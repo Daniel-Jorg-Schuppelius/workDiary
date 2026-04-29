@@ -1,0 +1,108 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Legacy\LegacyDiaryEntry;
+use App\Models\Legacy\LegacyUser;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+
+class HomeController extends Controller {
+    public function __invoke(): View|RedirectResponse {
+        $currentMode = session('work_mode', 'legacy');
+        $canViewSensitive = Auth::check();
+        $legacyConfigured = filled(config('database.connections.legacy.database'));
+
+        if ($canViewSensitive && $currentMode === 'legacy' && $legacyConfigured) {
+            return redirect()->route('legacy.diary.week');
+        }
+
+        $legacyOnline = false;
+        $stats = [
+            'entries_total' => 0,
+            'entries_open' => 0,
+            'entries_alert' => 0,
+            'team_size' => 0,
+        ];
+        $entries = collect();
+        $team = collect();
+
+        if ($legacyConfigured) {
+            try {
+                DB::connection('legacy')->getPdo();
+                $legacyOnline = true;
+
+                if ($canViewSensitive) {
+                    $stats = [
+                        'entries_total' => LegacyDiaryEntry::query()->count(),
+                        'entries_open' => LegacyDiaryEntry::query()->where('gelesen', 2)->count(),
+                        'entries_alert' => LegacyDiaryEntry::query()->where('gelesen', 3)->count(),
+                        'team_size' => LegacyUser::query()->where('id', '>', 3)->count(),
+                    ];
+
+                    $entries = LegacyDiaryEntry::query()
+                        ->with('author:id,uname')
+                        ->orderByDesc('aktuell')
+                        ->limit(8)
+                        ->get();
+
+                    $team = LegacyUser::query()
+                        ->where('id', '>', 3)
+                        ->orderBy('uname')
+                        ->limit(8)
+                        ->get(['id', 'uname', 'email']);
+                }
+            } catch (QueryException) {
+                $legacyOnline = false;
+            }
+        }
+
+        return view('home', [
+            'currentMode' => $currentMode,
+            'canViewSensitive' => $canViewSensitive,
+            'legacyConfigured' => $legacyConfigured,
+            'legacyOnline' => $legacyOnline,
+            'stats' => $stats,
+            'entries' => $entries,
+            'team' => $team,
+        ]);
+    }
+
+    public function switchMode(Request $request, string $mode): RedirectResponse {
+        if (! in_array($mode, ['legacy', 'new'], true)) {
+            return back()->with('success', __('Unbekannter Modus.'));
+        }
+
+        $legacyConfigured = filled(config('database.connections.legacy.database'));
+        if ($mode === 'legacy' && ! $legacyConfigured) {
+            $request->session()->put('work_mode', 'new');
+
+            return back()->with('success', __('Legacy-Modus ist nicht verfügbar (Legacy-DB nicht konfiguriert).'));
+        }
+
+        $request->session()->put('work_mode', $mode);
+
+        $origin = (string) $request->input('origin', 'home');
+        $targetRoute = $this->resolveModeRoute($origin, $mode);
+
+        return redirect()
+            ->route($targetRoute)
+            ->with('success', $mode === 'legacy' ? __('Legacy-Modus aktiviert.') : __('Neuer Modus aktiviert.'));
+    }
+
+    private function resolveModeRoute(string $origin, string $mode): string {
+        if ($origin === 'home') {
+            return 'home';
+        }
+
+        return match ($origin) {
+            'legacy.diary.index', 'diary.index' => $mode === 'legacy' ? 'legacy.diary.index' : 'diary.index',
+            'legacy.diary.create', 'diary.create' => $mode === 'legacy' ? 'legacy.diary.create' : 'diary.create',
+            default => $mode === 'legacy' ? 'legacy.diary.index' : 'diary.index',
+        };
+    }
+}

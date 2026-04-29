@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Models\Legacy\LegacyDiaryEntry;
+use App\Models\Legacy\LegacyUser;
+use Illuminate\Console\Command;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
+
+class LegacyImportPlanCommand extends Command {
+    protected $signature = 'legacy:import-plan';
+
+    protected $description = 'Zeigt den Umfang der Legacy-Daten für eine spätere Migration an';
+
+    public function handle(): int {
+        if (! filled(config('database.connections.legacy.database'))) {
+            $this->error('Legacy-DB ist nicht konfiguriert. Bitte LEGACY_DB_* in der .env setzen.');
+
+            return self::FAILURE;
+        }
+
+        try {
+            DB::connection('legacy')->getPdo();
+
+            $this->table(
+                ['Bereich', 'Anzahl'],
+                [
+                    ['Mitarbeiter', (string) LegacyUser::query()->where('id', '>', 3)->count()],
+                    ['Alle Nutzer', (string) LegacyUser::query()->count()],
+                    ['Tagebuch-Einträge', (string) LegacyDiaryEntry::query()->count()],
+                    ['Offene Einträge', (string) LegacyDiaryEntry::query()->where('gelesen', 2)->count()],
+                    ['Problem-Einträge', (string) LegacyDiaryEntry::query()->where('gelesen', 3)->count()],
+                ]
+            );
+
+            $this->info('Die Legacy-Tabellen können direkt gelesen werden. Ein dediziertes Importskript kann nun gezielt aufgebaut werden.');
+
+            return self::SUCCESS;
+        } catch (QueryException $exception) {
+            $this->error('Legacy-DB nicht erreichbar: ' . $exception->getMessage());
+
+            return self::FAILURE;
+        }
+    }
+}

@@ -1,0 +1,190 @@
+@import 'tailwindcss';
+
+@plugin '../../node_modules/daisyui/index.js' {
+    themes: corporate --default, dim --prefersdark;
+}
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        min-height: 100vh;
+        background-image:
+            radial-gradient(circle at top left, color-mix(in srgb, var(--color-base-300) 70%, transparent), transparent 40%),
+            radial-gradient(circle at bottom right, color-mix(in srgb, var(--color-base-300) 70%, transparent), transparent 40%);
+        background-attachment: fixed;
+    }
+}
+
+@layer components {
+
+    /* Wochenkalender-Tabelle */
+    .week-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.75rem;
+    }
+
+    .week-table th,
+    .week-table td {
+        border: 1px solid var(--color-base-300);
+        padding: 1px 3px;
+    }
+
+    /* Tages-Header */
+    .week-table th.kopf {
+        background-color: var(--color-primary);
+        color: var(--color-primary-content);
+        text-align: center;
+    }
+
+    .week-table th.kheute {
+        background-color: var(--color-success);
+        color: var(--color-success-content);
+        text-align: center;
+    }
+
+    .week-table th.kso {
+        background-color: var(--color-error);
+        color: var(--color-error-content);
+        text-align: center;
+    }
+
+    .week-table th.ksa {
+        background-color: color-mix(in srgb, var(--color-error) 70%, black);
+        color: var(--color-error-content);
+        text-align: center;
+    }
+
+    /* Mitarbeiter-Header */
+    .week-table th.mit {
+        background-color: color-mix(in srgb, var(--color-info) 15%, transparent);
+        text-align: center;
+        font-weight: normal;
+    }
+
+    .week-table th.mitb {
+        background-color: color-mix(in srgb, var(--color-info) 35%, transparent);
+        text-align: center;
+        font-weight: normal;
+    }
+
+    .week-table th.mitn {
+        background-color: color-mix(in srgb, var(--color-warning) 30%, transparent);
+        text-align: center;
+        font-weight: normal;
+    }
+
+    /* Stunden-Label-Zellen */
+    .week-table td.mitte {
+        background-color: var(--color-base-200);
+        text-align: center;
+    }
+
+    .week-table td.grau {
+        background-color: var(--color-base-100);
+        text-align: center;
+    }
+
+    /* Inhaltszellen (linke Hälfte des Zell-Paars) */
+    .week-table td.ro {
+        background-color: var(--color-base-100);
+        border-right-style: none;
+    }
+
+    .week-table td.rog {
+        background-color: var(--color-base-200);
+        border-right-style: none;
+    }
+
+    .week-table td.rob {
+        background-color: color-mix(in srgb, var(--color-info) 12%, transparent);
+        border-right-style: none;
+    }
+
+    .week-table td.rogb {
+        background-color: color-mix(in srgb, var(--color-info) 22%, transparent);
+        border-right-style: none;
+    }
+
+    .week-table td.ron {
+        background-color: color-mix(in srgb, var(--color-warning) 12%, transparent);
+        border-right-style: none;
+    }
+
+    .week-table td.rogn {
+        background-color: color-mix(in srgb, var(--color-warning) 22%, transparent);
+        border-right-style: none;
+    }
+
+    /* Status-/Leer-Zellen (rechte Hälfte des Zell-Paars) */
+    .week-table td.lo {
+        background-color: var(--color-base-100);
+        border-left-style: none;
+    }
+
+    .week-table td.log {
+        background-color: var(--color-base-200);
+        border-left-style: none;
+    }
+
+    .week-table td.lob {
+        background-color: color-mix(in srgb, var(--color-info) 12%, transparent);
+        border-left-style: none;
+    }
+
+    .week-table td.logb {
+        background-color: color-mix(in srgb, var(--color-info) 22%, transparent);
+        border-left-style: none;
+    }
+
+    .week-table td.lon {
+        background-color: color-mix(in srgb, var(--color-warning) 12%, transparent);
+        border-left-style: none;
+    }
+
+    .week-table td.logn {
+        background-color: color-mix(in srgb, var(--color-warning) 22%, transparent);
+        border-left-style: none;
+    }
+
+    /* Eintragsstatus-Überschreibungen (rechte Hälfte) */
+    .week-table td.neu {
+        background-color: var(--color-error);
+        color: var(--color-error-content);
+        font-weight: bold;
+        border-left-style: none;
+    }
+
+    .week-table td.off {
+        background-color: var(--color-warning);
+        color: var(--color-warning-content);
+        font-weight: bold;
+        border-left-style: none;
+    }
+
+    .week-table td.work {
+        background-color: var(--color-success);
+        color: var(--color-success-content);
+        font-weight: bold;
+        border-left-style: none;
+    }
+
+    .week-table td.ok {
+        background-color: color-mix(in srgb, var(--color-neutral) 30%, transparent);
+        font-weight: bold;
+        border-left-style: none;
+    }
+}
