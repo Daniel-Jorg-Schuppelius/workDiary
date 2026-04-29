@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', Str::limit($diary->content, 60) . ' — WorkDiary')
-@section('nav-title', 'Eintrag #' . $diary->id)
+@section('nav-title', __('Eintrag') . ' #' . $diary->id)
 
 @section('content')
     <div class="mx-auto flex h-[calc(100dvh-11rem)] w-full max-w-3xl flex-col gap-4">
@@ -36,7 +36,7 @@
                             data-confirm-dialog
                             data-confirm-title="{{ __('Eintrag löschen') }}"
                             data-confirm-message="{{ __('Der Eintrag wird dauerhaft gelöscht. Möchtest du fortfahren?') }}"
-                            data-confirm-label="Löschen"
+                            data-confirm-label="{{ __('Löschen') }}"
                         >
                             @csrf @method('DELETE')
                             <button class="btn btn-error btn-outline btn-sm">{{ __('Löschen') }}</button>

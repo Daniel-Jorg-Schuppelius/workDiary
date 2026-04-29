@@ -56,6 +56,7 @@ class LegacyUserAdminController extends Controller {
             'userpw' => ['required', 'string', 'max:100'],
             'email' => ['nullable', 'email', 'max:255'],
         ]);
+        $data['email'] = $data['email'] ?? '';
 
         LegacyUser::query()->create($data);
 
@@ -83,6 +84,7 @@ class LegacyUserAdminController extends Controller {
             'userpw' => ['required', 'string', 'max:100'],
             'email' => ['nullable', 'email', 'max:255'],
         ]);
+        $data['email'] = $data['email'] ?? '';
 
         $user->update($data);
 

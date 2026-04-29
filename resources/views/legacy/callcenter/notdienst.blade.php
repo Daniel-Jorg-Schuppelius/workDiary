@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Callcenter Notdienstplan — ' . config('app.name', 'WorkDiary'))
-@section('nav-title', 'Callcenter')
+@section('title', __('Callcenter Notdienstplan') . ' — ' . config('app.name', 'WorkDiary'))
+@section('nav-title', __('Callcenter'))
 
 @section('content')
     <div class="flex h-[calc(100dvh-11rem)] w-full flex-col gap-4">

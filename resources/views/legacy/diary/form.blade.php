@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', ($isEdit ? 'Legacy bearbeiten' : 'Legacy neuer Eintrag') . ' — WorkDiary')
-@section('nav-title', $isEdit ? 'Eintrag bearbeiten' : 'Eintrag neu')
+@section('title', ($isEdit ? __('Legacy bearbeiten') : __('Legacy neuer Eintrag')) . ' — WorkDiary')
+@section('nav-title', $isEdit ? __('Eintrag bearbeiten') : __('Eintrag neu'))
 
 @section('content')
     <div class="mx-auto flex h-[calc(100dvh-11rem)] w-full max-w-2xl flex-col">
@@ -9,9 +9,9 @@
             <div class="mb-6 flex items-start justify-between gap-4">
                 <div>
                     <p class="text-xs uppercase tracking-[0.2em] text-base-content/60">{{ __('Legacy Eintrag') }}</p>
-                    <h2 class="mt-2 font-['Space_Grotesk'] text-2xl font-bold text-base-content">{{ $isEdit ? 'Legacy-Eintrag bearbeiten' : 'Neuen Legacy-Eintrag anlegen' }}</h2>
+                    <h2 class="mt-2 font-['Space_Grotesk'] text-2xl font-bold text-base-content">{{ $isEdit ? __('Legacy-Eintrag bearbeiten') : __('Neuen Legacy-Eintrag anlegen') }}</h2>
                 </div>
-                <span class="badge badge-outline">{{ $isEdit ? 'Bearbeiten' : 'Neu' }}</span>
+                <span class="badge badge-outline">{{ $isEdit ? __('Bearbeiten') : __('Neu') }}</span>
             </div>
 
             <form method="POST" action="{{ $isEdit ? route('legacy.diary.update', $entry) : route('legacy.diary.store') }}" class="space-y-6">
@@ -79,7 +79,7 @@
 
                 <div class="flex items-center gap-3 rounded-box border border-base-300 bg-base-200 px-3 py-2">
                     <input id="sms" name="sms" type="checkbox" value="j" @checked(old('sms', $entry?->sms) === 'j') class="checkbox checkbox-sm">
-                    <label for="sms" class="text-sm">E-Mail-Hinweis senden</label>
+                    <label for="sms" class="text-sm">{{ __('E-Mail-Hinweis senden') }}</label>
                 </div>
 
                 <div class="rounded-box border border-base-300 bg-base-200/60 p-4 text-xs text-base-content/70">

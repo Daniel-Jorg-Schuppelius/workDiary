@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Legacy Archiv Woche — ' . config('app.name', 'WorkDiary'))
-@section('nav-title', 'Archivwoche')
+@section('title', __('Legacy Archiv Woche') . ' — ' . config('app.name', 'WorkDiary'))
+@section('nav-title', __('Archivwoche'))
 
 @section('content')
 @php
@@ -16,7 +16,7 @@
     <a role="tab" href="{{ route('legacy.archive.week') }}" class="tab tab-active">{{ __('Wochenansicht') }}</a>
 </div>
 <div class="flex-none flex flex-wrap items-center gap-2">
-    <a href="{{ route('legacy.archive.week', ['week' => $weekOffset - 1]) }}" class="btn btn-sm btn-ghost" title="1 Woche zurück">&#9664; Vorwoche</a>
+    <a href="{{ route('legacy.archive.week', ['week' => $weekOffset - 1]) }}" class="btn btn-sm btn-ghost" title="{{ __('1 Woche zurück') }}">&#9664; {{ __('Vorwoche') }}</a>
     <span class="text-sm font-semibold">{{ $monday->format('d.m.Y') }} &ndash; {{ $sunday->format('d.m.Y') }}</span>
     <a href="{{ route('legacy.archive.week', ['week' => $weekOffset + 1]) }}" class="btn btn-sm btn-ghost" title="{{ __('1 Woche vor') }}">{{ __('Folgewoche') }} &#9654;</a>
     <form method="GET" action="{{ route('legacy.archive.week') }}" class="flex items-center gap-2">
@@ -26,6 +26,10 @@
     @if ($weekOffset !== 0)
         <a href="{{ route('legacy.archive.week') }}" class="btn btn-sm btn-outline">{{ __('Aktuelle Woche') }}</a>
     @endif
+    <label class="label cursor-pointer gap-2 ml-2" title="{{ __('Tabelle an Bildschirmbreite anpassen') }}">
+        <input type="checkbox" class="checkbox checkbox-sm" data-week-fit>
+        <span class="label-text text-sm">{{ __('An Bildschirm anpassen') }}</span>
+    </label>
 </div>
 
 <div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-sm">
@@ -57,7 +61,7 @@
                     @endphp
                     <th colspan="2" class="{{ $userTh }}">{{ $user->uname }}</th>
                 @endforeach
-                <th class="{{ $dayTh }}">{{ $dayAbbr[$dayIndex] }}</th>
+                <th class="{{ $dayTh }}">{{ $day->isoFormat('dd') }}</th>
             </tr>
 
             @foreach ($hours as $hourIndex => $hour)

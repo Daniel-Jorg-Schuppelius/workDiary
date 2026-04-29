@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Carbon\Carbon;
 
 class SetLocale {
     public const SUPPORTED = ['de', 'en'];
@@ -15,6 +16,7 @@ class SetLocale {
             $locale = 'de';
         }
         App::setLocale($locale);
+        Carbon::setLocale($locale);
 
         return $next($request);
     }

@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', ($isEdit ? 'Mitarbeiter bearbeiten' : 'Mitarbeiter anlegen') . ' — WorkDiary')
-@section('nav-title', $isEdit ? 'Mitarbeiter bearbeiten' : 'Mitarbeiter anlegen')
+@section('title', ($isEdit ? __('Mitarbeiter bearbeiten') : __('Mitarbeiter anlegen')) . ' — WorkDiary')
+@section('nav-title', $isEdit ? __('Mitarbeiter bearbeiten') : __('Mitarbeiter anlegen'))
 
 @section('content')
     <div class="mx-auto flex h-[calc(100dvh-11rem)] w-full max-w-xl flex-col">
@@ -13,26 +13,26 @@
                 @endif
 
                 <div>
-                    <label for="uname" class="label text-sm font-semibold pb-1">Name</label>
+                    <label for="uname" class="label text-sm font-semibold pb-1">{{ __('Name') }}</label>
                     <input id="uname" name="uname" type="text" value="{{ old('uname', $legacyUser?->uname) }}" class="input input-bordered input-sm w-full @error('uname') input-error @enderror" required>
                     @error('uname')<p class="mt-2 text-sm text-error">{{ $message }}</p>@enderror
                 </div>
 
                 <div>
-                    <label for="userpw" class="label text-sm font-semibold pb-1">Passwort</label>
+                    <label for="userpw" class="label text-sm font-semibold pb-1">{{ __('Passwort') }}</label>
                     <input id="userpw" name="userpw" type="text" value="{{ old('userpw', $legacyUser?->userpw) }}" class="input input-bordered input-sm w-full @error('userpw') input-error @enderror" required>
                     @error('userpw')<p class="mt-2 text-sm text-error">{{ $message }}</p>@enderror
                 </div>
 
                 <div>
-                    <label for="email" class="label text-sm font-semibold pb-1">E-Mail</label>
+                    <label for="email" class="label text-sm font-semibold pb-1">{{ __('E-Mail') }}</label>
                     <input id="email" name="email" type="email" value="{{ old('email', $legacyUser?->email) }}" class="input input-bordered input-sm w-full @error('email') input-error @enderror">
                     @error('email')<p class="mt-2 text-sm text-error">{{ $message }}</p>@enderror
                 </div>
 
                 <div class="flex gap-2 pt-1">
-                    <button type="submit" class="btn btn-primary btn-sm">Speichern</button>
-                    <a href="{{ route('legacy.users.index') }}" class="btn btn-ghost btn-sm">Abbrechen</a>
+                    <button type="submit" class="btn btn-primary btn-sm">{{ __('Speichern') }}</button>
+                    <a href="{{ route('legacy.users.index') }}" class="btn btn-ghost btn-sm">{{ __('Abbrechen') }}</a>
                 </div>
             </form>
             </div>

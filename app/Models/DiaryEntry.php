@@ -31,11 +31,11 @@ class DiaryEntry extends Model {
 
     public function statusLabel(): string {
         return match ($this->status) {
-            -1 => 'Erledigt',
-            1 => 'Bestätigt',
-            2 => 'Offen',
-            3 => 'Problem',
-            default => 'Unbekannt',
+            -1 => __('Erledigt'),
+            1 => __('Bestätigt'),
+            2 => __('Offen'),
+            3 => __('Problem'),
+            default => __('Unbekannt'),
         };
     }
 

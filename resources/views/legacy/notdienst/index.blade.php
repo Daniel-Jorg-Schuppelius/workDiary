@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Legacy Notdienst — ' . config('app.name', 'WorkDiary'))
-@section('nav-title', 'Notdienst')
+@section('title', __('Legacy Notdienst') . ' — ' . config('app.name', 'WorkDiary'))
+@section('nav-title', __('Notdienst'))
 
 @section('content')
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
@@ -22,7 +22,7 @@
                 </div>
             @endif
             <div class="flex flex-col">
-                <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">Von &ndash; Bis</span></label>
+                <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Von') }} &ndash; {{ __('Bis') }}</span></label>
                 <div class="join">
                     <input type="date" name="from" value="{{ $filters['from'] ?? '' }}" class="join-item input input-bordered input-sm" title="{{ __('Von') }}">
                     <input type="date" name="to" value="{{ $filters['to'] ?? '' }}" class="join-item input input-bordered input-sm" title="{{ __('Bis') }}">
@@ -54,7 +54,7 @@
                 @forelse ($items as $item)
                     <tr>
                         <td class="text-center">{{ $item->id }}</td>
-                        <td>{{ optional($item->mitarbeiter)->uname ?? 'Unbekannt' }}</td>
+                        <td>{{ optional($item->mitarbeiter)->uname ?? __('Unbekannt') }}</td>
                         <td class="bg-warning/10 text-center">{{ $item->von?->format('d.m.Y') ?? '-' }}</td>
                         <td class="bg-warning/10 text-center">{{ $item->bis?->format('d.m.Y') ?? '-' }}</td>
                         <td class="text-right">
@@ -74,7 +74,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="py-6 text-center text-base-content/70">Keine Notdienst-Einträge gefunden.</td>
+                        <td colspan="5" class="py-6 text-center text-base-content/70">{{ __('Keine Notdienst-Einträge gefunden.') }}</td>
                     </tr>
                 @endforelse
             </tbody>

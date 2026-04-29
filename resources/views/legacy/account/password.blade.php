@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Passwort ändern — WorkDiary')
-@section('nav-title', 'Passwort')
+@section('title', __('Passwort ändern') . ' — WorkDiary')
+@section('nav-title', __('Passwort'))
 
 @section('content')
     <div class="mx-auto flex h-[calc(100dvh-11rem)] w-full max-w-xl flex-col">
@@ -10,7 +10,7 @@
                 @csrf
 
                 <div class="flex flex-col">
-                    <label for="current_password" class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">Altes Passwort</span></label>
+                    <label for="current_password" class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Altes Passwort') }}</span></label>
                     <input id="current_password" name="current_password" type="password" class="input input-bordered input-sm w-full @error('current_password') input-error @enderror" required>
                     @error('current_password')<p class="mt-2 text-sm text-error">{{ $message }}</p>@enderror
                 </div>

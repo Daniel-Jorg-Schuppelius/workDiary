@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Legacy-Tagebuch — ' . config('app.name', 'WorkDiary'))
-@section('nav-title', 'Einträge')
+@section('title', __('Legacy-Tagebuch') . ' — ' . config('app.name', 'WorkDiary'))
+@section('nav-title', __('Einträge'))
 
 @section('content')
     @php
@@ -43,7 +43,7 @@
                     </select>
                 </div>
                 <div class="flex flex-col">
-                    <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">Von &ndash; Bis</span></label>
+                    <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Von') }} &ndash; {{ __('Bis') }}</span></label>
                     <div class="join">
                         <input type="date" name="from" value="{{ $filters['from'] ?? '' }}" class="join-item input input-bordered input-sm" title="{{ __('Von') }}">
                         <input type="date" name="to" value="{{ $filters['to'] ?? '' }}" class="join-item input input-bordered input-sm" title="{{ __('Bis') }}">
@@ -94,7 +94,7 @@
                 @csrf
                 <div class="flex-none flex flex-wrap items-center gap-2 border-b border-base-300 bg-base-200/60 px-3 py-2">
                     <span class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Bulk-Aktionen') }}</span>
-                    <span id="bulk-count" class="badge badge-sm badge-ghost">0 ausgewählt</span>
+                    <span id="bulk-count" class="badge badge-sm badge-ghost">0 {{ __('ausgewählt') }}</span>
                     <select name="action" class="select select-bordered select-sm" required>
                         <option value="">{{ __('Aktion wählen…') }}</option>
                         <option value="status_open">{{ __('Status → Offen') }}</option>
@@ -112,12 +112,12 @@
                 <tr class="text-base-content/80">
                     <th class="w-8"><input type="checkbox" id="bulk-toggle-all" class="checkbox checkbox-sm" aria-label="{{ __('Alle auswählen') }}"></th>
                     <th class="w-14"><a href="{{ $sortLink('id') }}" class="link link-hover">ID {{ $sortIcon('id') }}</a></th>
-                    <th class="w-24 text-center"><a href="{{ $sortLink('status') }}" class="link link-hover">Status {{ $sortIcon('status') }}</a></th>
+                    <th class="w-24 text-center"><a href="{{ $sortLink('status') }}" class="link link-hover">{{ __('Status') }} {!! $sortIcon('status') !!}</a></th>
                     <th class="w-32">{{ __('Mitarbeiter') }}</th>
                     <th>{{ __('Inhalt') }}</th>
                     <th class="w-56">{{ __('Antwort') }}</th>
-                    <th class="w-28"><a href="{{ $sortLink('von') }}" class="link link-hover">Von {{ $sortIcon('von') }}</a></th>
-                    <th class="w-28"><a href="{{ $sortLink('bis') }}" class="link link-hover">Bis {{ $sortIcon('bis') }}</a></th>
+                    <th class="w-28"><a href="{{ $sortLink('von') }}" class="link link-hover">{{ __('Von') }} {!! $sortIcon('von') !!}</a></th>
+                    <th class="w-28"><a href="{{ $sortLink('bis') }}" class="link link-hover">{{ __('Bis') }} {!! $sortIcon('bis') !!}</a></th>
                     <th class="w-24 whitespace-nowrap text-right">{{ __('Aktion') }}</th>
                 </tr>
             </thead>
@@ -144,7 +144,7 @@
                         <td class="text-center">
                             <span class="badge badge-sm {{ $badgeClass }}">{{ $entry->statusLabel() }}</span>
                         </td>
-                        <td>{{ optional($entry->author)->uname ?? 'Unbekannt' }}</td>
+                        <td>{{ optional($entry->author)->uname ?? __('Unbekannt') }}</td>
                         <td class="max-w-md truncate" title="{{ $entry->inhalt ?? '' }}">{{ Str::limit($entry->inhalt ?? '', 120) }}</td>
                         <td class="max-w-xs truncate" title="{{ $entry->antwort ?? '' }}">{{ Str::limit($entry->antwort ?? '', 80) }}</td>
                         <td>{{ $entry->von?->format('d.m.Y H:i') ?? '-' }}</td>

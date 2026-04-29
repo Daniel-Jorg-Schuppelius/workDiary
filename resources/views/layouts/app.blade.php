@@ -172,8 +172,8 @@
 
         <dialog id="action-confirm-dialog" class="modal">
                 <div class="modal-box">
-                    <h3 id="action-confirm-title" class="text-lg font-bold">Aktion bestätigen</h3>
-                    <p id="action-confirm-message" class="py-4 text-sm text-base-content/75">Möchtest du diese Aktion wirklich ausführen?</p>
+                    <h3 id="action-confirm-title" class="text-lg font-bold">{{ __('Aktion bestätigen') }}</h3>
+                    <p id="action-confirm-message" class="py-4 text-sm text-base-content/75">{{ __('Möchtest du diese Aktion wirklich ausführen?') }}</p>
                     <div class="modal-action">
                         <form method="dialog">
                             <button class=" btn btn-sm btn-ghost">{{ __('Abbrechen') }}</button>
@@ -229,14 +229,14 @@
                             pendingForm = form;
 
                             if (confirmTitle) {
-                                confirmTitle.textContent = form.getAttribute('data-confirm-title') || 'Aktion bestätigen';
+                                confirmTitle.textContent = form.getAttribute('data-confirm-title') || @json(__('Aktion bestätigen'));
                             }
 
                             if (confirmMessage) {
                                 confirmMessage.textContent = form.getAttribute('data-confirm-message') || 'Möchtest du diese Aktion wirklich ausführen?';
                             }
 
-                            confirmSubmit.textContent = form.getAttribute('data-confirm-label') || 'Ausführen';
+                            confirmSubmit.textContent = form.getAttribute('data-confirm-label') || @json(__('Ausführen'));
 
                             if (typeof confirmDialog.showModal === 'function') {
                                 confirmDialog.showModal();

@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Legacy Archiv — ' . config('app.name', 'WorkDiary'))
-@section('nav-title', 'Archiv')
+@section('title', __('Legacy Archiv') . ' — ' . config('app.name', 'WorkDiary'))
+@section('nav-title', __('Archiv'))
 
 @section('content')
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-3">
@@ -25,7 +25,7 @@
                 </div>
             @endif
             <div class="flex flex-col">
-                <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">Von &ndash; Bis</span></label>
+                <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Von') }} &ndash; {{ __('Bis') }}</span></label>
                 <div class="join">
                     <input type="date" name="from" value="{{ $filters['from'] ?? '' }}" class="join-item input input-bordered input-sm" title="{{ __('Von') }}">
                     <input type="date" name="to" value="{{ $filters['to'] ?? '' }}" class="join-item input input-bordered input-sm" title="{{ __('Bis') }}">
@@ -45,10 +45,10 @@
                 <div class="flex flex-col">
                     <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Archiv bis') }}</span></label>
                     <select name="months" class="select select-bordered select-sm w-full">
-                        <option value="3">3 Monate</option>
-                        <option value="6">6 Monate</option>
-                        <option value="9">9 Monate</option>
-                        <option value="12">12 Monate</option>
+                        <option value="3">3 {{ __('Monate') }}</option>
+                        <option value="6">6 {{ __('Monate') }}</option>
+                        <option value="9">9 {{ __('Monate') }}</option>
+                        <option value="12">12 {{ __('Monate') }}</option>
                     </select>
                 </div>
                 <div class="flex flex-col min-w-48">
@@ -130,7 +130,7 @@
                         <form method="dialog" class="modal-backdrop"><button>close</button></form>
                     </dialog>
                 @empty
-                    <p class="text-sm text-base-content/60">Keine Einträge.</p>
+                    <p class="text-sm text-base-content/60">{{ __('Keine Einträge.') }}</p>
                 @endforelse
             </div>
             @if ($diaryEntries->hasPages())
@@ -145,15 +145,15 @@
             <div class="min-h-0 flex-1 space-y-3 overflow-auto pr-1">
                 @forelse ($onCallEntries as $entry)
                     <article class="cursor-pointer rounded-box border border-base-300 bg-base-200 p-2 transition hover:border-primary hover:bg-base-300" onclick="document.getElementById('archiv-oncall-{{ $entry->id }}').showModal()">
-                        <p class="text-sm text-base-content/70">{{ optional($entry->mitarbeiter)->uname ?? 'Unbekannt' }}</p>
+                        <p class="text-sm text-base-content/70">{{ optional($entry->mitarbeiter)->uname ?? __('Unbekannt') }}</p>
                         <p class="mt-1 text-sm text-base-content">{{ $entry->von?->format('d.m.Y') ?? '-' }} bis {{ $entry->bis?->format('d.m.Y') ?? '-' }}</p>
                     </article>
                     <dialog id="archiv-oncall-{{ $entry->id }}" class="modal">
                         <div class="modal-box max-w-md p-0">
                             <header class="flex items-start justify-between gap-3 border-b border-base-300 bg-base-200/60 px-6 py-4">
                                 <div class="min-w-0">
-                                    <p class="text-xs uppercase tracking-wider text-base-content/60">Archiv-Bereitschaft</p>
-                                    <h3 class="font-['Space_Grotesk'] mt-1 truncate text-lg font-semibold">#{{ $entry->id }} &middot; {{ optional($entry->mitarbeiter)->uname ?? 'Unbekannt' }}</h3>
+                                    <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Archiv-Bereitschaft') }}</p>
+                                    <h3 class="font-['Space_Grotesk'] mt-1 truncate text-lg font-semibold">#{{ $entry->id }} &middot; {{ optional($entry->mitarbeiter)->uname ?? __('Unbekannt') }}</h3>
                                 </div>
                                 <form method="dialog"><button class="btn btn-sm btn-square btn-error text-lg leading-none font-bold" aria-label="{{ __('Schließen') }}">&times;</button></form>
                             </header>
@@ -176,7 +176,7 @@
                         <form method="dialog" class="modal-backdrop"><button>close</button></form>
                     </dialog>
                 @empty
-                    <p class="text-sm text-base-content/60">Keine Einträge.</p>
+                    <p class="text-sm text-base-content/60">{{ __('Keine Einträge.') }}</p>
                 @endforelse
             </div>
             @if ($onCallEntries->hasPages())
@@ -191,15 +191,15 @@
             <div class="min-h-0 flex-1 space-y-3 overflow-auto pr-1">
                 @forelse ($notdienstEntries as $entry)
                     <article class="cursor-pointer rounded-box border border-base-300 bg-base-200 p-2 transition hover:border-primary hover:bg-base-300" onclick="document.getElementById('archiv-notdienst-{{ $entry->id }}').showModal()">
-                        <p class="text-sm text-base-content/70">{{ optional($entry->mitarbeiter)->uname ?? 'Unbekannt' }}</p>
+                        <p class="text-sm text-base-content/70">{{ optional($entry->mitarbeiter)->uname ?? __('Unbekannt') }}</p>
                         <p class="mt-1 text-sm text-base-content">{{ $entry->von?->format('d.m.Y') ?? '-' }} bis {{ $entry->bis?->format('d.m.Y') ?? '-' }}</p>
                     </article>
                     <dialog id="archiv-notdienst-{{ $entry->id }}" class="modal">
                         <div class="modal-box max-w-md p-0">
                             <header class="flex items-start justify-between gap-3 border-b border-base-300 bg-base-200/60 px-6 py-4">
                                 <div class="min-w-0">
-                                    <p class="text-xs uppercase tracking-wider text-base-content/60">Archiv-Notdienst</p>
-                                    <h3 class="font-['Space_Grotesk'] mt-1 truncate text-lg font-semibold">#{{ $entry->id }} &middot; {{ optional($entry->mitarbeiter)->uname ?? 'Unbekannt' }}</h3>
+                                    <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Archiv-Notdienst') }}</p>
+                                    <h3 class="font-['Space_Grotesk'] mt-1 truncate text-lg font-semibold">#{{ $entry->id }} &middot; {{ optional($entry->mitarbeiter)->uname ?? __('Unbekannt') }}</h3>
                                 </div>
                                 <form method="dialog"><button class="btn btn-sm btn-square btn-error text-lg leading-none font-bold" aria-label="{{ __('Schließen') }}">&times;</button></form>
                             </header>
@@ -222,7 +222,7 @@
                         <form method="dialog" class="modal-backdrop"><button>close</button></form>
                     </dialog>
                 @empty
-                    <p class="text-sm text-base-content/60">Keine Einträge.</p>
+                    <p class="text-sm text-base-content/60">{{ __('Keine Einträge.') }}</p>
                 @endforelse
             </div>
             @if ($notdienstEntries->hasPages())

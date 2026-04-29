@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de" data-theme="dim">
+<html lang="{{ app()->getLocale() }}" data-theme="dim">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,7 +13,7 @@
                 root.style.colorScheme = theme === 'corporate' ? 'light' : 'dark';
             })();
         </script>
-        <title>Anmelden — {{ config('app.name', 'WorkDiary') }}</title>
+        <title>{{ __('Anmelden') }} — {{ config('app.name', 'WorkDiary') }}</title>
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=space-grotesk:400,500,700|ibm-plex-sans:400,500,600" rel="stylesheet" />
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
@@ -31,7 +31,7 @@
             <div class="mx-auto flex w-full max-w-screen-2xl items-center justify-between gap-4 px-4 py-3 xl:px-8 2xl:px-12">
                 <a href="{{ route('home') }}" class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary">WorkDiary</a>
                 <div class="ml-auto flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-sm">
-                    <button type="button" data-theme-toggle aria-label="Farbschema wechseln" title="Farbschema wechseln" class="btn btn-sm btn-ghost btn-square">
+                    <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
                         <span data-theme-label class="text-base leading-none">◐</span>
                     </button>
                     <a href="{{ route('home') }}" class="btn btn-sm btn-ghost">⌂ Startseite</a>
@@ -44,9 +44,9 @@
             <div class="mb-8 text-center">
                 <a href="{{ route('home') }}" class="inline-block">
                     <p class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary">WorkDiary Next</p>
-                    <h1 class="mt-2 font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content">Anmelden</h1>
+                    <h1 class="mt-2 font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content">{{ __('Anmelden') }}</h1>
                 </a>
-                <p class="mt-3 text-sm text-base-content/70">Benutzerdaten aus dem bestehenden Tagebuch-System.</p>
+                <p class="mt-3 text-sm text-base-content/70">{{ __('Benutzerdaten aus dem bestehenden Tagebuch-System.') }}</p>
             </div>
 
             <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-sm">
@@ -54,7 +54,7 @@
                     @csrf
 
                     <div>
-                        <label for="username" class="mb-2 block text-sm font-medium text-base-content">Benutzername</label>
+                        <label for="username" class="mb-2 block text-sm font-medium text-base-content">{{ __('Benutzername') }}</label>
                         <input
                             id="username"
                             name="username"
@@ -63,7 +63,7 @@
                             autocomplete="username"
                             autofocus
                             class="w-full rounded-2xl border border-base-content/20 bg-base-200/80 px-4 py-3 text-base-content placeholder-base-content/40 transition focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/25 @error('username') ring-2 ring-error/40 @enderror"
-                            placeholder="Benutzername"
+                            placeholder="{{ __('Benutzername') }}"
                         >
                         @error('username')
                             <p class="mt-2 text-sm text-error">{{ $message }}</p>
@@ -71,14 +71,14 @@
                     </div>
 
                     <div>
-                        <label for="password" class="mb-2 block text-sm font-medium text-base-content">Passwort</label>
+                        <label for="password" class="mb-2 block text-sm font-medium text-base-content">{{ __('Passwort') }}</label>
                         <input
                             id="password"
                             name="password"
                             type="password"
                             autocomplete="current-password"
                             class="w-full rounded-2xl border border-base-content/20 bg-base-200/80 px-4 py-3 text-base-content placeholder-base-content/40 transition focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/25"
-                            placeholder="Passwort"
+                            placeholder="{{ __('Passwort') }}"
                         >
                     </div>
 
@@ -89,7 +89,7 @@
                             type="checkbox"
                             class="checkbox checkbox-primary checkbox-sm"
                         >
-                        <label for="remember" class="text-sm text-base-content/80">Angemeldet bleiben</label>
+                        <label for="remember" class="text-sm text-base-content/80">{{ __('Angemeldet bleiben') }}</label>
                     </div>
 
                     <button

@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Wochenansicht — ' . config('app.name', 'WorkDiary'))
-@section('nav-title', 'Wochenansicht')
+@section('title', __('Wochenansicht') . ' — ' . config('app.name', 'WorkDiary'))
+@section('nav-title', __('Wochenansicht'))
 
 @section('content')
 @php
@@ -16,21 +16,26 @@
     <section class="flex-none rounded-box border border-base-300 bg-base-100 p-4 shadow-sm md:p-5">
         <div class="flex flex-wrap items-end justify-between gap-3">
             <div>
-                <p class="text-xs uppercase tracking-[0.2em] text-base-content/60">Kalenderwoche</p>
+                <p class="text-xs uppercase tracking-[0.2em] text-base-content/60">{{ __('Kalenderwoche') }}</p>
                 <p class="mt-1 font-['Space_Grotesk'] text-lg font-semibold text-base-content">{{ $monday->format('d.m.Y') }} &ndash; {{ $sunday->format('d.m.Y') }}</p>
             </div>
             <form method="GET" action="{{ route('legacy.diary.week') }}" class="flex flex-wrap items-end gap-2">
                 <div>
-                    <label class="mb-2 block text-sm font-medium text-base-content">Woche wählen</label>
+                    <label class="mb-2 block text-sm font-medium text-base-content">{{ __('Woche wählen') }}</label>
                     <input type="week" name="week_date" value="{{ $selectedWeek ?? $monday->format('o-\\WW') }}" class="input input-bordered input-sm">
                 </div>
                 <button type="submit" class="btn btn-sm btn-primary">{{ __('Woche anzeigen') }}</button>
                 <span class="mx-1 h-8 w-px self-end bg-base-300" aria-hidden="true"></span>
-                <a href="{{ route('legacy.diary.week', ['week' => $weekOffset - 1]) }}" class="btn btn-sm btn-neutral" title="1 Woche zurück">&#9664; Vorwoche</a>
+                <a href="{{ route('legacy.diary.week', ['week' => $weekOffset - 1]) }}" class="btn btn-sm btn-neutral" title="{{ __('1 Woche zurück') }}">&#9664; {{ __('Vorwoche') }}</a>
                 <a href="{{ route('legacy.diary.week', ['week' => $weekOffset + 1]) }}" class="btn btn-sm btn-neutral" title="{{ __('1 Woche vor') }}">{{ __('Folgewoche') }} &#9654;</a>
                 @if ($weekOffset !== 0)
                     <a href="{{ route('legacy.diary.week') }}" class="btn btn-sm btn-outline">{{ __('Aktuelle Woche') }}</a>
                 @endif
+                <span class="mx-1 h-8 w-px self-end bg-base-300" aria-hidden="true"></span>
+                <label class="label cursor-pointer gap-2 self-end py-1" title="{{ __('Tabelle an Bildschirmbreite anpassen') }}">
+                    <input type="checkbox" class="checkbox checkbox-sm" data-week-fit>
+                    <span class="label-text text-sm">{{ __('An Bildschirm anpassen') }}</span>
+                </label>
             </form>
         </div>
     </section>
@@ -65,7 +70,7 @@
                     @endphp
                     <th colspan="2" class="{{ $userTh }}">{{ $user->uname }}</th>
                 @endforeach
-                <th class="{{ $dayTh }}">{{ $dayAbbr[$dayIndex] }}</th>
+                <th class="{{ $dayTh }}">{{ $day->isoFormat('dd') }}</th>
             </tr>
 
             {{-- Stundenzeilen 07–21 --}}
@@ -136,10 +141,10 @@
             <tr>
                 <td class="rogb">&nbsp;&nbsp;</td>
                 <td class="lob">&nbsp;&nbsp;</td>
-                <td class="px-2 text-xs">&nbsp; allgemeine Bereitschaft</td>
+                <td class="px-2 text-xs">&nbsp; {{ __('allgemeine Bereitschaft') }}</td>
                 <td class="rogn">&nbsp;&nbsp;</td>
                 <td class="lon">&nbsp;&nbsp;</td>
-                <td class="px-2 text-xs">&nbsp; Notdienst-Bereitschaft</td>
+                <td class="px-2 text-xs">&nbsp; {{ __('Notdienst-Bereitschaft') }}</td>
             </tr>
         </table>
     </div>

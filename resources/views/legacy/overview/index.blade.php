@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Legacy Überblick — ' . config('app.name', 'WorkDiary'))
-@section('nav-title', 'Überblick')
+@section('title', __('Legacy Überblick') . ' — ' . config('app.name', 'WorkDiary'))
+@section('nav-title', __('Überblick'))
 
 @section('content')
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
@@ -9,15 +9,15 @@
             <div class="flex flex-col">
                 <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Zeitraum') }}</span></label>
                 <select name="zeitpunkt" class="select select-bordered select-sm">
-                    <option value="1" @selected(($filters['zeitpunkt'] ?? 1) == 1)>Daten ab heute</option>
-                    <option value="2" @selected(($filters['zeitpunkt'] ?? 1) == 2)>Daten bis heute</option>
+                    <option value="1" @selected(($filters['zeitpunkt'] ?? 1) == 1)>{{ __('Daten ab heute') }}</option>
+                    <option value="2" @selected(($filters['zeitpunkt'] ?? 1) == 2)>{{ __('Daten bis heute') }}</option>
                 </select>
             </div>
             <div class="flex flex-col">
                 <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Status') }}</span></label>
                 <select name="status" class="select select-bordered select-sm">
-                    <option value="2" @selected(($filters['status'] ?? 2) == 2)>Ungelesen</option>
-                    <option value="1" @selected(($filters['status'] ?? 2) == 1)>In Bearbeitung</option>
+                    <option value="2" @selected(($filters['status'] ?? 2) == 2)>{{ __('Ungelesen') }}</option>
+                    <option value="1" @selected(($filters['status'] ?? 2) == 1)>{{ __('In Bearbeitung') }}</option>
                     <option value="-1" @selected(($filters['status'] ?? 2) == -1)>{{ __('Erledigt') }}</option>
                     <option value="3" @selected(($filters['status'] ?? 2) == 3)>{{ __('Probleme') }}</option>
                     <option value="0" @selected(($filters['status'] ?? 2) == 0)>{{ __('Alle') }}</option>
@@ -32,7 +32,7 @@
         <table class="table table-xs table-zebra table-pin-rows">
             <thead class="bg-base-200">
                 <tr>
-                    <th>Erstellt</th>
+                    <th>{{ __('Erstellt') }}</th>
                     @if ($isAdmin)
                         <th>{{ __('Mitarbeiter') }}</th>
                     @endif
@@ -48,7 +48,7 @@
                     <tr>
                         <td class="text-center">{{ optional($entry->aktuell)?->format('d.m.y') ?? '-' }}</td>
                         @if ($isAdmin)
-                            <td class="text-center">{{ optional($entry->author)->uname ?? 'Unbekannt' }}</td>
+                            <td class="text-center">{{ optional($entry->author)->uname ?? __('Unbekannt') }}</td>
                         @endif
                         <td class="text-center">{{ optional($entry->von)?->format('d.m.y') ?? '-' }}</td>
                         <td class="text-center">{{ optional($entry->bis)?->format('d.m.y') ?? '-' }}</td>

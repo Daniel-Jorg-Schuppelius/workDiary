@@ -149,7 +149,12 @@ class LegacyArchiveController extends Controller {
 
         return redirect()->route('legacy.archive.index')->with(
             'success',
-            'Archivierung abgeschlossen: ' . $result['total'] . ' Datensätze verschoben (Aufträge ' . $result['diary'] . ', Bereitschaft ' . $result['oncall'] . ', Notdienst ' . $result['notdienst'] . ').'
+            __('Archivierung abgeschlossen: :total Datensätze verschoben (Aufträge :diary, Bereitschaft :oncall, Notdienst :notdienst).', [
+                'total' => $result['total'],
+                'diary' => $result['diary'],
+                'oncall' => $result['oncall'],
+                'notdienst' => $result['notdienst'],
+            ])
         );
     }
 

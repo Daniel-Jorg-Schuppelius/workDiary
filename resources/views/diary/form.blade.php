@@ -1,13 +1,13 @@
 @extends('layouts.app')
-@section('title', ($isEdit ? 'Bearbeiten' : 'Neuer Eintrag') . ' — WorkDiary')
-@section('nav-title', $isEdit ? 'Eintrag bearbeiten' : 'Neuer Eintrag')
+@section('title', ($isEdit ? __('Bearbeiten') : __('Neuer Eintrag')) . ' — WorkDiary')
+@section('nav-title', $isEdit ? __('Eintrag bearbeiten') : __('Neuer Eintrag'))
 
 @section('content')
     <div class="mx-auto flex h-[calc(100dvh-11rem)] w-full max-w-2xl flex-col">
         <div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-sm">
             <div class="h-full overflow-auto p-6 md:p-8">
             <h2 class="mb-6 font-['Space_Grotesk'] text-2xl font-bold text-base-content">
-                {{ $isEdit ? 'Eintrag bearbeiten' : 'Neuen Eintrag anlegen' }}
+                {{ $isEdit ? __('Eintrag bearbeiten') : __('Neuen Eintrag anlegen') }}
             </h2>
 
             <form
@@ -97,7 +97,7 @@
 
                 <div class="flex gap-3 pt-2">
                     <button type="submit" class=" btn btn-sm btn-primary">
-                        {{ $isEdit ? 'Speichern' : 'Eintrag anlegen' }}
+                        {{ $isEdit ? __('Speichern') : __('Eintrag anlegen') }}
                     </button>
                     <a
                         href="{{ $isEdit ? route('diary.show', $entry) : route('diary.index') }}"

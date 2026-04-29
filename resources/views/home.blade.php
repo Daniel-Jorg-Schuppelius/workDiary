@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de" data-theme="dim">
+<html lang="{{ app()->getLocale() }}" data-theme="dim">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -70,12 +70,12 @@
                 <div class="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
                     <div>
                         <p class="font-['Space_Grotesk'] text-sm uppercase tracking-[0.35em] text-primary">WorkDiary</p>
-                        <h1 class="mt-3 font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content md:text-4xl">Operations Dashboard</h1>
+                        <h1 class="mt-3 font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content md:text-4xl">{{ __('Operations Dashboard') }}</h1>
                         <p class="mt-3 max-w-3xl text-base text-base-content/80">Zentrale Arbeitsoberfläche für Teamstatus, offene Punkte und direkte Aktionen im Tagesgeschäft.</p>
                         @auth
                             <div class="mt-4 inline-flex items-center gap-2 rounded-full border border-base-300 bg-base-200 px-3 py-1.5 text-xs uppercase tracking-[0.24em] text-base-content/80">
-                                <span>Aktiver Modus</span>
-                                <span class="badge badge-sm {{ $currentMode === 'legacy' ? 'badge-warning' : 'badge-primary' }}">{{ $currentMode === 'legacy' ? 'Legacy' : 'Neu' }}</span>
+                                <span>{{ __('Aktiver Modus') }}</span>
+                                <span class="badge badge-sm {{ $currentMode === 'legacy' ? 'badge-warning' : 'badge-primary' }}">{{ $currentMode === 'legacy' ? __('Legacy') : __('Neu') }}</span>
                             </div>
                         @endauth
                         <div class="mt-5 flex flex-wrap gap-3">
@@ -91,7 +91,7 @@
 
                     <div class="grid gap-3 text-sm text-base-content/80 md:min-w-80">
                         <div class="rounded-box border border-base-300 bg-base-100 px-4 py-3 shadow-sm">
-                            <p class="font-medium text-base-content">Datenquelle</p>
+                            <p class="font-medium text-base-content">{{ __('Datenquelle') }}</p>
                             <p class="mt-1 text-base-content/80">
                                 @if ($legacyOnline)
                                     Live verbunden mit Legacy-Datenbank.
@@ -119,31 +119,31 @@
                             <article class="rounded-[1.75rem] border border-base-300 bg-base-100 p-5 shadow-sm">
                                 <p class="badge badge-ghost badge-sm">{{ __('Einträge') }}</p>
                                 <p class="mt-3 font-['Space_Grotesk'] text-4xl font-bold text-base-content">{{ number_format($stats['entries_total'], 0, ',', '.') }}</p>
-                                <p class="mt-2 text-sm text-base-content/70">Gesamtbestand im Legacy-Tagebuch</p>
+                                <p class="mt-2 text-sm text-base-content/70">{{ __('Gesamtbestand im Legacy-Tagebuch') }}</p>
                             </article>
                             <article class="rounded-[1.75rem] border border-base-300 bg-base-100 p-5 shadow-sm">
                                 <p class="badge badge-warning badge-sm">{{ __('Offen') }}</p>
                                 <p class="mt-3 font-['Space_Grotesk'] text-4xl font-bold text-base-content">{{ number_format($stats['entries_open'], 0, ',', '.') }}</p>
-                                <p class="mt-2 text-sm text-base-content/75">Sofort in Bearbeitung nehmen</p>
+                                <p class="mt-2 text-sm text-base-content/75">{{ __('Sofort in Bearbeitung nehmen') }}</p>
                             </article>
                             <article class="rounded-[1.75rem] border border-base-300 bg-base-100 p-5 shadow-sm">
                                 <p class="badge badge-error badge-sm">{{ __('Probleme') }}</p>
                                 <p class="mt-3 font-['Space_Grotesk'] text-4xl font-bold text-base-content">{{ number_format($stats['entries_alert'], 0, ',', '.') }}</p>
-                                <p class="mt-2 text-sm text-base-content/75">Eskalationen mit Handlungsbedarf</p>
+                                <p class="mt-2 text-sm text-base-content/75">{{ __('Eskalationen mit Handlungsbedarf') }}</p>
                             </article>
                             <article class="rounded-[1.75rem] border border-base-300 bg-base-100 p-5 shadow-sm">
-                                <p class="badge badge-primary badge-sm">Team</p>
+                                <p class="badge badge-primary badge-sm">{{ __('Team') }}</p>
                                 <p class="mt-3 font-['Space_Grotesk'] text-4xl font-bold text-base-content">{{ number_format($stats['team_size'], 0, ',', '.') }}</p>
-                                <p class="mt-2 text-sm text-base-content/75">Verfügbare Mitarbeitende</p>
+                                <p class="mt-2 text-sm text-base-content/75">{{ __('Verfügbare Mitarbeitende') }}</p>
                             </article>
                         </div>
 
                         <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
                             <div class="flex flex-wrap items-center justify-between gap-4">
                                 <div>
-                                    <div class="badge badge-error badge-sm">Prioritäten</div>
-                                    <p class="mt-2 font-['Space_Grotesk'] text-2xl font-bold text-base-content">Jetzt wichtig</p>
-                                    <p class="mt-1 text-sm text-base-content/75">Problem- und offene Einträge als direkte Arbeitsliste.</p>
+                                    <div class="badge badge-error badge-sm">{{ __('Prioritäten') }}</div>
+                                    <p class="mt-2 font-['Space_Grotesk'] text-2xl font-bold text-base-content">{{ __('Jetzt wichtig') }}</p>
+                                    <p class="mt-1 text-sm text-base-content/75">{{ __('Problem- und offene Einträge als direkte Arbeitsliste.') }}</p>
                                 </div>
                                 <a href="{{ route($indexRoute, ['status' => 3]) }}" class="btn btn-error btn-outline btn-sm">⚠ Nur Probleme anzeigen</a>
                             </div>
@@ -157,13 +157,13 @@
                                                 'badge-warning' => (int) $entry->gelesen === 2,
                                                 'badge-error' => (int) $entry->gelesen === 3,
                                             ])>{{ $entry->statusLabel() }}</span>
-                                            <span class="text-sm text-base-content/70">{{ optional($entry->author)->uname ?? 'Unbekannt' }}</span>
+                                            <span class="text-sm text-base-content/70">{{ optional($entry->author)->uname ?? __('Unbekannt') }}</span>
                                         </div>
                                         <p class="mt-3 text-base-content">{{ \Illuminate\Support\Str::limit($entry->inhalt ?? 'Ohne Beschreibung', 180) }}</p>
-                                        <div class="mt-2 text-sm text-base-content/70">Von {{ optional($entry->von)?->format('d.m.Y H:i') ?? 'offen' }} · Bis {{ optional($entry->bis)?->format('d.m.Y H:i') ?? 'offen' }}</div>
+                                        <div class="mt-2 text-sm text-base-content/70">{{ __('Von') }} {{ optional($entry->von)?->format('d.m.Y H:i') ?? __('offen') }} · {{ __('Bis') }} {{ optional($entry->bis)?->format('d.m.Y H:i') ?? __('offen') }}</div>
                                     </article>
                                 @empty
-                                    <div class="rounded-box border border-dashed border-base-300 bg-base-100 p-5 text-base-content/80">Keine priorisierten Einträge gefunden.</div>
+                                    <div class="rounded-box border border-dashed border-base-300 bg-base-100 p-5 text-base-content/80">{{ __('Keine priorisierten Einträge gefunden.') }}</div>
                                 @endforelse
                             </div>
                         </section>
@@ -171,8 +171,8 @@
                         <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
                             <div class="flex flex-col gap-3 border-b border-base-300 pb-5 md:flex-row md:items-end md:justify-between">
                                 <div>
-                                    <p class="font-['Space_Grotesk'] text-2xl font-bold text-base-content">Aktuelle Arbeitslage</p>
-                                    <p class="mt-2 text-sm text-base-content/70">Neueste Einträge aus dem laufenden Betrieb.</p>
+                                    <p class="font-['Space_Grotesk'] text-2xl font-bold text-base-content">{{ __('Aktuelle Arbeitslage') }}</p>
+                                    <p class="mt-2 text-sm text-base-content/70">{{ __('Neueste Einträge aus dem laufenden Betrieb.') }}</p>
                                 </div>
                                 <div class="badge badge-ghost badge-lg px-4 py-3 text-xs uppercase tracking-[0.3em] text-base-content/70">
                                     Produktiver Betrieb
@@ -192,12 +192,12 @@
                                                     'badge-error' => $entry->statusTone() === 'alert',
                                                     'badge-ghost' => $entry->statusTone() === 'neutral',
                                                 ])>{{ $entry->statusLabel() }}</span>
-                                                <span class="text-sm text-base-content/70">{{ optional($entry->author)->uname ?? 'Unbekannt' }}</span>
+                                                <span class="text-sm text-base-content/70">{{ optional($entry->author)->uname ?? __('Unbekannt') }}</span>
                                             </div>
                                             <p class="mt-3 text-lg font-semibold text-base-content">{{ \Illuminate\Support\Str::limit($entry->inhalt ?? 'Ohne Beschreibung', 140) }}</p>
                                             <div class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-base-content/70">
-                                                <span>Von {{ optional($entry->von)?->format('d.m.Y H:i') ?? 'offen' }}</span>
-                                                <span>Bis {{ optional($entry->bis)?->format('d.m.Y H:i') ?? 'offen' }}</span>
+                                                <span>{{ __('Von') }} {{ optional($entry->von)?->format('d.m.Y H:i') ?? __('offen') }}</span>
+                                                <span>{{ __('Bis') }} {{ optional($entry->bis)?->format('d.m.Y H:i') ?? __('offen') }}</span>
                                                 <span>Aktualisiert {{ optional($entry->aktuell)?->diffForHumans() ?? 'unbekannt' }}</span>
                                             </div>
                                         </div>
@@ -214,7 +214,7 @@
                         </section>
                     @else
                         <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
-                            <p class="font-['Space_Grotesk'] text-2xl font-bold text-base-content">Produktzugang erforderlich</p>
+                            <p class="font-['Space_Grotesk'] text-2xl font-bold text-base-content">{{ __('Produktzugang erforderlich') }}</p>
                                 <p class="mt-3 text-base-content/80">Diese Oberfläche ist ein Arbeitsprodukt. Operative Inhalte, Kennzahlen und Teamdaten sind nur nach Anmeldung sichtbar.</p>
                             <div class="mt-4"><a href="{{ route('login') }}" class=" btn btn-sm btn-primary">⇢ Jetzt anmelden</a></div>
                         </section>
@@ -223,19 +223,19 @@
 
                 <aside class="space-y-6">
                     <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
-                        <p class="font-['Space_Grotesk'] text-2xl font-bold text-base-content">Heute arbeiten</p>
+                        <p class="font-['Space_Grotesk'] text-2xl font-bold text-base-content">{{ __('Heute arbeiten') }}</p>
                         <div class="mt-5 space-y-4">
                             <div class="rounded-[1.4rem] border border-base-300 bg-base-200 p-4">
                                 <p class="font-semibold text-base-content">1. Offene Punkte priorisieren</p>
-                                <p class="mt-2 text-sm text-base-content/75">Arbeitsliste filtern und zuerst kritische Probleme bearbeiten.</p>
+                                <p class="mt-2 text-sm text-base-content/75">{{ __('Arbeitsliste filtern und zuerst kritische Probleme bearbeiten.') }}</p>
                             </div>
                             <div class="rounded-[1.4rem] border border-base-300 bg-base-200 p-4">
                                 <p class="font-semibold text-base-content">2. Neue Einträge dokumentieren</p>
-                                <p class="mt-2 text-sm text-base-content/75">Vorgänge sauber erfassen, Zeitraum und Status direkt setzen.</p>
+                                <p class="mt-2 text-sm text-base-content/75">{{ __('Vorgänge sauber erfassen, Zeitraum und Status direkt setzen.') }}</p>
                             </div>
                             <div class="rounded-[1.4rem] border border-base-300 bg-base-200 p-4">
                                 <p class="font-semibold text-base-content">3. Rückmeldungen nachziehen</p>
-                                <p class="mt-2 text-sm text-base-content/75">Offene Antworten finalisieren und auf erledigt setzen.</p>
+                                <p class="mt-2 text-sm text-base-content/75">{{ __('Offene Antworten finalisieren und auf erledigt setzen.') }}</p>
                             </div>
                             @auth
                                 <a href="{{ route($indexRoute, ['status' => 2]) }}" class=" btn btn-sm btn-outline w-full">↗ Zu offenen Aufgaben</a>
@@ -246,7 +246,7 @@
                     @if ($canViewSensitive)
                         <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
                             <div class="flex items-center justify-between gap-4">
-                                <p class="font-['Space_Grotesk'] text-2xl font-bold text-base-content">Team</p>
+                                <p class="font-['Space_Grotesk'] text-2xl font-bold text-base-content">{{ __('Team') }}</p>
                                 <span class="badge badge-ghost">{{ $team->count() }} sichtbar</span>
                             </div>
                             <div class="mt-5 space-y-3">
@@ -256,7 +256,7 @@
                                         <p class="mt-1 text-sm text-base-content/70">{{ $member->email ?: 'Keine E-Mail im Altbestand' }}</p>
                                     </div>
                                 @empty
-                                    <div class="rounded-[1.25rem] border border-dashed border-base-300 bg-base-100 p-4 text-sm text-base-content/70">Teamdaten werden eingeblendet, sobald die Legacy-DB erreichbar ist.</div>
+                                    <div class="rounded-[1.25rem] border border-dashed border-base-300 bg-base-100 p-4 text-sm text-base-content/70">{{ __('Teamdaten werden eingeblendet, sobald die Legacy-DB erreichbar ist.') }}</div>
                                 @endforelse
                             </div>
                         </section>

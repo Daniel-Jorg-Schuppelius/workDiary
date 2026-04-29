@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Legacy Mitarbeiter — ' . config('app.name', 'WorkDiary'))
-@section('nav-title', 'Mitarbeiter')
+@section('title', __('Legacy Mitarbeiter') . ' — ' . config('app.name', 'WorkDiary'))
+@section('nav-title', __('Mitarbeiter'))
 
 @section('content')
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">

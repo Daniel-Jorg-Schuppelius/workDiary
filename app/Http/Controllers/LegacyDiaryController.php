@@ -328,9 +328,9 @@ class LegacyDiaryController extends Controller {
         }
 
         $skipped = count($data['ids']) - $affected;
-        $msg = $affected . ' Eintrag/Einträge aktualisiert.';
+        $msg = trans_choice('{1} :count Eintrag aktualisiert.|[2,*] :count Einträge aktualisiert.', $affected, ['count' => $affected]);
         if ($skipped > 0) {
-            $msg .= ' ' . $skipped . ' übersprungen (keine Berechtigung).';
+            $msg .= ' ' . __(':count übersprungen (keine Berechtigung).', ['count' => $skipped]);
         }
 
         return redirect()->back()->with('success', $msg);

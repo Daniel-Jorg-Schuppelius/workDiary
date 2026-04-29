@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', Str::limit($entry->inhalt ?? '', 60) . ' — Legacy')
-@section('nav-title', 'Eintrag #' . $entry->id)
+@section('nav-title', __('Eintrag') . ' #' . $entry->id)
 
 @section('content')
     @php
@@ -29,7 +29,7 @@
                 <div class="flex flex-wrap items-center gap-2 text-sm">
                     <span class="badge badge-md {{ $badgeClass }}">{{ $entry->statusLabel() }}</span>
                     <span class="text-base-content/40">|</span>
-                    <span class="text-base-content/70">{{ optional($entry->author)->uname ?? 'Unbekannt' }}</span>
+                    <span class="text-base-content/70">{{ optional($entry->author)->uname ?? __('Unbekannt') }}</span>
                     <span class="text-base-content/40">|</span>
                     <span class="text-base-content/70">Legacy #{{ $entry->id }}</span>
                 </div>

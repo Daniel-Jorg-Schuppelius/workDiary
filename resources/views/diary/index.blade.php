@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Tagebuch — ' . config('app.name', 'WorkDiary'))
-@section('nav-title', 'Alle Einträge')
+@section('title', __('Tagebuch') . ' — ' . config('app.name', 'WorkDiary'))
+@section('nav-title', __('Alle Einträge'))
 
 @section('content')
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
@@ -65,10 +65,10 @@
                     <p class="text-base leading-relaxed text-base-content">{{ Str::limit($entry->content, 160) }}</p>
                     <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-base-content/65">
                         @if ($entry->start_at)
-                            <span>Von {{ $entry->start_at->format('d.m.Y H:i') }}</span>
+                            <span>{{ __('Von') }} {{ $entry->start_at->format('d.m.Y H:i') }}</span>
                         @endif
                         @if ($entry->end_at)
-                            <span>Bis {{ $entry->end_at->format('d.m.Y H:i') }}</span>
+                            <span>{{ __('Bis') }} {{ $entry->end_at->format('d.m.Y H:i') }}</span>
                         @endif
                         <span>Erstellt {{ $entry->created_at->diffForHumans() }}</span>
                     </div>
