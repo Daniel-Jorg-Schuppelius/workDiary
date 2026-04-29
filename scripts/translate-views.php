@@ -1,4 +1,5 @@
 <?php
+
 /**
  * One-shot Übersetzungs-Helper:
  *  - Wendet ein DE→__('DE') Mapping auf alle Blade-Templates unter resources/views an.

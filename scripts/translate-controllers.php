@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Wrappt deutsche Strings in `with('success'|'error', '...')` und `withErrors([...])`
  * mit __() in allen Controller-Dateien. Außerdem strings in `validate(['custom'])`
@@ -22,7 +23,7 @@ $map = [
     'Mitarbeiter aktualisiert.' => 'Employee updated.',
     'Mitarbeiter gelöscht.' => 'Employee deleted.',
     'Mitarbeiter kann nicht gelöscht werden: es sind noch Legacy-Daten vorhanden.' =>
-        'Employee cannot be deleted: legacy data still exists.',
+    'Employee cannot be deleted: legacy data still exists.',
     'Eintrag gespeichert.' => 'Entry saved.',
     'Eintrag aktualisiert.' => 'Entry updated.',
     'Eintrag gelöscht.' => 'Entry deleted.',
@@ -31,18 +32,18 @@ $map = [
     'Legacy-Eintrag gelöscht.' => 'Legacy entry deleted.',
     'Passwort erfolgreich geändert.' => 'Password changed successfully.',
     'Lokales Passwort geändert. Legacy-Passwort konnte nicht synchronisiert werden.' =>
-        'Local password changed. Legacy password could not be synchronized.',
+    'Local password changed. Legacy password could not be synchronized.',
     'Aktuelles Passwort ist falsch.' => 'Current password is incorrect.',
     'Unbekannter Modus.' => 'Unknown mode.',
     'Legacy-Modus ist nicht verfügbar (Legacy-DB nicht konfiguriert).' =>
-        'Legacy mode is not available (legacy DB not configured).',
+    'Legacy mode is not available (legacy DB not configured).',
     'Legacy-Modus aktiviert.' => 'Legacy mode activated.',
     'Neuer Modus aktiviert.' => 'New mode activated.',
     'Nutzername oder Passwort ist falsch.' => 'Username or password is incorrect.',
     'Legacy-Datenbank ist nicht konfiguriert.' => 'Legacy database is not configured.',
     'Anmeldedaten sind ungültig.' => 'Credentials are invalid.',
     'Diese Zugangsdaten stimmen nicht mit unseren Aufzeichnungen überein.' =>
-        'These credentials do not match our records.',
+    'These credentials do not match our records.',
 ];
 
 $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
