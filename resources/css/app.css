@@ -308,18 +308,30 @@
         background-color: var(--color-base-200);
     }
 
-    /* Schwacher Schatten an der Sticky-Grenze für visuelle Abgrenzung */
+    /* Schwacher Schatten an der Sticky-Grenze für visuelle Abgrenzung.
+       Mit border-collapse rendern Borders an Sticky-Zellen unsauber, daher
+       ersetzen wir die rechte/untere Border durch einen 1px-Schatten, der
+       beim Scrollen mitwandert. */
     .week-table>tbody>tr>th:first-child,
     .week-table>tbody>tr>td:first-child {
-        box-shadow: 1px 0 0 0 var(--color-base-300);
+        box-shadow: inset -1px 0 0 0 var(--color-base-300), 1px 0 0 0 var(--color-base-300);
+    }
+
+    .week-table>tbody>tr>th:last-child,
+    .week-table>tbody>tr>td:last-child {
+        box-shadow: inset 1px 0 0 0 var(--color-base-300), -1px 0 0 0 var(--color-base-300);
     }
 
     .week-table>tbody>tr>th {
-        box-shadow: 0 1px 0 0 var(--color-base-300);
+        box-shadow: inset 0 -1px 0 0 var(--color-base-300), 0 1px 0 0 var(--color-base-300);
     }
 
     .week-table>tbody>tr>th:first-child {
-        box-shadow: 1px 0 0 0 var(--color-base-300), 0 1px 0 0 var(--color-base-300);
+        box-shadow: inset -1px -1px 0 0 var(--color-base-300), 1px 1px 0 0 var(--color-base-300);
+    }
+
+    .week-table>tbody>tr>th:last-child {
+        box-shadow: inset 1px -1px 0 0 var(--color-base-300), -1px 1px 0 0 var(--color-base-300);
     }
 
     /* Legenden-Tabelle soll NICHT sticky sein und keine Mindestbreiten /
