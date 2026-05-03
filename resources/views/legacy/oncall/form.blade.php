@@ -22,18 +22,17 @@
                     @error('user')<p class="mt-2 text-sm text-error">{{ $message }}</p>@enderror
                 </div>
 
-                <div class="grid gap-3 sm:grid-cols-2">
-                    <div>
-                        <label for="von" class="label text-sm font-semibold pb-1">{{ __('Von') }}</label>
-                        <input id="von" name="von" type="date" value="{{ old('von', $item?->von?->format('Y-m-d')) }}" class="input input-bordered input-sm w-full @error('von') input-error @enderror">
-                        @error('von')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
-                    </div>
-                    <div>
-                        <label for="bis" class="label text-sm font-semibold pb-1">{{ __('Bis') }}</label>
-                        <input id="bis" name="bis" type="date" value="{{ old('bis', $item?->bis?->format('Y-m-d')) }}" class="input input-bordered input-sm w-full @error('bis') input-error @enderror">
-                        @error('bis')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
-                    </div>
-                </div>
+                <x-date-range
+                    layout="split"
+                    fromName="von"
+                    toName="bis"
+                    fromId="von"
+                    toId="bis"
+                    :from="old('von', $item?->von?->format('Y-m-d'))"
+                    :to="old('bis', $item?->bis?->format('Y-m-d'))"
+                    :fromError="$errors->first('von')"
+                    :toError="$errors->first('bis')"
+                />
 
                 <div class="flex gap-2 pt-1">
                     <button type="submit" class="btn btn-primary btn-sm">{{ __('Speichern') }}</button>

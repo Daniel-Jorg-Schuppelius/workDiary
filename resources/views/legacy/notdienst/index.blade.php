@@ -8,8 +8,7 @@
         <a role="tab" href="{{ route('legacy.oncall.index') }}" class="tab">{{ __('Bereitschaft') }}</a>
         <a role="tab" href="{{ route('legacy.notdienst.index') }}" class="tab tab-active">{{ __('Notdienst') }}</a>
     </div>
-    <form method="GET" action="{{ route('legacy.notdienst.index') }}" class="flex-none rounded-box border border-base-300 bg-base-200 p-4">
-        <div class="flex flex-wrap items-end gap-4">
+    <x-filter-bar :action="route('legacy.notdienst.index')">
             @if ($isAdmin)
                 <div class="flex flex-col min-w-48">
                     <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</span></label>
@@ -21,13 +20,7 @@
                     </select>
                 </div>
             @endif
-            <div class="flex flex-col">
-                <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Von') }} &ndash; {{ __('Bis') }}</span></label>
-                <div class="join">
-                    <input type="date" name="from" value="{{ $filters['from'] ?? '' }}" class="join-item input input-bordered input-sm" title="{{ __('Von') }}">
-                    <input type="date" name="to" value="{{ $filters['to'] ?? '' }}" class="join-item input input-bordered input-sm" title="{{ __('Bis') }}">
-                </div>
-            </div>
+            <x-date-range :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''" />
             <button type="submit" class="btn btn-sm btn-primary">{{ __('Filtern') }}</button>
             @if (array_filter($filters))
                 <a href="{{ route('legacy.notdienst.index') }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
@@ -35,13 +28,10 @@
             @if ($isAdmin)
                 <a href="{{ route('legacy.notdienst.create') }}" class="btn btn-sm btn-outline">{{ __('Neuer Notdienst') }}</a>
             @endif
-        </div>
-    </form>
+    </x-filter-bar>
 
-    <div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300">
-        <div class="h-full overflow-auto">
-        <table class="table table-xs table-zebra table-pin-rows">
-            <thead class="bg-base-200">
+    <x-table size="xs" :pin-rows="true" scroll="flex">
+                <thead class="bg-base-200">
                 <tr>
                     <th class="w-16 text-center">ID</th>
                     <th>{{ __('Mitarbeiter') }}</th>
@@ -78,9 +68,7 @@
                     </tr>
                 @endforelse
             </tbody>
-        </table>
-        </div>
-    </div>
+    </x-table>
 
     @if ($items->hasPages())
         <div class="flex-none rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-sm">{{ $items->links('vendor.pagination.daisyui-simple') }}</div>

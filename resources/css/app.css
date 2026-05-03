@@ -1,7 +1,9 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @plugin '../../node_modules/daisyui/index.js' {
-    themes: corporate --default, dim --prefersdark;
+    themes:
+        corporate --default,
+        dim --prefersdark;
 }
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -10,126 +12,121 @@
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans:
+        "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji";
 }
 
 @layer base {
     html {
         scroll-behavior: smooth;
+        /* Week calendar: height per hour row – adjust to scale the grid */
+        --wd-hour-h: 2.5rem;
     }
 
     body {
         min-height: 100vh;
-        background-image:
-            radial-gradient(circle at top left, color-mix(in srgb, var(--color-base-300) 70%, transparent), transparent 40%),
-            radial-gradient(circle at bottom right, color-mix(in srgb, var(--color-base-300) 70%, transparent), transparent 40%);
+        background-image: radial-gradient(
+            circle at top left,
+            color-mix(in srgb, var(--color-primary) 10%, transparent),
+            transparent 35%
+        );
         background-attachment: fixed;
     }
 }
 
 @layer components {
-
     /* Wochenkalender-Tabelle */
     .week-table {
-        width: max-content;
-        min-width: 100%;
-        border-collapse: collapse;
+        width: 100%;
+        /* fixed: Spaltenbreiten nach erster Zeile, nicht nach Inhalt → alle User-Spalten gleich breit */
+        table-layout: fixed;
+        /* border-separate statt collapse: nötig damit position:sticky in th/td funktioniert */
+        border-collapse: separate;
+        border-spacing: 0;
         font-size: 0.75rem;
     }
 
-    /* Fit-to-Screen-Modus: Tabelle füllt Container, Spalten werden gleichmäßig
-       gestaucht. Aktiviert über data-week-fit-Attribut auf <html> oder <body>. */
-    [data-week-fit="1"] .week-table {
-        width: 100%;
-        min-width: 0;
-        table-layout: fixed;
+    /* Erste Spalte: Datum/Zeit – fest */
+    .week-table th:first-child,
+    .week-table td:first-child {
+        width: 4.5rem;
+        min-width: 4.5rem;
+        max-width: 4.5rem;
     }
 
-    [data-week-fit="1"] .week-table th.mit,
-    [data-week-fit="1"] .week-table th.mitb,
-    [data-week-fit="1"] .week-table th.mitn {
-        min-width: 0;
-        white-space: normal;
+    /* Letzte Spalte: Zeit/Tageskürzel – identisch zur ersten Spalte */
+    .week-table th:last-child,
+    .week-table td:last-child {
+        width: 4.5rem;
+        min-width: 4.5rem;
+        max-width: 4.5rem;
+    }
+
+    /* Mitarbeiter-Kopfzellen (colspan=2): feste Breite → 2 × 3 rem pro Benutzer */
+    .week-table th.mit,
+    .week-table th.mitb,
+    .week-table th.mitn {
+        width: 6rem;
         overflow: hidden;
         text-overflow: ellipsis;
-    }
-
-    [data-week-fit="1"] .week-table td.ro,
-    [data-week-fit="1"] .week-table td.rog,
-    [data-week-fit="1"] .week-table td.rob,
-    [data-week-fit="1"] .week-table td.rogb,
-    [data-week-fit="1"] .week-table td.ron,
-    [data-week-fit="1"] .week-table td.rogn {
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    [data-week-fit="1"] .week-table td.lo,
-    [data-week-fit="1"] .week-table td.log,
-    [data-week-fit="1"] .week-table td.lob,
-    [data-week-fit="1"] .week-table td.logb,
-    [data-week-fit="1"] .week-table td.lon,
-    [data-week-fit="1"] .week-table td.logn,
-    [data-week-fit="1"] .week-table td.neu,
-    [data-week-fit="1"] .week-table td.off,
-    [data-week-fit="1"] .week-table td.work,
-    [data-week-fit="1"] .week-table td.ok {
-        min-width: 0;
-        width: auto;
+        white-space: nowrap;
     }
 
     .week-table th,
     .week-table td {
-        border: 1px solid var(--color-base-300);
+        border-right: 1px solid var(--color-base-300);
+        border-bottom: 1px solid var(--color-base-300);
         padding: 1px 3px;
     }
 
-    /* Mitarbeiter-Spalte: Mindestbreite, damit Namen nicht gestaucht werden.
-       Da jeder Mitarbeiter aus einem Zell-Paar (Inhalt + Status) besteht,
-       wirkt min-width hier auf das colspan="2" im Header sowie auf die beiden
-       Datenzellen darunter. */
-    .week-table th.mit,
-    .week-table th.mitb,
-    .week-table th.mitn {
-        min-width: 9rem;
-        white-space: nowrap;
+    /* Linke und obere Außenkante */
+    .week-table th:first-child,
+    .week-table td:first-child {
+        border-left: 1px solid var(--color-base-300);
     }
 
-    /* Inhaltszelle (linke Hälfte) bekommt die meiste Breite */
-    .week-table td.ro,
-    .week-table td.rog,
-    .week-table td.rob,
-    .week-table td.rogb,
-    .week-table td.ron,
-    .week-table td.rogn {
-        min-width: 7rem;
+    .week-table tr:first-child th,
+    .week-table tr:first-child td {
+        border-top: 1px solid var(--color-base-300);
     }
 
-    /* Status-/Leerzelle (rechte Hälfte) bleibt schmal */
-    .week-table td.lo,
-    .week-table td.log,
-    .week-table td.lob,
-    .week-table td.logb,
-    .week-table td.lon,
-    .week-table td.logn,
-    .week-table td.neu,
-    .week-table td.off,
-    .week-table td.work,
-    .week-table td.ok {
-        min-width: 1.5rem;
-        width: 1.5rem;
+    /* Fit-to-screen: fixed layout, Zeitspalten fix, Mitarbeiterspalten gleichmäßig */
+    .week-table--fit {
+        table-layout: fixed;
+        width: 100%;
+        min-width: 0 !important;
     }
 
-    /* Erste Spalte (Datum/Uhrzeit) feste Breite */
-    .week-table>tbody>tr>th:first-child,
-    .week-table>tbody>tr>td:first-child,
-    .week-table>tbody>tr>th:last-child,
-    .week-table>tbody>tr>td:last-child {
-        min-width: 4.5rem;
+    /* Zeitspalte und Kürzel-Spalte bleiben fix – auch im Fit-Modus */
+    .week-table--fit th:first-child,
+    .week-table--fit td:first-child {
         width: 4.5rem;
-        white-space: nowrap;
+        min-width: 4.5rem;
+        max-width: 4.5rem;
+    }
+
+    .week-table--fit th:last-child,
+    .week-table--fit td:last-child {
+        width: 4.5rem;
+        min-width: 4.5rem;
+        max-width: 4.5rem;
+    }
+
+    /* Mitarbeiterspalten verteilen sich frei auf den verbleibenden Platz */
+    .week-table--fit th.mit,
+    .week-table--fit th.mitb,
+    .week-table--fit th.mitn {
+        width: auto;
+    }
+
+    /* Obere Kante jeder Tages-Kopfzeile (erste th in einer Gruppe) */
+    .week-table th.kopf,
+    .week-table th.kheute,
+    .week-table th.kso,
+    .week-table th.ksa {
+        border-top: 2px solid var(--color-base-300);
     }
 
     /* Tages-Header */
@@ -138,19 +135,16 @@
         color: var(--color-primary-content);
         text-align: center;
     }
-
     .week-table th.kheute {
         background-color: var(--color-success);
         color: var(--color-success-content);
         text-align: center;
     }
-
     .week-table th.kso {
         background-color: var(--color-error);
         color: var(--color-error-content);
         text-align: center;
     }
-
     .week-table th.ksa {
         background-color: color-mix(in srgb, var(--color-error) 70%, black);
         color: var(--color-error-content);
@@ -159,19 +153,29 @@
 
     /* Mitarbeiter-Header */
     .week-table th.mit {
-        background-color: color-mix(in srgb, var(--color-info) 15%, transparent);
+        background-color: color-mix(
+            in srgb,
+            var(--color-info) 15%,
+            transparent
+        );
         text-align: center;
         font-weight: normal;
     }
-
     .week-table th.mitb {
-        background-color: color-mix(in srgb, var(--color-info) 35%, transparent);
+        background-color: color-mix(
+            in srgb,
+            var(--color-info) 35%,
+            transparent
+        );
         text-align: center;
         font-weight: normal;
     }
-
     .week-table th.mitn {
-        background-color: color-mix(in srgb, var(--color-warning) 30%, transparent);
+        background-color: color-mix(
+            in srgb,
+            var(--color-warning) 30%,
+            transparent
+        );
         text-align: center;
         font-weight: normal;
     }
@@ -180,11 +184,12 @@
     .week-table td.mitte {
         background-color: var(--color-base-200);
         text-align: center;
+        white-space: nowrap;
     }
-
     .week-table td.grau {
         background-color: var(--color-base-100);
         text-align: center;
+        white-space: nowrap;
     }
 
     /* Inhaltszellen (linke Hälfte des Zell-Paars) */
@@ -192,29 +197,40 @@
         background-color: var(--color-base-100);
         border-right-style: none;
     }
-
     .week-table td.rog {
         background-color: var(--color-base-200);
         border-right-style: none;
     }
-
     .week-table td.rob {
-        background-color: color-mix(in srgb, var(--color-info) 12%, transparent);
+        background-color: color-mix(
+            in srgb,
+            var(--color-info) 12%,
+            transparent
+        );
         border-right-style: none;
     }
-
     .week-table td.rogb {
-        background-color: color-mix(in srgb, var(--color-info) 22%, transparent);
+        background-color: color-mix(
+            in srgb,
+            var(--color-info) 22%,
+            transparent
+        );
         border-right-style: none;
     }
-
     .week-table td.ron {
-        background-color: color-mix(in srgb, var(--color-warning) 12%, transparent);
+        background-color: color-mix(
+            in srgb,
+            var(--color-warning) 12%,
+            transparent
+        );
         border-right-style: none;
     }
-
     .week-table td.rogn {
-        background-color: color-mix(in srgb, var(--color-warning) 22%, transparent);
+        background-color: color-mix(
+            in srgb,
+            var(--color-warning) 22%,
+            transparent
+        );
         border-right-style: none;
     }
 
@@ -223,29 +239,40 @@
         background-color: var(--color-base-100);
         border-left-style: none;
     }
-
     .week-table td.log {
         background-color: var(--color-base-200);
         border-left-style: none;
     }
-
     .week-table td.lob {
-        background-color: color-mix(in srgb, var(--color-info) 12%, transparent);
+        background-color: color-mix(
+            in srgb,
+            var(--color-info) 12%,
+            transparent
+        );
         border-left-style: none;
     }
-
     .week-table td.logb {
-        background-color: color-mix(in srgb, var(--color-info) 22%, transparent);
+        background-color: color-mix(
+            in srgb,
+            var(--color-info) 22%,
+            transparent
+        );
         border-left-style: none;
     }
-
     .week-table td.lon {
-        background-color: color-mix(in srgb, var(--color-warning) 12%, transparent);
+        background-color: color-mix(
+            in srgb,
+            var(--color-warning) 12%,
+            transparent
+        );
         border-left-style: none;
     }
-
     .week-table td.logn {
-        background-color: color-mix(in srgb, var(--color-warning) 22%, transparent);
+        background-color: color-mix(
+            in srgb,
+            var(--color-warning) 22%,
+            transparent
+        );
         border-left-style: none;
     }
 
@@ -256,102 +283,398 @@
         font-weight: bold;
         border-left-style: none;
     }
-
     .week-table td.off {
         background-color: var(--color-warning);
         color: var(--color-warning-content);
         font-weight: bold;
         border-left-style: none;
     }
-
     .week-table td.work {
         background-color: var(--color-success);
         color: var(--color-success-content);
         font-weight: bold;
         border-left-style: none;
     }
-
     .week-table td.ok {
-        background-color: color-mix(in srgb, var(--color-neutral) 30%, transparent);
+        background-color: color-mix(
+            in srgb,
+            var(--color-neutral) 30%,
+            transparent
+        );
         font-weight: bold;
         border-left-style: none;
     }
+}
 
-    /* --- Sticky Layout für viele Mitarbeiter --- */
-    /* Erste Spalte (Datum-Header & Uhrzeit-Labels) bleibt beim horizontalen Scrollen sichtbar */
-    .week-table>tbody>tr>th:first-child,
-    .week-table>tbody>tr>td:first-child {
-        position: sticky;
-        left: 0;
-        z-index: 2;
+/* =========================================================================
+   WEEK CALENDAR  (wd-week-*)
+   Sticky two-axis calendar grid:
+     • Day-header row   → position: sticky; top: 0
+     • Time-axis column → position: sticky; left: 0
+     • Corner cell      → both axes, highest z-index
+   ========================================================================= */
+@layer components {
+    /* ── Grid container ──────────────────────────────────────────────────── */
+    .wd-week-grid {
+        display: grid;
+        /* col 1: time axis  |  cols 2-8: one column per day, min 9 rem */
+        grid-template-columns: 3.5rem repeat(7, minmax(9rem, 1fr));
+        /* Force horizontal scroll when viewport is narrower than 7 × 9 rem */
+        min-width: calc(3.5rem + 7 * 9rem);
+        align-items: stretch;
     }
 
-    /* Tageskopfzeile (Datum + Mitarbeiter) bleibt beim vertikalen Scrollen oben kleben –
-       sticky pro Header-<th>, jede neue Tageskopfzeile schiebt die alte raus */
-    .week-table>tbody>tr>th {
+    /* ── Corner cell: sticky top-left ────────────────────────────────────── */
+    .wd-week-corner {
         position: sticky;
         top: 0;
-        z-index: 3;
-    }
-
-    /* Linke obere Ecke: Datum-Header in Kopfzeile = sticky links UND oben */
-    .week-table>tbody>tr>th:first-child {
-        z-index: 4;
-    }
-
-    /* Sticky-Zellen brauchen einen vollen Hintergrund, sonst scheinen Inhalte durch */
-    .week-table>tbody>tr>td:first-child.grau {
+        left: 0;
+        z-index: 20;
         background-color: var(--color-base-100);
+        border-right: 2px solid var(--color-base-300);
+        border-bottom: 2px solid var(--color-base-300);
     }
 
-    .week-table>tbody>tr>td:first-child.mitte {
-        background-color: var(--color-base-200);
+    /* ── Day-header cells: sticky to top only ────────────────────────────── */
+    .wd-week-day-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        padding: 0.5rem 0.375rem;
+        text-align: center;
+        background-color: var(--color-base-100);
+        border-right: 1px solid var(--color-base-300);
+        border-bottom: 2px solid var(--color-base-300);
     }
 
-    /* Schwacher Schatten an der Sticky-Grenze für visuelle Abgrenzung.
-       Mit border-collapse rendern Borders an Sticky-Zellen unsauber, daher
-       ersetzen wir die rechte/untere Border durch einen 1px-Schatten, der
-       beim Scrollen mitwandert. */
-    .week-table>tbody>tr>th:first-child,
-    .week-table>tbody>tr>td:first-child {
-        box-shadow: inset -1px 0 0 0 var(--color-base-300), 1px 0 0 0 var(--color-base-300);
+    .wd-week-day-header.is-today {
+        background-color: color-mix(
+            in srgb,
+            var(--color-primary) 8%,
+            var(--color-base-100)
+        );
+        border-bottom-color: var(--color-primary);
     }
 
-    .week-table>tbody>tr>th:last-child,
-    .week-table>tbody>tr>td:last-child {
-        box-shadow: inset 1px 0 0 0 var(--color-base-300), -1px 0 0 0 var(--color-base-300);
+    .wd-week-day-header.is-weekend {
+        background-color: color-mix(
+            in srgb,
+            var(--color-base-200) 60%,
+            var(--color-base-100)
+        );
     }
 
-    .week-table>tbody>tr>th {
-        box-shadow: inset 0 -1px 0 0 var(--color-base-300), 0 1px 0 0 var(--color-base-300);
+    .wd-week-day-header.is-holiday {
+        background-color: color-mix(
+            in srgb,
+            var(--color-error) 8%,
+            var(--color-base-100)
+        );
+        border-bottom-color: var(--color-error);
     }
 
-    .week-table>tbody>tr>th:first-child {
-        box-shadow: inset -1px -1px 0 0 var(--color-base-300), 1px 1px 0 0 var(--color-base-300);
+    /* ── Time-axis column: sticky to left only ───────────────────────────── */
+    .wd-week-hours {
+        position: sticky;
+        left: 0;
+        z-index: 10;
+        background-color: var(--color-base-100);
+        border-right: 2px solid var(--color-base-300);
+        /* 24 equal-height rows, one per hour */
+        display: grid;
+        grid-template-rows: repeat(24, var(--wd-hour-h));
+        min-height: calc(24 * var(--wd-hour-h));
     }
 
-    .week-table>tbody>tr>th:last-child {
-        box-shadow: inset 1px -1px 0 0 var(--color-base-300), -1px 1px 0 0 var(--color-base-300);
+    .wd-week-hour-label {
+        display: flex;
+        align-items: flex-start;
+        padding-top: 2px;
+        padding-right: 0.375rem;
+        font-size: 0.625rem;
+        font-variant-numeric: tabular-nums;
+        color: color-mix(in srgb, var(--color-base-content) 50%, transparent);
+        justify-content: flex-end;
+        border-top: 1px solid var(--color-base-300);
     }
 
-    /* Legenden-Tabelle soll NICHT sticky sein und keine Mindestbreiten /
-       Fit-to-Screen-Logik erben */
-    .week-table.w-auto\! {
-        width: auto !important;
-        min-width: 0 !important;
-        table-layout: auto !important;
+    /* ── Day columns ──────────────────────────────────────────────────────── */
+    .wd-week-day {
+        position: relative;
+        min-height: calc(24 * var(--wd-hour-h));
+        border-right: 1px solid var(--color-base-300);
+        overflow: hidden;
     }
 
-    .week-table.w-auto\!>tbody>tr>th,
-    .week-table.w-auto\!>tbody>tr>td,
-    .week-table.w-auto\!>tr>th,
-    .week-table.w-auto\!>tr>td {
+    .wd-week-day.is-today {
+        background-color: color-mix(
+            in srgb,
+            var(--color-primary) 4%,
+            transparent
+        );
+    }
+
+    /* ── Background hour grid lines ───────────────────────────────────────── */
+    .wd-week-hour-row {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 0;
+        border-top: 1px solid
+            color-mix(in srgb, var(--color-base-300) 60%, transparent);
+        pointer-events: none;
+    }
+
+    /* ── Work-time background bands ───────────────────────────────────────── */
+    .wd-week-band {
+        position: absolute;
+        left: 0;
+        right: 0;
+        pointer-events: none;
+    }
+
+    .wd-week-band--off {
+        background-color: color-mix(
+            in srgb,
+            var(--color-base-200) 70%,
+            transparent
+        );
+    }
+
+    .wd-week-band--extended {
+        background-color: color-mix(
+            in srgb,
+            var(--color-primary) 5%,
+            transparent
+        );
+    }
+
+    /* ── Legend swatches (shared shape) ──────────────────────────────────── */
+    .wd-week-legend {
+        display: inline-block;
+        width: 0.875rem;
+        height: 0.875rem;
+        border-radius: 0.2rem;
+        flex-shrink: 0;
+    }
+
+    .wd-week-legend.wd-week-band--core {
+        background-color: color-mix(
+            in srgb,
+            var(--color-primary) 20%,
+            var(--color-base-100)
+        );
+        outline: 1px solid var(--color-primary);
+    }
+
+    .wd-week-legend.wd-week-band--extended {
+        background-color: color-mix(
+            in srgb,
+            var(--color-primary) 8%,
+            var(--color-base-100)
+        );
+        outline: 1px solid
+            color-mix(in srgb, var(--color-primary) 40%, transparent);
+    }
+
+    /* ── On-call shifts (left-side vertical bar) ─────────────────────────── */
+    .wd-week-shift {
+        position: absolute;
+        left: 0;
+        width: 1rem;
+        background-color: color-mix(
+            in srgb,
+            var(--color-info) 30%,
+            transparent
+        );
+        border-left: 3px solid var(--color-info);
+        border-radius: 0 3px 3px 0;
+        overflow: hidden;
+        cursor: default;
+    }
+
+    .wd-week-legend.wd-week-shift {
         position: static;
-        box-shadow: none;
-        min-width: 0 !important;
-        width: auto !important;
-        white-space: normal;
-        overflow: visible;
-        text-overflow: clip;
+        width: 0.875rem;
+        height: 0.875rem;
+        background-color: color-mix(
+            in srgb,
+            var(--color-info) 30%,
+            transparent
+        );
+        border-left: 3px solid var(--color-info);
+        border-radius: 2px;
+    }
+
+    .wd-week-shift-label {
+        display: block;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        transform: rotate(180deg);
+        font-size: 0.6rem;
+        line-height: 1;
+        padding: 4px 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-height: 100%;
+    }
+
+    /* ── Emergency assignments (right-side vertical bar) ─────────────────── */
+    .wd-week-emergency {
+        position: absolute;
+        right: 0;
+        width: 0.75rem;
+        background-color: color-mix(
+            in srgb,
+            var(--color-error) 30%,
+            transparent
+        );
+        border-right: 3px solid var(--color-error);
+        border-radius: 3px 0 0 3px;
+        overflow: hidden;
+        cursor: default;
+    }
+
+    .wd-week-legend.wd-week-emergency {
+        position: static;
+        width: 0.875rem;
+        height: 0.875rem;
+        background-color: color-mix(
+            in srgb,
+            var(--color-error) 30%,
+            transparent
+        );
+        border-right: 3px solid var(--color-error);
+        border-radius: 2px;
+    }
+
+    .wd-week-emergency-label {
+        display: block;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        transform: rotate(180deg);
+        font-size: 0.6rem;
+        line-height: 1;
+        padding: 4px 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-height: 100%;
+    }
+
+    /* ── Diary entry cards ────────────────────────────────────────────────── */
+    .wd-week-entry {
+        position: absolute;
+        overflow: hidden;
+        border-radius: 4px;
+        padding: 2px 5px;
+        font-size: 0.65rem;
+        line-height: 1.3;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        text-decoration: none;
+        transition: filter 0.1s ease;
+    }
+
+    .wd-week-entry:hover {
+        filter: brightness(1.06);
+        z-index: 5;
+    }
+
+    .wd-week-entry-time {
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--color-base-content);
+    }
+
+    .wd-week-entry-text {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        color: color-mix(in srgb, var(--color-base-content) 80%, transparent);
+    }
+
+    /* Status colours */
+    .wd-week-entry--done {
+        background-color: color-mix(
+            in srgb,
+            var(--color-success) 15%,
+            var(--color-base-100)
+        );
+    }
+
+    .wd-week-entry--progress {
+        background-color: color-mix(
+            in srgb,
+            var(--color-info) 15%,
+            var(--color-base-100)
+        );
+    }
+
+    .wd-week-entry--open {
+        background-color: color-mix(
+            in srgb,
+            var(--color-warning) 20%,
+            var(--color-base-100)
+        );
+    }
+
+    .wd-week-entry--alert {
+        background-color: color-mix(
+            in srgb,
+            var(--color-error) 20%,
+            var(--color-base-100)
+        );
+    }
+
+    .wd-week-entry--neutral {
+        background-color: color-mix(
+            in srgb,
+            var(--color-neutral) 12%,
+            var(--color-base-100)
+        );
+    }
+
+    /* Legend status swatches */
+    .wd-week-legend.wd-week-entry--done {
+        background-color: color-mix(
+            in srgb,
+            var(--color-success) 15%,
+            var(--color-base-100)
+        );
+        outline: 1px solid var(--color-success);
+    }
+
+    .wd-week-legend.wd-week-entry--progress {
+        background-color: color-mix(
+            in srgb,
+            var(--color-info) 15%,
+            var(--color-base-100)
+        );
+        outline: 1px solid var(--color-info);
+    }
+
+    .wd-week-legend.wd-week-entry--open {
+        background-color: color-mix(
+            in srgb,
+            var(--color-warning) 20%,
+            var(--color-base-100)
+        );
+        outline: 1px solid var(--color-warning);
+    }
+
+    .wd-week-legend.wd-week-entry--alert {
+        background-color: color-mix(
+            in srgb,
+            var(--color-error) 20%,
+            var(--color-base-100)
+        );
+        outline: 1px solid var(--color-error);
     }
 }

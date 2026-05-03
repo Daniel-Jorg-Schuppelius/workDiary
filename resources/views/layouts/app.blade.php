@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" data-theme="dim">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="dim">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -37,10 +37,15 @@
             $isLegacyMode = $effectiveMode === 'legacy';
             $legacyUserId = \App\Support\LegacyRoleResolver::resolveLegacyUserId(Auth::user());
             $isLegacyAdmin = \App\Support\LegacyRoleResolver::isAdmin(Auth::user());
+            $currentLocale = app()->getLocale();
+            $supportedLocales = [
+                'de' => ['label' => __('Deutsch'),  'code' => 'DE'],
+                'en' => ['label' => __('Englisch'), 'code' => 'EN'],
+            ];
         @endphp
 
         <header class="fixed inset-x-0 top-0 z-50 border-b border-base-300 bg-base-100 shadow-sm">
-            <div class="navbar mx-auto w-full max-w-screen-2xl flex-nowrap px-4 xl:px-8 2xl:px-12 min-h-14">
+            <div class="navbar mx-auto w-full max-w-screen-2xl px-4 xl:px-8 2xl:px-12 min-h-14">
                 <div class="navbar-start min-w-0 flex-1">
                     <a href="{{ route('home') }}" class="flex items-center gap-2 group min-w-0">
                         <span class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary transition group-hover:opacity-80 shrink-0">WorkDiary</span>
@@ -48,103 +53,109 @@
                         <span class="font-['Space_Grotesk'] font-semibold text-base-content truncate">@yield('nav-title', __('Tagebuch'))</span>
                     </a>
                 </div>
-                <div class="navbar-end flex-nowrap gap-2 whitespace-nowrap">
+                <div class="navbar-end gap-2">
                     @auth
                         @if ($isLegacyMode)
-                            <nav class="hidden flex-nowrap items-center gap-1 lg:flex">
-                                <a href="{{ route('legacy.diary.week') }}" class="btn btn-sm btn-ghost {{ request()->routeIs('legacy.diary.week') ? 'btn-active' : '' }}">{{ __('Wochenansicht') }}</a>
-                                <a href="{{ route($indexRoute) }}" class="btn btn-sm btn-ghost {{ request()->routeIs('legacy.diary.index') ? 'btn-active' : '' }}">{{ __('Arbeitsliste') }}</a>
-                                <a href="{{ route('legacy.oncall.index') }}" class="btn btn-sm btn-ghost {{ request()->routeIs('legacy.oncall.*', 'legacy.notdienst.*') ? 'btn-active' : '' }}">{{ __('Bereitschaft & Notdienst') }}</a>
-                                <a href="{{ route('legacy.archive.index') }}" class="btn btn-sm btn-ghost {{ request()->routeIs('legacy.archive.*') ? 'btn-active' : '' }}">{{ __('Archiv') }}</a>
-                                <a href="{{ route('legacy.callcenter.notdienst') }}" class="btn btn-sm btn-ghost {{ request()->routeIs('legacy.callcenter.*') ? 'btn-active' : '' }}">{{ __('Callcenter') }}</a>
-                                @if ($isLegacyAdmin)
-                                    <div class="dropdown dropdown-end">
-                                        <label tabindex="0" class="btn btn-sm btn-ghost {{ request()->routeIs('legacy.users.*') ? 'btn-active' : '' }}">⚙ {{ __('Admin') }} ▾</label>
-                                        <ul tabindex="0" class="dropdown-content menu z-50 mt-1 w-52 rounded-box border border-base-300 bg-base-100 p-2 shadow">
-                                            <li><a href="{{ route('legacy.users.index') }}">{{ __('Mitarbeiter') }}</a></li>
-                                        </ul>
-                                    </div>
-                                @endif
-                            </nav>
-                            <div class="dropdown dropdown-end lg:hidden">
+                            <div class="dropdown dropdown-end">
                                 <label tabindex="0" class="btn btn-sm btn-ghost">☰ {{ __('Navigation') }}</label>
-                                <ul tabindex="0" class="dropdown-content menu z-50 w-56 rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                <ul tabindex="0" class="dropdown-content menu z-50 w-52 rounded-box border border-base-300 bg-base-100 p-2 shadow">
                                     <li><a href="{{ route('legacy.diary.week') }}">{{ __('Wochenansicht') }}</a></li>
                                     <li><a href="{{ route($indexRoute) }}">{{ __('Arbeitsliste') }}</a></li>
-                                    <li><a href="{{ route('legacy.oncall.index') }}">{{ __('Bereitschaft & Notdienst') }}</a></li>
+                                    <li><a href="{{ route('legacy.overview.index') }}">{{ __('Überblick') }}</a></li>
+                                    <li><a href="{{ route('legacy.oncall.index') }}">{{ __('Bereitschaft') }}</a></li>
+                                    <li><a href="{{ route('legacy.notdienst.index') }}">{{ __('Notdienst') }}</a></li>
                                     <li><a href="{{ route('legacy.archive.index') }}">{{ __('Archiv') }}</a></li>
                                     <li><a href="{{ route('legacy.callcenter.notdienst') }}">{{ __('Callcenter') }}</a></li>
                                     @if ($isLegacyAdmin)
-                                        <li class="menu-title pt-2"><span>{{ __('Admin') }}</span></li>
                                         <li><a href="{{ route('legacy.users.index') }}">{{ __('Mitarbeiter') }}</a></li>
                                     @endif
+                                    <li><a href="{{ route('legacy.account.password.edit') }}">{{ __('Passwort') }}</a></li>
                                 </ul>
                             </div>
-                            <a href="{{ route($createRoute) }}" class="btn btn-sm btn-primary">{{ __('+ Neuer Eintrag') }}</a>
+                            <a href="{{ route($createRoute) }}" class="btn btn-sm btn-primary">+ {{ __('Neuer Eintrag') }}</a>
                         @else
-                            <div class="flex flex-nowrap items-center gap-2">
+                            <div class="flex flex-wrap items-center gap-2">
                                 <a href="{{ route($indexRoute) }}" class="btn btn-sm btn-ghost">▤ {{ __('Arbeitsliste') }}</a>
                                 @if ($isLegacyAdmin)
-                                    <div class="dropdown dropdown-end">
-                                        <label tabindex="0" class="btn btn-sm btn-ghost">⚙ {{ __('Admin') }} ▾</label>
-                                        <ul tabindex="0" class="dropdown-content menu z-50 mt-1 w-52 rounded-box border border-base-300 bg-base-100 p-2 shadow">
-                                            <li><a href="{{ route('legacy.users.index') }}">{{ __('Mitarbeiter') }}</a></li>
-                                        </ul>
-                                    </div>
+                                    <a href="{{ route('legacy.users.index') }}" class="btn btn-sm btn-ghost">⚙ {{ __('Mitarbeiter') }}</a>
                                 @endif
-                                <a href="{{ route($createRoute) }}" class="btn btn-sm btn-primary">{{ __('+ Neuer Eintrag') }}</a>
+                                <a href="{{ route($createRoute) }}" class="btn btn-sm btn-primary">+ {{ __('Neuer Eintrag') }}</a>
                             </div>
                         @endif
                         <div class="flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-sm">
                             <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
                                 <span data-theme-label class="text-base leading-none">◐</span>
                             </button>
-                            @php $currentLocale = app()->getLocale(); @endphp
-                            <form method="POST" action="{{ route('locale.switch', $currentLocale === 'de' ? 'en' : 'de') }}" class="inline">
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-ghost btn-square" title="{{ __('Sprache wechseln') }}" aria-label="{{ __('Sprache wechseln') }}">
-                                    <span class="text-base leading-none">{{ $currentLocale === 'de' ? '🇩🇪' : '🇬🇧' }}</span>
-                                </button>
-                            </form>
+                            <div class="dropdown dropdown-end">
+                                <label tabindex="0" class="btn btn-sm btn-ghost btn-square" title="{{ __('Sprache wechseln') }}" aria-label="{{ __('Sprache wechseln') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zm0 0c2.5 0 4-4.03 4-9s-1.5-9-4-9m0 18c-2.5 0-4-4.03-4-9s1.5-9 4-9M3 12h18" />
+                                    </svg>
+                                </label>
+                                <ul tabindex="0" class="dropdown-content menu z-50 w-40 rounded-box border border-base-300 bg-base-100 p-1 shadow">
+                                    @foreach ($supportedLocales as $code => $locale)
+                                        <li>
+                                            <form method="POST" action="{{ route('locale.switch', $code) }}">
+                                                @csrf
+                                                <button type="submit" class="flex w-full items-center gap-2 {{ $currentLocale === $code ? 'active' : '' }}">
+                                                    <span class="rounded px-1 py-0.5 font-mono text-[0.65rem] font-bold leading-none ring-1 ring-current opacity-70">{{ $locale['code'] }}</span>
+                                                    <span>{{ $locale['label'] }}</span>
+                                                    @if ($currentLocale === $code)
+                                                        <span class="ml-auto opacity-60">•</span>
+                                                    @endif
+                                                </button>
+                                            </form>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
                             @if ($legacyConfigured)
                                 <div class="join">
                                     <form method="POST" action="{{ route('mode.switch', 'legacy') }}" class="join-item">
                                         @csrf
                                         <input type="hidden" name="origin" value="{{ $originRoute }}">
-                                        <button type="submit" class="btn btn-sm {{ $currentMode === 'legacy' ? 'btn-primary' : 'btn-ghost' }}">{{ __('Legacy') }}</button>
+                                        <button type="submit" class="btn btn-sm {{ $currentMode === 'legacy' ? 'btn-primary' : 'btn-ghost' }}">Legacy</button>
                                     </form>
                                     <form method="POST" action="{{ route('mode.switch', 'new') }}" class="join-item">
                                         @csrf
                                         <input type="hidden" name="origin" value="{{ $originRoute }}">
-                                        <button type="submit" class="btn btn-sm {{ $currentMode === 'new' ? 'btn-primary' : 'btn-ghost' }}">{{ __('Neu') }}</button>
+                                        <button type="submit" class="btn btn-sm {{ $currentMode === 'new' ? 'btn-primary' : 'btn-ghost' }}">Neu</button>
                                     </form>
                                 </div>
                             @endif
-                            <div class="dropdown dropdown-end">
-                                <label tabindex="0" class="btn btn-sm btn-ghost">⎋ {{ Auth::user()->name }} ▾</label>
-                                <ul tabindex="0" class="dropdown-content menu z-50 mt-1 w-52 rounded-box border border-base-300 bg-base-100 p-2 shadow">
-                                    <li><a href="{{ route('legacy.account.password.edit') }}">{{ __('Passwort ändern') }}</a></li>
-                                    <li>
-                                        <form method="POST" action="{{ route('logout') }}">
-                                            @csrf
-                                            <button type="submit" class="w-full text-left">{{ __('Abmelden') }}</button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </div>
+                            <form method="POST" action="{{ route('logout') }}" class="inline">
+                                @csrf
+                                <button class="btn btn-sm btn-ghost">⎋ {{ Auth::user()->name }}</button>
+                            </form>
                         </div>
                     @else
                         <div class="flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-sm">
                             <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
                                 <span data-theme-label class="text-base leading-none">◐</span>
                             </button>
-                            @php $currentLocale = app()->getLocale(); @endphp
-                            <form method="POST" action="{{ route('locale.switch', $currentLocale === 'de' ? 'en' : 'de') }}" class="inline">
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-ghost btn-square" title="{{ __('Sprache wechseln') }}" aria-label="{{ __('Sprache wechseln') }}">
-                                    <span class="text-base leading-none">{{ $currentLocale === 'de' ? '🇩🇪' : '🇬🇧' }}</span>
-                                </button>
-                            </form>
+                            <div class="dropdown dropdown-end">
+                                <label tabindex="0" class="btn btn-sm btn-ghost btn-square" title="{{ __('Sprache wechseln') }}" aria-label="{{ __('Sprache wechseln') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zm0 0c2.5 0 4-4.03 4-9s-1.5-9-4-9m0 18c-2.5 0-4-4.03-4-9s1.5-9 4-9M3 12h18" />
+                                    </svg>
+                                </label>
+                                <ul tabindex="0" class="dropdown-content menu z-50 w-40 rounded-box border border-base-300 bg-base-100 p-1 shadow">
+                                    @foreach ($supportedLocales as $code => $locale)
+                                        <li>
+                                            <form method="POST" action="{{ route('locale.switch', $code) }}">
+                                                @csrf
+                                                <button type="submit" class="flex w-full items-center gap-2 {{ $currentLocale === $code ? 'active' : '' }}">
+                                                    <span class="rounded px-1 py-0.5 font-mono text-[0.65rem] font-bold leading-none ring-1 ring-current opacity-70">{{ $locale['code'] }}</span>
+                                                    <span>{{ $locale['label'] }}</span>
+                                                    @if ($currentLocale === $code)
+                                                        <span class="ml-auto opacity-60">•</span>
+                                                    @endif
+                                                </button>
+                                            </form>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
                             <a href="{{ route('login') }}" class="btn btn-sm btn-primary">⇢ {{ __('Anmelden') }}</a>
                         </div>
                     @endauth
@@ -152,14 +163,14 @@
             </div>
         </header>
 
-        <div class="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-20 pt-24 lg:px-10">
+        <div class="mx-auto flex @yield('wrapper-height-class', 'min-h-screen') w-full max-w-7xl flex-col px-4 pb-20 pt-24 lg:px-10">
             @if (session('success'))
-                <div class="alert alert-success mb-4 rounded-box px-5 py-3 text-sm shadow-sm">
+                <div class="alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-sm">
                     {{ session('success') }}
                 </div>
             @endif
 
-            <main class="flex-1">
+            <main class="flex-1 @yield('main-class', '')">
                 @yield('content')
             </main>
         </div>
@@ -176,9 +187,9 @@
                     <p id="action-confirm-message" class="py-4 text-sm text-base-content/75">{{ __('Möchtest du diese Aktion wirklich ausführen?') }}</p>
                     <div class="modal-action">
                         <form method="dialog">
-                            <button class=" btn btn-sm btn-ghost">{{ __('Abbrechen') }}</button>
+                            <button class="btn btn-ghost">{{ __('Abbrechen') }}</button>
                         </form>
-                        <button id="action-confirm-submit" type="button" class=" btn btn-sm btn-error">{{ __('Ausführen') }}</button>
+                        <button id="action-confirm-submit" type="button" class="btn btn-error">{{ __('Ausführen') }}</button>
                     </div>
                 </div>
             </dialog>
@@ -229,14 +240,14 @@
                             pendingForm = form;
 
                             if (confirmTitle) {
-                                confirmTitle.textContent = form.getAttribute('data-confirm-title') || @json(__('Aktion bestätigen'));
+                                confirmTitle.textContent = form.getAttribute('data-confirm-title') || 'Aktion bestätigen';
                             }
 
                             if (confirmMessage) {
                                 confirmMessage.textContent = form.getAttribute('data-confirm-message') || 'Möchtest du diese Aktion wirklich ausführen?';
                             }
 
-                            confirmSubmit.textContent = form.getAttribute('data-confirm-label') || @json(__('Ausführen'));
+                            confirmSubmit.textContent = form.getAttribute('data-confirm-label') || 'Ausführen';
 
                             if (typeof confirmDialog.showModal === 'function') {
                                 confirmDialog.showModal();

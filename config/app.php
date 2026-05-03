@@ -123,4 +123,47 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'legacy_write_enabled' => (bool) env('LEGACY_WRITE_ENABLED', false),
+
+    'mail_notifications_enabled' => (bool) env('MAIL_NOTIFICATIONS_ENABLED', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Arbeitszeiten
+    |--------------------------------------------------------------------------
+    |
+    | Kern- und erweiterte Arbeitszeit für die Wochenansicht (Hintergrund-Bänder).
+    | Wochentage als ISO-Tagesnummern (1=Mo … 7=So). Zeiten als "HH:MM".
+    |
+    */
+
+    'work_hours' => [
+        'core' => [
+            'start' => env('WORK_HOURS_CORE_START', '08:00'),
+            'end' => env('WORK_HOURS_CORE_END', '16:00'),
+            'days' => array_filter(array_map('intval', explode(',', (string) env('WORK_HOURS_CORE_DAYS', '1,2,3,4,5')))),
+        ],
+        'extended' => [
+            'start' => env('WORK_HOURS_EXTENDED_START', '06:00'),
+            'end' => env('WORK_HOURS_EXTENDED_END', '19:00'),
+            'days' => array_filter(array_map('intval', explode(',', (string) env('WORK_HOURS_EXTENDED_DAYS', '1,2,3,4,5')))),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Feiertage
+    |--------------------------------------------------------------------------
+    |
+    | Region (Yasumi-Provider): "Germany" (bundesweit) oder eines der Bundesländer
+    | wie "Germany\\Berlin", "Germany\\Bavaria", "Germany\\NorthRhineWestphalia" usw.
+    | Locale: "de_DE" für deutsche Feiertagsnamen.
+    |
+    */
+
+    'holidays' => [
+        'provider' => env('HOLIDAYS_PROVIDER', 'Germany\\Berlin'),
+        'locale' => env('HOLIDAYS_LOCALE', 'de_DE'),
+    ],
+
 ];

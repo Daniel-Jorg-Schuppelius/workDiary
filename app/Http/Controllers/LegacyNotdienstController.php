@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\EmergencyAssignment;
 use App\Models\Legacy\LegacyNotdienst;
 use App\Models\Legacy\LegacyUser;
 use App\Support\LegacyRoleResolver;
@@ -15,18 +16,7 @@ class LegacyNotdienstController extends Controller {
         $legacyUserId = LegacyRoleResolver::resolveLegacyUserId(Auth::user());
         $isAdmin = LegacyRoleResolver::isAdmin(Auth::user());
 
-        $sortableColumns = [
-            'id' => 'id',
-            'user' => 'user',
-            'von' => 'von',
-            'bis' => 'bis',
-        ];
-
-        $sort = (string) $request->query('sort', 'von');
-        $dir = strtolower((string) $request->query('dir', 'asc')) === 'desc' ? 'desc' : 'asc';
-        $sortColumn = $sortableColumns[$sort] ?? $sortableColumns['von'];
-
-        $query = LegacyNotdienst::query()->with('mitarbeiter:id,uname')->orderBy($sortColumn, $dir);
+        $query = LegacyNotdienst::query()->with('user:id,uname')->orderBy('von')->orderBy('user');
 
         if (! $isAdmin && $legacyUserId > 3) {
             $query->where('user', $legacyUserId);
@@ -52,8 +42,6 @@ class LegacyNotdienstController extends Controller {
             'isAdmin' => $isAdmin,
             'legacyUserId' => $legacyUserId,
             'filters' => $request->only('user', 'from', 'to'),
-            'sort' => array_key_exists($sort, $sortableColumns) ? $sort : 'von',
-            'dir' => $dir,
         ]);
     }
 
@@ -78,11 +66,15 @@ class LegacyNotdienstController extends Controller {
 
         LegacyNotdienst::query()->create($data);
 
-        return redirect()->route('legacy.notdienst.index')->with('success', __('Notdienst angelegt.'));
+        return redirect()->route('legacy.notdienst.index')->with('success', 'Notdienst angelegt.');
     }
 
-    public function edit(LegacyNotdienst $notdienst): View {
+    public function edit(LegacyNotdienst $notdienst): View|RedirectResponse {
         $this->ensureAdmin();
+
+        if (EmergencyAssignment::where('legacy_id', $notdienst->id)->exists()) {
+            return redirect()->route('week.index');
+        }
 
         return view('legacy.notdienst.form', [
             'item' => $notdienst,
@@ -102,7 +94,7 @@ class LegacyNotdienstController extends Controller {
 
         $notdienst->update($data);
 
-        return redirect()->route('legacy.notdienst.index')->with('success', __('Notdienst aktualisiert.'));
+        return redirect()->route('legacy.notdienst.index')->with('success', 'Notdienst aktualisiert.');
     }
 
     public function destroy(LegacyNotdienst $notdienst): RedirectResponse {
@@ -110,7 +102,7 @@ class LegacyNotdienstController extends Controller {
 
         $notdienst->delete();
 
-        return redirect()->route('legacy.notdienst.index')->with('success', __('Notdienst gelöscht.'));
+        return redirect()->route('legacy.notdienst.index')->with('success', 'Notdienst geloescht.');
     }
 
     private function ensureAdmin(): void {

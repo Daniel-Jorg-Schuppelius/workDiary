@@ -7,6 +7,16 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int|null $user
+ * @property string|null $inhalt
+ * @property string|null $sms
+ * @property \Illuminate\Support\Carbon|null $von
+ * @property \Illuminate\Support\Carbon|null $bis
+ * @property \Illuminate\Support\Carbon|null $aktuell
+ * @property int|null $gelesen
+ */
 class LegacyDiaryEntry extends Model {
     protected $connection = 'legacy';
 

@@ -89,6 +89,8 @@ class LegacyArchiveController extends Controller {
             'sunday' => $sunday,
             'weekOffset' => $weekOffset,
             'selectedWeek' => $monday->format('o-\\WW'),
+            'days' => collect(range(0, 6))->map(fn($i) => $monday->copy()->addDays($i)),
+            'hours' => range(7, 20),
             'entriesByUserDay' => $entriesByUserDay,
             'oncallByUserDay' => $oncallByUserDay,
             'notdienstByUserDay' => $notdienstByUserDay,
@@ -149,12 +151,7 @@ class LegacyArchiveController extends Controller {
 
         return redirect()->route('legacy.archive.index')->with(
             'success',
-            __('Archivierung abgeschlossen: :total Datensätze verschoben (Aufträge :diary, Bereitschaft :oncall, Notdienst :notdienst).', [
-                'total' => $result['total'],
-                'diary' => $result['diary'],
-                'oncall' => $result['oncall'],
-                'notdienst' => $result['notdienst'],
-            ])
+            'Archivierung abgeschlossen: ' . $result['total'] . ' Datensaetze verschoben (Auftraege ' . $result['diary'] . ', Bereitschaft ' . $result['oncall'] . ', Notdienst ' . $result['notdienst'] . ').'
         );
     }
 

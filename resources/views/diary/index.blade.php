@@ -3,10 +3,14 @@
 @section('nav-title', __('Alle Einträge'))
 
 @section('content')
-<div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
+<div class="flex h-full min-h-0 flex-col gap-4">
     {{-- Filter-Leiste --}}
     <form method="GET" action="{{ route('diary.index') }}" class="flex-none rounded-box border border-base-300 bg-base-100 p-5 shadow-sm">
         <div class="flex flex-wrap items-end gap-4">
+            <div class="flex-1 min-w-60">
+                <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-base-content/60">{{ __('Suche') }}</label>
+                <input type="search" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="{{ __('Inhalt oder Antwort …') }}" class="input input-bordered input-sm w-full">
+            </div>
             <div class="flex-1 min-w-40">
                 <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-base-content/60">{{ __('Status') }}</label>
                 <select name="status" class="select select-bordered select-sm w-full">
@@ -17,22 +21,37 @@
                     <option value="-1" @selected(($filters['status'] ?? '') === '-1')>{{ __('Erledigt') }}</option>
                 </select>
             </div>
-            <div>
-                <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-base-content/60">{{ __('Von') }}</label>
-                <input type="date" name="from" value="{{ $filters['from'] ?? '' }}" class="input input-bordered input-sm">
-            </div>
-            <div>
-                <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-base-content/60">{{ __('Bis') }}</label>
-                <input type="date" name="to" value="{{ $filters['to'] ?? '' }}" class="input input-bordered input-sm">
-            </div>
+            <x-date-range :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''" class="min-w-56" />
+            @if (($allTags ?? collect())->isNotEmpty())
+                <div>
+                    <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-base-content/60">{{ __('Tag') }}</label>
+                    <select name="tag" class="select select-bordered select-sm">
+                        <option value="">—</option>
+                        @foreach ($allTags as $tag)
+                            <option value="{{ $tag->id }}" @selected((int) ($filters['tag'] ?? 0) === $tag->id)>{{ $tag->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
             <div class="flex items-center gap-2 pb-2">
                 <input type="checkbox" id="mine" name="mine" value="1" @checked(!empty($filters['mine'])) class="checkbox checkbox-primary checkbox-sm">
                 <label for="mine" class="text-sm text-base-content/75">{{ __('Nur meine') }}</label>
+            </div>
+            <div class="flex items-center gap-2 pb-2">
+                <input type="checkbox" id="archived" name="archived" value="1" @checked(!empty($filters['archived'])) class="checkbox checkbox-primary checkbox-sm">
+                <label for="archived" class="text-sm text-base-content/75">{{ __('Archivierte zeigen') }}</label>
             </div>
             <button type="submit" class="btn btn-primary btn-sm">{{ __('Filtern') }}</button>
             @if (array_filter($filters))
                 <a href="{{ route('diary.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurücksetzen') }}</a>
             @endif
+            <div class="dropdown dropdown-end">
+                <label tabindex="0" class="btn btn-sm btn-outline">↓ {{ __('Export') }}</label>
+                <ul tabindex="0" class="dropdown-content menu z-50 mt-1 w-44 rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                    <li><a href="{{ route('diary.export.csv', $filters) }}">{{ __('CSV') }}</a></li>
+                    <li><a href="{{ route('diary.export.pdf', $filters) }}" target="_blank">{{ __('PDF (Druckansicht)') }}</a></li>
+                </ul>
+            </div>
         </div>
     </form>
 
@@ -60,9 +79,29 @@
                             'badge-error' => $entry->statusTone() === 'alert',
                             'badge-ghost' => $entry->statusTone() === 'neutral',
                         ])>{{ $entry->statusLabel() }}</span>
+                        @if ($entry->is_archived)
+                            <span class="badge badge-sm badge-neutral">{{ __('Archiviert') }}</span>
+                        @endif
                         <span class="text-sm text-base-content/70">{{ optional($entry->user)->name ?? '—' }}</span>
                     </div>
-                    <p class="text-base leading-relaxed text-base-content">{{ Str::limit($entry->content, 160) }}</p>
+                    <p class="text-base leading-relaxed text-base-content">
+                        @php
+                            $snippet = Str::limit($entry->content, 240);
+                            $needle = trim((string) ($filters['q'] ?? ''));
+                        @endphp
+                        @if ($needle !== '')
+                            {!! preg_replace('/(' . preg_quote($needle, '/') . ')/i', '<mark class="bg-warning/40 px-0.5 rounded">$1</mark>', e($snippet)) !!}
+                        @else
+                            {{ $snippet }}
+                        @endif
+                    </p>
+                    @if ($entry->tags->isNotEmpty())
+                        <div class="mt-2 flex flex-wrap gap-1">
+                            @foreach ($entry->tags as $tag)
+                                <span class="badge badge-outline badge-sm" @if ($tag->color) style="border-color: {{ $tag->color }}; color: {{ $tag->color }};" @endif>#{{ $tag->name }}</span>
+                            @endforeach
+                        </div>
+                    @endif
                     <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-base-content/65">
                         @if ($entry->start_at)
                             <span>{{ __('Von') }} {{ $entry->start_at->format('d.m.Y H:i') }}</span>
@@ -74,9 +113,9 @@
                     </div>
                 </div>
                 <div class="flex flex-col gap-2 md:items-end md:justify-between">
-                    <a href="{{ route('diary.show', $entry) }}" class="btn btn-outline btn-primary btn-sm text-center">{{ __('Details') }}</a>
+                    <a href="{{ route('diary.show', $entry) }}" data-entry-modal-trigger class="btn btn-outline btn-primary btn-sm text-center">{{ __('Details') }}</a>
                     @can('update', $entry)
-                        <a href="{{ route('diary.edit', $entry) }}" class="btn btn-ghost btn-sm text-center">{{ __('Bearbeiten') }}</a>
+                        <a href="{{ route('diary.edit', $entry) }}" data-entry-modal-trigger class="btn btn-ghost btn-sm text-center">{{ __('Bearbeiten') }}</a>
                     @endcan
                 </div>
             </article>

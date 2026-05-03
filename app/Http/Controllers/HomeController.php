@@ -21,6 +21,10 @@ class HomeController extends Controller {
             return redirect()->route('legacy.diary.week');
         }
 
+        if ($canViewSensitive) {
+            return redirect()->route('dashboard');
+        }
+
         $legacyOnline = false;
         $stats = [
             'entries_total' => 0,
@@ -35,27 +39,6 @@ class HomeController extends Controller {
             try {
                 DB::connection('legacy')->getPdo();
                 $legacyOnline = true;
-
-                if ($canViewSensitive) {
-                    $stats = [
-                        'entries_total' => LegacyDiaryEntry::query()->count(),
-                        'entries_open' => LegacyDiaryEntry::query()->where('gelesen', 2)->count(),
-                        'entries_alert' => LegacyDiaryEntry::query()->where('gelesen', 3)->count(),
-                        'team_size' => LegacyUser::query()->where('id', '>', 3)->count(),
-                    ];
-
-                    $entries = LegacyDiaryEntry::query()
-                        ->with('author:id,uname')
-                        ->orderByDesc('aktuell')
-                        ->limit(8)
-                        ->get();
-
-                    $team = LegacyUser::query()
-                        ->where('id', '>', 3)
-                        ->orderBy('uname')
-                        ->limit(8)
-                        ->get(['id', 'uname', 'email']);
-                }
             } catch (QueryException) {
                 $legacyOnline = false;
             }

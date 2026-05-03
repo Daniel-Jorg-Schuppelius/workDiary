@@ -104,7 +104,7 @@ class LegacyCallcenterController extends Controller {
         $todayBereitschaft = collect($bereitschaftByDay)->firstWhere('isToday', true);
 
         $openIssues = LegacyDiaryEntry::query()
-            ->with('mitarbeiter:id,uname')
+            ->with('author:id,uname')
             ->whereIn('gelesen', [2, 3])
             ->where('bis', '>=', $today)
             ->orderByDesc('gelesen')

@@ -1,0 +1,42 @@
+<?php
+
+namespace App\Models\Concerns;
+
+use App\Models\Tag;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Support\Facades\Auth;
+
+/**
+ * @method \Illuminate\Database\Eloquent\Relations\MorphToMany morphToMany(string $related, string $name, ?string $table = null, ?string $foreignPivotKey = null, ?string $relatedPivotKey = null, ?string $parentKey = null, ?string $relatedKey = null, $relation = null, bool $inverse = false)
+ * @phpstan-require-extends \Illuminate\Database\Eloquent\Model
+ */
+trait HasTags {
+    public function tags(): MorphToMany {
+        return $this->morphToMany(Tag::class, 'taggable');
+    }
+
+    /**
+     * Sync tags from a mix of existing tag IDs and free-form names.
+     *
+     * @param  array<int|string>  $tagIds  Existing tag IDs.
+     * @param  array<string>  $newNames  Names of tags to create on the fly.
+     */
+    public function syncTagsFromInput(array $tagIds = [], array $newNames = []): void {
+        $ids = collect($tagIds)
+            ->filter(fn($v) => is_numeric($v))
+            ->map(fn($v) => (int) $v)
+            ->all();
+
+        foreach ($newNames as $name) {
+            $name = trim((string) $name);
+            if ($name === '') {
+                continue;
+            }
+            $tag = Tag::findOrCreateByName($name, Auth::id());
+            $ids[] = $tag->id;
+        }
+
+        $this->tags()->sync(array_values(array_unique($ids)));
+    }
+}

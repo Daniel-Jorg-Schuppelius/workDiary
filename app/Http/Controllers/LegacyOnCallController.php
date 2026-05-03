@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Legacy\LegacyOnCall;
 use App\Models\Legacy\LegacyUser;
+use App\Models\OnCallShift;
 use App\Support\LegacyRoleResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,18 +16,7 @@ class LegacyOnCallController extends Controller {
         $legacyUserId = LegacyRoleResolver::resolveLegacyUserId(Auth::user());
         $isAdmin = LegacyRoleResolver::isAdmin(Auth::user());
 
-        $sortableColumns = [
-            'id' => 'id',
-            'user' => 'user',
-            'von' => 'von',
-            'bis' => 'bis',
-        ];
-
-        $sort = (string) $request->query('sort', 'von');
-        $dir = strtolower((string) $request->query('dir', 'asc')) === 'desc' ? 'desc' : 'asc';
-        $sortColumn = $sortableColumns[$sort] ?? $sortableColumns['von'];
-
-        $query = LegacyOnCall::query()->with('mitarbeiter:id,uname')->orderBy($sortColumn, $dir);
+        $query = LegacyOnCall::query()->with('user:id,uname')->orderBy('von')->orderBy('user');
 
         if (! $isAdmin && $legacyUserId > 3) {
             $query->where('user', $legacyUserId);
@@ -52,8 +42,6 @@ class LegacyOnCallController extends Controller {
             'isAdmin' => $isAdmin,
             'legacyUserId' => $legacyUserId,
             'filters' => $request->only('user', 'from', 'to'),
-            'sort' => array_key_exists($sort, $sortableColumns) ? $sort : 'von',
-            'dir' => $dir,
         ]);
     }
 
@@ -78,11 +66,15 @@ class LegacyOnCallController extends Controller {
 
         LegacyOnCall::query()->create($data);
 
-        return redirect()->route('legacy.oncall.index')->with('success', __('Bereitschaft angelegt.'));
+        return redirect()->route('legacy.oncall.index')->with('success', 'Bereitschaft angelegt.');
     }
 
-    public function edit(LegacyOnCall $oncall): View {
+    public function edit(LegacyOnCall $oncall): View|RedirectResponse {
         $this->ensureAdmin();
+
+        if (OnCallShift::where('legacy_id', $oncall->id)->exists()) {
+            return redirect()->route('week.index');
+        }
 
         return view('legacy.oncall.form', [
             'item' => $oncall,
@@ -102,7 +94,7 @@ class LegacyOnCallController extends Controller {
 
         $oncall->update($data);
 
-        return redirect()->route('legacy.oncall.index')->with('success', __('Bereitschaft aktualisiert.'));
+        return redirect()->route('legacy.oncall.index')->with('success', 'Bereitschaft aktualisiert.');
     }
 
     public function destroy(LegacyOnCall $oncall): RedirectResponse {
@@ -110,7 +102,7 @@ class LegacyOnCallController extends Controller {
 
         $oncall->delete();
 
-        return redirect()->route('legacy.oncall.index')->with('success', __('Bereitschaft gelöscht.'));
+        return redirect()->route('legacy.oncall.index')->with('success', 'Bereitschaft geloescht.');
     }
 
     private function ensureAdmin(): void {

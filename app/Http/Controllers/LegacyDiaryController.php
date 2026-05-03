@@ -21,11 +21,12 @@ class LegacyDiaryController extends Controller {
             'status' => 'gelesen',
             'von' => 'von',
             'bis' => 'bis',
+            'aktuell' => 'aktuell',
         ];
 
-        $sort = (string) $request->query('sort', 'von');
+        $sort = (string) $request->query('sort', 'aktuell');
         $dir = strtolower((string) $request->query('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
-        $sortColumn = $sortableColumns[$sort] ?? $sortableColumns['von'];
+        $sortColumn = $sortableColumns[$sort] ?? $sortableColumns['aktuell'];
 
         $query = LegacyDiaryEntry::query()->with('author:id,uname')->orderBy($sortColumn, $dir);
 
@@ -39,14 +40,6 @@ class LegacyDiaryController extends Controller {
 
         if ($request->filled('to')) {
             $query->whereDate('bis', '<=', $request->to);
-        }
-
-        $zeitpunkt = (int) $request->query('zeitpunkt', 0);
-        $today = Carbon::now()->startOfDay();
-        if ($zeitpunkt === 1) {
-            $query->where('bis', '>=', $today);
-        } elseif ($zeitpunkt === 2) {
-            $query->where('von', '<=', $today);
         }
 
         if ($request->boolean('mine') && Auth::user()?->legacy_user_id) {
@@ -65,8 +58,8 @@ class LegacyDiaryController extends Controller {
         return view('legacy.diary.index', [
             'entries' => $entries,
             'counts' => $counts,
-            'filters' => $request->only('status', 'from', 'to', 'mine', 'zeitpunkt', 'sort', 'dir'),
-            'sort' => array_key_exists($sort, $sortableColumns) ? $sort : 'von',
+            'filters' => $request->only('status', 'from', 'to', 'mine', 'sort', 'dir'),
+            'sort' => array_key_exists($sort, $sortableColumns) ? $sort : 'aktuell',
             'dir' => $dir,
         ]);
     }
@@ -74,7 +67,7 @@ class LegacyDiaryController extends Controller {
     public function week(Request $request): View {
         $weekOffset   = (int) $request->query('week', 0);
         $weekDate     = trim((string) $request->query('week_date', ''));
-        $legacyUserId = (int) (Auth::user()?->legacy_user_id ?? 0);
+        $legacyUserId = (int) (Auth::user()->legacy_user_id ?? 0);
         $isAdmin      = $legacyUserId > 0 && $legacyUserId <= 3;
 
         $baseMonday = Carbon::now()->startOfWeek(Carbon::MONDAY);
@@ -159,21 +152,27 @@ class LegacyDiaryController extends Controller {
         ]);
     }
 
-    public function create(): View {
+    public function create(): View|\Illuminate\Http\Response {
         $authUser = Auth::user();
         $isAdmin = LegacyRoleResolver::isAdmin($authUser);
 
-        return view('legacy.diary.form', [
+        $data = [
             'entry' => null,
             'isEdit' => false,
             'isAdmin' => $isAdmin,
             'users' => $isAdmin
                 ? LegacyUser::query()->where('id', '>', 3)->orderBy('uname')->get(['id', 'uname'])
                 : collect(),
-        ]);
+        ];
+
+        if (request()->boolean('dialog')) {
+            return response(view('legacy.diary._form_dialog', $data));
+        }
+
+        return view('legacy.diary.form', $data);
     }
 
-    public function store(Request $request): RedirectResponse {
+    public function store(Request $request): RedirectResponse|\Illuminate\Http\JsonResponse {
         $authUser = Auth::user();
         $isAdmin = LegacyRoleResolver::isAdmin($authUser);
 
@@ -190,8 +189,12 @@ class LegacyDiaryController extends Controller {
         $legacyUserId = LegacyRoleResolver::resolveLegacyUserId($authUser);
 
         if ($legacyUserId <= 0) {
+            if ($request->hasHeader('X-Entry-Dialog')) {
+                return response()->json(['errors' => ['inhalt' => 'Kein Legacy-Benutzerkonto verknuepft. Bitte Admin kontaktieren.']], 422);
+            }
+
             return back()->withErrors([
-                'inhalt' => 'Kein Legacy-Benutzerkonto verknüpft. Bitte Admin kontaktieren.',
+                'inhalt' => 'Kein Legacy-Benutzerkonto verknuepft. Bitte Admin kontaktieren.',
             ])->withInput();
         }
 
@@ -212,33 +215,47 @@ class LegacyDiaryController extends Controller {
 
         $this->sendLegacySmsMail($entry);
 
-        return redirect()->route('legacy.diary.show', $entry)->with('success', __('Legacy-Eintrag gespeichert.'));
+        if ($request->hasHeader('X-Entry-Dialog')) {
+            return response()->json(['redirect' => route('legacy.diary.index')]);
+        }
+
+        return redirect()->route('legacy.diary.show', $entry)->with('success', 'Legacy-Eintrag gespeichert.');
     }
 
-    public function show(LegacyDiaryEntry $entry): View {
+    public function show(LegacyDiaryEntry $entry): View|\Illuminate\Http\Response {
         $entry->load('author:id,uname');
+
+        if (request()->boolean('dialog')) {
+            return response(view('legacy.diary._show_dialog', ['entry' => $entry]));
+        }
 
         return view('legacy.diary.show', [
             'entry' => $entry,
         ]);
     }
 
-    public function edit(LegacyDiaryEntry $entry): View {
+    public function edit(LegacyDiaryEntry $entry): View|\Illuminate\Http\Response {
         $this->ensureCanModify($entry);
 
         $isAdmin = LegacyRoleResolver::isAdmin(Auth::user());
 
-        return view('legacy.diary.form', [
+        $data = [
             'entry' => $entry,
             'isEdit' => true,
             'isAdmin' => $isAdmin,
             'users' => $isAdmin
                 ? LegacyUser::query()->where('id', '>', 3)->orderBy('uname')->get(['id', 'uname'])
                 : collect(),
-        ]);
+        ];
+
+        if (request()->boolean('dialog')) {
+            return response(view('legacy.diary._form_dialog', $data));
+        }
+
+        return view('legacy.diary.form', $data);
     }
 
-    public function update(Request $request, LegacyDiaryEntry $entry): RedirectResponse {
+    public function update(Request $request, LegacyDiaryEntry $entry): RedirectResponse|\Illuminate\Http\JsonResponse {
         $this->ensureCanModify($entry);
 
         $authUser = Auth::user();
@@ -272,7 +289,11 @@ class LegacyDiaryController extends Controller {
 
         $this->sendLegacySmsMail($entry->fresh(['author']));
 
-        return redirect()->route('legacy.diary.show', $entry)->with('success', __('Legacy-Eintrag aktualisiert.'));
+        if ($request->hasHeader('X-Entry-Dialog')) {
+            return response()->json(['redirect' => route('legacy.diary.index')]);
+        }
+
+        return redirect()->route('legacy.diary.show', $entry)->with('success', 'Legacy-Eintrag aktualisiert.');
     }
 
     public function destroy(LegacyDiaryEntry $entry): RedirectResponse {
@@ -280,60 +301,7 @@ class LegacyDiaryController extends Controller {
 
         $entry->delete();
 
-        return redirect()->route('legacy.diary.index')->with('success', __('Legacy-Eintrag gelöscht.'));
-    }
-
-    public function bulk(Request $request): RedirectResponse {
-        $data = $request->validate([
-            'ids' => ['required', 'array', 'min:1'],
-            'ids.*' => ['integer'],
-            'action' => ['required', 'string', 'in:status_open,status_alert,status_progress,status_done,delete'],
-        ]);
-
-        $authUser = Auth::user();
-        $isAdmin = LegacyRoleResolver::isAdmin($authUser);
-        $legacyUserId = LegacyRoleResolver::resolveLegacyUserId($authUser);
-
-        $query = LegacyDiaryEntry::query()->whereIn('id', $data['ids']);
-        if (! $isAdmin) {
-            if ($legacyUserId <= 0) {
-                abort(403);
-            }
-            $query->where('user', $legacyUserId);
-        }
-
-        $entries = $query->get();
-        $affected = 0;
-
-        if ($data['action'] === 'delete') {
-            foreach ($entries as $entry) {
-                $entry->delete();
-                $affected++;
-            }
-        } else {
-            $statusMap = [
-                'status_open' => 2,
-                'status_alert' => 3,
-                'status_progress' => 1,
-                'status_done' => -1,
-            ];
-            $newStatus = $statusMap[$data['action']];
-            foreach ($entries as $entry) {
-                $entry->update([
-                    'gelesen' => $newStatus,
-                    'aktuell' => now(),
-                ]);
-                $affected++;
-            }
-        }
-
-        $skipped = count($data['ids']) - $affected;
-        $msg = trans_choice('{1} :count Eintrag aktualisiert.|[2,*] :count Einträge aktualisiert.', $affected, ['count' => $affected]);
-        if ($skipped > 0) {
-            $msg .= ' ' . __(':count übersprungen (keine Berechtigung).', ['count' => $skipped]);
-        }
-
-        return redirect()->back()->with('success', $msg);
+        return redirect()->route('legacy.diary.index')->with('success', 'Legacy-Eintrag geloescht.');
     }
 
     private function ensureCanModify(LegacyDiaryEntry $entry): void {

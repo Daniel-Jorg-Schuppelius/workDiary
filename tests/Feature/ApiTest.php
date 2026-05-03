@@ -1,0 +1,118 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Comment;
+use App\Models\DiaryEntry;
+use App\Models\Tag;
+use App\Models\User;
+use Database\Seeders\RolesSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
+
+class ApiTest extends TestCase {
+    use RefreshDatabase;
+
+    protected function setUp(): void {
+        parent::setUp();
+        $this->seed(RolesSeeder::class);
+    }
+
+    public function test_unauthenticated_returns_401(): void {
+        $this->getJson('/api/diary')->assertStatus(401);
+    }
+
+    public function test_me_returns_user(): void {
+        $user = User::factory()->user()->create();
+        Sanctum::actingAs($user);
+        $this->getJson('/api/me')
+            ->assertOk()
+            ->assertJsonPath('data.id', $user->id)
+            ->assertJsonPath('meta.roles.0', User::ROLE_USER);
+    }
+
+    public function test_diary_index_paginates(): void {
+        $user = User::factory()->user()->create();
+        DiaryEntry::factory()->count(3)->for($user)->create();
+        Sanctum::actingAs($user);
+        $this->getJson('/api/diary')
+            ->assertOk()
+            ->assertJsonStructure(['data' => [['id', 'content', 'status']], 'meta', 'links']);
+    }
+
+    public function test_diary_store_creates_entry(): void {
+        $user = User::factory()->user()->create();
+        Sanctum::actingAs($user);
+        $this->postJson('/api/diary', [
+            'content' => 'API erstellt',
+            'status' => 2,
+        ])->assertCreated()
+            ->assertJsonPath('data.content', 'API erstellt');
+
+        $this->assertDatabaseHas('diary_entries', ['content' => 'API erstellt', 'user_id' => $user->id]);
+    }
+
+    public function test_diary_update_requires_owner(): void {
+        $owner = User::factory()->user()->create();
+        $other = User::factory()->user()->create();
+        $entry = DiaryEntry::factory()->for($owner)->create();
+        Sanctum::actingAs($other);
+        $this->putJson('/api/diary/' . $entry->id, [
+            'content' => 'hack',
+            'status' => 2,
+        ])->assertForbidden();
+    }
+
+    public function test_diary_archive_and_restore(): void {
+        $user = User::factory()->user()->create();
+        $entry = DiaryEntry::factory()->for($user)->create(['is_archived' => false]);
+        Sanctum::actingAs($user);
+        $this->postJson('/api/diary/' . $entry->id . '/archive')->assertOk();
+        $this->assertTrue($entry->fresh()->is_archived);
+        $this->postJson('/api/diary/' . $entry->id . '/restore')->assertOk();
+        $this->assertFalse($entry->fresh()->is_archived);
+    }
+
+    public function test_comment_store_via_api(): void {
+        $user = User::factory()->user()->create();
+        $entry = DiaryEntry::factory()->for($user)->create();
+        Sanctum::actingAs($user);
+        $this->postJson('/api/diary/' . $entry->id . '/comments', ['body' => 'Hi'])
+            ->assertCreated()
+            ->assertJsonPath('data.body', 'Hi');
+    }
+
+    public function test_tags_crud(): void {
+        $admin = User::factory()->admin()->create();
+        $user = User::factory()->user()->create();
+
+        // Anlegen darf jeder
+        Sanctum::actingAs($user);
+        $this->postJson('/api/tags', ['name' => 'X'])->assertCreated();
+
+        // Update/Delete nur Admin
+        $tag = Tag::where('name', 'X')->first();
+        $this->putJson('/api/tags/' . $tag->id, ['name' => 'Y'])->assertForbidden();
+
+        Sanctum::actingAs($admin);
+        $this->putJson('/api/tags/' . $tag->id, ['name' => 'Y'])->assertOk();
+        $this->deleteJson('/api/tags/' . $tag->id)->assertOk();
+    }
+
+    public function test_dashboard_endpoint(): void {
+        $user = User::factory()->user()->create();
+        Sanctum::actingAs($user);
+        $this->getJson('/api/dashboard')->assertOk()->assertJsonStructure(['data']);
+    }
+
+    public function test_push_subscribe_via_api(): void {
+        $user = User::factory()->user()->create();
+        Sanctum::actingAs($user);
+        $this->postJson('/api/push/subscribe', [
+            'endpoint' => 'https://push.example.com/api',
+            'keys' => ['p256dh' => 'p', 'auth' => 'a'],
+        ])->assertCreated();
+        $this->assertDatabaseHas('push_subscriptions', ['endpoint' => 'https://push.example.com/api']);
+    }
+}

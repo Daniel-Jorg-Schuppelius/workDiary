@@ -57,7 +57,7 @@
                     </button>
                     @auth
                         <a href="{{ route($indexRoute) }}" class="btn btn-sm btn-ghost">▤ Arbeitsliste</a>
-                        <a href="{{ route($createRoute) }}" class="btn btn-sm btn-primary">{{ __('+ Neuer Eintrag') }}</a>
+                        <a href="{{ route($createRoute) }}" data-entry-modal-trigger class="btn btn-sm btn-primary">{{ __('+ Neuer Eintrag') }}</a>
                     @else
                         <a href="{{ route('login') }}" class="btn btn-sm btn-primary">⇢ Anmelden</a>
                     @endauth
@@ -80,7 +80,7 @@
                         @endauth
                         <div class="mt-5 flex flex-wrap gap-3">
                             @auth
-                                <a href="{{ route($createRoute) }}" class=" btn btn-sm btn-primary">✚ Neuer Eintrag</a>
+                                <a href="{{ route($createRoute) }}" data-entry-modal-trigger class=" btn btn-sm btn-primary">✚ Neuer Eintrag</a>
                                 <a href="{{ route($indexRoute) }}" class=" btn btn-sm btn-outline">▤ Arbeitsliste öffnen</a>
                                 <a href="{{ route($indexRoute, ['status' => 3]) }}" class=" btn btn-sm btn-error btn-outline">⚠ Probleme priorisieren</a>
                             @else

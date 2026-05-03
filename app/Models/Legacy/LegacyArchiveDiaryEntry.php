@@ -5,6 +5,14 @@ namespace App\Models\Legacy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $user
+ * @property-read \App\Models\Legacy\LegacyUser|null $mitarbeiter
+ * @property string|null $inhalt
+ * @property \Illuminate\Support\Carbon|null $von
+ * @property \Illuminate\Support\Carbon|null $bis
+ */
 class LegacyArchiveDiaryEntry extends Model {
     protected $connection = 'legacy';
 

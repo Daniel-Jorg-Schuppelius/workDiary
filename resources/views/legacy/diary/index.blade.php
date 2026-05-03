@@ -24,7 +24,7 @@
             <input type="hidden" name="sort" value="{{ $currentSort }}">
             <input type="hidden" name="dir" value="{{ $currentDir }}">
             <div class="flex flex-wrap items-end gap-3">
-                <div class="flex flex-1 flex-col min-w-[12rem]">
+                <div class="flex flex-1 flex-col min-w-48">
                     <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Status') }}</span></label>
                     <select name="status" class="select select-bordered select-sm w-full">
                         <option value="all" @selected(($filters['status'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
@@ -34,7 +34,7 @@
                         <option value="-1" @selected(($filters['status'] ?? '') === '-1')>{{ __('Erledigt') }}</option>
                     </select>
                 </div>
-                <div class="flex flex-1 flex-col min-w-[10rem]">
+                <div class="flex flex-1 flex-col min-w-40">
                     <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Zeitraum') }}</span></label>
                     <select name="zeitpunkt" class="select select-bordered select-sm w-full">
                         <option value="0" @selected((int) ($filters['zeitpunkt'] ?? 0) === 0)>{{ __('Alle') }}</option>
@@ -42,13 +42,7 @@
                         <option value="2" @selected((int) ($filters['zeitpunkt'] ?? 0) === 2)>{{ __('Bis heute') }}</option>
                     </select>
                 </div>
-                <div class="flex flex-col">
-                    <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Von') }} &ndash; {{ __('Bis') }}</span></label>
-                    <div class="join">
-                        <input type="date" name="from" value="{{ $filters['from'] ?? '' }}" class="join-item input input-bordered input-sm" title="{{ __('Von') }}">
-                        <input type="date" name="to" value="{{ $filters['to'] ?? '' }}" class="join-item input input-bordered input-sm" title="{{ __('Bis') }}">
-                    </div>
-                </div>
+                <x-date-range :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''" />
                 <label class="label cursor-pointer gap-2 py-1">
                     <input type="checkbox" name="mine" value="1" @checked(!empty($filters['mine'])) class="toggle toggle-sm toggle-primary">
                     <span class="label-text text-sm">{{ __('Nur meine') }}</span>
@@ -150,11 +144,11 @@
                         <td>{{ $entry->von?->format('d.m.Y H:i') ?? '-' }}</td>
                         <td>{{ $entry->bis?->format('d.m.Y H:i') ?? '-' }}</td>
                         <td class="whitespace-nowrap text-right">
-                            <a href="{{ route('legacy.diary.show', $entry) }}" class="btn btn-xs btn-ghost" title="{{ __('Details') }}" aria-label="{{ __('Details') }}">
+                            <a href="{{ route('legacy.diary.show', $entry) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Details') }}" aria-label="{{ __('Details') }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                             </a>
                             @if ($canModify)
-                                <a href="{{ route('legacy.diary.edit', $entry) }}" class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}" aria-label="{{ __('Bearbeiten') }}">
+                                <a href="{{ route('legacy.diary.edit', $entry) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}" aria-label="{{ __('Bearbeiten') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 </a>
                             @endif

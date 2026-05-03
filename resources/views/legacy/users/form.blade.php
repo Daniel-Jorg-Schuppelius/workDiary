@@ -1,11 +1,10 @@
 @extends('layouts.app')
 @section('title', ($isEdit ? __('Mitarbeiter bearbeiten') : __('Mitarbeiter anlegen')) . ' — WorkDiary')
-@section('nav-title', $isEdit ? __('Mitarbeiter bearbeiten') : __('Mitarbeiter anlegen'))
+@section('nav-title', $isEdit ? __('Legacy') . ' / ' . __('Mitarbeiter bearbeiten') : __('Legacy') . ' / ' . __('Mitarbeiter anlegen'))
 
 @section('content')
-    <div class="mx-auto flex h-[calc(100dvh-11rem)] w-full max-w-xl flex-col">
-        <div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100">
-            <div class="h-full overflow-auto p-5">
+    <div class="mx-auto max-w-xl">
+        <div class="rounded-box border border-base-300 bg-base-100 p-5">
             <form method="POST" action="{{ $isEdit ? route('legacy.users.update', $legacyUser) : route('legacy.users.store') }}" class="space-y-4">
                 @csrf
                 @if ($isEdit)
@@ -35,7 +34,6 @@
                     <a href="{{ route('legacy.users.index') }}" class="btn btn-ghost btn-sm">{{ __('Abbrechen') }}</a>
                 </div>
             </form>
-            </div>
         </div>
     </div>
 @endsection

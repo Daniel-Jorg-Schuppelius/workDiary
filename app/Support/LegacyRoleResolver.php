@@ -46,9 +46,9 @@ class LegacyRoleResolver {
             return false;
         }
 
-        $configured = (string) env('LEGACY_FALLBACK_ADMINS', 'admin,administrator,chef');
+        $configured = (string) config('legacy.fallback_admins', 'admin,administrator,chef');
         $allowed = array_values(array_filter(array_map(
-            static fn (string $value): string => strtolower(trim($value)),
+            static fn(string $value): string => strtolower(trim($value)),
             explode(',', $configured)
         )));
 

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', __('Legacy Archiv Woche') . ' — ' . config('app.name', 'WorkDiary'))
-@section('nav-title', __('Archivwoche'))
+@section('nav-title', __('Legacy') . ' / ' . __('Archivwoche'))
 
 @section('content')
 @php
@@ -10,30 +10,21 @@
     $hours = range(7, 20);
 @endphp
 
-<div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
-<div role="tablist" class="tabs tabs-box flex-none self-start">
-    <a role="tab" href="{{ route('legacy.archive.index') }}" class="tab">{{ __('Archivliste') }}</a>
-    <a role="tab" href="{{ route('legacy.archive.week') }}" class="tab tab-active">{{ __('Wochenansicht') }}</a>
-</div>
-<div class="flex-none flex flex-wrap items-center gap-2">
-    <a href="{{ route('legacy.archive.week', ['week' => $weekOffset - 1]) }}" class="btn btn-sm btn-ghost" title="{{ __('1 Woche zurück') }}">&#9664; {{ __('Vorwoche') }}</a>
+<div class="mb-3 flex flex-wrap items-center gap-2">
+    <a href="{{ route('legacy.archive.index') }}" class="btn btn-xs btn-ghost">{{ __('Archivliste') }}</a>
+    <a href="{{ route('legacy.archive.week', ['week' => $weekOffset - 1]) }}" class="btn btn-xs btn-ghost" title="{{ __('1 Woche zurück') }}">&#9664; {{ __('Vorwoche') }}</a>
     <span class="text-sm font-semibold">{{ $monday->format('d.m.Y') }} &ndash; {{ $sunday->format('d.m.Y') }}</span>
-    <a href="{{ route('legacy.archive.week', ['week' => $weekOffset + 1]) }}" class="btn btn-sm btn-ghost" title="{{ __('1 Woche vor') }}">{{ __('Folgewoche') }} &#9654;</a>
+    <a href="{{ route('legacy.archive.week', ['week' => $weekOffset + 1]) }}" class="btn btn-xs btn-ghost" title="{{ __('1 Woche vor') }}">{{ __('Folgewoche') }} &#9654;</a>
     <form method="GET" action="{{ route('legacy.archive.week') }}" class="flex items-center gap-2">
-        <input type="week" name="week_date" value="{{ $selectedWeek ?? $monday->format('o-\\WW') }}" class="input input-bordered input-sm">
-        <button type="submit" class="btn btn-sm btn-primary">{{ __('Woche anzeigen') }}</button>
+        <input type="week" name="week_date" value="{{ $selectedWeek ?? $monday->format('o-\\WW') }}" class="input input-bordered input-xs">
+        <button type="submit" class="btn btn-xs btn-primary">{{ __('Woche anzeigen') }}</button>
     </form>
     @if ($weekOffset !== 0)
-        <a href="{{ route('legacy.archive.week') }}" class="btn btn-sm btn-outline">{{ __('Aktuelle Woche') }}</a>
+        <a href="{{ route('legacy.archive.week') }}" class="btn btn-xs btn-outline">{{ __('Aktuelle Woche') }}</a>
     @endif
-    <label class="label cursor-pointer gap-2 ml-2" title="{{ __('Tabelle an Bildschirmbreite anpassen') }}">
-        <input type="checkbox" class="checkbox checkbox-sm" data-week-fit>
-        <span class="label-text text-sm">{{ __('An Bildschirm anpassen') }}</span>
-    </label>
 </div>
 
-<div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-sm">
-    <div class="h-full overflow-auto rounded-box p-2">
+<div class="overflow-x-auto">
     <table class="week-table">
         <tbody>
         @foreach ($days as $dayIndex => $day)
@@ -61,7 +52,7 @@
                     @endphp
                     <th colspan="2" class="{{ $userTh }}">{{ $user->uname }}</th>
                 @endforeach
-                <th class="{{ $dayTh }}">{{ $day->isoFormat('dd') }}</th>
+                <th class="{{ $dayTh }}">{{ $dayAbbr[$dayIndex] }}</th>
             </tr>
 
             @foreach ($hours as $hourIndex => $hour)
@@ -119,7 +110,5 @@
         @endforeach
         </tbody>
     </table>
-    </div>
-</div>
 </div>
 @endsection

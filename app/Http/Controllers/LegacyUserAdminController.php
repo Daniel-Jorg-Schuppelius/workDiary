@@ -14,28 +14,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class LegacyUserAdminController extends Controller {
-    public function index(Request $request): View {
+    public function index(): View {
         $this->ensureAdmin();
 
-        $sortableColumns = [
-            'id' => 'id',
-            'uname' => 'uname',
-            'email' => 'email',
-        ];
-
-        $sort = (string) $request->query('sort', 'uname');
-        $dir = strtolower((string) $request->query('dir', 'asc')) === 'desc' ? 'desc' : 'asc';
-        $sortColumn = $sortableColumns[$sort] ?? $sortableColumns['uname'];
-
-        $users = LegacyUser::query()
-            ->where('id', '>', 3)
-            ->orderBy($sortColumn, $dir)
-            ->get(['id', 'uname', 'email']);
-
         return view('legacy.users.index', [
-            'users' => $users,
-            'sort' => array_key_exists($sort, $sortableColumns) ? $sort : 'uname',
-            'dir' => $dir,
+            'users' => LegacyUser::query()->where('id', '>', 3)->orderBy('uname')->get(['id', 'uname', 'email']),
         ]);
     }
 
@@ -56,11 +39,10 @@ class LegacyUserAdminController extends Controller {
             'userpw' => ['required', 'string', 'max:100'],
             'email' => ['nullable', 'email', 'max:255'],
         ]);
-        $data['email'] = $data['email'] ?? '';
 
         LegacyUser::query()->create($data);
 
-        return redirect()->route('legacy.users.index')->with('success', __('Mitarbeiter angelegt.'));
+        return redirect()->route('legacy.users.index')->with('success', 'Mitarbeiter angelegt.');
     }
 
     public function edit(LegacyUser $user): View {
@@ -84,11 +66,10 @@ class LegacyUserAdminController extends Controller {
             'userpw' => ['required', 'string', 'max:100'],
             'email' => ['nullable', 'email', 'max:255'],
         ]);
-        $data['email'] = $data['email'] ?? '';
 
         $user->update($data);
 
-        return redirect()->route('legacy.users.index')->with('success', __('Mitarbeiter aktualisiert.'));
+        return redirect()->route('legacy.users.index')->with('success', 'Mitarbeiter aktualisiert.');
     }
 
     public function destroy(LegacyUser $user): RedirectResponse {
@@ -101,12 +82,12 @@ class LegacyUserAdminController extends Controller {
         $hasNotdienst = LegacyNotdienst::query()->where('user', $user->id)->exists();
 
         if ($hasDiary || $hasOnCall || $hasNotdienst) {
-            return back()->with('success', __('Mitarbeiter kann nicht gelöscht werden: es sind noch Legacy-Daten vorhanden.'));
+            return back()->with('success', 'Mitarbeiter kann nicht geloescht werden: es sind noch Legacy-Daten vorhanden.');
         }
 
         $user->delete();
 
-        return redirect()->route('legacy.users.index')->with('success', __('Mitarbeiter gelöscht.'));
+        return redirect()->route('legacy.users.index')->with('success', 'Mitarbeiter geloescht.');
     }
 
     private function ensureAdmin(): void {

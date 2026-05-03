@@ -2,6 +2,7 @@ import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import { German } from "flatpickr/dist/l10n/de.js";
 import weekSelect from "flatpickr/dist/plugins/weekSelect/weekSelect.js";
+import { bindPushToggle } from "./push.js";
 
 const htmlLang = (document.documentElement.lang || "de").toLowerCase();
 const locale = htmlLang.startsWith("de") ? German : "default";
@@ -30,6 +31,71 @@ flatpickr('input[type="time"]', {
     dateFormat: "H:i",
     allowInput: true,
 });
+
+// Für dynamisch nachgeladene Felder (z. B. im Entry-Dialog)
+window.__initFlatpickr = (el) => {
+    if (!el || el._flatpickr) return;
+    const t = el.getAttribute("type");
+    const dialogEl = el.closest("dialog");
+
+    // Im dialog-Kontext: appendTo in den Dialog (Top-Layer), damit der Kalender
+    // nicht vom modal-backdrop verdeckt wird. onOpen setzt position:fixed + z-index
+    // via getBoundingClientRect, da DaisyUI's dialog kein transform/filter hat.
+    const repositionCalendar = (fp) => {
+        const cal = fp.calendarContainer;
+        const r = fp.input.getBoundingClientRect();
+        cal.style.position = "fixed";
+        cal.style.zIndex = "9999";
+        // Platz unter dem Eingabefeld, nach oben wechseln wenn zu wenig Platz
+        const spaceBelow = window.innerHeight - r.bottom;
+        const calH = cal.offsetHeight || 300;
+        if (spaceBelow < calH && r.top > calH) {
+            cal.style.top = `${r.top - calH - 2}px`;
+        } else {
+            cal.style.top = `${r.bottom + 2}px`;
+        }
+        cal.style.left = `${Math.min(r.left, window.innerWidth - (cal.offsetWidth || 300) - 8)}px`;
+        cal.style.right = "auto";
+    };
+
+    const common = dialogEl
+        ? {
+              appendTo: dialogEl,
+              static: false,
+              onOpen: [repositionCalendar],
+              onReady: [repositionCalendar],
+          }
+        : {};
+    if (t === "date") {
+        flatpickr(el, {
+            locale,
+            dateFormat: "Y-m-d",
+            weekNumbers: true,
+            allowInput: true,
+            ...common,
+        });
+    } else if (t === "datetime-local") {
+        flatpickr(el, {
+            locale,
+            enableTime: true,
+            time_24hr: true,
+            dateFormat: "Y-m-d\\TH:i",
+            weekNumbers: true,
+            allowInput: true,
+            ...common,
+        });
+    } else if (t === "time") {
+        flatpickr(el, {
+            locale,
+            enableTime: true,
+            noCalendar: true,
+            time_24hr: true,
+            dateFormat: "H:i",
+            allowInput: true,
+            ...common,
+        });
+    }
+};
 
 // Wochen-Auswahl: type="week" -> type="text" + weekSelect-Plugin (lokalisiert)
 document.querySelectorAll('input[type="week"]').forEach((el) => {
@@ -98,3 +164,12 @@ document.querySelectorAll('input[type="week"]').forEach((el) => {
         });
     });
 })();
+
+// Web-Push Toggle (Glocken-Icon im Layout, data-push-toggle)
+if (typeof document !== "undefined") {
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => bindPushToggle());
+    } else {
+        bindPushToggle();
+    }
+}

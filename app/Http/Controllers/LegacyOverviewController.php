@@ -9,7 +9,7 @@ use Illuminate\View\View;
 
 class LegacyOverviewController extends Controller {
     public function index(Request $request): View {
-        $legacyUserId = (int) (Auth::user()?->legacy_user_id ?? 0);
+        $legacyUserId = (int) (Auth::user()->legacy_user_id ?? 0);
         $isAdmin = $legacyUserId > 0 && $legacyUserId <= 3;
 
         $zeitpunkt = (int) $request->input('zeitpunkt', 1);

@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\Concerns\Auditable;
+use App\Models\Concerns\HasAttachments;
+use Database\Factories\CommentFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Comment extends Model {
+    /** @use HasFactory<CommentFactory> */
+    use HasFactory;
+    use HasAttachments;
+    use Auditable;
+
+    protected $fillable = ['diary_entry_id', 'user_id', 'body'];
+
+    public function diaryEntry(): BelongsTo {
+        return $this->belongsTo(DiaryEntry::class);
+    }
+
+    public function user(): BelongsTo {
+        return $this->belongsTo(User::class);
+    }
+}
