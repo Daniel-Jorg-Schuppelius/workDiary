@@ -62,8 +62,15 @@
                                     <li><a href="{{ route('legacy.diary.week') }}">{{ __('Wochenansicht') }}</a></li>
                                     <li><a href="{{ route($indexRoute) }}">{{ __('Arbeitsliste') }}</a></li>
                                     <li><a href="{{ route('legacy.overview.index') }}">{{ __('Überblick') }}</a></li>
-                                    <li><a href="{{ route('legacy.oncall.index') }}">{{ __('Bereitschaft') }}</a></li>
-                                    <li><a href="{{ route('legacy.notdienst.index') }}">{{ __('Notdienst') }}</a></li>
+                                    <li>
+                                        <details>
+                                            <summary>{{ __('Dienste') }}</summary>
+                                            <ul>
+                                                <li><a href="{{ route('legacy.oncall.index') }}">{{ __('Bereitschaft') }}</a></li>
+                                                <li><a href="{{ route('legacy.notdienst.index') }}">{{ __('Notdienst') }}</a></li>
+                                            </ul>
+                                        </details>
+                                    </li>
                                     <li><a href="{{ route('legacy.archive.index') }}">{{ __('Archiv') }}</a></li>
                                     <li><a href="{{ route('legacy.callcenter.notdienst') }}">{{ __('Callcenter') }}</a></li>
                                     @if ($isLegacyAdmin)
@@ -72,14 +79,14 @@
                                     <li><a href="{{ route('legacy.account.password.edit') }}">{{ __('Passwort') }}</a></li>
                                 </ul>
                             </div>
-                            <a href="{{ route($createRoute) }}" class="btn btn-sm btn-primary">+ {{ __('Neuer Eintrag') }}</a>
+                            <a href="{{ route($createRoute) }}" data-entry-modal-trigger class="btn btn-sm btn-primary">+ {{ __('Neuer Eintrag') }}</a>
                         @else
                             <div class="flex flex-wrap items-center gap-2">
                                 <a href="{{ route($indexRoute) }}" class="btn btn-sm btn-ghost">▤ {{ __('Arbeitsliste') }}</a>
                                 @if ($isLegacyAdmin)
                                     <a href="{{ route('legacy.users.index') }}" class="btn btn-sm btn-ghost">⚙ {{ __('Mitarbeiter') }}</a>
                                 @endif
-                                <a href="{{ route($createRoute) }}" class="btn btn-sm btn-primary">+ {{ __('Neuer Eintrag') }}</a>
+                                <a href="{{ route($createRoute) }}" data-entry-modal-trigger class="btn btn-sm btn-primary">+ {{ __('Neuer Eintrag') }}</a>
                             </div>
                         @endif
                         <div class="flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-sm">

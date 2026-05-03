@@ -23,10 +23,12 @@ class AuditLog extends Model {
         ];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
+    /** @return MorphTo<\Illuminate\Database\Eloquent\Model, $this> */
     public function auditable(): MorphTo {
         return $this->morphTo();
     }

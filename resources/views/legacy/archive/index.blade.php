@@ -3,6 +3,7 @@
 @section('nav-title', __('Legacy') . ' / ' . __('Archiv'))
 
 @section('content')
+    @php($legacyUsers = collect($users ?? []))
     @if ($isAdmin)
         <div class="mb-3">
             <a href="{{ route('legacy.archive.week') }}" class="btn btn-xs btn-outline">{{ __('Archiv-Wochenansicht') }}</a>
@@ -16,8 +17,8 @@
                     <label class="label text-sm font-semibold pb-1">{{ __('Mitarbeiter') }}</label>
                     <select name="user" class="select select-bordered select-sm">
                         <option value="">{{ __('Alle') }}</option>
-                        @foreach ($users as $user)
-                            <option value="{{ $user->id }}" @selected(($filters['user'] ?? '') == $user->id)>{{ $user->uname }}</option>
+                        @foreach ($legacyUsers as $legacyUser)
+                            <option value="{{ $legacyUser->id }}" @selected(($filters['user'] ?? '') == $legacyUser->id)>{{ $legacyUser->uname }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -54,8 +55,8 @@
                     <label class="label text-sm font-semibold pb-1">{{ __('Mitarbeiter') }} ({{ __('Optional') }})</label>
                     <select name="user" class="select select-bordered select-sm">
                         <option value="">{{ __('Alle') }}</option>
-                        @foreach ($users as $user)
-                            <option value="{{ $user->id }}">{{ $user->uname }}</option>
+                        @foreach ($legacyUsers as $legacyUser)
+                            <option value="{{ $legacyUser->id }}">{{ $legacyUser->uname }}</option>
                         @endforeach
                     </select>
                 </div>

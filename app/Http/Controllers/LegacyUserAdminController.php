@@ -2,18 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Http\Controllers\Concerns\RequiresLegacyAdmin;
+use App\Http\Requests\SaveLegacyUserRequest;
 use App\Models\Legacy\LegacyDiaryEntry;
 use App\Models\Legacy\LegacyNotdienst;
 use App\Models\Legacy\LegacyOnCall;
 use App\Models\Legacy\LegacyUser;
-use App\Support\LegacyRoleResolver;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class LegacyUserAdminController extends Controller {
+    use RequiresLegacyAdmin;
     public function index(): View {
         $this->ensureAdmin();
 
@@ -31,16 +30,10 @@ class LegacyUserAdminController extends Controller {
         ]);
     }
 
-    public function store(Request $request): RedirectResponse {
+    public function store(SaveLegacyUserRequest $request): RedirectResponse {
         $this->ensureAdmin();
 
-        $data = $request->validate([
-            'uname' => ['required', 'string', 'max:100', 'unique:legacy.user,uname'],
-            'userpw' => ['required', 'string', 'max:100'],
-            'email' => ['nullable', 'email', 'max:255'],
-        ]);
-
-        LegacyUser::query()->create($data);
+        LegacyUser::query()->create($request->validated());
 
         return redirect()->route('legacy.users.index')->with('success', 'Mitarbeiter angelegt.');
     }
@@ -48,7 +41,7 @@ class LegacyUserAdminController extends Controller {
     public function edit(LegacyUser $user): View {
         $this->ensureAdmin();
 
-        abort_if((int) $user->id <= 3, 403);
+        $this->ensureMutableLegacyUser($user);
 
         return view('legacy.users.form', [
             'legacyUser' => $user,
@@ -56,18 +49,12 @@ class LegacyUserAdminController extends Controller {
         ]);
     }
 
-    public function update(Request $request, LegacyUser $user): RedirectResponse {
+    public function update(SaveLegacyUserRequest $request, LegacyUser $user): RedirectResponse {
         $this->ensureAdmin();
 
-        abort_if((int) $user->id <= 3, 403);
+        $this->ensureMutableLegacyUser($user);
 
-        $data = $request->validate([
-            'uname' => ['required', 'string', 'max:100', 'unique:legacy.user,uname,' . $user->id],
-            'userpw' => ['required', 'string', 'max:100'],
-            'email' => ['nullable', 'email', 'max:255'],
-        ]);
-
-        $user->update($data);
+        $user->update($request->validated());
 
         return redirect()->route('legacy.users.index')->with('success', 'Mitarbeiter aktualisiert.');
     }
@@ -75,14 +62,10 @@ class LegacyUserAdminController extends Controller {
     public function destroy(LegacyUser $user): RedirectResponse {
         $this->ensureAdmin();
 
-        abort_if((int) $user->id <= 3, 403);
+        $this->ensureMutableLegacyUser($user);
 
-        $hasDiary = LegacyDiaryEntry::query()->where('user', $user->id)->exists();
-        $hasOnCall = LegacyOnCall::query()->where('user', $user->id)->exists();
-        $hasNotdienst = LegacyNotdienst::query()->where('user', $user->id)->exists();
-
-        if ($hasDiary || $hasOnCall || $hasNotdienst) {
-            return back()->with('success', 'Mitarbeiter kann nicht geloescht werden: es sind noch Legacy-Daten vorhanden.');
+        if ($this->hasLegacyDependencies($user)) {
+            return back()->with('error', 'Mitarbeiter kann nicht geloescht werden: es sind noch Legacy-Daten vorhanden.');
         }
 
         $user->delete();
@@ -90,7 +73,13 @@ class LegacyUserAdminController extends Controller {
         return redirect()->route('legacy.users.index')->with('success', 'Mitarbeiter geloescht.');
     }
 
-    private function ensureAdmin(): void {
-        abort_if(! LegacyRoleResolver::isAdmin(Auth::user()), 403);
+    private function ensureMutableLegacyUser(LegacyUser $user): void {
+        abort_if((int) $user->id <= 3, 403);
+    }
+
+    private function hasLegacyDependencies(LegacyUser $user): bool {
+        return LegacyDiaryEntry::query()->where('user', $user->id)->exists()
+            || LegacyOnCall::query()->where('user', $user->id)->exists()
+            || LegacyNotdienst::query()->where('user', $user->id)->exists();
     }
 }

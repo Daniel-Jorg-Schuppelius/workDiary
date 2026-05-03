@@ -10,7 +10,7 @@ use Carbon\Carbon;
 class SetLocale {
     public const SUPPORTED = ['de', 'en'];
 
-    public function handle(Request $request, Closure $next) {
+    public function handle(Request $request, Closure $next): \Symfony\Component\HttpFoundation\Response {
         $locale = (string) $request->session()->get('locale', config('app.locale', 'de'));
         if (! in_array($locale, self::SUPPORTED, true)) {
             $locale = 'de';

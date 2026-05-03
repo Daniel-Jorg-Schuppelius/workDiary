@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Str;
 
 class Tag extends Model {
+    /** @use HasFactory<\Database\Factories\TagFactory> */
     use HasFactory;
 
     protected $fillable = ['name', 'slug', 'color', 'created_by'];
@@ -52,18 +53,22 @@ class Tag extends Model {
         ]);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** @return MorphToMany<DiaryEntry, $this> */
     public function diaryEntries(): MorphToMany {
         return $this->morphedByMany(DiaryEntry::class, 'taggable');
     }
 
+    /** @return MorphToMany<OnCallShift, $this> */
     public function shifts(): MorphToMany {
         return $this->morphedByMany(OnCallShift::class, 'taggable');
     }
 
+    /** @return MorphToMany<EmergencyAssignment, $this> */
     public function assignments(): MorphToMany {
         return $this->morphedByMany(EmergencyAssignment::class, 'taggable');
     }

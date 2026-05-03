@@ -4,19 +4,14 @@ namespace App\Policies;
 
 use App\Models\Tag;
 use App\Models\User;
+use App\Policies\Concerns\HasAdminBypass;
 
 class TagPolicy {
+    use HasAdminBypass;
+
     /**
      * Admin darf alles (Katalog-Pflege).
      */
-    public function before(User $user, string $ability): ?bool {
-        if ($user->isAdmin()) {
-            return true;
-        }
-
-        return null;
-    }
-
     public function viewAny(User $user): bool {
         return true;
     }

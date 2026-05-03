@@ -53,18 +53,22 @@ class User extends Authenticatable {
         ];
     }
 
+    /** @return HasMany<DiaryEntry, $this> */
     public function diaryEntries(): HasMany {
         return $this->hasMany(DiaryEntry::class);
     }
 
+    /** @return HasMany<OnCallShift, $this> */
     public function onCallShifts(): HasMany {
         return $this->hasMany(OnCallShift::class);
     }
 
+    /** @return HasMany<EmergencyAssignment, $this> */
     public function emergencyAssignments(): HasMany {
         return $this->hasMany(EmergencyAssignment::class);
     }
 
+    /** @return HasMany<PushSubscription, $this> */
     public function pushSubscriptions(): HasMany {
         return $this->hasMany(PushSubscription::class);
     }

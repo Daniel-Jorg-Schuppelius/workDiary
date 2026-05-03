@@ -37,18 +37,25 @@ class EmergencyAssignment extends Model {
         ];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<OnCallShift, $this> */
     public function shift(): BelongsTo {
         return $this->belongsTo(OnCallShift::class, 'on_call_shift_id');
     }
 
+    /** @return HasMany<DiaryEntry, $this> */
     public function diaryEntries(): HasMany {
         return $this->hasMany(DiaryEntry::class);
     }
 
+    /**
+     * @param Builder<EmergencyAssignment> $query
+     * @return Builder<EmergencyAssignment>
+     */
     public function scopeOverlapping(Builder $query, \DateTimeInterface $start, \DateTimeInterface $end): Builder {
         return $query->where('start_at', '<', $end)->where('end_at', '>', $start);
     }

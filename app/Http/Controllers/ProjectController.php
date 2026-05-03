@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SaveProjectRequest;
 use App\Models\DiaryEntry;
 use App\Models\Project;
 use Illuminate\Http\RedirectResponse;
@@ -9,7 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ProjectController extends Controller {
@@ -24,29 +24,23 @@ class ProjectController extends Controller {
 
         $projects = $query->orderByRaw("CASE status WHEN 'active' THEN 0 WHEN 'paused' THEN 1 ELSE 2 END")
             ->orderBy('name')
+            ->select(['id', 'name', 'slug', 'color', 'status', 'description', 'starts_on', 'ends_on'])
             ->get();
 
         $projectIds = $projects->pluck('id')->all();
 
-        // Aggregat: Eintragszahlen pro Projekt + Statusbreakdown
-        $stats = DiaryEntry::query()
-            ->select('project_id', 'status', DB::raw('COUNT(*) as cnt'))
+        // Einzel-Query für alle Aggregationen (statt 3 separater Queries)
+        $aggr = DiaryEntry::query()
+            ->select('project_id', 'status', DB::raw('COUNT(*) as cnt'), DB::raw('MAX(start_at) as last_at'), DB::raw('COUNT(DISTINCT user_id) as user_cnt'))
             ->whereIn('project_id', $projectIds)
             ->groupBy('project_id', 'status')
             ->get()
             ->groupBy('project_id');
 
-        $lastEntries = DiaryEntry::query()
-            ->select('project_id', DB::raw('MAX(start_at) as last_at'))
-            ->whereIn('project_id', $projectIds)
-            ->groupBy('project_id')
-            ->pluck('last_at', 'project_id');
-
-        $userCounts = DiaryEntry::query()
-            ->select('project_id', DB::raw('COUNT(DISTINCT user_id) as cnt'))
-            ->whereIn('project_id', $projectIds)
-            ->groupBy('project_id')
-            ->pluck('cnt', 'project_id');
+        // View-kompatible Strukturen aus einer einzigen Query ableiten
+        $stats = $aggr;
+        $lastEntries = $aggr->map(fn($rows) => $rows->max('last_at'));
+        $userCounts = $aggr->map(fn($rows) => $rows->max('user_cnt'));
 
         return view('projects.index', [
             'projects' => $projects,
@@ -83,10 +77,10 @@ class ProjectController extends Controller {
         ]);
     }
 
-    public function store(Request $request): RedirectResponse {
+    public function store(SaveProjectRequest $request): RedirectResponse {
         Gate::authorize('create', Project::class);
 
-        $data = $this->validatePayload($request);
+        $data = $request->validated();
 
         $project = Project::create($data + ['created_by' => Auth::id()]);
 
@@ -105,10 +99,10 @@ class ProjectController extends Controller {
         ]);
     }
 
-    public function update(Request $request, Project $project): RedirectResponse {
+    public function update(SaveProjectRequest $request, Project $project): RedirectResponse {
         Gate::authorize('update', $project);
 
-        $data = $this->validatePayload($request, $project);
+        $data = $request->validated();
         $project->update($data);
 
         return redirect()->route('projects.show', $project)
@@ -122,19 +116,5 @@ class ProjectController extends Controller {
 
         return redirect()->route('projects.index')
             ->with('success', __('Projekt gelöscht.'));
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function validatePayload(Request $request, ?Project $project = null): array {
-        return $request->validate([
-            'name' => ['required', 'string', 'max:120', Rule::unique('projects', 'name')->ignore($project?->id)],
-            'description' => ['nullable', 'string', 'max:2000'],
-            'color' => ['nullable', 'string', 'max:16'],
-            'status' => ['required', Rule::in(Project::STATUSES)],
-            'starts_on' => ['nullable', 'date'],
-            'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
-        ]);
     }
 }

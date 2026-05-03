@@ -31,10 +31,12 @@ class Attachment extends Model {
         ];
     }
 
+    /** @return MorphTo<\Illuminate\Database\Eloquent\Model, $this> */
     public function attachable(): MorphTo {
         return $this->morphTo();
     }
 
+    /** @return BelongsTo<User, $this> */
     public function uploader(): BelongsTo {
         return $this->belongsTo(User::class, 'user_id');
     }

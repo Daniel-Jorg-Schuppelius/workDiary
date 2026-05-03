@@ -34,6 +34,12 @@
         </div>
     </div>
 
+    @if ($isLimited)
+        <div class="rounded-box border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-base-content/80">
+            {{ __('Es werden maximal :count Einträge angezeigt. Verfeinere den Zeitraum oder die Ansicht für vollständigere Ergebnisse.', ['count' => 200]) }}
+        </div>
+    @endif
+
     {{-- Board --}}
     <div class="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-auto sm:grid-cols-2 xl:grid-cols-4"
          data-kanban-board

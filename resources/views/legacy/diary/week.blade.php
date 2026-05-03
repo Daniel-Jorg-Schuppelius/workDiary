@@ -13,6 +13,7 @@
     $dayAbbr = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
     $days    = collect(range(0, 6))->map(fn ($i) => $weekStart->copy()->addDays($i));
     $hours   = range(7, 20); // Slots 07–08 bis 20–21
+    $legacyUsers = collect($users ?? []);
 @endphp
 
 {{-- Toolbar --}}
@@ -41,10 +42,10 @@
         {{-- Legende --}}
         <div class="flex flex-wrap items-center gap-3 text-xs text-base-content/60">
             <span class="inline-flex items-center gap-1.5">
-                <span class="inline-block h-3 w-3 rounded-sm bg-info/30 outline outline-1 outline-info"></span>{{ __('Bereitschaft') }}
+                <span class="inline-block h-3 w-3 rounded-sm bg-info/30 outline-info outline-1"></span>{{ __('Bereitschaft') }}
             </span>
             <span class="inline-flex items-center gap-1.5">
-                <span class="inline-block h-3 w-3 rounded-sm bg-warning/30 outline outline-1 outline-warning"></span>{{ __('Notdienst') }}
+                <span class="inline-block h-3 w-3 rounded-sm bg-warning/30 outline-warning outline-1"></span>{{ __('Notdienst') }}
             </span>
         </div>
 
@@ -65,7 +66,7 @@
     <div id="week-scroll" class="h-full overflow-auto">
         @php
             /* min-width: Zeitspalte (4.5rem) + N Benutzer × 6rem + letztes Kürzel (2.5rem) */
-            $tableMinWidth = 'calc(4.5rem + ' . count($users) . ' * 6rem + 2.5rem)';
+            $tableMinWidth = 'calc(4.5rem + ' . $legacyUsers->count() . ' * 6rem + 2.5rem)';
         @endphp
         <table id="week-table" class="week-table" data-min-width="{{ $tableMinWidth }}">
             <tbody>
@@ -84,16 +85,16 @@
                 {{-- Tages-Kopfzeile: alle th sticky top + Ecke zusätzlich sticky left --}}
                 <tr>
                     <th class="{{ $dayTh }} sticky top-0 left-0 z-20">{{ $day->format('d.m.y') }}</th>
-                    @foreach ($users as $user)
+                    @foreach ($legacyUsers as $legacyUser)
                         @php
-                            $uid          = (int) $user->id;
+                            $uid          = (int) $legacyUser->id;
                             $hasOncall    = isset($oncallByUserDay[$uid][$dateKey]);
                             $hasNotdienst = ! $hasOncall && isset($notdienstByUserDay[$uid][$dateKey]);
                             if ($hasOncall)        $userTh = 'mitb';
                             elseif ($hasNotdienst) $userTh = 'mitn';
                             else                   $userTh = 'mit';
                         @endphp
-                        <th colspan="2" class="{{ $userTh }} sticky top-0 z-10" title="{{ $user->uname }}">{{ $user->uname }}</th>
+                        <th colspan="2" class="{{ $userTh }} sticky top-0 z-10" title="{{ $legacyUser->uname }}">{{ $legacyUser->uname }}</th>
                     @endforeach
                     <th class="{{ $dayTh }} sticky top-0 z-10">{{ $dayAbbr[$dayIndex] }}</th>
                 </tr>
@@ -110,9 +111,9 @@
                         {{-- Zeitspalte: sticky links --}}
                         <td class="{{ $bg ? 'grau' : 'mitte' }} sticky left-0 z-10">{{ $hourLabel }}</td>
 
-                        @foreach ($users as $user)
+                        @foreach ($legacyUsers as $legacyUser)
                             @php
-                                $uid          = (int) $user->id;
+                                $uid          = (int) $legacyUser->id;
                                 $hasOncall    = isset($oncallByUserDay[$uid][$dateKey]);
                                 $hasNotdienst = ! $hasOncall && isset($notdienstByUserDay[$uid][$dateKey]);
 

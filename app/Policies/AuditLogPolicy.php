@@ -4,11 +4,10 @@ namespace App\Policies;
 
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Policies\Concerns\HasAdminBypass;
 
 class AuditLogPolicy {
-    public function before(User $user, string $ability): ?bool {
-        return $user->isAdmin() ? true : null;
-    }
+    use HasAdminBypass;
 
     public function viewAny(User $user): bool {
         return false;

@@ -2,25 +2,36 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LegacyCallcenterLoginRequest;
 use App\Models\Legacy\LegacyDiaryEntry;
 use App\Models\Legacy\LegacyNotdienst;
 use App\Models\Legacy\LegacyOnCall;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\View\View;
 
 class LegacyCallcenterController extends Controller {
+    private const MAX_LOGIN_ATTEMPTS = 5;
+
     public function showLoginForm(): View {
         return view('legacy.callcenter.login');
     }
 
-    public function login(Request $request): RedirectResponse {
-        $credentials = $request->validate([
-            'username' => ['required', 'string', 'max:100'],
-            'password' => ['required', 'string', 'max:255'],
-        ]);
+    public function login(LegacyCallcenterLoginRequest $request): RedirectResponse {
+        $credentials = $request->validated();
+        $throttleKey = $this->throttleKey($request);
+
+        if (RateLimiter::tooManyAttempts($throttleKey, self::MAX_LOGIN_ATTEMPTS)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+
+            return back()->withErrors([
+                'username' => __('Zu viele Anmeldeversuche. Bitte in :seconds Sekunden erneut versuchen.', ['seconds' => $seconds]),
+            ])->onlyInput('username');
+        }
 
         if (! filled(config('database.connections.legacy.database'))) {
             return back()->withErrors([
@@ -31,6 +42,7 @@ class LegacyCallcenterController extends Controller {
         try {
             $callUser = DB::connection('legacy')
                 ->table('calluser')
+                ->select(['uname'])
                 ->where('uname', $credentials['username'])
                 ->where('userpw', $credentials['password'])
                 ->first();
@@ -39,11 +51,15 @@ class LegacyCallcenterController extends Controller {
         }
 
         if (! $callUser) {
+            RateLimiter::hit($throttleKey, 60);
+
             return back()->withErrors([
                 'username' => __('Nutzername oder Passwort ist falsch.'),
             ])->onlyInput('username');
         }
 
+        RateLimiter::clear($throttleKey);
+        $request->session()->regenerate();
         $request->session()->put('legacy_callcenter_user', (string) $callUser->uname);
 
         return redirect()->route('legacy.callcenter.notdienst');
@@ -51,6 +67,7 @@ class LegacyCallcenterController extends Controller {
 
     public function logout(Request $request): RedirectResponse {
         $request->session()->forget('legacy_callcenter_user');
+        $request->session()->regenerateToken();
 
         return redirect()->route('legacy.callcenter.login');
     }
@@ -61,49 +78,33 @@ class LegacyCallcenterController extends Controller {
         $start = $today->copy()->subDay()->addWeeks($weekOffset);
         $days = collect(range(0, 6))->map(fn(int $offset) => $start->copy()->addDays($offset));
 
-        $rangeStart = $start->copy()->toDateString();
-        $rangeEnd = $start->copy()->addDays(6)->toDateString();
+        $rangeStart = $start->copy()->startOfDay();
+        $rangeEnd = $start->copy()->addDays(6)->endOfDay();
 
-        $notdienstByDay = [];
-        $bereitschaftByDay = [];
-        foreach ($days as $day) {
-            $dateStr = $day->toDateString();
+        $notdienstItems = LegacyNotdienst::query()
+            ->select(['id', 'user', 'von', 'bis'])
+            ->with('mitarbeiter:id,uname,email')
+            ->whereDate('von', '<=', $rangeEnd->toDateString())
+            ->whereDate('bis', '>=', $rangeStart->toDateString())
+            ->orderBy('von')
+            ->get();
 
-            $nd = LegacyNotdienst::query()
-                ->with('mitarbeiter:id,uname,email')
-                ->whereDate('von', '<=', $dateStr)
-                ->whereDate('bis', '>=', $dateStr)
-                ->first();
+        $bereitschaftItems = LegacyOnCall::query()
+            ->select(['id', 'user', 'von', 'bis'])
+            ->with('mitarbeiter:id,uname,email')
+            ->whereDate('von', '<=', $rangeEnd->toDateString())
+            ->whereDate('bis', '>=', $rangeStart->toDateString())
+            ->orderBy('von')
+            ->get();
 
-            $br = LegacyOnCall::query()
-                ->with('mitarbeiter:id,uname,email')
-                ->whereDate('von', '<=', $dateStr)
-                ->whereDate('bis', '>=', $dateStr)
-                ->first();
-
-            $notdienstByDay[] = [
-                'date' => $day,
-                'isToday' => $day->isSameDay($today),
-                'user' => optional($nd?->mitarbeiter)->uname,
-                'email' => optional($nd?->mitarbeiter)->email,
-                'von' => $nd?->von,
-                'bis' => $nd?->bis,
-            ];
-
-            $bereitschaftByDay[] = [
-                'date' => $day,
-                'isToday' => $day->isSameDay($today),
-                'user' => optional($br?->mitarbeiter)->uname,
-                'email' => optional($br?->mitarbeiter)->email,
-                'von' => $br?->von,
-                'bis' => $br?->bis,
-            ];
-        }
+        $notdienstByDay = $this->mapDutyByDay($days, $notdienstItems, $today);
+        $bereitschaftByDay = $this->mapDutyByDay($days, $bereitschaftItems, $today);
 
         $todayNotdienst = collect($notdienstByDay)->firstWhere('isToday', true);
         $todayBereitschaft = collect($bereitschaftByDay)->firstWhere('isToday', true);
 
         $openIssues = LegacyDiaryEntry::query()
+            ->select(['id', 'user', 'inhalt', 'von', 'bis', 'gelesen'])
             ->with('author:id,uname')
             ->whereIn('gelesen', [2, 3])
             ->where('bis', '>=', $today)
@@ -119,9 +120,36 @@ class LegacyCallcenterController extends Controller {
             'todayBereitschaft' => $todayBereitschaft,
             'openIssues' => $openIssues,
             'weekOffset' => $weekOffset,
-            'rangeStart' => Carbon::parse($rangeStart),
-            'rangeEnd' => Carbon::parse($rangeEnd),
+            'rangeStart' => $rangeStart,
+            'rangeEnd' => $rangeEnd,
             'callcenterUser' => (string) $request->session()->get('legacy_callcenter_user', ''),
         ]);
+    }
+
+    private function throttleKey(Request $request): string {
+        return 'legacy-callcenter:' . mb_strtolower((string) $request->input('username', '')) . '|' . $request->ip();
+    }
+
+    /**
+     * @template TDuty of LegacyNotdienst|LegacyOnCall
+     * @param Collection<int, Carbon> $days
+     * @param \Illuminate\Database\Eloquent\Collection<int, TDuty> $items
+     * @return array<int, array<string, mixed>>
+     */
+    private function mapDutyByDay(Collection $days, \Illuminate\Database\Eloquent\Collection $items, Carbon $today): array {
+        return $days->map(function (Carbon $day) use ($items, $today): array {
+            $match = $items->first(function (LegacyNotdienst|LegacyOnCall $item) use ($day): bool {
+                return (bool) ($item->von && $item->bis && $item->von->copy()->startOfDay()->lte($day) && $item->bis->copy()->endOfDay()->gte($day));
+            });
+
+            return [
+                'date' => $day,
+                'isToday' => $day->isSameDay($today),
+                'user' => optional($match?->mitarbeiter)->uname,
+                'email' => optional($match?->mitarbeiter)->email,
+                'von' => $match?->von,
+                'bis' => $match?->bis,
+            ];
+        })->all();
     }
 }

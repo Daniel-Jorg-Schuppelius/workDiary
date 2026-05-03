@@ -18,6 +18,7 @@ class LegacyUserProvider extends EloquentUserProvider {
         parent::__construct($hasher, User::class);
     }
 
+    /** @param array<string, mixed> $credentials */
     public function retrieveByCredentials(array $credentials): ?Authenticatable {
         $username = $credentials['username'] ?? $credentials['email'] ?? null;
         $password = $credentials['password'] ?? null;
@@ -45,6 +46,7 @@ class LegacyUserProvider extends EloquentUserProvider {
         return parent::retrieveByCredentials(['email' => $username, 'password' => $password]);
     }
 
+    /** @param array<string, mixed> $credentials */
     public function validateCredentials(Authenticatable $user, array $credentials): bool {
         /** @var User $user */
         $password = $credentials['password'] ?? null;

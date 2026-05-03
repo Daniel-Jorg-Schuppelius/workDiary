@@ -8,7 +8,7 @@ use App\Models\Comment;
 use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
 use App\Models\OnCallShift;
-use App\Models\User;
+use App\Support\LookupCache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -53,7 +53,7 @@ class AuditLogController extends Controller {
 
         return view('audit.index', [
             'logs' => $logs,
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => LookupCache::userDropdown(),
             'events' => ['created', 'updated', 'deleted'],
             'types' => self::TYPE_MAP,
             'filters' => $request->only(['event', 'user_id', 'type', 'from', 'to']),

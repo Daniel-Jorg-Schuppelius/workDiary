@@ -36,20 +36,26 @@ class OnCallShift extends Model {
         ];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
+    /** @return HasMany<EmergencyAssignment, $this> */
     public function emergencyAssignments(): HasMany {
         return $this->hasMany(EmergencyAssignment::class);
     }
 
+    /** @return HasMany<DiaryEntry, $this> */
     public function diaryEntries(): HasMany {
         return $this->hasMany(DiaryEntry::class);
     }
 
     /**
      * Shifts that overlap a given period.
+     *
+     * @param Builder<OnCallShift> $query
+     * @return Builder<OnCallShift>
      */
     public function scopeOverlapping(Builder $query, \DateTimeInterface $start, \DateTimeInterface $end): Builder {
         return $query->where('start_at', '<', $end)->where('end_at', '>', $start);

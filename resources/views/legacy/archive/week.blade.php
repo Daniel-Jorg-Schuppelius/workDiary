@@ -8,6 +8,7 @@
     $dayAbbr = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
     $days = collect(range(0, 6))->map(fn ($i) => $weekStart->copy()->addDays($i));
     $hours = range(7, 20);
+    $legacyUsers = collect($users ?? []);
 @endphp
 
 <div class="mb-3 flex flex-wrap items-center gap-2">
@@ -41,16 +42,16 @@
 
             <tr>
                 <th class="{{ $dayTh }}">{{ $day->format('d.m.y') }}</th>
-                @foreach ($users as $user)
+                @foreach ($legacyUsers as $legacyUser)
                     @php
-                        $uid = (int) $user->id;
+                        $uid = (int) $legacyUser->id;
                         $hasOncall = isset($oncallByUserDay[$uid][$dateKey]);
                         $hasNotdienst = ! $hasOncall && isset($notdienstByUserDay[$uid][$dateKey]);
                         if ($hasOncall) $userTh = 'mitb';
                         elseif ($hasNotdienst) $userTh = 'mitn';
                         else $userTh = 'mit';
                     @endphp
-                    <th colspan="2" class="{{ $userTh }}">{{ $user->uname }}</th>
+                    <th colspan="2" class="{{ $userTh }}">{{ $legacyUser->uname }}</th>
                 @endforeach
                 <th class="{{ $dayTh }}">{{ $dayAbbr[$dayIndex] }}</th>
             </tr>
@@ -65,9 +66,9 @@
                 <tr>
                     <td class="{{ $bg ? 'grau' : 'mitte' }}">{{ $hourLabel }}</td>
 
-                    @foreach ($users as $user)
+                    @foreach ($legacyUsers as $legacyUser)
                         @php
-                            $uid = (int) $user->id;
+                            $uid = (int) $legacyUser->id;
                             $hasOncall = isset($oncallByUserDay[$uid][$dateKey]);
                             $hasNotdienst = ! $hasOncall && isset($notdienstByUserDay[$uid][$dateKey]);
 

@@ -70,7 +70,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('legacy/diary/week', [LegacyDiaryController::class, 'week'])->name('legacy.diary.week');
     Route::get('legacy/overview', function () {
-        return redirect()->route('legacy.diary.index', ['zeitpunkt' => 1, 'status' => 2]);
+        return redirect()->route('legacy.diary.index', ['status' => 2]);
     })->name('legacy.overview.index');
 
     Route::middleware('legacy.write')->group(function () {

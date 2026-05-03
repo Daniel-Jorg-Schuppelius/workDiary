@@ -44,12 +44,14 @@ trait Auditable {
         });
     }
 
+    /** @return MorphMany<AuditLog, \Illuminate\Database\Eloquent\Model> */
     public function auditLogs(): MorphMany {
-        /** @var MorphMany $relation */
+        /** @var MorphMany<AuditLog, \Illuminate\Database\Eloquent\Model> $relation */
         $relation = $this->morphMany(AuditLog::class, 'auditable');
         return $relation->latest();
     }
 
+    /** @param array<string, mixed> $changes */
     public function audit(string $event, array $changes = []): AuditLog {
         return AuditLog::create([
             'user_id' => Auth::id(),

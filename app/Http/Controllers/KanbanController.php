@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class KanbanController extends Controller {
+    private const MAX_ENTRIES = 200;
+
     /**
      * Spalten-Reihenfolge: Status-Code => Konfiguration
      *
@@ -50,6 +52,7 @@ class KanbanController extends Controller {
         }
 
         $query = DiaryEntry::query()
+            ->select(['id', 'user_id', 'content', 'status', 'start_at'])
             ->with(['user:id,name', 'tags:id,name,color'])
             ->where('is_archived', false)
             ->orderByDesc('start_at');
@@ -70,7 +73,7 @@ class KanbanController extends Controller {
             }
         }
 
-        $entries = $query->get();
+        $entries = $query->limit(self::MAX_ENTRIES)->get();
         $byStatus = $entries->groupBy(fn(DiaryEntry $e) => (int) $e->status);
 
         return view('kanban.index', [
@@ -78,6 +81,7 @@ class KanbanController extends Controller {
             'byStatus' => $byStatus,
             'teamScope' => $teamScope,
             'canEditOthers' => $auth->canCreateEntriesForOthers(),
+            'isLimited' => $entries->count() === self::MAX_ENTRIES,
             'range' => $range,
             'rangePresets' => $rangePresets,
             'from' => $from?->format('Y-m-d'),

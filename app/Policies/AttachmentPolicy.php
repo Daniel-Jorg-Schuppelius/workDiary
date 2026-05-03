@@ -4,11 +4,12 @@ namespace App\Policies;
 
 use App\Models\Attachment;
 use App\Models\User;
+use App\Policies\Concerns\ChecksOwnership;
+use App\Policies\Concerns\HasAdminBypass;
 
 class AttachmentPolicy {
-    public function before(User $user, string $ability): ?bool {
-        return $user->isAdmin() ? true : null;
-    }
+    use ChecksOwnership;
+    use HasAdminBypass;
 
     public function view(User $user, Attachment $attachment): bool {
         return true;
@@ -19,6 +20,6 @@ class AttachmentPolicy {
     }
 
     public function delete(User $user, Attachment $attachment): bool {
-        return $user->id === $attachment->user_id;
+        return $this->owns($user, $attachment);
     }
 }

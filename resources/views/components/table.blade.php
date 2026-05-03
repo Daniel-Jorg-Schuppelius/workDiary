@@ -1,8 +1,8 @@
 @props([
-    'size'    => 'sm',   {{-- '', 'xs', 'sm' --}}
+    'size'    => 'sm',
     'zebra'   => true,
     'pinRows' => false,
-    'scroll'  => 'x',   {{-- 'x' | 'flex' --}}
+    'scroll'  => 'x',
 ])
 
 @php

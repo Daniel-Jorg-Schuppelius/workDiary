@@ -6,12 +6,14 @@ use App\Models\Concerns\Auditable;
 use App\Models\Concerns\HasAttachments;
 use App\Models\Concerns\HasTags;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DiaryEntry extends Model {
+    /** @use HasFactory<\Database\Factories\DiaryEntryFactory> */
     use HasFactory;
     use HasTags;
     use HasAttachments;
@@ -42,22 +44,27 @@ class DiaryEntry extends Model {
         ];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
     }
 
+    /** @return BelongsTo<OnCallShift, $this> */
     public function shift(): BelongsTo {
         return $this->belongsTo(OnCallShift::class, 'on_call_shift_id');
     }
 
+    /** @return BelongsTo<EmergencyAssignment, $this> */
     public function emergency(): BelongsTo {
         return $this->belongsTo(EmergencyAssignment::class, 'emergency_assignment_id');
     }
 
+    /** @return HasMany<Comment, $this> */
     public function comments(): HasMany {
         return $this->hasMany(Comment::class)->orderBy('created_at');
     }
@@ -80,5 +87,26 @@ class DiaryEntry extends Model {
             3 => 'alert',
             default => 'neutral',
         };
+    }
+
+    /** @param Builder<DiaryEntry> $query */
+    public function scopeNotArchived(Builder $query): void {
+        $query->where('is_archived', false);
+    }
+
+    /** Offene und problematische Einträge (Status 2 = Offen, 3 = Problem).
+     *
+     * @param Builder<DiaryEntry> $query
+     */
+    public function scopeOpen(Builder $query): void {
+        $query->whereIn('status', [2, 3]);
+    }
+
+    /** Bestätigte Einträge (Status 1 = In Bearbeitung).
+     *
+     * @param Builder<DiaryEntry> $query
+     */
+    public function scopeInProgress(Builder $query): void {
+        $query->where('status', 1);
     }
 }

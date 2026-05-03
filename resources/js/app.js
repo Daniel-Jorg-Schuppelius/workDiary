@@ -173,3 +173,168 @@ if (typeof document !== "undefined") {
         bindPushToggle();
     }
 }
+
+// Entry-Dialog: lädt Form/Detailansichten mit ?dialog=1 in ein globales <dialog>
+(() => {
+    if (typeof document === "undefined") return;
+
+    let dialog = null;
+    let dialogBody = null;
+
+    const ensureDialog = () => {
+        if (dialog && dialogBody) return { dialog, dialogBody };
+
+        dialog = document.createElement("dialog");
+        dialog.id = "entry-modal";
+        dialog.className = "modal";
+        dialog.innerHTML = `
+            <div class="modal-box w-11/12 max-w-4xl p-0">
+                <div id="entry-modal-body"></div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button aria-label="Close">close</button>
+            </form>
+        `;
+        document.body.appendChild(dialog);
+        dialogBody = dialog.querySelector("#entry-modal-body");
+
+        dialog.addEventListener("click", (event) => {
+            const close = event.target.closest("[data-entry-modal-close]");
+            if (close) {
+                event.preventDefault();
+                dialog.close();
+            }
+        });
+
+        return { dialog, dialogBody };
+    };
+
+    const withDialogParam = (url) => {
+        const target = new URL(url, window.location.origin);
+        target.searchParams.set("dialog", "1");
+        return target.toString();
+    };
+
+    const initDynamicFields = (root) => {
+        if (!root || typeof window.__initFlatpickr !== "function") return;
+        root.querySelectorAll(
+            'input[type="date"], input[type="datetime-local"], input[type="time"]',
+        ).forEach((el) => {
+            window.__initFlatpickr(el);
+        });
+    };
+
+    const bindDialogForms = (root) => {
+        if (!root) return;
+
+        root.querySelectorAll("form[data-entry-form]").forEach((form) => {
+            if (form.dataset.entryFormBound === "1") return;
+            form.dataset.entryFormBound = "1";
+
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
+
+                const action =
+                    form.getAttribute("action") || window.location.href;
+                const methodRaw = (
+                    form.getAttribute("method") || "POST"
+                ).toUpperCase();
+                const method = methodRaw === "GET" ? "GET" : "POST";
+                const formData = new FormData(form);
+                const submitButton = form.querySelector(
+                    'button[type="submit"]',
+                );
+                if (submitButton) submitButton.disabled = true;
+
+                try {
+                    const response = await fetch(action, {
+                        method,
+                        body: formData,
+                        headers: {
+                            "X-Entry-Dialog": "1",
+                            "X-Requested-With": "XMLHttpRequest",
+                            Accept: "application/json",
+                        },
+                    });
+
+                    if (response.ok) {
+                        const contentType =
+                            response.headers.get("content-type") || "";
+                        if (contentType.includes("application/json")) {
+                            const payload = await response.json();
+                            if (payload.redirect) {
+                                window.location.href = payload.redirect;
+                                return;
+                            }
+                        }
+                        window.location.reload();
+                        return;
+                    }
+
+                    if (response.status === 422) {
+                        const payload = await response.json().catch(() => null);
+                        const firstError =
+                            payload && payload.errors
+                                ? Object.values(payload.errors).flat()[0]
+                                : null;
+                        window.alert(firstError || "Bitte Eingaben prüfen.");
+                        return;
+                    }
+
+                    // Fallback: Falls ein Controller HTML statt JSON zurückgibt
+                    const html = await response.text();
+                    if (dialogBody) {
+                        dialogBody.innerHTML = html;
+                        initDynamicFields(dialogBody);
+                        bindDialogForms(dialogBody);
+                    }
+                } catch (_error) {
+                    window.alert("Dialog konnte nicht gespeichert werden.");
+                } finally {
+                    if (submitButton) submitButton.disabled = false;
+                }
+            });
+        });
+    };
+
+    const openEntryDialog = async (rawUrl) => {
+        const { dialog: modal, dialogBody: body } = ensureDialog();
+        const url = withDialogParam(rawUrl);
+
+        body.innerHTML =
+            '<div class="p-6 text-sm text-base-content/70">Lade…</div>';
+        if (typeof modal.showModal === "function") {
+            modal.showModal();
+        }
+
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+            });
+            if (!response.ok) {
+                window.location.href = rawUrl;
+                return;
+            }
+
+            const html = await response.text();
+            body.innerHTML = html;
+            initDynamicFields(body);
+            bindDialogForms(body);
+        } catch (_error) {
+            window.location.href = rawUrl;
+        }
+    };
+
+    document.addEventListener("click", (event) => {
+        const trigger = event.target.closest("a[data-entry-modal-trigger]");
+        if (!trigger) return;
+
+        const href = trigger.getAttribute("href");
+        if (!href) return;
+
+        event.preventDefault();
+        openEntryDialog(href);
+    });
+})();

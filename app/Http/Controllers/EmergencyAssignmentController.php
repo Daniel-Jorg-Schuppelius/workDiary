@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ManagesShiftLike;
 use App\Models\EmergencyAssignment;
 use App\Models\OnCallShift;
 use App\Models\User;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class EmergencyAssignmentController extends Controller {
+    use ManagesShiftLike;
     public function create(Request $request): View {
         $isDialog = $request->boolean('dialog');
         /** @var User $auth */
@@ -23,8 +24,8 @@ class EmergencyAssignmentController extends Controller {
             'isEdit' => false,
             'isDialog' => $isDialog,
             'canAssignOthers' => $canAssignOthers,
-            'assignableUsers' => $canAssignOthers ? User::orderBy('name')->get(['id', 'name']) : collect([$auth->only(['id', 'name'])]),
-            'shiftOptions' => OnCallShift::query()->with('user:id,name')->orderByDesc('start_at')->limit(50)->get(),
+            'assignableUsers' => $this->assignableUsers(),
+            'shiftOptions' => $this->shiftOptions(),
             'prefillStartAt' => $this->parseDateTime($request->query('start_at') ?? $request->query('date')),
             'prefillEndAt' => $this->parseDateTime($request->query('end_at')),
             'prefillUserId' => (int) $request->query('user_id', 0),
@@ -40,7 +41,7 @@ class EmergencyAssignmentController extends Controller {
         }
         EmergencyAssignment::create($data);
 
-        return $this->redirectAfter($request, __('Notdienst gespeichert.'));
+        return $this->redirectAfter($request, __('Notdienst gespeichert.'), route('duties.index') . '?tab=notdienst');
     }
 
     public function edit(Request $request, EmergencyAssignment $assignment): View {
@@ -55,8 +56,8 @@ class EmergencyAssignmentController extends Controller {
             'isEdit' => true,
             'isDialog' => $isDialog,
             'canAssignOthers' => $canAssignOthers,
-            'assignableUsers' => $canAssignOthers ? User::orderBy('name')->get(['id', 'name']) : collect([$auth->only(['id', 'name'])]),
-            'shiftOptions' => OnCallShift::query()->with('user:id,name')->orderByDesc('start_at')->limit(50)->get(),
+            'assignableUsers' => $this->assignableUsers(),
+            'shiftOptions' => $this->shiftOptions(),
             'prefillStartAt' => null,
             'prefillEndAt' => null,
             'prefillUserId' => $assignment->user_id,
@@ -73,14 +74,14 @@ class EmergencyAssignmentController extends Controller {
         }
         $assignment->update($data);
 
-        return $this->redirectAfter($request, __('Notdienst aktualisiert.'));
+        return $this->redirectAfter($request, __('Notdienst aktualisiert.'), route('duties.index') . '?tab=notdienst');
     }
 
     public function destroy(Request $request, EmergencyAssignment $assignment): RedirectResponse {
         $this->authorizeManage();
         $assignment->delete();
 
-        return $this->redirectAfter($request, __('Notdienst gelöscht.'));
+        return $this->redirectAfter($request, __('Notdienst gelöscht.'), route('duties.index') . '?tab=notdienst');
     }
 
     /** @return array<string, mixed> */
@@ -94,26 +95,8 @@ class EmergencyAssignmentController extends Controller {
         ]);
     }
 
-    private function authorizeManage(): void {
-        /** @var User $auth */
-        $auth = Auth::user();
-        abort_unless($auth->canCreateEntriesForOthers(), 403);
-    }
-
-    private function parseDateTime(?string $value): ?string {
-        if (! $value) {
-            return null;
-        }
-        try {
-            return CarbonImmutable::parse($value)->format('Y-m-d\TH:i');
-        } catch (\Exception) {
-            return null;
-        }
-    }
-
-    private function redirectAfter(Request $request, string $message): RedirectResponse {
-        $back = $request->input('_back') ?: route('duties.index') . '?tab=notdienst';
-
-        return redirect($back)->with('success', $message);
+    /** @return \Illuminate\Support\Collection<int, OnCallShift> */
+    private function shiftOptions(): \Illuminate\Support\Collection {
+        return OnCallShift::query()->with('user:id,name')->orderByDesc('start_at')->limit(50)->get();
     }
 }

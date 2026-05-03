@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class LegacyArchiveService {
+    /** @return array<string, mixed> */
     public function archiveOlderThanMonths(int $months, ?int $legacyUserId = null): array {
         $cutoff = now()->subMonths($months)->startOfDay();
 
@@ -55,25 +56,31 @@ class LegacyArchiveService {
             $query->where('user', $legacyUserId);
         }
 
-        $rows = $query->get();
-
-        if ($rows->isEmpty()) {
-            return 0;
-        }
-
         $moved = 0;
 
-        foreach ($rows as $row) {
-            $payload = (array) $row;
+        $query->chunkById(250, function ($rows) use ($archiveTable, $connection, $sourceTable, &$moved): void {
+            if ($rows->isEmpty()) {
+                return;
+            }
 
-            $connection->table($archiveTable)->updateOrInsert(
-                ['id' => $row->id],
-                $payload
-            );
+            $connection->transaction(function () use ($archiveTable, $connection, $rows, $sourceTable): void {
+                $ids = [];
 
-            $connection->table($sourceTable)->where('id', $row->id)->delete();
-            $moved++;
-        }
+                foreach ($rows as $row) {
+                    $payload = (array) $row;
+                    $ids[] = $row->id;
+
+                    $connection->table($archiveTable)->updateOrInsert(
+                        ['id' => $row->id],
+                        $payload
+                    );
+                }
+
+                $connection->table($sourceTable)->whereIn('id', $ids)->delete();
+            });
+
+            $moved += $rows->count();
+        }, 'id');
 
         return $moved;
     }

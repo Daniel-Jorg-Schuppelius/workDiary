@@ -7,6 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /** @mixin \App\Models\Attachment */
 class AttachmentResource extends JsonResource {
+    /** @return array<string, mixed> */
     public function toArray(Request $request): array {
         return [
             'id' => $this->id,

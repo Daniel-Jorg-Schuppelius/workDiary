@@ -96,6 +96,7 @@ class LegacyImportCommand extends Command {
         $this->line('  ' . $legacyUsers->count() . ' Benutzer verarbeitet.');
     }
 
+    /** @return array<int, int> */
     private function userMap(): array {
         return User::whereNotNull('legacy_user_id')->pluck('id', 'legacy_user_id')->toArray();
     }

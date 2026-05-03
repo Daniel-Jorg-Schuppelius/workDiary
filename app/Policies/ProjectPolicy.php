@@ -4,15 +4,12 @@ namespace App\Policies;
 
 use App\Models\Project;
 use App\Models\User;
+use App\Policies\Concerns\ChecksOwnership;
+use App\Policies\Concerns\HasAdminBypass;
 
 class ProjectPolicy {
-    public function before(User $user, string $ability): ?bool {
-        if ($user->isAdmin()) {
-            return true;
-        }
-
-        return null;
-    }
+    use ChecksOwnership;
+    use HasAdminBypass;
 
     public function viewAny(User $user): bool {
         return true;
@@ -27,7 +24,7 @@ class ProjectPolicy {
     }
 
     public function update(User $user, Project $project): bool {
-        return $user->id === $project->created_by;
+        return $this->owns($user, $project, 'created_by');
     }
 
     public function delete(User $user, Project $project): bool {

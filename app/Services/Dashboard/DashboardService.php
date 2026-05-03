@@ -12,6 +12,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
 class DashboardService {
+    /** @return array<string, mixed> */
     public function summarize(User $user, ?CarbonImmutable $now = null): array {
         $now ??= CarbonImmutable::now();
 
@@ -28,45 +29,29 @@ class DashboardService {
     private function personal(User $user, CarbonImmutable $now): array {
         $weekEnd = $now->addDays(7);
 
-        $openEntries = DiaryEntry::query()
+        // Einzel-Query statt 2× COUNT für Diary-Einträge
+        /** @var object{open_cnt: int|string, progress_cnt: int|string}|null $entryCounts */
+        $entryCounts = DiaryEntry::query()
             ->where('user_id', $user->id)
             ->where('is_archived', false)
-            ->whereIn('status', [2, 3])
-            ->count();
+            ->selectRaw('SUM(status IN (2,3)) as open_cnt, SUM(status = 1) as progress_cnt')
+            ->first();
 
-        $progressEntries = DiaryEntry::query()
-            ->where('user_id', $user->id)
-            ->where('is_archived', false)
-            ->where('status', 1)
-            ->count();
-
+        // Upcoming Shifts: Einzel-Query, Count über ->count() der Collection
         $upcomingShifts = OnCallShift::query()
             ->where('user_id', $user->id)
             ->where('is_archived', false)
             ->where('end_at', '>=', $now)
             ->orderBy('start_at')
-            ->limit(5)
             ->get();
 
-        $upcomingShiftsCount = OnCallShift::query()
-            ->where('user_id', $user->id)
-            ->where('is_archived', false)
-            ->where('end_at', '>=', $now)
-            ->count();
-
+        // Upcoming Emergencies: ebenso
         $upcomingEmergencies = EmergencyAssignment::query()
             ->where('user_id', $user->id)
             ->where('is_archived', false)
             ->where('end_at', '>=', $now)
             ->orderBy('start_at')
-            ->limit(5)
             ->get();
-
-        $upcomingEmergenciesCount = EmergencyAssignment::query()
-            ->where('user_id', $user->id)
-            ->where('is_archived', false)
-            ->where('end_at', '>=', $now)
-            ->count();
 
         $todayShifts = OnCallShift::query()
             ->where('user_id', $user->id)
@@ -78,23 +63,24 @@ class DashboardService {
         $recentEntries = DiaryEntry::query()
             ->where('user_id', $user->id)
             ->where('is_archived', false)
+            ->select(['id', 'user_id', 'content', 'status', 'start_at', 'updated_at'])
             ->latest('updated_at')
             ->limit(5)
             ->get();
 
-        // Letzte Kommentare auf eigenen Einträgen (auch von Anderen)
-        $entryIds = DiaryEntry::query()->where('user_id', $user->id)->pluck('id');
+        // Subquery statt pluck() + large IN-Klausel
+        $userEntryIds = DiaryEntry::query()->where('user_id', $user->id)->select('id');
+
         $recentComments = Comment::query()
-            ->whereIn('diary_entry_id', $entryIds)
+            ->whereIn('diary_entry_id', $userEntryIds)
             ->with(['user:id,name', 'diaryEntry:id,content,user_id'])
             ->latest()
             ->limit(5)
             ->get();
 
-        // Letzte Anhänge auf eigenen Einträgen
         $recentAttachments = Attachment::query()
             ->where('attachable_type', DiaryEntry::class)
-            ->whereIn('attachable_id', $entryIds)
+            ->whereIn('attachable_id', $userEntryIds)
             ->with('uploader:id,name')
             ->latest()
             ->limit(5)
@@ -102,18 +88,18 @@ class DashboardService {
 
         return [
             'kpi' => [
-                'open_entries' => $openEntries,
-                'progress_entries' => $progressEntries,
-                'upcoming_shifts' => $upcomingShiftsCount,
-                'upcoming_emergencies' => $upcomingEmergenciesCount,
+                'open_entries'          => (int) $entryCounts?->open_cnt,
+                'progress_entries'      => (int) $entryCounts?->progress_cnt,
+                'upcoming_shifts'       => $upcomingShifts->count(),
+                'upcoming_emergencies'  => $upcomingEmergencies->count(),
             ],
-            'today_shifts' => $todayShifts,
-            'upcoming_shifts' => $upcomingShifts,
-            'upcoming_emergencies' => $upcomingEmergencies,
-            'recent_entries' => $recentEntries,
-            'recent_comments' => $recentComments,
-            'recent_attachments' => $recentAttachments,
-            'window_end' => $weekEnd,
+            'today_shifts'          => $todayShifts,
+            'upcoming_shifts'       => $upcomingShifts->take(5),
+            'upcoming_emergencies'  => $upcomingEmergencies->take(5),
+            'recent_entries'        => $recentEntries,
+            'recent_comments'       => $recentComments,
+            'recent_attachments'    => $recentAttachments,
+            'window_end'            => $weekEnd,
         ];
     }
 
@@ -121,15 +107,12 @@ class DashboardService {
      * @return array<string, mixed>
      */
     private function team(CarbonImmutable $now): array {
-        $openEntries = DiaryEntry::query()
+        // Einzel-Query statt 2× COUNT
+        /** @var object{open_cnt: int|string, progress_cnt: int|string}|null $entryCounts */
+        $entryCounts = DiaryEntry::query()
             ->where('is_archived', false)
-            ->whereIn('status', [2, 3])
-            ->count();
-
-        $progressEntries = DiaryEntry::query()
-            ->where('is_archived', false)
-            ->where('status', 1)
-            ->count();
+            ->selectRaw('SUM(status IN (2,3)) as open_cnt, SUM(status = 1) as progress_cnt')
+            ->first();
 
         $archivedToday = DiaryEntry::query()
             ->where('is_archived', true)
@@ -139,6 +122,7 @@ class DashboardService {
         $userCount = User::query()->count();
 
         $recentActivity = Comment::query()
+            ->select(['id', 'user_id', 'diary_entry_id', 'body', 'created_at'])
             ->with(['user:id,name', 'diaryEntry:id,content'])
             ->latest()
             ->limit(8)
@@ -146,10 +130,10 @@ class DashboardService {
 
         return [
             'kpi' => [
-                'open_entries' => $openEntries,
-                'progress_entries' => $progressEntries,
-                'archived_today' => $archivedToday,
-                'user_count' => $userCount,
+                'open_entries'     => (int) $entryCounts?->open_cnt,
+                'progress_entries' => (int) $entryCounts?->progress_cnt,
+                'archived_today'   => $archivedToday,
+                'user_count'       => $userCount,
             ],
             'recent_activity' => $recentActivity,
         ];

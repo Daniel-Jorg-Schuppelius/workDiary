@@ -34,6 +34,6 @@ class LegacyNotdienst extends Model {
     }
 
     public function user(): BelongsTo {
-        return $this->belongsTo(LegacyUser::class, 'user', 'id');
+        return $this->mitarbeiter();
     }
 }

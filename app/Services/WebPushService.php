@@ -17,7 +17,9 @@ class WebPushService {
      * @param  array{title: string, body?: string, url?: string, tag?: string, icon?: string}  $payload
      */
     public function sendToUser(User $user, array $payload): int {
-        $subscriptions = $user->pushSubscriptions()->get();
+        $subscriptions = $user->relationLoaded('pushSubscriptions')
+            ? $user->pushSubscriptions
+            : $user->pushSubscriptions()->get();
         if ($subscriptions->isEmpty()) {
             return 0;
         }
@@ -60,6 +62,10 @@ class WebPushService {
         return $sent;
     }
 
+    /**
+     * @param iterable<\App\Models\User> $users
+     * @param array<string, mixed> $payload
+     */
     public function sendToUsers(iterable $users, array $payload): int {
         $sum = 0;
         foreach ($users as $user) {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TagResource;
 use App\Models\Tag;
+use App\Support\LookupCache;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -13,7 +14,7 @@ use Illuminate\Support\Str;
 
 class TagController extends Controller {
     public function index(): AnonymousResourceCollection {
-        return TagResource::collection(Tag::orderBy('name')->get());
+        return TagResource::collection(LookupCache::tagOptions());
     }
 
     public function store(Request $request): JsonResponse {

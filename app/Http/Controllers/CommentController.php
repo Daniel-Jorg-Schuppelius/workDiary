@@ -13,13 +13,9 @@ class CommentController extends Controller {
     public function store(Request $request, DiaryEntry $diary): RedirectResponse {
         Gate::authorize('create', Comment::class);
 
-        $data = $request->validate([
-            'body' => ['required', 'string', 'max:5000'],
-        ]);
-
         $diary->comments()->create([
             'user_id' => Auth::id(),
-            'body' => $data['body'],
+            'body' => $this->validateBody($request),
         ]);
 
         return redirect()
@@ -31,14 +27,10 @@ class CommentController extends Controller {
     public function update(Request $request, Comment $comment): RedirectResponse {
         Gate::authorize('update', $comment);
 
-        $data = $request->validate([
-            'body' => ['required', 'string', 'max:5000'],
-        ]);
-
-        $comment->update($data);
+        $comment->update(['body' => $this->validateBody($request)]);
 
         return redirect()
-            ->route('diary.show', $comment->diary_entry_id)
+            ->route('diary.show', $comment->diaryEntry)
             ->withFragment('comments')
             ->with('success', __('Kommentar aktualisiert.'));
     }
@@ -46,12 +38,18 @@ class CommentController extends Controller {
     public function destroy(Comment $comment): RedirectResponse {
         Gate::authorize('delete', $comment);
 
-        $diaryId = $comment->diary_entry_id;
+        $diaryEntry = $comment->diaryEntry;
         $comment->delete();
 
         return redirect()
-            ->route('diary.show', $diaryId)
+            ->route('diary.show', $diaryEntry)
             ->withFragment('comments')
             ->with('success', __('Kommentar gelöscht.'));
+    }
+
+    private function validateBody(Request $request): string {
+        return $request->validate([
+            'body' => ['required', 'string', 'max:5000'],
+        ])['body'];
     }
 }

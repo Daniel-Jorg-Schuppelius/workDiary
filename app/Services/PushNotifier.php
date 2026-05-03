@@ -18,7 +18,9 @@ class PushNotifier {
         if (! $entry || ! $entry->user_id || $entry->user_id === $comment->user_id) {
             return;
         }
-        $owner = User::find($entry->user_id);
+        $entry->loadMissing('user.pushSubscriptions');
+        /** @var User|null $owner */
+        $owner = $entry->user;
         if (! $owner) {
             return;
         }
@@ -31,14 +33,18 @@ class PushNotifier {
     }
 
     public function newAttachment(Attachment $att): void {
-        if ($att->attachable_type !== DiaryEntry::class) {
+        $att->loadMissing('attachable');
+        $attachable = $att->attachable;
+        if (! $attachable instanceof DiaryEntry) {
             return;
         }
-        $entry = DiaryEntry::find($att->attachable_id);
-        if (! $entry || ! $entry->user_id || $entry->user_id === $att->user_id) {
+        $attachable->loadMissing('user.pushSubscriptions');
+        $entry = $attachable;
+        if ($entry->user_id === $att->user_id) {
             return;
         }
-        $owner = User::find($entry->user_id);
+        /** @var User|null $owner */
+        $owner = $entry->user;
         if (! $owner) {
             return;
         }
@@ -54,7 +60,9 @@ class PushNotifier {
         if (! $assignment->user_id) {
             return;
         }
-        $user = User::find($assignment->user_id);
+        $assignment->loadMissing('user.pushSubscriptions');
+        /** @var User|null $user */
+        $user = $assignment->user;
         if (! $user) {
             return;
         }
@@ -72,6 +80,7 @@ class PushNotifier {
         }
         $recipients = User::role([User::ROLE_ADMIN, User::ROLE_CALLCENTER])
             ->where('id', '!=', $entry->user_id)
+            ->with('pushSubscriptions')
             ->get();
         $payload = [
             'title' => __('Problem-Eintrag'),

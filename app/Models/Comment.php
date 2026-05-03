@@ -17,10 +17,12 @@ class Comment extends Model {
 
     protected $fillable = ['diary_entry_id', 'user_id', 'body'];
 
+    /** @return BelongsTo<DiaryEntry, $this> */
     public function diaryEntry(): BelongsTo {
         return $this->belongsTo(DiaryEntry::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }

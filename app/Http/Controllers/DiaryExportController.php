@@ -67,7 +67,8 @@ class DiaryExportController extends Controller {
         ]);
     }
 
-    private function buildQuery(Request $request) {
+    /** @return \Illuminate\Database\Eloquent\Builder<\App\Models\DiaryEntry> */
+    private function buildQuery(Request $request): \Illuminate\Database\Eloquent\Builder {
         $query = DiaryEntry::query()
             ->with(['user:id,name', 'tags:id,name'])
             ->orderByDesc('start_at');

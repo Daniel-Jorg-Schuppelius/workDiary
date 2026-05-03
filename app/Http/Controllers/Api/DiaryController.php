@@ -81,6 +81,7 @@ class DiaryController extends Controller {
         return new DiaryEntryResource($diary->fresh(['user', 'tags']));
     }
 
+    /** @return array<string, mixed> */
     private function validateData(Request $request): array {
         return $request->validate([
             'content' => ['required', 'string', 'max:65535'],

@@ -3,6 +3,7 @@
 @section('nav-title', __('Legacy') . ' / ' . __('Mitarbeiter'))
 
 @section('content')
+    @php($legacyUsers = collect($users ?? []))
     <div class="mb-3">
         <a href="{{ route('legacy.users.create') }}" class="btn btn-primary btn-sm">{{ __('Neuen Mitarbeiter anlegen') }}</a>
     </div>
@@ -17,15 +18,15 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($users as $user)
+                @forelse ($legacyUsers as $legacyUser)
                     <tr>
-                        <td class="text-center">{{ $user->id }}</td>
-                        <td>{{ $user->uname }}</td>
-                        <td>{{ $user->email ?: '-' }}</td>
+                        <td class="text-center">{{ $legacyUser->id }}</td>
+                        <td>{{ $legacyUser->uname }}</td>
+                        <td>{{ $legacyUser->email ?: '-' }}</td>
                         <td class="text-right">
-                            <a href="{{ route('legacy.users.edit', $user) }}" class="link link-primary text-xs">{{ __('Bearbeiten') }}</a>
+                            <a href="{{ route('legacy.users.edit', $legacyUser) }}" class="link link-primary text-xs">{{ __('Bearbeiten') }}</a>
                             <span class="mx-1 text-base-content/40">|</span>
-                            <form method="POST" action="{{ route('legacy.users.destroy', $user) }}" class="inline" onsubmit="return confirm('{{ __('Mitarbeiter wirklich löschen?') }}')">
+                            <form method="POST" action="{{ route('legacy.users.destroy', $legacyUser) }}" class="inline" onsubmit="return confirm('{{ __('Mitarbeiter wirklich löschen?') }}')">
                                 @csrf
                                 @method('DELETE')
                                 <button class="link">{{ __('Löschen') }}</button>

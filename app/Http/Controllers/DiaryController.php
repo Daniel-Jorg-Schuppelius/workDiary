@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SaveDiaryEntryRequest;
 use App\Models\DiaryEntry;
 use App\Models\Legacy\LegacyDiaryEntry;
 use App\Models\Tag;
 use App\Models\User;
 use App\Services\Archive\ArchiveService;
+use App\Support\LookupCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,29 +20,40 @@ class DiaryController extends Controller {
         [$query, $filters] = $this->buildIndexQuery($request);
         $entries = $query->paginate(20)->withQueryString();
 
+        $row = DiaryEntry::query()->selectRaw(
+            'COUNT(CASE WHEN is_archived = 0 THEN 1 END) as cnt_all,' .
+                'COUNT(CASE WHEN is_archived = 0 AND status = 2 THEN 1 END) as cnt_open,' .
+                'COUNT(CASE WHEN is_archived = 0 AND status = 3 THEN 1 END) as cnt_alert,' .
+                'COUNT(CASE WHEN is_archived = 0 AND status = -1 THEN 1 END) as cnt_done,' .
+                'COUNT(CASE WHEN is_archived = 1 THEN 1 END) as cnt_archived'
+        )->first()?->getAttributes() ?? [];
+
         $counts = [
-            'all' => DiaryEntry::where('is_archived', false)->count(),
-            'open' => DiaryEntry::where('is_archived', false)->where('status', 2)->count(),
-            'alert' => DiaryEntry::where('is_archived', false)->where('status', 3)->count(),
-            'done' => DiaryEntry::where('is_archived', false)->where('status', -1)->count(),
-            'archived' => DiaryEntry::where('is_archived', true)->count(),
+            'all'      => (int) ($row['cnt_all'] ?? 0),
+            'open'     => (int) ($row['cnt_open'] ?? 0),
+            'alert'    => (int) ($row['cnt_alert'] ?? 0),
+            'done'     => (int) ($row['cnt_done'] ?? 0),
+            'archived' => (int) ($row['cnt_archived'] ?? 0),
         ];
 
         return view('diary.index', [
             'entries' => $entries,
             'counts' => $counts,
             'filters' => $filters,
-            'allTags' => Tag::orderBy('name')->get(['id', 'name', 'color']),
+            'allTags' => $this->allTags(),
         ]);
     }
 
     /**
      * Baut die gefilterte Query und gibt zusätzlich das normalisierte Filter-Array zurück.
      *
-     * @return array{0: \Illuminate\Database\Eloquent\Builder, 1: array<string,mixed>}
+     * @return array{0: \Illuminate\Database\Eloquent\Builder<\App\Models\DiaryEntry>, 1: array<string,mixed>}
      */
     private function buildIndexQuery(Request $request): array {
-        $query = DiaryEntry::query()->with(['user:id,name', 'tags:id,name,color,slug'])->orderByDesc('start_at');
+        $query = DiaryEntry::query()
+            ->select(['id', 'user_id', 'content', 'status', 'is_archived', 'start_at', 'end_at', 'created_at'])
+            ->with(['user:id,name', 'tags:id,name,color,slug'])
+            ->orderByDesc('start_at');
 
         if ($request->filled('status') && $request->status !== 'all') {
             $query->where('status', (int) $request->status);
@@ -102,10 +115,10 @@ class DiaryController extends Controller {
             'entry' => null,
             'isEdit' => false,
             'isDialog' => $isDialog,
-            'allTags' => Tag::orderBy('name')->get(['id', 'name', 'color']),
+            'allTags' => $this->allTags(),
             'selectedTagIds' => [],
             'canCreateForOthers' => $canCreateForOthers,
-            'assignableUsers' => $canCreateForOthers ? User::orderBy('name')->get(['id', 'name']) : collect(),
+            'assignableUsers' => $canCreateForOthers ? LookupCache::userDropdown() : collect(),
             'prefillStartAt' => $prefillDate,
             'prefillUserId' => $prefillUserId,
         ]);
@@ -122,8 +135,8 @@ class DiaryController extends Controller {
         }
     }
 
-    public function store(Request $request): RedirectResponse {
-        $data = $this->validateEntry($request);
+    public function store(SaveDiaryEntryRequest $request): RedirectResponse {
+        $data = $request->validated();
         $tagIds = $this->extractTagIds($request);
         $newTagNames = $this->extractNewTagNames($request);
 
@@ -168,19 +181,25 @@ class DiaryController extends Controller {
         $diary->load('tags:id,name,color');
         $isDialog = $request->boolean('dialog');
 
+        /** @var \App\Models\User $auth */
+        $auth = Auth::user();
+        $canCreateForOthers = $auth->canCreateEntriesForOthers();
+
         return view($isDialog ? 'diary._form_dialog' : 'diary.form', [
             'entry' => $diary,
             'isEdit' => true,
             'isDialog' => $isDialog,
-            'allTags' => Tag::orderBy('name')->get(['id', 'name', 'color']),
+            'allTags' => $this->allTags(),
             'selectedTagIds' => $diary->tags->pluck('id')->all(),
+            'canCreateForOthers' => $canCreateForOthers,
+            'assignableUsers' => $canCreateForOthers ? LookupCache::userDropdown() : collect(),
         ]);
     }
 
-    public function update(Request $request, DiaryEntry $diary): RedirectResponse {
+    public function update(SaveDiaryEntryRequest $request, DiaryEntry $diary): RedirectResponse {
         Gate::authorize('update', $diary);
 
-        $data = $this->validateEntry($request);
+        $data = $request->validated();
         unset($data['user_id']); // Eigentümer wird beim Update nicht geändert
         $tagIds = $this->extractTagIds($request);
         $newTagNames = $this->extractNewTagNames($request);
@@ -197,19 +216,6 @@ class DiaryController extends Controller {
         $diary->delete();
 
         return redirect()->route('diary.index')->with('success', __('Eintrag gelöscht.'));
-    }
-
-    /** @return array<string,mixed> */
-    private function validateEntry(Request $request): array {
-        return $request->validate([
-            'content' => ['required', 'string', 'max:65535'],
-            'response' => ['nullable', 'string', 'max:65535'],
-            'status' => ['required', 'integer', 'in:-1,1,2,3'],
-            'start_at' => ['nullable', 'date'],
-            'end_at' => ['nullable', 'date', 'after_or_equal:start_at'],
-            'user_id' => ['nullable', 'integer', 'exists:users,id'],
-            'project_id' => ['nullable', 'integer', 'exists:projects,id'],
-        ]);
     }
 
     /** @return array<int> */
@@ -250,5 +256,10 @@ class DiaryController extends Controller {
         $service->restoreEntry($diary);
 
         return redirect()->route('diary.show', $diary)->with('success', __('Eintrag wiederhergestellt.'));
+    }
+
+    /** @return \Illuminate\Support\Collection<int, Tag> */
+    private function allTags(): \Illuminate\Support\Collection {
+        return LookupCache::tagOptions();
     }
 }

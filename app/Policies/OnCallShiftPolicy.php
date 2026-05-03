@@ -4,21 +4,22 @@ namespace App\Policies;
 
 use App\Models\OnCallShift;
 use App\Models\User;
+use App\Policies\Concerns\ChecksOwnership;
+use App\Policies\Concerns\HasAdminBypass;
 
 class OnCallShiftPolicy {
-    public function before(User $user, string $ability): ?bool {
-        return $user->isAdmin() ? true : null;
-    }
+    use ChecksOwnership;
+    use HasAdminBypass;
 
     public function view(User $user, OnCallShift $shift): bool {
-        return $user->id === $shift->user_id;
+        return $this->owns($user, $shift);
     }
 
     public function update(User $user, OnCallShift $shift): bool {
-        return $user->id === $shift->user_id;
+        return $this->owns($user, $shift);
     }
 
     public function delete(User $user, OnCallShift $shift): bool {
-        return $user->id === $shift->user_id;
+        return $this->owns($user, $shift);
     }
 }

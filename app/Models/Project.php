@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class Project extends Model {
+    /** @use HasFactory<\Illuminate\Database\Eloquent\Factories\Factory<static>> */
     use HasFactory;
 
     public const STATUS_ACTIVE = 'active';
@@ -59,10 +60,12 @@ class Project extends Model {
         return $slug;
     }
 
+    /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** @return HasMany<DiaryEntry, $this> */
     public function diaryEntries(): HasMany {
         return $this->hasMany(DiaryEntry::class);
     }
