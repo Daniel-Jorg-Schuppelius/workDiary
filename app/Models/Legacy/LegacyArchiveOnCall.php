@@ -19,7 +19,7 @@ class LegacyArchiveOnCall extends Model {
 
     public $timestamps = false;
 
-    protected $guarded = [];
+    protected $fillable = [];
 
     protected $primaryKey = 'id';
 

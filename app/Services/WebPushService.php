@@ -29,7 +29,7 @@ class WebPushService {
             return 0;
         }
 
-        $body = json_encode($payload);
+        $body = json_encode($payload) ?: null;
         $sent = 0;
 
         foreach ($subscriptions as $sub) {
@@ -64,7 +64,7 @@ class WebPushService {
 
     /**
      * @param iterable<\App\Models\User> $users
-     * @param array<string, mixed> $payload
+     * @param array{title: string, body?: string, url?: string, tag?: string, icon?: string} $payload
      */
     public function sendToUsers(iterable $users, array $payload): int {
         $sum = 0;

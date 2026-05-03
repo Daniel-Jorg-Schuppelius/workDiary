@@ -15,7 +15,7 @@
 
     $wrapperBase = $scroll === 'flex'
         ? 'min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100'
-        : 'overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-sm';
+        : 'overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-xs';
 @endphp
 
 <div {{ $attributes->class([$wrapperBase]) }}>

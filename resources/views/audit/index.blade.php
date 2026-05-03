@@ -9,7 +9,7 @@
             <p class="text-sm text-base-content/60">{{ $logs->total() }} {{ __('Einträge') }}</p>
         </div>
 
-        <form method="GET" class="flex flex-wrap gap-2 rounded-box border border-base-300 bg-base-100 p-3 shadow-sm">
+        <form method="GET" class="flex flex-wrap gap-2 rounded-box border border-base-300 bg-base-100 p-3 shadow-xs">
             <select name="event" class="select select-bordered select-sm">
                 <option value="">{{ __('Aktion') }}</option>
                 @foreach ($events as $ev)

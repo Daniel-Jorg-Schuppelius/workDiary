@@ -17,7 +17,7 @@
 @endphp
 
 {{-- Toolbar --}}
-<div class="flex-none flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+<div class="flex-none flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
     <div class="flex flex-wrap items-center gap-2">
         <a href="{{ route('legacy.diary.week', ['week' => $weekOffset - 1]) }}"
            class="btn btn-sm btn-ghost" title="1 Woche zurück">«</a>
@@ -42,10 +42,10 @@
         {{-- Legende --}}
         <div class="flex flex-wrap items-center gap-3 text-xs text-base-content/60">
             <span class="inline-flex items-center gap-1.5">
-                <span class="inline-block h-3 w-3 rounded-sm bg-info/30 outline-info outline-1"></span>{{ __('Bereitschaft') }}
+                <span class="inline-block h-3 w-3 rounded-xs bg-info/30 outline-info outline-1"></span>{{ __('Bereitschaft') }}
             </span>
             <span class="inline-flex items-center gap-1.5">
-                <span class="inline-block h-3 w-3 rounded-sm bg-warning/30 outline-warning outline-1"></span>{{ __('Notdienst') }}
+                <span class="inline-block h-3 w-3 rounded-xs bg-warning/30 outline-warning outline-1"></span>{{ __('Notdienst') }}
             </span>
         </div>
 
@@ -62,7 +62,7 @@
 </div>
 
 {{-- Card mit Scroll-Container --}}
-<div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-sm mt-4">
+<div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs mt-4">
     <div id="week-scroll" class="h-full overflow-auto">
         @php
             /* min-width: Zeitspalte (4.5rem) + N Benutzer × 6rem + letztes Kürzel (2.5rem) */

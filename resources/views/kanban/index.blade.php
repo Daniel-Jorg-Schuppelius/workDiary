@@ -5,7 +5,7 @@
 @section('content')
 <div class="flex h-full min-h-0 w-full flex-col gap-4">
     {{-- Toolbar --}}
-    <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+    <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Kanban') }}</h1>
         <div class="flex flex-wrap items-center gap-2">
             <div class="join">
@@ -46,7 +46,7 @@
          data-csrf="{{ csrf_token() }}">
         @foreach ($columns as $statusCode => $col)
             @php $items = $byStatus->get($statusCode, collect()); @endphp
-            <section class="flex min-h-0 flex-col rounded-box border border-base-300 bg-base-200/40 shadow-sm"
+            <section class="flex min-h-0 flex-col rounded-box border border-base-300 bg-base-200/40 shadow-xs"
                      data-kanban-column data-status="{{ $statusCode }}">
                 <header class="flex items-center justify-between border-b border-base-300 px-3 py-2">
                     <div class="flex items-center gap-2">

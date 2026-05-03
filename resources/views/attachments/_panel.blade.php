@@ -6,7 +6,7 @@
     $attachments = $parent->attachments;
 @endphp
 
-<section id="attachments" class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+<section id="attachments" class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
     <h3 class="mb-4 font-['Space_Grotesk'] text-lg font-semibold">{{ __('Anhänge') }} ({{ $attachments->count() }})</h3>
 
     <div class="space-y-2 mb-4">

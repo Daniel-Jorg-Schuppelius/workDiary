@@ -16,6 +16,7 @@ class LegacyNotdienstController extends Controller {
     use ManagesLegacyDutyCrud;
 
     public function index(Request $request): View {
+        /** @var \Illuminate\Database\Eloquent\Builder<LegacyNotdienst> $query */
         $query = LegacyNotdienst::query()->with('user:id,uname')->orderBy('von')->orderBy('user');
 
         return view('legacy.notdienst.index', $this->legacyDutyIndexData($request, $query));

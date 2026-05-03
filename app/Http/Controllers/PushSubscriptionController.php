@@ -21,10 +21,12 @@ class PushSubscriptionController extends Controller {
             'contentEncoding' => ['nullable', 'string', 'max:32'],
         ]);
 
+        /** @var \App\Models\User $user */
+        $user = $request->user();
         $sub = PushSubscription::updateOrCreate(
             ['endpoint' => $data['endpoint']],
             [
-                'user_id' => $request->user()->id,
+                'user_id' => $user->id,
                 'p256dh' => $data['keys']['p256dh'],
                 'auth' => $data['keys']['auth'],
                 'content_encoding' => $data['contentEncoding'] ?? 'aesgcm',
@@ -37,10 +39,12 @@ class PushSubscriptionController extends Controller {
     }
 
     public function destroy(Request $request): JsonResponse {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
         $endpoint = (string) $request->input('endpoint');
         if ($endpoint !== '') {
             PushSubscription::where('endpoint', $endpoint)
-                ->where('user_id', $request->user()->id)
+                ->where('user_id', $user->id)
                 ->delete();
         }
 

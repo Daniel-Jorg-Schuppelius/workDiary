@@ -16,7 +16,7 @@
         <div class="alert alert-warning">{{ session('warning') }}</div>
     @endif
 
-    <form method="POST" action="{{ route('account.password.update') }}" class="space-y-4 rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+    <form method="POST" action="{{ route('account.password.update') }}" class="space-y-4 rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
         @csrf
 
         @unless ($mustChange)

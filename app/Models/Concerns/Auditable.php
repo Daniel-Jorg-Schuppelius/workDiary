@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Request;
  * @method static void updated(\Closure $callback)
  * @method static void deleted(\Closure $callback)
  * @method mixed getKey()
- * @phpstan-require-extends Model
  */
 trait Auditable {
     /** @var array<int, string> Felder, die nie geloggt werden. */

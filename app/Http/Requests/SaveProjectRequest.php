@@ -13,6 +13,7 @@ class SaveProjectRequest extends FormRequest {
 
     /** @return array<string, mixed> */
     public function rules(): array {
+        /** @var \App\Models\Project|null $project */
         $project = $this->route('project');
 
         return [

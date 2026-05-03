@@ -5,7 +5,7 @@
 @section('content')
 <div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
     {{-- Header --}}
-    <div class="flex flex-wrap items-start justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+    <div class="flex flex-wrap items-start justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         <div class="flex min-w-0 items-start gap-3">
             <span class="mt-1 inline-block h-4 w-4 shrink-0 rounded-full" style="background:{{ $project->color ?: '#94a3b8' }}"></span>
             <div class="min-w-0">
@@ -45,7 +45,7 @@
     </div>
 
     {{-- Letzte Einträge --}}
-    <div class="rounded-box border border-base-300 bg-base-100 shadow-sm">
+    <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
         <header class="border-b border-base-300 px-4 py-3 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Letzte Einträge') }}</header>
         <ul class="divide-y divide-base-300">
             @forelse ($entries as $entry)

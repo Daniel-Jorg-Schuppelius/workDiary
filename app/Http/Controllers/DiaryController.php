@@ -235,7 +235,7 @@ class DiaryController extends Controller {
             return [];
         }
 
-        return collect(preg_split('/[,;\n]+/', $raw))
+        return collect(preg_split('/[,;\n]+/', $raw) ?: [])
             ->map(fn($v) => trim((string) $v))
             ->filter()
             ->take(20)

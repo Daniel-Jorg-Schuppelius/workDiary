@@ -98,7 +98,7 @@
 </article>
 
 @if (!empty($legacyEntry))
-    <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+    <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
         <p class="mb-4 font-['Space_Grotesk'] font-semibold text-base-content">Legacy-Original (tagebuch #{{ $legacyEntry->id }})</p>
         <div class="grid gap-4 md:grid-cols-2">
             <div>
@@ -116,7 +116,7 @@
     </section>
 @endif
 
-<section id="comments" class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+<section id="comments" class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
     <h3 class="mb-4 font-['Space_Grotesk'] text-lg font-semibold">{{ __('Kommentare') }} ({{ $diary->comments->count() }})</h3>
 
     <div class="space-y-3 mb-4">

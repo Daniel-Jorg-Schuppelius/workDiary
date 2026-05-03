@@ -44,7 +44,7 @@
             ];
         @endphp
 
-        <header class="fixed inset-x-0 top-0 z-50 border-b border-base-300 bg-base-100 shadow-sm">
+        <header class="fixed inset-x-0 top-0 z-50 border-b border-base-300 bg-base-100 shadow-xs">
             <div class="navbar mx-auto w-full max-w-screen-2xl px-4 xl:px-8 2xl:px-12 min-h-14">
                 <div class="navbar-start min-w-0 flex-1">
                     <a href="{{ route('home') }}" class="flex items-center gap-2 group min-w-0">
@@ -89,7 +89,7 @@
                                 <a href="{{ route($createRoute) }}" data-entry-modal-trigger class="btn btn-sm btn-primary">+ {{ __('Neuer Eintrag') }}</a>
                             </div>
                         @endif
-                        <div class="flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-sm">
+                        <div class="flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
                             <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
                                 <span data-theme-label class="text-base leading-none">◐</span>
                             </button>
@@ -136,7 +136,7 @@
                             </form>
                         </div>
                     @else
-                        <div class="flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-sm">
+                        <div class="flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
                             <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
                                 <span data-theme-label class="text-base leading-none">◐</span>
                             </button>
@@ -172,7 +172,7 @@
 
         <div class="mx-auto flex @yield('wrapper-height-class', 'min-h-screen') w-full max-w-7xl flex-col px-4 pb-20 pt-24 lg:px-10">
             @if (session('success'))
-                <div class="alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-sm">
+                <div class="alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
                     {{ session('success') }}
                 </div>
             @endif
@@ -182,7 +182,7 @@
             </main>
         </div>
 
-        <footer class="fixed inset-x-0 bottom-0 z-50 border-t border-base-300 bg-base-100 shadow-sm">
+        <footer class="fixed inset-x-0 bottom-0 z-50 border-t border-base-300 bg-base-100 shadow-xs">
             <div class="mx-auto flex w-full max-w-screen-2xl items-center justify-center px-4 py-3 text-xs text-base-content/70 xl:px-8 2xl:px-12">
                 &copy; {{ date('Y') }} WorkDiary. {{ __('Alle Rechte vorbehalten.') }}
             </div>

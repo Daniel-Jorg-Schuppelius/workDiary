@@ -32,7 +32,7 @@
 @section('content')
 <div class="wd-week flex h-full min-h-0 flex-col gap-4">
     {{-- Toolbar --}}
-    <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+    <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         <div class="flex flex-wrap items-center gap-2">
             <a href="{{ route('week.index', ['date' => $prevDate, 'scope' => $teamScope ? 'team' : 'mine']) }}"
                class="btn btn-sm btn-ghost" title="{{ __('Vorherige Woche') }}">«</a>
@@ -62,7 +62,7 @@
     </div>
 
     {{-- Legend --}}
-    <div class="flex flex-wrap items-center gap-4 rounded-box border border-base-300 bg-base-100 px-4 py-2 text-xs text-base-content/70 shadow-sm">
+    <div class="flex flex-wrap items-center gap-4 rounded-box border border-base-300 bg-base-100 px-4 py-2 text-xs text-base-content/70 shadow-xs">
         <span class="inline-flex items-center gap-2"><span class="wd-week-legend wd-week-band--core"></span>{{ __('Kernarbeitszeit') }}</span>
         <span class="inline-flex items-center gap-2"><span class="wd-week-legend wd-week-band--extended"></span>{{ __('Erweiterte Arbeitszeit') }}</span>
         <span class="inline-flex items-center gap-2"><span class="wd-week-legend wd-week-shift"></span>{{ __('Bereitschaft') }}</span>
@@ -98,7 +98,7 @@
             @endforeach
         </div>
     @endif    {{-- Grid --}}
-    <div class="min-h-0 flex-1 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-sm">
+    <div class="min-h-0 flex-1 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
         <div class="wd-week-grid">
             {{-- Header row --}}
             <div class="wd-week-corner"></div>

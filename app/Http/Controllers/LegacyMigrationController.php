@@ -37,7 +37,9 @@ class LegacyMigrationController extends Controller {
         try {
             Artisan::call('legacy:import', $options);
         } catch (\Throwable $e) {
-            return back()->with('error', __('Import fehlgeschlagen: ') . $e->getMessage());
+            report($e);
+
+            return back()->with('error', __('Import fehlgeschlagen. Bitte die Log-Dateien prüfen.'));
         }
 
         return back()->with('success', __('Import abgeschlossen.'));

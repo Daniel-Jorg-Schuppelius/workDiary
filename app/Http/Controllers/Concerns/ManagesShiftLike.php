@@ -20,10 +20,8 @@ trait ManagesShiftLike {
     /**
      * Gibt alle zuweisbaren Benutzer zurück.
      * Wenn der eingeloggte Nutzer keine Rechte hat, wird nur er selbst zurückgegeben.
-     *
-     * @return \Illuminate\Support\Collection<int, mixed>
      */
-    private function assignableUsers(): \Illuminate\Support\Collection {
+    private function assignableUsers(): \Illuminate\Support\Collection { // @phpstan-ignore missingType.generics
         /** @var User $auth */
         $auth = Auth::user();
 
@@ -46,8 +44,28 @@ trait ManagesShiftLike {
     }
 
     private function redirectAfter(Request $request, string $message, string $fallbackRoute): RedirectResponse {
-        $back = $request->input('_back') ?: $fallbackRoute;
+        $back = $this->safeBackUrl($request->input('_back'), $fallbackRoute);
 
         return redirect($back)->with('success', $message);
+    }
+
+    /**
+     * Gibt eine sichere Rücksprung-URL zurück.
+     * Externe URLs (anderer Host) werden auf $fallback zurückgesetzt,
+     * um Open-Redirect-Angriffe zu verhindern.
+     */
+    private function safeBackUrl(mixed $candidate, string $fallback): string {
+        if (! is_string($candidate) || $candidate === '') {
+            return $fallback;
+        }
+
+        // Nur URLs desselben Hosts zulassen; reine Pfade (/foo) sind ebenfalls ok.
+        $parsed = parse_url($candidate);
+
+        if (isset($parsed['host']) && $parsed['host'] !== parse_url(config('app.url'), PHP_URL_HOST)) {
+            return $fallback;
+        }
+
+        return $candidate;
     }
 }

@@ -71,7 +71,7 @@
     </x-table>
 
     @if ($items->hasPages())
-        <div class="flex-none rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-sm">{{ $items->links('vendor.pagination.daisyui-simple') }}</div>
+        <div class="flex-none rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-xs">{{ $items->links('vendor.pagination.daisyui-simple') }}</div>
     @endif
 </div>
 @endsection

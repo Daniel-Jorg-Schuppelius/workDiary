@@ -48,10 +48,10 @@
             $indexRoute = $currentMode === 'legacy' ? 'legacy.diary.index' : 'diary.index';
             $createRoute = $currentMode === 'legacy' ? 'legacy.diary.create' : 'diary.create';
         @endphp
-        <header class="fixed inset-x-0 top-0 z-50 border-b border-base-300 bg-base-100 shadow-sm">
+        <header class="fixed inset-x-0 top-0 z-50 border-b border-base-300 bg-base-100 shadow-xs">
             <div class="mx-auto flex w-full max-w-screen-2xl items-center justify-between gap-4 px-6 py-3 xl:px-8 2xl:px-12">
                 <a href="{{ route('home') }}" class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary">WorkDiary</a>
-                <div class="ml-auto flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-sm">
+                <div class="ml-auto flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
                     <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
                         <span data-theme-label class="text-base leading-none">◐</span>
                     </button>
@@ -66,7 +66,7 @@
         </header>
 
         <div class="mx-auto flex min-h-screen max-w-7xl flex-col px-6 pb-20 pt-24 lg:px-10">
-            <header class="mb-6 rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+            <header class="mb-6 rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
                 <div class="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
                     <div>
                         <p class="font-['Space_Grotesk'] text-sm uppercase tracking-[0.35em] text-primary">WorkDiary</p>
@@ -90,7 +90,7 @@
                     </div>
 
                     <div class="grid gap-3 text-sm text-base-content/80 md:min-w-80">
-                        <div class="rounded-box border border-base-300 bg-base-100 px-4 py-3 shadow-sm">
+                        <div class="rounded-box border border-base-300 bg-base-100 px-4 py-3 shadow-xs">
                             <p class="font-medium text-base-content">{{ __('Datenquelle') }}</p>
                             <p class="mt-1 text-base-content/80">
                                 @if ($legacyOnline)
@@ -116,29 +116,29 @@
                 <section class="space-y-6">
                     @if ($canViewSensitive)
                         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                            <article class="rounded-[1.75rem] border border-base-300 bg-base-100 p-5 shadow-sm">
+                            <article class="rounded-[1.75rem] border border-base-300 bg-base-100 p-5 shadow-xs">
                                 <p class="badge badge-ghost badge-sm">{{ __('Einträge') }}</p>
                                 <p class="mt-3 font-['Space_Grotesk'] text-4xl font-bold text-base-content">{{ number_format($stats['entries_total'], 0, ',', '.') }}</p>
                                 <p class="mt-2 text-sm text-base-content/70">{{ __('Gesamtbestand im Legacy-Tagebuch') }}</p>
                             </article>
-                            <article class="rounded-[1.75rem] border border-base-300 bg-base-100 p-5 shadow-sm">
+                            <article class="rounded-[1.75rem] border border-base-300 bg-base-100 p-5 shadow-xs">
                                 <p class="badge badge-warning badge-sm">{{ __('Offen') }}</p>
                                 <p class="mt-3 font-['Space_Grotesk'] text-4xl font-bold text-base-content">{{ number_format($stats['entries_open'], 0, ',', '.') }}</p>
                                 <p class="mt-2 text-sm text-base-content/75">{{ __('Sofort in Bearbeitung nehmen') }}</p>
                             </article>
-                            <article class="rounded-[1.75rem] border border-base-300 bg-base-100 p-5 shadow-sm">
+                            <article class="rounded-[1.75rem] border border-base-300 bg-base-100 p-5 shadow-xs">
                                 <p class="badge badge-error badge-sm">{{ __('Probleme') }}</p>
                                 <p class="mt-3 font-['Space_Grotesk'] text-4xl font-bold text-base-content">{{ number_format($stats['entries_alert'], 0, ',', '.') }}</p>
                                 <p class="mt-2 text-sm text-base-content/75">{{ __('Eskalationen mit Handlungsbedarf') }}</p>
                             </article>
-                            <article class="rounded-[1.75rem] border border-base-300 bg-base-100 p-5 shadow-sm">
+                            <article class="rounded-[1.75rem] border border-base-300 bg-base-100 p-5 shadow-xs">
                                 <p class="badge badge-primary badge-sm">{{ __('Team') }}</p>
                                 <p class="mt-3 font-['Space_Grotesk'] text-4xl font-bold text-base-content">{{ number_format($stats['team_size'], 0, ',', '.') }}</p>
                                 <p class="mt-2 text-sm text-base-content/75">{{ __('Verfügbare Mitarbeitende') }}</p>
                             </article>
                         </div>
 
-                        <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+                        <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
                             <div class="flex flex-wrap items-center justify-between gap-4">
                                 <div>
                                     <div class="badge badge-error badge-sm">{{ __('Prioritäten') }}</div>
@@ -150,7 +150,7 @@
 
                             <div class="mt-5 space-y-3">
                                 @forelse ($priorityEntries as $entry)
-                                    <article class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+                                    <article class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                                         <div class="flex flex-wrap items-center gap-2">
                                             <span @class([
                                                 'badge badge-sm',
@@ -168,7 +168,7 @@
                             </div>
                         </section>
 
-                        <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+                        <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
                             <div class="flex flex-col gap-3 border-b border-base-300 pb-5 md:flex-row md:items-end md:justify-between">
                                 <div>
                                     <p class="font-['Space_Grotesk'] text-2xl font-bold text-base-content">{{ __('Aktuelle Arbeitslage') }}</p>
@@ -181,7 +181,7 @@
 
                             <div class="mt-5 space-y-3">
                                 @forelse ($entries as $entry)
-                                    <article class="grid gap-4 rounded-[1.4rem] border border-base-300 bg-base-100 p-4 shadow-sm transition hover:border-primary/30 md:grid-cols-[1fr_auto] md:items-center">
+                                    <article class="grid gap-4 rounded-[1.4rem] border border-base-300 bg-base-100 p-4 shadow-xs transition hover:border-primary/30 md:grid-cols-[1fr_auto] md:items-center">
                                         <div>
                                             <div class="flex flex-wrap items-center gap-3">
                                                 <span @class([
@@ -213,7 +213,7 @@
                             </div>
                         </section>
                     @else
-                        <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+                        <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
                             <p class="font-['Space_Grotesk'] text-2xl font-bold text-base-content">{{ __('Produktzugang erforderlich') }}</p>
                                 <p class="mt-3 text-base-content/80">Diese Oberfläche ist ein Arbeitsprodukt. Operative Inhalte, Kennzahlen und Teamdaten sind nur nach Anmeldung sichtbar.</p>
                             <div class="mt-4"><a href="{{ route('login') }}" class=" btn btn-sm btn-primary">⇢ Jetzt anmelden</a></div>
@@ -222,7 +222,7 @@
                 </section>
 
                 <aside class="space-y-6">
-                    <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+                    <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
                         <p class="font-['Space_Grotesk'] text-2xl font-bold text-base-content">{{ __('Heute arbeiten') }}</p>
                         <div class="mt-5 space-y-4">
                             <div class="rounded-[1.4rem] border border-base-300 bg-base-200 p-4">
@@ -244,7 +244,7 @@
                     </section>
 
                     @if ($canViewSensitive)
-                        <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+                        <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
                             <div class="flex items-center justify-between gap-4">
                                 <p class="font-['Space_Grotesk'] text-2xl font-bold text-base-content">{{ __('Team') }}</p>
                                 <span class="badge badge-ghost">{{ $team->count() }} sichtbar</span>
@@ -265,7 +265,7 @@
             </main>
         </div>
 
-        <footer class="fixed inset-x-0 bottom-0 z-50 border-t border-base-300 bg-base-100 shadow-sm">
+        <footer class="fixed inset-x-0 bottom-0 z-50 border-t border-base-300 bg-base-100 shadow-xs">
             <div class="mx-auto flex w-full max-w-screen-2xl items-center justify-center px-6 py-3 text-xs text-base-content/70 xl:px-8 2xl:px-12">
                 &copy; {{ date('Y') }} WorkDiary. Alle Rechte vorbehalten.
             </div>

@@ -17,7 +17,7 @@ class LegacyWeekCalendarService {
             $isoYear = (int) $matches[1];
             $isoWeek = (int) $matches[2];
             $monday = Carbon::now()->setISODate($isoYear, $isoWeek, 1)->startOfDay();
-            $weekOffset = $baseMonday->diffInWeeks($monday, false);
+            $weekOffset = (int) $baseMonday->diffInWeeks($monday, false);
         }
 
         return [

@@ -32,6 +32,7 @@ class LegacyUserProvider extends EloquentUserProvider {
 
         if ($legacyUser) {
             // Schritt 2: Lokalen User anlegen oder aktualisieren
+            /** @var object{id: int, uname: string, email: string|null} $legacyUser */
             return User::updateOrCreate(
                 ['legacy_user_id' => $legacyUser->id],
                 [

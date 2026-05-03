@@ -12,7 +12,7 @@ class LegacyUser extends Model {
 
     public $timestamps = false;
 
-    protected $guarded = [];
+    protected $fillable = ['uname', 'userpw', 'email'];
 
     protected $primaryKey = 'id';
 

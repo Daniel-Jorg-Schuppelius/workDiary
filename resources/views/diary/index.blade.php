@@ -5,7 +5,7 @@
 @section('content')
 <div class="flex h-full min-h-0 flex-col gap-4">
     {{-- Filter-Leiste --}}
-    <form method="GET" action="{{ route('diary.index') }}" class="flex-none rounded-box border border-base-300 bg-base-100 p-5 shadow-sm">
+    <form method="GET" action="{{ route('diary.index') }}" class="flex-none rounded-box border border-base-300 bg-base-100 p-5 shadow-xs">
         <div class="flex flex-wrap items-end gap-4">
             <div class="flex-1 min-w-60">
                 <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-base-content/60">{{ __('Suche') }}</label>
@@ -58,7 +58,7 @@
     {{-- Zähler --}}
     <div class="flex-none grid gap-4 sm:grid-cols-4">
         @foreach ([['all',__('Gesamt'),'sky'], ['open',__('Offen'),'amber'], ['alert',__('Probleme'),'rose'], ['done',__('Erledigt'),'emerald']] as [$key, $label, $color])
-            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                 <p class="badge badge-sm {{ $key === 'open' ? 'badge-warning' : ($key === 'alert' ? 'badge-error' : ($key === 'done' ? 'badge-success' : 'badge-primary')) }}">{{ $label }}</p>
                 <p class="mt-2 font-['Space_Grotesk'] text-3xl font-bold text-base-content">{{ number_format($counts[$key], 0, ',', '.') }}</p>
             </div>
@@ -68,7 +68,7 @@
     {{-- Eintrags-Liste --}}
     <div class="min-h-0 flex-1 overflow-y-auto pr-1 space-y-3">
         @forelse ($entries as $entry)
-            <article class="grid gap-4 rounded-box border border-base-300 bg-base-100 p-4 shadow-sm transition hover:border-primary/30 md:grid-cols-[1fr_auto]">
+            <article class="grid gap-4 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs transition hover:border-primary/30 md:grid-cols-[1fr_auto]">
                 <div>
                     <div class="flex flex-wrap items-center gap-3 mb-3">
                         <span @class([

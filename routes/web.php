@@ -96,11 +96,12 @@ Route::middleware('auth')->group(function () {
             ->except(['show'])
             ->names('legacy.notdienst')
             ->parameters(['notdienst' => 'notdienst']);
+
+        Route::post('legacy/archive/run', [LegacyArchiveController::class, 'run'])->name('legacy.archive.run');
     });
 
     Route::get('legacy/archive', [LegacyArchiveController::class, 'index'])->name('legacy.archive.index');
     Route::get('legacy/archive/week', [LegacyArchiveController::class, 'week'])->name('legacy.archive.week');
-    Route::post('legacy/archive/run', [LegacyArchiveController::class, 'run'])->name('legacy.archive.run');
 
     Route::resource('diary', DiaryController::class)->parameters(['diary' => 'diary']);
     Route::post('diary/{diary}/archive', [DiaryController::class, 'archive'])->name('diary.archive');

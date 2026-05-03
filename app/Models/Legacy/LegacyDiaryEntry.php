@@ -24,7 +24,7 @@ class LegacyDiaryEntry extends Model {
 
     public $timestamps = false;
 
-    protected $guarded = [];
+    protected $fillable = ['user', 'von', 'bis', 'inhalt', 'antwort', 'gelesen', 'sms', 'aktuell'];
 
     protected $primaryKey = 'id';
 

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 
 class MeController extends Controller {
     public function __invoke(Request $request): UserResource {
+        /** @var \App\Models\User $user */
         $user = $request->user();
         $resource = new UserResource($user);
         return $resource->additional(['meta' => [

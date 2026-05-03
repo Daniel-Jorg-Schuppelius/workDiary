@@ -54,7 +54,8 @@ class LegacyUserAdminController extends Controller {
 
         $this->ensureMutableLegacyUser($user);
 
-        $user->update($request->validated());
+        $data = array_filter($request->validated(), static fn($v) => $v !== null);
+        $user->update($data);
 
         return redirect()->route('legacy.users.index')->with('success', 'Mitarbeiter aktualisiert.');
     }

@@ -5,7 +5,7 @@
 @section('content')
 <div class="mx-auto w-full max-w-md">
     <form method="POST" action="{{ $tag ? route('tags.update', $tag) : route('tags.store') }}"
-        class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm space-y-4">
+        class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs space-y-4">
         @csrf
         @if ($tag) @method('PUT') @endif
 

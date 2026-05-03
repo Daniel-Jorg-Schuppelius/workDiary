@@ -18,7 +18,9 @@ class WeekController extends Controller {
             $filterUserId = null;
         }
 
-        $data = $service->build($anchor, Auth::user(), $teamScope, $filterUserId);
+        /** @var \App\Models\User $authUser */
+        $authUser = Auth::user();
+        $data = $service->build($anchor, $authUser, $teamScope, $filterUserId);
 
         $shiftsByDay = $service->groupByDay($data['shifts'], $data['start']);
         $assignmentsByDay = $service->groupByDay($data['assignments'], $data['start']);

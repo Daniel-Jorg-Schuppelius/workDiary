@@ -6,7 +6,7 @@
 <div class="mx-auto max-w-md space-y-4">
     <h1 class="text-2xl font-semibold">{{ __('Profil') }}</h1>
 
-    <form method="POST" action="{{ route('account.profile.update') }}" class="space-y-4 rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+    <form method="POST" action="{{ route('account.profile.update') }}" class="space-y-4 rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
         @csrf
         @method('PUT')
 

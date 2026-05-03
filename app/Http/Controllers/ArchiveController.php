@@ -10,7 +10,7 @@ class ArchiveController extends Controller {
     public function run(ArchiveService $service): RedirectResponse {
         /** @var \App\Models\User|null $user */
         $user = Auth::user();
-        abort_unless($user?->isAdmin(), 403);
+        abort_unless($user !== null && $user->isAdmin(), 403);
 
         $result = $service->run();
 

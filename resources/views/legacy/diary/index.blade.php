@@ -20,7 +20,7 @@
         };
     @endphp
     <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
-        <form method="GET" action="{{ route('legacy.diary.index') }}" class="flex-none rounded-box border border-base-300 bg-base-100 p-4 shadow-sm md:p-5">
+        <form method="GET" action="{{ route('legacy.diary.index') }}" class="flex-none rounded-box border border-base-300 bg-base-100 p-4 shadow-xs md:p-5">
             <input type="hidden" name="sort" value="{{ $currentSort }}">
             <input type="hidden" name="dir" value="{{ $currentDir }}">
             <div class="flex flex-wrap items-end gap-3">
@@ -76,14 +76,14 @@
                         : $activeStatus === $statusValue;
                 @endphp
                 <a href="{{ route('legacy.diary.index', $tileFilters) }}"
-                   class="rounded-box border bg-base-100 px-4 py-3 shadow-sm transition hover:border-primary hover:shadow-md {{ $isActive ? 'border-primary ring-1 ring-primary/40' : $borderClass }}">
+                   class="rounded-box border bg-base-100 px-4 py-3 shadow-xs transition hover:border-primary hover:shadow-md {{ $isActive ? 'border-primary ring-1 ring-primary/40' : $borderClass }}">
                     <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $label }}</p>
                     <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ number_format($counts[$key], 0, ',', '.') }}</p>
                 </a>
             @endforeach
         </div>
 
-        <div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-sm">
+        <div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
             <form method="POST" action="{{ route('legacy.diary.bulk') }}" id="bulk-form" class="flex h-full flex-col" onsubmit="return bulkConfirm(event);">
                 @csrf
                 <div class="flex-none flex flex-wrap items-center gap-2 border-b border-base-300 bg-base-200/60 px-3 py-2">
@@ -208,7 +208,7 @@
         </script>
 
         @if ($entries->hasPages())
-            <div class="flex-none rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-sm">
+            <div class="flex-none rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-xs">
                 {{ $entries->links('vendor.pagination.daisyui-simple') }}
             </div>
         @endif

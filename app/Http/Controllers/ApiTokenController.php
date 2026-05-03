@@ -8,7 +8,9 @@ use Illuminate\View\View;
 
 class ApiTokenController extends Controller {
     public function index(Request $request): View {
-        $tokens = $request->user()->tokens()->orderByDesc('created_at')->get();
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+        $tokens = $user->tokens()->orderByDesc('created_at')->get();
         return view('profile.api-tokens', [
             'tokens' => $tokens,
             'newToken' => session('newToken'),
@@ -17,10 +19,12 @@ class ApiTokenController extends Controller {
     }
 
     public function store(Request $request): RedirectResponse {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
         $data = $request->validate([
             'name' => ['required', 'string', 'max:64'],
         ]);
-        $token = $request->user()->createToken($data['name']);
+        $token = $user->createToken($data['name']);
         return redirect()
             ->route('profile.api-tokens.index')
             ->with('newToken', $token->plainTextToken)
@@ -28,7 +32,9 @@ class ApiTokenController extends Controller {
     }
 
     public function destroy(Request $request, int $id): RedirectResponse {
-        $request->user()->tokens()->where('id', $id)->delete();
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+        $user->tokens()->where('id', $id)->delete();
         return redirect()->route('profile.api-tokens.index')
             ->with('success', __('Token widerrufen.'));
     }

@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller {
     public function __invoke(Request $request, DashboardService $service): JsonResponse {
-        return response()->json(['data' => $service->summarize($request->user())]);
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+        return response()->json(['data' => $service->summarize($user)]);
     }
 }

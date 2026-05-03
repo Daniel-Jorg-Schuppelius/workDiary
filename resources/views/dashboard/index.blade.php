@@ -26,19 +26,19 @@
 
         {{-- Personal KPIs --}}
         <section class="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                 <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Meine offenen Einträge') }}</p>
                 <p class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $user['kpi']['open_entries'] }}</p>
             </div>
-            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                 <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('In Bearbeitung') }}</p>
                 <p class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $user['kpi']['progress_entries'] }}</p>
             </div>
-            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                 <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Anstehende Schichten') }}</p>
                 <p class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $user['kpi']['upcoming_shifts'] }}</p>
             </div>
-            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                 <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Anstehende Notdienste') }}</p>
                 <p class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $user['kpi']['upcoming_emergencies'] }}</p>
             </div>
@@ -71,7 +71,7 @@
         <div class="grid gap-6 lg:grid-cols-2">
 
             {{-- Heute --}}
-            <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+            <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
                 <h3 class="mb-3 font-['Space_Grotesk'] text-lg font-semibold">{{ __('Heute') }}</h3>
                 @if ($user['today_shifts']->isEmpty())
                     <p class="text-sm text-base-content/60">{{ __('Keine Schicht heute.') }}</p>
@@ -88,7 +88,7 @@
             </section>
 
             {{-- Anstehende Schichten --}}
-            <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+            <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
                 <h3 class="mb-3 font-['Space_Grotesk'] text-lg font-semibold">{{ __('Nächste Schichten') }}</h3>
                 @if ($user['upcoming_shifts']->isEmpty())
                     <p class="text-sm text-base-content/60">{{ __('Keine geplanten Schichten.') }}</p>
@@ -105,7 +105,7 @@
             </section>
 
             {{-- Anstehende Notdienste --}}
-            <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+            <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
                 <h3 class="mb-3 font-['Space_Grotesk'] text-lg font-semibold">{{ __('Nächste Notdienste') }}</h3>
                 @if ($user['upcoming_emergencies']->isEmpty())
                     <p class="text-sm text-base-content/60">{{ __('Keine geplanten Notdienste.') }}</p>
@@ -122,7 +122,7 @@
             </section>
 
             {{-- Letzte eigene Einträge --}}
-            <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+            <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
                 <h3 class="mb-3 font-['Space_Grotesk'] text-lg font-semibold">{{ __('Meine letzten Einträge') }}</h3>
                 @if ($user['recent_entries']->isEmpty())
                     <p class="text-sm text-base-content/60">{{ __('Noch keine Einträge.') }}</p>
@@ -139,7 +139,7 @@
             </section>
 
             {{-- Letzte Kommentare --}}
-            <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+            <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
                 <h3 class="mb-3 font-['Space_Grotesk'] text-lg font-semibold">{{ __('Neue Kommentare auf meinen Einträgen') }}</h3>
                 @if ($user['recent_comments']->isEmpty())
                     <p class="text-sm text-base-content/60">{{ __('Noch keine Kommentare.') }}</p>
@@ -156,7 +156,7 @@
             </section>
 
             {{-- Letzte Anhänge --}}
-            <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+            <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
                 <h3 class="mb-3 font-['Space_Grotesk'] text-lg font-semibold">{{ __('Neue Anhänge auf meinen Einträgen') }}</h3>
                 @if ($user['recent_attachments']->isEmpty())
                     <p class="text-sm text-base-content/60">{{ __('Noch keine Anhänge.') }}</p>
@@ -174,7 +174,7 @@
         </div>
 
         @if ($team)
-            <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+            <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
                 <h3 class="mb-3 font-['Space_Grotesk'] text-lg font-semibold">{{ __('Letzte Team-Aktivität') }}</h3>
                 @if ($team['recent_activity']->isEmpty())
                     <p class="text-sm text-base-content/60">{{ __('Noch keine Aktivität.') }}</p>

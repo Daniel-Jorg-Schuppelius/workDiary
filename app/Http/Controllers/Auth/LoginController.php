@@ -8,9 +8,12 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\View\View;
 
 class LoginController extends Controller {
+    private const MAX_LOGIN_ATTEMPTS = 5;
+
     public function showLoginForm(): View {
         return view('auth.login');
     }
@@ -21,7 +24,18 @@ class LoginController extends Controller {
             'password' => ['required', 'string', 'max:255'],
         ]);
 
+        $throttleKey = $this->throttleKey($request);
+
+        if (RateLimiter::tooManyAttempts($throttleKey, self::MAX_LOGIN_ATTEMPTS)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+
+            return back()->withErrors([
+                'username' => __('auth.throttle', ['seconds' => $seconds]),
+            ])->onlyInput('username');
+        }
+
         if (Auth::attempt(['username' => $credentials['username'], 'password' => $credentials['password']], $request->boolean('remember'))) {
+            RateLimiter::clear($throttleKey);
             $request->session()->regenerate();
 
             $this->syncLegacyUserIdIfMissing((string) $credentials['username']);
@@ -35,9 +49,15 @@ class LoginController extends Controller {
             return redirect()->intended($defaultRoute);
         }
 
+        RateLimiter::hit($throttleKey, 60);
+
         return back()->withErrors([
             'username' => 'Benutzername oder Passwort ist falsch.',
         ])->onlyInput('username');
+    }
+
+    private function throttleKey(Request $request): string {
+        return 'login:' . mb_strtolower((string) $request->input('username', '')) . '|' . $request->ip();
     }
 
     public function logout(Request $request): RedirectResponse {

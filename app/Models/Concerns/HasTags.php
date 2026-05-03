@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 /**
  * @method \Illuminate\Database\Eloquent\Relations\MorphToMany<\App\Models\Tag, static> morphToMany(string $related, string $name, ?string $table = null, ?string $foreignPivotKey = null, ?string $relatedPivotKey = null, ?string $parentKey = null, ?string $relatedKey = null, $relation = null, bool $inverse = false)
- * @phpstan-require-extends \Illuminate\Database\Eloquent\Model
  */
 trait HasTags {
     /** @return MorphToMany<Tag, static> */
@@ -34,7 +33,7 @@ trait HasTags {
             if ($name === '') {
                 continue;
             }
-            $tag = Tag::findOrCreateByName($name, Auth::id());
+            $tag = Tag::findOrCreateByName($name, Auth::id() !== null ? (int) Auth::id() : null);
             $ids[] = $tag->id;
         }
 

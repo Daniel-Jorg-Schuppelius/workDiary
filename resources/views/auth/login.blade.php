@@ -27,10 +27,10 @@
         @endif
     </head>
     <body class="min-h-screen bg-primary-content text-base-content">
-        <header class="fixed inset-x-0 top-0 z-50 border-b border-base-300 bg-base-100 shadow-sm">
+        <header class="fixed inset-x-0 top-0 z-50 border-b border-base-300 bg-base-100 shadow-xs">
             <div class="mx-auto flex w-full max-w-screen-2xl items-center justify-between gap-4 px-4 py-3 xl:px-8 2xl:px-12">
                 <a href="{{ route('home') }}" class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary">WorkDiary</a>
-                <div class="ml-auto flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-sm">
+                <div class="ml-auto flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
                     <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
                         <span data-theme-label class="text-base leading-none">◐</span>
                     </button>
@@ -49,7 +49,7 @@
                 <p class="mt-3 text-sm text-base-content/70">{{ __('Benutzerdaten aus dem bestehenden Tagebuch-System.') }}</p>
             </div>
 
-            <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-sm">
+            <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs">
                 <form method="POST" action="{{ route('login') }}" class="space-y-5">
                     @csrf
 
@@ -107,7 +107,7 @@
             </div>
         </div>
 
-        <footer class="fixed inset-x-0 bottom-0 z-50 border-t border-base-300 bg-base-100 shadow-sm">
+        <footer class="fixed inset-x-0 bottom-0 z-50 border-t border-base-300 bg-base-100 shadow-xs">
             <div class="mx-auto flex w-full max-w-screen-2xl items-center justify-center px-4 py-3 text-xs text-base-content/70 xl:px-8 2xl:px-12">
                 &copy; {{ date('Y') }} WorkDiary. Alle Rechte vorbehalten.
             </div>

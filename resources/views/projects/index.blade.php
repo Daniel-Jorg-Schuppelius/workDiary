@@ -13,7 +13,7 @@
 @endphp
 <div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
     {{-- Toolbar --}}
-    <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+    <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Projekte') }}</h1>
         <div class="flex flex-wrap items-center gap-2">
             <div class="join">
@@ -47,7 +47,7 @@
                     $users = (int) ($userCounts->get($project->id) ?? 0);
                 @endphp
                 <a href="{{ route('projects.show', $project) }}"
-                   class="group flex flex-col gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-sm transition hover:border-primary hover:shadow-md">
+                   class="group flex flex-col gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs transition hover:border-primary hover:shadow-md">
                     <div class="flex items-start justify-between gap-2">
                         <div class="flex items-center gap-2 min-w-0">
                             <span class="inline-block h-3 w-3 shrink-0 rounded-full"

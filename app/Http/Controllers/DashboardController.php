@@ -8,7 +8,9 @@ use Illuminate\View\View;
 
 class DashboardController extends Controller {
     public function __invoke(Request $request, DashboardService $service): View {
-        $data = $service->summarize($request->user());
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+        $data = $service->summarize($user);
 
         return view('dashboard.index', $data);
     }

@@ -21,7 +21,7 @@
 @endphp
 
 {{-- Card mit Scroll-Container --}}
-<div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-sm mt-4">
+<div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs mt-4">
     <div id="{{ $scrollId }}" class="h-full overflow-auto">
         <table id="{{ $tableId }}" class="week-table" data-min-width="{{ $tableMinWidth }}">
             <tbody>

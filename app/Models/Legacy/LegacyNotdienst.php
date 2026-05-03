@@ -18,7 +18,7 @@ class LegacyNotdienst extends Model {
 
     public $timestamps = false;
 
-    protected $guarded = [];
+    protected $fillable = ['user', 'von', 'bis'];
 
     protected $primaryKey = 'id';
 

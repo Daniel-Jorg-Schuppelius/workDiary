@@ -30,7 +30,7 @@
 <div {{ $attributes->merge(['class' => "wd-dialog"]) }}>
     {{-- Header --}}
     @if ($title || $eyebrow || $icon || $badge || isset($header))
-        <header class="wd-dialog__header sticky top-0 z-10 relative flex items-start gap-3 border-b border-base-300 bg-gradient-to-br {{ $accent }} px-6 py-5 pr-14">
+        <header class="wd-dialog__header sticky top-0 z-10 flex items-start gap-3 border-b border-base-300 bg-linear-to-br {{ $accent }} px-6 py-5 pr-14">
             @if ($icon)
                 <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-box {{ $iconAccent }} text-lg">
                     {!! $icon !!}

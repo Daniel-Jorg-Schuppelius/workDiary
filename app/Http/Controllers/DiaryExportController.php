@@ -17,6 +17,7 @@ class DiaryExportController extends Controller {
 
         return response()->streamDownload(function () use ($query) {
             $out = fopen('php://output', 'wb');
+            assert($out !== false);
             // BOM für Excel-UTF8
             fwrite($out, "\xEF\xBB\xBF");
             fputcsv($out, [
@@ -69,6 +70,7 @@ class DiaryExportController extends Controller {
 
     /** @return \Illuminate\Database\Eloquent\Builder<\App\Models\DiaryEntry> */
     private function buildQuery(Request $request): \Illuminate\Database\Eloquent\Builder {
+        /** @var \Illuminate\Database\Eloquent\Builder<DiaryEntry> $query */
         $query = DiaryEntry::query()
             ->with(['user:id,name', 'tags:id,name'])
             ->orderByDesc('start_at');

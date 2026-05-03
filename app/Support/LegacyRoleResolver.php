@@ -49,10 +49,10 @@ class LegacyRoleResolver {
             return self::$idCache[$authUser->id] = 0;
         }
 
-        $authUser->legacy_user_id = (int) $legacy->id;
+        $authUser->legacy_user_id = max(0, (int) $legacy->id);
         $authUser->save();
 
-        return self::$idCache[$authUser->id] = (int) $legacy->id;
+        return self::$idCache[$authUser->id] = max(0, (int) $legacy->id);
     }
 
     /**
