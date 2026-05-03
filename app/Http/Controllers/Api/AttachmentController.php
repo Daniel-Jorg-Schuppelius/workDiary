@@ -21,9 +21,15 @@ class AttachmentController extends Controller {
     private const MAX_BYTES = 25 * 1024 * 1024;
     private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'log', 'zip', 'docx', 'xlsx'];
     private const ALLOWED_MIMES = [
-        'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-        'application/pdf', 'text/plain', 'text/csv',
-        'application/zip', 'application/x-zip-compressed',
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+        'application/pdf',
+        'text/plain',
+        'text/csv',
+        'application/zip',
+        'application/x-zip-compressed',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     ];
