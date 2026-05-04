@@ -4,8 +4,8 @@
 
 @section('content')
     <div class="flex h-full min-h-0 w-full flex-col overflow-auto">
-        <div class="tabs tabs-box">
-            <input type="radio" name="duty_tabs" class="tab" aria-label="⏱ {{ __('Bereitschaft') }} ({{ $shifts->total() }})" @checked($tab === 'bereitschaft') />
+        <div class="tabs tabs-box flex-nowrap overflow-x-auto">
+            <input type="radio" name="duty_tabs" class="tab shrink-0 whitespace-nowrap" aria-label="⏱ {{ __('Bereitschaft') }} ({{ $shifts->total() }})" @checked($tab === 'bereitschaft') />
             <div class="tab-content border-base-300 bg-base-100 p-4">
                 <div class="mb-3 flex items-center justify-between">
                     <h2 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Bereitschaftsdienste') }}</h2>
@@ -38,7 +38,7 @@
                 {{ $shifts->links() }}
             </div>
 
-            <input type="radio" name="duty_tabs" class="tab" aria-label="⚠ {{ __('Notdienst') }} ({{ $assignments->total() }})" @checked($tab === 'notdienst') />
+            <input type="radio" name="duty_tabs" class="tab shrink-0 whitespace-nowrap" aria-label="⚠ {{ __('Notdienst') }} ({{ $assignments->total() }})" @checked($tab === 'notdienst') />
             <div class="tab-content border-base-300 bg-base-100 p-4">
                 <div class="mb-3 flex items-center justify-between">
                     <h2 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Notdienste') }}</h2>

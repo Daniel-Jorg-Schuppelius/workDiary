@@ -53,11 +53,22 @@
             </span>
         </div>
 
-        <div class="join">
-            <a href="{{ route('week.index', ['date' => $weekStart->toDateString(), 'scope' => 'mine']) }}"
-               class="join-item btn btn-sm {{ $teamScope ? 'btn-ghost' : 'btn-primary' }}">{{ __('Meine Woche') }}</a>
-            <a href="{{ route('week.index', ['date' => $weekStart->toDateString(), 'scope' => 'team']) }}"
-               class="join-item btn btn-sm {{ $teamScope ? 'btn-primary' : 'btn-ghost' }}">{{ __('Team-Woche') }}</a>
+        <div class="flex items-center gap-3">
+            <button type="button" id="wd-week-fit-btn"
+                    class="btn btn-sm btn-ghost gap-1.5"
+                    title="{{ __('Ansicht an Bildschirm anpassen') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M3 4a1 1 0 011-1h3a1 1 0 010 2H5.414l2.293 2.293a1 1 0 01-1.414 1.414L4 6.414V8a1 1 0 01-2 0V4zm14 0a1 1 0 00-1-1h-3a1 1 0 000 2h1.586l-2.293 2.293a1 1 0 001.414 1.414L16 6.414V8a1 1 0 002 0V4zm-3 12a1 1 0 001-1v-3a1 1 0 00-2 0v1.586l-2.293-2.293a1 1 0 00-1.414 1.414L13.586 16H12a1 1 0 000 2h3zm-8 0a1 1 0 01-1-1v-3a1 1 0 012 0v1.586l2.293-2.293a1 1 0 011.414 1.414L6.414 16H8a1 1 0 010 2H5z"/>
+                </svg>
+                <span id="wd-week-fit-label">{{ __('Auf Bildschirm') }}</span>
+            </button>
+
+            <div class="join">
+                <a href="{{ route('week.index', ['date' => $weekStart->toDateString(), 'scope' => 'mine']) }}"
+                   class="join-item btn btn-sm {{ $teamScope ? 'btn-ghost' : 'btn-primary' }}">{{ __('Meine Woche') }}</a>
+                <a href="{{ route('week.index', ['date' => $weekStart->toDateString(), 'scope' => 'team']) }}"
+                   class="join-item btn btn-sm {{ $teamScope ? 'btn-primary' : 'btn-ghost' }}">{{ __('Team-Woche') }}</a>
+            </div>
         </div>
     </div>
 
@@ -98,8 +109,8 @@
             @endforeach
         </div>
     @endif    {{-- Grid --}}
-    <div class="min-h-0 flex-1 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <div class="wd-week-grid">
+    <div id="wd-week-scroll" class="min-h-0 flex-1 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
+        <div id="wd-week-grid" class="wd-week-grid">
             {{-- Header row --}}
             <div class="wd-week-corner"></div>
             @foreach ($days as $day)
@@ -228,4 +239,54 @@
         </div>
     </div>
 </div>
+
+<script>
+(function () {
+    var scroll = document.getElementById('wd-week-scroll');
+    var grid   = document.getElementById('wd-week-grid');
+    var btn    = document.getElementById('wd-week-fit-btn');
+    var label  = document.getElementById('wd-week-fit-label');
+    var KEY    = 'workDiaryWeekCalFit';
+    var fit    = localStorage.getItem(KEY) === '1';
+
+    function hourHeight() {
+        if (!scroll) return null;
+        // Verfügbare Höhe = Scroll-Container - Header-Zeile (sticky, ~erste Kind-Höhe)
+        var firstHeader = grid ? grid.querySelector('.wd-week-day-header') : null;
+        var headerH = firstHeader ? firstHeader.offsetHeight : 48;
+        var available = scroll.clientHeight - headerH;
+        return Math.max(available / 24, 20);
+    }
+
+    function apply(fitMode) {
+        if (!scroll || !grid) return;
+        if (fitMode) {
+            var h = hourHeight();
+            grid.style.setProperty('--wd-hour-h', h + 'px');
+            scroll.style.overflow = 'hidden';
+            if (btn) { btn.classList.add('btn-primary'); btn.classList.remove('btn-ghost'); }
+            if (label) label.textContent = '{{ __('Freies Scrollen') }}';
+        } else {
+            grid.style.removeProperty('--wd-hour-h');
+            scroll.style.overflow = '';
+            if (btn) { btn.classList.remove('btn-primary'); btn.classList.add('btn-ghost'); }
+            if (label) label.textContent = '{{ __('Auf Bildschirm') }}';
+        }
+    }
+
+    apply(fit);
+
+    if (btn) {
+        btn.addEventListener('click', function () {
+            fit = !fit;
+            localStorage.setItem(KEY, fit ? '1' : '0');
+            apply(fit);
+        });
+    }
+
+    window.addEventListener('resize', function () {
+        if (fit) apply(true);
+    });
+})();
+</script>
 @endsection

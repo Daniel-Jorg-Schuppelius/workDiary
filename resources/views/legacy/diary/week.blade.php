@@ -65,8 +65,8 @@
 <div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs mt-4">
     <div id="week-scroll" class="h-full overflow-auto">
         @php
-            /* min-width: Zeitspalte (4.5rem) + N Benutzer × 6rem + letztes Kürzel (2.5rem) */
-            $tableMinWidth = 'calc(4.5rem + ' . $legacyUsers->count() . ' * 6rem + 2.5rem)';
+            /* min-width: Zeitspalte (4.5rem) + N Benutzer × 6rem + letzte Spalte (4.5rem) */
+            $tableMinWidth = 'calc(4.5rem + ' . $legacyUsers->count() . ' * 6rem + 4.5rem)';
         @endphp
         <table id="week-table" class="week-table" data-min-width="{{ $tableMinWidth }}">
             <tbody>
@@ -173,14 +173,14 @@
         if (fit) {
             // Fit: table-layout:auto, Tabelle passt sich dem Container an
             table.classList.add('week-table--fit');
-            scroll.style.minWidth = '';
+            table.style.width = '';
             btn.classList.add('btn-primary');
             btn.classList.remove('btn-ghost');
             label.textContent = '{{ __('Freies Scrollen') }}';
         } else {
             // Scroll: table-layout:fixed, feste Spaltenbreiten, horizontaler Scroll
             table.classList.remove('week-table--fit');
-            scroll.style.minWidth = minW;
+            table.style.width = minW;
             btn.classList.remove('btn-primary');
             btn.classList.add('btn-ghost');
             label.textContent = '{{ __('Auf Bildschirm') }}';
