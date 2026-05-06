@@ -112,7 +112,7 @@
                             <td>{{ optional($issue->author)->uname ?? '-' }}</td>
                             <td>{{ $issue->von?->format('d.m.Y') ?? '-' }}</td>
                             <td>{{ $issue->bis?->format('d.m.Y') ?? '-' }}</td>
-                            <td>{{ \Illuminate\Support\Str::limit($issue->inhalt ?? '', 60) }}</td>
+                            <td>{{ truncate($issue->inhalt ?? '', 60) }}</td>
                         </tr>
                     @endforeach
                 </tbody>

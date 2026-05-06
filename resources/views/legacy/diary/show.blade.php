@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', Str::limit($entry->inhalt ?? '', 60) . ' — Legacy')
+@section('title', truncate($entry->inhalt ?? '', 60) . ' — Legacy')
 @section('nav-title', __('Eintrag') . ' #' . $entry->id)
 
 @section('content')

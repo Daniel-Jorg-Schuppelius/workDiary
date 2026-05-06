@@ -10,7 +10,7 @@
     /* @var \Carbon\Carbon $monday */
     /* @var \Carbon\Carbon $sunday */
     $weekStart = $monday ?? now()->startOfWeek(\Carbon\Carbon::MONDAY);
-    $dayAbbr = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+    $dayAbbr = weekdayAbbr('de');
     $days    = collect(range(0, 6))->map(fn ($i) => $weekStart->copy()->addDays($i));
     $hours   = range(7, 20); // Slots 07–08 bis 20–21
     $legacyUsers = collect($users ?? []);
@@ -145,7 +145,7 @@
                                     else                   $sClass = $bg ? 'lo'  : 'log';
                                 }
                             @endphp
-                            <td class="{{ $cClass }}">@if ($entry)<a href="{{ route('legacy.diary.show', [$entry, 'week_date' => ($selectedWeek ?? $monday->format('o-\\WW'))]) }}" class="font-normal hover:underline" title="{{ e($entry->inhalt ?? '') }}">{{ \Illuminate\Support\Str::limit($entry->inhalt ?? '', 10, '') }}</a>@else&nbsp;@endif</td>
+                            <td class="{{ $cClass }}">@if ($entry)<a href="{{ route('legacy.diary.show', [$entry, 'week_date' => ($selectedWeek ?? $monday->format('o-\\WW'))]) }}" class="font-normal hover:underline" title="{{ e($entry->inhalt ?? '') }}">{{ truncate($entry->inhalt ?? '', 10, '') }}</a>@else&nbsp;@endif</td>
                             <td class="{{ $sClass }}">&nbsp;</td>
                         @endforeach
 

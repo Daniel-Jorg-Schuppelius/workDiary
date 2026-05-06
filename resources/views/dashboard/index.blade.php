@@ -80,7 +80,7 @@
                         @foreach ($user['today_shifts'] as $shift)
                             <li class="flex items-center justify-between gap-3 rounded-box border border-base-300 bg-base-200 px-3 py-2 text-sm">
                                 <span>📅 {{ $shift->start_at->format('H:i') }} – {{ $shift->end_at->format('H:i') }}</span>
-                                <span class="text-base-content/60">{{ $shift->note ? Str::limit($shift->note, 40) : '' }}</span>
+                                <span class="text-base-content/60">{{ $shift->note ? truncate($shift->note, 40) : '' }}</span>
                             </li>
                         @endforeach
                     </ul>
@@ -97,7 +97,7 @@
                         @foreach ($user['upcoming_shifts'] as $shift)
                             <li class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 px-3 py-2">
                                 <span>{{ $shift->start_at->format('d.m. H:i') }} – {{ $shift->end_at->format('d.m. H:i') }}</span>
-                                @if ($shift->note)<span class="text-base-content/60">{{ Str::limit($shift->note, 50) }}</span>@endif
+                                @if ($shift->note)<span class="text-base-content/60">{{ truncate($shift->note, 50) }}</span>@endif
                             </li>
                         @endforeach
                     </ul>
@@ -114,7 +114,7 @@
                         @foreach ($user['upcoming_emergencies'] as $em)
                             <li class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 px-3 py-2">
                                 <span>🚨 {{ $em->start_at->format('d.m. H:i') }} – {{ $em->end_at->format('d.m. H:i') }}</span>
-                                @if ($em->reason)<span class="text-base-content/60">{{ Str::limit($em->reason, 50) }}</span>@endif
+                                @if ($em->reason)<span class="text-base-content/60">{{ truncate($em->reason, 50) }}</span>@endif
                             </li>
                         @endforeach
                     </ul>
@@ -130,7 +130,7 @@
                     <ul class="space-y-2 text-sm">
                         @foreach ($user['recent_entries'] as $entry)
                             <li class="rounded-box border border-base-300 bg-base-200 px-3 py-2">
-                                <a href="{{ route('diary.show', $entry) }}" class="link link-primary block">{{ Str::limit($entry->content, 80) }}</a>
+                                <a href="{{ route('diary.show', $entry) }}" class="link link-primary block">{{ truncate($entry->content, 80) }}</a>
                                 <span class="text-xs text-base-content/60">{{ $entry->statusLabel() }} · {{ $entry->updated_at->diffForHumans() }}</span>
                             </li>
                         @endforeach
@@ -148,7 +148,7 @@
                         @foreach ($user['recent_comments'] as $comment)
                             <li class="rounded-box border border-base-300 bg-base-200 px-3 py-2">
                                 <div class="text-xs text-base-content/60">{{ optional($comment->user)->name ?? '—' }} · {{ $comment->created_at->diffForHumans() }}</div>
-                                <a href="{{ route('diary.show', $comment->diary_entry_id) }}#comments" class="link block">{{ Str::limit($comment->body, 100) }}</a>
+                                <a href="{{ route('diary.show', $comment->diary_entry_id) }}#comments" class="link block">{{ truncate($comment->body, 100) }}</a>
                             </li>
                         @endforeach
                     </ul>
@@ -183,7 +183,7 @@
                         @foreach ($team['recent_activity'] as $comment)
                             <li class="rounded-box border border-base-300 bg-base-200 px-3 py-2">
                                 <div class="text-xs text-base-content/60">{{ optional($comment->user)->name ?? '—' }} · {{ $comment->created_at->diffForHumans() }}</div>
-                                <a href="{{ route('diary.show', $comment->diary_entry_id) }}#comments" class="link block">{{ Str::limit($comment->body, 120) }}</a>
+                                <a href="{{ route('diary.show', $comment->diary_entry_id) }}#comments" class="link block">{{ truncate($comment->body, 120) }}</a>
                             </li>
                         @endforeach
                     </ul>

@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.3",
         "azuyalabs/yasumi": "^2.11",
+        "dschuppelius/php-common-toolkit": "^1.7",
         "laravel/framework": "^13.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
@@ -29,7 +30,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/Helpers/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

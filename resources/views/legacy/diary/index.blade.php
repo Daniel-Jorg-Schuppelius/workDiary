@@ -139,8 +139,8 @@
                             <span class="badge badge-sm {{ $badgeClass }}">{{ $entry->statusLabel() }}</span>
                         </td>
                         <td>{{ optional($entry->author)->uname ?? __('Unbekannt') }}</td>
-                        <td class="max-w-md truncate" title="{{ $entry->inhalt ?? '' }}">{{ Str::limit($entry->inhalt ?? '', 120) }}</td>
-                        <td class="max-w-xs truncate" title="{{ $entry->antwort ?? '' }}">{{ Str::limit($entry->antwort ?? '', 80) }}</td>
+                        <td class="max-w-md truncate" title="{{ $entry->inhalt ?? '' }}">{{ truncate($entry->inhalt ?? '', 120) }}</td>
+                        <td class="max-w-xs truncate" title="{{ $entry->antwort ?? '' }}">{{ truncate($entry->antwort ?? '', 80) }}</td>
                         <td>{{ $entry->von?->format('d.m.Y H:i') ?? '-' }}</td>
                         <td>{{ $entry->bis?->format('d.m.Y H:i') ?? '-' }}</td>
                         <td class="whitespace-nowrap text-right">

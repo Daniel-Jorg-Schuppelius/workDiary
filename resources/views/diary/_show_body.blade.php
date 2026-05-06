@@ -103,12 +103,12 @@
         <div class="grid gap-4 md:grid-cols-2">
             <div>
                 <p class="mb-2 text-xs text-base-content/60">Inhalt (original)</p>
-                <p class="text-sm leading-relaxed whitespace-pre-wrap text-base-content/80">{{ Str::limit($legacyEntry->inhalt, 400) }}</p>
+                <p class="text-sm leading-relaxed whitespace-pre-wrap text-base-content/80">{{ truncate($legacyEntry->inhalt, 400) }}</p>
             </div>
             @if ($legacyEntry->antwort)
                 <div>
                     <p class="mb-2 text-xs text-base-content/60">Antwort (original)</p>
-                    <p class="text-sm leading-relaxed whitespace-pre-wrap text-base-content/80">{{ Str::limit($legacyEntry->antwort, 400) }}</p>
+                    <p class="text-sm leading-relaxed whitespace-pre-wrap text-base-content/80">{{ truncate($legacyEntry->antwort, 400) }}</p>
                 </div>
             @endif
         </div>

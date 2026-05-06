@@ -56,7 +56,7 @@
                             <span>· {{ $entry->user->name ?? '—' }}</span>
                             <span class="badge badge-xs badge-{{ $entry->statusTone() === 'open' ? 'neutral' : ($entry->statusTone() === 'alert' ? 'error' : ($entry->statusTone() === 'progress' ? 'info' : 'success')) }}">{{ $entry->statusLabel() }}</span>
                         </div>
-                        <div class="line-clamp-2 text-sm">{{ \Illuminate\Support\Str::limit($entry->content, 200) }}</div>
+                        <div class="line-clamp-2 text-sm">{{ truncate($entry->content, 200) }}</div>
                     </a>
                 </li>
             @empty

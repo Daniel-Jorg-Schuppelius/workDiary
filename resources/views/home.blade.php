@@ -159,7 +159,7 @@
                                             ])>{{ $entry->statusLabel() }}</span>
                                             <span class="text-sm text-base-content/70">{{ optional($entry->author)->uname ?? __('Unbekannt') }}</span>
                                         </div>
-                                        <p class="mt-3 text-base-content">{{ \Illuminate\Support\Str::limit($entry->inhalt ?? 'Ohne Beschreibung', 180) }}</p>
+                                        <p class="mt-3 text-base-content">{{ truncate($entry->inhalt ?? 'Ohne Beschreibung', 180) }}</p>
                                         <div class="mt-2 text-sm text-base-content/70">{{ __('Von') }} {{ optional($entry->von)?->format('d.m.Y H:i') ?? __('offen') }} · {{ __('Bis') }} {{ optional($entry->bis)?->format('d.m.Y H:i') ?? __('offen') }}</div>
                                     </article>
                                 @empty
@@ -194,7 +194,7 @@
                                                 ])>{{ $entry->statusLabel() }}</span>
                                                 <span class="text-sm text-base-content/70">{{ optional($entry->author)->uname ?? __('Unbekannt') }}</span>
                                             </div>
-                                            <p class="mt-3 text-lg font-semibold text-base-content">{{ \Illuminate\Support\Str::limit($entry->inhalt ?? 'Ohne Beschreibung', 140) }}</p>
+                                            <p class="mt-3 text-lg font-semibold text-base-content">{{ truncate($entry->inhalt ?? 'Ohne Beschreibung', 140) }}</p>
                                             <div class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-base-content/70">
                                                 <span>{{ __('Von') }} {{ optional($entry->von)?->format('d.m.Y H:i') ?? __('offen') }}</span>
                                                 <span>{{ __('Bis') }} {{ optional($entry->bis)?->format('d.m.Y H:i') ?? __('offen') }}</span>
@@ -202,7 +202,7 @@
                                             </div>
                                         </div>
                                         <div class="rounded-box border border-base-300 bg-base-200 px-4 py-3 text-sm text-base-content/70 md:max-w-56">
-                                            {{ \Illuminate\Support\Str::limit($entry->antwort ?: 'Noch keine Rückmeldung im Altsystem.', 110) }}
+                                            {{ truncate($entry->antwort ?: 'Noch keine Rückmeldung im Altsystem.', 110) }}
                                         </div>
                                     </article>
                                 @empty

@@ -231,7 +231,7 @@
                            style="top: {{ $placed['top'] }}%; height: {{ max($placed['height'], 3) }}%; left: calc(1rem + (100% - 1.25rem) * {{ $leftFrac }} + 2px); width: calc((100% - 1.25rem) * {{ $widthFrac }} - 4px); border-left: 3px solid hsl({{ $userHue }} 70% 45%);"
                            title="{{ $entry->statusLabel() }} · {{ $entry->user?->name }} · {{ $entry->start_at?->format('d.m. H:i') }}">
                             <span class="wd-week-entry-time">{{ $entry->start_at?->format('H:i') }}{{ $entry->user ? ' · ' . $entry->user->name : '' }}</span>
-                            <span class="wd-week-entry-text">{{ \Illuminate\Support\Str::limit($entry->content, 60) }}</span>
+                            <span class="wd-week-entry-text">{{ truncate($entry->content, 60) }}</span>
                         </a>
                     @endforeach
                 </div>

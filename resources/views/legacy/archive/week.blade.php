@@ -5,7 +5,7 @@
 @section('content')
 @php
     $weekStart = $monday ?? now()->startOfWeek(\Carbon\Carbon::MONDAY);
-    $dayAbbr = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+    $dayAbbr = weekdayAbbr('de');
     $days = collect(range(0, 6))->map(fn ($i) => $weekStart->copy()->addDays($i));
     $hours = range(7, 20);
     $legacyUsers = collect($users ?? []);
@@ -100,7 +100,7 @@
                                 else $sClass = $bg ? 'lo' : 'log';
                             }
                         @endphp
-                        <td class="{{ $cClass }}">@if ($entry)<span title="{{ e($entry->inhalt ?? '') }}">{{ \Illuminate\Support\Str::limit($entry->inhalt ?? '', 10, '') }}</span>@else&nbsp;@endif</td>
+                        <td class="{{ $cClass }}">@if ($entry)<span title="{{ e($entry->inhalt ?? '') }}">{{ truncate($entry->inhalt ?? '', 10, '') }}</span>@else&nbsp;@endif</td>
                         <td class="{{ $sClass }}">&nbsp;</td>
                     @endforeach
 

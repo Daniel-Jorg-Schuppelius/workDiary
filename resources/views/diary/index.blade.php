@@ -86,7 +86,7 @@
                     </div>
                     <p class="text-base leading-relaxed text-base-content">
                         @php
-                            $snippet = Str::limit($entry->content, 240);
+                            $snippet = truncate($entry->content, 240);
                             $needle = trim((string) ($filters['q'] ?? ''));
                         @endphp
                         @if ($needle !== '')

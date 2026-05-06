@@ -6,6 +6,7 @@ use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
 use App\Models\OnCallShift;
 use App\Models\User;
+use CommonToolkit\Helper\Data\StringHelper as ToolkitStringHelper;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -21,6 +22,8 @@ class LegacyImportCommand extends Command {
 
     protected $description = 'Importiert Benutzer, Tagebuch, Bereitschaften und Notdienste aus der Legacy-DB (idempotent).';
 
+    private string $legacyEncoding = 'latin1';
+
     public function handle(): int {
         if (! filled(config('database.connections.legacy.database'))) {
             $this->error('Legacy-DB ist nicht konfiguriert. Bitte LEGACY_DB_* in der .env setzen.');
@@ -33,6 +36,8 @@ class LegacyImportCommand extends Command {
             $this->error('Legacy-DB nicht erreichbar: ' . $e->getMessage());
             return self::FAILURE;
         }
+
+        $this->legacyEncoding = (string) config('database.connections.legacy.charset', 'latin1');
 
         $any = $this->option('users') || $this->option('diary') || $this->option('shifts') || $this->option('assignments');
         $importUsers = $this->option('users') || ! $any;
@@ -81,8 +86,8 @@ class LegacyImportCommand extends Command {
             User::updateOrCreate(
                 ['legacy_user_id' => $legacy->id],
                 [
-                    'name' => $legacy->uname,
-                    'email' => $legacy->email ?: $legacy->uname . '@workdiary.local',
+                    'name' => $this->normalizeLegacyText((string) ($legacy->uname ?? '')),
+                    'email' => $this->normalizeLegacyText((string) ($legacy->email ?: ($legacy->uname . '@workdiary.local'))),
                     // Zufalls-Passwort bei Neuanlage; vorhandene werden NICHT überschrieben.
                     'password' => Hash::make(Str::random(40)),
                     'must_change_password' => true,
@@ -125,8 +130,8 @@ class LegacyImportCommand extends Command {
                     ['legacy_id' => $row->id],
                     [
                         'user_id' => $userId,
-                        'content' => $row->inhalt ?? '',
-                        'response' => $row->antwort ?: null,
+                        'content' => $this->normalizeLegacyText((string) ($row->inhalt ?? '')),
+                        'response' => $this->nullableLegacyText($row->antwort),
                         'status' => (int) $row->gelesen,
                         'start_at' => $this->dt($row->von),
                         'end_at' => $this->dt($row->bis),
@@ -215,7 +220,7 @@ class LegacyImportCommand extends Command {
                         'on_call_shift_id' => null,
                         'start_at' => $start,
                         'end_at' => $end,
-                        'reason' => isset($row->grund) ? (string) $row->grund : null,
+                        'reason' => isset($row->grund) ? $this->nullableLegacyText($row->grund) : null,
                         'is_archived' => false,
                     ]
                 );
@@ -232,7 +237,24 @@ class LegacyImportCommand extends Command {
     private function dt(mixed $val): ?string {
         if ($val === null) return null;
         $s = (string) $val;
-        if ($s === '' || str_starts_with($s, '0000-00-00')) return null;
+        if (ToolkitStringHelper::isNullOrEmpty($s) || str_starts_with($s, '0000-00-00')) return null;
         return $s;
+    }
+
+    private function normalizeLegacyText(string $value): string {
+        if (ToolkitStringHelper::isNullOrEmpty($value)) {
+            return '';
+        }
+
+        return ToolkitStringHelper::convertToUtf8($value, $this->legacyEncoding);
+    }
+
+    private function nullableLegacyText(mixed $value): ?string {
+        if ($value === null) {
+            return null;
+        }
+
+        $normalized = $this->normalizeLegacyText((string) $value);
+        return ToolkitStringHelper::isNullOrEmpty($normalized) ? null : $normalized;
     }
 }

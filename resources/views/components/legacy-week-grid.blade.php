@@ -15,7 +15,7 @@
 ])
 
 @php
-    $dayAbbr       = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+    $dayAbbr       = weekdayAbbr('de');
     $tableMinWidth = 'calc(4.5rem + ' . count($users) . ' * 6rem + 4.5rem)';
     $selectedWeek  ??= $monday->format('o-\WW');
 @endphp
@@ -104,9 +104,9 @@
                                     @if ($entryRoute)
                                         <a href="{{ route($entryRoute, [$entry, 'week_date' => $selectedWeek]) }}"
                                            class="font-normal hover:underline"
-                                           title="{{ e($entry->inhalt ?? '') }}">{{ \Illuminate\Support\Str::limit($entry->inhalt ?? '', 10, '') }}</a>
+                                           title="{{ e($entry->inhalt ?? '') }}">{{ truncate($entry->inhalt ?? '', 10, '') }}</a>
                                     @else
-                                        <span title="{{ e($entry->inhalt ?? '') }}">{{ \Illuminate\Support\Str::limit($entry->inhalt ?? '', 10, '') }}</span>
+                                        <span title="{{ e($entry->inhalt ?? '') }}">{{ truncate($entry->inhalt ?? '', 10, '') }}</span>
                                     @endif
                                 @else
                                     &nbsp;

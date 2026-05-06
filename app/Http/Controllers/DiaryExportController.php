@@ -38,13 +38,13 @@ class DiaryExportController extends Controller {
                     /** @var DiaryEntry $entry */
                     fputcsv($out, [
                         $entry->id,
-                        $entry->statusLabel(),
-                        optional($entry->user)->name ?? '',
+                        $this->csvSafe($entry->statusLabel()),
+                        $this->csvSafe(optional($entry->user)->name ?? ''),
                         optional($entry->start_at)->format('Y-m-d H:i') ?? '',
                         optional($entry->end_at)->format('Y-m-d H:i') ?? '',
-                        $this->oneLine($entry->content),
-                        $this->oneLine($entry->response ?? ''),
-                        $entry->tags->pluck('name')->implode(', '),
+                        $this->csvSafe($entry->content),
+                        $this->csvSafe($entry->response ?? ''),
+                        $this->csvSafe($entry->tags->pluck('name')->implode(', ')),
                         $entry->is_archived ? '1' : '0',
                         optional($entry->created_at)->format('Y-m-d H:i') ?? '',
                     ], ';');
@@ -107,5 +107,16 @@ class DiaryExportController extends Controller {
 
     private function oneLine(string $value): string {
         return trim(preg_replace('/\s+/', ' ', $value) ?? '');
+    }
+
+    private function csvSafe(string $value): string {
+        $normalized = $this->oneLine($value);
+        $trimmed = ltrim($normalized);
+
+        if ($trimmed !== '' && in_array($trimmed[0], ['=', '+', '-', '@'], true)) {
+            return "'" . $normalized;
+        }
+
+        return $normalized;
     }
 }

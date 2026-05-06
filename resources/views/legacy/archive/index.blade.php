@@ -72,7 +72,7 @@
                 @forelse ($diaryEntries as $entry)
                     <article class="rounded-box border border-base-300 bg-base-200 p-2">
                         <p class="text-sm text-base-content/70">{{ optional($entry->mitarbeiter)->uname ?? 'Unbekannt' }}</p>
-                        <p class="mt-1 text-sm text-base-content">{{ \Illuminate\Support\Str::limit($entry->inhalt ?? '', 90) }}</p>
+                        <p class="mt-1 text-sm text-base-content">{{ truncate($entry->inhalt ?? '', 90) }}</p>
                         <p class="mt-1 text-xs text-base-content/60">{{ __('Bis') }} {{ $entry->bis?->format('d.m.Y H:i') ?? '-' }}</p>
                     </article>
                 @empty
