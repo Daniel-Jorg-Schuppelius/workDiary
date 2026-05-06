@@ -20,8 +20,7 @@ if (! function_exists('truncate')) {
      * @param bool $trim Whether to trim the text first
      * @return string Truncated text or original if shorter
      */
-    function truncate(?string $text, int $maxLength, string $suffix = '...', bool $trim = false): string
-    {
+    function truncate(?string $text, int $maxLength, string $suffix = '...', bool $trim = false): string {
         return ToolkitStringHelper::truncate($text, $maxLength, $suffix, $trim);
     }
 }
@@ -33,8 +32,7 @@ if (! function_exists('isNullOrEmpty')) {
      * @param string|null $value The value to check
      * @return bool True if null or empty string
      */
-    function isNullOrEmpty(?string $value): bool
-    {
+    function isNullOrEmpty(?string $value): bool {
         return ToolkitStringHelper::isNullOrEmpty($value);
     }
 }
@@ -49,8 +47,7 @@ if (! function_exists('maskEmail')) {
      * @param string $maskChar Character to use for masking
      * @return string Masked email address
      */
-    function maskEmail(string $email, int $visibleStart = 3, int $visibleEnd = 3, string $maskChar = '*'): string
-    {
+    function maskEmail(string $email, int $visibleStart = 3, int $visibleEnd = 3, string $maskChar = '*'): string {
         return ToolkitStringHelper::mask($email, $visibleStart, $visibleEnd, $maskChar);
     }
 }
@@ -64,8 +61,7 @@ if (! function_exists('weekdayAbbr')) {
      * @param bool $long Return full names instead of abbreviations
      * @return array<int, string> Array of 7 weekday abbreviations/names (Mo-Su)
      */
-    function weekdayAbbr(string $locale = 'de', bool $long = false): array
-    {
+    function weekdayAbbr(string $locale = 'de', bool $long = false): array {
         $days = [
             Weekday::MONDAY,
             Weekday::TUESDAY,
@@ -92,8 +88,7 @@ if (! function_exists('monthsArray')) {
      * @param bool $leadingZero Whether to pad months with leading zeros (01-12)
      * @return array<string|int, string> Array of months [key => month name]
      */
-    function monthsArray(string $locale = 'de', bool $leadingZero = false): array
-    {
+    function monthsArray(string $locale = 'de', bool $leadingZero = false): array {
         return Month::toArray($leadingZero, $locale);
     }
 }
