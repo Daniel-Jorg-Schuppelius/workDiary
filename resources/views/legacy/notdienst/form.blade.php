@@ -3,6 +3,9 @@
 @section('nav-title', $isEdit ? __('Notdienst bearbeiten') : __('Notdienst neu'))
 
 @section('content')
+    @php
+        /** @var \Illuminate\Support\Collection<int, \App\Models\Legacy\LegacyUser> $users */
+    @endphp
     <div class="mx-auto flex h-[calc(100dvh-11rem)] w-full max-w-xl flex-col">
         <div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100">
             <div class="h-full overflow-auto p-5">
@@ -15,8 +18,8 @@
                 <div>
                     <label for="user" class="label text-sm font-semibold pb-1">{{ __('Mitarbeiter') }}</label>
                     <select id="user" name="user" class="select select-bordered select-sm w-full @error('user') select-error @enderror">
-                        @foreach ($users as $user)
-                            <option value="{{ $user->id }}" @selected((int) old('user', $item?->user) === (int) $user->id)>{{ $user->uname }}</option>
+                        @foreach ($users as $legacyUser)
+                            <option value="{{ $legacyUser->id }}" @selected((int) old('user', $item?->user) === (int) $legacyUser->id)>{{ $legacyUser->uname }}</option>
                         @endforeach
                     </select>
                     @error('user')<p class="mt-2 text-sm text-error">{{ $message }}</p>@enderror

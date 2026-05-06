@@ -3,6 +3,10 @@
 @section('nav-title', __('Notdienst'))
 
 @section('content')
+@php
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Legacy\LegacyUser> $users */
+    /** @var array<string, mixed> $filters */
+@endphp
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
     <div role="tablist" class="tabs tabs-box flex-none self-start">
         <a role="tab" href="{{ route('legacy.oncall.index') }}" class="tab">{{ __('Bereitschaft') }}</a>
@@ -14,8 +18,8 @@
                     <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</span></label>
                     <select name="user" class="select select-bordered select-sm w-full">
                         <option value="">{{ __('Alle') }}</option>
-                        @foreach ($users as $user)
-                            <option value="{{ $user->id }}" @selected(($filters['user'] ?? '') == $user->id)>{{ $user->uname }}</option>
+                        @foreach ($users as $legacyUser)
+                            <option value="{{ $legacyUser->id }}" @selected(($filters['user'] ?? '') == $legacyUser->id)>{{ $legacyUser->uname }}</option>
                         @endforeach
                     </select>
                 </div>
