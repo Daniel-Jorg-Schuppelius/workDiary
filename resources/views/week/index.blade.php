@@ -199,20 +199,44 @@
 
                     {{-- Shifts (left band) --}}
                     @foreach ($shiftsByDay[$dayIndex] as $shift)
-                        @php $p = $service->placement($shift->start_at, $shift->end_at, $day); @endphp
-                        <div class="wd-week-shift" style="top: {{ $p['top'] }}%; height: {{ $p['height'] }}%"
-                             title="{{ __('Bereitschaft') }} · {{ $shift->user?->name }} · {{ $shift->start_at->format('d.m. H:i') }}–{{ $shift->end_at->format('H:i') }}">
-                            <span class="wd-week-shift-label">{{ $shift->user?->name ?? '—' }}</span>
-                        </div>
+                        @php
+                            $p = $service->placement($shift->start_at, $shift->end_at, $day);
+                            $shiftTitle = __('Bereitschaft') . ' · ' . ($shift->user?->name ?? '—') . ' · ' . $shift->start_at->format('d.m. H:i') . '–' . $shift->end_at->format('H:i');
+                        @endphp
+                        @can('update', $shift)
+                            <a href="{{ route('shifts.edit', $shift) }}"
+                               data-entry-modal-trigger
+                               class="wd-week-shift"
+                               style="top: {{ $p['top'] }}%; height: {{ $p['height'] }}%"
+                               title="{{ $shiftTitle }}">
+                                <span class="wd-week-shift-label">{{ $shift->user?->name ?? '—' }}</span>
+                            </a>
+                        @else
+                            <div class="wd-week-shift" style="top: {{ $p['top'] }}%; height: {{ $p['height'] }}%" title="{{ $shiftTitle }}">
+                                <span class="wd-week-shift-label">{{ $shift->user?->name ?? '—' }}</span>
+                            </div>
+                        @endcan
                     @endforeach
 
                     {{-- Emergency assignments (markers) --}}
                     @foreach ($assignmentsByDay[$dayIndex] as $assignment)
-                        @php $p = $service->placement($assignment->start_at, $assignment->end_at, $day); @endphp
-                        <div class="wd-week-emergency" style="top: {{ $p['top'] }}%; height: {{ max($p['height'], 2.5) }}%"
-                             title="{{ __('Notdienst') }} · {{ $assignment->user?->name }} · {{ $assignment->start_at->format('d.m. H:i') }}–{{ $assignment->end_at->format('H:i') }}{{ $assignment->reason ? ' · ' . $assignment->reason : '' }}">
-                            <span class="wd-week-emergency-label">⚡ {{ $assignment->user?->name ?? '—' }}</span>
-                        </div>
+                        @php
+                            $p = $service->placement($assignment->start_at, $assignment->end_at, $day);
+                            $assignmentTitle = __('Notdienst') . ' · ' . ($assignment->user?->name ?? '—') . ' · ' . $assignment->start_at->format('d.m. H:i') . '–' . $assignment->end_at->format('H:i') . ($assignment->reason ? ' · ' . $assignment->reason : '');
+                        @endphp
+                        @can('update', $assignment)
+                            <a href="{{ route('assignments.edit', $assignment) }}"
+                               data-entry-modal-trigger
+                               class="wd-week-emergency"
+                               style="top: {{ $p['top'] }}%; height: {{ max($p['height'], 2.5) }}%"
+                               title="{{ $assignmentTitle }}">
+                                <span class="wd-week-emergency-label">⚡ {{ $assignment->user?->name ?? '—' }}</span>
+                            </a>
+                        @else
+                            <div class="wd-week-emergency" style="top: {{ $p['top'] }}%; height: {{ max($p['height'], 2.5) }}%" title="{{ $assignmentTitle }}">
+                                <span class="wd-week-emergency-label">⚡ {{ $assignment->user?->name ?? '—' }}</span>
+                            </div>
+                        @endcan
                     @endforeach
 
                     {{-- Diary entries (cards) --}}

@@ -69,11 +69,9 @@ class ProjectController extends Controller {
     public function create(Request $request): View {
         Gate::authorize('create', Project::class);
 
-        $isDialog = $request->boolean('dialog');
-
-        return view($isDialog ? 'projects._form_dialog' : 'projects.form', [
+        return view('projects._form_dialog', [
             'project' => null,
-            'isDialog' => $isDialog,
+            'isDialog' => true,
         ]);
     }
 
@@ -91,11 +89,9 @@ class ProjectController extends Controller {
     public function edit(Request $request, Project $project): View {
         Gate::authorize('update', $project);
 
-        $isDialog = $request->boolean('dialog');
-
-        return view($isDialog ? 'projects._form_dialog' : 'projects.form', [
+        return view('projects._form_dialog', [
             'project' => $project,
-            'isDialog' => $isDialog,
+            'isDialog' => true,
         ]);
     }
 

@@ -1,23 +1,27 @@
-@extends('layouts.app')
+@php
+    $isDialog = $isDialog ?? true;
+@endphp
 
-@section('title', __('Passwort ändern'))
-
-@section('content')
-<div class="mx-auto max-w-md space-y-4">
-    <h1 class="text-2xl font-semibold">{{ __('Passwort ändern') }}</h1>
-
+<x-dialog
+    :title="__('Passwort ändern')"
+    :eyebrow="__('Konto')"
+    icon="🔐"
+    tone="warning">
     @if ($mustChange)
-        <div class="alert alert-warning">
+        <div class="alert alert-warning mb-4">
             <span>{{ __('Bitte legen Sie ein neues Passwort fest, bevor Sie weiterarbeiten.') }}</span>
         </div>
     @endif
 
     @if (session('warning'))
-        <div class="alert alert-warning">{{ session('warning') }}</div>
+        <div class="alert alert-warning mb-4">{{ session('warning') }}</div>
     @endif
 
-    <form method="POST" action="{{ route('account.password.update') }}" class="space-y-4 rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
+    <form method="POST" action="{{ route('account.password.update') }}" class="space-y-4" data-entry-form>
         @csrf
+        @if ($isDialog)
+            <input type="hidden" name="_dialog_url" value="{{ route('account.password.edit') }}?dialog=1">
+        @endif
 
         @unless ($mustChange)
             <div>
@@ -44,9 +48,11 @@
             <input type="password" id="password_confirmation" name="password_confirmation" autocomplete="new-password" class="input input-bordered w-full" required>
         </div>
 
-        <div class="flex justify-end">
+        <div class="flex justify-end gap-2 pt-2">
+            @if ($isDialog)
+                <button type="button" class="btn btn-ghost" data-entry-modal-close>{{ __('Abbrechen') }}</button>
+            @endif
             <button type="submit" class="btn btn-primary">{{ __('Speichern') }}</button>
         </div>
     </form>
-</div>
-@endsection
+</x-dialog>

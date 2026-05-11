@@ -11,8 +11,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class LegacyAccountController extends Controller {
-    public function editPassword(): View {
-        return view('legacy.account.password');
+    public function editPassword(Request $request): View {
+        return view('legacy.account._password_dialog', [
+            'isDialog' => true,
+        ]);
     }
 
     public function updatePassword(Request $request): RedirectResponse {

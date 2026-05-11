@@ -9,9 +9,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller {
-    public function edit(): View {
-        return view('account.profile', [
+    public function edit(Request $request): View {
+        return view('account._profile_dialog', [
             'user' => Auth::user(),
+            'isDialog' => true,
         ]);
     }
 

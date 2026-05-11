@@ -25,9 +25,7 @@ class TagController extends Controller {
     public function create(Request $request): View {
         Gate::authorize('create', Tag::class);
 
-        $isDialog = $request->boolean('dialog');
-
-        return view($isDialog ? 'tags._form_dialog' : 'tags.form', ['tag' => null, 'isDialog' => $isDialog]);
+        return view('tags._form_dialog', ['tag' => null, 'isDialog' => true]);
     }
 
     public function store(Request $request): RedirectResponse {
@@ -50,9 +48,7 @@ class TagController extends Controller {
     public function edit(Request $request, Tag $tag): View {
         Gate::authorize('update', $tag);
 
-        $isDialog = $request->boolean('dialog');
-
-        return view($isDialog ? 'tags._form_dialog' : 'tags.form', ['tag' => $tag, 'isDialog' => $isDialog]);
+        return view('tags._form_dialog', ['tag' => $tag, 'isDialog' => true]);
     }
 
     public function update(Request $request, Tag $tag): RedirectResponse {

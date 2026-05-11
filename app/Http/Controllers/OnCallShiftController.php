@@ -13,15 +13,14 @@ use Illuminate\View\View;
 class OnCallShiftController extends Controller {
     use ManagesShiftLike;
     public function create(Request $request): View {
-        $isDialog = $request->boolean('dialog');
         /** @var User $auth */
         $auth = Auth::user();
         $canAssignOthers = $auth->canCreateEntriesForOthers();
 
-        return view($isDialog ? 'shifts._form_dialog' : 'shifts.form', [
+        return view('shifts._form_dialog', [
             'shift' => null,
             'isEdit' => false,
-            'isDialog' => $isDialog,
+            'isDialog' => true,
             'canAssignOthers' => $canAssignOthers,
             'assignableUsers' => $this->assignableUsers(),
             'prefillStartAt' => $this->parseDateTime($request->query('start_at') ?? $request->query('date')),
@@ -46,15 +45,14 @@ class OnCallShiftController extends Controller {
 
     public function edit(Request $request, OnCallShift $shift): View {
         $this->authorizeManage();
-        $isDialog = $request->boolean('dialog');
         /** @var User $auth */
         $auth = Auth::user();
         $canAssignOthers = $auth->canCreateEntriesForOthers();
 
-        return view($isDialog ? 'shifts._form_dialog' : 'shifts.form', [
+        return view('shifts._form_dialog', [
             'shift' => $shift,
             'isEdit' => true,
-            'isDialog' => $isDialog,
+            'isDialog' => true,
             'canAssignOthers' => $canAssignOthers,
             'assignableUsers' => $this->assignableUsers(),
             'prefillStartAt' => null,

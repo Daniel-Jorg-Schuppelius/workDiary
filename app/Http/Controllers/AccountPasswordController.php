@@ -10,9 +10,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
 class AccountPasswordController extends Controller {
-    public function edit(): View {
-        return view('account.password', [
+    public function edit(Request $request): View {
+        return view('account._password_dialog', [
             'mustChange' => (bool) (Auth::user()->must_change_password ?? false),
+            'isDialog' => true,
         ]);
     }
 

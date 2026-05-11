@@ -18,7 +18,7 @@
                 <p class="text-sm text-base-content/60">{{ $now->translatedFormat('l, d.m.Y H:i') }}</p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <a href="{{ route('diary.create') }}" class="btn btn-primary btn-sm">+ {{ __('Neuer Eintrag') }}</a>
+                <a href="{{ route('diary.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">+ {{ __('Neuer Eintrag') }}</a>
                 <a href="{{ route('week.index') }}" class="btn btn-ghost btn-sm">{{ __('Wochenansicht') }}</a>
                 <a href="{{ route('diary.index') }}" class="btn btn-ghost btn-sm">{{ __('Tagebuch') }}</a>
             </div>

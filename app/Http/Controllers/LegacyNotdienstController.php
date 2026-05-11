@@ -22,10 +22,13 @@ class LegacyNotdienstController extends Controller {
         return view('legacy.notdienst.index', $this->legacyDutyIndexData($request, $query));
     }
 
-    public function create(): View {
+    public function create(Request $request): View {
         $this->ensureAdmin();
 
-        return view('legacy.notdienst.form', $this->legacyDutyFormData(null, false));
+        return view('legacy.notdienst._form_dialog', [
+            ...$this->legacyDutyFormData(null, false),
+            'isDialog' => true,
+        ]);
     }
 
     public function store(SaveLegacyDutyRequest $request): RedirectResponse {
@@ -43,7 +46,10 @@ class LegacyNotdienstController extends Controller {
             return $redirect;
         }
 
-        return view('legacy.notdienst.form', $this->legacyDutyFormData($notdienst, true));
+        return view('legacy.notdienst._form_dialog', [
+            ...$this->legacyDutyFormData($notdienst, true),
+            'isDialog' => true,
+        ]);
     }
 
     public function update(SaveLegacyDutyRequest $request, LegacyNotdienst $notdienst): RedirectResponse {

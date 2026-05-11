@@ -22,10 +22,13 @@ class LegacyOnCallController extends Controller {
         return view('legacy.oncall.index', $this->legacyDutyIndexData($request, $query));
     }
 
-    public function create(): View {
+    public function create(Request $request): View {
         $this->ensureAdmin();
 
-        return view('legacy.oncall.form', $this->legacyDutyFormData(null, false));
+        return view('legacy.oncall._form_dialog', [
+            ...$this->legacyDutyFormData(null, false),
+            'isDialog' => true,
+        ]);
     }
 
     public function store(SaveLegacyDutyRequest $request): RedirectResponse {
@@ -43,7 +46,10 @@ class LegacyOnCallController extends Controller {
             return $redirect;
         }
 
-        return view('legacy.oncall.form', $this->legacyDutyFormData($oncall, true));
+        return view('legacy.oncall._form_dialog', [
+            ...$this->legacyDutyFormData($oncall, true),
+            'isDialog' => true,
+        ]);
     }
 
     public function update(SaveLegacyDutyRequest $request, LegacyOnCall $oncall): RedirectResponse {

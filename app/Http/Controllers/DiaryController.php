@@ -99,7 +99,6 @@ class DiaryController extends Controller {
     }
 
     public function create(Request $request): View {
-        $isDialog = $request->boolean('dialog');
         /** @var User $auth */
         $auth = Auth::user();
         $canCreateForOthers = $auth->canCreateEntriesForOthers();
@@ -111,10 +110,10 @@ class DiaryController extends Controller {
             $prefillUserId = 0;
         }
 
-        return view($isDialog ? 'diary._form_dialog' : 'diary.form', [
+        return view('diary._form_dialog', [
             'entry' => null,
             'isEdit' => false,
-            'isDialog' => $isDialog,
+            'isDialog' => true,
             'allTags' => $this->allTags(),
             'selectedTagIds' => [],
             'canCreateForOthers' => $canCreateForOthers,
@@ -179,16 +178,15 @@ class DiaryController extends Controller {
         Gate::authorize('update', $diary);
 
         $diary->load('tags:id,name,color');
-        $isDialog = $request->boolean('dialog');
 
         /** @var \App\Models\User $auth */
         $auth = Auth::user();
         $canCreateForOthers = $auth->canCreateEntriesForOthers();
 
-        return view($isDialog ? 'diary._form_dialog' : 'diary.form', [
+        return view('diary._form_dialog', [
             'entry' => $diary,
             'isEdit' => true,
-            'isDialog' => $isDialog,
+            'isDialog' => true,
             'allTags' => $this->allTags(),
             'selectedTagIds' => $diary->tags->pluck('id')->all(),
             'canCreateForOthers' => $canCreateForOthers,

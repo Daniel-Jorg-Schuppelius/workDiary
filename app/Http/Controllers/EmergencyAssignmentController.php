@@ -14,15 +14,14 @@ use Illuminate\View\View;
 class EmergencyAssignmentController extends Controller {
     use ManagesShiftLike;
     public function create(Request $request): View {
-        $isDialog = $request->boolean('dialog');
         /** @var User $auth */
         $auth = Auth::user();
         $canAssignOthers = $auth->canCreateEntriesForOthers();
 
-        return view($isDialog ? 'assignments._form_dialog' : 'assignments.form', [
+        return view('assignments._form_dialog', [
             'assignment' => null,
             'isEdit' => false,
-            'isDialog' => $isDialog,
+            'isDialog' => true,
             'canAssignOthers' => $canAssignOthers,
             'assignableUsers' => $this->assignableUsers(),
             'shiftOptions' => $this->shiftOptions(),
@@ -46,15 +45,14 @@ class EmergencyAssignmentController extends Controller {
 
     public function edit(Request $request, EmergencyAssignment $assignment): View {
         $this->authorizeManage();
-        $isDialog = $request->boolean('dialog');
         /** @var User $auth */
         $auth = Auth::user();
         $canAssignOthers = $auth->canCreateEntriesForOthers();
 
-        return view($isDialog ? 'assignments._form_dialog' : 'assignments.form', [
+        return view('assignments._form_dialog', [
             'assignment' => $assignment,
             'isEdit' => true,
-            'isDialog' => $isDialog,
+            'isDialog' => true,
             'canAssignOthers' => $canAssignOthers,
             'assignableUsers' => $this->assignableUsers(),
             'shiftOptions' => $this->shiftOptions(),

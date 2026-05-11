@@ -130,11 +130,7 @@ class LegacyDiaryController extends Controller {
     public function create(): View|\Illuminate\Http\Response {
         $data = $this->formData(null, false);
 
-        if (request()->boolean('dialog')) {
-            return response(view('legacy.diary._form_dialog', $data));
-        }
-
-        return view('legacy.diary.form', $data);
+        return response(view('legacy.diary._form_dialog', $data));
     }
 
     public function store(SaveLegacyDiaryEntryRequest $request): RedirectResponse|\Illuminate\Http\JsonResponse {
@@ -187,11 +183,7 @@ class LegacyDiaryController extends Controller {
 
         $data = $this->formData($entry, true);
 
-        if (request()->boolean('dialog')) {
-            return response(view('legacy.diary._form_dialog', $data));
-        }
-
-        return view('legacy.diary.form', $data);
+        return response(view('legacy.diary._form_dialog', $data));
     }
 
     public function update(SaveLegacyDiaryEntryRequest $request, LegacyDiaryEntry $entry): RedirectResponse|\Illuminate\Http\JsonResponse {

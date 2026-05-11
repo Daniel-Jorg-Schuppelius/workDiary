@@ -313,28 +313,73 @@ if (typeof document !== "undefined") {
                     "X-Requested-With": "XMLHttpRequest",
                 },
             });
+            const html = await response.text();
+
             if (!response.ok) {
-                window.location.href = rawUrl;
+                body.innerHTML = `
+                    <div class="p-6 space-y-3">
+                        <p class="text-sm text-error">Dialog konnte nicht geladen werden.</p>
+                        <a href="${rawUrl}" target="_blank" rel="noopener" class="btn btn-sm btn-ghost">Seite in neuem Tab öffnen</a>
+                    </div>
+                `;
                 return;
             }
 
-            const html = await response.text();
             body.innerHTML = html;
             initDynamicFields(body);
             bindDialogForms(body);
         } catch (_error) {
-            window.location.href = rawUrl;
+            body.innerHTML = `
+                <div class="p-6 space-y-3">
+                    <p class="text-sm text-error">Dialog konnte nicht geladen werden.</p>
+                    <a href="${rawUrl}" target="_blank" rel="noopener" class="btn btn-sm btn-ghost">Seite in neuem Tab öffnen</a>
+                </div>
+            `;
         }
     };
 
-    document.addEventListener("click", (event) => {
-        const trigger = event.target.closest("a[data-entry-modal-trigger]");
-        if (!trigger) return;
+    const findModalTrigger = (event) => {
+        if (event.target instanceof Element) {
+            return event.target.closest("a[data-entry-modal-trigger]");
+        }
 
-        const href = trigger.getAttribute("href");
-        if (!href) return;
+        if (typeof event.composedPath === "function") {
+            const path = event.composedPath();
+            for (const node of path) {
+                if (
+                    node instanceof Element &&
+                    node.matches("a[data-entry-modal-trigger]")
+                ) {
+                    return node;
+                }
+            }
+        }
 
-        event.preventDefault();
-        openEntryDialog(href);
-    });
+        return null;
+    };
+
+    document.addEventListener(
+        "click",
+        (event) => {
+            if (event.defaultPrevented) return;
+            if (event.button !== 0) return;
+            if (
+                event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey
+            )
+                return;
+
+            const trigger = findModalTrigger(event);
+            if (!trigger) return;
+
+            const href = trigger.getAttribute("href");
+            if (!href) return;
+
+            event.preventDefault();
+            openEntryDialog(href);
+        },
+        true,
+    );
 })();

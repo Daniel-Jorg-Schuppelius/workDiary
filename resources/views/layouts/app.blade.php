@@ -76,7 +76,7 @@
                                     @if ($isLegacyAdmin)
                                         <li><a href="{{ route('legacy.users.index') }}">{{ __('Mitarbeiter') }}</a></li>
                                     @endif
-                                    <li><a href="{{ route('legacy.account.password.edit') }}">{{ __('Passwort') }}</a></li>
+                                    <li><a href="{{ route('legacy.account.password.edit') }}" data-entry-modal-trigger>{{ __('Passwort') }}</a></li>
                                 </ul>
                             </div>
                             <a href="{{ route($createRoute) }}" data-entry-modal-trigger class="btn btn-sm btn-primary">+ {{ __('Neuer Eintrag') }}</a>

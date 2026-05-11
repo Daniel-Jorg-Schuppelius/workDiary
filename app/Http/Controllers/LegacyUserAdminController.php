@@ -9,6 +9,7 @@ use App\Models\Legacy\LegacyNotdienst;
 use App\Models\Legacy\LegacyOnCall;
 use App\Models\Legacy\LegacyUser;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class LegacyUserAdminController extends Controller {
@@ -21,12 +22,13 @@ class LegacyUserAdminController extends Controller {
         ]);
     }
 
-    public function create(): View {
+    public function create(Request $request): View {
         $this->ensureAdmin();
 
-        return view('legacy.users.form', [
+        return view('legacy.users._form_dialog', [
             'legacyUser' => null,
             'isEdit' => false,
+            'isDialog' => true,
         ]);
     }
 
@@ -43,9 +45,10 @@ class LegacyUserAdminController extends Controller {
 
         $this->ensureMutableLegacyUser($user);
 
-        return view('legacy.users.form', [
+        return view('legacy.users._form_dialog', [
             'legacyUser' => $user,
             'isEdit' => true,
+            'isDialog' => true,
         ]);
     }
 

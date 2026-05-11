@@ -1,14 +1,18 @@
-@extends('layouts.app')
+@php
+    $isDialog = $isDialog ?? true;
+@endphp
 
-@section('title', __('Profil'))
-
-@section('content')
-<div class="mx-auto max-w-md space-y-4">
-    <h1 class="text-2xl font-semibold">{{ __('Profil') }}</h1>
-
-    <form method="POST" action="{{ route('account.profile.update') }}" class="space-y-4 rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
+<x-dialog
+    :title="__('Profil')"
+    :eyebrow="__('Konto')"
+    icon="👤"
+    tone="info">
+    <form method="POST" action="{{ route('account.profile.update') }}" class="space-y-4" data-entry-form>
         @csrf
         @method('PUT')
+        @if ($isDialog)
+            <input type="hidden" name="_dialog_url" value="{{ route('account.profile.edit') }}?dialog=1">
+        @endif
 
         <div>
             <label class="label" for="name">
@@ -26,10 +30,12 @@
             @error('email')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
-        <div class="flex justify-end gap-2">
-            <a href="{{ route('account.password.edit') }}" class="btn btn-ghost">{{ __('Passwort ändern') }}</a>
+        <div class="flex justify-end gap-2 pt-2">
+            <a href="{{ route('account.password.edit') }}" data-entry-modal-trigger class="btn btn-ghost">{{ __('Passwort ändern') }}</a>
+            @if ($isDialog)
+                <button type="button" class="btn btn-ghost" data-entry-modal-close>{{ __('Schließen') }}</button>
+            @endif
             <button type="submit" class="btn btn-primary">{{ __('Speichern') }}</button>
         </div>
     </form>
-</div>
-@endsection
+</x-dialog>

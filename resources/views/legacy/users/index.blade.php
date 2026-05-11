@@ -5,7 +5,7 @@
 @section('content')
     @php($legacyUsers = collect($users ?? []))
     <div class="mb-3">
-        <a href="{{ route('legacy.users.create') }}" class="btn btn-primary btn-sm">{{ __('Neuen Mitarbeiter anlegen') }}</a>
+        <a href="{{ route('legacy.users.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">{{ __('Neuen Mitarbeiter anlegen') }}</a>
     </div>
 
     <x-table size="xs">
@@ -24,7 +24,7 @@
                         <td>{{ $legacyUser->uname }}</td>
                         <td>{{ $legacyUser->email ?: '-' }}</td>
                         <td class="text-right">
-                            <a href="{{ route('legacy.users.edit', $legacyUser) }}" class="link link-primary text-xs">{{ __('Bearbeiten') }}</a>
+                            <a href="{{ route('legacy.users.edit', $legacyUser) }}" data-entry-modal-trigger class="link link-primary text-xs">{{ __('Bearbeiten') }}</a>
                             <span class="mx-1 text-base-content/40">|</span>
                             <form method="POST" action="{{ route('legacy.users.destroy', $legacyUser) }}" class="inline" onsubmit="return confirm('{{ __('Mitarbeiter wirklich löschen?') }}')">
                                 @csrf
