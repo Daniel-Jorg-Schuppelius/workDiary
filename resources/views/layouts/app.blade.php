@@ -70,6 +70,7 @@
                                     ['route' => 'week.index',               'label' => __('Wochenansicht'),  'modal' => false, 'matches' => ['week.index']],
                                     ['route' => 'kanban.index',             'label' => __('Kanban'),         'modal' => false, 'matches' => ['kanban.index']],
                                     ['route' => 'duties.index',             'label' => __('Dienste'),        'modal' => false, 'matches' => ['duties.*']],
+                                    ['route' => 'schedule.index',           'label' => __('Schichtplan'),     'modal' => false, 'matches' => ['schedule.*']],
                                     ['route' => 'vacations.index',          'label' => __('Urlaub'),         'modal' => false, 'matches' => ['vacations.*']],
                                 ];
 

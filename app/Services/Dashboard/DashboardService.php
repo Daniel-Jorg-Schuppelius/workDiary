@@ -7,6 +7,7 @@ use App\Models\Comment;
 use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
 use App\Models\OnCallShift;
+use App\Models\ScheduledShift;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -86,6 +87,15 @@ class DashboardService {
             ->limit(5)
             ->get();
 
+        $upcomingScheduledShifts = ScheduledShift::query()
+            ->where('user_id', $user->id)
+            ->forDateRange($now->toDateString(), $now->addDays(7)->toDateString())
+            ->visible()
+            ->with('shiftType:id,name,abbreviation,color')
+            ->orderBy('date')
+            ->limit(7)
+            ->get();
+
         return [
             'kpi' => [
                 'open_entries'          => (int) $entryCounts?->open_cnt,
@@ -99,6 +109,7 @@ class DashboardService {
             'recent_entries'        => $recentEntries,
             'recent_comments'       => $recentComments,
             'recent_attachments'    => $recentAttachments,
+            'upcoming_scheduled'    => $upcomingScheduledShifts,
             'window_end'            => $weekEnd,
         ];
     }

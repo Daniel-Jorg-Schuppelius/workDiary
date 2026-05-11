@@ -733,3 +733,32 @@
         outline: 1px solid var(--color-error);
     }
 }
+
+/* ── Schedule / Schichtplan ──────────────────────────────────── */
+@layer components {
+    .schedule-matrix {
+        min-width: max-content;
+    }
+
+    .schedule-cell {
+        transition: background-color 0.1s ease;
+    }
+
+    .schedule-cell.drag-over {
+        background-color: color-mix(in srgb, var(--color-primary) 15%, var(--color-base-100));
+        outline: 2px dashed var(--color-primary);
+    }
+
+    .schedule-shift-badge {
+        transition: opacity 0.1s ease, transform 0.1s ease;
+    }
+
+    .schedule-shift-badge[draggable="true"]:active {
+        opacity: 0.5;
+        transform: scale(0.95);
+    }
+
+    .schedule-month-matrix .schedule-cell {
+        min-height: 5.5rem;
+    }
+}

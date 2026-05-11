@@ -123,6 +123,40 @@
 
             {{-- Letzte eigene Einträge --}}
             <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
+
+            {{-- ── Schichtplan-Widget ── --}}
+            @if (isset($user['upcoming_scheduled']))
+            <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
+                <div class="mb-3 flex items-center justify-between">
+                    <h3 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Nächste geplante Schichten') }}</h3>
+                    <a href="{{ route('schedule.index') }}" class="btn btn-xs btn-ghost">{{ __('Alle →') }}</a>
+                </div>
+                @if ($user['upcoming_scheduled']->isEmpty())
+                    <p class="text-sm text-base-content/60">{{ __('Keine geplanten Schichten in den nächsten 7 Tagen.') }}</p>
+                @else
+                    <ul class="space-y-1.5 text-sm">
+                        @foreach ($user['upcoming_scheduled'] as $sshift)
+                            <li class="flex items-center gap-2 rounded-box border border-base-300 bg-base-200 px-3 py-2">
+                                <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-[0.65rem] font-bold text-white"
+                                      style="background:{{ $sshift->shiftType?->color ?? '#6b7280' }};">
+                                    {{ $sshift->shiftType?->abbreviation ?? '?' }}
+                                </span>
+                                <span class="font-medium">{{ \Carbon\Carbon::parse($sshift->date)->translatedFormat('D d.m.') }}</span>
+                                @if ($sshift->resolvedStartTime())
+                                    <span class="text-base-content/60">{{ $sshift->resolvedStartTime() }}{{ $sshift->resolvedEndTime() ? '–'.$sshift->resolvedEndTime() : '' }}</span>
+                                @endif
+                                @if ($sshift->shiftType)
+                                    <span class="ml-auto text-xs text-base-content/50">{{ $sshift->shiftType->name }}</span>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </section>
+            @endif
+
+            {{-- Letzte eigene Einträge --}}
+            <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
                 <h3 class="mb-3 font-['Space_Grotesk'] text-lg font-semibold">{{ __('Meine letzten Einträge') }}</h3>
                 @if ($user['recent_entries']->isEmpty())
                     <p class="text-sm text-base-content/60">{{ __('Noch keine Einträge.') }}</p>

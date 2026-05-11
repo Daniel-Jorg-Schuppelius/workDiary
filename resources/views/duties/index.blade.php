@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="flex h-full min-h-0 w-full flex-col overflow-auto">
-        <div class="tabs tabs-box flex-nowrap overflow-x-auto">
+        <div class="tabs tabs-box">
             <input type="radio" name="duty_tabs" class="tab shrink-0 whitespace-nowrap" aria-label="⏱ {{ __('Bereitschaft') }} ({{ $shifts->total() }})" @checked($tab === 'bereitschaft') />
             <div class="tab-content border-base-300 bg-base-100 p-4">
                 <div class="mb-3 flex items-center justify-between">

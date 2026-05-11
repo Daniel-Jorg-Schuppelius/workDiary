@@ -31,6 +31,9 @@ use App\Http\Controllers\OnCallShiftController;
 use App\Http\Controllers\EmergencyAssignmentController;
 use App\Http\Controllers\DutyController;
 use App\Http\Controllers\VacationController;
+use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\ShiftTypeController;
+use App\Http\Controllers\ScheduleImportController;
 use Illuminate\Support\Facades\Route;
 
 // Startseite (öffentlich)
@@ -145,6 +148,26 @@ Route::middleware('auth')->group(function () {
     Route::post('archive/run', [ArchiveController::class, 'run'])->name('archive.run');
 
     Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
+
+    // ── Schichtplan ─────────────────────────────────────────────────────────
+    Route::prefix('schedule')->name('schedule.')->group(function () {
+        Route::get('/', [ScheduleController::class, 'index'])->name('index');
+        // JSON-API for Alpine.js (accepts ?view=week|month&date=YYYY-MM-DD&user=ID)
+        Route::get('/api/shifts', [ScheduleController::class, 'apiIndex'])->name('api.index');
+        Route::post('/shifts', [ScheduleController::class, 'store'])->name('shifts.store');
+        Route::put('/shifts/{shift}', [ScheduleController::class, 'update'])->name('shifts.update');
+        Route::delete('/shifts/{shift}', [ScheduleController::class, 'destroy'])->name('shifts.destroy');
+        Route::patch('/shifts/{shift}/publish', [ScheduleController::class, 'publish'])->name('shifts.publish');
+        Route::patch('/shifts/{shift}/confirm', [ScheduleController::class, 'confirm'])->name('shifts.confirm');
+        // Shift types
+        Route::post('/types', [ShiftTypeController::class, 'store'])->name('types.store');
+        Route::put('/types/{shiftType}', [ShiftTypeController::class, 'update'])->name('types.update');
+        Route::delete('/types/{shiftType}', [ShiftTypeController::class, 'destroy'])->name('types.destroy');
+        // Import wizard
+        Route::get('/import', [ScheduleImportController::class, 'show'])->name('import');
+        Route::post('/import/preview', [ScheduleImportController::class, 'preview'])->name('import.preview');
+        Route::post('/import/confirm', [ScheduleImportController::class, 'confirm'])->name('import.confirm');
+    });
 
     Route::get('push/vapid', [PushSubscriptionController::class, 'vapid'])->name('push.vapid');
     Route::post('push/subscribe', [PushSubscriptionController::class, 'store'])->name('push.subscribe');
