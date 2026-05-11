@@ -10,8 +10,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $user
  * @property-read \App\Models\Legacy\LegacyUser|null $mitarbeiter
  * @property string|null $inhalt
+ * @property string|null $antwort
  * @property \Illuminate\Support\Carbon|null $von
  * @property \Illuminate\Support\Carbon|null $bis
+ * @property \Illuminate\Support\Carbon|null $aktuell
+ * @property int|null $gelesen
  */
 class LegacyArchiveDiaryEntry extends Model {
     protected $connection = 'legacy';
@@ -38,5 +41,15 @@ class LegacyArchiveDiaryEntry extends Model {
 
     public function mitarbeiter(): BelongsTo {
         return $this->belongsTo(LegacyUser::class, 'user', 'id');
+    }
+
+    public function statusLabel(): string {
+        return match ($this->gelesen) {
+            -1 => __('Erledigt'),
+            1 => __('Bestätigt'),
+            2 => __('Offen'),
+            3 => __('Problem'),
+            default => __('Unbekannt'),
+        };
     }
 }

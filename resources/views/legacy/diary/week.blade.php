@@ -19,6 +19,8 @@
 {{-- Toolbar --}}
 <div class="flex-none flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
     <div class="flex flex-wrap items-center gap-2">
+        <span class="badge badge-primary mr-1">{{ __('Aktiv') }}</span>
+
         <a href="{{ route('legacy.diary.week', ['week' => $weekOffset - 1]) }}"
            class="btn btn-sm btn-ghost" title="1 Woche zurück">«</a>
         <a href="{{ route('legacy.diary.week') }}"
@@ -39,6 +41,11 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-3">
+        {{-- Cross-Link --}}
+        @if (\App\Support\LegacyRoleResolver::isAdmin(Auth::user()))
+            <a href="{{ route('legacy.archive.week', ['week_date' => $selectedWeek ?? $monday->format('o-\\WW')]) }}" class="btn btn-sm btn-ghost">{{ __('Archivwoche') }}</a>
+        @endif
+
         {{-- Legende --}}
         <div class="flex flex-wrap items-center gap-3 text-xs text-base-content/60">
             <span class="inline-flex items-center gap-1.5">

@@ -61,10 +61,9 @@
                                 ? [
                                     ['route' => 'legacy.diary.week',        'label' => __('Wochenansicht'),  'modal' => false, 'matches' => ['legacy.diary.week']],
                                     ['route' => $indexRoute,                'label' => __('Arbeitsliste'),   'modal' => false, 'matches' => [$indexRoute]],
-                                    ['route' => 'legacy.overview.index',    'label' => __('Überblick'),      'modal' => false, 'matches' => ['legacy.overview.index']],
                                     ['route' => 'legacy.oncall.index',      'label' => __('Dienste'),        'modal' => false, 'matches' => ['legacy.oncall.*', 'legacy.notdienst.*']],
                                     ['route' => 'legacy.archive.index',     'label' => __('Archiv'),         'modal' => false, 'matches' => ['legacy.archive.*']],
-                                    ['route' => 'legacy.callcenter.notdienst', 'label' => __('Callcenter'),  'modal' => false, 'matches' => ['legacy.callcenter.*']],
+                                    ['route' => 'legacy.callcenter.notdienst', 'label' => __('Zentrale'),    'modal' => false, 'matches' => ['legacy.callcenter.*', 'legacy.overview.*']],
                                 ]
                                 : [
                                     ['route' => $indexRoute,                'label' => __('Arbeitsliste'),   'modal' => false, 'matches' => [$indexRoute]],

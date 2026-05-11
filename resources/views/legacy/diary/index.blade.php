@@ -20,6 +20,12 @@
         };
     @endphp
     <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
+        <div class="flex flex-none flex-wrap items-center justify-between gap-2">
+            <span class="badge badge-primary">{{ __('Aktiv') }}</span>
+            <a href="{{ route('legacy.archive.index') }}" class="btn btn-sm btn-ghost">
+                {{ __('Archiv ansehen') }} →
+            </a>
+        </div>
         <form method="GET" action="{{ route('legacy.diary.index') }}" class="flex-none rounded-box border border-base-300 bg-base-100 p-4 shadow-xs md:p-5">
             <input type="hidden" name="sort" value="{{ $currentSort }}">
             <input type="hidden" name="dir" value="{{ $currentDir }}">

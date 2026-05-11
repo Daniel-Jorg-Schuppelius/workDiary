@@ -20,7 +20,6 @@ use App\Http\Controllers\LegacyDiaryController;
 use App\Http\Controllers\LegacyMigrationController;
 use App\Http\Controllers\LegacyNotdienstController;
 use App\Http\Controllers\LegacyOnCallController;
-use App\Http\Controllers\LegacyOverviewController;
 use App\Http\Controllers\LegacyUserAdminController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PushSubscriptionController;
@@ -72,7 +71,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('holidays', HolidayController::class)->except('show');
 
     Route::get('legacy/diary/week', [LegacyDiaryController::class, 'week'])->name('legacy.diary.week');
-    Route::get('legacy/overview', [LegacyOverviewController::class, 'index'])->name('legacy.overview.index');
+    Route::get('legacy/overview', fn() => redirect()->route('legacy.callcenter.notdienst'))->name('legacy.overview.index');
 
     Route::middleware('legacy.write')->group(function () {
         Route::get('legacy/account/password', [LegacyAccountController::class, 'editPassword'])->name('legacy.account.password.edit');
@@ -103,6 +102,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('legacy/archive', [LegacyArchiveController::class, 'index'])->name('legacy.archive.index');
     Route::get('legacy/archive/week', [LegacyArchiveController::class, 'week'])->name('legacy.archive.week');
+    Route::get('legacy/archive/{entry}', [LegacyArchiveController::class, 'show'])
+        ->whereNumber('entry')
+        ->name('legacy.archive.show');
 
     Route::resource('diary', DiaryController::class)->parameters(['diary' => 'diary']);
     Route::post('diary/{diary}/archive', [DiaryController::class, 'archive'])->name('diary.archive');

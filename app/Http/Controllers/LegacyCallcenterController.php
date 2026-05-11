@@ -109,6 +109,11 @@ class LegacyCallcenterController extends Controller {
 
         $todayNotdienst = collect($notdienstByDay)->firstWhere('isToday', true);
         $todayBereitschaft = collect($bereitschaftByDay)->firstWhere('isToday', true);
+        $tomorrowNotdienst = collect($notdienstByDay)->firstWhere(fn(array $d) => $d['date']->isSameDay($today->copy()->addDay()));
+        $tomorrowBereitschaft = collect($bereitschaftByDay)->firstWhere(fn(array $d) => $d['date']->isSameDay($today->copy()->addDay()));
+
+        $weekendNotdienst = collect($notdienstByDay)->filter(fn(array $d) => $d['isWeekend'] || $d['isHoliday'])->values();
+        $weekendBereitschaft = collect($bereitschaftByDay)->filter(fn(array $d) => $d['isWeekend'] || $d['isHoliday'])->values();
 
         $openIssues = LegacyDiaryEntry::query()
             ->select(['id', 'user', 'inhalt', 'von', 'bis', 'gelesen'])
@@ -117,21 +122,64 @@ class LegacyCallcenterController extends Controller {
             ->where('bis', '>=', $today)
             ->orderByDesc('gelesen')
             ->orderBy('bis')
-            ->limit(10)
+            ->limit(15)
             ->get();
+
+        // Status-KPIs aktiver Tagebuch-Einträge (bis >= heute) plus erledigt der letzten 7 Tage
+        $statusCounts = [
+            'open'    => LegacyDiaryEntry::query()->where('gelesen', 2)->where('bis', '>=', $today)->count(),
+            'alert'   => LegacyDiaryEntry::query()->where('gelesen', 3)->where('bis', '>=', $today)->count(),
+            'progress' => LegacyDiaryEntry::query()->where('gelesen', 1)->where('bis', '>=', $today)->count(),
+            'doneRecent' => LegacyDiaryEntry::query()->where('gelesen', -1)->where('bis', '>=', $today->copy()->subDays(7))->count(),
+        ];
+
+        // Nächste Feiertage (kommende 30 Tage), maximal 5
+        $upcomingHolidays = $this->collectUpcomingHolidays($today, 30, 5);
 
         return view('legacy.callcenter.notdienst', [
             'notdienstByDay' => $notdienstByDay,
             'bereitschaftByDay' => $bereitschaftByDay,
             'todayNotdienst' => $todayNotdienst,
             'todayBereitschaft' => $todayBereitschaft,
+            'tomorrowNotdienst' => $tomorrowNotdienst,
+            'tomorrowBereitschaft' => $tomorrowBereitschaft,
+            'weekendNotdienst' => $weekendNotdienst,
+            'weekendBereitschaft' => $weekendBereitschaft,
             'openIssues' => $openIssues,
+            'statusCounts' => $statusCounts,
+            'upcomingHolidays' => $upcomingHolidays,
             'weekOffset' => $weekOffset,
             'rangeStart' => $rangeStart,
             'rangeEnd' => $rangeEnd,
             'callcenterUser' => (string) $request->session()->get('legacy_callcenter_user', ''),
             'holidayMap' => $holidayMap,
+            'today' => $today,
         ]);
+    }
+
+    /**
+     * @return array<int, array{date: Carbon, name: string, daysAway: int}>
+     */
+    private function collectUpcomingHolidays(Carbon $today, int $windowDays, int $limit): array {
+        $result = [];
+        $years = [(int) $today->year];
+        if ((int) $today->copy()->addDays($windowDays)->year !== $years[0]) {
+            $years[] = (int) $today->copy()->addDays($windowDays)->year;
+        }
+
+        foreach ($years as $year) {
+            foreach ($this->holidayService->forYear($year) as $dateStr => $name) {
+                $date = Carbon::parse($dateStr)->startOfDay();
+                $diff = $today->diffInDays($date, false);
+                if ($diff >= 0 && $diff <= $windowDays) {
+                    $result[] = ['date' => $date, 'name' => $name, 'daysAway' => (int) $diff];
+                }
+            }
+        }
+
+        usort($result, fn(array $a, array $b) => $a['date']->timestamp <=> $b['date']->timestamp);
+
+        return array_slice($result, 0, $limit);
     }
 
     private function throttleKey(Request $request): string {

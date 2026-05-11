@@ -76,8 +76,14 @@ class LegacyArchiveController extends Controller {
             $tab = 'auftraege';
         }
 
+        $statusFilter = (string) $request->query('status', 'all');
+        $allowedStatus = ['all', '-1', '1', '2', '3'];
+        if (! in_array($statusFilter, $allowedStatus, true)) {
+            $statusFilter = 'all';
+        }
+
         $diaryQuery = LegacyArchiveDiaryEntry::query()
-            ->select(['id', 'user', 'inhalt', 'bis'])
+            ->select(['id', 'user', 'inhalt', 'von', 'bis', 'gelesen'])
             ->with('mitarbeiter:id,uname')
             ->orderByDesc('bis');
         $onCallQuery = LegacyArchiveOnCall::query()
@@ -112,23 +118,86 @@ class LegacyArchiveController extends Controller {
             $notdienstQuery->whereDate('bis', '<=', $request->to);
         }
 
+        if ($tab === 'auftraege' && $statusFilter !== 'all') {
+            $diaryQuery->where('gelesen', (int) $statusFilter);
+        }
+
         $counts = [
             'auftraege' => (clone $diaryQuery)->toBase()->getCountForPagination(),
             'bereitschaft' => (clone $onCallQuery)->toBase()->getCountForPagination(),
             'notdienst' => (clone $notdienstQuery)->toBase()->getCountForPagination(),
         ];
 
+        // Per-Tab KPIs (vom aktiven Tab abhängig, Filter wirken mit)
+        $tabKpis = $this->buildTabKpis($tab, $diaryQuery, $onCallQuery, $notdienstQuery);
+
         return view('legacy.archive.index', [
             'isAdmin' => $isAdmin,
             'legacyUserId' => $legacyUserId,
             'users' => $this->legacyUsersForSelect(),
-            'filters' => $request->only('user', 'from', 'to'),
+            'filters' => $request->only('user', 'from', 'to', 'status'),
             'tab' => $tab,
+            'statusFilter' => $statusFilter,
             'counts' => $counts,
+            'tabKpis' => $tabKpis,
             'diaryEntries' => $diaryQuery->paginate(25, ['*'], 'dpage')->withQueryString(),
             'onCallEntries' => $onCallQuery->paginate(25, ['*'], 'opage')->withQueryString(),
             'notdienstEntries' => $notdienstQuery->paginate(25, ['*'], 'npage')->withQueryString(),
         ]);
+    }
+
+    public function show(LegacyArchiveDiaryEntry $entry): View|\Illuminate\Http\Response {
+        $entry->load('mitarbeiter:id,uname');
+
+        if (request()->boolean('dialog')) {
+            return response(view('legacy.archive._show_dialog', ['entry' => $entry]));
+        }
+
+        return view('legacy.archive.show', ['entry' => $entry]);
+    }
+
+    /**
+     * @param \Illuminate\Database\Eloquent\Builder<LegacyArchiveDiaryEntry> $diaryQuery
+     * @param \Illuminate\Database\Eloquent\Builder<LegacyArchiveOnCall> $onCallQuery
+     * @param \Illuminate\Database\Eloquent\Builder<LegacyArchiveNotdienst> $notdienstQuery
+     * @return array<string, int|string>
+     */
+    private function buildTabKpis(string $tab, $diaryQuery, $onCallQuery, $notdienstQuery): array {
+        $today = Carbon::today();
+        $cut7 = $today->copy()->subDays(7)->toDateString();
+        $cut30 = $today->copy()->subDays(30)->toDateString();
+
+        if ($tab === 'auftraege') {
+            $base = (clone $diaryQuery);
+
+            return [
+                'total'  => (clone $base)->toBase()->getCountForPagination(),
+                'last7'  => (clone $base)->whereDate('bis', '>=', $cut7)->toBase()->getCountForPagination(),
+                'last30' => (clone $base)->whereDate('bis', '>=', $cut30)->toBase()->getCountForPagination(),
+                'alert'  => (clone $base)->where('gelesen', 3)->toBase()->getCountForPagination(),
+            ];
+        }
+
+        $query = $tab === 'bereitschaft' ? $onCallQuery : $notdienstQuery;
+        $base = clone $query;
+
+        // Längste Schicht: Tage zwischen von/bis (inklusiv)
+        $longest = (clone $base)
+            ->get(['von', 'bis'])
+            ->map(function ($row) {
+                if (! $row->von || ! $row->bis) {
+                    return 0;
+                }
+                return (int) $row->von->copy()->startOfDay()->diffInDays($row->bis->copy()->startOfDay()) + 1;
+            })
+            ->max() ?? 0;
+
+        return [
+            'total'   => (clone $base)->toBase()->getCountForPagination(),
+            'last7'   => (clone $base)->whereDate('bis', '>=', $cut7)->toBase()->getCountForPagination(),
+            'last30'  => (clone $base)->whereDate('bis', '>=', $cut30)->toBase()->getCountForPagination(),
+            'longest' => (int) $longest,
+        ];
     }
 
     public function run(Request $request, LegacyArchiveService $service): RedirectResponse {
