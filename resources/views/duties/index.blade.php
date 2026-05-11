@@ -11,24 +11,28 @@
                     <h2 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Bereitschaftsdienste') }}</h2>
                     <a href="{{ route('shifts.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">{{ __('+ Neue Bereitschaft') }}</a>
                 </div>
-                <x-table>
-                        <thead>
+                <x-table :pin-rows="true">
+                        <thead class="bg-base-200">
                             <tr>
                                 <th>{{ __('Mitarbeiter') }}</th>
                                 <th>{{ __('Beginn') }}</th>
                                 <th>{{ __('Ende') }}</th>
                                 <th>{{ __('Notiz') }}</th>
-                                <th class="w-px"></th>
+                                <th class="w-24 text-right">{{ __('Aktion') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($shifts as $shift)
-                                <tr>
+                                <tr class="hover">
                                     <td>{{ $shift->user?->name ?? '—' }}</td>
                                     <td>{{ $shift->start_at?->format('d.m.Y H:i') }}</td>
                                     <td>{{ $shift->end_at?->format('d.m.Y H:i') }}</td>
                                     <td class="max-w-xs truncate">{{ $shift->note }}</td>
-                                    <td><a href="{{ route('shifts.edit', $shift) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a></td>
+                                    <td class="whitespace-nowrap text-right">
+                                        <a href="{{ route('shifts.edit', $shift) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}" aria-label="{{ __('Bearbeiten') }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        </a>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr><td colspan="5" class="text-center text-base-content/60">{{ __('Keine Einträge.') }}</td></tr>
@@ -44,20 +48,20 @@
                     <h2 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Notdienste') }}</h2>
                     <a href="{{ route('assignments.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">{{ __('+ Neuer Notdienst') }}</a>
                 </div>
-                <x-table>
-                        <thead>
+                <x-table :pin-rows="true">
+                        <thead class="bg-base-200">
                             <tr>
                                 <th>{{ __('Mitarbeiter') }}</th>
                                 <th>{{ __('Beginn') }}</th>
                                 <th>{{ __('Ende') }}</th>
                                 <th>{{ __('Bereitschaft') }}</th>
                                 <th>{{ __('Grund') }}</th>
-                                <th class="w-px"></th>
+                                <th class="w-24 text-right">{{ __('Aktion') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($assignments as $a)
-                                <tr>
+                                <tr class="hover">
                                     <td>{{ $a->user?->name ?? '—' }}</td>
                                     <td>{{ $a->start_at?->format('d.m.Y H:i') }}</td>
                                     <td>{{ $a->end_at?->format('d.m.Y H:i') }}</td>
@@ -67,7 +71,11 @@
                                         @else — @endif
                                     </td>
                                     <td class="max-w-xs truncate">{{ $a->reason }}</td>
-                                    <td><a href="{{ route('assignments.edit', $a) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a></td>
+                                    <td class="whitespace-nowrap text-right">
+                                        <a href="{{ route('assignments.edit', $a) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}" aria-label="{{ __('Bearbeiten') }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        </a>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr><td colspan="6" class="text-center text-base-content/60">{{ __('Keine Einträge.') }}</td></tr>

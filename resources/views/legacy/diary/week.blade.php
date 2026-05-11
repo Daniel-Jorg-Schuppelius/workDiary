@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', 'Wochenansicht — ' . config('app.name', 'WorkDiary'))
-@section('nav-title', __('Wochenansicht') . ' (Legacy)')
+@section('nav-title', __('Wochenansicht'))
 {{-- Full-viewport-height: kein Seiten-Scroll, nur interner Tabellen-Scroll --}}
 @section('wrapper-height-class', 'h-dvh overflow-clip')
 @section('main-class', 'min-h-0 overflow-clip flex flex-col')

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', __('Callcenter Login') . ' — ' . config('app.name', 'WorkDiary'))
-@section('nav-title', __('Legacy') . ' / ' . __('Callcenter Login'))
+@section('nav-title', __('Zentrale Login'))
 
 @section('content')
     <div class="mx-auto max-w-md">

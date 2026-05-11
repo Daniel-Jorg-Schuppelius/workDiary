@@ -27,20 +27,12 @@ class HolidayController extends Controller {
             ->orderBy('date')
             ->get();
 
-        // Indexiere DB-Feiertage nach Y-m-d für das Anzeigejahr,
-        // damit wir „Standard“ vs. „eigen“ in der Jahresliste unterscheiden können.
+        // Ordne DB-Feiertage per resolveForYear() den Jahresdaten zu.
         $customForYear = [];
         foreach ($customHolidays as $h) {
-            $date = Carbon::parse((string) $h->date);
-            if ($h->is_recurring) {
-                $key = sprintf('%04d-%02d-%02d', $year, (int) $date->format('m'), (int) $date->format('d'));
-            } else {
-                if ((int) $date->format('Y') !== $year) {
-                    continue;
-                }
-                $key = $date->format('Y-m-d');
+            foreach ($h->resolveForYear($year) as $dateKey) {
+                $customForYear[$dateKey] = $h;
             }
-            $customForYear[$key] = $h;
         }
 
         $merged = collect($holidayService->forYear($year))
@@ -119,26 +111,43 @@ class HolidayController extends Controller {
      */
     private function validateInput(Request $request, ?Holiday $holiday = null): array {
         $data = $request->validate([
-            'date' => ['required', 'date'],
-            'name' => ['required', 'string', 'max:120'],
-            'is_recurring' => ['nullable', 'boolean'],
+            'name'               => ['required', 'string', 'max:120'],
+            'recurrence_mode'    => ['required', 'in:once,yearly,relative'],
+            'date'               => ['nullable', 'date', 'required_unless:recurrence_mode,relative'],
+            'recurrence_weekday' => ['nullable', 'integer', 'between:0,6', 'required_if:recurrence_mode,relative'],
+            'recurrence_week'    => ['nullable', 'in:-1,1,2,3,4',           'required_if:recurrence_mode,relative'],
+            'recurrence_month'   => ['nullable', 'integer', 'between:1,12'],
         ]);
 
-        $isRecurring = (bool) ($data['is_recurring'] ?? false);
-        $date = (string) $data['date'];
+        $mode       = (string) $data['recurrence_mode'];
+        $isRelative = $mode === 'relative';
+        $isRecurring = $mode !== 'once';
 
-        $duplicate = Holiday::query()
-            ->when($holiday, fn($q) => $q->whereKeyNot($holiday->id))
-            ->where('is_recurring', $isRecurring)
-            ->where('date', $date)
-            ->exists();
+        $result = [
+            'name'               => $data['name'],
+            'recurrence_type'    => $isRelative ? 'relative' : 'fixed',
+            'is_recurring'       => $isRecurring,
+            'date'               => $isRelative ? null : ($data['date'] ?? null),
+            'recurrence_weekday' => $isRelative ? (int) ($data['recurrence_weekday'] ?? 0) : null,
+            'recurrence_week'    => $isRelative ? (int) ($data['recurrence_week']    ?? 1) : null,
+            'recurrence_month'   => $isRelative && ! empty($data['recurrence_month'])
+                ? (int) $data['recurrence_month'] : null,
+        ];
 
-        if ($duplicate) {
-            abort(422, __('Dieser Feiertag ist bereits vorhanden.'));
+        // Duplikat-Prüfung nur für feste Feiertage
+        if (! $isRelative) {
+            $duplicate = Holiday::query()
+                ->when($holiday, fn($q) => $q->whereKeyNot($holiday->id))
+                ->where('recurrence_type', 'fixed')
+                ->where('is_recurring', $isRecurring)
+                ->where('date', $result['date'])
+                ->exists();
+
+            if ($duplicate) {
+                abort(422, __('Dieser Feiertag ist bereits vorhanden.'));
+            }
         }
 
-        $data['is_recurring'] = $isRecurring;
-
-        return $data;
+        return $result;
     }
 }

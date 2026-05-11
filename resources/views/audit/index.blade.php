@@ -10,7 +10,7 @@
         /** @var array<string, string> $types */
         /** @var array<string, string> $filters */
     @endphp
-    <div class="mx-auto flex h-[calc(100dvh-11rem)] w-full max-w-screen-2xl flex-col gap-4 overflow-auto px-4 xl:px-8 2xl:px-12">
+    <div class="mx-auto flex h-[calc(100dvh-11rem)] w-full max-w-screen-2xl flex-col gap-4 px-4 xl:px-8 2xl:px-12">
         <div class="flex flex-wrap items-end justify-between gap-3">
             <h1 class="font-['Space_Grotesk'] text-2xl font-bold">{{ __('Audit-Log') }}</h1>
             <p class="text-sm text-base-content/60">{{ $logs->total() }} {{ __('Einträge') }}</p>
@@ -40,10 +40,11 @@
             <a href="{{ route('audit.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurücksetzen') }}</a>
         </form>
 
-        <x-table>
-                <thead>
+        <div class="min-h-0 flex-1 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
+        <table class="table table-xs table-zebra table-pin-rows w-full">
+                <thead class="bg-base-200">
                     <tr>
-                        <th>{{ __('Zeit') }}</th>
+                        <th class="whitespace-nowrap">{{ __('Zeit') }}</th>
                         <th>{{ __('Benutzer') }}</th>
                         <th>{{ __('Aktion') }}</th>
                         <th>{{ __('Typ') }}</th>
@@ -54,7 +55,7 @@
                 </thead>
                 <tbody>
                     @forelse ($logs as $log)
-                        <tr>
+                        <tr class="hover">
                             <td class="whitespace-nowrap text-xs">{{ $log->created_at->format('d.m.Y H:i:s') }}</td>
                             <td class="text-xs">{{ optional($log->user)->name ?? '—' }}</td>
                             <td><span class="badge badge-sm">{{ $log->eventLabel() }}</span></td>
@@ -74,8 +75,9 @@
                         <tr><td colspan="7" class="text-center text-sm text-base-content/60 py-6">{{ __('Keine Einträge.') }}</td></tr>
                     @endforelse
                 </tbody>
-        </x-table>
+        </table>
+        </div>
 
-        <div>{{ $logs->links() }}</div>
+        <div class="flex-none">{{ $logs->links() }}</div>
     </div>
 @endsection

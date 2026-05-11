@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', __('Legacy Archiv') . ' — ' . config('app.name', 'WorkDiary'))
-@section('nav-title', __('Legacy') . ' / ' . __('Archiv'))
+@section('title', __('Archiv') . ' — ' . config('app.name', 'WorkDiary'))
+@section('nav-title', __('Archiv'))
 
 @section('content')
     @php
@@ -12,18 +12,79 @@
             'notdienst' => ['label' => __('Notdienst'), 'count' => $counts['notdienst'] ?? 0],
         ];
         $activeTab = $tab ?? 'auftraege';
+        $today = \Carbon\Carbon::today();
+        $from7 = $today->copy()->subDays(7)->format('Y-m-d');
+        $from30 = $today->copy()->subDays(30)->format('Y-m-d');
+        $currentFrom = (string) ($filters['from'] ?? '');
+        $currentTo = (string) ($filters['to'] ?? '');
+        $currentStatus = (string) ($statusFilter ?? 'all');
+        $baseFilters = $tabFilters; // bestehender Mitarbeiterfilter etc.
+        unset($baseFilters['from'], $baseFilters['to'], $baseFilters['status']);
+
+        $tileLink = function (array $delta) use ($baseFilters, $activeTab) {
+            return route('legacy.archive.index', array_merge($baseFilters, ['tab' => $activeTab], $delta));
+        };
+
         $kpiTiles = $activeTab === 'auftraege'
             ? [
-                ['label' => __('Gesamt'),       'value' => $tabKpis['total']   ?? 0, 'border' => 'border-base-300'],
-                ['label' => __('Letzte 7d'),    'value' => $tabKpis['last7']   ?? 0, 'border' => 'border-success/40'],
-                ['label' => __('Letzte 30d'),   'value' => $tabKpis['last30']  ?? 0, 'border' => 'border-warning/40'],
-                ['label' => __('Mit Eskalation'), 'value' => $tabKpis['alert'] ?? 0, 'border' => 'border-error/40'],
+                [
+                    'label' => __('Gesamt'),
+                    'value' => $tabKpis['total']   ?? 0,
+                    'border' => 'border-base-300',
+                    'href' => $tileLink([]),
+                    'active' => $currentStatus === 'all' && $currentFrom === '' && $currentTo === '',
+                ],
+                [
+                    'label' => __('Letzte 7d'),
+                    'value' => $tabKpis['last7']   ?? 0,
+                    'border' => 'border-success/40',
+                    'href' => $tileLink(['from' => $from7]),
+                    'active' => $currentFrom === $from7 && $currentTo === '',
+                ],
+                [
+                    'label' => __('Letzte 30d'),
+                    'value' => $tabKpis['last30']  ?? 0,
+                    'border' => 'border-warning/40',
+                    'href' => $tileLink(['from' => $from30]),
+                    'active' => $currentFrom === $from30 && $currentTo === '',
+                ],
+                [
+                    'label' => __('Mit Eskalation'),
+                    'value' => $tabKpis['alert']   ?? 0,
+                    'border' => 'border-error/40',
+                    'href' => $tileLink(['status' => '3']),
+                    'active' => $currentStatus === '3',
+                ],
             ]
             : [
-                ['label' => __('Gesamt'),         'value' => $tabKpis['total']   ?? 0, 'border' => 'border-base-300'],
-                ['label' => __('Letzte 7d'),      'value' => $tabKpis['last7']   ?? 0, 'border' => 'border-success/40'],
-                ['label' => __('Letzte 30d'),    'value' => $tabKpis['last30']  ?? 0, 'border' => 'border-warning/40'],
-                ['label' => __('Längste Schicht (Tage)'), 'value' => $tabKpis['longest'] ?? 0, 'border' => 'border-info/40'],
+                [
+                    'label' => __('Gesamt'),
+                    'value' => $tabKpis['total']   ?? 0,
+                    'border' => 'border-base-300',
+                    'href' => $tileLink([]),
+                    'active' => $currentFrom === '' && $currentTo === '',
+                ],
+                [
+                    'label' => __('Letzte 7d'),
+                    'value' => $tabKpis['last7']   ?? 0,
+                    'border' => 'border-success/40',
+                    'href' => $tileLink(['from' => $from7]),
+                    'active' => $currentFrom === $from7 && $currentTo === '',
+                ],
+                [
+                    'label' => __('Letzte 30d'),
+                    'value' => $tabKpis['last30']  ?? 0,
+                    'border' => 'border-warning/40',
+                    'href' => $tileLink(['from' => $from30]),
+                    'active' => $currentFrom === $from30 && $currentTo === '',
+                ],
+                [
+                    'label' => __('Längste Schicht (Tage)'),
+                    'value' => $tabKpis['longest'] ?? 0,
+                    'border' => 'border-info/40',
+                    'href' => null,
+                    'active' => false,
+                ],
             ];
     @endphp
 
@@ -92,13 +153,25 @@
             </div>
         </form>
 
-        {{-- KPI-Kacheln (per Tab) --}}
+        {{-- KPI-Kacheln (per Tab, klickbare Filter) --}}
         <div class="flex-none grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             @foreach ($kpiTiles as $tile)
-                <div class="rounded-box border bg-base-100 px-4 py-3 shadow-xs {{ $tile['border'] }}">
-                    <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $tile['label'] }}</p>
-                    <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ number_format((int) $tile['value'], 0, ',', '.') }}</p>
-                </div>
+                @php
+                    $tileBaseClass = 'rounded-box border bg-base-100 px-4 py-3 shadow-xs ' . $tile['border'];
+                    $activeRing = $tile['active'] ? ' border-primary ring-1 ring-primary/40' : '';
+                @endphp
+                @if (! empty($tile['href']))
+                    <a href="{{ $tile['href'] }}"
+                       class="{{ $tileBaseClass }} transition hover:border-primary hover:shadow-md{{ $activeRing }}">
+                        <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $tile['label'] }}</p>
+                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ number_format((int) $tile['value'], 0, ',', '.') }}</p>
+                    </a>
+                @else
+                    <div class="{{ $tileBaseClass }}">
+                        <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $tile['label'] }}</p>
+                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ number_format((int) $tile['value'], 0, ',', '.') }}</p>
+                    </div>
+                @endif
             @endforeach
         </div>
 

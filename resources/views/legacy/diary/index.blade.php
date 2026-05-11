@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', __('Legacy-Tagebuch') . ' — ' . config('app.name', 'WorkDiary'))
+@section('title', __('Arbeitsliste') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Einträge'))
 
 @section('content')

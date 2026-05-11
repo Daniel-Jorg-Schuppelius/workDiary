@@ -116,7 +116,7 @@ class LegacyCallcenterController extends Controller {
         $weekendBereitschaft = collect($bereitschaftByDay)->filter(fn(array $d) => $d['isWeekend'] || $d['isHoliday'])->values();
 
         $openIssues = LegacyDiaryEntry::query()
-            ->select(['id', 'user', 'inhalt', 'von', 'bis', 'gelesen'])
+            ->select(['id', 'user', 'inhalt', 'von', 'bis', 'gelesen', 'aktuell'])
             ->with('author:id,uname')
             ->whereIn('gelesen', [2, 3])
             ->where('bis', '>=', $today)
@@ -133,6 +133,60 @@ class LegacyCallcenterController extends Controller {
             'doneRecent' => LegacyDiaryEntry::query()->where('gelesen', -1)->where('bis', '>=', $today->copy()->subDays(7))->count(),
         ];
 
+        // Erweiterte Lage-Indikatoren
+        $overdueCount = LegacyDiaryEntry::query()
+            ->whereIn('gelesen', [2, 3])
+            ->where('bis', '<', $today)
+            ->count();
+
+        $dueTodayCount = LegacyDiaryEntry::query()
+            ->whereIn('gelesen', [2, 3])
+            ->whereDate('bis', $today->toDateString())
+            ->count();
+
+        $dueNext7Count = LegacyDiaryEntry::query()
+            ->whereIn('gelesen', [2, 3])
+            ->whereBetween('bis', [$today->copy()->addDay()->startOfDay(), $today->copy()->addDays(7)->endOfDay()])
+            ->count();
+
+        // 14-Tage-Trend: neue Einträge je Tag (Sparkline-Daten)
+        $trendStart = $today->copy()->subDays(13);
+        $trendRaw = LegacyDiaryEntry::query()
+            ->selectRaw('DATE(von) as d, COUNT(*) as c')
+            ->where('von', '>=', $trendStart)
+            ->groupBy('d')
+            ->pluck('c', 'd');
+
+        $trend = collect();
+        for ($i = 0; $i < 14; $i++) {
+            $day = $trendStart->copy()->addDays($i);
+            $key = $day->format('Y-m-d');
+            $trend->push([
+                'date' => $day,
+                'count' => (int) ($trendRaw[$key] ?? 0),
+            ]);
+        }
+        $trendMax = max(1, (int) $trend->max('count'));
+
+        // Top-Autoren mit offenen/Eskalations-Meldungen
+        $topAuthors = LegacyDiaryEntry::query()
+            ->select(['user', DB::raw('COUNT(*) as cnt')])
+            ->with('author:id,uname')
+            ->whereIn('gelesen', [2, 3])
+            ->where('bis', '>=', $today)
+            ->whereNotNull('user')
+            ->groupBy('user')
+            ->orderByDesc('cnt')
+            ->limit(5)
+            ->get();
+
+        // Status-Mix (für kompakte Verteilungs-Anzeige)
+        $statusTotal = (int) array_sum([
+            $statusCounts['alert'],
+            $statusCounts['open'],
+            $statusCounts['progress'],
+        ]);
+
         // Nächste Feiertage (kommende 30 Tage), maximal 5
         $upcomingHolidays = $this->collectUpcomingHolidays($today, 30, 5);
 
@@ -147,6 +201,13 @@ class LegacyCallcenterController extends Controller {
             'weekendBereitschaft' => $weekendBereitschaft,
             'openIssues' => $openIssues,
             'statusCounts' => $statusCounts,
+            'statusTotal' => $statusTotal,
+            'overdueCount' => $overdueCount,
+            'dueTodayCount' => $dueTodayCount,
+            'dueNext7Count' => $dueNext7Count,
+            'trend' => $trend,
+            'trendMax' => $trendMax,
+            'topAuthors' => $topAuthors,
             'upcomingHolidays' => $upcomingHolidays,
             'weekOffset' => $weekOffset,
             'rangeStart' => $rangeStart,

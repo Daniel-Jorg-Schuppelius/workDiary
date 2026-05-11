@@ -13,27 +13,29 @@ class LookupCache {
 
     /** @return Collection<int, Tag> */
     public static function tagOptions(): Collection {
-        /** @var Collection<int, Tag> $tags */
-        $tags = Cache::remember(
-            self::TAG_OPTIONS_KEY,
-            now()->addMinutes(5),
-            static fn() =>
-            Tag::query()->orderBy('name')->get(['id', 'name', 'slug', 'color'])
-        );
+        $tags = Cache::get(self::TAG_OPTIONS_KEY);
 
+        if (! $tags instanceof Collection) {
+            Cache::forget(self::TAG_OPTIONS_KEY);
+            $tags = Tag::query()->orderBy('name')->get(['id', 'name', 'slug', 'color']);
+            Cache::put(self::TAG_OPTIONS_KEY, $tags, now()->addMinutes(5));
+        }
+
+        /** @var Collection<int, Tag> $tags */
         return $tags;
     }
 
     /** @return Collection<int, User> */
     public static function userDropdown(): Collection {
-        /** @var Collection<int, User> $users */
-        $users = Cache::remember(
-            self::USER_DROPDOWN_KEY,
-            now()->addMinutes(10),
-            static fn() =>
-            User::query()->orderBy('name')->get(['id', 'name'])
-        );
+        $users = Cache::get(self::USER_DROPDOWN_KEY);
 
+        if (! $users instanceof Collection) {
+            Cache::forget(self::USER_DROPDOWN_KEY);
+            $users = User::query()->orderBy('name')->get(['id', 'name']);
+            Cache::put(self::USER_DROPDOWN_KEY, $users, now()->addMinutes(10));
+        }
+
+        /** @var Collection<int, User> $users */
         return $users;
     }
 

@@ -38,10 +38,7 @@
 
     {{-- Jahresübersicht --}}
     <div data-holiday-pane="yearly" class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <table class="table table-sm table-pin-rows">
-            <thead>
-                <tr>
-                    <th class="whitespace-nowrap">{{ __('Datum') }}</th>
+        <table class="table table-sm table-zebra table-pin-rows">Datum') }}</th>
                     <th class="whitespace-nowrap">{{ __('Wochentag') }}</th>
                     <th>{{ __('Name') }}</th>
                     <th>{{ __('Quelle') }}</th>
@@ -54,13 +51,15 @@
                         $isCustom = $row['custom'] !== null;
                         $isPast = $row['date']->isPast() && ! $row['date']->isToday();
                     @endphp
-                    <tr class="{{ $isPast ? 'opacity-50' : '' }} {{ $row['date']->isToday() ? 'bg-warning/10' : '' }}">
+                    <tr class="hover {{ $isPast ? 'opacity-50' : '' }} {{ $row['date']->isToday() ? 'bg-warning/10' : '' }}">
                         <td class="whitespace-nowrap font-mono">{{ $row['date']->format('d.m.Y') }}</td>
                         <td class="whitespace-nowrap text-xs text-base-content/70">{{ $row['date']->locale(app()->getLocale())->isoFormat('dd') }}</td>
                         <td class="font-semibold">{{ $row['name'] }}</td>
                         <td>
                             @if ($isCustom)
-                                @if ($row['custom']->is_recurring)
+                                @if (($row['custom']->recurrence_type ?? 'fixed') === 'relative')
+                                    <span class="badge badge-sm badge-warning">{{ $row['custom']->recurrenceLabel() }}</span>
+                                @elseif ($row['custom']->is_recurring)
                                     <span class="badge badge-sm badge-info">{{ __('Eigen · jährlich') }}</span>
                                 @else
                                     <span class="badge badge-sm badge-info">{{ __('Eigen') }}</span>
@@ -71,7 +70,9 @@
                         </td>
                         <td class="whitespace-nowrap text-right">
                             @if ($isCustom)
-                                <a href="{{ route('holidays.edit', $row['custom']) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a>
+                                <a href="{{ route('holidays.edit', $row['custom']) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}" aria-label="{{ __('Bearbeiten') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                </a>
                                 <form method="POST" action="{{ route('holidays.destroy', $row['custom']) }}" class="inline"
                                       data-confirm-dialog
                                       data-confirm-title="{{ __('Feiertag löschen') }}"
@@ -79,7 +80,9 @@
                                       data-confirm-label="{{ __('Löschen') }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Löschen') }}</button>
+                                    <button type="submit" class="btn btn-xs btn-ghost text-error" title="{{ __('Löschen') }}" aria-label="{{ __('Löschen') }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3"/></svg>
+                                    </button>
                                 </form>
                             @else
                                 <span class="text-xs text-base-content/40">{{ __('—') }}</span>
@@ -97,10 +100,7 @@
 
     {{-- Eigene Feiertage (Verwaltung) --}}
     <div data-holiday-pane="custom" class="hidden flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <table class="table table-sm table-pin-rows">
-            <thead>
-                <tr>
-                    <th>{{ __('Datum') }}</th>
+        <table class="table table-sm table-zebra table-pin-rows"></th>
                     <th>{{ __('Name') }}</th>
                     <th>{{ __('Typ') }}</th>
                     <th class="text-right">{{ __('Aktion') }}</th>
@@ -108,18 +108,22 @@
             </thead>
             <tbody>
                 @forelse ($customHolidays as $holiday)
-                    <tr>
+                    <tr class="hover">
                         <td class="whitespace-nowrap font-mono">{{ optional($holiday->date)->format('d.m.Y') }}</td>
                         <td>{{ $holiday->name }}</td>
                         <td>
-                            @if ($holiday->is_recurring)
-                                <span class="badge badge-sm badge-info">{{ __('Jährlich') }}</span>
+                            @if (($holiday->recurrence_type ?? 'fixed') === 'relative')
+                                <span class="badge badge-sm badge-warning" title="{{ $holiday->recurrenceLabel() }}">{{ $holiday->recurrenceLabel() }}</span>
+                            @elseif ($holiday->is_recurring)
+                                <span class="badge badge-sm badge-info">{{ __('Jährl.') }} · {{ optional($holiday->date)->format('d.m.') }}</span>
                             @else
                                 <span class="badge badge-sm">{{ __('Einmalig') }}</span>
                             @endif
                         </td>
                         <td class="text-right whitespace-nowrap">
-                            <a href="{{ route('holidays.edit', $holiday) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a>
+                            <a href="{{ route('holidays.edit', $holiday) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}" aria-label="{{ __('Bearbeiten') }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </a>
                             <form method="POST" action="{{ route('holidays.destroy', $holiday) }}" class="inline"
                                   data-confirm-dialog
                                   data-confirm-title="{{ __('Feiertag löschen') }}"
@@ -127,7 +131,9 @@
                                   data-confirm-label="{{ __('Löschen') }}">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Löschen') }}</button>
+                                <button type="submit" class="btn btn-xs btn-ghost text-error" title="{{ __('Löschen') }}" aria-label="{{ __('Löschen') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3"/></svg>
+                                </button>
                             </form>
                         </td>
                     </tr>

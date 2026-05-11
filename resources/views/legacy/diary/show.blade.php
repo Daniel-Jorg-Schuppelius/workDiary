@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', truncate($entry->inhalt ?? '', 60) . ' — Legacy')
+@section('title', truncate($entry->inhalt ?? '', 60) . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Eintrag') . ' #' . $entry->id)
 
 @section('content')

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', __('Zentrale') . ' — ' . config('app.name', 'WorkDiary'))
-@section('nav-title', __('Legacy') . ' / ' . __('Zentrale'))
+@section('nav-title', __('Zentrale'))
 
 @section('content')
     <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
@@ -27,26 +27,92 @@
                 <a href="{{ route('legacy.callcenter.notdienst') }}"
                    class="btn btn-sm btn-outline">{{ __('Aktuelle Woche') }}</a>
             @endif
+            <span class="ml-auto text-xs text-base-content/50">
+                {{ __('Stand') }}: {{ $today->isoFormat('dddd, DD.MM.YYYY') }}
+            </span>
         </div>
 
-        {{-- KPI-Kacheln (Lagebild) --}}
-        <div class="flex-none grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            @php
-                $kpis = [
-                    ['key' => 'alert',      'label' => __('Probleme'),      'value' => $statusCounts['alert'],      'border' => 'border-error/40',    'status' => '3'],
-                    ['key' => 'open',       'label' => __('Offen'),         'value' => $statusCounts['open'],       'border' => 'border-warning/40',  'status' => '2'],
-                    ['key' => 'progress',   'label' => __('Bestätigt'),     'value' => $statusCounts['progress'],   'border' => 'border-success/40',  'status' => '1'],
-                    ['key' => 'doneRecent', 'label' => __('Erledigt (7d)'), 'value' => $statusCounts['doneRecent'], 'border' => 'border-neutral/40',  'status' => '-1'],
-                ];
-            @endphp
-            @foreach ($kpis as $tile)
-                <a href="{{ route('legacy.diary.index', ['status' => $tile['status']]) }}"
-                   class="rounded-box border bg-base-100 px-4 py-3 shadow-xs transition hover:border-primary hover:shadow-md {{ $tile['border'] }}"
-                   title="{{ __('Zur Arbeitsliste filtern') }}">
-                    <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $tile['label'] }}</p>
-                    <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ number_format((int) $tile['value'], 0, ',', '.') }}</p>
-                </a>
-            @endforeach
+        {{-- Hero: Lagebild (KPIs + Status-Mix + Trend) --}}
+        <div class="flex-none grid gap-3 lg:grid-cols-12">
+            {{-- Status-KPIs --}}
+            <div class="grid gap-3 sm:grid-cols-2 lg:col-span-7 xl:col-span-7">
+                @php
+                    $from30 = $today->copy()->subDays(30)->format('Y-m-d');
+                    $from7 = $today->copy()->subDays(7)->format('Y-m-d');
+                    $kpis = [
+                        ['key' => 'alert',      'label' => __('Probleme'),      'value' => $statusCounts['alert'],      'border' => 'border-error/40',   'tone' => 'text-error',           'params' => ['status' => '3',  'from' => $from30]],
+                        ['key' => 'open',       'label' => __('Offen'),         'value' => $statusCounts['open'],       'border' => 'border-warning/40', 'tone' => 'text-warning',         'params' => ['status' => '2',  'from' => $from30]],
+                        ['key' => 'progress',   'label' => __('Bestätigt'),     'value' => $statusCounts['progress'],   'border' => 'border-success/40', 'tone' => 'text-success',         'params' => ['status' => '1',  'from' => $from30]],
+                        ['key' => 'doneRecent', 'label' => __('Erledigt (7d)'), 'value' => $statusCounts['doneRecent'], 'border' => 'border-base-300',   'tone' => 'text-base-content/70', 'params' => ['status' => '-1', 'from' => $from7]],
+                    ];
+                @endphp
+                @foreach ($kpis as $tile)
+                    <a href="{{ route('legacy.diary.index', $tile['params']) }}"
+                       class="group rounded-box border bg-base-100 px-4 py-3 shadow-xs transition hover:border-primary hover:shadow-md {{ $tile['border'] }}"
+                       title="{{ __('Zur Arbeitsliste filtern (ab :date)', ['date' => \Carbon\Carbon::parse($tile['params']['from'])->format('d.m.Y')]) }}">
+                        <div class="flex items-center justify-between">
+                            <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $tile['label'] }}</p>
+                            <span class="text-base-content/30 transition group-hover:text-primary">›</span>
+                        </div>
+                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold {{ $tile['tone'] }}">{{ number_format((int) $tile['value'], 0, ',', '.') }}</p>
+                    </a>
+                @endforeach
+            </div>
+
+            {{-- Status-Mix + Mini-Lage --}}
+            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs lg:col-span-5 xl:col-span-5">
+                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ __('Status-Mix aktiv') }}</p>
+                @php
+                    $sAlert = (int) $statusCounts['alert'];
+                    $sOpen = (int) $statusCounts['open'];
+                    $sProg = (int) $statusCounts['progress'];
+                    $tot = max(1, (int) $statusTotal);
+                    $pAlert = (int) round($sAlert * 100 / $tot);
+                    $pOpen = (int) round($sOpen * 100 / $tot);
+                    $pProg = max(0, 100 - $pAlert - $pOpen);
+                @endphp
+                @if ($statusTotal === 0)
+                    <p class="mt-2 text-sm text-base-content/50">{{ __('Aktuell keine offenen Vorgänge.') }}</p>
+                @else
+                    <div class="mt-2 flex h-2 w-full overflow-hidden rounded-full bg-base-200">
+                        <div class="bg-error" style="width: {{ $pAlert }}%"></div>
+                        <div class="bg-warning" style="width: {{ $pOpen }}%"></div>
+                        <div class="bg-success" style="width: {{ $pProg }}%"></div>
+                    </div>
+                    <ul class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[0.7rem] text-base-content/70">
+                        <li><span class="inline-block size-2 rounded-full bg-error align-middle"></span> {{ __('Probleme') }} <span class="font-semibold">{{ $pAlert }}%</span> ({{ $sAlert }})</li>
+                        <li><span class="inline-block size-2 rounded-full bg-warning align-middle"></span> {{ __('Offen') }} <span class="font-semibold">{{ $pOpen }}%</span> ({{ $sOpen }})</li>
+                        <li><span class="inline-block size-2 rounded-full bg-success align-middle"></span> {{ __('Bestätigt') }} <span class="font-semibold">{{ $pProg }}%</span> ({{ $sProg }})</li>
+                    </ul>
+                @endif
+
+                {{-- Sub-KPIs: Überfällig / Heute fällig / Nächste 7d --}}
+                @php
+                    $yesterday = $today->copy()->subDay()->format('Y-m-d');
+                    $todayStr = $today->format('Y-m-d');
+                    $next7Str = $today->copy()->addDays(7)->format('Y-m-d');
+                @endphp
+                <div class="mt-3 grid grid-cols-3 gap-2 text-center">
+                    <a href="{{ route('legacy.diary.index', ['status' => '2', 'to' => $yesterday]) }}"
+                       class="rounded-box border border-base-300 px-2 py-1.5 transition hover:border-error hover:bg-error/5"
+                       title="{{ __('Vorgänge mit Frist bis :date', ['date' => \Carbon\Carbon::parse($yesterday)->format('d.m.Y')]) }}">
+                        <p class="text-[0.65rem] uppercase tracking-wider text-base-content/60">{{ __('Überfällig') }}</p>
+                        <p class="font-['Space_Grotesk'] text-lg font-semibold {{ $overdueCount > 0 ? 'text-error' : 'text-base-content/70' }}">{{ $overdueCount }}</p>
+                    </a>
+                    <a href="{{ route('legacy.diary.index', ['status' => '2', 'to' => $todayStr]) }}"
+                       class="rounded-box border border-base-300 px-2 py-1.5 transition hover:border-warning hover:bg-warning/5"
+                       title="{{ __('Vorgänge mit Frist bis :date', ['date' => $today->format('d.m.Y')]) }}">
+                        <p class="text-[0.65rem] uppercase tracking-wider text-base-content/60">{{ __('Heute fällig') }}</p>
+                        <p class="font-['Space_Grotesk'] text-lg font-semibold {{ $dueTodayCount > 0 ? 'text-warning' : 'text-base-content/70' }}">{{ $dueTodayCount }}</p>
+                    </a>
+                    <a href="{{ route('legacy.diary.index', ['status' => '2', 'to' => $next7Str]) }}"
+                       class="rounded-box border border-base-300 px-2 py-1.5 transition hover:border-primary hover:bg-primary/5"
+                       title="{{ __('Vorgänge mit Frist bis :date', ['date' => \Carbon\Carbon::parse($next7Str)->format('d.m.Y')]) }}">
+                        <p class="text-[0.65rem] uppercase tracking-wider text-base-content/60">{{ __('Nächste 7d') }}</p>
+                        <p class="font-['Space_Grotesk'] text-lg font-semibold text-base-content">{{ $dueNext7Count }}</p>
+                    </a>
+                </div>
+            </div>
         </div>
 
         {{-- Hauptbereich: 2 Spalten (links Plan + Kontakte, rechts offene Meldungen) --}}
@@ -55,11 +121,14 @@
 
                 {{-- Wochenplan --}}
                 <div class="flex-none overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
-                    <div class="border-b border-base-300 bg-base-200/60 px-3 py-2 text-xs uppercase tracking-wider text-base-content/60">
-                        {{ __('Wochenplan') }}
+                    <div class="flex items-center justify-between border-b border-base-300 bg-base-200/60 px-3 py-2">
+                        <span class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Wochenplan') }}</span>
+                        <span class="text-[0.7rem] text-base-content/50">
+                            {{ $rangeStart->isoFormat('DD.MM.') }} – {{ $rangeEnd->isoFormat('DD.MM.YYYY') }}
+                        </span>
                     </div>
                     <div class="overflow-x-auto">
-                        <x-table size="xs">
+                        <table class="table table-xs">
                             <thead>
                                 <tr>
                                     <th class="sticky top-0 left-0 z-20 bg-base-200">{{ __('Dienst') }}</th>
@@ -106,18 +175,21 @@
                                     @endforeach
                                 </tr>
                             </tbody>
-                        </x-table>
+                        </table>
                     </div>
                 </div>
 
-                {{-- Kontakte: Heute / Morgen / Wochenende --}}
+                {{-- Kontakte: Heute / Morgen --}}
                 <div class="grid flex-none gap-3 sm:grid-cols-2 xl:grid-cols-3">
                     @foreach ([
-                        ['label' => __('Heute'),  'nd' => $todayNotdienst,    'br' => $todayBereitschaft,    'tone' => 'border-primary/40'],
-                        ['label' => __('Morgen'), 'nd' => $tomorrowNotdienst, 'br' => $tomorrowBereitschaft, 'tone' => 'border-base-300'],
+                        ['label' => __('Heute'),  'sub' => $today->isoFormat('dd, DD.MM.'),                'nd' => $todayNotdienst,    'br' => $todayBereitschaft,    'tone' => 'border-primary/40'],
+                        ['label' => __('Morgen'), 'sub' => $today->copy()->addDay()->isoFormat('dd, DD.MM.'), 'nd' => $tomorrowNotdienst, 'br' => $tomorrowBereitschaft, 'tone' => 'border-base-300'],
                     ] as $card)
                         <div class="rounded-box border bg-base-100 p-3 shadow-xs {{ $card['tone'] }}">
-                            <p class="text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ $card['label'] }}</p>
+                            <div class="flex items-center justify-between">
+                                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ $card['label'] }}</p>
+                                <span class="text-[0.7rem] text-base-content/50">{{ $card['sub'] }}</span>
+                            </div>
                             <div class="mt-2 space-y-2">
                                 <div>
                                     <p class="text-[0.7rem] uppercase text-base-content/50">{{ __('Notdienst') }}</p>
@@ -161,6 +233,63 @@
                     </div>
                 </div>
 
+                {{-- Trend (14 Tage neu erfasst) + Top-Autoren --}}
+                <div class="grid flex-none gap-3 lg:grid-cols-2">
+                    {{-- 14-Tage-Trend --}}
+                    <div class="rounded-box border border-base-300 bg-base-100 p-3 shadow-xs">
+                        <div class="flex items-center justify-between">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ __('Neue Einträge (14 Tage)') }}</p>
+                            <span class="text-[0.7rem] text-base-content/50">{{ __('Σ') }} {{ (int) $trend->sum('count') }}</span>
+                        </div>
+                        @php $count = $trend->count(); @endphp
+                        <div class="mt-3 flex h-20 items-end gap-1">
+                            @foreach ($trend as $idx => $point)
+                                @php
+                                    $h = $trendMax > 0 ? max(2, (int) round(($point['count'] / $trendMax) * 72)) : 2;
+                                    $isToday = $point['date']->isSameDay($today);
+                                    $cls = $isToday ? 'bg-primary' : ($point['count'] === 0 ? 'bg-base-200' : 'bg-base-content/30');
+                                @endphp
+                                <div class="group flex flex-1 flex-col items-center gap-1"
+                                     title="{{ $point['date']->format('d.m.Y') }}: {{ $point['count'] }}">
+                                    <div class="w-full rounded-sm {{ $cls }} transition group-hover:bg-primary"
+                                         style="height: {{ $h }}px"></div>
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="mt-1 flex justify-between text-[0.6rem] text-base-content/50">
+                            <span>{{ $trend->first()['date']->format('d.m.') }}</span>
+                            <span>{{ $trend->last()['date']->format('d.m.') }}</span>
+                        </div>
+                    </div>
+
+                    {{-- Top-Autoren mit offenen Vorgängen --}}
+                    <div class="rounded-box border border-base-300 bg-base-100 p-3 shadow-xs">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ __('Top Verantwortliche (offen)') }}</p>
+                        @if ($topAuthors->isEmpty())
+                            <p class="mt-2 text-sm text-base-content/50">{{ __('Keine offenen Zuweisungen.') }}</p>
+                        @else
+                            @php $maxCnt = max(1, (int) $topAuthors->max('cnt')); @endphp
+                            <ul class="mt-2 space-y-1.5 text-xs">
+                                @foreach ($topAuthors as $row)
+                                    @php
+                                        $name = optional($row->author)->uname ?? '–';
+                                        $pct = (int) round(((int) $row->cnt) * 100 / $maxCnt);
+                                    @endphp
+                                    <li>
+                                        <div class="flex items-center justify-between">
+                                            <span class="truncate font-semibold">{{ $name }}</span>
+                                            <span class="text-base-content/70">{{ (int) $row->cnt }}</span>
+                                        </div>
+                                        <div class="mt-0.5 h-1.5 w-full overflow-hidden rounded-full bg-base-200">
+                                            <div class="h-full bg-primary/70" style="width: {{ $pct }}%"></div>
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </div>
+                </div>
+
                 {{-- Nächste Feiertage --}}
                 @if (! empty($upcomingHolidays))
                     <div class="flex-none rounded-box border border-base-300 bg-base-100 p-3 shadow-xs">
@@ -181,7 +310,10 @@
             {{-- Offene Meldungen (Spalte rechts) --}}
             <div class="flex min-h-0 flex-col overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
                 <div class="flex flex-none items-center justify-between border-b border-base-300 bg-base-200/60 px-3 py-2">
-                    <span class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Offene Meldungen') }}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Offene Meldungen') }}</span>
+                        <span class="badge badge-xs badge-ghost">{{ $openIssues->count() }}</span>
+                    </div>
                     <a href="{{ route('legacy.diary.index', ['status' => '2']) }}" class="link link-hover text-xs">{{ __('Alle anzeigen') }}</a>
                 </div>
                 <div class="min-h-0 flex-1 overflow-auto">
@@ -211,6 +343,9 @@
                                             2 => 'bg-warning/5',
                                             default => '',
                                         };
+                                        $bisDate = $issue->bis;
+                                        $isDueToday = $bisDate && $bisDate->isSameDay($today);
+                                        $daysLeft = $bisDate ? (int) $today->diffInDays($bisDate, false) : null;
                                     @endphp
                                     <tr class="hover {{ $rowClass }}">
                                         <td>
@@ -224,7 +359,18 @@
                                                 <span class="line-clamp-2">{{ truncate($issue->inhalt ?? '', 100) }}</span>
                                             </a>
                                         </td>
-                                        <td class="whitespace-nowrap">{{ $issue->bis?->format('d.m.Y') ?? '–' }}</td>
+                                        <td class="whitespace-nowrap">
+                                            @if ($bisDate)
+                                                <div>{{ $bisDate->format('d.m.Y') }}</div>
+                                                @if ($isDueToday)
+                                                    <span class="text-[0.65rem] font-semibold text-warning">{{ __('heute') }}</span>
+                                                @elseif ($daysLeft !== null && $daysLeft > 0 && $daysLeft <= 7)
+                                                    <span class="text-[0.65rem] text-base-content/60">{{ __('in :n d', ['n' => $daysLeft]) }}</span>
+                                                @endif
+                                            @else
+                                                <span class="text-base-content/40">–</span>
+                                            @endif
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>

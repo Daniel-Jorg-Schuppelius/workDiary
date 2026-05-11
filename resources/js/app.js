@@ -174,6 +174,20 @@ if (typeof document !== "undefined") {
     }
 }
 
+// Recurrence-Mode-Toggle: delegierter Listener für [data-recurrence-select]-Selects
+// (funktioniert sowohl für statisch geladene als auch per Dialog nachgeladene Formulare)
+document.addEventListener("change", (e) => {
+    const sel = e.target.closest("select[data-recurrence-select]");
+    if (!sel) return;
+    const form = sel.closest("[data-recurrence-form]");
+    if (!form) return;
+    const val = sel.value;
+    form.querySelectorAll("[data-recurrence-show]").forEach((el) => {
+        const modes = el.getAttribute("data-recurrence-show").split(" ");
+        el.hidden = !modes.includes(val);
+    });
+});
+
 // Entry-Dialog: lädt Form/Detailansichten mit ?dialog=1 in ein globales <dialog>
 (() => {
     if (typeof document === "undefined") return;
@@ -215,13 +229,28 @@ if (typeof document !== "undefined") {
         return target.toString();
     };
 
-    const initDynamicFields = (root) => {
-        if (!root || typeof window.__initFlatpickr !== "function") return;
-        root.querySelectorAll(
-            'input[type="date"], input[type="datetime-local"], input[type="time"]',
-        ).forEach((el) => {
-            window.__initFlatpickr(el);
+    const applyRecurrenceToggle = (sel) => {
+        const form = sel.closest("[data-recurrence-form]");
+        if (!form) return;
+        const val = sel.value;
+        form.querySelectorAll("[data-recurrence-show]").forEach((el) => {
+            const modes = el.getAttribute("data-recurrence-show").split(" ");
+            el.hidden = !modes.includes(val);
         });
+    };
+
+    const initDynamicFields = (root) => {
+        if (!root) return;
+        if (typeof window.__initFlatpickr === "function") {
+            root.querySelectorAll(
+                'input[type="date"], input[type="datetime-local"], input[type="time"]',
+            ).forEach((el) => {
+                window.__initFlatpickr(el);
+            });
+        }
+        root.querySelectorAll("select[data-recurrence-select]").forEach(
+            applyRecurrenceToggle,
+        );
     };
 
     const bindDialogForms = (root) => {

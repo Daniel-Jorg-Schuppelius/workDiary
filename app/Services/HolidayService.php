@@ -57,24 +57,10 @@ class HolidayService {
         }
 
         foreach ($custom as $holiday) {
-            $date = $holiday->date;
-            if (! $date instanceof CarbonInterface) {
-                continue;
+            foreach ($holiday->resolveForYear($year) as $key) {
+                // Benutzerdefinierte Feiertage haben Vorrang vor Provider-Namen.
+                $map[$key] = (string) $holiday->name;
             }
-
-            if ($holiday->is_recurring) {
-                $month = (int) $date->format('m');
-                $day = (int) $date->format('d');
-                if (! checkdate($month, $day, $year)) {
-                    continue;
-                }
-                $key = sprintf('%04d-%02d-%02d', $year, $month, $day);
-            } else {
-                $key = $date->format('Y-m-d');
-            }
-
-            // Benutzerdefinierte Feiertage haben Vorrang vor Provider-Namen.
-            $map[$key] = (string) $holiday->name;
         }
 
         return $this->cache[$year] = $map;

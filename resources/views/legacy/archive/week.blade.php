@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', __('Legacy Archiv Woche') . ' — ' . config('app.name', 'WorkDiary'))
+@section('title', __('Archiv') . ' — ' . __('Wochenansicht') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Wochenansicht') . ' (' . __('Archiv') . ')')
 @section('wrapper-height-class', 'h-dvh overflow-clip')
 @section('main-class', 'min-h-0 overflow-clip flex flex-col')

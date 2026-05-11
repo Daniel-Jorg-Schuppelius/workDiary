@@ -80,6 +80,11 @@ class User extends Authenticatable {
         return $this->hasMany(EmergencyAssignment::class);
     }
 
+    /** @return HasMany<Vacation, $this> */
+    public function vacations(): HasMany {
+        return $this->hasMany(Vacation::class);
+    }
+
     /** @return HasMany<PushSubscription, $this> */
     public function pushSubscriptions(): HasMany {
         return $this->hasMany(PushSubscription::class);

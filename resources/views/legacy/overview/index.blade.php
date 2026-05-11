@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', __('Überblick') . ' — ' . config('app.name', 'WorkDiary'))
-@section('nav-title', __('Legacy') . ' / ' . __('Überblick'))
+@section('nav-title', __('Überblick'))
 
 @section('content')
     @php

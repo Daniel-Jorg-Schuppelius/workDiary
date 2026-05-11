@@ -30,6 +30,7 @@ use App\Http\Controllers\WeekController;
 use App\Http\Controllers\OnCallShiftController;
 use App\Http\Controllers\EmergencyAssignmentController;
 use App\Http\Controllers\DutyController;
+use App\Http\Controllers\VacationController;
 use Illuminate\Support\Facades\Route;
 
 // Startseite (öffentlich)
@@ -130,6 +131,12 @@ Route::middleware('auth')->group(function () {
     Route::get('assignments', fn() => redirect()->route('duties.index', ['tab' => 'notdienst']))->name('assignments.index');
     Route::resource('shifts', OnCallShiftController::class)->except(['show', 'index'])->parameters(['shifts' => 'shift']);
     Route::resource('assignments', EmergencyAssignmentController::class)->except(['show', 'index'])->parameters(['assignments' => 'assignment']);
+
+    Route::resource('vacations', VacationController::class)->except('show');
+    Route::patch('vacations/{vacation}/approve',   [VacationController::class, 'approve'])->name('vacations.approve');
+    Route::patch('vacations/{vacation}/reject',    [VacationController::class, 'reject'])->name('vacations.reject');
+    Route::get('vacations/{vacation}/reject-form', [VacationController::class, 'rejectForm'])->name('vacations.reject-form');
+    Route::patch('vacations/{vacation}/cancel',    [VacationController::class, 'cancel'])->name('vacations.cancel');
 
     Route::resource('tags', TagController::class)->except('show');
 

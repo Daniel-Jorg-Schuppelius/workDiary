@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', __('Legacy Archiv') . ' #' . $entry->id . ' — ' . config('app.name', 'WorkDiary'))
-@section('nav-title', __('Legacy') . ' / ' . __('Archiv'))
+@section('title', __('Archiv') . ' #' . $entry->id . ' — ' . config('app.name', 'WorkDiary'))
+@section('nav-title', __('Archiv'))
 
 @section('content')
     <div class="mb-4">
