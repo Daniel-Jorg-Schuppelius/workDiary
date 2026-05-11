@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\Holiday as CustomHoliday;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Facades\Schema;
 use Yasumi\Holiday;
 use Yasumi\Yasumi;
 
@@ -37,6 +39,42 @@ class HolidayService {
         /** @var Holiday $h */
         foreach ($holidays->getHolidays() as $h) {
             $map[$h->format('Y-m-d')] = (string) $h->getName();
+        }
+
+        $custom = collect();
+        if (Schema::hasTable('holidays')) {
+            try {
+                $custom = CustomHoliday::query()
+                    ->where(function ($q) use ($year) {
+                        $q->where('is_recurring', false)
+                            ->whereBetween('date', ["{$year}-01-01", "{$year}-12-31"]);
+                    })
+                    ->orWhere('is_recurring', true)
+                    ->get(['date', 'name', 'is_recurring']);
+            } catch (\Throwable) {
+                $custom = collect();
+            }
+        }
+
+        foreach ($custom as $holiday) {
+            $date = $holiday->date;
+            if (! $date instanceof CarbonInterface) {
+                continue;
+            }
+
+            if ($holiday->is_recurring) {
+                $month = (int) $date->format('m');
+                $day = (int) $date->format('d');
+                if (! checkdate($month, $day, $year)) {
+                    continue;
+                }
+                $key = sprintf('%04d-%02d-%02d', $year, $month, $day);
+            } else {
+                $key = $date->format('Y-m-d');
+            }
+
+            // Benutzerdefinierte Feiertage haben Vorrang vor Provider-Namen.
+            $map[$key] = (string) $holiday->name;
         }
 
         return $this->cache[$year] = $map;

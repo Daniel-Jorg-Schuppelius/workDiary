@@ -76,7 +76,10 @@
                     $isToday   = $day->isToday();
                     $isSunday  = (int) $day->dayOfWeek === 0;
                     $isSaturday = (int) $day->dayOfWeek === 6;
+                    $holidayName = isset($holidays) ? $holidays->nameFor($day) : null;
+                    $isHoliday = $holidayName !== null;
                     if ($isToday)        $dayTh = 'kheute';
+                    elseif ($isHoliday)  $dayTh = 'kfeiertag';
                     elseif ($isSunday)   $dayTh = 'kso';
                     elseif ($isSaturday) $dayTh = 'ksa';
                     else                 $dayTh = 'kopf';
@@ -84,7 +87,10 @@
 
                 {{-- Tages-Kopfzeile: alle th sticky top + Ecke zusätzlich sticky left --}}
                 <tr>
-                    <th class="{{ $dayTh }} sticky top-0 left-0 z-20">{{ $day->format('d.m.y') }}</th>
+                    <th class="{{ $dayTh }} sticky top-0 left-0 z-20" @if ($isHoliday) title="{{ $holidayName }}" @endif>
+                        <div>{{ $day->format('d.m.y') }}</div>
+                            <div class="holiday-name text-[0.65rem] font-medium leading-tight">{{ $isHoliday ? truncate($holidayName, 16, '') : strtoupper((string) $dayAbbr[$dayIndex]) }}</div>
+                    </th>
                     @foreach ($legacyUsers as $legacyUser)
                         @php
                             $uid          = (int) $legacyUser->id;
@@ -94,9 +100,13 @@
                             elseif ($hasNotdienst) $userTh = 'mitn';
                             else                   $userTh = 'mit';
                         @endphp
-                        <th colspan="2" class="{{ $userTh }} sticky top-0 z-10" title="{{ $legacyUser->uname }}">{{ $legacyUser->uname }}</th>
+                        <th class="{{ $userTh }} sticky top-0 z-10" title="{{ $legacyUser->uname }}">{{ $legacyUser->uname }}</th>
+                        <th class="{{ $userTh }} status-col sticky top-0 z-10" aria-hidden="true">&nbsp;</th>
                     @endforeach
-                    <th class="{{ $dayTh }} sticky top-0 z-10">{{ $dayAbbr[$dayIndex] }}</th>
+                    <th class="{{ $dayTh }} sticky top-0 z-10" @if ($isHoliday) title="{{ $holidayName }}" @endif>
+                        <div>{{ $dayAbbr[$dayIndex] }}</div>
+                            <div class="holiday-name text-[0.65rem] font-medium leading-tight">{{ $isHoliday ? __('Feiertag') : ' ' }}</div>
+                    </th>
                 </tr>
 
                 {{-- Stundenzeilen 07–21 --}}
@@ -146,7 +156,7 @@
                                 }
                             @endphp
                             <td class="{{ $cClass }}">@if ($entry)<a href="{{ route('legacy.diary.show', [$entry, 'week_date' => ($selectedWeek ?? $monday->format('o-\\WW'))]) }}" data-entry-modal-trigger class="font-normal hover:underline" title="{{ e($entry->inhalt ?? '') }}">{{ truncate($entry->inhalt ?? '', 10, '') }}</a>@else&nbsp;@endif</td>
-                            <td class="{{ $sClass }}">&nbsp;</td>
+                            <td class="{{ $sClass }} status-col">&nbsp;</td>
                         @endforeach
 
                         <td class="{{ $bg ? 'grau' : 'mitte' }}">{{ $hourLabel }}</td>

@@ -30,34 +30,51 @@
         @endif
     </div>
 
-    {{-- Notdienst-Tabelle --}}
-    <div class="overflow-x-auto mb-6">
+    {{-- Notdienst-/Bereitschafts-Tabelle --}}
+    <div class="overflow-x-auto mb-6 max-h-[60vh] overflow-y-auto rounded-box border border-base-300">
         <x-table size="xs">
             <thead>
                 <tr>
-                    <th>{{ __('Dienst') }}</th>
+                    <th class="sticky top-0 left-0 z-20 bg-base-200">{{ __('Dienst') }}</th>
                     @foreach ($notdienstByDay as $item)
-                        <th class="{{ $item['isToday'] ? 'bg-primary/10' : '' }}">
-                            {{ $item['date']->isoFormat('ddd') }}<br>
-                            {{ $item['date']->format('d.m.') }}
+                        @php
+                            $headBg = $item['isToday']
+                                ? 'bg-primary/10'
+                                : ($item['isHoliday']
+                                    ? 'bg-error/15'
+                                    : ($item['isSunday']
+                                        ? 'bg-error/10'
+                                        : ($item['isSaturday']
+                                            ? 'bg-error/5'
+                                            : 'bg-base-200')));
+                        @endphp
+                        <th class="sticky top-0 z-10 text-center {{ $headBg }}"
+                            @if ($item['isHoliday']) title="{{ $item['holidayName'] }}" @endif>
+                            <div class="font-semibold">{{ $item['date']->isoFormat('ddd') }}</div>
+                            <div class="text-[0.7rem] opacity-80">{{ $item['date']->format('d.m.') }}</div>
+                            @if ($item['isHoliday'])
+                                <div class="holiday-name mt-0.5 text-[0.65rem] font-medium uppercase tracking-wider text-error">{{ $item['holidayName'] }}</div>
+                            @endif
                         </th>
                     @endforeach
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td class="font-semibold whitespace-nowrap">{{ __('Notdienst') }}</td>
+                    <td class="font-semibold whitespace-nowrap sticky left-0 z-10 bg-base-100">{{ __('Notdienst') }}</td>
                     @foreach ($notdienstByDay as $item)
-                        <td class="text-center {{ $item['isToday'] ? 'bg-primary/10 font-semibold' : '' }}">
-                            {{ $item['user'] ?: '-' }}
+                        <td class="text-center {{ $item['isToday'] ? 'bg-primary/10 font-semibold' : ($item['isHoliday'] ? 'bg-error/5' : '') }}"
+                            @if ($item['user'] && $item['von'] && $item['bis']) title="{{ $item['von']->format('d.m.Y H:i') }} – {{ $item['bis']->format('d.m.Y H:i') }}" @endif>
+                            {{ $item['user'] ?: '–' }}
                         </td>
                     @endforeach
                 </tr>
                 <tr>
-                    <td class="font-semibold whitespace-nowrap">{{ __('Bereitschaft') }}</td>
+                    <td class="font-semibold whitespace-nowrap sticky left-0 z-10 bg-base-100">{{ __('Bereitschaft') }}</td>
                     @foreach ($bereitschaftByDay as $item)
-                        <td class="text-center {{ $item['isToday'] ? 'bg-primary/10 font-semibold' : '' }}">
-                            {{ $item['user'] ?: '-' }}
+                        <td class="text-center {{ $item['isToday'] ? 'bg-primary/10 font-semibold' : ($item['isHoliday'] ? 'bg-error/5' : '') }}"
+                            @if ($item['user'] && $item['von'] && $item['bis']) title="{{ $item['von']->format('d.m.Y H:i') }} – {{ $item['bis']->format('d.m.Y H:i') }}" @endif>
+                            {{ $item['user'] ?: '–' }}
                         </td>
                     @endforeach
                 </tr>
@@ -71,18 +88,24 @@
             @if ($todayNotdienst)
                 <div>
                     <p class="text-xs font-semibold uppercase text-base-content/50 mb-1">{{ __('Notdienst heute') }}</p>
-                    <p class="font-semibold">{{ $todayNotdienst['user'] ?: '-' }}</p>
+                    <p class="font-semibold">{{ $todayNotdienst['user'] ?: '–' }}</p>
                     @if ($todayNotdienst['email'])
                         <a href="mailto:{{ $todayNotdienst['email'] }}" class="link link-primary text-sm">{{ $todayNotdienst['email'] }}</a>
+                    @endif
+                    @if ($todayNotdienst['von'] && $todayNotdienst['bis'])
+                        <p class="text-xs text-base-content/60 mt-1">{{ $todayNotdienst['von']->format('d.m.Y H:i') }} – {{ $todayNotdienst['bis']->format('d.m.Y H:i') }}</p>
                     @endif
                 </div>
             @endif
             @if ($todayBereitschaft)
                 <div>
                     <p class="text-xs font-semibold uppercase text-base-content/50 mb-1">{{ __('Bereitschaft heute') }}</p>
-                    <p class="font-semibold">{{ $todayBereitschaft['user'] ?: '-' }}</p>
+                    <p class="font-semibold">{{ $todayBereitschaft['user'] ?: '–' }}</p>
                     @if ($todayBereitschaft['email'])
                         <a href="mailto:{{ $todayBereitschaft['email'] }}" class="link link-primary text-sm">{{ $todayBereitschaft['email'] }}</a>
+                    @endif
+                    @if ($todayBereitschaft['von'] && $todayBereitschaft['bis'])
+                        <p class="text-xs text-base-content/60 mt-1">{{ $todayBereitschaft['von']->format('d.m.Y H:i') }} – {{ $todayBereitschaft['bis']->format('d.m.Y H:i') }}</p>
                     @endif
                 </div>
             @endif
@@ -92,27 +115,42 @@
     {{-- Offene Meldungen --}}
     @if ($openIssues->isNotEmpty())
         <h2 class="text-sm font-semibold mb-2">{{ __('Offene Meldungen') }}</h2>
-        <div class="overflow-x-auto">
-            <x-table size="xs">
-                <thead>
+        <div class="overflow-x-auto rounded-box border border-base-300 max-h-[50vh] overflow-y-auto">
+            <x-table size="xs" :pin-rows="true">
+                <thead class="bg-base-200">
                     <tr>
-                        <th>#</th>
-                        <th>{{ __('Status') }}</th>
-                        <th>{{ __('Mitarbeiter') }}</th>
-                        <th>{{ __('Von') }}</th>
-                        <th>{{ __('Bis') }}</th>
+                        <th class="w-14">#</th>
+                        <th class="w-24 text-center">{{ __('Status') }}</th>
+                        <th class="w-32">{{ __('Mitarbeiter') }}</th>
+                        <th class="w-28">{{ __('Von') }}</th>
+                        <th class="w-28">{{ __('Bis') }}</th>
                         <th>{{ __('Inhalt') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($openIssues as $issue)
-                        <tr>
+                        @php
+                            $g = (int) $issue->gelesen;
+                            $badgeClass = match ($g) {
+                                -1 => 'badge-neutral',
+                                1  => 'badge-success',
+                                2  => 'badge-warning',
+                                3  => 'badge-error',
+                                default => 'badge-ghost',
+                            };
+                            $rowClass = match ($g) {
+                                3 => 'bg-error/5',
+                                2 => 'bg-warning/5',
+                                default => '',
+                            };
+                        @endphp
+                        <tr class="{{ $rowClass }}">
                             <td>{{ $issue->id }}</td>
-                            <td>{{ $issue->statusLabel() }}</td>
-                            <td>{{ optional($issue->author)->uname ?? '-' }}</td>
-                            <td>{{ $issue->von?->format('d.m.Y') ?? '-' }}</td>
-                            <td>{{ $issue->bis?->format('d.m.Y') ?? '-' }}</td>
-                            <td>{{ truncate($issue->inhalt ?? '', 60) }}</td>
+                            <td class="text-center"><span class="badge badge-sm {{ $badgeClass }}">{{ $issue->statusLabel() }}</span></td>
+                            <td>{{ optional($issue->author)->uname ?? '–' }}</td>
+                            <td class="whitespace-nowrap">{{ $issue->von?->format('d.m.Y H:i') ?? '–' }}</td>
+                            <td class="whitespace-nowrap">{{ $issue->bis?->format('d.m.Y H:i') ?? '–' }}</td>
+                            <td class="max-w-md" title="{{ $issue->inhalt ?? '' }}">{{ truncate($issue->inhalt ?? '', 120) }}</td>
                         </tr>
                     @endforeach
                 </tbody>

@@ -8,6 +8,7 @@ use App\Models\Legacy\LegacyArchiveNotdienst;
 use App\Models\Legacy\LegacyArchiveOnCall;
 use App\Services\Legacy\LegacyArchiveService;
 use App\Services\Legacy\LegacyWeekCalendarService;
+use App\Services\HolidayService;
 use App\Support\LegacyRoleResolver;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -18,7 +19,7 @@ use Illuminate\View\View;
 class LegacyArchiveController extends Controller {
     use RequiresLegacyAdmin;
 
-    public function week(Request $request, LegacyWeekCalendarService $calendar): View {
+    public function week(Request $request, LegacyWeekCalendarService $calendar, HolidayService $holidays): View {
         $this->ensureAdmin();
 
         $weekOffset = (int) $request->query('week', 0);
@@ -62,12 +63,18 @@ class LegacyArchiveController extends Controller {
             'entriesByUserDay' => $entriesByUserDay,
             'oncallByUserDay' => $oncallByUserDay,
             'notdienstByUserDay' => $notdienstByUserDay,
+            'holidays' => $holidays,
         ]);
     }
 
     public function index(Request $request): View {
         $legacyUserId = LegacyRoleResolver::resolveLegacyUserId(Auth::user());
         $isAdmin = LegacyRoleResolver::isAdmin(Auth::user());
+
+        $tab = (string) $request->query('tab', 'auftraege');
+        if (! in_array($tab, ['auftraege', 'bereitschaft', 'notdienst'], true)) {
+            $tab = 'auftraege';
+        }
 
         $diaryQuery = LegacyArchiveDiaryEntry::query()
             ->select(['id', 'user', 'inhalt', 'bis'])
@@ -105,14 +112,22 @@ class LegacyArchiveController extends Controller {
             $notdienstQuery->whereDate('bis', '<=', $request->to);
         }
 
+        $counts = [
+            'auftraege' => (clone $diaryQuery)->toBase()->getCountForPagination(),
+            'bereitschaft' => (clone $onCallQuery)->toBase()->getCountForPagination(),
+            'notdienst' => (clone $notdienstQuery)->toBase()->getCountForPagination(),
+        ];
+
         return view('legacy.archive.index', [
             'isAdmin' => $isAdmin,
             'legacyUserId' => $legacyUserId,
             'users' => $this->legacyUsersForSelect(),
             'filters' => $request->only('user', 'from', 'to'),
-            'diaryEntries' => $diaryQuery->paginate(20, ['*'], 'dpage')->withQueryString(),
-            'onCallEntries' => $onCallQuery->paginate(20, ['*'], 'opage')->withQueryString(),
-            'notdienstEntries' => $notdienstQuery->paginate(20, ['*'], 'npage')->withQueryString(),
+            'tab' => $tab,
+            'counts' => $counts,
+            'diaryEntries' => $diaryQuery->paginate(25, ['*'], 'dpage')->withQueryString(),
+            'onCallEntries' => $onCallQuery->paginate(25, ['*'], 'opage')->withQueryString(),
+            'notdienstEntries' => $notdienstQuery->paginate(25, ['*'], 'npage')->withQueryString(),
         ]);
     }
 

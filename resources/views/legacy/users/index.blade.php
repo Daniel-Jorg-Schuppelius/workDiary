@@ -4,11 +4,13 @@
 
 @section('content')
     @php($legacyUsers = collect($users ?? []))
-    <div class="mb-3">
-        <a href="{{ route('legacy.users.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">{{ __('Neuen Mitarbeiter anlegen') }}</a>
-    </div>
-
-    <x-table size="xs">
+    <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
+        <div class="flex items-center justify-between gap-2">
+            <h1 class="font-['Space_Grotesk'] text-xl font-semibold">{{ __('Mitarbeiter') }}</h1>
+            <a href="{{ route('legacy.users.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">+ {{ __('Neuer Mitarbeiter') }}</a>
+        </div>
+        <div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
+        <x-table size="xs">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -39,5 +41,7 @@
                     </tr>
                 @endforelse
             </tbody>
-    </x-table>
+        </x-table>
+        </div>
+    </div>
 @endsection

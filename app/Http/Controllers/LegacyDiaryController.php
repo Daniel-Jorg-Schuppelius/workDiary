@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\RequiresLegacyAdmin;
 use App\Http\Requests\SaveLegacyDiaryEntryRequest;
+use App\Services\HolidayService;
 use App\Models\Legacy\LegacyDiaryEntry;
 use App\Models\Legacy\LegacyNotdienst;
 use App\Models\Legacy\LegacyOnCall;
@@ -77,7 +78,7 @@ class LegacyDiaryController extends Controller {
         ]);
     }
 
-    public function week(Request $request, LegacyWeekCalendarService $calendar): View {
+    public function week(Request $request, LegacyWeekCalendarService $calendar, HolidayService $holidays): View {
         $weekOffset   = (int) $request->query('week', 0);
         $weekDate     = trim((string) $request->query('week_date', ''));
         $legacyUserId = (int) (Auth::user()->legacy_user_id ?? 0);
@@ -124,6 +125,7 @@ class LegacyDiaryController extends Controller {
             'entriesByUserDay'   => $entriesByUserDay,
             'oncallByUserDay'    => $oncallByUserDay,
             'notdienstByUserDay' => $notdienstByUserDay,
+            'holidays'           => $holidays,
         ]);
     }
 

@@ -3,7 +3,7 @@
 @section('title', __('Legacy-Migration'))
 
 @section('content')
-<div class="space-y-6">
+<div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
     <header class="flex flex-wrap items-baseline justify-between gap-3">
         <div>
             <h1 class="text-3xl font-semibold">{{ __('Legacy-Migration') }}</h1>

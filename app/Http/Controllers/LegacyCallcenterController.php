@@ -6,6 +6,7 @@ use App\Http\Requests\LegacyCallcenterLoginRequest;
 use App\Models\Legacy\LegacyDiaryEntry;
 use App\Models\Legacy\LegacyNotdienst;
 use App\Models\Legacy\LegacyOnCall;
+use App\Services\HolidayService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,9 @@ use Illuminate\View\View;
 
 class LegacyCallcenterController extends Controller {
     private const MAX_LOGIN_ATTEMPTS = 5;
+
+    public function __construct(private readonly HolidayService $holidayService) {
+    }
 
     public function showLoginForm(): View {
         return view('legacy.callcenter.login');
@@ -81,6 +85,9 @@ class LegacyCallcenterController extends Controller {
         $rangeStart = $start->copy()->startOfDay();
         $rangeEnd = $start->copy()->addDays(6)->endOfDay();
 
+        $holidayService = $this->holidayService;
+        $holidayMap = $days->mapWithKeys(fn(Carbon $day) => [$day->format('Y-m-d') => $holidayService->nameFor($day)])->all();
+
         $notdienstItems = LegacyNotdienst::query()
             ->select(['id', 'user', 'von', 'bis'])
             ->with('mitarbeiter:id,uname,email')
@@ -97,8 +104,8 @@ class LegacyCallcenterController extends Controller {
             ->orderBy('von')
             ->get();
 
-        $notdienstByDay = $this->mapDutyByDay($days, $notdienstItems, $today);
-        $bereitschaftByDay = $this->mapDutyByDay($days, $bereitschaftItems, $today);
+        $notdienstByDay = $this->mapDutyByDay($days, $notdienstItems, $today, $holidayMap);
+        $bereitschaftByDay = $this->mapDutyByDay($days, $bereitschaftItems, $today, $holidayMap);
 
         $todayNotdienst = collect($notdienstByDay)->firstWhere('isToday', true);
         $todayBereitschaft = collect($bereitschaftByDay)->firstWhere('isToday', true);
@@ -123,6 +130,7 @@ class LegacyCallcenterController extends Controller {
             'rangeStart' => $rangeStart,
             'rangeEnd' => $rangeEnd,
             'callcenterUser' => (string) $request->session()->get('legacy_callcenter_user', ''),
+            'holidayMap' => $holidayMap,
         ]);
     }
 
@@ -134,17 +142,26 @@ class LegacyCallcenterController extends Controller {
      * @template TDuty of LegacyNotdienst|LegacyOnCall
      * @param Collection<int, Carbon> $days
      * @param \Illuminate\Database\Eloquent\Collection<int, TDuty> $items
+     * @param array<string, string|null> $holidayMap
      * @return array<int, array<string, mixed>>
      */
-    private function mapDutyByDay(Collection $days, \Illuminate\Database\Eloquent\Collection $items, Carbon $today): array {
-        return $days->map(function (Carbon $day) use ($items, $today): array {
+    private function mapDutyByDay(Collection $days, \Illuminate\Database\Eloquent\Collection $items, Carbon $today, array $holidayMap = []): array {
+        return $days->map(function (Carbon $day) use ($items, $today, $holidayMap): array {
             $match = $items->first(function (LegacyNotdienst|LegacyOnCall $item) use ($day): bool {
                 return (bool) ($item->von && $item->bis && $item->von->copy()->startOfDay()->lte($day) && $item->bis->copy()->endOfDay()->gte($day));
             });
 
+            $key = $day->format('Y-m-d');
+            $dow = (int) $day->dayOfWeek;
+
             return [
                 'date' => $day,
                 'isToday' => $day->isSameDay($today),
+                'isWeekend' => $dow === 0 || $dow === 6,
+                'isSunday' => $dow === 0,
+                'isSaturday' => $dow === 6,
+                'holidayName' => $holidayMap[$key] ?? null,
+                'isHoliday' => ($holidayMap[$key] ?? null) !== null,
                 'user' => optional($match?->mitarbeiter)->uname,
                 'email' => optional($match?->mitarbeiter)->email,
                 'von' => $match?->von,

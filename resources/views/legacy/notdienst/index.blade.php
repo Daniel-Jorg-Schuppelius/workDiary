@@ -34,6 +34,23 @@
             @endif
     </x-filter-bar>
 
+    @php
+        $kpiTiles = [
+            ['all',      __('Gesamt'),       'border-base-300'],
+            ['today',    __('Heute aktiv'),  'border-warning/40'],
+            ['upcoming', __('Kommend'),      'border-info/40'],
+            ['past',     __('Vergangen'),    'border-neutral/40'],
+        ];
+    @endphp
+    <div class="flex-none grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        @foreach ($kpiTiles as [$key, $label, $borderClass])
+            <div class="rounded-box border bg-base-100 px-4 py-3 shadow-xs {{ $borderClass }}">
+                <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $label }}</p>
+                <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ number_format($counts[$key] ?? 0, 0, ',', '.') }}</p>
+            </div>
+        @endforeach
+    </div>
+
     <x-table size="xs" :pin-rows="true" scroll="flex">
                 <thead class="bg-base-200">
                 <tr>

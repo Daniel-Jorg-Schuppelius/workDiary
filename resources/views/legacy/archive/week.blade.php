@@ -34,14 +34,20 @@
                 $isToday = $day->isToday();
                 $isSunday = (int) $day->dayOfWeek === 0;
                 $isSaturday = (int) $day->dayOfWeek === 6;
+                $holidayName = isset($holidays) ? $holidays->nameFor($day) : null;
+                $isHoliday = $holidayName !== null;
                 if ($isToday) $dayTh = 'kheute';
+                elseif ($isHoliday) $dayTh = 'kfeiertag';
                 elseif ($isSunday) $dayTh = 'kso';
                 elseif ($isSaturday) $dayTh = 'ksa';
                 else $dayTh = 'kopf';
             @endphp
 
             <tr>
-                <th class="{{ $dayTh }}">{{ $day->format('d.m.y') }}</th>
+                <th class="{{ $dayTh }}" @if ($isHoliday) title="{{ $holidayName }}" @endif>
+                    <div>{{ $day->format('d.m.y') }}</div>
+                        <div class="holiday-name text-[0.65rem] font-medium leading-tight">{{ $isHoliday ? truncate($holidayName, 16, '') : strtoupper((string) $dayAbbr[$dayIndex]) }}</div>
+                </th>
                 @foreach ($legacyUsers as $legacyUser)
                     @php
                         $uid = (int) $legacyUser->id;
@@ -51,9 +57,13 @@
                         elseif ($hasNotdienst) $userTh = 'mitn';
                         else $userTh = 'mit';
                     @endphp
-                    <th colspan="2" class="{{ $userTh }}">{{ $legacyUser->uname }}</th>
+                    <th class="{{ $userTh }}">{{ $legacyUser->uname }}</th>
+                    <th class="{{ $userTh }} status-col" aria-hidden="true">&nbsp;</th>
                 @endforeach
-                <th class="{{ $dayTh }}">{{ $dayAbbr[$dayIndex] }}</th>
+                <th class="{{ $dayTh }}" @if ($isHoliday) title="{{ $holidayName }}" @endif>
+                    <div>{{ $dayAbbr[$dayIndex] }}</div>
+                    <div class="holiday-name text-[0.65rem] font-medium leading-tight">{{ $isHoliday ? __('Feiertag') : ' ' }}</div>
+                </th>
             </tr>
 
             @foreach ($hours as $hourIndex => $hour)
@@ -101,7 +111,7 @@
                             }
                         @endphp
                         <td class="{{ $cClass }}">@if ($entry)<span title="{{ e($entry->inhalt ?? '') }}">{{ truncate($entry->inhalt ?? '', 10, '') }}</span>@else&nbsp;@endif</td>
-                        <td class="{{ $sClass }}">&nbsp;</td>
+                        <td class="{{ $sClass }} status-col">&nbsp;</td>
                     @endforeach
 
                     <td class="{{ $bg ? 'grau' : 'mitte' }}">{{ $hourLabel }}</td>

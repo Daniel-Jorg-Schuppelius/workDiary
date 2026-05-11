@@ -3,7 +3,14 @@
 @section('nav-title', __('Audit-Log'))
 
 @section('content')
-    <div class="mx-auto w-full max-w-screen-2xl space-y-4 px-4 xl:px-8 2xl:px-12">
+    @php
+        /** @var \Illuminate\Pagination\LengthAwarePaginator $logs */
+        /** @var \Illuminate\Support\Collection<int, \App\Models\User> $users */
+        /** @var array<string, string> $events */
+        /** @var array<string, string> $types */
+        /** @var array<string, string> $filters */
+    @endphp
+    <div class="mx-auto flex h-[calc(100dvh-11rem)] w-full max-w-screen-2xl flex-col gap-4 overflow-auto px-4 xl:px-8 2xl:px-12">
         <div class="flex flex-wrap items-end justify-between gap-3">
             <h1 class="font-['Space_Grotesk'] text-2xl font-bold">{{ __('Audit-Log') }}</h1>
             <p class="text-sm text-base-content/60">{{ $logs->total() }} {{ __('Einträge') }}</p>

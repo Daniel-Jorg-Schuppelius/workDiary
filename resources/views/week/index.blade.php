@@ -113,7 +113,7 @@
         <div id="wd-week-grid" class="wd-week-grid">
             {{-- Header row --}}
             <div class="wd-week-corner"></div>
-            @foreach ($days as $day)
+            @foreach ($days as $dayIndex => $day)
                 @php
                     $isToday = $day->isSameDay(now());
                     $isWeekend = $day->isoWeekday() >= 6;

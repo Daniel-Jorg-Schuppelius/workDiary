@@ -33,12 +33,22 @@ trait ManagesLegacyDutyCrud {
             $query->whereDate('bis', '<=', $request->to);
         }
 
+        $countsQuery = (clone $query);
+        $today = now()->toDateString();
+        $counts = [
+            'all'      => (clone $countsQuery)->count(),
+            'today'    => (clone $countsQuery)->whereDate('von', '<=', $today)->whereDate('bis', '>=', $today)->count(),
+            'upcoming' => (clone $countsQuery)->whereDate('von', '>', $today)->count(),
+            'past'     => (clone $countsQuery)->whereDate('bis', '<', $today)->count(),
+        ];
+
         return [
             'items' => $query->paginate(30)->withQueryString(),
             'users' => $this->legacyUsersForSelect(),
             'isAdmin' => $isAdmin,
             'legacyUserId' => $legacyUserId,
             'filters' => $request->only('user', 'from', 'to'),
+            'counts' => $counts,
         ];
     }
 

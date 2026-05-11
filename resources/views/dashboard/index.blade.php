@@ -9,7 +9,7 @@
         /** @var array|null $team */
     @endphp
 
-    <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 xl:px-8 2xl:px-12">
+    <div class="mx-auto flex h-[calc(100dvh-11rem)] w-full max-w-screen-2xl flex-col gap-6 overflow-auto px-4 xl:px-8 2xl:px-12">
 
         {{-- Header --}}
         <div class="flex flex-wrap items-end justify-between gap-3">

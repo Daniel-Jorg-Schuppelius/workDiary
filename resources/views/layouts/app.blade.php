@@ -55,40 +55,95 @@
                 </div>
                 <div class="navbar-end gap-2">
                     @auth
-                        @if ($isLegacyMode)
-                            <div class="dropdown dropdown-end">
-                                <label tabindex="0" class="btn btn-sm btn-ghost">☰ {{ __('Navigation') }}</label>
-                                <ul tabindex="0" class="dropdown-content menu z-50 w-52 rounded-box border border-base-300 bg-base-100 p-2 shadow">
-                                    <li><a href="{{ route('legacy.diary.week') }}">{{ __('Wochenansicht') }}</a></li>
-                                    <li><a href="{{ route($indexRoute) }}">{{ __('Arbeitsliste') }}</a></li>
-                                    <li><a href="{{ route('legacy.overview.index') }}">{{ __('Überblick') }}</a></li>
+                        @php
+                            // Hauptnavigation: pro Modus eine Liste mit Routenname + Label.
+                            $mainNavItems = $isLegacyMode
+                                ? [
+                                    ['route' => 'legacy.diary.week',        'label' => __('Wochenansicht'),  'modal' => false, 'matches' => ['legacy.diary.week']],
+                                    ['route' => $indexRoute,                'label' => __('Arbeitsliste'),   'modal' => false, 'matches' => [$indexRoute]],
+                                    ['route' => 'legacy.overview.index',    'label' => __('Überblick'),      'modal' => false, 'matches' => ['legacy.overview.index']],
+                                    ['route' => 'legacy.oncall.index',      'label' => __('Dienste'),        'modal' => false, 'matches' => ['legacy.oncall.*', 'legacy.notdienst.*']],
+                                    ['route' => 'legacy.archive.index',     'label' => __('Archiv'),         'modal' => false, 'matches' => ['legacy.archive.*']],
+                                    ['route' => 'legacy.callcenter.notdienst', 'label' => __('Callcenter'),  'modal' => false, 'matches' => ['legacy.callcenter.*']],
+                                ]
+                                : [
+                                    ['route' => $indexRoute,                'label' => __('Arbeitsliste'),   'modal' => false, 'matches' => [$indexRoute]],
+                                    ['route' => 'week.index',               'label' => __('Wochenansicht'),  'modal' => false, 'matches' => ['week.index']],
+                                    ['route' => 'kanban.index',             'label' => __('Kanban'),         'modal' => false, 'matches' => ['kanban.index']],
+                                    ['route' => 'duties.index',             'label' => __('Dienste'),        'modal' => false, 'matches' => ['duties.*']],
+                                ];
+
+                            $adminNavItems = [];
+                            if ($isLegacyAdmin) {
+                                $adminNavItems[] = ['route' => 'legacy.users.index', 'label' => __('Mitarbeiter'), 'modal' => false];
+                                $adminNavItems[] = ['route' => 'holidays.index',     'label' => __('Feiertage'),   'modal' => false];
+                                $adminNavItems[] = ['route' => 'audit.index',        'label' => __('Audit-Log'),   'modal' => false];
+                                $adminNavItems[] = ['route' => 'admin.legacy-migration.index', 'label' => __('Legacy-Migration'), 'modal' => false];
+                            }
+
+                            $userNavItems = [];
+                            if (! $isLegacyMode) {
+                                $userNavItems[] = ['route' => 'account.profile.edit',  'label' => __('Profil bearbeiten'), 'modal' => true];
+                                $userNavItems[] = ['route' => 'account.password.edit', 'label' => __('Passwort ändern'),  'modal' => true];
+                            } else {
+                                $userNavItems[] = ['route' => 'legacy.account.password.edit', 'label' => __('Passwort ändern'), 'modal' => true];
+                            }
+                            $userNavItems[] = ['route' => 'profile.api-tokens.index', 'label' => __('API-Tokens'), 'modal' => false];
+
+                            $isAdminActive = collect($adminNavItems)->contains(fn ($i) => request()->routeIs($i['route']));
+                            $isUserActive = collect($userNavItems)->contains(fn ($i) => request()->routeIs($i['route']));
+                        @endphp
+
+                        {{-- Inline-Hauptnavigation (xl+) --}}
+                        <nav class="hidden xl:flex items-center gap-1">
+                            @foreach ($mainNavItems as $item)
+                                @php $active = collect($item['matches'])->contains(fn ($m) => request()->routeIs($m)); @endphp
+                                <a href="{{ route($item['route']) }}"
+                                   @if ($item['modal']) data-entry-modal-trigger @endif
+                                   class="btn btn-sm {{ $active ? 'btn-primary' : 'btn-ghost' }}">
+                                    {{ $item['label'] }}
+                                </a>
+                            @endforeach
+                        </nav>
+
+                        {{-- Fallback-Hauptnavigation (< xl) --}}
+                        <div class="dropdown dropdown-end xl:hidden">
+                            <label tabindex="0" class="btn btn-sm btn-ghost">☰ {{ __('Navigation') }}</label>
+                            <ul tabindex="0" class="dropdown-content menu z-50 w-56 rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                @foreach ($mainNavItems as $item)
+                                    @php $active = collect($item['matches'])->contains(fn ($m) => request()->routeIs($m)); @endphp
                                     <li>
-                                        <details>
-                                            <summary>{{ __('Dienste') }}</summary>
-                                            <ul>
-                                                <li><a href="{{ route('legacy.oncall.index') }}">{{ __('Bereitschaft') }}</a></li>
-                                                <li><a href="{{ route('legacy.notdienst.index') }}">{{ __('Notdienst') }}</a></li>
-                                            </ul>
-                                        </details>
+                                        <a href="{{ route($item['route']) }}"
+                                           @if ($item['modal']) data-entry-modal-trigger @endif
+                                           class="{{ $active ? 'active' : '' }}">
+                                            {{ $item['label'] }}
+                                        </a>
                                     </li>
-                                    <li><a href="{{ route('legacy.archive.index') }}">{{ __('Archiv') }}</a></li>
-                                    <li><a href="{{ route('legacy.callcenter.notdienst') }}">{{ __('Callcenter') }}</a></li>
-                                    @if ($isLegacyAdmin)
-                                        <li><a href="{{ route('legacy.users.index') }}">{{ __('Mitarbeiter') }}</a></li>
-                                    @endif
-                                    <li><a href="{{ route('legacy.account.password.edit') }}" data-entry-modal-trigger>{{ __('Passwort') }}</a></li>
+                                @endforeach
+                            </ul>
+                        </div>
+
+                        {{-- Admin-Menü --}}
+                        @if (! empty($adminNavItems))
+                            <div class="dropdown dropdown-end">
+                                <label tabindex="0" class="btn btn-sm {{ $isAdminActive ? 'btn-primary' : 'btn-ghost' }}" title="{{ __('Administration') }}">
+                                    ⚙ <span class="hidden sm:inline ml-1">{{ __('Admin') }}</span>
+                                </label>
+                                <ul tabindex="0" class="dropdown-content menu z-50 w-56 rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                    @foreach ($adminNavItems as $item)
+                                        @php $active = request()->routeIs($item['route']); @endphp
+                                        <li>
+                                            <a href="{{ route($item['route']) }}" class="{{ $active ? 'active' : '' }}">
+                                                {{ $item['label'] }}
+                                            </a>
+                                        </li>
+                                    @endforeach
                                 </ul>
                             </div>
-                            <a href="{{ route($createRoute) }}" data-entry-modal-trigger class="btn btn-sm btn-primary">+ {{ __('Neuer Eintrag') }}</a>
-                        @else
-                            <div class="flex flex-wrap items-center gap-2">
-                                <a href="{{ route($indexRoute) }}" class="btn btn-sm btn-ghost">▤ {{ __('Arbeitsliste') }}</a>
-                                @if ($isLegacyAdmin)
-                                    <a href="{{ route('legacy.users.index') }}" class="btn btn-sm btn-ghost">⚙ {{ __('Mitarbeiter') }}</a>
-                                @endif
-                                <a href="{{ route($createRoute) }}" data-entry-modal-trigger class="btn btn-sm btn-primary">+ {{ __('Neuer Eintrag') }}</a>
-                            </div>
                         @endif
+
+                        <a href="{{ route($createRoute) }}" data-entry-modal-trigger class="btn btn-sm btn-primary">+ {{ __('Neuer Eintrag') }}</a>
+
                         <div class="flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
                             <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
                                 <span data-theme-label class="text-base leading-none">◐</span>
@@ -130,10 +185,31 @@
                                     </form>
                                 </div>
                             @endif
-                            <form method="POST" action="{{ route('logout') }}" class="inline">
-                                @csrf
-                                <button class="btn btn-sm btn-ghost">⎋ {{ Auth::user()->name }}</button>
-                            </form>
+                            <div class="dropdown dropdown-end">
+                                <label tabindex="0" class="btn btn-sm {{ $isUserActive ? 'btn-primary' : 'btn-ghost' }}" title="{{ Auth::user()->name }}">
+                                    ⎋ <span class="ml-1 max-w-32 truncate">{{ Auth::user()->name }}</span>
+                                </label>
+                                <ul tabindex="0" class="dropdown-content menu z-50 w-56 rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                    @foreach ($userNavItems as $item)
+                                        @php $active = request()->routeIs($item['route']); @endphp
+                                        <li>
+                                            <a href="{{ route($item['route']) }}"
+                                               @if ($item['modal']) data-entry-modal-trigger @endif
+                                               class="{{ $active ? 'active' : '' }}">
+                                                {{ $item['label'] }}
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                    <li>
+                                        <form method="POST" action="{{ route('logout') }}" class="w-full">
+                                            @csrf
+                                            <button type="submit" class="flex w-full items-center gap-2 text-error">
+                                                ⎋ <span>{{ __('Abmelden') }}</span>
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     @else
                         <div class="flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
