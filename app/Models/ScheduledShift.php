@@ -3,15 +3,20 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Models\Concerns\BelongsToOrganization;
 use Database\Factories\ScheduledShiftFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property \Carbon\Carbon $date
+ */
 class ScheduledShift extends Model {
     /** @use HasFactory<ScheduledShiftFactory> */
     use HasFactory;
+    use BelongsToOrganization;
     use Auditable;
 
     public const STATUS_DRAFT     = 'draft';
@@ -19,6 +24,7 @@ class ScheduledShift extends Model {
     public const STATUS_CONFIRMED = 'confirmed';
     public const STATUS_CANCELLED = 'cancelled';
 
+    /** @var list<string> */
     public static array $statuses = [
         self::STATUS_DRAFT,
         self::STATUS_PUBLISHED,
@@ -27,6 +33,8 @@ class ScheduledShift extends Model {
     ];
 
     protected $fillable = [
+        'organization_id',
+        'duty_plan_id',
         'user_id',
         'shift_type_id',
         'date',
@@ -47,6 +55,11 @@ class ScheduledShift extends Model {
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
+    }
+
+    /** @return BelongsTo<DutyPlan, $this> */
+    public function dutyPlan(): BelongsTo {
+        return $this->belongsTo(DutyPlan::class);
     }
 
     /** @return BelongsTo<ShiftType, $this> */

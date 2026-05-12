@@ -57,7 +57,7 @@ class LegacyDutyControllersTest extends TestCase {
                 'von' => '2026-05-01',
                 'bis' => '2026-05-02',
             ])
-            ->assertRedirect(route('legacy.notdienst.index'));
+            ->assertRedirect(route('legacy.diary.index', ['tab' => 'notdienst']));
 
         $this->assertDatabaseHas('notdnst', [
             'user' => 4,

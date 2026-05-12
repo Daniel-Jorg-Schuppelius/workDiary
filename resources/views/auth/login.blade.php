@@ -104,6 +104,12 @@
             <p class="mt-6 text-center text-sm text-base-content/70">
                 <a href="{{ route('home') }}" class="text-primary transition hover:opacity-80">← Zurück zur Startseite</a>
             </p>
+            @if (config('app.registration_enabled'))
+            <p class="mt-3 text-center text-sm text-base-content/70">
+                {{ __('Noch kein Account?') }}
+                <a href="{{ route('register') }}" class="text-primary transition hover:opacity-80">{{ __('Organisation registrieren') }}</a>
+            </p>
+            @endif
             </div>
         </div>
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\TenantRegistrationController;
 use App\Http\Controllers\AccountPasswordController;
 use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\ArchiveController;
@@ -25,14 +26,21 @@ use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\MilestoneController;
+use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TimeEntryController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\WeekController;
 use App\Http\Controllers\OnCallShiftController;
 use App\Http\Controllers\EmergencyAssignmentController;
 use App\Http\Controllers\DutyController;
+use App\Http\Controllers\DutyPlanController;
+use App\Http\Controllers\QualificationController;
 use App\Http\Controllers\VacationController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ShiftTypeController;
+use App\Http\Controllers\OrgMemberController;
+use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\ScheduleImportController;
 use Illuminate\Support\Facades\Route;
 
@@ -43,6 +51,9 @@ Route::get('/', HomeController::class)->name('home');
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login')->middleware('guest');
 Route::post('/login', [LoginController::class, 'login'])->middleware('guest');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+Route::get('/register', [TenantRegistrationController::class, 'showForm'])->name('register')->middleware('guest');
+Route::post('/register', [TenantRegistrationController::class, 'register'])->middleware('guest');
 
 Route::post('/locale/{locale}', [LocaleController::class, 'switch'])->name('locale.switch');
 
@@ -130,6 +141,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('kanban/{entry}/status', [KanbanController::class, 'updateStatus'])->name('kanban.status');
 
     Route::get('duties', [DutyController::class, 'index'])->name('duties.index');
+
+    Route::resource('duty-plans', DutyPlanController::class)->parameters(['duty-plans' => 'dutyPlan']);
+    Route::patch('duty-plans/{dutyPlan}/publish', [DutyPlanController::class, 'publish'])->name('duty-plans.publish');
+    Route::patch('duty-plans/{dutyPlan}/retract', [DutyPlanController::class, 'retract'])->name('duty-plans.retract');
     Route::get('shifts', fn() => redirect()->route('duties.index'))->name('shifts.index');
     Route::get('assignments', fn() => redirect()->route('duties.index', ['tab' => 'notdienst']))->name('assignments.index');
     Route::resource('shifts', OnCallShiftController::class)->except(['show', 'index'])->parameters(['shifts' => 'shift']);
@@ -144,10 +159,26 @@ Route::middleware('auth')->group(function () {
     Route::resource('tags', TagController::class)->except('show');
 
     Route::resource('projects', ProjectController::class);
+    Route::resource('projects.milestones', MilestoneController::class)->except(['index', 'show']);
+    Route::resource('projects.tasks', TaskController::class)->except(['index', 'show']);
+    Route::patch('projects/{project}/tasks/{task}/complete', [TaskController::class, 'complete'])->name('projects.tasks.complete');
+    Route::resource('projects.time-entries', TimeEntryController::class)->except(['index', 'show']);
 
+    Route::get('archive', [ArchiveController::class, 'index'])->name('archive.index');
     Route::post('archive/run', [ArchiveController::class, 'run'])->name('archive.run');
 
     Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
+
+    Route::resource('admin/organizations', OrganizationController::class)
+        ->names('admin.organizations')
+        ->parameters(['organizations' => 'organization']);
+
+    Route::resource('org/members', OrgMemberController::class)
+        ->names('org.members')
+        ->parameters(['members' => 'member'])
+        ->except('show');
+
+    Route::resource('qualifications', QualificationController::class)->except('show');
 
     // ── Schichtplan ─────────────────────────────────────────────────────────
     Route::prefix('schedule')->name('schedule.')->group(function () {

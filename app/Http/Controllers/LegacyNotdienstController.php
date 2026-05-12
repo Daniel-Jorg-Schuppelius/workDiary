@@ -15,11 +15,8 @@ class LegacyNotdienstController extends Controller {
     use RequiresLegacyAdmin;
     use ManagesLegacyDutyCrud;
 
-    public function index(Request $request): View {
-        /** @var \Illuminate\Database\Eloquent\Builder<LegacyNotdienst> $query */
-        $query = LegacyNotdienst::query()->with('user:id,uname')->orderBy('von')->orderBy('user');
-
-        return view('legacy.notdienst.index', $this->legacyDutyIndexData($request, $query));
+    public function index(Request $request): RedirectResponse {
+        return redirect()->route('legacy.diary.index', ['tab' => 'notdienst']);
     }
 
     public function create(Request $request): View {
@@ -36,7 +33,7 @@ class LegacyNotdienstController extends Controller {
 
         LegacyNotdienst::query()->create($request->validated());
 
-        return redirect()->route('legacy.notdienst.index')->with('success', 'Notdienst angelegt.');
+        return redirect()->route('legacy.diary.index', ['tab' => 'notdienst'])->with('success', 'Notdienst angelegt.');
     }
 
     public function edit(LegacyNotdienst $notdienst): View|RedirectResponse {
@@ -57,7 +54,7 @@ class LegacyNotdienstController extends Controller {
 
         $notdienst->update($request->validated());
 
-        return redirect()->route('legacy.notdienst.index')->with('success', 'Notdienst aktualisiert.');
+        return redirect()->route('legacy.diary.index', ['tab' => 'notdienst'])->with('success', 'Notdienst aktualisiert.');
     }
 
     public function destroy(LegacyNotdienst $notdienst): RedirectResponse {
@@ -65,6 +62,6 @@ class LegacyNotdienstController extends Controller {
 
         $notdienst->delete();
 
-        return redirect()->route('legacy.notdienst.index')->with('success', 'Notdienst geloescht.');
+        return redirect()->route('legacy.diary.index', ['tab' => 'notdienst'])->with('success', 'Notdienst geloescht.');
     }
 }

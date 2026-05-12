@@ -45,7 +45,7 @@
                 ->sortByDesc(fn ($entry) => (int) $entry->gelesen)
                 ->take(5);
             $currentMode = $currentMode ?? session('work_mode', 'legacy');
-            $indexRoute = $currentMode === 'legacy' ? 'legacy.diary.index' : 'diary.index';
+            $indexRoute = $currentMode === 'legacy' ? 'legacy.diary.index' : 'duties.index';
             $createRoute = $currentMode === 'legacy' ? 'legacy.diary.create' : 'diary.create';
         @endphp
         <header class="fixed inset-x-0 top-0 z-50 border-b border-base-300 bg-base-100 shadow-xs">

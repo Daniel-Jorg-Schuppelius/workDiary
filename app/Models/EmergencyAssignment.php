@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Concerns\HasAttachments;
 use App\Models\Concerns\HasTags;
 use Database\Factories\EmergencyAssignmentFactory;
@@ -12,14 +13,20 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property \Carbon\Carbon $start_at
+ * @property \Carbon\Carbon $end_at
+ */
 class EmergencyAssignment extends Model {
     /** @use HasFactory<EmergencyAssignmentFactory> */
     use HasFactory;
+    use BelongsToOrganization;
     use HasTags;
     use HasAttachments;
     use Auditable;
 
     protected $fillable = [
+        'organization_id',
         'legacy_id',
         'user_id',
         'on_call_shift_id',

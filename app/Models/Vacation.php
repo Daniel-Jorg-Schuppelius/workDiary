@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Models\Concerns\BelongsToOrganization;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int                             $id
+ * @property int                             $organization_id
  * @property int                             $user_id
  * @property \Carbon\Carbon                  $start_date
  * @property \Carbon\Carbon                  $end_date
@@ -24,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Vacation extends Model {
     use Auditable;
+    use BelongsToOrganization;
 
     public const TYPE_VACATION   = 'vacation';
     public const TYPE_SICK       = 'sick';
@@ -52,6 +55,7 @@ class Vacation extends Model {
     ];
 
     protected $fillable = [
+        'organization_id',
         'user_id',
         'start_date',
         'end_date',

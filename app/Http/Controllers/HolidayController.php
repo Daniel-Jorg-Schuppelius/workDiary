@@ -22,6 +22,7 @@ class HolidayController extends Controller {
         }
 
         // Eigene (DB-)Feiertage für die Verwaltung (alle, paginiert nach Datum).
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Holiday> $customHolidays */
         $customHolidays = Holiday::query()
             ->orderByDesc('is_recurring')
             ->orderBy('date')

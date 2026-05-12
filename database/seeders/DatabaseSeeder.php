@@ -14,10 +14,14 @@ class DatabaseSeeder extends Seeder {
      */
     public function run(): void {
         $this->call(RolesSeeder::class);
+        $this->call(OrganizationSeeder::class);
+
+        $org = \App\Models\Organization::where('slug', 'default')->first();
 
         User::factory()->admin()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name'            => 'Test User',
+            'email'           => 'test@example.com',
+            'organization_id' => $org?->id,
         ]);
     }
 }

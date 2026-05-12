@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SaveProjectRequest;
 use App\Models\DiaryEntry;
 use App\Models\Project;
+use App\Models\TimeEntry;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -54,15 +55,68 @@ class ProjectController extends Controller {
     public function show(Project $project): View {
         Gate::authorize('view', $project);
 
+        // Diary-Einträge (Tab 4)
         $entries = $project->diaryEntries()
             ->with(['user:id,name', 'tags:id,name,color'])
             ->orderByDesc('start_at')
-            ->limit(50)
+            ->limit(20)
             ->get();
 
+        // Milestones mit Tasks (Tab 1 + 2)
+        $milestones = $project->milestones()
+            ->with(['tasks' => function ($q): void {
+                $q->whereNull('parent_task_id')->orderBy('position');
+            }])
+            ->get();
+
+        // Alle Toplevel-Tasks des Projekts (Tab 2)
+        $topTasks = $project->tasks()
+            ->with(['assignee:id,name', 'milestone:id,title', 'subTasks'])
+            ->whereNull('parent_task_id')
+            ->orderBy('milestone_id')
+            ->orderBy('position')
+            ->get();
+
+        // Task-Statistik (Tab 1)
+        $taskStats = $project->tasks()
+            ->select('status', DB::raw('COUNT(*) as cnt'))
+            ->groupBy('status')
+            ->pluck('cnt', 'status');
+
+        // Zeiteinträge (Tab 3)
+        $timeEntries = $project->timeEntries()
+            ->with(['user:id,name', 'task:id,title'])
+            ->orderByDesc('date')
+            ->limit(100)
+            ->get();
+
+        // Zeit-Aggregationen (Tab 1 + 3)
+        $totalMinutes = $project->timeEntries()->sum('minutes');
+        $monthMinutes = $project->timeEntries()
+            ->where('date', '>=', now()->startOfMonth())
+            ->sum('minutes');
+        $myMinutes = $project->timeEntries()
+            ->where('user_id', Auth::id())
+            ->sum('minutes');
+
+        // Nächster Milestone für Übersicht
+        $nextMilestone = $project->milestones()
+            ->where('is_completed', false)
+            ->whereNotNull('due_date')
+            ->orderBy('due_date')
+            ->first();
+
         return view('projects.show', [
-            'project' => $project,
-            'entries' => $entries,
+            'project'       => $project,
+            'entries'       => $entries,
+            'milestones'    => $milestones,
+            'topTasks'      => $topTasks,
+            'taskStats'     => $taskStats,
+            'timeEntries'   => $timeEntries,
+            'totalMinutes'  => (int) $totalMinutes,
+            'monthMinutes'  => (int) $monthMinutes,
+            'myMinutes'     => (int) $myMinutes,
+            'nextMilestone' => $nextMilestone,
         ]);
     }
 

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Concerns\HasAttachments;
 use App\Models\Concerns\HasTags;
 use App\Models\User;
@@ -15,11 +16,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class DiaryEntry extends Model {
     /** @use HasFactory<\Database\Factories\DiaryEntryFactory> */
     use HasFactory;
+    use BelongsToOrganization;
     use HasTags;
     use HasAttachments;
     use Auditable;
 
     protected $fillable = [
+        'organization_id',
         'legacy_id',
         'user_id',
         'project_id',

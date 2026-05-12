@@ -166,4 +166,13 @@ return [
         'locale' => env('HOLIDAYS_LOCALE', 'de_DE'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Tenant Self-Registration
+    |--------------------------------------------------------------------------
+    | Set REGISTRATION_ENABLED=true in .env to allow new tenants to sign up
+    | via /register. Disabled by default for on-premise installations.
+    */
+    'registration_enabled' => env('REGISTRATION_ENABLED', false),
+
 ];

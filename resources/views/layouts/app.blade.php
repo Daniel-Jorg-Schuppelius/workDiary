@@ -26,12 +26,15 @@
             </style>
         @endif
     </head>
-    <body class="min-h-screen">
+    @php
+        $_bodyMode = (session('work_mode', 'legacy') === 'legacy' && filled(config('database.connections.legacy.database'))) ? 'legacy' : 'new';
+    @endphp
+    <body class="min-h-screen" data-mode="{{ $_bodyMode }}">
         @php
             $currentMode = session('work_mode', 'legacy');
             $legacyConfigured = filled(config('database.connections.legacy.database'));
             $effectiveMode = $currentMode === 'legacy' && $legacyConfigured ? 'legacy' : 'new';
-            $indexRoute = $effectiveMode === 'legacy' ? 'legacy.diary.index' : 'diary.index';
+            $indexRoute = $effectiveMode === 'legacy' ? 'legacy.diary.index' : 'duties.index';
             $createRoute = $effectiveMode === 'legacy' ? 'legacy.diary.create' : 'diary.create';
             $originRoute = request()->route()?->getName() ?? 'home';
             $isLegacyMode = $effectiveMode === 'legacy';
@@ -59,19 +62,19 @@
                             // Hauptnavigation: pro Modus eine Liste mit Routenname + Label.
                             $mainNavItems = $isLegacyMode
                                 ? [
-                                    ['route' => 'legacy.diary.week',        'label' => __('Wochenansicht'),  'modal' => false, 'matches' => ['legacy.diary.week']],
-                                    ['route' => $indexRoute,                'label' => __('Arbeitsliste'),   'modal' => false, 'matches' => [$indexRoute]],
-                                    ['route' => 'legacy.oncall.index',      'label' => __('Dienste'),        'modal' => false, 'matches' => ['legacy.oncall.*', 'legacy.notdienst.*']],
-                                    ['route' => 'legacy.archive.index',     'label' => __('Archiv'),         'modal' => false, 'matches' => ['legacy.archive.*']],
-                                    ['route' => 'legacy.callcenter.notdienst', 'label' => __('Zentrale'),    'modal' => false, 'matches' => ['legacy.callcenter.*', 'legacy.overview.*']],
+                                    ['route' => 'legacy.diary.week',           'label' => __('Wochenansicht'), 'modal' => false, 'matches' => ['legacy.diary.week']],
+                                    ['route' => $indexRoute,                   'label' => __('Arbeitsliste'),  'modal' => false, 'matches' => [$indexRoute, 'legacy.oncall.*', 'legacy.notdienst.*']],
+                                    ['route' => 'legacy.archive.index',        'label' => __('Archiv'),        'modal' => false, 'matches' => ['legacy.archive.*']],
+                                    ['route' => 'legacy.callcenter.notdienst', 'label' => __('Zentrale'),      'modal' => false, 'matches' => ['legacy.callcenter.*', 'legacy.overview.*']],
                                 ]
                                 : [
-                                    ['route' => $indexRoute,                'label' => __('Arbeitsliste'),   'modal' => false, 'matches' => [$indexRoute]],
+                                    ['route' => $indexRoute,                'label' => __('Arbeitsliste'),   'modal' => false, 'matches' => [$indexRoute, 'diary.*']],
                                     ['route' => 'week.index',               'label' => __('Wochenansicht'),  'modal' => false, 'matches' => ['week.index']],
                                     ['route' => 'kanban.index',             'label' => __('Kanban'),         'modal' => false, 'matches' => ['kanban.index']],
-                                    ['route' => 'duties.index',             'label' => __('Dienste'),        'modal' => false, 'matches' => ['duties.*']],
-                                    ['route' => 'schedule.index',           'label' => __('Schichtplan'),     'modal' => false, 'matches' => ['schedule.*']],
+                                    ['route' => 'duty-plans.index',      'label' => __('Dienstpläne'),    'modal' => false, 'matches' => ['duty-plans.*']],
+                                    ['route' => 'schedule.index',        'label' => __('Schichtplan'),    'modal' => false, 'matches' => ['schedule.*']],
                                     ['route' => 'vacations.index',          'label' => __('Urlaub'),         'modal' => false, 'matches' => ['vacations.*']],
+                                    ['route' => 'archive.index',            'label' => __('Archiv'),         'modal' => false, 'matches' => ['archive.*']],
                                 ];
 
                             $adminNavItems = [];
@@ -79,7 +82,11 @@
                                 $adminNavItems[] = ['route' => 'legacy.users.index', 'label' => __('Mitarbeiter'), 'modal' => false];
                                 $adminNavItems[] = ['route' => 'holidays.index',     'label' => __('Feiertage'),   'modal' => false];
                                 $adminNavItems[] = ['route' => 'audit.index',        'label' => __('Audit-Log'),   'modal' => false];
+                                $adminNavItems[] = ['route' => 'admin.organizations.index', 'label' => __('Organisationen'), 'modal' => false];
                                 $adminNavItems[] = ['route' => 'admin.legacy-migration.index', 'label' => __('Legacy-Migration'), 'modal' => false];
+                            }
+                            if (\Illuminate\Support\Facades\Gate::allows('manage-members')) {
+                                $adminNavItems[] = ['route' => 'org.members.index', 'label' => __('Mitglieder'), 'modal' => false];
                             }
 
                             $userNavItems = [];
@@ -173,18 +180,32 @@
                                 </ul>
                             </div>
                             @if ($legacyConfigured)
-                                <div class="join">
-                                    <form method="POST" action="{{ route('mode.switch', 'legacy') }}" class="join-item">
-                                        @csrf
-                                        <input type="hidden" name="origin" value="{{ $originRoute }}">
-                                        <button type="submit" class="btn btn-sm {{ $currentMode === 'legacy' ? 'btn-primary' : 'btn-ghost' }}">Legacy</button>
-                                    </form>
-                                    <form method="POST" action="{{ route('mode.switch', 'new') }}" class="join-item">
-                                        @csrf
-                                        <input type="hidden" name="origin" value="{{ $originRoute }}">
-                                        <button type="submit" class="btn btn-sm {{ $currentMode === 'new' ? 'btn-primary' : 'btn-ghost' }}">Neu</button>
-                                    </form>
-                                </div>
+                                {{-- Legacy-Toggle-Switch --}}
+                                <form method="POST"
+                                      action="{{ route('mode.switch', $isLegacyMode ? 'new' : 'legacy') }}"
+                                      id="mode-switch-form"
+                                      class="flex items-center gap-1.5">
+                                    @csrf
+                                    <input type="hidden" name="origin" value="{{ $originRoute }}">
+                                    <label for="mode-switch-toggle"
+                                           class="text-[0.65rem] font-semibold uppercase tracking-widest cursor-pointer select-none
+                                                  {{ $isLegacyMode ? 'text-base-content/70' : 'text-base-content/40' }}"
+                                           title="{{ __('Modus wechseln') }}">
+                                        Legacy
+                                    </label>
+                                    <button type="submit" id="mode-switch-toggle" role="switch"
+                                            aria-checked="{{ $isLegacyMode ? 'true' : 'false' }}"
+                                            aria-label="{{ __('Legacy-Modus') }}"
+                                            title="{{ __('Modus wechseln') }}"
+                                            class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full
+                                                   border-2 border-transparent transition-colors duration-200 focus:outline-none focus-visible:ring-2
+                                                   focus-visible:ring-primary focus-visible:ring-offset-2
+                                                   {{ $isLegacyMode ? 'bg-primary' : 'bg-base-300' }}">
+                                        <span class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-md ring-0
+                                                     transform transition-transform duration-200
+                                                     {{ $isLegacyMode ? 'translate-x-4' : 'translate-x-0' }}"></span>
+                                    </button>
+                                </form>
                             @endif
                             <div class="dropdown dropdown-end">
                                 <label tabindex="0" class="btn btn-sm {{ $isUserActive ? 'btn-primary' : 'btn-ghost' }}" title="{{ Auth::user()->name }}">
@@ -247,7 +268,29 @@
             </div>
         </header>
 
-        <div class="mx-auto flex @yield('wrapper-height-class', 'min-h-screen') w-full max-w-7xl flex-col px-4 pb-20 pt-24 lg:px-10">
+        @if (session('mode_toast'))
+        <div id="mode-toast"
+             class="fixed bottom-24 left-1/2 z-200 -translate-x-1/2 translate-y-0 opacity-100 transition-all duration-500"
+             aria-live="polite">
+            <div class="flex items-center gap-3 rounded-2xl border border-base-300 bg-base-100/90 px-5 py-3 text-sm shadow-xl backdrop-blur-sm">
+                <span class="text-base">{{ $effectiveMode === 'legacy' ? '🗂' : '✨' }}</span>
+                <span class="font-medium">{{ session('mode_toast') }}</span>
+            </div>
+        </div>
+        <script>
+            (function () {
+                var el = document.getElementById('mode-toast');
+                if (!el) return;
+                setTimeout(function () {
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateX(-50%) translateY(0.75rem)';
+                    setTimeout(function () { el.remove(); }, 500);
+                }, 3000);
+            })();
+        </script>
+        @endif
+
+        <div class="mx-auto flex @yield('wrapper-height-class', 'min-h-screen') w-full max-w-screen-2xl flex-col px-4 pb-20 pt-24 xl:px-8 2xl:px-12">
             @if (session('success'))
                 <div class="alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
                     {{ session('success') }}

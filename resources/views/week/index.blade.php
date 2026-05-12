@@ -54,14 +54,13 @@
         </div>
 
         <div class="flex items-center gap-3">
-            <button type="button" id="wd-week-fit-btn"
-                    class="btn btn-sm btn-ghost gap-1.5"
-                    title="{{ __('Ansicht an Bildschirm anpassen') }}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor">
+            <label class="flex cursor-pointer items-center gap-2 text-sm" title="{{ __('Ansicht an Bildschirm anpassen') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/70" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M3 4a1 1 0 011-1h3a1 1 0 010 2H5.414l2.293 2.293a1 1 0 01-1.414 1.414L4 6.414V8a1 1 0 01-2 0V4zm14 0a1 1 0 00-1-1h-3a1 1 0 000 2h1.586l-2.293 2.293a1 1 0 001.414 1.414L16 6.414V8a1 1 0 002 0V4zm-3 12a1 1 0 001-1v-3a1 1 0 00-2 0v1.586l-2.293-2.293a1 1 0 00-1.414 1.414L13.586 16H12a1 1 0 000 2h3zm-8 0a1 1 0 01-1-1v-3a1 1 0 012 0v1.586l2.293-2.293a1 1 0 011.414 1.414L6.414 16H8a1 1 0 010 2H5z"/>
                 </svg>
-                <span id="wd-week-fit-label">{{ __('Auf Bildschirm') }}</span>
-            </button>
+                <span class="text-sm text-base-content/70">{{ __('Auf Bildschirm') }}</span>
+                <input type="checkbox" id="wd-week-fit-btn" class="toggle toggle-sm toggle-primary">
+            </label>
 
             <div class="join">
                 <a href="{{ route('week.index', ['date' => $weekStart->toDateString(), 'scope' => 'mine']) }}"
@@ -269,7 +268,6 @@
     var scroll = document.getElementById('wd-week-scroll');
     var grid   = document.getElementById('wd-week-grid');
     var btn    = document.getElementById('wd-week-fit-btn');
-    var label  = document.getElementById('wd-week-fit-label');
     var KEY    = 'workDiaryWeekCalFit';
     var fit    = localStorage.getItem(KEY) === '1';
 
@@ -288,21 +286,19 @@
             var h = hourHeight();
             grid.style.setProperty('--wd-hour-h', h + 'px');
             scroll.style.overflow = 'hidden';
-            if (btn) { btn.classList.add('btn-primary'); btn.classList.remove('btn-ghost'); }
-            if (label) label.textContent = '{{ __('Freies Scrollen') }}';
+            if (btn) btn.checked = true;
         } else {
             grid.style.removeProperty('--wd-hour-h');
             scroll.style.overflow = '';
-            if (btn) { btn.classList.remove('btn-primary'); btn.classList.add('btn-ghost'); }
-            if (label) label.textContent = '{{ __('Auf Bildschirm') }}';
+            if (btn) btn.checked = false;
         }
     }
 
     apply(fit);
 
     if (btn) {
-        btn.addEventListener('click', function () {
-            fit = !fit;
+        btn.addEventListener('change', function () {
+            fit = btn.checked;
             localStorage.setItem(KEY, fit ? '1' : '0');
             apply(fit);
         });

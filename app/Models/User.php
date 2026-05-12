@@ -6,6 +6,8 @@ use App\Models\Legacy\LegacyUser;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -14,6 +16,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 /**
  * @property int $id
+ * @property int|null $organization_id
  * @property string $name
  * @property string $email
  * @property \Illuminate\Support\Carbon|null $email_verified_at
@@ -50,6 +53,7 @@ class User extends Authenticatable {
     }
 
     protected $fillable = [
+        'organization_id',
         'name',
         'email',
         'password',
@@ -63,6 +67,18 @@ class User extends Authenticatable {
             'password' => 'hashed',
             'must_change_password' => 'boolean',
         ];
+    }
+
+    /** @return BelongsTo<Organization, $this> */
+    public function organization(): BelongsTo {
+        return $this->belongsTo(Organization::class);
+    }
+
+    /** @return BelongsToMany<Qualification, $this> */
+    public function qualifications(): BelongsToMany {
+        return $this->belongsToMany(Qualification::class, 'user_qualifications')
+            ->withPivot(['valid_from', 'valid_until'])
+            ->withTimestamps();
     }
 
     /** @return HasMany<DiaryEntry, $this> */

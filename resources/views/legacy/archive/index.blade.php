@@ -10,11 +10,9 @@
             'auftraege' => ['label' => __('Aufträge'), 'count' => $counts['auftraege'] ?? 0],
             'bereitschaft' => ['label' => __('Bereitschaft'), 'count' => $counts['bereitschaft'] ?? 0],
             'notdienst' => ['label' => __('Notdienst'), 'count' => $counts['notdienst'] ?? 0],
+            'urlaub'    => ['label' => __('Urlaub'),    'count' => $counts['urlaub'] ?? 0],
         ];
         $activeTab = $tab ?? 'auftraege';
-        $today = \Carbon\Carbon::today();
-        $from7 = $today->copy()->subDays(7)->format('Y-m-d');
-        $from30 = $today->copy()->subDays(30)->format('Y-m-d');
         $currentFrom = (string) ($filters['from'] ?? '');
         $currentTo = (string) ($filters['to'] ?? '');
         $currentStatus = (string) ($statusFilter ?? 'all');
@@ -28,64 +26,72 @@
         $kpiTiles = $activeTab === 'auftraege'
             ? [
                 [
-                    'label' => __('Gesamt'),
-                    'value' => $tabKpis['total']   ?? 0,
+                    'label'  => __('Gesamt'),
+                    'value'  => $tabKpis['total']    ?? 0,
                     'border' => 'border-base-300',
-                    'href' => $tileLink([]),
+                    'href'   => $tileLink([]),
                     'active' => $currentStatus === 'all' && $currentFrom === '' && $currentTo === '',
                 ],
                 [
-                    'label' => __('Letzte 7d'),
-                    'value' => $tabKpis['last7']   ?? 0,
-                    'border' => 'border-success/40',
-                    'href' => $tileLink(['from' => $from7]),
-                    'active' => $currentFrom === $from7 && $currentTo === '',
+                    'label'  => __('Erledigt'),
+                    'value'  => $tabKpis['erledigt'] ?? 0,
+                    'border' => 'border-neutral/40',
+                    'href'   => $tileLink(['status' => '-1']),
+                    'active' => $currentStatus === '-1',
                 ],
                 [
-                    'label' => __('Letzte 30d'),
-                    'value' => $tabKpis['last30']  ?? 0,
+                    'label'  => __('Offen'),
+                    'value'  => $tabKpis['offen']    ?? 0,
                     'border' => 'border-warning/40',
-                    'href' => $tileLink(['from' => $from30]),
-                    'active' => $currentFrom === $from30 && $currentTo === '',
+                    'href'   => $tileLink(['status' => '2']),
+                    'active' => $currentStatus === '2',
                 ],
                 [
-                    'label' => __('Mit Eskalation'),
-                    'value' => $tabKpis['alert']   ?? 0,
+                    'label'  => __('Mit Eskalation'),
+                    'value'  => $tabKpis['alert']    ?? 0,
                     'border' => 'border-error/40',
-                    'href' => $tileLink(['status' => '3']),
+                    'href'   => $tileLink(['status' => '3']),
                     'active' => $currentStatus === '3',
                 ],
             ]
-            : [
-                [
-                    'label' => __('Gesamt'),
-                    'value' => $tabKpis['total']   ?? 0,
-                    'border' => 'border-base-300',
-                    'href' => $tileLink([]),
-                    'active' => $currentFrom === '' && $currentTo === '',
-                ],
-                [
-                    'label' => __('Letzte 7d'),
-                    'value' => $tabKpis['last7']   ?? 0,
-                    'border' => 'border-success/40',
-                    'href' => $tileLink(['from' => $from7]),
-                    'active' => $currentFrom === $from7 && $currentTo === '',
-                ],
-                [
-                    'label' => __('Letzte 30d'),
-                    'value' => $tabKpis['last30']  ?? 0,
-                    'border' => 'border-warning/40',
-                    'href' => $tileLink(['from' => $from30]),
-                    'active' => $currentFrom === $from30 && $currentTo === '',
-                ],
-                [
-                    'label' => __('Längste Schicht (Tage)'),
-                    'value' => $tabKpis['longest'] ?? 0,
-                    'border' => 'border-info/40',
-                    'href' => null,
-                    'active' => false,
-                ],
-            ];
+            : ($activeTab === 'urlaub'
+                ? [
+                    ['label' => __('Gesamt'),     'value' => $tabKpis['total']     ?? 0, 'border' => 'border-base-300',   'href' => $tileLink([]), 'active' => $currentFrom === '' && $currentTo === ''],
+                    ['label' => __('Abgelehnt'),  'value' => $tabKpis['rejected']  ?? 0, 'border' => 'border-error/40',   'href' => null,          'active' => false],
+                    ['label' => __('Storniert'),  'value' => $tabKpis['cancelled'] ?? 0, 'border' => 'border-neutral/40', 'href' => null,          'active' => false],
+                    ['label' => __('Abgelaufen'), 'value' => $tabKpis['expired']   ?? 0, 'border' => 'border-info/40',    'href' => null,          'active' => false],
+                ]
+                : [
+                    [
+                        'label'  => __('Gesamt'),
+                        'value'  => $tabKpis['total']   ?? 0,
+                        'border' => 'border-base-300',
+                        'href'   => $tileLink([]),
+                        'active' => $currentFrom === '' && $currentTo === '',
+                    ],
+                    [
+                        'label'  => __('Längste Schicht (Tage)'),
+                        'value'  => $tabKpis['longest'] ?? 0,
+                        'border' => 'border-info/40',
+                        'href'   => null,
+                        'active' => false,
+                    ],
+                    [
+                        'label'  => __('Ø Dauer (Tage)'),
+                        'value'  => $tabKpis['avg']     ?? 0,
+                        'border' => 'border-primary/40',
+                        'href'   => null,
+                        'active' => false,
+                    ],
+                    [
+                        'label'  => __('Mitarbeiter'),
+                        'value'  => $tabKpis['users']   ?? 0,
+                        'border' => 'border-secondary/40',
+                        'href'   => null,
+                        'active' => false,
+                    ],
+                ]
+            );
     @endphp
 
     <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
@@ -105,7 +111,7 @@
                 </div>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-                <a href="{{ route('legacy.diary.index') }}" class="btn btn-sm btn-ghost">
+                <a href="{{ route('legacy.diary.index', ['tab' => match($activeTab) { 'urlaub' => 'urlaub', default => $activeTab }]) }}" class="btn btn-sm btn-ghost">
                     ← {{ __('Aktive Arbeitsliste') }}
                 </a>
                 @if ($isAdmin)
@@ -142,6 +148,32 @@
                             <option value="-1" @selected(($statusFilter ?? '') === '-1')>{{ __('Erledigt') }}</option>
                         </select>
                     </div>
+                @elseif ($activeTab === 'urlaub')
+                    <div class="flex flex-1 flex-col min-w-40">
+                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Typ') }}</span></label>
+                        <select name="vtype" class="select select-bordered select-sm w-full">
+                            <option value="">{{ __('Alle Typen') }}</option>
+                            <option value="{{ \App\Models\Vacation::TYPE_VACATION }}" @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_VACATION)>{{ __('Urlaub') }}</option>
+                            <option value="{{ \App\Models\Vacation::TYPE_SICK }}"     @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_SICK)>{{ __('Krank') }}</option>
+                            <option value="{{ \App\Models\Vacation::TYPE_SPECIAL }}"  @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_SPECIAL)>{{ __('Sonderurlaub') }}</option>
+                            <option value="{{ \App\Models\Vacation::TYPE_UNPAID }}"   @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_UNPAID)>{{ __('Unbezahlt') }}</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-1 flex-col min-w-40">
+                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Status') }}</span></label>
+                        <select name="vstatus" class="select select-bordered select-sm w-full">
+                            <option value="">{{ __('Alle Status') }}</option>
+                            <option value="{{ \App\Models\Vacation::STATUS_REJECTED }}"  @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_REJECTED)>{{ __('Abgelehnt') }}</option>
+                            <option value="{{ \App\Models\Vacation::STATUS_CANCELLED }}" @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_CANCELLED)>{{ __('Storniert') }}</option>
+                            <option value="{{ \App\Models\Vacation::STATUS_APPROVED }}"  @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_APPROVED)>{{ __('Abgelaufen') }}</option>
+                        </select>
+                    </div>
+                    @if ($vacationIsAdmin)
+                        <div class="flex items-center gap-2 pb-2">
+                            <input type="checkbox" id="mine" name="mine" value="1" @checked(!empty($filters['mine'])) class="toggle toggle-sm toggle-primary">
+                            <label for="mine" class="label-text text-sm">{{ __('Nur meine') }}</label>
+                        </div>
+                    @endif
                 @endif
                 <x-date-range :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''" />
                 <div class="ml-auto flex items-end gap-2">
@@ -177,7 +209,59 @@
 
         {{-- Tabellenbereich (scrollbar, sticky header) --}}
         <div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-            @if ($activeTab === 'auftraege')
+            @if ($activeTab === 'urlaub')
+                <table class="table table-sm table-zebra table-pin-rows">
+                    <thead class="bg-base-200">
+                        <tr>
+                            @if ($vacationIsAdmin)
+                                <th class="w-32">{{ __('Mitarbeiter') }}</th>
+                            @endif
+                            <th>{{ __('Typ') }}</th>
+                            <th class="w-28 whitespace-nowrap">{{ __('Von') }}</th>
+                            <th class="w-28 whitespace-nowrap">{{ __('Bis') }}</th>
+                            <th>{{ __('Status') }}</th>
+                            <th class="max-w-xs">{{ __('Notiz') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($vacationEntries as $v)
+                            @php
+                                $statusBadge = match ($v->status) {
+                                    \App\Models\Vacation::STATUS_APPROVED  => 'badge-success',
+                                    \App\Models\Vacation::STATUS_REJECTED  => 'badge-error',
+                                    \App\Models\Vacation::STATUS_CANCELLED => 'badge-ghost',
+                                    default                                => 'badge-neutral',
+                                };
+                                $statusLabel = match ($v->status) {
+                                    \App\Models\Vacation::STATUS_APPROVED  => __('Abgelaufen'),
+                                    \App\Models\Vacation::STATUS_REJECTED  => __('Abgelehnt'),
+                                    \App\Models\Vacation::STATUS_CANCELLED => __('Storniert'),
+                                    default                                => $v->status,
+                                };
+                                $typeLabel = match ($v->type) {
+                                    \App\Models\Vacation::TYPE_VACATION => __('Urlaub'),
+                                    \App\Models\Vacation::TYPE_SICK     => __('Krank'),
+                                    \App\Models\Vacation::TYPE_SPECIAL  => __('Sonderurlaub'),
+                                    \App\Models\Vacation::TYPE_UNPAID   => __('Unbezahlt'),
+                                    default                             => $v->type,
+                                };
+                            @endphp
+                            <tr class="hover">
+                                @if ($vacationIsAdmin)
+                                    <td class="whitespace-nowrap">{{ $v->user?->name ?? '—' }}</td>
+                                @endif
+                                <td class="whitespace-nowrap">{{ $typeLabel }}</td>
+                                <td class="whitespace-nowrap text-xs text-base-content/70">{{ $v->start_date->format('d.m.Y') }}</td>
+                                <td class="whitespace-nowrap text-xs text-base-content/70">{{ $v->end_date->format('d.m.Y') }}</td>
+                                <td><span class="badge badge-sm {{ $statusBadge }}">{{ $statusLabel }}</span></td>
+                                <td class="max-w-xs truncate text-sm text-base-content/70">{{ $v->note ?? '—' }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="{{ $vacationIsAdmin ? 6 : 5 }}" class="py-6 text-center text-base-content/60">{{ __('Keine Einträge.') }}</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            @elseif ($activeTab === 'auftraege')
                 <table class="table table-sm table-zebra table-pin-rows">
                     <thead class="bg-base-200">
                         <tr>
@@ -250,7 +334,7 @@
                         @endforelse
                     </tbody>
                 </table>
-            @else
+            @elseif ($activeTab === 'notdienst')
                 <table class="table table-sm table-zebra table-pin-rows">
                     <thead class="bg-base-200">
                         <tr>
@@ -282,26 +366,27 @@
         </div>
 
         {{-- Paginierung des aktiven Tabs --}}
-        <div class="flex flex-none items-center justify-between gap-3">
-            <div class="text-xs text-base-content/60">
-                @php
-                    $activePaginator = match ($activeTab) {
-                        'bereitschaft' => $onCallEntries,
-                        'notdienst'    => $notdienstEntries,
-                        default        => $diaryEntries,
-                    };
-                @endphp
-                @if ($activePaginator->total() > 0)
+        @php
+            $activePaginator = match ($activeTab) {
+                'bereitschaft' => $onCallEntries,
+                'notdienst'    => $notdienstEntries,
+                'urlaub'       => $vacationEntries,
+                default        => $diaryEntries,
+            };
+        @endphp
+        @if ($activePaginator->total() > 0)
+            <div class="flex-none">
+                <p class="mb-1 text-xs text-base-content/60">
                     {{ __('Seite') }} {{ $activePaginator->currentPage() }} / {{ $activePaginator->lastPage() }}
                     · {{ $activePaginator->total() }} {{ __('Einträge') }}
-                @endif
-            </div>
-            <div>
+                </p>
                 @if ($activePaginator->hasPages())
-                    {{ $activePaginator->links('vendor.pagination.daisyui-simple') }}
+                    <div class="rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-xs">
+                        {{ $activePaginator->links('vendor.pagination.daisyui-simple') }}
+                    </div>
                 @endif
             </div>
-        </div>
+        @endif
 
         {{-- Admin: Archivierung starten --}}
         @if ($isAdmin)

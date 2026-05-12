@@ -8,6 +8,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /** @mixin ScheduledShift */
 class ScheduledShiftResource extends JsonResource {
+    /** @return array<string, mixed> */
     public function toArray(Request $request): array {
         return [
             'id'          => $this->id,
@@ -24,7 +25,7 @@ class ScheduledShiftResource extends JsonResource {
             'end_time'    => $this->resolvedEndTime(),
             'note'        => $this->note,
             'status'      => $this->status,
-            'status_label'=> $this->statusLabel(),
+            'status_label' => $this->statusLabel(),
             'status_tone' => $this->statusTone(),
         ];
     }

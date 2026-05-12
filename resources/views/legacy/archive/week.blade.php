@@ -55,14 +55,13 @@
         </div>
 
         {{-- Fit-to-screen Toggle --}}
-        <button type="button" id="week-fit-toggle"
-                class="btn btn-sm btn-ghost gap-1.5"
-                title="{{ __('Ansicht an Bildschirm anpassen') }}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor">
+        <label class="flex cursor-pointer items-center gap-2 text-sm" title="{{ __('Ansicht an Bildschirm anpassen') }}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/70" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M3 4a1 1 0 011-1h3a1 1 0 010 2H5.414l2.293 2.293a1 1 0 01-1.414 1.414L4 6.414V8a1 1 0 01-2 0V4zm14 0a1 1 0 00-1-1h-3a1 1 0 000 2h1.586l-2.293 2.293a1 1 0 001.414 1.414L16 6.414V8a1 1 0 002 0V4zm-3 12a1 1 0 001-1v-3a1 1 0 00-2 0v1.586l-2.293-2.293a1 1 0 00-1.414 1.414L13.586 16H12a1 1 0 000 2h3zm-8 0a1 1 0 01-1-1v-3a1 1 0 012 0v1.586l2.293-2.293a1 1 0 011.414 1.414L6.414 16H8a1 1 0 010 2H5z"/>
             </svg>
-            <span id="week-fit-label">{{ __('Auf Bildschirm') }}</span>
-        </button>
+            <span class="text-sm text-base-content/70">{{ __('Auf Bildschirm') }}</span>
+            <input type="checkbox" id="week-fit-toggle" class="toggle toggle-sm toggle-primary">
+        </label>
     </div>
 </div>
 
@@ -174,7 +173,6 @@
     var scroll  = document.getElementById('week-scroll');
     var table   = document.getElementById('week-table');
     var btn     = document.getElementById('week-fit-toggle');
-    var label   = document.getElementById('week-fit-label');
     var minW    = table ? table.dataset.minWidth : '';
     var KEY     = 'workDiaryWeekFit';
     var fitMode = localStorage.getItem(KEY) === '1';
@@ -184,23 +182,19 @@
         if (fit) {
             table.classList.add('week-table--fit');
             table.style.width = '';
-            btn.classList.add('btn-primary');
-            btn.classList.remove('btn-ghost');
-            label.textContent = '{{ __('Freies Scrollen') }}';
+            btn.checked = true;
         } else {
             table.classList.remove('week-table--fit');
             table.style.width = minW;
-            btn.classList.remove('btn-primary');
-            btn.classList.add('btn-ghost');
-            label.textContent = '{{ __('Auf Bildschirm') }}';
+            btn.checked = false;
         }
     }
 
     apply(fitMode);
 
     if (btn) {
-        btn.addEventListener('click', function () {
-            fitMode = !fitMode;
+        btn.addEventListener('change', function () {
+            fitMode = btn.checked;
             localStorage.setItem(KEY, fitMode ? '1' : '0');
             apply(fitMode);
         });

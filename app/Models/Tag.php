@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,8 +12,9 @@ use Illuminate\Support\Str;
 class Tag extends Model {
     /** @use HasFactory<\Database\Factories\TagFactory> */
     use HasFactory;
+    use BelongsToOrganization;
 
-    protected $fillable = ['name', 'slug', 'color', 'created_by'];
+    protected $fillable = ['name', 'slug', 'color', 'created_by', 'organization_id'];
 
     protected static function booted(): void {
         static::saving(function (Tag $tag): void {

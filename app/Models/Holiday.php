@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToOrganization;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,7 +17,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string              $name
  */
 class Holiday extends Model {
+    use BelongsToOrganization;
+
     protected $fillable = [
+        'organization_id',
         'date',
         'name',
         'is_recurring',

@@ -4,7 +4,8 @@
 
 @section('content')
 <div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
-    {{-- Header --}}
+
+    {{-- Projekt-Header --}}
     <div class="flex flex-wrap items-start justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         <div class="flex min-w-0 items-start gap-3">
             <span class="mt-1 inline-block h-4 w-4 shrink-0 rounded-full" style="background:{{ $project->color ?: '#94a3b8' }}"></span>
@@ -27,7 +28,6 @@
             </div>
         </div>
         <div class="flex flex-wrap gap-2">
-            <a href="{{ route('diary.index', ['project' => $project->id]) }}" class="btn btn-sm">{{ __('Im Tagebuch öffnen') }}</a>
             @can('update', $project)
                 <a href="{{ route('projects.edit', $project) }}" data-entry-modal-trigger class="btn btn-sm btn-ghost">{{ __('Bearbeiten') }}</a>
             @endcan
@@ -44,25 +44,53 @@
         </div>
     </div>
 
-    {{-- Letzte Einträge --}}
-    <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <header class="border-b border-base-300 px-4 py-3 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Letzte Einträge') }}</header>
-        <ul class="divide-y divide-base-300">
-            @forelse ($entries as $entry)
-                <li class="flex flex-wrap items-start justify-between gap-2 px-4 py-3">
-                    <a href="{{ route('diary.show', $entry) }}" data-entry-modal-trigger class="min-w-0 flex-1">
-                        <div class="flex flex-wrap items-center gap-2 text-xs text-base-content/60">
-                            <span>{{ optional($entry->start_at)->format('d.m.Y H:i') }}</span>
-                            <span>· {{ $entry->user->name ?? '—' }}</span>
-                            <span class="badge badge-xs badge-{{ $entry->statusTone() === 'open' ? 'neutral' : ($entry->statusTone() === 'alert' ? 'error' : ($entry->statusTone() === 'progress' ? 'info' : 'success')) }}">{{ $entry->statusLabel() }}</span>
-                        </div>
-                        <div class="line-clamp-2 text-sm">{{ truncate($entry->content, 200) }}</div>
-                    </a>
-                </li>
-            @empty
-                <li class="px-4 py-6 text-center text-sm text-base-content/60">{{ __('Keine Einträge zugeordnet.') }}</li>
-            @endforelse
-        </ul>
+    {{-- Tabs --}}
+    <div x-data="projectTabs()" class="flex min-h-0 flex-col gap-4">
+        <div role="tablist" class="tabs tabs-box w-full sm:w-auto">
+            <button role="tab" @click="setTab('overview')" :class="{ 'tab-active': tab === 'overview' }" class="tab">
+                {{ __('Übersicht') }}
+            </button>
+            <button role="tab" @click="setTab('tasks')" :class="{ 'tab-active': tab === 'tasks' }" class="tab">
+                {{ __('Aufgaben') }}
+                @php $openCount = ($taskStats->get('open') ?? 0) + ($taskStats->get('in_progress') ?? 0); @endphp
+                @if ($openCount > 0)
+                    <span class="badge badge-xs badge-primary ml-1">{{ $openCount }}</span>
+                @endif
+            </button>
+            <button role="tab" @click="setTab('time')" :class="{ 'tab-active': tab === 'time' }" class="tab">
+                {{ __('Zeiterfassung') }}
+            </button>
+            <button role="tab" @click="setTab('diary')" :class="{ 'tab-active': tab === 'diary' }" class="tab">
+                {{ __('Tagebuch') }}
+            </button>
+        </div>
+
+        <div x-show="tab === 'overview'" x-cloak>
+            @include('projects._overview_tab')
+        </div>
+        <div x-show="tab === 'tasks'" x-cloak>
+            @include('projects._tasks_tab')
+        </div>
+        <div x-show="tab === 'time'" x-cloak>
+            @include('projects._time_tab')
+        </div>
+        <div x-show="tab === 'diary'" x-cloak>
+            @include('projects._diary_tab')
+        </div>
     </div>
 </div>
+
+<script>
+    function projectTabs() {
+        const allowed = ['overview', 'tasks', 'time', 'diary'];
+        const hash = window.location.hash.replace('#', '');
+        return {
+            tab: allowed.includes(hash) ? hash : 'overview',
+            setTab(name) {
+                this.tab = name;
+                history.replaceState(null, '', '#' + name);
+            }
+        };
+    }
+</script>
 @endsection

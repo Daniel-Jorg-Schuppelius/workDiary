@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,6 +12,7 @@ use Illuminate\Support\Str;
 class Project extends Model {
     /** @use HasFactory<\Illuminate\Database\Eloquent\Factories\Factory<static>> */
     use HasFactory;
+    use BelongsToOrganization;
 
     public const STATUS_ACTIVE = 'active';
     public const STATUS_PAUSED = 'paused';
@@ -20,6 +22,7 @@ class Project extends Model {
     public const STATUSES = [self::STATUS_ACTIVE, self::STATUS_PAUSED, self::STATUS_ARCHIVED];
 
     protected $fillable = [
+        'organization_id',
         'name',
         'slug',
         'description',
@@ -68,6 +71,21 @@ class Project extends Model {
     /** @return HasMany<DiaryEntry, $this> */
     public function diaryEntries(): HasMany {
         return $this->hasMany(DiaryEntry::class);
+    }
+
+    /** @return HasMany<Milestone, $this> */
+    public function milestones(): HasMany {
+        return $this->hasMany(Milestone::class)->orderBy('position')->orderBy('due_date');
+    }
+
+    /** @return HasMany<Task, $this> */
+    public function tasks(): HasMany {
+        return $this->hasMany(Task::class);
+    }
+
+    /** @return HasMany<TimeEntry, $this> */
+    public function timeEntries(): HasMany {
+        return $this->hasMany(TimeEntry::class);
     }
 
     public function statusLabel(): string {

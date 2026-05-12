@@ -74,7 +74,7 @@ class HomeController extends Controller {
 
         return redirect()
             ->route($targetRoute)
-            ->with('success', $mode === 'legacy' ? __('Legacy-Modus aktiviert.') : __('Neuer Modus aktiviert.'));
+            ->with('mode_toast', $mode === 'legacy' ? __('Legacy-Modus aktiviert.') : __('Neuer Modus aktiviert.'));
     }
 
     private function resolveModeRoute(string $origin, string $mode): string {

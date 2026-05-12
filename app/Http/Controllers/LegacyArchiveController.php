@@ -6,11 +6,11 @@ use App\Http\Controllers\Concerns\RequiresLegacyAdmin;
 use App\Models\Legacy\LegacyArchiveDiaryEntry;
 use App\Models\Legacy\LegacyArchiveNotdienst;
 use App\Models\Legacy\LegacyArchiveOnCall;
+use App\Models\Vacation;
 use App\Services\Legacy\LegacyArchiveService;
 use App\Services\Legacy\LegacyWeekCalendarService;
 use App\Services\HolidayService;
 use App\Support\LegacyRoleResolver;
-use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -72,9 +72,13 @@ class LegacyArchiveController extends Controller {
         $isAdmin = LegacyRoleResolver::isAdmin(Auth::user());
 
         $tab = (string) $request->query('tab', 'auftraege');
-        if (! in_array($tab, ['auftraege', 'bereitschaft', 'notdienst'], true)) {
+        if (! in_array($tab, ['auftraege', 'bereitschaft', 'notdienst', 'urlaub'], true)) {
             $tab = 'auftraege';
         }
+
+        /** @var \App\Models\User $currentUser */
+        $currentUser     = Auth::user();
+        $vacationIsAdmin = $currentUser->isAdmin();
 
         $statusFilter = (string) $request->query('status', 'all');
         $allowedStatus = ['all', '-1', '1', '2', '3'];
@@ -95,6 +99,30 @@ class LegacyArchiveController extends Controller {
             ->with('mitarbeiter:id,uname')
             ->orderByDesc('bis');
 
+        // Urlaub-Archiv: abgelehnt, storniert, oder genehmigt+abgelaufen
+        $vacationQuery = Vacation::query()
+            ->with('user:id,name')
+            ->where(function ($q) {
+                $q->whereIn('status', [Vacation::STATUS_REJECTED, Vacation::STATUS_CANCELLED])
+                    ->orWhere(function ($q2) {
+                        $q2->where('status', Vacation::STATUS_APPROVED)
+                            ->where('end_date', '<', now()->toDateString());
+                    });
+            })
+            ->orderByDesc('end_date');
+
+        if (! $vacationIsAdmin) {
+            $vacationQuery->where('user_id', $currentUser->id);
+        } elseif ($request->boolean('mine')) {
+            $vacationQuery->where('user_id', $currentUser->id);
+        }
+        if ($request->filled('vtype')) {
+            $vacationQuery->where('type', $request->vtype);
+        }
+        if ($request->filled('vstatus')) {
+            $vacationQuery->where('status', $request->vstatus);
+        }
+
         if (! $isAdmin && $legacyUserId > 3) {
             $diaryQuery->where('user', $legacyUserId);
             $onCallQuery->where('user', $legacyUserId);
@@ -110,12 +138,14 @@ class LegacyArchiveController extends Controller {
             $diaryQuery->whereDate('bis', '>=', $request->from);
             $onCallQuery->whereDate('bis', '>=', $request->from);
             $notdienstQuery->whereDate('bis', '>=', $request->from);
+            $vacationQuery->whereDate('end_date', '>=', $request->from);
         }
 
         if ($request->filled('to')) {
             $diaryQuery->whereDate('bis', '<=', $request->to);
             $onCallQuery->whereDate('bis', '<=', $request->to);
             $notdienstQuery->whereDate('bis', '<=', $request->to);
+            $vacationQuery->whereDate('end_date', '<=', $request->to);
         }
 
         if ($tab === 'auftraege' && $statusFilter !== 'all') {
@@ -123,26 +153,42 @@ class LegacyArchiveController extends Controller {
         }
 
         $counts = [
-            'auftraege' => (clone $diaryQuery)->toBase()->getCountForPagination(),
+            'auftraege'    => (clone $diaryQuery)->toBase()->getCountForPagination(),
             'bereitschaft' => (clone $onCallQuery)->toBase()->getCountForPagination(),
-            'notdienst' => (clone $notdienstQuery)->toBase()->getCountForPagination(),
+            'notdienst'    => (clone $notdienstQuery)->toBase()->getCountForPagination(),
+            'urlaub'       => (clone $vacationQuery)->count(),
         ];
 
-        // Per-Tab KPIs (vom aktiven Tab abhängig, Filter wirken mit)
-        $tabKpis = $this->buildTabKpis($tab, $diaryQuery, $onCallQuery, $notdienstQuery);
+        if ($tab === 'urlaub') {
+            $tabKpis = [
+                'total'     => $counts['urlaub'],
+                'rejected'  => (clone $vacationQuery)->where('status', Vacation::STATUS_REJECTED)->count(),
+                'cancelled' => (clone $vacationQuery)->where('status', Vacation::STATUS_CANCELLED)->count(),
+                'expired'   => (clone $vacationQuery)->where('status', Vacation::STATUS_APPROVED)
+                    ->where('end_date', '<', now()->toDateString())->count(),
+            ];
+        } else {
+            // Per-Tab KPIs (vom aktiven Tab abhängig, Filter wirken mit)
+            /** @var \Illuminate\Database\Eloquent\Builder<LegacyArchiveDiaryEntry> $diaryQuery */
+            /** @var \Illuminate\Database\Eloquent\Builder<LegacyArchiveOnCall> $onCallQuery */
+            /** @var \Illuminate\Database\Eloquent\Builder<LegacyArchiveNotdienst> $notdienstQuery */
+            $tabKpis = $this->buildTabKpis($tab, $diaryQuery, $onCallQuery, $notdienstQuery);
+        }
 
         return view('legacy.archive.index', [
-            'isAdmin' => $isAdmin,
-            'legacyUserId' => $legacyUserId,
-            'users' => $this->legacyUsersForSelect(),
-            'filters' => $request->only('user', 'from', 'to', 'status'),
-            'tab' => $tab,
-            'statusFilter' => $statusFilter,
-            'counts' => $counts,
-            'tabKpis' => $tabKpis,
-            'diaryEntries' => $diaryQuery->paginate(25, ['*'], 'dpage')->withQueryString(),
-            'onCallEntries' => $onCallQuery->paginate(25, ['*'], 'opage')->withQueryString(),
+            'isAdmin'         => $isAdmin,
+            'vacationIsAdmin' => $vacationIsAdmin,
+            'legacyUserId'    => $legacyUserId,
+            'users'           => $this->legacyUsersForSelect(),
+            'filters'         => $request->only('user', 'from', 'to', 'status', 'vtype', 'vstatus'),
+            'tab'             => $tab,
+            'statusFilter'    => $statusFilter,
+            'counts'          => $counts,
+            'tabKpis'         => $tabKpis,
+            'diaryEntries'    => $diaryQuery->paginate(25, ['*'], 'dpage')->withQueryString(),
+            'onCallEntries'   => $onCallQuery->paginate(25, ['*'], 'opage')->withQueryString(),
             'notdienstEntries' => $notdienstQuery->paginate(25, ['*'], 'npage')->withQueryString(),
+            'vacationEntries' => $vacationQuery->paginate(25, ['*'], 'vpage')->withQueryString(),
         ]);
     }
 
@@ -163,40 +209,32 @@ class LegacyArchiveController extends Controller {
      * @return array<string, int|string>
      */
     private function buildTabKpis(string $tab, $diaryQuery, $onCallQuery, $notdienstQuery): array {
-        $today = Carbon::today();
-        $cut7 = $today->copy()->subDays(7)->toDateString();
-        $cut30 = $today->copy()->subDays(30)->toDateString();
-
         if ($tab === 'auftraege') {
             $base = (clone $diaryQuery);
 
             return [
-                'total'  => (clone $base)->toBase()->getCountForPagination(),
-                'last7'  => (clone $base)->whereDate('bis', '>=', $cut7)->toBase()->getCountForPagination(),
-                'last30' => (clone $base)->whereDate('bis', '>=', $cut30)->toBase()->getCountForPagination(),
-                'alert'  => (clone $base)->where('gelesen', 3)->toBase()->getCountForPagination(),
+                'total'    => (clone $base)->toBase()->getCountForPagination(),
+                'erledigt' => (clone $base)->where('gelesen', -1)->toBase()->getCountForPagination(),
+                'offen'    => (clone $base)->where('gelesen', 2)->toBase()->getCountForPagination(),
+                'alert'    => (clone $base)->where('gelesen', 3)->toBase()->getCountForPagination(),
             ];
         }
 
         $query = $tab === 'bereitschaft' ? $onCallQuery : $notdienstQuery;
-        $base = clone $query;
+        $base  = clone $query;
 
-        // Längste Schicht: Tage zwischen von/bis (inklusiv)
-        $longest = (clone $base)
-            ->get(['von', 'bis'])
-            ->map(function ($row) {
-                if (! $row->von || ! $row->bis) {
-                    return 0;
-                }
-                return (int) $row->von->copy()->startOfDay()->diffInDays($row->bis->copy()->startOfDay()) + 1;
-            })
-            ->max() ?? 0;
+        $durations = (clone $base)->get(['von', 'bis'])->map(function ($row) {
+            if (! $row->von || ! $row->bis) {
+                return 0;
+            }
+            return (int) $row->von->copy()->startOfDay()->diffInDays($row->bis->copy()->startOfDay()) + 1;
+        });
 
         return [
             'total'   => (clone $base)->toBase()->getCountForPagination(),
-            'last7'   => (clone $base)->whereDate('bis', '>=', $cut7)->toBase()->getCountForPagination(),
-            'last30'  => (clone $base)->whereDate('bis', '>=', $cut30)->toBase()->getCountForPagination(),
-            'longest' => (int) $longest,
+            'longest' => (int) ($durations->max() ?? 0),
+            'avg'     => $durations->count() > 0 ? round($durations->avg(), 1) : 0,
+            'users'   => (clone $base)->distinct()->count('user'),
         ];
     }
 

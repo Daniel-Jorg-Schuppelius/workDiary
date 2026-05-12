@@ -1,0 +1,50 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Models\DutyPlan;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends Factory<DutyPlan>
+ */
+class DutyPlanFactory extends Factory {
+    protected $model = DutyPlan::class;
+
+    public function definition(): array {
+        $from = fake()->dateTimeBetween('-1 month', '+1 month');
+        $to   = (clone $from)->modify('+6 days');
+
+        return [
+            'title'       => fake()->sentence(3),
+            'period_type' => fake()->randomElement(DutyPlan::$periodTypes),
+            'from_date'   => $from->format('Y-m-d'),
+            'to_date'     => $to->format('Y-m-d'),
+            'status'      => DutyPlan::STATUS_DRAFT,
+            'min_staff'   => 0,
+            'note'        => null,
+        ];
+    }
+
+    public function draft(): static {
+        return $this->state(['status' => DutyPlan::STATUS_DRAFT]);
+    }
+
+    public function published(): static {
+        return $this->state(['status' => DutyPlan::STATUS_PUBLISHED]);
+    }
+
+    public function weekly(): static {
+        return $this->state(['period_type' => DutyPlan::PERIOD_WEEKLY]);
+    }
+
+    public function monthly(): static {
+        $from = fake()->dateTimeBetween('-1 month', '+1 month');
+        $to   = \Carbon\Carbon::parse($from)->endOfMonth();
+        return $this->state([
+            'period_type' => DutyPlan::PERIOD_MONTHLY,
+            'from_date'   => $from->format('Y-m-01'),
+            'to_date'     => $to->format('Y-m-d'),
+        ]);
+    }
+}

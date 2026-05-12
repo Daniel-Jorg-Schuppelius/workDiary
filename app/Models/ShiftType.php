@@ -3,19 +3,23 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Models\Concerns\BelongsToOrganization;
 use Database\Factories\ShiftTypeFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ShiftType extends Model {
     /** @use HasFactory<ShiftTypeFactory> */
     use HasFactory;
+    use BelongsToOrganization;
     use Auditable;
 
     protected $fillable = [
+        'organization_id',
         'name',
         'abbreviation',
         'color',
@@ -39,6 +43,14 @@ class ShiftType extends Model {
     /** @return HasMany<ScheduledShift, $this> */
     public function scheduledShifts(): HasMany {
         return $this->hasMany(ScheduledShift::class);
+    }
+
+    /**
+     * Pflichtqualifikationen für diesen Schichttyp.
+     * @return BelongsToMany<Qualification, $this>
+     */
+    public function qualifications(): BelongsToMany {
+        return $this->belongsToMany(Qualification::class, 'shift_type_qualifications');
     }
 
     /**

@@ -60,7 +60,7 @@ class ScheduleController extends Controller {
             'nextDate'    => $nextDate,
             'todayDate'   => CarbonImmutable::today()->toDateString(),
             'shifts'      => $shifts,
-            'shiftsByDate'=> $shiftsByDate,
+            'shiftsByDate' => $shiftsByDate,
             'shiftTypes'  => $shiftTypes,
             'users'       => $users,
             'userFilter'  => $userFilter,

@@ -15,11 +15,8 @@ class LegacyOnCallController extends Controller {
     use RequiresLegacyAdmin;
     use ManagesLegacyDutyCrud;
 
-    public function index(Request $request): View {
-        /** @var \Illuminate\Database\Eloquent\Builder<LegacyOnCall> $query */
-        $query = LegacyOnCall::query()->with('user:id,uname')->orderBy('von')->orderBy('user');
-
-        return view('legacy.oncall.index', $this->legacyDutyIndexData($request, $query));
+    public function index(Request $request): RedirectResponse {
+        return redirect()->route('legacy.diary.index', ['tab' => 'bereitschaft']);
     }
 
     public function create(Request $request): View {
@@ -36,7 +33,7 @@ class LegacyOnCallController extends Controller {
 
         LegacyOnCall::query()->create($request->validated());
 
-        return redirect()->route('legacy.oncall.index')->with('success', 'Bereitschaft angelegt.');
+        return redirect()->route('legacy.diary.index', ['tab' => 'bereitschaft'])->with('success', 'Bereitschaft angelegt.');
     }
 
     public function edit(LegacyOnCall $oncall): View|RedirectResponse {
@@ -57,7 +54,7 @@ class LegacyOnCallController extends Controller {
 
         $oncall->update($request->validated());
 
-        return redirect()->route('legacy.oncall.index')->with('success', 'Bereitschaft aktualisiert.');
+        return redirect()->route('legacy.diary.index', ['tab' => 'bereitschaft'])->with('success', 'Bereitschaft aktualisiert.');
     }
 
     public function destroy(LegacyOnCall $oncall): RedirectResponse {
@@ -65,6 +62,6 @@ class LegacyOnCallController extends Controller {
 
         $oncall->delete();
 
-        return redirect()->route('legacy.oncall.index')->with('success', 'Bereitschaft geloescht.');
+        return redirect()->route('legacy.diary.index', ['tab' => 'bereitschaft'])->with('success', 'Bereitschaft geloescht.');
     }
 }

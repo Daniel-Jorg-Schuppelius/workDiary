@@ -7,6 +7,7 @@ use App\Models\Comment;
 use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
 use App\Models\OnCallShift;
+use App\Models\Task;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,10 +39,11 @@ class AttachmentController extends Controller {
     ];
 
     private const TYPE_MAP = [
-        'diary' => DiaryEntry::class,
-        'comment' => Comment::class,
-        'shift' => OnCallShift::class,
+        'diary'      => DiaryEntry::class,
+        'comment'    => Comment::class,
+        'shift'      => OnCallShift::class,
         'assignment' => EmergencyAssignment::class,
+        'task'       => Task::class,
     ];
 
     public function store(Request $request, string $type, int $id): RedirectResponse {
