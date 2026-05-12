@@ -2,17 +2,15 @@
 @section('title', __('Qualifikationen'))
 @section('content')
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
-    <header class="flex flex-wrap items-baseline justify-between gap-3">
-        <div>
-            <h1 class="text-3xl font-semibold">{{ __('Qualifikationen') }}</h1>
-            <p class="text-sm text-base-content/70">{{ __('Anforderungsprofile und Zertifikate.') }}</p>
-        </div>
-        @can('create', \App\Models\Qualification::class)
-        <a href="{{ route('qualifications.create') }}" class="btn btn-primary btn-sm">
-            + {{ __('Qualifikation anlegen') }}
-        </a>
-        @endcan
-    </header>
+    <x-page-title :title="__('Qualifikationen')" :subtitle="__('Anforderungsprofile und Zertifikate.')">
+        <x-slot:actions>
+            @can('create', \App\Models\Qualification::class)
+                <a href="{{ route('qualifications.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
+                    + {{ __('Qualifikation anlegen') }}
+                </a>
+            @endcan
+        </x-slot:actions>
+    </x-page-title>
 
     <x-table>
         <thead>
@@ -42,7 +40,7 @@
                     <td class="text-right">
                         <div class="flex justify-end gap-2">
                             @can('update', $qual)
-                            <a href="{{ route('qualifications.edit', $qual) }}" class="btn btn-ghost btn-xs">{{ __('Bearbeiten') }}</a>
+                            <a href="{{ route('qualifications.edit', $qual) }}" data-entry-modal-trigger class="btn btn-ghost btn-xs">{{ __('Bearbeiten') }}</a>
                             @endcan
                             @can('delete', $qual)
                             <form method="POST" action="{{ route('qualifications.destroy', $qual) }}"

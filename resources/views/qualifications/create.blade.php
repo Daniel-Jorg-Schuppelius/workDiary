@@ -2,7 +2,7 @@
 @section('title', __('Qualifikation anlegen'))
 @section('content')
 <div class="mx-auto max-w-lg py-8">
-    <h1 class="text-2xl font-semibold mb-6">{{ __('Qualifikation anlegen') }}</h1>
+    <x-page-title :title="__('Qualifikation anlegen')" class="mb-6" />
     <form method="POST" action="{{ route('qualifications.store') }}" class="card bg-base-200 p-6 flex flex-col gap-4">
         @csrf
         @include('qualifications._form', ['qualification' => null])

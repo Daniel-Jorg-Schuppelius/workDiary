@@ -7,8 +7,8 @@
 
     <div class="mb-6 flex items-center gap-3">
         <a href="{{ route('schedule.index') }}" class="btn btn-sm btn-ghost">← {{ __('Zurück') }}</a>
-        <h1 class="text-2xl font-bold">{{ __('Schichtplan importieren') }}</h1>
     </div>
+    <x-page-title :title="__('Schichtplan importieren')" class="mb-6" />
 
     @if (session('error'))
         <div class="alert alert-error mb-4">{{ session('error') }}</div>

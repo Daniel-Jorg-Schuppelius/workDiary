@@ -48,11 +48,11 @@
             <input type="password" id="password_confirmation" name="password_confirmation" autocomplete="new-password" class="input input-bordered w-full" required>
         </div>
 
-        <div class="flex justify-end gap-2 pt-2">
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+            <button type="submit" class="btn btn-sm btn-primary">{{ __('Speichern') }}</button>
             @if ($isDialog)
-                <button type="button" class="btn btn-ghost" data-entry-modal-close>{{ __('Abbrechen') }}</button>
+                <button type="button" class="btn btn-sm btn-ghost" data-entry-modal-close>{{ __('Abbrechen') }}</button>
             @endif
-            <button type="submit" class="btn btn-primary">{{ __('Speichern') }}</button>
         </div>
     </form>
 </x-dialog>

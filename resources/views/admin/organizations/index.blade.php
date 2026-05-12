@@ -4,15 +4,13 @@
 
 @section('content')
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
-    <header class="flex flex-wrap items-baseline justify-between gap-3">
-        <div>
-            <h1 class="text-3xl font-semibold">{{ __('Organisationen') }}</h1>
-            <p class="text-sm text-base-content/70">{{ __('Alle Mandanten dieser Installation.') }}</p>
-        </div>
-        <a href="{{ route('admin.organizations.create') }}" class="btn btn-primary btn-sm">
-            + {{ __('Organisation anlegen') }}
-        </a>
-    </header>
+    <x-page-title :title="__('Organisationen')" :subtitle="__('Alle Mandanten dieser Installation.')">
+        <x-slot:actions>
+            <a href="{{ route('admin.organizations.create') }}" class="btn btn-primary btn-sm">
+                + {{ __('Organisation anlegen') }}
+            </a>
+        </x-slot:actions>
+    </x-page-title>
 
     <x-table>
         <thead>

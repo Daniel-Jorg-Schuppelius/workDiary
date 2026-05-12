@@ -38,7 +38,7 @@ class OrgMemberController extends Controller {
 
         $roles = [User::ROLE_ADMIN, User::ROLE_USER, User::ROLE_BUCHHALTUNG];
 
-        return view('org.members.create', compact('roles'));
+        return view('org.members._form_dialog', compact('roles') + ['member' => null, 'isEdit' => false]);
     }
 
     public function store(Request $request): RedirectResponse {
@@ -75,7 +75,7 @@ class OrgMemberController extends Controller {
 
         $roles = [User::ROLE_ADMIN, User::ROLE_USER, User::ROLE_BUCHHALTUNG];
 
-        return view('org.members.edit', compact('member', 'roles'));
+        return view('org.members._form_dialog', compact('member', 'roles') + ['isEdit' => true]);
     }
 
     public function update(Request $request, User $member): RedirectResponse {

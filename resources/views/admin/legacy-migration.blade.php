@@ -4,19 +4,15 @@
 
 @section('content')
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
-    <header class="flex flex-wrap items-baseline justify-between gap-3">
-        <div>
-            <h1 class="text-3xl font-semibold">{{ __('Legacy-Migration') }}</h1>
-            <p class="text-sm text-base-content/70">{{ __('Status der Datenübernahme aus der Legacy-Datenbank.') }}</p>
-        </div>
-        <div class="flex items-center gap-2">
+    <x-page-title :title="__('Legacy-Migration')" :subtitle="__('Status der Datenübernahme aus der Legacy-Datenbank.')">
+        <x-slot:actions>
             @if ($writeEnabled)
                 <span class="badge badge-warning">{{ __('Legacy-Schreibzugriff aktiv') }}</span>
             @else
                 <span class="badge badge-success">{{ __('Legacy read-only') }}</span>
             @endif
-        </div>
-    </header>
+        </x-slot:actions>
+    </x-page-title>
 
     @if (! $stats['configured'])
         <div class="alert alert-warning">

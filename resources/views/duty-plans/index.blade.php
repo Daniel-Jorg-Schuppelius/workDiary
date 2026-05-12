@@ -2,17 +2,15 @@
 @section('title', __('Dienstpläne'))
 @section('content')
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
-    <header class="flex flex-wrap items-baseline justify-between gap-3">
-        <div>
-            <h1 class="text-3xl font-semibold">{{ __('Dienstpläne') }}</h1>
-            <p class="text-sm text-base-content/70">{{ __('Tages-, Wochen- und Monatspläne.') }}</p>
-        </div>
-        @can('create', \App\Models\DutyPlan::class)
-        <a href="{{ route('duty-plans.create') }}" class="btn btn-primary btn-sm">
-            + {{ __('Dienstplan anlegen') }}
-        </a>
-        @endcan
-    </header>
+    <x-page-title :title="__('Dienstpläne')" :subtitle="__('Tages-, Wochen- und Monatspläne.')">
+        <x-slot:actions>
+            @can('create', \App\Models\DutyPlan::class)
+                <a href="{{ route('duty-plans.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
+                    + {{ __('Dienstplan anlegen') }}
+                </a>
+            @endcan
+        </x-slot:actions>
+    </x-page-title>
 
     {{-- Filter --}}
     <form method="GET" class="flex flex-wrap gap-3">
@@ -65,7 +63,7 @@
                         <div class="flex justify-end gap-2">
                             <a href="{{ route('duty-plans.show', $plan) }}" class="btn btn-ghost btn-xs">{{ __('Ansehen') }}</a>
                             @can('update', $plan)
-                            <a href="{{ route('duty-plans.edit', $plan) }}" class="btn btn-ghost btn-xs">{{ __('Bearbeiten') }}</a>
+                            <a href="{{ route('duty-plans.edit', $plan) }}" data-entry-modal-trigger class="btn btn-ghost btn-xs">{{ __('Bearbeiten') }}</a>
                             @endcan
                             @can('delete', $plan)
                             <form method="POST" action="{{ route('duty-plans.destroy', $plan) }}"

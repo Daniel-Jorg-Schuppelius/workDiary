@@ -11,10 +11,7 @@
         /** @var array<string, string> $filters */
     @endphp
     <div class="mx-auto flex h-[calc(100dvh-11rem)] w-full max-w-screen-2xl flex-col gap-4 px-4 xl:px-8 2xl:px-12">
-        <div class="flex flex-wrap items-end justify-between gap-3">
-            <h1 class="font-['Space_Grotesk'] text-2xl font-bold">{{ __('Audit-Log') }}</h1>
-            <p class="text-sm text-base-content/60">{{ $logs->total() }} {{ __('Einträge') }}</p>
-        </div>
+        <x-page-title :title="__('Audit-Log')" :subtitle="$logs->total() . ' ' . __('Einträge')" />
 
         <form method="GET" class="flex flex-wrap gap-2 rounded-box border border-base-300 bg-base-100 p-3 shadow-xs">
             <select name="event" class="select select-bordered select-sm">

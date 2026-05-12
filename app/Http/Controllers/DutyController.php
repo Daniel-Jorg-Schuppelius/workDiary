@@ -8,12 +8,13 @@ use App\Models\OnCallShift;
 use App\Models\Tag;
 use App\Models\User;
 use App\Models\Vacation;
+use App\Services\HolidayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class DutyController extends Controller {
-    public function index(Request $request): View {
+    public function index(Request $request, HolidayService $holidayService): View {
         $tab = (string) $request->query('tab', 'diary');
         if (! in_array($tab, ['diary', 'bereitschaft', 'notdienst', 'urlaub'], true)) {
             $tab = 'diary';
@@ -74,8 +75,6 @@ class DutyController extends Controller {
             $vacationQuery->where('user_id', $authUser->id);
         } elseif ($request->filled('user_id')) {
             $vacationQuery->where('user_id', (int) $request->user_id);
-        } elseif ($request->boolean('mine')) {
-            $vacationQuery->where('user_id', $authUser->id);
         }
         if ($request->filled('vtype')) {
             $vacationQuery->where('type', $request->vtype);
@@ -179,6 +178,7 @@ class DutyController extends Controller {
             'vacationKpis'    => $vacationKpis,
             'isAdmin'         => $isAdmin,
             'users'           => $users,
+            'holidayService'  => $holidayService,
         ]);
     }
 }

@@ -56,12 +56,17 @@
     </form>
 
     {{-- Zähler --}}
-    <div class="flex-none grid gap-4 sm:grid-cols-4">
-        @foreach ([['all',__('Gesamt'),'sky'], ['open',__('Offen'),'amber'], ['alert',__('Probleme'),'rose'], ['done',__('Erledigt'),'emerald']] as [$key, $label, $color])
-            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-                <p class="badge badge-sm {{ $key === 'open' ? 'badge-warning' : ($key === 'alert' ? 'badge-error' : ($key === 'done' ? 'badge-success' : 'badge-primary')) }}">{{ $label }}</p>
-                <p class="mt-2 font-['Space_Grotesk'] text-3xl font-bold text-base-content">{{ number_format($counts[$key], 0, ',', '.') }}</p>
-            </div>
+    <div class="flex-none grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        @foreach ([
+            ['key' => 'all',   'label' => __('Gesamt'),   'tone' => 'primary'],
+            ['key' => 'open',  'label' => __('Offen'),    'tone' => 'warning'],
+            ['key' => 'alert', 'label' => __('Probleme'), 'tone' => 'error'],
+            ['key' => 'done',  'label' => __('Erledigt'), 'tone' => 'success'],
+        ] as $tile)
+            <x-kpi-tile
+                :label="$tile['label']"
+                :value="$counts[$tile['key']]"
+                :tone="$tile['tone']" />
         @endforeach
     </div>
 

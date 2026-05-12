@@ -20,7 +20,7 @@
     :badge="$task?->priorityLabel()"
     :badge-tone="$task?->priorityTone() ?? 'ghost'"
     tone="primary">
-    <form method="POST" action="{{ $action }}" class="space-y-4">
+    <form method="POST" action="{{ $action }}" class="space-y-4" data-entry-form>
         @csrf
         @if ($task) @method('PUT') @endif
         @if ($isDialog)
@@ -104,7 +104,7 @@
             @endif
         </div>
 
-        <div class="flex gap-3 pt-2">
+        <div class="flex flex-wrap items-center gap-3 pt-2">
             <button type="submit" class="btn btn-sm btn-primary">
                 {{ $task ? __('Speichern') : __('Anlegen') }}
             </button>

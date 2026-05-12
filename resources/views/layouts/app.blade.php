@@ -73,7 +73,6 @@
                                     ['route' => 'kanban.index',             'label' => __('Kanban'),         'modal' => false, 'matches' => ['kanban.index']],
                                     ['route' => 'duty-plans.index',      'label' => __('Dienstpläne'),    'modal' => false, 'matches' => ['duty-plans.*']],
                                     ['route' => 'schedule.index',        'label' => __('Schichtplan'),    'modal' => false, 'matches' => ['schedule.*']],
-                                    ['route' => 'vacations.index',          'label' => __('Urlaub'),         'modal' => false, 'matches' => ['vacations.*']],
                                     ['route' => 'archive.index',            'label' => __('Archiv'),         'modal' => false, 'matches' => ['archive.*']],
                                 ];
 
@@ -81,11 +80,15 @@
                             if ($isLegacyAdmin) {
                                 $adminNavItems[] = ['route' => 'legacy.users.index', 'label' => __('Mitarbeiter'), 'modal' => false];
                                 $adminNavItems[] = ['route' => 'holidays.index',     'label' => __('Feiertage'),   'modal' => false];
-                                $adminNavItems[] = ['route' => 'audit.index',        'label' => __('Audit-Log'),   'modal' => false];
-                                $adminNavItems[] = ['route' => 'admin.organizations.index', 'label' => __('Organisationen'), 'modal' => false];
-                                $adminNavItems[] = ['route' => 'admin.legacy-migration.index', 'label' => __('Legacy-Migration'), 'modal' => false];
+                                if (! $isLegacyMode) {
+                                    $adminNavItems[] = ['route' => 'qualifications.index',         'label' => __('Qualifikationen'),  'modal' => false];
+                                    $adminNavItems[] = ['route' => 'shift-types.index',             'label' => __('Schichttypen'),     'modal' => false];
+                                    $adminNavItems[] = ['route' => 'admin.organizations.index',     'label' => __('Organisationen'),   'modal' => false];
+                                }
+                                $adminNavItems[] = ['route' => 'audit.index',                       'label' => __('Audit-Log'),        'modal' => false];
+                                $adminNavItems[] = ['route' => 'admin.legacy-migration.index',      'label' => __('Legacy-Migration'), 'modal' => false];
                             }
-                            if (\Illuminate\Support\Facades\Gate::allows('manage-members')) {
+                            if (! $isLegacyMode && \Illuminate\Support\Facades\Gate::allows('manage-members')) {
                                 $adminNavItems[] = ['route' => 'org.members.index', 'label' => __('Mitglieder'), 'modal' => false];
                             }
 

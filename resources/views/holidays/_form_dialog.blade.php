@@ -103,9 +103,9 @@
             @endif
         </div>
 
-        <div class="flex justify-end gap-2 pt-2">
-            <button type="button" class="btn btn-sm btn-ghost" data-entry-modal-close>{{ __('Abbrechen') }}</button>
+        <div class="flex flex-wrap items-center gap-3 pt-2">
             <button type="submit" class="btn btn-sm btn-primary">{{ $isEdit ? __('Speichern') : __('Anlegen') }}</button>
+            <button type="button" class="btn btn-sm btn-ghost" data-entry-modal-close>{{ __('Abbrechen') }}</button>
         </div>
     </form>
 </x-dialog>

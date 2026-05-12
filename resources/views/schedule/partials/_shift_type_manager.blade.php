@@ -22,7 +22,7 @@
                     </tr>
                 </thead>
                 <tbody id="shift-type-table-body">
-                    @foreach ($shiftTypes as $t)
+                    @forelse ($shiftTypes as $t)
                         <tr data-type-row="{{ $t->id }}">
                             <td>
                                 <span class="inline-block h-4 w-4 rounded" style="{{ $t->badgeStyle() }}"></span>
@@ -45,7 +45,9 @@
                                         class="btn btn-xs btn-ghost text-error">{{ __('Löschen') }}</button>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr><td colspan="7" class="py-4 text-center text-sm text-base-content/50">{{ __('Noch keine Schichttypen angelegt.') }}</td></tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>

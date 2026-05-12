@@ -23,14 +23,20 @@ class QualificationController extends Controller {
     public function create(): View {
         Gate::authorize('create', Qualification::class);
 
-        return view('qualifications.create');
+        return view('qualifications._form_dialog', [
+            'qualification' => null,
+            'isEdit'        => false,
+        ]);
     }
 
     public function store(Request $request): RedirectResponse {
         Gate::authorize('create', Qualification::class);
 
+        /** @var \App\Models\User $auth */
+        $auth = Auth::user();
         $data = $this->validated($request);
-        $data['created_by'] = Auth::id();
+        $data['created_by']      = $auth->id;
+        $data['organization_id'] = $auth->organization_id;
 
         Qualification::create($data);
 
@@ -41,7 +47,10 @@ class QualificationController extends Controller {
     public function edit(Qualification $qualification): View {
         Gate::authorize('update', $qualification);
 
-        return view('qualifications.edit', compact('qualification'));
+        return view('qualifications._form_dialog', [
+            'qualification' => $qualification,
+            'isEdit'        => true,
+        ]);
     }
 
     public function update(Request $request, Qualification $qualification): RedirectResponse {

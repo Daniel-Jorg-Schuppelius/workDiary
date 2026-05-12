@@ -36,7 +36,10 @@ class DutyPlanController extends Controller {
     public function create(): View {
         Gate::authorize('create', DutyPlan::class);
 
-        return view('duty-plans.create');
+        return view('duty-plans._form_dialog', [
+            'dutyPlan' => null,
+            'isEdit'   => false,
+        ]);
     }
 
     public function store(Request $request): RedirectResponse {
@@ -75,7 +78,10 @@ class DutyPlanController extends Controller {
     public function edit(DutyPlan $dutyPlan): View {
         Gate::authorize('update', $dutyPlan);
 
-        return view('duty-plans.edit', compact('dutyPlan'));
+        return view('duty-plans._form_dialog', [
+            'dutyPlan' => $dutyPlan,
+            'isEdit'   => true,
+        ]);
     }
 
     public function update(Request $request, DutyPlan $dutyPlan): RedirectResponse {

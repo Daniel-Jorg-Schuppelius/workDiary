@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Vacation;
-use App\Services\HolidayService;
 use App\Support\LookupCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,61 +12,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class VacationController extends Controller {
-
-    // ── List ───────────────────────────────────────────────────────────────
-
-    public function index(Request $request, HolidayService $holidayService): View {
-        /** @var User $auth */
-        $auth = Auth::user();
-        $isAdmin = $auth->isAdmin();
-
-        $filters = $request->only(['user_id', 'status', 'type', 'from', 'to']);
-
-        $query = Vacation::query()
-            ->with(['user', 'decider'])
-            ->orderByDesc('start_date');
-
-        // Nicht-Admins sehen nur eigene Einträge
-        if (! $isAdmin) {
-            $query->where('user_id', $auth->id);
-        } elseif (! empty($filters['user_id'])) {
-            $query->where('user_id', (int) $filters['user_id']);
-        }
-
-        if (! empty($filters['status'])) {
-            $query->where('status', $filters['status']);
-        }
-        if (! empty($filters['type'])) {
-            $query->where('type', $filters['type']);
-        }
-        if (! empty($filters['from'])) {
-            $query->where('end_date', '>=', $filters['from']);
-        }
-        if (! empty($filters['to'])) {
-            $query->where('start_date', '<=', $filters['to']);
-        }
-
-        $vacations = $query->paginate(25)->withQueryString();
-
-        // KPI counts (ungefiltert per User-Scope)
-        $kpiBase = Vacation::query()
-            ->when(! $isAdmin, fn($q) => $q->where('user_id', $auth->id));
-        $counts = [
-            'pending'  => (clone $kpiBase)->where('status', Vacation::STATUS_PENDING)->count(),
-            'approved' => (clone $kpiBase)->where('status', Vacation::STATUS_APPROVED)
-                              ->where('end_date', '>=', now()->startOfYear())->count(),
-            'total'    => (clone $kpiBase)->where('end_date', '>=', now()->startOfYear())->count(),
-        ];
-
-        return view('vacations.index', [
-            'vacations'     => $vacations,
-            'filters'       => $filters,
-            'isAdmin'       => $isAdmin,
-            'counts'        => $counts,
-            'users'         => $isAdmin ? LookupCache::userDropdown() : collect(),
-            'holidayService' => $holidayService,
-        ]);
-    }
 
     // ── Create / Store ──────────────────────────────────────────────────────
 
@@ -101,7 +45,7 @@ class VacationController extends Controller {
 
         Vacation::create($data);
 
-        return redirect()->route('vacations.index')->with('success', __('Urlaubsantrag gestellt.'));
+        return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('Urlaubsantrag gestellt.'));
     }
 
     // ── Edit / Update ───────────────────────────────────────────────────────
@@ -128,7 +72,7 @@ class VacationController extends Controller {
         $data = $this->validateVacation($request);
         $vacation->update($data);
 
-        return redirect()->route('vacations.index')->with('success', __('Urlaubsantrag aktualisiert.'));
+        return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('Urlaubsantrag aktualisiert.'));
     }
 
     // ── Delete ──────────────────────────────────────────────────────────────
@@ -138,7 +82,7 @@ class VacationController extends Controller {
 
         $vacation->delete();
 
-        return redirect()->route('vacations.index')->with('success', __('Urlaubsantrag gelöscht.'));
+        return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('Urlaubsantrag gelöscht.'));
     }
 
     // ── Admin actions ────────────────────────────────────────────────────────
@@ -164,7 +108,7 @@ class VacationController extends Controller {
             'reject_reason' => null,
         ]);
 
-        return redirect()->route('vacations.index')->with('success', __('Urlaubsantrag genehmigt.'));
+        return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('Urlaubsantrag genehmigt.'));
     }
 
     public function reject(Request $request, Vacation $vacation): RedirectResponse {
@@ -184,7 +128,7 @@ class VacationController extends Controller {
             'reject_reason' => $data['reject_reason'] ?? null,
         ]);
 
-        return redirect()->route('vacations.index')->with('success', __('Urlaubsantrag abgelehnt.'));
+        return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('Urlaubsantrag abgelehnt.'));
     }
 
     public function cancel(Request $request, Vacation $vacation): RedirectResponse {
@@ -196,7 +140,7 @@ class VacationController extends Controller {
             'decided_at' => null,
         ]);
 
-        return redirect()->route('vacations.index')->with('success', __('Urlaubsantrag storniert.'));
+        return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('Urlaubsantrag storniert.'));
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

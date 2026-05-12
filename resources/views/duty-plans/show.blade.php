@@ -4,25 +4,21 @@
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
 
     {{-- Header --}}
-    <header class="flex flex-wrap items-start justify-between gap-3">
-        <div>
-            <div class="flex items-center gap-3">
-                <h1 class="text-3xl font-semibold">{{ $dutyPlan->title }}</h1>
-                @if ($dutyPlan->isPublished())
-                    <span class="badge badge-success">{{ __('duty_plan.status.published') }}</span>
-                @else
-                    <span class="badge badge-ghost">{{ __('duty_plan.status.draft') }}</span>
-                @endif
-            </div>
-            <p class="text-sm text-base-content/70 mt-1">
-                {{ __('duty_plan.period.' . $dutyPlan->period_type) }} &middot;
-                {{ $dutyPlan->from_date->format('d.m.Y') }} – {{ $dutyPlan->to_date->format('d.m.Y') }}
-                @if ($dutyPlan->min_staff > 0)
-                    &middot; {{ __('Mindestbesetzung') }}: {{ $dutyPlan->min_staff }}
-                @endif
-            </p>
-        </div>
-        <div class="flex flex-wrap gap-2">
+    @php
+        $subtitle = __('duty_plan.period.' . $dutyPlan->period_type)
+            . ' · ' . $dutyPlan->from_date->format('d.m.Y')
+            . ' – ' . $dutyPlan->to_date->format('d.m.Y');
+        if ($dutyPlan->min_staff > 0) {
+            $subtitle .= ' · ' . __('Mindestbesetzung') . ': ' . $dutyPlan->min_staff;
+        }
+    @endphp
+    <x-page-title
+        :title="$dutyPlan->title"
+        :subtitle="$subtitle"
+        :badge="$dutyPlan->isPublished() ? __('duty_plan.status.published') : __('duty_plan.status.draft')"
+        :badge-tone="$dutyPlan->isPublished() ? 'success' : 'ghost'"
+    >
+        <x-slot:actions>
             @can('update', $dutyPlan)
                 @if ($dutyPlan->isDraft())
                     <form method="POST" action="{{ route('duty-plans.publish', $dutyPlan) }}">
@@ -35,11 +31,11 @@
                         <button class="btn btn-warning btn-sm">{{ __('Zurück zu Entwurf') }}</button>
                     </form>
                 @endif
-                <a href="{{ route('duty-plans.edit', $dutyPlan) }}" class="btn btn-ghost btn-sm">{{ __('Bearbeiten') }}</a>
+                <a href="{{ route('duty-plans.edit', $dutyPlan) }}" data-entry-modal-trigger class="btn btn-ghost btn-sm">{{ __('Bearbeiten') }}</a>
             @endcan
             <a href="{{ route('duty-plans.index') }}" class="btn btn-ghost btn-sm">← {{ __('Übersicht') }}</a>
-        </div>
-    </header>
+        </x-slot:actions>
+    </x-page-title>
 
     @if ($dutyPlan->note)
         <div class="alert alert-info text-sm">{{ $dutyPlan->note }}</div>

@@ -19,20 +19,21 @@
     @error('period_type')<p class="text-error text-sm mt-1">{{ $message }}</p>@enderror
 </div>
 
-<div class="grid grid-cols-2 gap-4">
-    <div class="form-control">
-        <label class="label"><span class="label-text">{{ __('Von') }} *</span></label>
-        <input type="date" name="from_date" class="input input-bordered @error('from_date') input-error @enderror"
-               value="{{ old('from_date', $plan?->from_date?->toDateString()) }}" required>
-        @error('from_date')<p class="text-error text-sm mt-1">{{ $message }}</p>@enderror
-    </div>
-    <div class="form-control">
-        <label class="label"><span class="label-text">{{ __('Bis') }} *</span></label>
-        <input type="date" name="to_date" class="input input-bordered @error('to_date') input-error @enderror"
-               value="{{ old('to_date', $plan?->to_date?->toDateString()) }}" required>
-        @error('to_date')<p class="text-error text-sm mt-1">{{ $message }}</p>@enderror
-    </div>
-</div>
+<x-date-range
+    layout="split"
+    type="date"
+    fromName="from_date"
+    toName="to_date"
+    :fromLabel="__('Von') . ' *'"
+    :toLabel="__('Bis') . ' *'"
+    :from="old('from_date', $plan?->from_date?->toDateString())"
+    :to="old('to_date', $plan?->to_date?->toDateString())"
+    formControl
+    required
+    gridClass="grid grid-cols-2 gap-4"
+    :fromError="$errors->first('from_date')"
+    :toError="$errors->first('to_date')"
+/>
 
 <div class="form-control">
     <label class="label"><span class="label-text">{{ __('Mindestbesetzung pro Schicht') }}</span></label>

@@ -19,7 +19,7 @@
     :eyebrow="__('Zeiterfassung')"
     icon="⏱"
     tone="primary">
-    <form method="POST" action="{{ $action }}" class="space-y-4" id="time-entry-form">
+    <form method="POST" action="{{ $action }}" class="space-y-4" id="time-entry-form" data-entry-form>
         @csrf
         @if ($entry) @method('PUT') @endif
         @if ($isDialog)
@@ -70,7 +70,7 @@
                    value="{{ old('description', $entry?->description) }}">
         </label>
 
-        <div class="flex gap-3 pt-2">
+        <div class="flex flex-wrap items-center gap-3 pt-2">
             <button type="submit" class="btn btn-sm btn-primary">
                 {{ $entry ? __('Speichern') : __('Erfassen') }}
             </button>

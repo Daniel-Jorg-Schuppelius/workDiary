@@ -38,6 +38,7 @@ use App\Http\Controllers\DutyPlanController;
 use App\Http\Controllers\QualificationController;
 use App\Http\Controllers\VacationController;
 use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\ScheduledShiftController;
 use App\Http\Controllers\ShiftTypeController;
 use App\Http\Controllers\OrgMemberController;
 use App\Http\Controllers\OrganizationController;
@@ -150,7 +151,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('shifts', OnCallShiftController::class)->except(['show', 'index'])->parameters(['shifts' => 'shift']);
     Route::resource('assignments', EmergencyAssignmentController::class)->except(['show', 'index'])->parameters(['assignments' => 'assignment']);
 
-    Route::resource('vacations', VacationController::class)->except('show');
+    Route::get('vacations', fn() => redirect()->route('duties.index', ['tab' => 'urlaub']))->name('vacations.index');
+    Route::resource('vacations', VacationController::class)->except(['show', 'index']);
     Route::patch('vacations/{vacation}/approve',   [VacationController::class, 'approve'])->name('vacations.approve');
     Route::patch('vacations/{vacation}/reject',    [VacationController::class, 'reject'])->name('vacations.reject');
     Route::get('vacations/{vacation}/reject-form', [VacationController::class, 'rejectForm'])->name('vacations.reject-form');
@@ -179,6 +181,20 @@ Route::middleware('auth')->group(function () {
         ->except('show');
 
     Route::resource('qualifications', QualificationController::class)->except('show');
+
+    // ── Schichttypen (HTML CRUD, Admin) ─────────────────────────────────────
+    Route::get('shift-types',                  [ShiftTypeController::class, 'index'])->name('shift-types.index');
+    Route::get('shift-types/create',           [ShiftTypeController::class, 'create'])->name('shift-types.create');
+    Route::post('shift-types',                 [ShiftTypeController::class, 'htmlStore'])->name('shift-types.store');
+    Route::get('shift-types/{shiftType}/edit', [ShiftTypeController::class, 'edit'])->name('shift-types.edit');
+    Route::put('shift-types/{shiftType}',      [ShiftTypeController::class, 'htmlUpdate'])->name('shift-types.update');
+    Route::delete('shift-types/{shiftType}',   [ShiftTypeController::class, 'htmlDestroy'])->name('shift-types.destroy');
+
+    // ── Geplante Schichten (HTML, Admin) ────────────────────────────────────
+    Route::get('scheduled-shifts/{shift}',         [ScheduledShiftController::class, 'show'])->name('scheduled-shifts.show');
+    Route::get('scheduled-shifts/{shift}/edit',    [ScheduledShiftController::class, 'edit'])->name('scheduled-shifts.edit');
+    Route::put('scheduled-shifts/{shift}',         [ScheduledShiftController::class, 'update'])->name('scheduled-shifts.update');
+    Route::delete('scheduled-shifts/{shift}',      [ScheduledShiftController::class, 'destroy'])->name('scheduled-shifts.destroy');
 
     // ── Schichtplan ─────────────────────────────────────────────────────────
     Route::prefix('schedule')->name('schedule.')->group(function () {

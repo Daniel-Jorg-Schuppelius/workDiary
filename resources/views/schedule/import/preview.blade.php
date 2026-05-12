@@ -5,10 +5,10 @@
 @section('content')
 <div class="mx-auto max-w-4xl px-4 py-8">
 
-    <div class="mb-6 flex items-center gap-3">
+    <div class="mb-4 flex items-center gap-3">
         <a href="{{ route('schedule.import') }}" class="btn btn-sm btn-ghost">← {{ __('Zurück') }}</a>
-        <h1 class="text-2xl font-bold">{{ __('Spalten zuordnen') }}</h1>
     </div>
+    <x-page-title :title="__('Spalten zuordnen')" class="mb-6" />
 
     {{-- ── File info ── --}}
     <div class="mb-4 flex items-center gap-3 rounded-box border border-base-300 bg-base-200/40 px-4 py-3 text-sm">

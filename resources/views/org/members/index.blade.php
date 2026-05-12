@@ -2,15 +2,13 @@
 @section('title', __('Mitglieder'))
 @section('content')
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
-    <header class="flex flex-wrap items-baseline justify-between gap-3">
-        <div>
-            <h1 class="text-3xl font-semibold">{{ __('Mitglieder') }}</h1>
-            <p class="text-sm text-base-content/70">{{ __('Benutzer dieser Organisation verwalten.') }}</p>
-        </div>
-        <a href="{{ route('org.members.create') }}" class="btn btn-primary btn-sm">
-            + {{ __('Mitglied anlegen') }}
-        </a>
-    </header>
+    <x-page-title :title="__('Mitglieder')" :subtitle="__('Benutzer dieser Organisation verwalten.')">
+        <x-slot:actions>
+            <a href="{{ route('org.members.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
+                + {{ __('Mitglied anlegen') }}
+            </a>
+        </x-slot:actions>
+    </x-page-title>
 
     <x-table>
         <thead>
@@ -33,7 +31,7 @@
                     </td>
                     <td class="text-right">
                         <div class="flex justify-end gap-2">
-                            <a href="{{ route('org.members.edit', $member) }}" class="btn btn-ghost btn-xs">{{ __('Bearbeiten') }}</a>
+                            <a href="{{ route('org.members.edit', $member) }}" data-entry-modal-trigger class="btn btn-ghost btn-xs">{{ __('Bearbeiten') }}</a>
                             <form method="POST" action="{{ route('org.members.destroy', $member) }}"
                                   onsubmit="return confirm('{{ __('Mitglied wirklich entfernen?') }}')">
                                 @csrf @method('DELETE')

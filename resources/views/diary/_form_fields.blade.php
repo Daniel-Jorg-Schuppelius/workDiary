@@ -8,54 +8,54 @@
 @endphp
 
 @if (! $isEdit && $canCreateForOthers && $assignableUsers->isNotEmpty())
-    <div>
-        <label for="user_id" class="mb-2 block text-sm font-medium text-base-content">{{ __('Benutzer') }}<span class="text-error">*</span></label>
+    <div class="form-control">
+        <label class="label" for="user_id"><span class="label-text">{{ __('Benutzer') }} *</span></label>
         <select
             id="user_id"
             name="user_id"
-            class="select select-bordered select-sm w-full @error('user_id') ring-2 ring-error/30 @enderror"
+            class="select select-bordered w-full @error('user_id') select-error @enderror"
         >
             @foreach ($assignableUsers as $u)
                 <option value="{{ $u->id }}" @selected((int) $defaultUserId === (int) $u->id)>{{ $u->name }}</option>
             @endforeach
         </select>
         @error('user_id')
-            <p class="mt-2 text-sm text-error">{{ $message }}</p>
+            <p class="mt-1 text-sm text-error">{{ $message }}</p>
         @enderror
     </div>
 @endif
 
-<div>
-    <label for="content" class="mb-2 block text-sm font-medium text-base-content">{{ __('Inhalt') }}<span class="text-error">*</span></label>
+<div class="form-control">
+    <label class="label" for="content"><span class="label-text">{{ __('Inhalt') }} *</span></label>
     <textarea
         id="content"
         name="content"
         rows="8"
-        class="textarea textarea-bordered textarea-sm w-full @error('content') ring-2 ring-error/30 @enderror"
+        class="textarea textarea-bordered w-full @error('content') textarea-error @enderror"
         placeholder="{{ __('Beschreibe den Vorgang...') }}"
     >{{ old('content', $entry?->content) }}</textarea>
     @error('content')
-        <p class="mt-2 text-sm text-error">{{ $message }}</p>
+        <p class="mt-1 text-sm text-error">{{ $message }}</p>
     @enderror
 </div>
 
-<div>
-    <label for="response" class="mb-2 block text-sm font-medium text-base-content">{{ __('Rückmeldung') }}</label>
+<div class="form-control">
+    <label class="label" for="response"><span class="label-text">{{ __('Rückmeldung') }}</span></label>
     <textarea
         id="response"
         name="response"
         rows="4"
-        class="textarea textarea-bordered textarea-sm w-full"
+        class="textarea textarea-bordered w-full"
         placeholder="{{ __('Antwort oder Notiz (optional) ...') }}"
     >{{ old('response', $entry?->response) }}</textarea>
 </div>
 
-<div>
-    <label for="status" class="mb-2 block text-sm font-medium text-base-content">{{ __('Status') }}<span class="text-error">*</span></label>
+<div class="form-control">
+    <label class="label" for="status"><span class="label-text">{{ __('Status') }} *</span></label>
     <select
         id="status"
         name="status"
-        class="select select-bordered select-sm w-full @error('status') ring-2 ring-error/30 @enderror"
+        class="select select-bordered w-full @error('status') select-error @enderror"
     >
         <option value="2" @selected(old('status', $entry?->status ?? 2) == 2)>{{ __('Offen') }}</option>
         <option value="3" @selected(old('status', $entry?->status) == 3)>{{ __('Problem') }}</option>
@@ -63,7 +63,7 @@
         <option value="-1" @selected(old('status', $entry?->status) == -1)>{{ __('Erledigt') }}</option>
     </select>
     @error('status')
-        <p class="mt-2 text-sm text-error">{{ $message }}</p>
+        <p class="mt-1 text-sm text-error">{{ $message }}</p>
     @enderror
 </div>
 
@@ -76,14 +76,14 @@
     toId="end_at"
     :from="old('start_at', $entry?->start_at?->format('Y-m-d\TH:i') ?? $prefillStartAt)"
     :to="old('end_at', $entry?->end_at?->format('Y-m-d\TH:i'))"
-    labelClass="mb-2 block text-sm font-medium text-base-content"
+    formControl
     :fromError="$errors->first('start_at')"
     :toError="$errors->first('end_at')"
     gridClass="grid gap-4 sm:grid-cols-2"
 />
 
-<div>
-    <label class="mb-2 block text-sm font-medium text-base-content">{{ __('Tags') }}</label>
+<div class="form-control">
+    <label class="label"><span class="label-text">{{ __('Tags') }}</span></label>
     @php($currentTagIds = old('tag_ids', $selectedTagIds ?? []))
     @if (($allTags ?? collect())->isNotEmpty())
         <div class="flex flex-wrap gap-2 mb-3">

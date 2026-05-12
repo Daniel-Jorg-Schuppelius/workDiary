@@ -5,26 +5,28 @@
 @section('content')
 <div class="h-[calc(100dvh-11rem)] flex flex-col gap-4">
 
+    {{-- Header --}}
+    <x-page-title :title="__('Urlaubsverwaltung')" :subtitle="__('Anträge erfassen, prüfen und verfolgen.')" class="flex-none">
+        <x-slot:actions>
+            @can('create', \App\Models\Vacation::class)
+                <a href="{{ route('vacations.create') }}?dialog=1"
+                   class="btn btn-primary btn-sm"
+                   data-entry-modal-trigger>
+                    + {{ __('Neuer Antrag') }}
+                </a>
+            @endcan
+        </x-slot:actions>
+    </x-page-title>
+
     {{-- KPI-Tiles --}}
-    <div class="grid grid-cols-3 gap-3 flex-none">
-        <div class="stat rounded-box border border-base-300 bg-base-100 py-3 px-4 shadow-xs">
-            <div class="stat-title text-xs">{{ __('Ausstehend') }}</div>
-            <div class="stat-value text-2xl text-warning">{{ $counts['pending'] }}</div>
-        </div>
-        <div class="stat rounded-box border border-base-300 bg-base-100 py-3 px-4 shadow-xs">
-            <div class="stat-title text-xs">{{ __('Genehmigt (Jahr)') }}</div>
-            <div class="stat-value text-2xl text-success">{{ $counts['approved'] }}</div>
-        </div>
-        <div class="stat rounded-box border border-base-300 bg-base-100 py-3 px-4 shadow-xs">
-            <div class="stat-title text-xs">{{ __('Gesamt (Jahr)') }}</div>
-            <div class="stat-value text-2xl">{{ $counts['total'] }}</div>
-        </div>
+    <div class="grid grid-cols-1 gap-3 flex-none sm:grid-cols-3">
+        <x-kpi-tile :label="__('Ausstehend')"       :value="$counts['pending']"  tone="warning" />
+        <x-kpi-tile :label="__('Genehmigt (Jahr)')" :value="$counts['approved']" tone="success" />
+        <x-kpi-tile :label="__('Gesamt (Jahr)')"    :value="$counts['total']"    tone="neutral" />
     </div>
 
     {{-- Toolbar --}}
     <div class="flex flex-none flex-wrap items-center gap-2">
-        <h1 class="mr-auto text-base font-semibold">{{ __('Urlaubsverwaltung') }}</h1>
-
         <form method="GET" action="{{ route('vacations.index') }}" class="flex flex-wrap items-center gap-2">
             @if ($isAdmin && $users->isNotEmpty())
                 <select name="user_id" class="select select-bordered select-sm" onchange="this.form.submit()">
@@ -51,17 +53,9 @@
             </select>
 
             @if (array_filter($filters))
-                <a href="{{ route('vacations.index') }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
+                <a href="{{ route('vacations.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurücksetzen') }}</a>
             @endif
         </form>
-
-        @can('create', \App\Models\Vacation::class)
-            <a href="{{ route('vacations.create') }}?dialog=1"
-               class="btn btn-sm btn-primary"
-               data-entry-modal-trigger>
-                + {{ __('Neuer Antrag') }}
-            </a>
-        @endcan
     </div>
 
     {{-- Flash --}}

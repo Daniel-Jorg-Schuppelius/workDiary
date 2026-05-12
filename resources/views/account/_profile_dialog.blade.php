@@ -30,12 +30,12 @@
             @error('email')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
-        <div class="flex justify-end gap-2 pt-2">
-            <a href="{{ route('account.password.edit') }}" data-entry-modal-trigger class="btn btn-ghost">{{ __('Passwort ändern') }}</a>
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+            <button type="submit" class="btn btn-sm btn-primary">{{ __('Speichern') }}</button>
             @if ($isDialog)
-                <button type="button" class="btn btn-ghost" data-entry-modal-close>{{ __('Schließen') }}</button>
+                <button type="button" class="btn btn-sm btn-ghost" data-entry-modal-close>{{ __('Schließen') }}</button>
             @endif
-            <button type="submit" class="btn btn-primary">{{ __('Speichern') }}</button>
+            <a href="{{ route('account.password.edit') }}" data-entry-modal-trigger class="btn btn-sm btn-ghost">{{ __('Passwort ändern') }}</a>
         </div>
     </form>
 </x-dialog>

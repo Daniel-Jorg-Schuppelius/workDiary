@@ -19,7 +19,7 @@
 
     @include('diary._form_fields')
 
-    <div class="flex gap-3 pt-2">
+    <div class="flex flex-wrap items-center gap-3 pt-2">
         <button type="submit" class="btn btn-sm btn-primary">
             {{ $isEdit ? __('Speichern') : __('Eintrag anlegen') }}
         </button>

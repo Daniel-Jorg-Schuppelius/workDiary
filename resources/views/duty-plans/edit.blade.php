@@ -2,7 +2,7 @@
 @section('title', __('Dienstplan bearbeiten'))
 @section('content')
 <div class="mx-auto max-w-lg py-8">
-    <h1 class="text-2xl font-semibold mb-6">{{ __('Dienstplan bearbeiten') }}: {{ $dutyPlan->title }}</h1>
+    <x-page-title :title="__('Dienstplan bearbeiten')" :subtitle="$dutyPlan->title" class="mb-6" />
     <form method="POST" action="{{ route('duty-plans.update', $dutyPlan) }}" class="card bg-base-200 p-6 flex flex-col gap-4">
         @csrf @method('PUT')
         @include('duty-plans._form', ['plan' => $dutyPlan])

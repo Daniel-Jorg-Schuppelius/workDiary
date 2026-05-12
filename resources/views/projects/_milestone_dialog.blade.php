@@ -16,7 +16,7 @@
     :badge="$milestone?->statusLabel()"
     :badge-tone="$milestone?->statusTone() ?? 'ghost'"
     tone="primary">
-    <form method="POST" action="{{ $action }}" class="space-y-4">
+    <form method="POST" action="{{ $action }}" class="space-y-4" data-entry-form>
         @csrf
         @if ($milestone) @method('PUT') @endif
         @if ($isDialog)
@@ -50,7 +50,7 @@
             <span class="text-sm">{{ __('Milestone abgeschlossen') }}</span>
         </label>
 
-        <div class="flex gap-3 pt-2">
+        <div class="flex flex-wrap items-center gap-3 pt-2">
             <button type="submit" class="btn btn-sm btn-primary">
                 {{ $milestone ? __('Speichern') : __('Anlegen') }}
             </button>

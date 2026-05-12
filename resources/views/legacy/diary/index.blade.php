@@ -57,7 +57,7 @@
                 @if ($tab !== 'urlaub')
                     <a href="{{ route('legacy.archive.index', ['tab' => $tab === 'auftraege' ? 'auftraege' : $tab]) }}" class="btn btn-sm btn-ghost">{{ __('Archiv') }} →</a>
                 @else
-                    <a href="{{ route('vacations.index') }}" class="btn btn-sm btn-ghost">{{ __('Alle Anträge') }} →</a>
+                    <a href="{{ route('duties.index', ['tab' => 'urlaub']) }}" class="btn btn-sm btn-ghost">{{ __('Alle Anträge') }} →</a>
                 @endif
             </div>
         </div>

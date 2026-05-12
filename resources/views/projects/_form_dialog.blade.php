@@ -12,7 +12,7 @@
     :badge="$project?->statusLabel()"
     :badge-tone="$project?->statusTone() ?? 'ghost'"
     tone="primary">
-    <form method="POST" action="{{ $action }}" class="space-y-4">
+    <form method="POST" action="{{ $action }}" class="space-y-4" data-entry-form>
         @csrf
         @if ($project) @method('PUT') @endif
         @if ($isDialog)
@@ -69,7 +69,7 @@
             />
         </div>
 
-        <div class="flex gap-3 pt-2">
+        <div class="flex flex-wrap items-center gap-3 pt-2">
             <button type="submit" class="btn btn-sm btn-primary">{{ $project ? __('Speichern') : __('Anlegen') }}</button>
             @if ($isDialog)
                 <button type="button" class="btn btn-sm btn-ghost" data-entry-modal-close>{{ __('Abbrechen') }}</button>
