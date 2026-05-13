@@ -47,7 +47,7 @@
             ];
         @endphp
 
-        <header class="fixed inset-x-0 top-0 z-50 border-b border-base-300 bg-base-100 shadow-xs">
+        <header id="app-header" class="fixed inset-x-0 top-0 z-50 border-b border-base-300 bg-base-100 shadow-xs">
             <div class="navbar mx-auto w-full max-w-screen-2xl px-4 xl:px-8 2xl:px-12 min-h-14">
                 <div class="navbar-start min-w-0 flex-1">
                     <a href="{{ route('home') }}" class="flex items-center gap-2 group min-w-0">

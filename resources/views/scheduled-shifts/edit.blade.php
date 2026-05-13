@@ -1,10 +1,9 @@
 @extends('layouts.app')
 @section('title', __('Schicht bearbeiten'))
+@section('nav-title', __('Schicht bearbeiten'))
 
 @section('content')
     <div class="space-y-6">
-        <x-page-title :title="__('Schicht bearbeiten')" :subtitle="$shift->date->format('d.m.Y') . ' · ' . ($shift->user?->name ?? '—')" />
-
         @if ($errors->any())
             <div class="alert alert-error"><ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
         @endif

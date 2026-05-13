@@ -4,15 +4,13 @@
 
 @section('content')
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
-    <x-page-title :title="__('Tags')">
-        <x-slot:actions>
-            @can('create', App\Models\Tag::class)
-                @if (auth()->user()->isAdmin())
-                    <a href="{{ route('tags.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">{{ __('+ Neuer Tag') }}</a>
-                @endif
-            @endcan
-        </x-slot:actions>
-    </x-page-title>
+    <div class="flex justify-end">
+        @can('create', App\Models\Tag::class)
+            @if (auth()->user()->isAdmin())
+                <a href="{{ route('tags.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">{{ __('+ Neuer Tag') }}</a>
+            @endif
+        @endcan
+    </div>
 
     {{-- Tag-Liste --}}
     <x-table :pin-rows="true" scroll="flex">

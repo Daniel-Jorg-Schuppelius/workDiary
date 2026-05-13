@@ -1,11 +1,10 @@
 @extends('layouts.app')
 
 @section('title', __('Organisation anlegen'))
+@section('nav-title', __('Organisation anlegen'))
 
 @section('content')
 <div class="mx-auto max-w-lg py-8">
-    <x-page-title :title="__('Organisation anlegen')" class="mb-6" />
-
     <form method="POST" action="{{ route('admin.organizations.store') }}" class="card bg-base-200 p-6 flex flex-col gap-4">
         @csrf
         @include('admin.organizations._form', ['organization' => null])

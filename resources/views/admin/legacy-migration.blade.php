@@ -1,18 +1,17 @@
 @extends('layouts.app')
 
 @section('title', __('Legacy-Migration'))
+@section('nav-title', __('Legacy-Migration'))
 
 @section('content')
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
-    <x-page-title :title="__('Legacy-Migration')" :subtitle="__('Status der Datenübernahme aus der Legacy-Datenbank.')">
-        <x-slot:actions>
-            @if ($writeEnabled)
-                <span class="badge badge-warning">{{ __('Legacy-Schreibzugriff aktiv') }}</span>
-            @else
-                <span class="badge badge-success">{{ __('Legacy read-only') }}</span>
-            @endif
-        </x-slot:actions>
-    </x-page-title>
+    <div class="flex justify-end">
+        @if ($writeEnabled)
+            <span class="badge badge-warning">{{ __('Legacy-Schreibzugriff aktiv') }}</span>
+        @else
+            <span class="badge badge-success">{{ __('Legacy read-only') }}</span>
+        @endif
+    </div>
 
     @if (! $stats['configured'])
         <div class="alert alert-warning">

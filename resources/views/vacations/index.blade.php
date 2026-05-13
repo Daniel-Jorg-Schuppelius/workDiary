@@ -5,18 +5,16 @@
 @section('content')
 <div class="h-[calc(100dvh-11rem)] flex flex-col gap-4">
 
-    {{-- Header --}}
-    <x-page-title :title="__('Urlaubsverwaltung')" :subtitle="__('Anträge erfassen, prüfen und verfolgen.')" class="flex-none">
-        <x-slot:actions>
-            @can('create', \App\Models\Vacation::class)
-                <a href="{{ route('vacations.create') }}?dialog=1"
-                   class="btn btn-primary btn-sm"
-                   data-entry-modal-trigger>
-                    + {{ __('Neuer Antrag') }}
-                </a>
-            @endcan
-        </x-slot:actions>
-    </x-page-title>
+    {{-- Aktionen --}}
+    <div class="flex flex-none justify-end">
+        @can('create', \App\Models\Vacation::class)
+            <a href="{{ route('vacations.create') }}?dialog=1"
+               class="btn btn-primary btn-sm"
+               data-entry-modal-trigger>
+                + {{ __('Neuer Antrag') }}
+            </a>
+        @endcan
+    </div>
 
     {{-- KPI-Tiles --}}
     <div class="grid grid-cols-1 gap-3 flex-none sm:grid-cols-3">

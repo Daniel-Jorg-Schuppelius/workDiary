@@ -1,32 +1,32 @@
 @extends('layouts.app')
 @section('title', __('Dienstpläne'))
+@section('nav-title', __('Dienstpläne'))
 @section('content')
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
-    <x-page-title :title="__('Dienstpläne')" :subtitle="__('Tages-, Wochen- und Monatspläne.')">
-        <x-slot:actions>
+    <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Dienstpläne') }}</h1>
+        <div class="flex items-center gap-2">
+            <form method="GET" class="contents">
+                <select name="period" class="select select-sm select-bordered" onchange="this.form.submit()">
+                    <option value="">{{ __('Alle Zeiträume') }}</option>
+                    @foreach (\App\Models\DutyPlan::$periodTypes as $pt)
+                        <option value="{{ $pt }}" @selected($period === $pt)>{{ __('duty_plan.period.' . $pt) }}</option>
+                    @endforeach
+                </select>
+                <select name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
+                    <option value="">{{ __('Alle Status') }}</option>
+                    @foreach (\App\Models\DutyPlan::$statuses as $st)
+                        <option value="{{ $st }}" @selected($status === $st)>{{ __('duty_plan.status.' . $st) }}</option>
+                    @endforeach
+                </select>
+            </form>
             @can('create', \App\Models\DutyPlan::class)
                 <a href="{{ route('duty-plans.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
                     + {{ __('Dienstplan anlegen') }}
                 </a>
             @endcan
-        </x-slot:actions>
-    </x-page-title>
-
-    {{-- Filter --}}
-    <form method="GET" class="flex flex-wrap gap-3">
-        <select name="period" class="select select-sm select-bordered" onchange="this.form.submit()">
-            <option value="">{{ __('Alle Zeiträume') }}</option>
-            @foreach (\App\Models\DutyPlan::$periodTypes as $pt)
-                <option value="{{ $pt }}" @selected($period === $pt)>{{ __('duty_plan.period.' . $pt) }}</option>
-            @endforeach
-        </select>
-        <select name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
-            <option value="">{{ __('Alle Status') }}</option>
-            @foreach (\App\Models\DutyPlan::$statuses as $st)
-                <option value="{{ $st }}" @selected($status === $st)>{{ __('duty_plan.status.' . $st) }}</option>
-            @endforeach
-        </select>
-    </form>
+        </div>
+    </div>
 
     <x-table>
         <thead>

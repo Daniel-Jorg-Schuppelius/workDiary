@@ -1,13 +1,12 @@
 @extends('layouts.app')
 @section('title', __('Schichttypen'))
+@section('nav-title', __('Schichttypen'))
 
 @section('content')
     <div class="space-y-6">
-        <x-page-title :title="__('Schichttypen')" :subtitle="__('Vorlagen für Schichten verwalten')">
-            <x-slot:actions>
-                <a href="{{ route('shift-types.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">{{ __('Neuer Schichttyp') }}</a>
-            </x-slot:actions>
-        </x-page-title>
+        <div class="flex justify-end">
+            <a href="{{ route('shift-types.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">{{ __('Neuer Schichttyp') }}</a>
+        </div>
 
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>

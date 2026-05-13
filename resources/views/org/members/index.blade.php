@@ -1,14 +1,13 @@
 @extends('layouts.app')
 @section('title', __('Mitglieder'))
+@section('nav-title', __('Mitglieder'))
 @section('content')
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
-    <x-page-title :title="__('Mitglieder')" :subtitle="__('Benutzer dieser Organisation verwalten.')">
-        <x-slot:actions>
-            <a href="{{ route('org.members.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
-                + {{ __('Mitglied anlegen') }}
-            </a>
-        </x-slot:actions>
-    </x-page-title>
+    <div class="flex justify-end">
+        <a href="{{ route('org.members.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
+            + {{ __('Mitglied anlegen') }}
+        </a>
+    </div>
 
     <x-table>
         <thead>

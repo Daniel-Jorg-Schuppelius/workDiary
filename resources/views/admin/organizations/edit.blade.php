@@ -1,11 +1,10 @@
 @extends('layouts.app')
 
 @section('title', __('Organisation bearbeiten'))
+@section('nav-title', __('Organisation bearbeiten'))
 
 @section('content')
 <div class="mx-auto max-w-lg py-8">
-    <x-page-title :title="__('Organisation bearbeiten')" :subtitle="$organization->name" class="mb-6" />
-
     <form method="POST" action="{{ route('admin.organizations.update', $organization) }}" class="card bg-base-200 p-6 flex flex-col gap-4">
         @csrf @method('PUT')
         @include('admin.organizations._form', ['organization' => $organization])

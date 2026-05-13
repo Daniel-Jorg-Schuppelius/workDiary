@@ -68,16 +68,17 @@
     }
 
     /* Farbiger Akzent-Streifen am oberen Header-Rand */
-    body[data-mode="new"] header {
+    body[data-mode="new"] #app-header {
         border-top: 2px solid;
         border-image: linear-gradient(
-            90deg,
-            var(--color-secondary) 0%,
-            var(--color-success) 100%
-        ) 1;
+                90deg,
+                var(--color-secondary) 0%,
+                var(--color-success) 100%
+            )
+            1;
     }
 
-    body[data-mode="legacy"] header {
+    body[data-mode="legacy"] #app-header {
         border-top: 2px solid var(--color-primary);
     }
 }
@@ -791,12 +792,18 @@
     }
 
     .schedule-cell.drag-over {
-        background-color: color-mix(in srgb, var(--color-primary) 15%, var(--color-base-100));
+        background-color: color-mix(
+            in srgb,
+            var(--color-primary) 15%,
+            var(--color-base-100)
+        );
         outline: 2px dashed var(--color-primary);
     }
 
     .schedule-shift-badge {
-        transition: opacity 0.1s ease, transform 0.1s ease;
+        transition:
+            opacity 0.1s ease,
+            transform 0.1s ease;
     }
 
     .schedule-shift-badge[draggable="true"]:active {

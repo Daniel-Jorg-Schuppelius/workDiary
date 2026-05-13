@@ -1,19 +1,24 @@
 @extends('layouts.app')
 @section('title', __('Schicht'))
+@section('nav-title', __('Schicht am :date', ['date' => $shift->date->format('d.m.Y')]))
 
 @section('content')
     <div class="space-y-6">
-        <x-page-title :title="__('Schicht am :date', ['date' => $shift->date->format('d.m.Y')])"
-                      :subtitle="$shift->user?->name"
-                      :badge="$shift->statusLabel()"
-                      :badgeTone="$shift->statusTone()">
-            <x-slot:actions>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-2 text-sm text-base-content/70">
+                @if ($shift->user)
+                    <span>{{ $shift->user->name }}</span>
+                    <span>·</span>
+                @endif
+                <span class="badge badge-sm badge-{{ $shift->statusTone() }}">{{ $shift->statusLabel() }}</span>
+            </div>
+            <div class="flex items-center gap-2">
                 @can('update', $shift)
                     <a href="{{ route('scheduled-shifts.edit', $shift) }}" class="btn btn-primary btn-sm">{{ __('Bearbeiten') }}</a>
                 @endcan
                 <a href="{{ route('schedule.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurück') }}</a>
-            </x-slot:actions>
-        </x-page-title>
+            </div>
+        </div>
 
         @if (session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
 

@@ -9,19 +9,18 @@
 @endphp
 
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
-    <x-page-title :title="__('Feiertagsverwaltung')" :subtitle="(string) $year">
-        <x-slot:actions>
-            <form method="GET" action="{{ route('holidays.index') }}" class="flex items-center gap-2">
-                <label class="text-sm text-base-content/70">{{ __('Jahr') }}</label>
-                <select name="year" class="select select-bordered select-sm" onchange="this.form.submit()">
-                    @foreach ($years as $y)
-                        <option value="{{ $y }}" @selected($y === $year)>{{ $y }}</option>
-                    @endforeach
-                </select>
-            </form>
-            <a href="{{ route('holidays.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">+ {{ __('Eigener Feiertag') }}</a>
-        </x-slot:actions>
-    </x-page-title>
+    {{-- Toolbar: Jahr + Aktionen --}}
+    <div class="flex flex-none flex-wrap items-center justify-between gap-3">
+        <form method="GET" action="{{ route('holidays.index') }}" class="flex items-center gap-2">
+            <label class="text-sm text-base-content/70">{{ __('Jahr') }}</label>
+            <select name="year" class="select select-bordered select-sm" onchange="this.form.submit()">
+                @foreach ($years as $y)
+                    <option value="{{ $y }}" @selected($y === $year)>{{ $y }}</option>
+                @endforeach
+            </select>
+        </form>
+        <a href="{{ route('holidays.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">+ {{ __('Eigener Feiertag') }}</a>
+    </div>
 
     {{-- Tabs: Jahresübersicht | Eigene Feiertage --}}
     <div role="tablist" class="tabs tabs-box w-fit">

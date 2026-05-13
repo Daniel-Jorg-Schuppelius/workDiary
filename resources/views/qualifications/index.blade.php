@@ -1,16 +1,15 @@
 @extends('layouts.app')
 @section('title', __('Qualifikationen'))
+@section('nav-title', __('Qualifikationen'))
 @section('content')
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
-    <x-page-title :title="__('Qualifikationen')" :subtitle="__('Anforderungsprofile und Zertifikate.')">
-        <x-slot:actions>
-            @can('create', \App\Models\Qualification::class)
-                <a href="{{ route('qualifications.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
-                    + {{ __('Qualifikation anlegen') }}
-                </a>
-            @endcan
-        </x-slot:actions>
-    </x-page-title>
+    <div class="flex justify-end">
+        @can('create', \App\Models\Qualification::class)
+            <a href="{{ route('qualifications.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
+                + {{ __('Qualifikation anlegen') }}
+            </a>
+        @endcan
+    </div>
 
     <x-table>
         <thead>

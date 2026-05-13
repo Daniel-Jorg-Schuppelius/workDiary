@@ -1,8 +1,8 @@
 @extends('layouts.app')
 @section('title', __('Mitglied anlegen'))
+@section('nav-title', __('Mitglied anlegen'))
 @section('content')
 <div class="mx-auto max-w-lg py-8">
-    <x-page-title :title="__('Mitglied anlegen')" class="mb-6" />
     <form method="POST" action="{{ route('org.members.store') }}" class="card bg-base-200 p-6 flex flex-col gap-4">
         @csrf
         @include('org.members._form', ['member' => null])

@@ -1,8 +1,8 @@
 @extends('layouts.app')
 @section('title', __('Dienstplan anlegen'))
+@section('nav-title', __('Dienstplan anlegen'))
 @section('content')
 <div class="mx-auto max-w-lg py-8">
-    <x-page-title :title="__('Dienstplan anlegen')" class="mb-6" />
     <form method="POST" action="{{ route('duty-plans.store') }}" class="card bg-base-200 p-6 flex flex-col gap-4">
         @csrf
         @include('duty-plans._form', ['plan' => null])

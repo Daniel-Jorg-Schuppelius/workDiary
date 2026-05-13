@@ -1,24 +1,17 @@
 @extends('layouts.app')
 @section('title', $dutyPlan->title)
+@section('nav-title', $dutyPlan->title)
 @section('content')
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
 
-    {{-- Header --}}
-    @php
-        $subtitle = __('duty_plan.period.' . $dutyPlan->period_type)
-            . ' · ' . $dutyPlan->from_date->format('d.m.Y')
-            . ' – ' . $dutyPlan->to_date->format('d.m.Y');
-        if ($dutyPlan->min_staff > 0) {
-            $subtitle .= ' · ' . __('Mindestbesetzung') . ': ' . $dutyPlan->min_staff;
-        }
-    @endphp
-    <x-page-title
-        :title="$dutyPlan->title"
-        :subtitle="$subtitle"
-        :badge="$dutyPlan->isPublished() ? __('duty_plan.status.published') : __('duty_plan.status.draft')"
-        :badge-tone="$dutyPlan->isPublished() ? 'success' : 'ghost'"
-    >
-        <x-slot:actions>
+    <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <div class="flex flex-wrap items-center gap-2">
+            <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ $dutyPlan->title }}</h1>
+            <span class="badge badge-sm badge-{{ $dutyPlan->isPublished() ? 'success' : 'ghost' }}">
+                {{ $dutyPlan->isPublished() ? __('duty_plan.status.published') : __('duty_plan.status.draft') }}
+            </span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
             @can('update', $dutyPlan)
                 @if ($dutyPlan->isDraft())
                     <form method="POST" action="{{ route('duty-plans.publish', $dutyPlan) }}">
@@ -34,8 +27,8 @@
                 <a href="{{ route('duty-plans.edit', $dutyPlan) }}" data-entry-modal-trigger class="btn btn-ghost btn-sm">{{ __('Bearbeiten') }}</a>
             @endcan
             <a href="{{ route('duty-plans.index') }}" class="btn btn-ghost btn-sm">← {{ __('Übersicht') }}</a>
-        </x-slot:actions>
-    </x-page-title>
+        </div>
+    </div>
 
     @if ($dutyPlan->note)
         <div class="alert alert-info text-sm">{{ $dutyPlan->note }}</div>
