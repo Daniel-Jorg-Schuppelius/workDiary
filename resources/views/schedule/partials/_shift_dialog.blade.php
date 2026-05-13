@@ -7,33 +7,33 @@
             <button type="button" onclick="document.getElementById('shift-dialog').close()" class="btn btn-sm btn-circle btn-ghost">✕</button>
         </div>
 
-        <form id="shift-dialog-form" novalidate>
+        <form id="shift-dialog-form" class="space-y-4" novalidate>
             <input type="hidden" id="shift-dialog-id" name="id" value="">
 
             {{-- User --}}
             @if (auth()->user()->isAdmin())
-            <div class="form-control mb-3">
-                <label class="label pb-1"><span class="label-text text-sm">{{ __('Mitarbeiter') }}</span></label>
-                <select id="shift-dialog-user" name="user_id" class="select select-bordered select-sm w-full" required>
-                    @foreach ($users as $u)
-                        <option value="{{ $u->id }}">{{ $u->name }}</option>
-                    @endforeach
-                </select>
-            </div>
+                <div class="fieldset">
+                    <label class="fieldset-label">{{ __('Mitarbeiter') }}</label>
+                    <select id="shift-dialog-user" name="user_id" class="select select-bordered w-full" required>
+                        @foreach ($users as $u)
+                            <option value="{{ $u->id }}">{{ $u->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
             @else
-            <input type="hidden" id="shift-dialog-user" name="user_id" value="{{ auth()->id() }}">
+                <input type="hidden" id="shift-dialog-user" name="user_id" value="{{ auth()->id() }}">
             @endif
 
             {{-- Date --}}
-            <div class="form-control mb-3">
-                <label class="label pb-1"><span class="label-text text-sm">{{ __('Datum') }}</span></label>
-                <input type="date" id="shift-dialog-date" name="date" class="input input-bordered input-sm w-full" required>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Datum') }}</label>
+                <input type="date" id="shift-dialog-date" name="date" class="input input-bordered w-full" required>
             </div>
 
             {{-- Shift type --}}
-            <div class="form-control mb-3">
-                <label class="label pb-1"><span class="label-text text-sm">{{ __('Schichttyp') }}</span></label>
-                <select id="shift-dialog-type" name="shift_type_id" class="select select-bordered select-sm w-full">
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Schichttyp') }}</label>
+                <select id="shift-dialog-type" name="shift_type_id" class="select select-bordered w-full">
                     <option value="">— {{ __('kein Typ') }} —</option>
                     @foreach ($shiftTypes as $t)
                         <option value="{{ $t->id }}" style="color:{{ $t->color }}">{{ $t->name }} ({{ $t->abbreviation }})</option>
@@ -42,35 +42,39 @@
             </div>
 
             {{-- Times --}}
-            <div class="mb-3 grid grid-cols-2 gap-3">
-                <div class="form-control">
-                    <label class="label pb-1"><span class="label-text text-sm">{{ __('Von') }}</span></label>
-                    <input type="time" id="shift-dialog-start" name="start_time" class="input input-bordered input-sm w-full">
-                </div>
-                <div class="form-control">
-                    <label class="label pb-1"><span class="label-text text-sm">{{ __('Bis') }}</span></label>
-                    <input type="time" id="shift-dialog-end" name="end_time" class="input input-bordered input-sm w-full">
-                </div>
-            </div>
+            <x-date-range
+                type="time"
+                fromName="start_time"
+                toName="end_time"
+                fromId="shift-dialog-start"
+                toId="shift-dialog-end"
+                :fromLabel="__('Von')"
+                :toLabel="__('Bis')"
+                :label="__('Von – Bis')"
+                formControl
+                class="w-full"
+            />
 
             {{-- Note --}}
-            <div class="form-control mb-3">
-                <label class="label pb-1"><span class="label-text text-sm">{{ __('Notiz') }}</span></label>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Notiz') }}</label>
                 <textarea id="shift-dialog-note" name="note" rows="2" maxlength="1000"
-                          class="textarea textarea-bordered textarea-sm w-full resize-none"></textarea>
+                          class="textarea textarea-bordered w-full resize-none"></textarea>
             </div>
 
             {{-- Status (edit only) --}}
-            <div id="shift-dialog-status-row" class="form-control mb-4 hidden">
-                <label class="label pb-1"><span class="label-text text-sm">{{ __('Status') }}</span></label>
-                <select id="shift-dialog-status" name="status" class="select select-bordered select-sm w-full">
-                    @foreach (\App\Models\ScheduledShift::$statuses as $key => $label)
-                        <option value="{{ $key }}">{{ $label }}</option>
-                    @endforeach
-                </select>
+            <div id="shift-dialog-status-row" class="hidden">
+                <div class="fieldset">
+                    <label class="fieldset-label">{{ __('Status') }}</label>
+                    <select id="shift-dialog-status" name="status" class="select select-bordered w-full">
+                        @foreach (\App\Models\ScheduledShift::$statuses as $key => $label)
+                            <option value="{{ $key }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
 
-            <div id="shift-dialog-error" class="alert alert-error alert-sm mb-3 hidden text-sm"></div>
+            <div id="shift-dialog-error" class="alert alert-error alert-sm hidden text-sm"></div>
 
             <div class="modal-action mt-0 flex justify-between">
                 <button type="button" id="shift-dialog-delete" class="btn btn-sm btn-error btn-outline hidden">{{ __('Löschen') }}</button>

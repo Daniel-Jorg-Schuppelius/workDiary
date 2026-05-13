@@ -40,8 +40,8 @@
         @endif
 
         {{-- Wiederholungs-Typ --}}
-        <div>
-            <label class="label" for="recurrence-mode"><span class="label-text">{{ __('Typ') }}</span></label>
+        <div class="fieldset">
+            <label class="fieldset-label" for="recurrence-mode">{{ __('Typ') }}</label>
             <select id="recurrence-mode" name="recurrence_mode"
                     class="select select-bordered w-full"
                     data-recurrence-select>
@@ -52,39 +52,39 @@
         </div>
 
         {{-- Datum (für einmalig / jährlich-fest) --}}
-        <div data-recurrence-show="once yearly">
-            <label class="label" for="holiday-date">
-                <span class="label-text">{{ __('Datum') }}</span>
-                <span class="label-text-alt text-base-content/50" data-recurrence-show="yearly">{{ __('Nur Tag & Monat werden verwendet') }}</span>
+        <div class="fieldset" data-recurrence-show="once yearly">
+            <label class="fieldset-label" for="holiday-date">
+                {{ __('Datum') }}
+                <span class="ml-auto text-xs text-base-content/50" data-recurrence-show="yearly">{{ __('Nur Tag & Monat werden verwendet') }}</span>
             </label>
             <input id="holiday-date" type="date" name="date"
                    value="{{ old('date', optional($holiday?->date)->format('Y-m-d')) }}"
                    class="input input-bordered w-full {{ $errors->has('date') ? 'input-error' : '' }}" >
             @if ($errors->has('date'))
-                <p class="mt-1 text-sm text-error">{{ $errors->first('date') }}</p>
+                <p class="text-error text-sm">{{ $errors->first('date') }}</p>
             @endif
         </div>
 
         {{-- Relative Felder (Woche / Wochentag / Monat) --}}
         <div data-recurrence-show="relative" class="grid grid-cols-3 gap-3">
-            <div>
-                <label class="label" for="rec-week"><span class="label-text">{{ __('Woche') }}</span></label>
+            <div class="fieldset">
+                <label class="fieldset-label" for="rec-week">{{ __('Woche') }}</label>
                 <select id="rec-week" name="recurrence_week" class="select select-bordered w-full">
                     @foreach ($weekNumbers as $val => $label)
                         <option value="{{ $val }}" @selected((int) old('recurrence_week', $holiday?->recurrence_week ?? 1) === $val)>{{ $label }}</option>
                     @endforeach
                 </select>
             </div>
-            <div>
-                <label class="label" for="rec-weekday"><span class="label-text">{{ __('Wochentag') }}</span></label>
+            <div class="fieldset">
+                <label class="fieldset-label" for="rec-weekday">{{ __('Wochentag') }}</label>
                 <select id="rec-weekday" name="recurrence_weekday" class="select select-bordered w-full">
                     @foreach ($weekdays as $val => $label)
                         <option value="{{ $val }}" @selected((int) old('recurrence_weekday', $holiday?->recurrence_weekday ?? 1) === $val)>{{ $label }}</option>
                     @endforeach
                 </select>
             </div>
-            <div>
-                <label class="label" for="rec-month"><span class="label-text">{{ __('Monat') }}</span></label>
+            <div class="fieldset">
+                <label class="fieldset-label" for="rec-month">{{ __('Monat') }}</label>
                 <select id="rec-month" name="recurrence_month" class="select select-bordered w-full">
                     <option value="">{{ __('Jeden Monat') }}</option>
                     @foreach ($monthNames as $val => $label)
@@ -95,11 +95,11 @@
         </div>
 
         {{-- Name --}}
-        <div>
-            <label class="label" for="holiday-name"><span class="label-text">{{ __('Name') }}</span></label>
+        <div class="fieldset">
+            <label class="fieldset-label" for="holiday-name">{{ __('Name') }}</label>
             <input id="holiday-name" type="text" name="name" value="{{ old('name', $holiday?->name) }}" maxlength="120" class="input input-bordered w-full {{ $errors->has('name') ? 'input-error' : '' }}" required>
             @if ($errors->has('name'))
-                <p class="mt-1 text-sm text-error">{{ $errors->first('name') }}</p>
+                <p class="text-error text-sm">{{ $errors->first('name') }}</p>
             @endif
         </div>
 

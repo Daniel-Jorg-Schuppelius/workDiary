@@ -39,20 +39,22 @@
     @enderror
 </div>
 
-<x-date-range
-    layout="split"
-    type="datetime-local"
-    fromName="von"
-    toName="bis"
-    fromId="von"
-    toId="bis"
-    :from="old('von', $entry?->von?->format('Y-m-d\TH:i'))"
-    :to="old('bis', $entry?->bis?->format('Y-m-d\TH:i'))"
-    labelClass="mb-2 block text-sm font-medium text-base-content"
-    :fromError="$errors->first('von')"
-    :toError="$errors->first('bis')"
-    gridClass="grid gap-4 sm:grid-cols-2"
-/>
+<div class="fieldset">
+    <label class="fieldset-label">{{ __('Zeitraum') }}</label>
+    <x-date-range
+        type="datetime-local"
+        fromName="von"
+        toName="bis"
+        fromId="von"
+        toId="bis"
+        :from="old('von', $entry?->von?->format('Y-m-d\TH:i'))"
+        :to="old('bis', $entry?->bis?->format('Y-m-d\TH:i'))"
+        :label="false"
+        class="w-full"
+    />
+    @error('von')<p class="text-error text-sm">{{ $message }}</p>@enderror
+    @error('bis')<p class="text-error text-sm">{{ $message }}</p>@enderror
+</div>
 
 <div class="flex items-center gap-3 rounded-box border border-base-300 bg-base-200 px-3 py-2">
     <input id="sms" name="sms" type="checkbox" value="j" @checked(old('sms', $entry?->sms) === 'j') class="checkbox checkbox-sm">

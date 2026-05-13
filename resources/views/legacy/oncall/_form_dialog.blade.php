@@ -20,29 +20,31 @@
             <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
         @endif
 
-        <div>
-            <label for="user" class="label text-sm font-semibold pb-1">{{ __('Mitarbeiter') }}</label>
-            <select id="user" name="user" class="select select-bordered select-sm w-full {{ $errors->has('user') ? 'select-error' : '' }}">
+        <div class="fieldset">
+            <label for="user" class="fieldset-label">{{ __('Mitarbeiter') }}</label>
+            <select id="user" name="user" class="select select-bordered w-full @error('user') select-error @enderror">
                 @foreach ($users as $user)
                     <option value="{{ $user->id }}" @selected((int) old('user', $item?->user) === (int) $user->id)>{{ $user->uname }}</option>
                 @endforeach
             </select>
-            @if ($errors->has('user'))
-                <p class="mt-2 text-sm text-error">{{ $errors->first('user') }}</p>
-            @endif
+            @error('user')<p class="text-error text-sm">{{ $message }}</p>@enderror
         </div>
 
-        <x-date-range
-            layout="split"
-            fromName="von"
-            toName="bis"
-            fromId="von"
-            toId="bis"
-            :from="old('von', $item?->von?->format('Y-m-d'))"
-            :to="old('bis', $item?->bis?->format('Y-m-d'))"
-            :fromError="$errors->first('von')"
-            :toError="$errors->first('bis')"
-        />
+        <div class="fieldset">
+            <label class="fieldset-label">{{ __('Zeitraum') }}</label>
+            <x-date-range
+                fromName="von"
+                toName="bis"
+                fromId="von"
+                toId="bis"
+                :from="old('von', $item?->von?->format('Y-m-d'))"
+                :to="old('bis', $item?->bis?->format('Y-m-d'))"
+                :label="false"
+                class="w-full"
+            />
+            @error('von')<p class="text-error text-sm">{{ $message }}</p>@enderror
+            @error('bis')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
 
         <div class="flex gap-2 pt-1">
             <button type="submit" class="btn btn-primary btn-sm">{{ __('Speichern') }}</button>

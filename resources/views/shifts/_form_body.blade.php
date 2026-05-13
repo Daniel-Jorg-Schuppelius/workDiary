@@ -20,37 +20,38 @@
     @endif
 
     @if ($canAssignOthers)
-        <label class="form-control w-full">
-            <div class="label"><span class="label-text">{{ __('Mitarbeiter') }}</span></div>
+        <div class="fieldset w-full">
+            <label class="fieldset-label">{{ __('Mitarbeiter') }}</label>
             <select name="user_id" class="select select-bordered w-full">
                 @foreach ($assignableUsers as $u)
                     <option value="{{ $u['id'] }}" @selected($selectedUser === (int) $u['id'])>{{ $u['name'] }}</option>
                 @endforeach
             </select>
-        </label>
+        </div>
     @endif
 
-    <x-date-range
-        layout="split"
-        type="datetime-local"
-        :from="$startAt"
-        :to="$endAt"
-        fromName="start_at"
-        toName="end_at"
-        :fromLabel="__('Beginn')"
-        :toLabel="__('Ende')"
-        size=""
-        formControl
-        required
-        gridClass="grid grid-cols-1 gap-4 sm:grid-cols-2"
-        :fromError="$errors->first('start_at')"
-        :toError="$errors->first('end_at')"
-    />
+    <div class="fieldset">
+        <label class="fieldset-label">{{ __('Zeitraum') }} *</label>
+        <x-date-range
+            type="datetime-local"
+            :from="$startAt"
+            :to="$endAt"
+            fromName="start_at"
+            toName="end_at"
+            :fromLabel="__('Beginn')"
+            :toLabel="__('Ende')"
+            :label="false"
+            required
+            class="w-full"
+        />
+        @error('start_at')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        @error('end_at')<p class="text-error text-sm">{{ $message }}</p>@enderror
+    </div>
 
-    <label class="form-control w-full">
-        <div class="label"><span class="label-text">{{ __('Notiz') }}</span></div>
+    <div class="fieldset w-full">
+        <label class="fieldset-label">{{ __('Notiz') }}</label>
         <textarea name="note" rows="3" class="textarea textarea-bordered w-full">{{ $note }}</textarea>
-    </label>
+    </div>
 
     @if ($errors->any())
         <div class="alert alert-error">

@@ -21,35 +21,36 @@
     @endif
 
     @if ($canAssignOthers)
-        <label class="form-control w-full">
-            <div class="label"><span class="label-text">{{ __('Mitarbeiter') }}</span></div>
+        <div class="fieldset w-full">
+            <label class="fieldset-label">{{ __('Mitarbeiter') }}</label>
             <select name="user_id" class="select select-bordered w-full">
                 @foreach ($assignableUsers as $u)
                     <option value="{{ $u['id'] }}" @selected($selectedUser === (int) $u['id'])>{{ $u['name'] }}</option>
                 @endforeach
             </select>
-        </label>
+        </div>
     @endif
 
-    <x-date-range
-        layout="split"
-        type="datetime-local"
-        :from="$startAt"
-        :to="$endAt"
-        fromName="start_at"
-        toName="end_at"
-        :fromLabel="__('Beginn')"
-        :toLabel="__('Ende')"
-        size=""
-        formControl
-        required
-        gridClass="grid grid-cols-1 gap-4 sm:grid-cols-2"
-        :fromError="$errors->first('start_at')"
-        :toError="$errors->first('end_at')"
-    />
+    <div class="fieldset">
+        <label class="fieldset-label">{{ __('Zeitraum') }} *</label>
+        <x-date-range
+            type="datetime-local"
+            :from="$startAt"
+            :to="$endAt"
+            fromName="start_at"
+            toName="end_at"
+            :fromLabel="__('Beginn')"
+            :toLabel="__('Ende')"
+            :label="false"
+            required
+            class="w-full"
+        />
+        @error('start_at')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        @error('end_at')<p class="text-error text-sm">{{ $message }}</p>@enderror
+    </div>
 
-    <label class="form-control w-full">
-        <div class="label"><span class="label-text">{{ __('Zugehörige Bereitschaft (optional)') }}</span></div>
+    <div class="fieldset w-full">
+        <label class="fieldset-label">{{ __('Zugehörige Bereitschaft (optional)') }}</label>
         <select name="on_call_shift_id" class="select select-bordered w-full">
             <option value="">{{ __('— keine —') }}</option>
             @foreach ($shiftOptions as $s)
@@ -58,12 +59,12 @@
                 </option>
             @endforeach
         </select>
-    </label>
+    </div>
 
-    <label class="form-control w-full">
-        <div class="label"><span class="label-text">{{ __('Grund') }}</span></div>
+    <div class="fieldset w-full">
+        <label class="fieldset-label">{{ __('Grund') }}</label>
         <textarea name="reason" rows="3" class="textarea textarea-bordered w-full">{{ $reason }}</textarea>
-    </label>
+    </div>
 
     @if ($errors->any())
         <div class="alert alert-error">

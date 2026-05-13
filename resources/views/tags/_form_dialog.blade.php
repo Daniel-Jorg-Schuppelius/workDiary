@@ -17,20 +17,20 @@
             <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
         @endif
 
-        <label class="form-control w-full">
-            <div class="label"><span class="label-text">{{ __('Name') }}</span></div>
+        <div class="fieldset">
+            <label class="fieldset-label">{{ __('Name') }}</label>
             <input name="name" type="text" required maxlength="60"
                    class="input input-bordered w-full"
                    value="{{ old('name', $tag?->name) }}">
-            @error('name')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
-        </label>
+            @error('name')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
 
-        <label class="form-control w-full">
-            <div class="label"><span class="label-text">{{ __('Farbe') }}</span></div>
+        <div class="fieldset">
+            <label class="fieldset-label">{{ __('Farbe') }}</label>
             <input name="color" type="color"
                    value="{{ old('color', $tag?->color ?? '#3b82f6') }}"
                    class="input input-bordered h-10 w-20 p-1">
-        </label>
+        </div>
 
         <div class="flex flex-wrap items-center gap-3 pt-2">
             <button type="submit" class="btn btn-sm btn-primary">{{ $tag ? __('Speichern') : __('Anlegen') }}</button>

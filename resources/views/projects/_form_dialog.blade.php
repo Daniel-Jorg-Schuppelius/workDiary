@@ -19,39 +19,39 @@
             <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
         @endif
 
-        <label class="form-control w-full">
-            <div class="label"><span class="label-text">{{ __('Name') }}</span></div>
+        <div class="fieldset">
+            <label class="fieldset-label">{{ __('Name') }}</label>
             <input name="name" type="text" required maxlength="120"
                    class="input input-bordered w-full"
                    value="{{ old('name', $project?->name) }}">
-            @error('name')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
-        </label>
+            @error('name')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
 
-        <label class="form-control w-full">
-            <div class="label"><span class="label-text">{{ __('Beschreibung') }}</span></div>
+        <div class="fieldset">
+            <label class="fieldset-label">{{ __('Beschreibung') }}</label>
             <textarea name="description" rows="3" maxlength="2000"
                       class="textarea textarea-bordered w-full">{{ old('description', $project?->description) }}</textarea>
-            @error('description')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
-        </label>
+            @error('description')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <label class="form-control">
-                <div class="label"><span class="label-text">{{ __('Status') }}</span></div>
-                <select name="status" class="select select-bordered">
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Status') }}</label>
+                <select name="status" class="select select-bordered w-full">
                     @foreach (\App\Models\Project::STATUSES as $status)
                         <option value="{{ $status }}" @selected(old('status', $project?->status ?? 'active') === $status)>
                             {{ ['active' => __('Aktiv'), 'paused' => __('Pausiert'), 'archived' => __('Archiviert')][$status] }}
                         </option>
                     @endforeach
                 </select>
-            </label>
+            </div>
 
-            <label class="form-control">
-                <div class="label"><span class="label-text">{{ __('Farbe') }}</span></div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Farbe') }}</label>
                 <input name="color" type="color"
                        value="{{ old('color', $project?->color ?? '#3b82f6') }}"
                        class="input input-bordered h-10 w-20 p-1">
-            </label>
+            </div>
 
             <x-date-range
                 layout="split"

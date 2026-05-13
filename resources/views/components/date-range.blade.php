@@ -28,14 +28,14 @@
     $label ??= $fromLabel.' – '.$toLabel;
     $sizeClass = $size ? 'input-'.$size : '';
     $inputBase = trim('input input-bordered '.$sizeClass);
-    $splitLabelClass = $labelClass ?? ($formControl ? 'label' : 'label text-sm font-semibold pb-1');
+    $splitLabelClass = $labelClass ?? ($formControl ? 'fieldset-label' : 'label text-sm font-semibold pb-1');
 @endphp
 
 @if ($layout === 'split')
     <div {{ $attributes->merge(['class' => $gridClass]) }}>
         @if ($formControl)
-            <label class="form-control w-full">
-                <div class="label"><span class="label-text">{{ $fromLabel }}</span></div>
+            <div class="fieldset">
+                <label @if($fromId) for="{{ $fromId }}" @endif class="fieldset-label">{{ $fromLabel }}</label>
                 <input
                     @if($fromId) id="{{ $fromId }}" @endif
                     name="{{ $fromName }}"
@@ -46,10 +46,10 @@
                     @if($max !== null) max="{{ $max }}" @endif
                     class="{{ $inputBase }} w-full {{ $inputClass }} @if($fromError) input-error @endif"
                 >
-                @if($fromError)<p class="mt-1 text-sm text-error">{{ $fromError }}</p>@endif
-            </label>
-            <label class="form-control w-full">
-                <div class="label"><span class="label-text">{{ $toLabel }}</span></div>
+                @if($fromError)<p class="text-error text-sm">{{ $fromError }}</p>@endif
+            </div>
+            <div class="fieldset">
+                <label @if($toId) for="{{ $toId }}" @endif class="fieldset-label">{{ $toLabel }}</label>
                 <input
                     @if($toId) id="{{ $toId }}" @endif
                     name="{{ $toName }}"
@@ -60,8 +60,8 @@
                     @if($max !== null) max="{{ $max }}" @endif
                     class="{{ $inputBase }} w-full {{ $inputClass }} @if($toError) input-error @endif"
                 >
-                @if($toError)<p class="mt-1 text-sm text-error">{{ $toError }}</p>@endif
-            </label>
+                @if($toError)<p class="text-error text-sm">{{ $toError }}</p>@endif
+            </div>
         @else
             <div>
                 <label @if($fromId) for="{{ $fromId }}" @endif class="{{ $splitLabelClass }}">{{ $fromLabel }}</label>
@@ -94,30 +94,36 @@
         @endif
     </div>
 @else
-    <div {{ $attributes->merge(['class' => 'flex flex-col']) }}>
+    <div {{ $attributes->merge(['class' => $formControl ? 'fieldset w-full' : 'flex flex-col']) }}>
         @if ($label !== false && $label !== '')
-            <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ $label }}</span></label>
+            @if ($formControl)
+                <label class="fieldset-label">{{ $label }}</label>
+            @else
+                <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ $label }}</span></label>
+            @endif
         @endif
-        <div class="join">
+        <div class="join w-full">
             <input
+                @if($fromId) id="{{ $fromId }}" @endif
                 type="{{ $type }}"
                 name="{{ $fromName }}"
                 value="{{ $from }}"
                 @if($required) required @endif
                 @if($min !== null) min="{{ $min }}" @endif
                 @if($max !== null) max="{{ $max }}" @endif
-                class="join-item {{ $inputBase }} {{ $inputClass }}"
+                class="join-item flex-1 min-w-0 {{ $inputBase }} {{ $inputClass }}"
                 title="{{ $fromLabel }}"
                 aria-label="{{ $fromLabel }}"
             >
             <input
+                @if($toId) id="{{ $toId }}" @endif
                 type="{{ $type }}"
                 name="{{ $toName }}"
                 value="{{ $to }}"
                 @if($required) required @endif
                 @if($min !== null) min="{{ $min }}" @endif
                 @if($max !== null) max="{{ $max }}" @endif
-                class="join-item {{ $inputBase }} {{ $inputClass }}"
+                class="join-item flex-1 min-w-0 {{ $inputBase }} {{ $inputClass }}"
                 title="{{ $toLabel }}"
                 aria-label="{{ $toLabel }}"
             >

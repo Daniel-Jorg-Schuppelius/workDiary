@@ -27,71 +27,71 @@
             <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
         @endif
 
-        <label class="form-control w-full">
-            <div class="label"><span class="label-text">{{ __('Titel') }}</span></div>
+        <div class="fieldset">
+            <label class="fieldset-label">{{ __('Titel') }}</label>
             <input name="title" type="text" required maxlength="200"
                    class="input input-bordered w-full"
                    value="{{ old('title', $task?->title) }}">
-            @error('title')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
-        </label>
+            @error('title')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
 
-        <label class="form-control w-full">
-            <div class="label"><span class="label-text">{{ __('Beschreibung') }}</span></div>
+        <div class="fieldset">
+            <label class="fieldset-label">{{ __('Beschreibung') }}</label>
             <textarea name="description" rows="3" class="textarea textarea-bordered w-full">{{ old('description', $task?->description) }}</textarea>
-        </label>
+        </div>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <label class="form-control">
-                <div class="label"><span class="label-text">{{ __('Status') }}</span></div>
-                <select name="status" class="select select-bordered">
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Status') }}</label>
+                <select name="status" class="select select-bordered w-full">
                     @foreach ($statusLabels as $val => $lbl)
                         <option value="{{ $val }}" @selected(old('status', $task?->status ?? Task::STATUS_OPEN) === $val)>{{ $lbl }}</option>
                     @endforeach
                 </select>
-            </label>
+            </div>
 
-            <label class="form-control">
-                <div class="label"><span class="label-text">{{ __('Priorität') }}</span></div>
-                <select name="priority" class="select select-bordered">
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Priorität') }}</label>
+                <select name="priority" class="select select-bordered w-full">
                     @foreach ($priorityLabels as $val => $lbl)
                         <option value="{{ $val }}" @selected(old('priority', $task?->priority ?? Task::PRIORITY_MEDIUM) === $val)>{{ $lbl }}</option>
                     @endforeach
                 </select>
-            </label>
+            </div>
 
-            <label class="form-control">
-                <div class="label"><span class="label-text">{{ __('Fälligkeitsdatum') }}</span></div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Fälligkeitsdatum') }}</label>
                 <input name="due_date" type="date"
                        class="input input-bordered w-full"
                        value="{{ old('due_date', $task?->due_date?->format('Y-m-d')) }}">
-            </label>
+            </div>
 
-            <label class="form-control">
-                <div class="label"><span class="label-text">{{ __('Zuweisung') }}</span></div>
-                <select name="assigned_to" class="select select-bordered">
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Zuweisung') }}</label>
+                <select name="assigned_to" class="select select-bordered w-full">
                     <option value="">{{ __('Nicht zugewiesen') }}</option>
                     @foreach ($users as $u)
                         <option value="{{ $u->id }}" @selected(old('assigned_to', $task?->assigned_to) == $u->id)>{{ $u->name }}</option>
                     @endforeach
                 </select>
-            </label>
+            </div>
 
             @if ($milestones->isNotEmpty())
-                <label class="form-control">
-                    <div class="label"><span class="label-text">{{ __('Milestone') }}</span></div>
-                    <select name="milestone_id" class="select select-bordered">
+                <div class="fieldset">
+                    <label class="fieldset-label">{{ __('Milestone') }}</label>
+                    <select name="milestone_id" class="select select-bordered w-full">
                         <option value="">{{ __('Kein Milestone') }}</option>
                         @foreach ($milestones as $ms)
                             <option value="{{ $ms->id }}" @selected(old('milestone_id', $task?->milestone_id) == $ms->id)>{{ $ms->title }}</option>
                         @endforeach
                     </select>
-                </label>
+                </div>
             @endif
 
             @if ($parentTasks->isNotEmpty() && (! $task || ! $task->parent_task_id))
-                <label class="form-control">
-                    <div class="label"><span class="label-text">{{ __('Übergeordnete Aufgabe') }}</span></div>
-                    <select name="parent_task_id" class="select select-bordered">
+                <div class="fieldset">
+                    <label class="fieldset-label">{{ __('Übergeordnete Aufgabe') }}</label>
+                    <select name="parent_task_id" class="select select-bordered w-full">
                         <option value="">{{ __('Keine') }}</option>
                         @foreach ($parentTasks as $pt)
                             <option value="{{ $pt->id }}"
@@ -100,7 +100,7 @@
                             </option>
                         @endforeach
                     </select>
-                </label>
+                </div>
             @endif
         </div>
 

@@ -8,7 +8,7 @@
         : route('diary.create') . '?dialog=1';
 @endphp
 
-<form method="POST" action="{{ $action }}" class="space-y-6" data-entry-form>
+<form method="POST" action="{{ $action }}" class="space-y-4" data-entry-form>
     @csrf
     @if ($isEdit)
         @method('PUT')

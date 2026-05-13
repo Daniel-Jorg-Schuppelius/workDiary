@@ -59,33 +59,36 @@
                 <input type="hidden" id="shift-type-id" name="id" value="">
 
                 <div class="grid grid-cols-2 gap-3">
-                    <div class="form-control">
-                        <label class="label pb-1"><span class="label-text text-xs">{{ __('Name') }} *</span></label>
+                    <div class="fieldset">
+                        <label class="fieldset-label">{{ __('Name') }} *</label>
                         <input type="text" id="shift-type-name" name="name" maxlength="100" required
-                               class="input input-bordered input-sm w-full" placeholder="{{ __('z.B. Frühschicht') }}">
+                               class="input input-bordered w-full" placeholder="{{ __('z.B. Frühschicht') }}">
                     </div>
-                    <div class="form-control">
-                        <label class="label pb-1"><span class="label-text text-xs">{{ __('Kürzel') }} (max. 5) *</span></label>
+                    <div class="fieldset">
+                        <label class="fieldset-label">{{ __('Kürzel') }} (max. 5) *</label>
                         <input type="text" id="shift-type-abbr" name="abbreviation" maxlength="5" required
-                               class="input input-bordered input-sm w-full font-mono uppercase" placeholder="{{ __('z.B. F') }}">
+                               class="input input-bordered w-full font-mono uppercase" placeholder="{{ __('z.B. F') }}">
                     </div>
-                    <div class="form-control">
-                        <label class="label pb-1"><span class="label-text text-xs">{{ __('Von') }}</span></label>
-                        <input type="time" id="shift-type-start" name="default_start_time" class="input input-bordered input-sm w-full">
+                    <div class="fieldset col-span-2">
+                        <label class="fieldset-label">{{ __('Von – Bis') }}</label>
+                        <div class="join w-full">
+                            <input type="time" id="shift-type-start" name="default_start_time"
+                                   class="join-item input input-bordered flex-1 min-w-0"
+                                   title="{{ __('Von') }}" aria-label="{{ __('Von') }}">
+                            <input type="time" id="shift-type-end" name="default_end_time"
+                                   class="join-item input input-bordered flex-1 min-w-0"
+                                   title="{{ __('Bis') }}" aria-label="{{ __('Bis') }}">
+                        </div>
                     </div>
-                    <div class="form-control">
-                        <label class="label pb-1"><span class="label-text text-xs">{{ __('Bis') }}</span></label>
-                        <input type="time" id="shift-type-end" name="default_end_time" class="input input-bordered input-sm w-full">
-                    </div>
-                    <div class="form-control">
-                        <label class="label pb-1"><span class="label-text text-xs">{{ __('Farbe') }}</span></label>
+                    <div class="fieldset">
+                        <label class="fieldset-label">{{ __('Farbe') }}</label>
                         <input type="color" id="shift-type-color" name="color" value="#3b82f6"
-                               class="input input-bordered input-sm h-9 w-full cursor-pointer px-1">
+                               class="input input-bordered h-9 w-full cursor-pointer px-1">
                     </div>
-                    <div class="form-control justify-end">
-                        <label class="label cursor-pointer justify-start gap-3 pb-1">
+                    <div class="fieldset justify-end">
+                        <label class="label cursor-pointer justify-start gap-3">
                             <input type="checkbox" id="shift-type-active" name="is_active" checked class="checkbox checkbox-sm">
-                            <span class="label-text text-xs">{{ __('Aktiv') }}</span>
+                            <span class="fieldset-label">{{ __('Aktiv') }}</span>
                         </label>
                     </div>
                 </div>
