@@ -362,7 +362,7 @@ class CustomerController extends Controller {
 
         if ($result['errors'] !== []) {
             return redirect()->route('customers.index')
-                ->with('error', $message.' Fehler: '.implode(' | ', array_slice($result['errors'], 0, 5)));
+                ->with('error', $message . ' Fehler: ' . implode(' | ', array_slice($result['errors'], 0, 5)));
         }
 
         return redirect()->route('customers.index')->with('success', $message);
