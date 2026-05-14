@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SaveCustomerRequest;
 use App\Models\Customer;
 use App\Models\ExternalReference;
+use App\Models\User;
 use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
@@ -272,7 +273,9 @@ class CustomerController extends Controller {
      */
     public function bulkPushLexoffice(PluginManager $plugins): RedirectResponse {
         Gate::authorize('viewAny', Customer::class);
-        if (! Auth::user()?->canManageBilling()) {
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+        if (! $authUser?->canManageBilling()) {
             abort(403);
         }
 
@@ -289,6 +292,7 @@ class CustomerController extends Controller {
             ->pluck('referenceable_id')
             ->all();
 
+        /** @var \Illuminate\Database\Eloquent\Collection<int, Customer> $candidates */
         $candidates = Customer::query()
             ->whereNull('archived_at')
             ->whereNotIn('id', $alreadySyncedIds)
@@ -316,7 +320,9 @@ class CustomerController extends Controller {
      */
     public function importForm(): View {
         Gate::authorize('viewAny', Customer::class);
-        if (! Auth::user()?->canManageBilling()) {
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+        if (! $authUser?->canManageBilling()) {
             abort(403);
         }
         return view('customers.import');
@@ -327,7 +333,9 @@ class CustomerController extends Controller {
      */
     public function import(Request $request, CustomerCsvImporter $importer): RedirectResponse {
         Gate::authorize('viewAny', Customer::class);
-        if (! Auth::user()?->canManageBilling()) {
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+        if (! $authUser?->canManageBilling()) {
             abort(403);
         }
 
