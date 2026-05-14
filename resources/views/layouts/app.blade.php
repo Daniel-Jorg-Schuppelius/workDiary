@@ -165,6 +165,7 @@
                                     ['route' => 'duty-plans.index',         'label' => __('Dienstpläne'),    'icon' => 'event_available',  'modal' => false, 'matches' => ['duty-plans.*']],
                                     ['route' => 'schedule.index',           'label' => __('Schichtplan'),    'icon' => 'schedule',         'modal' => false, 'matches' => ['schedule.*']],
                                     ['route' => 'timesheets.index',         'label' => __('Stundenzettel'),  'icon' => 'description',      'modal' => false, 'matches' => ['timesheets.*', 'projects.timesheets.*']],
+                                    ['route' => 'customers.index',          'label' => __('Kunden'),         'icon' => 'badge',            'modal' => false, 'matches' => ['customers.*']],
                                     ['route' => 'flex.index',               'label' => __('Gleitzeit'),      'icon' => 'hourglass_top',    'modal' => false, 'matches' => ['flex.*']],
                                     ['route' => 'archive.index',            'label' => __('Archiv'),         'icon' => 'inventory_2',      'modal' => false, 'matches' => ['archive.*']],
                                 ];
@@ -182,6 +183,7 @@
                                     $adminNavItems[]  = ['route' => 'admin.organizations.index',     'label' => __('Organisationen'),   'icon' => 'corporate_fare',   'modal' => false];
                                 }
                                 $adminNavItems[] = ['route' => 'audit.index',                       'label' => __('Audit-Log'),        'icon' => 'fact_check',       'modal' => false];
+                                $adminNavItems[] = ['route' => 'admin.plugins.index',                'label' => __('Plugins'),          'icon' => 'extension',        'modal' => false];
                                 $adminNavItems[] = ['route' => 'admin.legacy-migration.index',      'label' => __('Legacy-Migration'), 'icon' => 'sync_alt',         'modal' => false];
                             }
                             if (! $isLegacyMode && \Illuminate\Support\Facades\Gate::allows('manage-members')) {
@@ -514,6 +516,16 @@
             @if (session('success'))
                 <div class="alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
                     {{ session('success') }}
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="alert alert-error mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
+                    {{ session('error') }}
+                </div>
+            @endif
+            @if (session('info'))
+                <div class="alert alert-info mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
+                    {{ session('info') }}
                 </div>
             @endif
 

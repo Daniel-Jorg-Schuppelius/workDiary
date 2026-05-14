@@ -7,6 +7,7 @@ use App\Listeners\AuthEventSubscriber;
 use App\Models\Attachment;
 use App\Models\Comment;
 use App\Models\CoverageRequirement;
+use App\Models\Customer;
 use App\Models\DiaryEntry;
 use App\Models\DutyPlan;
 use App\Models\EmergencyAssignment;
@@ -24,6 +25,7 @@ use App\Models\User;
 use App\Models\WorkSchedule;
 use App\Observers\AttachmentObserver;
 use App\Observers\CommentObserver;
+use App\Observers\CustomerObserver;
 use App\Observers\DiaryEntryObserver;
 use App\Observers\EmergencyAssignmentObserver;
 use App\Observers\MaterialUsageObserver;
@@ -66,6 +68,7 @@ class AppServiceProvider extends ServiceProvider {
 
         Comment::observe(CommentObserver::class);
         Attachment::observe(AttachmentObserver::class);
+        Customer::observe(CustomerObserver::class);
         EmergencyAssignment::observe(EmergencyAssignmentObserver::class);
         DiaryEntry::observe(DiaryEntryObserver::class);
         Tag::observe(TagObserver::class);

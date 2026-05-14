@@ -12,6 +12,7 @@
         "php": "^8.3",
         "azuyalabs/yasumi": "^2.11",
         "barryvdh/laravel-dompdf": "^3.1",
+        "daniel-jorg-schuppelius/lexoffice-php-sdk": "^1.0",
         "dschuppelius/php-common-toolkit": "^1.7",
         "laravel/framework": "^13.0",
         "laravel/sanctum": "^4.0",

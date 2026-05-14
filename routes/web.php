@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountPasswordController;
+use App\Http\Controllers\Admin\PluginController as AdminPluginController;
 use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\ArchiveController;
 use App\Http\Controllers\AttachmentController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\TenantRegistrationController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\CoverageRequirementController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiaryController;
 use App\Http\Controllers\DiaryExportController;
@@ -25,6 +27,7 @@ use App\Http\Controllers\MilestoneController;
 use App\Http\Controllers\OnCallShiftController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrgMemberController;
+use App\Http\Controllers\Plugins\LexofficeCustomerController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
@@ -136,6 +139,25 @@ Route::middleware('auth')->group(function () {
     Route::patch('vacations/{vacation}/cancel', [VacationController::class, 'cancel'])->name('vacations.cancel');
 
     Route::resource('tags', TagController::class)->except('show');
+
+    // ── Kunden (Kimai-style customers) ──────────────────────────────────────
+    Route::get('customers/export', [CustomerController::class, 'export'])->name('customers.export');
+    Route::get('customers/import', [CustomerController::class, 'importForm'])->name('customers.import.form');
+    Route::post('customers/import', [CustomerController::class, 'import'])->name('customers.import');
+    Route::post('customers/lexoffice/push-all', [CustomerController::class, 'bulkPushLexoffice'])
+        ->name('customers.lexoffice.push-all');
+    Route::resource('customers', CustomerController::class);
+    Route::post('customers/{customer}/archive', [CustomerController::class, 'archive'])->name('customers.archive');
+    Route::post('customers/{customer}/restore', [CustomerController::class, 'restore'])->name('customers.restore');
+
+    // ── Plugin-Aktionen (Lexoffice) ─────────────────────────────────────────
+    Route::post('customers/{customer}/lexoffice/contact', [LexofficeCustomerController::class, 'pushContact'])
+        ->name('customers.lexoffice.contact');
+    Route::post('customers/{customer}/lexoffice/time-export', [LexofficeCustomerController::class, 'exportTime'])
+        ->name('customers.lexoffice.time-export');
+
+    // ── Plugin-Übersicht (Admin) ────────────────────────────────────────────
+    Route::get('admin/plugins', [AdminPluginController::class, 'index'])->name('admin.plugins.index');
 
     Route::resource('projects', ProjectController::class);
     Route::resource('projects.milestones', MilestoneController::class)->except(['index', 'show']);

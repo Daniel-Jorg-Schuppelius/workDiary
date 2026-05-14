@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Attachment;
 use App\Models\Comment;
+use App\Models\Customer;
 use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
 use App\Models\OnCallShift;
@@ -45,6 +46,7 @@ class AttachmentController extends Controller
         'shift' => OnCallShift::class,
         'assignment' => EmergencyAssignment::class,
         'task' => Task::class,
+        'customer' => Customer::class,
     ];
 
     public function store(Request $request, string $type, int $id): RedirectResponse
@@ -73,7 +75,7 @@ class AttachmentController extends Controller
         $filename = Str::uuid()->toString().'.'.$ext;
         $path = $file->storeAs($folder, $filename, 'local');
 
-        /** @var DiaryEntry|Comment|OnCallShift|EmergencyAssignment $parent */
+        /** @var DiaryEntry|Comment|OnCallShift|EmergencyAssignment|Task|Customer $parent */
         $parent->attachments()->create([
             'user_id' => Auth::id(),
             'disk' => 'local',

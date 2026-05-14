@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToOrganization;
+use App\Services\RateCalculator;
 use Database\Factories\TimeEntryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class TimeEntry extends Model
-{
+class TimeEntry extends Model {
     use BelongsToOrganization;
 
     /** @use HasFactory<TimeEntryFactory> */
@@ -37,21 +37,31 @@ class TimeEntry extends Model
         'kind',
         'minutes',
         'description',
+        'billable',
+        'hourly_rate',
+        'fixed_rate',
+        'rate',
+        'internal_rate',
+        'exported',
     ];
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'date' => 'date',
             'started_at' => 'datetime',
             'ended_at' => 'datetime',
             'minutes' => 'integer',
             'break_minutes' => 'integer',
+            'billable' => 'boolean',
+            'exported' => 'boolean',
+            'hourly_rate' => 'decimal:2',
+            'fixed_rate' => 'decimal:2',
+            'rate' => 'decimal:2',
+            'internal_rate' => 'decimal:2',
         ];
     }
 
-    protected static function booted(): void
-    {
+    protected static function booted(): void {
         static::saving(function (TimeEntry $entry): void {
             if ($entry->started_at && $entry->ended_at) {
                 $diff = (int) $entry->started_at->diffInMinutes($entry->ended_at, false);
@@ -61,35 +71,50 @@ class TimeEntry extends Model
                     $entry->date = $entry->started_at->copy()->startOfDay();
                 }
             }
+
+            // Recalculate billing snapshot whenever a relevant field changes.
+            if ($entry->isDirty([
+                'minutes',
+                'billable',
+                'hourly_rate',
+                'fixed_rate',
+                'project_id',
+                'task_id',
+                'user_id',
+            ]) || ! $entry->exists) {
+                $calc = app(RateCalculator::class);
+                $result = $calc->compute($entry);
+                $entry->rate = $result['rate'];
+                $entry->internal_rate = $result['internal_rate'];
+                if ($entry->hourly_rate === null && $result['hourly_rate'] !== null) {
+                    // Snapshot resolved hourly rate so historical entries stay stable.
+                    $entry->hourly_rate = $result['hourly_rate'];
+                }
+            }
         });
     }
 
     /** @return BelongsTo<Project, $this> */
-    public function project(): BelongsTo
-    {
+    public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
     }
 
     /** @return BelongsTo<Timesheet, $this> */
-    public function timesheet(): BelongsTo
-    {
+    public function timesheet(): BelongsTo {
         return $this->belongsTo(Timesheet::class);
     }
 
     /** @return BelongsTo<Task, $this> */
-    public function task(): BelongsTo
-    {
+    public function task(): BelongsTo {
         return $this->belongsTo(Task::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo
-    {
+    public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
-    public function hoursFormatted(): string
-    {
+    public function hoursFormatted(): string {
         $h = intdiv($this->minutes, 60);
         $m = $this->minutes % 60;
 
