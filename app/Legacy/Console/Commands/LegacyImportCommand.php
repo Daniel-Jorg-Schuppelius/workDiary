@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Legacy\Console\Commands;
 
 use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-class LegacyImportCommand extends Command {
+class LegacyImportCommand extends Command
+{
     protected $signature = 'legacy:import
         {--users : Nur Benutzer importieren}
         {--diary : Nur Tagebuch-Einträge importieren}
@@ -24,16 +25,19 @@ class LegacyImportCommand extends Command {
 
     private string $legacyEncoding = 'latin1';
 
-    public function handle(): int {
+    public function handle(): int
+    {
         if (! filled(config('database.connections.legacy.database'))) {
             $this->error('Legacy-DB ist nicht konfiguriert. Bitte LEGACY_DB_* in der .env setzen.');
+
             return self::FAILURE;
         }
 
         try {
             DB::connection('legacy')->getPdo();
         } catch (\Exception $e) {
-            $this->error('Legacy-DB nicht erreichbar: ' . $e->getMessage());
+            $this->error('Legacy-DB nicht erreichbar: '.$e->getMessage());
+
             return self::FAILURE;
         }
 
@@ -64,17 +68,27 @@ class LegacyImportCommand extends Command {
             }
         }
 
-        if ($importUsers) $this->importUsers();
-        if ($importDiary) $this->importDiary();
-        if ($importShifts) $this->importShifts();
-        if ($importAssignments) $this->importAssignments();
+        if ($importUsers) {
+            $this->importUsers();
+        }
+        if ($importDiary) {
+            $this->importDiary();
+        }
+        if ($importShifts) {
+            $this->importShifts();
+        }
+        if ($importAssignments) {
+            $this->importAssignments();
+        }
 
         $this->newLine();
         $this->info('Import abgeschlossen.');
+
         return self::SUCCESS;
     }
 
-    private function importUsers(): void {
+    private function importUsers(): void
+    {
         $this->info('Importiere Benutzer ...');
 
         $legacyUsers = DB::connection('legacy')->table('user')->get();
@@ -87,7 +101,7 @@ class LegacyImportCommand extends Command {
                 ['legacy_user_id' => $legacy->id],
                 [
                     'name' => $this->normalizeLegacyText((string) ($legacy->uname ?? '')),
-                    'email' => $this->normalizeLegacyText((string) ($legacy->email ?: ($legacy->uname . '@workdiary.local'))),
+                    'email' => $this->normalizeLegacyText((string) ($legacy->email ?: ($legacy->uname.'@workdiary.local'))),
                     // Zufalls-Passwort bei Neuanlage; vorhandene werden NICHT überschrieben.
                     'password' => Hash::make(Str::random(40)),
                     'must_change_password' => true,
@@ -98,15 +112,17 @@ class LegacyImportCommand extends Command {
 
         $bar->finish();
         $this->newLine();
-        $this->line('  ' . $legacyUsers->count() . ' Benutzer verarbeitet.');
+        $this->line('  '.$legacyUsers->count().' Benutzer verarbeitet.');
     }
 
     /** @return array<int, int> */
-    private function userMap(): array {
+    private function userMap(): array
+    {
         return User::whereNotNull('legacy_user_id')->pluck('id', 'legacy_user_id')->toArray();
     }
 
-    private function importDiary(): void {
+    private function importDiary(): void
+    {
         $this->info('Importiere Tagebuch-Einträge ...');
 
         $userMap = $this->userMap();
@@ -123,6 +139,7 @@ class LegacyImportCommand extends Command {
                 if (! $userId) {
                     $skipped++;
                     $bar->advance();
+
                     continue;
                 }
 
@@ -149,7 +166,8 @@ class LegacyImportCommand extends Command {
         $this->line("  {$imported} Tagebuch-Einträge importiert, {$skipped} übersprungen.");
     }
 
-    private function importShifts(): void {
+    private function importShifts(): void
+    {
         $this->info('Importiere Bereitschaften ...');
 
         $userMap = $this->userMap();
@@ -168,6 +186,7 @@ class LegacyImportCommand extends Command {
                 if (! $userId || ! $start || ! $end) {
                     $skipped++;
                     $bar->advance();
+
                     continue;
                 }
 
@@ -191,7 +210,8 @@ class LegacyImportCommand extends Command {
         $this->line("  {$imported} Bereitschaften importiert, {$skipped} übersprungen.");
     }
 
-    private function importAssignments(): void {
+    private function importAssignments(): void
+    {
         $this->info('Importiere Notdienste ...');
 
         $userMap = $this->userMap();
@@ -210,6 +230,7 @@ class LegacyImportCommand extends Command {
                 if (! $userId || ! $start || ! $end) {
                     $skipped++;
                     $bar->advance();
+
                     continue;
                 }
 
@@ -234,14 +255,21 @@ class LegacyImportCommand extends Command {
         $this->line("  {$imported} Notdienste importiert, {$skipped} übersprungen.");
     }
 
-    private function dt(mixed $val): ?string {
-        if ($val === null) return null;
+    private function dt(mixed $val): ?string
+    {
+        if ($val === null) {
+            return null;
+        }
         $s = (string) $val;
-        if (ToolkitStringHelper::isNullOrEmpty($s) || str_starts_with($s, '0000-00-00')) return null;
+        if (ToolkitStringHelper::isNullOrEmpty($s) || str_starts_with($s, '0000-00-00')) {
+            return null;
+        }
+
         return $s;
     }
 
-    private function normalizeLegacyText(string $value): string {
+    private function normalizeLegacyText(string $value): string
+    {
         if (ToolkitStringHelper::isNullOrEmpty($value)) {
             return '';
         }
@@ -249,12 +277,14 @@ class LegacyImportCommand extends Command {
         return ToolkitStringHelper::convertToUtf8($value, $this->legacyEncoding);
     }
 
-    private function nullableLegacyText(mixed $value): ?string {
+    private function nullableLegacyText(mixed $value): ?string
+    {
         if ($value === null) {
             return null;
         }
 
         $normalized = $this->normalizeLegacyText((string) $value);
+
         return ToolkitStringHelper::isNullOrEmpty($normalized) ? null : $normalized;
     }
 }

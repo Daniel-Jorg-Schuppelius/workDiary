@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Legacy\Http\Controllers;
+use App\Http\Controllers\Controller;
 
-use App\Http\Requests\RunLegacyMigrationRequest;
+use App\Legacy\Http\Requests\RunLegacyMigrationRequest;
 use App\Models\AuditLog;
 use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
@@ -14,8 +15,10 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
-class LegacyMigrationController extends Controller {
-    public function index(): View {
+class LegacyMigrationController extends Controller
+{
+    public function index(): View
+    {
         Gate::authorize('viewAny', AuditLog::class);
 
         return view('admin.legacy-migration', [
@@ -24,7 +27,8 @@ class LegacyMigrationController extends Controller {
         ]);
     }
 
-    public function run(RunLegacyMigrationRequest $request): RedirectResponse {
+    public function run(RunLegacyMigrationRequest $request): RedirectResponse
+    {
         $type = $request->validated()['type'];
         $options = match ($type) {
             'users' => ['--users' => true],
@@ -46,7 +50,8 @@ class LegacyMigrationController extends Controller {
     }
 
     /** @return array<string, mixed> */
-    private function stats(): array {
+    private function stats(): array
+    {
         $notConfigured = ['configured' => false, 'users' => null, 'diary' => null, 'shifts' => null, 'assignments' => null];
 
         if (! $this->isLegacyReachable()) {
@@ -74,7 +79,8 @@ class LegacyMigrationController extends Controller {
         ];
     }
 
-    private function isLegacyReachable(): bool {
+    private function isLegacyReachable(): bool
+    {
         if (! filled(config('database.connections.legacy.database'))) {
             return false;
         }

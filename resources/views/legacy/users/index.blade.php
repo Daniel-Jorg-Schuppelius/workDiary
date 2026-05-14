@@ -3,33 +3,34 @@
 @section('nav-title', __('Mitarbeiter'))
 
 @section('content')
-    @php($legacyUsers = collect($users ?? []))
+    <?php $legacyUsers = collect($users ?? []); ?>
     <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
         <div class="flex items-center justify-between gap-2">
             <h1 class="font-['Space_Grotesk'] text-xl font-semibold">{{ __('Mitarbeiter') }}</h1>
             <a href="{{ route('legacy.users.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">+ {{ __('Neuer Mitarbeiter') }}</a>
         </div>
         <div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <table class="table table-xs table-zebra table-pin-rows w-full">
+        <table class="table table-xs table-zebra table-pin-rows w-full" data-sortable>
             <thead class="bg-base-200">
                 <tr>
-                    <th class="w-16 text-center">ID</th>
-                    <th>{{ __('Name') }}</th>
-                    <th>{{ __('E-Mail') }}</th>
+                    <th data-sort data-sort-default="asc">{{ __('Name') }}</th>
+                    <th data-sort>{{ __('E-Mail') }}</th>
                     <th class="w-24 text-right">{{ __('Aktion') }}</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse ($legacyUsers as $legacyUser)
                     <tr class="hover">
-                        <td class="text-center">{{ $legacyUser->id }}</td>
                         <td>{{ $legacyUser->uname }}</td>
                         <td>{{ $legacyUser->email ?: '–' }}</td>
                         <td class="whitespace-nowrap text-right">
                             <a href="{{ route('legacy.users.edit', $legacyUser) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}" aria-label="{{ __('Bearbeiten') }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                             </a>
-                            <form method="POST" action="{{ route('legacy.users.destroy', $legacyUser) }}" class="inline" onsubmit="return confirm('{{ __('Mitarbeiter wirklich löschen?') }}')">
+                            <form method="POST" action="{{ route('legacy.users.destroy', $legacyUser) }}" class="inline"
+                                  data-confirm-dialog
+                                  data-confirm-message="{{ __('Mitarbeiter wirklich löschen?') }}"
+                                  data-confirm-label="{{ __('Löschen') }}">
                                 @csrf
                                 @method('DELETE')
                                 <button class="btn btn-xs btn-ghost text-error" title="{{ __('Löschen') }}" aria-label="{{ __('Löschen') }}">
@@ -39,8 +40,8 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="4" class="py-6 text-center text-base-content/70">{{ __('Keine Mitarbeiter gefunden.') }}</td>
+                    <tr data-sort-ignore>
+                        <td colspan="3" class="py-6 text-center text-base-content/70">{{ __('Keine Mitarbeiter gefunden.') }}</td>
                     </tr>
                 @endforelse
             </tbody>

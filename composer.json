@@ -11,6 +11,7 @@
     "require": {
         "php": "^8.3",
         "azuyalabs/yasumi": "^2.11",
+        "barryvdh/laravel-dompdf": "^3.1",
         "dschuppelius/php-common-toolkit": "^1.7",
         "laravel/framework": "^13.0",
         "laravel/sanctum": "^4.0",
@@ -31,6 +32,7 @@
     "autoload": {
         "psr-4": {
             "App\\": "app/",
+            "App\\Legacy\\": "app/Legacy/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         },
@@ -59,6 +61,15 @@
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
+        ],
+        "lint": "phpstan analyse --memory-limit=1G",
+        "format": "pint --test",
+        "format:fix": "pint",
+        "audit": "@composer audit",
+        "qa": [
+            "@format",
+            "@lint",
+            "@test"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

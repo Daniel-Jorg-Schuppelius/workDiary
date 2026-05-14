@@ -1,25 +1,29 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Legacy\Http\Controllers;
+use App\Http\Controllers\Controller;
 
-use App\Http\Controllers\Concerns\ManagesLegacyDutyCrud;
-use App\Http\Controllers\Concerns\RequiresLegacyAdmin;
-use App\Http\Requests\SaveLegacyDutyRequest;
-use App\Models\Legacy\LegacyOnCall;
+use App\Legacy\Http\Concerns\ManagesLegacyDutyCrud;
+use App\Legacy\Http\Concerns\RequiresLegacyAdmin;
+use App\Legacy\Http\Requests\SaveLegacyDutyRequest;
+use App\Legacy\Models\LegacyOnCall;
 use App\Models\OnCallShift;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-class LegacyOnCallController extends Controller {
-    use RequiresLegacyAdmin;
+class LegacyOnCallController extends Controller
+{
     use ManagesLegacyDutyCrud;
+    use RequiresLegacyAdmin;
 
-    public function index(Request $request): RedirectResponse {
+    public function index(Request $request): RedirectResponse
+    {
         return redirect()->route('legacy.diary.index', ['tab' => 'bereitschaft']);
     }
 
-    public function create(Request $request): View {
+    public function create(Request $request): View
+    {
         $this->ensureAdmin();
 
         return view('legacy.oncall._form_dialog', [
@@ -28,7 +32,8 @@ class LegacyOnCallController extends Controller {
         ]);
     }
 
-    public function store(SaveLegacyDutyRequest $request): RedirectResponse {
+    public function store(SaveLegacyDutyRequest $request): RedirectResponse
+    {
         $this->ensureAdmin();
 
         LegacyOnCall::query()->create($request->validated());
@@ -36,7 +41,8 @@ class LegacyOnCallController extends Controller {
         return redirect()->route('legacy.diary.index', ['tab' => 'bereitschaft'])->with('success', 'Bereitschaft angelegt.');
     }
 
-    public function edit(LegacyOnCall $oncall): View|RedirectResponse {
+    public function edit(LegacyOnCall $oncall): View|RedirectResponse
+    {
         $this->ensureAdmin();
 
         if ($redirect = $this->redirectToWeekIfMigrated(OnCallShift::class, (int) $oncall->id)) {
@@ -49,7 +55,8 @@ class LegacyOnCallController extends Controller {
         ]);
     }
 
-    public function update(SaveLegacyDutyRequest $request, LegacyOnCall $oncall): RedirectResponse {
+    public function update(SaveLegacyDutyRequest $request, LegacyOnCall $oncall): RedirectResponse
+    {
         $this->ensureAdmin();
 
         $oncall->update($request->validated());
@@ -57,7 +64,8 @@ class LegacyOnCallController extends Controller {
         return redirect()->route('legacy.diary.index', ['tab' => 'bereitschaft'])->with('success', 'Bereitschaft aktualisiert.');
     }
 
-    public function destroy(LegacyOnCall $oncall): RedirectResponse {
+    public function destroy(LegacyOnCall $oncall): RedirectResponse
+    {
         $this->ensureAdmin();
 
         $oncall->delete();

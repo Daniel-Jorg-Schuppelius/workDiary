@@ -14,11 +14,11 @@
     <x-table>
         <thead>
             <tr>
-                <th>{{ __('Name') }}</th>
+                <th><x-sort-th column="name" :route="route('admin.organizations.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'" default="name">{{ __('Name') }}</x-sort-th></th>
                 <th>{{ __('Slug') }}</th>
-                <th>{{ __('Plan') }}</th>
-                <th class="text-center">{{ __('Benutzer') }}</th>
-                <th class="text-center">{{ __('Aktiv') }}</th>
+                <th><x-sort-th column="plan" :route="route('admin.organizations.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Plan') }}</x-sort-th></th>
+                <th class="text-center"><x-sort-th column="users" :route="route('admin.organizations.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Benutzer') }}</x-sort-th></th>
+                <th class="text-center"><x-sort-th column="is_active" :route="route('admin.organizations.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Aktiv') }}</x-sort-th></th>
                 <th>{{ __('Erstellt') }}</th>
                 <th></th>
             </tr>
@@ -46,7 +46,9 @@
                         <div class="flex justify-end gap-2">
                             <a href="{{ route('admin.organizations.edit', $org) }}" class="btn btn-ghost btn-xs">{{ __('Bearbeiten') }}</a>
                             <form method="POST" action="{{ route('admin.organizations.destroy', $org) }}"
-                                  onsubmit="return confirm('{{ __('Organisation wirklich löschen?') }}')">
+                                  data-confirm-dialog
+                                  data-confirm-message="{{ __('Organisation wirklich löschen?') }}"
+                                  data-confirm-label="{{ __('Löschen') }}">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('Löschen') }}</button>
                             </form>

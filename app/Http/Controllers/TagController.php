@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tag;
+use App\Support\SortableQuery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,15 +12,22 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class TagController extends Controller {
-    public function index(): View {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', Tag::class);
 
-        $tags = Tag::query()
-            ->withCount(['diaryEntries', 'shifts', 'assignments'])
-            ->orderBy('name')
-            ->paginate(50);
+        $query = Tag::query()->withCount(['diaryEntries', 'shifts', 'assignments']);
 
-        return view('tags.index', compact('tags'));
+        [$sort, $dir] = SortableQuery::apply($query, $request, [
+            'name' => 'name',
+            'color' => 'color',
+            'diary' => 'diary_entries_count',
+            'shifts' => 'shifts_count',
+            'assignments' => 'assignments_count',
+        ], 'name', 'asc');
+
+        $tags = $query->paginate(50)->withQueryString();
+
+        return view('tags.index', compact('tags', 'sort', 'dir'));
     }
 
     public function create(Request $request): View {

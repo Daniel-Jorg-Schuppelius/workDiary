@@ -60,6 +60,9 @@
             <button role="tab" @click="setTab('time')" :class="{ 'tab-active': tab === 'time' }" class="tab">
                 {{ __('Zeiterfassung') }}
             </button>
+            <button role="tab" @click="setTab('timesheets')" :class="{ 'tab-active': tab === 'timesheets' }" class="tab">
+                {{ __('Stundenzettel') }}
+            </button>
             <button role="tab" @click="setTab('diary')" :class="{ 'tab-active': tab === 'diary' }" class="tab">
                 {{ __('Tagebuch') }}
             </button>
@@ -74,6 +77,9 @@
         <div x-show="tab === 'time'" x-cloak>
             @include('projects._time_tab')
         </div>
+        <div x-show="tab === 'timesheets'" x-cloak>
+            @include('projects._timesheets_tab')
+        </div>
         <div x-show="tab === 'diary'" x-cloak>
             @include('projects._diary_tab')
         </div>
@@ -82,7 +88,7 @@
 
 <script>
     function projectTabs() {
-        const allowed = ['overview', 'tasks', 'time', 'diary'];
+        const allowed = ['overview', 'tasks', 'time', 'timesheets', 'diary'];
         const hash = window.location.hash.replace('#', '');
         return {
             tab: allowed.includes(hash) ? hash : 'overview',

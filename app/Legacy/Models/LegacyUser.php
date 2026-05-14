@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Models\Legacy;
+namespace App\Legacy\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class LegacyUser extends Model {
+class LegacyUser extends Model
+{
     protected $connection = 'legacy';
 
     protected $table = 'user';
@@ -16,7 +17,8 @@ class LegacyUser extends Model {
 
     protected $primaryKey = 'id';
 
-    public function entries(): HasMany {
+    public function entries(): HasMany
+    {
         return $this->hasMany(LegacyDiaryEntry::class, 'user', 'id');
     }
 }

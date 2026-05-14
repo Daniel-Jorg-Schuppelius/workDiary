@@ -86,7 +86,7 @@
 
 <div class="fieldset">
     <label class="fieldset-label">{{ __('Tags') }}</label>
-    @php($currentTagIds = old('tag_ids', $selectedTagIds ?? []))
+    <?php $currentTagIds = old('tag_ids', $selectedTagIds ?? []); ?>
     @if (($allTags ?? collect())->isNotEmpty())
         <div class="flex flex-wrap gap-2 mb-3">
             @foreach ($allTags as $tag)

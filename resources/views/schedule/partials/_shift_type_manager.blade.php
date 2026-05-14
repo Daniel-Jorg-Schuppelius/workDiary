@@ -20,15 +20,15 @@
 
             {{-- ── Existing types table ── --}}
             <div class="mb-5 overflow-x-auto rounded-box border border-base-300">
-                <table class="table table-sm w-full">
+                <table class="table table-sm w-full" data-sortable>
                     <thead>
                         <tr>
                             <th class="w-6"></th>
-                            <th>{{ __('Kürzel') }}</th>
-                            <th>{{ __('Name') }}</th>
-                            <th>{{ __('Von') }}</th>
-                            <th>{{ __('Bis') }}</th>
-                            <th>{{ __('Aktiv') }}</th>
+                            <th data-sort data-sort-default="asc">{{ __('Kürzel') }}</th>
+                            <th data-sort>{{ __('Name') }}</th>
+                            <th data-sort>{{ __('Von') }}</th>
+                            <th data-sort>{{ __('Bis') }}</th>
+                            <th data-sort>{{ __('Aktiv') }}</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -49,7 +49,7 @@
                                 </td>
                                 <td class="text-right">
                                     <button type="button"
-                                            onclick="shiftTypeOpenEdit({{ $t->id }}, @json($t))"
+                                            onclick="shiftTypeOpenEdit({{ $t->id }}, {{ json_encode($t) }})"
                                             class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</button>
                                     <button type="button"
                                             onclick="shiftTypeDelete({{ $t->id }})"

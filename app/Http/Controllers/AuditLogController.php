@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AuditLog;
 use App\Models\Attachment;
+use App\Models\AuditLog;
 use App\Models\Comment;
 use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
 use App\Models\OnCallShift;
 use App\Support\LookupCache;
+use App\Support\SortableQuery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -49,7 +50,15 @@ class AuditLogController extends Controller {
             $query->where('created_at', '<=', $to . ' 23:59:59');
         }
 
-        $logs = $query->latest()->paginate(50)->withQueryString();
+        [$sort, $dir] = SortableQuery::apply($query, $request, [
+            'created_at' => 'created_at',
+            'event' => 'event',
+            'auditable_type' => 'auditable_type',
+            'user_id' => 'user_id',
+            'ip' => 'ip',
+        ], 'created_at', 'desc');
+
+        $logs = $query->paginate(50)->withQueryString();
 
         return view('audit.index', [
             'logs' => $logs,
@@ -57,6 +66,8 @@ class AuditLogController extends Controller {
             'events' => ['created', 'updated', 'deleted'],
             'types' => self::TYPE_MAP,
             'filters' => $request->only(['event', 'user_id', 'type', 'from', 'to']),
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 }

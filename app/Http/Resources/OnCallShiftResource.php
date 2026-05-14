@@ -2,13 +2,16 @@
 
 namespace App\Http\Resources;
 
+use App\Models\OnCallShift;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin \App\Models\OnCallShift */
-class OnCallShiftResource extends JsonResource {
+/** @mixin OnCallShift */
+class OnCallShiftResource extends JsonResource
+{
     /** @return array<string, mixed> */
-    public function toArray(Request $request): array {
+    public function toArray(Request $request): array
+    {
         return [
             'id' => $this->id,
             'user' => new UserResource($this->whenLoaded('user')),

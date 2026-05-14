@@ -4,13 +4,16 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class SaveDiaryEntryRequest extends FormRequest {
-    public function authorize(): bool {
+class SaveDiaryEntryRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
         return true;
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array {
+    public function rules(): array
+    {
         return [
             'content' => ['required', 'string', 'max:65535'],
             'response' => ['nullable', 'string', 'max:65535'],

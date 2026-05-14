@@ -18,7 +18,8 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-class AttachmentController extends Controller {
+class AttachmentController extends Controller
+{
     private const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 
     private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'log', 'zip', 'docx', 'xlsx'];
@@ -39,20 +40,21 @@ class AttachmentController extends Controller {
     ];
 
     private const TYPE_MAP = [
-        'diary'      => DiaryEntry::class,
-        'comment'    => Comment::class,
-        'shift'      => OnCallShift::class,
+        'diary' => DiaryEntry::class,
+        'comment' => Comment::class,
+        'shift' => OnCallShift::class,
         'assignment' => EmergencyAssignment::class,
-        'task'       => Task::class,
+        'task' => Task::class,
     ];
 
-    public function store(Request $request, string $type, int $id): RedirectResponse {
+    public function store(Request $request, string $type, int $id): RedirectResponse
+    {
         Gate::authorize('create', Attachment::class);
 
         $parent = $this->resolveParent($type, $id);
 
         $request->validate([
-            'file' => ['required', 'file', 'max:' . (self::MAX_BYTES / 1024)],
+            'file' => ['required', 'file', 'max:'.(self::MAX_BYTES / 1024)],
         ]);
 
         $file = $request->file('file');
@@ -67,11 +69,11 @@ class AttachmentController extends Controller {
             return back()->withErrors(['file' => __('Dateityp nicht erlaubt.')]);
         }
 
-        $folder = 'attachments/' . now()->format('Y/m');
-        $filename = Str::uuid()->toString() . '.' . $ext;
+        $folder = 'attachments/'.now()->format('Y/m');
+        $filename = Str::uuid()->toString().'.'.$ext;
         $path = $file->storeAs($folder, $filename, 'local');
 
-        /** @var \App\Models\DiaryEntry|\App\Models\Comment|\App\Models\OnCallShift|\App\Models\EmergencyAssignment $parent */
+        /** @var DiaryEntry|Comment|OnCallShift|EmergencyAssignment $parent */
         $parent->attachments()->create([
             'user_id' => Auth::id(),
             'disk' => 'local',
@@ -84,7 +86,8 @@ class AttachmentController extends Controller {
         return back()->with('success', __('Anhang hochgeladen.'));
     }
 
-    public function download(Request $request, Attachment $attachment): BinaryFileResponse {
+    public function download(Request $request, Attachment $attachment): BinaryFileResponse
+    {
         if (! $request->hasValidSignature()) {
             abort(403);
         }
@@ -99,7 +102,8 @@ class AttachmentController extends Controller {
         return response()->download($disk->path($attachment->path), $attachment->original_name);
     }
 
-    public function destroy(Attachment $attachment): RedirectResponse {
+    public function destroy(Attachment $attachment): RedirectResponse
+    {
         Gate::authorize('delete', $attachment);
 
         Storage::disk($attachment->disk)->delete($attachment->path);
@@ -111,11 +115,13 @@ class AttachmentController extends Controller {
     /**
      * Generate a temporary signed download URL (15 min).
      */
-    public static function downloadUrl(Attachment $attachment): string {
+    public static function downloadUrl(Attachment $attachment): string
+    {
         return URL::temporarySignedRoute('attachments.download', now()->addMinutes(15), ['attachment' => $attachment->id]);
     }
 
-    private function resolveParent(string $type, int $id): Model {
+    private function resolveParent(string $type, int $id): Model
+    {
         $class = self::TYPE_MAP[$type] ?? null;
         if ($class === null) {
             abort(404);
@@ -128,11 +134,13 @@ class AttachmentController extends Controller {
      * Bereinigt einen vom Client gelieferten Dateinamen:
      * entfernt Pfad-Traversal-Sequenzen und behält nur druckbare Zeichen.
      */
-    private function sanitizeFilename(string $name): string {
+    private function sanitizeFilename(string $name): string
+    {
         // Nur den Dateinamen ohne Verzeichnis-Anteile verwenden
         $name = basename($name);
         // Null-Bytes, Steuerzeichen und bekannte Traversal-Muster entfernen
         $name = preg_replace('/[\x00-\x1F\x7F\/\\\\]/', '_', $name) ?? 'file';
+
         // Auf 255 Zeichen begrenzen
         return mb_substr($name, 0, 255);
     }

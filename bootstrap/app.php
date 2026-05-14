@@ -1,8 +1,15 @@
 <?php
 
+use App\Http\Middleware\ForcePasswordChange;
+use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\SetOrganizationContext;
+use App\Legacy\Http\Middleware\EnsureLegacyCallcenterAuthenticated;
+use App\Legacy\Http\Middleware\EnsureLegacyWriteAllowed;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -10,17 +17,20 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__ . '/../routes/api.php',
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
+        then: function (): void {
+            Route::middleware('web')->group(__DIR__ . '/../routes/legacy.php');
+        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
-            \App\Http\Middleware\SecurityHeaders::class,
-            \App\Http\Middleware\SetLocale::class,
-            \App\Http\Middleware\SetOrganizationContext::class,
-            \App\Http\Middleware\ForcePasswordChange::class,
+            SecurityHeaders::class,
+            SetLocale::class,
+            SetOrganizationContext::class,
+            ForcePasswordChange::class,
         ]);
         $middleware->alias([
-            'legacy.callcenter.auth' => \App\Http\Middleware\EnsureLegacyCallcenterAuthenticated::class,
-            'legacy.write' => \App\Http\Middleware\EnsureLegacyWriteAllowed::class,
+            'legacy.callcenter.auth' => EnsureLegacyCallcenterAuthenticated::class,
+            'legacy.write' => EnsureLegacyWriteAllowed::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

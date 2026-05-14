@@ -11,27 +11,29 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class VacationController extends Controller {
-
+class VacationController extends Controller
+{
     // ── Create / Store ──────────────────────────────────────────────────────
 
-    public function create(Request $request): View {
+    public function create(Request $request): View
+    {
         /** @var User $auth */
         $auth = Auth::user();
         Gate::authorize('create', Vacation::class);
 
         return view('vacations._form_dialog', [
-            'vacation'        => null,
-            'isEdit'          => false,
-            'isDialog'        => true,
+            'vacation' => null,
+            'isEdit' => false,
+            'isDialog' => true,
             'canAssignOthers' => $auth->isAdmin(),
             'assignableUsers' => $auth->isAdmin() ? LookupCache::userDropdown() : collect(),
-            'prefillStart'    => $request->query('start_date') ?? '',
-            'prefillEnd'      => $request->query('end_date')   ?? '',
+            'prefillStart' => $request->query('start_date') ?? '',
+            'prefillEnd' => $request->query('end_date') ?? '',
         ]);
     }
 
-    public function store(Request $request): RedirectResponse {
+    public function store(Request $request): RedirectResponse
+    {
         /** @var User $auth */
         $auth = Auth::user();
         Gate::authorize('create', Vacation::class);
@@ -50,23 +52,25 @@ class VacationController extends Controller {
 
     // ── Edit / Update ───────────────────────────────────────────────────────
 
-    public function edit(Vacation $vacation): View {
+    public function edit(Vacation $vacation): View
+    {
         /** @var User $auth */
         $auth = Auth::user();
         Gate::authorize('update', $vacation);
 
         return view('vacations._form_dialog', [
-            'vacation'        => $vacation,
-            'isEdit'          => true,
-            'isDialog'        => true,
+            'vacation' => $vacation,
+            'isEdit' => true,
+            'isDialog' => true,
             'canAssignOthers' => $auth->isAdmin(),
             'assignableUsers' => $auth->isAdmin() ? LookupCache::userDropdown() : collect(),
-            'prefillStart'    => '',
-            'prefillEnd'      => '',
+            'prefillStart' => '',
+            'prefillEnd' => '',
         ]);
     }
 
-    public function update(Request $request, Vacation $vacation): RedirectResponse {
+    public function update(Request $request, Vacation $vacation): RedirectResponse
+    {
         Gate::authorize('update', $vacation);
 
         $data = $this->validateVacation($request);
@@ -77,7 +81,8 @@ class VacationController extends Controller {
 
     // ── Delete ──────────────────────────────────────────────────────────────
 
-    public function destroy(Vacation $vacation): RedirectResponse {
+    public function destroy(Vacation $vacation): RedirectResponse
+    {
         Gate::authorize('delete', $vacation);
 
         $vacation->delete();
@@ -87,7 +92,8 @@ class VacationController extends Controller {
 
     // ── Admin actions ────────────────────────────────────────────────────────
 
-    public function rejectForm(Vacation $vacation): View {
+    public function rejectForm(Vacation $vacation): View
+    {
         Gate::authorize('decide', $vacation);
 
         return view('vacations._reject_dialog', [
@@ -95,23 +101,25 @@ class VacationController extends Controller {
         ]);
     }
 
-    public function approve(Request $request, Vacation $vacation): RedirectResponse {
+    public function approve(Request $request, Vacation $vacation): RedirectResponse
+    {
         Gate::authorize('decide', $vacation);
 
         /** @var User $auth */
         $auth = Auth::user();
 
         $vacation->update([
-            'status'      => Vacation::STATUS_APPROVED,
-            'decided_by'  => $auth->id,
-            'decided_at'  => now(),
+            'status' => Vacation::STATUS_APPROVED,
+            'decided_by' => $auth->id,
+            'decided_at' => now(),
             'reject_reason' => null,
         ]);
 
         return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('Urlaubsantrag genehmigt.'));
     }
 
-    public function reject(Request $request, Vacation $vacation): RedirectResponse {
+    public function reject(Request $request, Vacation $vacation): RedirectResponse
+    {
         Gate::authorize('decide', $vacation);
 
         $data = $request->validate([
@@ -122,20 +130,21 @@ class VacationController extends Controller {
         $auth = Auth::user();
 
         $vacation->update([
-            'status'        => Vacation::STATUS_REJECTED,
-            'decided_by'    => $auth->id,
-            'decided_at'    => now(),
+            'status' => Vacation::STATUS_REJECTED,
+            'decided_by' => $auth->id,
+            'decided_at' => now(),
             'reject_reason' => $data['reject_reason'] ?? null,
         ]);
 
         return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('Urlaubsantrag abgelehnt.'));
     }
 
-    public function cancel(Request $request, Vacation $vacation): RedirectResponse {
+    public function cancel(Request $request, Vacation $vacation): RedirectResponse
+    {
         Gate::authorize('cancel', $vacation);
 
         $vacation->update([
-            'status'     => Vacation::STATUS_CANCELLED,
+            'status' => Vacation::STATUS_CANCELLED,
             'decided_by' => null,
             'decided_at' => null,
         ]);
@@ -146,13 +155,14 @@ class VacationController extends Controller {
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     /** @return array<string, mixed> */
-    private function validateVacation(Request $request): array {
+    private function validateVacation(Request $request): array
+    {
         return $request->validate([
-            'user_id'    => ['nullable', 'exists:users,id'],
+            'user_id' => ['nullable', 'exists:users,id'],
             'start_date' => ['required', 'date'],
-            'end_date'   => ['required', 'date', 'gte:start_date'],
-            'type'       => ['required', 'in:' . implode(',', Vacation::$types)],
-            'note'       => ['nullable', 'string', 'max:1000'],
+            'end_date' => ['required', 'date', 'gte:start_date'],
+            'type' => ['required', 'in:'.implode(',', Vacation::$types)],
+            'note' => ['nullable', 'string', 'max:1000'],
         ]);
     }
 }

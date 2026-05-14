@@ -33,14 +33,14 @@
             <div class="px-4 py-8 text-center text-sm text-base-content/60">{{ __('Noch keine Zeiteinträge erfasst.') }}</div>
         @else
             <div class="overflow-x-auto">
-                <table class="table table-sm">
+                <table class="table table-sm" data-sortable>
                     <thead>
                         <tr class="text-xs text-base-content/50">
-                            <th>{{ __('Datum') }}</th>
-                            <th>{{ __('Mitarbeitende') }}</th>
-                            <th class="text-right">{{ __('Zeit') }}</th>
-                            <th>{{ __('Aufgabe') }}</th>
-                            <th>{{ __('Beschreibung') }}</th>
+                            <th data-sort data-sort-type="date" data-sort-default="desc">{{ __('Datum') }}</th>
+                            <th data-sort>{{ __('Mitarbeitende') }}</th>
+                            <th class="text-right" data-sort data-sort-type="number">{{ __('Zeit') }}</th>
+                            <th data-sort>{{ __('Aufgabe') }}</th>
+                            <th data-sort>{{ __('Beschreibung') }}</th>
                             <th></th>
                         </tr>
                     </thead>

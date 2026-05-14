@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Services\Calendar\WeekViewService;
 use App\Services\HolidayService;
 use Carbon\CarbonImmutable;
@@ -9,8 +10,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-class WeekController extends Controller {
-    public function __invoke(Request $request, WeekViewService $service, HolidayService $holidays): View {
+class WeekController extends Controller
+{
+    public function __invoke(Request $request, WeekViewService $service, HolidayService $holidays): View
+    {
         $anchor = $this->parseDate($request->query('date'));
         $teamScope = $request->query('scope') === 'team';
         $filterUserId = $teamScope ? (int) $request->query('user', 0) : 0;
@@ -18,7 +21,7 @@ class WeekController extends Controller {
             $filterUserId = null;
         }
 
-        /** @var \App\Models\User $authUser */
+        /** @var User $authUser */
         $authUser = Auth::user();
         $data = $service->build($anchor, $authUser, $teamScope, $filterUserId);
 
@@ -46,7 +49,8 @@ class WeekController extends Controller {
         ]);
     }
 
-    private function parseDate(?string $value): CarbonImmutable {
+    private function parseDate(?string $value): CarbonImmutable
+    {
         if (! $value) {
             return CarbonImmutable::today();
         }

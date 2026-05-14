@@ -5,24 +5,27 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreScheduledShiftRequest;
 use App\Http\Requests\UpdateScheduledShiftRequest;
 use App\Http\Resources\ScheduledShiftResource;
+use App\Models\Organization;
 use App\Models\ScheduledShift;
 use App\Models\ShiftType;
 use App\Models\User;
+use App\Services\Compliance\ShiftComplianceService;
 use App\Services\HolidayService;
+use App\Services\Schedule\OpenSlotService;
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class ScheduleController extends Controller {
-    public function index(Request $request, HolidayService $holidays): View {
+    public function index(Request $request, HolidayService $holidays, ShiftComplianceService $compliance, OpenSlotService $openSlots): View {
         /** @var User $auth */
         $auth = Auth::user();
 
-        $view     = $request->query('view', 'week'); // week|month
-        $dateStr  = $request->query('date', CarbonImmutable::today()->toDateString());
+        $view = $request->query('view', 'week'); // week|month
+        $dateStr = $request->query('date', CarbonImmutable::today()->toDateString());
         $userFilter = (int) $request->query('user', 0);
 
         try {
@@ -34,7 +37,7 @@ class ScheduleController extends Controller {
         [$from, $to, $prevDate, $nextDate] = $this->periodBounds($anchor, $view);
 
         $shiftTypes = ShiftType::active()->orderBy('name')->get();
-        $users      = User::orderBy('name')->get();
+        $users = User::orderBy('name')->get();
 
         $shiftsQuery = ScheduledShift::query()
             ->with(['user:id,name', 'shiftType'])
@@ -51,29 +54,48 @@ class ScheduleController extends Controller {
         // Group by date string for template
         $shiftsByDate = $shifts->groupBy(fn(ScheduledShift $s) => $s->date->toDateString());
 
+        // Compliance-Reports pro Schicht (für visuelle Markierung in der Matrix)
+        $org = $auth->organization_id
+            ? Organization::query()->find($auth->organization_id)
+            : null;
+        /** @var array<int, array{severity: string, messages: list<string>}> $complianceByShift */
+        $complianceByShift = [];
+        foreach ($shifts as $s) {
+            $report = $compliance->check($s, $org);
+            if (! $report->hasViolations()) {
+                continue;
+            }
+            $complianceByShift[(int) $s->id] = [
+                'severity' => $report->hasErrors() ? 'error' : 'warning',
+                'messages' => array_map(fn($v) => $v->message, $report->violations),
+            ];
+        }
+
         return view('schedule.index', [
-            'view'        => $view,
-            'anchor'      => $anchor,
-            'from'        => $from,
-            'to'          => $to,
-            'prevDate'    => $prevDate,
-            'nextDate'    => $nextDate,
-            'todayDate'   => CarbonImmutable::today()->toDateString(),
-            'shifts'      => $shifts,
+            'view' => $view,
+            'anchor' => $anchor,
+            'from' => $from,
+            'to' => $to,
+            'prevDate' => $prevDate,
+            'nextDate' => $nextDate,
+            'todayDate' => CarbonImmutable::today()->toDateString(),
+            'shifts' => $shifts,
             'shiftsByDate' => $shiftsByDate,
-            'shiftTypes'  => $shiftTypes,
-            'users'       => $users,
-            'userFilter'  => $userFilter,
-            'holidays'    => $holidays,
-            'isAdmin'     => $auth->isAdmin(),
+            'shiftTypes' => $shiftTypes,
+            'users' => $users,
+            'userFilter' => $userFilter,
+            'holidays' => $holidays,
+            'isAdmin' => $auth->isAdmin(),
+            'complianceByShift' => $complianceByShift,
+            'openSlotsByDate' => $openSlots->compute($from, $to, $shifts),
         ]);
     }
 
     // ── JSON-API for Alpine.js ───────────────────────────────────────────────
 
     public function apiIndex(Request $request): JsonResponse {
-        $dateStr    = $request->query('date', CarbonImmutable::today()->toDateString());
-        $view       = $request->query('view', 'week');
+        $dateStr = $request->query('date', CarbonImmutable::today()->toDateString());
+        $view = $request->query('view', 'week');
         $userFilter = (int) $request->query('user', 0);
 
         try {
@@ -104,13 +126,20 @@ class ScheduleController extends Controller {
         $auth = Auth::user();
 
         $data = $request->validated();
+        unset($data['override_compliance']);
         $data['created_by'] = $auth->id;
         $data['updated_by'] = $auth->id;
 
         $shift = ScheduledShift::create($data);
         $shift->load(['user:id,name', 'shiftType']);
 
-        return response()->json(new ScheduledShiftResource($shift), 201);
+        $payload = (new ScheduledShiftResource($shift))->resolve();
+        $report = $request->complianceReport();
+        if ($report && $report->hasViolations()) {
+            $payload['compliance_warnings'] = $report->toArray();
+        }
+
+        return response()->json($payload, 201);
     }
 
     public function update(UpdateScheduledShiftRequest $request, ScheduledShift $shift): JsonResponse {
@@ -118,12 +147,19 @@ class ScheduleController extends Controller {
         $auth = Auth::user();
 
         $data = $request->validated();
+        unset($data['override_compliance']);
         $data['updated_by'] = $auth->id;
 
         $shift->update($data);
         $shift->load(['user:id,name', 'shiftType']);
 
-        return response()->json(new ScheduledShiftResource($shift));
+        $payload = (new ScheduledShiftResource($shift))->resolve();
+        $report = $request->complianceReport();
+        if ($report && $report->hasViolations()) {
+            $payload['compliance_warnings'] = $report->toArray();
+        }
+
+        return response()->json($payload);
     }
 
     public function destroy(ScheduledShift $shift): JsonResponse {
@@ -176,13 +212,13 @@ class ScheduleController extends Controller {
      */
     private function periodBounds(CarbonImmutable $anchor, string $view): array {
         if ($view === 'month') {
-            $from     = $anchor->startOfMonth();
-            $to       = $anchor->endOfMonth();
+            $from = $anchor->startOfMonth();
+            $to = $anchor->endOfMonth();
             $prevDate = $from->subMonth()->toDateString();
             $nextDate = $from->addMonth()->toDateString();
         } else {
-            $from     = $anchor->startOfWeek(\Carbon\CarbonInterface::MONDAY);
-            $to       = $from->endOfWeek(\Carbon\CarbonInterface::SUNDAY);
+            $from = $anchor->startOfWeek(CarbonInterface::MONDAY);
+            $to = $from->endOfWeek(CarbonInterface::SUNDAY);
             $prevDate = $from->subWeek()->toDateString();
             $nextDate = $from->addWeek()->toDateString();
         }

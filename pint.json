@@ -1,0 +1,13 @@
+{
+    "preset": "laravel",
+    "exclude": [
+        "bootstrap/cache",
+        "storage",
+        "vendor",
+        "public/build"
+    ],
+    "notPath": [
+        "_ide_helper.php",
+        "_ide_helper_models.php"
+    ]
+}

@@ -2,12 +2,12 @@
 
 return [
     'period' => [
-        'daily'   => 'Täglich',
-        'weekly'  => 'Wöchentlich',
+        'daily' => 'Täglich',
+        'weekly' => 'Wöchentlich',
         'monthly' => 'Monatlich',
     ],
     'status' => [
-        'draft'     => 'Entwurf',
+        'draft' => 'Entwurf',
         'published' => 'Veröffentlicht',
     ],
 ];

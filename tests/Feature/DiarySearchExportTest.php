@@ -8,15 +8,18 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class DiarySearchExportTest extends TestCase {
+class DiarySearchExportTest extends TestCase
+{
     use RefreshDatabase;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
     }
 
-    public function test_search_filters_entries_by_content_and_response(): void {
+    public function test_search_filters_entries_by_content_and_response(): void
+    {
         $user = User::factory()->user()->create();
         $this->actingAs($user);
 
@@ -31,7 +34,8 @@ class DiarySearchExportTest extends TestCase {
         $response->assertDontSeeText('Belanglos');
     }
 
-    public function test_csv_export_returns_csv_with_filtered_entries(): void {
+    public function test_csv_export_returns_csv_with_filtered_entries(): void
+    {
         $user = User::factory()->user()->create();
         $this->actingAs($user);
 
@@ -47,7 +51,8 @@ class DiarySearchExportTest extends TestCase {
         $this->assertStringNotContainsString('Eintrag Beta', $body);
     }
 
-    public function test_pdf_export_renders_printable_html(): void {
+    public function test_pdf_export_renders_printable_html(): void
+    {
         $user = User::factory()->user()->create();
         $this->actingAs($user);
 

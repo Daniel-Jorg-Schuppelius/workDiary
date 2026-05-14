@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Concerns;
+namespace App\Legacy\Http\Concerns;
 
-use App\Support\LegacyRoleResolver;
+use App\Legacy\Support\LegacyRoleResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Auth;
 trait ManagesLegacyDutyCrud {
     /**
      * @template TModel of Model
-     * @param Builder<TModel> $query
+     *
+     * @param  Builder<TModel>  $query
      * @return array<string, mixed>
      */
     private function legacyDutyIndexData(Request $request, Builder $query): array {
@@ -36,10 +37,10 @@ trait ManagesLegacyDutyCrud {
         $countsQuery = (clone $query);
         $today = now()->toDateString();
         $counts = [
-            'all'      => (clone $countsQuery)->count(),
-            'today'    => (clone $countsQuery)->whereDate('von', '<=', $today)->whereDate('bis', '>=', $today)->count(),
+            'all' => (clone $countsQuery)->count(),
+            'today' => (clone $countsQuery)->whereDate('von', '<=', $today)->whereDate('bis', '>=', $today)->count(),
             'upcoming' => (clone $countsQuery)->whereDate('von', '>', $today)->count(),
-            'past'     => (clone $countsQuery)->whereDate('bis', '<', $today)->count(),
+            'past' => (clone $countsQuery)->whereDate('bis', '<', $today)->count(),
         ];
 
         return [

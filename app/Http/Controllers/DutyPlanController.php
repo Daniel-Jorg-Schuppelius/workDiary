@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DutyPlan;
-use Carbon\Carbon;
+use App\Support\SortableQuery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,8 +18,7 @@ class DutyPlanController extends Controller {
         $period = $request->query('period', '');
 
         $query = DutyPlan::query()
-            ->withCount('shifts')
-            ->orderByDesc('from_date');
+            ->withCount('shifts');
 
         if ($status && in_array($status, DutyPlan::$statuses, true)) {
             $query->where('status', $status);
@@ -28,9 +27,18 @@ class DutyPlanController extends Controller {
             $query->where('period_type', $period);
         }
 
+        [$sort, $dir] = SortableQuery::apply($query, $request, [
+            'name' => 'name',
+            'period_type' => 'period_type',
+            'from_date' => 'from_date',
+            'to_date' => 'to_date',
+            'status' => 'status',
+            'shifts' => 'shifts_count',
+        ], 'from_date', 'desc');
+
         $plans = $query->paginate(20)->withQueryString();
 
-        return view('duty-plans.index', compact('plans', 'status', 'period'));
+        return view('duty-plans.index', compact('plans', 'status', 'period', 'sort', 'dir'));
     }
 
     public function create(): View {
@@ -38,7 +46,7 @@ class DutyPlanController extends Controller {
 
         return view('duty-plans._form_dialog', [
             'dutyPlan' => null,
-            'isEdit'   => false,
+            'isEdit' => false,
         ]);
     }
 
@@ -80,7 +88,7 @@ class DutyPlanController extends Controller {
 
         return view('duty-plans._form_dialog', [
             'dutyPlan' => $dutyPlan,
-            'isEdit'   => true,
+            'isEdit' => true,
         ]);
     }
 
@@ -124,12 +132,12 @@ class DutyPlanController extends Controller {
     /** @return array<string, mixed> */
     private function validated(Request $request): array {
         return $request->validate([
-            'title'       => ['required', 'string', 'max:255'],
+            'title' => ['required', 'string', 'max:255'],
             'period_type' => ['required', 'in:' . implode(',', DutyPlan::$periodTypes)],
-            'from_date'   => ['required', 'date'],
-            'to_date'     => ['required', 'date', 'gte:from_date'],
-            'min_staff'   => ['nullable', 'integer', 'min:0', 'max:255'],
-            'note'        => ['nullable', 'string', 'max:2000'],
+            'from_date' => ['required', 'date'],
+            'to_date' => ['required', 'date', 'gte:from_date'],
+            'min_staff' => ['nullable', 'integer', 'min:0', 'max:255'],
+            'note' => ['nullable', 'string', 'max:2000'],
         ]);
     }
 }

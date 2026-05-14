@@ -7,38 +7,46 @@ use App\Models\User;
 use App\Policies\Concerns\ChecksOwnership;
 use App\Policies\Concerns\HasAdminBypass;
 
-class ScheduledShiftPolicy {
+class ScheduledShiftPolicy
+{
     use ChecksOwnership;
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
+    public function viewAny(User $user): bool
+    {
         return true;
     }
 
-    public function view(User $user, ScheduledShift $shift): bool {
+    public function view(User $user, ScheduledShift $shift): bool
+    {
         return true;
     }
 
-    public function create(User $user): bool {
+    public function create(User $user): bool
+    {
         return false;
     }
 
-    public function update(User $user, ScheduledShift $shift): bool {
+    public function update(User $user, ScheduledShift $shift): bool
+    {
         return false;
     }
 
-    public function delete(User $user, ScheduledShift $shift): bool {
+    public function delete(User $user, ScheduledShift $shift): bool
+    {
         return false;
     }
 
-    public function publish(User $user, ScheduledShift $shift): bool {
+    public function publish(User $user, ScheduledShift $shift): bool
+    {
         return false;
     }
 
     /**
      * Only the assigned user may confirm their own shift.
      */
-    public function confirm(User $user, ScheduledShift $shift): bool {
+    public function confirm(User $user, ScheduledShift $shift): bool
+    {
         return $this->owns($user, $shift);
     }
 }

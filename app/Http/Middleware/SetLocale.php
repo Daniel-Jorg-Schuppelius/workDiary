@@ -2,15 +2,18 @@
 
 namespace App\Http\Middleware;
 
+use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
-use Carbon\Carbon;
+use Symfony\Component\HttpFoundation\Response;
 
-class SetLocale {
+class SetLocale
+{
     public const SUPPORTED = ['de', 'en'];
 
-    public function handle(Request $request, Closure $next): \Symfony\Component\HttpFoundation\Response {
+    public function handle(Request $request, Closure $next): Response
+    {
         $locale = (string) $request->session()->get('locale', config('app.locale', 'de'));
         if (! in_array($locale, self::SUPPORTED, true)) {
             $locale = 'de';

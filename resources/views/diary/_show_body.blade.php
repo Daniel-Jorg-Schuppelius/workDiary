@@ -1,5 +1,5 @@
 {{-- Diary Detail-Body (für Seite + Dialog). Erwartet: $diary, $legacyEntry (nullable), $isDialog (bool, optional) --}}
-@php($isDialog = $isDialog ?? false)
+<?php $isDialog = $isDialog ?? false; ?>
 
 <article>
     <div class="flex flex-wrap items-center justify-between gap-4 mb-6 {{ $isDialog ? 'pr-10' : '' }}">

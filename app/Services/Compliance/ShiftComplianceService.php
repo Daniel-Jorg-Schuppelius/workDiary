@@ -1,0 +1,78 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services\Compliance;
+
+use App\Models\Organization;
+use App\Models\ScheduledShift;
+use App\Services\Compliance\Rules\ConsecutiveDaysRule;
+use App\Services\Compliance\Rules\HolidayDoubleBookRule;
+use App\Services\Compliance\Rules\MaxDailyHoursRule;
+use App\Services\Compliance\Rules\MaxWeeklyHoursRule;
+use App\Services\Compliance\Rules\OverlapRule;
+use App\Services\Compliance\Rules\QualificationMatchRule;
+use App\Services\Compliance\Rules\RestPeriodRule;
+use App\Services\Compliance\Rules\VacationConflictRule;
+
+/**
+ * Aggregiert die Compliance-Regeln und prüft eine geplante Schicht.
+ */
+final class ShiftComplianceService
+{
+    /** @var list<ComplianceRule> */
+    private array $rules;
+
+    /** @param list<ComplianceRule>|null $rules */
+    public function __construct(?array $rules = null)
+    {
+        $this->rules = $rules ?? [
+            new OverlapRule,
+            new RestPeriodRule,
+            new MaxDailyHoursRule,
+            new MaxWeeklyHoursRule,
+            new ConsecutiveDaysRule,
+            new VacationConflictRule,
+            new QualificationMatchRule,
+            new HolidayDoubleBookRule,
+        ];
+    }
+
+    /**
+     * Prüfe die Schicht gegen alle aktivierten Regeln der Organisation.
+     */
+    public function check(ScheduledShift $shift, ?Organization $organization = null): ComplianceReport
+    {
+        $organization ??= $shift->organization;
+        $settings = $organization
+            ? $organization->complianceSettings()
+            : Organization::COMPLIANCE_DEFAULTS;
+
+        if ($settings['mode'] === Organization::COMPLIANCE_OFF) {
+            return new ComplianceReport([]);
+        }
+
+        $violations = [];
+        foreach ($this->rules as $rule) {
+            $key = $rule->key();
+            if (! ($settings['rules'][$key] ?? true)) {
+                continue;
+            }
+            foreach ($rule->check($shift, $settings) as $v) {
+                $violations[] = $v;
+            }
+        }
+
+        return new ComplianceReport($violations);
+    }
+
+    /**
+     * Liste der vom Service unterstützten Regel-Keys (für Settings-UI).
+     *
+     * @return list<string>
+     */
+    public function ruleKeys(): array
+    {
+        return array_map(fn (ComplianceRule $r) => $r->key(), $this->rules);
+    }
+}

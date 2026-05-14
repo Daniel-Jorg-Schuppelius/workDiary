@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Support;
+namespace App\Legacy\Support;
 
-use App\Models\Legacy\LegacyUser;
+use App\Legacy\Models\LegacyUser;
 use App\Models\User;
 
-class LegacyRoleResolver {
+class LegacyRoleResolver
+{
     /** Per-Request-Cache: user-id → resolved legacy-id
      * @var array<int, int>
      */
@@ -16,7 +17,8 @@ class LegacyRoleResolver {
      */
     private static ?array $fallbackList = null;
 
-    public static function resolveLegacyUserId(?User $authUser): int {
+    public static function resolveLegacyUserId(?User $authUser): int
+    {
         if (! $authUser instanceof User) {
             return 0;
         }
@@ -59,7 +61,8 @@ class LegacyRoleResolver {
      * Gibt true zurück, wenn der User eine Legacy-ID ≤ 3 hat.
      * Berücksichtigt KEINE Namens-Fallbacks — für sicherheitskritische Prüfungen bevorzugen.
      */
-    public static function isAdminByLegacyId(?User $authUser): bool {
+    public static function isAdminByLegacyId(?User $authUser): bool
+    {
         $legacyUserId = self::resolveLegacyUserId($authUser);
 
         return $legacyUserId > 0 && $legacyUserId <= 3;
@@ -71,7 +74,8 @@ class LegacyRoleResolver {
      * Nur als Übergangsmechanismus gedacht; sobald alle Admins eine Legacy-ID haben,
      * kann dieser Pfad deaktiviert werden.
      */
-    public static function isFallbackAdmin(?User $authUser): bool {
+    public static function isFallbackAdmin(?User $authUser): bool
+    {
         if (! $authUser instanceof User) {
             return false;
         }
@@ -92,14 +96,16 @@ class LegacyRoleResolver {
     }
 
     /** Prüft Legacy-Admin-Status über ID (primär) oder Namens-Fallback (sekundär). */
-    public static function isAdmin(?User $authUser): bool {
+    public static function isAdmin(?User $authUser): bool
+    {
         return self::isAdminByLegacyId($authUser) || self::isFallbackAdmin($authUser);
     }
 
     /** Memoized Fallback-Admin-Liste für den aktuellen Request.
      * @return list<string>
      */
-    private static function fallbackAdminList(): array {
+    private static function fallbackAdminList(): array
+    {
         if (self::$fallbackList !== null) {
             return self::$fallbackList;
         }
@@ -107,7 +113,7 @@ class LegacyRoleResolver {
         $configured = (string) config('legacy.fallback_admins', 'admin,administrator,chef');
 
         return self::$fallbackList = array_values(array_filter(array_map(
-            static fn(string $value): string => mb_strtolower(trim($value)),
+            static fn (string $value): string => mb_strtolower(trim($value)),
             explode(',', $configured)
         )));
     }
@@ -115,7 +121,8 @@ class LegacyRoleResolver {
     /**
      * @return array<int, string>
      */
-    private static function candidateUsernames(User $authUser): array {
+    private static function candidateUsernames(User $authUser): array
+    {
         return array_values(array_filter(array_unique([
             trim((string) $authUser->name),
             trim((string) strstr((string) $authUser->email, '@', true)),

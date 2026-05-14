@@ -31,11 +31,12 @@
     <x-table>
         <thead>
             <tr>
-                <th>{{ __('Titel') }}</th>
-                <th>{{ __('Zeitraum') }}</th>
-                <th>{{ __('Typ') }}</th>
-                <th class="text-center">{{ __('Schichten') }}</th>
-                <th>{{ __('Status') }}</th>
+                <?php $p = ['status' => $status, 'period' => $period]; ?>
+                <th><x-sort-th column="name" :route="route('duty-plans.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Titel') }}</x-sort-th></th>
+                <th><x-sort-th column="from_date" :route="route('duty-plans.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'" default="from_date">{{ __('Zeitraum') }}</x-sort-th></th>
+                <th><x-sort-th column="period_type" :route="route('duty-plans.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Typ') }}</x-sort-th></th>
+                <th class="text-center"><x-sort-th column="shifts" :route="route('duty-plans.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Schichten') }}</x-sort-th></th>
+                <th><x-sort-th column="status" :route="route('duty-plans.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Status') }}</x-sort-th></th>
                 <th></th>
             </tr>
         </thead>
@@ -67,7 +68,9 @@
                             @endcan
                             @can('delete', $plan)
                             <form method="POST" action="{{ route('duty-plans.destroy', $plan) }}"
-                                  onsubmit="return confirm('{{ __('Dienstplan wirklich löschen?') }}')">
+                                  data-confirm-dialog
+                                  data-confirm-message="{{ __('Dienstplan wirklich löschen?') }}"
+                                  data-confirm-label="{{ __('Löschen') }}">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-ghost btn-xs text-error">{{ __('Löschen') }}</button>
                             </form>

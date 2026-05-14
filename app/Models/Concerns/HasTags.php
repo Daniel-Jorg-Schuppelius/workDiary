@@ -3,16 +3,17 @@
 namespace App\Models\Concerns;
 
 use App\Models\Tag;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Auth;
 
 /**
  * @method \Illuminate\Database\Eloquent\Relations\MorphToMany<\App\Models\Tag, static> morphToMany(string $related, string $name, ?string $table = null, ?string $foreignPivotKey = null, ?string $relatedPivotKey = null, ?string $parentKey = null, ?string $relatedKey = null, $relation = null, bool $inverse = false)
  */
-trait HasTags {
+trait HasTags
+{
     /** @return MorphToMany<Tag, static> */
-    public function tags(): MorphToMany {
+    public function tags(): MorphToMany
+    {
         return $this->morphToMany(Tag::class, 'taggable');
     }
 
@@ -22,10 +23,11 @@ trait HasTags {
      * @param  array<int|string>  $tagIds  Existing tag IDs.
      * @param  array<string>  $newNames  Names of tags to create on the fly.
      */
-    public function syncTagsFromInput(array $tagIds = [], array $newNames = []): void {
+    public function syncTagsFromInput(array $tagIds = [], array $newNames = []): void
+    {
         $ids = collect($tagIds)
-            ->filter(fn($v) => is_numeric($v))
-            ->map(fn($v) => (int) $v)
+            ->filter(fn ($v) => is_numeric($v))
+            ->map(fn ($v) => (int) $v)
             ->all();
 
         foreach ($newNames as $name) {

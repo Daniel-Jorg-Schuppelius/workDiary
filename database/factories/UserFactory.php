@@ -10,7 +10,8 @@ use Illuminate\Support\Str;
 /**
  * @extends Factory<User>
  */
-class UserFactory extends Factory {
+class UserFactory extends Factory
+{
     /**
      * The current password being used by the factory.
      */
@@ -21,7 +22,8 @@ class UserFactory extends Factory {
      *
      * @return array<string, mixed>
      */
-    public function definition(): array {
+    public function definition(): array
+    {
         return [
             'organization_id' => null,
             'name' => fake()->name(),
@@ -35,25 +37,29 @@ class UserFactory extends Factory {
     /**
      * Indicate that the model's email address should be unverified.
      */
-    public function unverified(): static {
-        return $this->state(fn(array $attributes) => [
+    public function unverified(): static
+    {
+        return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
     }
 
-    public function admin(): static {
+    public function admin(): static
+    {
         return $this->afterCreating(function (User $user): void {
             $user->syncRoles([User::ROLE_ADMIN]);
         });
     }
 
-    public function user(): static {
+    public function user(): static
+    {
         return $this->afterCreating(function (User $user): void {
             $user->syncRoles([User::ROLE_USER]);
         });
     }
 
-    public function callcenter(): static {
+    public function callcenter(): static
+    {
         return $this->afterCreating(function (User $user): void {
             $user->syncRoles([User::ROLE_CALLCENTER]);
         });

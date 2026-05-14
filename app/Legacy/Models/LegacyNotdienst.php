@@ -1,17 +1,19 @@
 <?php
 
-namespace App\Models\Legacy;
+namespace App\Legacy\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
- * @property-read \App\Models\Legacy\LegacyUser|null $user
- * @property \Illuminate\Support\Carbon|null $von
- * @property \Illuminate\Support\Carbon|null $bis
+ * @property-read LegacyUser|null $user
+ * @property Carbon|null $von
+ * @property Carbon|null $bis
  */
-class LegacyNotdienst extends Model {
+class LegacyNotdienst extends Model
+{
     protected $connection = 'legacy';
 
     protected $table = 'notdnst';
@@ -22,18 +24,21 @@ class LegacyNotdienst extends Model {
 
     protected $primaryKey = 'id';
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'von' => 'date',
             'bis' => 'date',
         ];
     }
 
-    public function mitarbeiter(): BelongsTo {
+    public function mitarbeiter(): BelongsTo
+    {
         return $this->belongsTo(LegacyUser::class, 'user', 'id');
     }
 
-    public function user(): BelongsTo {
+    public function user(): BelongsTo
+    {
         return $this->mitarbeiter();
     }
 }

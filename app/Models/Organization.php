@@ -10,14 +10,50 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-class Organization extends Model {
-    /** @use HasFactory<OrganizationFactory> */
-    use HasFactory;
+class Organization extends Model
+{
     use Auditable;
 
-    public const PLAN_FREE       = 'free';
-    public const PLAN_PRO        = 'pro';
+    /** @use HasFactory<OrganizationFactory> */
+    use HasFactory;
+
+    public const PLAN_FREE = 'free';
+
+    public const PLAN_PRO = 'pro';
+
     public const PLAN_ENTERPRISE = 'enterprise';
+
+    public const COMPLIANCE_OFF = 'off';
+
+    public const COMPLIANCE_WARN = 'warn';
+
+    public const COMPLIANCE_BLOCK = 'block';
+
+    /** @var list<string> */
+    public static array $complianceModes = [
+        self::COMPLIANCE_OFF,
+        self::COMPLIANCE_WARN,
+        self::COMPLIANCE_BLOCK,
+    ];
+
+    /** Default-Compliance-Settings (ArbZG-Standard). */
+    public const COMPLIANCE_DEFAULTS = [
+        'mode' => self::COMPLIANCE_WARN,
+        'max_hours_day' => 10,
+        'min_rest_hours' => 11,
+        'max_hours_week' => 48,
+        'max_consecutive_days' => 6,
+        'rules' => [
+            'overlap' => true,
+            'rest_period' => true,
+            'max_daily_hours' => true,
+            'max_weekly_hours' => true,
+            'consecutive_days' => true,
+            'vacation_conflict' => true,
+            'qualification_match' => true,
+            'holiday_double_book' => true,
+        ],
+    ];
 
     /** @var list<string> */
     public static array $plans = [
@@ -38,22 +74,24 @@ class Organization extends Model {
         'trial_ends_at',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
-            'settings'       => 'array',
-            'is_active'      => 'boolean',
-            'trial_ends_at'  => 'datetime',
+            'settings' => 'array',
+            'is_active' => 'boolean',
+            'trial_ends_at' => 'datetime',
         ];
     }
 
-    protected static function booted(): void {
+    protected static function booted(): void
+    {
         static::creating(function (Organization $org): void {
             if (! $org->slug) {
                 $base = Str::slug($org->name) ?: 'org';
                 $slug = $base;
-                $i    = 2;
+                $i = 2;
                 while (static::withoutGlobalScopes()->where('slug', $slug)->exists()) {
-                    $slug = $base . '-' . $i++;
+                    $slug = $base.'-'.$i++;
                 }
                 $org->slug = $slug;
             }
@@ -61,12 +99,28 @@ class Organization extends Model {
     }
 
     /** @return BelongsTo<User, $this> */
-    public function owner(): BelongsTo {
+    public function owner(): BelongsTo
+    {
         return $this->belongsTo(User::class, 'owner_id');
     }
 
     /** @return HasMany<User, $this> */
-    public function users(): HasMany {
+    public function users(): HasMany
+    {
         return $this->hasMany(User::class);
+    }
+
+    /**
+     * Compliance-Settings inkl. Defaults (rekursiv gemerged).
+     *
+     * @return array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, rules:array<string,bool>}
+     */
+    public function complianceSettings(): array
+    {
+        $stored = (array) ($this->settings['compliance'] ?? []);
+        $merged = array_replace_recursive(self::COMPLIANCE_DEFAULTS, $stored);
+
+        /** @var array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, rules:array<string,bool>} $merged */
+        return $merged;
     }
 }

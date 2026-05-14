@@ -26,6 +26,20 @@
                 @endif
                 <a href="{{ route('duty-plans.edit', $dutyPlan) }}" data-entry-modal-trigger class="btn btn-ghost btn-sm">{{ __('Bearbeiten') }}</a>
             @endcan
+            @can('view', $dutyPlan)
+                <a href="{{ route('duty-plans.coverage.index', $dutyPlan) }}" class="btn btn-outline btn-sm">{{ __('Soll-Besetzung') }}</a>
+            @endcan
+            <div class="dropdown dropdown-end">
+                <label tabindex="0" class="btn btn-outline btn-sm">{{ __('Drucken') }}</label>
+                <ul tabindex="0" class="menu dropdown-content z-1 mt-2 w-72 rounded-box bg-base-100 p-2 shadow">
+                    <li class="menu-title">{{ __('Layout wählen') }}</li>
+                    <li><a href="{{ route('print.duty-plan.roster', $dutyPlan) }}" target="_blank">{{ __('Monats-Aushang (A3 quer)') }}</a></li>
+                    <li><a href="{{ route('print.duty-plan.week', $dutyPlan) }}" target="_blank">{{ __('Wochenplan (A4 quer)') }}</a></li>
+                    <li><a href="{{ route('print.duty-plan.day', [$dutyPlan, 'date' => $dutyPlan->from_date->toDateString()]) }}" target="_blank">{{ __('Tagesbriefing (A4 hoch)') }}</a></li>
+                    <li class="menu-title">{{ __('Datenschutz') }}</li>
+                    <li><a href="{{ route('print.duty-plan.roster', [$dutyPlan, 'anonymous' => 1]) }}" target="_blank">{{ __('Aushang anonymisiert') }}</a></li>
+                </ul>
+            </div>
             <a href="{{ route('duty-plans.index') }}" class="btn btn-ghost btn-sm">← {{ __('Übersicht') }}</a>
         </div>
     </div>
@@ -33,6 +47,14 @@
     @if ($dutyPlan->note)
         <div class="alert alert-info text-sm">{{ $dutyPlan->note }}</div>
     @endif
+
+    {{-- Soll/Ist-Heatmap --}}
+    <details class="rounded-box border border-base-300 bg-base-100 p-3" open>
+        <summary class="cursor-pointer font-semibold">{{ __('Soll/Ist-Besetzung') }}</summary>
+        <div class="mt-3">
+            @include('coverage-requirements._heatmap', ['dutyPlan' => $dutyPlan])
+        </div>
+    </details>
 
     {{-- Kalender-Raster --}}
     <div class="overflow-x-auto rounded-box border border-base-300">

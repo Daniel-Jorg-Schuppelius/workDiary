@@ -5,12 +5,14 @@ namespace App\Console\Commands;
 use App\Services\Archive\ArchiveService;
 use Illuminate\Console\Command;
 
-class ArchiveRunCommand extends Command {
+class ArchiveRunCommand extends Command
+{
     protected $signature = 'archive:run {--days= : Schwellwert in Tagen (überschreibt config)}';
 
     protected $description = 'Archiviert erledigte Tagebucheinträge sowie abgelaufene Bereitschaft/Notdienste älter als der Schwellwert.';
 
-    public function handle(ArchiveService $service): int {
+    public function handle(ArchiveService $service): int
+    {
         $days = $this->option('days');
         $thresholdDays = is_numeric($days) ? (int) $days : null;
 
@@ -26,7 +28,7 @@ class ArchiveRunCommand extends Command {
             ]
         );
 
-        $this->info('Archivierung abgeschlossen (Stichtag: ' . $result['cutoff'] . ').');
+        $this->info('Archivierung abgeschlossen (Stichtag: '.$result['cutoff'].').');
 
         return self::SUCCESS;
     }

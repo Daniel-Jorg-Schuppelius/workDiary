@@ -12,11 +12,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class ShiftType extends Model {
+class ShiftType extends Model
+{
+    use Auditable;
+
+    use BelongsToOrganization;
     /** @use HasFactory<ShiftTypeFactory> */
     use HasFactory;
-    use BelongsToOrganization;
-    use Auditable;
 
     protected $fillable = [
         'organization_id',
@@ -29,44 +31,51 @@ class ShiftType extends Model {
         'created_by',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'is_active' => 'boolean',
         ];
     }
 
     /** @return BelongsTo<User, $this> */
-    public function creator(): BelongsTo {
+    public function creator(): BelongsTo
+    {
         return $this->belongsTo(User::class, 'created_by');
     }
 
     /** @return HasMany<ScheduledShift, $this> */
-    public function scheduledShifts(): HasMany {
+    public function scheduledShifts(): HasMany
+    {
         return $this->hasMany(ScheduledShift::class);
     }
 
     /**
      * Pflichtqualifikationen für diesen Schichttyp.
+     *
      * @return BelongsToMany<Qualification, $this>
      */
-    public function qualifications(): BelongsToMany {
+    public function qualifications(): BelongsToMany
+    {
         return $this->belongsToMany(Qualification::class, 'shift_type_qualifications');
     }
 
     /**
      * Returns a DaisyUI-compatible inline style fragment for the badge background.
      */
-    public function badgeStyle(): string {
+    public function badgeStyle(): string
+    {
         return "background-color:{$this->color};color:#fff;";
     }
 
     /**
      * Active types only.
      *
-     * @param Builder<ShiftType> $query
+     * @param  Builder<ShiftType>  $query
      * @return Builder<ShiftType>
      */
-    public function scopeActive(Builder $query): Builder {
+    public function scopeActive(Builder $query): Builder
+    {
         return $query->where('is_active', true);
     }
 }

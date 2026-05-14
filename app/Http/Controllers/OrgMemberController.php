@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Support\SortableQuery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 use Spatie\Permission\Models\Role;
 
@@ -16,21 +18,27 @@ use Spatie\Permission\Models\Role;
  * Nur Org-Admins dürfen zugreifen (Gate 'manage-members' via OrganizationPolicy).
  */
 class OrgMemberController extends Controller {
-    public function index(): View {
+    public function index(Request $request): View {
         Gate::authorize('manage-members');
 
         /** @var User $auth */
         $auth = Auth::user();
 
-        $members = User::withoutGlobalScopes()
+        $query = User::withoutGlobalScopes()
             ->where('organization_id', $auth->organization_id)
-            ->with('roles')
-            ->orderBy('name')
-            ->paginate(25);
+            ->with('roles');
+
+        [$sort, $dir] = SortableQuery::apply($query, $request, [
+            'name' => 'name',
+            'email' => 'email',
+            'created_at' => 'created_at',
+        ], 'name', 'asc');
+
+        $members = $query->paginate(25)->withQueryString();
 
         $roles = [User::ROLE_ADMIN, User::ROLE_USER, User::ROLE_BUCHHALTUNG];
 
-        return view('org.members.index', compact('members', 'roles'));
+        return view('org.members.index', compact('members', 'roles', 'sort', 'dir'));
     }
 
     public function create(): View {
@@ -48,17 +56,17 @@ class OrgMemberController extends Controller {
         $auth = Auth::user();
 
         $data = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
-            'role'     => ['required', 'in:' . implode(',', [User::ROLE_ADMIN, User::ROLE_USER, User::ROLE_BUCHHALTUNG])],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'role' => ['required', 'in:' . implode(',', [User::ROLE_ADMIN, User::ROLE_USER, User::ROLE_BUCHHALTUNG])],
+            'password' => ['required', 'string', 'confirmed', Password::defaults()],
         ]);
 
         $user = User::create([
-            'organization_id'      => $auth->organization_id,
-            'name'                 => $data['name'],
-            'email'                => $data['email'],
-            'password'             => Hash::make($data['password']),
+            'organization_id' => $auth->organization_id,
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
             'must_change_password' => true,
         ]);
 
@@ -83,9 +91,9 @@ class OrgMemberController extends Controller {
         $this->ensureSameOrg($member);
 
         $data = $request->validate([
-            'name'  => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $member->id],
-            'role'  => ['required', 'in:' . implode(',', [User::ROLE_ADMIN, User::ROLE_USER, User::ROLE_BUCHHALTUNG])],
+            'role' => ['required', 'in:' . implode(',', [User::ROLE_ADMIN, User::ROLE_USER, User::ROLE_BUCHHALTUNG])],
         ]);
 
         $member->update(['name' => $data['name'], 'email' => $data['email']]);

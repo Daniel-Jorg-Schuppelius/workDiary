@@ -9,10 +9,12 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<DiaryEntry>
  */
-class DiaryEntryFactory extends Factory {
+class DiaryEntryFactory extends Factory
+{
     protected $model = DiaryEntry::class;
 
-    public function definition(): array {
+    public function definition(): array
+    {
         $start = fake()->dateTimeBetween('-1 month', '+1 month');
         $end = (clone $start)->modify('+1 hour');
 

@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Policies;
+
+use App\Models\MaterialUsage;
+use App\Models\Timesheet;
+use App\Models\User;
+use App\Policies\Concerns\ChecksOwnership;
+use App\Policies\Concerns\HasAdminBypass;
+
+class MaterialUsagePolicy
+{
+    use ChecksOwnership;
+    use HasAdminBypass;
+
+    public function view(User $user, MaterialUsage $usage): bool
+    {
+        return $this->owns($user, $usage->timesheet, 'user_id');
+    }
+
+    public function create(User $user, ?Timesheet $timesheet = null): bool
+    {
+        if (! $timesheet) {
+            return true;
+        }
+
+        return $timesheet->canEdit() && $this->owns($user, $timesheet, 'user_id');
+    }
+
+    public function update(User $user, MaterialUsage $usage): bool
+    {
+        return $usage->timesheet?->canEdit() && $this->owns($user, $usage->timesheet, 'user_id');
+    }
+
+    public function delete(User $user, MaterialUsage $usage): bool
+    {
+        return $usage->timesheet?->canEdit() && $this->owns($user, $usage->timesheet, 'user_id');
+    }
+}

@@ -5,8 +5,10 @@ namespace Tests\Concerns;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
-trait UsesLegacySqlite {
-    protected function useLegacySqlite(): void {
+trait UsesLegacySqlite
+{
+    protected function useLegacySqlite(): void
+    {
         Config::set('database.connections.legacy', [
             'driver' => 'sqlite',
             'database' => ':memory:',

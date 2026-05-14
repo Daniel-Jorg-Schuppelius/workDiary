@@ -7,10 +7,9 @@
  *
  * Aufruf: php scripts/translate-controllers.php
  */
-
-$root = __DIR__ . '/..';
-$dir = $root . '/app/Http/Controllers';
-$jsonFile = $root . '/lang/en.json';
+$root = __DIR__.'/..';
+$dir = $root.'/app/Http/Controllers';
+$jsonFile = $root.'/lang/en.json';
 
 $map = [
     'Bereitschaft angelegt.' => 'Standby created.',
@@ -22,8 +21,7 @@ $map = [
     'Mitarbeiter angelegt.' => 'Employee created.',
     'Mitarbeiter aktualisiert.' => 'Employee updated.',
     'Mitarbeiter gelöscht.' => 'Employee deleted.',
-    'Mitarbeiter kann nicht gelöscht werden: es sind noch Legacy-Daten vorhanden.' =>
-    'Employee cannot be deleted: legacy data still exists.',
+    'Mitarbeiter kann nicht gelöscht werden: es sind noch Legacy-Daten vorhanden.' => 'Employee cannot be deleted: legacy data still exists.',
     'Eintrag gespeichert.' => 'Entry saved.',
     'Eintrag aktualisiert.' => 'Entry updated.',
     'Eintrag gelöscht.' => 'Entry deleted.',
@@ -31,19 +29,16 @@ $map = [
     'Legacy-Eintrag aktualisiert.' => 'Legacy entry updated.',
     'Legacy-Eintrag gelöscht.' => 'Legacy entry deleted.',
     'Passwort erfolgreich geändert.' => 'Password changed successfully.',
-    'Lokales Passwort geändert. Legacy-Passwort konnte nicht synchronisiert werden.' =>
-    'Local password changed. Legacy password could not be synchronized.',
+    'Lokales Passwort geändert. Legacy-Passwort konnte nicht synchronisiert werden.' => 'Local password changed. Legacy password could not be synchronized.',
     'Aktuelles Passwort ist falsch.' => 'Current password is incorrect.',
     'Unbekannter Modus.' => 'Unknown mode.',
-    'Legacy-Modus ist nicht verfügbar (Legacy-DB nicht konfiguriert).' =>
-    'Legacy mode is not available (legacy DB not configured).',
+    'Legacy-Modus ist nicht verfügbar (Legacy-DB nicht konfiguriert).' => 'Legacy mode is not available (legacy DB not configured).',
     'Legacy-Modus aktiviert.' => 'Legacy mode activated.',
     'Neuer Modus aktiviert.' => 'New mode activated.',
     'Nutzername oder Passwort ist falsch.' => 'Username or password is incorrect.',
     'Legacy-Datenbank ist nicht konfiguriert.' => 'Legacy database is not configured.',
     'Anmeldedaten sind ungültig.' => 'Credentials are invalid.',
-    'Diese Zugangsdaten stimmen nicht mit unseren Aufzeichnungen überein.' =>
-    'These credentials do not match our records.',
+    'Diese Zugangsdaten stimmen nicht mit unseren Aufzeichnungen überein.' => 'These credentials do not match our records.',
 ];
 
 $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
@@ -51,7 +46,9 @@ $totalReplacements = 0;
 $filesChanged = 0;
 
 foreach ($rii as $file) {
-    if (! $file->isFile() || ! str_ends_with($file->getFilename(), '.php')) continue;
+    if (! $file->isFile() || ! str_ends_with($file->getFilename(), '.php')) {
+        continue;
+    }
     $path = $file->getPathname();
     $content = file_get_contents($path);
     $original = $content;
@@ -59,10 +56,10 @@ foreach ($rii as $file) {
     foreach ($map as $de => $en) {
         $deEsc = addcslashes($de, "'");
         // 1) Single-quoted: '...'
-        $content = str_replace("'" . $deEsc . "'", "__('" . $deEsc . "')", $content);
+        $content = str_replace("'".$deEsc."'", "__('".$deEsc."')", $content);
         // 2) Double-quoted (selten, aber sicher)
         $deEscD = addcslashes($de, '"');
-        $content = str_replace('"' . $deEscD . '"', "__('" . $deEsc . "')", $content);
+        $content = str_replace('"'.$deEscD.'"', "__('".$deEsc."')", $content);
     }
 
     if ($content !== $original) {
@@ -70,7 +67,7 @@ foreach ($rii as $file) {
         $totalReplacements += $diff;
         $filesChanged++;
         file_put_contents($path, $content);
-        echo "✓ " . str_replace($root . '/', '', $path) . " (+{$diff})\n";
+        echo '✓ '.str_replace($root.'/', '', $path)." (+{$diff})\n";
     }
 }
 
@@ -79,8 +76,10 @@ echo "\n{$filesChanged} Controller geändert, {$totalReplacements} __()-Aufrufe.
 // en.json mergen
 $existing = file_exists($jsonFile) ? json_decode(file_get_contents($jsonFile), true) : [];
 foreach ($map as $de => $en) {
-    if (! isset($existing[$de])) $existing[$de] = $en;
+    if (! isset($existing[$de])) {
+        $existing[$de] = $en;
+    }
 }
 ksort($existing, SORT_NATURAL | SORT_FLAG_CASE);
-file_put_contents($jsonFile, json_encode($existing, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n");
-echo "lang/en.json: " . count($existing) . " Keys.\n";
+file_put_contents($jsonFile, json_encode($existing, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)."\n");
+echo 'lang/en.json: '.count($existing)." Keys.\n";

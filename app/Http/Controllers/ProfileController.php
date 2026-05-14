@@ -2,22 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
-class ProfileController extends Controller {
-    public function edit(Request $request): View {
+class ProfileController extends Controller
+{
+    public function edit(Request $request): View
+    {
         return view('account._profile_dialog', [
             'user' => Auth::user(),
             'isDialog' => true,
         ]);
     }
 
-    public function update(Request $request): RedirectResponse {
-        /** @var \App\Models\User $user */
+    public function update(Request $request): RedirectResponse
+    {
+        /** @var User $user */
         $user = Auth::user();
 
         $data = $request->validate([

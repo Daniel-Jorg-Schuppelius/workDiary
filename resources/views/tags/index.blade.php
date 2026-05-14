@@ -16,10 +16,10 @@
     <x-table :pin-rows="true" scroll="flex">
             <thead class="bg-base-200">
                 <tr>
-                    <th>{{ __('Tag') }}</th>
-                    <th class="text-right">{{ __('Tagebuch') }}</th>
-                    <th class="text-right">{{ __('Bereitschaft') }}</th>
-                    <th class="text-right">{{ __('Notdienst') }}</th>
+                    <th><x-sort-th column="name" :route="route('tags.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'" default="name">{{ __('Tag') }}</x-sort-th></th>
+                    <th class="text-right"><x-sort-th column="diary" :route="route('tags.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Tagebuch') }}</x-sort-th></th>
+                    <th class="text-right"><x-sort-th column="shifts" :route="route('tags.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Bereitschaft') }}</x-sort-th></th>
+                    <th class="text-right"><x-sort-th column="assignments" :route="route('tags.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Notdienst') }}</x-sort-th></th>
                     <th class="text-right">{{ __('Aktionen') }}</th>
                 </tr>
             </thead>

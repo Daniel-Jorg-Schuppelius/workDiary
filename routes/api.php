@@ -5,10 +5,16 @@ use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DiaryController;
 use App\Http\Controllers\Api\EmergencyAssignmentController;
+use App\Http\Controllers\Api\FlexController;
+use App\Http\Controllers\Api\MaterialController;
 use App\Http\Controllers\Api\MeController;
 use App\Http\Controllers\Api\OnCallShiftController;
 use App\Http\Controllers\Api\PushSubscriptionController;
+use App\Http\Controllers\Api\StopwatchController;
 use App\Http\Controllers\Api\TagController;
+use App\Http\Controllers\Api\TimesheetController;
+use App\Http\Controllers\Api\TimesheetEntryController;
+use App\Http\Controllers\Api\TimesheetMaterialController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -47,4 +53,32 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('push/vapid', [PushSubscriptionController::class, 'vapid'])->name('api.push.vapid');
     Route::post('push/subscribe', [PushSubscriptionController::class, 'store'])->name('api.push.subscribe');
     Route::delete('push/unsubscribe', [PushSubscriptionController::class, 'destroy'])->name('api.push.unsubscribe');
+
+    // ── Stundenzettel / Material / Flex / Stoppuhr ─────────────────────────
+    Route::get('timesheets', [TimesheetController::class, 'index'])->name('api.timesheets.index');
+    Route::post('projects/{project}/timesheets', [TimesheetController::class, 'store'])->name('api.timesheets.store');
+    Route::get('timesheets/{timesheet}', [TimesheetController::class, 'show'])->name('api.timesheets.show');
+    Route::put('timesheets/{timesheet}', [TimesheetController::class, 'update'])->name('api.timesheets.update');
+    Route::delete('timesheets/{timesheet}', [TimesheetController::class, 'destroy'])->name('api.timesheets.destroy');
+    Route::post('timesheets/{timesheet}/submit', [TimesheetController::class, 'submit'])->name('api.timesheets.submit');
+    Route::post('timesheets/{timesheet}/sign', [TimesheetController::class, 'sign'])->name('api.timesheets.sign');
+    Route::get('timesheets/{timesheet}/pdf', [TimesheetController::class, 'pdf'])->name('api.timesheets.pdf');
+
+    Route::get('timesheets/{timesheet}/entries', [TimesheetEntryController::class, 'index'])->name('api.timesheets.entries.index');
+    Route::post('timesheets/{timesheet}/entries', [TimesheetEntryController::class, 'store'])->name('api.timesheets.entries.store');
+    Route::put('timesheets/{timesheet}/entries/{entry}', [TimesheetEntryController::class, 'update'])->name('api.timesheets.entries.update');
+    Route::delete('timesheets/{timesheet}/entries/{entry}', [TimesheetEntryController::class, 'destroy'])->name('api.timesheets.entries.destroy');
+
+    Route::get('timesheets/{timesheet}/materials', [TimesheetMaterialController::class, 'index'])->name('api.timesheets.materials.index');
+    Route::post('timesheets/{timesheet}/materials', [TimesheetMaterialController::class, 'store'])->name('api.timesheets.materials.store');
+    Route::put('timesheets/{timesheet}/materials/{usage}', [TimesheetMaterialController::class, 'update'])->name('api.timesheets.materials.update');
+    Route::delete('timesheets/{timesheet}/materials/{usage}', [TimesheetMaterialController::class, 'destroy'])->name('api.timesheets.materials.destroy');
+
+    Route::get('materials', [MaterialController::class, 'index'])->name('api.materials.index');
+
+    Route::get('stopwatch', [StopwatchController::class, 'current'])->name('api.stopwatch.current');
+    Route::post('stopwatch/start', [StopwatchController::class, 'start'])->name('api.stopwatch.start');
+    Route::post('stopwatch/stop', [StopwatchController::class, 'stop'])->name('api.stopwatch.stop');
+
+    Route::get('flex/summary', [FlexController::class, 'summary'])->name('api.flex.summary');
 });

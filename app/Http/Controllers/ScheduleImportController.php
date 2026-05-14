@@ -5,16 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\ScheduledShift;
 use App\Models\ShiftType;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\View\View;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
-class ScheduleImportController extends Controller {
+class ScheduleImportController extends Controller
+{
     /** Step 1 – show upload form */
-    public function show(): View {
+    public function show(): View
+    {
         /** @var User $auth */
         $auth = Auth::user();
         if (! $auth->isAdmin()) {
@@ -25,7 +29,8 @@ class ScheduleImportController extends Controller {
     }
 
     /** Step 2 – parse file, show column-mapping form */
-    public function preview(Request $request): View|RedirectResponse {
+    public function preview(Request $request): View|RedirectResponse
+    {
         /** @var User $auth */
         $auth = Auth::user();
         if (! $auth->isAdmin()) {
@@ -36,9 +41,9 @@ class ScheduleImportController extends Controller {
             'file' => ['required', 'file', 'mimes:csv,txt,xlsx,xls', 'max:10240'],
         ]);
 
-        $file      = $request->file('file');
+        $file = $request->file('file');
         $extension = strtolower($file->getClientOriginalExtension());
-        $path      = $file->store('schedule-imports', 'local');
+        $path = $file->store('schedule-imports', 'local');
 
         $rows = $this->parseFile(storage_path("app/{$path}"), $extension);
 
@@ -46,30 +51,31 @@ class ScheduleImportController extends Controller {
             return back()->withErrors(['file' => __('Die Datei enthält keine verwertbaren Zeilen.')]);
         }
 
-        $headers   = $rows[0];
-        $preview   = array_slice($rows, 1, 20);
+        $headers = $rows[0];
+        $preview = array_slice($rows, 1, 20);
         $remaining = max(0, count($rows) - 1);
 
         Session::put('schedule_import', [
-            'path'      => $path,
+            'path' => $path,
             'extension' => $extension,
-            'headers'   => $headers,
+            'headers' => $headers,
         ]);
 
         $shiftTypes = ShiftType::active()->orderBy('name')->pluck('name', 'id');
-        $users      = User::orderBy('name')->pluck('name', 'id');
+        $users = User::orderBy('name')->pluck('name', 'id');
 
         return view('schedule.import.preview', [
-            'headers'    => $headers,
-            'preview'    => $preview,
-            'remaining'  => $remaining,
+            'headers' => $headers,
+            'preview' => $preview,
+            'remaining' => $remaining,
             'shiftTypes' => $shiftTypes,
-            'users'      => $users,
+            'users' => $users,
         ]);
     }
 
     /** Step 3 – confirm import with column mapping */
-    public function confirm(Request $request): RedirectResponse {
+    public function confirm(Request $request): RedirectResponse
+    {
         /** @var User $auth */
         $auth = Auth::user();
         if (! $auth->isAdmin()) {
@@ -82,19 +88,19 @@ class ScheduleImportController extends Controller {
         }
 
         $mapping = $request->validate([
-            'map'   => ['required', 'array'],
+            'map' => ['required', 'array'],
             'map.*' => ['required', 'string'],
         ])['map'];
 
         $rows = $this->parseFile(storage_path("app/{$import['path']}"), $import['extension']);
         $data = array_slice($rows, 1); // skip header
 
-        $users     = User::pluck('id', 'name');
+        $users = User::pluck('id', 'name');
         $userEmails = User::pluck('id', 'email');
         $shiftTypes = ShiftType::pluck('id', 'name');
 
         $imported = 0;
-        $errors   = [];
+        $errors = [];
 
         foreach ($data as $idx => $row) {
             $line = $idx + 2; // 1-based, +1 for header
@@ -104,18 +110,21 @@ class ScheduleImportController extends Controller {
 
                 if (! $userId) {
                     $errors[] = __('Zeile :line: Mitarbeiter ":user" nicht gefunden.', ['line' => $line, 'user' => $mapped['user'] ?? '?']);
+
                     continue;
                 }
 
                 if (empty($mapped['date'])) {
                     $errors[] = __('Zeile :line: Datum fehlt.', ['line' => $line]);
+
                     continue;
                 }
 
                 try {
-                    $date = \Carbon\Carbon::parse($mapped['date'])->format('Y-m-d');
+                    $date = Carbon::parse($mapped['date'])->format('Y-m-d');
                 } catch (\Exception) {
                     $errors[] = __('Zeile :line: Ungültiges Datum ":date".', ['line' => $line, 'date' => $mapped['date']]);
+
                     continue;
                 }
 
@@ -128,12 +137,12 @@ class ScheduleImportController extends Controller {
                     ['user_id' => $userId, 'date' => $date],
                     [
                         'shift_type_id' => $shiftTypeId,
-                        'start_time'    => $this->normalizeTime($mapped['start_time'] ?? null),
-                        'end_time'      => $this->normalizeTime($mapped['end_time'] ?? null),
-                        'note'          => $mapped['note'] ?? null,
-                        'status'        => ScheduledShift::STATUS_DRAFT,
-                        'created_by'    => $auth->id,
-                        'updated_by'    => $auth->id,
+                        'start_time' => $this->normalizeTime($mapped['start_time'] ?? null),
+                        'end_time' => $this->normalizeTime($mapped['end_time'] ?? null),
+                        'note' => $mapped['note'] ?? null,
+                        'status' => ScheduledShift::STATUS_DRAFT,
+                        'created_by' => $auth->id,
+                        'updated_by' => $auth->id,
                     ]
                 );
 
@@ -158,7 +167,8 @@ class ScheduleImportController extends Controller {
     /**
      * @return array<int, array<int, string>>
      */
-    private function parseFile(string $path, string $extension): array {
+    private function parseFile(string $path, string $extension): array
+    {
         if (in_array($extension, ['xlsx', 'xls'])) {
             return $this->parseSpreadsheet($path);
         }
@@ -169,7 +179,8 @@ class ScheduleImportController extends Controller {
     /**
      * @return array<int, array<int, string>>
      */
-    private function parseCsv(string $path): array {
+    private function parseCsv(string $path): array
+    {
         $rows = [];
         if (($handle = fopen($path, 'r')) !== false) {
             while (($line = fgetcsv($handle, 0, ';')) !== false) {
@@ -187,14 +198,15 @@ class ScheduleImportController extends Controller {
     /**
      * @return array<int, array<int, string>>
      */
-    private function parseSpreadsheet(string $path): array {
-        if (! class_exists(\PhpOffice\PhpSpreadsheet\IOFactory::class)) {
+    private function parseSpreadsheet(string $path): array
+    {
+        if (! class_exists(IOFactory::class)) {
             abort(500, 'phpoffice/phpspreadsheet ist nicht installiert.');
         }
 
         $spreadsheet = IOFactory::load($path);
-        $sheet       = $spreadsheet->getActiveSheet();
-        $rows        = [];
+        $sheet = $spreadsheet->getActiveSheet();
+        $rows = [];
 
         foreach ($sheet->getRowIterator() as $row) {
             $cells = [];
@@ -208,11 +220,12 @@ class ScheduleImportController extends Controller {
     }
 
     /**
-     * @param array<int, string>            $row
-     * @param array<string, string>         $mapping  column-index → field-name
+     * @param  array<int, string>  $row
+     * @param  array<string, string>  $mapping  column-index → field-name
      * @return array<string, string|null>
      */
-    private function mapRow(array $row, array $mapping): array {
+    private function mapRow(array $row, array $mapping): array
+    {
         $result = [];
         foreach ($mapping as $colIndex => $fieldName) {
             if ($fieldName === 'skip') {
@@ -225,10 +238,11 @@ class ScheduleImportController extends Controller {
     }
 
     /**
-     * @param \Illuminate\Support\Collection<string, int> $byName
-     * @param \Illuminate\Support\Collection<string, int> $byEmail
+     * @param  Collection<string, int>  $byName
+     * @param  Collection<string, int>  $byEmail
      */
-    private function resolveUser(?string $value, $byName, $byEmail): ?int {
+    private function resolveUser(?string $value, $byName, $byEmail): ?int
+    {
         if (empty($value)) {
             return null;
         }
@@ -237,12 +251,13 @@ class ScheduleImportController extends Controller {
         return $byName[$value] ?? $byEmail[$value] ?? null;
     }
 
-    private function normalizeTime(?string $value): ?string {
+    private function normalizeTime(?string $value): ?string
+    {
         if (empty($value)) {
             return null;
         }
         try {
-            return \Carbon\Carbon::parse($value)->format('H:i');
+            return Carbon::parse($value)->format('H:i');
         } catch (\Exception) {
             return null;
         }

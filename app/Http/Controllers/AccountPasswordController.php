@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,12 +19,12 @@ class AccountPasswordController extends Controller {
     }
 
     public function update(Request $request): RedirectResponse {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
         $mustChange = (bool) ($user->must_change_password ?? false);
 
         $rules = [
-            'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
+            'password' => ['required', 'confirmed', Password::defaults()],
         ];
 
         // Wenn der User sein Passwort regulär ändern will (nicht erzwungen),

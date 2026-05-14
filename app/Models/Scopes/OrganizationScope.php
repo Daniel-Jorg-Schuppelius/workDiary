@@ -2,22 +2,25 @@
 
 namespace App\Models\Scopes;
 
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 
-/** @implements Scope<\Illuminate\Database\Eloquent\Model> */
-class OrganizationScope implements Scope {
-    public function apply(Builder $builder, Model $model): void {
+/** @implements Scope<Model> */
+class OrganizationScope implements Scope
+{
+    public function apply(Builder $builder, Model $model): void
+    {
         if (! app()->bound('currentOrganization')) {
             return;
         }
 
-        /** @var \App\Models\Organization|null $org */
+        /** @var Organization|null $org */
         $org = app('currentOrganization');
 
-        if ($org instanceof \App\Models\Organization) {
-            $builder->where($model->getTable() . '.organization_id', $org->id);
+        if ($org instanceof Organization) {
+            $builder->where($model->getTable().'.organization_id', $org->id);
         }
     }
 }

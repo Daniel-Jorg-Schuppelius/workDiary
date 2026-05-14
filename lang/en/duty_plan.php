@@ -2,12 +2,12 @@
 
 return [
     'period' => [
-        'daily'   => 'Daily',
-        'weekly'  => 'Weekly',
+        'daily' => 'Daily',
+        'weekly' => 'Weekly',
         'monthly' => 'Monthly',
     ],
     'status' => [
-        'draft'     => 'Draft',
+        'draft' => 'Draft',
         'published' => 'Published',
     ],
 ];

@@ -76,7 +76,9 @@
 
     @can('delete', $shift)
         <form method="POST" action="{{ route('scheduled-shifts.destroy', $shift) }}" class="mt-3"
-              onsubmit="return confirm('{{ __('Wirklich löschen?') }}')">
+              data-confirm-dialog
+              data-confirm-message="{{ __('Wirklich löschen?') }}"
+              data-confirm-label="{{ __('Löschen') }}">
             @csrf @method('DELETE')
             <button type="submit" class="btn btn-error btn-outline btn-sm">{{ __('Schicht löschen') }}</button>
         </form>

@@ -7,15 +7,18 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class ApiTokenTest extends TestCase {
+class ApiTokenTest extends TestCase
+{
     use RefreshDatabase;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
     }
 
-    public function test_index_lists_tokens(): void {
+    public function test_index_lists_tokens(): void
+    {
         $user = User::factory()->user()->create();
         $user->createToken('Mein Token');
 
@@ -24,7 +27,8 @@ class ApiTokenTest extends TestCase {
             ->assertSee('Mein Token');
     }
 
-    public function test_create_token_shows_plain_text_once(): void {
+    public function test_create_token_shows_plain_text_once(): void
+    {
         $user = User::factory()->user()->create();
 
         $response = $this->actingAs($user)->post(route('profile.api-tokens.store'), [
@@ -35,7 +39,8 @@ class ApiTokenTest extends TestCase {
         $this->assertDatabaseHas('personal_access_tokens', ['name' => 'CLI']);
     }
 
-    public function test_destroy_revokes_token(): void {
+    public function test_destroy_revokes_token(): void
+    {
         $user = User::factory()->user()->create();
         $token = $user->createToken('temp')->accessToken;
 

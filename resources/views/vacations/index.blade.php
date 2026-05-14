@@ -140,12 +140,14 @@
 
                                     {{-- Stornieren --}}
                                     @can('cancel', $v)
-                                        <form method="POST" action="{{ route('vacations.cancel', $v) }}" class="inline">
+                                        <form method="POST" action="{{ route('vacations.cancel', $v) }}" class="inline"
+                                              data-confirm-dialog
+                                              data-confirm-message="{{ __('Urlaubsantrag wirklich stornieren?') }}"
+                                              data-confirm-label="{{ __('Stornieren') }}">
                                             @csrf @method('PATCH')
                                             <button type="submit"
                                                 title="{{ __('Stornieren') }}"
-                                                class="btn btn-xs btn-ghost text-warning"
-                                                onclick="return confirm('{{ __('Urlaubsantrag wirklich stornieren?') }}')">
+                                                class="btn btn-xs btn-ghost text-warning">
                                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
                                             </button>
                                         </form>
@@ -153,12 +155,14 @@
 
                                     {{-- Delete --}}
                                     @can('delete', $v)
-                                        <form method="POST" action="{{ route('vacations.destroy', $v) }}" class="inline">
+                                        <form method="POST" action="{{ route('vacations.destroy', $v) }}" class="inline"
+                                              data-confirm-dialog
+                                              data-confirm-message="{{ __('Urlaubsantrag wirklich löschen?') }}"
+                                              data-confirm-label="{{ __('Löschen') }}">
                                             @csrf @method('DELETE')
                                             <button type="submit"
                                                 title="{{ __('Löschen') }}"
-                                                class="btn btn-xs btn-ghost text-error"
-                                                onclick="return confirm('{{ __('Urlaubsantrag wirklich löschen?') }}')">
+                                                class="btn btn-xs btn-ghost text-error">
                                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3m-7 0h8"/></svg>
                                             </button>
                                         </form>

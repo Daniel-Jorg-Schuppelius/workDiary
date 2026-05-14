@@ -79,18 +79,25 @@
 
                     {{-- Shift badges --}}
                     @foreach ($cellShifts as $shift)
+                        @php
+                            $compl = $complianceByShift[$shift->id] ?? null;
+                            $complTitle = $compl ? "\n⚠ ".implode("\n⚠ ", $compl['messages']) : '';
+                        @endphp
                         <div class="schedule-shift-badge mb-0.5 flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-semibold leading-tight shadow-xs
                                     @if ($isAdmin) cursor-pointer hover:opacity-80 @endif"
                              style="background:{{ $shift->shiftType?->color ?? '#6b7280' }};color:#fff;"
                              @if ($isAdmin)
                                  draggable="true"
                                  ondragstart="scheduleDragStart(event, {{ $shift->id }})"
-                                 onclick="event.stopPropagation(); scheduleOpenEditDialog({{ $shift->id }}, @json($shift))"
+                                 onclick="event.stopPropagation(); scheduleOpenEditDialog({{ $shift->id }}, {{ json_encode($shift) }})"
                              @endif
-                             title="{{ $shift->shiftType?->name ?? __('Schicht') }}{{ $shift->resolvedStartTime() ? ': '.$shift->resolvedStartTime() : '' }}{{ $shift->resolvedEndTime() ? '–'.$shift->resolvedEndTime() : '' }}{{ $shift->note ? ' · '.$shift->note : '' }}">
+                             title="{{ $shift->shiftType?->name ?? __('Schicht') }}{{ $shift->resolvedStartTime() ? ': '.$shift->resolvedStartTime() : '' }}{{ $shift->resolvedEndTime() ? '–'.$shift->resolvedEndTime() : '' }}{{ $shift->note ? ' · '.$shift->note : '' }}{{ $complTitle }}">
                             <span>{{ $shift->shiftType?->abbreviation ?? '?' }}</span>
-                            @if ($shift->resolvedStartTime())
-                                <span class="font-normal opacity-80">{{ $shift->resolvedStartTime() }}</span>
+                            @if ($shift->resolvedStartTime() || $shift->resolvedEndTime())
+                                <span class="font-normal opacity-80">{{ $shift->resolvedStartTime() ?? '' }}–{{ $shift->resolvedEndTime() ?? '' }}</span>
+                            @endif
+                            @if ($compl)
+                                <span class="ml-auto inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-white/90 text-[0.6rem] font-bold {{ $compl['severity'] === 'error' ? 'text-error' : 'text-warning' }}" aria-hidden="true">!</span>
                             @endif
                         </div>
                     @endforeach
@@ -105,5 +112,38 @@
     @empty
         <p class="py-12 text-center text-sm text-base-content/50">{{ __('Keine Schichten in diesem Zeitraum.') }}</p>
     @endforelse
+
+    {{-- ── Open-slot row (Soll vs Ist) ── --}}
+    @php
+        $hasOpenSlots = collect($weekDays)->contains(fn($d) => ! empty($openSlotsByDate[$d['date']] ?? []));
+    @endphp
+    @if ($hasOpenSlots)
+        <div class="flex border-b border-base-300 bg-base-200/30">
+            <div class="sticky left-0 z-10 flex w-36 shrink-0 items-center border-r border-base-300 bg-base-200/60 px-3 py-2 text-sm font-semibold text-base-content/70">
+                {{ __('Offen') }}
+            </div>
+            @foreach ($weekDays as $day)
+                @php $slots = $openSlotsByDate[$day['date']] ?? []; @endphp
+                <div class="schedule-cell relative min-h-[3rem] min-w-[8rem] flex-1 border-r border-base-300 p-1">
+                    @foreach ($slots as $slot)
+                        @for ($i = 0; $i < $slot['missing']; $i++)
+                            <button type="button"
+                                    @if ($isAdmin)
+                                        onclick="scheduleOpenSlotDialog('{{ $day['date'] }}', {{ $slot['shift_type_id'] }})"
+                                    @else
+                                        disabled
+                                    @endif
+                                    class="schedule-shift-badge mb-0.5 flex w-full items-center gap-1 rounded border-2 border-dashed px-1.5 py-0.5 text-xs font-semibold leading-tight text-base-content/70 hover:bg-base-100 @if ($isAdmin) cursor-pointer @endif"
+                                    style="border-color:{{ $slot['color'] }};color:{{ $slot['color'] }};"
+                                    title="{{ __('Offene Schicht') }}: {{ $slot['name'] }}">
+                                <span>{{ $slot['abbreviation'] }}</span>
+                                <span class="ml-auto text-[0.6rem] opacity-70">+</span>
+                            </button>
+                        @endfor
+                    @endforeach
+                </div>
+            @endforeach
+        </div>
+    @endif
 
 </div>

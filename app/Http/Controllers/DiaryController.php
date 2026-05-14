@@ -4,35 +4,40 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SaveDiaryEntryRequest;
 use App\Models\DiaryEntry;
-use App\Models\Legacy\LegacyDiaryEntry;
+use App\Legacy\Models\LegacyDiaryEntry;
 use App\Models\Tag;
 use App\Models\User;
 use App\Services\Archive\ArchiveService;
 use App\Support\LookupCache;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class DiaryController extends Controller {
-    public function index(Request $request): View {
+class DiaryController extends Controller
+{
+    public function index(Request $request): View
+    {
         [$query, $filters] = $this->buildIndexQuery($request);
         $entries = $query->paginate(20)->withQueryString();
 
         $row = DiaryEntry::query()->selectRaw(
-            'COUNT(CASE WHEN is_archived = 0 THEN 1 END) as cnt_all,' .
-                'COUNT(CASE WHEN is_archived = 0 AND status = 2 THEN 1 END) as cnt_open,' .
-                'COUNT(CASE WHEN is_archived = 0 AND status = 3 THEN 1 END) as cnt_alert,' .
-                'COUNT(CASE WHEN is_archived = 0 AND status = -1 THEN 1 END) as cnt_done,' .
+            'COUNT(CASE WHEN is_archived = 0 THEN 1 END) as cnt_all,'.
+                'COUNT(CASE WHEN is_archived = 0 AND status = 2 THEN 1 END) as cnt_open,'.
+                'COUNT(CASE WHEN is_archived = 0 AND status = 3 THEN 1 END) as cnt_alert,'.
+                'COUNT(CASE WHEN is_archived = 0 AND status = -1 THEN 1 END) as cnt_done,'.
                 'COUNT(CASE WHEN is_archived = 1 THEN 1 END) as cnt_archived'
         )->first()?->getAttributes() ?? [];
 
         $counts = [
-            'all'      => (int) ($row['cnt_all'] ?? 0),
-            'open'     => (int) ($row['cnt_open'] ?? 0),
-            'alert'    => (int) ($row['cnt_alert'] ?? 0),
-            'done'     => (int) ($row['cnt_done'] ?? 0),
+            'all' => (int) ($row['cnt_all'] ?? 0),
+            'open' => (int) ($row['cnt_open'] ?? 0),
+            'alert' => (int) ($row['cnt_alert'] ?? 0),
+            'done' => (int) ($row['cnt_done'] ?? 0),
             'archived' => (int) ($row['cnt_archived'] ?? 0),
         ];
 
@@ -47,9 +52,10 @@ class DiaryController extends Controller {
     /**
      * Baut die gefilterte Query und gibt zusätzlich das normalisierte Filter-Array zurück.
      *
-     * @return array{0: \Illuminate\Database\Eloquent\Builder<\App\Models\DiaryEntry>, 1: array<string,mixed>}
+     * @return array{0: Builder<DiaryEntry>, 1: array<string,mixed>}
      */
-    private function buildIndexQuery(Request $request): array {
+    private function buildIndexQuery(Request $request): array
+    {
         $query = DiaryEntry::query()
             ->select(['id', 'user_id', 'content', 'status', 'is_archived', 'start_at', 'end_at', 'created_at'])
             ->with(['user:id,name', 'tags:id,name,color,slug'])
@@ -77,7 +83,7 @@ class DiaryController extends Controller {
 
         $tagId = $request->integer('tag');
         if ($tagId > 0) {
-            $query->whereHas('tags', fn($q) => $q->where('tags.id', $tagId));
+            $query->whereHas('tags', fn ($q) => $q->where('tags.id', $tagId));
         }
 
         $projectId = $request->integer('project');
@@ -87,7 +93,7 @@ class DiaryController extends Controller {
 
         $q = trim((string) $request->query('q', ''));
         if ($q !== '') {
-            $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $q) . '%';
+            $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $q).'%';
             $query->where(function ($w) use ($like) {
                 $w->where('content', 'like', $like)->orWhere('response', 'like', $like);
             });
@@ -98,7 +104,8 @@ class DiaryController extends Controller {
         return [$query, $filters];
     }
 
-    public function create(Request $request): View {
+    public function create(Request $request): View
+    {
         /** @var User $auth */
         $auth = Auth::user();
         $canCreateForOthers = $auth->canCreateEntriesForOthers();
@@ -123,23 +130,25 @@ class DiaryController extends Controller {
         ]);
     }
 
-    private function parsePrefillDate(?string $value): ?string {
+    private function parsePrefillDate(?string $value): ?string
+    {
         if (! $value) {
             return null;
         }
         try {
-            return \Carbon\CarbonImmutable::parse($value)->format('Y-m-d\TH:i');
+            return CarbonImmutable::parse($value)->format('Y-m-d\TH:i');
         } catch (\Exception) {
             return null;
         }
     }
 
-    public function store(SaveDiaryEntryRequest $request): RedirectResponse {
+    public function store(SaveDiaryEntryRequest $request): RedirectResponse
+    {
         $data = $request->validated();
         $tagIds = $this->extractTagIds($request);
         $newTagNames = $this->extractNewTagNames($request);
 
-        /** @var \App\Models\User $auth */
+        /** @var User $auth */
         $auth = Auth::user();
 
         $owner = $auth;
@@ -156,7 +165,8 @@ class DiaryController extends Controller {
         return redirect()->route('diary.show', $entry)->with('success', __('Eintrag gespeichert.'));
     }
 
-    public function show(Request $request, DiaryEntry $diary): View {
+    public function show(Request $request, DiaryEntry $diary): View
+    {
         $diary->load(['user:id,name', 'tags:id,name,color,slug', 'comments.user:id,name', 'attachments.uploader:id,name']);
 
         // Falls der Eintrag aus einem Legacy-Import stammt, auch die Legacy-Daten laden
@@ -174,12 +184,13 @@ class DiaryController extends Controller {
         return view($view, compact('diary', 'legacyEntry'));
     }
 
-    public function edit(Request $request, DiaryEntry $diary): View {
+    public function edit(Request $request, DiaryEntry $diary): View
+    {
         Gate::authorize('update', $diary);
 
         $diary->load('tags:id,name,color');
 
-        /** @var \App\Models\User $auth */
+        /** @var User $auth */
         $auth = Auth::user();
         $canCreateForOthers = $auth->canCreateEntriesForOthers();
 
@@ -194,7 +205,8 @@ class DiaryController extends Controller {
         ]);
     }
 
-    public function update(SaveDiaryEntryRequest $request, DiaryEntry $diary): RedirectResponse {
+    public function update(SaveDiaryEntryRequest $request, DiaryEntry $diary): RedirectResponse
+    {
         Gate::authorize('update', $diary);
 
         $data = $request->validated();
@@ -208,7 +220,8 @@ class DiaryController extends Controller {
         return redirect()->route('diary.show', $diary)->with('success', __('Eintrag aktualisiert.'));
     }
 
-    public function destroy(DiaryEntry $diary): RedirectResponse {
+    public function destroy(DiaryEntry $diary): RedirectResponse
+    {
         Gate::authorize('delete', $diary);
 
         $diary->delete();
@@ -217,30 +230,33 @@ class DiaryController extends Controller {
     }
 
     /** @return array<int> */
-    private function extractTagIds(Request $request): array {
+    private function extractTagIds(Request $request): array
+    {
         $raw = $request->input('tag_ids', []);
         if (! is_array($raw)) {
             return [];
         }
 
-        return collect($raw)->filter(fn($v) => is_numeric($v))->map(fn($v) => (int) $v)->all();
+        return collect($raw)->filter(fn ($v) => is_numeric($v))->map(fn ($v) => (int) $v)->all();
     }
 
     /** @return array<string> */
-    private function extractNewTagNames(Request $request): array {
+    private function extractNewTagNames(Request $request): array
+    {
         $raw = (string) $request->input('new_tags', '');
         if ($raw === '') {
             return [];
         }
 
         return collect(preg_split('/[,;\n]+/', $raw) ?: [])
-            ->map(fn($v) => trim((string) $v))
+            ->map(fn ($v) => trim((string) $v))
             ->filter()
             ->take(20)
             ->all();
     }
 
-    public function archive(DiaryEntry $diary, ArchiveService $service): RedirectResponse {
+    public function archive(DiaryEntry $diary, ArchiveService $service): RedirectResponse
+    {
         Gate::authorize('archive', $diary);
 
         $service->archiveEntry($diary);
@@ -248,7 +264,8 @@ class DiaryController extends Controller {
         return redirect()->route('diary.show', $diary)->with('success', __('Eintrag archiviert.'));
     }
 
-    public function restore(DiaryEntry $diary, ArchiveService $service): RedirectResponse {
+    public function restore(DiaryEntry $diary, ArchiveService $service): RedirectResponse
+    {
         Gate::authorize('archive', $diary);
 
         $service->restoreEntry($diary);
@@ -256,8 +273,9 @@ class DiaryController extends Controller {
         return redirect()->route('diary.show', $diary)->with('success', __('Eintrag wiederhergestellt.'));
     }
 
-    /** @return \Illuminate\Support\Collection<int, Tag> */
-    private function allTags(): \Illuminate\Support\Collection {
+    /** @return Collection<int, Tag> */
+    private function allTags(): Collection
+    {
         return LookupCache::tagOptions();
     }
 }

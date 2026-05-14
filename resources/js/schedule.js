@@ -30,12 +30,42 @@ document.addEventListener("DOMContentLoaded", function () {
     document
         .getElementById("shift-dialog-delete")
         ?.addEventListener("click", onShiftDialogDelete);
+    document
+        .getElementById("shift-dialog-publish")
+        ?.addEventListener("click", onShiftDialogPublish);
+    document
+        .getElementById("shift-dialog-confirm")
+        ?.addEventListener("click", onShiftDialogConfirm);
 
     // Shift-type form: save
     document
         .getElementById("shift-type-form")
         ?.addEventListener("submit", onShiftTypeSave);
+
+    // Auto-fill default times when shift type changes
+    document
+        .getElementById("shift-dialog-type")
+        ?.addEventListener("change", applyShiftTypeDefaults);
 });
+
+/**
+ * When a shift type is selected, prefill start/end with its defaults.
+ * Always overwrites empty fields; overwrites existing values only if they
+ * still match the previously selected type's defaults (so manual edits stay).
+ */
+function applyShiftTypeDefaults(event) {
+    const sel = event.currentTarget ?? event.target;
+    const id = sel.value;
+    const types = Array.isArray(_cfg?.shiftTypes) ? _cfg.shiftTypes : [];
+    const t = types.find((x) => String(x.id) === String(id));
+    if (!t) return;
+    const startEl = document.getElementById("shift-dialog-start");
+    const endEl = document.getElementById("shift-dialog-end");
+    const ds = (t.default_start_time ?? "").slice(0, 5);
+    const de = (t.default_end_time ?? "").slice(0, 5);
+    if (startEl && ds) startEl.value = ds;
+    if (endEl && de) endEl.value = de;
+}
 
 /* ──────────────────────── Cell click ─────────────────────────── */
 
@@ -81,11 +111,20 @@ window.scheduleOpenEditDialog = function (shiftId, shift) {
     openShiftDialog({ shiftId, shift });
 };
 
+/**
+ * Open dialog to CREATE a shift for an open slot (date + shift type prefilled).
+ * Called by open-slot placeholder buttons in the matrix.
+ */
+window.scheduleOpenSlotDialog = function (date, shiftTypeId) {
+    openShiftDialog({ date, shiftTypeId });
+};
+
 function openShiftDialog({
     date = null,
     userId = null,
     shiftId = null,
     shift = null,
+    shiftTypeId = null,
 } = {}) {
     const dlg = document.getElementById("shift-dialog");
     if (!dlg) return;
@@ -96,12 +135,32 @@ function openShiftDialog({
     document.getElementById("shift-dialog-form").reset();
     document.getElementById("shift-dialog-id").value = isEdit ? shiftId : "";
     document.getElementById("shift-dialog-error").classList.add("hidden");
+    document.getElementById("shift-dialog-compliance")?.classList.add("hidden");
+    document
+        .getElementById("shift-dialog-override-row")
+        ?.classList.add("hidden");
+    const _ovr = document.getElementById("shift-dialog-override");
+    if (_ovr) _ovr.checked = false;
     document
         .getElementById("shift-dialog-delete")
         .classList.toggle("hidden", !isEdit);
     document
         .getElementById("shift-dialog-status-row")
         .classList.toggle("hidden", !isEdit);
+
+    // Publish / Confirm buttons (state-driven, edit only)
+    const status = isEdit ? (shift?.status ?? "") : "";
+    const isAdmin = !!_cfg?.isAdmin;
+    const isOwner =
+        isEdit && Number(shift?.user_id) === Number(_cfg?.currentUserId ?? 0);
+    const showPublish = isEdit && isAdmin && status === "draft";
+    const showConfirm = isEdit && isOwner && status === "published";
+    document
+        .getElementById("shift-dialog-publish")
+        ?.classList.toggle("hidden", !showPublish);
+    document
+        .getElementById("shift-dialog-confirm")
+        ?.classList.toggle("hidden", !showConfirm);
     document.getElementById("shift-dialog-title").textContent = isEdit
         ? _t("Schicht bearbeiten")
         : _t("Schicht anlegen");
@@ -126,6 +185,7 @@ function openShiftDialog({
     } else {
         if (userEl?.tagName === "SELECT" && userId) userEl.value = userId;
         dateEl.value = date ?? "";
+        if (shiftTypeId && typeEl) typeEl.value = shiftTypeId;
     }
 
     dlg.showModal();
@@ -138,6 +198,10 @@ async function onShiftDialogSave(event) {
     const isEdit = !!id;
     const errEl = document.getElementById("shift-dialog-error");
     const saveBtn = document.getElementById("shift-dialog-save");
+    const compEl = document.getElementById("shift-dialog-compliance");
+    const compList = document.getElementById("shift-dialog-compliance-list");
+    const overrideRow = document.getElementById("shift-dialog-override-row");
+    const overrideEl = document.getElementById("shift-dialog-override");
 
     errEl.classList.add("hidden");
     saveBtn.disabled = true;
@@ -156,28 +220,73 @@ async function onShiftDialogSave(event) {
         body.status =
             document.getElementById("shift-dialog-status")?.value ?? undefined;
     }
+    if (overrideEl?.checked) {
+        body.override_compliance = 1;
+    }
 
     try {
-        if (isEdit) {
-            await apiFetch("PUT", `${_cfg.routes.shiftsUpdate}/${id}`, body);
-        } else {
-            await apiFetch("POST", _cfg.routes.shiftsStore, body);
+        const data = isEdit
+            ? await apiFetch("PUT", `${_cfg.routes.shiftsUpdate}/${id}`, body)
+            : await apiFetch("POST", _cfg.routes.shiftsStore, body);
+
+        if (
+            data &&
+            Array.isArray(data.compliance_warnings) &&
+            data.compliance_warnings.length > 0
+        ) {
+            // Soft warnings (mode=warn) — kurz anzeigen, dann reload.
+            showComplianceWarnings(data.compliance_warnings, false);
+            setTimeout(() => {
+                document.getElementById("shift-dialog").close();
+                window.location.reload();
+            }, 1500);
+            return;
         }
         document.getElementById("shift-dialog").close();
         window.location.reload();
     } catch (err) {
-        errEl.textContent = err.message ?? _t("Fehler beim Speichern.");
-        errEl.classList.remove("hidden");
+        // Compliance-Block (mode=block)?
+        const violations = err.complianceViolations;
+        if (Array.isArray(violations) && violations.length > 0) {
+            showComplianceWarnings(violations, true);
+        } else {
+            errEl.textContent = err.message ?? _t("Fehler beim Speichern.");
+            errEl.classList.remove("hidden");
+        }
     } finally {
         saveBtn.disabled = false;
         saveBtn.textContent = _t("Speichern");
     }
 }
 
+function showComplianceWarnings(violations, allowOverride) {
+    const compEl = document.getElementById("shift-dialog-compliance");
+    const compList = document.getElementById("shift-dialog-compliance-list");
+    const overrideRow = document.getElementById("shift-dialog-override-row");
+    if (!compEl || !compList) return;
+    compList.innerHTML = "";
+    for (const v of violations) {
+        const li = document.createElement("li");
+        li.textContent =
+            typeof v === "string" ? v : (v.message ?? JSON.stringify(v));
+        compList.appendChild(li);
+    }
+    compEl.classList.remove("hidden");
+    if (overrideRow) {
+        overrideRow.classList.toggle("hidden", !allowOverride);
+    }
+}
+
 async function onShiftDialogDelete() {
     const id = document.getElementById("shift-dialog-id").value;
     if (!id) return;
-    if (!confirm(_t("Schicht wirklich löschen?"))) return;
+    const ok = await (window.confirmAction
+        ? window.confirmAction({
+              message: _t("Schicht wirklich löschen?"),
+              label: _t("Löschen"),
+          })
+        : Promise.resolve(true));
+    if (!ok) return;
 
     try {
         await apiFetch("DELETE", `${_cfg.routes.shiftsDestroy}/${id}`);
@@ -185,6 +294,30 @@ async function onShiftDialogDelete() {
         window.location.reload();
     } catch (err) {
         alert(err.message ?? _t("Fehler beim Löschen."));
+    }
+}
+
+async function onShiftDialogPublish() {
+    const id = document.getElementById("shift-dialog-id").value;
+    if (!id) return;
+    try {
+        await apiFetch("PATCH", `${_cfg.routes.shiftsPublish}/${id}/publish`);
+        document.getElementById("shift-dialog").close();
+        window.location.reload();
+    } catch (err) {
+        alert(err.message ?? _t("Fehler beim Veröffentlichen."));
+    }
+}
+
+async function onShiftDialogConfirm() {
+    const id = document.getElementById("shift-dialog-id").value;
+    if (!id) return;
+    try {
+        await apiFetch("PATCH", `${_cfg.routes.shiftsConfirm}/${id}/confirm`);
+        document.getElementById("shift-dialog").close();
+        window.location.reload();
+    } catch (err) {
+        alert(err.message ?? _t("Fehler beim Bestätigen."));
     }
 }
 
@@ -253,8 +386,10 @@ async function onShiftTypeSave(event) {
         // Update row in table or add new row
         if (isEdit) {
             updateTypeRow(id, data);
+            updateTypeOption(id, data);
         } else {
             addTypeRow(data);
+            addTypeOption(data);
         }
         shiftTypeResetForm();
     } catch (err) {
@@ -268,14 +403,60 @@ async function onShiftTypeSave(event) {
 }
 
 window.shiftTypeDelete = async function (typeId) {
-    if (!confirm(_t("Schichttyp wirklich löschen?"))) return;
+    const ok = await (window.confirmAction
+        ? window.confirmAction({
+              message: _t("Schichttyp wirklich löschen?"),
+              label: _t("Löschen"),
+          })
+        : Promise.resolve(true));
+    if (!ok) return;
     try {
         await apiFetch("DELETE", `${_cfg.routes.typesDestroy}/${typeId}`);
         document.querySelector(`[data-type-row="${typeId}"]`)?.remove();
+        removeTypeOption(typeId);
     } catch (err) {
         alert(err.message ?? _t("Fehler beim Löschen."));
     }
 };
+
+function addTypeOption(type) {
+    const sel = document.getElementById("shift-dialog-type");
+    if (!sel) return;
+    if (sel.querySelector(`option[value="${type.id}"]`)) return;
+    const opt = document.createElement("option");
+    opt.value = String(type.id);
+    opt.style.color = type.color ?? "";
+    opt.textContent = `${type.name} (${type.abbreviation})`;
+    sel.appendChild(opt);
+    // Sync in-memory cache so other code paths can use it.
+    if (Array.isArray(_cfg?.shiftTypes)) _cfg.shiftTypes.push(type);
+}
+
+function updateTypeOption(id, type) {
+    const sel = document.getElementById("shift-dialog-type");
+    if (!sel) return;
+    const opt = sel.querySelector(`option[value="${id}"]`);
+    if (!opt) {
+        addTypeOption(type);
+        return;
+    }
+    opt.style.color = type.color ?? "";
+    opt.textContent = `${type.name} (${type.abbreviation})`;
+    if (Array.isArray(_cfg?.shiftTypes)) {
+        const i = _cfg.shiftTypes.findIndex((t) => String(t.id) === String(id));
+        if (i >= 0) _cfg.shiftTypes[i] = type;
+    }
+}
+
+function removeTypeOption(id) {
+    const sel = document.getElementById("shift-dialog-type");
+    sel?.querySelector(`option[value="${id}"]`)?.remove();
+    if (Array.isArray(_cfg?.shiftTypes)) {
+        _cfg.shiftTypes = _cfg.shiftTypes.filter(
+            (t) => String(t.id) !== String(id),
+        );
+    }
+}
 
 function updateTypeRow(id, type) {
     const row = document.querySelector(`[data-type-row="${id}"]`);
@@ -338,8 +519,13 @@ async function apiFetch(method, url, body = null) {
     if (!resp.ok) {
         // Laravel validation errors (422) return { errors: { field: [...] } }
         if (json?.errors) {
+            const compliance = json.errors.compliance;
             const msgs = Object.values(json.errors).flat().join(" ");
-            throw new Error(msgs);
+            const e = new Error(msgs);
+            if (Array.isArray(compliance)) {
+                e.complianceViolations = compliance;
+            }
+            throw e;
         }
         throw new Error(json?.message ?? `HTTP ${resp.status}`);
     }

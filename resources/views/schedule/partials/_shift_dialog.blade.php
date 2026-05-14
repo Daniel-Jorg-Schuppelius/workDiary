@@ -67,8 +67,8 @@
                 <div class="fieldset">
                     <label class="fieldset-label">{{ __('Status') }}</label>
                     <select id="shift-dialog-status" name="status" class="select select-bordered w-full">
-                        @foreach (\App\Models\ScheduledShift::$statuses as $key => $label)
-                            <option value="{{ $key }}">{{ $label }}</option>
+                        @foreach (\App\Models\ScheduledShift::$statuses as $status)
+                            <option value="{{ $status }}">{{ (new \App\Models\ScheduledShift(['status' => $status]))->statusLabel() }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -76,9 +76,20 @@
 
             <div id="shift-dialog-error" class="alert alert-error alert-sm hidden text-sm"></div>
 
+            <div id="shift-dialog-compliance" class="alert alert-warning alert-sm hidden flex-col items-start gap-2 text-sm">
+                <div class="font-semibold">{{ __('Compliance-Hinweise') }}</div>
+                <ul id="shift-dialog-compliance-list" class="list-disc list-inside space-y-1"></ul>
+                <label class="cursor-pointer label justify-start gap-2 hidden" id="shift-dialog-override-row">
+                    <input type="checkbox" id="shift-dialog-override" class="checkbox checkbox-sm">
+                    <span class="label-text">{{ __('Trotzdem speichern (Override)') }}</span>
+                </label>
+            </div>
+
             <div class="modal-action mt-0 flex justify-between">
                 <button type="button" id="shift-dialog-delete" class="btn btn-sm btn-error btn-outline hidden">{{ __('Löschen') }}</button>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2 justify-end">
+                    <button type="button" id="shift-dialog-publish" class="btn btn-sm btn-info hidden">{{ __('Veröffentlichen') }}</button>
+                    <button type="button" id="shift-dialog-confirm" class="btn btn-sm btn-success hidden">{{ __('Bestätigen') }}</button>
                     <button type="button" onclick="document.getElementById('shift-dialog').close()" class="btn btn-sm btn-ghost">{{ __('Abbrechen') }}</button>
                     <button type="submit" id="shift-dialog-save" class="btn btn-sm btn-primary">{{ __('Speichern') }}</button>
                 </div>

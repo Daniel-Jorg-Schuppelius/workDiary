@@ -116,7 +116,7 @@
         </div>
 
         {{-- Hauptbereich: 2 Spalten (links Plan + Kontakte, rechts offene Meldungen) --}}
-        <div class="min-h-0 flex-1 grid gap-4 lg:grid-cols-3">
+        <div class="min-h-0 flex-1 grid gap-4 lg:grid-cols-3 lg:grid-rows-[minmax(0,1fr)] lg:items-stretch">
             <div class="flex min-h-0 flex-col gap-4 lg:col-span-2 overflow-auto">
 
                 {{-- Wochenplan --}}
@@ -321,7 +321,6 @@
                         <x-table size="xs" :pin-rows="true">
                             <thead class="bg-base-200">
                                 <tr>
-                                    <th class="w-12">#</th>
                                     <th class="w-20 text-center">{{ __('Status') }}</th>
                                     <th>{{ __('Inhalt') }}</th>
                                     <th class="w-24 whitespace-nowrap">{{ __('Bis') }}</th>
@@ -348,10 +347,6 @@
                                         $daysLeft = $bisDate ? (int) $today->diffInDays($bisDate, false) : null;
                                     @endphp
                                     <tr class="hover {{ $rowClass }}">
-                                        <td>
-                                            <a href="{{ route('legacy.diary.show', $issue) }}" data-entry-modal-trigger
-                                               class="link link-hover">{{ $issue->id }}</a>
-                                        </td>
                                         <td class="text-center"><span class="badge badge-sm {{ $badgeClass }}">{{ $issue->statusLabel() }}</span></td>
                                         <td class="max-w-md" title="{{ $issue->inhalt ?? '' }}">
                                             <a href="{{ route('legacy.diary.show', $issue) }}" data-entry-modal-trigger class="block link link-hover">

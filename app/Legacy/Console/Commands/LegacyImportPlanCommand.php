@@ -1,19 +1,21 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Legacy\Console\Commands;
 
-use App\Models\Legacy\LegacyDiaryEntry;
-use App\Models\Legacy\LegacyUser;
+use App\Legacy\Models\LegacyDiaryEntry;
+use App\Legacy\Models\LegacyUser;
 use Illuminate\Console\Command;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
-class LegacyImportPlanCommand extends Command {
+class LegacyImportPlanCommand extends Command
+{
     protected $signature = 'legacy:import-plan';
 
     protected $description = 'Zeigt den Umfang der Legacy-Daten für eine spätere Migration an';
 
-    public function handle(): int {
+    public function handle(): int
+    {
         if (! filled(config('database.connections.legacy.database'))) {
             $this->error('Legacy-DB ist nicht konfiguriert. Bitte LEGACY_DB_* in der .env setzen.');
 
@@ -38,7 +40,7 @@ class LegacyImportPlanCommand extends Command {
 
             return self::SUCCESS;
         } catch (QueryException $exception) {
-            $this->error('Legacy-DB nicht erreichbar: ' . $exception->getMessage());
+            $this->error('Legacy-DB nicht erreichbar: '.$exception->getMessage());
 
             return self::FAILURE;
         }

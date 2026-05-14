@@ -24,10 +24,13 @@
         : $from->translatedFormat('d.m.') . ' – ' . $to->translatedFormat('d.m.Y') . ' KW ' . $from->weekOfYear;
 @endphp
 
-<div class="mx-auto flex h-[calc(100dvh-5rem)] w-full max-w-screen-2xl flex-col px-4 xl:px-8 2xl:px-12">
+<div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
 
-    {{-- ── Toolbar ─────────────────────────────────────────────────────── --}}
-    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-base-300 py-3">
+    {{-- ── Filter & Toolbar ────────────────────────────────────────────── --}}
+    <x-filter-bar :action="route('schedule.index')" class="!bg-base-100">
+        <input type="hidden" name="view" value="{{ $view }}">
+        <input type="hidden" name="date" value="{{ $anchor->toDateString() }}">
+
         {{-- Period navigation --}}
         <div class="flex items-center gap-2">
             <div class="join">
@@ -38,7 +41,7 @@
                 <a href="{{ route('schedule.index', array_filter(['view' => $view, 'date' => $nextDate, 'user' => $userFilter ?: null])) }}"
                    class="btn btn-sm btn-ghost join-item" title="{{ __('Weiter') }}">›</a>
             </div>
-            <span class="font-['Space_Grotesk'] text-base font-semibold">{{ $periodLabel }}</span>
+            <span class="font-['Space_Grotesk'] text-sm font-semibold whitespace-nowrap">{{ $periodLabel }}</span>
         </div>
 
         {{-- View toggle --}}
@@ -49,25 +52,33 @@
                class="btn btn-sm join-item {{ $view === 'month' ? 'btn-primary' : 'btn-ghost' }}">{{ __('Monat') }}</a>
         </div>
 
-        {{-- Filters + Actions --}}
-        <form method="GET" action="{{ route('schedule.index') }}" class="flex flex-wrap items-center gap-2">
-            <input type="hidden" name="view" value="{{ $view }}">
-            <input type="hidden" name="date" value="{{ $anchor->toDateString() }}">
-            <select name="user" class="select select-sm select-bordered" onchange="this.form.submit()">
-                <option value="">{{ __('Alle Mitarbeiter') }}</option>
-                @foreach ($users as $u)
-                    <option value="{{ $u->id }}" @selected($userFilter === $u->id)>{{ $u->name }}</option>
-                @endforeach
-            </select>
-        </form>
+        {{-- User filter --}}
+        <select name="user" class="select select-bordered select-sm min-w-48" onchange="this.form.submit()">
+            <option value="">{{ __('Alle Mitarbeiter') }}</option>
+            @foreach ($users as $u)
+                <option value="{{ $u->id }}" @selected($userFilter === $u->id)>{{ $u->name }}</option>
+            @endforeach
+        </select>
+
+        @if ($userFilter)
+            <a href="{{ route('schedule.index', ['view' => $view, 'date' => $anchor->toDateString()]) }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
+        @endif
 
         @if ($isAdmin)
-            <div class="flex gap-2">
+            <div class="ml-auto flex flex-wrap items-center gap-2">
                 <button type="button" id="btn-open-type-manager" class="btn btn-sm btn-ghost">⚙ {{ __('Schichttypen') }}</button>
                 <a href="{{ route('schedule.import') }}" class="btn btn-sm btn-ghost">↑ {{ __('Import') }}</a>
+                <div class="dropdown dropdown-end">
+                    <label tabindex="0" class="btn btn-sm btn-ghost">🖨 {{ __('Drucken') }}</label>
+                    <ul tabindex="0" class="menu dropdown-content z-1 mt-2 w-72 rounded-box bg-base-100 p-2 shadow">
+                        <li class="menu-title">{{ __('Übersichten') }}</li>
+                        <li><a href="{{ route('print.on-call') }}" target="_blank">{{ __('Bereitschaft & Notdienst (A4 quer)') }}</a></li>
+                        <li><a href="{{ route('print.vacations', ['year' => $anchor->year]) }}" target="_blank">{{ __('Urlaubsübersicht ') . $anchor->year . __(' (A4 hoch)') }}</a></li>
+                    </ul>
+                </div>
             </div>
         @endif
-    </div>
+    </x-filter-bar>
 
     {{-- ── Flash messages ──────────────────────────────────────────────── --}}
     @if (session('success'))
@@ -84,7 +95,7 @@
     @endif
 
     {{-- ── Matrix ──────────────────────────────────────────────────────── --}}
-    <div class="min-h-0 flex-1 overflow-auto">
+    <div class="min-h-0 flex-1 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
         @if ($view === 'month')
             @include('schedule.partials._month_matrix')
         @else
@@ -105,11 +116,14 @@
 <script>
 window.__scheduleConfig = {
     isAdmin: {{ $isAdmin ? 'true' : 'false' }},
+    currentUserId: {{ (int) auth()->id() }},
     csrf: @json(csrf_token()),
     routes: {
         shiftsStore:   @json(route('schedule.shifts.store')),
         shiftsUpdate:  @json(url('schedule/shifts')),
         shiftsDestroy: @json(url('schedule/shifts')),
+        shiftsPublish: @json(url('schedule/shifts')),
+        shiftsConfirm: @json(url('schedule/shifts')),
         typesStore:    @json(route('schedule.types.store')),
         typesUpdate:   @json(url('schedule/types')),
         typesDestroy:  @json(url('schedule/types')),

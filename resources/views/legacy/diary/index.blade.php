@@ -4,7 +4,7 @@
 
 @section('content')
     @php
-        $currentSort = $sort ?? 'aktuell';
+        $currentSort = $sort ?? 'bis';
         $currentDir  = $dir  ?? 'desc';
         $tabFilters  = array_filter($filters ?? [], fn($v) => $v !== null && $v !== '' && $v !== '0' && $v !== false);
         $sortLink = function (string $column) use ($currentSort, $currentDir, $filters, $tab): string {
@@ -69,6 +69,17 @@
                 <input type="hidden" name="sort" value="{{ $currentSort }}">
                 <input type="hidden" name="dir"  value="{{ $currentDir }}">
                 <div class="flex flex-wrap items-end gap-3">
+                    @if ($isAdmin && $users->isNotEmpty())
+                        <div class="flex flex-1 flex-col min-w-44">
+                            <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</span></label>
+                            <select name="user" class="select select-bordered select-sm w-full">
+                                <option value="">{{ __('Alle') }}</option>
+                                @foreach ($users as $u)
+                                    <option value="{{ $u->id }}" @selected((int) ($filters['user'] ?? 0) === (int) $u->id)>{{ $u->uname }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
                     <div class="flex flex-1 flex-col min-w-48">
                         <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Status') }}</span></label>
                         <select name="status" class="select select-bordered select-sm w-full">
@@ -143,7 +154,7 @@
                                 <tr class="text-base-content/80">
                                     <th class="w-8"><input type="checkbox" id="bulk-toggle-all" class="checkbox checkbox-sm" aria-label="{{ __('Alle auswählen') }}"></th>
                                     <th class="w-24 text-center"><a href="{{ $sortLink('status') }}" class="link link-hover">{{ __('Status') }} {!! $sortIcon('status') !!}</a></th>
-                                    <th class="w-32">{{ __('Mitarbeiter') }}</th>
+                                    <th class="w-32"><a href="{{ $sortLink('mitarbeiter') }}" class="link link-hover">{{ __('Mitarbeiter') }} {!! $sortIcon('mitarbeiter') !!}</a></th>
                                     <th>{{ __('Inhalt') }}</th>
                                     <th class="w-56">{{ __('Antwort') }}</th>
                                     <th class="w-28"><a href="{{ $sortLink('von') }}" class="link link-hover">{{ __('Von') }} {!! $sortIcon('von') !!}</a></th>
@@ -162,7 +173,7 @@
                                             default => 'badge-ghost',
                                         };
                                         $canModify = (int) $entry->user === (int) (Auth::user()->legacy_user_id ?? 0)
-                                            || \App\Support\LegacyRoleResolver::isAdmin(Auth::user());
+                                            || \App\Legacy\Support\LegacyRoleResolver::isAdmin(Auth::user());
                                     @endphp
                                     <tr class="hover">
                                         <td>
@@ -222,7 +233,14 @@
                     const action = form.querySelector('select[name="action"]').value;
                     const count = form.querySelectorAll('.bulk-row:checked').length;
                     if (!action || count === 0) { e.preventDefault(); return false; }
-                    if (action === 'delete') return confirm(count + ' {{ __('Eintrag/Einträge wirklich löschen?') }}');
+                    if (action === 'delete') {
+                        e.preventDefault();
+                        window.confirmAction({
+                            message: count + ' {{ __('Eintrag/Einträge wirklich löschen?') }}',
+                            label: '{{ __('Löschen') }}',
+                        }).then(function (ok) { if (ok) form.submit(); });
+                        return false;
+                    }
                     return true;
                 }
             </script>
@@ -247,9 +265,9 @@
                             <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</span></label>
                             <select name="user" class="select select-bordered select-sm w-full">
                                 <option value="">{{ __('Alle') }}</option>
-                                @php /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Legacy\LegacyUser> $users */ @endphp
+                                @php /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Legacy\Models\LegacyUser> $users */ @endphp
                                 @foreach ($users as $u)
-                                    @php /** @var \App\Models\Legacy\LegacyUser $u */ @endphp
+                                    @php /** @var \App\Legacy\Models\LegacyUser $u */ @endphp
                                     <option value="{{ $u->id }}" @selected(($filters['user'] ?? '') == $u->id)>{{ $u->uname }}</option>
                                 @endforeach
                             </select>
@@ -276,9 +294,9 @@
                 <table class="table table-sm table-zebra table-pin-rows">
                     <thead class="bg-base-200">
                         <tr>
-                            <th>{{ __('Mitarbeiter') }}</th>
-                            <th class="w-32 text-center">{{ __('Von') }}</th>
-                            <th class="w-32 text-center">{{ __('Bis') }}</th>
+                            <th><a href="{{ $sortLink('mitarbeiter') }}" class="link link-hover">{{ __('Mitarbeiter') }} {!! $sortIcon('mitarbeiter') !!}</a></th>
+                            <th class="w-32 text-center"><a href="{{ $sortLink('von') }}" class="link link-hover">{{ __('Von') }} {!! $sortIcon('von') !!}</a></th>
+                            <th class="w-32 text-center"><a href="{{ $sortLink('bis') }}" class="link link-hover">{{ __('Bis') }} {!! $sortIcon('bis') !!}</a></th>
                             <th class="w-32 text-right">{{ __('Aktion') }}</th>
                         </tr>
                     </thead>
@@ -293,7 +311,10 @@
                                         <a href="{{ route('legacy.oncall.edit', $item) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                         </a>
-                                        <form method="POST" action="{{ route('legacy.oncall.destroy', $item) }}" class="inline" onsubmit="return confirm('{{ __('Eintrag wirklich löschen?') }}')">
+                                        <form method="POST" action="{{ route('legacy.oncall.destroy', $item) }}" class="inline"
+                                              data-confirm-dialog
+                                              data-confirm-message="{{ __('Eintrag wirklich löschen?') }}"
+                                              data-confirm-label="{{ __('Löschen') }}">
                                             @csrf @method('DELETE')
                                             <button class="btn btn-xs btn-ghost text-error" title="{{ __('Löschen') }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3"/></svg>
@@ -329,9 +350,9 @@
                             <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</span></label>
                             <select name="user" class="select select-bordered select-sm w-full">
                                 <option value="">{{ __('Alle') }}</option>
-                                @php /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Legacy\LegacyUser> $users */ @endphp
+                                @php /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Legacy\Models\LegacyUser> $users */ @endphp
                                 @foreach ($users as $u)
-                                    @php /** @var \App\Models\Legacy\LegacyUser $u */ @endphp
+                                    @php /** @var \App\Legacy\Models\LegacyUser $u */ @endphp
                                     <option value="{{ $u->id }}" @selected(($filters['user'] ?? '') == $u->id)>{{ $u->uname }}</option>
                                 @endforeach
                             </select>
@@ -358,9 +379,9 @@
                 <table class="table table-sm table-zebra table-pin-rows">
                     <thead class="bg-base-200">
                         <tr>
-                            <th>{{ __('Mitarbeiter') }}</th>
-                            <th class="w-32 text-center">{{ __('Von') }}</th>
-                            <th class="w-32 text-center">{{ __('Bis') }}</th>
+                            <th><a href="{{ $sortLink('mitarbeiter') }}" class="link link-hover">{{ __('Mitarbeiter') }} {!! $sortIcon('mitarbeiter') !!}</a></th>
+                            <th class="w-32 text-center"><a href="{{ $sortLink('von') }}" class="link link-hover">{{ __('Von') }} {!! $sortIcon('von') !!}</a></th>
+                            <th class="w-32 text-center"><a href="{{ $sortLink('bis') }}" class="link link-hover">{{ __('Bis') }} {!! $sortIcon('bis') !!}</a></th>
                             <th class="w-32 text-right">{{ __('Aktion') }}</th>
                         </tr>
                     </thead>
@@ -375,7 +396,10 @@
                                         <a href="{{ route('legacy.notdienst.edit', $item) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                         </a>
-                                        <form method="POST" action="{{ route('legacy.notdienst.destroy', $item) }}" class="inline" onsubmit="return confirm('{{ __('Eintrag wirklich löschen?') }}')">
+                                        <form method="POST" action="{{ route('legacy.notdienst.destroy', $item) }}" class="inline"
+                                              data-confirm-dialog
+                                              data-confirm-message="{{ __('Eintrag wirklich löschen?') }}"
+                                              data-confirm-label="{{ __('Löschen') }}">
                                             @csrf @method('DELETE')
                                             <button class="btn btn-xs btn-ghost text-error" title="{{ __('Löschen') }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3"/></svg>
@@ -469,12 +493,12 @@
                     <thead class="bg-base-200">
                         <tr>
                             @if ($vacationIsAdmin)
-                                <th>{{ __('Mitarbeiter') }}</th>
+                                <th><a href="{{ $sortLink('mitarbeiter') }}" class="link link-hover">{{ __('Mitarbeiter') }} {!! $sortIcon('mitarbeiter') !!}</a></th>
                             @endif
-                            <th>{{ __('Typ') }}</th>
-                            <th>{{ __('Von') }}</th>
-                            <th>{{ __('Bis') }}</th>
-                            <th>{{ __('Status') }}</th>
+                            <th><a href="{{ $sortLink('typ') }}" class="link link-hover">{{ __('Typ') }} {!! $sortIcon('typ') !!}</a></th>
+                            <th><a href="{{ $sortLink('von') }}" class="link link-hover">{{ __('Von') }} {!! $sortIcon('von') !!}</a></th>
+                            <th><a href="{{ $sortLink('bis') }}" class="link link-hover">{{ __('Bis') }} {!! $sortIcon('bis') !!}</a></th>
+                            <th><a href="{{ $sortLink('status') }}" class="link link-hover">{{ __('Status') }} {!! $sortIcon('status') !!}</a></th>
                             <th class="max-w-xs">{{ __('Notiz') }}</th>
                             <th class="w-24 text-right">{{ __('Aktion') }}</th>
                         </tr>

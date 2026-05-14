@@ -12,9 +12,11 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
-class DashboardService {
+class DashboardService
+{
     /** @return array<string, mixed> */
-    public function summarize(User $user, ?CarbonImmutable $now = null): array {
+    public function summarize(User $user, ?CarbonImmutable $now = null): array
+    {
         $now ??= CarbonImmutable::now();
 
         return [
@@ -27,7 +29,8 @@ class DashboardService {
     /**
      * @return array<string, mixed>
      */
-    private function personal(User $user, CarbonImmutable $now): array {
+    private function personal(User $user, CarbonImmutable $now): array
+    {
         $weekEnd = $now->addDays(7);
 
         // Einzel-Query statt 2× COUNT für Diary-Einträge
@@ -98,26 +101,27 @@ class DashboardService {
 
         return [
             'kpi' => [
-                'open_entries'          => (int) $entryCounts?->open_cnt,
-                'progress_entries'      => (int) $entryCounts?->progress_cnt,
-                'upcoming_shifts'       => $upcomingShifts->count(),
-                'upcoming_emergencies'  => $upcomingEmergencies->count(),
+                'open_entries' => (int) $entryCounts?->open_cnt,
+                'progress_entries' => (int) $entryCounts?->progress_cnt,
+                'upcoming_shifts' => $upcomingShifts->count(),
+                'upcoming_emergencies' => $upcomingEmergencies->count(),
             ],
-            'today_shifts'          => $todayShifts,
-            'upcoming_shifts'       => $upcomingShifts->take(5),
-            'upcoming_emergencies'  => $upcomingEmergencies->take(5),
-            'recent_entries'        => $recentEntries,
-            'recent_comments'       => $recentComments,
-            'recent_attachments'    => $recentAttachments,
-            'upcoming_scheduled'    => $upcomingScheduledShifts,
-            'window_end'            => $weekEnd,
+            'today_shifts' => $todayShifts,
+            'upcoming_shifts' => $upcomingShifts->take(5),
+            'upcoming_emergencies' => $upcomingEmergencies->take(5),
+            'recent_entries' => $recentEntries,
+            'recent_comments' => $recentComments,
+            'recent_attachments' => $recentAttachments,
+            'upcoming_scheduled' => $upcomingScheduledShifts,
+            'window_end' => $weekEnd,
         ];
     }
 
     /**
      * @return array<string, mixed>
      */
-    private function team(CarbonImmutable $now): array {
+    private function team(CarbonImmutable $now): array
+    {
         // Einzel-Query statt 2× COUNT
         /** @var object{open_cnt: int|string, progress_cnt: int|string}|null $entryCounts */
         $entryCounts = DiaryEntry::query()
@@ -141,10 +145,10 @@ class DashboardService {
 
         return [
             'kpi' => [
-                'open_entries'     => (int) $entryCounts?->open_cnt,
+                'open_entries' => (int) $entryCounts?->open_cnt,
                 'progress_entries' => (int) $entryCounts?->progress_cnt,
-                'archived_today'   => $archivedToday,
-                'user_count'       => $userCount,
+                'archived_today' => $archivedToday,
+                'user_count' => $userCount,
             ],
             'recent_activity' => $recentActivity,
         ];

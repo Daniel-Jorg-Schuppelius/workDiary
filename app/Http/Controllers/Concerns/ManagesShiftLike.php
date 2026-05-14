@@ -10,8 +10,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
-trait ManagesShiftLike {
-    private function authorizeManage(): void {
+trait ManagesShiftLike
+{
+    private function authorizeManage(): void
+    {
         /** @var User $auth */
         $auth = Auth::user();
         abort_unless($auth->canCreateEntriesForOthers(), 403);
@@ -21,8 +23,8 @@ trait ManagesShiftLike {
      * Gibt alle zuweisbaren Benutzer zurück.
      * Wenn der eingeloggte Nutzer keine Rechte hat, wird nur er selbst zurückgegeben.
      */
-    private function assignableUsers(): \Illuminate\Support\Collection { // @phpstan-ignore missingType.generics
-        /** @var User $auth */
+    private function assignableUsers(): Collection // @phpstan-ignore missingType.generics
+    {/** @var User $auth */
         $auth = Auth::user();
 
         if ($auth->canCreateEntriesForOthers()) {
@@ -32,7 +34,8 @@ trait ManagesShiftLike {
         return collect([$auth->only(['id', 'name'])]);
     }
 
-    private function parseDateTime(?string $value): ?string {
+    private function parseDateTime(?string $value): ?string
+    {
         if (! $value) {
             return null;
         }
@@ -43,7 +46,8 @@ trait ManagesShiftLike {
         }
     }
 
-    private function redirectAfter(Request $request, string $message, string $fallbackRoute): RedirectResponse {
+    private function redirectAfter(Request $request, string $message, string $fallbackRoute): RedirectResponse
+    {
         $back = $this->safeBackUrl($request->input('_back'), $fallbackRoute);
 
         return redirect($back)->with('success', $message);
@@ -54,7 +58,8 @@ trait ManagesShiftLike {
      * Externe URLs (anderer Host) werden auf $fallback zurückgesetzt,
      * um Open-Redirect-Angriffe zu verhindern.
      */
-    private function safeBackUrl(mixed $candidate, string $fallback): string {
+    private function safeBackUrl(mixed $candidate, string $fallback): string
+    {
         if (! is_string($candidate) || $candidate === '') {
             return $fallback;
         }

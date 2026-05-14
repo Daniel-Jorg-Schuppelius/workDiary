@@ -12,16 +12,19 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
-class AttachmentsTest extends TestCase {
+class AttachmentsTest extends TestCase
+{
     use RefreshDatabase;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         Storage::fake('local');
     }
 
-    public function test_user_can_upload_attachment_to_diary_entry(): void {
+    public function test_user_can_upload_attachment_to_diary_entry(): void
+    {
         $owner = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($owner)->create();
         $file = UploadedFile::fake()->create('report.pdf', 100, 'application/pdf');
@@ -40,7 +43,8 @@ class AttachmentsTest extends TestCase {
         $this->assertTrue(Storage::disk('local')->exists($stored->path));
     }
 
-    public function test_executable_extensions_are_rejected(): void {
+    public function test_executable_extensions_are_rejected(): void
+    {
         $owner = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($owner)->create();
         $file = UploadedFile::fake()->create('evil.php', 10, 'application/x-php');
@@ -52,7 +56,8 @@ class AttachmentsTest extends TestCase {
         $this->assertSame(0, Attachment::count());
     }
 
-    public function test_oversize_file_is_rejected(): void {
+    public function test_oversize_file_is_rejected(): void
+    {
         $owner = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($owner)->create();
         // 26 MB > 25 MB limit
@@ -63,7 +68,8 @@ class AttachmentsTest extends TestCase {
             ->assertSessionHasErrors('file');
     }
 
-    public function test_signed_download_succeeds_and_unsigned_fails(): void {
+    public function test_signed_download_succeeds_and_unsigned_fails(): void
+    {
         $owner = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($owner)->create();
         $this->actingAs($owner)
@@ -82,7 +88,8 @@ class AttachmentsTest extends TestCase {
         $this->actingAs($owner)->get($url)->assertOk();
     }
 
-    public function test_only_uploader_or_admin_can_delete(): void {
+    public function test_only_uploader_or_admin_can_delete(): void
+    {
         $uploader = User::factory()->user()->create();
         $other = User::factory()->user()->create();
         $admin = User::factory()->admin()->create();
@@ -112,7 +119,8 @@ class AttachmentsTest extends TestCase {
         $this->assertNull(Attachment::find($attachment2->id));
     }
 
-    public function test_attachments_panel_shown_on_diary_show(): void {
+    public function test_attachments_panel_shown_on_diary_show(): void
+    {
         $owner = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($owner)->create();
 

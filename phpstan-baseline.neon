@@ -1,0 +1,301 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\Flextime\\FlexCalculator\:\:monthlyBalance\(\) expects App\\Models\\User, App\\Models\\User\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/FlexController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Project\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Project\>\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StopwatchController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Project\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Project\>\:\:\$organization_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StopwatchController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\Timesheet\\Stopwatch\:\:current\(\) expects App\\Models\\User, App\\Models\\User\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/StopwatchController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\Timesheet\\Stopwatch\:\:start\(\) expects App\\Models\\User, App\\Models\\User\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/StopwatchController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\Timesheet\\Stopwatch\:\:stop\(\) expects App\\Models\\User, App\\Models\\User\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/StopwatchController.php
+
+		-
+			message: '#^Parameter \#2 \$timesheet of method App\\Services\\Timesheet\\Stopwatch\:\:start\(\) expects App\\Models\\Timesheet, App\\Models\\Timesheet\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Timesheet\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/StopwatchController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Material\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Material\>\:\:\$default_unit_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/TimesheetMaterialController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Material\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Material\>\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/TimesheetMaterialController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Material\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Material\>\:\:\$tax_rate\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/TimesheetMaterialController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Material\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Material\>\:\:\$unit\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/TimesheetMaterialController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 2
+			path: app/Http/Controllers/DutyController.php
+
+		-
+			message: '#^Parameter \#1 \$num of function round expects float\|int, float\|int\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/DutyController.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 2
+			path: app/Http/Controllers/DutyController.php
+
+		-
+			message: '#^Cannot call method isAdmin\(\) on App\\Models\\User\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/FlexController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, bool\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/FlexController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\Flextime\\FlexCalculator\:\:monthlyBalance\(\) expects App\\Models\\User, App\\Models\\User\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/FlexController.php
+
+		-
+			message: '#^Cannot access property \$id on App\\Models\\Holiday\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/HolidayController.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on Carbon\\CarbonImmutable\|null\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Http/Controllers/PrintController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\Timesheet\\Stopwatch\:\:start\(\) expects App\\Models\\User, App\\Models\\User\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/StopwatchController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\Timesheet\\Stopwatch\:\:stop\(\) expects App\\Models\\User, App\\Models\\User\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/StopwatchController.php
+
+		-
+			message: '#^Parameter \#2 \$timesheet of method App\\Services\\Timesheet\\Stopwatch\:\:start\(\) expects App\\Models\\Timesheet, App\\Models\\Timesheet\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Timesheet\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/StopwatchController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Material\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Material\>\:\:\$default_unit_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/TimesheetMaterialController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Material\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Material\>\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/TimesheetMaterialController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Material\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Material\>\:\:\$tax_rate\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/TimesheetMaterialController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Material\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Material\>\:\:\$unit\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/TimesheetMaterialController.php
+
+		-
+			message: '#^Parameter \#2 \$admin of method App\\Services\\Timesheet\\SignatureService\:\:lock\(\) expects App\\Models\\User, App\\Models\\User\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/TimesheetSignatureController.php
+
+		-
+			message: '#^Cannot call method workSchedule\(\) on App\\Models\\User\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/WorkScheduleController.php
+
+		-
+			message: '#^Access to an undefined property \(object\|string\)\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Requests/SaveMaterialRequest.php
+
+		-
+			message: '#^Cannot access property \$abbreviation on App\\Models\\ShiftType\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Resources/ScheduledShiftResource.php
+
+		-
+			message: '#^Cannot access property \$color on App\\Models\\ShiftType\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Resources/ScheduledShiftResource.php
+
+		-
+			message: '#^Cannot access property \$id on App\\Models\\ShiftType\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Resources/ScheduledShiftResource.php
+
+		-
+			message: '#^Cannot access property \$name on App\\Models\\ShiftType\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Resources/ScheduledShiftResource.php
+
+		-
+			message: '#^Cannot access property \$name on App\\Models\\User\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Resources/ScheduledShiftResource.php
+
+		-
+			message: '#^Method App\\Legacy\\Http\\Controllers\\LegacyArchiveController\:\:buildTabKpis\(\) should return array\<string, int\|string\> but returns array\<string, float\|int\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Legacy/Http/Controllers/LegacyArchiveController.php
+
+		-
+			message: '#^Parameter \#1 \$num of function round expects float\|int, float\|int\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Legacy/Http/Controllers/LegacyArchiveController.php
+
+		-
+			message: '#^Cannot call method lastOfMonth\(\) on Carbon\\Carbon\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/Holiday.php
+
+		-
+			message: '#^Cannot call method nthOfMonth\(\) on Carbon\\Carbon\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/Holiday.php
+
+		-
+			message: '#^Offset ''compliance'' on string\|null on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Models/Organization.php
+
+		-
+			message: '#^Cannot call method copy\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/TimeEntry.php
+
+		-
+			message: '#^Cannot call method diffInMinutes\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/TimeEntry.php
+
+		-
+			message: '#^Parameter \#1 \$date of static method Carbon\\CarbonImmutable\:\:instance\(\) expects DateTimeInterface, Carbon\\CarbonInterface\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/CoverageService.php
+
+		-
+			message: '#^Cannot access property \$dayOfWeekIso on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Services/Flextime/CoreTimeValidator.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 4
+			path: app/Services/Flextime/CoreTimeValidator.php
+
+		-
+			message: '#^Parameter \#2 \$on of method App\\Services\\Flextime\\WorkScheduleResolver\:\:for\(\) expects Carbon\\CarbonInterface, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Flextime/CoreTimeValidator.php
+
+		-
+			message: '#^Cannot call method startOfMonth\(\) on Carbon\\CarbonImmutable\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Flextime/FlexCalculator.php
+
+		-
+			message: '#^Property App\\Models\\WorkSchedule\:\:\$valid_from \(Illuminate\\Support\\Carbon\) does not accept Carbon\\CarbonInterface\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Services/Flextime/WorkScheduleResolver.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/PushNotifier.php
+
+		-
+			message: '#^Method App\\Services\\Timesheet\\SignatureService\:\:sign\(\) has parameter \$customer with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Timesheet/SignatureService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Timesheet/SignatureService.php

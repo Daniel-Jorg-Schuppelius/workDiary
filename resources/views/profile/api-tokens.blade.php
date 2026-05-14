@@ -41,10 +41,13 @@
                             <td>{{ optional($token->created_at)->format('d.m.Y H:i') }}</td>
                             <td>{{ $token->last_used_at ? $token->last_used_at->diffForHumans() : '—' }}</td>
                             <td class="text-right">
-                                <form method="POST" action="{{ route('profile.api-tokens.destroy', $token->id) }}" class="inline">
+                                <form method="POST" action="{{ route('profile.api-tokens.destroy', $token->id) }}" class="inline"
+                                      data-confirm-dialog
+                                      data-confirm-message="{{ __('Token wirklich widerrufen?') }}"
+                                      data-confirm-label="{{ __('Widerrufen') }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-ghost btn-xs text-error" onclick="return confirm('{{ __('Token wirklich widerrufen?') }}')">{{ __('Widerrufen') }}</button>
+                                    <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('Widerrufen') }}</button>
                                 </form>
                             </td>
                         </tr>

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Auth;
+namespace App\Legacy\Auth;
 
 use App\Models\User;
 use Illuminate\Auth\EloquentUserProvider;
@@ -13,13 +13,16 @@ use Illuminate\Support\Facades\DB;
  * legt dann bei Erstlogin einen lokalen Datensatz in users an und
  * nutzt danach Standard-Eloquent für alle weiteren Checks.
  */
-class LegacyUserProvider extends EloquentUserProvider {
-    public function __construct(Hasher $hasher) {
+class LegacyUserProvider extends EloquentUserProvider
+{
+    public function __construct(Hasher $hasher)
+    {
         parent::__construct($hasher, User::class);
     }
 
     /** @param array<string, mixed> $credentials */
-    public function retrieveByCredentials(array $credentials): ?Authenticatable {
+    public function retrieveByCredentials(array $credentials): ?Authenticatable
+    {
         $username = $credentials['username'] ?? $credentials['email'] ?? null;
         $password = $credentials['password'] ?? null;
 
@@ -37,7 +40,7 @@ class LegacyUserProvider extends EloquentUserProvider {
                 ['legacy_user_id' => $legacyUser->id],
                 [
                     'name' => $legacyUser->uname,
-                    'email' => $legacyUser->email ?: $legacyUser->uname . '@workdiary.local',
+                    'email' => $legacyUser->email ?: $legacyUser->uname.'@workdiary.local',
                     'password' => bcrypt($password),
                 ]
             );
@@ -48,7 +51,8 @@ class LegacyUserProvider extends EloquentUserProvider {
     }
 
     /** @param array<string, mixed> $credentials */
-    public function validateCredentials(Authenticatable $user, array $credentials): bool {
+    public function validateCredentials(Authenticatable $user, array $credentials): bool
+    {
         /** @var User $user */
         $password = $credentials['password'] ?? null;
 
@@ -61,7 +65,8 @@ class LegacyUserProvider extends EloquentUserProvider {
         return $this->hasher->check($password, $user->getAuthPassword());
     }
 
-    private function findLegacyUser(string $username, string $password): ?object {
+    private function findLegacyUser(string $username, string $password): ?object
+    {
         if (! filled(config('database.connections.legacy.database'))) {
             return null;
         }

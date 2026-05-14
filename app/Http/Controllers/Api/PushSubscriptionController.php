@@ -4,22 +4,26 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\PushSubscription;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class PushSubscriptionController extends Controller {
-    public function vapid(): JsonResponse {
+class PushSubscriptionController extends Controller
+{
+    public function vapid(): JsonResponse
+    {
         return response()->json(['data' => ['publicKey' => config('webpush.public_key')]]);
     }
 
-    public function store(Request $request): JsonResponse {
+    public function store(Request $request): JsonResponse
+    {
         $data = $request->validate([
             'endpoint' => ['required', 'string', 'max:500'],
             'keys.p256dh' => ['required', 'string', 'max:255'],
             'keys.auth' => ['required', 'string', 'max:255'],
             'contentEncoding' => ['nullable', 'string', 'max:32'],
         ]);
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = $request->user();
         $sub = PushSubscription::updateOrCreate(
             ['endpoint' => $data['endpoint']],
@@ -32,11 +36,13 @@ class PushSubscriptionController extends Controller {
                 'last_used_at' => now(),
             ]
         );
+
         return response()->json(['data' => ['id' => $sub->id, 'status' => 'subscribed']], 201);
     }
 
-    public function destroy(Request $request): JsonResponse {
-        /** @var \App\Models\User $user */
+    public function destroy(Request $request): JsonResponse
+    {
+        /** @var User $user */
         $user = $request->user();
         $endpoint = (string) $request->input('endpoint');
         if ($endpoint !== '') {
@@ -44,6 +50,7 @@ class PushSubscriptionController extends Controller {
                 ->where('user_id', $user->id)
                 ->delete();
         }
+
         return response()->json(['data' => ['status' => 'unsubscribed']]);
     }
 }

@@ -39,13 +39,14 @@
         <table class="table table-xs table-zebra table-pin-rows w-full">
                 <thead class="bg-base-200">
                     <tr>
-                        <th class="whitespace-nowrap">{{ __('Zeit') }}</th>
-                        <th>{{ __('Benutzer') }}</th>
-                        <th>{{ __('Aktion') }}</th>
-                        <th>{{ __('Typ') }}</th>
+                        <?php $p = $filters ?? []; ?>
+                        <th class="whitespace-nowrap"><x-sort-th column="created_at" :route="route('audit.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'" default="created_at">{{ __('Zeit') }}</x-sort-th></th>
+                        <th><x-sort-th column="user_id" :route="route('audit.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Benutzer') }}</x-sort-th></th>
+                        <th><x-sort-th column="event" :route="route('audit.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Aktion') }}</x-sort-th></th>
+                        <th><x-sort-th column="auditable_type" :route="route('audit.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Typ') }}</x-sort-th></th>
                         <th>{{ __('Objekt') }}</th>
                         <th>{{ __('Änderungen') }}</th>
-                        <th>IP</th>
+                        <th><x-sort-th column="ip" :route="route('audit.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">IP</x-sort-th></th>
                     </tr>
                 </thead>
                 <tbody>

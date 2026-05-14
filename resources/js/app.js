@@ -3,6 +3,7 @@ import "flatpickr/dist/flatpickr.min.css";
 import { German } from "flatpickr/dist/l10n/de.js";
 import weekSelect from "flatpickr/dist/plugins/weekSelect/weekSelect.js";
 import { bindPushToggle } from "./push.js";
+import "./sortable-tables.js";
 
 const htmlLang = (document.documentElement.lang || "de").toLowerCase();
 const locale = htmlLang.startsWith("de") ? German : "default";

@@ -2,13 +2,16 @@
 
 namespace App\Http\Resources;
 
+use App\Models\EmergencyAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin \App\Models\EmergencyAssignment */
-class EmergencyAssignmentResource extends JsonResource {
+/** @mixin EmergencyAssignment */
+class EmergencyAssignmentResource extends JsonResource
+{
     /** @return array<string, mixed> */
-    public function toArray(Request $request): array {
+    public function toArray(Request $request): array
+    {
         return [
             'id' => $this->id,
             'user' => new UserResource($this->whenLoaded('user')),

@@ -151,16 +151,17 @@
         {{-- Tabellenbereich --}}
         <div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
             @if ($tab === 'urlaub')
+                <?php $p = array_merge($filters ?? [], ['tab' => 'urlaub']); ?>
                 <table class="table table-sm table-zebra table-pin-rows">
                     <thead class="bg-base-200">
                         <tr>
                             @if ($isAdmin)
-                                <th class="w-32">{{ __('Mitarbeiter') }}</th>
+                                <th class="w-32"><x-sort-th column="mitarbeiter" :route="route('archive.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Mitarbeiter') }}</x-sort-th></th>
                             @endif
-                            <th>{{ __('Typ') }}</th>
-                            <th class="w-28 whitespace-nowrap">{{ __('Von') }}</th>
-                            <th class="w-28 whitespace-nowrap">{{ __('Bis') }}</th>
-                            <th>{{ __('Status') }}</th>
+                            <th><x-sort-th column="typ" :route="route('archive.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Typ') }}</x-sort-th></th>
+                            <th class="w-28 whitespace-nowrap"><x-sort-th column="start" :route="route('archive.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Von') }}</x-sort-th></th>
+                            <th class="w-28 whitespace-nowrap"><x-sort-th column="end" :route="route('archive.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'" default="end">{{ __('Bis') }}</x-sort-th></th>
+                            <th><x-sort-th column="status" :route="route('archive.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Status') }}</x-sort-th></th>
                             <th class="max-w-xs">{{ __('Notiz') }}</th>
                         </tr>
                     </thead>
@@ -203,14 +204,15 @@
                     </tbody>
                 </table>
             @elseif ($tab === 'diary')
+                <?php $p = array_merge($filters ?? [], ['tab' => 'diary']); ?>
                 <table class="table table-sm table-zebra table-pin-rows">
                     <thead class="bg-base-200">
                         <tr>
-                            <th class="w-32">{{ __('Mitarbeiter') }}</th>
-                            <th class="w-24 text-center">{{ __('Status') }}</th>
-                            <th class="w-28 whitespace-nowrap">{{ __('Von') }}</th>
-                            <th class="w-28 whitespace-nowrap">{{ __('Bis') }}</th>
-                            <th class="w-36 whitespace-nowrap">{{ __('Archiviert am') }}</th>
+                            <th class="w-32"><x-sort-th column="mitarbeiter" :route="route('archive.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Mitarbeiter') }}</x-sort-th></th>
+                            <th class="w-24 text-center"><x-sort-th column="status" :route="route('archive.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Status') }}</x-sort-th></th>
+                            <th class="w-28 whitespace-nowrap"><x-sort-th column="start" :route="route('archive.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Von') }}</x-sort-th></th>
+                            <th class="w-28 whitespace-nowrap"><x-sort-th column="end" :route="route('archive.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Bis') }}</x-sort-th></th>
+                            <th class="w-36 whitespace-nowrap"><x-sort-th column="archived" :route="route('archive.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'" default="archived">{{ __('Archiviert am') }}</x-sort-th></th>
                             <th>{{ __('Inhalt') }}</th>
                         </tr>
                     </thead>
@@ -239,12 +241,13 @@
                     </tbody>
                 </table>
             @elseif ($tab === 'bereitschaft')
+                <?php $p = array_merge($filters ?? [], ['tab' => 'bereitschaft']); ?>
                 <table class="table table-sm table-zebra table-pin-rows">
                     <thead class="bg-base-200">
                         <tr>
-                            <th class="w-32">{{ __('Mitarbeiter') }}</th>
-                            <th class="w-28 whitespace-nowrap">{{ __('Von') }}</th>
-                            <th class="w-28 whitespace-nowrap">{{ __('Bis') }}</th>
+                            <th class="w-32"><x-sort-th column="mitarbeiter" :route="route('archive.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Mitarbeiter') }}</x-sort-th></th>
+                            <th class="w-28 whitespace-nowrap"><x-sort-th column="start" :route="route('archive.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Von') }}</x-sort-th></th>
+                            <th class="w-28 whitespace-nowrap"><x-sort-th column="end" :route="route('archive.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'" default="end">{{ __('Bis') }}</x-sort-th></th>
                             <th>{{ __('Dauer') }}</th>
                             <th>{{ __('Notiz') }}</th>
                         </tr>
@@ -271,12 +274,13 @@
                     </tbody>
                 </table>
             @else
+                <?php $p = array_merge($filters ?? [], ['tab' => 'notdienst']); ?>
                 <table class="table table-sm table-zebra table-pin-rows">
                     <thead class="bg-base-200">
                         <tr>
-                            <th class="w-32">{{ __('Mitarbeiter') }}</th>
-                            <th class="w-28 whitespace-nowrap">{{ __('Von') }}</th>
-                            <th class="w-28 whitespace-nowrap">{{ __('Bis') }}</th>
+                            <th class="w-32"><x-sort-th column="mitarbeiter" :route="route('archive.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Mitarbeiter') }}</x-sort-th></th>
+                            <th class="w-28 whitespace-nowrap"><x-sort-th column="start" :route="route('archive.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Von') }}</x-sort-th></th>
+                            <th class="w-28 whitespace-nowrap"><x-sort-th column="end" :route="route('archive.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'" default="end">{{ __('Bis') }}</x-sort-th></th>
                             <th>{{ __('Dauer') }}</th>
                             <th>{{ __('Grund') }}</th>
                         </tr>

@@ -7,7 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class ForcePasswordChange {
+class ForcePasswordChange
+{
     /**
      * Routen, die auch bei erzwungenem Passwortwechsel erreichbar sein müssen.
      */
@@ -20,7 +21,8 @@ class ForcePasswordChange {
         'locale.update',
     ];
 
-    public function handle(Request $request, Closure $next): Response {
+    public function handle(Request $request, Closure $next): Response
+    {
         $user = Auth::user();
 
         if (! $user || empty($user->must_change_password)) {

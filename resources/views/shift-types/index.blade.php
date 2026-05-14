@@ -16,14 +16,14 @@
         @endif
 
         <div class="overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-            <table class="table table-zebra table-pin-rows">
+            <table class="table table-zebra table-pin-rows" data-sortable>
                 <thead class="bg-base-200">
                     <tr>
-                        <th>{{ __('Name') }}</th>
-                        <th>{{ __('Kürzel') }}</th>
-                        <th>{{ __('Standardzeit') }}</th>
-                        <th>{{ __('Status') }}</th>
-                        <th class="text-right">{{ __('Verwendet') }}</th>
+                        <th data-sort data-sort-default="asc">{{ __('Name') }}</th>
+                        <th data-sort>{{ __('Kürzel') }}</th>
+                        <th data-sort>{{ __('Standardzeit') }}</th>
+                        <th data-sort>{{ __('Status') }}</th>
+                        <th class="text-right" data-sort data-sort-type="number">{{ __('Verwendet') }}</th>
                         <th class="w-32 text-right">{{ __('Aktion') }}</th>
                     </tr>
                 </thead>
@@ -51,7 +51,9 @@
                             <td class="text-right whitespace-nowrap">
                                 <a href="{{ route('shift-types.edit', $type) }}" data-entry-modal-trigger class="btn btn-ghost btn-sm">{{ __('Bearbeiten') }}</a>
                                 <form action="{{ route('shift-types.destroy', $type) }}" method="POST" class="inline"
-                                      onsubmit="return confirm('{{ __('Wirklich löschen?') }}')">
+                                      data-confirm-dialog
+                                      data-confirm-message="{{ __('Wirklich löschen?') }}"
+                                      data-confirm-label="{{ __('Löschen') }}">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-ghost btn-sm text-error">{{ __('Löschen') }}</button>
                                 </form>

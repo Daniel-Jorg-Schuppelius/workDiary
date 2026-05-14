@@ -5,7 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PushSubscription extends Model {
+class PushSubscription extends Model
+{
     protected $fillable = [
         'user_id',
         'endpoint',
@@ -21,7 +22,8 @@ class PushSubscription extends Model {
     ];
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo {
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 }

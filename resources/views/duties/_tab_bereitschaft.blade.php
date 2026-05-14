@@ -1,11 +1,12 @@
 {{-- Bereitschaft: Tabelle --}}
+<?php $p = array_merge($filters ?? [], ['tab' => 'bereitschaft']); ?>
 <div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
     <table class="table table-zebra table-pin-rows">
         <thead class="bg-base-200">
             <tr>
-                <th>{{ __('Mitarbeiter') }}</th>
-                <th>{{ __('Beginn') }}</th>
-                <th>{{ __('Ende') }}</th>
+                <th><x-sort-th column="mitarbeiter" :route="route('duties.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Mitarbeiter') }}</x-sort-th></th>
+                <th><x-sort-th column="von" :route="route('duties.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'" default="von">{{ __('Beginn') }}</x-sort-th></th>
+                <th><x-sort-th column="bis" :route="route('duties.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Ende') }}</x-sort-th></th>
                 <th>{{ __('Notiz') }}</th>
                 <th class="w-24 text-right">{{ __('Aktion') }}</th>
             </tr>

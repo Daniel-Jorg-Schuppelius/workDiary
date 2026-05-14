@@ -10,9 +10,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-class OnCallShiftController extends Controller {
+class OnCallShiftController extends Controller
+{
     use ManagesShiftLike;
-    public function create(Request $request): View {
+
+    public function create(Request $request): View
+    {
         /** @var User $auth */
         $auth = Auth::user();
         $canAssignOthers = $auth->canCreateEntriesForOthers();
@@ -29,7 +32,8 @@ class OnCallShiftController extends Controller {
         ]);
     }
 
-    public function store(Request $request): RedirectResponse {
+    public function store(Request $request): RedirectResponse
+    {
         $data = $this->validateShift($request);
         /** @var User $auth */
         $auth = Auth::user();
@@ -43,7 +47,8 @@ class OnCallShiftController extends Controller {
         return $this->redirectAfter($request, __('Bereitschaft gespeichert.'), route('duties.index'));
     }
 
-    public function edit(Request $request, OnCallShift $shift): View {
+    public function edit(Request $request, OnCallShift $shift): View
+    {
         $this->authorizeManage();
         /** @var User $auth */
         $auth = Auth::user();
@@ -61,7 +66,8 @@ class OnCallShiftController extends Controller {
         ]);
     }
 
-    public function update(Request $request, OnCallShift $shift): RedirectResponse {
+    public function update(Request $request, OnCallShift $shift): RedirectResponse
+    {
         $this->authorizeManage();
         $data = $this->validateShift($request);
         /** @var User $auth */
@@ -74,7 +80,8 @@ class OnCallShiftController extends Controller {
         return $this->redirectAfter($request, __('Bereitschaft aktualisiert.'), route('duties.index'));
     }
 
-    public function destroy(Request $request, OnCallShift $shift): RedirectResponse {
+    public function destroy(Request $request, OnCallShift $shift): RedirectResponse
+    {
         $this->authorizeManage();
         $shift->delete();
 
@@ -82,7 +89,8 @@ class OnCallShiftController extends Controller {
     }
 
     /** @return array<string, mixed> */
-    private function validateShift(Request $request): array {
+    private function validateShift(Request $request): array
+    {
         return $request->validate([
             'user_id' => ['nullable', 'integer', 'exists:users,id'],
             'start_at' => ['required', 'date'],

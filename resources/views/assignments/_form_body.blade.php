@@ -83,7 +83,10 @@
 </form>
 
 @if ($isEdit)
-    <form method="POST" action="{{ route('assignments.destroy', $assignment) }}" class="mt-3" onsubmit="return confirm('{{ __('Wirklich löschen?') }}');">
+    <form method="POST" action="{{ route('assignments.destroy', $assignment) }}" class="mt-3"
+          data-confirm-dialog
+          data-confirm-message="{{ __('Wirklich löschen?') }}"
+          data-confirm-label="{{ __('Löschen') }}">
         @csrf @method('DELETE')
         <input type="hidden" name="_back" value="{{ $back }}">
         <button type="submit" class="btn btn-sm btn-error btn-outline">{{ __('Notdienst löschen') }}</button>

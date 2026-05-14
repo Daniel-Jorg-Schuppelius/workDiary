@@ -14,11 +14,11 @@
     <x-table>
         <thead>
             <tr>
-                <th>{{ __('Name') }}</th>
-                <th>{{ __('Kürzel') }}</th>
+                <th><x-sort-th column="name" :route="route('qualifications.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'" default="name">{{ __('Name') }}</x-sort-th></th>
+                <th><x-sort-th column="abbreviation" :route="route('qualifications.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Kürzel') }}</x-sort-th></th>
                 <th>{{ __('Beschreibung') }}</th>
-                <th class="text-center">{{ __('Mitarbeiter') }}</th>
-                <th class="text-center">{{ __('Aktiv') }}</th>
+                <th class="text-center"><x-sort-th column="users" :route="route('qualifications.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Mitarbeiter') }}</x-sort-th></th>
+                <th class="text-center"><x-sort-th column="is_active" :route="route('qualifications.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Aktiv') }}</x-sort-th></th>
                 <th></th>
             </tr>
         </thead>
@@ -43,7 +43,9 @@
                             @endcan
                             @can('delete', $qual)
                             <form method="POST" action="{{ route('qualifications.destroy', $qual) }}"
-                                  onsubmit="return confirm('{{ __('Qualifikation wirklich löschen?') }}')">
+                                  data-confirm-dialog
+                                  data-confirm-message="{{ __('Qualifikation wirklich löschen?') }}"
+                                  data-confirm-label="{{ __('Löschen') }}">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-ghost btn-xs text-error">{{ __('Löschen') }}</button>
                             </form>

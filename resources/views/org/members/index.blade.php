@@ -12,8 +12,8 @@
     <x-table>
         <thead>
             <tr>
-                <th>{{ __('Name') }}</th>
-                <th>{{ __('E-Mail') }}</th>
+                <th><x-sort-th column="name" :route="route('org.members.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'" default="name">{{ __('Name') }}</x-sort-th></th>
+                <th><x-sort-th column="email" :route="route('org.members.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('E-Mail') }}</x-sort-th></th>
                 <th>{{ __('Rolle') }}</th>
                 <th></th>
             </tr>
@@ -32,7 +32,9 @@
                         <div class="flex justify-end gap-2">
                             <a href="{{ route('org.members.edit', $member) }}" data-entry-modal-trigger class="btn btn-ghost btn-xs">{{ __('Bearbeiten') }}</a>
                             <form method="POST" action="{{ route('org.members.destroy', $member) }}"
-                                  onsubmit="return confirm('{{ __('Mitglied wirklich entfernen?') }}')">
+                                  data-confirm-dialog
+                                  data-confirm-message="{{ __('Mitglied wirklich entfernen?') }}"
+                                  data-confirm-label="{{ __('Entfernen') }}">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('Entfernen') }}</button>
                             </form>

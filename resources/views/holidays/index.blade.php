@@ -9,18 +9,31 @@
 @endphp
 
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
-    {{-- Toolbar: Jahr + Aktionen --}}
-    <div class="flex flex-none flex-wrap items-center justify-between gap-3">
-        <form method="GET" action="{{ route('holidays.index') }}" class="flex items-center gap-2">
-            <label class="text-sm text-base-content/70">{{ __('Jahr') }}</label>
-            <select name="year" class="select select-bordered select-sm" onchange="this.form.submit()">
-                @foreach ($years as $y)
-                    <option value="{{ $y }}" @selected($y === $year)>{{ $y }}</option>
-                @endforeach
-            </select>
-        </form>
-        <a href="{{ route('holidays.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">+ {{ __('Eigener Feiertag') }}</a>
-    </div>
+    {{-- Filter & Aktionen --}}
+    <form method="GET" action="{{ route('holidays.index') }}"
+          class="flex-none rounded-box border border-base-300 bg-base-100 p-4 shadow-xs md:p-5">
+        <div class="flex flex-wrap items-end gap-3">
+            <div class="flex flex-col min-w-32">
+                <label for="filter-year" class="label py-1">
+                    <span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Jahr') }}</span>
+                </label>
+                <select id="filter-year" name="year" class="select select-bordered select-sm" onchange="this.form.submit()">
+                    @foreach ($years as $y)
+                        <option value="{{ $y }}" @selected($y === $year)>{{ $y }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="ml-auto flex items-end gap-2">
+                <button type="submit" class="btn btn-sm btn-primary">{{ __('Filtern') }}</button>
+                @if ((int) $year !== $currentYear)
+                    <a href="{{ route('holidays.index') }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
+                @endif
+                <a href="{{ route('holidays.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
+                    + {{ __('Eigener Feiertag') }}
+                </a>
+            </div>
+        </div>
+    </form>
 
     {{-- Tabs: Jahresübersicht | Eigene Feiertage --}}
     <div role="tablist" class="tabs tabs-box w-fit">
@@ -34,10 +47,13 @@
 
     {{-- Jahresübersicht --}}
     <div data-holiday-pane="yearly" class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <table class="table table-sm table-zebra table-pin-rows">Datum') }}</th>
-                    <th class="whitespace-nowrap">{{ __('Wochentag') }}</th>
-                    <th>{{ __('Name') }}</th>
-                    <th>{{ __('Quelle') }}</th>
+        <table class="table table-sm table-zebra table-pin-rows" data-sortable>
+            <thead>
+                <tr>
+                    <th class="whitespace-nowrap" data-sort data-sort-type="date" data-sort-default="asc">{{ __('Datum') }}</th>
+                    <th class="whitespace-nowrap" data-sort>{{ __('Wochentag') }}</th>
+                    <th data-sort>{{ __('Name') }}</th>
+                    <th data-sort>{{ __('Quelle') }}</th>
                     <th class="text-right">{{ __('Aktion') }}</th>
                 </tr>
             </thead>
@@ -96,9 +112,12 @@
 
     {{-- Eigene Feiertage (Verwaltung) --}}
     <div data-holiday-pane="custom" class="hidden flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <table class="table table-sm table-zebra table-pin-rows"></th>
-                    <th>{{ __('Name') }}</th>
-                    <th>{{ __('Typ') }}</th>
+        <table class="table table-sm table-zebra table-pin-rows" data-sortable>
+            <thead>
+                <tr>
+                    <th class="whitespace-nowrap" data-sort data-sort-type="date" data-sort-default="asc">{{ __('Datum') }}</th>
+                    <th data-sort>{{ __('Name') }}</th>
+                    <th data-sort>{{ __('Typ') }}</th>
                     <th class="text-right">{{ __('Aktion') }}</th>
                 </tr>
             </thead>

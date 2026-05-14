@@ -6,14 +6,17 @@ use App\Models\AuditLog;
 use App\Models\Holiday;
 use App\Services\HolidayService;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class HolidayController extends Controller {
-    public function index(Request $request, HolidayService $holidayService): View {
+class HolidayController extends Controller
+{
+    public function index(Request $request, HolidayService $holidayService): View
+    {
         Gate::authorize('viewAny', AuditLog::class);
 
         $year = (int) $request->query('year', (int) Carbon::now()->year);
@@ -22,7 +25,7 @@ class HolidayController extends Controller {
         }
 
         // Eigene (DB-)Feiertage für die Verwaltung (alle, paginiert nach Datum).
-        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Holiday> $customHolidays */
+        /** @var Collection<int, Holiday> $customHolidays */
         $customHolidays = Holiday::query()
             ->orderByDesc('is_recurring')
             ->orderBy('date')
@@ -44,7 +47,7 @@ class HolidayController extends Controller {
                     'custom' => $customForYear[$dateKey] ?? null,
                 ];
             })
-            ->sortBy(fn($h) => $h['date']->getTimestamp())
+            ->sortBy(fn ($h) => $h['date']->getTimestamp())
             ->values();
 
         return view('holidays.index', [
@@ -54,7 +57,8 @@ class HolidayController extends Controller {
         ]);
     }
 
-    public function create(): View {
+    public function create(): View
+    {
         Gate::authorize('viewAny', AuditLog::class);
 
         return view('holidays._form_dialog', [
@@ -64,7 +68,8 @@ class HolidayController extends Controller {
         ]);
     }
 
-    public function store(Request $request): RedirectResponse {
+    public function store(Request $request): RedirectResponse
+    {
         Gate::authorize('viewAny', AuditLog::class);
 
         $data = $this->validateInput($request);
@@ -77,7 +82,8 @@ class HolidayController extends Controller {
         return redirect()->route('holidays.index')->with('success', __('Feiertag angelegt.'));
     }
 
-    public function edit(Holiday $holiday): View {
+    public function edit(Holiday $holiday): View
+    {
         Gate::authorize('viewAny', AuditLog::class);
 
         return view('holidays._form_dialog', [
@@ -87,7 +93,8 @@ class HolidayController extends Controller {
         ]);
     }
 
-    public function update(Request $request, Holiday $holiday): RedirectResponse {
+    public function update(Request $request, Holiday $holiday): RedirectResponse
+    {
         Gate::authorize('viewAny', AuditLog::class);
 
         $data = $this->validateInput($request, $holiday);
@@ -99,7 +106,8 @@ class HolidayController extends Controller {
         return redirect()->route('holidays.index')->with('success', __('Feiertag aktualisiert.'));
     }
 
-    public function destroy(Holiday $holiday): RedirectResponse {
+    public function destroy(Holiday $holiday): RedirectResponse
+    {
         Gate::authorize('viewAny', AuditLog::class);
 
         $holiday->delete();
@@ -110,35 +118,36 @@ class HolidayController extends Controller {
     /**
      * @return array<string, mixed>
      */
-    private function validateInput(Request $request, ?Holiday $holiday = null): array {
+    private function validateInput(Request $request, ?Holiday $holiday = null): array
+    {
         $data = $request->validate([
-            'name'               => ['required', 'string', 'max:120'],
-            'recurrence_mode'    => ['required', 'in:once,yearly,relative'],
-            'date'               => ['nullable', 'date', 'required_unless:recurrence_mode,relative'],
+            'name' => ['required', 'string', 'max:120'],
+            'recurrence_mode' => ['required', 'in:once,yearly,relative'],
+            'date' => ['nullable', 'date', 'required_unless:recurrence_mode,relative'],
             'recurrence_weekday' => ['nullable', 'integer', 'between:0,6', 'required_if:recurrence_mode,relative'],
-            'recurrence_week'    => ['nullable', 'in:-1,1,2,3,4',           'required_if:recurrence_mode,relative'],
-            'recurrence_month'   => ['nullable', 'integer', 'between:1,12'],
+            'recurrence_week' => ['nullable', 'in:-1,1,2,3,4',           'required_if:recurrence_mode,relative'],
+            'recurrence_month' => ['nullable', 'integer', 'between:1,12'],
         ]);
 
-        $mode       = (string) $data['recurrence_mode'];
+        $mode = (string) $data['recurrence_mode'];
         $isRelative = $mode === 'relative';
         $isRecurring = $mode !== 'once';
 
         $result = [
-            'name'               => $data['name'],
-            'recurrence_type'    => $isRelative ? 'relative' : 'fixed',
-            'is_recurring'       => $isRecurring,
-            'date'               => $isRelative ? null : ($data['date'] ?? null),
+            'name' => $data['name'],
+            'recurrence_type' => $isRelative ? 'relative' : 'fixed',
+            'is_recurring' => $isRecurring,
+            'date' => $isRelative ? null : ($data['date'] ?? null),
             'recurrence_weekday' => $isRelative ? (int) ($data['recurrence_weekday'] ?? 0) : null,
-            'recurrence_week'    => $isRelative ? (int) ($data['recurrence_week']    ?? 1) : null,
-            'recurrence_month'   => $isRelative && ! empty($data['recurrence_month'])
+            'recurrence_week' => $isRelative ? (int) ($data['recurrence_week'] ?? 1) : null,
+            'recurrence_month' => $isRelative && ! empty($data['recurrence_month'])
                 ? (int) $data['recurrence_month'] : null,
         ];
 
         // Duplikat-Prüfung nur für feste Feiertage
         if (! $isRelative) {
             $duplicate = Holiday::query()
-                ->when($holiday, fn($q) => $q->whereKeyNot($holiday->id))
+                ->when($holiday, fn ($q) => $q->whereKeyNot($holiday->id))
                 ->where('recurrence_type', 'fixed')
                 ->where('is_recurring', $isRecurring)
                 ->where('date', $result['date'])

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 use Spatie\Permission\Models\Role;
 
@@ -27,28 +28,28 @@ class TenantRegistrationController extends Controller {
         abort_unless(config('app.registration_enabled'), 404);
 
         $data = $request->validate([
-            'org_name'  => ['required', 'string', 'max:255'],
-            'name'      => ['required', 'string', 'max:255'],
-            'email'     => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password'  => ['required', 'string', 'min:8', 'confirmed'],
+            'org_name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'confirmed', Password::defaults()],
         ]);
 
         $user = DB::transaction(function () use ($data): User {
             // Organisation anlegen (owner_id wird nach User-Erstellung gesetzt)
             $org = Organization::create([
-                'name'      => $data['org_name'],
-                'plan'      => Organization::PLAN_FREE,
-                'locale'    => app()->getLocale(),
-                'timezone'  => 'Europe/Berlin',
+                'name' => $data['org_name'],
+                'plan' => Organization::PLAN_FREE,
+                'locale' => app()->getLocale(),
+                'timezone' => 'Europe/Berlin',
                 'is_active' => true,
             ]);
 
             /** @var User $user */
             $user = User::create([
                 'organization_id' => $org->id,
-                'name'            => $data['name'],
-                'email'           => $data['email'],
-                'password'        => Hash::make($data['password']),
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
             ]);
 
             // Owner setzen

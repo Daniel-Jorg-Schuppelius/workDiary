@@ -23,6 +23,18 @@
             return route('legacy.archive.index', array_merge($baseFilters, ['tab' => $activeTab], $delta));
         };
 
+        $currentSort = $sort ?? '';
+        $currentDir = $dir ?? 'desc';
+        $sortLink = function (string $column) use ($tabFilters, $activeTab, $currentSort, $currentDir): string {
+            $nextDir = ($currentSort === $column && $currentDir === 'asc') ? 'desc' : 'asc';
+            return route('legacy.archive.index', array_merge($tabFilters, [
+                'tab' => $activeTab,
+                'sort' => $column,
+                'dir' => $nextDir,
+            ]));
+        };
+        $sortIcon = fn (string $col): string => $currentSort !== $col ? '↕' : ($currentDir === 'asc' ? '↑' : '↓');
+
         $kpiTiles = $activeTab === 'auftraege'
             ? [
                 [
@@ -214,12 +226,12 @@
                     <thead class="bg-base-200">
                         <tr>
                             @if ($vacationIsAdmin)
-                                <th class="w-32">{{ __('Mitarbeiter') }}</th>
+                                <th class="w-32"><a href="{{ $sortLink('mitarbeiter') }}" class="link link-hover">{{ __('Mitarbeiter') }} {!! $sortIcon('mitarbeiter') !!}</a></th>
                             @endif
-                            <th>{{ __('Typ') }}</th>
-                            <th class="w-28 whitespace-nowrap">{{ __('Von') }}</th>
-                            <th class="w-28 whitespace-nowrap">{{ __('Bis') }}</th>
-                            <th>{{ __('Status') }}</th>
+                            <th><a href="{{ $sortLink('typ') }}" class="link link-hover">{{ __('Typ') }} {!! $sortIcon('typ') !!}</a></th>
+                            <th class="w-28 whitespace-nowrap"><a href="{{ $sortLink('von') }}" class="link link-hover">{{ __('Von') }} {!! $sortIcon('von') !!}</a></th>
+                            <th class="w-28 whitespace-nowrap"><a href="{{ $sortLink('bis') }}" class="link link-hover">{{ __('Bis') }} {!! $sortIcon('bis') !!}</a></th>
+                            <th><a href="{{ $sortLink('status') }}" class="link link-hover">{{ __('Status') }} {!! $sortIcon('status') !!}</a></th>
                             <th class="max-w-xs">{{ __('Notiz') }}</th>
                         </tr>
                     </thead>
@@ -265,10 +277,10 @@
                 <table class="table table-sm table-zebra table-pin-rows">
                     <thead class="bg-base-200">
                         <tr>
-                            <th class="w-32">{{ __('Mitarbeiter') }}</th>
-                            <th class="w-24 text-center">{{ __('Status') }}</th>
-                            <th class="w-28 whitespace-nowrap">{{ __('Von') }}</th>
-                            <th class="w-28 whitespace-nowrap">{{ __('Bis') }}</th>
+                            <th class="w-32"><a href="{{ $sortLink('mitarbeiter') }}" class="link link-hover">{{ __('Mitarbeiter') }} {!! $sortIcon('mitarbeiter') !!}</a></th>
+                            <th class="w-24 text-center"><a href="{{ $sortLink('status') }}" class="link link-hover">{{ __('Status') }} {!! $sortIcon('status') !!}</a></th>
+                            <th class="w-28 whitespace-nowrap"><a href="{{ $sortLink('von') }}" class="link link-hover">{{ __('Von') }} {!! $sortIcon('von') !!}</a></th>
+                            <th class="w-28 whitespace-nowrap"><a href="{{ $sortLink('bis') }}" class="link link-hover">{{ __('Bis') }} {!! $sortIcon('bis') !!}</a></th>
                             <th>{{ __('Inhalt') }}</th>
                         </tr>
                     </thead>
@@ -310,9 +322,9 @@
                 <table class="table table-sm table-zebra table-pin-rows">
                     <thead class="bg-base-200">
                         <tr>
-                            <th class="w-32">{{ __('Mitarbeiter') }}</th>
-                            <th class="w-28 whitespace-nowrap">{{ __('Von') }}</th>
-                            <th class="w-28 whitespace-nowrap">{{ __('Bis') }}</th>
+                            <th class="w-32"><a href="{{ $sortLink('mitarbeiter') }}" class="link link-hover">{{ __('Mitarbeiter') }} {!! $sortIcon('mitarbeiter') !!}</a></th>
+                            <th class="w-28 whitespace-nowrap"><a href="{{ $sortLink('von') }}" class="link link-hover">{{ __('Von') }} {!! $sortIcon('von') !!}</a></th>
+                            <th class="w-28 whitespace-nowrap"><a href="{{ $sortLink('bis') }}" class="link link-hover">{{ __('Bis') }} {!! $sortIcon('bis') !!}</a></th>
                             <th>{{ __('Dauer') }}</th>
                         </tr>
                     </thead>
@@ -338,9 +350,9 @@
                 <table class="table table-sm table-zebra table-pin-rows">
                     <thead class="bg-base-200">
                         <tr>
-                            <th class="w-32">{{ __('Mitarbeiter') }}</th>
-                            <th class="w-28 whitespace-nowrap">{{ __('Von') }}</th>
-                            <th class="w-28 whitespace-nowrap">{{ __('Bis') }}</th>
+                            <th class="w-32"><a href="{{ $sortLink('mitarbeiter') }}" class="link link-hover">{{ __('Mitarbeiter') }} {!! $sortIcon('mitarbeiter') !!}</a></th>
+                            <th class="w-28 whitespace-nowrap"><a href="{{ $sortLink('von') }}" class="link link-hover">{{ __('Von') }} {!! $sortIcon('von') !!}</a></th>
+                            <th class="w-28 whitespace-nowrap"><a href="{{ $sortLink('bis') }}" class="link link-hover">{{ __('Bis') }} {!! $sortIcon('bis') !!}</a></th>
                             <th>{{ __('Dauer') }}</th>
                         </tr>
                     </thead>

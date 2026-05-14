@@ -6,12 +6,15 @@ use App\Models\DiaryEntry;
 use App\Services\MailNotifier;
 use App\Services\PushNotifier;
 
-class DiaryEntryObserver {
-    public function created(DiaryEntry $entry): void {
+class DiaryEntryObserver
+{
+    public function created(DiaryEntry $entry): void
+    {
         app(PushNotifier::class)->diaryProblem($entry);
     }
 
-    public function updated(DiaryEntry $entry): void {
+    public function updated(DiaryEntry $entry): void
+    {
         if (! $entry->wasChanged('status')) {
             return;
         }

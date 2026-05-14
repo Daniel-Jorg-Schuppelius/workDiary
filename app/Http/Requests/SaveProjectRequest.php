@@ -6,14 +6,17 @@ use App\Models\Project;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveProjectRequest extends FormRequest {
-    public function authorize(): bool {
+class SaveProjectRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
         return true;
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array {
-        /** @var \App\Models\Project|null $project */
+    public function rules(): array
+    {
+        /** @var Project|null $project */
         $project = $this->route('project');
 
         return [

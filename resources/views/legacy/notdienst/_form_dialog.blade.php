@@ -1,5 +1,5 @@
 @php
-    /** @var \Illuminate\Support\Collection<int, \App\Models\Legacy\LegacyUser> $users */
+    /** @var \Illuminate\Support\Collection<int, \App\Legacy\Models\LegacyUser> $users */
     $isEdit = $isEdit ?? false;
     $isDialog = $isDialog ?? true;
     $action = $isEdit ? route('legacy.notdienst.update', $item) : route('legacy.notdienst.store');

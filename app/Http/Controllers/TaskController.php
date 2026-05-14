@@ -11,36 +11,39 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class TaskController extends Controller {
-    public function create(Project $project, Request $request): View {
+class TaskController extends Controller
+{
+    public function create(Project $project, Request $request): View
+    {
         Gate::authorize('create', Task::class);
 
         $milestones = $project->milestones()->orderBy('position')->orderBy('due_date')->get(['id', 'title']);
         $parentTasks = $project->tasks()->whereNull('parent_task_id')->orderBy('position')->get(['id', 'title']);
-        $users       = $project->organization
+        $users = $project->organization
             ? $project->organization->users()->orderBy('name')->get(['id', 'name'])
             : collect();
 
         $preselectedParentId = $request->integer('parent_id') ?: null;
 
         return view('projects._task_dialog', [
-            'project'             => $project,
-            'task'                => null,
-            'milestones'          => $milestones,
-            'parentTasks'         => $parentTasks,
-            'users'               => $users,
+            'project' => $project,
+            'task' => null,
+            'milestones' => $milestones,
+            'parentTasks' => $parentTasks,
+            'users' => $users,
             'preselectedParentId' => $preselectedParentId,
-            'isDialog'            => true,
+            'isDialog' => true,
         ]);
     }
 
-    public function store(Project $project, SaveTaskRequest $request): RedirectResponse {
+    public function store(Project $project, SaveTaskRequest $request): RedirectResponse
+    {
         Gate::authorize('create', Task::class);
 
         $data = $request->validated();
 
         $project->tasks()->create($data + [
-            'created_by'      => Auth::id(),
+            'created_by' => Auth::id(),
             'organization_id' => $project->organization_id,
         ]);
 
@@ -48,7 +51,8 @@ class TaskController extends Controller {
             ->with('success', __('Aufgabe angelegt.'));
     }
 
-    public function edit(Project $project, Task $task): View {
+    public function edit(Project $project, Task $task): View
+    {
         Gate::authorize('update', $task);
 
         $milestones = $project->milestones()->orderBy('position')->orderBy('due_date')->get(['id', 'title']);
@@ -62,17 +66,18 @@ class TaskController extends Controller {
             : collect();
 
         return view('projects._task_dialog', [
-            'project'             => $project,
-            'task'                => $task,
-            'milestones'          => $milestones,
-            'parentTasks'         => $parentTasks,
-            'users'               => $users,
+            'project' => $project,
+            'task' => $task,
+            'milestones' => $milestones,
+            'parentTasks' => $parentTasks,
+            'users' => $users,
             'preselectedParentId' => null,
-            'isDialog'            => true,
+            'isDialog' => true,
         ]);
     }
 
-    public function update(Project $project, Task $task, SaveTaskRequest $request): RedirectResponse {
+    public function update(Project $project, Task $task, SaveTaskRequest $request): RedirectResponse
+    {
         Gate::authorize('update', $task);
 
         $task->update($request->validated());
@@ -81,7 +86,8 @@ class TaskController extends Controller {
             ->with('success', __('Aufgabe aktualisiert.'));
     }
 
-    public function destroy(Project $project, Task $task): RedirectResponse {
+    public function destroy(Project $project, Task $task): RedirectResponse
+    {
         Gate::authorize('delete', $task);
 
         $task->delete();
@@ -90,7 +96,8 @@ class TaskController extends Controller {
             ->with('success', __('Aufgabe gelöscht.'));
     }
 
-    public function complete(Project $project, Task $task): RedirectResponse {
+    public function complete(Project $project, Task $task): RedirectResponse
+    {
         Gate::authorize('update', $task);
 
         $task->update([

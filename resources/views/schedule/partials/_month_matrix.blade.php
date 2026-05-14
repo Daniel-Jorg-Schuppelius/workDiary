@@ -80,18 +80,25 @@
 
                     {{-- Shift badges --}}
                     @foreach ($visibleShifts as $shift)
+                        @php
+                            $compl = $complianceByShift[$shift->id] ?? null;
+                            $complTitle = $compl ? "\n⚠ ".implode("\n⚠ ", $compl['messages']) : '';
+                        @endphp
                         <div class="schedule-shift-badge mb-0.5 flex items-center gap-1 truncate rounded px-1.5 py-0.5 text-[0.65rem] font-semibold leading-tight shadow-xs
                                     @if ($isAdmin) cursor-pointer hover:opacity-80 @endif"
                              style="background:{{ $shift->shiftType?->color ?? '#6b7280' }};color:#fff;"
                              @if ($isAdmin)
                                  draggable="true"
                                  ondragstart="scheduleDragStart(event, {{ $shift->id }})"
-                                 onclick="event.stopPropagation(); scheduleOpenEditDialog({{ $shift->id }}, @json($shift))"
+                                 onclick="event.stopPropagation(); scheduleOpenEditDialog({{ $shift->id }}, {{ json_encode($shift) }})"
                              @endif
-                             title="{{ $shift->shiftType?->name ?? __('Schicht') }}{{ $shift->resolvedStartTime() ? ': '.$shift->resolvedStartTime() : '' }}{{ $shift->note ? ' · '.$shift->note : '' }}">
+                             title="{{ $shift->shiftType?->name ?? __('Schicht') }}{{ $shift->resolvedStartTime() ? ': '.$shift->resolvedStartTime() : '' }}{{ $shift->note ? ' · '.$shift->note : '' }}{{ $complTitle }}">
                             {{ $shift->shiftType?->abbreviation ?? '?' }}
-                            @if ($shift->resolvedStartTime())
-                                <span class="font-normal opacity-80">{{ $shift->resolvedStartTime() }}</span>
+                            @if ($shift->resolvedStartTime() || $shift->resolvedEndTime())
+                                <span class="font-normal opacity-80">{{ $shift->resolvedStartTime() ?? '' }}–{{ $shift->resolvedEndTime() ?? '' }}</span>
+                            @endif
+                            @if ($compl)
+                                <span class="ml-auto inline-flex h-3 w-3 items-center justify-center rounded-full bg-white/90 text-[0.55rem] font-bold {{ $compl['severity'] === 'error' ? 'text-error' : 'text-warning' }}" aria-hidden="true">!</span>
                             @endif
                         </div>
                     @endforeach
@@ -99,6 +106,25 @@
                     @if ($overflow > 0)
                         <span class="text-[0.6rem] text-base-content/50">+{{ $overflow }} {{ __('mehr') }}</span>
                     @endif
+
+                    {{-- Open slots (Soll-Lücken) --}}
+                    @php $slots = $openSlotsByDate[$day['date']] ?? []; @endphp
+                    @foreach ($slots as $slot)
+                        @for ($i = 0; $i < $slot['missing']; $i++)
+                            <button type="button"
+                                    @if ($isAdmin && $day['inMonth'])
+                                        onclick="event.stopPropagation(); scheduleOpenSlotDialog('{{ $day['date'] }}', {{ $slot['shift_type_id'] }})"
+                                    @else
+                                        disabled
+                                    @endif
+                                    class="schedule-shift-badge mb-0.5 flex items-center gap-1 truncate rounded border-2 border-dashed px-1.5 py-0.5 text-[0.65rem] font-semibold leading-tight text-base-content/70 hover:bg-base-100 @if ($isAdmin && $day['inMonth']) cursor-pointer @endif"
+                                    style="border-color:{{ $slot['color'] }};color:{{ $slot['color'] }};"
+                                    title="{{ __('Offene Schicht') }}: {{ $slot['name'] }}">
+                                <span>{{ $slot['abbreviation'] }}</span>
+                                <span class="ml-auto text-[0.55rem] opacity-70">+</span>
+                            </button>
+                        @endfor
+                    @endforeach
 
                     {{-- Visual add hint --}}
                     @if ($isAdmin && $day['inMonth'])

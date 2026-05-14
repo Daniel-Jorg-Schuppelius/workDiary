@@ -12,12 +12,15 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 
-class TagController extends Controller {
-    public function index(): AnonymousResourceCollection {
+class TagController extends Controller
+{
+    public function index(): AnonymousResourceCollection
+    {
         return TagResource::collection(LookupCache::tagOptions());
     }
 
-    public function store(Request $request): JsonResponse {
+    public function store(Request $request): JsonResponse
+    {
         Gate::authorize('create', Tag::class);
         $data = $request->validate([
             'name' => ['required', 'string', 'max:64', 'unique:tags,name'],
@@ -28,13 +31,15 @@ class TagController extends Controller {
             'slug' => Str::slug($data['name']),
             'color' => $data['color'] ?? null,
         ]);
+
         return (new TagResource($tag))->response()->setStatusCode(201);
     }
 
-    public function update(Request $request, Tag $tag): TagResource {
+    public function update(Request $request, Tag $tag): TagResource
+    {
         Gate::authorize('update', $tag);
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:64', 'unique:tags,name,' . $tag->id],
+            'name' => ['required', 'string', 'max:64', 'unique:tags,name,'.$tag->id],
             'color' => ['nullable', 'string', 'max:16'],
         ]);
         $tag->update([
@@ -42,12 +47,15 @@ class TagController extends Controller {
             'slug' => Str::slug($data['name']),
             'color' => $data['color'] ?? null,
         ]);
+
         return new TagResource($tag);
     }
 
-    public function destroy(Tag $tag): JsonResponse {
+    public function destroy(Tag $tag): JsonResponse
+    {
         Gate::authorize('delete', $tag);
         $tag->delete();
+
         return response()->json(['status' => 'deleted']);
     }
 }

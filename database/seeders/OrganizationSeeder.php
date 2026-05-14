@@ -6,15 +6,17 @@ use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
-class OrganizationSeeder extends Seeder {
-    public function run(): void {
+class OrganizationSeeder extends Seeder
+{
+    public function run(): void
+    {
         $org = Organization::firstOrCreate(
             ['slug' => 'default'],
             [
-                'name'      => 'Default Organisation',
-                'plan'      => Organization::PLAN_FREE,
-                'locale'    => 'de',
-                'timezone'  => 'Europe/Berlin',
+                'name' => 'Default Organisation',
+                'plan' => Organization::PLAN_FREE,
+                'locale' => 'de',
+                'timezone' => 'Europe/Berlin',
                 'is_active' => true,
             ]
         );

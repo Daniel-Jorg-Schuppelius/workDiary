@@ -1,23 +1,25 @@
 <?php
 
-namespace App\Models\Legacy;
+namespace App\Legacy\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int|null $user
  * @property string|null $inhalt
  * @property string|null $sms
- * @property \Illuminate\Support\Carbon|null $von
- * @property \Illuminate\Support\Carbon|null $bis
- * @property \Illuminate\Support\Carbon|null $aktuell
+ * @property Carbon|null $von
+ * @property Carbon|null $bis
+ * @property Carbon|null $aktuell
  * @property int|null $gelesen
  */
-class LegacyDiaryEntry extends Model {
+class LegacyDiaryEntry extends Model
+{
     protected $connection = 'legacy';
 
     protected $table = 'tagebuch';
@@ -28,7 +30,8 @@ class LegacyDiaryEntry extends Model {
 
     protected $primaryKey = 'id';
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'aktuell' => 'datetime',
             'von' => 'datetime',
@@ -37,20 +40,24 @@ class LegacyDiaryEntry extends Model {
         ];
     }
 
-    public function author(): BelongsTo {
+    public function author(): BelongsTo
+    {
         return $this->belongsTo(LegacyUser::class, 'user', 'id');
     }
 
-    public function user(): BelongsTo {
+    public function user(): BelongsTo
+    {
         return $this->author();
     }
 
     #[Scope]
-    protected function active(Builder $query): void {
+    protected function active(Builder $query): void
+    {
         $query->where('bis', '>=', now()->subDays(30));
     }
 
-    public function statusLabel(): string {
+    public function statusLabel(): string
+    {
         return match ($this->gelesen) {
             -1 => __('Erledigt'),
             1 => __('Bestätigt'),
@@ -60,7 +67,8 @@ class LegacyDiaryEntry extends Model {
         };
     }
 
-    public function statusTone(): string {
+    public function statusTone(): string
+    {
         return match ($this->gelesen) {
             -1 => 'done',
             1 => 'progress',

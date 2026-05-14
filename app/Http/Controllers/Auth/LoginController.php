@@ -11,14 +11,17 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\View\View;
 
-class LoginController extends Controller {
+class LoginController extends Controller
+{
     private const MAX_LOGIN_ATTEMPTS = 5;
 
-    public function showLoginForm(): View {
+    public function showLoginForm(): View
+    {
         return view('auth.login');
     }
 
-    public function login(Request $request): RedirectResponse {
+    public function login(Request $request): RedirectResponse
+    {
         $credentials = $request->validate([
             'username' => ['required', 'string', 'max:100'],
             'password' => ['required', 'string', 'max:255'],
@@ -56,11 +59,13 @@ class LoginController extends Controller {
         ])->onlyInput('username');
     }
 
-    private function throttleKey(Request $request): string {
-        return 'login:' . mb_strtolower((string) $request->input('username', '')) . '|' . $request->ip();
+    private function throttleKey(Request $request): string
+    {
+        return 'login:'.mb_strtolower((string) $request->input('username', '')).'|'.$request->ip();
     }
 
-    public function logout(Request $request): RedirectResponse {
+    public function logout(Request $request): RedirectResponse
+    {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
@@ -68,7 +73,8 @@ class LoginController extends Controller {
         return redirect()->route('home');
     }
 
-    private function syncLegacyUserIdIfMissing(string $submittedUsername): void {
+    private function syncLegacyUserIdIfMissing(string $submittedUsername): void
+    {
         $authUser = Auth::user();
 
         if (! $authUser instanceof User || (int) ($authUser->legacy_user_id ?? 0) > 0) {

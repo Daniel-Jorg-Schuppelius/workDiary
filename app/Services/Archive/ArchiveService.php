@@ -7,13 +7,15 @@ use App\Models\EmergencyAssignment;
 use App\Models\OnCallShift;
 use Carbon\CarbonImmutable;
 
-class ArchiveService {
+class ArchiveService
+{
     /**
      * Run the archive sweep using the configured threshold.
      *
      * @return array{diary:int,shifts:int,assignments:int,total:int,cutoff:string}
      */
-    public function run(?int $thresholdDays = null, ?CarbonImmutable $now = null): array {
+    public function run(?int $thresholdDays = null, ?CarbonImmutable $now = null): array
+    {
         $days = $thresholdDays ?? (int) config('archive.threshold_days', 30);
         $now = $now ?? CarbonImmutable::now();
         $cutoff = $now->subDays($days);
@@ -45,14 +47,16 @@ class ArchiveService {
         ];
     }
 
-    public function archiveEntry(DiaryEntry $entry, ?CarbonImmutable $now = null): void {
+    public function archiveEntry(DiaryEntry $entry, ?CarbonImmutable $now = null): void
+    {
         $entry->forceFill([
             'is_archived' => true,
             'archived_at' => $now ?? CarbonImmutable::now(),
         ])->save();
     }
 
-    public function restoreEntry(DiaryEntry $entry): void {
+    public function restoreEntry(DiaryEntry $entry): void
+    {
         $entry->forceFill([
             'is_archived' => false,
             'archived_at' => null,

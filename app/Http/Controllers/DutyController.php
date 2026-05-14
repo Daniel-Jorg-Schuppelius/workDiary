@@ -9,6 +9,7 @@ use App\Models\Tag;
 use App\Models\User;
 use App\Models\Vacation;
 use App\Services\HolidayService;
+use App\Support\SortableQuery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -20,9 +21,9 @@ class DutyController extends Controller {
             $tab = 'diary';
         }
 
-        /** @var \App\Models\User $authUser */
+        /** @var User $authUser */
         $authUser = Auth::user();
-        $isAdmin  = $authUser->isAdmin();
+        $isAdmin = $authUser->isAdmin();
 
         // ── Aufträge (Diary) ─────────────────────────────────────────────────
         $diaryQuery = DiaryEntry::query()
@@ -115,17 +116,17 @@ class DutyController extends Controller {
             ->first();
 
         $diaryCounts = [
-            'all'   => (int) ($row->cnt_all   ?? 0),
-            'open'  => (int) ($row->cnt_open  ?? 0),
+            'all' => (int) ($row->cnt_all ?? 0),
+            'open' => (int) ($row->cnt_open ?? 0),
             'alert' => (int) ($row->cnt_alert ?? 0),
-            'done'  => (int) ($row->cnt_done  ?? 0),
+            'done' => (int) ($row->cnt_done ?? 0),
         ];
 
         $tabCounts = [
-            'diary'        => (clone $diaryQuery)->count(),
+            'diary' => (clone $diaryQuery)->count(),
             'bereitschaft' => (clone $shiftQuery)->count(),
-            'notdienst'    => (clone $assignmentQuery)->count(),
-            'urlaub'       => (clone $vacationQuery)->count(),
+            'notdienst' => (clone $assignmentQuery)->count(),
+            'urlaub' => (clone $vacationQuery)->count(),
         ];
 
         // KPIs für Bereitschaft- und Notdienst-Tabs
@@ -134,10 +135,10 @@ class DutyController extends Controller {
                 ? (int) $r->start_at->startOfDay()->diffInDays($r->end_at->startOfDay()) + 1
                 : 0);
         $shiftKpis = [
-            'total'   => $tabCounts['bereitschaft'],
+            'total' => $tabCounts['bereitschaft'],
             'longest' => (int) ($shiftDurations->max() ?? 0),
-            'avg'     => $shiftDurations->count() > 0 ? round($shiftDurations->avg(), 1) : 0,
-            'users'   => (clone $shiftQuery)->distinct()->count('user_id'),
+            'avg' => $shiftDurations->count() > 0 ? round($shiftDurations->avg(), 1) : 0,
+            'users' => (clone $shiftQuery)->distinct()->count('user_id'),
         ];
 
         $assignmentDurations = (clone $assignmentQuery)->get(['start_at', 'end_at'])
@@ -145,40 +146,75 @@ class DutyController extends Controller {
                 ? (int) $r->start_at->startOfDay()->diffInDays($r->end_at->startOfDay()) + 1
                 : 0);
         $assignmentKpis = [
-            'total'   => $tabCounts['notdienst'],
+            'total' => $tabCounts['notdienst'],
             'longest' => (int) ($assignmentDurations->max() ?? 0),
-            'avg'     => $assignmentDurations->count() > 0 ? round($assignmentDurations->avg(), 1) : 0,
-            'users'   => (clone $assignmentQuery)->distinct()->count('user_id'),
+            'avg' => $assignmentDurations->count() > 0 ? round($assignmentDurations->avg(), 1) : 0,
+            'users' => (clone $assignmentQuery)->distinct()->count('user_id'),
         ];
 
         $vacationKpis = [
-            'total'    => (clone $vacationQuery)->count(),
-            'pending'  => (clone $vacationQuery)->where('status', Vacation::STATUS_PENDING)->count(),
+            'total' => (clone $vacationQuery)->count(),
+            'pending' => (clone $vacationQuery)->where('status', Vacation::STATUS_PENDING)->count(),
             'approved' => (clone $vacationQuery)->where('status', Vacation::STATUS_APPROVED)
                 ->where('end_date', '>=', now()->startOfYear())->count(),
             'rejected' => (clone $vacationQuery)->where('status', Vacation::STATUS_REJECTED)->count(),
         ];
 
         $allTags = Tag::orderBy('name')->get(['id', 'name', 'color']);
-        $users   = $isAdmin ? User::query()->orderBy('name')->get(['id', 'name']) : collect();
+        $users = $isAdmin ? User::query()->orderBy('name')->get(['id', 'name']) : collect();
         $filters = $request->only('status', 'from', 'to', 'mine', 'q', 'tag', 'vtype', 'vstatus', 'user_id');
 
+        // Sortierung pro aktivem Tab anwenden.
+        $sort = '';
+        $dir = 'desc';
+        if ($tab === 'diary') {
+            [$sort, $dir] = SortableQuery::apply($diaryQuery, $request, [
+                'mitarbeiter' => 'user_id',
+                'status' => 'status',
+                'von' => 'start_at',
+                'bis' => 'end_at',
+                'erstellt' => 'created_at',
+            ], 'von', 'desc');
+        } elseif ($tab === 'bereitschaft') {
+            [$sort, $dir] = SortableQuery::apply($shiftQuery, $request, [
+                'mitarbeiter' => 'user_id',
+                'von' => 'start_at',
+                'bis' => 'end_at',
+            ], 'von', 'desc');
+        } elseif ($tab === 'notdienst') {
+            [$sort, $dir] = SortableQuery::apply($assignmentQuery, $request, [
+                'mitarbeiter' => 'user_id',
+                'von' => 'start_at',
+                'bis' => 'end_at',
+            ], 'von', 'desc');
+        } elseif ($tab === 'urlaub') {
+            [$sort, $dir] = SortableQuery::apply($vacationQuery, $request, [
+                'mitarbeiter' => 'user_id',
+                'typ' => 'type',
+                'status' => 'status',
+                'von' => 'start_date',
+                'bis' => 'end_date',
+            ], 'von', 'desc');
+        }
+
         return view('duties.index', [
-            'tab'             => $tab,
-            'filters'         => $filters,
-            'tabCounts'       => $tabCounts,
-            'diaryCounts'     => $diaryCounts,
-            'shiftKpis'       => $shiftKpis,
-            'assignmentKpis'  => $assignmentKpis,
-            'allTags'         => $allTags,
-            'entries'         => $diaryQuery->paginate(20, ['*'], 'dpage')->withQueryString(),
-            'shifts'          => $shiftQuery->paginate(15, ['*'], 'spage')->withQueryString(),
-            'assignments'     => $assignmentQuery->paginate(15, ['*'], 'apage')->withQueryString(),
-            'vacations'       => $vacationQuery->paginate(15, ['*'], 'vpage')->withQueryString(),
-            'vacationKpis'    => $vacationKpis,
-            'isAdmin'         => $isAdmin,
-            'users'           => $users,
-            'holidayService'  => $holidayService,
+            'tab' => $tab,
+            'filters' => $filters,
+            'tabCounts' => $tabCounts,
+            'diaryCounts' => $diaryCounts,
+            'shiftKpis' => $shiftKpis,
+            'assignmentKpis' => $assignmentKpis,
+            'allTags' => $allTags,
+            'entries' => $diaryQuery->paginate(20, ['*'], 'dpage')->withQueryString(),
+            'shifts' => $shiftQuery->paginate(15, ['*'], 'spage')->withQueryString(),
+            'assignments' => $assignmentQuery->paginate(15, ['*'], 'apage')->withQueryString(),
+            'vacations' => $vacationQuery->paginate(15, ['*'], 'vpage')->withQueryString(),
+            'vacationKpis' => $vacationKpis,
+            'isAdmin' => $isAdmin,
+            'users' => $users,
+            'holidayService' => $holidayService,
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 }

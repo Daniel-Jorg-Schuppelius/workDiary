@@ -1,21 +1,23 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Legacy\Http\Controllers;
 
-use App\Http\Controllers\Concerns\RequiresLegacyAdmin;
-use App\Http\Requests\SaveLegacyDiaryEntryRequest;
-use App\Services\HolidayService;
-use App\Models\Legacy\LegacyDiaryEntry;
-use App\Models\Legacy\LegacyNotdienst;
-use App\Models\Legacy\LegacyOnCall;
-use App\Models\Legacy\LegacyUser;
+use App\Http\Controllers\Controller;
+use App\Legacy\Http\Concerns\RequiresLegacyAdmin;
+use App\Legacy\Http\Requests\SaveLegacyDiaryEntryRequest;
+use App\Legacy\Models\LegacyDiaryEntry;
+use App\Legacy\Models\LegacyNotdienst;
+use App\Legacy\Models\LegacyOnCall;
+use App\Legacy\Models\LegacyUser;
+use App\Legacy\Services\LegacyDashboardService;
+use App\Legacy\Services\LegacyWeekCalendarService;
+use App\Legacy\Support\LegacyRoleResolver;
 use App\Models\User;
-use App\Models\Vacation;
-use App\Support\LegacyRoleResolver;
-use App\Services\Legacy\LegacyWeekCalendarService;
-use Carbon\Carbon;
+use App\Services\HolidayService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
@@ -23,170 +25,21 @@ use Illuminate\View\View;
 class LegacyDiaryController extends Controller {
     use RequiresLegacyAdmin;
 
-    public function index(Request $request): View {
-        $tab = (string) $request->query('tab', 'auftraege');
-        if (! in_array($tab, ['auftraege', 'bereitschaft', 'notdienst', 'urlaub'], true)) {
-            $tab = 'auftraege';
-        }
+    public function index(Request $request, LegacyDashboardService $dashboard): View {
+        /** @var User $currentUser */
+        $currentUser = Auth::user();
 
-        $legacyUserId = LegacyRoleResolver::resolveLegacyUserId(Auth::user());
-        $isAdmin = LegacyRoleResolver::isAdmin(Auth::user());
+        $data = $dashboard->buildIndexData($request, $currentUser);
+        $data['users'] = $this->legacyUsersForSelect();
 
-        /** @var \App\Models\User $currentUser */
-        $currentUser     = Auth::user();
-        $vacationIsAdmin = $currentUser->isAdmin();
-
-        // ── Aufträge ─────────────────────────────────────────────────────────
-        $sortableColumns = ['id' => 'id', 'status' => 'gelesen', 'von' => 'von', 'bis' => 'bis', 'aktuell' => 'aktuell'];
-        $sort = (string) $request->query('sort', 'aktuell');
-        $dir  = strtolower((string) $request->query('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
-        $sortColumn = $sortableColumns[$sort] ?? $sortableColumns['aktuell'];
-
-        $diaryQuery = LegacyDiaryEntry::query()
-            ->select(['id', 'user', 'von', 'bis', 'gelesen', 'aktuell', 'inhalt', 'antwort'])
-            ->with('author:id,uname')
-            ->orderBy($sortColumn, $dir);
-
-        if ($request->filled('status') && $request->status !== 'all') {
-            $diaryQuery->where('gelesen', (int) $request->status);
-        }
-        if ($request->filled('from')) {
-            $diaryQuery->whereDate('von', '>=', $request->from);
-        }
-        if ($request->filled('to')) {
-            $diaryQuery->whereDate('bis', '<=', $request->to);
-        }
-        if ($request->boolean('mine') && Auth::user()?->legacy_user_id) {
-            $diaryQuery->where('user', (int) Auth::user()->legacy_user_id);
-        }
-
-        $countRow = LegacyDiaryEntry::query()->selectRaw(
-            'COUNT(*) as cnt_all,' .
-                'SUM(gelesen = 2) as cnt_open,' .
-                'SUM(gelesen = 3) as cnt_alert,' .
-                'SUM(gelesen = -1) as cnt_done'
-        )->first()?->getAttributes() ?? [];
-
-        $diaryCounts = [
-            'all'   => (int) ($countRow['cnt_all']   ?? 0),
-            'open'  => (int) ($countRow['cnt_open']  ?? 0),
-            'alert' => (int) ($countRow['cnt_alert'] ?? 0),
-            'done'  => (int) ($countRow['cnt_done']  ?? 0),
-        ];
-
-        // ── Bereitschaft ─────────────────────────────────────────────────────
-        $oncallQuery = LegacyOnCall::query()->with('mitarbeiter:id,uname')->orderBy('von')->orderBy('user');
-        if (! $isAdmin && $legacyUserId > 3) {
-            $oncallQuery->where('user', $legacyUserId);
-        } elseif ($request->filled('user')) {
-            $oncallQuery->where('user', (int) $request->user);
-        }
-        if ($request->filled('from')) {
-            $oncallQuery->whereDate('von', '>=', $request->from);
-        }
-        if ($request->filled('to')) {
-            $oncallQuery->whereDate('bis', '<=', $request->to);
-        }
-
-        // ── Urlaub ───────────────────────────────────────────────────────────
-        $vacationQuery = Vacation::query()
-            ->with('user:id,name')
-            ->orderByDesc('start_date');
-
-        if (! $vacationIsAdmin) {
-            $vacationQuery->where('user_id', $currentUser->id);
-        } elseif ($request->filled('user_id')) {
-            $vacationQuery->where('user_id', (int) $request->user_id);
-        } elseif ($request->boolean('mine')) {
-            $vacationQuery->where('user_id', $currentUser->id);
-        }
-        if ($request->filled('vtype')) {
-            $vacationQuery->where('type', $request->vtype);
-        }
-        if ($request->filled('vstatus')) {
-            $vacationQuery->where('status', $request->vstatus);
-        }
-        if ($request->filled('from')) {
-            $vacationQuery->where('end_date', '>=', $request->from);
-        }
-        if ($request->filled('to')) {
-            $vacationQuery->where('start_date', '<=', $request->to);
-        }
-
-        // ── Notdienst ────────────────────────────────────────────────────────
-        $notdienstQuery = LegacyNotdienst::query()->with('mitarbeiter:id,uname')->orderBy('von')->orderBy('user');
-        if (! $isAdmin && $legacyUserId > 3) {
-            $notdienstQuery->where('user', $legacyUserId);
-        } elseif ($request->filled('user')) {
-            $notdienstQuery->where('user', (int) $request->user);
-        }
-        if ($request->filled('from')) {
-            $notdienstQuery->whereDate('von', '>=', $request->from);
-        }
-        if ($request->filled('to')) {
-            $notdienstQuery->whereDate('bis', '<=', $request->to);
-        }
-
-        $today = now()->toDateString();
-
-        $oncallCounts = [
-            'all'      => (clone $oncallQuery)->count(),
-            'today'    => (clone $oncallQuery)->whereDate('von', '<=', $today)->whereDate('bis', '>=', $today)->count(),
-            'upcoming' => (clone $oncallQuery)->whereDate('von', '>', $today)->count(),
-            'past'     => (clone $oncallQuery)->whereDate('bis', '<', $today)->count(),
-        ];
-        $notdienstCounts = [
-            'all'      => (clone $notdienstQuery)->count(),
-            'today'    => (clone $notdienstQuery)->whereDate('von', '<=', $today)->whereDate('bis', '>=', $today)->count(),
-            'upcoming' => (clone $notdienstQuery)->whereDate('von', '>', $today)->count(),
-            'past'     => (clone $notdienstQuery)->whereDate('bis', '<', $today)->count(),
-        ];
-
-        $tabCounts = [
-            'auftraege'    => $diaryCounts['all'],
-            'bereitschaft' => $oncallCounts['all'],
-            'notdienst'    => $notdienstCounts['all'],
-            'urlaub'       => (clone $vacationQuery)->count(),
-        ];
-
-        $vacationKpis = [
-            'total'    => $tabCounts['urlaub'],
-            'pending'  => (clone $vacationQuery)->where('status', Vacation::STATUS_PENDING)->count(),
-            'approved' => (clone $vacationQuery)->where('status', Vacation::STATUS_APPROVED)
-                ->where('end_date', '>=', now()->startOfYear())->count(),
-            'rejected' => (clone $vacationQuery)->where('status', Vacation::STATUS_REJECTED)->count(),
-        ];
-
-        return view('legacy.diary.index', [
-            'tab'             => $tab,
-            'isAdmin'         => $isAdmin,
-            'legacyUserId'    => $legacyUserId,
-            'users'           => $this->legacyUsersForSelect(),
-            'tabCounts'       => $tabCounts,
-            // Aufträge
-            'entries'         => $diaryQuery->paginate(20, ['*'], 'dpage')->withQueryString(),
-            'diaryCounts'     => $diaryCounts,
-            'filters'         => $request->only('status', 'from', 'to', 'mine', 'sort', 'dir', 'user', 'zeitpunkt', 'vtype', 'vstatus', 'user_id'),
-            'vacations'       => $vacationQuery->paginate(15, ['*'], 'vpage')->withQueryString(),
-            'vacationKpis'    => $vacationKpis,
-            'vacationIsAdmin' => $vacationIsAdmin,
-            'vacationUsers'   => $vacationIsAdmin ? User::query()->orderBy('name')->get(['id', 'name']) : collect(),
-            'sort'            => array_key_exists($sort, $sortableColumns) ? $sort : 'aktuell',
-            'dir'             => $dir,
-            // Bereitschaft
-            'oncallItems'     => $oncallQuery->paginate(30, ['*'], 'opage')->withQueryString(),
-            'oncallCounts'    => $oncallCounts,
-            // Notdienst
-            'notdienstItems'  => $notdienstQuery->paginate(30, ['*'], 'npage')->withQueryString(),
-            'notdienstCounts' => $notdienstCounts,
-        ]);
+        return view('legacy.diary.index', $data);
     }
 
     public function week(Request $request, LegacyWeekCalendarService $calendar, HolidayService $holidays): View {
-        $weekOffset   = (int) $request->query('week', 0);
-        $weekDate     = trim((string) $request->query('week_date', ''));
+        $weekOffset = (int) $request->query('week', 0);
+        $weekDate = trim((string) $request->query('week_date', ''));
         $legacyUserId = (int) (Auth::user()->legacy_user_id ?? 0);
-        $isAdmin      = $legacyUserId > 0 && $legacyUserId <= 3;
+        $isAdmin = $legacyUserId > 0 && $legacyUserId <= 3;
 
         ['monday' => $monday, 'sunday' => $sunday, 'weekOffset' => $weekOffset, 'selectedWeek' => $selectedWeek] = $calendar->resolveWindow($weekOffset, $weekDate);
 
@@ -219,27 +72,27 @@ class LegacyDiaryController extends Controller {
         ] = $calendar->buildWeekMaps($allEntries, $oncalls, $notdiensts);
 
         return view('legacy.diary.week', [
-            'users'              => $users,
-            'monday'             => $monday,
-            'sunday'             => $sunday,
-            'weekOffset'         => $weekOffset,
-            'selectedWeek'       => $selectedWeek,
-            'isAdmin'            => $isAdmin,
-            'legacyUserId'       => $legacyUserId,
-            'entriesByUserDay'   => $entriesByUserDay,
-            'oncallByUserDay'    => $oncallByUserDay,
+            'users' => $users,
+            'monday' => $monday,
+            'sunday' => $sunday,
+            'weekOffset' => $weekOffset,
+            'selectedWeek' => $selectedWeek,
+            'isAdmin' => $isAdmin,
+            'legacyUserId' => $legacyUserId,
+            'entriesByUserDay' => $entriesByUserDay,
+            'oncallByUserDay' => $oncallByUserDay,
             'notdienstByUserDay' => $notdienstByUserDay,
-            'holidays'           => $holidays,
+            'holidays' => $holidays,
         ]);
     }
 
-    public function create(): View|\Illuminate\Http\Response {
+    public function create(): View|Response {
         $data = $this->formData(null, false);
 
         return response(view('legacy.diary._form_dialog', $data));
     }
 
-    public function store(SaveLegacyDiaryEntryRequest $request): RedirectResponse|\Illuminate\Http\JsonResponse {
+    public function store(SaveLegacyDiaryEntryRequest $request): RedirectResponse|JsonResponse {
         $authUser = Auth::user();
         $isAdmin = LegacyRoleResolver::isAdmin($authUser);
 
@@ -272,7 +125,7 @@ class LegacyDiaryController extends Controller {
         return redirect()->route('legacy.diary.show', $entry)->with('success', 'Legacy-Eintrag gespeichert.');
     }
 
-    public function show(LegacyDiaryEntry $entry): View|\Illuminate\Http\Response {
+    public function show(LegacyDiaryEntry $entry): View|Response {
         $entry->load('author:id,uname');
 
         if (request()->boolean('dialog')) {
@@ -284,7 +137,7 @@ class LegacyDiaryController extends Controller {
         ]);
     }
 
-    public function edit(LegacyDiaryEntry $entry): View|\Illuminate\Http\Response {
+    public function edit(LegacyDiaryEntry $entry): View|Response {
         $this->ensureCanModify($entry);
 
         $data = $this->formData($entry, true);
@@ -292,7 +145,7 @@ class LegacyDiaryController extends Controller {
         return response(view('legacy.diary._form_dialog', $data));
     }
 
-    public function update(SaveLegacyDiaryEntryRequest $request, LegacyDiaryEntry $entry): RedirectResponse|\Illuminate\Http\JsonResponse {
+    public function update(SaveLegacyDiaryEntryRequest $request, LegacyDiaryEntry $entry): RedirectResponse|JsonResponse {
         $this->ensureCanModify($entry);
 
         $authUser = Auth::user();

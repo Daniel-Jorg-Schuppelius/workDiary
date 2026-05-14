@@ -1,22 +1,24 @@
 <?php
 
-namespace App\Models\Legacy;
+namespace App\Legacy\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int $user
- * @property-read \App\Models\Legacy\LegacyUser|null $mitarbeiter
+ * @property-read LegacyUser|null $mitarbeiter
  * @property string|null $inhalt
  * @property string|null $antwort
- * @property \Illuminate\Support\Carbon|null $von
- * @property \Illuminate\Support\Carbon|null $bis
- * @property \Illuminate\Support\Carbon|null $aktuell
+ * @property Carbon|null $von
+ * @property Carbon|null $bis
+ * @property Carbon|null $aktuell
  * @property int|null $gelesen
  */
-class LegacyArchiveDiaryEntry extends Model {
+class LegacyArchiveDiaryEntry extends Model
+{
     protected $connection = 'legacy';
 
     protected $table = 'a_tagebuch';
@@ -29,7 +31,8 @@ class LegacyArchiveDiaryEntry extends Model {
 
     public $incrementing = false;
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'id' => 'integer',
             'aktuell' => 'datetime',
@@ -39,11 +42,13 @@ class LegacyArchiveDiaryEntry extends Model {
         ];
     }
 
-    public function mitarbeiter(): BelongsTo {
+    public function mitarbeiter(): BelongsTo
+    {
         return $this->belongsTo(LegacyUser::class, 'user', 'id');
     }
 
-    public function statusLabel(): string {
+    public function statusLabel(): string
+    {
         return match ($this->gelesen) {
             -1 => __('Erledigt'),
             1 => __('Bestätigt'),

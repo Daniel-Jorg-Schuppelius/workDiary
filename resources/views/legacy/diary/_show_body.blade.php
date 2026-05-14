@@ -18,7 +18,7 @@
         <span class="text-base-content/40">|</span>
         <span class="text-base-content/70">Legacy #{{ $entry->id }}</span>
     </div>
-    @if ((int) $entry->user === (int) (Auth::user()->legacy_user_id ?? 0) || \App\Support\LegacyRoleResolver::isAdmin(Auth::user()))
+    @if ((int) $entry->user === (int) (Auth::user()->legacy_user_id ?? 0) || \App\Legacy\Support\LegacyRoleResolver::isAdmin(Auth::user()))
         <div class="flex items-center gap-2">
             <a href="{{ route('legacy.diary.edit', $entry) }}" data-entry-modal-trigger class="btn btn-sm btn-ghost">{{ __('Bearbeiten') }}</a>
             <form method="POST" action="{{ route('legacy.diary.destroy', $entry) }}" class="inline"

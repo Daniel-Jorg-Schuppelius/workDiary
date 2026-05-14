@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Services\Flextime\FlexCalculator;
+use Carbon\CarbonImmutable;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class FlexController extends Controller
+{
+    public function __construct(protected FlexCalculator $calc) {}
+
+    public function summary(Request $request): JsonResponse
+    {
+        $year = (int) $request->input('year', CarbonImmutable::now()->year);
+        $month = (int) $request->input('month', CarbonImmutable::now()->month);
+
+        return response()->json(['data' => $this->calc->monthlyBalance(Auth::user(), $year, $month)]);
+    }
+}
