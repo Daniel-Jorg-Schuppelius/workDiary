@@ -16,13 +16,19 @@
         <title>@yield('title', config('app.name', 'WorkDiary'))</title>
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=space-grotesk:400,500,700|ibm-plex-sans:400,500,600" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Two+Tone" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200&display=swap" rel="stylesheet">
         <style>
             :root { --sidebar-w: 16rem; }
             body.sidebar-collapsed { --sidebar-w: 4rem; }
             #app-sidebar { width: var(--sidebar-w); transition: width 200ms ease; }
             @media (min-width: 1024px) {
-                .with-sidebar-pad { padding-left: var(--sidebar-w); transition: padding-left 200ms ease; }
+                .with-sidebar-pad { padding-left: calc(var(--sidebar-w) + 1rem) !important; transition: padding-left 200ms ease; }
+            }
+            @media (min-width: 1280px) {
+                .with-sidebar-pad { padding-left: calc(var(--sidebar-w) + 2rem) !important; }
+            }
+            @media (min-width: 1536px) {
+                .with-sidebar-pad { padding-left: calc(var(--sidebar-w) + 3rem) !important; }
             }
             body.sidebar-collapsed #app-sidebar [data-sidebar-label],
             body.sidebar-collapsed #app-sidebar [data-sidebar-section] {
@@ -39,72 +45,124 @@
             body.sidebar-collapsed #app-sidebar .menu { padding-left: 0; padding-right: 0; }
             body.sidebar-collapsed #app-sidebar .menu li { width: 100%; }
             body.sidebar-collapsed #app-sidebar .sidebar-cta-text { display: none; }
-            #app-sidebar .material-icons-two-tone { font-size: 1.25rem; line-height: 1; flex-shrink: 0; }
-            /* Aktiver Eintrag: dezent getönt, damit das Two-Tone-Icon erkennbar bleibt */
+            #app-sidebar .material-symbols-outlined { font-size: 1.25rem; line-height: 1; flex-shrink: 0; }
+            /* Sidebar nutzt `base-100` als Surface — bleibt damit weiß im hellen
+               Corporate-Theme und im dim-Theme die übliche Card-Fläche. Abgrenzung
+               zum Body kommt über Border + Schatten. */
+            #app-sidebar { background-color: var(--color-base-100); }
+            #app-sidebar [data-sidebar-section] { color: color-mix(in oklab, var(--color-base-content) 55%, transparent); }
+
+            /* Menü-Items: Farben kommen ausschließlich aus den DaisyUI-Theme-Tokens.
+               Der Active-State nutzt einen neutralen, base-content-getragenen Hintergrund
+               (gut lesbar in jedem Theme) und einen schmalen `--color-primary`-Akzentbalken
+               links — so bleibt die Theme-Akzentfarbe präsent, ohne den ganzen Eintrag
+               einzufärben. Hover ist eine noch dezentere base-content-Tönung. */
+            #app-sidebar .menu :where(li) > a,
+            #app-sidebar .menu :where(li) > .menu-link {
+                color: var(--color-base-content);
+                border-radius: var(--radius-field, 0.5rem);
+                transition: background-color .15s ease, color .15s ease;
+            }
+            #app-sidebar .menu :where(li) > a:hover,
+            #app-sidebar .menu :where(li) > .menu-link:hover,
+            #app-sidebar .menu :where(li) > a:focus-visible,
+            #app-sidebar .menu :where(li) > .menu-link:focus-visible {
+                background-color: color-mix(in oklab, var(--color-base-content) 8%, transparent);
+                color: var(--color-base-content);
+            }
             #app-sidebar .menu :where(li) > .menu-active,
             #app-sidebar .menu :where(li) > .menu-active:hover,
-            #app-sidebar .menu :where(li) > .menu-active:focus {
-                background-color: color-mix(in oklab, var(--color-primary) 15%, transparent) !important;
-                color: var(--color-primary) !important;
+            #app-sidebar .menu :where(li) > .menu-active:focus,
+            #app-sidebar .menu :where(li) > a[aria-current="page"] {
+                background-color: color-mix(in oklab, var(--color-base-content) 12%, transparent) !important;
+                color: var(--color-base-content) !important;
                 font-weight: 600;
                 box-shadow: inset 3px 0 0 var(--color-primary);
             }
-            #app-sidebar .menu :where(li) > .menu-active .material-icons-two-tone { color: var(--color-primary) !important; }
-
-            /* Dark-Theme: dunkler Verlauf für Content + helleres Icon-Rendering */
-            html[data-theme="dim"] body,
-            html[data-theme="dark"] body,
-            html[data-theme="night"] body,
-            html[data-theme="business"] body,
-            html[data-theme="black"] body,
-            html[data-theme="luxury"] body,
-            html[data-theme="dracula"] body,
-            html[data-theme="coffee"] body,
-            html[data-theme="forest"] body {
-                background-image: linear-gradient(to bottom right, #1f242c, #131820, #1f242c) !important;
+            /* Icon im aktiven Eintrag in der Theme-Akzentfarbe — zieht den Blick, ohne den
+               kompletten Eintrag mit Primary zu überlagern. */
+            #app-sidebar .menu :where(li) > .menu-active .material-symbols-outlined,
+            #app-sidebar .menu :where(li) > a[aria-current="page"] .material-symbols-outlined {
+                color: var(--color-primary);
+                font-variation-settings: 'FILL' 1, 'wght' 500;
             }
-            html[data-theme="dim"] .material-icons-two-tone,
-            html[data-theme="dark"] .material-icons-two-tone,
-            html[data-theme="night"] .material-icons-two-tone,
-            html[data-theme="business"] .material-icons-two-tone,
-            html[data-theme="black"] .material-icons-two-tone,
-            html[data-theme="luxury"] .material-icons-two-tone,
-            html[data-theme="dracula"] .material-icons-two-tone,
-            html[data-theme="coffee"] .material-icons-two-tone,
-            html[data-theme="forest"] .material-icons-two-tone {
-                /* Two-Tone-Icons sind als Schwarz-Glyphen mit interner Alpha designt -
-                   im Dark-Mode invertieren, damit sie hell erscheinen */
-                filter: invert(1) hue-rotate(180deg) brightness(1.35);
+            /* Sidebar-CTA „Neuer Eintrag“ als primäre Action erhält den vollen Theme-Primary. */
+            #app-sidebar .sidebar-cta { color: var(--color-primary-content); }
+
+            /* Collapsible Section-Header (<details>): optisch wie eine Section-Überschrift,
+               aber klickbar mit drehendem Chevron. Im aktiven Zustand (offen oder mit
+               aktivem Kind-Item) wird die Schrift kräftiger. */
+            #app-sidebar details.sidebar-section-collapsible { width: 100%; }
+            #app-sidebar details.sidebar-section-collapsible > summary {
+                list-style: none;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: .625rem;
+                padding: .375rem .5rem;
+                border-radius: var(--radius-field, .5rem);
+                font-size: 0.65rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.18em;
+                color: color-mix(in oklab, var(--color-base-content) 55%, transparent);
+                transition: background-color .15s ease, color .15s ease;
+                user-select: none;
+            }
+            #app-sidebar details.sidebar-section-collapsible > summary::-webkit-details-marker { display: none; }
+            #app-sidebar details.sidebar-section-collapsible > summary::marker { content: ''; }
+            #app-sidebar details.sidebar-section-collapsible > summary:hover {
+                background-color: color-mix(in oklab, var(--color-base-content) 6%, transparent);
+                color: var(--color-base-content);
+            }
+            #app-sidebar details.sidebar-section-collapsible[open] > summary {
+                color: color-mix(in oklab, var(--color-base-content) 75%, transparent);
+            }
+            #app-sidebar .sidebar-section-icon { font-size: 1rem; opacity: .85; }
+            #app-sidebar .sidebar-section-chevron {
+                margin-left: auto;
+                font-size: 1.1rem;
+                opacity: .6;
+                transition: transform .15s ease;
+            }
+            #app-sidebar details.sidebar-section-collapsible[open] > summary .sidebar-section-chevron {
+                transform: rotate(180deg);
             }
 
-            /* Innerhalb farbiger Buttons (btn-primary/secondary/accent/info/success/warning/error/neutral)
-               soll das Icon komplett in der Buttontext-Farbe (idR. weiß) erscheinen.
-               Das Two-Tone-Font hat einen fest eincodierten, halbtransparenten Sekundärton, der
-               auf farbigem Grund grau/dunkel wirkt. Mit `brightness(0) invert(1)` werden beide
-               Tonspuren auf reines Weiß gezogen. */
-            .btn-primary .material-icons-two-tone,
-            .btn-secondary .material-icons-two-tone,
-            .btn-accent .material-icons-two-tone,
-            .btn-info .material-icons-two-tone,
-            .btn-success .material-icons-two-tone,
-            .btn-warning .material-icons-two-tone,
-            .btn-error .material-icons-two-tone,
-            .btn-neutral .material-icons-two-tone,
-            .badge-primary .material-icons-two-tone,
-            .badge-secondary .material-icons-two-tone,
-            .badge-accent .material-icons-two-tone,
-            .badge-info .material-icons-two-tone,
-            .badge-success .material-icons-two-tone,
-            .badge-warning .material-icons-two-tone,
-            .badge-error .material-icons-two-tone,
-            .badge-neutral .material-icons-two-tone,
-            .alert-info .material-icons-two-tone,
-            .alert-success .material-icons-two-tone,
-            .alert-warning .material-icons-two-tone,
-            .alert-error .material-icons-two-tone {
-                filter: brightness(0) invert(1) !important;
-                color: #fff !important;
-                opacity: 1 !important;
+            /* Collapsed-Mode: Section-Titel + Summary-Text/Chevron verschwinden, Details
+               werden zwangsweise geöffnet, damit alle Item-Icons als flache Liste sichtbar
+               bleiben. Nur die Icons der Items zählen dann. */
+            body.sidebar-collapsed #app-sidebar .sidebar-section-summary { display: none; }
+            body.sidebar-collapsed #app-sidebar details.sidebar-section-collapsible > ul { display: block !important; }
+            body.sidebar-collapsed #app-sidebar .sidebar-section-chevron,
+            body.sidebar-collapsed #app-sidebar .sidebar-section-icon { display: none; }
+            /* Material Symbols Outlined ist eine Single-Color-Variable-Font und folgt automatisch
+               currentColor — sie funktioniert in jedem DaisyUI-Theme, auf jedem Hintergrund und in
+               allen Button-/Badge-/Alert-Farben ohne weitere CSS-Hacks. */
+            .material-symbols-outlined { font-size: 1.25rem; line-height: 1; vertical-align: middle; }
+
+            /* Backwards-Compat: bestehende `material-icons-two-tone`-Spans
+               werden transparent über die Symbols-Outlined-Variable-Font gerendert, bis sie
+               schrittweise auf die x-icon-Komponente migriert sind. Damit funktionieren alle
+               bisherigen Pages in jedem DaisyUI-Theme korrekt — ohne den separaten
+               Two-Tone-Color-Font und ohne die bisher nötigen `brightness(0) invert(1)`-Hacks
+               für farbige Buttons/Badges/Alerts. */
+            .material-icons-two-tone {
+                font-family: 'Material Symbols Outlined';
+                font-weight: normal;
+                font-style: normal;
+                font-size: 1.25rem;
+                line-height: 1;
+                letter-spacing: normal;
+                text-transform: none;
+                display: inline-block;
+                white-space: nowrap;
+                word-wrap: normal;
+                direction: ltr;
+                vertical-align: middle;
+                -webkit-font-feature-settings: 'liga';
+                -webkit-font-smoothing: antialiased;
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             }
         </style>
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
@@ -120,7 +178,7 @@
     @php
         $_bodyMode = (session('work_mode', 'legacy') === 'legacy' && filled(config('database.connections.legacy.database'))) ? 'legacy' : 'new';
     @endphp
-    <body class="min-h-screen bg-gradient-to-br from-neutral-100 via-neutral-200 to-neutral-100" data-mode="{{ $_bodyMode }}">
+    <body class="min-h-screen text-base-content {{ $_bodyMode === 'legacy' ? 'bg-base-200' : 'bg-gradient-to-b from-base-200 to-base-300' }}" data-mode="{{ $_bodyMode }}">
         @php
             $currentMode = session('work_mode', 'legacy');
             $legacyConfigured = filled(config('database.connections.legacy.database'));
@@ -138,7 +196,7 @@
             ];
         @endphp
 
-        <header id="app-header" class="fixed inset-x-0 top-0 z-50 bg-base-100 shadow-xs">
+        <header id="app-header" class="fixed inset-x-0 top-0 z-50 bg-base-100 border-b border-base-300 shadow-xs">
             <div class="navbar w-full px-4 xl:px-8 2xl:px-12 min-h-14">
                 <div class="navbar-start min-w-0 flex-1">
                     <a href="{{ route('home') }}" class="flex items-center gap-2 group min-w-0">
@@ -166,6 +224,8 @@
                                     ['route' => 'schedule.index',           'label' => __('Schichtplan'),    'icon' => 'schedule',         'modal' => false, 'matches' => ['schedule.*']],
                                     ['route' => 'timesheets.index',         'label' => __('Stundenzettel'),  'icon' => 'description',      'modal' => false, 'matches' => ['timesheets.*', 'projects.timesheets.*']],
                                     ['route' => 'customers.index',          'label' => __('Kunden'),         'icon' => 'badge',            'modal' => false, 'matches' => ['customers.*']],
+                                    ['route' => 'projects.index',           'label' => __('Projekte'),       'icon' => 'folder_special',   'modal' => false, 'matches' => ['projects.*']],
+                                    ['route' => 'invoices.index',           'label' => __('Rechnungen'),     'icon' => 'receipt_long',     'modal' => false, 'matches' => ['invoices.*']],
                                     ['route' => 'flex.index',               'label' => __('Gleitzeit'),      'icon' => 'hourglass_top',    'modal' => false, 'matches' => ['flex.*']],
                                     ['route' => 'archive.index',            'label' => __('Archiv'),         'icon' => 'inventory_2',      'modal' => false, 'matches' => ['archive.*']],
                                 ];
@@ -179,6 +239,7 @@
                                     $manageNavItems[] = ['route' => 'qualifications.index',         'label' => __('Qualifikationen'),  'icon' => 'workspace_premium','modal' => false];
                                     $manageNavItems[] = ['route' => 'shift-types.index',             'label' => __('Schichttypen'),     'icon' => 'work_history',     'modal' => false];
                                     $manageNavItems[] = ['route' => 'materials.index',               'label' => __('Materialien'),      'icon' => 'inventory',        'modal' => false];
+                                    $manageNavItems[] = ['route' => 'tags.index',                    'label' => __('Tags'),             'icon' => 'label',            'modal' => false];
                                     $manageNavItems[] = ['route' => 'flex.admin',                    'label' => __('Gleitzeit Team'),   'icon' => 'groups',           'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.organizations.index',     'label' => __('Organisationen'),   'icon' => 'corporate_fare',   'modal' => false];
                                 }
@@ -203,6 +264,66 @@
                             $isAdminActive  = collect($adminNavItems)->contains(fn ($i) => request()->routeIs($i['route']));
                             $isManageActive = collect($manageNavItems)->contains(fn ($i) => request()->routeIs($i['route']));
                             $isUserActive = collect($userNavItems)->contains(fn ($i) => request()->routeIs($i['route']));
+
+                            // ---------------------------------------------------------------
+                            // Sidebar-Sektionen (nur im modernen Modus). Thematische Gruppen
+                            // statt einer langen Flachliste; Verwaltung + System sind
+                            // collapsible, weil sie deutlich mehr Einträge haben (und das
+                            // Archiv soll perspektivisch eigene Submenüs bekommen).
+                            // ---------------------------------------------------------------
+                            $sidebarSections = [];
+                            if (! $isLegacyMode) {
+                                $sidebarSections[] = [
+                                    'key'         => 'work',
+                                    'label'       => __('Tagesgeschäft'),
+                                    'collapsible' => false,
+                                    'items'       => [
+                                        ['route' => $indexRoute,    'label' => __('Arbeitsliste'),  'icon' => 'list_alt',          'modal' => false, 'matches' => [$indexRoute, 'diary.*']],
+                                        ['route' => 'week.index',   'label' => __('Wochenansicht'), 'icon' => 'calendar_view_week','modal' => false, 'matches' => ['week.index']],
+                                        ['route' => 'kanban.index', 'label' => __('Kanban'),        'icon' => 'view_kanban',       'modal' => false, 'matches' => ['kanban.index']],
+                                    ],
+                                ];
+                                $sidebarSections[] = [
+                                    'key'         => 'plan',
+                                    'label'       => __('Planung'),
+                                    'collapsible' => false,
+                                    'items'       => [
+                                        ['route' => 'duty-plans.index', 'label' => __('Dienstpläne'),   'icon' => 'event_available', 'modal' => false, 'matches' => ['duty-plans.*']],
+                                        ['route' => 'schedule.index',   'label' => __('Schichtplan'),   'icon' => 'schedule',        'modal' => false, 'matches' => ['schedule.*']],
+                                        ['route' => 'timesheets.index', 'label' => __('Stundenzettel'), 'icon' => 'description',     'modal' => false, 'matches' => ['timesheets.*', 'projects.timesheets.*']],
+                                        ['route' => 'flex.index',       'label' => __('Gleitzeit'),     'icon' => 'hourglass_top',   'modal' => false, 'matches' => ['flex.*']],
+                                    ],
+                                ];
+                                $sidebarSections[] = [
+                                    'key'         => 'data',
+                                    'label'       => __('Stammdaten'),
+                                    'collapsible' => false,
+                                    'items'       => [
+                                        ['route' => 'customers.index', 'label' => __('Kunden'),   'icon' => 'badge',          'modal' => false, 'matches' => ['customers.*']],
+                                        ['route' => 'projects.index',  'label' => __('Projekte'), 'icon' => 'folder_special', 'modal' => false, 'matches' => ['projects.*']],
+                                    ],
+                                ];
+                                $sidebarSections[] = [
+                                    'key'         => 'reports',
+                                    'label'       => __('Auswertungen'),
+                                    'collapsible' => false,
+                                    'items'       => [
+                                        ['route' => 'reports.my-month',         'label' => __('Mein Monat'),         'icon' => 'calendar_view_week',  'modal' => false, 'matches' => ['reports.my-month']],
+                                        ['route' => 'reports.my-year',          'label' => __('Mein Jahr'),          'icon' => 'calendar_view_month', 'modal' => false, 'matches' => ['reports.my-year']],
+                                        ['route' => 'reports.week-by-user',     'label' => __('Woche pro Mitarbeiter'), 'icon' => 'date_range',       'modal' => false, 'matches' => ['reports.week-by-user']],
+                                        ['route' => 'reports.customer-project', 'label' => __('Kunden & Projekte'), 'icon' => 'pie_chart',           'modal' => false, 'matches' => ['reports.customer-project']],
+                                        ['route' => 'reports.project-details',  'label' => __('Projekt-Details'),    'icon' => 'analytics',           'modal' => false, 'matches' => ['reports.project-details']],
+                                    ],
+                                ];
+                                $sidebarSections[] = [
+                                    'key'         => 'archive',
+                                    'label'       => __('Archiv'),
+                                    'collapsible' => false,
+                                    'items'       => [
+                                        ['route' => 'archive.index', 'label' => __('Archiv-Übersicht'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['archive.*']],
+                                    ],
+                                ];
+                            }
                         @endphp
 
                         @if ($isLegacyMode)
@@ -287,7 +408,7 @@
                             @if (! empty($manageNavItems))
                                 <div class="dropdown dropdown-end">
                                     <label tabindex="0" class="btn btn-sm {{ $isManageActive ? 'btn-primary' : 'btn-ghost' }} gap-1" title="{{ __('Verwaltung') }}">
-                                        <span class="material-icons-two-tone text-[1.1rem] leading-none" aria-hidden="true">manage_accounts</span>
+                                        <x-icon name="manage_accounts" class="text-[1.1rem]" />
                                         <span class="hidden sm:inline">{{ __('Verwaltung') }}</span>
                                     </label>
                                     <ul tabindex="0" class="dropdown-content menu z-50 w-60 rounded-box border border-base-300 bg-base-100 p-2 shadow">
@@ -295,7 +416,7 @@
                                             @php $active = request()->routeIs($item['route']); @endphp
                                             <li>
                                                 <a href="{{ route($item['route']) }}" class="flex items-center gap-3 {{ $active ? 'menu-active' : '' }}">
-                                                    <span class="material-icons-two-tone text-[1.1rem] leading-none" aria-hidden="true">{{ $item['icon'] ?? 'tune' }}</span>
+                                                    <x-icon :name="$item['icon'] ?? 'tune'" class="text-[1.1rem]" />
                                                     <span class="truncate">{{ $item['label'] }}</span>
                                                 </a>
                                             </li>
@@ -306,16 +427,16 @@
 
                             @if (! empty($adminNavItems))
                                 <div class="dropdown dropdown-end">
-                                    <label tabindex="0" class="btn btn-sm {{ $isAdminActive ? 'btn-primary' : 'btn-ghost' }} gap-1" title="{{ __('Administration') }}">
-                                        <span class="material-icons-two-tone text-[1.1rem] leading-none" aria-hidden="true">settings</span>
-                                        <span class="hidden sm:inline">{{ __('Admin') }}</span>
+                                    <label tabindex="0" class="btn btn-sm {{ $isAdminActive ? 'btn-primary' : 'btn-ghost' }} gap-1" title="{{ __('System') }}">
+                                        <x-icon name="settings" class="text-[1.1rem]" />
+                                        <span class="hidden sm:inline">{{ __('System') }}</span>
                                     </label>
                                     <ul tabindex="0" class="dropdown-content menu z-50 w-60 rounded-box border border-base-300 bg-base-100 p-2 shadow">
                                         @foreach ($adminNavItems as $item)
                                             @php $active = request()->routeIs($item['route']); @endphp
                                             <li>
                                                 <a href="{{ route($item['route']) }}" class="flex items-center gap-3 {{ $active ? 'menu-active' : '' }}">
-                                                    <span class="material-icons-two-tone text-[1.1rem] leading-none" aria-hidden="true">{{ $item['icon'] ?? 'tune' }}</span>
+                                                    <x-icon :name="$item['icon'] ?? 'tune'" class="text-[1.1rem]" />
                                                     <span class="truncate">{{ $item['label'] }}</span>
                                                 </a>
                                             </li>
@@ -324,6 +445,32 @@
                                 </div>
                             @endif
                         @endif
+
+                        @unless ($isLegacyMode)
+                            <x-header-date-range />
+                        @endunless
+
+                        @isset($stopwatchEntry)
+                            @if ($stopwatchEntry)
+                                <div class="flex items-center gap-1.5 rounded-box border border-primary/40 bg-primary/10 px-2 py-1 shadow-xs"
+                                     title="{{ $stopwatchEntry->description ?: __('Läuft…') }}"
+                                     x-data="{ s: 0 }"
+                                     x-init="s = Math.max(0, Math.floor((Date.now() - new Date('{{ $stopwatchEntry->started_at?->toIso8601String() }}').getTime())/1000)); setInterval(() => s++, 1000);">
+                                    <span class="relative flex size-2">
+                                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+                                        <span class="relative inline-flex size-2 rounded-full bg-primary"></span>
+                                    </span>
+                                    <span class="font-['Space_Grotesk'] text-sm font-semibold tabular-nums text-primary"
+                                          x-text="String(Math.floor(s/3600)).padStart(2,'0') + ':' + String(Math.floor((s%3600)/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0')">00:00:00</span>
+                                    <form method="POST" action="{{ route('stopwatch.stop') }}" class="leading-none">
+                                        @csrf
+                                        <button type="submit" class="btn btn-xs btn-ghost btn-square text-error" title="{{ __('Stoppen') }}" aria-label="{{ __('Stoppen') }}">
+                                            <x-icon name="stop_circle" filled />
+                                        </button>
+                                    </form>
+                                </div>
+                            @endif
+                        @endisset
 
                         <div class="flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
                             <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
@@ -445,33 +592,66 @@
         @unless ($isLegacyMode)
         {{-- Sidebar: persistent ab lg, sonst Drawer --}}
         <aside id="app-sidebar"
-               class="fixed top-14 bottom-12 left-0 z-40 -translate-x-full transform bg-base-100 shadow-sm transition-transform duration-200 lg:translate-x-0"
+               class="fixed top-14 bottom-12 left-0 z-40 -translate-x-full transform border-r border-base-300 shadow-sm transition-transform duration-200 lg:translate-x-0"
                aria-label="{{ __('Hauptnavigation') }}"
                data-sidebar>
             <div class="flex h-[calc(100dvh-3.5rem-3rem)] flex-col gap-3 overflow-y-auto overflow-x-hidden px-2 py-3">
                 <a href="{{ route($createRoute) }}" data-entry-modal-trigger
                    class="sidebar-cta btn btn-sm btn-primary w-full gap-2"
                    title="{{ __('Neuer Eintrag') }}">
-                    <span class="material-icons-two-tone" aria-hidden="true">add_circle</span>
+                    <x-icon name="add_circle" />
                     <span class="sidebar-cta-text">{{ __('Neuer Eintrag') }}</span>
                 </a>
 
-                <div>
-                    <p data-sidebar-section class="px-2 pb-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-base-content/50 transition-opacity duration-150">{{ __('Arbeiten') }}</p>
-                    <ul class="menu menu-sm w-full gap-0.5 p-0">
-                        @foreach ($mainNavItems as $item)
-                            @php $active = collect($item['matches'])->contains(fn ($m) => request()->routeIs($m)); @endphp
-                            <li>
-                                <a href="{{ route($item['route']) }}"
-                                   @if ($item['modal']) data-entry-modal-trigger @endif
-                                   class="menu-link flex items-center gap-3 {{ $active ? 'menu-active' : '' }}"
-                                   title="{{ $item['label'] }}">
-                                    <span class="material-icons-two-tone" aria-hidden="true">{{ $item['icon'] ?? 'circle' }}</span>
-                                    <span data-sidebar-label class="truncate transition-opacity duration-150">{{ $item['label'] }}</span>
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
+                <div class="flex flex-col gap-4">
+                    @foreach ($sidebarSections as $section)
+                        @php
+                            $sectionActive = collect($section['items'])->contains(
+                                fn ($i) => collect($i['matches'] ?? [$i['route']])->contains(fn ($m) => request()->routeIs($m))
+                            );
+                        @endphp
+                        @if (! empty($section['collapsible']))
+                            <details class="sidebar-section sidebar-section-collapsible" @if ($sectionActive) open @endif>
+                                <summary class="sidebar-section-summary">
+                                    <x-icon :name="$section['icon'] ?? 'folder'" class="sidebar-section-icon" />
+                                    <span data-sidebar-label class="flex-1 truncate">{{ $section['label'] }}</span>
+                                    <x-icon name="expand_more" class="sidebar-section-chevron" />
+                                </summary>
+                                <ul class="menu menu-sm w-full gap-0.5 p-0 pt-1">
+                                    @foreach ($section['items'] as $item)
+                                        @php $active = collect($item['matches'] ?? [$item['route']])->contains(fn ($m) => request()->routeIs($m)); @endphp
+                                        <li>
+                                            <a href="{{ route($item['route']) }}"
+                                               @if (! empty($item['modal'])) data-entry-modal-trigger @endif
+                                               class="menu-link flex items-center gap-3 {{ $active ? 'menu-active' : '' }}"
+                                               title="{{ $item['label'] }}">
+                                                <x-icon :name="$item['icon'] ?? 'circle'" />
+                                                <span data-sidebar-label class="truncate transition-opacity duration-150">{{ $item['label'] }}</span>
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </details>
+                        @else
+                            <div class="sidebar-section">
+                                <p data-sidebar-section class="px-2 pb-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-base-content/50 transition-opacity duration-150">{{ $section['label'] }}</p>
+                                <ul class="menu menu-sm w-full gap-0.5 p-0">
+                                    @foreach ($section['items'] as $item)
+                                        @php $active = collect($item['matches'] ?? [$item['route']])->contains(fn ($m) => request()->routeIs($m)); @endphp
+                                        <li>
+                                            <a href="{{ route($item['route']) }}"
+                                               @if (! empty($item['modal'])) data-entry-modal-trigger @endif
+                                               class="menu-link flex items-center gap-3 {{ $active ? 'menu-active' : '' }}"
+                                               title="{{ $item['label'] }}">
+                                                <x-icon :name="$item['icon'] ?? 'circle'" />
+                                                <span data-sidebar-label class="truncate transition-opacity duration-150">{{ $item['label'] }}</span>
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                    @endforeach
                 </div>
 
                 <div class="mt-auto pt-2">
@@ -480,7 +660,7 @@
                             class="btn btn-sm btn-ghost w-full justify-center gap-2"
                             aria-label="{{ __('Sidebar ein-/ausklappen') }}"
                             title="{{ __('Sidebar ein-/ausklappen') }}">
-                        <span class="material-icons-two-tone" data-sidebar-collapse-icon aria-hidden="true">chevron_left</span>
+                        <x-icon name="chevron_left" data-sidebar-collapse-icon />
                         <span data-sidebar-label>{{ __('Einklappen') }}</span>
                     </button>
                 </div>
@@ -512,7 +692,7 @@
         </script>
         @endif
 
-        <div class="mx-auto flex @yield('wrapper-height-class', 'min-h-screen') w-full max-w-screen-2xl flex-col px-4 pb-20 pt-24 xl:px-8 2xl:px-12 @auth @unless($isLegacyMode) with-sidebar-pad @endunless @endauth">
+        <div class="mx-auto flex @yield('wrapper-height-class', 'min-h-screen') w-full @auth @if($isLegacyMode) max-w-screen-2xl @else max-w-none @endif @else max-w-screen-2xl @endauth flex-col px-4 pb-20 pt-24 xl:px-8 2xl:px-12 @auth @unless($isLegacyMode) with-sidebar-pad @endunless @endauth">
             @if (session('success'))
                 <div class="alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
                     {{ session('success') }}
@@ -534,8 +714,8 @@
             </main>
         </div>
 
-        <footer class="fixed inset-x-0 bottom-0 z-50 h-12 bg-base-100 shadow-xs">
-            <div class="mx-auto flex w-full max-w-screen-2xl items-center justify-center px-4 py-3 text-xs text-base-content/70 xl:px-8 2xl:px-12">
+        <footer class="fixed inset-x-0 bottom-0 z-50 h-12 bg-base-100 border-t border-base-300 shadow-xs">
+            <div class="mx-auto flex w-full @auth @if($isLegacyMode) max-w-screen-2xl @else max-w-none @endif @else max-w-screen-2xl @endauth items-center justify-center px-4 py-3 text-xs text-base-content/70 xl:px-8 2xl:px-12">
                 &copy; {{ date('Y') }} WorkDiary. {{ __('Alle Rechte vorbehalten.') }}
             </div>
         </footer>

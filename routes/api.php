@@ -2,7 +2,10 @@
 
 use App\Http\Controllers\Api\AttachmentController;
 use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\ProjectController;
+use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\DiaryController;
 use App\Http\Controllers\Api\EmergencyAssignmentController;
 use App\Http\Controllers\Api\FlexController;
@@ -81,4 +84,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('stopwatch/stop', [StopwatchController::class, 'stop'])->name('api.stopwatch.stop');
 
     Route::get('flex/summary', [FlexController::class, 'summary'])->name('api.flex.summary');
+
+    // ── Customers / Projects / Tasks (Kimai-Parity) ────────────────────────
+    Route::apiResource('customers', CustomerController::class)->names('api.customers');
+    Route::apiResource('projects', ProjectController::class)->names('api.projects');
+    Route::get('tasks', [TaskController::class, 'index'])->name('api.tasks.index');
+    Route::get('tasks/{task}', [TaskController::class, 'show'])->name('api.tasks.show');
+    Route::put('tasks/{task}', [TaskController::class, 'update'])->name('api.tasks.update');
+    Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->name('api.tasks.destroy');
+    Route::post('projects/{project}/tasks', [TaskController::class, 'store'])->name('api.tasks.store');
 });

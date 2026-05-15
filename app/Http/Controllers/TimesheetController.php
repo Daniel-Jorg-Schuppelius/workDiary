@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SaveTimesheetRequest;
+use App\Models\Customer;
 use App\Models\Project;
 use App\Models\Timesheet;
 use App\Services\Material\MaterialProviderRegistry;
@@ -64,6 +65,46 @@ class TimesheetController extends Controller {
         Gate::authorize('create', Timesheet::class);
 
         $timesheet = $project->timesheets()->create($request->validated() + [
+            'user_id' => Auth::id(),
+            'organization_id' => $project->organization_id,
+            'status' => Timesheet::STATUS_DRAFT,
+        ]);
+
+        return redirect()->route('projects.timesheets.show', [$project, $timesheet])
+            ->with('success', __('Stundenzettel angelegt.'));
+    }
+
+    /**
+     * Schnell-Anlage eines Stundenzettels via Kunde (Toggl-Stil):
+     * fällt automatisch auf das Standardprojekt des Kunden zurück, wenn
+     * kein Projekt angegeben ist (z. B. ad-hoc / Notfall-Einsätze).
+     */
+    public function storeQuick(Request $request): RedirectResponse {
+        Gate::authorize('create', Timesheet::class);
+
+        $data = $request->validate([
+            'customer_id' => ['required', 'integer', 'exists:customers,id'],
+            'project_id' => ['nullable', 'integer', 'exists:projects,id'],
+            'work_date' => ['nullable', 'date'],
+        ]);
+
+        /** @var Customer $customer */
+        $customer = Customer::query()->findOrFail($data['customer_id']);
+
+        if (isset($data['project_id'])) {
+            /** @var Project $project */
+            $project = Project::query()->where('customer_id', $customer->id)->findOrFail($data['project_id']);
+        } else {
+            $project = $customer->defaultProjectOrCreate();
+        }
+
+        $workDate = isset($data['work_date'])
+            ? CarbonImmutable::parse($data['work_date'])->toDateString()
+            : CarbonImmutable::today()->toDateString();
+
+        /** @var Timesheet $timesheet */
+        $timesheet = $project->timesheets()->create([
+            'work_date' => $workDate,
             'user_id' => Auth::id(),
             'organization_id' => $project->organization_id,
             'status' => Timesheet::STATUS_DRAFT,

@@ -95,6 +95,9 @@ class AppServiceProvider extends ServiceProvider {
 
         $this->configureRateLimiters();
 
+        $this->registerStopwatchViewComposer();
+        $this->registerDateRangeViewComposer();
+
         Password::defaults(function () {
             $rule = Password::min(12)
                 ->mixedCase()
@@ -127,6 +130,33 @@ class AppServiceProvider extends ServiceProvider {
                 Limit::perMinute(5)->by('pwd:' . $userId . '|' . $request->ip()),
                 Limit::perHour(20)->by('pwd:' . $userId),
             ];
+        });
+    }
+
+    /**
+     * Stellt der App-Layout-View den aktuell laufenden Stoppuhr-Eintrag
+     * (TimeEntry|null) als $stopwatchEntry bereit, damit das Header-Widget
+     * den Live-Timer rendern kann.
+     */
+    private function registerStopwatchViewComposer(): void {
+        \Illuminate\Support\Facades\View::composer('layouts.app', function ($view): void {
+            $user = Auth::user();
+            $entry = null;
+            if ($user instanceof User) {
+                $entry = app(\App\Services\Timesheet\Stopwatch::class)->current($user);
+            }
+            $view->with('stopwatchEntry', $entry);
+        });
+    }
+
+    /**
+     * Stellt der App-Layout-View den global gewählten Zeitraum
+     * (Preset + Von/Bis) als $globalDateRange bereit, damit das Header-
+     * Widget und Report-Controller einen einheitlichen State teilen.
+     */
+    private function registerDateRangeViewComposer(): void {
+        \Illuminate\Support\Facades\View::composer('layouts.app', function ($view): void {
+            $view->with('globalDateRange', app(\App\Services\UI\DateRangeContext::class)->current());
         });
     }
 }

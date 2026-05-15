@@ -3,6 +3,18 @@
     $isDialog = $isDialog ?? false;
     $action = $project ? route('projects.update', $project) : route('projects.store');
     $dialogUrl = ($project ? route('projects.edit', $project) : route('projects.create')) . '?dialog=1';
+    $customers = \App\Models\Customer::query()->whereNull('archived_at')->orderBy('name')->get(['id', 'name']);
+    // Mögliche Parents: alle Projekte außer dem aktuellen und dessen Subtree.
+    $excludeIds = [];
+    if ($project) {
+        $excludeIds = $project->descendants()->pluck('id')->all();
+        $excludeIds[] = $project->id;
+    }
+    $parentOptions = \App\Models\Project::query()
+        ->when($excludeIds, fn($q) => $q->whereNotIn('id', $excludeIds))
+        ->orderBy('name')
+        ->get(['id', 'name', 'customer_id']);
+    $initialParentCustomer = $project?->parent?->customer_id;
 @endphp
 
 <x-dialog
@@ -12,7 +24,14 @@
     :badge="$project?->statusLabel()"
     :badge-tone="$project?->statusTone() ?? 'ghost'"
     tone="primary">
-    <form method="POST" action="{{ $action }}" class="space-y-4" data-entry-form>
+    <form method="POST" action="{{ $action }}" class="space-y-4" data-entry-form
+          x-data="{
+              parentId: @js((string) old('parent_id', $project?->parent_id ?? '')),
+              parentCustomers: @js($parentOptions->pluck('customer_id', 'id')),
+              get hasParent() { return this.parentId !== '' && this.parentId !== null; },
+              get parentCustomerId() { return this.hasParent ? (this.parentCustomers[this.parentId] ?? '') : ''; },
+          }"
+          x-effect="if (hasParent && parentCustomerId) { $refs.customerSelect.value = String(parentCustomerId); }">
         @csrf
         @if ($project) @method('PUT') @endif
         @if ($isDialog)
@@ -26,6 +45,36 @@
                    value="{{ old('name', $project?->name) }}">
             @error('name')<p class="text-error text-sm">{{ $message }}</p>@enderror
         </div>
+
+        <div class="fieldset">
+            <label class="fieldset-label">{{ __('Übergeordnetes Projekt') }}</label>
+            <select name="parent_id" class="select select-bordered w-full" x-model="parentId">
+                <option value="">{{ __('— Top-Level (kein Parent) —') }}</option>
+                @foreach ($parentOptions as $opt)
+                    <option value="{{ $opt->id }}" @selected((int) old('parent_id', $project?->parent_id) === (int) $opt->id)>
+                        {{ $opt->name }}
+                    </option>
+                @endforeach
+            </select>
+            <p class="text-xs text-base-content/60">{{ __('Sub-Projekte erben Customer und Abrechnung vom Parent.') }}</p>
+            @error('parent_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="fieldset" x-show="!hasParent" x-cloak>
+            <label class="fieldset-label">{{ __('Kunde') }}</label>
+            <select name="customer_id" class="select select-bordered w-full" x-ref="customerSelect" :disabled="hasParent">
+                <option value="">{{ __('— Kein Kunde —') }}</option>
+                @foreach ($customers as $customer)
+                    <option value="{{ $customer->id }}" @selected((int) old('customer_id', $project?->customer_id) === (int) $customer->id)>
+                        {{ $customer->name }}
+                    </option>
+                @endforeach
+            </select>
+            @error('customer_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+        <p class="text-xs text-base-content/60" x-show="hasParent" x-cloak>
+            {{ __('Customer wird vom Parent-Projekt übernommen.') }}
+        </p>
 
         <div class="fieldset">
             <label class="fieldset-label">{{ __('Beschreibung') }}</label>
@@ -68,6 +117,18 @@
                 :fromError="$errors->first('starts_on')"
             />
         </div>
+
+        @if (auth()->user()?->canManageBilling())
+            <div class="fieldset" x-show="!hasParent" x-cloak>
+                <label class="label cursor-pointer justify-start gap-2">
+                    <input type="hidden" name="is_default" value="0">
+                    <input type="checkbox" name="is_default" value="1" class="checkbox checkbox-sm"
+                           @checked(old('is_default', $project?->is_default))>
+                    <span class="label-text">{{ __('Standardprojekt für diesen Kunden') }}</span>
+                </label>
+                <p class="text-xs text-base-content/60">{{ __('Auto-Bucket für Ad-hoc-/Notfall-Stundenzettel. Pro Kunde gibt es genau ein Standardprojekt.') }}</p>
+            </div>
+        @endif
 
         <div class="flex flex-wrap items-center gap-3 pt-2">
             <button type="submit" class="btn btn-sm btn-primary">{{ $project ? __('Speichern') : __('Anlegen') }}</button>

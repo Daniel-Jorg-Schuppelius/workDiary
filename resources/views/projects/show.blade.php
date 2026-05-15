@@ -66,6 +66,11 @@
             <button role="tab" @click="setTab('diary')" :class="{ 'tab-active': tab === 'diary' }" class="tab">
                 {{ __('Tagebuch') }}
             </button>
+            @if (auth()->user()?->canManageBilling())
+                <button role="tab" @click="setTab('billing')" :class="{ 'tab-active': tab === 'billing' }" class="tab">
+                    {{ __('Abrechnung') }}
+                </button>
+            @endif
         </div>
 
         <div x-show="tab === 'overview'" x-cloak>
@@ -83,12 +88,17 @@
         <div x-show="tab === 'diary'" x-cloak>
             @include('projects._diary_tab')
         </div>
+        @if (auth()->user()?->canManageBilling())
+            <div x-show="tab === 'billing'" x-cloak>
+                @include('projects._billing_tab')
+            </div>
+        @endif
     </div>
 </div>
 
 <script>
     function projectTabs() {
-        const allowed = ['overview', 'tasks', 'time', 'timesheets', 'diary'];
+        const allowed = ['overview', 'tasks', 'time', 'timesheets', 'diary', 'billing'];
         const hash = window.location.hash.replace('#', '');
         return {
             tab: allowed.includes(hash) ? hash : 'overview',

@@ -131,7 +131,27 @@
 
     {{-- Projekte --}}
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <h2 class="mb-3 font-semibold">{{ __('Projekte') }} ({{ $projects->count() }})</h2>
+        <div class="mb-3 flex items-center justify-between">
+            <h2 class="font-semibold">{{ __('Projekte') }} ({{ $projects->count() }})</h2>
+            @isset($defaultProject)
+                <a href="{{ route('projects.timesheets.create', $defaultProject) }}" class="btn btn-sm btn-primary">
+                    <span class="material-symbols-outlined text-base">add</span>
+                    {{ __('Stundenzettel') }}
+                </a>
+            @endisset
+        </div>
+
+        @isset($defaultProject)
+            <div class="mb-3 flex items-center justify-between rounded-box border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
+                <div class="flex items-center gap-2 min-w-0">
+                    <span class="material-symbols-outlined text-primary text-base">star</span>
+                    <a class="link link-hover truncate font-medium" href="{{ route('projects.show', $defaultProject) }}">{{ $defaultProject->name }}</a>
+                    <span class="badge badge-sm">{{ __('Standardprojekt') }}</span>
+                </div>
+                <span class="text-xs text-base-content/60">{{ __('Auto-Bucket für Ad-hoc-/Notfalleinsätze') }}</span>
+            </div>
+        @endisset
+
         @if ($projects->isEmpty())
             <p class="text-sm text-base-content/60">{{ __('Diesem Kunden sind noch keine Projekte zugeordnet.') }}</p>
         @else
@@ -141,6 +161,9 @@
                         <div class="flex items-center gap-2 min-w-0">
                             <span class="inline-block h-3 w-3 rounded-full" style="background:{{ $project->color ?: '#94a3b8' }}"></span>
                             <a class="link link-hover truncate" href="{{ route('projects.show', $project) }}">{{ $project->name }}</a>
+                            @if ($project->is_default)
+                                <span class="material-symbols-outlined text-primary text-base" title="{{ __('Standardprojekt') }}">star</span>
+                            @endif
                         </div>
                         <span class="badge badge-sm badge-{{ $project->statusTone() }}">{{ $project->statusLabel() }}</span>
                     </li>
@@ -148,6 +171,58 @@
             </ul>
         @endif
     </div>
+
+    {{-- Auswertung pro Kunde --}}
+    @isset($statsTotal)
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs" x-data="{ tab: 'month' }">
+            <div class="mb-3 flex items-center justify-between">
+                <h2 class="font-semibold">{{ __('Auswertung') }}</h2>
+                <div role="tablist" class="tabs tabs-boxed tabs-sm">
+                    <button role="tab" class="tab" :class="{ 'tab-active': tab === 'month' }" @click="tab = 'month'">{{ __('Aktueller Monat') }}</button>
+                    <button role="tab" class="tab" :class="{ 'tab-active': tab === 'total' }" @click="tab = 'total'">{{ __('Gesamt') }}</button>
+                </div>
+            </div>
+            @foreach (['month' => $statsMonth, 'total' => $statsTotal] as $key => $set)
+                <div x-show="tab === '{{ $key }}'" x-cloak>
+                    <div class="mb-3 grid grid-cols-2 gap-3 text-sm">
+                        <div class="rounded-box bg-base-200 p-3">
+                            <div class="text-xs text-base-content/60">{{ __('Stunden gesamt') }}</div>
+                            <div class="font-['Space_Grotesk'] text-xl font-semibold">{{ number_format($set['total_minutes'] / 60, 2, ',', '.') }} h</div>
+                        </div>
+                        <div class="rounded-box bg-base-200 p-3">
+                            <div class="text-xs text-base-content/60">{{ __('davon abrechenbar') }}</div>
+                            <div class="font-['Space_Grotesk'] text-xl font-semibold">{{ number_format($set['billable_minutes'] / 60, 2, ',', '.') }} h</div>
+                        </div>
+                    </div>
+                    @if (count($set['by_project']) > 0)
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>{{ __('Projekt') }}</th>
+                                    <th class="text-right">{{ __('Stunden') }}</th>
+                                    <th class="text-right">{{ __('abrechenbar') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($set['by_project'] as $row)
+                                    <tr>
+                                        <td>
+                                            @if ($row['is_default'])
+                                                <span class="material-symbols-outlined text-primary text-sm align-middle">star</span>
+                                            @endif
+                                            {{ $row['name'] }}
+                                        </td>
+                                        <td class="text-right">{{ number_format($row['minutes'] / 60, 2, ',', '.') }}</td>
+                                        <td class="text-right">{{ number_format($row['billable_minutes'] / 60, 2, ',', '.') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+    @endisset
 
     {{-- Anhänge --}}
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">

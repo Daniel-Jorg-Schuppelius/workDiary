@@ -19,37 +19,54 @@
 
 @section('content')
 <div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
+    {{-- Toolbar: Aktionen + Suche --}}
     <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Kunden') }}</h1>
+        <form method="GET" action="{{ route('customers.index') }}" class="join">
+            <input type="hidden" name="status" value="{{ $status }}">
+            <input type="text" name="q" value="{{ $search }}" placeholder="{{ __('Suche…') }}"
+                   class="input input-sm input-bordered join-item w-48">
+            <button type="submit" class="btn btn-sm btn-ghost join-item gap-1">
+                <x-icon name="search" />
+                <span class="hidden sm:inline">{{ __('Suchen') }}</span>
+            </button>
+        </form>
         <div class="flex flex-wrap items-center gap-2">
-            <form method="GET" action="{{ route('customers.index') }}" class="join">
-                <input type="hidden" name="status" value="{{ $status }}">
-                <input type="text" name="q" value="{{ $search }}" placeholder="{{ __('Suche…') }}"
-                       class="input input-sm input-bordered join-item w-48">
-                <button type="submit" class="btn btn-sm btn-ghost join-item">{{ __('Suchen') }}</button>
-            </form>
-            <div class="join">
-                <a href="{{ route('customers.index', ['status' => 'active', 'q' => $search]) }}"
-                   class="join-item btn btn-sm {{ $status === 'active' ? 'btn-primary' : 'btn-ghost' }}">{{ __('Aktiv') }}</a>
-                <a href="{{ route('customers.index', ['status' => 'billable_pending', 'q' => $search]) }}"
-                   class="join-item btn btn-sm {{ $status === 'billable_pending' ? 'btn-primary' : 'btn-ghost' }}">{{ __('Bereit zur Abrechnung') }}</a>
-                <a href="{{ route('customers.index', ['status' => 'archived', 'q' => $search]) }}"
-                   class="join-item btn btn-sm {{ $status === 'archived' ? 'btn-primary' : 'btn-ghost' }}">{{ __('Archiv') }}</a>
-            </div>
             <a href="{{ route('customers.export', array_filter(['status' => $status, 'q' => $search])) }}"
-               class="btn btn-sm btn-ghost">{{ __('CSV-Export') }}</a>
+               class="btn btn-sm btn-ghost gap-1">
+                <x-icon name="download" />
+                <span>{{ __('CSV-Export') }}</span>
+            </a>
             @if (auth()->user()?->canManageBilling())
-                <a href="{{ route('customers.import.form') }}" class="btn btn-sm btn-ghost">{{ __('CSV-Import') }}</a>
+                <a href="{{ route('customers.import.form') }}" class="btn btn-sm btn-ghost gap-1">
+                    <x-icon name="upload" />
+                    <span>{{ __('CSV-Import') }}</span>
+                </a>
                 <form method="POST" action="{{ route('customers.lexoffice.push-all') }}"
                       onsubmit="return confirm('{{ __('Alle nicht synchronisierten Kunden zu Lexoffice übertragen?') }}');">
                     @csrf
-                    <button type="submit" class="btn btn-sm btn-ghost">{{ __('Lexoffice: alle pushen') }}</button>
+                    <button type="submit" class="btn btn-sm btn-ghost gap-1">
+                        <x-icon name="sync" />
+                        <span>{{ __('Lexoffice: alle pushen') }}</span>
+                    </button>
                 </form>
             @endif
             @can('create', App\Models\Customer::class)
-                <a href="{{ route('customers.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">+ {{ __('Kunde') }}</a>
+                <a href="{{ route('customers.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
+                    <x-icon name="add" />
+                    <span>{{ __('Kunde') }}</span>
+                </a>
             @endcan
         </div>
+    </div>
+
+    {{-- Tabs: Status --}}
+    <div role="tablist" class="tabs tabs-box self-start">
+        <a role="tab" href="{{ route('customers.index', ['status' => 'active', 'q' => $search]) }}"
+           class="tab {{ $status === 'active' ? 'tab-active' : '' }}">{{ __('Aktiv') }}</a>
+        <a role="tab" href="{{ route('customers.index', ['status' => 'billable_pending', 'q' => $search]) }}"
+           class="tab {{ $status === 'billable_pending' ? 'tab-active' : '' }}">{{ __('Bereit zur Abrechnung') }}</a>
+        <a role="tab" href="{{ route('customers.index', ['status' => 'archived', 'q' => $search]) }}"
+           class="tab {{ $status === 'archived' ? 'tab-active' : '' }}">{{ __('Archiv') }}</a>
     </div>
 
     @if ($customers->total() === 0)

@@ -10,6 +10,7 @@ use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
 use App\Services\CustomerCsvImporter;
+use App\Services\CustomerStatsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -51,10 +52,13 @@ class CustomerController extends Controller {
         ]);
     }
 
-    public function show(Customer $customer, PluginManager $plugins): View {
+    public function show(Customer $customer, PluginManager $plugins, CustomerStatsService $stats): View {
         Gate::authorize('view', $customer);
 
+        $defaultProject = $customer->defaultProjectOrCreate();
+
         $projects = $customer->projects()
+            ->orderByDesc('is_default')
             ->orderBy('name')
             ->get();
 
@@ -91,6 +95,9 @@ class CustomerController extends Controller {
         return view('customers.show', [
             'customer' => $customer,
             'projects' => $projects,
+            'defaultProject' => $defaultProject,
+            'statsTotal' => $stats->forCustomer($customer),
+            'statsMonth' => $stats->forCustomer($customer, $stats->currentMonthRange()),
             'totalMinutes' => $totalMinutes,
             'totalRate' => $totalRate,
             'lexofficePlugin' => $lexoffice,
@@ -161,7 +168,7 @@ class CustomerController extends Controller {
     public function destroy(Customer $customer): RedirectResponse {
         Gate::authorize('delete', $customer);
 
-        if ($customer->hasProjects()) {
+        if ($customer->hasNonDefaultProjects()) {
             return redirect()->route('customers.show', $customer)
                 ->with('error', __('Kunde kann nicht gelöscht werden: Es existieren noch Projekte. Bitte zuerst archivieren oder Projekte entfernen.'));
         }
@@ -171,6 +178,8 @@ class CustomerController extends Controller {
                 ->with('error', __('Kunde kann nicht gelöscht werden: Es existieren externe Referenzen (z. B. Lexoffice). Bitte stattdessen archivieren.'));
         }
 
+        // Standardprojekt(e) zusammen mit dem Kunden entfernen.
+        $customer->projects()->where('is_default', true)->delete();
         $customer->delete();
 
         return redirect()->route('customers.index')

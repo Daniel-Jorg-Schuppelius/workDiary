@@ -1,0 +1,117 @@
+@extends('layouts.app')
+@section('title', __('Kunden & Projekte'))
+@section('nav-title', __('Kunden & Projekte'))
+
+@section('content')
+@php
+    $fmt = function (int $min): string {
+        $sign = $min < 0 ? '-' : '';
+        $abs = abs($min);
+        return $sign . intdiv($abs, 60) . ':' . str_pad((string) ($abs % 60), 2, '0', STR_PAD_LEFT) . ' h';
+    };
+    $money = function (float $val): string {
+        return number_format($val, 2, ',', '.') . ' €';
+    };
+@endphp
+
+<div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
+
+    <x-filter-bar :action="route('reports.customer-project')" :reset="route('reports.customer-project')">
+        <x-filter-field :label="__('Von')" for="rep-from">
+            <input id="rep-from" type="date" name="from" value="{{ $from }}" class="input input-sm input-bordered">
+        </x-filter-field>
+        <x-filter-field :label="__('Bis')" for="rep-to">
+            <input id="rep-to" type="date" name="to" value="{{ $to }}" class="input input-sm input-bordered">
+        </x-filter-field>
+        @if ($isAdmin)
+            <x-filter-field :label="__('Bereich')" for="rep-scope">
+                <select id="rep-scope" name="scope" class="select select-sm select-bordered" onchange="this.form.submit()">
+                    <option value="mine" @selected($scope === 'mine')>{{ __('Nur meine') }}</option>
+                    <option value="team" @selected($scope === 'team')>{{ __('Gesamtes Team') }}</option>
+                </select>
+            </x-filter-field>
+        @endif
+        <x-slot:extra>
+            <a href="{{ route('reports.customer-project', array_filter(['from' => $from, 'to' => $to, 'scope' => $isAdmin ? $scope : null, 'export' => 'csv'])) }}" class="btn btn-sm btn-outline gap-1">
+                <x-icon name="download" />CSV
+            </a>
+            <a href="{{ route('reports.customer-project', array_filter(['from' => $from, 'to' => $to, 'scope' => $isAdmin ? $scope : null, 'export' => 'pdf'])) }}" class="btn btn-sm btn-outline gap-1">
+                <x-icon name="picture_as_pdf" />PDF
+            </a>
+        </x-slot:extra>
+    </x-filter-bar>
+
+    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+            <p class="text-xs text-base-content/60">
+                {{ __('Aggregierte Stunden und Erlöse pro Kunde und Projekt im gewählten Zeitraum.') }}
+            </p>
+            <div class="flex items-baseline gap-4">
+                <div class="flex items-baseline gap-2">
+                    <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">Σ Std.</span>
+                    <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $totalMinutes > 0 ? 'text-primary' : 'text-base-content/50' }}">
+                        {{ $fmt($totalMinutes) }}
+                    </span>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">Σ €</span>
+                    <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $totalRate > 0 ? 'text-primary' : 'text-base-content/50' }}">
+                        {{ $money($totalRate) }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        @if (empty($bucket))
+            <div class="rounded-box border border-dashed border-base-300 px-4 py-10 text-center text-sm text-base-content/60">
+                {{ __('Keine Zeiteinträge im gewählten Zeitraum.') }}
+            </div>
+        @else
+            <div class="overflow-x-auto">
+                <table class="table table-sm w-full">
+                    <thead>
+                        <tr class="text-xs uppercase tracking-[0.12em] text-base-content/60">
+                            <th>{{ __('Kunde / Projekt') }}</th>
+                            <th class="text-right">{{ __('Stunden') }}</th>
+                            <th class="text-right">{{ __('Erlös') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($bucket as $row)
+                            <tr class="bg-base-200/60">
+                                <th class="font-semibold text-base-content">
+                                    {{ $row['customer']?->name ?? __('Ohne Kunde') }}
+                                </th>
+                                <th class="text-right font-semibold tabular-nums text-base-content">{{ $fmt($row['minutes']) }}</th>
+                                <th class="text-right font-semibold tabular-nums text-base-content">{{ $money($row['rate']) }}</th>
+                            </tr>
+                            @foreach ($row['projects'] as $entry)
+                                <tr>
+                                    <td class="pl-8 text-sm text-base-content/80">
+                                        @if ($entry['project']->color)
+                                            <span class="mr-2 inline-block size-2 rounded-full align-middle" style="background-color: {{ $entry['project']->color }};"></span>
+                                        @endif
+                                        {{ $entry['project']->name }}
+                                        @if ($entry['project']->number)
+                                            <span class="ml-1 text-xs text-base-content/50">#{{ $entry['project']->number }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-right tabular-nums">{{ $fmt($entry['minutes']) }}</td>
+                                    <td class="text-right tabular-nums">{{ $money($entry['rate']) }}</td>
+                                </tr>
+                            @endforeach
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr class="border-t-2 border-base-300">
+                            <th class="text-xs uppercase tracking-[0.12em] text-base-content/70">{{ __('Gesamt') }}</th>
+                            <th class="text-right font-semibold tabular-nums text-primary">{{ $fmt($totalMinutes) }}</th>
+                            <th class="text-right font-semibold tabular-nums text-primary">{{ $money($totalRate) }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        @endif
+    </div>
+</div>
+@endsection

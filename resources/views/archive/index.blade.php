@@ -44,24 +44,24 @@
 
     <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
 
-        {{-- Kopfzeile: Tabs + Cross-Links --}}
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div class="flex flex-wrap items-center gap-3">
-                <span class="badge badge-neutral">{{ __('Archiv') }}</span>
-                <div role="tablist" class="tabs tabs-box">
-                    @foreach ($tabs as $key => $info)
-                        <a role="tab"
-                           href="{{ route('archive.index', array_merge($tabFilters, ['tab' => $key])) }}"
-                           class="tab {{ $tab === $key ? 'tab-active' : '' }}">
-                            {{ $info['label'] }}
-                            <span class="badge badge-sm ml-2">{{ $info['count'] }}</span>
-                        </a>
-                    @endforeach
-                </div>
-            </div>
-            <a href="{{ route('duties.index', ['tab' => match($tab) { 'diary' => 'diary', 'urlaub' => 'urlaub', default => $tab }]) }}" class="btn btn-sm btn-ghost">
-                ← {{ __('Aktive Arbeitsliste') }}
+        {{-- Toolbar: Archiv-Badge + Cross-Link --}}
+        <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <span class="badge badge-neutral">{{ __('Archiv') }}</span>
+            <a href="{{ route('duties.index', ['tab' => match($tab) { 'diary' => 'diary', 'urlaub' => 'urlaub', default => $tab }]) }}" class="btn btn-sm btn-ghost gap-1">
+                <x-icon name="arrow_back" /><span>{{ __('Aktive Arbeitsliste') }}</span>
             </a>
+        </div>
+
+        {{-- Tabs --}}
+        <div role="tablist" class="tabs tabs-box self-start">
+            @foreach ($tabs as $key => $info)
+                <a role="tab"
+                   href="{{ route('archive.index', array_merge($tabFilters, ['tab' => $key])) }}"
+                   class="tab {{ $tab === $key ? 'tab-active' : '' }}">
+                    {{ $info['label'] }}
+                    <span class="badge badge-sm ml-2">{{ $info['count'] }}</span>
+                </a>
+            @endforeach
         </div>
 
         {{-- Filter --}}

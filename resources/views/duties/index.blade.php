@@ -15,37 +15,47 @@
 
     <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
 
-        {{-- Kopfzeile: Status-Badge + Tabs + Aktions-Buttons --}}
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div class="flex flex-wrap items-center gap-3">
-                <span class="badge badge-primary">{{ __('Aktiv') }}</span>
-                <div role="tablist" class="tabs tabs-box">
-                    @foreach ($tabs as $key => $info)
-                        <a role="tab"
-                           href="{{ route('duties.index', array_merge($tabFilters, ['tab' => $key])) }}"
-                           class="tab {{ $tab === $key ? 'tab-active' : '' }}">
-                            {{ $info['label'] }}
-                            <span class="badge badge-sm ml-2">{{ $info['count'] }}</span>
-                        </a>
-                    @endforeach
-                </div>
-            </div>
+        {{-- Toolbar: Status-Badge + Aktions-Buttons --}}
+        <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <span class="badge badge-primary">{{ __('Aktiv') }}</span>
             <div class="flex items-center gap-2">
                 @if ($tab === 'diary')
-                    <a href="{{ route('diary.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">{{ __('+ Neuer Auftrag') }}</a>
+                    <a href="{{ route('diary.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
+                        <x-icon name="add" /><span>{{ __('Neuer Auftrag') }}</span>
+                    </a>
                 @elseif ($tab === 'bereitschaft')
-                    <a href="{{ route('shifts.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">{{ __('+ Neue Bereitschaft') }}</a>
+                    <a href="{{ route('shifts.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
+                        <x-icon name="add" /><span>{{ __('Neue Bereitschaft') }}</span>
+                    </a>
                 @elseif ($tab === 'notdienst')
-                    <a href="{{ route('assignments.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">{{ __('+ Neuer Notdienst') }}</a>
+                    <a href="{{ route('assignments.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
+                        <x-icon name="add" /><span>{{ __('Neuer Notdienst') }}</span>
+                    </a>
                 @else
                     @can('create', \App\Models\Vacation::class)
-                        <a href="{{ route('vacations.create') }}?dialog=1" data-entry-modal-trigger class="btn btn-sm btn-primary">{{ __('+ Neuer Antrag') }}</a>
+                        <a href="{{ route('vacations.create') }}?dialog=1" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
+                            <x-icon name="add" /><span>{{ __('Neuer Antrag') }}</span>
+                        </a>
                     @endcan
                 @endif
                 @if ($tab !== 'urlaub')
-                    <a href="{{ route('archive.index', ['tab' => $tab === 'diary' ? 'diary' : $tab]) }}" class="btn btn-sm btn-ghost">{{ __('Archiv') }} →</a>
+                    <a href="{{ route('archive.index', ['tab' => $tab === 'diary' ? 'diary' : $tab]) }}" class="btn btn-sm btn-ghost gap-1">
+                        <x-icon name="inventory_2" /><span>{{ __('Archiv') }}</span>
+                    </a>
                 @endif
             </div>
+        </div>
+
+        {{-- Tabs --}}
+        <div role="tablist" class="tabs tabs-box self-start">
+            @foreach ($tabs as $key => $info)
+                <a role="tab"
+                   href="{{ route('duties.index', array_merge($tabFilters, ['tab' => $key])) }}"
+                   class="tab {{ $tab === $key ? 'tab-active' : '' }}">
+                    {{ $info['label'] }}
+                    <span class="badge badge-sm ml-2">{{ $info['count'] }}</span>
+                </a>
+            @endforeach
         </div>
 
         {{-- Filter --}}

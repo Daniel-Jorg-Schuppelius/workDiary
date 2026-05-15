@@ -5,9 +5,11 @@
 @section('content')
     <?php $legacyUsers = collect($users ?? []); ?>
     <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
-        <div class="flex items-center justify-between gap-2">
-            <h1 class="font-['Space_Grotesk'] text-xl font-semibold">{{ __('Mitarbeiter') }}</h1>
-            <a href="{{ route('legacy.users.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">+ {{ __('Neuer Mitarbeiter') }}</a>
+        <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <span class="text-sm text-base-content/60">{{ trans_choice(':n Mitarbeiter|:n Mitarbeiter', $legacyUsers->count(), ['n' => $legacyUsers->count()]) }}</span>
+            <a href="{{ route('legacy.users.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm gap-1">
+                <x-icon name="add" /><span>{{ __('Neuer Mitarbeiter') }}</span>
+            </a>
         </div>
         <div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
         <table class="table table-xs table-zebra table-pin-rows w-full" data-sortable>

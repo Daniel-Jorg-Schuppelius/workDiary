@@ -12,10 +12,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class ProjectController extends Controller
-{
-    public function index(Request $request): View
-    {
+class ProjectController extends Controller {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', Project::class);
 
         $statusFilter = $request->string('status')->toString();
@@ -26,7 +24,8 @@ class ProjectController extends Controller
 
         $projects = $query->orderByRaw("CASE status WHEN 'active' THEN 0 WHEN 'paused' THEN 1 ELSE 2 END")
             ->orderBy('name')
-            ->select(['id', 'name', 'slug', 'color', 'status', 'description', 'starts_on', 'ends_on'])
+            ->select(['id', 'name', 'slug', 'color', 'status', 'description', 'starts_on', 'ends_on', 'parent_id'])
+            ->with(['parent:id,name'])
             ->get();
 
         $projectIds = $projects->pluck('id')->all();
@@ -41,8 +40,8 @@ class ProjectController extends Controller
 
         // View-kompatible Strukturen aus einer einzigen Query ableiten
         $stats = $aggr;
-        $lastEntries = $aggr->map(fn ($rows) => $rows->max('last_at'));
-        $userCounts = $aggr->map(fn ($rows) => $rows->max('user_cnt'));
+        $lastEntries = $aggr->map(fn($rows) => $rows->max('last_at'));
+        $userCounts = $aggr->map(fn($rows) => $rows->max('user_cnt'));
 
         return view('projects.index', [
             'projects' => $projects,
@@ -53,8 +52,7 @@ class ProjectController extends Controller
         ]);
     }
 
-    public function show(Project $project): View
-    {
+    public function show(Project $project): View {
         Gate::authorize('view', $project);
 
         // Diary-Einträge (Tab 4)
@@ -123,8 +121,7 @@ class ProjectController extends Controller
         ]);
     }
 
-    public function create(Request $request): View
-    {
+    public function create(Request $request): View {
         Gate::authorize('create', Project::class);
 
         return view('projects._form_dialog', [
@@ -133,8 +130,7 @@ class ProjectController extends Controller
         ]);
     }
 
-    public function store(SaveProjectRequest $request): RedirectResponse
-    {
+    public function store(SaveProjectRequest $request): RedirectResponse {
         Gate::authorize('create', Project::class);
 
         $data = $request->validated();
@@ -145,8 +141,7 @@ class ProjectController extends Controller
             ->with('success', __('Projekt angelegt.'));
     }
 
-    public function edit(Request $request, Project $project): View
-    {
+    public function edit(Request $request, Project $project): View {
         Gate::authorize('update', $project);
 
         return view('projects._form_dialog', [
@@ -155,8 +150,7 @@ class ProjectController extends Controller
         ]);
     }
 
-    public function update(SaveProjectRequest $request, Project $project): RedirectResponse
-    {
+    public function update(SaveProjectRequest $request, Project $project): RedirectResponse {
         Gate::authorize('update', $project);
 
         $data = $request->validated();
@@ -166,8 +160,7 @@ class ProjectController extends Controller
             ->with('success', __('Projekt aktualisiert.'));
     }
 
-    public function destroy(Project $project): RedirectResponse
-    {
+    public function destroy(Project $project): RedirectResponse {
         Gate::authorize('delete', $project);
 
         $project->delete();

@@ -4,24 +4,37 @@
 
 @section('content')
 <div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
-    <div class="flex flex-wrap items-center justify-between gap-2">
-        <h1 class="font-['Space_Grotesk'] text-xl font-semibold">{{ __('Stundenzettel') }}</h1>
+    {{-- Toolbar (CTA) --}}
+    <x-page-toolbar>
+        <x-slot:actions>
+            @can('create', \App\Models\Timesheet::class)
+                <button type="button" class="btn btn-sm btn-primary gap-1" onclick="document.getElementById('quick-timesheet-dialog').showModal()">
+                    <x-icon name="add" />
+                    <span>{{ __('Stundenzettel') }}</span>
+                </button>
+            @endcan
+        </x-slot:actions>
+    </x-page-toolbar>
 
-        <form method="GET" class="flex flex-wrap items-center gap-2">
-            @if($isAdmin)
-                <select name="scope" class="select select-sm select-bordered" onchange="this.form.submit()">
+    {{-- Filter --}}
+    <x-filter-bar :action="route('timesheets.index')" :reset="route('timesheets.index')">
+        @if($isAdmin)
+            <x-filter-field :label="__('Bereich')" for="ts-scope">
+                <select id="ts-scope" name="scope" class="select select-sm select-bordered" onchange="this.form.submit()">
                     <option value="mine" @selected($scope==='mine')>{{ __('Eigene') }}</option>
                     <option value="team" @selected($scope==='team')>{{ __('Team') }}</option>
                 </select>
-            @endif
-            <select name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
+            </x-filter-field>
+        @endif
+        <x-filter-field :label="__('Status')" for="ts-status">
+            <select id="ts-status" name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
                 <option value="">{{ __('Alle Status') }}</option>
                 @foreach(\App\Models\Timesheet::STATUSES as $s)
                     <option value="{{ $s }}" @selected(request('status')===$s)>{{ __(\Illuminate\Support\Str::ucfirst($s)) }}</option>
                 @endforeach
             </select>
-        </form>
-    </div>
+        </x-filter-field>
+    </x-filter-bar>
 
     <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
         @if($timesheets->isEmpty())
@@ -62,4 +75,34 @@
         @endif
     </div>
 </div>
+
+@can('create', \App\Models\Timesheet::class)
+    <dialog id="quick-timesheet-dialog" class="modal">
+        <div class="modal-box">
+            <h3 class="mb-3 font-semibold">{{ __('Stundenzettel anlegen') }}</h3>
+            <form method="POST" action="{{ route('timesheets.quick') }}" class="flex flex-col gap-3">
+                @csrf
+                <div class="fieldset">
+                    <label class="fieldset-label">{{ __('Kunde') }}</label>
+                    <select name="customer_id" required class="select select-bordered w-full">
+                        <option value="">{{ __('Kunde wählen…') }}</option>
+                        @foreach (\App\Models\Customer::query()->whereNull('archived_at')->orderBy('name')->get(['id','name']) as $c)
+                            <option value="{{ $c->id }}">{{ $c->name }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-base-content/60">{{ __('Ohne Projektwahl landet der Stundenzettel im Standardprojekt des Kunden (z. B. Wartung).') }}</p>
+                </div>
+                <div class="fieldset">
+                    <label class="fieldset-label">{{ __('Datum') }}</label>
+                    <input type="date" name="work_date" value="{{ now()->format('Y-m-d') }}" class="input input-bordered w-full">
+                </div>
+                <div class="modal-action">
+                    <button type="button" class="btn btn-sm btn-ghost" onclick="document.getElementById('quick-timesheet-dialog').close()">{{ __('Abbrechen') }}</button>
+                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Anlegen') }}</button>
+                </div>
+            </form>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+@endcan
 @endsection

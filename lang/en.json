@@ -475,18 +475,13 @@
     "Mittel": "Medium",
     "Hoch": "High",
     "Dringend": "Urgent",
-    "Offen": "Open",
     "In Arbeit": "In progress",
-    "Erledigt": "Done",
     "Fälligkeitsdatum": "Due date",
     "Zuweisung": "Assignment",
     "Dieser Monat": "This month",
     "Meine Stunden": "My hours",
-    "Gesamt": "Total",
     "Gesamtstunden": "Total hours",
     "Keine Aufgaben vorhanden.": "No tasks available.",
-    "Übersicht": "Overview",
-    "Tagebuch": "Diary",
     "Tagebucheinträge": "Diary entries",
     "Alle im Tagebuch": "All in diary"
 }

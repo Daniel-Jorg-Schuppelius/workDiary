@@ -64,7 +64,7 @@
                         $isPast = $row['date']->isPast() && ! $row['date']->isToday();
                     @endphp
                     <tr class="hover {{ $isPast ? 'opacity-50' : '' }} {{ $row['date']->isToday() ? 'bg-warning/10' : '' }}">
-                        <td class="whitespace-nowrap font-mono">{{ $row['date']->format('d.m.Y') }}</td>
+                        <td class="whitespace-nowrap font-mono" data-sort-value="{{ $row['date']->format('Y-m-d') }}">{{ $row['date']->format('d.m.Y') }}</td>
                         <td class="whitespace-nowrap text-xs text-base-content/70">{{ $row['date']->locale(app()->getLocale())->isoFormat('dd') }}</td>
                         <td class="font-semibold">{{ $row['name'] }}</td>
                         <td>
@@ -124,7 +124,7 @@
             <tbody>
                 @forelse ($customHolidays as $holiday)
                     <tr class="hover">
-                        <td class="whitespace-nowrap font-mono">{{ optional($holiday->date)->format('d.m.Y') }}</td>
+                        <td class="whitespace-nowrap font-mono" data-sort-value="{{ optional($holiday->date)->format('Y-m-d') }}">{{ optional($holiday->date)->format('d.m.Y') }}</td>
                         <td>{{ $holiday->name }}</td>
                         <td>
                             @if (($holiday->recurrence_type ?? 'fixed') === 'relative')

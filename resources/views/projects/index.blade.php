@@ -14,16 +14,18 @@
 <div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
     {{-- Toolbar --}}
     <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Projekte') }}</h1>
+        <div class="join">
+            @foreach ($statusOptions as $value => $label)
+                <a href="{{ route('projects.index', $value === '' ? [] : ['status' => $value]) }}"
+                   class="join-item btn btn-sm {{ $statusFilter === $value ? 'btn-primary' : 'btn-ghost' }}">{{ $label }}</a>
+            @endforeach
+        </div>
         <div class="flex flex-wrap items-center gap-2">
-            <div class="join">
-                @foreach ($statusOptions as $value => $label)
-                    <a href="{{ route('projects.index', $value === '' ? [] : ['status' => $value]) }}"
-                       class="join-item btn btn-sm {{ $statusFilter === $value ? 'btn-primary' : 'btn-ghost' }}">{{ $label }}</a>
-                @endforeach
-            </div>
             @can('create', App\Models\Project::class)
-                <a href="{{ route('projects.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">+ {{ __('Projekt') }}</a>
+                <a href="{{ route('projects.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
+                    <x-icon name="add" />
+                    <span>{{ __('Projekt') }}</span>
+                </a>
             @endcan
         </div>
     </div>
@@ -59,6 +61,12 @@
 
                     @if ($project->description)
                         <p class="line-clamp-2 text-xs text-base-content/70">{{ $project->description }}</p>
+                    @endif
+
+                    @if ($project->parent)
+                        <div class="text-xs text-base-content/60">
+                            ↳ {{ __('Sub-Projekt von') }} <span class="font-medium">{{ $project->parent->name }}</span>
+                        </div>
                     @endif
 
                     <div class="grid grid-cols-4 gap-2 text-center text-xs">

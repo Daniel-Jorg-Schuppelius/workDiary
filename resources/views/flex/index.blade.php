@@ -1,5 +1,9 @@
 @extends('layouts.app')
 @section('title', __('Gleitzeit'))
+@php
+    $monthName = \DateTime::createFromFormat('!m', (string)$month)->format('F');
+@endphp
+@section('nav-title', __('Gleitzeit-Konto') . ' – ' . $monthName . ' ' . $year)
 @section('content')
 @php
     $fmt = function (int $min): string {
@@ -9,17 +13,23 @@
     };
 @endphp
 <div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
-    <div class="flex flex-wrap items-center justify-between gap-2">
-        <h1 class="font-['Space_Grotesk'] text-xl font-semibold">{{ __('Gleitzeit-Konto') }} – {{ \DateTime::createFromFormat('!m', (string)$month)->format('F') }} {{ $year }}</h1>
-        <form method="GET" class="flex gap-2">
-            <input type="number" name="year"  value="{{ $year }}"  min="2000" max="2100" class="input input-sm input-bordered w-24">
-            <input type="number" name="month" value="{{ $month }}" min="1"    max="12"   class="input input-sm input-bordered w-20">
-            <button class="btn btn-sm">{{ __('Anzeigen') }}</button>
-            @if($isAdmin)
-                <a href="{{ route('flex.admin') }}" class="btn btn-sm btn-ghost">{{ __('Team-Sicht') }}</a>
-            @endif
-        </form>
-    </div>
+    <x-filter-bar :action="route('flex.index')">
+        <x-filter-field :label="__('Jahr')" for="flex-year">
+            <input id="flex-year" type="number" name="year" value="{{ $year }}" min="2000" max="2100" class="input input-sm input-bordered w-24">
+        </x-filter-field>
+        <x-filter-field :label="__('Monat')" for="flex-month">
+            <input id="flex-month" type="number" name="month" value="{{ $month }}" min="1" max="12" class="input input-sm input-bordered w-20">
+        </x-filter-field>
+
+        @if($isAdmin)
+            <x-slot:extra>
+                <a href="{{ route('flex.admin') }}" class="btn btn-sm btn-ghost gap-1">
+                    <x-icon name="groups" />
+                    <span>{{ __('Team-Sicht') }}</span>
+                </a>
+            </x-slot:extra>
+        @endif
+    </x-filter-bar>
 
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div class="rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs">

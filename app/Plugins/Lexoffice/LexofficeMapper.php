@@ -142,26 +142,46 @@ class LexofficeMapper {
         $vatRate = (float) ($defaults['default_vat_rate'] ?? 19.0);
         $currency = $customer->currency ?: ($defaults['default_currency'] ?? 'EUR');
 
-        $items = $entries->groupBy('project_id')->map(function (Collection $group) use ($vatRate, $from, $to) {
-            /** @var TimeEntry $first */
-            $first = $group->first();
-            $projectName = $first->project !== null ? $first->project->name : (string) __('Leistung');
-            $hours = round($group->sum('minutes') / 60.0, 2);
-            $revenue = round((float) $group->sum('rate'), 2);
-            $unitPrice = $hours > 0 ? round($revenue / $hours, 2) : 0.0;
+        $items = $entries
+            ->groupBy(fn(TimeEntry $e) => ($e->project_id ?? 0) . '|' . ((string) ($e->kind ?? '')))
+            ->map(function (Collection $group) use ($vatRate, $from, $to) {
+                /** @var TimeEntry $first */
+                $first = $group->first();
+                $project = $first->project;
+                $kind = $first->kind;
+                $projectName = $project !== null ? $project->name : (string) __('Leistung');
+                $hours = round($group->sum('minutes') / 60.0, 2);
+                $revenue = round((float) $group->sum('rate'), 2);
+                $unitPrice = $hours > 0 ? round($revenue / $hours, 2) : 0.0;
 
-            return [
-                'type' => 'service',
-                'name' => sprintf('%s (%s – %s)', $projectName, $from->format('d.m.Y'), $to->format('d.m.Y')),
-                'quantity' => $hours,
-                'unitName' => 'Stunde',
-                'unitPrice' => [
-                    'currency' => 'EUR',
-                    'netAmount' => $unitPrice,
-                    'taxRatePercentage' => $vatRate,
-                ],
-            ];
-        })->values()->all();
+                $rule = $project?->resolveBillingRule($kind);
+
+                $type = $rule?->item_type ?: 'service';
+                $unitName = $rule?->unit_name ?: 'Stunde';
+                $taxRate = $rule?->vat_rate !== null ? (float) $rule->vat_rate : $vatRate;
+                $netAmount = $rule?->net_unit_price !== null ? (float) $rule->net_unit_price : $unitPrice;
+
+                $kindSuffix = $kind ? ' [' . $kind . ']' : '';
+                $name = sprintf('%s%s (%s – %s)', $projectName, $kindSuffix, $from->format('d.m.Y'), $to->format('d.m.Y'));
+
+                $item = [
+                    'type' => $type,
+                    'name' => $name,
+                    'quantity' => $hours,
+                    'unitName' => $unitName,
+                    'unitPrice' => [
+                        'currency' => 'EUR',
+                        'netAmount' => $netAmount,
+                        'taxRatePercentage' => $taxRate,
+                    ],
+                ];
+
+                if ($rule?->lexoffice_article_id) {
+                    $item['id'] = $rule->lexoffice_article_id;
+                }
+
+                return $item;
+            })->values()->all();
 
         return [
             'voucherType' => 'salesinvoice',

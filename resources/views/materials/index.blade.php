@@ -1,16 +1,18 @@
 @extends('layouts.app')
 @section('title', __('Materialien'))
+@section('nav-title', __('Materialien'))
 @section('content')
 <div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
-    <div class="flex flex-wrap items-center justify-between gap-2">
-        <h1 class="font-['Space_Grotesk'] text-xl font-semibold">{{ __('Materialien') }}</h1>
+    <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <form method="GET" class="flex gap-2">
+            <input type="search" name="q" value="{{ $q }}" placeholder="{{ __('Suche…') }}" class="input input-sm input-bordered">
+            <button class="btn btn-sm btn-ghost gap-1"><x-icon name="search" /><span class="hidden sm:inline">{{ __('Suchen') }}</span></button>
+        </form>
         <div class="flex gap-2">
-            <form method="GET" class="flex gap-2">
-                <input type="search" name="q" value="{{ $q }}" placeholder="{{ __('Suche…') }}" class="input input-sm input-bordered">
-                <button class="btn btn-sm">{{ __('Suchen') }}</button>
-            </form>
             @can('create', \App\Models\Material::class)
-                <a href="{{ route('materials.create') }}" class="btn btn-sm btn-primary">+ {{ __('Material') }}</a>
+                <a href="{{ route('materials.create') }}" class="btn btn-sm btn-primary gap-1">
+                    <x-icon name="add" /><span>{{ __('Material') }}</span>
+                </a>
             @endcan
         </div>
     </div>

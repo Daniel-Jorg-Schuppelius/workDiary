@@ -69,6 +69,7 @@
                 <input type="hidden" name="sort" value="{{ $currentSort }}">
                 <input type="hidden" name="dir"  value="{{ $currentDir }}">
                 <div class="flex flex-wrap items-end gap-3">
+                    @php /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Legacy\Models\LegacyUser> $users */ @endphp
                     @if ($isAdmin && $users->isNotEmpty())
                         <div class="flex flex-1 flex-col min-w-44">
                             <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</span></label>
@@ -435,6 +436,7 @@
                             <select name="user_id" class="select select-bordered select-sm w-full">
                                 <option value="">{{ __('Alle') }}</option>
                                 @foreach ($vacationUsers ?? [] as $u)
+                                    @php /** @var \App\Models\User $u */ @endphp
                                     <option value="{{ $u->id }}" @selected((int) ($filters['user_id'] ?? 0) === $u->id)>{{ $u->name }}</option>
                                 @endforeach
                             </select>

@@ -11,6 +11,7 @@ use App\Http\Controllers\Auth\TenantRegistrationController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\CoverageRequirementController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiaryController;
 use App\Http\Controllers\DiaryExportController;
@@ -18,6 +19,11 @@ use App\Http\Controllers\DutyController;
 use App\Http\Controllers\DutyPlanController;
 use App\Http\Controllers\EmergencyAssignmentController;
 use App\Http\Controllers\FlexController;
+use App\Http\Controllers\Reporting\CustomerProjectReportController;
+use App\Http\Controllers\Reporting\MyMonthReportController;
+use App\Http\Controllers\Reporting\MyYearReportController;
+use App\Http\Controllers\Reporting\ProjectDetailsReportController;
+use App\Http\Controllers\Reporting\WeekByUserReportController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KanbanController;
@@ -30,6 +36,7 @@ use App\Http\Controllers\OrgMemberController;
 use App\Http\Controllers\Plugins\LexofficeCustomerController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProjectBillingRuleController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PublicSignatureController;
 use App\Http\Controllers\PushSubscriptionController;
@@ -162,11 +169,23 @@ Route::middleware('auth')->group(function () {
     Route::resource('projects', ProjectController::class);
     Route::resource('projects.milestones', MilestoneController::class)->except(['index', 'show']);
     Route::resource('projects.tasks', TaskController::class)->except(['index', 'show']);
+
+    // ── Rechnungen / Invoicing ────────────────────────────────────
+    Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+    Route::get('invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
+    Route::post('invoices', [InvoiceController::class, 'store'])->name('invoices.store');
+    Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
+    Route::delete('invoices/{invoice}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
+    Route::post('invoices/{invoice}/issue', [InvoiceController::class, 'issue'])->name('invoices.issue');
+    Route::post('invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
+    Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
     Route::patch('projects/{project}/tasks/{task}/complete', [TaskController::class, 'complete'])->name('projects.tasks.complete');
     Route::resource('projects.time-entries', TimeEntryController::class)->except(['index', 'show']);
+    Route::resource('projects.billing-rules', ProjectBillingRuleController::class)->except(['index', 'show', 'create', 'edit']);
 
     // ── Stundenzettel (an Projekt gekoppelt) ────────────────────────────────
     Route::get('timesheets', [TimesheetController::class, 'index'])->name('timesheets.index');
+    Route::post('timesheets/quick', [TimesheetController::class, 'storeQuick'])->name('timesheets.quick');
     Route::resource('projects.timesheets', TimesheetController::class)
         ->parameters(['timesheets' => 'timesheet'])
         ->except(['index']);
@@ -192,9 +211,19 @@ Route::middleware('auth')->group(function () {
     Route::post('stopwatch/start', [StopwatchController::class, 'start'])->name('stopwatch.start');
     Route::post('stopwatch/stop', [StopwatchController::class, 'stop'])->name('stopwatch.stop');
 
+    // ── Globale Zeitauswahl (Header-Widget) ─────────────────────────────────
+    Route::post('ui/date-range', [\App\Http\Controllers\UI\DateRangeController::class, 'update'])->name('ui.date-range.update');
+
     // ── Gleitzeit ───────────────────────────────────────────────────────────
     Route::get('flex', [FlexController::class, 'index'])->name('flex.index');
     Route::get('flex/admin', [FlexController::class, 'admin'])->name('flex.admin');
+
+    // ── Auswertungen ────────────────────────────────────────────────────────
+    Route::get('reports/my-year', [MyYearReportController::class, 'index'])->name('reports.my-year');
+    Route::get('reports/my-month', [MyMonthReportController::class, 'index'])->name('reports.my-month');
+    Route::get('reports/customer-project', [CustomerProjectReportController::class, 'index'])->name('reports.customer-project');
+    Route::get('reports/week-by-user', [WeekByUserReportController::class, 'index'])->name('reports.week-by-user');
+    Route::get('reports/project-details', [ProjectDetailsReportController::class, 'index'])->name('reports.project-details');
 
     // ── Material-Stamm (Admin) ──────────────────────────────────────────────
     Route::resource('materials', MaterialController::class)->except('show');

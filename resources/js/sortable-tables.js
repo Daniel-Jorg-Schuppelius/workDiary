@@ -7,7 +7,11 @@
  *   data-sort-type:
  *     - "string" (default): localeCompare (de)
  *     - "number": parseFloat after stripping non-digits/decimal
- *     - "date": Date.parse on full text or `data-sort-value`
+ *     - "date": robust parser — handles ISO (YYYY-MM-DD[ HH:MM[:SS]]),
+ *               German DD.MM.YYYY[ HH:MM[:SS]] and DD.MM. (year-less),
+ *               or any string that Date.parse() understands.
+ *               Cells may set `data-sort-value` (preferred, e.g. "2026-05-15").
+ *     - "duration": "H:MM[:SS]" or "Hh MMm" → minutes
  *     - any: prefer cell `data-sort-value` if present
  *
  *   <th data-sort-default="asc|desc"> – initial sort & icon shown on load
@@ -31,6 +35,65 @@ function getCellValue(row, columnIndex) {
     return (cell.textContent || "").trim();
 }
 
+// Parse common date formats into a numeric timestamp (ms).
+// Supports:
+//   - explicit numeric data-sort-value (e.g. "2026-05-15" or "1747000000000")
+//   - ISO date / datetime (Date.parse handles these)
+//   - German DD.MM.YYYY[ HH:MM[:SS]]
+//   - German DD.MM. (no year — used for recurring entries; treated as current year)
+function parseAnyDate(input) {
+    const raw = String(input || "").trim();
+    if (raw === "") return NaN;
+
+    // Pure number → epoch ms
+    if (/^-?\d+$/.test(raw)) return Number(raw);
+
+    // German DD.MM.YYYY [HH:MM[:SS]]
+    const de = raw.match(
+        /^(\d{1,2})\.(\d{1,2})\.(\d{2,4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/,
+    );
+    if (de) {
+        const [, d, m, y, hh, mm, ss] = de;
+        const year = y.length === 2 ? 2000 + Number(y) : Number(y);
+        const dt = new Date(
+            year,
+            Number(m) - 1,
+            Number(d),
+            Number(hh ?? 0),
+            Number(mm ?? 0),
+            Number(ss ?? 0),
+        );
+        return dt.getTime();
+    }
+
+    // German DD.MM. (no year) → use current year so relative ordering still works
+    const deShort = raw.match(/^(\d{1,2})\.(\d{1,2})\.?$/);
+    if (deShort) {
+        const [, d, m] = deShort;
+        const dt = new Date(new Date().getFullYear(), Number(m) - 1, Number(d));
+        return dt.getTime();
+    }
+
+    // Fallback to native parser (ISO etc.)
+    return Date.parse(raw);
+}
+
+// Parse "H:MM[:SS]" or "Hh MMm" or "12,5 h" → minutes (float)
+function parseDuration(input) {
+    const raw = String(input || "").trim();
+    if (raw === "") return NaN;
+    const colon = raw.match(/^(-?)(\d+):(\d{1,2})(?::(\d{1,2}))?/);
+    if (colon) {
+        const sign = colon[1] === "-" ? -1 : 1;
+        const h = Number(colon[2]);
+        const m = Number(colon[3]);
+        const s = Number(colon[4] ?? 0);
+        return sign * (h * 60 + m + s / 60);
+    }
+    const num = parseFloat(raw.replace(",", "."));
+    return Number.isFinite(num) ? num * 60 : NaN;
+}
+
 function compareFactory(type) {
     if (type === "number") {
         return (a, b) => {
@@ -51,10 +114,19 @@ function compareFactory(type) {
     }
     if (type === "date") {
         return (a, b) => {
-            const ta = Date.parse(a);
-            const tb = Date.parse(b);
+            const ta = parseAnyDate(a);
+            const tb = parseAnyDate(b);
             const va = Number.isFinite(ta) ? ta : -Infinity;
             const vb = Number.isFinite(tb) ? tb : -Infinity;
+            return va - vb;
+        };
+    }
+    if (type === "duration") {
+        return (a, b) => {
+            const da = parseDuration(a);
+            const db = parseDuration(b);
+            const va = Number.isFinite(da) ? da : -Infinity;
+            const vb = Number.isFinite(db) ? db : -Infinity;
             return va - vb;
         };
     }

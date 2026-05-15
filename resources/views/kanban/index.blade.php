@@ -6,7 +6,6 @@
 <div class="flex h-full min-h-0 w-full flex-col gap-4">
     {{-- Toolbar --}}
     <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Kanban') }}</h1>
         <div class="flex flex-wrap items-center gap-2">
             <div class="join">
                 <a href="{{ route('kanban.index', array_filter(['scope' => 'mine', 'range' => $range !== 'custom' ? $range : null])) }}"
@@ -29,9 +28,11 @@
                 <x-date-range :from="$from" :to="$to" :label="false" />
                 <button type="submit" class="btn btn-sm {{ $range === 'custom' ? 'btn-primary' : 'btn-ghost' }}">{{ __('Filter') }}</button>
             </form>
-
-            <a href="{{ route('diary.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">+ {{ __('Eintrag') }}</a>
         </div>
+
+        <a href="{{ route('diary.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
+            <x-icon name="add" /><span>{{ __('Eintrag') }}</span>
+        </a>
     </div>
 
     @if ($isLimited)

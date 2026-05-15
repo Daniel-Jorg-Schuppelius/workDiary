@@ -44,8 +44,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $archived_at
  * @property int|null $created_by
  */
-class Customer extends Model
-{
+class Customer extends Model {
     use BelongsToOrganization;
     use HasAttachments;
     use HasTags;
@@ -126,6 +125,35 @@ class Customer extends Model
         return $this->hasMany(Project::class);
     }
 
+    public function defaultProject(): ?Project {
+        return $this->projects()->where('is_default', true)->first();
+    }
+
+    /**
+     * Liefert das Standardprojekt des Kunden oder legt es lazy an.
+     * Wird vom CustomerObserver bei `created` aufgerufen und steht auch
+     * UI-/Service-seitig als Fallback bereit (z. B. Quick-Stundenzettel).
+     */
+    public function defaultProjectOrCreate(): Project {
+        $existing = $this->defaultProject();
+        if ($existing instanceof Project) {
+            return $existing;
+        }
+
+        /** @var Project $project */
+        $project = $this->projects()->create([
+            'organization_id' => $this->organization_id,
+            'name' => (string) config('project.default_project.name', 'Wartung'),
+            'color' => (string) config('project.default_project.color', '#64748b'),
+            'status' => Project::STATUS_ACTIVE,
+            'is_default' => true,
+            'billable' => (bool) config('project.default_project.billable', true),
+            'global_activities' => true,
+        ]);
+
+        return $project;
+    }
+
     /** @return MorphMany<ExternalReference, $this> */
     public function externalReferences(): MorphMany {
         /** @var MorphMany<ExternalReference, $this> $relation */
@@ -139,6 +167,10 @@ class Customer extends Model
 
     public function hasProjects(): bool {
         return $this->projects()->exists();
+    }
+
+    public function hasNonDefaultProjects(): bool {
+        return $this->projects()->where('is_default', false)->exists();
     }
 
     /**

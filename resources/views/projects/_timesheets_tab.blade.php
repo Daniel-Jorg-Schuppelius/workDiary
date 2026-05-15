@@ -19,7 +19,7 @@
                         <tr>
                             <th data-sort data-sort-type="date" data-sort-default="desc">{{ __('Datum') }}</th>
                             <th data-sort>{{ __('Mitarbeiter') }}</th>
-                            <th class="text-right" data-sort data-sort-type="number">{{ __('Arbeit') }}</th>
+                            <th class="text-right" data-sort data-sort-type="duration">{{ __('Arbeit') }}</th>
                             <th class="text-right" data-sort data-sort-type="number">{{ __('Material netto') }}</th>
                             <th data-sort>{{ __('Status') }}</th>
                             <th></th>
@@ -32,9 +32,9 @@
                                 $m = (int)$ts->total_work_minutes % 60;
                             @endphp
                             <tr>
-                                <td>{{ optional($ts->work_date)->format('d.m.Y') }}</td>
+                                <td data-sort-value="{{ optional($ts->work_date)->format('Y-m-d') }}">{{ optional($ts->work_date)->format('d.m.Y') }}</td>
                                 <td>{{ $ts->user?->name }}</td>
-                                <td class="text-right tabular-nums">{{ $h }}:{{ str_pad((string)$m,2,'0',STR_PAD_LEFT) }} h</td>
+                                <td class="text-right tabular-nums" data-sort-value="{{ (int) $ts->total_work_minutes }}">{{ $h }}:{{ str_pad((string)$m,2,'0',STR_PAD_LEFT) }} h</td>
                                 <td class="text-right tabular-nums">{{ number_format((float)$ts->total_material_net, 2, ',', '.') }} €</td>
                                 <td><span class="badge badge-sm badge-{{ $ts->statusTone() }}">{{ $ts->statusLabel() }}</span></td>
                                 <td class="text-right">

@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Request;
 class CustomerObserver {
     public function created(Customer $customer): void {
         $this->log($customer, 'created', $customer->getAttributes());
+        // Standardprojekt automatisch anlegen, damit Ad-hoc-/Notfallaufträge
+        // sofort einen sauberen Container für Stundenzettel/Zeiteinträge haben.
+        $customer->defaultProjectOrCreate();
     }
 
     public function updated(Customer $customer): void {

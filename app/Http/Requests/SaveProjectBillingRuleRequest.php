@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Http\Requests;
+
+use App\Models\LexofficeArticle;
+use App\Models\TimeEntry;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class SaveProjectBillingRuleRequest extends FormRequest {
+    public function authorize(): bool {
+        return $this->user()?->canManageBilling() === true;
+    }
+
+    /** @return array<string, mixed> */
+    public function rules(): array {
+        $kinds = TimeEntry::KINDS;
+
+        return [
+            'plugin_id' => ['nullable', 'string', 'max:50'],
+            'applies_to_kind' => ['nullable', 'string', Rule::in($kinds)],
+            'lexoffice_article_id' => [
+                'nullable',
+                'string',
+                Rule::exists((new LexofficeArticle)->getTable(), 'external_id'),
+            ],
+            'item_type' => ['nullable', 'string', Rule::in(['service', 'material', 'custom'])],
+            'unit_name' => ['nullable', 'string', 'max:50'],
+            'vat_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'net_unit_price' => ['nullable', 'numeric', 'min:0'],
+            'priority' => ['nullable', 'integer', 'min:0', 'max:1000'],
+        ];
+    }
+}

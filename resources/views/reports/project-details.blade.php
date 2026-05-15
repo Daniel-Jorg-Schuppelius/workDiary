@@ -1,0 +1,113 @@
+@extends('layouts.app')
+@section('title', __('Projekt-Details'))
+@section('nav-title', __('Projekt-Details'))
+
+@section('content')
+@php
+    $fmt = function (int $min): string {
+        if ($min <= 0) return '–';
+        return intdiv($min, 60) . ':' . str_pad((string) ($min % 60), 2, '0', STR_PAD_LEFT) . ' h';
+    };
+    $money = function (float $val): string {
+        return number_format($val, 2, ',', '.') . ' €';
+    };
+@endphp
+
+<div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
+
+    <x-filter-bar :action="route('reports.project-details')" :reset="route('reports.project-details')">
+        <x-filter-field :label="__('Projekt')" for="rep-project">
+            <select id="rep-project" name="project_id" class="select select-sm select-bordered" onchange="this.form.submit()">
+                @foreach ($projects as $p)
+                    <option value="{{ $p->id }}" @selected($projectId === (int) $p->id)>
+                        {{ $p->name }}@if ($p->customer) — {{ $p->customer->name }}@endif
+                    </option>
+                @endforeach
+            </select>
+        </x-filter-field>
+        <x-filter-field :label="__('Jahr')" for="rep-year">
+            <input id="rep-year" type="number" name="year" value="{{ $year }}" min="2000" max="2100" class="input input-sm input-bordered w-24">
+        </x-filter-field>
+        <x-slot:extra>
+            @if ($project)
+                <a href="{{ route('reports.project-details', ['project_id' => $projectId, 'year' => $year, 'export' => 'csv']) }}" class="btn btn-sm btn-outline gap-1">
+                    <x-icon name="download" />CSV
+                </a>
+                <a href="{{ route('reports.project-details', ['project_id' => $projectId, 'year' => $year, 'export' => 'pdf']) }}" class="btn btn-sm btn-outline gap-1">
+                    <x-icon name="picture_as_pdf" />PDF
+                </a>
+            @endif
+        </x-slot:extra>
+    </x-filter-bar>
+
+    @if (! $project)
+        <div class="alert">{{ __('Kein Projekt vorhanden.') }}</div>
+    @else
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+                <h2 class="font-['Space_Grotesk'] text-lg font-semibold">
+                    {{ $project->name }}
+                    @if ($project->customer)
+                        <span class="text-sm text-base-content/60">– {{ $project->customer->name }}</span>
+                    @endif
+                </h2>
+                <div class="flex items-baseline gap-4">
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">Σ Std.</span>
+                        <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $yearMinutes > 0 ? 'text-primary' : 'text-base-content/50' }}">{{ $fmt($yearMinutes) }}</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">Σ €</span>
+                        <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $yearRate > 0 ? 'text-primary' : 'text-base-content/50' }}">{{ $money($yearRate) }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="table table-zebra table-sm">
+                    <thead>
+                        <tr>
+                            <th>{{ __('Monat') }}</th>
+                            <th class="text-right">{{ __('Stunden') }}</th>
+                            <th class="text-right">{{ __('Erlös') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($monthMatrix as $idx => $row)
+                            <tr>
+                                <td>{{ $monthLabels[$idx] ?? $idx }}</td>
+                                <td class="text-right @if ($row['minutes'] === 0) opacity-30 @endif">{{ $fmt($row['minutes']) }}</td>
+                                <td class="text-right">{{ $money($row['rate']) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            @if (count($byUser) > 0)
+                <h3 class="mt-6 mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('Aufteilung pro Mitarbeiter') }}</h3>
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra table-sm">
+                        <thead>
+                            <tr>
+                                <th>{{ __('Mitarbeiter') }}</th>
+                                <th class="text-right">{{ __('Stunden') }}</th>
+                                <th class="text-right">{{ __('Erlös') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($byUser as $uid => $row)
+                                <tr>
+                                    <td>{{ $users->get($uid)?->name ?? '#' . $uid }}</td>
+                                    <td class="text-right">{{ $fmt($row['minutes']) }}</td>
+                                    <td class="text-right">{{ $money($row['rate']) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+    @endif
+</div>
+@endsection
