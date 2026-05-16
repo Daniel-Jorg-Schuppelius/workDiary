@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -20,8 +19,7 @@ use Tests\Concerns\WithGlobalDateRange;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class MyYearReportTest extends TestCase
-{
+class MyYearReportTest extends TestCase {
     use RefreshDatabase;
     use WithGlobalDateRange;
     use WithOrganization;
@@ -30,8 +28,7 @@ class MyYearReportTest extends TestCase
 
     private Project $project;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -44,8 +41,7 @@ class MyYearReportTest extends TestCase
         ]);
     }
 
-    public function test_route_renders_for_authenticated_user(): void
-    {
+    public function test_route_renders_for_authenticated_user(): void {
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeYear(2030))
             ->get(route('reports.my-year'));
@@ -53,8 +49,7 @@ class MyYearReportTest extends TestCase
         $response->assertSee('Mein Jahr 2030', false);
     }
 
-    public function test_aggregates_minutes_into_year_total(): void
-    {
+    public function test_aggregates_minutes_into_year_total(): void {
         TimeEntry::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -95,8 +90,7 @@ class MyYearReportTest extends TestCase
         $response->assertSee('4:30 h', false);
     }
 
-    public function test_filters_by_kind(): void
-    {
+    public function test_filters_by_kind(): void {
         TimeEntry::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -124,8 +118,7 @@ class MyYearReportTest extends TestCase
         $response->assertDontSee('7:00 h', false); // Summe wäre 7:00
     }
 
-    public function test_requires_authentication(): void
-    {
+    public function test_requires_authentication(): void {
         $this->get(route('reports.my-year'))->assertRedirect(route('login'));
     }
 }

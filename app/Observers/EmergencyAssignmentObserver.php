@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,10 +13,8 @@ namespace App\Observers;
 use App\Models\EmergencyAssignment;
 use App\Services\PushNotifier;
 
-class EmergencyAssignmentObserver
-{
-    public function created(EmergencyAssignment $assignment): void
-    {
+class EmergencyAssignmentObserver {
+    public function created(EmergencyAssignment $assignment): void {
         $assignment->loadMissing('user');
 
         app(PushNotifier::class)->emergencyAssigned($assignment);

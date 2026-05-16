@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -23,13 +22,11 @@ use Illuminate\Support\Facades\Request;
  * @method static void deleted(\Closure $callback)
  * @method mixed getKey()
  */
-trait Auditable
-{
+trait Auditable {
     /** @var array<int, string> Felder, die nie geloggt werden. */
     protected array $auditExclude = ['password', 'remember_token', 'updated_at'];
 
-    public static function bootAuditable(): void
-    {
+    public static function bootAuditable(): void {
         static::created(function (Model $model): void {
             assert($model instanceof self);
             $model->audit('created', $model->getAuditAttributes($model->getAttributes()));
@@ -41,7 +38,7 @@ trait Auditable
             if (empty($changes)) {
                 return;
             }
-            $original = collect($changes)->mapWithKeys(fn ($v, $k) => [$k => $model->getOriginal($k)])->all();
+            $original = collect($changes)->mapWithKeys(fn($v, $k) => [$k => $model->getOriginal($k)])->all();
             $model->audit('updated', [
                 'before' => $model->getAuditAttributes($original),
                 'after' => $model->getAuditAttributes($changes),
@@ -55,8 +52,7 @@ trait Auditable
     }
 
     /** @return MorphMany<AuditLog, Model> */
-    public function auditLogs(): MorphMany
-    {
+    public function auditLogs(): MorphMany {
         /** @var MorphMany<AuditLog, Model> $relation */
         $relation = $this->morphMany(AuditLog::class, 'auditable');
 
@@ -64,8 +60,7 @@ trait Auditable
     }
 
     /** @param array<string, mixed> $changes */
-    public function audit(string $event, array $changes = []): AuditLog
-    {
+    public function audit(string $event, array $changes = []): AuditLog {
         return AuditLog::create([
             'user_id' => Auth::id(),
             'event' => $event,
@@ -81,8 +76,7 @@ trait Auditable
      * @param  array<string, mixed>  $attributes
      * @return array<string, mixed>
      */
-    public function getAuditAttributes(array $attributes): array
-    {
+    public function getAuditAttributes(array $attributes): array {
         $excluded = array_merge($this->auditExclude, $this->getHidden());
 
         return collect($attributes)

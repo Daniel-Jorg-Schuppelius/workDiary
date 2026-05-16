@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,18 +17,15 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class CommentsTest extends TestCase
-{
+class CommentsTest extends TestCase {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
     }
 
-    public function test_authenticated_user_can_create_comment(): void
-    {
+    public function test_authenticated_user_can_create_comment(): void {
         $owner = User::factory()->user()->create();
         $author = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($owner)->create();
@@ -45,16 +41,14 @@ class CommentsTest extends TestCase
         ]);
     }
 
-    public function test_guest_cannot_create_comment(): void
-    {
+    public function test_guest_cannot_create_comment(): void {
         $entry = DiaryEntry::factory()->for(User::factory()->user())->create();
 
         $this->post(route('diary.comments.store', $entry), ['body' => 'x'])
             ->assertRedirect(route('login'));
     }
 
-    public function test_owner_can_update_and_delete_own_comment(): void
-    {
+    public function test_owner_can_update_and_delete_own_comment(): void {
         $author = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($author)->create();
         $comment = Comment::factory()->for($entry, 'diaryEntry')->for($author)->create();
@@ -70,8 +64,7 @@ class CommentsTest extends TestCase
         $this->assertNull(Comment::find($comment->id));
     }
 
-    public function test_other_user_cannot_update_or_delete_foreign_comment(): void
-    {
+    public function test_other_user_cannot_update_or_delete_foreign_comment(): void {
         $author = User::factory()->user()->create();
         $other = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($author)->create();
@@ -86,8 +79,7 @@ class CommentsTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_admin_can_delete_any_comment(): void
-    {
+    public function test_admin_can_delete_any_comment(): void {
         $admin = User::factory()->admin()->create();
         $author = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($author)->create();
@@ -100,8 +92,7 @@ class CommentsTest extends TestCase
         $this->assertNull(Comment::find($comment->id));
     }
 
-    public function test_comment_body_is_required(): void
-    {
+    public function test_comment_body_is_required(): void {
         $user = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($user)->create();
 
@@ -110,8 +101,7 @@ class CommentsTest extends TestCase
             ->assertSessionHasErrors('body');
     }
 
-    public function test_show_page_renders_comments(): void
-    {
+    public function test_show_page_renders_comments(): void {
         $user = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($user)->create();
         Comment::factory()->for($entry, 'diaryEntry')->for($user)->create(['body' => 'Sichtbarer Inhalt']);
@@ -122,8 +112,7 @@ class CommentsTest extends TestCase
             ->assertSee('Sichtbarer Inhalt');
     }
 
-    public function test_deleting_diary_cascades_comments(): void
-    {
+    public function test_deleting_diary_cascades_comments(): void {
         $user = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($user)->create();
         Comment::factory()->for($entry, 'diaryEntry')->for($user)->create();

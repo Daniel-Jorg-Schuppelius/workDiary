@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,21 +18,18 @@ use Illuminate\Support\Facades\DB;
 use Tests\Concerns\UsesLegacySqlite;
 use Tests\TestCase;
 
-class LegacyDutyControllersTest extends TestCase
-{
+class LegacyDutyControllersTest extends TestCase {
     use RefreshDatabase;
     use UsesLegacySqlite;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->useLegacySqlite();
         Config::set('app.legacy_write_enabled', true);
     }
 
-    public function test_oncall_store_requires_existing_legacy_user(): void
-    {
+    public function test_oncall_store_requires_existing_legacy_user(): void {
         $admin = User::factory()->admin()->create([
             'name' => 'admin',
             'email' => 'admin-duty@example.test',
@@ -50,8 +46,7 @@ class LegacyDutyControllersTest extends TestCase
             ->assertSessionHasErrors('user');
     }
 
-    public function test_notdienst_store_persists_valid_record(): void
-    {
+    public function test_notdienst_store_persists_valid_record(): void {
         $admin = User::factory()->admin()->create([
             'name' => 'admin',
             'email' => 'admin-notdienst@example.test',

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,12 +18,10 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<Task>
  */
-class TaskFactory extends Factory
-{
+class TaskFactory extends Factory {
     protected $model = Task::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'project_id' => Project::factory(),
             'created_by' => User::factory(),
@@ -37,13 +34,11 @@ class TaskFactory extends Factory
         ];
     }
 
-    public function done(): static
-    {
+    public function done(): static {
         return $this->state(['status' => Task::STATUS_DONE]);
     }
 
-    public function urgent(): static
-    {
+    public function urgent(): static {
         return $this->state(['priority' => Task::PRIORITY_URGENT]);
     }
 }

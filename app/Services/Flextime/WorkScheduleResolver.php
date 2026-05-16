@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,11 +15,9 @@ use App\Models\WorkSchedule;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 
-class WorkScheduleResolver
-{
+class WorkScheduleResolver {
     /** @return array<string, mixed> */
-    public static function defaults(): array
-    {
+    public static function defaults(): array {
         return [
             'weekly_minutes' => (int) config('timesheet.defaults.weekly_minutes', 2400),
             'daily_target_minutes' => (int) config('timesheet.defaults.daily_target_minutes', 480),
@@ -34,8 +31,7 @@ class WorkScheduleResolver
         ];
     }
 
-    public function for(User $user, CarbonInterface $on): WorkSchedule
-    {
+    public function for(User $user, CarbonInterface $on): WorkSchedule {
         $schedule = $user->workSchedule($on);
         if ($schedule) {
             return $schedule;

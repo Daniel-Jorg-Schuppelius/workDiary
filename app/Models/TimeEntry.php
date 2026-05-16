@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -40,8 +39,7 @@ use Illuminate\Support\Carbon;
  * @property float|null $internal_rate
  * @property bool $exported
  */
-class TimeEntry extends Model
-{
+class TimeEntry extends Model {
     use BelongsToOrganization;
 
     /** @use HasFactory<TimeEntryFactory> */
@@ -77,8 +75,7 @@ class TimeEntry extends Model
         'exported',
     ];
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'date' => 'date',
             'started_at' => 'datetime',
@@ -94,8 +91,7 @@ class TimeEntry extends Model
         ];
     }
 
-    protected static function booted(): void
-    {
+    protected static function booted(): void {
         static::saving(function (TimeEntry $entry): void {
             if ($entry->started_at && $entry->ended_at) {
                 $diff = (int) $entry->started_at->diffInMinutes($entry->ended_at, false);
@@ -129,31 +125,26 @@ class TimeEntry extends Model
     }
 
     /** @return BelongsTo<Project, $this> */
-    public function project(): BelongsTo
-    {
+    public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
     }
 
     /** @return BelongsTo<Timesheet, $this> */
-    public function timesheet(): BelongsTo
-    {
+    public function timesheet(): BelongsTo {
         return $this->belongsTo(Timesheet::class);
     }
 
     /** @return BelongsTo<Task, $this> */
-    public function task(): BelongsTo
-    {
+    public function task(): BelongsTo {
         return $this->belongsTo(Task::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo
-    {
+    public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
-    public function hoursFormatted(): string
-    {
+    public function hoursFormatted(): string {
         $h = intdiv($this->minutes, 60);
         $m = $this->minutes % 60;
 

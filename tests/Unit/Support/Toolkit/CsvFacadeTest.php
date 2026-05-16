@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sat May 16 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,32 +16,27 @@ use App\Support\Toolkit\CsvFacade;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-final class CsvFacadeTest extends TestCase
-{
+final class CsvFacadeTest extends TestCase {
     private string $tmpFile;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->tmpFile = tempnam(sys_get_temp_dir(), 'csv_facade_test_');
         file_put_contents($this->tmpFile, "name;email;number\nAlice;alice@example.com;K-001\nBob;bob@example.com;K-002\n");
     }
 
-    protected function tearDown(): void
-    {
+    protected function tearDown(): void {
         @unlink($this->tmpFile);
         parent::tearDown();
     }
 
     #[Test]
-    public function it_reads_header(): void
-    {
+    public function it_reads_header(): void {
         self::assertSame(['name', 'email', 'number'], CsvFacade::readHeader($this->tmpFile));
     }
 
     #[Test]
-    public function it_streams_assoc_rows(): void
-    {
+    public function it_streams_assoc_rows(): void {
         $rows = iterator_to_array(CsvFacade::streamAssoc($this->tmpFile), false);
 
         self::assertCount(2, $rows);
@@ -54,8 +48,7 @@ final class CsvFacadeTest extends TestCase
     }
 
     #[Test]
-    public function it_builds_csv(): void
-    {
+    public function it_builds_csv(): void {
         $csv = CsvFacade::buildCsv(
             ['name', 'value'],
             [['name' => 'Alpha', 'value' => '1'], ['name' => 'Beta', 'value' => '2']],
@@ -67,8 +60,7 @@ final class CsvFacadeTest extends TestCase
     }
 
     #[Test]
-    public function it_detects_semicolon_delimiter(): void
-    {
+    public function it_detects_semicolon_delimiter(): void {
         self::assertSame(';', CsvFacade::detectDelimiter($this->tmpFile));
     }
 }

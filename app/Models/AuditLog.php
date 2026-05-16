@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,8 +15,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
-class AuditLog extends Model
-{
+class AuditLog extends Model {
     use BelongsToOrganization;
 
     protected $fillable = [
@@ -31,27 +29,23 @@ class AuditLog extends Model
         'user_agent',
     ];
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'changes' => 'array',
         ];
     }
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo
-    {
+    public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
     /** @return MorphTo<Model, $this> */
-    public function auditable(): MorphTo
-    {
+    public function auditable(): MorphTo {
         return $this->morphTo();
     }
 
-    public function eventLabel(): string
-    {
+    public function eventLabel(): string {
         return match ($this->event) {
             'created' => __('Angelegt'),
             'updated' => __('Geändert'),

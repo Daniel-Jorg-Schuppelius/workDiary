@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,18 +16,15 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-class ForcePasswordChangeTest extends TestCase
-{
+class ForcePasswordChangeTest extends TestCase {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
     }
 
-    public function test_user_with_flag_is_redirected_to_password_change(): void
-    {
+    public function test_user_with_flag_is_redirected_to_password_change(): void {
         $user = User::factory()->user()->create(['must_change_password' => true]);
 
         $this->actingAs($user)
@@ -36,8 +32,7 @@ class ForcePasswordChangeTest extends TestCase
             ->assertRedirect(route('account.password.edit'));
     }
 
-    public function test_password_change_page_itself_is_reachable(): void
-    {
+    public function test_password_change_page_itself_is_reachable(): void {
         $user = User::factory()->user()->create(['must_change_password' => true]);
 
         $this->actingAs($user)
@@ -45,8 +40,7 @@ class ForcePasswordChangeTest extends TestCase
             ->assertOk();
     }
 
-    public function test_forced_change_does_not_require_current_password(): void
-    {
+    public function test_forced_change_does_not_require_current_password(): void {
         $user = User::factory()->user()->create(['must_change_password' => true]);
 
         $this->actingAs($user)->post(route('account.password.update'), [
@@ -59,8 +53,7 @@ class ForcePasswordChangeTest extends TestCase
         $this->assertTrue(Hash::check('NeuesPasswort123!', $user->password));
     }
 
-    public function test_regular_change_requires_current_password(): void
-    {
+    public function test_regular_change_requires_current_password(): void {
         $user = User::factory()->user()->create([
             'password' => 'AltesPasswort1',
             'must_change_password' => false,
@@ -78,8 +71,7 @@ class ForcePasswordChangeTest extends TestCase
         ])->assertRedirect(route('dashboard'));
     }
 
-    public function test_user_without_flag_can_browse_normally(): void
-    {
+    public function test_user_without_flag_can_browse_normally(): void {
         $user = User::factory()->user()->create(['must_change_password' => false]);
 
         $this->actingAs($user)

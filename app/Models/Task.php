@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,8 +18,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Task extends Model
-{
+class Task extends Model {
     use BelongsToOrganization;
     use HasAttachments;
 
@@ -71,8 +69,7 @@ class Task extends Model
         'archived_at',
     ];
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'due_date' => 'date',
             'archived_at' => 'datetime',
@@ -86,49 +83,41 @@ class Task extends Model
     }
 
     /** @return BelongsTo<Project, $this> */
-    public function project(): BelongsTo
-    {
+    public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
     }
 
     /** @return BelongsTo<Milestone, $this> */
-    public function milestone(): BelongsTo
-    {
+    public function milestone(): BelongsTo {
         return $this->belongsTo(Milestone::class);
     }
 
     /** @return BelongsTo<Task, $this> */
-    public function parent(): BelongsTo
-    {
+    public function parent(): BelongsTo {
         return $this->belongsTo(Task::class, 'parent_task_id');
     }
 
     /** @return HasMany<Task, $this> */
-    public function subTasks(): HasMany
-    {
+    public function subTasks(): HasMany {
         return $this->hasMany(Task::class, 'parent_task_id');
     }
 
     /** @return BelongsTo<User, $this> */
-    public function assignee(): BelongsTo
-    {
+    public function assignee(): BelongsTo {
         return $this->belongsTo(User::class, 'assigned_to');
     }
 
     /** @return BelongsTo<User, $this> */
-    public function creator(): BelongsTo
-    {
+    public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by');
     }
 
     /** @return HasMany<TimeEntry, $this> */
-    public function timeEntries(): HasMany
-    {
+    public function timeEntries(): HasMany {
         return $this->hasMany(TimeEntry::class);
     }
 
-    public function statusLabel(): string
-    {
+    public function statusLabel(): string {
         return match ($this->status) {
             self::STATUS_OPEN => __('Offen'),
             self::STATUS_IN_PROGRESS => __('In Arbeit'),
@@ -137,8 +126,7 @@ class Task extends Model
         };
     }
 
-    public function statusTone(): string
-    {
+    public function statusTone(): string {
         return match ($this->status) {
             self::STATUS_OPEN => 'neutral',
             self::STATUS_IN_PROGRESS => 'info',
@@ -147,8 +135,7 @@ class Task extends Model
         };
     }
 
-    public function priorityLabel(): string
-    {
+    public function priorityLabel(): string {
         return match ($this->priority) {
             self::PRIORITY_LOW => __('Niedrig'),
             self::PRIORITY_MEDIUM => __('Mittel'),
@@ -158,8 +145,7 @@ class Task extends Model
         };
     }
 
-    public function priorityTone(): string
-    {
+    public function priorityTone(): string {
         return match ($this->priority) {
             self::PRIORITY_LOW => 'ghost',
             self::PRIORITY_MEDIUM => 'info',
@@ -169,8 +155,7 @@ class Task extends Model
         };
     }
 
-    public function priorityColor(): string
-    {
+    public function priorityColor(): string {
         return match ($this->priority) {
             self::PRIORITY_LOW => '#94a3b8',
             self::PRIORITY_MEDIUM => '#3b82f6',

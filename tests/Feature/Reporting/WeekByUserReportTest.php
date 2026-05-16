@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -20,8 +19,7 @@ use Tests\Concerns\WithGlobalDateRange;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class WeekByUserReportTest extends TestCase
-{
+class WeekByUserReportTest extends TestCase {
     use RefreshDatabase;
     use WithGlobalDateRange;
     use WithOrganization;
@@ -30,8 +28,7 @@ class WeekByUserReportTest extends TestCase
 
     private Project $project;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -44,14 +41,12 @@ class WeekByUserReportTest extends TestCase
         ]);
     }
 
-    public function test_route_renders(): void
-    {
+    public function test_route_renders(): void {
         $response = $this->actingAs($this->user)->get(route('reports.week-by-user'));
         $response->assertOk();
     }
 
-    public function test_aggregates_minutes_per_day(): void
-    {
+    public function test_aggregates_minutes_per_day(): void {
         // Monday 2030-04-01 (week 14)
         TimeEntry::create([
             'organization_id' => $this->organization->id,
@@ -70,8 +65,7 @@ class WeekByUserReportTest extends TestCase
         $response->assertSee('2:00');
     }
 
-    public function test_csv_export_returns_download(): void
-    {
+    public function test_csv_export_returns_download(): void {
         TimeEntry::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -91,8 +85,7 @@ class WeekByUserReportTest extends TestCase
         $this->assertStringContainsString('120', $response->getContent() ?: '');
     }
 
-    public function test_pdf_export_returns_download(): void
-    {
+    public function test_pdf_export_returns_download(): void {
         TimeEntry::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -111,8 +104,7 @@ class WeekByUserReportTest extends TestCase
         $this->assertStringStartsWith('%PDF', (string) $response->getContent());
     }
 
-    public function test_requires_authentication(): void
-    {
+    public function test_requires_authentication(): void {
         $this->get(route('reports.week-by-user'))->assertRedirect(route('login'));
     }
 }

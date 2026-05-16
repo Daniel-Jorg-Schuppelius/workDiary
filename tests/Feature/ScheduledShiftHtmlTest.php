@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,30 +17,25 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class ScheduledShiftHtmlTest extends TestCase
-{
+class ScheduledShiftHtmlTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
     }
 
-    private function admin(): User
-    {
+    private function admin(): User {
         return User::factory()->admin()->create(['organization_id' => $this->organization->id]);
     }
 
-    private function user(): User
-    {
+    private function user(): User {
         return User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
-    public function test_admin_can_view_show(): void
-    {
+    public function test_admin_can_view_show(): void {
         $shift = ScheduledShift::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
@@ -52,8 +46,7 @@ class ScheduledShiftHtmlTest extends TestCase
             ->assertViewIs('scheduled-shifts._form_dialog');
     }
 
-    public function test_admin_can_edit(): void
-    {
+    public function test_admin_can_edit(): void {
         $shift = ScheduledShift::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
@@ -64,8 +57,7 @@ class ScheduledShiftHtmlTest extends TestCase
             ->assertViewIs('scheduled-shifts._form_dialog');
     }
 
-    public function test_admin_can_update(): void
-    {
+    public function test_admin_can_update(): void {
         $shift = ScheduledShift::factory()->create([
             'organization_id' => $this->organization->id,
             'note' => 'old',
@@ -80,8 +72,7 @@ class ScheduledShiftHtmlTest extends TestCase
         $this->assertDatabaseHas('scheduled_shifts', ['id' => $shift->id, 'note' => 'updated note']);
     }
 
-    public function test_admin_can_delete(): void
-    {
+    public function test_admin_can_delete(): void {
         $shift = ScheduledShift::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
@@ -93,8 +84,7 @@ class ScheduledShiftHtmlTest extends TestCase
         $this->assertDatabaseMissing('scheduled_shifts', ['id' => $shift->id]);
     }
 
-    public function test_non_admin_cannot_edit(): void
-    {
+    public function test_non_admin_cannot_edit(): void {
         $shift = ScheduledShift::factory()->create([
             'organization_id' => $this->organization->id,
         ]);

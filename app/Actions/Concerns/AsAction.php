@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sat May 16 2026
  * Author       : Daniel Jörg Schuppelius
@@ -27,4 +26,5 @@ namespace App\Actions\Concerns;
  *      public function handle(User $user, CreateDiaryEntryData $data): DiaryEntry { ... }
  *  }
  */
-interface AsAction {}
+interface AsAction {
+}

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,10 +17,8 @@ use Illuminate\Support\Facades\Schema;
  * `php artisan lexoffice:sync-articles` aktualisiert. Pro Organisation eindeutig
  * über die `external_id` (Lexoffice-UUID).
  */
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::create('lexoffice_articles', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
@@ -43,8 +40,7 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('lexoffice_articles');
     }
 };

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -23,18 +22,15 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\RedirectResponse;
 use Tests\TestCase;
 
-class LegacyAutoRedirectTest extends TestCase
-{
+class LegacyAutoRedirectTest extends TestCase {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
     }
 
-    private function actAsLegacyAdmin(): User
-    {
+    private function actAsLegacyAdmin(): User {
         // Username "admin" wird via LEGACY_FALLBACK_ADMINS als Admin erkannt.
         $admin = User::factory()->admin()->create(['name' => 'admin']);
         $this->actingAs($admin);
@@ -42,8 +38,7 @@ class LegacyAutoRedirectTest extends TestCase
         return $admin;
     }
 
-    public function test_oncall_edit_redirects_when_migrated(): void
-    {
+    public function test_oncall_edit_redirects_when_migrated(): void {
         $admin = $this->actAsLegacyAdmin();
 
         OnCallShift::create([
@@ -62,8 +57,7 @@ class LegacyAutoRedirectTest extends TestCase
         $this->assertSame(route('week.index'), $response->getTargetUrl());
     }
 
-    public function test_oncall_edit_does_not_redirect_when_not_migrated(): void
-    {
+    public function test_oncall_edit_does_not_redirect_when_not_migrated(): void {
         $this->actAsLegacyAdmin();
 
         $oncall = new LegacyOnCall;
@@ -82,8 +76,7 @@ class LegacyAutoRedirectTest extends TestCase
         }
     }
 
-    public function test_notdienst_edit_redirects_when_migrated(): void
-    {
+    public function test_notdienst_edit_redirects_when_migrated(): void {
         $admin = $this->actAsLegacyAdmin();
 
         EmergencyAssignment::create([

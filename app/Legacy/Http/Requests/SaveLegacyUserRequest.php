@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,16 +14,13 @@ use App\Legacy\Models\LegacyUser;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveLegacyUserRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class SaveLegacyUserRequest extends FormRequest {
+    public function authorize(): bool {
         return true;
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         /** @var LegacyUser|null $legacyUser */
         $legacyUser = $this->route('user');
 

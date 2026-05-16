@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,19 +17,17 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class TimesheetSignatureRequestedMail extends Mailable
-{
+class TimesheetSignatureRequestedMail extends Mailable {
     use Queueable, SerializesModels;
 
-    public function __construct(public Timesheet $timesheet, public string $signUrl) {}
+    public function __construct(public Timesheet $timesheet, public string $signUrl) {
+    }
 
-    public function envelope(): Envelope
-    {
+    public function envelope(): Envelope {
         return new Envelope(subject: __('Stundenzettel zur Gegenzeichnung'));
     }
 
-    public function content(): Content
-    {
+    public function content(): Content {
         return new Content(view: 'mail.timesheet-signature-requested', with: [
             'timesheet' => $this->timesheet,
             'signUrl' => $this->signUrl,

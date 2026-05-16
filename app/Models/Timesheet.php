@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -45,8 +44,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $magic_token
  * @property Carbon|null $magic_expires_at
  */
-class Timesheet extends Model
-{
+class Timesheet extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
@@ -55,8 +53,7 @@ class Timesheet extends Model
     use HasFactory;
 
     /** @param array<string, mixed> $attributes */
-    public function __construct(array $attributes = [])
-    {
+    public function __construct(array $attributes = []) {
         parent::__construct($attributes);
     }
 
@@ -98,8 +95,7 @@ class Timesheet extends Model
         'magic_expires_at',
     ];
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'work_date' => 'date',
             'signed_at' => 'datetime',
@@ -111,38 +107,32 @@ class Timesheet extends Model
     }
 
     /** @return BelongsTo<Project, $this> */
-    public function project(): BelongsTo
-    {
+    public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo
-    {
+    public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function locker(): BelongsTo
-    {
+    public function locker(): BelongsTo {
         return $this->belongsTo(User::class, 'locked_by');
     }
 
     /** @return BelongsTo<Attachment, $this> */
-    public function signatureAttachment(): BelongsTo
-    {
+    public function signatureAttachment(): BelongsTo {
         return $this->belongsTo(Attachment::class, 'signature_attachment_id');
     }
 
     /** @return HasMany<TimeEntry, $this> */
-    public function entries(): HasMany
-    {
+    public function entries(): HasMany {
         return $this->hasMany(TimeEntry::class)->orderBy('started_at')->orderBy('id');
     }
 
     /** @return HasMany<MaterialUsage, $this> */
-    public function materialUsages(): HasMany
-    {
+    public function materialUsages(): HasMany {
         return $this->hasMany(MaterialUsage::class)->orderBy('id');
     }
 
@@ -150,8 +140,7 @@ class Timesheet extends Model
      * @param  Builder<Timesheet>  $q
      * @return Builder<Timesheet>
      */
-    public function scopeForUser(Builder $q, int $userId): Builder
-    {
+    public function scopeForUser(Builder $q, int $userId): Builder {
         return $q->where('user_id', $userId);
     }
 
@@ -159,8 +148,7 @@ class Timesheet extends Model
      * @param  Builder<Timesheet>  $q
      * @return Builder<Timesheet>
      */
-    public function scopeInRange(Builder $q, CarbonInterface $from, CarbonInterface $to): Builder
-    {
+    public function scopeInRange(Builder $q, CarbonInterface $from, CarbonInterface $to): Builder {
         return $q->whereBetween('work_date', [$from->toDateString(), $to->toDateString()]);
     }
 
@@ -168,28 +156,23 @@ class Timesheet extends Model
      * @param  Builder<Timesheet>  $q
      * @return Builder<Timesheet>
      */
-    public function scopeUnsigned(Builder $q): Builder
-    {
+    public function scopeUnsigned(Builder $q): Builder {
         return $q->whereIn('status', [self::STATUS_DRAFT, self::STATUS_SUBMITTED]);
     }
 
-    public function isSigned(): bool
-    {
+    public function isSigned(): bool {
         return in_array($this->status, [self::STATUS_SIGNED, self::STATUS_LOCKED], true);
     }
 
-    public function isLocked(): bool
-    {
+    public function isLocked(): bool {
         return $this->status === self::STATUS_LOCKED;
     }
 
-    public function canEdit(): bool
-    {
+    public function canEdit(): bool {
         return ! $this->isSigned();
     }
 
-    public function recalcTotals(): void
-    {
+    public function recalcTotals(): void {
         $this->loadMissing(['entries', 'materialUsages']);
         $minutes = (int) $this->entries->sum('minutes');
         $material = (float) $this->materialUsages->sum('line_total_net');
@@ -198,8 +181,7 @@ class Timesheet extends Model
         $this->saveQuietly();
     }
 
-    public function statusLabel(): string
-    {
+    public function statusLabel(): string {
         return match ($this->status) {
             self::STATUS_DRAFT => __('Entwurf'),
             self::STATUS_SUBMITTED => __('Eingereicht'),
@@ -209,8 +191,7 @@ class Timesheet extends Model
         };
     }
 
-    public function statusTone(): string
-    {
+    public function statusTone(): string {
         return match ($this->status) {
             self::STATUS_DRAFT => 'neutral',
             self::STATUS_SUBMITTED => 'info',

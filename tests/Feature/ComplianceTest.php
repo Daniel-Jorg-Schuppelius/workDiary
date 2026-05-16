@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -24,39 +23,33 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class ComplianceTest extends TestCase
-{
+class ComplianceTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
     }
 
-    private function admin(): User
-    {
+    private function admin(): User {
         return User::factory()->admin()->create(['organization_id' => $this->organization->id]);
     }
 
-    private function user(): User
-    {
+    private function user(): User {
         return User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
     /** Setze den Compliance-Mode auf der Organisation. */
-    private function setMode(string $mode, array $extra = []): void
-    {
+    private function setMode(string $mode, array $extra = []): void {
         $this->organization->settings = [
             'compliance' => array_replace(['mode' => $mode], $extra),
         ];
         $this->organization->save();
     }
 
-    private function payload(User $u, array $overrides = []): array
-    {
+    private function payload(User $u, array $overrides = []): array {
         return array_replace([
             'user_id' => $u->id,
             'date' => '2026-06-01',
@@ -68,8 +61,7 @@ class ComplianceTest extends TestCase
 
     // ─── Mode behavior ───────────────────────────────────────────────────────
 
-    public function test_mode_off_skips_all_checks(): void
-    {
+    public function test_mode_off_skips_all_checks(): void {
         $this->setMode('off');
         $admin = $this->admin();
         $u = $this->user();
@@ -87,8 +79,7 @@ class ComplianceTest extends TestCase
             ->assertJsonMissingPath('compliance_warnings');
     }
 
-    public function test_mode_warn_returns_warnings_but_creates(): void
-    {
+    public function test_mode_warn_returns_warnings_but_creates(): void {
         $this->setMode('warn');
         $admin = $this->admin();
         $u = $this->user();
@@ -107,8 +98,7 @@ class ComplianceTest extends TestCase
         $this->assertNotEmpty($res->json('compliance_warnings'));
     }
 
-    public function test_mode_block_rejects_violations(): void
-    {
+    public function test_mode_block_rejects_violations(): void {
         $this->setMode('block');
         $admin = $this->admin();
         $u = $this->user();
@@ -126,8 +116,7 @@ class ComplianceTest extends TestCase
             ->assertJsonValidationErrors(['compliance']);
     }
 
-    public function test_block_can_be_overridden(): void
-    {
+    public function test_block_can_be_overridden(): void {
         $this->setMode('block');
         $admin = $this->admin();
         $u = $this->user();
@@ -146,8 +135,7 @@ class ComplianceTest extends TestCase
 
     // ─── Individual rules (mode=block to surface as 422) ─────────────────────
 
-    public function test_overlap_rule_detects_conflict(): void
-    {
+    public function test_overlap_rule_detects_conflict(): void {
         $this->setMode('block');
         $admin = $this->admin();
         $u = $this->user();
@@ -167,8 +155,7 @@ class ComplianceTest extends TestCase
             ->assertStatus(422);
     }
 
-    public function test_overlap_rule_passes_for_disjoint_shifts(): void
-    {
+    public function test_overlap_rule_passes_for_disjoint_shifts(): void {
         $this->setMode('block');
         $admin = $this->admin();
         $u = $this->user();
@@ -188,8 +175,7 @@ class ComplianceTest extends TestCase
             ->assertCreated();
     }
 
-    public function test_rest_period_rule_detects_short_break(): void
-    {
+    public function test_rest_period_rule_detects_short_break(): void {
         $this->setMode('block');
         $admin = $this->admin();
         $u = $this->user();
@@ -207,8 +193,7 @@ class ComplianceTest extends TestCase
             ->assertStatus(422);
     }
 
-    public function test_max_daily_hours_rule_detects_overload(): void
-    {
+    public function test_max_daily_hours_rule_detects_overload(): void {
         $this->setMode('block', ['max_hours_day' => 8]);
         $admin = $this->admin();
         $u = $this->user();
@@ -229,8 +214,7 @@ class ComplianceTest extends TestCase
             ->assertStatus(422);
     }
 
-    public function test_max_weekly_hours_rule_only_warns(): void
-    {
+    public function test_max_weekly_hours_rule_only_warns(): void {
         // Wochenstunden ist severity=warning → block triggert nur bei Errors.
         // Daher muss der Endpoint mit 201 antworten und compliance_warnings setzen.
         $this->setMode('block', ['max_hours_week' => 4]);
@@ -248,8 +232,7 @@ class ComplianceTest extends TestCase
         $this->assertContains('max_weekly_hours', $codes);
     }
 
-    public function test_consecutive_days_rule_warns(): void
-    {
+    public function test_consecutive_days_rule_warns(): void {
         $this->setMode('warn', ['max_consecutive_days' => 2]);
         $admin = $this->admin();
         $u = $this->user();
@@ -272,8 +255,7 @@ class ComplianceTest extends TestCase
         $this->assertContains('consecutive_days', $codes);
     }
 
-    public function test_vacation_conflict_rule_blocks_approved_vacation(): void
-    {
+    public function test_vacation_conflict_rule_blocks_approved_vacation(): void {
         $this->setMode('block');
         $admin = $this->admin();
         $u = $this->user();
@@ -290,8 +272,7 @@ class ComplianceTest extends TestCase
             ->assertStatus(422);
     }
 
-    public function test_qualification_match_rule_warns_when_user_lacks_qualification(): void
-    {
+    public function test_qualification_match_rule_warns_when_user_lacks_qualification(): void {
         $this->setMode('warn');
         $admin = $this->admin();
         $u = $this->user();
@@ -336,8 +317,7 @@ class ComplianceTest extends TestCase
         $this->assertContains('qualification_match', $codes);
     }
 
-    public function test_holiday_double_book_rule_warns(): void
-    {
+    public function test_holiday_double_book_rule_warns(): void {
         $this->setMode('warn');
         $admin = $this->admin();
         $u = $this->user();

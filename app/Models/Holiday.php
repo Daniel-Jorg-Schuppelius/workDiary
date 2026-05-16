@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 11 2026
  * Author       : Daniel Jörg Schuppelius
@@ -25,8 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $recurrence_month
  * @property string $name
  */
-class Holiday extends Model
-{
+class Holiday extends Model {
     use BelongsToOrganization;
 
     protected $fillable = [
@@ -42,8 +40,7 @@ class Holiday extends Model
         'updated_by',
     ];
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'date' => 'date',
             'is_recurring' => 'boolean',
@@ -54,14 +51,12 @@ class Holiday extends Model
     }
 
     /** @return BelongsTo<User, $this> */
-    public function creator(): BelongsTo
-    {
+    public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by');
     }
 
     /** @return BelongsTo<User, $this> */
-    public function editor(): BelongsTo
-    {
+    public function editor(): BelongsTo {
         return $this->belongsTo(User::class, 'updated_by');
     }
 
@@ -70,8 +65,7 @@ class Holiday extends Model
      *
      * @return list<string>
      */
-    public function resolveForYear(int $year): array
-    {
+    public function resolveForYear(int $year): array {
         if (($this->recurrence_type ?? 'fixed') === 'relative') {
             $months = $this->recurrence_month ? [$this->recurrence_month] : range(1, 12);
             $dates = [];
@@ -113,8 +107,7 @@ class Holiday extends Model
     }
 
     /** Lesbarer Label für die Index-Ansicht. */
-    public function recurrenceLabel(): string
-    {
+    public function recurrenceLabel(): string {
         if (($this->recurrence_type ?? 'fixed') === 'relative') {
             $weeks = [1 => '1.', 2 => '2.', 3 => '3.', 4 => '4.', -1 => 'Letzter'];
             $days = [0 => 'So', 1 => 'Mo', 2 => 'Di', 3 => 'Mi', 4 => 'Do', 5 => 'Fr', 6 => 'Sa'];
@@ -141,7 +134,7 @@ class Holiday extends Model
         }
 
         if ($this->is_recurring) {
-            return 'Jährl. · '.($this->date?->format('d.m.') ?? '?');
+            return 'Jährl. · ' . ($this->date?->format('d.m.') ?? '?');
         }
 
         return 'Einmalig';

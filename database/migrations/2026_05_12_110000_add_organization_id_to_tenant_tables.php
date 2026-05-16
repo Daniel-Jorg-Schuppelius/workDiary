@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,8 +12,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /** @var list<string> Tables that receive organization_id */
     private array $tables = [
         'users',
@@ -30,8 +28,7 @@ return new class extends Migration
         'audit_logs',
     ];
 
-    public function up(): void
-    {
+    public function up(): void {
         foreach ($this->tables as $table) {
             Schema::table($table, function (Blueprint $blueprint) use ($table) {
                 $blueprint->foreignId('organization_id')
@@ -45,8 +42,7 @@ return new class extends Migration
         }
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         foreach (array_reverse($this->tables) as $table) {
             Schema::table($table, function (Blueprint $blueprint) use ($table) {
                 $blueprint->dropForeign(['organization_id']);

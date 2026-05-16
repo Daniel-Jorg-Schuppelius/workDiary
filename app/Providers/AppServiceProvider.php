@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -68,12 +67,11 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
-class AppServiceProvider extends ServiceProvider
-{
-    public function register(): void {}
+class AppServiceProvider extends ServiceProvider {
+    public function register(): void {
+    }
 
-    public function boot(): void
-    {
+    public function boot(): void {
         Auth::provider('legacy', function ($app) {
             return new LegacyUserProvider($app['hash']);
         });
@@ -125,25 +123,24 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 
-    private function configureRateLimiters(): void
-    {
+    private function configureRateLimiters(): void {
         RateLimiter::for('login', function (Request $request) {
             $email = (string) $request->input('email', $request->input('username', ''));
 
             return [
-                Limit::perMinute(5)->by(strtolower($email).'|'.$request->ip()),
+                Limit::perMinute(5)->by(strtolower($email) . '|' . $request->ip()),
                 Limit::perMinute(20)->by($request->ip()),
             ];
         });
 
-        RateLimiter::for('register', fn (Request $request) => Limit::perMinute(3)->by($request->ip()));
+        RateLimiter::for('register', fn(Request $request) => Limit::perMinute(3)->by($request->ip()));
 
         RateLimiter::for('password', function (Request $request) {
             $userId = (string) ($request->user()?->getAuthIdentifier() ?? 'guest');
 
             return [
-                Limit::perMinute(5)->by('pwd:'.$userId.'|'.$request->ip()),
-                Limit::perHour(20)->by('pwd:'.$userId),
+                Limit::perMinute(5)->by('pwd:' . $userId . '|' . $request->ip()),
+                Limit::perHour(20)->by('pwd:' . $userId),
             ];
         });
     }
@@ -157,8 +154,7 @@ class AppServiceProvider extends ServiceProvider
      * Login-Screen auch bei nicht erreichbarer Datenbank gerendert werden
      * können.
      */
-    private function registerStopwatchViewComposer(): void
-    {
+    private function registerStopwatchViewComposer(): void {
         View::composer('layouts.app', function ($view): void {
             $entry = null;
             try {
@@ -182,8 +178,7 @@ class AppServiceProvider extends ServiceProvider
      * Fällt bei Session-/DB-Fehlern auf einen statischen Fallback zurück,
      * damit das Layout (z.B. die Fehlerseite) noch gerendert werden kann.
      */
-    private function registerDateRangeViewComposer(): void
-    {
+    private function registerDateRangeViewComposer(): void {
         View::composer(['layouts.app', 'components.header-date-range'], function ($view): void {
             try {
                 $range = app(DateRangeContext::class)->current();

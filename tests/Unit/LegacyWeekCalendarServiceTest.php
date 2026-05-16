@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,10 +14,8 @@ use App\Legacy\Services\LegacyWeekCalendarService;
 use Carbon\CarbonImmutable;
 use Tests\TestCase;
 
-class LegacyWeekCalendarServiceTest extends TestCase
-{
-    public function test_resolve_window_prefers_iso_week_input(): void
-    {
+class LegacyWeekCalendarServiceTest extends TestCase {
+    public function test_resolve_window_prefers_iso_week_input(): void {
         $service = new LegacyWeekCalendarService;
 
         $result = $service->resolveWindow(0, '2026-W18');
@@ -28,8 +25,7 @@ class LegacyWeekCalendarServiceTest extends TestCase
         $this->assertSame('2026-05-03', $result['sunday']->toDateString());
     }
 
-    public function test_build_week_maps_indexes_entries_and_flags_per_day(): void
-    {
+    public function test_build_week_maps_indexes_entries_and_flags_per_day(): void {
         $service = new LegacyWeekCalendarService;
 
         $entry = (object) [

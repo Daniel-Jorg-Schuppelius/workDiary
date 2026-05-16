@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,8 +17,7 @@ namespace App\Plugins\Contracts;
  *
  * Implementations should be stateless and resolved through the container.
  */
-interface Plugin
-{
+interface Plugin {
     /** Unique stable identifier (e.g. "lexoffice"). Used for config + DB refs. */
     public function id(): string;
 

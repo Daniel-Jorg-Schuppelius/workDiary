@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 11 2026
  * Author       : Daniel Jörg Schuppelius
@@ -35,8 +34,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  */
-class Vacation extends Model
-{
+class Vacation extends Model {
     use Auditable;
     use BelongsToOrganization;
 
@@ -85,8 +83,7 @@ class Vacation extends Model
         'decided_at',
     ];
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'start_date' => 'date',
             'end_date' => 'date',
@@ -97,28 +94,24 @@ class Vacation extends Model
     // ── Relations ──────────────────────────────────────────────────────────
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo
-    {
+    public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function decider(): BelongsTo
-    {
+    public function decider(): BelongsTo {
         return $this->belongsTo(User::class, 'decided_by');
     }
 
     // ── Scopes ─────────────────────────────────────────────────────────────
 
     /** @param Builder<Vacation> $query */
-    public function scopePending(Builder $query): void
-    {
+    public function scopePending(Builder $query): void {
         $query->where('status', self::STATUS_PENDING);
     }
 
     /** @param Builder<Vacation> $query */
-    public function scopeApproved(Builder $query): void
-    {
+    public function scopeApproved(Builder $query): void {
         $query->where('status', self::STATUS_APPROVED);
     }
 
@@ -127,16 +120,14 @@ class Vacation extends Model
      *
      * @param  Builder<Vacation>  $query
      */
-    public function scopeOverlapping(Builder $query, CarbonInterface $start, CarbonInterface $end): void
-    {
+    public function scopeOverlapping(Builder $query, CarbonInterface $start, CarbonInterface $end): void {
         $query->where('start_date', '<=', $end)->where('end_date', '>=', $start);
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────
 
     /** Anzahl Werktage (Mo–Fr, ohne Feiertage). */
-    public function workingDays(HolidayService $holidayService): int
-    {
+    public function workingDays(HolidayService $holidayService): int {
         $count = 0;
         $cursor = $this->start_date->copy();
         while ($cursor->lte($this->end_date)) {
@@ -149,8 +140,7 @@ class Vacation extends Model
         return $count;
     }
 
-    public function typeLabel(): string
-    {
+    public function typeLabel(): string {
         return match ($this->type) {
             self::TYPE_VACATION => __('Urlaub'),
             self::TYPE_SICK => __('Krank'),
@@ -160,8 +150,7 @@ class Vacation extends Model
         };
     }
 
-    public function statusLabel(): string
-    {
+    public function statusLabel(): string {
         return match ($this->status) {
             self::STATUS_PENDING => __('Ausstehend'),
             self::STATUS_APPROVED => __('Genehmigt'),
@@ -172,8 +161,7 @@ class Vacation extends Model
     }
 
     /** DaisyUI badge tone */
-    public function statusTone(): string
-    {
+    public function statusTone(): string {
         return match ($this->status) {
             self::STATUS_APPROVED => 'success',
             self::STATUS_REJECTED => 'error',

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,12 +17,10 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<EmergencyAssignment>
  */
-class EmergencyAssignmentFactory extends Factory
-{
+class EmergencyAssignmentFactory extends Factory {
     protected $model = EmergencyAssignment::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         $start = fake()->dateTimeBetween('-1 week', '+1 week');
         $end = (clone $start)->modify('+1 hour');
 

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,8 +20,7 @@ use Tests\Concerns\WithGlobalDateRange;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class CustomerProjectReportTest extends TestCase
-{
+class CustomerProjectReportTest extends TestCase {
     use RefreshDatabase;
     use WithGlobalDateRange;
     use WithOrganization;
@@ -33,8 +31,7 @@ class CustomerProjectReportTest extends TestCase
 
     private Project $project;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -54,15 +51,13 @@ class CustomerProjectReportTest extends TestCase
         ]);
     }
 
-    public function test_route_renders_for_authenticated_user(): void
-    {
+    public function test_route_renders_for_authenticated_user(): void {
         $response = $this->actingAs($this->user)->get(route('reports.customer-project'));
         $response->assertOk();
         $response->assertSee('Aggregierte Stunden');
     }
 
-    public function test_aggregates_by_customer_and_project(): void
-    {
+    public function test_aggregates_by_customer_and_project(): void {
         TimeEntry::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -83,13 +78,11 @@ class CustomerProjectReportTest extends TestCase
         $response->assertSee('2:00 h', false);
     }
 
-    public function test_requires_authentication(): void
-    {
+    public function test_requires_authentication(): void {
         $this->get(route('reports.customer-project'))->assertRedirect(route('login'));
     }
 
-    public function test_csv_export_returns_download(): void
-    {
+    public function test_csv_export_returns_download(): void {
         TimeEntry::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -112,8 +105,7 @@ class CustomerProjectReportTest extends TestCase
         $this->assertStringContainsString('120', $body);
     }
 
-    public function test_pdf_export_returns_download(): void
-    {
+    public function test_pdf_export_returns_download(): void {
         TimeEntry::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -24,30 +23,25 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class PrintLayoutsTest extends TestCase
-{
+class PrintLayoutsTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
     }
 
-    private function admin(): User
-    {
+    private function admin(): User {
         return User::factory()->admin()->create(['organization_id' => $this->organization->id]);
     }
 
-    private function user(): User
-    {
+    private function user(): User {
         return User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
-    private function planWithShift(?User $assignee = null): array
-    {
+    private function planWithShift(?User $assignee = null): array {
         $assignee = $assignee ?? $this->user();
         $plan = DutyPlan::factory()->draft()->weekly()->create([
             'organization_id' => $this->organization->id,
@@ -75,8 +69,7 @@ class PrintLayoutsTest extends TestCase
 
     // ── Duty plan layouts ────────────────────────────────────────────────────
 
-    public function test_admin_can_print_duty_plan_roster_a3(): void
-    {
+    public function test_admin_can_print_duty_plan_roster_a3(): void {
         $ctx = $this->planWithShift();
 
         $res = $this->actingAs($this->admin())
@@ -88,8 +81,7 @@ class PrintLayoutsTest extends TestCase
             ->assertSee('Dienstplan-Aushang');
     }
 
-    public function test_print_duty_plan_roster_anonymises_when_requested(): void
-    {
+    public function test_print_duty_plan_roster_anonymises_when_requested(): void {
         $ctx = $this->planWithShift();
 
         $res = $this->actingAs($this->admin())
@@ -100,8 +92,7 @@ class PrintLayoutsTest extends TestCase
             ->assertSee(printable_initials($ctx['user']->name));
     }
 
-    public function test_admin_can_print_week_layout_a4(): void
-    {
+    public function test_admin_can_print_week_layout_a4(): void {
         $ctx = $this->planWithShift();
 
         $this->actingAs($this->admin())
@@ -112,8 +103,7 @@ class PrintLayoutsTest extends TestCase
             ->assertSee($ctx['user']->name);
     }
 
-    public function test_admin_can_print_day_briefing_a4(): void
-    {
+    public function test_admin_can_print_day_briefing_a4(): void {
         $ctx = $this->planWithShift();
 
         $this->actingAs($this->admin())
@@ -124,8 +114,7 @@ class PrintLayoutsTest extends TestCase
             ->assertSee('06:00');
     }
 
-    public function test_cross_org_user_cannot_view_print(): void
-    {
+    public function test_cross_org_user_cannot_view_print(): void {
         $ctx = $this->planWithShift();
 
         $otherOrg = Organization::factory()->create();
@@ -138,8 +127,7 @@ class PrintLayoutsTest extends TestCase
 
     // ── User month ───────────────────────────────────────────────────────────
 
-    public function test_user_can_print_own_month(): void
-    {
+    public function test_user_can_print_own_month(): void {
         $u = $this->user();
 
         $this->actingAs($u)
@@ -148,8 +136,7 @@ class PrintLayoutsTest extends TestCase
             ->assertSee('Monatsplan');
     }
 
-    public function test_user_cannot_print_other_user_month(): void
-    {
+    public function test_user_cannot_print_other_user_month(): void {
         $other = $this->user();
         $intruder = $this->user();
 
@@ -158,8 +145,7 @@ class PrintLayoutsTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_admin_can_print_any_user_month(): void
-    {
+    public function test_admin_can_print_any_user_month(): void {
         $other = $this->user();
 
         $this->actingAs($this->admin())
@@ -170,8 +156,7 @@ class PrintLayoutsTest extends TestCase
 
     // ── On-call ──────────────────────────────────────────────────────────────
 
-    public function test_admin_can_print_on_call_layout(): void
-    {
+    public function test_admin_can_print_on_call_layout(): void {
         $u = $this->user();
         OnCallShift::factory()->create([
             'organization_id' => $this->organization->id,
@@ -194,8 +179,7 @@ class PrintLayoutsTest extends TestCase
             ->assertSee($u->name);
     }
 
-    public function test_non_admin_cannot_print_on_call(): void
-    {
+    public function test_non_admin_cannot_print_on_call(): void {
         $this->actingAs($this->user())
             ->get(route('print.on-call'))
             ->assertForbidden();
@@ -203,8 +187,7 @@ class PrintLayoutsTest extends TestCase
 
     // ── Vacation year ────────────────────────────────────────────────────────
 
-    public function test_admin_can_print_vacation_year(): void
-    {
+    public function test_admin_can_print_vacation_year(): void {
         $u = $this->user();
         Vacation::create([
             'organization_id' => $this->organization->id,
@@ -223,8 +206,7 @@ class PrintLayoutsTest extends TestCase
             ->assertSee($u->name);
     }
 
-    public function test_non_admin_cannot_print_vacation_year(): void
-    {
+    public function test_non_admin_cannot_print_vacation_year(): void {
         $this->actingAs($this->user())
             ->get(route('print.vacations'))
             ->assertForbidden();

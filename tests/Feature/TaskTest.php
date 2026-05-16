@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,8 +18,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class TaskTest extends TestCase
-{
+class TaskTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
@@ -28,8 +26,7 @@ class TaskTest extends TestCase
 
     private Project $project;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -45,8 +42,7 @@ class TaskTest extends TestCase
         ]);
     }
 
-    public function test_user_can_create_task(): void
-    {
+    public function test_user_can_create_task(): void {
         $this->actingAs($this->user)
             ->post(route('projects.tasks.store', $this->project), [
                 'title' => 'Neue Aufgabe',
@@ -62,8 +58,7 @@ class TaskTest extends TestCase
         ]);
     }
 
-    public function test_user_can_create_sub_task(): void
-    {
+    public function test_user_can_create_sub_task(): void {
         $parent = Task::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -89,8 +84,7 @@ class TaskTest extends TestCase
         ]);
     }
 
-    public function test_complete_toggle_marks_task_done_and_back_open(): void
-    {
+    public function test_complete_toggle_marks_task_done_and_back_open(): void {
         $task = Task::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -116,8 +110,7 @@ class TaskTest extends TestCase
         $this->assertDatabaseHas('tasks', ['id' => $task->id, 'status' => Task::STATUS_OPEN]);
     }
 
-    public function test_owner_can_update_task(): void
-    {
+    public function test_owner_can_update_task(): void {
         $task = Task::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -143,8 +136,7 @@ class TaskTest extends TestCase
         ]);
     }
 
-    public function test_non_owner_cannot_update_task(): void
-    {
+    public function test_non_owner_cannot_update_task(): void {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $task = Task::create([
             'organization_id' => $this->organization->id,
@@ -165,8 +157,7 @@ class TaskTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_non_owner_cannot_delete_task(): void
-    {
+    public function test_non_owner_cannot_delete_task(): void {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $task = Task::create([
             'organization_id' => $this->organization->id,
@@ -183,8 +174,7 @@ class TaskTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_owner_can_delete_task(): void
-    {
+    public function test_owner_can_delete_task(): void {
         $task = Task::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,

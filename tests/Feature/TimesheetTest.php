@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -24,8 +23,7 @@ use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class TimesheetTest extends TestCase
-{
+class TimesheetTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
@@ -35,8 +33,7 @@ class TimesheetTest extends TestCase
 
     private Project $project;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -51,8 +48,7 @@ class TimesheetTest extends TestCase
         ]);
     }
 
-    public function test_user_can_create_timesheet(): void
-    {
+    public function test_user_can_create_timesheet(): void {
         $this->actingAs($this->user)
             ->post(route('projects.timesheets.store', $this->project), [
                 'work_date' => '2030-02-01',
@@ -71,8 +67,7 @@ class TimesheetTest extends TestCase
         ]);
     }
 
-    public function test_entry_recalculates_totals(): void
-    {
+    public function test_entry_recalculates_totals(): void {
         $ts = $this->makeTimesheet();
         $ts->entries()->create([
             'organization_id' => $this->organization->id,
@@ -86,8 +81,7 @@ class TimesheetTest extends TestCase
         $this->assertSame(90, (int) $ts->fresh()->totals_minutes);
     }
 
-    public function test_material_usage_computes_line_total(): void
-    {
+    public function test_material_usage_computes_line_total(): void {
         $ts = $this->makeTimesheet();
         $material = Material::create([
             'organization_id' => $this->organization->id,
@@ -111,8 +105,7 @@ class TimesheetTest extends TestCase
         $this->assertSame('15.00', (string) $ts->fresh()->totals_material_net);
     }
 
-    public function test_signature_locks_editing_and_dispatches_mail(): void
-    {
+    public function test_signature_locks_editing_and_dispatches_mail(): void {
         Storage::fake('local');
         Mail::fake();
 
@@ -135,8 +128,7 @@ class TimesheetTest extends TestCase
         Mail::assertSent(TimesheetSignedMail::class);
     }
 
-    public function test_signed_timesheet_blocks_entry_changes(): void
-    {
+    public function test_signed_timesheet_blocks_entry_changes(): void {
         $ts = $this->makeTimesheet(['status' => Timesheet::STATUS_SIGNED]);
 
         $this->actingAs($this->user)
@@ -147,8 +139,7 @@ class TimesheetTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_admin_can_lock_and_unlock_timesheet(): void
-    {
+    public function test_admin_can_lock_and_unlock_timesheet(): void {
         $ts = $this->makeTimesheet(['status' => Timesheet::STATUS_SIGNED]);
 
         $this->actingAs($this->admin)
@@ -164,8 +155,7 @@ class TimesheetTest extends TestCase
         $this->assertSame(Timesheet::STATUS_SIGNED, $ts->fresh()->status);
     }
 
-    public function test_public_signature_via_magic_token(): void
-    {
+    public function test_public_signature_via_magic_token(): void {
         Storage::fake('local');
         $ts = $this->makeTimesheet();
         $ts->forceFill(['magic_token' => 'tok123', 'magic_expires_at' => now()->addDay()])->save();
@@ -182,16 +172,14 @@ class TimesheetTest extends TestCase
         $this->assertNull($ts->magic_token);
     }
 
-    public function test_expired_magic_token_is_rejected(): void
-    {
+    public function test_expired_magic_token_is_rejected(): void {
         $ts = $this->makeTimesheet();
         $ts->forceFill(['magic_token' => 'old', 'magic_expires_at' => now()->subDay()])->save();
 
         $this->get(route('timesheets.public-sign', 'old'))->assertStatus(410);
     }
 
-    private function makeTimesheet(array $attrs = []): Timesheet
-    {
+    private function makeTimesheet(array $attrs = []): Timesheet {
         return Timesheet::create(array_merge([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -201,8 +189,7 @@ class TimesheetTest extends TestCase
         ], $attrs));
     }
 
-    private function fakePngBase64(): string
-    {
+    private function fakePngBase64(): string {
         // 1x1 transparent PNG
         return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
     }

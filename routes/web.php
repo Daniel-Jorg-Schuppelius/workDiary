@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -143,12 +142,12 @@ Route::middleware('auth')->group(function () {
         Route::get('vacations', [PrintController::class, 'vacationYear'])->name('vacations');
     });
 
-    Route::get('shifts', fn () => redirect()->route('duties.index'))->name('shifts.index');
-    Route::get('assignments', fn () => redirect()->route('duties.index', ['tab' => 'notdienst']))->name('assignments.index');
+    Route::get('shifts', fn() => redirect()->route('duties.index'))->name('shifts.index');
+    Route::get('assignments', fn() => redirect()->route('duties.index', ['tab' => 'notdienst']))->name('assignments.index');
     Route::resource('shifts', OnCallShiftController::class)->except(['show', 'index'])->parameters(['shifts' => 'shift']);
     Route::resource('assignments', EmergencyAssignmentController::class)->except(['show', 'index'])->parameters(['assignments' => 'assignment']);
 
-    Route::get('vacations', fn () => redirect()->route('duties.index', ['tab' => 'urlaub']))->name('vacations.index');
+    Route::get('vacations', fn() => redirect()->route('duties.index', ['tab' => 'urlaub']))->name('vacations.index');
     Route::resource('vacations', VacationController::class)->except(['show', 'index']);
     Route::patch('vacations/{vacation}/approve', [VacationController::class, 'approve'])->name('vacations.approve');
     Route::patch('vacations/{vacation}/reject', [VacationController::class, 'reject'])->name('vacations.reject');

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -32,8 +31,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class Attachment extends Model
-{
+class Attachment extends Model {
     use Auditable;
 
     /** @use HasFactory<AttachmentFactory> */
@@ -50,40 +48,35 @@ class Attachment extends Model
         'size',
     ];
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'size' => 'integer',
         ];
     }
 
     /** @return MorphTo<Model, $this> */
-    public function attachable(): MorphTo
-    {
+    public function attachable(): MorphTo {
         return $this->morphTo();
     }
 
     /** @return BelongsTo<User, $this> */
-    public function uploader(): BelongsTo
-    {
+    public function uploader(): BelongsTo {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function isImage(): bool
-    {
+    public function isImage(): bool {
         return str_starts_with((string) $this->mime, 'image/');
     }
 
-    public function humanSize(): string
-    {
+    public function humanSize(): string {
         $bytes = (int) $this->size;
         if ($bytes < 1024) {
-            return $bytes.' B';
+            return $bytes . ' B';
         }
         if ($bytes < 1024 * 1024) {
-            return round($bytes / 1024, 1).' KB';
+            return round($bytes / 1024, 1) . ' KB';
         }
 
-        return round($bytes / (1024 * 1024), 1).' MB';
+        return round($bytes / (1024 * 1024), 1) . ' MB';
     }
 }

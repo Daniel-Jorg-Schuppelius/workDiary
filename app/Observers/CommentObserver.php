@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,10 +14,8 @@ use App\Models\Comment;
 use App\Services\MailNotifier;
 use App\Services\PushNotifier;
 
-class CommentObserver
-{
-    public function created(Comment $comment): void
-    {
+class CommentObserver {
+    public function created(Comment $comment): void {
         $comment->loadMissing('diaryEntry.user', 'user');
 
         app(PushNotifier::class)->newComment($comment);

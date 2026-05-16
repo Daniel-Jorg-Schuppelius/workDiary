@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,10 +14,8 @@ use App\Models\Attachment;
 use App\Models\DiaryEntry;
 use App\Services\PushNotifier;
 
-class AttachmentObserver
-{
-    public function created(Attachment $attachment): void
-    {
+class AttachmentObserver {
+    public function created(Attachment $attachment): void {
         if ($attachment->attachable_type === DiaryEntry::class) {
             $attachment->loadMissing('attachable.user', 'uploader');
         }

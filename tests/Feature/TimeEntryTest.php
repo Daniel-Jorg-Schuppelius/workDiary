@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,8 +18,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class TimeEntryTest extends TestCase
-{
+class TimeEntryTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
@@ -28,8 +26,7 @@ class TimeEntryTest extends TestCase
 
     private Project $project;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -45,8 +42,7 @@ class TimeEntryTest extends TestCase
         ]);
     }
 
-    public function test_user_can_log_time(): void
-    {
+    public function test_user_can_log_time(): void {
         $this->actingAs($this->user)
             ->post(route('projects.time-entries.store', $this->project), [
                 'date' => '2030-01-15',
@@ -64,8 +60,7 @@ class TimeEntryTest extends TestCase
         ]);
     }
 
-    public function test_owner_can_update_time_entry(): void
-    {
+    public function test_owner_can_update_time_entry(): void {
         $entry = TimeEntry::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -87,8 +82,7 @@ class TimeEntryTest extends TestCase
         ]);
     }
 
-    public function test_non_owner_cannot_update_time_entry(): void
-    {
+    public function test_non_owner_cannot_update_time_entry(): void {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $entry = TimeEntry::create([
             'organization_id' => $this->organization->id,
@@ -106,8 +100,7 @@ class TimeEntryTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_non_owner_cannot_delete_time_entry(): void
-    {
+    public function test_non_owner_cannot_delete_time_entry(): void {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $entry = TimeEntry::create([
             'organization_id' => $this->organization->id,
@@ -122,8 +115,7 @@ class TimeEntryTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_owner_can_delete_time_entry(): void
-    {
+    public function test_owner_can_delete_time_entry(): void {
         $entry = TimeEntry::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -26,14 +25,12 @@ use Illuminate\Support\Collection;
  * fed into Lexoffice entity classes via fromJson(json_encode($payload)) which
  * is the conventional construction pattern in the Lexoffice SDK.
  */
-class LexofficeMapper
-{
+class LexofficeMapper {
     /**
      * @param  array<string, mixed>  $defaults
      * @return array<string, mixed>
      */
-    public function customerToContactPayload(Customer $customer, array $defaults = []): array
-    {
+    public function customerToContactPayload(Customer $customer, array $defaults = []): array {
         $isCompany = (bool) ($customer->company || $customer->vat_id);
 
         $billingAddress = [];
@@ -92,7 +89,7 @@ class LexofficeMapper
             ]);
         }
 
-        return array_filter($payload, static fn ($v) => $v !== null && $v !== []);
+        return array_filter($payload, static fn($v) => $v !== null && $v !== []);
     }
 
     /**
@@ -101,8 +98,7 @@ class LexofficeMapper
      *
      * @return array<int, array<string, mixed>>
      */
-    private function buildContactPersons(Customer $customer): array
-    {
+    private function buildContactPersons(Customer $customer): array {
         $persons = $customer->contact_persons ?? [];
         $list = [];
 
@@ -119,7 +115,7 @@ class LexofficeMapper
                 'emailAddress' => $p['email'] ?? null,
                 'phoneNumber' => $p['phone'] ?? null,
                 'primary' => (bool) ($p['primary'] ?? false),
-            ], static fn ($v) => $v !== null && $v !== '');
+            ], static fn($v) => $v !== null && $v !== '');
         }
 
         if ($list === [] && $customer->contact_name) {
@@ -155,7 +151,7 @@ class LexofficeMapper
         $currency = $customer->currency ?: ($defaults['default_currency'] ?? 'EUR');
 
         $items = $entries
-            ->groupBy(fn (TimeEntry $e) => ($e->project_id ?? 0).'|'.((string) ($e->kind ?? '')))
+            ->groupBy(fn(TimeEntry $e) => ($e->project_id ?? 0) . '|' . ((string) ($e->kind ?? '')))
             ->map(function (Collection $group) use ($vatRate, $from, $to) {
                 /** @var TimeEntry $first */
                 $first = $group->first();
@@ -173,7 +169,7 @@ class LexofficeMapper
                 $taxRate = $rule?->vat_rate !== null ? (float) $rule->vat_rate : $vatRate;
                 $netAmount = $rule?->net_unit_price !== null ? (float) $rule->net_unit_price : $unitPrice;
 
-                $kindSuffix = $kind ? ' ['.$kind.']' : '';
+                $kindSuffix = $kind ? ' [' . $kind . ']' : '';
                 $name = sprintf('%s%s (%s – %s)', $projectName, $kindSuffix, $from->format('d.m.Y'), $to->format('d.m.Y'));
 
                 $item = [
@@ -198,7 +194,7 @@ class LexofficeMapper
         return [
             'voucherType' => 'salesinvoice',
             'voucherNumber' => null,
-            'voucherDate' => $to->format('Y-m-d').'T00:00:00.000+01:00',
+            'voucherDate' => $to->format('Y-m-d') . 'T00:00:00.000+01:00',
             'totalGrossAmount' => null,
             'totalTaxAmount' => null,
             'taxType' => $taxType,

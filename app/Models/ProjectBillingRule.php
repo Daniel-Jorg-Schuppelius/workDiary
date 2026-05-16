@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,8 +17,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ProjectBillingRule extends Model
-{
+class ProjectBillingRule extends Model {
     use BelongsToOrganization;
 
     /** @use HasFactory<Factory<static>> */
@@ -38,8 +36,7 @@ class ProjectBillingRule extends Model
         'priority',
     ];
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'vat_rate' => 'decimal:2',
             'net_unit_price' => 'decimal:4',
@@ -48,14 +45,12 @@ class ProjectBillingRule extends Model
     }
 
     /** @return BelongsTo<Project, $this> */
-    public function project(): BelongsTo
-    {
+    public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
     }
 
     /** @return BelongsTo<LexofficeArticle, $this> */
-    public function lexofficeArticle(): BelongsTo
-    {
+    public function lexofficeArticle(): BelongsTo {
         return $this->belongsTo(LexofficeArticle::class, 'lexoffice_article_id', 'external_id');
     }
 
@@ -66,8 +61,7 @@ class ProjectBillingRule extends Model
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
-    public function scopeForKind(Builder $query, ?string $kind): Builder
-    {
+    public function scopeForKind(Builder $query, ?string $kind): Builder {
         return $query
             ->where(function (Builder $q) use ($kind): void {
                 $q->whereNull('applies_to_kind');

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -20,8 +19,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class StopwatchTest extends TestCase
-{
+class StopwatchTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
@@ -29,8 +27,7 @@ class StopwatchTest extends TestCase
 
     private Project $project;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -43,8 +40,7 @@ class StopwatchTest extends TestCase
         ]);
     }
 
-    public function test_start_creates_running_entry_and_stop_closes_it(): void
-    {
+    public function test_start_creates_running_entry_and_stop_closes_it(): void {
         $sw = app(Stopwatch::class);
         $ts = Timesheet::create([
             'organization_id' => $this->organization->id,
@@ -68,8 +64,7 @@ class StopwatchTest extends TestCase
         $this->assertGreaterThanOrEqual(40, (int) $stopped->minutes);
     }
 
-    public function test_cannot_start_when_timesheet_signed(): void
-    {
+    public function test_cannot_start_when_timesheet_signed(): void {
         $sw = app(Stopwatch::class);
         $ts = Timesheet::create([
             'organization_id' => $this->organization->id,

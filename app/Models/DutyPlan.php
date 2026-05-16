@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -25,8 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Carbon $from_date
  * @property Carbon $to_date
  */
-class DutyPlan extends Model
-{
+class DutyPlan extends Model {
     use Auditable;
     use BelongsToOrganization;
 
@@ -69,8 +67,7 @@ class DutyPlan extends Model
         'updated_by',
     ];
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'from_date' => 'date',
             'to_date' => 'date',
@@ -79,36 +76,30 @@ class DutyPlan extends Model
     }
 
     /** @return BelongsTo<User, $this> */
-    public function creator(): BelongsTo
-    {
+    public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by');
     }
 
     /** @return BelongsTo<User, $this> */
-    public function editor(): BelongsTo
-    {
+    public function editor(): BelongsTo {
         return $this->belongsTo(User::class, 'updated_by');
     }
 
     /** @return HasMany<ScheduledShift, $this> */
-    public function shifts(): HasMany
-    {
+    public function shifts(): HasMany {
         return $this->hasMany(ScheduledShift::class);
     }
 
     /** @return HasMany<CoverageRequirement, $this> */
-    public function coverageRequirements(): HasMany
-    {
+    public function coverageRequirements(): HasMany {
         return $this->hasMany(CoverageRequirement::class);
     }
 
-    public function isDraft(): bool
-    {
+    public function isDraft(): bool {
         return $this->status === self::STATUS_DRAFT;
     }
 
-    public function isPublished(): bool
-    {
+    public function isPublished(): bool {
         return $this->status === self::STATUS_PUBLISHED;
     }
 
@@ -118,8 +109,7 @@ class DutyPlan extends Model
      * @param  Builder<DutyPlan>  $query
      * @return Builder<DutyPlan>
      */
-    public function scopeDraft(Builder $query): Builder
-    {
+    public function scopeDraft(Builder $query): Builder {
         return $query->where('status', self::STATUS_DRAFT);
     }
 
@@ -129,8 +119,7 @@ class DutyPlan extends Model
      * @param  Builder<DutyPlan>  $query
      * @return Builder<DutyPlan>
      */
-    public function scopePublished(Builder $query): Builder
-    {
+    public function scopePublished(Builder $query): Builder {
         return $query->where('status', self::STATUS_PUBLISHED);
     }
 
@@ -140,8 +129,7 @@ class DutyPlan extends Model
      * @param  Builder<DutyPlan>  $query
      * @return Builder<DutyPlan>
      */
-    public function scopeInPeriod(Builder $query, string $from, string $to): Builder
-    {
+    public function scopeInPeriod(Builder $query, string $from, string $to): Builder {
         return $query->where('from_date', '<=', $to)
             ->where('to_date', '>=', $from);
     }

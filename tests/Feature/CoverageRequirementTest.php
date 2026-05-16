@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -23,33 +22,28 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class CoverageRequirementTest extends TestCase
-{
+class CoverageRequirementTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
     }
 
-    private function admin(): User
-    {
+    private function admin(): User {
         return User::factory()->admin()->create(['organization_id' => $this->organization->id]);
     }
 
-    private function user(): User
-    {
+    private function user(): User {
         return User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
     /**
      * @return array{plan: DutyPlan, fruh: ShiftType, spaet: ShiftType}
      */
-    private function planWithTypes(): array
-    {
+    private function planWithTypes(): array {
         $plan = DutyPlan::factory()->draft()->weekly()->create([
             'organization_id' => $this->organization->id,
             'from_date' => '2026-05-18', // Monday
@@ -74,8 +68,7 @@ class CoverageRequirementTest extends TestCase
 
     // ── HTTP CRUD ────────────────────────────────────────────────────────────
 
-    public function test_admin_sees_index_page(): void
-    {
+    public function test_admin_sees_index_page(): void {
         $ctx = $this->planWithTypes();
 
         $res = $this->actingAs($this->admin())
@@ -84,8 +77,7 @@ class CoverageRequirementTest extends TestCase
         $res->assertOk()->assertSee('Soll-Besetzung');
     }
 
-    public function test_non_admin_cannot_create(): void
-    {
+    public function test_non_admin_cannot_create(): void {
         $ctx = $this->planWithTypes();
 
         $res = $this->actingAs($this->user())
@@ -99,8 +91,7 @@ class CoverageRequirementTest extends TestCase
         $this->assertDatabaseCount('coverage_requirements', 0);
     }
 
-    public function test_admin_can_create_requirement(): void
-    {
+    public function test_admin_can_create_requirement(): void {
         $ctx = $this->planWithTypes();
 
         $res = $this->actingAs($this->admin())
@@ -122,8 +113,7 @@ class CoverageRequirementTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_update_and_delete_requirement(): void
-    {
+    public function test_admin_can_update_and_delete_requirement(): void {
         $ctx = $this->planWithTypes();
         $req = CoverageRequirement::factory()
             ->forWeekday(1)
@@ -155,8 +145,7 @@ class CoverageRequirementTest extends TestCase
 
     // ── Cross-org isolation ──────────────────────────────────────────────────
 
-    public function test_requirements_from_other_org_are_not_returned_by_service(): void
-    {
+    public function test_requirements_from_other_org_are_not_returned_by_service(): void {
         $ctx = $this->planWithTypes();
 
         // Eigene Anforderung im Plan (Mo, min=2).
@@ -191,8 +180,7 @@ class CoverageRequirementTest extends TestCase
 
     // ── Service: Soll-/Ist-/Gap-Logik ────────────────────────────────────────
 
-    public function test_service_uses_plan_min_staff_when_no_requirement(): void
-    {
+    public function test_service_uses_plan_min_staff_when_no_requirement(): void {
         $ctx = $this->planWithTypes();
         $ctx['plan']->update(['min_staff' => 1]);
 
@@ -213,8 +201,7 @@ class CoverageRequirementTest extends TestCase
         $this->assertSame(1, $req['2026-05-22'][$ctx['fruh']->id]['min']);
     }
 
-    public function test_service_weekday_overrides_plan_default(): void
-    {
+    public function test_service_weekday_overrides_plan_default(): void {
         $ctx = $this->planWithTypes();
         $ctx['plan']->update(['min_staff' => 1]);
 
@@ -241,8 +228,7 @@ class CoverageRequirementTest extends TestCase
         $this->assertSame(1, $req['2026-05-19'][$ctx['fruh']->id]['min']);  // Di → Plan-Default
     }
 
-    public function test_specific_date_overrides_weekday(): void
-    {
+    public function test_specific_date_overrides_weekday(): void {
         $ctx = $this->planWithTypes();
 
         CoverageRequirement::factory()->forWeekday(1)->create([
@@ -264,8 +250,7 @@ class CoverageRequirementTest extends TestCase
         $this->assertSame(5, $req['2026-05-18'][$ctx['fruh']->id]['min']);
     }
 
-    public function test_actual_staffing_counts_only_published_or_confirmed(): void
-    {
+    public function test_actual_staffing_counts_only_published_or_confirmed(): void {
         $ctx = $this->planWithTypes();
         $u = $this->user();
 
@@ -299,8 +284,7 @@ class CoverageRequirementTest extends TestCase
         $this->assertSame(1, $actual['2026-05-18'][$ctx['fruh']->id]);
     }
 
-    public function test_gaps_lists_underbesetzte_tage(): void
-    {
+    public function test_gaps_lists_underbesetzte_tage(): void {
         $ctx = $this->planWithTypes();
 
         // Mo-Fr je 1 Frühdienst gefordert (weekday 1..5).
@@ -336,8 +320,7 @@ class CoverageRequirementTest extends TestCase
         }
     }
 
-    public function test_gaps_lists_überbesetzte_tage_when_max_set(): void
-    {
+    public function test_gaps_lists_überbesetzte_tage_when_max_set(): void {
         $ctx = $this->planWithTypes();
         $u = $this->user();
         $u2 = $this->user();

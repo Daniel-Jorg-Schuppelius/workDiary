@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -33,8 +32,7 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $synced_at
  * @property ?Carbon $archived_at
  */
-class LexofficeArticle extends Model
-{
+class LexofficeArticle extends Model {
     use BelongsToOrganization;
 
     protected $fillable = [
@@ -52,8 +50,7 @@ class LexofficeArticle extends Model
         'archived_at',
     ];
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'net_unit_price' => 'decimal:4',
             'vat_rate' => 'decimal:2',
@@ -66,8 +63,7 @@ class LexofficeArticle extends Model
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
-    public function scopeActive(Builder $query): Builder
-    {
+    public function scopeActive(Builder $query): Builder {
         return $query->whereNull('archived_at');
     }
 }

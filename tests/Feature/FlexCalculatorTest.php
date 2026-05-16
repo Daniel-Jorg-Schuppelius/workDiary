@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,8 +21,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class FlexCalculatorTest extends TestCase
-{
+class FlexCalculatorTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
@@ -31,8 +29,7 @@ class FlexCalculatorTest extends TestCase
 
     private Project $project;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -59,8 +56,7 @@ class FlexCalculatorTest extends TestCase
         ]);
     }
 
-    public function test_overtime_is_positive_balance(): void
-    {
+    public function test_overtime_is_positive_balance(): void {
         // 2030-01-02 = Mittwoch
         TimeEntry::create([
             'organization_id' => $this->organization->id,
@@ -79,8 +75,7 @@ class FlexCalculatorTest extends TestCase
         $this->assertSame(60, $b['balance']);
     }
 
-    public function test_weekend_target_is_zero(): void
-    {
+    public function test_weekend_target_is_zero(): void {
         // 2030-01-05 = Samstag
         $calc = app(FlexCalculator::class);
         $b = $calc->dailyBalance($this->user, CarbonImmutable::parse('2030-01-05'));
@@ -88,8 +83,7 @@ class FlexCalculatorTest extends TestCase
         $this->assertSame(0, $b['actual']);
     }
 
-    public function test_monthly_balance_aggregates(): void
-    {
+    public function test_monthly_balance_aggregates(): void {
         TimeEntry::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,

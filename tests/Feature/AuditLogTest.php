@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,18 +18,15 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class AuditLogTest extends TestCase
-{
+class AuditLogTest extends TestCase {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
     }
 
-    public function test_creating_diary_entry_writes_audit_log(): void
-    {
+    public function test_creating_diary_entry_writes_audit_log(): void {
         $user = User::factory()->user()->create();
         $this->actingAs($user);
 
@@ -44,8 +40,7 @@ class AuditLogTest extends TestCase
         ]);
     }
 
-    public function test_updating_diary_entry_writes_changes(): void
-    {
+    public function test_updating_diary_entry_writes_changes(): void {
         $user = User::factory()->user()->create();
         $this->actingAs($user);
         $entry = DiaryEntry::factory()->for($user)->create(['content' => 'A']);
@@ -58,8 +53,7 @@ class AuditLogTest extends TestCase
         $this->assertSame('B', $log->changes['after']['content']);
     }
 
-    public function test_delete_writes_audit_log(): void
-    {
+    public function test_delete_writes_audit_log(): void {
         $user = User::factory()->user()->create();
         $this->actingAs($user);
         $entry = DiaryEntry::factory()->for($user)->create();
@@ -73,8 +67,7 @@ class AuditLogTest extends TestCase
         ]);
     }
 
-    public function test_audit_index_admin_only(): void
-    {
+    public function test_audit_index_admin_only(): void {
         $user = User::factory()->user()->create();
         $admin = User::factory()->admin()->create();
 
@@ -82,8 +75,7 @@ class AuditLogTest extends TestCase
         $this->actingAs($admin)->get(route('audit.index'))->assertOk();
     }
 
-    public function test_audit_filter_by_event_and_type(): void
-    {
+    public function test_audit_filter_by_event_and_type(): void {
         $admin = User::factory()->admin()->create();
         $user = User::factory()->user()->create();
         $this->actingAs($user);

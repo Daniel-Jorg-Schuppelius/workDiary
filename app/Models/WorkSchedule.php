@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -36,8 +35,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $valid_to
  * @property bool $exists
  */
-class WorkSchedule extends Model
-{
+class WorkSchedule extends Model {
     use Auditable;
     use BelongsToOrganization;
 
@@ -45,8 +43,7 @@ class WorkSchedule extends Model
     use HasFactory;
 
     /** @param array<string, mixed> $attributes */
-    public function __construct(array $attributes = [])
-    {
+    public function __construct(array $attributes = []) {
         parent::__construct($attributes);
     }
 
@@ -66,8 +63,7 @@ class WorkSchedule extends Model
         'valid_to',
     ];
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'working_days' => 'array',
             'weekly_minutes' => 'integer',
@@ -80,13 +76,11 @@ class WorkSchedule extends Model
     }
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo
-    {
+    public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
-    public function appliesOnWeekday(int $isoDow): bool
-    {
+    public function appliesOnWeekday(int $isoDow): bool {
         return in_array($isoDow, $this->working_days ?? [], true);
     }
 }

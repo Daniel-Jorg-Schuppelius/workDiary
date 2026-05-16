@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,12 +18,10 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<TimeEntry>
  */
-class TimeEntryFactory extends Factory
-{
+class TimeEntryFactory extends Factory {
     protected $model = TimeEntry::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'project_id' => Project::factory(),
             'user_id' => User::factory(),
