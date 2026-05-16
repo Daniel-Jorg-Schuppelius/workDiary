@@ -10,17 +10,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
-class HomeController extends Controller
-{
-    public function __invoke(): View|RedirectResponse
-    {
+class HomeController extends Controller {
+    public function __invoke(): View|RedirectResponse {
         $currentMode = session('work_mode', 'legacy');
         $canViewSensitive = Auth::check();
         $legacyConfigured = filled(config('database.connections.legacy.database'));
@@ -44,12 +42,22 @@ class HomeController extends Controller
         $team = collect();
 
         if ($legacyConfigured) {
-            try {
-                DB::connection('legacy')->getPdo();
-                $legacyOnline = true;
-            } catch (QueryException) {
-                $legacyOnline = false;
-            }
+            // Probe-Ergebnis kurz cachen (file-Store, damit kein DB-Roundtrip nötig ist),
+            // sonst läuft jeder Request bei nicht erreichbarer Legacy-DB in den
+            // Connect-Timeout (siehe DB_CONNECT_TIMEOUT).
+            $legacyOnline = (bool) Cache::store('file')->remember(
+                'legacy_db_online',
+                30,
+                static function (): bool {
+                    try {
+                        DB::connection('legacy')->getPdo();
+
+                        return true;
+                    } catch (\Throwable) {
+                        return false;
+                    }
+                }
+            );
         }
 
         return view('home', [
@@ -63,8 +71,7 @@ class HomeController extends Controller
         ]);
     }
 
-    public function switchMode(Request $request, string $mode): RedirectResponse
-    {
+    public function switchMode(Request $request, string $mode): RedirectResponse {
         if (! in_array($mode, ['legacy', 'new'], true)) {
             return back()->with('success', __('Unbekannter Modus.'));
         }
@@ -86,8 +93,7 @@ class HomeController extends Controller
             ->with('mode_toast', $mode === 'legacy' ? __('Legacy-Modus aktiviert.') : __('Neuer Modus aktiviert.'));
     }
 
-    private function resolveModeRoute(string $origin, string $mode): string
-    {
+    private function resolveModeRoute(string $origin, string $mode): string {
         if ($origin === 'home') {
             return 'home';
         }

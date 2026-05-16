@@ -69,6 +69,7 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
+                PDO::ATTR_TIMEOUT => (int) env('DB_CONNECT_TIMEOUT', 3),
             ]) : [],
         ],
 
@@ -89,6 +90,7 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
+                PDO::ATTR_TIMEOUT => (int) env('DB_CONNECT_TIMEOUT', 3),
             ]) : [],
         ],
 
@@ -109,8 +111,9 @@ return [
             'engine' => null,
             'encrypt' => env('LEGACY_DB_ENCRYPT', 'no'),
             'trust_server_certificate' => env('LEGACY_DB_TRUST_SERVER_CERTIFICATE', 'true'),
-            'options' => env('LEGACY_DB_DRIVER', 'mysql') === 'mysql' && extension_loaded('pdo_mysql') ? array_filter([
+            'options' => in_array(env('LEGACY_DB_DRIVER', 'mysql'), ['mysql', 'mariadb'], true) && extension_loaded('pdo_mysql') ? array_filter([
                 (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('LEGACY_MYSQL_ATTR_SSL_CA'),
+                PDO::ATTR_TIMEOUT => (int) env('LEGACY_DB_CONNECT_TIMEOUT', env('DB_CONNECT_TIMEOUT', 3)),
             ]) : [],
         ],
 

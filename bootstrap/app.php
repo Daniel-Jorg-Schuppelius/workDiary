@@ -9,12 +9,12 @@
  */
 
 use App\Http\Middleware\ForcePasswordChange;
+use App\Http\Middleware\HandleDatabaseUnavailable;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\SetOrganizationContext;
 use App\Legacy\Http\Middleware\EnsureLegacyCallcenterAuthenticated;
 use App\Legacy\Http\Middleware\EnsureLegacyWriteAllowed;
-use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -32,6 +32,12 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Muss zuerst laufen, damit DB-Ausfälle in StartSession (SESSION_DRIVER=database)
+        // und nachgelagerten Middlewares sauber als 503 zurückgegeben werden, ohne dass
+        // beim Response-Unwind erneut DB-Schreibversuche stattfinden.
+        $middleware->web(prepend: [
+            HandleDatabaseUnavailable::class,
+        ]);
         $middleware->web(append: [
             SecurityHeaders::class,
             SetLocale::class,
@@ -49,9 +55,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // generischen Whoops/500-Stack auszuwerfen. Wichtig: die Antwort
         // darf NICHT auf Session/DB zugreifen (kein layouts.app).
         $exceptions->render(function (Throwable $e, Request $request) {
-            if (! ($e instanceof PDOException
-                || $e instanceof QueryException
-                || ($e->getPrevious() instanceof PDOException))) {
+            // QueryException erbt von PDOException, daher genügt diese Prüfung.
+            if (! ($e instanceof PDOException || $e->getPrevious() instanceof PDOException)) {
                 return null;
             }
 
