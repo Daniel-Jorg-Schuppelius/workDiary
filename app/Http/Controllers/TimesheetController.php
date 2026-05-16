@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Project;
 use App\Models\Timesheet;
 use App\Services\Material\MaterialProviderRegistry;
+use App\Services\UI\DateRangeContext;
 use App\Support\SortableQuery;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
@@ -23,7 +24,13 @@ class TimesheetController extends Controller {
         $scope = $request->string('scope', 'mine')->toString();
         $isAdmin = Auth::user()?->isAdmin() ?? false;
 
-        $query = Timesheet::query()->with(['project', 'user']);
+        $globalRange = app(DateRangeContext::class)->current();
+        $query = Timesheet::query()
+            ->with(['project', 'user'])
+            ->whereBetween('work_date', [
+                $globalRange['from']->toDateString(),
+                $globalRange['to']->toDateString(),
+            ]);
         if ($scope !== 'team' || ! $isAdmin) {
             $query->forUser($userId);
         }

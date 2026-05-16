@@ -3,6 +3,12 @@
     Available: $from, $to, $shifts, $users, $holidays (HolidayService), $isAdmin
 --}}
 @php
+    /** @var \Carbon\Carbon $from */
+    /** @var \Carbon\Carbon $to */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\OnCallShift> $shifts */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\User> $users */
+    /** @var \App\Services\HolidayService $holidays */
+    /** @var bool $isAdmin */
     $weekDays = [];
     $cursor   = $from->copy();
     while ($cursor->lte($to)) {
@@ -12,6 +18,7 @@
             'label'       => $cursor->translatedFormat('D d.m.'),
             'isToday'     => $cursor->isToday(),
             'isWeekend'   => $cursor->isWeekend(),
+            'isSunday'    => $cursor->isSunday(),
             'isHoliday'   => $holidayName !== null,
             'holidayName' => $holidayName ?? '',
         ];
@@ -32,11 +39,19 @@
             {{ __('Mitarbeiter') }}
         </div>
         @foreach ($weekDays as $day)
-            <div class="flex min-w-[8rem] flex-1 flex-col items-center border-r border-base-300 px-1 py-1.5 text-center text-xs font-medium
-                        @if ($day['isToday']) bg-primary/10 text-primary font-bold
-                        @elseif ($day['isWeekend']) bg-base-200/60 text-base-content/50
-                        @endif
-                        @if ($day['isHoliday']) bg-warning/10 @endif">
+            @php
+                if ($day['isToday']) {
+                    $headerStateClass = 'bg-primary/10 text-primary font-bold';
+                } elseif ($day['isSunday']) {
+                    $headerStateClass = 'bg-base-200/60 text-error';
+                } elseif ($day['isWeekend']) {
+                    $headerStateClass = 'bg-base-200/60 text-base-content/50';
+                } else {
+                    $headerStateClass = '';
+                }
+                $headerHolidayClass = $day['isHoliday'] ? 'bg-warning/10' : '';
+            @endphp
+            <div class="flex min-w-32 flex-1 flex-col items-center border-r border-base-300 px-1 py-1.5 text-center text-xs font-medium {{ $headerStateClass }} {{ $headerHolidayClass }}">
                 <span>{{ $day['label'] }}</span>
                 @if ($day['isHoliday'])
                     <span class="mt-0.5 max-w-full truncate text-[0.6rem] text-warning" title="{{ $day['holidayName'] }}">
@@ -61,13 +76,17 @@
             @foreach ($weekDays as $day)
                 @php
                     $cellShifts = $userShifts->filter(fn($s) => $s->date->toDateString() === $day['date']);
+                    if ($day['isToday']) {
+                        $cellStateClass = 'bg-primary/5';
+                    } elseif ($day['isWeekend']) {
+                        $cellStateClass = 'bg-base-200/40';
+                    } else {
+                        $cellStateClass = '';
+                    }
+                    $cellHolidayClass = $day['isHoliday'] ? 'bg-warning/5' : '';
+                    $cellCursorClass = $isAdmin ? 'cursor-pointer' : '';
                 @endphp
-                <div class="schedule-cell group relative min-h-[4rem] min-w-[8rem] flex-1 border-r border-base-300 p-1
-                            @if ($day['isToday']) bg-primary/5
-                            @elseif ($day['isWeekend']) bg-base-200/40
-                            @endif
-                            @if ($day['isHoliday']) bg-warning/5 @endif
-                            @if ($isAdmin) cursor-pointer @endif"
+                <div class="schedule-cell group relative min-h-16 min-w-32 flex-1 border-r border-base-300 p-1 {{ $cellStateClass }} {{ $cellHolidayClass }} {{ $cellCursorClass }}"
                      @if ($isAdmin)
                          data-schedule-cell
                          data-date="{{ $day['date'] }}"
@@ -124,7 +143,7 @@
             </div>
             @foreach ($weekDays as $day)
                 @php $slots = $openSlotsByDate[$day['date']] ?? []; @endphp
-                <div class="schedule-cell relative min-h-[3rem] min-w-[8rem] flex-1 border-r border-base-300 p-1">
+                <div class="schedule-cell relative min-h-12 min-w-32 flex-1 border-r border-base-300 p-1">
                     @foreach ($slots as $slot)
                         @for ($i = 0; $i < $slot['missing']; $i++)
                             <button type="button"

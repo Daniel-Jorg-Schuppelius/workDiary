@@ -66,21 +66,6 @@
                 transparent
             );
     }
-
-    /* Farbiger Akzent-Streifen am oberen Header-Rand */
-    body[data-mode="new"] #app-header {
-        border-top: 2px solid;
-        border-image: linear-gradient(
-                90deg,
-                var(--color-secondary) 0%,
-                var(--color-success) 100%
-            )
-            1;
-    }
-
-    body[data-mode="legacy"] #app-header {
-        border-top: 2px solid var(--color-primary);
-    }
 }
 
 @layer components {
@@ -420,9 +405,22 @@
         display: grid;
         /* col 1: time axis  |  cols 2-8: one column per day, min 9 rem */
         grid-template-columns: 3.5rem repeat(7, minmax(9rem, 1fr));
-        /* Force horizontal scroll when viewport is narrower than 7 × 9 rem */
-        min-width: calc(3.5rem + 7 * 9rem);
         align-items: stretch;
+    }
+    /* Unterhalb 1385 px Viewport: Wochengitter erzwingt horizontales Scrollen,
+       die Zeitspalte bleibt durch `position: sticky` links fixiert. */
+    @media (max-width: 1384px) {
+        .wd-week-grid:not(.wd-week-grid--fit) {
+            grid-template-columns: 3.5rem repeat(7, 10rem);
+            min-width: calc(3.5rem + 7 * 10rem);
+        }
+    }
+
+    /* Fit-Mode: Grid passt sich der verfügbaren Breite an, kein horizontaler
+       Overflow – unabhängig vom Viewport. */
+    .wd-week-grid.wd-week-grid--fit {
+        grid-template-columns: 3.5rem repeat(7, minmax(0, 1fr));
+        min-width: 0;
     }
 
     /* ── Corner cell: sticky top-left ────────────────────────────────────── */
@@ -446,6 +444,39 @@
         background-color: color-mix(in srgb, var(--color-base-100) 96%, white);
         border-right: 1px solid var(--color-base-300);
         border-bottom: 2px solid var(--color-base-300);
+        min-width: 0;
+        overflow: hidden;
+    }
+    /* Datumstext + Wochentag: an Zellenbreite anpassen, niemals umbrechen,
+       Überlänge per Ellipsis abschneiden. */
+    .wd-week-day-header > div {
+        min-width: 0;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    /* Innerhalb der Datumszeile (flex) muss der Datums-Span Vorrang haben:
+       er darf schrumpfen + Ellipsis bekommen, das "+"-Dropdown verschwindet
+       als erstes, wenn der Platz wirklich knapp ist. */
+    .wd-week-day-header > div.flex > span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 0 1 auto;
+    }
+    /* Bei knappem Platz Schrift verkleinern. */
+    @media (max-width: 1100px) {
+        .wd-week-day-header { padding: 0.375rem 0.25rem; }
+        .wd-week-day-header .text-lg { font-size: 0.95rem; }
+    }
+    @media (max-width: 760px) {
+        .wd-week-day-header { padding: 0.25rem 0.125rem; }
+        .wd-week-day-header .text-lg { font-size: 0.8rem; }
+        .wd-week-day-header .text-xs { font-size: 0.6rem; letter-spacing: 0.1em; }
+        /* "+"-Dropdown bei sehr schmalen Zellen ausblenden, damit das
+           Datum vollständig sichtbar bleibt. */
+        .wd-week-day-header .dropdown { display: none; }
     }
 
     .wd-week-day-header.is-today {
@@ -472,6 +503,13 @@
             var(--color-base-100)
         );
         border-bottom-color: var(--color-error);
+    }
+
+    .wd-week-day-header.is-sunday {
+        color: var(--color-error);
+    }
+    .wd-week-day-header.is-sunday > div {
+        color: var(--color-error);
     }
 
     /* ── Time-axis column: sticky to left only ───────────────────────────── */
@@ -505,6 +543,7 @@
         min-height: calc(24 * var(--wd-hour-h));
         border-right: 1px solid var(--color-base-300);
         overflow: hidden;
+        cursor: cell;
     }
 
     .wd-week-day.is-today {

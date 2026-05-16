@@ -8,8 +8,6 @@
     /** @var \Carbon\CarbonImmutable $anchor */
     /** @var \Carbon\CarbonImmutable $from */
     /** @var \Carbon\CarbonImmutable $to */
-    /** @var string $prevDate */
-    /** @var string $nextDate */
     /** @var string $todayDate */
     /** @var \Illuminate\Support\Collection<int, \App\Models\ScheduledShift> $shifts */
     /** @var \Illuminate\Support\Collection<string, \Illuminate\Support\Collection> $shiftsByDate */
@@ -27,33 +25,21 @@
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
 
     {{-- ── Filter & Toolbar ────────────────────────────────────────────── --}}
-    <x-filter-bar :action="route('schedule.index')" class="!bg-base-100">
+    <x-filter-bar :action="route('schedule.index')" class="bg-base-100!">
         <input type="hidden" name="view" value="{{ $view }}">
-        <input type="hidden" name="date" value="{{ $anchor->toDateString() }}">
 
-        {{-- Period navigation --}}
-        <div class="flex items-center gap-2">
-            <div class="join">
-                <a href="{{ route('schedule.index', array_filter(['view' => $view, 'date' => $prevDate, 'user' => $userFilter ?: null])) }}"
-                   class="btn btn-sm btn-ghost join-item" title="{{ __('Zurück') }}">‹</a>
-                <a href="{{ route('schedule.index', array_filter(['view' => $view, 'date' => $todayDate, 'user' => $userFilter ?: null])) }}"
-                   class="btn btn-sm btn-ghost join-item">{{ __('Heute') }}</a>
-                <a href="{{ route('schedule.index', array_filter(['view' => $view, 'date' => $nextDate, 'user' => $userFilter ?: null])) }}"
-                   class="btn btn-sm btn-ghost join-item" title="{{ __('Weiter') }}">›</a>
-            </div>
-            <span class="font-['Space_Grotesk'] text-sm font-semibold whitespace-nowrap">{{ $periodLabel }}</span>
-        </div>
+        <span class="font-['Space_Grotesk'] text-sm font-semibold whitespace-nowrap">{{ $periodLabel }}</span>
 
         {{-- View toggle --}}
         <div class="join">
-            <a href="{{ route('schedule.index', array_filter(['view' => 'week', 'date' => $anchor->toDateString(), 'user' => $userFilter ?: null])) }}"
+            <a href="{{ route('schedule.index', array_filter(['view' => 'week', 'user' => $userFilter ?: null])) }}"
                class="btn btn-sm join-item {{ $view === 'week' ? 'btn-primary' : 'btn-ghost' }}">{{ __('Woche') }}</a>
-            <a href="{{ route('schedule.index', array_filter(['view' => 'month', 'date' => $anchor->toDateString(), 'user' => $userFilter ?: null])) }}"
+            <a href="{{ route('schedule.index', array_filter(['view' => 'month', 'user' => $userFilter ?: null])) }}"
                class="btn btn-sm join-item {{ $view === 'month' ? 'btn-primary' : 'btn-ghost' }}">{{ __('Monat') }}</a>
         </div>
 
         {{-- User filter --}}
-        <select name="user" class="select select-bordered select-sm min-w-48" onchange="this.form.submit()">
+        <select name="user" class="select select-bordered select-sm w-full sm:w-auto sm:min-w-48" onchange="this.form.submit()">
             <option value="">{{ __('Alle Mitarbeiter') }}</option>
             @foreach ($users as $u)
                 <option value="{{ $u->id }}" @selected($userFilter === $u->id)>{{ $u->name }}</option>
@@ -61,7 +47,7 @@
         </select>
 
         @if ($userFilter)
-            <a href="{{ route('schedule.index', ['view' => $view, 'date' => $anchor->toDateString()]) }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
+            <a href="{{ route('schedule.index', ['view' => $view]) }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
         @endif
 
         @if ($isAdmin)

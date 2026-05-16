@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
 use App\Models\OnCallShift;
@@ -9,13 +10,28 @@ use App\Models\Tag;
 use App\Models\User;
 use App\Models\Vacation;
 use App\Services\HolidayService;
+use App\Services\UI\DateRangeContext;
 use App\Support\SortableQuery;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class DutyController extends Controller {
-    public function index(Request $request, HolidayService $holidayService): View {
+    use ResolvesGlobalDateRange;
+
+    public function index(Request $request, HolidayService $holidayService): View|RedirectResponse {
+        // Backward-Compat: ?from=&to= einmalig in den globalen Context.
+        if ($request->filled('from') || $request->filled('to')) {
+            app(DateRangeContext::class)->set(
+                DateRangeContext::PRESET_CUSTOM,
+                (string) $request->query('from', ''),
+                (string) $request->query('to', ''),
+            );
+
+            return redirect()->route('duties.index', $request->except(['from', 'to']));
+        }
+
         $tab = (string) $request->query('tab', 'diary');
         if (! in_array($tab, ['diary', 'bereitschaft', 'notdienst', 'urlaub'], true)) {
             $tab = 'diary';
@@ -24,6 +40,10 @@ class DutyController extends Controller {
         /** @var User $authUser */
         $authUser = Auth::user();
         $isAdmin = $authUser->isAdmin();
+
+        $range = $this->globalDateRange();
+        $rangeFrom = $range['from']->toDateString();
+        $rangeTo = $range['to']->toDateString();
 
         // ── Aufträge (Diary) ─────────────────────────────────────────────────
         $diaryQuery = DiaryEntry::query()
@@ -35,12 +55,8 @@ class DutyController extends Controller {
         if ($request->filled('status') && $request->status !== 'all') {
             $diaryQuery->where('status', (int) $request->status);
         }
-        if ($request->filled('from')) {
-            $diaryQuery->whereDate('start_at', '>=', $request->from);
-        }
-        if ($request->filled('to')) {
-            $diaryQuery->whereDate('start_at', '<=', $request->to);
-        }
+        $diaryQuery->whereDate('start_at', '>=', $rangeFrom);
+        $diaryQuery->whereDate('start_at', '<=', $rangeTo);
         if ($request->boolean('mine')) {
             $diaryQuery->where('user_id', Auth::id());
         }
@@ -60,12 +76,8 @@ class DutyController extends Controller {
             ->where('is_archived', false)
             ->orderByDesc('start_at');
 
-        if ($request->filled('from')) {
-            $shiftQuery->whereDate('start_at', '>=', $request->from);
-        }
-        if ($request->filled('to')) {
-            $shiftQuery->whereDate('start_at', '<=', $request->to);
-        }
+        $shiftQuery->whereDate('start_at', '>=', $rangeFrom);
+        $shiftQuery->whereDate('start_at', '<=', $rangeTo);
 
         // ── Urlaub ───────────────────────────────────────────────────────────
         $vacationQuery = Vacation::query()
@@ -83,12 +95,8 @@ class DutyController extends Controller {
         if ($request->filled('vstatus')) {
             $vacationQuery->where('status', $request->vstatus);
         }
-        if ($request->filled('from')) {
-            $vacationQuery->where('end_date', '>=', $request->from);
-        }
-        if ($request->filled('to')) {
-            $vacationQuery->where('start_date', '<=', $request->to);
-        }
+        $vacationQuery->where('end_date', '>=', $rangeFrom);
+        $vacationQuery->where('start_date', '<=', $rangeTo);
 
         // ── Notdienst ────────────────────────────────────────────────────────
         $assignmentQuery = EmergencyAssignment::query()
@@ -96,12 +104,8 @@ class DutyController extends Controller {
             ->where('is_archived', false)
             ->orderByDesc('start_at');
 
-        if ($request->filled('from')) {
-            $assignmentQuery->whereDate('start_at', '>=', $request->from);
-        }
-        if ($request->filled('to')) {
-            $assignmentQuery->whereDate('start_at', '<=', $request->to);
-        }
+        $assignmentQuery->whereDate('start_at', '>=', $rangeFrom);
+        $assignmentQuery->whereDate('start_at', '<=', $rangeTo);
 
         // ── Counts ───────────────────────────────────────────────────────────
         $row = DiaryEntry::query()
@@ -162,7 +166,9 @@ class DutyController extends Controller {
 
         $allTags = Tag::orderBy('name')->get(['id', 'name', 'color']);
         $users = $isAdmin ? User::query()->orderBy('name')->get(['id', 'name']) : collect();
-        $filters = $request->only('status', 'from', 'to', 'mine', 'q', 'tag', 'vtype', 'vstatus', 'user_id');
+        $filters = $request->only('status', 'mine', 'q', 'tag', 'vtype', 'vstatus', 'user_id');
+        $filters['from'] = $rangeFrom;
+        $filters['to'] = $rangeTo;
 
         // Sortierung pro aktivem Tab anwenden.
         $sort = '';

@@ -8,11 +8,13 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\WithGlobalDateRange;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
 class ProjectDetailsReportTest extends TestCase {
     use RefreshDatabase;
+    use WithGlobalDateRange;
     use WithOrganization;
 
     private User $user;
@@ -47,10 +49,11 @@ class ProjectDetailsReportTest extends TestCase {
             'ended_at' => '2030-04-10 11:00:00',
             'kind' => TimeEntry::KIND_WORK,
         ]);
-        $response = $this->actingAs($this->user)->get(route('reports.project-details', [
-            'project_id' => $this->project->id,
-            'year' => 2030,
-        ]));
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeYear(2030))
+            ->get(route('reports.project-details', [
+                'project_id' => $this->project->id,
+            ]));
         $response->assertOk();
         $response->assertSee('Website-Relaunch');
     }
@@ -65,11 +68,12 @@ class ProjectDetailsReportTest extends TestCase {
             'ended_at' => '2030-04-10 11:00:00',
             'kind' => TimeEntry::KIND_WORK,
         ]);
-        $response = $this->actingAs($this->user)->get(route('reports.project-details', [
-            'project_id' => $this->project->id,
-            'year' => 2030,
-            'export' => 'csv',
-        ]));
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeYear(2030))
+            ->get(route('reports.project-details', [
+                'project_id' => $this->project->id,
+                'export' => 'csv',
+            ]));
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $body = $response->getContent() ?: '';
@@ -86,11 +90,12 @@ class ProjectDetailsReportTest extends TestCase {
             'ended_at' => '2030-04-10 11:00:00',
             'kind' => TimeEntry::KIND_WORK,
         ]);
-        $response = $this->actingAs($this->user)->get(route('reports.project-details', [
-            'project_id' => $this->project->id,
-            'year' => 2030,
-            'export' => 'pdf',
-        ]));
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeYear(2030))
+            ->get(route('reports.project-details', [
+                'project_id' => $this->project->id,
+                'export' => 'pdf',
+            ]));
         $response->assertOk();
         $response->assertHeader('Content-Type', 'application/pdf');
         $this->assertStringStartsWith('%PDF', (string) $response->getContent());

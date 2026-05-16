@@ -1,6 +1,8 @@
 @extends('layouts.app')
 @section('title', __('Kanban') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Kanban'))
+@section('wrapper-height-class', 'h-[calc(100dvh_-_var(--app-header-h))] overflow-clip')
+@section('main-class', 'min-h-0 overflow-clip flex flex-col')
 
 @section('content')
 <div class="flex h-full min-h-0 w-full flex-col gap-4">
@@ -8,26 +10,11 @@
     <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         <div class="flex flex-wrap items-center gap-2">
             <div class="join">
-                <a href="{{ route('kanban.index', array_filter(['scope' => 'mine', 'range' => $range !== 'custom' ? $range : null])) }}"
+                <a href="{{ route('kanban.index', ['scope' => 'mine']) }}"
                    class="join-item btn btn-sm {{ $teamScope ? 'btn-ghost' : 'btn-primary' }}">{{ __('Meine') }}</a>
-                <a href="{{ route('kanban.index', array_filter(['scope' => 'team', 'range' => $range !== 'custom' ? $range : null])) }}"
+                <a href="{{ route('kanban.index', ['scope' => 'team']) }}"
                    class="join-item btn btn-sm {{ $teamScope ? 'btn-primary' : 'btn-ghost' }}">{{ __('Team') }}</a>
             </div>
-
-            <div class="join">
-                @foreach ($rangePresets as $value => $label)
-                    <a href="{{ route('kanban.index', array_filter(['scope' => $teamScope ? 'team' : null, 'range' => $value])) }}"
-                       class="join-item btn btn-sm {{ $range === $value ? 'btn-primary' : 'btn-ghost' }}">{{ $label }}</a>
-                @endforeach
-            </div>
-
-            <form method="GET" action="{{ route('kanban.index') }}" class="flex items-end gap-2">
-                @if ($teamScope)
-                    <input type="hidden" name="scope" value="team">
-                @endif
-                <x-date-range :from="$from" :to="$to" :label="false" />
-                <button type="submit" class="btn btn-sm {{ $range === 'custom' ? 'btn-primary' : 'btn-ghost' }}">{{ __('Filter') }}</button>
-            </form>
         </div>
 
         <a href="{{ route('diary.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
@@ -42,12 +29,12 @@
     @endif
 
     {{-- Board --}}
-    <div class="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-auto sm:grid-cols-2 xl:grid-cols-4"
+    <div class="grid min-h-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4"
          data-kanban-board
          data-csrf="{{ csrf_token() }}">
         @foreach ($columns as $statusCode => $col)
             @php $items = $byStatus->get($statusCode, collect()); @endphp
-            <section class="flex min-h-0 flex-col rounded-box border border-base-300 bg-base-200/40 shadow-xs"
+            <section class="flex min-h-0 flex-col rounded-box border border-base-300 bg-base-100 shadow-xs"
                      data-kanban-column data-status="{{ $statusCode }}">
                 <header class="flex items-center justify-between border-b border-base-300 px-3 py-2">
                     <div class="flex items-center gap-2">

@@ -23,6 +23,7 @@
                 'day'         => $cursor->day,
                 'isToday'     => $cursor->isToday(),
                 'isWeekend'   => $cursor->isWeekend(),
+                'isSunday'    => $cursor->isSunday(),
                 'isHoliday'   => $holidayName !== null,
                 'holidayName' => $holidayName ?? '',
                 'inMonth'     => $cursor->month === $anchor->month,
@@ -68,7 +69,7 @@
                      @endif>
 
                     {{-- Day number --}}
-                    <span class="mb-0.5 self-end text-xs {{ $day['isToday'] ? 'flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-content' : ($day['inMonth'] ? '' : 'text-base-content/30') }}">
+                    <span class="mb-0.5 self-end text-xs {{ $day['isToday'] ? 'flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-content' : ($day['inMonth'] ? ($day['isSunday'] ? 'text-error font-semibold' : '') : 'text-base-content/30') }}">
                         {{ $day['day'] }}
                     </span>
 

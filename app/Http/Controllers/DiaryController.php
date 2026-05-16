@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveDiaryEntryRequest;
 use App\Models\DiaryEntry;
 use App\Legacy\Models\LegacyDiaryEntry;
 use App\Models\Tag;
 use App\Models\User;
 use App\Services\Archive\ArchiveService;
+use App\Services\UI\DateRangeContext;
 use App\Support\LookupCache;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,8 +22,22 @@ use Illuminate\View\View;
 
 class DiaryController extends Controller
 {
-    public function index(Request $request): View
+    use ResolvesGlobalDateRange;
+
+    public function index(Request $request): View|RedirectResponse
     {
+        // Backward-Compat: alte Bookmarks mit ?from=&to= setzen den globalen
+        // Range einmalig auf Custom und leiten dann auf die saubere URL um.
+        if ($request->filled('from') || $request->filled('to')) {
+            app(DateRangeContext::class)->set(
+                DateRangeContext::PRESET_CUSTOM,
+                (string) $request->query('from', ''),
+                (string) $request->query('to', ''),
+            );
+
+            return redirect()->route('diary.index', $request->except(['from', 'to']));
+        }
+
         [$query, $filters] = $this->buildIndexQuery($request);
         $entries = $query->paginate(20)->withQueryString();
 
@@ -65,12 +81,9 @@ class DiaryController extends Controller
             $query->where('status', (int) $request->status);
         }
 
-        if ($request->filled('from')) {
-            $query->whereDate('start_at', '>=', $request->from);
-        }
-        if ($request->filled('to')) {
-            $query->whereDate('start_at', '<=', $request->to);
-        }
+        $range = $this->globalDateRange();
+        $query->whereDate('start_at', '>=', $range['from']->toDateString());
+        $query->whereDate('start_at', '<=', $range['to']->toDateString());
 
         if ($request->boolean('mine')) {
             $query->where('user_id', Auth::id());
@@ -99,7 +112,9 @@ class DiaryController extends Controller
             });
         }
 
-        $filters = $request->only('status', 'from', 'to', 'mine', 'archived', 'tag', 'project', 'q');
+        $filters = $request->only('status', 'mine', 'archived', 'tag', 'project', 'q');
+        $filters['from'] = $range['from']->toDateString();
+        $filters['to'] = $range['to']->toDateString();
 
         return [$query, $filters];
     }

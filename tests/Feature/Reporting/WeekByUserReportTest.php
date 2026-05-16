@@ -7,11 +7,13 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\WithGlobalDateRange;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
 class WeekByUserReportTest extends TestCase {
     use RefreshDatabase;
+    use WithGlobalDateRange;
     use WithOrganization;
 
     private User $user;
@@ -48,7 +50,9 @@ class WeekByUserReportTest extends TestCase {
             'kind' => TimeEntry::KIND_WORK,
         ]);
 
-        $response = $this->actingAs($this->user)->get(route('reports.week-by-user', ['year' => 2030, 'week' => 14]));
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeWeek(2030, 14))
+            ->get(route('reports.week-by-user'));
         $response->assertOk();
         $response->assertSee('2:00');
     }
@@ -64,11 +68,9 @@ class WeekByUserReportTest extends TestCase {
             'kind' => TimeEntry::KIND_WORK,
         ]);
 
-        $response = $this->actingAs($this->user)->get(route('reports.week-by-user', [
-            'year' => 2030,
-            'week' => 14,
-            'export' => 'csv',
-        ]));
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeWeek(2030, 14))
+            ->get(route('reports.week-by-user', ['export' => 'csv']));
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $this->assertStringContainsString('woche_2030-W14.csv', (string) $response->headers->get('Content-Disposition'));
@@ -86,11 +88,9 @@ class WeekByUserReportTest extends TestCase {
             'kind' => TimeEntry::KIND_WORK,
         ]);
 
-        $response = $this->actingAs($this->user)->get(route('reports.week-by-user', [
-            'year' => 2030,
-            'week' => 14,
-            'export' => 'pdf',
-        ]));
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeWeek(2030, 14))
+            ->get(route('reports.week-by-user', ['export' => 'pdf']));
         $response->assertOk();
         $response->assertHeader('Content-Type', 'application/pdf');
         $this->assertStringStartsWith('%PDF', (string) $response->getContent());

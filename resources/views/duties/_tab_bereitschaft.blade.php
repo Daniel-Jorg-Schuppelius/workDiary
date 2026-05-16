@@ -13,7 +13,8 @@
         </thead>
         <tbody>
             @forelse ($shifts as $shift)
-                <tr class="hover">
+                @php $isSunday = $shift->start_at && $shift->start_at->isSunday(); @endphp
+                <tr class="hover {{ $isSunday ? 'text-error' : '' }}">
                     <td>{{ $shift->user?->name ?? '—' }}</td>
                     <td class="whitespace-nowrap">{{ $shift->start_at?->format('d.m.Y H:i') ?? '—' }}</td>
                     <td class="whitespace-nowrap">{{ $shift->end_at?->format('d.m.Y H:i') ?? '—' }}</td>

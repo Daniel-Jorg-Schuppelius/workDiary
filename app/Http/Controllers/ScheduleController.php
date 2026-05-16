@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\StoreScheduledShiftRequest;
 use App\Http\Requests\UpdateScheduledShiftRequest;
 use App\Http\Resources\ScheduledShiftResource;
@@ -20,21 +21,18 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class ScheduleController extends Controller {
+    use ResolvesGlobalDateRange;
+
     public function index(Request $request, HolidayService $holidays, ShiftComplianceService $compliance, OpenSlotService $openSlots): View {
         /** @var User $auth */
         $auth = Auth::user();
 
         $view = $request->query('view', 'week'); // week|month
-        $dateStr = $request->query('date', CarbonImmutable::today()->toDateString());
         $userFilter = (int) $request->query('user', 0);
 
-        try {
-            $anchor = CarbonImmutable::parse($dateStr);
-        } catch (\Exception) {
-            $anchor = CarbonImmutable::today();
-        }
+        $anchor = $this->globalDateRange()['from'];
 
-        [$from, $to, $prevDate, $nextDate] = $this->periodBounds($anchor, $view);
+        [$from, $to] = $this->periodBounds($anchor, $view);
 
         $shiftTypes = ShiftType::active()->orderBy('name')->get();
         $users = User::orderBy('name')->get();
@@ -76,8 +74,6 @@ class ScheduleController extends Controller {
             'anchor' => $anchor,
             'from' => $from,
             'to' => $to,
-            'prevDate' => $prevDate,
-            'nextDate' => $nextDate,
             'todayDate' => CarbonImmutable::today()->toDateString(),
             'shifts' => $shifts,
             'shiftsByDate' => $shiftsByDate,
@@ -94,15 +90,10 @@ class ScheduleController extends Controller {
     // ── JSON-API for Alpine.js ───────────────────────────────────────────────
 
     public function apiIndex(Request $request): JsonResponse {
-        $dateStr = $request->query('date', CarbonImmutable::today()->toDateString());
         $view = $request->query('view', 'week');
         $userFilter = (int) $request->query('user', 0);
 
-        try {
-            $anchor = CarbonImmutable::parse($dateStr);
-        } catch (\Exception) {
-            $anchor = CarbonImmutable::today();
-        }
+        $anchor = $this->globalDateRange()['from'];
 
         [$from, $to] = $this->periodBounds($anchor, $view);
 
@@ -111,7 +102,6 @@ class ScheduleController extends Controller {
             ->forDateRange($from, $to)
             ->orderBy('date')
             ->orderBy('start_time');
-
         if ($userFilter > 0) {
             $query->forUser($userFilter);
         }
@@ -208,21 +198,17 @@ class ScheduleController extends Controller {
     // ── Helpers ─────────────────────────────────────────────────────────────
 
     /**
-     * @return array{CarbonImmutable, CarbonImmutable, string, string}
+     * @return array{CarbonImmutable, CarbonImmutable}
      */
     private function periodBounds(CarbonImmutable $anchor, string $view): array {
         if ($view === 'month') {
             $from = $anchor->startOfMonth();
             $to = $anchor->endOfMonth();
-            $prevDate = $from->subMonth()->toDateString();
-            $nextDate = $from->addMonth()->toDateString();
         } else {
             $from = $anchor->startOfWeek(CarbonInterface::MONDAY);
             $to = $from->endOfWeek(CarbonInterface::SUNDAY);
-            $prevDate = $from->subWeek()->toDateString();
-            $nextDate = $from->addWeek()->toDateString();
         }
 
-        return [$from, $to, $prevDate, $nextDate];
+        return [$from, $to];
     }
 }

@@ -33,8 +33,8 @@ class WeekByUserReportController extends Controller {
         }
 
         $globalFrom = $this->globalDateRange()['from'];
-        $year = (int) $request->input('year', $globalFrom->year);
-        $week = (int) $request->input('week', $globalFrom->isoWeek);
+        $year = (int) $globalFrom->isoWeekYear;
+        $week = (int) $globalFrom->isoWeek;
         $year = max(2000, min(2100, $year));
         $week = max(1, min(53, $week));
 
@@ -95,10 +95,6 @@ class WeekByUserReportController extends Controller {
             $weekRate += $row['rate'];
         }
 
-        // Navigation
-        $prev = $start->copy()->subWeek();
-        $next = $start->copy()->addWeek();
-
         $start->locale($locale);
         $weekLabel = sprintf('KW %02d / %d', $week, $year);
 
@@ -121,10 +117,6 @@ class WeekByUserReportController extends Controller {
             'dayTotals' => $dayTotals,
             'weekTotal' => $weekTotal,
             'weekRate' => $weekRate,
-            'prevYear' => (int) $prev->isoWeekYear,
-            'prevWeek' => (int) $prev->isoWeek,
-            'nextYear' => (int) $next->isoWeekYear,
-            'nextWeek' => (int) $next->isoWeek,
         ]);
     }
 

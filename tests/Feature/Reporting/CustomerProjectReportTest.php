@@ -8,11 +8,13 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\WithGlobalDateRange;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
 class CustomerProjectReportTest extends TestCase {
     use RefreshDatabase;
+    use WithGlobalDateRange;
     use WithOrganization;
 
     private User $user;
@@ -59,10 +61,9 @@ class CustomerProjectReportTest extends TestCase {
             'billable' => true,
         ]);
 
-        $response = $this->actingAs($this->user)->get(route('reports.customer-project', [
-            'from' => now()->startOfYear()->toDateString(),
-            'to' => now()->endOfYear()->toDateString(),
-        ]));
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->startOfYear()->toDateString(), now()->endOfYear()->toDateString()))
+            ->get(route('reports.customer-project'));
         $response->assertOk();
         $response->assertSee('Acme GmbH');
         $response->assertSee('Website-Relaunch');
@@ -85,11 +86,9 @@ class CustomerProjectReportTest extends TestCase {
             'billable' => true,
         ]);
 
-        $response = $this->actingAs($this->user)->get(route('reports.customer-project', [
-            'from' => now()->startOfYear()->toDateString(),
-            'to' => now()->endOfYear()->toDateString(),
-            'export' => 'csv',
-        ]));
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->startOfYear()->toDateString(), now()->endOfYear()->toDateString()))
+            ->get(route('reports.customer-project', ['export' => 'csv']));
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $body = $response->getContent() ?: '';
@@ -110,11 +109,9 @@ class CustomerProjectReportTest extends TestCase {
             'billable' => true,
         ]);
 
-        $response = $this->actingAs($this->user)->get(route('reports.customer-project', [
-            'from' => now()->startOfYear()->toDateString(),
-            'to' => now()->endOfYear()->toDateString(),
-            'export' => 'pdf',
-        ]));
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->startOfYear()->toDateString(), now()->endOfYear()->toDateString()))
+            ->get(route('reports.customer-project', ['export' => 'pdf']));
         $response->assertOk();
         $response->assertHeader('Content-Type', 'application/pdf');
         $this->assertStringContainsString('kunden-projekte_', (string) $response->headers->get('Content-Disposition'));

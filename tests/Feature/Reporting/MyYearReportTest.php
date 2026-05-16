@@ -7,11 +7,13 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\WithGlobalDateRange;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
 class MyYearReportTest extends TestCase {
     use RefreshDatabase;
+    use WithGlobalDateRange;
     use WithOrganization;
 
     private User $user;
@@ -32,7 +34,9 @@ class MyYearReportTest extends TestCase {
     }
 
     public function test_route_renders_for_authenticated_user(): void {
-        $response = $this->actingAs($this->user)->get(route('reports.my-year', ['year' => 2030]));
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeYear(2030))
+            ->get(route('reports.my-year'));
         $response->assertOk();
         $response->assertSee('Mein Jahr 2030', false);
     }
@@ -70,7 +74,9 @@ class MyYearReportTest extends TestCase {
             'billable' => true,
         ]);
 
-        $response = $this->actingAs($this->user)->get(route('reports.my-year', ['year' => 2030]));
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeYear(2030))
+            ->get(route('reports.my-year'));
         $response->assertOk();
         // 3:00 + 1:30 = 4:30 h Jahressumme
         $response->assertSee('4:30 h', false);
@@ -96,7 +102,9 @@ class MyYearReportTest extends TestCase {
             'kind' => TimeEntry::KIND_TRAVEL,
         ]);
 
-        $response = $this->actingAs($this->user)->get(route('reports.my-year', ['year' => 2030, 'kind' => 'travel']));
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeYear(2030))
+            ->get(route('reports.my-year', ['kind' => 'travel']));
         $response->assertOk();
         $response->assertSee('5:00 h', false); // nur Reise = 5:00
         $response->assertDontSee('7:00 h', false); // Summe wäre 7:00

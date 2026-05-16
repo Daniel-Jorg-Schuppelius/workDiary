@@ -137,13 +137,22 @@ class AppServiceProvider extends ServiceProvider {
      * Stellt der App-Layout-View den aktuell laufenden Stoppuhr-Eintrag
      * (TimeEntry|null) als $stopwatchEntry bereit, damit das Header-Widget
      * den Live-Timer rendern kann.
+     *
+     * Fängt DB-/Infrastruktur-Fehler ab, damit Fehlerseiten und der
+     * Login-Screen auch bei nicht erreichbarer Datenbank gerendert werden
+     * können.
      */
     private function registerStopwatchViewComposer(): void {
         \Illuminate\Support\Facades\View::composer('layouts.app', function ($view): void {
-            $user = Auth::user();
             $entry = null;
-            if ($user instanceof User) {
-                $entry = app(\App\Services\Timesheet\Stopwatch::class)->current($user);
+            try {
+                $user = Auth::user();
+                if ($user instanceof User) {
+                    $entry = app(\App\Services\Timesheet\Stopwatch::class)->current($user);
+                }
+            } catch (\Throwable $e) {
+                report($e);
+                $entry = null;
             }
             $view->with('stopwatchEntry', $entry);
         });
@@ -153,10 +162,27 @@ class AppServiceProvider extends ServiceProvider {
      * Stellt der App-Layout-View den global gewählten Zeitraum
      * (Preset + Von/Bis) als $globalDateRange bereit, damit das Header-
      * Widget und Report-Controller einen einheitlichen State teilen.
+     *
+     * Fällt bei Session-/DB-Fehlern auf einen statischen Fallback zurück,
+     * damit das Layout (z.B. die Fehlerseite) noch gerendert werden kann.
      */
     private function registerDateRangeViewComposer(): void {
-        \Illuminate\Support\Facades\View::composer('layouts.app', function ($view): void {
-            $view->with('globalDateRange', app(\App\Services\UI\DateRangeContext::class)->current());
+        \Illuminate\Support\Facades\View::composer(['layouts.app', 'components.header-date-range'], function ($view): void {
+            try {
+                $range = app(\App\Services\UI\DateRangeContext::class)->current();
+            } catch (\Throwable $e) {
+                report($e);
+                $now = \Carbon\CarbonImmutable::now();
+                $range = [
+                    'from' => $now->startOfMonth(),
+                    'to' => $now->endOfMonth(),
+                    'preset' => \App\Services\UI\DateRangeContext::PRESET_THIS_MONTH,
+                    'label' => __('Dieser Monat'),
+                    'unit' => 'month',
+                    'isoWeekLabel' => null,
+                ];
+            }
+            $view->with('globalDateRange', $range);
         });
     }
 }

@@ -7,6 +7,7 @@ use App\Models\EmergencyAssignment;
 use App\Models\OnCallShift;
 use App\Models\User;
 use App\Services\Archive\ArchiveService;
+use App\Services\UI\DateRangeContext;
 use Carbon\CarbonImmutable;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -21,6 +22,7 @@ class ArchiveTest extends TestCase
         parent::setUp();
         $this->seed(RolesSeeder::class);
         config()->set('archive.threshold_days', 30);
+        app(DateRangeContext::class)->set(DateRangeContext::PRESET_THIS_YEAR);
     }
 
     public function test_archive_service_archives_old_done_entries_only(): void

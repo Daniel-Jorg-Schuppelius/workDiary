@@ -213,6 +213,7 @@ Route::middleware('auth')->group(function () {
 
     // ── Globale Zeitauswahl (Header-Widget) ─────────────────────────────────
     Route::post('ui/date-range', [\App\Http\Controllers\UI\DateRangeController::class, 'update'])->name('ui.date-range.update');
+    Route::post('ui/date-range/shift', [\App\Http\Controllers\UI\DateRangeController::class, 'shift'])->name('ui.date-range.shift');
 
     // ── Gleitzeit ───────────────────────────────────────────────────────────
     Route::get('flex', [FlexController::class, 'index'])->name('flex.index');

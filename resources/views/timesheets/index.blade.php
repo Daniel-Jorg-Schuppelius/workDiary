@@ -57,7 +57,8 @@
                         @foreach($timesheets as $ts)
                             <?php $h = intdiv((int)$ts->total_work_minutes, 60); ?>
                             <?php $m = (int)$ts->total_work_minutes % 60; ?>
-                            <tr>
+                            <?php $tsIsSunday = $ts->work_date && \Carbon\Carbon::parse($ts->work_date)->isSunday(); ?>
+                            <tr class="{{ $tsIsSunday ? 'text-error' : '' }}">
                                 <td>{{ optional($ts->work_date)->format('d.m.Y') }}</td>
                                 <td>{{ $ts->project?->name }}</td>
                                 <td>{{ $ts->user?->name }}</td>

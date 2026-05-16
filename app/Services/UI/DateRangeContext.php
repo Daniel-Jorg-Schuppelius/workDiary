@@ -16,6 +16,9 @@ class DateRangeContext {
     public const PRESET_THIS_MONTH = 'this_month';
     public const PRESET_LAST_MONTH = 'last_month';
     public const PRESET_THIS_YEAR = 'this_year';
+    public const PRESET_LAST_7_DAYS = 'last_7_days';
+    public const PRESET_LAST_30_DAYS = 'last_30_days';
+    public const PRESET_LAST_90_DAYS = 'last_90_days';
     public const PRESET_CUSTOM = 'custom';
 
     /** @var array<int, string> */
@@ -25,6 +28,9 @@ class DateRangeContext {
         self::PRESET_THIS_MONTH,
         self::PRESET_LAST_MONTH,
         self::PRESET_THIS_YEAR,
+        self::PRESET_LAST_7_DAYS,
+        self::PRESET_LAST_30_DAYS,
+        self::PRESET_LAST_90_DAYS,
         self::PRESET_CUSTOM,
     ];
 
@@ -36,7 +42,7 @@ class DateRangeContext {
     }
 
     /**
-     * @return array{from: CarbonImmutable, to: CarbonImmutable, preset: string, label: string}
+     * @return array{from: CarbonImmutable, to: CarbonImmutable, preset: string, label: string, unit: string, isoWeekLabel: ?string}
      */
     public function current(): array {
         $preset = (string) $this->session->get(self::KEY_PRESET, self::PRESET_THIS_MONTH);
@@ -62,7 +68,88 @@ class DateRangeContext {
             'to' => $to,
             'preset' => $preset,
             'label' => $this->labelFor($preset, $from, $to),
+            'unit' => $this->unitFor($preset, $from, $to),
+            'isoWeekLabel' => $this->isoWeekLabel($from, $to),
         ];
+    }
+
+    /**
+     * Verschiebt den aktuellen Range um eine Periode (je nach Preset) vor
+     * (+1) oder zurück (-1). Bei Non-Custom-Presets wechselt der Preset auf
+     * 'custom', wenn das Ergebnis nicht mehr dem dynamischen Default
+     * entspricht (z.B. „Letzter Monat“ wird zu Custom). Bei Custom-Ranges
+     * wird um die Länge des Ranges verschoben.
+     */
+    public function shift(int $direction): void {
+        $direction = $direction >= 0 ? 1 : -1;
+        $state = $this->current();
+        $from = $state['from'];
+        $to = $state['to'];
+        $unit = $state['unit'];
+
+        switch ($unit) {
+            case 'day':
+                $newFrom = $from->addDays($direction);
+                $newTo = $newFrom->endOfDay();
+                $newFrom = $newFrom->startOfDay();
+                break;
+            case 'week':
+                $newFrom = $from->addWeeks($direction)->startOfWeek();
+                $newTo = $newFrom->endOfWeek();
+                break;
+            case 'month':
+                $newFrom = $from->addMonthsNoOverflow($direction)->startOfMonth();
+                $newTo = $newFrom->endOfMonth();
+                break;
+            case 'year':
+                $newFrom = $from->addYears($direction)->startOfYear();
+                $newTo = $newFrom->endOfYear();
+                break;
+            default: // custom
+                $days = $from->diffInDays($to) + 1;
+                $newFrom = $from->addDays($direction * $days)->startOfDay();
+                $newTo = $newFrom->addDays($days - 1)->endOfDay();
+                break;
+        }
+
+        $this->session->put(self::KEY_PRESET, self::PRESET_CUSTOM);
+        $this->session->put(self::KEY_FROM, $newFrom->toDateString());
+        $this->session->put(self::KEY_TO, $newTo->toDateString());
+    }
+
+    private function unitFor(string $preset, CarbonImmutable $from, CarbonImmutable $to): string {
+        switch ($preset) {
+            case self::PRESET_TODAY:
+                return 'day';
+            case self::PRESET_THIS_WEEK:
+                return 'week';
+            case self::PRESET_THIS_MONTH:
+            case self::PRESET_LAST_MONTH:
+                return 'month';
+            case self::PRESET_THIS_YEAR:
+                return 'year';
+        }
+        // Custom: leite Einheit aus Range ab, damit Vor/Zurück sinnvoll ist.
+        if ($from->isSameDay($to)) {
+            return 'day';
+        }
+        if ($from->equalTo($from->startOfWeek()) && $to->equalTo($from->endOfWeek())) {
+            return 'week';
+        }
+        if ($from->equalTo($from->startOfMonth()) && $to->equalTo($from->endOfMonth())) {
+            return 'month';
+        }
+        if ($from->equalTo($from->startOfYear()) && $to->equalTo($from->endOfYear())) {
+            return 'year';
+        }
+        return 'custom';
+    }
+
+    private function isoWeekLabel(CarbonImmutable $from, CarbonImmutable $to): ?string {
+        if (! $from->equalTo($from->startOfWeek()) || ! $to->equalTo($from->endOfWeek())) {
+            return null;
+        }
+        return sprintf('KW %02d/%d', $from->isoWeek, $from->isoWeekYear);
     }
 
     /**
@@ -103,6 +190,9 @@ class DateRangeContext {
                 $now->subMonthNoOverflow()->endOfMonth(),
             ],
             self::PRESET_THIS_YEAR => [$now->startOfYear(), $now->endOfYear()],
+            self::PRESET_LAST_7_DAYS => [$now->subDays(6)->startOfDay(), $now->endOfDay()],
+            self::PRESET_LAST_30_DAYS => [$now->subDays(29)->startOfDay(), $now->endOfDay()],
+            self::PRESET_LAST_90_DAYS => [$now->subDays(89)->startOfDay(), $now->endOfDay()],
             default => [$now->startOfMonth(), $now->endOfMonth()],
         };
     }
@@ -125,6 +215,9 @@ class DateRangeContext {
             self::PRESET_THIS_MONTH => __('Dieser Monat'),
             self::PRESET_LAST_MONTH => __('Letzter Monat'),
             self::PRESET_THIS_YEAR => __('Dieses Jahr'),
+            self::PRESET_LAST_7_DAYS => __('Letzte 7 Tage'),
+            self::PRESET_LAST_30_DAYS => __('Letzte 30 Tage'),
+            self::PRESET_LAST_90_DAYS => __('Letzte 90 Tage'),
             default => $from->format('d.m.Y') . ' – ' . $to->format('d.m.Y'),
         };
     }

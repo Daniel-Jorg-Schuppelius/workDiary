@@ -34,5 +34,25 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Datenbank nicht erreichbar (Connection refused / timeout / Auth-Fehler):
+        // Zeige eine schlanke, layout-freie Fehlerseite, statt einen
+        // generischen Whoops/500-Stack auszuwerfen. Wichtig: die Antwort
+        // darf NICHT auf Session/DB zugreifen (kein layouts.app).
+        $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
+            if (! ($e instanceof \PDOException
+                || $e instanceof \Illuminate\Database\QueryException
+                || ($e->getPrevious() instanceof \PDOException))) {
+                return null;
+            }
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Database temporarily unavailable.',
+                ], 503);
+            }
+
+            return response()->view('errors.database-unavailable', [
+                'exceptionMessage' => $e->getMessage(),
+            ], 503);
+        });
     })->create();

@@ -34,13 +34,8 @@ class CustomerProjectReportController extends Controller {
         }
 
         $globalRange = $this->globalDateRange();
-        $defaultFrom = $globalRange['from']->toDateString();
-        $defaultTo = $globalRange['to']->toDateString();
-        $from = (string) $request->input('from', $defaultFrom);
-        $to = (string) $request->input('to', $defaultTo);
-
-        $fromDate = Carbon::parse($from)->startOfDay();
-        $toDate = Carbon::parse($to)->endOfDay();
+        $fromDate = Carbon::parse($globalRange['from']->toDateString())->startOfDay();
+        $toDate = Carbon::parse($globalRange['to']->toDateString())->endOfDay();
 
         $query = TimeEntry::query()
             ->whereBetween('date', [$fromDate->toDateString(), $toDate->toDateString()])

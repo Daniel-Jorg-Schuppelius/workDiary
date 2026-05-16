@@ -25,15 +25,12 @@
                 @endforeach
             </select>
         </x-filter-field>
-        <x-filter-field :label="__('Jahr')" for="rep-year">
-            <input id="rep-year" type="number" name="year" value="{{ $year }}" min="2000" max="2100" class="input input-sm input-bordered w-24">
-        </x-filter-field>
         <x-slot:extra>
             @if ($project)
-                <a href="{{ route('reports.project-details', ['project_id' => $projectId, 'year' => $year, 'export' => 'csv']) }}" class="btn btn-sm btn-outline gap-1">
+                <a href="{{ route('reports.project-details', ['project_id' => $projectId, 'export' => 'csv']) }}" class="btn btn-sm btn-outline gap-1">
                     <x-icon name="download" />CSV
                 </a>
-                <a href="{{ route('reports.project-details', ['project_id' => $projectId, 'year' => $year, 'export' => 'pdf']) }}" class="btn btn-sm btn-outline gap-1">
+                <a href="{{ route('reports.project-details', ['project_id' => $projectId, 'export' => 'pdf']) }}" class="btn btn-sm btn-outline gap-1">
                     <x-icon name="picture_as_pdf" />PDF
                 </a>
             @endif
@@ -81,6 +78,13 @@
                             </tr>
                         @endforeach
                     </tbody>
+                    <tfoot>
+                        <tr class="font-bold">
+                            <td>Σ {{ __('Jahr') }}</td>
+                            <td class="text-right">{{ $fmt($yearMinutes) }}</td>
+                            <td class="text-right">{{ $money($yearRate) }}</td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
 
@@ -104,6 +108,13 @@
                                 </tr>
                             @endforeach
                         </tbody>
+                        <tfoot>
+                            <tr class="font-bold">
+                                <td>Σ {{ __('Gesamt') }}</td>
+                                <td class="text-right">{{ $fmt($yearMinutes) }}</td>
+                                <td class="text-right">{{ $money($yearRate) }}</td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             @endif

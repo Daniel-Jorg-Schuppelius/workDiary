@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\DiaryEntry;
 use App\Models\User;
+use App\Services\UI\DateRangeContext;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -14,6 +17,8 @@ use Illuminate\View\View;
 
 class KanbanController extends Controller
 {
+    use ResolvesGlobalDateRange;
+
     private const MAX_ENTRIES = 200;
 
     /**
@@ -31,28 +36,22 @@ class KanbanController extends Controller
         ];
     }
 
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
+        // Backward-Compat: alte URLs mit ?range=7|30|90|all|custom oder
+        // ?from=&to= einmalig in den globalen DateRangeContext übersetzen
+        // und auf die saubere URL umleiten. Der Header-Selektor übernimmt.
+        if ($request->has('range') || $request->filled('from') || $request->filled('to')) {
+            $this->migrateLegacyRange($request);
+
+            return redirect()->route('kanban.index', $request->except(['range', 'from', 'to']));
+        }
+
         /** @var User $auth */
         $auth = Auth::user();
         $teamScope = $request->query('scope') === 'team';
 
-        // Zeitraum: Preset (range) oder explizite from/to-Werte
-        $rangePresets = [
-            '7' => __('Letzte 7 Tage'),
-            '30' => __('Letzte 30 Tage'),
-            '90' => __('Letzte 90 Tage'),
-            'all' => __('Alle'),
-        ];
-        $range = (string) $request->query('range', '30');
-        if (! array_key_exists($range, $rangePresets)) {
-            $range = '30';
-        }
-        $from = $request->date('from');
-        $to = $request->date('to');
-        if ($from || $to) {
-            $range = 'custom';
-        }
+        $range = $this->globalDateRange();
 
         $query = DiaryEntry::query()
             ->select(['id', 'user_id', 'content', 'status', 'start_at'])
@@ -64,17 +63,8 @@ class KanbanController extends Controller
             $query->where('user_id', $auth->id);
         }
 
-        if ($range !== 'all' && $range !== 'custom') {
-            $days = (int) $range;
-            $query->where('start_at', '>=', now()->subDays($days)->startOfDay());
-        } elseif ($range === 'custom') {
-            if ($from) {
-                $query->whereDate('start_at', '>=', $from);
-            }
-            if ($to) {
-                $query->whereDate('start_at', '<=', $to);
-            }
-        }
+        $query->whereDate('start_at', '>=', $range['from']->toDateString());
+        $query->whereDate('start_at', '<=', $range['to']->toDateString());
 
         $entries = $query->limit(self::MAX_ENTRIES)->get();
         $byStatus = $entries->groupBy(fn (DiaryEntry $e) => (int) $e->status);
@@ -85,11 +75,38 @@ class KanbanController extends Controller
             'teamScope' => $teamScope,
             'canEditOthers' => $auth->canCreateEntriesForOthers(),
             'isLimited' => $entries->count() === self::MAX_ENTRIES,
-            'range' => $range,
-            'rangePresets' => $rangePresets,
-            'from' => $from?->format('Y-m-d'),
-            'to' => $to?->format('Y-m-d'),
         ]);
+    }
+
+    /**
+     * Übersetzt alte Query-Parameter (?range=7|30|90|all|custom, ?from=, ?to=)
+     * in den globalen DateRangeContext, damit bestehende Bookmarks weiter
+     * funktionieren.
+     */
+    private function migrateLegacyRange(Request $request): void
+    {
+        $ctx = app(DateRangeContext::class);
+
+        if ($request->filled('from') || $request->filled('to')) {
+            $ctx->set(
+                DateRangeContext::PRESET_CUSTOM,
+                (string) $request->query('from', ''),
+                (string) $request->query('to', ''),
+            );
+
+            return;
+        }
+
+        $preset = match ((string) $request->query('range', '')) {
+            '7' => DateRangeContext::PRESET_LAST_7_DAYS,
+            '30' => DateRangeContext::PRESET_LAST_30_DAYS,
+            '90' => DateRangeContext::PRESET_LAST_90_DAYS,
+            'all' => DateRangeContext::PRESET_THIS_YEAR,
+            default => null,
+        };
+        if ($preset !== null) {
+            $ctx->set($preset);
+        }
     }
 
     public function updateStatus(Request $request, DiaryEntry $entry): JsonResponse

@@ -48,6 +48,8 @@
         .weekend  { background: #f4f4f4; }
         .holiday  { background: #fff5d6; }
         .today    { background: #e8f1ff; }
+        .sunday   { color: #c00; }
+        .sunday.weekend { color: #c00; }
 
         .badge {
             display: inline-block;

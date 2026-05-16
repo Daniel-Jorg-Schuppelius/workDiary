@@ -42,7 +42,9 @@ window.__initFlatpickr = (el) => {
     // Im dialog-Kontext: appendTo in den Dialog (Top-Layer), damit der Kalender
     // nicht vom modal-backdrop verdeckt wird. onOpen setzt position:fixed + z-index
     // via getBoundingClientRect, da DaisyUI's dialog kein transform/filter hat.
-    const repositionCalendar = (fp) => {
+    // Flatpickr ruft Callbacks mit (selectedDates, dateStr, instance) auf.
+    const repositionCalendar = (_dates, _dateStr, fp) => {
+        if (!fp || !fp.input) return;
         const cal = fp.calendarContainer;
         const r = fp.input.getBoundingClientRect();
         cal.style.position = "fixed";

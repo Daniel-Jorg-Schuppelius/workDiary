@@ -26,10 +26,8 @@ class MyMonthReportController extends Controller {
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         $globalRange = $this->globalDateRange();
-        $defaultYear = $globalRange['from']->year;
-        $defaultMonth = $globalRange['from']->month;
-        $year = (int) $request->input('year', $defaultYear);
-        $month = (int) $request->input('month', $defaultMonth);
+        $year = (int) $globalRange['from']->year;
+        $month = (int) $globalRange['from']->month;
         $year = max(2000, min(2100, $year));
         $month = max(1, min(12, $month));
 
@@ -63,10 +61,6 @@ class MyMonthReportController extends Controller {
         }
         ksort($byDay);
 
-        // Monats-Navigation
-        $prev = $start->copy()->subMonthNoOverflow();
-        $next = $start->copy()->addMonthNoOverflow();
-
         $locale = app()->getLocale();
         $start->locale($locale);
         $monthLabel = $start->isoFormat('MMMM YYYY');
@@ -85,10 +79,6 @@ class MyMonthReportController extends Controller {
             'byDay' => $byDay,
             'monthMinutes' => $monthMinutes,
             'monthRate' => $monthRate,
-            'prevYear' => (int) $prev->year,
-            'prevMonth' => (int) $prev->month,
-            'nextYear' => (int) $next->year,
-            'nextMonth' => (int) $next->month,
         ]);
     }
 

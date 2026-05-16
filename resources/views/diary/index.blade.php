@@ -7,7 +7,7 @@
     {{-- Filter-Leiste --}}
     <form method="GET" action="{{ route('diary.index') }}" class="flex-none rounded-box border border-base-300 bg-base-100 p-5 shadow-xs">
         <div class="flex flex-wrap items-end gap-4">
-            <div class="flex-1 min-w-60">
+            <div class="flex-1 w-full sm:min-w-60 sm:w-auto">
                 <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-base-content/60">{{ __('Suche') }}</label>
                 <input type="search" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="{{ __('Inhalt oder Antwort …') }}" class="input input-bordered input-sm w-full">
             </div>
@@ -21,7 +21,6 @@
                     <option value="-1" @selected(($filters['status'] ?? '') === '-1')>{{ __('Erledigt') }}</option>
                 </select>
             </div>
-            <x-date-range :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''" class="min-w-56" />
             @if (($allTags ?? collect())->isNotEmpty())
                 <div>
                     <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-base-content/60">{{ __('Tag') }}</label>

@@ -27,9 +27,11 @@ class ProjectDetailsReportController extends Controller {
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        $isAdmin = Auth::user()?->isAdmin() ?? false;
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+        $isAdmin = $authUser?->isAdmin() ?? false;
 
-        $year = (int) $request->input('year', $this->globalDateRange()['from']->year);
+        $year = (int) $this->globalDateRange()['from']->year;
         $year = max(2000, min(2100, $year));
         $projectId = $request->integer('project_id');
 

@@ -2,7 +2,7 @@
 @section('title', 'Wochenansicht — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Wochenansicht'))
 {{-- Full-viewport-height: kein Seiten-Scroll, nur interner Tabellen-Scroll --}}
-@section('wrapper-height-class', 'h-dvh overflow-clip')
+@section('wrapper-height-class', 'h-[calc(100dvh_-_var(--app-header-h))] overflow-clip')
 @section('main-class', 'min-h-0 overflow-clip flex flex-col')
 
 @section('content')

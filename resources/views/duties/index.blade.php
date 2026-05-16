@@ -128,7 +128,6 @@
                         </select>
                     </div>
                 @endif
-                <x-date-range :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''" />
                 <div class="ml-auto flex items-end gap-2">
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('Filtern') }}</button>
                     @if (! empty($tabFilters))

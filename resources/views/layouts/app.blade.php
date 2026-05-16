@@ -18,7 +18,8 @@
         <link href="https://fonts.bunny.net/css?family=space-grotesk:400,500,700|ibm-plex-sans:400,500,600" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200&display=swap" rel="stylesheet">
         <style>
-            :root { --sidebar-w: 16rem; }
+            :root { --sidebar-w: min(16rem, 85vw); --app-header-h: 3.5rem; --app-footer-h: 3rem; }
+            @media (min-width: 1024px) { :root { --sidebar-w: 16rem; } }
             body.sidebar-collapsed { --sidebar-w: 4rem; }
             #app-sidebar { width: var(--sidebar-w); transition: width 200ms ease; }
             @media (min-width: 1024px) {
@@ -29,6 +30,34 @@
             }
             @media (min-width: 1536px) {
                 .with-sidebar-pad { padding-left: calc(var(--sidebar-w) + 3rem) !important; }
+            }
+            /* 3-stufiger Header: <900 zentriert gestapelt; 900-1695 zwei Zeilen; >=1696 eine Zeile */
+            .header-row {
+                display: grid;
+                gap: 0.5rem 0.75rem;
+                grid-template-columns: 1fr;
+                grid-template-areas: "left" "right" "center";
+                justify-items: center;
+                align-items: center;
+            }
+            .header-row .header-left   { grid-area: left;   min-width: 0; max-width: 100%; }
+            .header-row .header-center { grid-area: center; min-width: 0; max-width: 100%; display: flex; justify-content: center; }
+            .header-row .header-right  { grid-area: right;  min-width: 0; max-width: 100%; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.5rem; }
+            @media (min-width: 900px) {
+                .header-row {
+                    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                    grid-template-areas: "left right" "center center";
+                    justify-items: stretch;
+                }
+                .header-row .header-left   { justify-self: start; }
+                .header-row .header-right  { justify-self: end; flex-wrap: nowrap; justify-content: flex-end; }
+                .header-row .header-center { justify-self: center; }
+            }
+            @media (min-width: 1696px) {
+                .header-row {
+                    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+                    grid-template-areas: "left center right";
+                }
             }
             body.sidebar-collapsed #app-sidebar [data-sidebar-label],
             body.sidebar-collapsed #app-sidebar [data-sidebar-section] {
@@ -178,7 +207,7 @@
     @php
         $_bodyMode = (session('work_mode', 'legacy') === 'legacy' && filled(config('database.connections.legacy.database'))) ? 'legacy' : 'new';
     @endphp
-    <body class="min-h-screen text-base-content {{ $_bodyMode === 'legacy' ? 'bg-base-200' : 'bg-gradient-to-b from-base-200 to-base-300' }}" data-mode="{{ $_bodyMode }}">
+    <body class="min-h-screen text-base-content {{ $_bodyMode === 'legacy' ? 'bg-base-200' : 'bg-linear-to-b from-base-200 to-base-300' }}" data-mode="{{ $_bodyMode }}">
         @php
             $currentMode = session('work_mode', 'legacy');
             $legacyConfigured = filled(config('database.connections.legacy.database'));
@@ -196,16 +225,30 @@
             ];
         @endphp
 
-        <header id="app-header" class="fixed inset-x-0 top-0 z-50 bg-base-100 border-b border-base-300 shadow-xs">
-            <div class="navbar w-full px-4 xl:px-8 2xl:px-12 min-h-14">
-                <div class="navbar-start min-w-0 flex-1">
+        <header id="app-header" class="sticky top-0 z-50 bg-base-100 border-b border-base-300 shadow-xs">
+            @php
+                $_hasCenter = \Illuminate\Support\Facades\View::hasSection('nav-center');
+                $_showCenteredRange = ! $_hasCenter && auth()->check() && ! $isLegacyMode;
+                $_useGrid = $_hasCenter || $_showCenteredRange;
+            @endphp
+            <div class="header-row w-full px-4 xl:px-8 2xl:px-12 min-h-14 py-2">
+                <div class="header-left flex items-center">
                     <a href="{{ route('home') }}" class="flex items-center gap-2 group min-w-0">
                         <span class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary transition group-hover:opacity-80 shrink-0">WorkDiary</span>
                         <span class="text-base-content/40">/</span>
                         <span class="font-['Space_Grotesk'] font-semibold text-base-content truncate">@yield('nav-title', __('Tagebuch'))</span>
                     </a>
                 </div>
-                <div class="navbar-end gap-2">
+                @if ($_useGrid)
+                    <div class="header-center">
+                        @hasSection('nav-center')
+                            @yield('nav-center')
+                        @else
+                            <x-header-date-range align="center" />
+                        @endif
+                    </div>
+                @endif
+                <div class="header-right">
                     @auth
                         @php
                             // Hauptnavigation: pro Modus eine Liste mit Routenname + Label.
@@ -341,7 +384,7 @@
 
                             <div class="dropdown dropdown-end xl:hidden">
                                 <label tabindex="0" class="btn btn-sm btn-ghost">☰ {{ __('Navigation') }}</label>
-                                <ul tabindex="0" class="dropdown-content menu z-50 w-56 rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                <ul tabindex="0" class="dropdown-content menu z-50 w-[min(14rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
                                     @foreach ($mainNavItems as $item)
                                         @php $active = collect($item['matches'])->contains(fn ($m) => request()->routeIs($m)); @endphp
                                         <li>
@@ -360,7 +403,7 @@
                                     <label tabindex="0" class="btn btn-sm {{ $isManageActive ? 'btn-primary' : 'btn-ghost' }}" title="{{ __('Verwaltung') }}">
                                         ≡ <span class="hidden sm:inline ml-1">{{ __('Verwaltung') }}</span>
                                     </label>
-                                    <ul tabindex="0" class="dropdown-content menu z-50 w-56 rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                    <ul tabindex="0" class="dropdown-content menu z-50 w-[min(14rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
                                         @foreach ($manageNavItems as $item)
                                             @php $active = request()->routeIs($item['route']); @endphp
                                             <li>
@@ -378,7 +421,7 @@
                                     <label tabindex="0" class="btn btn-sm {{ $isAdminActive ? 'btn-primary' : 'btn-ghost' }}" title="{{ __('Administration') }}">
                                         ⚙ <span class="hidden sm:inline ml-1">{{ __('Admin') }}</span>
                                     </label>
-                                    <ul tabindex="0" class="dropdown-content menu z-50 w-56 rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                    <ul tabindex="0" class="dropdown-content menu z-50 w-[min(14rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
                                         @foreach ($adminNavItems as $item)
                                             @php $active = request()->routeIs($item['route']); @endphp
                                             <li>
@@ -411,7 +454,7 @@
                                         <x-icon name="manage_accounts" class="text-[1.1rem]" />
                                         <span class="hidden sm:inline">{{ __('Verwaltung') }}</span>
                                     </label>
-                                    <ul tabindex="0" class="dropdown-content menu z-50 w-60 rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                    <ul tabindex="0" class="dropdown-content menu z-50 w-[min(15rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
                                         @foreach ($manageNavItems as $item)
                                             @php $active = request()->routeIs($item['route']); @endphp
                                             <li>
@@ -431,7 +474,7 @@
                                         <x-icon name="settings" class="text-[1.1rem]" />
                                         <span class="hidden sm:inline">{{ __('System') }}</span>
                                     </label>
-                                    <ul tabindex="0" class="dropdown-content menu z-50 w-60 rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                    <ul tabindex="0" class="dropdown-content menu z-50 w-[min(15rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
                                         @foreach ($adminNavItems as $item)
                                             @php $active = request()->routeIs($item['route']); @endphp
                                             <li>
@@ -445,10 +488,6 @@
                                 </div>
                             @endif
                         @endif
-
-                        @unless ($isLegacyMode)
-                            <x-header-date-range />
-                        @endunless
 
                         @isset($stopwatchEntry)
                             @if ($stopwatchEntry)
@@ -482,7 +521,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zm0 0c2.5 0 4-4.03 4-9s-1.5-9-4-9m0 18c-2.5 0-4-4.03-4-9s1.5-9 4-9M3 12h18" />
                                     </svg>
                                 </label>
-                                <ul tabindex="0" class="dropdown-content menu z-50 w-40 rounded-box border border-base-300 bg-base-100 p-1 shadow">
+                                <ul tabindex="0" class="dropdown-content menu z-50 w-[min(10rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-1 shadow">
                                     @foreach ($supportedLocales as $code => $locale)
                                         <li>
                                             <form method="POST" action="{{ route('locale.switch', $code) }}">
@@ -531,7 +570,7 @@
                                 <label tabindex="0" class="btn btn-sm {{ $isUserActive ? 'btn-primary' : 'btn-ghost' }}" title="{{ Auth::user()->name }}">
                                     ⎋ <span class="ml-1 max-w-32 truncate">{{ Auth::user()->name }}</span>
                                 </label>
-                                <ul tabindex="0" class="dropdown-content menu z-50 w-56 rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                <ul tabindex="0" class="dropdown-content menu z-50 w-[min(14rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
                                     @foreach ($userNavItems as $item)
                                         @php $active = request()->routeIs($item['route']); @endphp
                                         <li>
@@ -564,7 +603,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zm0 0c2.5 0 4-4.03 4-9s-1.5-9-4-9m0 18c-2.5 0-4-4.03-4-9s1.5-9 4-9M3 12h18" />
                                     </svg>
                                 </label>
-                                <ul tabindex="0" class="dropdown-content menu z-50 w-40 rounded-box border border-base-300 bg-base-100 p-1 shadow">
+                                <ul tabindex="0" class="dropdown-content menu z-50 w-[min(10rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-1 shadow">
                                     @foreach ($supportedLocales as $code => $locale)
                                         <li>
                                             <form method="POST" action="{{ route('locale.switch', $code) }}">
@@ -586,16 +625,23 @@
                     @endauth
                 </div>
             </div>
+            @auth
+                @unless ($isLegacyMode)
+                    {{-- Datumsauswahl wird im .header-center innerhalb der .header-row gerendert. --}}
+                @endunless
+            @endauth
         </header>
 
         @auth
         @unless ($isLegacyMode)
         {{-- Sidebar: persistent ab lg, sonst Drawer --}}
         <aside id="app-sidebar"
-               class="fixed top-14 bottom-12 left-0 z-40 -translate-x-full transform border-r border-base-300 shadow-sm transition-transform duration-200 lg:translate-x-0"
+               class="fixed left-0 z-40 -translate-x-full transform border-r border-base-300 shadow-sm transition-transform duration-200 lg:translate-x-0"
+               style="top: var(--app-header-h); bottom: var(--app-footer-h);"
                aria-label="{{ __('Hauptnavigation') }}"
                data-sidebar>
-            <div class="flex h-[calc(100dvh-3.5rem-3rem)] flex-col gap-3 overflow-y-auto overflow-x-hidden px-2 py-3">
+            <div class="flex flex-col gap-3 overflow-y-auto overflow-x-hidden px-2 py-3"
+                 style="height: calc(100dvh - var(--app-header-h) - var(--app-footer-h));">
                 <a href="{{ route($createRoute) }}" data-entry-modal-trigger
                    class="sidebar-cta btn btn-sm btn-primary w-full gap-2"
                    title="{{ __('Neuer Eintrag') }}">
@@ -666,9 +712,31 @@
                 </div>
             </div>
         </aside>
-        <div id="app-sidebar-backdrop" class="fixed inset-x-0 top-14 bottom-12 z-30 hidden bg-black/40 backdrop-blur-[1px] lg:hidden" data-sidebar-backdrop></div>
+        <div id="app-sidebar-backdrop"
+             class="fixed inset-x-0 z-30 hidden bg-black/40 backdrop-blur-[1px] lg:hidden"
+             style="top: var(--app-header-h); bottom: var(--app-footer-h);"
+             data-sidebar-backdrop></div>
         @endunless
         @endauth
+
+        <script>
+            // Header-Höhe als CSS-Var pflegen (Sidebar + Content folgen automatisch)
+            (function () {
+                var header = document.getElementById('app-header');
+                if (!header) return;
+                var apply = function () {
+                    var h = header.offsetHeight;
+                    if (h > 0) document.documentElement.style.setProperty('--app-header-h', h + 'px');
+                };
+                apply();
+                if (typeof ResizeObserver === 'function') {
+                    new ResizeObserver(apply).observe(header);
+                } else {
+                    window.addEventListener('resize', apply);
+                }
+                window.addEventListener('load', apply);
+            })();
+        </script>
 
         @if (session('mode_toast'))
         <div id="mode-toast"
@@ -692,7 +760,10 @@
         </script>
         @endif
 
-        <div class="mx-auto flex @yield('wrapper-height-class', 'min-h-screen') w-full @auth @if($isLegacyMode) max-w-screen-2xl @else max-w-none @endif @else max-w-screen-2xl @endauth flex-col px-4 pb-20 pt-24 xl:px-8 2xl:px-12 @auth @unless($isLegacyMode) with-sidebar-pad @endunless @endauth">
+        @php
+            $_wrapperMaxW = (Auth::check() && ! $isLegacyMode) ? 'max-w-none' : 'max-w-screen-2xl';
+        @endphp
+        <div class="mx-auto flex @yield('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))]') w-full {{ $_wrapperMaxW }} flex-col px-4 pt-6 pb-20 xl:px-8 2xl:px-12 @auth @unless($isLegacyMode) with-sidebar-pad @endunless @endauth">
             @if (session('success'))
                 <div class="alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
                     {{ session('success') }}
@@ -715,7 +786,7 @@
         </div>
 
         <footer class="fixed inset-x-0 bottom-0 z-50 h-12 bg-base-100 border-t border-base-300 shadow-xs">
-            <div class="mx-auto flex w-full @auth @if($isLegacyMode) max-w-screen-2xl @else max-w-none @endif @else max-w-screen-2xl @endauth items-center justify-center px-4 py-3 text-xs text-base-content/70 xl:px-8 2xl:px-12">
+            <div class="mx-auto flex w-full {{ $_wrapperMaxW }} items-center justify-center px-4 py-3 text-xs text-base-content/70 xl:px-8 2xl:px-12">
                 &copy; {{ date('Y') }} WorkDiary. {{ __('Alle Rechte vorbehalten.') }}
             </div>
         </footer>

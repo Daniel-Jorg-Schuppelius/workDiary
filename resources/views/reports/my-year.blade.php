@@ -4,6 +4,15 @@
 
 @section('content')
 @php
+    /** @var int $year */
+    /** @var int $maxCell */
+    $maxCell = (int) ($maxCell ?? 0);
+    /** @var int $yearTotal */
+    /** @var string $kind */
+    /** @var array<int, array<int, int>> $matrix */
+    /** @var array<int, int> $monthTotals */
+    /** @var array<int, int> $daysInMonth */
+    /** @var array<int, string> $monthNames */
     $fmt = function (int $min): string {
         if ($min <= 0) {
             return '';
@@ -29,10 +38,6 @@
 <div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
 
     <x-filter-bar :action="route('reports.my-year')" :reset="route('reports.my-year')">
-        <x-filter-field :label="__('Jahr')" for="rep-year">
-            <input id="rep-year" type="number" name="year" value="{{ $year }}" min="2000" max="2100"
-                   class="input input-sm input-bordered w-24">
-        </x-filter-field>
         <x-filter-field :label="__('Art')" for="rep-kind">
             <select id="rep-kind" name="kind" class="select select-sm select-bordered" onchange="this.form.submit()">
                 <option value="all" @selected($kind === 'all')>{{ __('Alle') }}</option>
@@ -41,18 +46,6 @@
                 <option value="standby" @selected($kind === 'standby')>{{ __('Bereitschaft') }}</option>
             </select>
         </x-filter-field>
-        <x-slot:extra>
-            <a href="{{ route('reports.my-year', array_filter(['year' => $prevYear, 'kind' => $kind === 'all' ? null : $kind])) }}"
-               class="btn btn-sm btn-ghost gap-1" title="{{ __('Vorheriges Jahr') }}">
-                <x-icon name="chevron_left" />
-                <span>{{ $prevYear }}</span>
-            </a>
-            <a href="{{ route('reports.my-year', array_filter(['year' => $nextYear, 'kind' => $kind === 'all' ? null : $kind])) }}"
-               class="btn btn-sm btn-ghost gap-1" title="{{ __('Nächstes Jahr') }}">
-                <span>{{ $nextYear }}</span>
-                <x-icon name="chevron_right" />
-            </a>
-        </x-slot:extra>
     </x-filter-bar>
 
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
@@ -69,7 +62,7 @@
         </div>
 
         @if ($yearTotal === 0)
-            <div class="rounded-box border border-dashed border-base-300 px-4 py-10 text-center text-sm text-base-content/60">
+            <div class="rounded-box border border-base-300 bg-base-200 p-6 text-center text-sm text-base-content/60">
                 {{ __('Keine Zeiteinträge für dieses Jahr.') }}
             </div>
         @else
@@ -92,8 +85,11 @@
                                     @if ($d > $daysInMonth[$m])
                                         <td class="bg-base-200/40 text-base-content/30">·</td>
                                     @else
-                                        @php $val = $matrix[$m][$d]; @endphp
-                                        <td class="text-[0.65rem]" style="{{ $intensity($val) }}"
+                                        @php
+                                            $val = $matrix[$m][$d];
+                                            $isSunday = \Carbon\Carbon::create($year, $m, $d)->isSunday();
+                                        @endphp
+                                        <td class="text-[0.65rem]{{ $isSunday ? ' text-error' : '' }}" style="{{ $intensity($val) }}"
                                             title="{{ sprintf('%02d.%02d.%d', $d, $m, $year) }} — {{ $val > 0 ? $fmtTotal($val) : __('keine Einträge') }}">
                                             {{ $fmt($val) }}
                                         </td>

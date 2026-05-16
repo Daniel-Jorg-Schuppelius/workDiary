@@ -16,12 +16,6 @@
 <div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
 
     <x-filter-bar :action="route('reports.week-by-user')" :reset="route('reports.week-by-user')">
-        <x-filter-field :label="__('Jahr')" for="rep-year">
-            <input id="rep-year" type="number" name="year" value="{{ $year }}" min="2000" max="2100" class="input input-sm input-bordered w-24">
-        </x-filter-field>
-        <x-filter-field :label="__('KW')" for="rep-week">
-            <input id="rep-week" type="number" name="week" value="{{ $week }}" min="1" max="53" class="input input-sm input-bordered w-20">
-        </x-filter-field>
         @if ($isAdmin)
             <x-filter-field :label="__('Bereich')" for="rep-scope">
                 <select id="rep-scope" name="scope" class="select select-sm select-bordered" onchange="this.form.submit()">
@@ -31,12 +25,10 @@
             </x-filter-field>
         @endif
         <x-slot:extra>
-            <a href="{{ route('reports.week-by-user', ['year' => $prevYear, 'week' => $prevWeek, 'scope' => $isAdmin ? $scope : null]) }}" class="btn btn-sm btn-ghost">‹</a>
-            <a href="{{ route('reports.week-by-user', ['year' => $nextYear, 'week' => $nextWeek, 'scope' => $isAdmin ? $scope : null]) }}" class="btn btn-sm btn-ghost">›</a>
-            <a href="{{ route('reports.week-by-user', array_filter(['year' => $year, 'week' => $week, 'scope' => $isAdmin ? $scope : null, 'export' => 'csv'])) }}" class="btn btn-sm btn-outline gap-1">
+            <a href="{{ route('reports.week-by-user', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'csv'])) }}" class="btn btn-sm btn-outline gap-1">
                 <x-icon name="download" />CSV
             </a>
-            <a href="{{ route('reports.week-by-user', array_filter(['year' => $year, 'week' => $week, 'scope' => $isAdmin ? $scope : null, 'export' => 'pdf'])) }}" class="btn btn-sm btn-outline gap-1">
+            <a href="{{ route('reports.week-by-user', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'pdf'])) }}" class="btn btn-sm btn-outline gap-1">
                 <x-icon name="picture_as_pdf" />PDF
             </a>
         </x-slot:extra>

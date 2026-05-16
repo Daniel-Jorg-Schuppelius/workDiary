@@ -30,7 +30,6 @@
                     <option value="{{ $u->id }}" @selected((int) ($filters['user_id'] ?? 0) === $u->id)>{{ $u->name }}</option>
                 @endforeach
             </select>
-            <x-date-range :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''" :label="false" />
             <button class="btn btn-primary btn-sm">{{ __('Filtern') }}</button>
             <a href="{{ route('audit.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurücksetzen') }}</a>
         </form>

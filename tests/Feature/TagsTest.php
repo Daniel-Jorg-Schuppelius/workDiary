@@ -7,6 +7,7 @@ use App\Models\EmergencyAssignment;
 use App\Models\OnCallShift;
 use App\Models\Tag;
 use App\Models\User;
+use App\Services\UI\DateRangeContext;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -19,6 +20,9 @@ class TagsTest extends TestCase
     {
         parent::setUp();
         $this->seed(RolesSeeder::class);
+        // Tagebuch-Listing nutzt den globalen Range; auf das ganze Jahr
+        // stellen, damit die Factory-Eintr\u00e4ge (\u00b11 Monat) sichtbar sind.
+        app(DateRangeContext::class)->set(DateRangeContext::PRESET_THIS_YEAR);
     }
 
     public function test_tag_can_be_attached_to_diary_shift_assignment(): void

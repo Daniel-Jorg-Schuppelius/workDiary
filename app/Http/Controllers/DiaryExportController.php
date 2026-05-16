@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DiaryEntry;
+use App\Services\UI\DateRangeContext;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -82,12 +83,21 @@ class DiaryExportController extends Controller
         if ($request->filled('status') && $request->status !== 'all') {
             $query->where('status', (int) $request->status);
         }
-        if ($request->filled('from')) {
-            $query->whereDate('start_at', '>=', $request->from);
+
+        // Hybrid-Filter: explizite Query-Parameter haben Vorrang, sonst globaler Kontext.
+        if ($request->filled('from') || $request->filled('to')) {
+            if ($request->filled('from')) {
+                $query->whereDate('start_at', '>=', $request->from);
+            }
+            if ($request->filled('to')) {
+                $query->whereDate('start_at', '<=', $request->to);
+            }
+        } else {
+            $range = app(DateRangeContext::class)->current();
+            $query->whereDate('start_at', '>=', $range['from']->toDateString());
+            $query->whereDate('start_at', '<=', $range['to']->toDateString());
         }
-        if ($request->filled('to')) {
-            $query->whereDate('start_at', '<=', $request->to);
-        }
+
         if ($request->boolean('mine')) {
             $query->where('user_id', Auth::id());
         }

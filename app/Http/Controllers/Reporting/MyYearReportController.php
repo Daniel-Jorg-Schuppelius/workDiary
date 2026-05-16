@@ -22,7 +22,7 @@ class MyYearReportController extends Controller {
 
     public function index(Request $request): View {
         $userId = (int) Auth::id();
-        $year = (int) $request->input('year', $this->globalDateRange()['from']->year);
+        $year = (int) $this->globalDateRange()['from']->year;
         $year = max(2000, min(2100, $year));
 
         $kind = (string) $request->input('kind', 'all');
@@ -89,8 +89,6 @@ class MyYearReportController extends Controller {
             'monthNames' => $monthNames,
             'daysInMonth' => $daysInMonth,
             'maxCell' => $maxCell,
-            'prevYear' => $year - 1,
-            'nextYear' => $year + 1,
         ]);
     }
 }

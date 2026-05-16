@@ -34,8 +34,8 @@
                     </div>
                 @endif
                 <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-base-content/65">
-                    @if ($entry->start_at)<span>{{ __('Von') }} {{ $entry->start_at->format('d.m.Y H:i') }}</span>@endif
-                    @if ($entry->end_at)<span>{{ __('Bis') }} {{ $entry->end_at->format('d.m.Y H:i') }}</span>@endif
+                    @if ($entry->start_at)<span class="{{ $entry->start_at->isSunday() ? 'text-error font-semibold' : '' }}">{{ __('Von') }} {{ $entry->start_at->format('d.m.Y H:i') }}</span>@endif
+                    @if ($entry->end_at)<span class="{{ $entry->end_at->isSunday() ? 'text-error font-semibold' : '' }}">{{ __('Bis') }} {{ $entry->end_at->format('d.m.Y H:i') }}</span>@endif
                     <span>{{ $entry->created_at->diffForHumans() }}</span>
                 </div>
             </div>

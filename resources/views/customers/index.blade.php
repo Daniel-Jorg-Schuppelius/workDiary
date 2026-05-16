@@ -24,7 +24,7 @@
         <form method="GET" action="{{ route('customers.index') }}" class="join">
             <input type="hidden" name="status" value="{{ $status }}">
             <input type="text" name="q" value="{{ $search }}" placeholder="{{ __('Suche…') }}"
-                   class="input input-sm input-bordered join-item w-48">
+                   class="input input-sm input-bordered join-item w-full sm:w-48">
             <button type="submit" class="btn btn-sm btn-ghost join-item gap-1">
                 <x-icon name="search" />
                 <span class="hidden sm:inline">{{ __('Suchen') }}</span>

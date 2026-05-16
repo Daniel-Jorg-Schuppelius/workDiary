@@ -25,7 +25,7 @@ class ArchiveSummaryService {
     /**
      * @return array<string,mixed>
      */
-    public function buildIndexData(Request $request, User $currentUser): array {
+    public function buildIndexData(Request $request, User $currentUser, string $rangeFrom, string $rangeTo): array {
         $isAdmin = $currentUser->isAdmin();
         $tab = $this->resolveTab((string) $request->query('tab', 'diary'));
         $statusFilter = $this->resolveStatus((string) $request->query('status', 'all'));
@@ -48,18 +48,12 @@ class ArchiveSummaryService {
             }
         }
 
-        if ($request->filled('from')) {
-            foreach ([$diaryQuery, $shiftQuery, $assignmentQuery] as $q) {
-                $q->whereDate('end_at', '>=', $request->from);
-            }
-            $vacationQuery->whereDate('end_date', '>=', $request->from);
+        foreach ([$diaryQuery, $shiftQuery, $assignmentQuery] as $q) {
+            $q->whereDate('end_at', '>=', $rangeFrom);
+            $q->whereDate('end_at', '<=', $rangeTo);
         }
-        if ($request->filled('to')) {
-            foreach ([$diaryQuery, $shiftQuery, $assignmentQuery] as $q) {
-                $q->whereDate('end_at', '<=', $request->to);
-            }
-            $vacationQuery->whereDate('end_date', '<=', $request->to);
-        }
+        $vacationQuery->whereDate('end_date', '>=', $rangeFrom);
+        $vacationQuery->whereDate('end_date', '<=', $rangeTo);
 
         if ($request->filled('vtype')) {
             $vacationQuery->where('type', $request->vtype);
@@ -118,7 +112,10 @@ class ArchiveSummaryService {
             'users' => $isAdmin ? User::query()->orderBy('name')->get(['id', 'name']) : collect(),
             'tab' => $tab,
             'statusFilter' => $statusFilter,
-            'filters' => $request->only('from', 'to', 'status', 'user_id', 'vtype', 'vstatus'),
+            'filters' => array_merge(
+                $request->only('status', 'user_id', 'vtype', 'vstatus'),
+                ['from' => $rangeFrom, 'to' => $rangeTo],
+            ),
             'counts' => $counts,
             'tabKpis' => $tabKpis,
             'diaryEntries' => $diaryQuery->paginate(25, ['*'], 'dpage')->withQueryString(),
@@ -142,40 +139,50 @@ class ArchiveSummaryService {
      * @return Builder<DiaryEntry>
      */
     private function buildDiaryQuery(): Builder {
-        return DiaryEntry::query()
+        /** @var Builder<DiaryEntry> $q */
+        $q = DiaryEntry::query()
             ->select(['id', 'user_id', 'content', 'status', 'start_at', 'end_at', 'archived_at'])
             ->with('user:id,name')
             ->where('is_archived', true)
             ->orderByDesc('archived_at');
+
+        return $q;
     }
 
     /**
      * @return Builder<OnCallShift>
      */
     private function buildShiftQuery(): Builder {
-        return OnCallShift::query()
+        /** @var Builder<OnCallShift> $q */
+        $q = OnCallShift::query()
             ->select(['id', 'user_id', 'start_at', 'end_at', 'note'])
             ->with('user:id,name')
             ->where('is_archived', true)
             ->orderByDesc('end_at');
+
+        return $q;
     }
 
     /**
      * @return Builder<EmergencyAssignment>
      */
     private function buildAssignmentQuery(): Builder {
-        return EmergencyAssignment::query()
+        /** @var Builder<EmergencyAssignment> $q */
+        $q = EmergencyAssignment::query()
             ->select(['id', 'user_id', 'on_call_shift_id', 'start_at', 'end_at', 'reason'])
             ->with(['user:id,name', 'shift:id,start_at,end_at'])
             ->where('is_archived', true)
             ->orderByDesc('end_at');
+
+        return $q;
     }
 
     /**
      * @return Builder<Vacation>
      */
     private function buildVacationQuery(): Builder {
-        return Vacation::query()
+        /** @var Builder<Vacation> $q */
+        $q = Vacation::query()
             ->with('user:id,name')
             ->where(function ($q) {
                 $q->whereIn('status', [Vacation::STATUS_REJECTED, Vacation::STATUS_CANCELLED])
@@ -185,6 +192,8 @@ class ArchiveSummaryService {
                     });
             })
             ->orderByDesc('end_date');
+
+        return $q;
     }
 
     /**

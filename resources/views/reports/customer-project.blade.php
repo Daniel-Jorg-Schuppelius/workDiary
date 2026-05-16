@@ -17,12 +17,6 @@
 <div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
 
     <x-filter-bar :action="route('reports.customer-project')" :reset="route('reports.customer-project')">
-        <x-filter-field :label="__('Von')" for="rep-from">
-            <input id="rep-from" type="date" name="from" value="{{ $from }}" class="input input-sm input-bordered">
-        </x-filter-field>
-        <x-filter-field :label="__('Bis')" for="rep-to">
-            <input id="rep-to" type="date" name="to" value="{{ $to }}" class="input input-sm input-bordered">
-        </x-filter-field>
         @if ($isAdmin)
             <x-filter-field :label="__('Bereich')" for="rep-scope">
                 <select id="rep-scope" name="scope" class="select select-sm select-bordered" onchange="this.form.submit()">
@@ -32,10 +26,10 @@
             </x-filter-field>
         @endif
         <x-slot:extra>
-            <a href="{{ route('reports.customer-project', array_filter(['from' => $from, 'to' => $to, 'scope' => $isAdmin ? $scope : null, 'export' => 'csv'])) }}" class="btn btn-sm btn-outline gap-1">
+            <a href="{{ route('reports.customer-project', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'csv'])) }}" class="btn btn-sm btn-outline gap-1">
                 <x-icon name="download" />CSV
             </a>
-            <a href="{{ route('reports.customer-project', array_filter(['from' => $from, 'to' => $to, 'scope' => $isAdmin ? $scope : null, 'export' => 'pdf'])) }}" class="btn btn-sm btn-outline gap-1">
+            <a href="{{ route('reports.customer-project', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'pdf'])) }}" class="btn btn-sm btn-outline gap-1">
                 <x-icon name="picture_as_pdf" />PDF
             </a>
         </x-slot:extra>
@@ -63,14 +57,14 @@
         </div>
 
         @if (empty($bucket))
-            <div class="rounded-box border border-dashed border-base-300 px-4 py-10 text-center text-sm text-base-content/60">
+            <div class="rounded-box border border-base-300 bg-base-200 p-6 text-center text-sm text-base-content/60">
                 {{ __('Keine Zeiteinträge im gewählten Zeitraum.') }}
             </div>
         @else
             <div class="overflow-x-auto">
-                <table class="table table-sm w-full">
+                <table class="table table-zebra table-sm">
                     <thead>
-                        <tr class="text-xs uppercase tracking-[0.12em] text-base-content/60">
+                        <tr>
                             <th>{{ __('Kunde / Projekt') }}</th>
                             <th class="text-right">{{ __('Stunden') }}</th>
                             <th class="text-right">{{ __('Erlös') }}</th>
@@ -103,10 +97,10 @@
                         @endforeach
                     </tbody>
                     <tfoot>
-                        <tr class="border-t-2 border-base-300">
-                            <th class="text-xs uppercase tracking-[0.12em] text-base-content/70">{{ __('Gesamt') }}</th>
-                            <th class="text-right font-semibold tabular-nums text-primary">{{ $fmt($totalMinutes) }}</th>
-                            <th class="text-right font-semibold tabular-nums text-primary">{{ $money($totalRate) }}</th>
+                        <tr class="font-bold">
+                            <td>{{ __('Gesamt') }}</td>
+                            <td class="text-right">{{ $fmt($totalMinutes) }}</td>
+                            <td class="text-right">{{ $money($totalRate) }}</td>
                         </tr>
                     </tfoot>
                 </table>

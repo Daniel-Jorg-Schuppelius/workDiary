@@ -27,27 +27,11 @@
 <div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
 
     <x-filter-bar :action="route('reports.my-month')" :reset="route('reports.my-month')">
-        <x-filter-field :label="__('Jahr')" for="rep-year">
-            <input id="rep-year" type="number" name="year" value="{{ $year }}" min="2000" max="2100" class="input input-sm input-bordered w-24">
-        </x-filter-field>
-        <x-filter-field :label="__('Monat')" for="rep-month">
-            <select id="rep-month" name="month" class="select select-sm select-bordered" onchange="this.form.submit()">
-                @for ($m = 1; $m <= 12; $m++)
-                    <option value="{{ $m }}" @selected($month === $m)>{{ \Carbon\Carbon::create(2000, $m, 1)?->locale(app()->getLocale())->isoFormat('MMMM') }}</option>
-                @endfor
-            </select>
-        </x-filter-field>
         <x-slot:extra>
-            <a href="{{ route('reports.my-month', ['year' => $prevYear, 'month' => $prevMonth]) }}" class="btn btn-sm btn-ghost gap-1">
-                <x-icon name="chevron_left" />{{ __('Vorheriger') }}
-            </a>
-            <a href="{{ route('reports.my-month', ['year' => $nextYear, 'month' => $nextMonth]) }}" class="btn btn-sm btn-ghost gap-1">
-                {{ __('Nächster') }}<x-icon name="chevron_right" />
-            </a>
-            <a href="{{ route('reports.my-month', ['year' => $year, 'month' => $month, 'export' => 'csv']) }}" class="btn btn-sm btn-outline gap-1">
+            <a href="{{ route('reports.my-month', ['export' => 'csv']) }}" class="btn btn-sm btn-outline gap-1">
                 <x-icon name="download" />CSV
             </a>
-            <a href="{{ route('reports.my-month', ['year' => $year, 'month' => $month, 'export' => 'pdf']) }}" class="btn btn-sm btn-outline gap-1">
+            <a href="{{ route('reports.my-month', ['export' => 'pdf']) }}" class="btn btn-sm btn-outline gap-1">
                 <x-icon name="picture_as_pdf" />PDF
             </a>
         </x-slot:extra>
@@ -71,14 +55,14 @@
         </div>
 
         @if (empty($byDay))
-            <div class="rounded-box border border-dashed border-base-300 px-4 py-10 text-center text-sm text-base-content/60">
+            <div class="rounded-box border border-base-300 bg-base-200 p-6 text-center text-sm text-base-content/60">
                 {{ __('Keine Zeiteinträge in diesem Monat.') }}
             </div>
         @else
             <div class="overflow-x-auto">
-                <table class="table table-sm w-full">
+                <table class="table table-zebra table-sm">
                     <thead>
-                        <tr class="text-xs uppercase tracking-[0.12em] text-base-content/60">
+                        <tr>
                             <th>{{ __('Datum') }}</th>
                             <th>{{ __('Zeit') }}</th>
                             <th>{{ __('Art') }}</th>
@@ -93,15 +77,17 @@
                             @php
                                 $d = \Carbon\Carbon::parse($day)->locale(app()->getLocale());
                                 $dayLabel = $d->isoFormat('dd, DD.MM.');
+                                $isSunday = $d->isSunday();
+                                $sundayCls = $isSunday ? ' text-error' : '';
                             @endphp
-                            <tr class="bg-base-200/60">
-                                <th class="font-semibold text-base-content">{{ $dayLabel }}</th>
+                            <tr class="bg-base-200/60{{ $sundayCls }}">
+                                <th class="font-semibold text-base-content{{ $sundayCls }}">{{ $dayLabel }}</th>
                                 <th colspan="4"></th>
-                                <th class="text-right font-semibold tabular-nums text-base-content">{{ $fmt($info['minutes']) }}</th>
-                                <th class="text-right font-semibold tabular-nums text-base-content">{{ $money($info['rate']) }}</th>
+                                <th class="text-right font-semibold tabular-nums text-base-content{{ $sundayCls }}">{{ $fmt($info['minutes']) }}</th>
+                                <th class="text-right font-semibold tabular-nums text-base-content{{ $sundayCls }}">{{ $money($info['rate']) }}</th>
                             </tr>
                             @foreach ($info['entries'] as $e)
-                                <tr>
+                                <tr class="{{ $sundayCls }}">
                                     <td></td>
                                     <td class="tabular-nums text-sm">
                                         @if ($e->started_at && $e->ended_at)
@@ -139,6 +125,13 @@
                             @endforeach
                         @endforeach
                     </tbody>
+                    <tfoot>
+                        <tr class="font-bold">
+                            <td colspan="5">{{ __('Gesamt') }}</td>
+                            <td class="text-right">{{ $fmt($monthMinutes) }}</td>
+                            <td class="text-right">{{ $money($monthRate) }}</td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         @endif

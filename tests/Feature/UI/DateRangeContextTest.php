@@ -74,4 +74,32 @@ class DateRangeContextTest extends TestCase {
 
         $this->assertSame(DateRangeContext::PRESET_THIS_MONTH, $range['preset']);
     }
+
+    public function test_last_7_days_preset(): void {
+        $ctx = $this->app->make(DateRangeContext::class);
+        $ctx->set(DateRangeContext::PRESET_LAST_7_DAYS);
+        $range = $ctx->current();
+
+        $this->assertSame(DateRangeContext::PRESET_LAST_7_DAYS, $range['preset']);
+        $this->assertSame('2026-05-09', $range['from']->toDateString());
+        $this->assertSame('2026-05-15', $range['to']->toDateString());
+    }
+
+    public function test_last_30_days_preset(): void {
+        $ctx = $this->app->make(DateRangeContext::class);
+        $ctx->set(DateRangeContext::PRESET_LAST_30_DAYS);
+        $range = $ctx->current();
+
+        $this->assertSame('2026-04-16', $range['from']->toDateString());
+        $this->assertSame('2026-05-15', $range['to']->toDateString());
+    }
+
+    public function test_last_90_days_preset(): void {
+        $ctx = $this->app->make(DateRangeContext::class);
+        $ctx->set(DateRangeContext::PRESET_LAST_90_DAYS);
+        $range = $ctx->current();
+
+        $this->assertSame('2026-02-15', $range['from']->toDateString());
+        $this->assertSame('2026-05-15', $range['to']->toDateString());
+    }
 }

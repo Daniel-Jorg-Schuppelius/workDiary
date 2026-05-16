@@ -4,6 +4,13 @@
 
 @section('content')
     @php
+        /** @var string $tab */
+        /** @var bool $isAdmin */
+        /** @var \Illuminate\Support\Collection<int, \App\Models\User> $users */
+        /** @var array<string,int> $counts */
+        /** @var array<string,int> $tabKpis */
+        /** @var array<string,mixed> $filters */
+        /** @var string $statusFilter */
         $tabs = [
             'diary'        => ['label' => __('Aufträge'),   'count' => $counts['diary']],
             'bereitschaft' => ['label' => __('Bereitschaft'), 'count' => $counts['bereitschaft']],
@@ -116,7 +123,6 @@
                         </select>
                     </div>
                 @endif
-                <x-date-range :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''" />
                 <div class="ml-auto flex items-end gap-2">
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('Filtern') }}</button>
                     @if (! empty($tabFilters))

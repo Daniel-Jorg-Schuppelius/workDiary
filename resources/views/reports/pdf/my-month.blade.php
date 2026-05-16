@@ -13,6 +13,7 @@
     th    { background: #f3f3f3; text-align: left; font-size: 8.5pt; }
     .right { text-align: right; }
     .day-header { background: #eef; font-weight: bold; }
+    .day-header.sun th { color: #c00; }
     .totals { margin-top: 6pt; }
     .totals td { border: 0; padding: 2pt 5pt; font-size: 9.5pt; }
     .badge { display: inline-block; padding: 1pt 4pt; border-radius: 2pt; font-size: 7.5pt; background: #ddd; }
@@ -28,10 +29,11 @@
     @php
         $h = intdiv((int) $row['minutes'], 60);
         $m = (int) $row['minutes'] % 60;
+        $isSunday = \Carbon\Carbon::parse($date)->isSunday();
     @endphp
     <table>
         <thead>
-            <tr class="day-header">
+            <tr class="day-header{{ $isSunday ? ' sun' : '' }}">
                 <th colspan="4">{{ \Carbon\Carbon::parse($date)->locale(app()->getLocale())->isoFormat('dddd, DD.MM.YYYY') }}</th>
                 <th class="right">{{ $h }}:{{ str_pad((string) $m, 2, '0', STR_PAD_LEFT) }} h</th>
                 <th class="right">{{ number_format((float) $row['rate'], 2, ',', '.') }} €</th>

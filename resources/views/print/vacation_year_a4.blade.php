@@ -58,6 +58,7 @@
                             $hName  = $holidays->nameFor($cur);
                             $cls    = $cur->isWeekend() ? 'weekend center small' : 'center small';
                             $cls    = $hName ? 'holiday center small' : $cls;
+                            if ($cur->isSunday()) { $cls .= ' sunday'; }
                         @endphp
                         <th class="{{ $cls }}" title="{{ $hName ?? '' }}">{{ $d }}</th>
                     @endfor
@@ -74,6 +75,7 @@
                                 $hName  = $holidays->nameFor($cur);
                                 $cls    = $cur->isWeekend() ? 'weekend center' : 'center';
                                 $cls    = $hName ? 'holiday center' : $cls;
+                                if ($cur->isSunday()) { $cls .= ' sunday'; }
                                 $status = $statusFor($u->id, $dateS);
                                 $bg     = $status === 'A' ? '#10b981' : ($status === 'P' ? '#f59e0b' : null);
                             @endphp

@@ -2,19 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\Attachment;
 use App\Models\AuditLog;
 use App\Models\Comment;
 use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
 use App\Models\OnCallShift;
+use App\Services\UI\DateRangeContext;
 use App\Support\LookupCache;
 use App\Support\SortableQuery;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class AuditLogController extends Controller {
+    use ResolvesGlobalDateRange;
+
     private const TYPE_MAP = [
         'diary' => DiaryEntry::class,
         'comment' => Comment::class,
@@ -23,8 +28,19 @@ class AuditLogController extends Controller {
         'attachment' => Attachment::class,
     ];
 
-    public function index(Request $request): View {
+    public function index(Request $request): View|RedirectResponse {
         Gate::authorize('viewAny', AuditLog::class);
+
+        // Backward-Compat: ?from=&to= einmalig in den globalen Context.
+        if ($request->filled('from') || $request->filled('to')) {
+            app(DateRangeContext::class)->set(
+                DateRangeContext::PRESET_CUSTOM,
+                (string) $request->query('from', ''),
+                (string) $request->query('to', ''),
+            );
+
+            return redirect()->route('audit.index', $request->except(['from', 'to']));
+        }
 
         $query = AuditLog::query()->with(['user:id,name', 'auditable']);
 
@@ -43,12 +59,9 @@ class AuditLogController extends Controller {
             }
         }
 
-        if ($from = $request->string('from')->toString()) {
-            $query->where('created_at', '>=', $from);
-        }
-        if ($to = $request->string('to')->toString()) {
-            $query->where('created_at', '<=', $to . ' 23:59:59');
-        }
+        $range = $this->globalDateRange();
+        $query->where('created_at', '>=', $range['from']->startOfDay());
+        $query->where('created_at', '<=', $range['to']->endOfDay());
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [
             'created_at' => 'created_at',
@@ -60,12 +73,16 @@ class AuditLogController extends Controller {
 
         $logs = $query->paginate(50)->withQueryString();
 
+        $filters = $request->only(['event', 'user_id', 'type']);
+        $filters['from'] = $range['from']->toDateString();
+        $filters['to'] = $range['to']->toDateString();
+
         return view('audit.index', [
             'logs' => $logs,
             'users' => LookupCache::userDropdown(),
             'events' => ['created', 'updated', 'deleted'],
             'types' => self::TYPE_MAP,
-            'filters' => $request->only(['event', 'user_id', 'type', 'from', 'to']),
+            'filters' => $filters,
             'sort' => $sort,
             'dir' => $dir,
         ]);

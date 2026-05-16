@@ -56,10 +56,11 @@
                     @php
                         $dateStr = $day->format('Y-m-d');
                         $isWeekend = $day->isWeekend();
+                        $isSunday = $day->isSunday();
                     @endphp
-                    <tr class="{{ $isWeekend ? 'bg-base-200/40' : '' }}">
+                    <tr class="{{ $isWeekend ? 'bg-base-200/40' : '' }} {{ $isSunday ? 'text-error' : '' }}">
                         <td class="whitespace-nowrap font-medium">
-                            <span class="text-xs text-base-content/60">{{ $day->isoFormat('dd') }}</span>
+                            <span class="text-xs {{ $isSunday ? 'text-error' : 'text-base-content/60' }}">{{ $day->isoFormat('dd') }}</span>
                             {{ $day->format('d.m.') }}
                         </td>
                         @foreach ($types as $st)

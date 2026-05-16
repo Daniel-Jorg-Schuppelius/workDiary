@@ -2,20 +2,44 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\User;
 use App\Services\Archive\ArchiveService;
 use App\Services\Archive\ArchiveSummaryService;
+use App\Services\UI\DateRangeContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class ArchiveController extends Controller {
-    public function index(Request $request, ArchiveSummaryService $summary): View {
+    use ResolvesGlobalDateRange;
+
+    public function index(Request $request, ArchiveSummaryService $summary): View|RedirectResponse {
+        // Backward-Compat: ?from=&to= einmalig in den globalen Context.
+        if ($request->filled('from') || $request->filled('to')) {
+            app(DateRangeContext::class)->set(
+                DateRangeContext::PRESET_CUSTOM,
+                (string) $request->query('from', ''),
+                (string) $request->query('to', ''),
+            );
+
+            return redirect()->route('archive.index', $request->except(['from', 'to']));
+        }
+
         /** @var User $user */
         $user = Auth::user();
 
-        return view('archive.index', $summary->buildIndexData($request, $user));
+        $range = $this->globalDateRange();
+
+        $data = $summary->buildIndexData(
+            $request,
+            $user,
+            $range['from']->toDateString(),
+            $range['to']->toDateString(),
+        );
+
+        return view('archive.index', $data);
     }
 
     public function run(ArchiveService $service): RedirectResponse {

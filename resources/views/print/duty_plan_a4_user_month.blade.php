@@ -71,6 +71,7 @@
                 $hName   = $holidays->nameFor($carbon);
                 $cls     = $carbon->isWeekend() ? 'weekend' : '';
                 $cls     = $hName ? 'holiday' : $cls;
+                if ($carbon->isSunday()) { $cls .= ' sunday'; }
                 $vac     = $vacationByDate[$d] ?? null;
                 $dayShifts = $shifts->get($d, collect());
                 $rowspan = max(1, $dayShifts->count() + ($vac ? 1 : 0));

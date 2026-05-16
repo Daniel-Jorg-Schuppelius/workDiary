@@ -1,13 +1,10 @@
 @extends('layouts.app')
 @section('title', __('Wochenansicht') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Wochenansicht'))
-@section('wrapper-height-class', 'h-dvh overflow-clip')
+@section('wrapper-height-class', 'h-[calc(100dvh_-_var(--app-header-h))] overflow-clip')
 @section('main-class', 'min-h-0 overflow-clip flex flex-col')
 
 @php
-    $weekNumber = $weekStart->isoWeek();
-    $year = $weekStart->isoWeekYear();
-    $rangeLabel = $weekStart->isoFormat('DD.MM.') . ' – ' . $weekStart->addDays(6)->isoFormat('DD.MM.YYYY');
     $hours = range(0, 23);
     $statusToneClass = [
         'done' => 'wd-week-entry--done',
@@ -16,40 +13,37 @@
         'alert' => 'wd-week-entry--alert',
         'neutral' => 'wd-week-entry--neutral',
     ];
-    $workHours = config('app.work_hours');
+    $workHoursCfg = config('app.work_hours');
     $toPct = static function (string $hhmm): float {
         [$h, $m] = array_pad(array_map('intval', explode(':', $hhmm)), 2, 0);
         return (($h * 60 + $m) / 1440) * 100;
     };
-    $coreTop = $toPct($workHours['core']['start'] ?? '08:00');
-    $coreBottom = $toPct($workHours['core']['end'] ?? '16:00');
-    $extTop = $toPct($workHours['extended']['start'] ?? '06:00');
-    $extBottom = $toPct($workHours['extended']['end'] ?? '19:00');
-    $coreDays = $workHours['core']['days'] ?? [];
-    $extDays = $workHours['extended']['days'] ?? [];
+    $bands = [
+        'coreTop' => $toPct($workHoursCfg['core']['start'] ?? '08:00'),
+        'coreBottom' => $toPct($workHoursCfg['core']['end'] ?? '16:00'),
+        'extTop' => $toPct($workHoursCfg['extended']['start'] ?? '06:00'),
+        'extBottom' => $toPct($workHoursCfg['extended']['end'] ?? '19:00'),
+        'coreDays' => $workHoursCfg['core']['days'] ?? [],
+        'extDays' => $workHoursCfg['extended']['days'] ?? [],
+    ];
+    $weekCount = count($weekViews);
 @endphp
 
 @section('content')
-<div class="wd-week flex h-full min-h-0 flex-col gap-4">
+<div class="wd-week flex h-full min-h-0 flex-col gap-4"
+     data-week-tabs
+     data-active-week="{{ $activeKey }}">
+
     {{-- Toolbar --}}
     <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <div class="flex flex-wrap items-center gap-2">
-            <a href="{{ route('week.index', ['date' => $prevDate, 'scope' => $teamScope ? 'team' : 'mine']) }}"
-               class="btn btn-sm btn-ghost" title="{{ __('Vorherige Woche') }}">«</a>
-            <a href="{{ route('week.index', ['date' => $todayDate, 'scope' => $teamScope ? 'team' : 'mine']) }}"
-               class="btn btn-sm btn-outline">{{ __('Heute') }}</a>
-            <a href="{{ route('week.index', ['date' => $nextDate, 'scope' => $teamScope ? 'team' : 'mine']) }}"
-               class="btn btn-sm btn-ghost" title="{{ __('Nächste Woche') }}">»</a>
-
-            <form method="GET" action="{{ route('week.index') }}" class="flex items-center gap-2 ml-2">
-                <input type="hidden" name="scope" value="{{ $teamScope ? 'team' : 'mine' }}">
-                <input type="date" name="date" value="{{ $weekStart->toDateString() }}"
-                       class="input input-bordered input-sm" onchange="this.form.submit()">
-            </form>
-
-            <span class="ml-3 font-['Space_Grotesk'] text-base-content">
-                <span class="badge badge-primary badge-sm align-middle">{{ __('KW') }} {{ $weekNumber }} / {{ $year }}</span>
-                <span class="ml-2 text-sm text-base-content/70">{{ $rangeLabel }}</span>
+        <div class="flex flex-wrap items-center gap-3">
+            @if ($weekCount > 0)
+                <span class="font-['Space_Grotesk'] text-sm text-base-content/70">
+                    {{ trans_choice('{1} :count Woche|[2,*] :count Wochen', $weekCount, ['count' => $weekCount]) }}
+                </span>
+            @endif
+            <span class="text-xs text-base-content/50 hidden md:inline">
+                {{ __('Zeitraum-Auswahl im Header oben rechts.') }}
             </span>
         </div>
 
@@ -63,9 +57,9 @@
             </label>
 
             <div class="join">
-                <a href="{{ route('week.index', ['date' => $weekStart->toDateString(), 'scope' => 'mine']) }}"
+                <a href="{{ route('week.index', ['scope' => 'mine']) }}"
                    class="join-item btn btn-sm {{ $teamScope ? 'btn-ghost' : 'btn-primary' }}">{{ __('Meine Woche') }}</a>
-                <a href="{{ route('week.index', ['date' => $weekStart->toDateString(), 'scope' => 'team']) }}"
+                <a href="{{ route('week.index', ['scope' => 'team']) }}"
                    class="join-item btn btn-sm {{ $teamScope ? 'btn-primary' : 'btn-ghost' }}">{{ __('Team-Woche') }}</a>
             </div>
         </div>
@@ -83,11 +77,11 @@
         <span class="inline-flex items-center gap-2"><span class="wd-week-legend wd-week-entry--done"></span>{{ __('Erledigt') }}</span>
     </div>
 
-    {{-- User-Tabs (nur in Team-Woche) --}}
-    @if ($teamScope && ($weekUsers ?? collect())->isNotEmpty())
+    {{-- User-Tabs (nur in Team-Sicht) --}}
+    @if ($teamScope && $weekUsers->isNotEmpty())
         <div role="tablist" class="tabs tabs-box">
             <a role="tab"
-               href="{{ route('week.index', ['date' => $weekStart->toDateString(), 'scope' => 'team']) }}"
+               href="{{ route('week.index', ['scope' => 'team']) }}"
                class="tab {{ ! $filterUserId ? 'tab-active' : '' }}">
                 {{ __('Alle') }}
             </a>
@@ -99,7 +93,7 @@
                     $soft = "hsl({$hue} 70% 92%)";
                 @endphp
                 <a role="tab"
-                   href="{{ route('week.index', ['date' => $weekStart->toDateString(), 'scope' => 'team', 'user' => $u->id]) }}"
+                   href="{{ route('week.index', ['scope' => 'team', 'user' => $u->id]) }}"
                    class="tab gap-2 {{ $isActive ? 'tab-active' : '' }}"
                    style="--tab-bg: {{ $soft }}; --tab-border-color: {{ $color }}; {{ $isActive ? 'color: ' . $color . ';' : '' }}">
                     <span class="inline-block h-2.5 w-2.5 rounded-full" style="background: {{ $color }};"></span>
@@ -107,205 +101,218 @@
                 </a>
             @endforeach
         </div>
-    @endif    {{-- Grid --}}
-    <div id="wd-week-scroll" class="min-h-0 flex-1 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <div id="wd-week-grid" class="wd-week-grid">
-            {{-- Header row --}}
-            <div class="wd-week-corner"></div>
-            @foreach ($days as $dayIndex => $day)
-                @php
-                    $isToday = $day->isSameDay(now());
-                    $isWeekend = $day->isoWeekday() >= 6;
-                    $holidayName = isset($holidays) ? $holidays->nameFor($day) : null;
-                    $isHoliday = $holidayName !== null;
-                @endphp
-                <div class="wd-week-day-header {{ $isToday ? 'is-today' : '' }} {{ $isWeekend ? 'is-weekend' : '' }} {{ $isHoliday ? 'is-holiday' : '' }}"
-                     @if ($isHoliday) title="{{ $holidayName }}" @endif>
-                    <div class="text-xs uppercase tracking-[0.2em] text-base-content/60">{{ $day->isoFormat('dd') }}</div>
-                    <div class="flex items-center justify-center gap-2 font-['Space_Grotesk'] text-lg">
-                        <span>{{ $day->isoFormat('DD.MM.') }}</span>
-                        @php
-                            $dayDate = $day->format('Y-m-d');
-                            $shiftStart = $dayDate . 'T08:00';
-                            $shiftEnd = $dayDate . 'T17:00';
-                        @endphp
-                        <div class="dropdown dropdown-end">
-                            <button type="button" tabindex="0" class="btn btn-xs btn-ghost btn-circle" title="{{ __('Neu anlegen') }}">+</button>
-                            <ul tabindex="0" class="dropdown-content menu z-20 mt-1 w-44 rounded-box border border-base-300 bg-base-100 p-1 text-sm shadow">
-                                <li><a href="{{ route('diary.create', ['date' => $shiftStart]) }}" data-entry-modal-trigger>{{ __('Tagebucheintrag') }}</a></li>
-                                <li><a href="{{ route('shifts.create', ['start_at' => $shiftStart, 'end_at' => $shiftEnd]) }}" data-entry-modal-trigger>{{ __('Bereitschaft') }}</a></li>
-                                <li><a href="{{ route('assignments.create', ['start_at' => $shiftStart, 'end_at' => $shiftEnd]) }}" data-entry-modal-trigger>{{ __('Notdienst') }}</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    @if ($isHoliday)
-                        <div class="mt-0.5 truncate text-[0.65rem] font-medium uppercase tracking-wider text-error">{{ $holidayName }}</div>
-                    @endif
-                </div>
-            @endforeach
+    @endif
 
-            {{-- Hour axis --}}
-            <div class="wd-week-hours">
-                @foreach ($hours as $h)
-                    <div class="wd-week-hour-label">{{ sprintf('%02d:00', $h) }}</div>
-                @endforeach
-            </div>
+    {{-- Truncation-Hinweis --}}
+    @if ($weeksTruncated)
+        <div class="alert alert-warning text-sm">
+            <span>
+                {{ __('Der gewählte Zeitraum umfasst :total Wochen — es werden nur die ersten :shown angezeigt. Bitte engere die Auswahl im Header ein.', [
+                    'total' => $totalWeeks,
+                    'shown' => $weekCount,
+                ]) }}
+            </span>
+        </div>
+    @endif
 
-            {{-- Day columns --}}
-            @foreach ($days as $dayIndex => $day)
-                @php
-                    $isToday = $day->isSameDay(now());
-                    $iso = (int) $day->isoWeekday();
-                    $dayHolidayName = isset($holidays) ? $holidays->nameFor($day) : null;
-                    $dayIsHoliday = $dayHolidayName !== null;
-                    $hasExt = ! $dayIsHoliday && in_array($iso, $extDays, true);
-                    $hasCore = ! $dayIsHoliday && in_array($iso, $coreDays, true);
-                @endphp
-                <div class="wd-week-day {{ $isToday ? 'is-today' : '' }}">
-                    {{-- Arbeitszeit-Bänder (Hintergrund: außerhalb der Kernzeit grau) --}}
-                    @if ($hasExt || $hasCore)
-                        @php
-                            $extT = $hasExt ? $extTop : 0;
-                            $extB = $hasExt ? $extBottom : 100;
-                            $coreT = $hasCore ? $coreTop : $extT;
-                            $coreB = $hasCore ? $coreBottom : $extB;
-                        @endphp
-                        {{-- vor erweiterter Zeit (dunkler) --}}
-                        @if ($extT > 0)
-                            <div class="wd-week-band wd-week-band--off" style="top: 0; height: {{ $extT }}%"></div>
-                        @endif
-                        {{-- erweitert vor Kern (heller) --}}
-                        @if ($coreT > $extT)
-                            <div class="wd-week-band wd-week-band--extended" style="top: {{ $extT }}%; height: {{ $coreT - $extT }}%"></div>
-                        @endif
-                        {{-- erweitert nach Kern (heller) --}}
-                        @if ($extB > $coreB)
-                            <div class="wd-week-band wd-week-band--extended" style="top: {{ $coreB }}%; height: {{ $extB - $coreB }}%"></div>
-                        @endif
-                        {{-- nach erweiterter Zeit (dunkler) --}}
-                        @if ($extB < 100)
-                            <div class="wd-week-band wd-week-band--off" style="top: {{ $extB }}%; height: {{ 100 - $extB }}%"></div>
-                        @endif
-                    @else
-                        {{-- Kein Arbeitstag: ganzer Tag grau --}}
-                        <div class="wd-week-band wd-week-band--off" style="top: 0; height: 100%"></div>
-                    @endif
-
-                    {{-- background hour grid --}}
-                    @foreach ($hours as $h)
-                        <div class="wd-week-hour-row" style="top: {{ ($h / 24) * 100 }}%"></div>
-                    @endforeach
-
-                    {{-- Shifts (left band) --}}
-                    @foreach ($shiftsByDay[$dayIndex] as $shift)
-                        @php
-                            $p = $service->placement($shift->start_at, $shift->end_at, $day);
-                            $shiftTitle = __('Bereitschaft') . ' · ' . ($shift->user?->name ?? '—') . ' · ' . $shift->start_at->format('d.m. H:i') . '–' . $shift->end_at->format('H:i');
-                        @endphp
-                        @can('update', $shift)
-                            <a href="{{ route('shifts.edit', $shift) }}"
-                               data-entry-modal-trigger
-                               class="wd-week-shift"
-                               style="top: {{ $p['top'] }}%; height: {{ $p['height'] }}%"
-                               title="{{ $shiftTitle }}">
-                                <span class="wd-week-shift-label">{{ $shift->user?->name ?? '—' }}</span>
-                            </a>
-                        @else
-                            <div class="wd-week-shift" style="top: {{ $p['top'] }}%; height: {{ $p['height'] }}%" title="{{ $shiftTitle }}">
-                                <span class="wd-week-shift-label">{{ $shift->user?->name ?? '—' }}</span>
-                            </div>
-                        @endcan
-                    @endforeach
-
-                    {{-- Emergency assignments (markers) --}}
-                    @foreach ($assignmentsByDay[$dayIndex] as $assignment)
-                        @php
-                            $p = $service->placement($assignment->start_at, $assignment->end_at, $day);
-                            $assignmentTitle = __('Notdienst') . ' · ' . ($assignment->user?->name ?? '—') . ' · ' . $assignment->start_at->format('d.m. H:i') . '–' . $assignment->end_at->format('H:i') . ($assignment->reason ? ' · ' . $assignment->reason : '');
-                        @endphp
-                        @can('update', $assignment)
-                            <a href="{{ route('assignments.edit', $assignment) }}"
-                               data-entry-modal-trigger
-                               class="wd-week-emergency"
-                               style="top: {{ $p['top'] }}%; height: {{ max($p['height'], 2.5) }}%"
-                               title="{{ $assignmentTitle }}">
-                                <span class="wd-week-emergency-label">⚡ {{ $assignment->user?->name ?? '—' }}</span>
-                            </a>
-                        @else
-                            <div class="wd-week-emergency" style="top: {{ $p['top'] }}%; height: {{ max($p['height'], 2.5) }}%" title="{{ $assignmentTitle }}">
-                                <span class="wd-week-emergency-label">⚡ {{ $assignment->user?->name ?? '—' }}</span>
-                            </div>
-                        @endcan
-                    @endforeach
-
-                    {{-- Diary entries (cards) --}}
-                    @foreach ($service->layoutEntries($entriesByDay[$dayIndex], $day) as $placed)
-                        @php
-                            $entry = $placed['entry'];
-                            $toneClass = $statusToneClass[$entry->statusTone()] ?? 'wd-week-entry--neutral';
-                            // Stabile Farb-Akzentuierung pro Benutzer (Hue 0–359)
-                            $userHue = $entry->user_id ? $service->userHue((int) $entry->user_id) : 210;
-                            // Lane-Geometrie: linke Spurzone für die Bereitschaft (1.25rem) reservieren
-                            $leftFrac = $placed['left'] / 100;
-                            $widthFrac = $placed['width'] / 100;
-                        @endphp
-                        <a href="{{ route('diary.show', $entry) }}" data-entry-modal-trigger
-                           class="wd-week-entry {{ $toneClass }}"
-                           style="top: {{ $placed['top'] }}%; height: {{ max($placed['height'], 3) }}%; left: calc(1rem + (100% - 1.25rem) * {{ $leftFrac }} + 2px); width: calc((100% - 1.25rem) * {{ $widthFrac }} - 4px); border-left: 3px solid hsl({{ $userHue }} 70% 45%);"
-                           title="{{ $entry->statusLabel() }} · {{ $entry->user?->name }} · {{ $entry->start_at?->format('d.m. H:i') }}">
-                            <span class="wd-week-entry-time">{{ $entry->start_at?->format('H:i') }}{{ $entry->user ? ' · ' . $entry->user->name : '' }}</span>
-                            <span class="wd-week-entry-text">{{ truncate($entry->content, 60) }}</span>
-                        </a>
-                    @endforeach
-                </div>
+    {{-- Wochen-Tabs (nur bei >1 Woche) --}}
+    @if ($weekCount > 1)
+        <div role="tablist" class="tabs tabs-box flex-nowrap overflow-x-auto">
+            @foreach ($weekViews as $wv)
+                <button type="button" role="tab"
+                        data-week-tab="{{ $wv['key'] }}"
+                        class="tab whitespace-nowrap gap-1.5 {{ $wv['key'] === $activeKey ? 'tab-active' : '' }}">
+                    <span class="font-semibold">{{ __('KW') }} {{ $wv['isoWeek'] }}</span>
+                    <span class="text-[0.65rem] text-base-content/50 tabular-nums">{{ $wv['shortLabel'] }}</span>
+                </button>
             @endforeach
         </div>
-    </div>
+    @endif
+
+    {{-- Wochen-Grids --}}
+    @if ($weekCount === 0)
+        <div class="alert alert-info">
+            <span>{{ __('Keine Wochen im gewählten Zeitraum.') }}</span>
+        </div>
+    @elseif ($weekCount === 1)
+        @include('week._grid', [
+            'wv' => $weekViews[0],
+            'service' => $service,
+            'holidays' => $holidays,
+            'hours' => $hours,
+            'statusToneClass' => $statusToneClass,
+            'bands' => $bands,
+        ])
+    @else
+        @foreach ($weekViews as $wv)
+            <div data-week-pane="{{ $wv['key'] }}"
+                 class="min-h-0 flex-1 flex flex-col {{ $wv['key'] === $activeKey ? '' : 'hidden' }}">
+                @include('week._grid', [
+                    'wv' => $wv,
+                    'service' => $service,
+                    'holidays' => $holidays,
+                    'hours' => $hours,
+                    'statusToneClass' => $statusToneClass,
+                    'bands' => $bands,
+                ])
+            </div>
+        @endforeach
+    @endif
 </div>
 
 <script>
 (function () {
-    var scroll = document.getElementById('wd-week-scroll');
-    var grid   = document.getElementById('wd-week-grid');
-    var btn    = document.getElementById('wd-week-fit-btn');
-    var KEY    = 'workDiaryWeekCalFit';
-    var fit    = localStorage.getItem(KEY) === '1';
+    var KEY  = 'workDiaryWeekCalFit';
+    var btn  = document.getElementById('wd-week-fit-btn');
+    var fit  = localStorage.getItem(KEY) === '1';
 
-    function hourHeight() {
-        if (!scroll) return null;
-        // Verfügbare Höhe = Scroll-Container - Header-Zeile (sticky, ~erste Kind-Höhe)
-        var firstHeader = grid ? grid.querySelector('.wd-week-day-header') : null;
-        var headerH = firstHeader ? firstHeader.offsetHeight : 48;
-        var available = scroll.clientHeight - headerH;
-        return Math.max(available / 24, 20);
+    function applyToAll(fitMode) {
+        var scrolls = document.querySelectorAll('.wd-week-scroll');
+        scrolls.forEach(function (scroll) {
+            var grid = scroll.querySelector('.wd-week-grid');
+            if (!grid) return;
+            if (fitMode) {
+                grid.classList.add('wd-week-grid--fit');
+                var firstHeader = grid.querySelector('.wd-week-day-header');
+                var headerH = firstHeader ? firstHeader.offsetHeight : 48;
+                var available = scroll.clientHeight - headerH;
+                if (available > 0) {
+                    var h = Math.max(available / 24, 20);
+                    grid.style.setProperty('--wd-hour-h', h + 'px');
+                }
+                scroll.style.overflowY = 'hidden';
+                scroll.style.overflowX = 'hidden';
+            } else {
+                grid.classList.remove('wd-week-grid--fit');
+                grid.style.removeProperty('--wd-hour-h');
+                scroll.style.overflowY = '';
+                scroll.style.overflowX = '';
+            }
+        });
+        if (btn) btn.checked = fitMode;
     }
 
-    function apply(fitMode) {
-        if (!scroll || !grid) return;
-        if (fitMode) {
-            var h = hourHeight();
-            grid.style.setProperty('--wd-hour-h', h + 'px');
-            scroll.style.overflow = 'hidden';
-            if (btn) btn.checked = true;
-        } else {
-            grid.style.removeProperty('--wd-hour-h');
-            scroll.style.overflow = '';
-            if (btn) btn.checked = false;
-        }
-    }
-
-    apply(fit);
+    applyToAll(fit);
 
     if (btn) {
         btn.addEventListener('change', function () {
             fit = btn.checked;
             localStorage.setItem(KEY, fit ? '1' : '0');
-            apply(fit);
+            applyToAll(fit);
         });
     }
 
     window.addEventListener('resize', function () {
-        if (fit) apply(true);
+        if (fit) applyToAll(true);
+    });
+
+    // Vanilla-JS Tab-Umschaltung für die Wochen-Tabs (Alpine ist im Projekt
+    // nicht eingebunden, daher keine x-show-Direktive).
+    var root = document.querySelector('[data-week-tabs]');
+    if (root) {
+        var tabs  = root.querySelectorAll('[data-week-tab]');
+        var panes = root.querySelectorAll('[data-week-pane]');
+        tabs.forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                var key = tab.getAttribute('data-week-tab');
+                tabs.forEach(function (t) {
+                    t.classList.toggle('tab-active', t === tab);
+                });
+                panes.forEach(function (p) {
+                    p.classList.toggle('hidden', p.getAttribute('data-week-pane') !== key);
+                });
+                if (fit) {
+                    // Frisch sichtbarer Container braucht eine Neuberechnung der
+                    // Stundenhöhe, weil er vorher display:none hatte.
+                    setTimeout(function () { applyToAll(true); }, 0);
+                }
+            });
+        });
+    }
+})();
+</script>
+
+{{-- Outlook-Style: Klick in den Tageskalender → Kontextmenü mit zeitlich
+     passender Anlage von Tagebucheintrag / Bereitschaft / Notdienst. --}}
+<div id="wd-week-create-menu"
+     class="fixed z-50 hidden min-w-44 rounded-box border border-base-300 bg-base-100 p-1 text-sm shadow-xl"
+     role="menu" aria-label="{{ __('Neu anlegen') }}">
+    <div class="px-3 py-1 text-[0.65rem] uppercase tracking-wider text-base-content/60" data-wd-menu-label></div>
+    <a href="#" class="block rounded-md px-3 py-2 hover:bg-base-200" data-wd-menu-kind="diary" data-entry-modal-trigger>{{ __('Tagebucheintrag') }}</a>
+    <a href="#" class="block rounded-md px-3 py-2 hover:bg-base-200" data-wd-menu-kind="shift" data-entry-modal-trigger>{{ __('Bereitschaft') }}</a>
+    <a href="#" class="block rounded-md px-3 py-2 hover:bg-base-200" data-wd-menu-kind="assignment" data-entry-modal-trigger>{{ __('Notdienst') }}</a>
+</div>
+<script>
+(function () {
+    var menu = document.getElementById('wd-week-create-menu');
+    if (!menu) return;
+
+    // URL-Templates: Platzhalter __START__ / __END__ werden ersetzt.
+    var urls = {
+        diary:      '{{ route('diary.create',       ['date' => '__START__']) }}',
+        shift:      '{{ route('shifts.create',      ['start_at' => '__START__', 'end_at' => '__END__']) }}',
+        assignment: '{{ route('assignments.create', ['start_at' => '__START__', 'end_at' => '__END__']) }}'
+    };
+    var label = menu.querySelector('[data-wd-menu-label]');
+    var links = menu.querySelectorAll('[data-wd-menu-kind]');
+
+    function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+    function timeFromY(dayEl, clientY) {
+        var rect = dayEl.getBoundingClientRect();
+        var ratio = Math.min(Math.max((clientY - rect.top) / rect.height, 0), 0.9999);
+        var totalMinutes = Math.floor(ratio * 24 * 60);
+        totalMinutes = Math.floor(totalMinutes / 15) * 15;
+        return { h: Math.floor(totalMinutes / 60), m: totalMinutes % 60 };
+    }
+
+    function buildDateTime(dateStr, t) {
+        return dateStr + 'T' + pad(t.h) + ':' + pad(t.m);
+    }
+
+    function closeMenu() { menu.classList.add('hidden'); }
+
+    function openMenuAt(x, y, dateStr, t) {
+        var startStr = buildDateTime(dateStr, t);
+        var endH = (t.h + 1) % 24;
+        var endStr = buildDateTime(dateStr, { h: endH, m: t.m });
+        label.textContent = dateStr.split('-').reverse().join('.') + ' · ' + pad(t.h) + ':' + pad(t.m);
+        links.forEach(function (a) {
+            var kind = a.getAttribute('data-wd-menu-kind');
+            var tpl  = urls[kind];
+            a.href = tpl.replace('__START__', encodeURIComponent(startStr))
+                        .replace('__END__',   encodeURIComponent(endStr));
+        });
+        menu.classList.remove('hidden');
+        var rect = menu.getBoundingClientRect();
+        var maxX = window.innerWidth  - rect.width  - 8;
+        var maxY = window.innerHeight - rect.height - 8;
+        menu.style.left = Math.min(x, maxX) + 'px';
+        menu.style.top  = Math.min(y, maxY) + 'px';
+    }
+
+    // Klick-Delegation über alle (auch versteckten) Wochen-Grids hinweg.
+    document.addEventListener('click', function (ev) {
+        if (ev.target.closest('a, button, .wd-week-entry, .wd-week-shift, .wd-week-emergency, [role="tab"]')) {
+            return;
+        }
+        var dayEl = ev.target.closest('.wd-week-day');
+        if (!dayEl) { closeMenu(); return; }
+        var dateStr = dayEl.getAttribute('data-date');
+        if (!dateStr) return;
+        var t = timeFromY(dayEl, ev.clientY);
+        openMenuAt(ev.clientX, ev.clientY, dateStr, t);
+        ev.stopPropagation();
+    });
+
+    document.addEventListener('click', function (ev) {
+        if (!menu.contains(ev.target) && !ev.target.closest('.wd-week-day')) closeMenu();
+    });
+    document.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape') closeMenu();
+    });
+    links.forEach(function (a) {
+        a.addEventListener('click', function () { setTimeout(closeMenu, 0); });
     });
 })();
 </script>

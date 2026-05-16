@@ -50,6 +50,7 @@
                         $hName  = $holidays->nameFor($carbon);
                         $cls    = $carbon->isWeekend() ? 'weekend center' : 'center';
                         $cls    = $hName ? 'holiday center' : $cls;
+                        if ($carbon->isSunday()) { $cls .= ' sunday'; }
                     @endphp
                     <th class="{{ $cls }}" title="{{ $hName ?? '' }}">
                         <div class="small">{{ $carbon->translatedFormat('D') }}</div>
@@ -70,6 +71,7 @@
                             $hName  = $holidays->nameFor($carbon);
                             $cls    = $carbon->isWeekend() ? 'weekend center' : 'center';
                             $cls    = $hName ? 'holiday center' : $cls;
+                            if ($carbon->isSunday()) { $cls .= ' sunday'; }
                             $cellShifts = $matrix[$u->id][$d] ?? [];
                         @endphp
                         <td class="{{ $cls }}">

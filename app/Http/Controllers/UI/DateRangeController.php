@@ -24,4 +24,14 @@ class DateRangeController extends Controller {
 
         return redirect()->back();
     }
+
+    public function shift(Request $request, DateRangeContext $context): RedirectResponse {
+        $data = $request->validate([
+            'direction' => ['required', Rule::in(['prev', 'next'])],
+        ]);
+
+        $context->shift($data['direction'] === 'next' ? 1 : -1);
+
+        return redirect()->back();
+    }
 }

@@ -14,7 +14,8 @@
         </thead>
         <tbody>
             @forelse ($assignments as $a)
-                <tr class="hover">
+                @php $isSunday = $a->start_at && $a->start_at->isSunday(); @endphp
+                <tr class="hover {{ $isSunday ? 'text-error' : '' }}">
                     <td>{{ $a->user?->name ?? '—' }}</td>
                     <td class="whitespace-nowrap">{{ $a->start_at?->format('d.m.Y H:i') ?? '—' }}</td>
                     <td class="whitespace-nowrap">{{ $a->end_at?->format('d.m.Y H:i') ?? '—' }}</td>
