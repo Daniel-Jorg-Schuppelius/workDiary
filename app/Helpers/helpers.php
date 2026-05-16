@@ -1,122 +1,70 @@
 <?php
 
+/*
+ * Created on   : Wed May 06 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : helpers.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 declare(strict_types=1);
 
 /**
- * Global helper functions for convenient access to common utilities
+ * Globale Helper-Funktionen.
+ *
+ * Dünne Wrapper um App-Facades (app/Support/Toolkit/*), die wiederum
+ * CommonToolkit-Funktionen kapseln. Für neue Code-Pfade bitte direkt
+ * die Facade-Klassen nutzen; diese Funktionen bleiben aus Kompatibilitäts-
+ * gründen für Views und Legacy-Pfade bestehen.
  */
 
+use App\Support\Toolkit\DateFacade;
+use App\Support\Toolkit\StringFacade;
 use CommonToolkit\Enums\Month;
-use CommonToolkit\Enums\Weekday;
-use CommonToolkit\Helper\Data\StringHelper as ToolkitStringHelper;
 
 if (! function_exists('truncate')) {
-    /**
-     * Truncate a string to a maximum length with optional suffix.
-     *
-     * @param  string|null  $text  The text to truncate
-     * @param  int  $maxLength  Maximum length (including suffix)
-     * @param  string  $suffix  Suffix to append (default: '...')
-     * @param  bool  $trim  Whether to trim the text first
-     * @return string Truncated text or original if shorter
-     */
     function truncate(?string $text, int $maxLength, string $suffix = '...', bool $trim = false): string
     {
-        return ToolkitStringHelper::truncate($text, $maxLength, $suffix, $trim);
+        return StringFacade::truncate($text, $maxLength, $suffix, $trim);
     }
 }
 
 if (! function_exists('isNullOrEmpty')) {
-    /**
-     * Check if a string is null or empty.
-     *
-     * @param  string|null  $value  The value to check
-     * @return bool True if null or empty string
-     */
     function isNullOrEmpty(?string $value): bool
     {
-        return ToolkitStringHelper::isNullOrEmpty($value);
+        return StringFacade::isNullOrEmpty($value);
     }
 }
 
 if (! function_exists('maskEmail')) {
-    /**
-     * Mask an email address for display purposes.
-     *
-     * @param  string  $email  The email to mask
-     * @param  int  $visibleStart  Number of visible characters at start
-     * @param  int  $visibleEnd  Number of visible characters at end
-     * @param  string  $maskChar  Character to use for masking
-     * @return string Masked email address
-     */
     function maskEmail(string $email, int $visibleStart = 3, int $visibleEnd = 3, string $maskChar = '*'): string
     {
-        return ToolkitStringHelper::mask($email, $visibleStart, $visibleEnd, $maskChar);
+        return StringFacade::mask($email, $visibleStart, $visibleEnd, $maskChar);
     }
 }
 
 if (! function_exists('weekdayAbbr')) {
     /**
-     * Get weekday abbreviations for a week starting with Monday.
-     * Uses the CommonToolkit Weekday enum with localization.
-     *
-     * @param  string  $locale  Locale for names (default: 'de')
-     * @param  bool  $long  Return full names instead of abbreviations
-     * @return array<int, string> Array of 7 weekday abbreviations/names (Mo-Su)
+     * @return list<string>
      */
     function weekdayAbbr(string $locale = 'de', bool $long = false): array
     {
-        $days = [
-            Weekday::MONDAY,
-            Weekday::TUESDAY,
-            Weekday::WEDNESDAY,
-            Weekday::THURSDAY,
-            Weekday::FRIDAY,
-            Weekday::SATURDAY,
-            Weekday::SUNDAY,
-        ];
-
-        return array_map(function (Weekday $day) use ($locale, $long): string {
-            $name = $day->getName($locale);
-
-            return $long ? $name : mb_substr($name, 0, 2);
-        }, $days);
+        return DateFacade::weekdayAbbreviations($locale, $long);
     }
 }
 
 if (! function_exists('printable_initials')) {
-    /**
-     * Build privacy-friendly initials for a person, e.g. "Max Schuppelius" => "M.S.".
-     * Used in anonymised print layouts.
-     *
-     * @param  string|null  $name  Full name
-     * @param  int  $maxParts  Maximum number of name parts to consider
-     * @return string Dotted initials (uppercase) or "—" if name is empty
-     */
     function printable_initials(?string $name, int $maxParts = 3): string
     {
-        if ($name === null || trim($name) === '') {
-            return '—';
-        }
-        $parts = preg_split('/\s+/u', trim($name)) ?: [];
-        $parts = array_slice($parts, 0, $maxParts);
-        $initials = array_map(
-            static fn (string $part): string => mb_strtoupper(mb_substr($part, 0, 1)).'.',
-            $parts
-        );
-
-        return implode('', $initials);
+        return StringFacade::printableInitials($name, $maxParts);
     }
 }
 
 if (! function_exists('monthsArray')) {
     /**
-     * Get array of months for a given year with localization.
-     * Uses the CommonToolkit Month enum.
-     *
-     * @param  string  $locale  Locale for month names (default: 'de')
-     * @param  bool  $leadingZero  Whether to pad months with leading zeros (01-12)
-     * @return array<string|int, string> Array of months [key => month name]
+     * @return array<string|int, string>
      */
     function monthsArray(string $locale = 'de', bool $leadingZero = false): array
     {

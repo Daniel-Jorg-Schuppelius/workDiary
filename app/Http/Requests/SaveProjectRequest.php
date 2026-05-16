@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Sun May 03 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : SaveProjectRequest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Http\Requests;
 
 use App\Models\Project;
@@ -7,13 +16,16 @@ use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveProjectRequest extends FormRequest {
-    public function authorize(): bool {
+class SaveProjectRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
         return true;
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array {
+    public function rules(): array
+    {
         /** @var Project|null $project */
         $project = $this->route('project');
 
@@ -37,11 +49,13 @@ class SaveProjectRequest extends FormRequest {
                     $parentId = (int) $value;
                     if ($project !== null && $parentId === (int) $project->id) {
                         $fail(__('Ein Projekt kann nicht sein eigenes Übergeordnetes Projekt sein.'));
+
                         return;
                     }
                     $parent = Project::query()->find($parentId);
                     if ($parent === null) {
                         $fail(__('Übergeordnetes Projekt nicht gefunden.'));
+
                         return;
                     }
                     if ($project !== null && $project->isAncestorOf($parent)) {

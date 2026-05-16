@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Wed Apr 29 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : web.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 use App\Http\Controllers\AccountPasswordController;
 use App\Http\Controllers\Admin\PluginController as AdminPluginController;
 use App\Http\Controllers\ApiTokenController;
@@ -11,7 +20,6 @@ use App\Http\Controllers\Auth\TenantRegistrationController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\CoverageRequirementController;
 use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiaryController;
 use App\Http\Controllers\DiaryExportController;
@@ -19,13 +27,9 @@ use App\Http\Controllers\DutyController;
 use App\Http\Controllers\DutyPlanController;
 use App\Http\Controllers\EmergencyAssignmentController;
 use App\Http\Controllers\FlexController;
-use App\Http\Controllers\Reporting\CustomerProjectReportController;
-use App\Http\Controllers\Reporting\MyMonthReportController;
-use App\Http\Controllers\Reporting\MyYearReportController;
-use App\Http\Controllers\Reporting\ProjectDetailsReportController;
-use App\Http\Controllers\Reporting\WeekByUserReportController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MaterialController;
@@ -41,6 +45,11 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PublicSignatureController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\QualificationController;
+use App\Http\Controllers\Reporting\CustomerProjectReportController;
+use App\Http\Controllers\Reporting\MyMonthReportController;
+use App\Http\Controllers\Reporting\MyYearReportController;
+use App\Http\Controllers\Reporting\ProjectDetailsReportController;
+use App\Http\Controllers\Reporting\WeekByUserReportController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ScheduledShiftController;
 use App\Http\Controllers\ScheduleImportController;
@@ -53,6 +62,7 @@ use App\Http\Controllers\TimesheetController;
 use App\Http\Controllers\TimesheetEntryController;
 use App\Http\Controllers\TimesheetMaterialController;
 use App\Http\Controllers\TimesheetSignatureController;
+use App\Http\Controllers\UI\DateRangeController;
 use App\Http\Controllers\VacationController;
 use App\Http\Controllers\WeekController;
 use App\Http\Controllers\WorkScheduleController;
@@ -133,12 +143,12 @@ Route::middleware('auth')->group(function () {
         Route::get('vacations', [PrintController::class, 'vacationYear'])->name('vacations');
     });
 
-    Route::get('shifts', fn() => redirect()->route('duties.index'))->name('shifts.index');
-    Route::get('assignments', fn() => redirect()->route('duties.index', ['tab' => 'notdienst']))->name('assignments.index');
+    Route::get('shifts', fn () => redirect()->route('duties.index'))->name('shifts.index');
+    Route::get('assignments', fn () => redirect()->route('duties.index', ['tab' => 'notdienst']))->name('assignments.index');
     Route::resource('shifts', OnCallShiftController::class)->except(['show', 'index'])->parameters(['shifts' => 'shift']);
     Route::resource('assignments', EmergencyAssignmentController::class)->except(['show', 'index'])->parameters(['assignments' => 'assignment']);
 
-    Route::get('vacations', fn() => redirect()->route('duties.index', ['tab' => 'urlaub']))->name('vacations.index');
+    Route::get('vacations', fn () => redirect()->route('duties.index', ['tab' => 'urlaub']))->name('vacations.index');
     Route::resource('vacations', VacationController::class)->except(['show', 'index']);
     Route::patch('vacations/{vacation}/approve', [VacationController::class, 'approve'])->name('vacations.approve');
     Route::patch('vacations/{vacation}/reject', [VacationController::class, 'reject'])->name('vacations.reject');
@@ -212,8 +222,8 @@ Route::middleware('auth')->group(function () {
     Route::post('stopwatch/stop', [StopwatchController::class, 'stop'])->name('stopwatch.stop');
 
     // ── Globale Zeitauswahl (Header-Widget) ─────────────────────────────────
-    Route::post('ui/date-range', [\App\Http\Controllers\UI\DateRangeController::class, 'update'])->name('ui.date-range.update');
-    Route::post('ui/date-range/shift', [\App\Http\Controllers\UI\DateRangeController::class, 'shift'])->name('ui.date-range.shift');
+    Route::post('ui/date-range', [DateRangeController::class, 'update'])->name('ui.date-range.update');
+    Route::post('ui/date-range/shift', [DateRangeController::class, 'shift'])->name('ui.date-range.shift');
 
     // ── Gleitzeit ───────────────────────────────────────────────────────────
     Route::get('flex', [FlexController::class, 'index'])->name('flex.index');

@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Thu May 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : VacationConflictRule.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 declare(strict_types=1);
 
 namespace App\Services\Compliance\Rules;
@@ -10,15 +19,12 @@ use App\Services\Compliance\ComplianceRule;
 use App\Services\Compliance\ComplianceViolation;
 
 /** Schicht fällt in genehmigten Urlaub des Mitarbeiters. */
-final class VacationConflictRule implements ComplianceRule
-{
-    public function key(): string
-    {
+final class VacationConflictRule implements ComplianceRule {
+    public function key(): string {
         return 'vacation_conflict';
     }
 
-    public function check(ScheduledShift $shift, array $settings): array
-    {
+    public function check(ScheduledShift $shift, array $settings): array {
         $dateStr = $shift->date->format('Y-m-d');
 
         $vacation = Vacation::query()

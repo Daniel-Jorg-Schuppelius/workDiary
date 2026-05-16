@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Wed Apr 29 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : LegacyArchiveDiaryEntry.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Legacy\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -8,14 +17,28 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
+ * @property Carbon $aktuell
  * @property int $user
- * @property-read LegacyUser|null $mitarbeiter
- * @property string|null $inhalt
- * @property string|null $antwort
  * @property Carbon|null $von
  * @property Carbon|null $bis
- * @property Carbon|null $aktuell
- * @property int|null $gelesen
+ * @property string $inhalt
+ * @property string $antwort
+ * @property int $gelesen
+ * @property string $sms
+ * @property-read LegacyUser|null $mitarbeiter
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyArchiveDiaryEntry newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyArchiveDiaryEntry newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyArchiveDiaryEntry query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyArchiveDiaryEntry whereAktuell($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyArchiveDiaryEntry whereAntwort($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyArchiveDiaryEntry whereBis($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyArchiveDiaryEntry whereGelesen($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyArchiveDiaryEntry whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyArchiveDiaryEntry whereInhalt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyArchiveDiaryEntry whereSms($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyArchiveDiaryEntry whereUser($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyArchiveDiaryEntry whereVon($value)
  */
 class LegacyArchiveDiaryEntry extends Model
 {

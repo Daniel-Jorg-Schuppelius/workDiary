@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Thu May 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : LexofficeMaterialProvider.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Services\Material\Provider;
 
 use App\Models\Material;
@@ -13,23 +22,21 @@ use Illuminate\Support\Facades\Http;
  *
  * Doku: https://developers.lexoffice.io/docs/#articles-endpoint-articles
  */
-class LexofficeMaterialProvider implements MaterialProviderInterface
-{
+class LexofficeMaterialProvider implements MaterialProviderInterface {
     public function __construct(
         protected string $apiKey,
         protected string $baseUrl = 'https://api.lexoffice.io/v1',
-    ) {}
+    ) {
+    }
 
-    public function name(): string
-    {
+    public function name(): string {
         return 'lexoffice';
     }
 
     /**
      * @return Collection<int, Material>
      */
-    public function search(string $query, int $limit = 20): Collection
-    {
+    public function search(string $query, int $limit = 20): Collection {
         if ($this->apiKey === '') {
             return collect();
         }
@@ -53,8 +60,7 @@ class LexofficeMaterialProvider implements MaterialProviderInterface
         return $models;
     }
 
-    public function sync(): int
-    {
+    public function sync(): int {
         if ($this->apiKey === '') {
             return 0;
         }
@@ -82,8 +88,7 @@ class LexofficeMaterialProvider implements MaterialProviderInterface
     /**
      * @param  array<string, mixed>  $item
      */
-    protected function upsert(array $item): Material
-    {
+    protected function upsert(array $item): Material {
         $price = data_get($item, 'price.netPrice');
         $tax = data_get($item, 'price.taxRate');
 
@@ -103,8 +108,7 @@ class LexofficeMaterialProvider implements MaterialProviderInterface
         );
     }
 
-    protected function client(): PendingRequest
-    {
+    protected function client(): PendingRequest {
         return Http::baseUrl($this->baseUrl)
             ->withToken($this->apiKey)
             ->acceptJson();

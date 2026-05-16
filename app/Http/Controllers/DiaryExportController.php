@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Sun May 03 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : DiaryExportController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Http\Controllers;
 
 use App\Models\DiaryEntry;
@@ -10,11 +19,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class DiaryExportController extends Controller {
-    public function csv(Request $request): StreamedResponse {
+class DiaryExportController extends Controller
+{
+    public function csv(Request $request): StreamedResponse
+    {
         $query = $this->buildQuery($request);
 
-        $filename = 'tagebuch_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'tagebuch_'.now()->format('Ymd_His').'.csv';
 
         return response()->streamDownload(function () use ($query) {
             $out = fopen('php://output', 'wb');
@@ -58,7 +69,8 @@ class DiaryExportController extends Controller {
         ]);
     }
 
-    public function pdf(Request $request): View {
+    public function pdf(Request $request): View
+    {
         $query = $this->buildQuery($request);
         $entries = $query->limit(2000)->get();
 
@@ -70,7 +82,8 @@ class DiaryExportController extends Controller {
     }
 
     /** @return Builder<DiaryEntry> */
-    private function buildQuery(Request $request): Builder {
+    private function buildQuery(Request $request): Builder
+    {
         /** @var Builder<DiaryEntry> $query */
         $query = DiaryEntry::query()
             ->with(['user:id,name', 'tags:id,name'])
@@ -102,11 +115,11 @@ class DiaryExportController extends Controller {
         }
         $tagId = $request->integer('tag');
         if ($tagId > 0) {
-            $query->whereHas('tags', fn($q) => $q->where('tags.id', $tagId));
+            $query->whereHas('tags', fn ($q) => $q->where('tags.id', $tagId));
         }
         $q = trim((string) $request->query('q', ''));
         if ($q !== '') {
-            $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $q) . '%';
+            $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $q).'%';
             $query->where(function ($w) use ($like) {
                 $w->where('content', 'like', $like)->orWhere('response', 'like', $like);
             });
@@ -115,16 +128,18 @@ class DiaryExportController extends Controller {
         return $query;
     }
 
-    private function oneLine(string $value): string {
+    private function oneLine(string $value): string
+    {
         return trim(preg_replace('/\s+/', ' ', $value) ?? '');
     }
 
-    private function csvSafe(string $value): string {
+    private function csvSafe(string $value): string
+    {
         $normalized = $this->oneLine($value);
         $trimmed = ltrim($normalized);
 
         if ($trimmed !== '' && in_array($trimmed[0], ['=', '+', '-', '@'], true)) {
-            return "'" . $normalized;
+            return "'".$normalized;
         }
 
         return $normalized;

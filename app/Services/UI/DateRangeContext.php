@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : DateRangeContext.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Services\UI;
 
 use Carbon\CarbonImmutable;
@@ -12,13 +21,21 @@ use Illuminate\Contracts\Session\Session;
  */
 class DateRangeContext {
     public const PRESET_TODAY = 'today';
+
     public const PRESET_THIS_WEEK = 'this_week';
+
     public const PRESET_THIS_MONTH = 'this_month';
+
     public const PRESET_LAST_MONTH = 'last_month';
+
     public const PRESET_THIS_YEAR = 'this_year';
+
     public const PRESET_LAST_7_DAYS = 'last_7_days';
+
     public const PRESET_LAST_30_DAYS = 'last_30_days';
+
     public const PRESET_LAST_90_DAYS = 'last_90_days';
+
     public const PRESET_CUSTOM = 'custom';
 
     /** @var array<int, string> */
@@ -35,7 +52,9 @@ class DateRangeContext {
     ];
 
     private const KEY_PRESET = 'ui.daterange.preset';
+
     private const KEY_FROM = 'ui.daterange.from';
+
     private const KEY_TO = 'ui.daterange.to';
 
     public function __construct(private readonly Session $session) {
@@ -142,6 +161,7 @@ class DateRangeContext {
         if ($from->equalTo($from->startOfYear()) && $to->equalTo($from->endOfYear())) {
             return 'year';
         }
+
         return 'custom';
     }
 
@@ -149,6 +169,7 @@ class DateRangeContext {
         if (! $from->equalTo($from->startOfWeek()) || ! $to->equalTo($from->endOfWeek())) {
             return null;
         }
+
         return sprintf('KW %02d/%d', $from->isoWeek, $from->isoWeekYear);
     }
 

@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : DefaultProjectTest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace Tests\Feature;
 
 use App\Models\Customer;
@@ -11,13 +20,15 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class DefaultProjectTest extends TestCase {
+class DefaultProjectTest extends TestCase
+{
     use RefreshDatabase;
     use WithOrganization;
 
     private User $user;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -26,7 +37,8 @@ class DefaultProjectTest extends TestCase {
         ]);
     }
 
-    public function test_customer_creation_provisions_default_project(): void {
+    public function test_customer_creation_provisions_default_project(): void
+    {
         $customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
             'created_by' => $this->user->id,
@@ -39,7 +51,8 @@ class DefaultProjectTest extends TestCase {
         $this->assertSame((int) $this->organization->id, (int) $default->organization_id);
     }
 
-    public function test_default_project_or_create_returns_existing(): void {
+    public function test_default_project_or_create_returns_existing(): void
+    {
         $customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
@@ -51,7 +64,8 @@ class DefaultProjectTest extends TestCase {
         $this->assertSame(1, $customer->projects()->count());
     }
 
-    public function test_saving_is_default_unsets_others_for_same_customer(): void {
+    public function test_saving_is_default_unsets_others_for_same_customer(): void
+    {
         $customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
@@ -71,7 +85,8 @@ class DefaultProjectTest extends TestCase {
         $this->assertSame(1, $customer->projects()->where('is_default', true)->count());
     }
 
-    public function test_quick_store_uses_customer_default_project(): void {
+    public function test_quick_store_uses_customer_default_project(): void
+    {
         $customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
@@ -87,7 +102,8 @@ class DefaultProjectTest extends TestCase {
         $response->assertRedirect(route('projects.timesheets.show', [$default, $timesheet]));
     }
 
-    public function test_quick_store_with_explicit_project_overrides_default(): void {
+    public function test_quick_store_with_explicit_project_overrides_default(): void
+    {
         $customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
@@ -110,7 +126,8 @@ class DefaultProjectTest extends TestCase {
         $response->assertRedirect(route('projects.timesheets.show', [$explicit, $timesheet]));
     }
 
-    public function test_customer_destroy_cleans_up_default_project_only(): void {
+    public function test_customer_destroy_cleans_up_default_project_only(): void
+    {
         $customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
         ]);

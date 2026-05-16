@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Sun May 03 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : ManagesLegacyDutyCrud.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Legacy\Http\Concerns;
 
 use App\Legacy\Support\LegacyRoleResolver;
@@ -9,14 +18,16 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-trait ManagesLegacyDutyCrud {
+trait ManagesLegacyDutyCrud
+{
     /**
      * @template TModel of Model
      *
      * @param  Builder<TModel>  $query
      * @return array<string, mixed>
      */
-    private function legacyDutyIndexData(Request $request, Builder $query): array {
+    private function legacyDutyIndexData(Request $request, Builder $query): array
+    {
         $legacyUserId = LegacyRoleResolver::resolveLegacyUserId(Auth::user());
         $isAdmin = LegacyRoleResolver::isAdmin(Auth::user());
 
@@ -54,7 +65,8 @@ trait ManagesLegacyDutyCrud {
     }
 
     /** @return array<string, mixed> */
-    private function legacyDutyFormData(mixed $item, bool $isEdit): array {
+    private function legacyDutyFormData(mixed $item, bool $isEdit): array
+    {
         return [
             'item' => $item,
             'users' => $this->legacyUsersForSelect(),
@@ -62,7 +74,8 @@ trait ManagesLegacyDutyCrud {
         ];
     }
 
-    private function redirectToWeekIfMigrated(string $modernModelClass, int $legacyId): ?RedirectResponse {
+    private function redirectToWeekIfMigrated(string $modernModelClass, int $legacyId): ?RedirectResponse
+    {
         if ($modernModelClass::where('legacy_id', $legacyId)->exists()) {
             return redirect()->route('week.index');
         }

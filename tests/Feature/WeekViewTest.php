@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Sun May 03 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : WeekViewTest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace Tests\Feature;
 
 use App\Models\DiaryEntry;
@@ -13,19 +22,23 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class WeekViewTest extends TestCase {
+class WeekViewTest extends TestCase
+{
     use RefreshDatabase;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
     }
 
-    public function test_week_route_requires_auth(): void {
+    public function test_week_route_requires_auth(): void
+    {
         $this->get('/week')->assertRedirect(route('login'));
     }
 
-    public function test_mine_scope_only_returns_users_items(): void {
+    public function test_mine_scope_only_returns_users_items(): void
+    {
         $owner = User::factory()->user()->create();
         $other = User::factory()->user()->create();
 
@@ -47,7 +60,8 @@ class WeekViewTest extends TestCase {
         $this->assertSame($myShift->id, $data['shifts']->first()->id);
     }
 
-    public function test_team_scope_returns_all_users_items(): void {
+    public function test_team_scope_returns_all_users_items(): void
+    {
         $owner = User::factory()->user()->create();
         $other = User::factory()->user()->create();
         $monday = CarbonImmutable::parse('2026-04-27 00:00');
@@ -66,7 +80,8 @@ class WeekViewTest extends TestCase {
         $this->assertCount(2, $data['shifts']);
     }
 
-    public function test_group_by_day_splits_multi_day_shift(): void {
+    public function test_group_by_day_splits_multi_day_shift(): void
+    {
         $owner = User::factory()->user()->create();
         $monday = CarbonImmutable::parse('2026-04-27 00:00');
 
@@ -86,7 +101,8 @@ class WeekViewTest extends TestCase {
         $this->assertSame($shift->id, $byDay[0]->first()->id);
     }
 
-    public function test_placement_calculates_top_and_height_in_percent(): void {
+    public function test_placement_calculates_top_and_height_in_percent(): void
+    {
         $day = CarbonImmutable::parse('2026-04-27 00:00');
         $start = $day->setTime(6, 0);
         $end = $day->setTime(18, 0);
@@ -97,7 +113,8 @@ class WeekViewTest extends TestCase {
         $this->assertSame(50.0, $p['height']); // 12/24
     }
 
-    public function test_archived_items_are_excluded(): void {
+    public function test_archived_items_are_excluded(): void
+    {
         $owner = User::factory()->user()->create();
         $monday = CarbonImmutable::parse('2026-04-27 00:00');
 
@@ -126,7 +143,8 @@ class WeekViewTest extends TestCase {
         $this->assertCount(0, $data['entries']);
     }
 
-    public function test_view_renders_with_my_and_team_scope(): void {
+    public function test_view_renders_with_my_and_team_scope(): void
+    {
         $user = User::factory()->user()->create();
 
         $this->actingAs($user)
@@ -140,7 +158,8 @@ class WeekViewTest extends TestCase {
             ->assertSee('Team-Woche');
     }
 
-    public function test_multi_week_range_renders_week_tabs(): void {
+    public function test_multi_week_range_renders_week_tabs(): void
+    {
         $user = User::factory()->user()->create();
 
         // Globaler Range über zwei volle ISO-Wochen
@@ -157,7 +176,8 @@ class WeekViewTest extends TestCase {
         $response->assertSee('KW 19');
     }
 
-    public function test_date_query_param_redirects_for_backward_compat(): void {
+    public function test_date_query_param_redirects_for_backward_compat(): void
+    {
         $user = User::factory()->user()->create();
 
         $response = $this->actingAs($user)->get(route('week.index', ['date' => '2026-04-29']));

@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Sun May 03 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : KanbanController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers;
@@ -15,7 +24,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class KanbanController extends Controller {
+class KanbanController extends Controller
+{
     use ResolvesGlobalDateRange;
 
     private const MAX_ENTRIES = 200;
@@ -25,7 +35,8 @@ class KanbanController extends Controller {
      *
      * @return array<int, array{label: string, tone: string}>
      */
-    public static function columns(): array {
+    public static function columns(): array
+    {
         return [
             2 => ['label' => 'Offen', 'tone' => 'open'],
             3 => ['label' => 'Problem', 'tone' => 'alert'],
@@ -34,7 +45,8 @@ class KanbanController extends Controller {
         ];
     }
 
-    public function index(Request $request): View|RedirectResponse {
+    public function index(Request $request): View|RedirectResponse
+    {
         // Backward-Compat: alte URLs mit ?range=7|30|90|all|custom oder
         // ?from=&to= einmalig in den globalen DateRangeContext übersetzen
         // und auf die saubere URL umleiten. Der Header-Selektor übernimmt.
@@ -64,7 +76,7 @@ class KanbanController extends Controller {
         $query->whereDate('start_at', '<=', $range['to']->toDateString());
 
         $entries = $query->limit(self::MAX_ENTRIES)->get();
-        $byStatus = $entries->groupBy(fn(DiaryEntry $e) => (int) $e->status);
+        $byStatus = $entries->groupBy(fn (DiaryEntry $e) => (int) $e->status);
 
         return view('kanban.index', [
             'columns' => self::columns(),
@@ -80,7 +92,8 @@ class KanbanController extends Controller {
      * in den globalen DateRangeContext, damit bestehende Bookmarks weiter
      * funktionieren.
      */
-    private function migrateLegacyRange(Request $request): void {
+    private function migrateLegacyRange(Request $request): void
+    {
         $ctx = app(DateRangeContext::class);
 
         if ($request->filled('from') || $request->filled('to')) {
@@ -105,7 +118,8 @@ class KanbanController extends Controller {
         }
     }
 
-    public function updateStatus(Request $request, DiaryEntry $entry): JsonResponse {
+    public function updateStatus(Request $request, DiaryEntry $entry): JsonResponse
+    {
         Gate::authorize('update', $entry);
 
         $validated = $request->validate([

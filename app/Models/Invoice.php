@@ -1,8 +1,18 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : Invoice.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToOrganization;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,19 +39,23 @@ use Illuminate\Support\Carbon;
  * @property int|null $created_by
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, InvoiceItem> $items
+ * @property-read Collection<int, InvoiceItem> $items
  * @property-read Customer $customer
  * @property-read Project|null $project
  */
-class Invoice extends Model {
+class Invoice extends Model
+{
     use BelongsToOrganization;
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_ISSUED = 'issued';
+
     public const STATUS_PAID = 'paid';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     /** @var array<int, string> */
@@ -65,7 +79,8 @@ class Invoice extends Model {
         'created_by',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'issued_on' => 'date',
             'due_on' => 'date',
@@ -78,21 +93,25 @@ class Invoice extends Model {
     }
 
     /** @return BelongsTo<Customer, $this> */
-    public function customer(): BelongsTo {
+    public function customer(): BelongsTo
+    {
         return $this->belongsTo(Customer::class);
     }
 
     /** @return BelongsTo<Project, $this> */
-    public function project(): BelongsTo {
+    public function project(): BelongsTo
+    {
         return $this->belongsTo(Project::class);
     }
 
     /** @return HasMany<InvoiceItem, $this> */
-    public function items(): HasMany {
+    public function items(): HasMany
+    {
         return $this->hasMany(InvoiceItem::class)->orderBy('position');
     }
 
-    public function recalculate(): void {
+    public function recalculate(): void
+    {
         $sub = 0.0;
         foreach ($this->items as $item) {
             $sub += (float) $item->amount;

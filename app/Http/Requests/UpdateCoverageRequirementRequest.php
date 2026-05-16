@@ -1,7 +1,17 @@
 <?php
 
+/*
+ * Created on   : Thu May 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : UpdateCoverageRequirementRequest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Http\Requests;
 
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
@@ -9,7 +19,9 @@ class UpdateCoverageRequirementRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Auth::user()?->isAdmin() ?? false;
+        $user = Auth::user();
+
+        return $user instanceof User && $user->isAdmin();
     }
 
     /** @return array<string, mixed> */

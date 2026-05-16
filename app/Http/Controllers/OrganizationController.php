@@ -1,4 +1,12 @@
 <?php
+/*
+ * Created on   : Tue May 12 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : OrganizationController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
 
 namespace App\Http\Controllers;
 
@@ -9,11 +17,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class OrganizationController extends Controller {
-    public function index(Request $request): View {
+class OrganizationController extends Controller
+{
+    public function index(Request $request): View
+    {
         Gate::authorize('viewAny', Organization::class);
 
-        $query = Organization::withoutGlobalScopes()->withCount('users');
+        $query = Organization::query()->withoutGlobalScopes()->withCount('users');
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [
             'name' => 'name',
@@ -29,18 +39,20 @@ class OrganizationController extends Controller {
         return view('admin.organizations.index', compact('organizations', 'sort', 'dir'));
     }
 
-    public function create(): View {
+    public function create(): View
+    {
         Gate::authorize('create', Organization::class);
 
         return view('admin.organizations.create');
     }
 
-    public function store(Request $request): RedirectResponse {
+    public function store(Request $request): RedirectResponse
+    {
         Gate::authorize('create', Organization::class);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'plan' => ['required', 'in:' . implode(',', Organization::$plans)],
+            'plan' => ['required', 'in:'.implode(',', Organization::$plans)],
             'locale' => ['required', 'string', 'max:10'],
             'timezone' => ['required', 'string', 'max:64'],
             'is_active' => ['boolean'],
@@ -54,23 +66,25 @@ class OrganizationController extends Controller {
             ->with('success', __('Organisation wurde erstellt.'));
     }
 
-    public function edit(Organization $organization): View {
+    public function edit(Organization $organization): View
+    {
         Gate::authorize('update', $organization);
 
         return view('admin.organizations.edit', compact('organization'));
     }
 
-    public function update(Request $request, Organization $organization): RedirectResponse {
+    public function update(Request $request, Organization $organization): RedirectResponse
+    {
         Gate::authorize('update', $organization);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'plan' => ['required', 'in:' . implode(',', Organization::$plans)],
+            'plan' => ['required', 'in:'.implode(',', Organization::$plans)],
             'locale' => ['required', 'string', 'max:10'],
             'timezone' => ['required', 'string', 'max:64'],
             'is_active' => ['boolean'],
             'compliance' => ['sometimes', 'array'],
-            'compliance.mode' => ['sometimes', 'in:' . implode(',', Organization::$complianceModes)],
+            'compliance.mode' => ['sometimes', 'in:'.implode(',', Organization::$complianceModes)],
             'compliance.max_hours_day' => ['sometimes', 'integer', 'min:1', 'max:24'],
             'compliance.min_rest_hours' => ['sometimes', 'integer', 'min:1', 'max:24'],
             'compliance.max_hours_week' => ['sometimes', 'integer', 'min:1', 'max:168'],
@@ -96,7 +110,7 @@ class OrganizationController extends Controller {
             // Boolean-Konvertierung für rules
             if (isset($settings['compliance']['rules']) && is_array($settings['compliance']['rules'])) {
                 $settings['compliance']['rules'] = array_map(
-                    static fn($v) => filter_var($v, FILTER_VALIDATE_BOOL),
+                    static fn ($v) => filter_var($v, FILTER_VALIDATE_BOOL),
                     $settings['compliance']['rules'],
                 );
             }
@@ -110,7 +124,8 @@ class OrganizationController extends Controller {
             ->with('success', __('Organisation wurde aktualisiert.'));
     }
 
-    public function destroy(Organization $organization): RedirectResponse {
+    public function destroy(Organization $organization): RedirectResponse
+    {
         Gate::authorize('delete', $organization);
 
         $organization->delete();

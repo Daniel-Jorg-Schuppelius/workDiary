@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : LexofficeService.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Plugins\Lexoffice;
 
 use App\Models\Customer;
@@ -20,7 +29,8 @@ use RuntimeException;
  * Construction is lazy: the SDK Client is instantiated on first use so that
  * the plugin can be registered safely even when no API key is configured.
  */
-class LexofficeService {
+class LexofficeService
+{
     private ?Client $client = null;
 
     public function __construct(
@@ -28,14 +38,15 @@ class LexofficeService {
         private readonly LexofficeMapper $mapper,
         /** @var array<string, mixed> */
         private readonly array $defaults = [],
-    ) {
-    }
+    ) {}
 
-    public function isConfigured(): bool {
+    public function isConfigured(): bool
+    {
         return $this->apiKey !== null && $this->apiKey !== '';
     }
 
-    private function client(): Client {
+    private function client(): Client
+    {
         if (! $this->isConfigured()) {
             throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
         }
@@ -46,7 +57,8 @@ class LexofficeService {
     /**
      * Push a customer to Lexoffice as a contact. Returns the external id.
      */
-    public function createContact(Customer $customer): string {
+    public function createContact(Customer $customer): string
+    {
         $payload = $this->mapper->customerToContactPayload($customer, $this->defaults);
 
         $endpoint = new ContactsEndpoint($this->client());

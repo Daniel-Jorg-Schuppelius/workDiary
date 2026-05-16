@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Thu May 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : legacy.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 declare(strict_types=1);
 
 use App\Legacy\Http\Controllers\LegacyAccountController;
@@ -42,7 +51,7 @@ Route::middleware('auth')->group(function (): void {
 
     // Read-only-Routen (immer erlaubt)
     Route::get('legacy/diary/week', [LegacyDiaryController::class, 'week'])->name('legacy.diary.week');
-    Route::get('legacy/overview', fn() => redirect()->route('legacy.callcenter.notdienst'))->name('legacy.overview.index');
+    Route::get('legacy/overview', fn () => redirect()->route('legacy.callcenter.notdienst'))->name('legacy.overview.index');
     Route::get('legacy/archive', [LegacyArchiveController::class, 'index'])->name('legacy.archive.index');
     Route::get('legacy/archive/week', [LegacyArchiveController::class, 'week'])->name('legacy.archive.week');
     Route::get('legacy/archive/{entry}', [LegacyArchiveController::class, 'show'])

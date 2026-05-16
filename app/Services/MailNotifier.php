@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Sun May 03 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : MailNotifier.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Services;
 
 use App\Mail\CommentCreatedMail;
@@ -11,10 +20,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
-class MailNotifier
-{
-    public function commentCreated(Comment $comment): void
-    {
+class MailNotifier {
+    public function commentCreated(Comment $comment): void {
         if (! $this->enabled()) {
             return;
         }
@@ -33,8 +40,7 @@ class MailNotifier
         Mail::to($recipients->all())->queue(new CommentCreatedMail($comment));
     }
 
-    public function diaryStatusChanged(DiaryEntry $entry, ?int $oldStatus, int $newStatus): void
-    {
+    public function diaryStatusChanged(DiaryEntry $entry, ?int $oldStatus, int $newStatus): void {
         if (! $this->enabled()) {
             return;
         }
@@ -61,15 +67,14 @@ class MailNotifier
      *
      * @return Collection<int,string>
      */
-    private function commentRecipients(DiaryEntry $entry, Comment $comment): Collection
-    {
+    private function commentRecipients(DiaryEntry $entry, Comment $comment): Collection {
         $authorId = (int) $comment->user_id;
 
         $userIds = $entry->comments
             ->pluck('user_id')
             ->push($entry->user_id)
             ->unique()
-            ->reject(fn ($id) => (int) $id === $authorId)
+            ->reject(fn($id) => (int) $id === $authorId)
             ->values();
 
         if ($userIds->isEmpty()) {
@@ -83,8 +88,7 @@ class MailNotifier
             ->values();
     }
 
-    private function enabled(): bool
-    {
+    private function enabled(): bool {
         return (bool) config('app.mail_notifications_enabled', false);
     }
 }

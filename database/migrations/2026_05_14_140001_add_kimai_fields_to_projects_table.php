@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : 2026_05_14_140001_add_kimai_fields_to_projects_table.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -7,8 +16,10 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Adds Kimai-style billing/budget fields to projects.
  */
-return new class extends Migration {
-    public function up(): void {
+return new class extends Migration
+{
+    public function up(): void
+    {
         Schema::table('projects', function (Blueprint $table): void {
             $table->foreignId('customer_id')->nullable()->after('id')
                 ->constrained('customers')->nullOnDelete();
@@ -28,7 +39,8 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::table('projects', function (Blueprint $table): void {
             $table->dropForeign(['customer_id']);
             $table->dropIndex(['customer_id']);

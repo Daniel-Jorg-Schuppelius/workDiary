@@ -1,20 +1,28 @@
 <?php
 
+/*
+ * Created on   : Thu May 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : Stopwatch.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Services\Timesheet;
 
 use App\Models\TimeEntry;
 use App\Models\Timesheet;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Carbon;
 use RuntimeException;
 
-class Stopwatch
-{
+class Stopwatch {
     /**
      * Liefert den aktuell laufenden Eintrag des Users (started_at gesetzt, ended_at null).
      */
-    public function current(User $user): ?TimeEntry
-    {
+    public function current(User $user): ?TimeEntry {
         return TimeEntry::query()
             ->where('user_id', $user->id)
             ->whereNotNull('started_at')
@@ -23,8 +31,7 @@ class Stopwatch
             ->first();
     }
 
-    public function start(User $user, Timesheet $timesheet, ?int $taskId = null, ?string $description = null): TimeEntry
-    {
+    public function start(User $user, Timesheet $timesheet, ?int $taskId = null, ?string $description = null): TimeEntry {
         if ($this->current($user)) {
             throw new RuntimeException('A running entry already exists.');
         }
@@ -50,13 +57,12 @@ class Stopwatch
         ]);
     }
 
-    public function stop(User $user): ?TimeEntry
-    {
+    public function stop(User $user): ?TimeEntry {
         $entry = $this->current($user);
         if (! $entry) {
             return null;
         }
-        $entry->ended_at = CarbonImmutable::now();
+        $entry->ended_at = Carbon::now();
         $entry->save(); // saving-hook berechnet minutes
 
         return $entry->refresh();

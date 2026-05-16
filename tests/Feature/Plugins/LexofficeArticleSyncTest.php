@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : LexofficeArticleSyncTest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace Tests\Feature\Plugins;
 
 use App\Models\LexofficeArticle;
@@ -10,17 +19,20 @@ use Illuminate\Support\Facades\Http;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class LexofficeArticleSyncTest extends TestCase {
+class LexofficeArticleSyncTest extends TestCase
+{
     use RefreshDatabase;
     use WithOrganization;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
     }
 
-    public function test_sync_creates_articles_from_paginated_response(): void {
+    public function test_sync_creates_articles_from_paginated_response(): void
+    {
         Http::fakeSequence('https://api.lexoffice.io/v1/articles*')
             ->push([
                 'content' => [
@@ -70,7 +82,8 @@ class LexofficeArticleSyncTest extends TestCase {
         ]);
     }
 
-    public function test_sync_archives_missing_articles_and_is_idempotent(): void {
+    public function test_sync_archives_missing_articles_and_is_idempotent(): void
+    {
         $callCount = 0;
         Http::fake(function () use (&$callCount) {
             $callCount++;
@@ -83,6 +96,7 @@ class LexofficeArticleSyncTest extends TestCase {
                     'totalPages' => 1,
                 ], 200);
             }
+
             return Http::response([
                 'content' => [
                     ['id' => 'lex-1', 'title' => 'A neu', 'type' => 'service', 'price' => ['netPrice' => 1.5, 'currency' => 'EUR']],

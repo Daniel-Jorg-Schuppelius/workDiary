@@ -1,13 +1,22 @@
 <?php
 
-namespace App\Legacy\Http\Controllers;
-use App\Http\Controllers\Controller;
+/*
+ * Created on   : Wed Apr 29 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : LegacyNotdienstController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
 
+namespace App\Legacy\Http\Controllers;
+
+use App\Http\Controllers\Controller;
 use App\Legacy\Http\Concerns\ManagesLegacyDutyCrud;
 use App\Legacy\Http\Concerns\RequiresLegacyAdmin;
 use App\Legacy\Http\Requests\SaveLegacyDutyRequest;
-use App\Models\EmergencyAssignment;
 use App\Legacy\Models\LegacyNotdienst;
+use App\Models\EmergencyAssignment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;

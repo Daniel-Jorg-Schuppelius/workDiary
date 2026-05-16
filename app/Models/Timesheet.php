@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Thu May 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : Timesheet.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
@@ -39,11 +48,17 @@ use Illuminate\Support\Carbon;
 class Timesheet extends Model
 {
     use Auditable;
-
     use BelongsToOrganization;
     use HasAttachments;
+
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
+    /** @param array<string, mixed> $attributes */
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+    }
 
     public const STATUS_DRAFT = 'draft';
 

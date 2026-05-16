@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Mon May 11 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : ScheduledShift.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
@@ -12,13 +21,26 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
+ * @property int $id
+ * @property int|null $organization_id
+ * @property int|null $duty_plan_id
+ * @property int $user_id
+ * @property int|null $shift_type_id
  * @property Carbon $date
+ * @property string|null $start_time
+ * @property string|null $end_time
+ * @property string|null $note
+ * @property string $status
+ * @property int|null $created_by
+ * @property int|null $updated_by
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class ScheduledShift extends Model
 {
     use Auditable;
-
     use BelongsToOrganization;
+
     /** @use HasFactory<ScheduledShiftFactory> */
     use HasFactory;
 

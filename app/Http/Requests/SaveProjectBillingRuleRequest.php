@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : SaveProjectBillingRuleRequest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Http\Requests;
 
 use App\Models\LexofficeArticle;
@@ -7,13 +16,16 @@ use App\Models\TimeEntry;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveProjectBillingRuleRequest extends FormRequest {
-    public function authorize(): bool {
+class SaveProjectBillingRuleRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
         return $this->user()?->canManageBilling() === true;
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array {
+    public function rules(): array
+    {
         $kinds = TimeEntry::KINDS;
 
         return [

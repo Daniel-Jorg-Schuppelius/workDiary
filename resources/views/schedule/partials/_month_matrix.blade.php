@@ -3,14 +3,15 @@
     Available: $anchor, $from, $to, $shifts, $shiftsByDate, $users, $holidays, $isAdmin
 --}}
 @php
+    use App\Support\WeekDay;
     use Carbon\CarbonImmutable;
 
     // Build calendar weeks
     $monthStart = $anchor->startOfMonth();
     $monthEnd   = $anchor->endOfMonth();
     // Extend to full weeks (Mon–Sun)
-    $calStart   = $monthStart->startOfWeek(CarbonImmutable::MONDAY);
-    $calEnd     = $monthEnd->endOfWeek(CarbonImmutable::SUNDAY);
+    $calStart   = $monthStart->startOfWeek(WeekDay::MONDAY);
+    $calEnd     = $monthEnd->endOfWeek(WeekDay::SUNDAY);
 
     $weeks  = [];
     $cursor = $calStart;
@@ -46,18 +47,28 @@
 
     {{-- ── Weeks ── --}}
     @foreach ($weeks as $week)
-        <div class="grid min-h-[6rem] grid-cols-7 border-b border-base-300 last:border-b-0">
+        <div class="grid min-h-24 grid-cols-7 border-b border-base-300 last:border-b-0">
             @foreach ($week as $day)
                 @php
                     $dayShifts = $shiftsByDate->get($day['date'], collect());
                     $visibleShifts = $dayShifts->take(3);
                     $overflow = $dayShifts->count() - 3;
+
+                    // Resolve background class with strict precedence to avoid
+                    // emitting conflicting bg-* utilities into the class attribute.
+                    if (! $day['inMonth']) {
+                        $bgClass = 'opacity-40 bg-base-200/20';
+                    } elseif ($day['isHoliday']) {
+                        $bgClass = 'bg-warning/5';
+                    } elseif ($day['isToday']) {
+                        $bgClass = 'bg-primary/10';
+                    } elseif ($day['isWeekend']) {
+                        $bgClass = 'bg-base-200/40';
+                    } else {
+                        $bgClass = '';
+                    }
                 @endphp
-                <div class="schedule-cell group relative flex flex-col border-r border-base-300 px-1 pt-0.5 pb-1 last:border-r-0
-                            @if (! $day['inMonth']) opacity-40 bg-base-200/20 @endif
-                            @if ($day['isToday']) bg-primary/10 @endif
-                            @if ($day['isWeekend'] && ! $day['isToday'] && $day['inMonth']) bg-base-200/40 @endif
-                            @if ($day['isHoliday']) bg-warning/5 @endif
+                <div class="schedule-cell group relative flex flex-col border-r border-base-300 px-1 pt-0.5 pb-1 last:border-r-0 {{ $bgClass }}
                             @if ($isAdmin && $day['inMonth']) cursor-pointer @endif"
                      @if ($isAdmin && $day['inMonth'])
                          data-schedule-cell

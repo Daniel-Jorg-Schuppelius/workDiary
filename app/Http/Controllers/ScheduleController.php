@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Mon May 11 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : ScheduleController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
@@ -13,8 +22,9 @@ use App\Models\User;
 use App\Services\Compliance\ShiftComplianceService;
 use App\Services\HolidayService;
 use App\Services\Schedule\OpenSlotService;
+use App\Support\WeekDay;
 use Carbon\CarbonImmutable;
-use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,32 +41,56 @@ class ScheduleController extends Controller {
         $userFilter = (int) $request->query('user', 0);
 
         $anchor = $this->globalDateRange()['from'];
-
         [$from, $to] = $this->periodBounds($anchor, $view);
 
-        $shiftTypes = ShiftType::active()->orderBy('name')->get();
-        $users = User::orderBy('name')->get();
+        $shifts = $this->loadShifts($from, $to, $userFilter);
+        $shiftsByDate = $shifts->groupBy(fn(ScheduledShift $s) => $s->date->toDateString());
 
-        $shiftsQuery = ScheduledShift::query()
+        $org = $auth->organization_id
+            ? Organization::query()->find($auth->organization_id)
+            : null;
+        $complianceByShift = $this->computeComplianceByShift($shifts, $compliance, $org);
+
+        return view('schedule.index', [
+            'view' => $view,
+            'anchor' => $anchor,
+            'from' => $from,
+            'to' => $to,
+            'todayDate' => CarbonImmutable::today()->toDateString(),
+            'shifts' => $shifts,
+            'shiftsByDate' => $shiftsByDate,
+            'shiftTypes' => ShiftType::active()->orderBy('name')->get(),
+            'users' => User::orderBy('name')->get(),
+            'userFilter' => $userFilter,
+            'holidays' => $holidays,
+            'isAdmin' => $auth->isAdmin(),
+            'complianceByShift' => $complianceByShift,
+            'openSlotsByDate' => $openSlots->compute($from, $to, $shifts),
+        ]);
+    }
+
+    /**
+     * @return Collection<int, ScheduledShift>
+     */
+    private function loadShifts(CarbonImmutable $from, CarbonImmutable $to, int $userFilter): Collection {
+        $query = ScheduledShift::query()
             ->with(['user:id,name', 'shiftType'])
             ->forDateRange($from, $to)
             ->orderBy('date')
             ->orderBy('start_time');
 
         if ($userFilter > 0) {
-            $shiftsQuery->forUser($userFilter);
+            $query->forUser($userFilter);
         }
 
-        $shifts = $shiftsQuery->get();
+        return $query->get();
+    }
 
-        // Group by date string for template
-        $shiftsByDate = $shifts->groupBy(fn(ScheduledShift $s) => $s->date->toDateString());
-
-        // Compliance-Reports pro Schicht (für visuelle Markierung in der Matrix)
-        $org = $auth->organization_id
-            ? Organization::query()->find($auth->organization_id)
-            : null;
-        /** @var array<int, array{severity: string, messages: list<string>}> $complianceByShift */
+    /**
+     * @param  Collection<int, ScheduledShift>  $shifts
+     * @return array<int, array{severity: string, messages: list<string>}>
+     */
+    private function computeComplianceByShift(Collection $shifts, ShiftComplianceService $compliance, ?Organization $org): array {
         $complianceByShift = [];
         foreach ($shifts as $s) {
             $report = $compliance->check($s, $org);
@@ -69,22 +103,7 @@ class ScheduleController extends Controller {
             ];
         }
 
-        return view('schedule.index', [
-            'view' => $view,
-            'anchor' => $anchor,
-            'from' => $from,
-            'to' => $to,
-            'todayDate' => CarbonImmutable::today()->toDateString(),
-            'shifts' => $shifts,
-            'shiftsByDate' => $shiftsByDate,
-            'shiftTypes' => $shiftTypes,
-            'users' => $users,
-            'userFilter' => $userFilter,
-            'holidays' => $holidays,
-            'isAdmin' => $auth->isAdmin(),
-            'complianceByShift' => $complianceByShift,
-            'openSlotsByDate' => $openSlots->compute($from, $to, $shifts),
-        ]);
+        return $complianceByShift;
     }
 
     // ── JSON-API for Alpine.js ───────────────────────────────────────────────
@@ -205,8 +224,8 @@ class ScheduleController extends Controller {
             $from = $anchor->startOfMonth();
             $to = $anchor->endOfMonth();
         } else {
-            $from = $anchor->startOfWeek(CarbonInterface::MONDAY);
-            $to = $from->endOfWeek(CarbonInterface::SUNDAY);
+            $from = $anchor->startOfWeek(WeekDay::MONDAY);
+            $to = $from->endOfWeek(WeekDay::SUNDAY);
         }
 
         return [$from, $to];

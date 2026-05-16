@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Mon May 11 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : ScheduledShiftResource.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Http\Resources;
 
 use App\Models\ScheduledShift;
@@ -9,6 +18,12 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /** @mixin ScheduledShift */
 class ScheduledShiftResource extends JsonResource
 {
+    /** @param ScheduledShift $resource */
+    public function __construct($resource)
+    {
+        parent::__construct($resource);
+    }
+
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {

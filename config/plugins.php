@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : plugins.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+use App\Plugins\Lexoffice\LexofficePlugin;
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -11,7 +22,7 @@ return [
     | from the container, so they may declare constructor dependencies.
     */
     'classes' => array_filter([
-        env('LEXOFFICE_ENABLED', false) ? \App\Plugins\Lexoffice\LexofficePlugin::class : null,
+        env('LEXOFFICE_ENABLED', false) ? LexofficePlugin::class : null,
     ]),
 
     /*

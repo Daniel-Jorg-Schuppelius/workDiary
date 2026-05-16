@@ -1,11 +1,19 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : ProjectBillingRuleTest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace Tests\Feature;
 
 use App\Models\Customer;
 use App\Models\LexofficeArticle;
 use App\Models\Project;
-use App\Models\ProjectBillingRule;
 use App\Models\TimeEntry;
 use App\Models\User;
 use App\Plugins\Lexoffice\LexofficeMapper;
@@ -15,7 +23,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class ProjectBillingRuleTest extends TestCase {
+class ProjectBillingRuleTest extends TestCase
+{
     use RefreshDatabase;
     use WithOrganization;
 
@@ -23,7 +32,8 @@ class ProjectBillingRuleTest extends TestCase {
 
     private Customer $customer;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -37,16 +47,18 @@ class ProjectBillingRuleTest extends TestCase {
         ]);
     }
 
-    private function makeProject(array $attrs = []): Project {
+    private function makeProject(array $attrs = []): Project
+    {
         return Project::create(array_merge([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
-            'name' => 'P ' . uniqid('', true),
+            'name' => 'P '.uniqid('', true),
             'status' => Project::STATUS_ACTIVE,
         ], $attrs));
     }
 
-    public function test_fallback_rule_matches_any_kind(): void {
+    public function test_fallback_rule_matches_any_kind(): void
+    {
         $project = $this->makeProject();
         $rule = $project->billingRules()->create([
             'organization_id' => $this->organization->id,
@@ -61,7 +73,8 @@ class ProjectBillingRuleTest extends TestCase {
         $this->assertSame((int) $rule->id, (int) $resolved->id);
     }
 
-    public function test_kind_specific_rule_wins_over_fallback(): void {
+    public function test_kind_specific_rule_wins_over_fallback(): void
+    {
         $project = $this->makeProject();
         $project->billingRules()->create([
             'organization_id' => $this->organization->id,
@@ -81,7 +94,8 @@ class ProjectBillingRuleTest extends TestCase {
         $this->assertSame((int) $travel->id, (int) $resolved?->id);
     }
 
-    public function test_sub_project_inherits_rule_from_parent_and_can_override(): void {
+    public function test_sub_project_inherits_rule_from_parent_and_can_override(): void
+    {
         $parent = $this->makeProject();
         $parent->billingRules()->create([
             'organization_id' => $this->organization->id,
@@ -115,7 +129,8 @@ class ProjectBillingRuleTest extends TestCase {
         $this->assertSame('Stunde-Child', $resolved?->unit_name);
     }
 
-    public function test_higher_priority_rule_wins(): void {
+    public function test_higher_priority_rule_wins(): void
+    {
         $project = $this->makeProject();
         $low = $project->billingRules()->create([
             'organization_id' => $this->organization->id,
@@ -136,7 +151,8 @@ class ProjectBillingRuleTest extends TestCase {
         $this->assertSame((int) $high->id, (int) $resolved?->id);
     }
 
-    public function test_mapper_renders_article_id_and_unit_from_rule(): void {
+    public function test_mapper_renders_article_id_and_unit_from_rule(): void
+    {
         $project = $this->makeProject();
         LexofficeArticle::create([
             'organization_id' => $this->organization->id,

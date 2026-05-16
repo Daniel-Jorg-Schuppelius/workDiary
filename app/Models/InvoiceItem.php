@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : InvoiceItem.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -18,7 +27,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $amount
  * @property int $position
  */
-class InvoiceItem extends Model {
+class InvoiceItem extends Model
+{
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
@@ -33,7 +43,8 @@ class InvoiceItem extends Model {
         'position',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'quantity' => 'decimal:2',
             'unit_price' => 'decimal:2',
@@ -41,19 +52,22 @@ class InvoiceItem extends Model {
         ];
     }
 
-    protected static function booted(): void {
+    protected static function booted(): void
+    {
         static::saving(function (InvoiceItem $i): void {
             $i->amount = (string) round(((float) $i->quantity) * ((float) $i->unit_price), 2);
         });
     }
 
     /** @return BelongsTo<Invoice, $this> */
-    public function invoice(): BelongsTo {
+    public function invoice(): BelongsTo
+    {
         return $this->belongsTo(Invoice::class);
     }
 
     /** @return BelongsTo<TimeEntry, $this> */
-    public function timeEntry(): BelongsTo {
+    public function timeEntry(): BelongsTo
+    {
         return $this->belongsTo(TimeEntry::class);
     }
 }

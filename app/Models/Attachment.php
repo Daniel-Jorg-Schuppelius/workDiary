@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Sun May 03 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : Attachment.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
@@ -8,7 +17,21 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property string $attachable_type
+ * @property int $attachable_id
+ * @property int|null $user_id
+ * @property string $disk
+ * @property string $path
+ * @property string $original_name
+ * @property string|null $mime
+ * @property int $size
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 class Attachment extends Model
 {
     use Auditable;

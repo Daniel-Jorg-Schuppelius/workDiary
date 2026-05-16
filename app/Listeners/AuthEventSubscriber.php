@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Thu May 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : AuthEventSubscriber.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 declare(strict_types=1);
 
 namespace App\Listeners;
@@ -18,20 +27,25 @@ use Illuminate\Support\Facades\Request;
  * Persistiert Auth-Events ins Audit-Log (sofern ein User-Bezug existiert)
  * und protokolliert anonyme Events (Failed-Login, Lockout) im Application-Log.
  */
-class AuthEventSubscriber {
-    public function handleLogin(Login $event): void {
+class AuthEventSubscriber
+{
+    public function handleLogin(Login $event): void
+    {
         $this->logForUser($event->user, 'auth.login');
     }
 
-    public function handleLogout(Logout $event): void {
+    public function handleLogout(Logout $event): void
+    {
         $this->logForUser($event->user, 'auth.logout');
     }
 
-    public function handlePasswordReset(PasswordReset $event): void {
+    public function handlePasswordReset(PasswordReset $event): void
+    {
         $this->logForUser($event->user, 'auth.password_reset');
     }
 
-    public function handleFailed(Failed $event): void {
+    public function handleFailed(Failed $event): void
+    {
         $email = (string) ($event->credentials['email'] ?? $event->credentials['username'] ?? 'unknown');
 
         Log::warning('auth.failed', [
@@ -45,7 +59,8 @@ class AuthEventSubscriber {
         }
     }
 
-    public function handleLockout(Lockout $event): void {
+    public function handleLockout(Lockout $event): void
+    {
         Log::warning('auth.lockout', [
             'ip' => Request::ip(),
             'ua' => substr((string) Request::userAgent(), 0, 255),
@@ -55,7 +70,8 @@ class AuthEventSubscriber {
     /**
      * @return array<class-string, string>
      */
-    public function subscribe(): array {
+    public function subscribe(): array
+    {
         return [
             Login::class => 'handleLogin',
             Logout::class => 'handleLogout',
@@ -65,7 +81,8 @@ class AuthEventSubscriber {
         ];
     }
 
-    private function logForUser(mixed $user, string $event): void {
+    private function logForUser(mixed $user, string $event): void
+    {
         if (! $user instanceof User) {
             return;
         }

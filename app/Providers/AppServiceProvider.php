@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Wed Apr 29 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : AppServiceProvider.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Providers;
 
 use App\Legacy\Auth\LegacyUserProvider;
@@ -46,20 +55,25 @@ use App\Policies\TaskPolicy;
 use App\Policies\TimeEntryPolicy;
 use App\Policies\TimesheetPolicy;
 use App\Policies\WorkSchedulePolicy;
+use App\Services\Timesheet\Stopwatch;
+use App\Services\UI\DateRangeContext;
+use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
-class AppServiceProvider extends ServiceProvider {
-    public function register(): void {
-    }
+class AppServiceProvider extends ServiceProvider
+{
+    public function register(): void {}
 
-    public function boot(): void {
+    public function boot(): void
+    {
         Auth::provider('legacy', function ($app) {
             return new LegacyUserProvider($app['hash']);
         });
@@ -111,24 +125,25 @@ class AppServiceProvider extends ServiceProvider {
         });
     }
 
-    private function configureRateLimiters(): void {
+    private function configureRateLimiters(): void
+    {
         RateLimiter::for('login', function (Request $request) {
             $email = (string) $request->input('email', $request->input('username', ''));
 
             return [
-                Limit::perMinute(5)->by(strtolower($email) . '|' . $request->ip()),
+                Limit::perMinute(5)->by(strtolower($email).'|'.$request->ip()),
                 Limit::perMinute(20)->by($request->ip()),
             ];
         });
 
-        RateLimiter::for('register', fn(Request $request) => Limit::perMinute(3)->by($request->ip()));
+        RateLimiter::for('register', fn (Request $request) => Limit::perMinute(3)->by($request->ip()));
 
         RateLimiter::for('password', function (Request $request) {
             $userId = (string) ($request->user()?->getAuthIdentifier() ?? 'guest');
 
             return [
-                Limit::perMinute(5)->by('pwd:' . $userId . '|' . $request->ip()),
-                Limit::perHour(20)->by('pwd:' . $userId),
+                Limit::perMinute(5)->by('pwd:'.$userId.'|'.$request->ip()),
+                Limit::perHour(20)->by('pwd:'.$userId),
             ];
         });
     }
@@ -142,13 +157,14 @@ class AppServiceProvider extends ServiceProvider {
      * Login-Screen auch bei nicht erreichbarer Datenbank gerendert werden
      * können.
      */
-    private function registerStopwatchViewComposer(): void {
-        \Illuminate\Support\Facades\View::composer('layouts.app', function ($view): void {
+    private function registerStopwatchViewComposer(): void
+    {
+        View::composer('layouts.app', function ($view): void {
             $entry = null;
             try {
                 $user = Auth::user();
                 if ($user instanceof User) {
-                    $entry = app(\App\Services\Timesheet\Stopwatch::class)->current($user);
+                    $entry = app(Stopwatch::class)->current($user);
                 }
             } catch (\Throwable $e) {
                 report($e);
@@ -166,17 +182,18 @@ class AppServiceProvider extends ServiceProvider {
      * Fällt bei Session-/DB-Fehlern auf einen statischen Fallback zurück,
      * damit das Layout (z.B. die Fehlerseite) noch gerendert werden kann.
      */
-    private function registerDateRangeViewComposer(): void {
-        \Illuminate\Support\Facades\View::composer(['layouts.app', 'components.header-date-range'], function ($view): void {
+    private function registerDateRangeViewComposer(): void
+    {
+        View::composer(['layouts.app', 'components.header-date-range'], function ($view): void {
             try {
-                $range = app(\App\Services\UI\DateRangeContext::class)->current();
+                $range = app(DateRangeContext::class)->current();
             } catch (\Throwable $e) {
                 report($e);
-                $now = \Carbon\CarbonImmutable::now();
+                $now = CarbonImmutable::now();
                 $range = [
                     'from' => $now->startOfMonth(),
                     'to' => $now->endOfMonth(),
-                    'preset' => \App\Services\UI\DateRangeContext::PRESET_THIS_MONTH,
+                    'preset' => DateRangeContext::PRESET_THIS_MONTH,
                     'label' => __('Dieser Monat'),
                     'unit' => 'month',
                     'isoWeekLabel' => null,

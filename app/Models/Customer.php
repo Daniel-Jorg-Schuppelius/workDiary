@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : Customer.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToOrganization;
@@ -47,10 +56,11 @@ use Illuminate\Support\Carbon;
 class Customer extends Model {
     use BelongsToOrganization;
     use HasAttachments;
-    use HasTags;
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
+    use HasTags;
 
     protected $fillable = [
         'organization_id',
@@ -154,11 +164,9 @@ class Customer extends Model {
         return $project;
     }
 
-    /** @return MorphMany<ExternalReference, $this> */
+    /** @phpstan-ignore-next-line missingType.generics */
     public function externalReferences(): MorphMany {
-        /** @var MorphMany<ExternalReference, $this> $relation */
-        $relation = $this->morphMany(ExternalReference::class, 'referenceable');
-        return $relation;
+        return $this->morphMany(ExternalReference::class, 'referenceable');
     }
 
     public function isArchived(): bool {

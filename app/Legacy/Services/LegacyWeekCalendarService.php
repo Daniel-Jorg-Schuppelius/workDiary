@@ -1,7 +1,17 @@
 <?php
 
+/*
+ * Created on   : Sun May 03 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : LegacyWeekCalendarService.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Legacy\Services;
 
+use App\Support\WeekDay;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 
@@ -12,7 +22,7 @@ class LegacyWeekCalendarService
      */
     public function resolveWindow(int $weekOffset, string $weekDate): array
     {
-        $baseMonday = Carbon::now()->startOfWeek(Carbon::MONDAY);
+        $baseMonday = Carbon::now()->startOfWeek(WeekDay::MONDAY);
         $monday = $baseMonday->copy()->addWeeks($weekOffset);
 
         if (preg_match('/^(\d{4})-W(\d{2})$/', $weekDate, $matches) === 1) {

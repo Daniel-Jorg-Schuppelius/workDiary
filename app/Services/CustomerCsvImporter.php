@@ -1,23 +1,38 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : CustomerCsvImporter.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\Customer;
+use App\Support\Toolkit\CsvFacade;
+use App\Support\Toolkit\NumberFacade;
+use App\Support\Toolkit\StringFacade;
+use CommonToolkit\Enums\CountryCode;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 /**
  * CSV-Import für Kunden.
  *
  * Erwartet eine Kopfzeile mit deutschen oder englischen Spaltennamen
  * (siehe self::HEADER_MAP). Trennzeichen wird automatisch erkannt
- * (Semikolon bevorzugt, sonst Komma oder Tab).
+ * (Semikolon bevorzugt, sonst Komma oder Tab) via CommonToolkit.
  *
  * Rückgabe: ImportResult mit Anzahl angelegt/aktualisiert/übersprungen + Fehlerliste.
  */
-class CustomerCsvImporter
-{
+class CustomerCsvImporter {
     /** Map: Header-Bezeichner (klein, getrimmt) → DB-Spalte */
     private const HEADER_MAP = [
         'name' => 'name',
@@ -67,42 +82,22 @@ class CustomerCsvImporter
     ];
 
     /**
-     * @return array{created:int, updated:int, skipped:int, errors:array<int, string>}
+     * @return array{created:int, updated:int, skipped:int, errors:list<string>}
      */
-    public function import(UploadedFile $file, ?int $organizationId): array
-    {
-        $handle = fopen($file->getRealPath(), 'r');
-        if ($handle === false) {
+    public function import(UploadedFile $file, ?int $organizationId): array {
+        $path = $file->getRealPath();
+        if ($path === false || ! is_readable($path)) {
             return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => ['Datei nicht lesbar.']];
         }
 
-        // BOM überspringen
-        $bom = fread($handle, 3);
-        if ($bom !== "\xEF\xBB\xBF") {
-            rewind($handle);
-        }
-
-        // Trennzeichen erkennen anhand erster Zeile
-        $firstLine = fgets($handle);
-        if ($firstLine === false) {
-            fclose($handle);
-            return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => ['Datei ist leer.']];
-        }
-        $delimiter = $this->detectDelimiter($firstLine);
-        rewind($handle);
-        if ($bom === "\xEF\xBB\xBF") {
-            fread($handle, 3);
-        }
-
-        $headerRow = fgetcsv($handle, 0, $delimiter);
-        if ($headerRow === false) {
-            fclose($handle);
-            return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => ['Kopfzeile fehlt.']];
+        try {
+            $headerRow = CsvFacade::readHeader($path);
+        } catch (Throwable $e) {
+            return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => ['Kopfzeile fehlt oder unlesbar: ' . $e->getMessage()]];
         }
 
         $columns = $this->mapHeaders($headerRow);
         if (! in_array('name', $columns, true)) {
-            fclose($handle);
             return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => ['Pflichtspalte "Name" nicht gefunden.']];
         }
 
@@ -110,35 +105,29 @@ class CustomerCsvImporter
         $updated = 0;
         $skipped = 0;
         $errors = [];
-        $lineNo = 1; // Header
 
         $userId = Auth::id();
 
-        DB::transaction(function () use (
-            $handle, $delimiter, $columns, $organizationId, $userId,
-            &$created, &$updated, &$skipped, &$errors, &$lineNo
-        ): void {
-            while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
-                $lineNo++;
-                if ($row === [null]) {
-                    continue;
-                }
-
+        DB::transaction(function () use ($path, $columns, $organizationId, $userId, &$created, &$updated, &$skipped, &$errors): void {
+            foreach (CsvFacade::streamRows($path) as $lineNumber => $dataLine) {
+                $fields = $dataLine->getFields();
                 $data = [];
                 foreach ($columns as $i => $col) {
                     if ($col === null) {
                         continue;
                     }
-                    $val = trim((string) ($row[$i] ?? ''));
-                    if ($val === '') {
+                    $rawValue = isset($fields[$i]) ? $fields[$i]->getValue() : '';
+                    $value = trim($rawValue);
+                    if ($value === '') {
                         continue;
                     }
-                    $data[$col] = $this->castValue($col, $val);
+                    $data[$col] = $this->castValue($col, $value);
                 }
 
                 $name = $data['name'] ?? null;
                 if ($name === null || $name === '') {
                     $skipped++;
+
                     continue;
                 }
 
@@ -161,46 +150,35 @@ class CustomerCsvImporter
                         Customer::create($data + ['created_by' => $userId]);
                         $created++;
                     }
-                } catch (\Throwable $e) {
-                    $errors[] = sprintf('Zeile %d: %s', $lineNo, $e->getMessage());
+                } catch (Throwable $e) {
+                    $errors[] = sprintf('Zeile %d: %s', $lineNumber, $e->getMessage());
                     $skipped++;
                 }
             }
         });
 
-        fclose($handle);
-
         return ['created' => $created, 'updated' => $updated, 'skipped' => $skipped, 'errors' => $errors];
     }
 
-    private function detectDelimiter(string $line): string
-    {
-        $candidates = [';' => substr_count($line, ';'), ',' => substr_count($line, ','), "\t" => substr_count($line, "\t")];
-        arsort($candidates);
-        $best = (string) array_key_first($candidates);
-        return $candidates[$best] > 0 ? $best : ';';
-    }
-
     /**
-     * @param  array<int, string|null>  $headerRow
-     * @return array<int, string|null> indexed by CSV column position, value is DB column name or null
+     * @param  list<string>  $headerRow
+     * @return array<int, string|null>
      */
-    private function mapHeaders(array $headerRow): array
-    {
+    private function mapHeaders(array $headerRow): array {
         $out = [];
         foreach ($headerRow as $i => $h) {
-            $key = strtolower(trim((string) $h));
+            $key = StringFacade::isNullOrEmpty($h) ? '' : mb_strtolower(trim($h));
             $out[$i] = self::HEADER_MAP[$key] ?? null;
         }
+
         return $out;
     }
 
-    private function castValue(string $col, string $val): mixed
-    {
+    private function castValue(string $col, string $val): mixed {
         return match ($col) {
-            'billable' => in_array(strtolower($val), ['1', 'ja', 'yes', 'true', 'wahr'], true),
-            'hourly_rate', 'internal_rate' => (float) str_replace([' ', "\u{00A0}", ','], ['', '', '.'], $val),
-            'country', 'currency' => strtoupper($val),
+            'billable' => in_array(mb_strtolower($val), ['1', 'ja', 'yes', 'true', 'wahr'], true),
+            'hourly_rate', 'internal_rate' => NumberFacade::parseDecimal($val, CountryCode::Germany),
+            'country', 'currency' => mb_strtoupper($val),
             default => $val,
         };
     }

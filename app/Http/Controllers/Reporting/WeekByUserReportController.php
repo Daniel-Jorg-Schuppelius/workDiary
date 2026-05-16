@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : WeekByUserReportController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
@@ -8,6 +17,7 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -21,12 +31,15 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Pattern angelehnt an Kimai's WeekByUserController (AGPL-3.0) — eigene
  * Implementierung, kein Code-Reuse.
  */
-class WeekByUserReportController extends Controller {
+class WeekByUserReportController extends Controller
+{
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request): View|SymfonyResponse {
+    public function index(Request $request): View|SymfonyResponse
+    {
         $userId = (int) Auth::id();
-        $isAdmin = Auth::user()?->isAdmin() ?? false;
+        $authUser = Auth::user();
+        $isAdmin = $authUser instanceof User && $authUser->isAdmin();
         $scope = $request->string('scope', 'mine')->toString();
         if ($scope !== 'team' || ! $isAdmin) {
             $scope = 'mine';
@@ -73,6 +86,7 @@ class WeekByUserReportController extends Controller {
             $userB = $users->get($b);
             $na = $userA instanceof User ? $userA->name : '~';
             $nb = $userB instanceof User ? $userB->name : '~';
+
             return strnatcasecmp($na, $nb);
         });
 
@@ -121,17 +135,18 @@ class WeekByUserReportController extends Controller {
     }
 
     /**
-     * @param array<int, array{days: array<int, int>, total: int, rate: float}> $byUser
-     * @param \Illuminate\Database\Eloquent\Collection<int, User> $users
-     * @param array<int, string> $dayLabels
-     * @param array<int, int> $dayTotals
+     * @param  array<int, array{days: array<int, int>, total: int, rate: float}>  $byUser
+     * @param  Collection<int, User>  $users
+     * @param  array<int, string>  $dayLabels
+     * @param  array<int, int>  $dayTotals
      */
-    private function exportCsv(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, int $year, int $week): Response {
+    private function exportCsv(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, int $year, int $week): Response
+    {
         $filename = sprintf('woche_%04d-W%02d.csv', $year, $week);
         $rows = [array_merge(['Mitarbeiter'], $dayLabels, ['Wochensumme', 'Erloes'])];
         foreach ($byUser as $uid => $row) {
             $userModel = $users->get($uid);
-            $name = $userModel instanceof User ? $userModel->name : '#' . $uid;
+            $name = $userModel instanceof User ? $userModel->name : '#'.$uid;
             $cols = [(string) $name];
             foreach ($row['days'] as $m) {
                 $cols[] = (int) $m;
@@ -153,25 +168,27 @@ class WeekByUserReportController extends Controller {
             $csv .= implode(';', array_map(static function ($v): string {
                 $s = (string) $v;
                 if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"' . str_replace('"', '""', $s) . '"';
+                    $s = '"'.str_replace('"', '""', $s).'"';
                 }
+
                 return $s;
-            }, $row)) . "\r\n";
+            }, $row))."\r\n";
         }
 
-        return response("\xEF\xBB\xBF" . $csv, 200, [
+        return response("\xEF\xBB\xBF".$csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
 
     /**
-     * @param array<int, array{days: array<int, int>, total: int, rate: float}> $byUser
-     * @param \Illuminate\Database\Eloquent\Collection<int, User> $users
-     * @param array<int, string> $dayLabels
-     * @param array<int, int> $dayTotals
+     * @param  array<int, array{days: array<int, int>, total: int, rate: float}>  $byUser
+     * @param  Collection<int, User>  $users
+     * @param  array<int, string>  $dayLabels
+     * @param  array<int, int>  $dayTotals
      */
-    private function exportPdf(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, string $weekLabel, int $year, int $week): SymfonyResponse {
+    private function exportPdf(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, string $weekLabel, int $year, int $week): SymfonyResponse
+    {
         $filename = sprintf('woche_%04d-W%02d.pdf', $year, $week);
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = Pdf::loadView('reports.pdf.week-by-user', [

@@ -1,20 +1,29 @@
 <?php
 
+/*
+ * Created on   : Sun May 03 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : api.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 use App\Http\Controllers\Api\AttachmentController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\DashboardController;
-use App\Http\Controllers\Api\ProjectController;
-use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\DiaryController;
 use App\Http\Controllers\Api\EmergencyAssignmentController;
 use App\Http\Controllers\Api\FlexController;
 use App\Http\Controllers\Api\MaterialController;
 use App\Http\Controllers\Api\MeController;
 use App\Http\Controllers\Api\OnCallShiftController;
+use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\PushSubscriptionController;
 use App\Http\Controllers\Api\StopwatchController;
 use App\Http\Controllers\Api\TagController;
+use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\TimesheetController;
 use App\Http\Controllers\Api\TimesheetEntryController;
 use App\Http\Controllers\Api\TimesheetMaterialController;

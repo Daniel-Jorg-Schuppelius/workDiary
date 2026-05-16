@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : MyYearReportController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
@@ -17,10 +26,12 @@ use Illuminate\View\View;
  * Pattern angelehnt an Kimai's UserYearController (AGPL-3.0) — eigene
  * Implementierung, kein Code-Reuse.
  */
-class MyYearReportController extends Controller {
+class MyYearReportController extends Controller
+{
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request): View {
+    public function index(Request $request): View
+    {
         $userId = (int) Auth::id();
         $year = (int) $this->globalDateRange()['from']->year;
         $year = max(2000, min(2100, $year));

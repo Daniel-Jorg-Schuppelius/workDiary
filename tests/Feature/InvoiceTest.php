@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : InvoiceTest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace Tests\Feature;
 
 use App\Models\Customer;
@@ -12,7 +21,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class InvoiceTest extends TestCase {
+class InvoiceTest extends TestCase
+{
     use RefreshDatabase;
     use WithOrganization;
 
@@ -22,7 +32,8 @@ class InvoiceTest extends TestCase {
 
     private Project $project;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -43,13 +54,15 @@ class InvoiceTest extends TestCase {
         ]);
     }
 
-    public function test_index_requires_billing_role(): void {
+    public function test_index_requires_billing_role(): void
+    {
         $regular = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($regular)->get(route('invoices.index'))->assertForbidden();
         $this->actingAs($this->admin)->get(route('invoices.index'))->assertOk();
     }
 
-    public function test_create_invoice_from_time_entries(): void {
+    public function test_create_invoice_from_time_entries(): void
+    {
         TimeEntry::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -75,7 +88,8 @@ class InvoiceTest extends TestCase {
         $this->assertSame('214.20', $invoice->total);
     }
 
-    public function test_issue_and_pay_workflow(): void {
+    public function test_issue_and_pay_workflow(): void
+    {
         $invoice = Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
@@ -95,7 +109,8 @@ class InvoiceTest extends TestCase {
         $this->assertSame(Invoice::STATUS_PAID, $invoice->fresh()?->status);
     }
 
-    public function test_pdf_export(): void {
+    public function test_pdf_export(): void
+    {
         $invoice = Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,

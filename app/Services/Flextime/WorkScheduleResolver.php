@@ -1,10 +1,20 @@
 <?php
 
+/*
+ * Created on   : Thu May 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : WorkScheduleResolver.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Services\Flextime;
 
 use App\Models\User;
 use App\Models\WorkSchedule;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Carbon;
 
 class WorkScheduleResolver
 {
@@ -34,7 +44,7 @@ class WorkScheduleResolver
         $defaults = self::defaults();
         $schedule = new WorkSchedule($defaults);
         $schedule->user_id = $user->id;
-        $schedule->valid_from = $on->copy()->startOfMonth();
+        $schedule->valid_from = Carbon::instance($on)->startOfMonth();
         $schedule->exists = false;
 
         return $schedule;

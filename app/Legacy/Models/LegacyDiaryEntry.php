@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Wed Apr 29 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : LegacyDiaryEntry.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Legacy\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -10,13 +19,29 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
+ * @property Carbon $aktuell
  * @property int|null $user
- * @property string|null $inhalt
- * @property string|null $sms
  * @property Carbon|null $von
  * @property Carbon|null $bis
- * @property Carbon|null $aktuell
- * @property int|null $gelesen
+ * @property string $inhalt
+ * @property string $antwort
+ * @property int $gelesen
+ * @property string $sms
+ * @property-read LegacyUser|null $author
+ *
+ * @method static Builder<static>|LegacyDiaryEntry active()
+ * @method static Builder<static>|LegacyDiaryEntry newModelQuery()
+ * @method static Builder<static>|LegacyDiaryEntry newQuery()
+ * @method static Builder<static>|LegacyDiaryEntry query()
+ * @method static Builder<static>|LegacyDiaryEntry whereAktuell($value)
+ * @method static Builder<static>|LegacyDiaryEntry whereAntwort($value)
+ * @method static Builder<static>|LegacyDiaryEntry whereBis($value)
+ * @method static Builder<static>|LegacyDiaryEntry whereGelesen($value)
+ * @method static Builder<static>|LegacyDiaryEntry whereId($value)
+ * @method static Builder<static>|LegacyDiaryEntry whereInhalt($value)
+ * @method static Builder<static>|LegacyDiaryEntry whereSms($value)
+ * @method static Builder<static>|LegacyDiaryEntry whereUser($value)
+ * @method static Builder<static>|LegacyDiaryEntry whereVon($value)
  */
 class LegacyDiaryEntry extends Model
 {

@@ -1,11 +1,21 @@
 <?php
 
+/*
+ * Created on   : Sun May 03 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : WeekViewService.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Services\Calendar;
 
 use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
 use App\Models\OnCallShift;
 use App\Models\User;
+use App\Support\WeekDay;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
@@ -27,7 +37,7 @@ class WeekViewService
      */
     public function build(CarbonInterface $anchor, User $user, bool $teamScope, ?int $filterUserId = null): array
     {
-        $start = CarbonImmutable::instance($anchor)->startOfWeek(CarbonInterface::MONDAY)->startOfDay();
+        $start = CarbonImmutable::instance($anchor)->startOfWeek(WeekDay::MONDAY)->startOfDay();
         $end = $start->addDays(7); // exclusive
 
         $days = [];
@@ -87,7 +97,7 @@ class WeekViewService
      */
     public function usersInWeek(CarbonInterface $anchor): Collection
     {
-        $start = CarbonImmutable::instance($anchor)->startOfWeek(CarbonInterface::MONDAY)->startOfDay();
+        $start = CarbonImmutable::instance($anchor)->startOfWeek(WeekDay::MONDAY)->startOfDay();
         $end = $start->addDays(7);
 
         $entryUserIds = DiaryEntry::query()

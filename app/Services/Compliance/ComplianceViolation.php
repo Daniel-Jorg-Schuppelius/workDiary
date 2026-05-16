@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Thu May 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : ComplianceViolation.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 declare(strict_types=1);
 
 namespace App\Services\Compliance;
@@ -7,8 +16,7 @@ namespace App\Services\Compliance;
 /**
  * Eine einzelne Compliance-Verletzung (z.B. Ruhezeit, Maximalstunden).
  */
-final class ComplianceViolation
-{
+final class ComplianceViolation {
     public const SEVERITY_INFO = 'info';
 
     public const SEVERITY_WARNING = 'warning';
@@ -25,11 +33,11 @@ final class ComplianceViolation
         public readonly string $message,
         public readonly array $relatedShiftIds = [],
         public readonly array $context = [],
-    ) {}
+    ) {
+    }
 
     /** @return array<string, mixed> */
-    public function toArray(): array
-    {
+    public function toArray(): array {
         return [
             'code' => $this->code,
             'severity' => $this->severity,

@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : 2026_05_14_140002_add_kimai_fields_to_tasks_table.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -8,8 +17,10 @@ use Illuminate\Support\Facades\Schema;
  * Tasks act as Kimai "activities": time can be logged against them with
  * dedicated rate/budget overrides.
  */
-return new class extends Migration {
-    public function up(): void {
+return new class extends Migration
+{
+    public function up(): void
+    {
         Schema::table('tasks', function (Blueprint $table): void {
             $table->decimal('hourly_rate', 10, 2)->nullable()->after('priority');
             $table->decimal('internal_rate', 10, 2)->nullable()->after('hourly_rate');
@@ -26,7 +37,8 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::table('tasks', function (Blueprint $table): void {
             $table->dropIndex(['archived_at']);
             $table->dropIndex(['is_global']);

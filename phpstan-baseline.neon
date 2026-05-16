@@ -67,21 +67,9 @@ parameters:
 			path: app/Http/Controllers/Api/TimesheetMaterialController.php
 
 		-
-			message: '#^Left side of && is always true\.$#'
-			identifier: booleanAnd.leftAlwaysTrue
-			count: 2
-			path: app/Http/Controllers/DutyController.php
-
-		-
 			message: '#^Parameter \#1 \$num of function round expects float\|int, float\|int\|null given\.$#'
 			identifier: argument.type
-			count: 2
-			path: app/Http/Controllers/DutyController.php
-
-		-
-			message: '#^Right side of && is always true\.$#'
-			identifier: booleanAnd.rightAlwaysTrue
-			count: 2
+			count: 1
 			path: app/Http/Controllers/DutyController.php
 
 		-
@@ -143,12 +131,6 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/TimesheetSignatureController.php
-
-		-
-			message: '#^Cannot call method workSchedule\(\) on App\\Models\\User\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Http/Controllers/WorkScheduleController.php
 
 		-
 			message: '#^Access to an undefined property \(object\|string\)\:\:\$id\.$#'
@@ -217,52 +199,16 @@ parameters:
 			path: app/Models/Organization.php
 
 		-
-			message: '#^Cannot call method copy\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Models/TimeEntry.php
-
-		-
-			message: '#^Cannot call method diffInMinutes\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Models/TimeEntry.php
-
-		-
 			message: '#^Parameter \#1 \$date of static method Carbon\\CarbonImmutable\:\:instance\(\) expects DateTimeInterface, Carbon\\CarbonInterface\|null given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Services/CoverageService.php
 
 		-
-			message: '#^Cannot access property \$dayOfWeekIso on string\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: app/Services/Flextime/CoreTimeValidator.php
-
-		-
-			message: '#^Cannot call method format\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 4
-			path: app/Services/Flextime/CoreTimeValidator.php
-
-		-
-			message: '#^Parameter \#2 \$on of method App\\Services\\Flextime\\WorkScheduleResolver\:\:for\(\) expects Carbon\\CarbonInterface, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Services/Flextime/CoreTimeValidator.php
-
-		-
 			message: '#^Cannot call method startOfMonth\(\) on Carbon\\CarbonImmutable\|null\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: app/Services/Flextime/FlexCalculator.php
-
-		-
-			message: '#^Property App\\Models\\WorkSchedule\:\:\$valid_from \(Illuminate\\Support\\Carbon\) does not accept Carbon\\CarbonInterface\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Services/Flextime/WorkScheduleResolver.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'

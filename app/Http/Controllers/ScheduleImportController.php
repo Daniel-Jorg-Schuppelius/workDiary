@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Mon May 11 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : ScheduleImportController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Http\Controllers;
 
 use App\Models\ScheduledShift;
@@ -12,7 +21,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\View\View;
-use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ScheduleImportController extends Controller
 {
@@ -200,11 +208,12 @@ class ScheduleImportController extends Controller
      */
     private function parseSpreadsheet(string $path): array
     {
-        if (! class_exists(IOFactory::class)) {
+        $factory = 'PhpOffice\\PhpSpreadsheet\\IOFactory';
+        if (! class_exists($factory)) {
             abort(500, 'phpoffice/phpspreadsheet ist nicht installiert.');
         }
 
-        $spreadsheet = IOFactory::load($path);
+        $spreadsheet = $factory::load($path);
         $sheet = $spreadsheet->getActiveSheet();
         $rows = [];
 

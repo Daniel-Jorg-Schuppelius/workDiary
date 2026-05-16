@@ -1,9 +1,19 @@
 <?php
 
+/*
+ * Created on   : Mon May 11 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : StoreScheduledShiftRequest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\ChecksShiftCompliance;
 use App\Models\ScheduledShift;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Validator;
@@ -14,7 +24,9 @@ class StoreScheduledShiftRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return Auth::user()?->isAdmin() ?? false;
+        $user = Auth::user();
+
+        return $user instanceof User && $user->isAdmin();
     }
 
     /** @return array<string, mixed> */

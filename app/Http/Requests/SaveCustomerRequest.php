@@ -1,18 +1,30 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : SaveCustomerRequest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Http\Requests;
 
 use App\Models\Customer;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveCustomerRequest extends FormRequest {
-    public function authorize(): bool {
+class SaveCustomerRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
         return true;
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array {
+    public function rules(): array
+    {
         /** @var Customer|null $customer */
         $customer = $this->route('customer');
 
@@ -23,7 +35,7 @@ class SaveCustomerRequest extends FormRequest {
                 'string',
                 'max:64',
                 Rule::unique('customers', 'number')
-                    ->where(fn($q) => $q->where('organization_id', $customer?->organization_id))
+                    ->where(fn ($q) => $q->where('organization_id', $customer?->organization_id))
                     ->ignore($customer?->id),
             ],
             'company' => ['nullable', 'string', 'max:200'],
@@ -58,7 +70,8 @@ class SaveCustomerRequest extends FormRequest {
         ];
     }
 
-    protected function prepareForValidation(): void {
+    protected function prepareForValidation(): void
+    {
         // Leere Kontaktpersonen-Zeilen herausfiltern + primary-Flag normalisieren
         $persons = $this->input('contact_persons', []);
         if (is_array($persons)) {

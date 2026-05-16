@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Tue May 12 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : TimeEntry.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToOrganization;
@@ -8,8 +17,31 @@ use Database\Factories\TimeEntryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
-class TimeEntry extends Model {
+/**
+ * @property int $id
+ * @property int|null $organization_id
+ * @property int|null $project_id
+ * @property int|null $timesheet_id
+ * @property int|null $task_id
+ * @property int|null $user_id
+ * @property Carbon|null $date
+ * @property Carbon|null $started_at
+ * @property Carbon|null $ended_at
+ * @property int $break_minutes
+ * @property string $kind
+ * @property int $minutes
+ * @property string|null $description
+ * @property bool $billable
+ * @property float|null $hourly_rate
+ * @property float|null $fixed_rate
+ * @property float|null $rate
+ * @property float|null $internal_rate
+ * @property bool $exported
+ */
+class TimeEntry extends Model
+{
     use BelongsToOrganization;
 
     /** @use HasFactory<TimeEntryFactory> */
@@ -45,7 +77,8 @@ class TimeEntry extends Model {
         'exported',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'date' => 'date',
             'started_at' => 'datetime',
@@ -61,7 +94,8 @@ class TimeEntry extends Model {
         ];
     }
 
-    protected static function booted(): void {
+    protected static function booted(): void
+    {
         static::saving(function (TimeEntry $entry): void {
             if ($entry->started_at && $entry->ended_at) {
                 $diff = (int) $entry->started_at->diffInMinutes($entry->ended_at, false);
@@ -95,26 +129,31 @@ class TimeEntry extends Model {
     }
 
     /** @return BelongsTo<Project, $this> */
-    public function project(): BelongsTo {
+    public function project(): BelongsTo
+    {
         return $this->belongsTo(Project::class);
     }
 
     /** @return BelongsTo<Timesheet, $this> */
-    public function timesheet(): BelongsTo {
+    public function timesheet(): BelongsTo
+    {
         return $this->belongsTo(Timesheet::class);
     }
 
     /** @return BelongsTo<Task, $this> */
-    public function task(): BelongsTo {
+    public function task(): BelongsTo
+    {
         return $this->belongsTo(Task::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo {
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 
-    public function hoursFormatted(): string {
+    public function hoursFormatted(): string
+    {
         $h = intdiv($this->minutes, 60);
         $m = $this->minutes % 60;
 

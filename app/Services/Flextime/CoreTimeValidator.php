@@ -1,21 +1,29 @@
 <?php
 
+/*
+ * Created on   : Thu May 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : CoreTimeValidator.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Services\Flextime;
 
 use App\Models\TimeEntry;
 use App\Models\User;
 
-class CoreTimeValidator
-{
-    public function __construct(protected WorkScheduleResolver $resolver) {}
+class CoreTimeValidator {
+    public function __construct(protected WorkScheduleResolver $resolver) {
+    }
 
     /**
      * Liefert eine Liste mit Verstoß-Beschreibungen (i18n-Key/-String). Leeres Array = ok.
      *
      * @return array<int, string>
      */
-    public function violations(User $user, TimeEntry $entry): array
-    {
+    public function violations(User $user, TimeEntry $entry): array {
         if (! $entry->started_at || ! $entry->ended_at) {
             return [];
         }

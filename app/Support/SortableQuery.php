@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Thu May 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : SortableQuery.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 declare(strict_types=1);
 
 namespace App\Support;
@@ -21,7 +30,7 @@ final class SortableQuery {
      *
      * @param  EloquentBuilder<TModel>|QueryBuilder  $query
      * @param  array<string,string>  $allowed  Mapping `key => sql column`.
-     * @return array{0:string,1:string}  Effektiv angewandter `[key, dir]`-Eintrag.
+     * @return array{0:string,1:string} Effektiv angewandter `[key, dir]`-Eintrag.
      */
     public static function apply(
         EloquentBuilder|QueryBuilder $query,

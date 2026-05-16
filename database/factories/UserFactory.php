@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Wed Apr 29 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : UserFactory.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace Database\Factories;
 
 use App\Models\User;
@@ -53,7 +62,10 @@ class UserFactory extends Factory
 
     public function user(): static
     {
-        return $this->afterCreating(function (User $user): void {
+        return $this->state(fn (array $attributes): array => [
+            'name' => 'TestUser '.Str::random(8),
+            'email' => 'user-'.Str::random(10).'@example.test',
+        ])->afterCreating(function (User $user): void {
             $user->syncRoles([User::ROLE_USER]);
         });
     }

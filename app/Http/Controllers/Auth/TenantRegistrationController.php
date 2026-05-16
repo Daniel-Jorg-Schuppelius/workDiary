@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Tue May 12 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : TenantRegistrationController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -14,17 +23,20 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 use Spatie\Permission\Models\Role;
 
-class TenantRegistrationController extends Controller {
+class TenantRegistrationController extends Controller
+{
     /**
      * Nur erreichbar wenn REGISTRATION_ENABLED=true in der Konfiguration.
      */
-    public function showForm(): View {
+    public function showForm(): View
+    {
         abort_unless(config('app.registration_enabled'), 404);
 
         return view('auth.register');
     }
 
-    public function register(Request $request): RedirectResponse {
+    public function register(Request $request): RedirectResponse
+    {
         abort_unless(config('app.registration_enabled'), 404);
 
         $data = $request->validate([

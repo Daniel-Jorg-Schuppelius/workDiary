@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : CustomerControllerTest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace Tests\Feature;
 
 use App\Models\Customer;
@@ -8,11 +17,16 @@ use App\Models\Project;
 use App\Models\User;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use Database\Seeders\RolesSeeder;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class CustomerControllerTest extends TestCase {
+class CustomerControllerTest extends TestCase
+{
     use RefreshDatabase;
     use WithOrganization;
 
@@ -20,7 +34,8 @@ class CustomerControllerTest extends TestCase {
 
     private User $user;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -33,7 +48,8 @@ class CustomerControllerTest extends TestCase {
         ]);
     }
 
-    public function test_index_shows_active_customers_and_paginates(): void {
+    public function test_index_shows_active_customers_and_paginates(): void
+    {
         Customer::factory()->count(30)->create([
             'organization_id' => $this->organization->id,
             'created_by' => $this->user->id,
@@ -48,7 +64,8 @@ class CustomerControllerTest extends TestCase {
         $this->assertSame(25, $paginator->perPage());
     }
 
-    public function test_index_search_filters_by_name(): void {
+    public function test_index_search_filters_by_name(): void
+    {
         Customer::factory()->create([
             'organization_id' => $this->organization->id,
             'created_by' => $this->user->id,
@@ -65,7 +82,8 @@ class CustomerControllerTest extends TestCase {
         $this->assertSame(1, $response->viewData('customers')->total());
     }
 
-    public function test_store_auto_assigns_customer_number(): void {
+    public function test_store_auto_assigns_customer_number(): void
+    {
         $this->actingAs($this->admin)
             ->post(route('customers.store'), [
                 'name' => 'Neuer Kunde',
@@ -80,7 +98,8 @@ class CustomerControllerTest extends TestCase {
         ]);
     }
 
-    public function test_store_increments_customer_number_per_org(): void {
+    public function test_store_increments_customer_number_per_org(): void
+    {
         Customer::factory()->create([
             'organization_id' => $this->organization->id,
             'created_by' => $this->user->id,
@@ -94,7 +113,8 @@ class CustomerControllerTest extends TestCase {
         $this->assertDatabaseHas('customers', ['name' => 'Folgekunde', 'number' => 'K-0008']);
     }
 
-    public function test_store_persists_contact_persons(): void {
+    public function test_store_persists_contact_persons(): void
+    {
         $this->actingAs($this->admin)
             ->post(route('customers.store'), [
                 'name' => 'Mit Kontakten',
@@ -114,7 +134,8 @@ class CustomerControllerTest extends TestCase {
         $this->assertTrue($persons[0]['primary'] ?? false);
     }
 
-    public function test_destroy_blocked_when_projects_exist(): void {
+    public function test_destroy_blocked_when_projects_exist(): void
+    {
         $customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
             'created_by' => $this->admin->id,
@@ -135,7 +156,8 @@ class CustomerControllerTest extends TestCase {
         $this->assertDatabaseHas('customers', ['id' => $customer->id]);
     }
 
-    public function test_destroy_blocked_when_external_references_exist(): void {
+    public function test_destroy_blocked_when_external_references_exist(): void
+    {
         $customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
             'created_by' => $this->admin->id,
@@ -159,7 +181,8 @@ class CustomerControllerTest extends TestCase {
         $this->assertDatabaseHas('customers', ['id' => $customer->id]);
     }
 
-    public function test_destroy_succeeds_when_clean(): void {
+    public function test_destroy_succeeds_when_clean(): void
+    {
         $customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
             'created_by' => $this->admin->id,
@@ -172,7 +195,8 @@ class CustomerControllerTest extends TestCase {
         $this->assertDatabaseMissing('customers', ['id' => $customer->id]);
     }
 
-    public function test_regular_user_cannot_delete_customer(): void {
+    public function test_regular_user_cannot_delete_customer(): void
+    {
         $customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
             'created_by' => $this->user->id,
@@ -183,7 +207,8 @@ class CustomerControllerTest extends TestCase {
             ->assertForbidden();
     }
 
-    public function test_csv_export_returns_streamed_response(): void {
+    public function test_csv_export_returns_streamed_response(): void
+    {
         Customer::factory()->count(3)->create([
             'organization_id' => $this->organization->id,
             'created_by' => $this->user->id,
@@ -199,7 +224,8 @@ class CustomerControllerTest extends TestCase {
         $this->assertGreaterThanOrEqual(4, substr_count($body, "\n"));
     }
 
-    public function test_audit_log_is_written_on_create_and_update(): void {
+    public function test_audit_log_is_written_on_create_and_update(): void
+    {
         $this->actingAs($this->admin)
             ->post(route('customers.store'), ['name' => 'Audit Co.', 'currency' => 'EUR'])
             ->assertRedirect();
@@ -225,7 +251,8 @@ class CustomerControllerTest extends TestCase {
         ]);
     }
 
-    public function test_csv_import_creates_and_updates_customers(): void {
+    public function test_csv_import_creates_and_updates_customers(): void
+    {
         $existing = Customer::factory()->create([
             'organization_id' => $this->organization->id,
             'created_by' => $this->admin->id,
@@ -240,7 +267,7 @@ class CustomerControllerTest extends TestCase {
 
         $tmp = tempnam(sys_get_temp_dir(), 'csv');
         file_put_contents($tmp, $csv);
-        $upload = new \Illuminate\Http\UploadedFile($tmp, 'customers.csv', 'text/csv', null, true);
+        $upload = new UploadedFile($tmp, 'customers.csv', 'text/csv', null, true);
 
         $response = $this->actingAs($this->admin)
             ->post(route('customers.import'), ['file' => $upload]);
@@ -250,32 +277,36 @@ class CustomerControllerTest extends TestCase {
         $this->assertDatabaseHas('customers', ['number' => 'K-0099', 'name' => 'Frischer Kunde', 'billable' => true]);
     }
 
-    public function test_csv_import_requires_billing_permission(): void {
+    public function test_csv_import_requires_billing_permission(): void
+    {
         $csv = "Nummer;Name\nK-0001;Foo\n";
         $tmp = tempnam(sys_get_temp_dir(), 'csv');
         file_put_contents($tmp, $csv);
-        $upload = new \Illuminate\Http\UploadedFile($tmp, 'customers.csv', 'text/csv', null, true);
+        $upload = new UploadedFile($tmp, 'customers.csv', 'text/csv', null, true);
 
         $this->actingAs($this->user)
             ->post(route('customers.import'), ['file' => $upload])
             ->assertForbidden();
     }
 
-    public function test_customer_supports_tags_and_attachments_relations(): void {
+    public function test_customer_supports_tags_and_attachments_relations(): void
+    {
         $customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
             'created_by' => $this->admin->id,
         ]);
 
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\MorphMany::class, $customer->attachments());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\MorphToMany::class, $customer->tags());
+        $this->assertInstanceOf(MorphMany::class, $customer->attachments());
+        $this->assertInstanceOf(MorphToMany::class, $customer->tags());
         $this->assertSame(0, $customer->attachments()->count());
         $this->assertSame(0, $customer->tags()->count());
     }
 
-    private function getStreamContent(\Symfony\Component\HttpFoundation\Response $response): string {
+    private function getStreamContent(Response $response): string
+    {
         ob_start();
         $response->sendContent();
+
         return (string) ob_get_clean();
     }
 }

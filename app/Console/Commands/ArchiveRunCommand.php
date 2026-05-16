@@ -1,4 +1,12 @@
 <?php
+/*
+ * Created on   : Sat May 16 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : ArchiveRunCommand.php
+ * License      : MIT License
+ * License Uri  : https://opensource.org/license/mit
+ */
 
 namespace App\Console\Commands;
 

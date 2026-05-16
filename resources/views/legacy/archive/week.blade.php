@@ -8,7 +8,7 @@
 @php
     /* @var \Carbon\Carbon $monday */
     /* @var \Carbon\Carbon $sunday */
-    $weekStart = $monday ?? now()->startOfWeek(\Carbon\Carbon::MONDAY);
+    $weekStart = $monday ?? now()->startOfWeek(\App\Support\WeekDay::MONDAY);
     $dayAbbr = weekdayAbbr('de');
     $days    = collect(range(0, 6))->map(fn ($i) => $weekStart->copy()->addDays($i));
     $hours   = range(7, 20);

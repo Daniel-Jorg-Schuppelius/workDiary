@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Thu May 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : RestPeriodRule.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 declare(strict_types=1);
 
 namespace App\Services\Compliance\Rules;
@@ -10,17 +19,14 @@ use App\Services\Compliance\ComplianceViolation;
 use App\Services\Compliance\ResolvesShiftTiming;
 
 /** ArbZG §5: Mindestruhezeit (Standard 11h) zwischen zwei Schichten. */
-final class RestPeriodRule implements ComplianceRule
-{
+final class RestPeriodRule implements ComplianceRule {
     use ResolvesShiftTiming;
 
-    public function key(): string
-    {
+    public function key(): string {
         return 'rest_period';
     }
 
-    public function check(ScheduledShift $shift, array $settings): array
-    {
+    public function check(ScheduledShift $shift, array $settings): array {
         $iv = $this->resolveInterval($shift);
         if ($iv === null) {
             return [];
@@ -35,7 +41,7 @@ final class RestPeriodRule implements ComplianceRule
                 $start->copy()->subDays(2)->toDateString(),
                 $end->copy()->addDays(2)->toDateString(),
             ])
-            ->when($shift->id, fn ($q) => $q->where('id', '!=', $shift->id))
+            ->when($shift->id, fn($q) => $q->where('id', '!=', $shift->id))
             ->with('shiftType')
             ->get();
 

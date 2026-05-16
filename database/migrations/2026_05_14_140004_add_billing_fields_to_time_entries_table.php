@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : 2026_05_14_140004_add_billing_fields_to_time_entries_table.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -14,8 +23,10 @@ use Illuminate\Support\Facades\Schema;
  * - fixed_rate:   overrides hourly rate when set (flat fee)
  * - exported:     marked as exported to payroll/invoice (locked)
  */
-return new class extends Migration {
-    public function up(): void {
+return new class extends Migration
+{
+    public function up(): void
+    {
         Schema::table('time_entries', function (Blueprint $table): void {
             $table->boolean('billable')->default(true)->after('kind');
             $table->decimal('hourly_rate', 10, 2)->nullable()->after('billable');
@@ -29,7 +40,8 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::table('time_entries', function (Blueprint $table): void {
             $table->dropIndex(['billable']);
             $table->dropIndex(['exported']);

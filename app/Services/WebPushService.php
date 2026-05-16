@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Sun May 03 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : WebPushService.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Services;
 
 use App\Models\PushSubscription;
@@ -8,8 +17,7 @@ use Illuminate\Support\Facades\Log;
 use Minishlink\WebPush\Subscription;
 use Minishlink\WebPush\WebPush;
 
-class WebPushService
-{
+class WebPushService {
     protected ?WebPush $webPush = null;
 
     /**
@@ -17,8 +25,7 @@ class WebPushService
      *
      * @param  array{title: string, body?: string, url?: string, tag?: string, icon?: string}  $payload
      */
-    public function sendToUser(User $user, array $payload): int
-    {
+    public function sendToUser(User $user, array $payload): int {
         $subscriptions = $user->relationLoaded('pushSubscriptions')
             ? $user->pushSubscriptions
             : $user->pushSubscriptions()->get();
@@ -69,8 +76,7 @@ class WebPushService
      * @param  iterable<User>  $users
      * @param  array{title: string, body?: string, url?: string, tag?: string, icon?: string}  $payload
      */
-    public function sendToUsers(iterable $users, array $payload): int
-    {
+    public function sendToUsers(iterable $users, array $payload): int {
         $sum = 0;
         foreach ($users as $user) {
             $sum += $this->sendToUser($user, $payload);
@@ -79,8 +85,7 @@ class WebPushService
         return $sum;
     }
 
-    protected function webPush(): ?WebPush
-    {
+    protected function webPush(): ?WebPush {
         if ($this->webPush !== null) {
             return $this->webPush;
         }

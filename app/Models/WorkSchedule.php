@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Thu May 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : WorkSchedule.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
@@ -25,14 +34,21 @@ use Illuminate\Support\Carbon;
  * @property int $break_minutes
  * @property Carbon $valid_from
  * @property Carbon|null $valid_to
+ * @property bool $exists
  */
 class WorkSchedule extends Model
 {
     use Auditable;
-
     use BelongsToOrganization;
+
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
+    /** @param array<string, mixed> $attributes */
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+    }
 
     protected $fillable = [
         'organization_id',

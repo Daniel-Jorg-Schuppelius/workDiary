@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Created on   : Fri May 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : CustomerProjectReportController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
 namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
@@ -7,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Project;
 use App\Models\TimeEntry;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -27,29 +37,63 @@ class CustomerProjectReportController extends Controller {
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        $isAdmin = Auth::user()?->isAdmin() ?? false;
+        $authUser = Auth::user();
+        $isAdmin = $authUser instanceof User && $authUser->isAdmin();
+        $scope = $this->resolveScope($request, $isAdmin);
+
+        $globalRange = $this->globalDateRange();
+        $fromDate = Carbon::parse($globalRange['from']->toDateString())->startOfDay();
+        $toDate = Carbon::parse($globalRange['to']->toDateString())->endOfDay();
+        $from = $fromDate->toDateString();
+        $to = $toDate->toDateString();
+
+        $byProject = $this->aggregateByProject($from, $to, $scope, $userId);
+        $bucket = $this->bucketByCustomer($byProject);
+        $this->sortBuckets($bucket);
+
+        $totalMinutes = array_sum(array_column($bucket, 'minutes'));
+        $totalRate = array_sum(array_column($bucket, 'rate'));
+
+        if ($request->query('export') === 'csv') {
+            return $this->exportCsv($bucket, $totalMinutes, $totalRate, $from, $to);
+        }
+        if ($request->query('export') === 'pdf') {
+            return $this->exportPdf($bucket, $totalMinutes, $totalRate, $from, $to, $scope);
+        }
+
+        return view('reports.customer-project', [
+            'from' => $from,
+            'to' => $to,
+            'scope' => $scope,
+            'isAdmin' => $isAdmin,
+            'bucket' => $bucket,
+            'totalMinutes' => $totalMinutes,
+            'totalRate' => $totalRate,
+        ]);
+    }
+
+    private function resolveScope(Request $request, bool $isAdmin): string {
         $scope = $request->string('scope', 'mine')->toString();
         if ($scope !== 'team' || ! $isAdmin) {
             $scope = 'mine';
         }
 
-        $globalRange = $this->globalDateRange();
-        $fromDate = Carbon::parse($globalRange['from']->toDateString())->startOfDay();
-        $toDate = Carbon::parse($globalRange['to']->toDateString())->endOfDay();
+        return $scope;
+    }
 
+    /**
+     * @return array<int, array{minutes: int, rate: float}>
+     */
+    private function aggregateByProject(string $from, string $to, string $scope, int $userId): array {
         $query = TimeEntry::query()
-            ->whereBetween('date', [$fromDate->toDateString(), $toDate->toDateString()])
+            ->whereBetween('date', [$from, $to])
             ->select('project_id', 'minutes', 'rate', 'user_id');
         if ($scope === 'mine') {
             $query->where('user_id', $userId);
         }
 
-        $entries = $query->get();
-
-        // Aggregate: project_id => [minutes, rate]
-        /** @var array<int, array{minutes: int, rate: float}> $byProject */
         $byProject = [];
-        foreach ($entries as $e) {
+        foreach ($query->get() as $e) {
             $pid = (int) $e->project_id;
             if (! isset($byProject[$pid])) {
                 $byProject[$pid] = ['minutes' => 0, 'rate' => 0.0];
@@ -58,14 +102,19 @@ class CustomerProjectReportController extends Controller {
             $byProject[$pid]['rate'] += (float) $e->rate;
         }
 
-        // Lade Projekte + Customer.
+        return $byProject;
+    }
+
+    /**
+     * @param  array<int, array{minutes: int, rate: float}>  $byProject
+     * @return array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}>
+     */
+    private function bucketByCustomer(array $byProject): array {
         $projects = Project::with('customer')
             ->whereIn('id', array_keys($byProject))
             ->get()
             ->keyBy('id');
 
-        // Gruppiere nach Customer (inkl. "Ohne Kunde"-Bucket).
-        /** @var array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}> $bucket */
         $bucket = [];
         foreach ($byProject as $pid => $sums) {
             $project = $projects->get($pid);
@@ -90,40 +139,27 @@ class CustomerProjectReportController extends Controller {
             $bucket[$cid]['rate'] += $sums['rate'];
         }
 
-        // Sortiere Buckets nach Customer-Name; Projekte innerhalb nach Stunden DESC.
+        return $bucket;
+    }
+
+    /**
+     * @param  array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}>  $bucket
+     */
+    private function sortBuckets(array &$bucket): void {
         uasort($bucket, function ($a, $b): int {
             $na = $a['customer'] instanceof Customer ? $a['customer']->name : '~~~';
             $nb = $b['customer'] instanceof Customer ? $b['customer']->name : '~~~';
+
             return strnatcasecmp($na, $nb);
         });
         foreach ($bucket as &$row) {
             uasort($row['projects'], fn($a, $b) => $b['minutes'] <=> $a['minutes']);
         }
         unset($row);
-
-        $totalMinutes = array_sum(array_column($bucket, 'minutes'));
-        $totalRate = array_sum(array_column($bucket, 'rate'));
-
-        if ($request->query('export') === 'csv') {
-            return $this->exportCsv($bucket, $totalMinutes, $totalRate, $fromDate->toDateString(), $toDate->toDateString());
-        }
-        if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($bucket, $totalMinutes, $totalRate, $fromDate->toDateString(), $toDate->toDateString(), $scope);
-        }
-
-        return view('reports.customer-project', [
-            'from' => $fromDate->toDateString(),
-            'to' => $toDate->toDateString(),
-            'scope' => $scope,
-            'isAdmin' => $isAdmin,
-            'bucket' => $bucket,
-            'totalMinutes' => $totalMinutes,
-            'totalRate' => $totalRate,
-        ]);
     }
 
     /**
-     * @param array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}> $bucket
+     * @param  array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}>  $bucket
      */
     private function exportCsv(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to): Response {
         $filename = sprintf('kunden-projekte_%s_%s.csv', $from, $to);
@@ -149,6 +185,7 @@ class CustomerProjectReportController extends Controller {
                 if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
                     $s = '"' . str_replace('"', '""', $s) . '"';
                 }
+
                 return $s;
             }, $row)) . "\r\n";
         }
@@ -160,7 +197,7 @@ class CustomerProjectReportController extends Controller {
     }
 
     /**
-     * @param array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}> $bucket
+     * @param  array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}>  $bucket
      */
     private function exportPdf(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to, string $scope): SymfonyResponse {
         $filename = sprintf('kunden-projekte_%s_%s.pdf', $from, $to);

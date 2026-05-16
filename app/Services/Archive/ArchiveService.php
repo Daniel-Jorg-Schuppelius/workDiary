@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Created on   : Sun May 03 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : ArchiveService.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+declare(strict_types=1);
+
 namespace App\Services\Archive;
 
 use App\Models\DiaryEntry;
@@ -7,7 +18,7 @@ use App\Models\EmergencyAssignment;
 use App\Models\OnCallShift;
 use Carbon\CarbonImmutable;
 
-class ArchiveService
+final class ArchiveService
 {
     /**
      * Run the archive sweep using the configured threshold.
