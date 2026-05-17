@@ -4,7 +4,7 @@
         <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Stundenzettel') }}</span>
             @can('create', \App\Models\Timesheet::class)
-                <a href="{{ route('projects.timesheets.create', $project) }}" class="btn btn-sm btn-primary">
+                <a href="{{ route('projects.timesheets.create', $project) }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
                     + {{ __('Stundenzettel') }}
                 </a>
             @endcan

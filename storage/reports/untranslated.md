@@ -1,0 +1,10959 @@
+# Untranslated strings report
+
+Generated: 2026-05-17T18:42:33+00:00
+
+- Blade hits: 10606
+- JS hits:    261
+
+## BLADE
+
+- `resources/views/duties/_tab_urlaub.blade.php:2` — `urlaub`
+- `resources/views/duties/_tab_urlaub.blade.php:3` — `flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/duties/_tab_urlaub.blade.php:4` — `table table-sm table-zebra table-pin-rows w-full`
+- `resources/views/duties/_tab_urlaub.blade.php:5` — `bg-base-200`
+- `resources/views/duties/_tab_urlaub.blade.php:8` — `mitarbeiter`
+- `resources/views/duties/_tab_urlaub.blade.php:8` — `desc'`
+- `resources/views/duties/_tab_urlaub.blade.php:8` — `Mitarbeiter`
+- `resources/views/duties/_tab_urlaub.blade.php:10` — `desc'`
+- `resources/views/duties/_tab_urlaub.blade.php:10` — `Zeitraum`
+- `resources/views/duties/_tab_urlaub.blade.php:11` — `Tage`
+- `resources/views/duties/_tab_urlaub.blade.php:12` — `desc'`
+- `resources/views/duties/_tab_urlaub.blade.php:13` — `status`
+- `resources/views/duties/_tab_urlaub.blade.php:13` — `desc'`
+- `resources/views/duties/_tab_urlaub.blade.php:13` — `Status`
+- `resources/views/duties/_tab_urlaub.blade.php:14` — `max-w-xs`
+- `resources/views/duties/_tab_urlaub.blade.php:14` — `Notiz`
+- `resources/views/duties/_tab_urlaub.blade.php:15` — `w-px`
+- `resources/views/duties/_tab_urlaub.blade.php:21` — `hover`
+- `resources/views/duties/_tab_urlaub.blade.php:23` — `font-medium`
+- `resources/views/duties/_tab_urlaub.blade.php:25` — `whitespace-nowrap`
+- `resources/views/duties/_tab_urlaub.blade.php:31` — `tabular-nums`
+- `resources/views/duties/_tab_urlaub.blade.php:33` — `badge badge-sm badge-ghost`
+- `resources/views/duties/_tab_urlaub.blade.php:38` — `tooltip tooltip-right`
+- `resources/views/duties/_tab_urlaub.blade.php:39` — `inline h-3 w-3 text-error`
+- `resources/views/duties/_tab_urlaub.blade.php:39` — `none`
+- `resources/views/duties/_tab_urlaub.blade.php:39` — `currentColor`
+- `resources/views/duties/_tab_urlaub.blade.php:39` — `round`
+- `resources/views/duties/_tab_urlaub.blade.php:39` — `round`
+- `resources/views/duties/_tab_urlaub.blade.php:39` — `M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z`
+- `resources/views/duties/_tab_urlaub.blade.php:45` — `flex items-center gap-1`
+- `resources/views/duties/_tab_urlaub.blade.php:47` — `decide`
+- `resources/views/duties/_tab_urlaub.blade.php:49` — `inline`
+- `resources/views/duties/_tab_urlaub.blade.php:51` — `submit`
+- `resources/views/duties/_tab_urlaub.blade.php:52` — `Genehmigen`
+- `resources/views/duties/_tab_urlaub.blade.php:53` — `btn btn-xs btn-ghost text-success`
+- `resources/views/duties/_tab_urlaub.blade.php:54` — `h-4 w-4`
+- `resources/views/duties/_tab_urlaub.blade.php:54` — `none`
+- `resources/views/duties/_tab_urlaub.blade.php:54` — `currentColor`
+- `resources/views/duties/_tab_urlaub.blade.php:54` — `round`
+- `resources/views/duties/_tab_urlaub.blade.php:54` — `round`
+- `resources/views/duties/_tab_urlaub.blade.php:54` — `M5 13l4 4L19 7`
+- `resources/views/duties/_tab_urlaub.blade.php:57` — `vacations.reject-form`
+- `resources/views/duties/_tab_urlaub.blade.php:58` — `Ablehnen`
+- `resources/views/duties/_tab_urlaub.blade.php:59` — `btn btn-xs btn-ghost text-error`
+- `resources/views/duties/_tab_urlaub.blade.php:61` — `h-4 w-4`
+- `resources/views/duties/_tab_urlaub.blade.php:61` — `none`
+- `resources/views/duties/_tab_urlaub.blade.php:61` — `currentColor`
+- `resources/views/duties/_tab_urlaub.blade.php:61` — `round`
+- `resources/views/duties/_tab_urlaub.blade.php:61` — `round`
+- `resources/views/duties/_tab_urlaub.blade.php:61` — `M6 18L18 6M6 6l12 12`
+- `resources/views/duties/_tab_urlaub.blade.php:67` — `update`
+- `resources/views/duties/_tab_urlaub.blade.php:69` — `Bearbeiten`
+- `resources/views/duties/_tab_urlaub.blade.php:70` — `btn btn-xs btn-ghost`
+- `resources/views/duties/_tab_urlaub.blade.php:72` — `h-4 w-4`
+- `resources/views/duties/_tab_urlaub.blade.php:72` — `none`
+- `resources/views/duties/_tab_urlaub.blade.php:72` — `currentColor`
+- `resources/views/duties/_tab_urlaub.blade.php:72` — `round`
+- `resources/views/duties/_tab_urlaub.blade.php:72` — `round`
+- `resources/views/duties/_tab_urlaub.blade.php:72` — `M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01-1.414.586H9v-2.414z`
+- `resources/views/duties/_tab_urlaub.blade.php:77` — `cancel`
+- `resources/views/duties/_tab_urlaub.blade.php:78` — `inline`
+- `resources/views/duties/_tab_urlaub.blade.php:80` — `Urlaubsantrag wirklich stornieren?`
+- `resources/views/duties/_tab_urlaub.blade.php:81` — `Stornieren`
+- `resources/views/duties/_tab_urlaub.blade.php:83` — `submit`
+- `resources/views/duties/_tab_urlaub.blade.php:84` — `Stornieren`
+- `resources/views/duties/_tab_urlaub.blade.php:85` — `btn btn-xs btn-ghost text-warning`
+- `resources/views/duties/_tab_urlaub.blade.php:86` — `h-4 w-4`
+- `resources/views/duties/_tab_urlaub.blade.php:86` — `none`
+- `resources/views/duties/_tab_urlaub.blade.php:86` — `currentColor`
+- `resources/views/duties/_tab_urlaub.blade.php:86` — `round`
+- `resources/views/duties/_tab_urlaub.blade.php:86` — `round`
+- `resources/views/duties/_tab_urlaub.blade.php:86` — `M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636`
+- `resources/views/duties/_tab_urlaub.blade.php:92` — `delete`
+- `resources/views/duties/_tab_urlaub.blade.php:93` — `inline`
+- `resources/views/duties/_tab_urlaub.blade.php:95` — `Urlaubsantrag wirklich löschen?`
+- `resources/views/duties/_tab_urlaub.blade.php:96` — `Löschen`
+- `resources/views/duties/_tab_urlaub.blade.php:98` — `submit`
+- `resources/views/duties/_tab_urlaub.blade.php:99` — `Löschen`
+- `resources/views/duties/_tab_urlaub.blade.php:100` — `btn btn-xs btn-ghost text-error`
+- `resources/views/duties/_tab_urlaub.blade.php:101` — `h-4 w-4`
+- `resources/views/duties/_tab_urlaub.blade.php:101` — `none`
+- `resources/views/duties/_tab_urlaub.blade.php:101` — `currentColor`
+- `resources/views/duties/_tab_urlaub.blade.php:101` — `round`
+- `resources/views/duties/_tab_urlaub.blade.php:101` — `round`
+- `resources/views/duties/_tab_urlaub.blade.php:101` — `M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3m-7 0h8`
+- `resources/views/duties/_tab_urlaub.blade.php:111` — `Keine Einträge gefunden.`
+- `resources/views/duties/_tab_urlaub.blade.php:119` — `paginator`
+- `resources/views/duties/_tab_notdienst.blade.php:2` — `notdienst`
+- `resources/views/duties/_tab_notdienst.blade.php:3` — `flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/duties/_tab_notdienst.blade.php:4` — `table table-zebra table-pin-rows`
+- `resources/views/duties/_tab_notdienst.blade.php:5` — `bg-base-200`
+- `resources/views/duties/_tab_notdienst.blade.php:7` — `mitarbeiter`
+- `resources/views/duties/_tab_notdienst.blade.php:7` — `desc'`
+- `resources/views/duties/_tab_notdienst.blade.php:7` — `Mitarbeiter`
+- `resources/views/duties/_tab_notdienst.blade.php:8` — `desc'`
+- `resources/views/duties/_tab_notdienst.blade.php:8` — `Beginn`
+- `resources/views/duties/_tab_notdienst.blade.php:9` — `desc'`
+- `resources/views/duties/_tab_notdienst.blade.php:9` — `Ende`
+- `resources/views/duties/_tab_notdienst.blade.php:10` — `Bereitschaft`
+- `resources/views/duties/_tab_notdienst.blade.php:11` — `Grund`
+- `resources/views/duties/_tab_notdienst.blade.php:12` — `w-24 text-right`
+- `resources/views/duties/_tab_notdienst.blade.php:12` — `Aktion`
+- `resources/views/duties/_tab_notdienst.blade.php:18` — `text-error`
+- `resources/views/duties/_tab_notdienst.blade.php:20` — `whitespace-nowrap`
+- `resources/views/duties/_tab_notdienst.blade.php:21` — `whitespace-nowrap`
+- `resources/views/duties/_tab_notdienst.blade.php:27` — `max-w-xs truncate`
+- `resources/views/duties/_tab_notdienst.blade.php:28` — `whitespace-nowrap text-right`
+- `resources/views/duties/_tab_notdienst.blade.php:30` — `btn btn-ghost btn-xs`
+- `resources/views/duties/_tab_notdienst.blade.php:30` — `Bearbeiten`
+- `resources/views/duties/_tab_notdienst.blade.php:31` — `h-4 w-4`
+- `resources/views/duties/_tab_notdienst.blade.php:31` — `none`
+- `resources/views/duties/_tab_notdienst.blade.php:31` — `currentColor`
+- `resources/views/duties/_tab_notdienst.blade.php:31` — `round`
+- `resources/views/duties/_tab_notdienst.blade.php:31` — `round`
+- `resources/views/duties/_tab_notdienst.blade.php:31` — `M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z`
+- `resources/views/duties/_tab_notdienst.blade.php:36` — `Keine Einträge.`
+- `resources/views/duties/_tab_notdienst.blade.php:42` — `paginator`
+- `resources/views/duties/_pagination.blade.php:2` — `flex-none`
+- `resources/views/duties/_pagination.blade.php:4` — `Seite`
+- `resources/views/duties/_pagination.blade.php:4` — `Einträge`
+- `resources/views/duties/_pagination.blade.php:7` — `rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-xs`
+- `resources/views/duties/_pagination.blade.php:8` — `vendor.pagination.daisyui-simple`
+- `resources/views/duties/_tab_diary.blade.php:2` — `min-h-0 flex-1 overflow-y-auto space-y-3 pr-1`
+- `resources/views/duties/_tab_diary.blade.php:6` — `flex flex-wrap items-center gap-3 mb-3`
+- `resources/views/duties/_tab_diary.blade.php:8` — `badge badge-sm',
+                        'badge-success`
+- `resources/views/duties/_tab_diary.blade.php:9` — `done',
+                        'badge-info`
+- `resources/views/duties/_tab_diary.blade.php:10` — `progress',
+                        'badge-warning`
+- `resources/views/duties/_tab_diary.blade.php:11` — `open',
+                        'badge-error`
+- `resources/views/duties/_tab_diary.blade.php:12` — `alert',
+                        'badge-ghost`
+- `resources/views/duties/_tab_diary.blade.php:13` — `neutral`
+- `resources/views/duties/_tab_diary.blade.php:17` — `text-base leading-relaxed text-base-content`
+- `resources/views/duties/_tab_diary.blade.php:29` — `mt-2 flex flex-wrap gap-1`
+- `resources/views/duties/_tab_diary.blade.php:31` — `badge badge-outline badge-sm`
+- `resources/views/duties/_tab_diary.blade.php:37` — `text-error font-semibold`
+- `resources/views/duties/_tab_diary.blade.php:38` — `text-error font-semibold`
+- `resources/views/duties/_tab_diary.blade.php:43` — `btn btn-outline btn-primary btn-sm`
+- `resources/views/duties/_tab_diary.blade.php:43` — `Details`
+- `resources/views/duties/_tab_diary.blade.php:44` — `update`
+- `resources/views/duties/_tab_diary.blade.php:45` — `btn btn-ghost btn-sm`
+- `resources/views/duties/_tab_diary.blade.php:45` — `Bearbeiten`
+- `resources/views/duties/_tab_diary.blade.php:51` — `Keine Einträge gefunden.`
+- `resources/views/duties/_tab_diary.blade.php:53` — `diary`
+- `resources/views/duties/_tab_diary.blade.php:53` — `ml-2 text-primary underline`
+- `resources/views/duties/_tab_diary.blade.php:53` — `Filter zurücksetzen`
+- `resources/views/duties/_tab_diary.blade.php:59` — `paginator`
+- `resources/views/duties/_tab_bereitschaft.blade.php:2` — `bereitschaft`
+- `resources/views/duties/_tab_bereitschaft.blade.php:3` — `flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/duties/_tab_bereitschaft.blade.php:4` — `table table-zebra table-pin-rows`
+- `resources/views/duties/_tab_bereitschaft.blade.php:5` — `bg-base-200`
+- `resources/views/duties/_tab_bereitschaft.blade.php:7` — `mitarbeiter`
+- `resources/views/duties/_tab_bereitschaft.blade.php:7` — `desc'`
+- `resources/views/duties/_tab_bereitschaft.blade.php:7` — `Mitarbeiter`
+- `resources/views/duties/_tab_bereitschaft.blade.php:8` — `desc'`
+- `resources/views/duties/_tab_bereitschaft.blade.php:8` — `Beginn`
+- `resources/views/duties/_tab_bereitschaft.blade.php:9` — `desc'`
+- `resources/views/duties/_tab_bereitschaft.blade.php:9` — `Ende`
+- `resources/views/duties/_tab_bereitschaft.blade.php:10` — `Notiz`
+- `resources/views/duties/_tab_bereitschaft.blade.php:11` — `w-24 text-right`
+- `resources/views/duties/_tab_bereitschaft.blade.php:11` — `Aktion`
+- `resources/views/duties/_tab_bereitschaft.blade.php:17` — `text-error`
+- `resources/views/duties/_tab_bereitschaft.blade.php:19` — `whitespace-nowrap`
+- `resources/views/duties/_tab_bereitschaft.blade.php:20` — `whitespace-nowrap`
+- `resources/views/duties/_tab_bereitschaft.blade.php:21` — `max-w-xs truncate`
+- `resources/views/duties/_tab_bereitschaft.blade.php:22` — `whitespace-nowrap text-right`
+- `resources/views/duties/_tab_bereitschaft.blade.php:24` — `btn btn-ghost btn-xs`
+- `resources/views/duties/_tab_bereitschaft.blade.php:24` — `Bearbeiten`
+- `resources/views/duties/_tab_bereitschaft.blade.php:25` — `h-4 w-4`
+- `resources/views/duties/_tab_bereitschaft.blade.php:25` — `none`
+- `resources/views/duties/_tab_bereitschaft.blade.php:25` — `currentColor`
+- `resources/views/duties/_tab_bereitschaft.blade.php:25` — `round`
+- `resources/views/duties/_tab_bereitschaft.blade.php:25` — `round`
+- `resources/views/duties/_tab_bereitschaft.blade.php:25` — `M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z`
+- `resources/views/duties/_tab_bereitschaft.blade.php:30` — `Keine Einträge.`
+- `resources/views/duties/_tab_bereitschaft.blade.php:36` — `paginator`
+- `resources/views/duties/index.blade.php:2` — `title`
+- `resources/views/duties/index.blade.php:2` — `Arbeitsliste`
+- `resources/views/duties/index.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/duties/index.blade.php:3` — `nav-title`
+- `resources/views/duties/index.blade.php:3` — `Arbeitsliste`
+- `resources/views/duties/index.blade.php:5` — `content`
+- `resources/views/duties/index.blade.php:8` — `diary`
+- `resources/views/duties/index.blade.php:8` — `label`
+- `resources/views/duties/index.blade.php:8` — `Aufträge`
+- `resources/views/duties/index.blade.php:8` — `count`
+- `resources/views/duties/index.blade.php:8` — `diary`
+- `resources/views/duties/index.blade.php:9` — `bereitschaft`
+- `resources/views/duties/index.blade.php:9` — `label`
+- `resources/views/duties/index.blade.php:9` — `Bereitschaft`
+- `resources/views/duties/index.blade.php:9` — `count`
+- `resources/views/duties/index.blade.php:9` — `bereitschaft`
+- `resources/views/duties/index.blade.php:10` — `notdienst`
+- `resources/views/duties/index.blade.php:10` — `label`
+- `resources/views/duties/index.blade.php:10` — `Notdienst`
+- `resources/views/duties/index.blade.php:10` — `count`
+- `resources/views/duties/index.blade.php:10` — `notdienst`
+- `resources/views/duties/index.blade.php:11` — `urlaub`
+- `resources/views/duties/index.blade.php:11` — `label`
+- `resources/views/duties/index.blade.php:11` — `Urlaub`
+- `resources/views/duties/index.blade.php:11` — `count`
+- `resources/views/duties/index.blade.php:11` — `urlaub`
+- `resources/views/duties/index.blade.php:19` — `flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/duties/index.blade.php:20` — `badge badge-primary`
+- `resources/views/duties/index.blade.php:20` — `Aktiv`
+- `resources/views/duties/index.blade.php:21` — `flex items-center gap-2`
+- `resources/views/duties/index.blade.php:22` — `diary`
+- `resources/views/duties/index.blade.php:23` — `btn btn-sm btn-primary gap-1`
+- `resources/views/duties/index.blade.php:24` — `Neuer Auftrag`
+- `resources/views/duties/index.blade.php:26` — `bereitschaft`
+- `resources/views/duties/index.blade.php:27` — `btn btn-sm btn-primary gap-1`
+- `resources/views/duties/index.blade.php:28` — `Neue Bereitschaft`
+- `resources/views/duties/index.blade.php:30` — `notdienst`
+- `resources/views/duties/index.blade.php:31` — `btn btn-sm btn-primary gap-1`
+- `resources/views/duties/index.blade.php:32` — `Neuer Notdienst`
+- `resources/views/duties/index.blade.php:35` — `create`
+- `resources/views/duties/index.blade.php:36` — `btn btn-sm btn-primary gap-1`
+- `resources/views/duties/index.blade.php:37` — `Neuer Antrag`
+- `resources/views/duties/index.blade.php:41` — `urlaub`
+- `resources/views/duties/index.blade.php:42` — `diary' ? 'diary`
+- `resources/views/duties/index.blade.php:42` — `btn btn-sm btn-ghost gap-1`
+- `resources/views/duties/index.blade.php:43` — `Archiv`
+- `resources/views/duties/index.blade.php:50` — `tablist`
+- `resources/views/duties/index.blade.php:50` — `tabs tabs-box self-start`
+- `resources/views/duties/index.blade.php:54` — `tab-active`
+- `resources/views/duties/index.blade.php:55` — `label`
+- `resources/views/duties/index.blade.php:56` — `badge badge-sm ml-2`
+- `resources/views/duties/index.blade.php:56` — `count`
+- `resources/views/duties/index.blade.php:64` — `hidden`
+- `resources/views/duties/index.blade.php:65` — `flex flex-wrap items-end gap-3`
+- `resources/views/duties/index.blade.php:66` — `diary`
+- `resources/views/duties/index.blade.php:67` — `flex-1 min-w-52`
+- `resources/views/duties/index.blade.php:68` — `label py-1`
+- `resources/views/duties/index.blade.php:68` — `Suche`
+- `resources/views/duties/index.blade.php:69` — `search`
+- `resources/views/duties/index.blade.php:71` — `input input-bordered input-sm w-full`
+- `resources/views/duties/index.blade.php:73` — `flex flex-1 flex-col min-w-40`
+- `resources/views/duties/index.blade.php:74` — `label py-1`
+- `resources/views/duties/index.blade.php:74` — `Status`
+- `resources/views/duties/index.blade.php:75` — `status`
+- `resources/views/duties/index.blade.php:75` — `select select-bordered select-sm w-full`
+- `resources/views/duties/index.blade.php:76` — `status`
+- `resources/views/duties/index.blade.php:76` — `Alle`
+- `resources/views/duties/index.blade.php:77` — `status`
+- `resources/views/duties/index.blade.php:77` — `Offen`
+- `resources/views/duties/index.blade.php:78` — `status`
+- `resources/views/duties/index.blade.php:78` — `Problem`
+- `resources/views/duties/index.blade.php:79` — `status`
+- `resources/views/duties/index.blade.php:79` — `Bestätigt`
+- `resources/views/duties/index.blade.php:80` — `status`
+- `resources/views/duties/index.blade.php:80` — `Erledigt`
+- `resources/views/duties/index.blade.php:84` — `flex flex-col min-w-36`
+- `resources/views/duties/index.blade.php:85` — `label py-1`
+- `resources/views/duties/index.blade.php:86` — `select select-bordered select-sm`
+- `resources/views/duties/index.blade.php:94` — `flex items-center gap-2 pb-2`
+- `resources/views/duties/index.blade.php:95` — `checkbox`
+- `resources/views/duties/index.blade.php:95` — `mine`
+- `resources/views/duties/index.blade.php:95` — `mine`
+- `resources/views/duties/index.blade.php:95` — `mine`
+- `resources/views/duties/index.blade.php:95` — `checkbox checkbox-primary checkbox-sm`
+- `resources/views/duties/index.blade.php:96` — `mine`
+- `resources/views/duties/index.blade.php:96` — `Nur meine`
+- `resources/views/duties/index.blade.php:98` — `urlaub`
+- `resources/views/duties/index.blade.php:100` — `flex flex-1 flex-col min-w-44`
+- `resources/views/duties/index.blade.php:101` — `label py-1`
+- `resources/views/duties/index.blade.php:101` — `Mitarbeiter`
+- `resources/views/duties/index.blade.php:102` — `select select-bordered select-sm w-full`
+- `resources/views/duties/index.blade.php:103` — `Alle`
+- `resources/views/duties/index.blade.php:110` — `flex flex-1 flex-col min-w-40`
+- `resources/views/duties/index.blade.php:111` — `label py-1`
+- `resources/views/duties/index.blade.php:112` — `vtype`
+- `resources/views/duties/index.blade.php:112` — `select select-bordered select-sm w-full`
+- `resources/views/duties/index.blade.php:113` — `Alle Typen`
+- `resources/views/duties/index.blade.php:114` — `vtype`
+- `resources/views/duties/index.blade.php:114` — `Urlaub`
+- `resources/views/duties/index.blade.php:115` — `vtype`
+- `resources/views/duties/index.blade.php:115` — `Krank`
+- `resources/views/duties/index.blade.php:116` — `vtype`
+- `resources/views/duties/index.blade.php:116` — `Sonderurlaub`
+- `resources/views/duties/index.blade.php:117` — `vtype`
+- `resources/views/duties/index.blade.php:117` — `Unbezahlt`
+- `resources/views/duties/index.blade.php:120` — `flex flex-1 flex-col min-w-40`
+- `resources/views/duties/index.blade.php:121` — `label py-1`
+- `resources/views/duties/index.blade.php:121` — `Status`
+- `resources/views/duties/index.blade.php:122` — `vstatus`
+- `resources/views/duties/index.blade.php:122` — `select select-bordered select-sm w-full`
+- `resources/views/duties/index.blade.php:123` — `Alle Status`
+- `resources/views/duties/index.blade.php:124` — `vstatus`
+- `resources/views/duties/index.blade.php:124` — `Ausstehend`
+- `resources/views/duties/index.blade.php:125` — `vstatus`
+- `resources/views/duties/index.blade.php:125` — `Genehmigt`
+- `resources/views/duties/index.blade.php:126` — `vstatus`
+- `resources/views/duties/index.blade.php:126` — `Abgelehnt`
+- `resources/views/duties/index.blade.php:127` — `vstatus`
+- `resources/views/duties/index.blade.php:127` — `Storniert`
+- `resources/views/duties/index.blade.php:131` — `ml-auto flex items-end gap-2`
+- `resources/views/duties/index.blade.php:132` — `submit`
+- `resources/views/duties/index.blade.php:132` — `btn btn-sm btn-primary`
+- `resources/views/duties/index.blade.php:132` — `Filtern`
+- `resources/views/duties/index.blade.php:134` — `btn btn-sm btn-ghost`
+- `resources/views/duties/index.blade.php:134` — `Zurücksetzen`
+- `resources/views/duties/index.blade.php:142` — `diary`
+- `resources/views/duties/index.blade.php:144` — `label`
+- `resources/views/duties/index.blade.php:144` — `Gesamt`
+- `resources/views/duties/index.blade.php:144` — `value`
+- `resources/views/duties/index.blade.php:144` — `tone`
+- `resources/views/duties/index.blade.php:144` — `neutral', 'href`
+- `resources/views/duties/index.blade.php:144` — `diary`
+- `resources/views/duties/index.blade.php:144` — `statusKey`
+- `resources/views/duties/index.blade.php:145` — `label`
+- `resources/views/duties/index.blade.php:145` — `Offen`
+- `resources/views/duties/index.blade.php:145` — `value`
+- `resources/views/duties/index.blade.php:145` — `open`
+- `resources/views/duties/index.blade.php:145` — `tone`
+- `resources/views/duties/index.blade.php:145` — `warning', 'href`
+- `resources/views/duties/index.blade.php:145` — `diary', 'status`
+- `resources/views/duties/index.blade.php:145` — `statusKey`
+- `resources/views/duties/index.blade.php:146` — `label`
+- `resources/views/duties/index.blade.php:146` — `Probleme`
+- `resources/views/duties/index.blade.php:146` — `value`
+- `resources/views/duties/index.blade.php:146` — `alert`
+- `resources/views/duties/index.blade.php:146` — `tone`
+- `resources/views/duties/index.blade.php:146` — `error',   'href`
+- `resources/views/duties/index.blade.php:146` — `diary', 'status`
+- `resources/views/duties/index.blade.php:146` — `statusKey`
+- `resources/views/duties/index.blade.php:147` — `label`
+- `resources/views/duties/index.blade.php:147` — `Erledigt`
+- `resources/views/duties/index.blade.php:147` — `value`
+- `resources/views/duties/index.blade.php:147` — `done`
+- `resources/views/duties/index.blade.php:147` — `tone`
+- `resources/views/duties/index.blade.php:147` — `success', 'href`
+- `resources/views/duties/index.blade.php:147` — `diary', 'status`
+- `resources/views/duties/index.blade.php:147` — `statusKey`
+- `resources/views/duties/index.blade.php:149` — `bereitschaft`
+- `resources/views/duties/index.blade.php:151` — `label`
+- `resources/views/duties/index.blade.php:151` — `Gesamt`
+- `resources/views/duties/index.blade.php:151` — `value`
+- `resources/views/duties/index.blade.php:151` — `total`
+- `resources/views/duties/index.blade.php:151` — `tone`
+- `resources/views/duties/index.blade.php:151` — `neutral',   'href`
+- `resources/views/duties/index.blade.php:151` — `statusKey`
+- `resources/views/duties/index.blade.php:152` — `label`
+- `resources/views/duties/index.blade.php:152` — `value`
+- `resources/views/duties/index.blade.php:152` — `longest`
+- `resources/views/duties/index.blade.php:152` — `tone`
+- `resources/views/duties/index.blade.php:152` — `info',      'href`
+- `resources/views/duties/index.blade.php:152` — `statusKey`
+- `resources/views/duties/index.blade.php:153` — `label`
+- `resources/views/duties/index.blade.php:153` — `value`
+- `resources/views/duties/index.blade.php:153` — `tone`
+- `resources/views/duties/index.blade.php:153` — `primary',   'href`
+- `resources/views/duties/index.blade.php:153` — `statusKey`
+- `resources/views/duties/index.blade.php:153` — `format`
+- `resources/views/duties/index.blade.php:153` — `decimal`
+- `resources/views/duties/index.blade.php:154` — `label`
+- `resources/views/duties/index.blade.php:154` — `Mitarbeiter`
+- `resources/views/duties/index.blade.php:154` — `value`
+- `resources/views/duties/index.blade.php:154` — `users`
+- `resources/views/duties/index.blade.php:154` — `tone`
+- `resources/views/duties/index.blade.php:154` — `secondary', 'href`
+- `resources/views/duties/index.blade.php:154` — `statusKey`
+- `resources/views/duties/index.blade.php:156` — `notdienst`
+- `resources/views/duties/index.blade.php:158` — `label`
+- `resources/views/duties/index.blade.php:158` — `Gesamt`
+- `resources/views/duties/index.blade.php:158` — `value`
+- `resources/views/duties/index.blade.php:158` — `total`
+- `resources/views/duties/index.blade.php:158` — `tone`
+- `resources/views/duties/index.blade.php:158` — `neutral',   'href`
+- `resources/views/duties/index.blade.php:158` — `statusKey`
+- `resources/views/duties/index.blade.php:159` — `label`
+- `resources/views/duties/index.blade.php:159` — `value`
+- `resources/views/duties/index.blade.php:159` — `longest`
+- `resources/views/duties/index.blade.php:159` — `tone`
+- `resources/views/duties/index.blade.php:159` — `info',      'href`
+- `resources/views/duties/index.blade.php:159` — `statusKey`
+- `resources/views/duties/index.blade.php:160` — `label`
+- `resources/views/duties/index.blade.php:160` — `value`
+- `resources/views/duties/index.blade.php:160` — `tone`
+- `resources/views/duties/index.blade.php:160` — `primary',   'href`
+- `resources/views/duties/index.blade.php:160` — `statusKey`
+- `resources/views/duties/index.blade.php:160` — `format`
+- `resources/views/duties/index.blade.php:160` — `decimal`
+- `resources/views/duties/index.blade.php:161` — `label`
+- `resources/views/duties/index.blade.php:161` — `Mitarbeiter`
+- `resources/views/duties/index.blade.php:161` — `value`
+- `resources/views/duties/index.blade.php:161` — `users`
+- `resources/views/duties/index.blade.php:161` — `tone`
+- `resources/views/duties/index.blade.php:161` — `secondary', 'href`
+- `resources/views/duties/index.blade.php:161` — `statusKey`
+- `resources/views/duties/index.blade.php:164` — `label`
+- `resources/views/duties/index.blade.php:164` — `Gesamt`
+- `resources/views/duties/index.blade.php:164` — `value`
+- `resources/views/duties/index.blade.php:164` — `total`
+- `resources/views/duties/index.blade.php:164` — `tone`
+- `resources/views/duties/index.blade.php:164` — `neutral', 'href`
+- `resources/views/duties/index.blade.php:164` — `statusKey`
+- `resources/views/duties/index.blade.php:165` — `label`
+- `resources/views/duties/index.blade.php:165` — `Ausstehend`
+- `resources/views/duties/index.blade.php:165` — `value`
+- `resources/views/duties/index.blade.php:165` — `pending`
+- `resources/views/duties/index.blade.php:165` — `tone`
+- `resources/views/duties/index.blade.php:165` — `warning', 'href`
+- `resources/views/duties/index.blade.php:165` — `statusKey`
+- `resources/views/duties/index.blade.php:166` — `label`
+- `resources/views/duties/index.blade.php:166` — `value`
+- `resources/views/duties/index.blade.php:166` — `approved`
+- `resources/views/duties/index.blade.php:166` — `tone`
+- `resources/views/duties/index.blade.php:166` — `success', 'href`
+- `resources/views/duties/index.blade.php:166` — `statusKey`
+- `resources/views/duties/index.blade.php:167` — `label`
+- `resources/views/duties/index.blade.php:167` — `Abgelehnt`
+- `resources/views/duties/index.blade.php:167` — `value`
+- `resources/views/duties/index.blade.php:167` — `rejected`
+- `resources/views/duties/index.blade.php:167` — `tone`
+- `resources/views/duties/index.blade.php:167` — `error',   'href`
+- `resources/views/duties/index.blade.php:167` — `statusKey`
+- `resources/views/duties/index.blade.php:170` — `status`
+- `resources/views/duties/index.blade.php:175` — `label`
+- `resources/views/duties/index.blade.php:176` — `value`
+- `resources/views/duties/index.blade.php:177` — `tone`
+- `resources/views/duties/index.blade.php:178` — `href`
+- `resources/views/duties/index.blade.php:179` — `format`
+- `resources/views/duties/index.blade.php:179` — `int'`
+- `resources/views/duties/index.blade.php:180` — `diary`
+- `resources/views/duties/index.blade.php:180` — `statusKey`
+- `resources/views/duties/index.blade.php:180` — `statusKey`
+- `resources/views/duties/index.blade.php:186` — `diary`
+- `resources/views/duties/index.blade.php:189` — `bereitschaft`
+- `resources/views/duties/index.blade.php:192` — `notdienst`
+- `resources/views/duties/index.blade.php:195` — `urlaub`
+- `resources/views/public/timesheet-sign.blade.php:2` — `light`
+- `resources/views/public/timesheet-sign.blade.php:4` — `utf-8`
+- `resources/views/public/timesheet-sign.blade.php:5` — `viewport`
+- `resources/views/public/timesheet-sign.blade.php:6` — `Stundenzettel signieren`
+- `resources/views/public/timesheet-sign.blade.php:9` — `min-h-screen bg-base-200`
+- `resources/views/public/timesheet-sign.blade.php:10` — `mx-auto max-w-3xl p-4`
+- `resources/views/public/timesheet-sign.blade.php:11` — `mb-4 rounded-box bg-base-100 p-4 shadow`
+- `resources/views/public/timesheet-sign.blade.php:12` — `Stundenzettel signieren`
+- `resources/views/public/timesheet-sign.blade.php:18` — `mb-4 rounded-box bg-base-100 p-4 shadow`
+- `resources/views/public/timesheet-sign.blade.php:19` — `table table-sm`
+- `resources/views/public/timesheet-sign.blade.php:20` — `text-right`
+- `resources/views/public/timesheet-sign.blade.php:26` — `text-right`
+- `resources/views/public/timesheet-sign.blade.php:34` — `mt-3 text-sm font-semibold`
+- `resources/views/public/timesheet-sign.blade.php:34` — `Material`
+- `resources/views/public/timesheet-sign.blade.php:35` — `table table-sm`
+- `resources/views/public/timesheet-sign.blade.php:36` — `text-right`
+- `resources/views/public/timesheet-sign.blade.php:36` — `text-right`
+- `resources/views/public/timesheet-sign.blade.php:41` — `text-right`
+- `resources/views/public/timesheet-sign.blade.php:43` — `text-right`
+- `resources/views/public/timesheet-sign.blade.php:51` — `timesheets.public-sign.submit`
+- `resources/views/public/timesheet-sign.blade.php:52` — `rounded-box bg-base-100 p-4 shadow`
+- `resources/views/public/timesheet-sign.blade.php:53` — `action`
+- `resources/views/public/timesheet-sign.blade.php:53` — `timesheets.public-sign.submit`
+- `resources/views/public/timesheet-sign.blade.php:53` — `timesheet`
+- `resources/views/public/timesheet-thanks.blade.php:2` — `light`
+- `resources/views/public/timesheet-thanks.blade.php:4` — `utf-8`
+- `resources/views/public/timesheet-thanks.blade.php:5` — `Vielen Dank`
+- `resources/views/public/timesheet-thanks.blade.php:8` — `grid min-h-screen place-items-center bg-base-200 p-6`
+- `resources/views/public/timesheet-thanks.blade.php:9` — `rounded-box bg-base-100 p-8 text-center shadow`
+- `resources/views/public/timesheet-thanks.blade.php:10` — `Vielen Dank!`
+- `resources/views/public/timesheet-thanks.blade.php:11` — `Ihre Unterschrift wurde erfasst.`
+- `resources/views/auth/login.blade.php:4` — `utf-8`
+- `resources/views/auth/login.blade.php:5` — `viewport`
+- `resources/views/auth/login.blade.php:8` — `workDiaryTheme`
+- `resources/views/auth/login.blade.php:10` — `corporate`
+- `resources/views/auth/login.blade.php:12` — `data-theme`
+- `resources/views/auth/login.blade.php:13` — `corporate' ? 'light`
+- `resources/views/auth/login.blade.php:13` — `dark`
+- `resources/views/auth/login.blade.php:16` — `Anmelden`
+- `resources/views/auth/login.blade.php:16` — `app.name', 'WorkDiary`
+- `resources/views/auth/login.blade.php:17` — `preconnect`
+- `resources/views/auth/login.blade.php:18` — `stylesheet`
+- `resources/views/auth/login.blade.php:23` — `IBM Plex Sans`
+- `resources/views/auth/login.blade.php:29` — `min-h-screen bg-primary-content text-base-content`
+- `resources/views/auth/login.blade.php:30` — `fixed inset-x-0 top-0 z-50 border-b border-base-300 bg-base-100 shadow-xs`
+- `resources/views/auth/login.blade.php:32` — `home`
+- `resources/views/auth/login.blade.php:34` — `button`
+- `resources/views/auth/login.blade.php:34` — `Farbschema wechseln`
+- `resources/views/auth/login.blade.php:34` — `Farbschema wechseln`
+- `resources/views/auth/login.blade.php:34` — `btn btn-sm btn-ghost btn-square`
+- `resources/views/auth/login.blade.php:35` — `text-base leading-none`
+- `resources/views/auth/login.blade.php:37` — `home`
+- `resources/views/auth/login.blade.php:37` — `btn btn-sm btn-ghost`
+- `resources/views/auth/login.blade.php:43` — `w-full max-w-md`
+- `resources/views/auth/login.blade.php:44` — `mb-8 text-center`
+- `resources/views/auth/login.blade.php:45` — `home`
+- `resources/views/auth/login.blade.php:45` — `inline-block`
+- `resources/views/auth/login.blade.php:47` — `Anmelden`
+- `resources/views/auth/login.blade.php:49` — `Benutzerdaten aus dem bestehenden Tagebuch-System.`
+- `resources/views/auth/login.blade.php:52` — `rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs`
+- `resources/views/auth/login.blade.php:53` — `login`
+- `resources/views/auth/login.blade.php:53` — `space-y-5`
+- `resources/views/auth/login.blade.php:57` — `username`
+- `resources/views/auth/login.blade.php:57` — `mb-2 block text-sm font-medium text-base-content`
+- `resources/views/auth/login.blade.php:57` — `Benutzername`
+- `resources/views/auth/login.blade.php:59` — `username`
+- `resources/views/auth/login.blade.php:60` — `username`
+- `resources/views/auth/login.blade.php:61` — `text`
+- `resources/views/auth/login.blade.php:62` — `username`
+- `resources/views/auth/login.blade.php:63` — `username`
+- `resources/views/auth/login.blade.php:65` — `username`
+- `resources/views/auth/login.blade.php:66` — `Benutzername`
+- `resources/views/auth/login.blade.php:68` — `username`
+- `resources/views/auth/login.blade.php:69` — `mt-2 text-sm text-error`
+- `resources/views/auth/login.blade.php:74` — `password`
+- `resources/views/auth/login.blade.php:74` — `mb-2 block text-sm font-medium text-base-content`
+- `resources/views/auth/login.blade.php:74` — `Passwort`
+- `resources/views/auth/login.blade.php:76` — `password`
+- `resources/views/auth/login.blade.php:77` — `password`
+- `resources/views/auth/login.blade.php:78` — `password`
+- `resources/views/auth/login.blade.php:79` — `current-password`
+- `resources/views/auth/login.blade.php:81` — `Passwort`
+- `resources/views/auth/login.blade.php:85` — `flex items-center gap-3`
+- `resources/views/auth/login.blade.php:87` — `remember`
+- `resources/views/auth/login.blade.php:88` — `remember`
+- `resources/views/auth/login.blade.php:89` — `checkbox`
+- `resources/views/auth/login.blade.php:90` — `checkbox checkbox-primary checkbox-sm`
+- `resources/views/auth/login.blade.php:92` — `remember`
+- `resources/views/auth/login.blade.php:92` — `Angemeldet bleiben`
+- `resources/views/auth/login.blade.php:96` — `submit`
+- `resources/views/auth/login.blade.php:105` — `home`
+- `resources/views/auth/login.blade.php:109` — `Noch kein Account?`
+- `resources/views/auth/login.blade.php:110` — `register`
+- `resources/views/auth/login.blade.php:110` — `Organisation registrieren`
+- `resources/views/auth/login.blade.php:116` — `fixed inset-x-0 bottom-0 z-50 border-t border-base-300 bg-base-100 shadow-xs`
+- `resources/views/auth/login.blade.php:128` — `data-theme`
+- `resources/views/auth/login.blade.php:129` — `corporate' ? 'light`
+- `resources/views/auth/login.blade.php:129` — `dark`
+- `resources/views/auth/login.blade.php:130` — `workDiaryTheme`
+- `resources/views/auth/login.blade.php:132` — `corporate' ? `
+- `resources/views/auth/login.blade.php:136` — `data-theme`
+- `resources/views/auth/login.blade.php:136` — `corporate' ? 'corporate`
+- `resources/views/auth/login.blade.php:140` — `click`
+- `resources/views/auth/login.blade.php:141` — `data-theme`
+- `resources/views/auth/login.blade.php:141` — `corporate' ? 'dim`
+- `resources/views/auth/login.blade.php:141` — `corporate`
+- `resources/views/auth/register.blade.php:4` — `utf-8`
+- `resources/views/auth/register.blade.php:5` — `viewport`
+- `resources/views/auth/register.blade.php:8` — `workDiaryTheme`
+- `resources/views/auth/register.blade.php:10` — `corporate`
+- `resources/views/auth/register.blade.php:12` — `data-theme`
+- `resources/views/auth/register.blade.php:13` — `corporate' ? 'light`
+- `resources/views/auth/register.blade.php:13` — `dark`
+- `resources/views/auth/register.blade.php:16` — `Registrieren`
+- `resources/views/auth/register.blade.php:16` — `app.name', 'WorkDiary`
+- `resources/views/auth/register.blade.php:17` — `preconnect`
+- `resources/views/auth/register.blade.php:18` — `stylesheet`
+- `resources/views/auth/register.blade.php:23` — `IBM Plex Sans`
+- `resources/views/auth/register.blade.php:29` — `min-h-screen bg-primary-content text-base-content`
+- `resources/views/auth/register.blade.php:30` — `fixed inset-x-0 top-0 z-50 border-b border-base-300 bg-base-100 shadow-xs`
+- `resources/views/auth/register.blade.php:32` — `home`
+- `resources/views/auth/register.blade.php:34` — `button`
+- `resources/views/auth/register.blade.php:34` — `Farbschema wechseln`
+- `resources/views/auth/register.blade.php:34` — `Farbschema wechseln`
+- `resources/views/auth/register.blade.php:34` — `btn btn-sm btn-ghost btn-square`
+- `resources/views/auth/register.blade.php:35` — `text-base leading-none`
+- `resources/views/auth/register.blade.php:37` — `login`
+- `resources/views/auth/register.blade.php:37` — `btn btn-sm btn-ghost`
+- `resources/views/auth/register.blade.php:37` — `Anmelden`
+- `resources/views/auth/register.blade.php:43` — `w-full max-w-md`
+- `resources/views/auth/register.blade.php:44` — `mb-8 text-center`
+- `resources/views/auth/register.blade.php:45` — `home`
+- `resources/views/auth/register.blade.php:45` — `inline-block`
+- `resources/views/auth/register.blade.php:47` — `Organisation registrieren`
+- `resources/views/auth/register.blade.php:49` — `Legen Sie Ihre Organisation und Ihren Administrator-Account an.`
+- `resources/views/auth/register.blade.php:52` — `rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs`
+- `resources/views/auth/register.blade.php:53` — `register`
+- `resources/views/auth/register.blade.php:53` — `space-y-5`
+- `resources/views/auth/register.blade.php:58` — `Organisation`
+- `resources/views/auth/register.blade.php:59` — `mb-2 block text-sm font-medium text-base-content`
+- `resources/views/auth/register.blade.php:59` — `Name der Organisation`
+- `resources/views/auth/register.blade.php:63` — `text`
+- `resources/views/auth/register.blade.php:65` — `organization`
+- `resources/views/auth/register.blade.php:68` — `z. B. Klimatechnik Mustermann GmbH`
+- `resources/views/auth/register.blade.php:71` — `mt-2 text-sm text-error`
+- `resources/views/auth/register.blade.php:75` — `Administrator-Account`
+- `resources/views/auth/register.blade.php:79` — `name`
+- `resources/views/auth/register.blade.php:79` — `mb-2 block text-sm font-medium text-base-content`
+- `resources/views/auth/register.blade.php:79` — `Vollständiger Name`
+- `resources/views/auth/register.blade.php:81` — `name`
+- `resources/views/auth/register.blade.php:82` — `name`
+- `resources/views/auth/register.blade.php:83` — `text`
+- `resources/views/auth/register.blade.php:84` — `name`
+- `resources/views/auth/register.blade.php:85` — `name`
+- `resources/views/auth/register.blade.php:86` — `name`
+- `resources/views/auth/register.blade.php:87` — `Max Mustermann`
+- `resources/views/auth/register.blade.php:89` — `name`
+- `resources/views/auth/register.blade.php:90` — `mt-2 text-sm text-error`
+- `resources/views/auth/register.blade.php:96` — `email`
+- `resources/views/auth/register.blade.php:96` — `mb-2 block text-sm font-medium text-base-content`
+- `resources/views/auth/register.blade.php:96` — `E-Mail-Adresse`
+- `resources/views/auth/register.blade.php:98` — `email`
+- `resources/views/auth/register.blade.php:99` — `email`
+- `resources/views/auth/register.blade.php:100` — `email`
+- `resources/views/auth/register.blade.php:101` — `email`
+- `resources/views/auth/register.blade.php:102` — `email`
+- `resources/views/auth/register.blade.php:103` — `email`
+- `resources/views/auth/register.blade.php:106` — `email`
+- `resources/views/auth/register.blade.php:107` — `mt-2 text-sm text-error`
+- `resources/views/auth/register.blade.php:113` — `password`
+- `resources/views/auth/register.blade.php:113` — `mb-2 block text-sm font-medium text-base-content`
+- `resources/views/auth/register.blade.php:113` — `Passwort`
+- `resources/views/auth/register.blade.php:115` — `password`
+- `resources/views/auth/register.blade.php:116` — `password`
+- `resources/views/auth/register.blade.php:117` — `password`
+- `resources/views/auth/register.blade.php:118` — `new-password`
+- `resources/views/auth/register.blade.php:119` — `password`
+- `resources/views/auth/register.blade.php:120` — `Mindestens 8 Zeichen`
+- `resources/views/auth/register.blade.php:122` — `password`
+- `resources/views/auth/register.blade.php:123` — `mt-2 text-sm text-error`
+- `resources/views/auth/register.blade.php:129` — `mb-2 block text-sm font-medium text-base-content`
+- `resources/views/auth/register.blade.php:129` — `Passwort bestätigen`
+- `resources/views/auth/register.blade.php:133` — `password`
+- `resources/views/auth/register.blade.php:134` — `new-password`
+- `resources/views/auth/register.blade.php:136` — `Passwort wiederholen`
+- `resources/views/auth/register.blade.php:141` — `submit`
+- `resources/views/auth/register.blade.php:144` — `Organisation anlegen`
+- `resources/views/auth/register.blade.php:150` — `Bereits registriert?`
+- `resources/views/auth/register.blade.php:151` — `login`
+- `resources/views/auth/register.blade.php:151` — `Anmelden`
+- `resources/views/auth/register.blade.php:156` — `fixed inset-x-0 bottom-0 z-50 border-t border-base-300 bg-base-100 shadow-xs`
+- `resources/views/auth/register.blade.php:167` — `data-theme`
+- `resources/views/auth/register.blade.php:168` — `corporate' ? `
+- `resources/views/auth/register.blade.php:171` — `click`
+- `resources/views/auth/register.blade.php:172` — `data-theme`
+- `resources/views/auth/register.blade.php:173` — `dim' ? 'corporate`
+- `resources/views/auth/register.blade.php:174` — `data-theme`
+- `resources/views/auth/register.blade.php:175` — `corporate' ? 'light`
+- `resources/views/auth/register.blade.php:175` — `dark`
+- `resources/views/auth/register.blade.php:176` — `corporate' ? `
+- `resources/views/auth/register.blade.php:177` — `workDiaryTheme`
+- `resources/views/tours/edit.blade.php:3` — `title`
+- `resources/views/tours/edit.blade.php:3` — `Tour bearbeiten`
+- `resources/views/tours/edit.blade.php:5` — `content`
+- `resources/views/tours/edit.blade.php:10` — `label`
+- `resources/views/tours/edit.blade.php:10` — `Start`
+- `resources/views/tours/edit.blade.php:14` — `label`
+- `resources/views/tours/edit.blade.php:18` — `label`
+- `resources/views/tours/edit.blade.php:18` — `Ziel`
+- `resources/views/tours/edit.blade.php:24` — `space-y-4`
+- `resources/views/tours/edit.blade.php:25` — `flex flex-wrap items-center justify-between gap-3`
+- `resources/views/tours/edit.blade.php:27` — `text-xl font-semibold`
+- `resources/views/tours/edit.blade.php:28` — `Tour`
+- `resources/views/tours/edit.blade.php:32` — `badge badge-ghost badge-sm`
+- `resources/views/tours/edit.blade.php:37` — `flex flex-wrap gap-2`
+- `resources/views/tours/edit.blade.php:40` — `btn btn-sm`
+- `resources/views/tours/edit.blade.php:40` — `Optimieren`
+- `resources/views/tours/edit.blade.php:42` — `btn btn-sm btn-ghost`
+- `resources/views/tours/edit.blade.php:42` — `Ansicht`
+- `resources/views/tours/edit.blade.php:48` — `space-y-4 rounded-box border border-base-300 bg-base-100 p-4`
+- `resources/views/tours/edit.blade.php:51` — `hidden`
+- `resources/views/tours/edit.blade.php:52` — `hidden`
+- `resources/views/tours/edit.blade.php:55` — `form-control`
+- `resources/views/tours/edit.blade.php:56` — `label-text`
+- `resources/views/tours/edit.blade.php:56` — `Fahrzeug`
+- `resources/views/tours/edit.blade.php:57` — `select select-bordered select-sm`
+- `resources/views/tours/edit.blade.php:64` — `form-control`
+- `resources/views/tours/edit.blade.php:65` — `label-text`
+- `resources/views/tours/edit.blade.php:65` — `Status`
+- `resources/views/tours/edit.blade.php:66` — `status`
+- `resources/views/tours/edit.blade.php:66` — `select select-bordered select-sm`
+- `resources/views/tours/edit.blade.php:73` — `label-text`
+- `resources/views/tours/edit.blade.php:73` — `Name`
+- `resources/views/tours/edit.blade.php:74` — `text`
+- `resources/views/tours/edit.blade.php:74` — `name`
+- `resources/views/tours/edit.blade.php:74` — `input input-bordered input-sm`
+- `resources/views/tours/edit.blade.php:79` — `px-1 text-sm font-medium`
+- `resources/views/tours/edit.blade.php:79` — `Start`
+- `resources/views/tours/edit.blade.php:81` — `label-text`
+- `resources/views/tours/edit.blade.php:81` — `Adresse`
+- `resources/views/tours/edit.blade.php:82` — `text`
+- `resources/views/tours/edit.blade.php:82` — `input input-bordered input-sm`
+- `resources/views/tours/edit.blade.php:84` — `form-control`
+- `resources/views/tours/edit.blade.php:85` — `label-text`
+- `resources/views/tours/edit.blade.php:86` — `number`
+- `resources/views/tours/edit.blade.php:86` — `input input-bordered input-sm`
+- `resources/views/tours/edit.blade.php:88` — `form-control`
+- `resources/views/tours/edit.blade.php:89` — `label-text`
+- `resources/views/tours/edit.blade.php:90` — `number`
+- `resources/views/tours/edit.blade.php:90` — `input input-bordered input-sm`
+- `resources/views/tours/edit.blade.php:95` — `px-1 text-sm font-medium`
+- `resources/views/tours/edit.blade.php:95` — `Ziel`
+- `resources/views/tours/edit.blade.php:97` — `label-text`
+- `resources/views/tours/edit.blade.php:97` — `Adresse`
+- `resources/views/tours/edit.blade.php:98` — `text`
+- `resources/views/tours/edit.blade.php:98` — `input input-bordered input-sm`
+- `resources/views/tours/edit.blade.php:100` — `form-control`
+- `resources/views/tours/edit.blade.php:101` — `label-text`
+- `resources/views/tours/edit.blade.php:102` — `number`
+- `resources/views/tours/edit.blade.php:102` — `input input-bordered input-sm`
+- `resources/views/tours/edit.blade.php:104` — `form-control`
+- `resources/views/tours/edit.blade.php:105` — `label-text`
+- `resources/views/tours/edit.blade.php:106` — `number`
+- `resources/views/tours/edit.blade.php:106` — `input input-bordered input-sm`
+- `resources/views/tours/edit.blade.php:110` — `rounded-box border border-base-300 p-3`
+- `resources/views/tours/edit.blade.php:111` — `px-1 text-sm font-medium`
+- `resources/views/tours/edit.blade.php:111` — `Stopps`
+- `resources/views/tours/edit.blade.php:113` — `space-y-1`
+- `resources/views/tours/edit.blade.php:115` — `flex items-center gap-2 rounded-box border border-base-200 p-2`
+- `resources/views/tours/edit.blade.php:116` — `number`
+- `resources/views/tours/edit.blade.php:118` — `hidden`
+- `resources/views/tours/edit.blade.php:119` — `badge badge-primary badge-sm`
+- `resources/views/tours/edit.blade.php:120` — `flex-1`
+- `resources/views/tours/edit.blade.php:121` — `font-medium text-sm`
+- `resources/views/tours/edit.blade.php:128` — `Noch keine Stopps zugewiesen.`
+- `resources/views/tours/edit.blade.php:132` — `flex justify-end gap-2`
+- `resources/views/tours/edit.blade.php:133` — `btn btn-sm btn-ghost`
+- `resources/views/tours/edit.blade.php:133` — `Schließen`
+- `resources/views/tours/edit.blade.php:134` — `submit`
+- `resources/views/tours/edit.blade.php:134` — `btn btn-sm btn-primary`
+- `resources/views/tours/edit.blade.php:134` — `Speichern`
+- `resources/views/tours/edit.blade.php:138` — `space-y-4`
+- `resources/views/tours/edit.blade.php:143` — `rounded-box border border-base-300 bg-base-100 p-4`
+- `resources/views/tours/edit.blade.php:144` — `mb-2 text-sm font-medium`
+- `resources/views/tours/edit.blade.php:144` — `Verfügbare Aufträge`
+- `resources/views/tours/edit.blade.php:146` — `Keine offenen Aufträge für dieses Datum.`
+- `resources/views/tours/edit.blade.php:151` — `hidden`
+- `resources/views/tours/edit.blade.php:152` — `hidden`
+- `resources/views/tours/edit.blade.php:154` — `hidden`
+- `resources/views/tours/edit.blade.php:156` — `space-y-1`
+- `resources/views/tours/edit.blade.php:158` — `flex items-center gap-2 rounded-box border border-base-200 p-2`
+- `resources/views/tours/edit.blade.php:159` — `checkbox`
+- `resources/views/tours/edit.blade.php:159` — `checkbox checkbox-sm`
+- `resources/views/tours/edit.blade.php:160` — `flex-1`
+- `resources/views/tours/edit.blade.php:161` — `text-sm`
+- `resources/views/tours/edit.blade.php:167` — `mt-3 flex justify-end`
+- `resources/views/tours/edit.blade.php:168` — `btn btn-xs`
+- `resources/views/tours/edit.blade.php:168` — `Auswahl übernehmen`
+- `resources/views/tours/index.blade.php:3` — `title`
+- `resources/views/tours/index.blade.php:3` — `Touren`
+- `resources/views/tours/index.blade.php:5` — `content`
+- `resources/views/tours/index.blade.php:6` — `space-y-4`
+- `resources/views/tours/index.blade.php:7` — `flex flex-wrap items-center justify-between gap-3`
+- `resources/views/tours/index.blade.php:9` — `text-xl font-semibold`
+- `resources/views/tours/index.blade.php:9` — `Touren`
+- `resources/views/tours/index.blade.php:14` — `btn btn-sm btn-primary`
+- `resources/views/tours/index.blade.php:15` — `Neue Tour`
+- `resources/views/tours/index.blade.php:19` — `flex flex-wrap items-end gap-2 rounded-box border border-base-300 bg-base-100 p-3`
+- `resources/views/tours/index.blade.php:21` — `label-text`
+- `resources/views/tours/index.blade.php:21` — `Status`
+- `resources/views/tours/index.blade.php:22` — `status`
+- `resources/views/tours/index.blade.php:22` — `select select-bordered select-sm`
+- `resources/views/tours/index.blade.php:23` — `alle`
+- `resources/views/tours/index.blade.php:31` — `label-text`
+- `resources/views/tours/index.blade.php:31` — `Fahrer`
+- `resources/views/tours/index.blade.php:32` — `user`
+- `resources/views/tours/index.blade.php:32` — `select select-bordered select-sm`
+- `resources/views/tours/index.blade.php:33` — `alle`
+- `resources/views/tours/index.blade.php:40` — `btn btn-sm`
+- `resources/views/tours/index.blade.php:40` — `Filtern`
+- `resources/views/tours/index.blade.php:43` — `overflow-x-auto rounded-box border border-base-300 bg-base-100`
+- `resources/views/tours/index.blade.php:44` — `table table-sm`
+- `resources/views/tours/index.blade.php:47` — `Datum`
+- `resources/views/tours/index.blade.php:48` — `Fahrer`
+- `resources/views/tours/index.blade.php:49` — `Fahrzeug`
+- `resources/views/tours/index.blade.php:50` — `Name`
+- `resources/views/tours/index.blade.php:51` — `text-right`
+- `resources/views/tours/index.blade.php:52` — `text-right`
+- `resources/views/tours/index.blade.php:53` — `Status`
+- `resources/views/tours/index.blade.php:64` — `link`
+- `resources/views/tours/index.blade.php:68` — `text-right`
+- `resources/views/tours/index.blade.php:69` — `text-right`
+- `resources/views/tours/index.blade.php:70` — `badge badge-ghost badge-sm`
+- `resources/views/tours/index.blade.php:71` — `text-right`
+- `resources/views/tours/index.blade.php:72` — `btn btn-xs btn-ghost`
+- `resources/views/tours/index.blade.php:72` — `Bearbeiten`
+- `resources/views/tours/index.blade.php:73` — `inline`
+- `resources/views/tours/index.blade.php:75` — `Tour wirklich löschen?`
+- `resources/views/tours/index.blade.php:76` — `Löschen`
+- `resources/views/tours/index.blade.php:78` — `submit`
+- `resources/views/tours/index.blade.php:78` — `btn btn-xs btn-ghost text-error`
+- `resources/views/tours/index.blade.php:78` — `Löschen`
+- `resources/views/tours/index.blade.php:83` — `Keine Touren im gewählten Zeitraum.`
+- `resources/views/tours/_form_body.blade.php:4` — `Stammdaten`
+- `resources/views/tours/_form_body.blade.php:4` — `primary`
+- `resources/views/tours/_form_body.blade.php:5` — `fieldset`
+- `resources/views/tours/_form_body.blade.php:6` — `fieldset-label`
+- `resources/views/tours/_form_body.blade.php:6` — `Datum`
+- `resources/views/tours/_form_body.blade.php:7` — `date`
+- `resources/views/tours/_form_body.blade.php:8` — `input input-bordered w-full`
+- `resources/views/tours/_form_body.blade.php:10` — `fieldset`
+- `resources/views/tours/_form_body.blade.php:11` — `fieldset-label`
+- `resources/views/tours/_form_body.blade.php:11` — `Fahrer`
+- `resources/views/tours/_form_body.blade.php:12` — `select select-bordered w-full`
+- `resources/views/tours/_form_body.blade.php:18` — `fieldset`
+- `resources/views/tours/_form_body.blade.php:19` — `fieldset-label`
+- `resources/views/tours/_form_body.blade.php:19` — `Fahrzeug`
+- `resources/views/tours/_form_body.blade.php:20` — `select select-bordered w-full`
+- `resources/views/tours/_form_body.blade.php:27` — `fieldset`
+- `resources/views/tours/_form_body.blade.php:28` — `fieldset-label`
+- `resources/views/tours/_form_body.blade.php:28` — `Name`
+- `resources/views/tours/_form_body.blade.php:29` — `text`
+- `resources/views/tours/_form_body.blade.php:29` — `name`
+- `resources/views/tours/_form_body.blade.php:30` — `name`
+- `resources/views/tours/_form_body.blade.php:31` — `input input-bordered w-full`
+- `resources/views/tours/_form_body.blade.php:36` — `alert alert-error text-sm`
+- `resources/views/tours/_form_body.blade.php:37` — `list-disc pl-5`
+- `resources/views/tours/_form_dialog.blade.php:7` — `Neue Tour`
+- `resources/views/tours/_form_dialog.blade.php:8` — `Touren`
+- `resources/views/tours/_form_dialog.blade.php:10` — `primary`
+- `resources/views/tours/_form_dialog.blade.php:13` — `data-entry-form`
+- `resources/views/tours/_form_dialog.blade.php:14` — `Anlegen`
+- `resources/views/tours/show.blade.php:3` — `title`
+- `resources/views/tours/show.blade.php:3` — `Tour`
+- `resources/views/tours/show.blade.php:5` — `content`
+- `resources/views/tours/show.blade.php:10` — `label`
+- `resources/views/tours/show.blade.php:10` — `Start`
+- `resources/views/tours/show.blade.php:14` — `label`
+- `resources/views/tours/show.blade.php:18` — `label`
+- `resources/views/tours/show.blade.php:18` — `Ziel`
+- `resources/views/tours/show.blade.php:24` — `space-y-4`
+- `resources/views/tours/show.blade.php:25` — `flex flex-wrap items-center justify-between gap-3`
+- `resources/views/tours/show.blade.php:27` — `text-xl font-semibold`
+- `resources/views/tours/show.blade.php:27` — `Tour`
+- `resources/views/tours/show.blade.php:31` — `text-sm`
+- `resources/views/tours/show.blade.php:32` — `badge badge-ghost badge-sm`
+- `resources/views/tours/show.blade.php:37` — `flex flex-wrap gap-2`
+- `resources/views/tours/show.blade.php:38` — `btn btn-sm`
+- `resources/views/tours/show.blade.php:38` — `Bearbeiten`
+- `resources/views/tours/show.blade.php:39` — `draft', 'planned`
+- `resources/views/tours/show.blade.php:42` — `btn btn-sm btn-primary`
+- `resources/views/tours/show.blade.php:42` — `Starten`
+- `resources/views/tours/show.blade.php:45` — `planned', `
+- `resources/views/tours/show.blade.php:48` — `btn btn-sm btn-success`
+- `resources/views/tours/show.blade.php:48` — `Abschließen`
+- `resources/views/tours/show.blade.php:51` — `completed`
+- `resources/views/tours/show.blade.php:53` — `Stopps als Fahrten ins Fahrtenbuch übernehmen?`
+- `resources/views/tours/show.blade.php:55` — `btn btn-sm btn-ghost`
+- `resources/views/tours/show.blade.php:55` — `Als Fahrten übernehmen`
+- `resources/views/tours/show.blade.php:62` — `rounded-box border border-base-300 bg-base-100`
+- `resources/views/tours/show.blade.php:63` — `table table-sm`
+- `resources/views/tours/show.blade.php:67` — `Auftrag`
+- `resources/views/tours/show.blade.php:68` — `Kunde`
+- `resources/views/tours/show.blade.php:70` — `Status`
+- `resources/views/tours/show.blade.php:77` — `service-orders.show`
+- `resources/views/tours/show.blade.php:77` — `link`
+- `resources/views/tours/show.blade.php:80` — `badge badge-ghost badge-xs`
+- `resources/views/tours/show.blade.php:83` — `Keine Stopps zugewiesen.`
+- `resources/views/tours/show.blade.php:95` — `rounded-box border border-base-300 bg-base-100 p-4`
+- `resources/views/tours/show.blade.php:96` — `mb-2 text-sm font-medium`
+- `resources/views/tours/show.blade.php:96` — `Notizen`
+- `resources/views/tours/show.blade.php:97` — `whitespace-pre-line text-sm`
+- `resources/views/archive/index.blade.php:2` — `title`
+- `resources/views/archive/index.blade.php:2` — `Archiv`
+- `resources/views/archive/index.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/archive/index.blade.php:3` — `nav-title`
+- `resources/views/archive/index.blade.php:3` — `Archiv`
+- `resources/views/archive/index.blade.php:5` — `content`
+- `resources/views/archive/index.blade.php:15` — `diary`
+- `resources/views/archive/index.blade.php:15` — `label`
+- `resources/views/archive/index.blade.php:15` — `Aufträge`
+- `resources/views/archive/index.blade.php:15` — `count`
+- `resources/views/archive/index.blade.php:15` — `diary`
+- `resources/views/archive/index.blade.php:16` — `bereitschaft`
+- `resources/views/archive/index.blade.php:16` — `label`
+- `resources/views/archive/index.blade.php:16` — `Bereitschaft`
+- `resources/views/archive/index.blade.php:16` — `count`
+- `resources/views/archive/index.blade.php:16` — `bereitschaft`
+- `resources/views/archive/index.blade.php:17` — `notdienst`
+- `resources/views/archive/index.blade.php:17` — `label`
+- `resources/views/archive/index.blade.php:17` — `Notdienst`
+- `resources/views/archive/index.blade.php:17` — `count`
+- `resources/views/archive/index.blade.php:17` — `notdienst`
+- `resources/views/archive/index.blade.php:18` — `urlaub`
+- `resources/views/archive/index.blade.php:18` — `label`
+- `resources/views/archive/index.blade.php:18` — `Urlaub`
+- `resources/views/archive/index.blade.php:18` — `count`
+- `resources/views/archive/index.blade.php:18` — `urlaub`
+- `resources/views/archive/index.blade.php:22` — `from`
+- `resources/views/archive/index.blade.php:22` — `status`
+- `resources/views/archive/index.blade.php:23` — `from`
+- `resources/views/archive/index.blade.php:29` — `diary`
+- `resources/views/archive/index.blade.php:31` — `label`
+- `resources/views/archive/index.blade.php:31` — `Gesamt`
+- `resources/views/archive/index.blade.php:31` — `value`
+- `resources/views/archive/index.blade.php:31` — `total`
+- `resources/views/archive/index.blade.php:31` — `border`
+- `resources/views/archive/index.blade.php:31` — `border-base-300',    'href`
+- `resources/views/archive/index.blade.php:31` — `active`
+- `resources/views/archive/index.blade.php:32` — `label`
+- `resources/views/archive/index.blade.php:32` — `Erledigt`
+- `resources/views/archive/index.blade.php:32` — `value`
+- `resources/views/archive/index.blade.php:32` — `erledigt`
+- `resources/views/archive/index.blade.php:32` — `border`
+- `resources/views/archive/index.blade.php:32` — `href`
+- `resources/views/archive/index.blade.php:32` — `status`
+- `resources/views/archive/index.blade.php:32` — `active`
+- `resources/views/archive/index.blade.php:33` — `label`
+- `resources/views/archive/index.blade.php:33` — `Offen`
+- `resources/views/archive/index.blade.php:33` — `value`
+- `resources/views/archive/index.blade.php:33` — `offen`
+- `resources/views/archive/index.blade.php:33` — `border`
+- `resources/views/archive/index.blade.php:33` — `href`
+- `resources/views/archive/index.blade.php:33` — `status`
+- `resources/views/archive/index.blade.php:33` — `active`
+- `resources/views/archive/index.blade.php:34` — `label`
+- `resources/views/archive/index.blade.php:34` — `Mit Eskalation`
+- `resources/views/archive/index.blade.php:34` — `value`
+- `resources/views/archive/index.blade.php:34` — `alert`
+- `resources/views/archive/index.blade.php:34` — `border`
+- `resources/views/archive/index.blade.php:34` — `href`
+- `resources/views/archive/index.blade.php:34` — `status`
+- `resources/views/archive/index.blade.php:34` — `active`
+- `resources/views/archive/index.blade.php:36` — `urlaub`
+- `resources/views/archive/index.blade.php:38` — `label`
+- `resources/views/archive/index.blade.php:38` — `Gesamt`
+- `resources/views/archive/index.blade.php:38` — `value`
+- `resources/views/archive/index.blade.php:38` — `total`
+- `resources/views/archive/index.blade.php:38` — `border`
+- `resources/views/archive/index.blade.php:38` — `border-base-300',   'href`
+- `resources/views/archive/index.blade.php:38` — `active`
+- `resources/views/archive/index.blade.php:39` — `label`
+- `resources/views/archive/index.blade.php:39` — `Abgelehnt`
+- `resources/views/archive/index.blade.php:39` — `value`
+- `resources/views/archive/index.blade.php:39` — `rejected`
+- `resources/views/archive/index.blade.php:39` — `border`
+- `resources/views/archive/index.blade.php:39` — `href`
+- `resources/views/archive/index.blade.php:39` — `active`
+- `resources/views/archive/index.blade.php:40` — `label`
+- `resources/views/archive/index.blade.php:40` — `Storniert`
+- `resources/views/archive/index.blade.php:40` — `value`
+- `resources/views/archive/index.blade.php:40` — `cancelled`
+- `resources/views/archive/index.blade.php:40` — `border`
+- `resources/views/archive/index.blade.php:40` — `href`
+- `resources/views/archive/index.blade.php:40` — `active`
+- `resources/views/archive/index.blade.php:41` — `label`
+- `resources/views/archive/index.blade.php:41` — `Abgelaufen`
+- `resources/views/archive/index.blade.php:41` — `value`
+- `resources/views/archive/index.blade.php:41` — `expired`
+- `resources/views/archive/index.blade.php:41` — `border`
+- `resources/views/archive/index.blade.php:41` — `href`
+- `resources/views/archive/index.blade.php:41` — `active`
+- `resources/views/archive/index.blade.php:44` — `label`
+- `resources/views/archive/index.blade.php:44` — `Gesamt`
+- `resources/views/archive/index.blade.php:44` — `value`
+- `resources/views/archive/index.blade.php:44` — `total`
+- `resources/views/archive/index.blade.php:44` — `border`
+- `resources/views/archive/index.blade.php:44` — `border-base-300',     'href`
+- `resources/views/archive/index.blade.php:44` — `active`
+- `resources/views/archive/index.blade.php:45` — `label`
+- `resources/views/archive/index.blade.php:45` — `value`
+- `resources/views/archive/index.blade.php:45` — `longest`
+- `resources/views/archive/index.blade.php:45` — `border`
+- `resources/views/archive/index.blade.php:45` — `href`
+- `resources/views/archive/index.blade.php:45` — `active`
+- `resources/views/archive/index.blade.php:46` — `label`
+- `resources/views/archive/index.blade.php:46` — `value`
+- `resources/views/archive/index.blade.php:46` — `border`
+- `resources/views/archive/index.blade.php:46` — `href`
+- `resources/views/archive/index.blade.php:46` — `active`
+- `resources/views/archive/index.blade.php:47` — `label`
+- `resources/views/archive/index.blade.php:47` — `Mitarbeiter`
+- `resources/views/archive/index.blade.php:47` — `value`
+- `resources/views/archive/index.blade.php:47` — `users`
+- `resources/views/archive/index.blade.php:47` — `border`
+- `resources/views/archive/index.blade.php:47` — `href`
+- `resources/views/archive/index.blade.php:47` — `active`
+- `resources/views/archive/index.blade.php:55` — `flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/archive/index.blade.php:56` — `badge badge-neutral`
+- `resources/views/archive/index.blade.php:56` — `Archiv`
+- `resources/views/archive/index.blade.php:57` — `diary`
+- `resources/views/archive/index.blade.php:57` — `diary', 'urlaub`
+- `resources/views/archive/index.blade.php:57` — `urlaub`
+- `resources/views/archive/index.blade.php:57` — `btn btn-sm btn-ghost gap-1`
+- `resources/views/archive/index.blade.php:58` — `Aktive Arbeitsliste`
+- `resources/views/archive/index.blade.php:63` — `tablist`
+- `resources/views/archive/index.blade.php:63` — `tabs tabs-box self-start`
+- `resources/views/archive/index.blade.php:67` — `tab-active`
+- `resources/views/archive/index.blade.php:68` — `label`
+- `resources/views/archive/index.blade.php:69` — `badge badge-sm ml-2`
+- `resources/views/archive/index.blade.php:69` — `count`
+- `resources/views/archive/index.blade.php:77` — `hidden`
+- `resources/views/archive/index.blade.php:78` — `flex flex-wrap items-end gap-3`
+- `resources/views/archive/index.blade.php:80` — `flex flex-1 flex-col min-w-44`
+- `resources/views/archive/index.blade.php:81` — `label py-1`
+- `resources/views/archive/index.blade.php:82` — `Mitarbeiter`
+- `resources/views/archive/index.blade.php:84` — `select select-bordered select-sm w-full`
+- `resources/views/archive/index.blade.php:85` — `Alle`
+- `resources/views/archive/index.blade.php:92` — `diary`
+- `resources/views/archive/index.blade.php:93` — `flex flex-1 flex-col min-w-44`
+- `resources/views/archive/index.blade.php:94` — `label py-1`
+- `resources/views/archive/index.blade.php:95` — `Status`
+- `resources/views/archive/index.blade.php:97` — `status`
+- `resources/views/archive/index.blade.php:97` — `select select-bordered select-sm w-full`
+- `resources/views/archive/index.blade.php:98` — `Alle`
+- `resources/views/archive/index.blade.php:99` — `Offen`
+- `resources/views/archive/index.blade.php:100` — `Problem`
+- `resources/views/archive/index.blade.php:101` — `Bestätigt`
+- `resources/views/archive/index.blade.php:102` — `Erledigt`
+- `resources/views/archive/index.blade.php:105` — `urlaub`
+- `resources/views/archive/index.blade.php:106` — `flex flex-1 flex-col min-w-40`
+- `resources/views/archive/index.blade.php:107` — `label py-1`
+- `resources/views/archive/index.blade.php:108` — `vtype`
+- `resources/views/archive/index.blade.php:108` — `select select-bordered select-sm w-full`
+- `resources/views/archive/index.blade.php:109` — `Alle Typen`
+- `resources/views/archive/index.blade.php:110` — `vtype`
+- `resources/views/archive/index.blade.php:110` — `Urlaub`
+- `resources/views/archive/index.blade.php:111` — `vtype`
+- `resources/views/archive/index.blade.php:111` — `Krank`
+- `resources/views/archive/index.blade.php:112` — `vtype`
+- `resources/views/archive/index.blade.php:112` — `Sonderurlaub`
+- `resources/views/archive/index.blade.php:113` — `vtype`
+- `resources/views/archive/index.blade.php:113` — `Unbezahlt`
+- `resources/views/archive/index.blade.php:116` — `flex flex-1 flex-col min-w-40`
+- `resources/views/archive/index.blade.php:117` — `label py-1`
+- `resources/views/archive/index.blade.php:117` — `Status`
+- `resources/views/archive/index.blade.php:118` — `vstatus`
+- `resources/views/archive/index.blade.php:118` — `select select-bordered select-sm w-full`
+- `resources/views/archive/index.blade.php:119` — `Alle Status`
+- `resources/views/archive/index.blade.php:120` — `vstatus`
+- `resources/views/archive/index.blade.php:120` — `Abgelehnt`
+- `resources/views/archive/index.blade.php:121` — `vstatus`
+- `resources/views/archive/index.blade.php:121` — `Storniert`
+- `resources/views/archive/index.blade.php:122` — `vstatus`
+- `resources/views/archive/index.blade.php:122` — `Abgelaufen`
+- `resources/views/archive/index.blade.php:126` — `ml-auto flex items-end gap-2`
+- `resources/views/archive/index.blade.php:127` — `submit`
+- `resources/views/archive/index.blade.php:127` — `btn btn-sm btn-primary`
+- `resources/views/archive/index.blade.php:127` — `Filtern`
+- `resources/views/archive/index.blade.php:129` — `btn btn-sm btn-ghost`
+- `resources/views/archive/index.blade.php:129` — `Zurücksetzen`
+- `resources/views/archive/index.blade.php:139` — `rounded-box border bg-base-100 px-4 py-3 shadow-xs `
+- `resources/views/archive/index.blade.php:139` — `border`
+- `resources/views/archive/index.blade.php:140` — `active`
+- `resources/views/archive/index.blade.php:142` — `href`
+- `resources/views/archive/index.blade.php:143` — `href`
+- `resources/views/archive/index.blade.php:145` — `label`
+- `resources/views/archive/index.blade.php:146` — `value`
+- `resources/views/archive/index.blade.php:150` — `label`
+- `resources/views/archive/index.blade.php:151` — `value`
+- `resources/views/archive/index.blade.php:158` — `flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/archive/index.blade.php:159` — `urlaub`
+- `resources/views/archive/index.blade.php:160` — `urlaub`
+- `resources/views/archive/index.blade.php:161` — `table table-sm table-zebra table-pin-rows`
+- `resources/views/archive/index.blade.php:162` — `bg-base-200`
+- `resources/views/archive/index.blade.php:165` — `w-32`
+- `resources/views/archive/index.blade.php:165` — `mitarbeiter`
+- `resources/views/archive/index.blade.php:165` — `desc'`
+- `resources/views/archive/index.blade.php:165` — `Mitarbeiter`
+- `resources/views/archive/index.blade.php:167` — `desc'`
+- `resources/views/archive/index.blade.php:168` — `w-28 whitespace-nowrap`
+- `resources/views/archive/index.blade.php:168` — `start`
+- `resources/views/archive/index.blade.php:168` — `desc'`
+- `resources/views/archive/index.blade.php:169` — `w-28 whitespace-nowrap`
+- `resources/views/archive/index.blade.php:169` — `desc'`
+- `resources/views/archive/index.blade.php:170` — `status`
+- `resources/views/archive/index.blade.php:170` — `desc'`
+- `resources/views/archive/index.blade.php:170` — `Status`
+- `resources/views/archive/index.blade.php:171` — `max-w-xs`
+- `resources/views/archive/index.blade.php:171` — `Notiz`
+- `resources/views/archive/index.blade.php:178` — `badge-success`
+- `resources/views/archive/index.blade.php:179` — `badge-error`
+- `resources/views/archive/index.blade.php:180` — `badge-ghost`
+- `resources/views/archive/index.blade.php:181` — `badge-neutral`
+- `resources/views/archive/index.blade.php:184` — `Abgelaufen`
+- `resources/views/archive/index.blade.php:185` — `Abgelehnt`
+- `resources/views/archive/index.blade.php:186` — `Storniert`
+- `resources/views/archive/index.blade.php:190` — `Urlaub`
+- `resources/views/archive/index.blade.php:191` — `Krank`
+- `resources/views/archive/index.blade.php:192` — `Sonderurlaub`
+- `resources/views/archive/index.blade.php:193` — `Unbezahlt`
+- `resources/views/archive/index.blade.php:197` — `hover`
+- `resources/views/archive/index.blade.php:199` — `whitespace-nowrap`
+- `resources/views/archive/index.blade.php:201` — `whitespace-nowrap`
+- `resources/views/archive/index.blade.php:208` — `Keine Einträge.`
+- `resources/views/archive/index.blade.php:212` — `diary`
+- `resources/views/archive/index.blade.php:213` — `diary`
+- `resources/views/archive/index.blade.php:214` — `table table-sm table-zebra table-pin-rows`
+- `resources/views/archive/index.blade.php:215` — `bg-base-200`
+- `resources/views/archive/index.blade.php:217` — `w-32`
+- `resources/views/archive/index.blade.php:217` — `mitarbeiter`
+- `resources/views/archive/index.blade.php:217` — `desc'`
+- `resources/views/archive/index.blade.php:217` — `Mitarbeiter`
+- `resources/views/archive/index.blade.php:218` — `w-24 text-center`
+- `resources/views/archive/index.blade.php:218` — `status`
+- `resources/views/archive/index.blade.php:218` — `desc'`
+- `resources/views/archive/index.blade.php:218` — `Status`
+- `resources/views/archive/index.blade.php:219` — `w-28 whitespace-nowrap`
+- `resources/views/archive/index.blade.php:219` — `start`
+- `resources/views/archive/index.blade.php:219` — `desc'`
+- `resources/views/archive/index.blade.php:220` — `w-28 whitespace-nowrap`
+- `resources/views/archive/index.blade.php:220` — `desc'`
+- `resources/views/archive/index.blade.php:221` — `w-36 whitespace-nowrap`
+- `resources/views/archive/index.blade.php:221` — `archived`
+- `resources/views/archive/index.blade.php:221` — `desc'`
+- `resources/views/archive/index.blade.php:221` — `archived`
+- `resources/views/archive/index.blade.php:221` — `Archiviert am`
+- `resources/views/archive/index.blade.php:222` — `Inhalt`
+- `resources/views/archive/index.blade.php:227` — `hover`
+- `resources/views/archive/index.blade.php:228` — `whitespace-nowrap`
+- `resources/views/archive/index.blade.php:229` — `text-center`
+- `resources/views/archive/index.blade.php:231` — `badge badge-sm',
+                                        'badge-success`
+- `resources/views/archive/index.blade.php:232` — `done',
+                                        'badge-info`
+- `resources/views/archive/index.blade.php:233` — `progress',
+                                        'badge-warning`
+- `resources/views/archive/index.blade.php:234` — `open',
+                                        'badge-error`
+- `resources/views/archive/index.blade.php:235` — `alert',
+                                        'badge-ghost`
+- `resources/views/archive/index.blade.php:236` — `neutral`
+- `resources/views/archive/index.blade.php:242` — `text-sm`
+- `resources/views/archive/index.blade.php:245` — `Keine Einträge.`
+- `resources/views/archive/index.blade.php:249` — `bereitschaft`
+- `resources/views/archive/index.blade.php:250` — `bereitschaft`
+- `resources/views/archive/index.blade.php:251` — `table table-sm table-zebra table-pin-rows`
+- `resources/views/archive/index.blade.php:252` — `bg-base-200`
+- `resources/views/archive/index.blade.php:254` — `w-32`
+- `resources/views/archive/index.blade.php:254` — `mitarbeiter`
+- `resources/views/archive/index.blade.php:254` — `desc'`
+- `resources/views/archive/index.blade.php:254` — `Mitarbeiter`
+- `resources/views/archive/index.blade.php:255` — `w-28 whitespace-nowrap`
+- `resources/views/archive/index.blade.php:255` — `start`
+- `resources/views/archive/index.blade.php:255` — `desc'`
+- `resources/views/archive/index.blade.php:256` — `w-28 whitespace-nowrap`
+- `resources/views/archive/index.blade.php:256` — `desc'`
+- `resources/views/archive/index.blade.php:257` — `Dauer`
+- `resources/views/archive/index.blade.php:258` — `Notiz`
+- `resources/views/archive/index.blade.php:268` — `hover`
+- `resources/views/archive/index.blade.php:269` — `whitespace-nowrap`
+- `resources/views/archive/index.blade.php:270` — `whitespace-nowrap text-xs`
+- `resources/views/archive/index.blade.php:271` — `whitespace-nowrap text-xs`
+- `resources/views/archive/index.blade.php:275` — `max-w-xs truncate text-sm`
+- `resources/views/archive/index.blade.php:278` — `Keine Einträge.`
+- `resources/views/archive/index.blade.php:283` — `notdienst`
+- `resources/views/archive/index.blade.php:284` — `table table-sm table-zebra table-pin-rows`
+- `resources/views/archive/index.blade.php:285` — `bg-base-200`
+- `resources/views/archive/index.blade.php:287` — `w-32`
+- `resources/views/archive/index.blade.php:287` — `mitarbeiter`
+- `resources/views/archive/index.blade.php:287` — `desc'`
+- `resources/views/archive/index.blade.php:287` — `Mitarbeiter`
+- `resources/views/archive/index.blade.php:288` — `w-28 whitespace-nowrap`
+- `resources/views/archive/index.blade.php:288` — `start`
+- `resources/views/archive/index.blade.php:288` — `desc'`
+- `resources/views/archive/index.blade.php:289` — `w-28 whitespace-nowrap`
+- `resources/views/archive/index.blade.php:289` — `desc'`
+- `resources/views/archive/index.blade.php:290` — `Dauer`
+- `resources/views/archive/index.blade.php:291` — `Grund`
+- `resources/views/archive/index.blade.php:301` — `hover`
+- `resources/views/archive/index.blade.php:302` — `whitespace-nowrap`
+- `resources/views/archive/index.blade.php:303` — `whitespace-nowrap text-xs`
+- `resources/views/archive/index.blade.php:304` — `whitespace-nowrap text-xs`
+- `resources/views/archive/index.blade.php:308` — `max-w-xs truncate text-sm`
+- `resources/views/archive/index.blade.php:311` — `Keine Einträge.`
+- `resources/views/archive/index.blade.php:321` — `bereitschaft`
+- `resources/views/archive/index.blade.php:322` — `notdienst`
+- `resources/views/archive/index.blade.php:323` — `urlaub`
+- `resources/views/archive/index.blade.php:328` — `flex-none`
+- `resources/views/archive/index.blade.php:330` — `Seite`
+- `resources/views/archive/index.blade.php:331` — `Einträge`
+- `resources/views/archive/index.blade.php:334` — `rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-xs`
+- `resources/views/archive/index.blade.php:335` — `vendor.pagination.daisyui-simple`
+- `resources/views/archive/index.blade.php:343` — `flex-none rounded-box border border-base-300 bg-base-200`
+- `resources/views/archive/index.blade.php:344` — `cursor-pointer px-4 py-2 text-sm font-semibold`
+- `resources/views/archive/index.blade.php:345` — `Archivierung starten`
+- `resources/views/archive/index.blade.php:347` — `px-4 pb-4 pt-2`
+- `resources/views/archive/index.blade.php:350` — `days`
+- `resources/views/archive/index.blade.php:352` — `submit`
+- `resources/views/archive/index.blade.php:352` — `btn btn-warning btn-sm`
+- `resources/views/archive/index.blade.php:354` — `Archivierung starten`
+- `resources/views/archive/index.blade.php:355` — `Archivierung wirklich starten?`
+- `resources/views/archive/index.blade.php:356` — `Starten`
+- `resources/views/archive/index.blade.php:357` — `Archivierung starten`
+- `resources/views/flex/index.blade.php:2` — `title`
+- `resources/views/flex/index.blade.php:2` — `Gleitzeit`
+- `resources/views/flex/index.blade.php:13` — `nav-title`
+- `resources/views/flex/index.blade.php:13` — `Gleitzeit-Konto`
+- `resources/views/flex/index.blade.php:14` — `content`
+- `resources/views/flex/index.blade.php:30` — `flex h-full min-h-0 w-full flex-col gap-4 overflow-auto`
+- `resources/views/flex/index.blade.php:32` — `tablist`
+- `resources/views/flex/index.blade.php:32` — `tabs tabs-box`
+- `resources/views/flex/index.blade.php:42` — `user`
+- `resources/views/flex/index.blade.php:43` — `tab-active`
+- `resources/views/flex/index.blade.php:45` — `inline-block h-2.5 w-2.5 rounded-full`
+- `resources/views/flex/index.blade.php:57` — `tablist`
+- `resources/views/flex/index.blade.php:57` — `tabs tabs-box flex-nowrap overflow-x-auto`
+- `resources/views/flex/index.blade.php:60` — `activeMonth`
+- `resources/views/flex/index.blade.php:62` — `user`
+- `resources/views/flex/index.blade.php:67` — `tab-active`
+- `resources/views/flex/index.blade.php:68` — `font-semibold`
+- `resources/views/flex/index.blade.php:68` — `shortLabel`
+- `resources/views/flex/index.blade.php:75` — `rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs`
+- `resources/views/flex/index.blade.php:76` — `text-2xl font-bold`
+- `resources/views/flex/index.blade.php:76` — `target`
+- `resources/views/flex/index.blade.php:77` — `Soll`
+- `resources/views/flex/index.blade.php:79` — `rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs`
+- `resources/views/flex/index.blade.php:80` — `text-2xl font-bold`
+- `resources/views/flex/index.blade.php:80` — `actual`
+- `resources/views/flex/index.blade.php:83` — `rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs`
+- `resources/views/flex/index.blade.php:84` — `balance`
+- `resources/views/flex/index.blade.php:84` — `text-error`
+- `resources/views/flex/index.blade.php:84` — `text-success`
+- `resources/views/flex/index.blade.php:84` — `balance`
+- `resources/views/flex/index.blade.php:85` — `Saldo`
+- `resources/views/flex/index.blade.php:89` — `rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/flex/index.blade.php:90` — `overflow-x-auto`
+- `resources/views/flex/index.blade.php:91` — `table table-xs table-zebra`
+- `resources/views/flex/index.blade.php:92` — `text-right`
+- `resources/views/flex/index.blade.php:92` — `Soll`
+- `resources/views/flex/index.blade.php:92` — `text-right`
+- `resources/views/flex/index.blade.php:92` — `text-right`
+- `resources/views/flex/index.blade.php:92` — `Saldo`
+- `resources/views/flex/index.blade.php:94` — `days`
+- `resources/views/flex/index.blade.php:96` — `target`
+- `resources/views/flex/index.blade.php:96` — `actual`
+- `resources/views/flex/index.blade.php:99` — `opacity-40`
+- `resources/views/flex/index.blade.php:99` — `text-error`
+- `resources/views/flex/index.blade.php:100` — `D, d.m.`
+- `resources/views/flex/index.blade.php:101` — `target`
+- `resources/views/flex/index.blade.php:101` — `target`
+- `resources/views/flex/index.blade.php:102` — `actual`
+- `resources/views/flex/index.blade.php:102` — `actual`
+- `resources/views/flex/index.blade.php:103` — `balance`
+- `resources/views/flex/index.blade.php:103` — `balance`
+- `resources/views/flex/index.blade.php:103` — `text-error`
+- `resources/views/flex/index.blade.php:103` — `balance`
+- `resources/views/flex/admin.blade.php:2` — `title`
+- `resources/views/flex/admin.blade.php:3` — `content`
+- `resources/views/flex/admin.blade.php:9` — `flex h-full min-h-0 w-full flex-col gap-4 overflow-auto`
+- `resources/views/flex/admin.blade.php:13` — `tablist`
+- `resources/views/flex/admin.blade.php:13` — `tabs tabs-box`
+- `resources/views/flex/admin.blade.php:22` — `user`
+- `resources/views/flex/admin.blade.php:23` — `tab-active`
+- `resources/views/flex/admin.blade.php:25` — `inline-block h-2.5 w-2.5 rounded-full`
+- `resources/views/flex/admin.blade.php:32` — `isAdmin`
+- `resources/views/admin/organizations/_settings.blade.php:7` — `number`
+- `resources/views/admin/organizations/_settings.blade.php:10` — `settings.`
+- `resources/views/admin/organizations/_settings.blade.php:11` — `value`
+- `resources/views/admin/organizations/_settings.blade.php:18` — `fieldset`
+- `resources/views/admin/organizations/_settings.blade.php:19` — `fieldset-label`
+- `resources/views/admin/organizations/_settings.blade.php:20` — `input input-bordered w-full`
+- `resources/views/admin/organizations/_settings.blade.php:28` — `divider`
+- `resources/views/admin/organizations/_settings.blade.php:30` — `tablist`
+- `resources/views/admin/organizations/_settings.blade.php:30` — `tabs tabs-lifted`
+- `resources/views/admin/organizations/_settings.blade.php:30` — `pagination`
+- `resources/views/admin/organizations/_settings.blade.php:33` — `pagination`
+- `resources/views/admin/organizations/_settings.blade.php:34` — `invoicing`
+- `resources/views/admin/organizations/_settings.blade.php:35` — `uploads`
+- `resources/views/admin/organizations/_settings.blade.php:36` — `validation`
+- `resources/views/admin/organizations/_settings.blade.php:37` — `notifications`
+- `resources/views/admin/organizations/_settings.blade.php:42` — `tab-active`
+- `resources/views/admin/organizations/_settings.blade.php:47` — `text-xs opacity-70 mt-2`
+- `resources/views/admin/organizations/_settings.blade.php:50` — `pagination'`
+- `resources/views/admin/organizations/_settings.blade.php:51` — `pagination`
+- `resources/views/admin/organizations/_settings.blade.php:52` — `fieldset`
+- `resources/views/admin/organizations/_settings.blade.php:53` — `fieldset-label`
+- `resources/views/admin/organizations/_settings.blade.php:54` — `number`
+- `resources/views/admin/organizations/_settings.blade.php:56` — `pagination.`
+- `resources/views/admin/organizations/_settings.blade.php:57` — `value`
+- `resources/views/admin/organizations/_settings.blade.php:58` — `input input-bordered w-full`
+- `resources/views/admin/organizations/_settings.blade.php:64` — `invoicing'`
+- `resources/views/admin/organizations/_settings.blade.php:65` — `fieldset`
+- `resources/views/admin/organizations/_settings.blade.php:66` — `fieldset-label`
+- `resources/views/admin/organizations/_settings.blade.php:67` — `text`
+- `resources/views/admin/organizations/_settings.blade.php:69` — `value`
+- `resources/views/admin/organizations/_settings.blade.php:70` — `input input-bordered w-full`
+- `resources/views/admin/organizations/_settings.blade.php:70` — `decimal`
+- `resources/views/admin/organizations/_settings.blade.php:72` — `fieldset`
+- `resources/views/admin/organizations/_settings.blade.php:73` — `fieldset-label`
+- `resources/views/admin/organizations/_settings.blade.php:74` — `text`
+- `resources/views/admin/organizations/_settings.blade.php:76` — `value`
+- `resources/views/admin/organizations/_settings.blade.php:77` — `input input-bordered w-full uppercase`
+- `resources/views/admin/organizations/_settings.blade.php:79` — `fieldset`
+- `resources/views/admin/organizations/_settings.blade.php:80` — `fieldset-label`
+- `resources/views/admin/organizations/_settings.blade.php:81` — `text`
+- `resources/views/admin/organizations/_settings.blade.php:83` — `value`
+- `resources/views/admin/organizations/_settings.blade.php:84` — `input input-bordered w-full`
+- `resources/views/admin/organizations/_settings.blade.php:89` — `uploads'`
+- `resources/views/admin/organizations/_settings.blade.php:90` — `uploads`
+- `resources/views/admin/organizations/_settings.blade.php:91` — `fieldset`
+- `resources/views/admin/organizations/_settings.blade.php:92` — `fieldset-label`
+- `resources/views/admin/organizations/_settings.blade.php:93` — `number`
+- `resources/views/admin/organizations/_settings.blade.php:94` — `uploads.`
+- `resources/views/admin/organizations/_settings.blade.php:95` — `value`
+- `resources/views/admin/organizations/_settings.blade.php:96` — `input input-bordered w-full`
+- `resources/views/admin/organizations/_settings.blade.php:102` — `validation'`
+- `resources/views/admin/organizations/_settings.blade.php:102` — `mt-4 space-y-4`
+- `resources/views/admin/organizations/_settings.blade.php:103` — `validation`
+- `resources/views/admin/organizations/_settings.blade.php:105` — `font-semibold text-sm mb-2`
+- `resources/views/admin/organizations/_settings.blade.php:108` — `fieldset`
+- `resources/views/admin/organizations/_settings.blade.php:109` — `fieldset-label`
+- `resources/views/admin/organizations/_settings.blade.php:110` — `number`
+- `resources/views/admin/organizations/_settings.blade.php:112` — `validation.`
+- `resources/views/admin/organizations/_settings.blade.php:113` — `value`
+- `resources/views/admin/organizations/_settings.blade.php:114` — `input input-bordered w-full`
+- `resources/views/admin/organizations/_settings.blade.php:123` — `notifications'`
+- `resources/views/admin/organizations/_settings.blade.php:124` — `fieldset`
+- `resources/views/admin/organizations/_settings.blade.php:125` — `fieldset-label`
+- `resources/views/admin/organizations/_settings.blade.php:126` — `number`
+- `resources/views/admin/organizations/_settings.blade.php:129` — `value`
+- `resources/views/admin/organizations/_settings.blade.php:130` — `input input-bordered w-full`
+- `resources/views/admin/organizations/_settings.blade.php:135` — `mt-4 space-y-4`
+- `resources/views/admin/organizations/_settings.blade.php:138` — `font-semibold text-sm mb-2`
+- `resources/views/admin/organizations/_settings.blade.php:141` — `fieldset`
+- `resources/views/admin/organizations/_settings.blade.php:142` — `fieldset-label`
+- `resources/views/admin/organizations/_settings.blade.php:143` — `number`
+- `resources/views/admin/organizations/_settings.blade.php:146` — `value`
+- `resources/views/admin/organizations/_settings.blade.php:147` — `input input-bordered w-full`
+- `resources/views/admin/organizations/_compliance.blade.php:6` — `overlap`
+- `resources/views/admin/organizations/_compliance.blade.php:6` — `Überlappende Schichten`
+- `resources/views/admin/organizations/_compliance.blade.php:7` — `Mindestruhezeit`
+- `resources/views/admin/organizations/_compliance.blade.php:8` — `Tagesarbeitszeit`
+- `resources/views/admin/organizations/_compliance.blade.php:9` — `Wochenarbeitszeit`
+- `resources/views/admin/organizations/_compliance.blade.php:10` — `Aufeinanderfolgende Tage`
+- `resources/views/admin/organizations/_compliance.blade.php:11` — `Urlaubskonflikt`
+- `resources/views/admin/organizations/_compliance.blade.php:12` — `Qualifikations-Match`
+- `resources/views/admin/organizations/_compliance.blade.php:13` — `Feiertagsbuchung`
+- `resources/views/admin/organizations/_compliance.blade.php:17` — `divider`
+- `resources/views/admin/organizations/_compliance.blade.php:17` — `Compliance-Prüfung`
+- `resources/views/admin/organizations/_compliance.blade.php:19` — `form-control`
+- `resources/views/admin/organizations/_compliance.blade.php:20` — `label`
+- `resources/views/admin/organizations/_compliance.blade.php:20` — `label-text`
+- `resources/views/admin/organizations/_compliance.blade.php:20` — `Modus`
+- `resources/views/admin/organizations/_compliance.blade.php:21` — `select select-bordered`
+- `resources/views/admin/organizations/_compliance.blade.php:23` — `mode`
+- `resources/views/admin/organizations/_compliance.blade.php:26` — `warn`
+- `resources/views/admin/organizations/_compliance.blade.php:26` — `Warnen`
+- `resources/views/admin/organizations/_compliance.blade.php:27` — `block`
+- `resources/views/admin/organizations/_compliance.blade.php:27` — `Blockieren`
+- `resources/views/admin/organizations/_compliance.blade.php:34` — `grid grid-cols-2 gap-4`
+- `resources/views/admin/organizations/_compliance.blade.php:35` — `form-control`
+- `resources/views/admin/organizations/_compliance.blade.php:36` — `label`
+- `resources/views/admin/organizations/_compliance.blade.php:36` — `label-text`
+- `resources/views/admin/organizations/_compliance.blade.php:37` — `number`
+- `resources/views/admin/organizations/_compliance.blade.php:37` — `input input-bordered`
+- `resources/views/admin/organizations/_compliance.blade.php:40` — `form-control`
+- `resources/views/admin/organizations/_compliance.blade.php:41` — `label`
+- `resources/views/admin/organizations/_compliance.blade.php:41` — `label-text`
+- `resources/views/admin/organizations/_compliance.blade.php:42` — `number`
+- `resources/views/admin/organizations/_compliance.blade.php:42` — `input input-bordered`
+- `resources/views/admin/organizations/_compliance.blade.php:45` — `form-control`
+- `resources/views/admin/organizations/_compliance.blade.php:46` — `label`
+- `resources/views/admin/organizations/_compliance.blade.php:46` — `label-text`
+- `resources/views/admin/organizations/_compliance.blade.php:47` — `number`
+- `resources/views/admin/organizations/_compliance.blade.php:47` — `input input-bordered`
+- `resources/views/admin/organizations/_compliance.blade.php:50` — `form-control`
+- `resources/views/admin/organizations/_compliance.blade.php:51` — `label`
+- `resources/views/admin/organizations/_compliance.blade.php:51` — `label-text`
+- `resources/views/admin/organizations/_compliance.blade.php:51` — `Max. Tage am Stück`
+- `resources/views/admin/organizations/_compliance.blade.php:52` — `number`
+- `resources/views/admin/organizations/_compliance.blade.php:52` — `input input-bordered`
+- `resources/views/admin/organizations/_compliance.blade.php:57` — `form-control gap-2`
+- `resources/views/admin/organizations/_compliance.blade.php:58` — `label-text font-medium`
+- `resources/views/admin/organizations/_compliance.blade.php:58` — `Aktive Regeln`
+- `resources/views/admin/organizations/_compliance.blade.php:61` — `cursor-pointer label justify-start gap-3`
+- `resources/views/admin/organizations/_compliance.blade.php:62` — `hidden`
+- `resources/views/admin/organizations/_compliance.blade.php:63` — `checkbox`
+- `resources/views/admin/organizations/_compliance.blade.php:63` — `checkbox checkbox-sm`
+- `resources/views/admin/organizations/_compliance.blade.php:64` — `rules`
+- `resources/views/admin/organizations/_compliance.blade.php:65` — `label-text`
+- `resources/views/admin/organizations/index.blade.php:3` — `title`
+- `resources/views/admin/organizations/index.blade.php:3` — `Organisationen`
+- `resources/views/admin/organizations/index.blade.php:4` — `nav-title`
+- `resources/views/admin/organizations/index.blade.php:4` — `Organisationen`
+- `resources/views/admin/organizations/index.blade.php:6` — `content`
+- `resources/views/admin/organizations/index.blade.php:8` — `flex justify-end`
+- `resources/views/admin/organizations/index.blade.php:9` — `btn btn-primary btn-sm`
+- `resources/views/admin/organizations/index.blade.php:10` — `Organisation anlegen`
+- `resources/views/admin/organizations/index.blade.php:17` — `name`
+- `resources/views/admin/organizations/index.blade.php:17` — `asc'`
+- `resources/views/admin/organizations/index.blade.php:17` — `name`
+- `resources/views/admin/organizations/index.blade.php:17` — `Name`
+- `resources/views/admin/organizations/index.blade.php:18` — `Slug`
+- `resources/views/admin/organizations/index.blade.php:19` — `plan`
+- `resources/views/admin/organizations/index.blade.php:19` — `asc'`
+- `resources/views/admin/organizations/index.blade.php:19` — `Plan`
+- `resources/views/admin/organizations/index.blade.php:20` — `text-center`
+- `resources/views/admin/organizations/index.blade.php:20` — `users`
+- `resources/views/admin/organizations/index.blade.php:20` — `asc'`
+- `resources/views/admin/organizations/index.blade.php:20` — `Benutzer`
+- `resources/views/admin/organizations/index.blade.php:21` — `text-center`
+- `resources/views/admin/organizations/index.blade.php:21` — `asc'`
+- `resources/views/admin/organizations/index.blade.php:21` — `Aktiv`
+- `resources/views/admin/organizations/index.blade.php:22` — `Erstellt`
+- `resources/views/admin/organizations/index.blade.php:29` — `font-medium`
+- `resources/views/admin/organizations/index.blade.php:32` — `enterprise' ? 'badge-primary`
+- `resources/views/admin/organizations/index.blade.php:32` — `pro' ? 'badge-secondary`
+- `resources/views/admin/organizations/index.blade.php:32` — `badge-ghost`
+- `resources/views/admin/organizations/index.blade.php:36` — `text-center`
+- `resources/views/admin/organizations/index.blade.php:37` — `text-center`
+- `resources/views/admin/organizations/index.blade.php:39` — `badge badge-success badge-sm`
+- `resources/views/admin/organizations/index.blade.php:41` — `badge badge-error badge-sm`
+- `resources/views/admin/organizations/index.blade.php:41` — `Nein`
+- `resources/views/admin/organizations/index.blade.php:45` — `text-right`
+- `resources/views/admin/organizations/index.blade.php:46` — `flex justify-end gap-2`
+- `resources/views/admin/organizations/index.blade.php:47` — `btn btn-ghost btn-xs`
+- `resources/views/admin/organizations/index.blade.php:47` — `Bearbeiten`
+- `resources/views/admin/organizations/index.blade.php:50` — `Organisation wirklich löschen?`
+- `resources/views/admin/organizations/index.blade.php:51` — `Löschen`
+- `resources/views/admin/organizations/index.blade.php:53` — `submit`
+- `resources/views/admin/organizations/index.blade.php:53` — `btn btn-ghost btn-xs text-error`
+- `resources/views/admin/organizations/index.blade.php:53` — `Löschen`
+- `resources/views/admin/organizations/index.blade.php:60` — `Keine Organisationen vorhanden.`
+- `resources/views/admin/organizations/_form_body.blade.php:3` — `Stammdaten`
+- `resources/views/admin/organizations/_form_body.blade.php:3` — `apartment`
+- `resources/views/admin/organizations/_form_body.blade.php:3` — `primary`
+- `resources/views/admin/organizations/_form_body.blade.php:5` — `fieldset-label`
+- `resources/views/admin/organizations/_form_body.blade.php:5` — `Name`
+- `resources/views/admin/organizations/_form_body.blade.php:6` — `text`
+- `resources/views/admin/organizations/_form_body.blade.php:6` — `name`
+- `resources/views/admin/organizations/_form_body.blade.php:7` — `name`
+- `resources/views/admin/organizations/_form_body.blade.php:8` — `name`
+- `resources/views/admin/organizations/_form_body.blade.php:9` — `name`
+- `resources/views/admin/organizations/_form_body.blade.php:9` — `text-error text-xs mt-1`
+- `resources/views/admin/organizations/_form_body.blade.php:12` — `fieldset`
+- `resources/views/admin/organizations/_form_body.blade.php:13` — `fieldset-label`
+- `resources/views/admin/organizations/_form_body.blade.php:13` — `Plan`
+- `resources/views/admin/organizations/_form_body.blade.php:14` — `plan`
+- `resources/views/admin/organizations/_form_body.blade.php:14` — `plan`
+- `resources/views/admin/organizations/_form_body.blade.php:16` — `plan`
+- `resources/views/admin/organizations/_form_body.blade.php:16` — `free`
+- `resources/views/admin/organizations/_form_body.blade.php:21` — `plan`
+- `resources/views/admin/organizations/_form_body.blade.php:21` — `text-error text-xs mt-1`
+- `resources/views/admin/organizations/_form_body.blade.php:24` — `fieldset`
+- `resources/views/admin/organizations/_form_body.blade.php:25` — `cursor-pointer label justify-start gap-3`
+- `resources/views/admin/organizations/_form_body.blade.php:26` — `checkbox`
+- `resources/views/admin/organizations/_form_body.blade.php:26` — `checkbox`
+- `resources/views/admin/organizations/_form_body.blade.php:28` — `fieldset-label`
+- `resources/views/admin/organizations/_form_body.blade.php:28` — `Aktiv`
+- `resources/views/admin/organizations/_form_body.blade.php:32` — `fieldset`
+- `resources/views/admin/organizations/_form_body.blade.php:33` — `fieldset-label`
+- `resources/views/admin/organizations/_form_body.blade.php:33` — `Sprache`
+- `resources/views/admin/organizations/_form_body.blade.php:34` — `text`
+- `resources/views/admin/organizations/_form_body.blade.php:34` — `locale`
+- `resources/views/admin/organizations/_form_body.blade.php:35` — `locale`
+- `resources/views/admin/organizations/_form_body.blade.php:36` — `locale`
+- `resources/views/admin/organizations/_form_body.blade.php:37` — `locale`
+- `resources/views/admin/organizations/_form_body.blade.php:37` — `text-error text-xs mt-1`
+- `resources/views/admin/organizations/_form_body.blade.php:40` — `fieldset`
+- `resources/views/admin/organizations/_form_body.blade.php:41` — `fieldset-label`
+- `resources/views/admin/organizations/_form_body.blade.php:41` — `Zeitzone`
+- `resources/views/admin/organizations/_form_body.blade.php:42` — `text`
+- `resources/views/admin/organizations/_form_body.blade.php:42` — `timezone`
+- `resources/views/admin/organizations/_form_body.blade.php:43` — `timezone`
+- `resources/views/admin/organizations/_form_body.blade.php:44` — `timezone`
+- `resources/views/admin/organizations/_form_body.blade.php:45` — `timezone`
+- `resources/views/admin/organizations/_form_body.blade.php:45` — `text-error text-xs mt-1`
+- `resources/views/admin/organizations/_form_body.blade.php:50` — `organization`
+- `resources/views/admin/organizations/_form_body.blade.php:51` — `organization`
+- `resources/views/admin/organizations/_form_dialog.blade.php:6` — `Organisation bearbeiten`
+- `resources/views/admin/organizations/_form_dialog.blade.php:6` — `Organisation anlegen`
+- `resources/views/admin/organizations/_form_dialog.blade.php:8` — `apartment`
+- `resources/views/admin/organizations/_form_dialog.blade.php:9` — `primary`
+- `resources/views/admin/organizations/_form_dialog.blade.php:11` — `POST'`
+- `resources/views/admin/organizations/_form_dialog.blade.php:12` — `data-entry-form`
+- `resources/views/admin/organizations/_form_dialog.blade.php:13` — `Speichern`
+- `resources/views/admin/organizations/_form_dialog.blade.php:13` — `Anlegen`
+- `resources/views/admin/organizations/_form_dialog.blade.php:21` — `Organisation wirklich löschen?`
+- `resources/views/admin/organizations/_form_dialog.blade.php:22` — `Löschen`
+- `resources/views/admin/organizations/_form_dialog.blade.php:24` — `submit`
+- `resources/views/admin/organizations/_form_dialog.blade.php:24` — `btn btn-ghost btn-sm text-error`
+- `resources/views/admin/organizations/_form_dialog.blade.php:24` — `Löschen`
+- `resources/views/admin/plugins/index.blade.php:2` — `title`
+- `resources/views/admin/plugins/index.blade.php:2` — `Plugins`
+- `resources/views/admin/plugins/index.blade.php:3` — `nav-title`
+- `resources/views/admin/plugins/index.blade.php:3` — `Plugins`
+- `resources/views/admin/plugins/index.blade.php:5` — `content`
+- `resources/views/admin/plugins/index.blade.php:6` — `flex h-full min-h-0 w-full flex-col gap-4 overflow-auto`
+- `resources/views/admin/plugins/index.blade.php:7` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/admin/plugins/index.blade.php:8` — `Registrierte Plugins`
+- `resources/views/admin/plugins/index.blade.php:14` — `rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/admin/plugins/index.blade.php:15` — `overflow-x-auto`
+- `resources/views/admin/plugins/index.blade.php:16` — `table table-sm`
+- `resources/views/admin/plugins/index.blade.php:19` — `Name`
+- `resources/views/admin/plugins/index.blade.php:21` — `Version`
+- `resources/views/admin/plugins/index.blade.php:22` — `Status`
+- `resources/views/admin/plugins/index.blade.php:23` — `Capabilities`
+- `resources/views/admin/plugins/index.blade.php:24` — `Beschreibung`
+- `resources/views/admin/plugins/index.blade.php:30` — `font-medium`
+- `resources/views/admin/plugins/index.blade.php:31` — `text-xs`
+- `resources/views/admin/plugins/index.blade.php:32` — `tabular-nums`
+- `resources/views/admin/plugins/index.blade.php:35` — `badge badge-success badge-sm`
+- `resources/views/admin/plugins/index.blade.php:35` — `aktiv`
+- `resources/views/admin/plugins/index.blade.php:37` — `badge badge-ghost badge-sm`
+- `resources/views/admin/plugins/index.blade.php:37` — `inaktiv`
+- `resources/views/admin/plugins/index.blade.php:41` — `flex flex-wrap gap-1`
+- `resources/views/admin/plugins/index.blade.php:43` — `badge badge-outline badge-sm`
+- `resources/views/admin/legacy-migration.blade.php:3` — `title`
+- `resources/views/admin/legacy-migration.blade.php:3` — `Legacy-Migration`
+- `resources/views/admin/legacy-migration.blade.php:4` — `nav-title`
+- `resources/views/admin/legacy-migration.blade.php:4` — `Legacy-Migration`
+- `resources/views/admin/legacy-migration.blade.php:6` — `content`
+- `resources/views/admin/legacy-migration.blade.php:8` — `flex justify-end`
+- `resources/views/admin/legacy-migration.blade.php:10` — `badge badge-warning`
+- `resources/views/admin/legacy-migration.blade.php:10` — `Legacy-Schreibzugriff aktiv`
+- `resources/views/admin/legacy-migration.blade.php:12` — `badge badge-success`
+- `resources/views/admin/legacy-migration.blade.php:12` — `Legacy read-only`
+- `resources/views/admin/legacy-migration.blade.php:16` — `configured`
+- `resources/views/admin/legacy-migration.blade.php:17` — `alert alert-warning`
+- `resources/views/admin/legacy-migration.blade.php:18` — `Legacy-Datenbank nicht erreichbar oder nicht konfiguriert.`
+- `resources/views/admin/legacy-migration.blade.php:24` — `Datentyp`
+- `resources/views/admin/legacy-migration.blade.php:25` — `text-right`
+- `resources/views/admin/legacy-migration.blade.php:25` — `Legacy gesamt`
+- `resources/views/admin/legacy-migration.blade.php:26` — `text-right`
+- `resources/views/admin/legacy-migration.blade.php:26` — `Bereits importiert`
+- `resources/views/admin/legacy-migration.blade.php:27` — `text-right`
+- `resources/views/admin/legacy-migration.blade.php:27` — `Verbleibend`
+- `resources/views/admin/legacy-migration.blade.php:28` — `text-right`
+- `resources/views/admin/legacy-migration.blade.php:28` — `Aktion`
+- `resources/views/admin/legacy-migration.blade.php:32` — `users`
+- `resources/views/admin/legacy-migration.blade.php:32` — `Benutzer`
+- `resources/views/admin/legacy-migration.blade.php:32` — `diary`
+- `resources/views/admin/legacy-migration.blade.php:32` — `Tagebuch`
+- `resources/views/admin/legacy-migration.blade.php:32` — `shifts`
+- `resources/views/admin/legacy-migration.blade.php:32` — `Bereitschaften`
+- `resources/views/admin/legacy-migration.blade.php:32` — `assignments`
+- `resources/views/admin/legacy-migration.blade.php:32` — `Notdienste`
+- `resources/views/admin/legacy-migration.blade.php:33` — `legacy`
+- `resources/views/admin/legacy-migration.blade.php:33` — `imported`
+- `resources/views/admin/legacy-migration.blade.php:35` — `font-medium`
+- `resources/views/admin/legacy-migration.blade.php:36` — `text-right`
+- `resources/views/admin/legacy-migration.blade.php:36` — `legacy`
+- `resources/views/admin/legacy-migration.blade.php:37` — `text-right`
+- `resources/views/admin/legacy-migration.blade.php:37` — `imported`
+- `resources/views/admin/legacy-migration.blade.php:38` — `text-right`
+- `resources/views/admin/legacy-migration.blade.php:40` — `badge badge-success badge-sm`
+- `resources/views/admin/legacy-migration.blade.php:40` — `Vollständig`
+- `resources/views/admin/legacy-migration.blade.php:42` — `text-warning`
+- `resources/views/admin/legacy-migration.blade.php:45` — `text-right`
+- `resources/views/admin/legacy-migration.blade.php:46` — `admin.legacy-migration.run`
+- `resources/views/admin/legacy-migration.blade.php:48` — `hidden`
+- `resources/views/admin/legacy-migration.blade.php:48` — `type`
+- `resources/views/admin/legacy-migration.blade.php:49` — `submit`
+- `resources/views/admin/legacy-migration.blade.php:49` — `btn btn-sm btn-primary`
+- `resources/views/admin/legacy-migration.blade.php:49` — `Importieren`
+- `resources/views/admin/legacy-migration.blade.php:57` — `admin.legacy-migration.run`
+- `resources/views/admin/legacy-migration.blade.php:59` — `hidden`
+- `resources/views/admin/legacy-migration.blade.php:59` — `type`
+- `resources/views/admin/legacy-migration.blade.php:60` — `submit`
+- `resources/views/admin/legacy-migration.blade.php:60` — `btn btn-primary`
+- `resources/views/admin/legacy-migration.blade.php:60` — `Alles importieren`
+- `resources/views/work-schedules/_form_body.blade.php:3` — `Arbeitszeit`
+- `resources/views/work-schedules/_form_body.blade.php:3` — `schedule`
+- `resources/views/work-schedules/_form_body.blade.php:3` — `primary`
+- `resources/views/work-schedules/_form_body.blade.php:4` — `fieldset`
+- `resources/views/work-schedules/_form_body.blade.php:5` — `fieldset-label`
+- `resources/views/work-schedules/_form_body.blade.php:6` — `number`
+- `resources/views/work-schedules/_form_body.blade.php:7` — `input input-bordered w-full`
+- `resources/views/work-schedules/_form_body.blade.php:9` — `fieldset`
+- `resources/views/work-schedules/_form_body.blade.php:10` — `fieldset-label`
+- `resources/views/work-schedules/_form_body.blade.php:11` — `number`
+- `resources/views/work-schedules/_form_body.blade.php:12` — `input input-bordered w-full`
+- `resources/views/work-schedules/_form_body.blade.php:15` — `fieldset-label`
+- `resources/views/work-schedules/_form_body.blade.php:15` — `Arbeitstage`
+- `resources/views/work-schedules/_form_body.blade.php:17` — `mt-1 flex flex-wrap gap-3`
+- `resources/views/work-schedules/_form_body.blade.php:19` — `label cursor-pointer gap-1`
+- `resources/views/work-schedules/_form_body.blade.php:20` — `checkbox`
+- `resources/views/work-schedules/_form_body.blade.php:20` — `checkbox checkbox-xs`
+- `resources/views/work-schedules/_form_body.blade.php:21` — `fieldset-label`
+- `resources/views/work-schedules/_form_body.blade.php:28` — `schedule`
+- `resources/views/work-schedules/_form_body.blade.php:28` — `info`
+- `resources/views/work-schedules/_form_body.blade.php:29` — `fieldset`
+- `resources/views/work-schedules/_form_body.blade.php:30` — `fieldset-label`
+- `resources/views/work-schedules/_form_body.blade.php:30` — `Kernzeit Start`
+- `resources/views/work-schedules/_form_body.blade.php:31` — `time`
+- `resources/views/work-schedules/_form_body.blade.php:31` — `input input-bordered w-full`
+- `resources/views/work-schedules/_form_body.blade.php:33` — `fieldset`
+- `resources/views/work-schedules/_form_body.blade.php:34` — `fieldset-label`
+- `resources/views/work-schedules/_form_body.blade.php:34` — `Kernzeit Ende`
+- `resources/views/work-schedules/_form_body.blade.php:35` — `time`
+- `resources/views/work-schedules/_form_body.blade.php:35` — `input input-bordered w-full`
+- `resources/views/work-schedules/_form_body.blade.php:37` — `fieldset`
+- `resources/views/work-schedules/_form_body.blade.php:38` — `fieldset-label`
+- `resources/views/work-schedules/_form_body.blade.php:38` — `Rahmenzeit Start`
+- `resources/views/work-schedules/_form_body.blade.php:39` — `time`
+- `resources/views/work-schedules/_form_body.blade.php:39` — `input input-bordered w-full`
+- `resources/views/work-schedules/_form_body.blade.php:41` — `fieldset`
+- `resources/views/work-schedules/_form_body.blade.php:42` — `fieldset-label`
+- `resources/views/work-schedules/_form_body.blade.php:42` — `Rahmenzeit Ende`
+- `resources/views/work-schedules/_form_body.blade.php:43` — `time`
+- `resources/views/work-schedules/_form_body.blade.php:43` — `input input-bordered w-full`
+- `resources/views/work-schedules/_form_body.blade.php:47` — `restaurant`
+- `resources/views/work-schedules/_form_body.blade.php:47` — `success`
+- `resources/views/work-schedules/_form_body.blade.php:48` — `fieldset`
+- `resources/views/work-schedules/_form_body.blade.php:49` — `fieldset-label`
+- `resources/views/work-schedules/_form_body.blade.php:49` — `Pause ab Min.`
+- `resources/views/work-schedules/_form_body.blade.php:50` — `number`
+- `resources/views/work-schedules/_form_body.blade.php:51` — `input input-bordered w-full`
+- `resources/views/work-schedules/_form_body.blade.php:53` — `fieldset`
+- `resources/views/work-schedules/_form_body.blade.php:54` — `fieldset-label`
+- `resources/views/work-schedules/_form_body.blade.php:54` — `Pflichtpause Min.`
+- `resources/views/work-schedules/_form_body.blade.php:55` — `number`
+- `resources/views/work-schedules/_form_body.blade.php:56` — `input input-bordered w-full`
+- `resources/views/work-schedules/_form_body.blade.php:58` — `fieldset`
+- `resources/views/work-schedules/_form_body.blade.php:59` — `fieldset-label`
+- `resources/views/work-schedules/_form_body.blade.php:59` — `Gültig ab`
+- `resources/views/work-schedules/_form_body.blade.php:60` — `date`
+- `resources/views/work-schedules/_form_body.blade.php:61` — `Y-m-d`
+- `resources/views/work-schedules/_form_body.blade.php:61` — `input input-bordered w-full`
+- `resources/views/work-schedules/_form_body.blade.php:63` — `fieldset`
+- `resources/views/work-schedules/_form_body.blade.php:64` — `fieldset-label`
+- `resources/views/work-schedules/_form_body.blade.php:64` — `Gültig bis`
+- `resources/views/work-schedules/_form_body.blade.php:65` — `date`
+- `resources/views/work-schedules/_form_body.blade.php:66` — `Y-m-d`
+- `resources/views/work-schedules/_form_body.blade.php:66` — `input input-bordered w-full`
+- `resources/views/work-schedules/_form_body.blade.php:71` — `alert alert-error text-sm`
+- `resources/views/work-schedules/_form_body.blade.php:72` — `list-disc pl-5`
+- `resources/views/work-schedules/_form_dialog.blade.php:3` — `Arbeitszeit-Modell`
+- `resources/views/work-schedules/_form_dialog.blade.php:5` — `schedule`
+- `resources/views/work-schedules/_form_dialog.blade.php:6` — `primary`
+- `resources/views/work-schedules/_form_dialog.blade.php:7` — `users.work-schedule.update`
+- `resources/views/work-schedules/_form_dialog.blade.php:9` — `data-entry-form`
+- `resources/views/work-schedules/_form_dialog.blade.php:10` — `Speichern`
+- `resources/views/work-schedules/show.blade.php:2` — `title`
+- `resources/views/work-schedules/show.blade.php:2` — `Mein Arbeitszeit-Modell`
+- `resources/views/work-schedules/show.blade.php:3` — `content`
+- `resources/views/work-schedules/show.blade.php:4` — `w-full p-4 space-y-4`
+- `resources/views/work-schedules/show.blade.php:5` — `mb-4 flex items-center justify-between gap-3`
+- `resources/views/work-schedules/show.blade.php:6` — `Mein Arbeitszeit-Modell`
+- `resources/views/work-schedules/show.blade.php:9` — `users.work-schedule.edit`
+- `resources/views/work-schedules/show.blade.php:10` — `btn btn-sm btn-primary`
+- `resources/views/work-schedules/show.blade.php:11` — `edit`
+- `resources/views/work-schedules/show.blade.php:11` — `Bearbeiten`
+- `resources/views/work-schedules/show.blade.php:17` — `rounded-box border border-base-300 bg-base-100 p-4 text-sm shadow-xs`
+- `resources/views/work-schedules/show.blade.php:18` — `Wochenstunden`
+- `resources/views/work-schedules/show.blade.php:19` — `Tagessoll`
+- `resources/views/work-schedules/show.blade.php:20` — `Kernzeit`
+- `resources/views/work-schedules/show.blade.php:21` — `Rahmenzeit`
+- `resources/views/work-schedules/show.blade.php:22` — `Pflichtpause`
+- `resources/views/holidays/index.blade.php:2` — `title`
+- `resources/views/holidays/index.blade.php:2` — `Feiertage`
+- `resources/views/holidays/index.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/holidays/index.blade.php:3` — `nav-title`
+- `resources/views/holidays/index.blade.php:3` — `Feiertage`
+- `resources/views/holidays/index.blade.php:5` — `content`
+- `resources/views/holidays/index.blade.php:15` — `flex flex-wrap items-end gap-3`
+- `resources/views/holidays/index.blade.php:16` — `flex flex-col min-w-32`
+- `resources/views/holidays/index.blade.php:17` — `filter-year`
+- `resources/views/holidays/index.blade.php:17` — `label py-1`
+- `resources/views/holidays/index.blade.php:18` — `Jahr`
+- `resources/views/holidays/index.blade.php:20` — `filter-year`
+- `resources/views/holidays/index.blade.php:20` — `year`
+- `resources/views/holidays/index.blade.php:20` — `select select-bordered select-sm`
+- `resources/views/holidays/index.blade.php:26` — `ml-auto flex items-end gap-2`
+- `resources/views/holidays/index.blade.php:27` — `submit`
+- `resources/views/holidays/index.blade.php:27` — `btn btn-sm btn-primary`
+- `resources/views/holidays/index.blade.php:27` — `Filtern`
+- `resources/views/holidays/index.blade.php:29` — `btn btn-sm btn-ghost`
+- `resources/views/holidays/index.blade.php:29` — `Zurücksetzen`
+- `resources/views/holidays/index.blade.php:31` — `btn btn-sm btn-primary`
+- `resources/views/holidays/index.blade.php:32` — `Eigener Feiertag`
+- `resources/views/holidays/index.blade.php:39` — `tablist`
+- `resources/views/holidays/index.blade.php:39` — `tabs tabs-box w-fit`
+- `resources/views/holidays/index.blade.php:40` — `tab tab-active`
+- `resources/views/holidays/index.blade.php:40` — `yearly`
+- `resources/views/holidays/index.blade.php:41` — `Jahresübersicht`
+- `resources/views/holidays/index.blade.php:41` — `badge badge-sm ml-2`
+- `resources/views/holidays/index.blade.php:43` — `custom`
+- `resources/views/holidays/index.blade.php:44` — `Eigene Feiertage`
+- `resources/views/holidays/index.blade.php:44` — `badge badge-sm ml-2`
+- `resources/views/holidays/index.blade.php:49` — `yearly`
+- `resources/views/holidays/index.blade.php:49` — `flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/holidays/index.blade.php:50` — `table table-sm table-zebra table-pin-rows`
+- `resources/views/holidays/index.blade.php:53` — `whitespace-nowrap`
+- `resources/views/holidays/index.blade.php:53` — `date`
+- `resources/views/holidays/index.blade.php:53` — `Datum`
+- `resources/views/holidays/index.blade.php:54` — `whitespace-nowrap`
+- `resources/views/holidays/index.blade.php:54` — `Wochentag`
+- `resources/views/holidays/index.blade.php:55` — `Name`
+- `resources/views/holidays/index.blade.php:56` — `Quelle`
+- `resources/views/holidays/index.blade.php:57` — `text-right`
+- `resources/views/holidays/index.blade.php:57` — `Aktion`
+- `resources/views/holidays/index.blade.php:63` — `custom`
+- `resources/views/holidays/index.blade.php:64` — `date`
+- `resources/views/holidays/index.blade.php:64` — `date`
+- `resources/views/holidays/index.blade.php:65` — `date`
+- `resources/views/holidays/index.blade.php:67` — `opacity-50`
+- `resources/views/holidays/index.blade.php:67` — `date`
+- `resources/views/holidays/index.blade.php:67` — `text-error`
+- `resources/views/holidays/index.blade.php:68` — `whitespace-nowrap font-mono`
+- `resources/views/holidays/index.blade.php:68` — `date`
+- `resources/views/holidays/index.blade.php:68` — `Y-m-d`
+- `resources/views/holidays/index.blade.php:68` — `date`
+- `resources/views/holidays/index.blade.php:69` — `date`
+- `resources/views/holidays/index.blade.php:70` — `font-semibold`
+- `resources/views/holidays/index.blade.php:70` — `name`
+- `resources/views/holidays/index.blade.php:73` — `custom`
+- `resources/views/holidays/index.blade.php:73` — `fixed`
+- `resources/views/holidays/index.blade.php:73` — `relative`
+- `resources/views/holidays/index.blade.php:74` — `badge badge-sm badge-warning`
+- `resources/views/holidays/index.blade.php:74` — `custom`
+- `resources/views/holidays/index.blade.php:75` — `custom`
+- `resources/views/holidays/index.blade.php:76` — `badge badge-sm badge-info`
+- `resources/views/holidays/index.blade.php:78` — `badge badge-sm badge-info`
+- `resources/views/holidays/index.blade.php:78` — `Eigen`
+- `resources/views/holidays/index.blade.php:81` — `badge badge-sm badge-ghost`
+- `resources/views/holidays/index.blade.php:81` — `Standard`
+- `resources/views/holidays/index.blade.php:84` — `whitespace-nowrap text-right`
+- `resources/views/holidays/index.blade.php:86` — `custom`
+- `resources/views/holidays/index.blade.php:86` — `btn btn-xs btn-ghost`
+- `resources/views/holidays/index.blade.php:86` — `Bearbeiten`
+- `resources/views/holidays/index.blade.php:86` — `Bearbeiten`
+- `resources/views/holidays/index.blade.php:87` — `h-4 w-4`
+- `resources/views/holidays/index.blade.php:87` — `none`
+- `resources/views/holidays/index.blade.php:87` — `currentColor`
+- `resources/views/holidays/index.blade.php:87` — `round`
+- `resources/views/holidays/index.blade.php:87` — `round`
+- `resources/views/holidays/index.blade.php:87` — `M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z`
+- `resources/views/holidays/index.blade.php:89` — `custom`
+- `resources/views/holidays/index.blade.php:89` — `inline`
+- `resources/views/holidays/index.blade.php:91` — `Feiertag löschen`
+- `resources/views/holidays/index.blade.php:92` — `Diesen Feiertag wirklich löschen?`
+- `resources/views/holidays/index.blade.php:93` — `Löschen`
+- `resources/views/holidays/index.blade.php:96` — `submit`
+- `resources/views/holidays/index.blade.php:96` — `btn btn-xs btn-ghost text-error`
+- `resources/views/holidays/index.blade.php:96` — `Löschen`
+- `resources/views/holidays/index.blade.php:96` — `Löschen`
+- `resources/views/holidays/index.blade.php:97` — `h-4 w-4`
+- `resources/views/holidays/index.blade.php:97` — `none`
+- `resources/views/holidays/index.blade.php:97` — `currentColor`
+- `resources/views/holidays/index.blade.php:97` — `round`
+- `resources/views/holidays/index.blade.php:97` — `round`
+- `resources/views/holidays/index.blade.php:97` — `M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3`
+- `resources/views/holidays/index.blade.php:107` — `Keine Feiertage in diesem Jahr.`
+- `resources/views/holidays/index.blade.php:115` — `custom`
+- `resources/views/holidays/index.blade.php:115` — `hidden flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/holidays/index.blade.php:116` — `table table-sm table-zebra table-pin-rows`
+- `resources/views/holidays/index.blade.php:119` — `whitespace-nowrap`
+- `resources/views/holidays/index.blade.php:119` — `date`
+- `resources/views/holidays/index.blade.php:119` — `Datum`
+- `resources/views/holidays/index.blade.php:120` — `Name`
+- `resources/views/holidays/index.blade.php:122` — `text-right`
+- `resources/views/holidays/index.blade.php:122` — `Aktion`
+- `resources/views/holidays/index.blade.php:128` — `text-error`
+- `resources/views/holidays/index.blade.php:129` — `whitespace-nowrap font-mono`
+- `resources/views/holidays/index.blade.php:129` — `Y-m-d`
+- `resources/views/holidays/index.blade.php:132` — `fixed`
+- `resources/views/holidays/index.blade.php:132` — `relative`
+- `resources/views/holidays/index.blade.php:133` — `badge badge-sm badge-warning`
+- `resources/views/holidays/index.blade.php:135` — `badge badge-sm badge-info`
+- `resources/views/holidays/index.blade.php:135` — `Jährl.`
+- `resources/views/holidays/index.blade.php:137` — `badge badge-sm`
+- `resources/views/holidays/index.blade.php:137` — `Einmalig`
+- `resources/views/holidays/index.blade.php:140` — `text-right whitespace-nowrap`
+- `resources/views/holidays/index.blade.php:141` — `btn btn-xs btn-ghost`
+- `resources/views/holidays/index.blade.php:141` — `Bearbeiten`
+- `resources/views/holidays/index.blade.php:141` — `Bearbeiten`
+- `resources/views/holidays/index.blade.php:142` — `h-4 w-4`
+- `resources/views/holidays/index.blade.php:142` — `none`
+- `resources/views/holidays/index.blade.php:142` — `currentColor`
+- `resources/views/holidays/index.blade.php:142` — `round`
+- `resources/views/holidays/index.blade.php:142` — `round`
+- `resources/views/holidays/index.blade.php:142` — `M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z`
+- `resources/views/holidays/index.blade.php:144` — `inline`
+- `resources/views/holidays/index.blade.php:146` — `Feiertag löschen`
+- `resources/views/holidays/index.blade.php:147` — `Diesen Feiertag wirklich löschen?`
+- `resources/views/holidays/index.blade.php:148` — `Löschen`
+- `resources/views/holidays/index.blade.php:151` — `submit`
+- `resources/views/holidays/index.blade.php:151` — `btn btn-xs btn-ghost text-error`
+- `resources/views/holidays/index.blade.php:151` — `Löschen`
+- `resources/views/holidays/index.blade.php:151` — `Löschen`
+- `resources/views/holidays/index.blade.php:152` — `h-4 w-4`
+- `resources/views/holidays/index.blade.php:152` — `none`
+- `resources/views/holidays/index.blade.php:152` — `currentColor`
+- `resources/views/holidays/index.blade.php:152` — `round`
+- `resources/views/holidays/index.blade.php:152` — `round`
+- `resources/views/holidays/index.blade.php:152` — `M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3`
+- `resources/views/holidays/index.blade.php:159` — `Keine eigenen Feiertage vorhanden.`
+- `resources/views/holidays/index.blade.php:172` — `click`
+- `resources/views/holidays/index.blade.php:174` — `data-holiday-tab`
+- `resources/views/holidays/index.blade.php:175` — `tab-active`
+- `resources/views/holidays/index.blade.php:177` — `hidden`
+- `resources/views/holidays/index.blade.php:177` — `data-holiday-pane`
+- `resources/views/holidays/_form_dialog.blade.php:9` — `fixed`
+- `resources/views/holidays/_form_dialog.blade.php:9` — `relative`
+- `resources/views/holidays/_form_dialog.blade.php:9` — `relative`
+- `resources/views/holidays/_form_dialog.blade.php:10` — `yearly`
+- `resources/views/holidays/_form_dialog.blade.php:11` — `once`
+- `resources/views/holidays/_form_dialog.blade.php:15` — `Sonntag`
+- `resources/views/holidays/_form_dialog.blade.php:15` — `Montag`
+- `resources/views/holidays/_form_dialog.blade.php:15` — `Dienstag`
+- `resources/views/holidays/_form_dialog.blade.php:16` — `Mittwoch`
+- `resources/views/holidays/_form_dialog.blade.php:16` — `Donnerstag`
+- `resources/views/holidays/_form_dialog.blade.php:16` — `Freitag`
+- `resources/views/holidays/_form_dialog.blade.php:16` — `Samstag`
+- `resources/views/holidays/_form_dialog.blade.php:22` — `Januar`
+- `resources/views/holidays/_form_dialog.blade.php:22` — `Februar`
+- `resources/views/holidays/_form_dialog.blade.php:22` — `März`
+- `resources/views/holidays/_form_dialog.blade.php:22` — `April`
+- `resources/views/holidays/_form_dialog.blade.php:23` — `Juni`
+- `resources/views/holidays/_form_dialog.blade.php:23` — `Juli`
+- `resources/views/holidays/_form_dialog.blade.php:23` — `August`
+- `resources/views/holidays/_form_dialog.blade.php:24` — `September`
+- `resources/views/holidays/_form_dialog.blade.php:24` — `Oktober`
+- `resources/views/holidays/_form_dialog.blade.php:24` — `November`
+- `resources/views/holidays/_form_dialog.blade.php:24` — `Dezember`
+- `resources/views/holidays/_form_dialog.blade.php:29` — `Feiertag bearbeiten`
+- `resources/views/holidays/_form_dialog.blade.php:29` — `Feiertag anlegen`
+- `resources/views/holidays/_form_dialog.blade.php:30` — `Kalender`
+- `resources/views/holidays/_form_dialog.blade.php:31` — `celebration`
+- `resources/views/holidays/_form_dialog.blade.php:32` — `warning`
+- `resources/views/holidays/_form_dialog.blade.php:34` — `POST'`
+- `resources/views/holidays/_form_dialog.blade.php:35` — `data-entry-form`
+- `resources/views/holidays/_form_dialog.blade.php:35` — `data-recurrence-form`
+- `resources/views/holidays/_form_dialog.blade.php:36` — `Speichern`
+- `resources/views/holidays/_form_dialog.blade.php:36` — `Anlegen`
+- `resources/views/holidays/_form_dialog.blade.php:38` — `hidden`
+- `resources/views/holidays/_form_dialog.blade.php:41` — `Wiederholung`
+- `resources/views/holidays/_form_dialog.blade.php:41` — `sync`
+- `resources/views/holidays/_form_dialog.blade.php:41` — `warning`
+- `resources/views/holidays/_form_dialog.blade.php:42` — `fieldset`
+- `resources/views/holidays/_form_dialog.blade.php:43` — `fieldset-label`
+- `resources/views/holidays/_form_dialog.blade.php:43` — `recurrence-mode`
+- `resources/views/holidays/_form_dialog.blade.php:44` — `recurrence-mode`
+- `resources/views/holidays/_form_dialog.blade.php:45` — `select select-bordered w-full`
+- `resources/views/holidays/_form_dialog.blade.php:47` — `once`
+- `resources/views/holidays/_form_dialog.blade.php:47` — `once`
+- `resources/views/holidays/_form_dialog.blade.php:47` — `Einmalig`
+- `resources/views/holidays/_form_dialog.blade.php:48` — `yearly`
+- `resources/views/holidays/_form_dialog.blade.php:48` — `yearly`
+- `resources/views/holidays/_form_dialog.blade.php:49` — `relative`
+- `resources/views/holidays/_form_dialog.blade.php:49` — `relative`
+- `resources/views/holidays/_form_dialog.blade.php:53` — `fieldset`
+- `resources/views/holidays/_form_dialog.blade.php:53` — `once yearly`
+- `resources/views/holidays/_form_dialog.blade.php:54` — `fieldset-label`
+- `resources/views/holidays/_form_dialog.blade.php:54` — `holiday-date`
+- `resources/views/holidays/_form_dialog.blade.php:55` — `Datum`
+- `resources/views/holidays/_form_dialog.blade.php:56` — `yearly`
+- `resources/views/holidays/_form_dialog.blade.php:58` — `holiday-date`
+- `resources/views/holidays/_form_dialog.blade.php:58` — `date`
+- `resources/views/holidays/_form_dialog.blade.php:58` — `date`
+- `resources/views/holidays/_form_dialog.blade.php:59` — `date`
+- `resources/views/holidays/_form_dialog.blade.php:59` — `Y-m-d`
+- `resources/views/holidays/_form_dialog.blade.php:60` — `date`
+- `resources/views/holidays/_form_dialog.blade.php:60` — `input-error`
+- `resources/views/holidays/_form_dialog.blade.php:61` — `date`
+- `resources/views/holidays/_form_dialog.blade.php:62` — `text-error text-sm`
+- `resources/views/holidays/_form_dialog.blade.php:62` — `date`
+- `resources/views/holidays/_form_dialog.blade.php:66` — `relative`
+- `resources/views/holidays/_form_dialog.blade.php:67` — `fieldset`
+- `resources/views/holidays/_form_dialog.blade.php:68` — `fieldset-label`
+- `resources/views/holidays/_form_dialog.blade.php:68` — `rec-week`
+- `resources/views/holidays/_form_dialog.blade.php:68` — `Woche`
+- `resources/views/holidays/_form_dialog.blade.php:69` — `rec-week`
+- `resources/views/holidays/_form_dialog.blade.php:69` — `select select-bordered w-full`
+- `resources/views/holidays/_form_dialog.blade.php:75` — `fieldset`
+- `resources/views/holidays/_form_dialog.blade.php:76` — `fieldset-label`
+- `resources/views/holidays/_form_dialog.blade.php:76` — `rec-weekday`
+- `resources/views/holidays/_form_dialog.blade.php:76` — `Wochentag`
+- `resources/views/holidays/_form_dialog.blade.php:77` — `rec-weekday`
+- `resources/views/holidays/_form_dialog.blade.php:77` — `select select-bordered w-full`
+- `resources/views/holidays/_form_dialog.blade.php:83` — `fieldset`
+- `resources/views/holidays/_form_dialog.blade.php:84` — `fieldset-label`
+- `resources/views/holidays/_form_dialog.blade.php:84` — `rec-month`
+- `resources/views/holidays/_form_dialog.blade.php:84` — `Monat`
+- `resources/views/holidays/_form_dialog.blade.php:85` — `rec-month`
+- `resources/views/holidays/_form_dialog.blade.php:85` — `select select-bordered w-full`
+- `resources/views/holidays/_form_dialog.blade.php:86` — `Jeden Monat`
+- `resources/views/holidays/_form_dialog.blade.php:95` — `Bezeichnung`
+- `resources/views/holidays/_form_dialog.blade.php:95` — `label`
+- `resources/views/holidays/_form_dialog.blade.php:95` — `primary`
+- `resources/views/holidays/_form_dialog.blade.php:96` — `fieldset`
+- `resources/views/holidays/_form_dialog.blade.php:97` — `fieldset-label`
+- `resources/views/holidays/_form_dialog.blade.php:97` — `holiday-name`
+- `resources/views/holidays/_form_dialog.blade.php:97` — `Name`
+- `resources/views/holidays/_form_dialog.blade.php:98` — `holiday-name`
+- `resources/views/holidays/_form_dialog.blade.php:98` — `text`
+- `resources/views/holidays/_form_dialog.blade.php:98` — `name`
+- `resources/views/holidays/_form_dialog.blade.php:98` — `name`
+- `resources/views/holidays/_form_dialog.blade.php:98` — `name`
+- `resources/views/holidays/_form_dialog.blade.php:98` — `input-error`
+- `resources/views/holidays/_form_dialog.blade.php:99` — `name`
+- `resources/views/holidays/_form_dialog.blade.php:100` — `text-error text-sm`
+- `resources/views/holidays/_form_dialog.blade.php:100` — `name`
+- `resources/views/mail/timesheet-signature-requested.blade.php:2` — `Stundenzettel zur Gegenzeichnung`
+- `resources/views/mail/timesheet-signature-requested.blade.php:7` — `Stundenzettel öffnen`
+- `resources/views/mail/timesheet-signature-requested.blade.php:14` — `Danke!`
+- `resources/views/mail/comment-created.blade.php:2` — `Neuer Kommentar`
+- `resources/views/mail/comment-created.blade.php:5` — `name`
+- `resources/views/mail/comment-created.blade.php:5` — `Unbekannt`
+- `resources/views/mail/comment-created.blade.php:12` — `Eintrag öffnen`
+- `resources/views/mail/comment-created.blade.php:15` — `Viele Grüße`
+- `resources/views/mail/timesheet-signed.blade.php:2` — `Stundenzettel signiert`
+- `resources/views/mail/timesheet-signed.blade.php:4` — `Der Stundenzettel wurde signiert. Das PDF finden Sie im Anhang.`
+- `resources/views/mail/diary-status-changed.blade.php:3` — `Erledigt`
+- `resources/views/mail/diary-status-changed.blade.php:4` — `Bestätigt`
+- `resources/views/mail/diary-status-changed.blade.php:5` — `Offen`
+- `resources/views/mail/diary-status-changed.blade.php:6` — `Problem`
+- `resources/views/mail/diary-status-changed.blade.php:11` — `Status geändert`
+- `resources/views/mail/diary-status-changed.blade.php:15` — `Vorher`
+- `resources/views/mail/diary-status-changed.blade.php:16` — `Jetzt`
+- `resources/views/mail/diary-status-changed.blade.php:21` — `Eintrag öffnen`
+- `resources/views/mail/diary-status-changed.blade.php:24` — `Viele Grüße`
+- `resources/views/stopwatch/_panel.blade.php:2` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/stopwatch/_panel.blade.php:3` — `Stoppuhr`
+- `resources/views/stopwatch/_panel.blade.php:5` — `mt-2`
+- `resources/views/stopwatch/_panel.blade.php:6` — `text-2xl font-bold tabular-nums`
+- `resources/views/stopwatch/_panel.blade.php:10` — `mt-2`
+- `resources/views/stopwatch/_panel.blade.php:12` — `btn btn-sm btn-error`
+- `resources/views/stopwatch/_panel.blade.php:12` — `Stoppen`
+- `resources/views/stopwatch/_panel.blade.php:16` — `Keine laufende Erfassung.`
+- `resources/views/coverage-requirements/_heatmap.blade.php:22` — `under`
+- `resources/views/coverage-requirements/_heatmap.blade.php:22` — `border-2 border-black bg-white',
+                'over`
+- `resources/views/coverage-requirements/_heatmap.blade.php:23` — `border border-dashed border-black bg-white',
+                'ok`
+- `resources/views/coverage-requirements/_heatmap.blade.php:24` — `bg-black text-white`
+- `resources/views/coverage-requirements/_heatmap.blade.php:29` — `under`
+- `resources/views/coverage-requirements/_heatmap.blade.php:30` — `over`
+- `resources/views/coverage-requirements/_heatmap.blade.php:38` — `Keine Schichttypen im Plan vorhanden.`
+- `resources/views/coverage-requirements/_heatmap.blade.php:40` — `overflow-x-auto rounded-box border border-base-300`
+- `resources/views/coverage-requirements/_heatmap.blade.php:41` — `table table-xs w-full`
+- `resources/views/coverage-requirements/_heatmap.blade.php:42` — `bg-base-200`
+- `resources/views/coverage-requirements/_heatmap.blade.php:44` — `whitespace-nowrap`
+- `resources/views/coverage-requirements/_heatmap.blade.php:44` — `Datum`
+- `resources/views/coverage-requirements/_heatmap.blade.php:46` — `text-center whitespace-nowrap`
+- `resources/views/coverage-requirements/_heatmap.blade.php:47` — `badge badge-sm`
+- `resources/views/coverage-requirements/_heatmap.blade.php:57` — `Y-m-d`
+- `resources/views/coverage-requirements/_heatmap.blade.php:61` — `text-error`
+- `resources/views/coverage-requirements/_heatmap.blade.php:62` — `whitespace-nowrap font-medium`
+- `resources/views/coverage-requirements/_heatmap.blade.php:63` — `text-error`
+- `resources/views/coverage-requirements/_heatmap.blade.php:77` — `text-center px-1`
+- `resources/views/coverage-requirements/_heatmap.blade.php:80` — `opacity-60`
+- `resources/views/coverage-requirements/_heatmap.blade.php:91` — `flex items-center gap-1`
+- `resources/views/coverage-requirements/_heatmap.blade.php:91` — `under`
+- `resources/views/coverage-requirements/_heatmap.blade.php:91` — `Unterbesetzt`
+- `resources/views/coverage-requirements/_heatmap.blade.php:92` — `flex items-center gap-1`
+- `resources/views/coverage-requirements/_heatmap.blade.php:92` — `Soll erfüllt`
+- `resources/views/coverage-requirements/_heatmap.blade.php:93` — `flex items-center gap-1`
+- `resources/views/coverage-requirements/_heatmap.blade.php:93` — `over`
+- `resources/views/coverage-requirements/_heatmap.blade.php:93` — `Überbesetzt`
+- `resources/views/coverage-requirements/_heatmap.blade.php:94` — `flex items-center gap-1`
+- `resources/views/coverage-requirements/_heatmap.blade.php:94` — `idle`
+- `resources/views/coverage-requirements/_heatmap.blade.php:94` — `Kein Soll`
+- `resources/views/coverage-requirements/index.blade.php:2` — `title`
+- `resources/views/coverage-requirements/index.blade.php:2` — `Soll-Besetzung`
+- `resources/views/coverage-requirements/index.blade.php:3` — `nav-title`
+- `resources/views/coverage-requirements/index.blade.php:3` — `Soll-Besetzung`
+- `resources/views/coverage-requirements/index.blade.php:4` — `content`
+- `resources/views/coverage-requirements/index.blade.php:6` — `flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/coverage-requirements/index.blade.php:8` — `Soll-Besetzung`
+- `resources/views/coverage-requirements/index.blade.php:13` — `flex items-center gap-2`
+- `resources/views/coverage-requirements/index.blade.php:14` — `create`
+- `resources/views/coverage-requirements/index.blade.php:15` — `duty-plans.coverage.create`
+- `resources/views/coverage-requirements/index.blade.php:15` — `btn btn-primary btn-sm`
+- `resources/views/coverage-requirements/index.blade.php:16` — `Anforderung hinzufügen`
+- `resources/views/coverage-requirements/index.blade.php:19` — `duty-plans.show`
+- `resources/views/coverage-requirements/index.blade.php:19` — `btn btn-ghost btn-sm`
+- `resources/views/coverage-requirements/index.blade.php:19` — `Zurück`
+- `resources/views/coverage-requirements/index.blade.php:25` — `Noch keine Soll-Besetzungen für diesen Dienstplan definiert.`
+- `resources/views/coverage-requirements/index.blade.php:27` — `text-sm`
+- `resources/views/coverage-requirements/index.blade.php:33` — `Schichttyp`
+- `resources/views/coverage-requirements/index.blade.php:34` — `Geltungsbereich`
+- `resources/views/coverage-requirements/index.blade.php:35` — `text-center`
+- `resources/views/coverage-requirements/index.blade.php:36` — `text-center`
+- `resources/views/coverage-requirements/index.blade.php:37` — `Qualifikationen`
+- `resources/views/coverage-requirements/index.blade.php:38` — `Notizen`
+- `resources/views/coverage-requirements/index.blade.php:53` — `badge badge-sm`
+- `resources/views/coverage-requirements/index.blade.php:61` — `text-sm`
+- `resources/views/coverage-requirements/index.blade.php:63` — `badge badge-sm badge-warning`
+- `resources/views/coverage-requirements/index.blade.php:63` — `Konkretes Datum`
+- `resources/views/coverage-requirements/index.blade.php:66` — `badge badge-sm badge-info`
+- `resources/views/coverage-requirements/index.blade.php:66` — `Wochentag`
+- `resources/views/coverage-requirements/index.blade.php:69` — `badge badge-sm badge-ghost`
+- `resources/views/coverage-requirements/index.blade.php:69` — `Immer`
+- `resources/views/coverage-requirements/index.blade.php:72` — `text-center font-semibold`
+- `resources/views/coverage-requirements/index.blade.php:73` — `text-center`
+- `resources/views/coverage-requirements/index.blade.php:74` — `text-sm`
+- `resources/views/coverage-requirements/index.blade.php:76` — `Qual.`
+- `resources/views/coverage-requirements/index.blade.php:82` — `text-right`
+- `resources/views/coverage-requirements/index.blade.php:83` — `flex justify-end gap-2`
+- `resources/views/coverage-requirements/index.blade.php:84` — `update`
+- `resources/views/coverage-requirements/index.blade.php:85` — `duty-plans.coverage.edit`
+- `resources/views/coverage-requirements/index.blade.php:85` — `btn btn-ghost btn-xs`
+- `resources/views/coverage-requirements/index.blade.php:85` — `Bearbeiten`
+- `resources/views/coverage-requirements/index.blade.php:87` — `delete`
+- `resources/views/coverage-requirements/index.blade.php:88` — `duty-plans.coverage.destroy`
+- `resources/views/coverage-requirements/index.blade.php:90` — `Anforderung wirklich löschen?`
+- `resources/views/coverage-requirements/index.blade.php:91` — `Löschen`
+- `resources/views/coverage-requirements/index.blade.php:93` — `btn btn-ghost btn-xs text-error`
+- `resources/views/coverage-requirements/index.blade.php:93` — `Löschen`
+- `resources/views/coverage-requirements/_form.blade.php:5` — `name`
+- `resources/views/coverage-requirements/_form.blade.php:8` — `name`
+- `resources/views/coverage-requirements/_form.blade.php:12` — `Sonntag`
+- `resources/views/coverage-requirements/_form.blade.php:13` — `Montag`
+- `resources/views/coverage-requirements/_form.blade.php:14` — `Dienstag`
+- `resources/views/coverage-requirements/_form.blade.php:15` — `Mittwoch`
+- `resources/views/coverage-requirements/_form.blade.php:16` — `Donnerstag`
+- `resources/views/coverage-requirements/_form.blade.php:17` — `Freitag`
+- `resources/views/coverage-requirements/_form.blade.php:18` — `Samstag`
+- `resources/views/coverage-requirements/_form.blade.php:24` — `alert alert-error`
+- `resources/views/coverage-requirements/_form.blade.php:25` — `list-disc pl-5`
+- `resources/views/coverage-requirements/_form.blade.php:31` — `Schichttyp`
+- `resources/views/coverage-requirements/_form.blade.php:31` — `primary`
+- `resources/views/coverage-requirements/_form.blade.php:32` — `fieldset w-full`
+- `resources/views/coverage-requirements/_form.blade.php:33` — `fieldset-label`
+- `resources/views/coverage-requirements/_form.blade.php:33` — `Schichttyp`
+- `resources/views/coverage-requirements/_form.blade.php:34` — `select select-bordered w-full`
+- `resources/views/coverage-requirements/_form.blade.php:35` — `bitte wählen`
+- `resources/views/coverage-requirements/_form.blade.php:45` — `Wann`
+- `resources/views/coverage-requirements/_form.blade.php:45` — `event`
+- `resources/views/coverage-requirements/_form.blade.php:45` — `info`
+- `resources/views/coverage-requirements/_form.blade.php:46` — `fieldset w-full`
+- `resources/views/coverage-requirements/_form.blade.php:47` — `fieldset-label`
+- `resources/views/coverage-requirements/_form.blade.php:47` — `Wochentag`
+- `resources/views/coverage-requirements/_form.blade.php:48` — `weekday`
+- `resources/views/coverage-requirements/_form.blade.php:48` — `select select-bordered w-full`
+- `resources/views/coverage-requirements/_form.blade.php:50` — `weekday`
+- `resources/views/coverage-requirements/_form.blade.php:58` — `fieldset w-full`
+- `resources/views/coverage-requirements/_form.blade.php:59` — `fieldset-label`
+- `resources/views/coverage-requirements/_form.blade.php:59` — `Konkretes Datum`
+- `resources/views/coverage-requirements/_form.blade.php:60` — `date`
+- `resources/views/coverage-requirements/_form.blade.php:62` — `input input-bordered w-full`
+- `resources/views/coverage-requirements/_form.blade.php:63` — `Überschreibt Wochentag-Regel`
+- `resources/views/coverage-requirements/_form.blade.php:67` — `Besetzung`
+- `resources/views/coverage-requirements/_form.blade.php:67` — `group`
+- `resources/views/coverage-requirements/_form.blade.php:67` — `success`
+- `resources/views/coverage-requirements/_form.blade.php:68` — `fieldset w-full`
+- `resources/views/coverage-requirements/_form.blade.php:69` — `fieldset-label`
+- `resources/views/coverage-requirements/_form.blade.php:69` — `Min. Personen`
+- `resources/views/coverage-requirements/_form.blade.php:70` — `number`
+- `resources/views/coverage-requirements/_form.blade.php:72` — `input input-bordered w-full`
+- `resources/views/coverage-requirements/_form.blade.php:75` — `fieldset w-full`
+- `resources/views/coverage-requirements/_form.blade.php:76` — `fieldset-label`
+- `resources/views/coverage-requirements/_form.blade.php:76` — `Max. Personen`
+- `resources/views/coverage-requirements/_form.blade.php:77` — `number`
+- `resources/views/coverage-requirements/_form.blade.php:79` — `input input-bordered w-full`
+- `resources/views/coverage-requirements/_form.blade.php:85` — `Erforderliche Qualifikationen`
+- `resources/views/coverage-requirements/_form.blade.php:85` — `school`
+- `resources/views/coverage-requirements/_form.blade.php:85` — `warning`
+- `resources/views/coverage-requirements/_form.blade.php:86` — `fieldset w-full`
+- `resources/views/coverage-requirements/_form.blade.php:89` — `label cursor-pointer justify-start gap-2`
+- `resources/views/coverage-requirements/_form.blade.php:90` — `checkbox`
+- `resources/views/coverage-requirements/_form.blade.php:92` — `checkbox checkbox-sm`
+- `resources/views/coverage-requirements/_form.blade.php:94` — `label-text`
+- `resources/views/coverage-requirements/_form.blade.php:102` — `Notizen`
+- `resources/views/coverage-requirements/_form.blade.php:102` — `description`
+- `resources/views/coverage-requirements/_form.blade.php:102` — `ghost`
+- `resources/views/coverage-requirements/_form.blade.php:103` — `fieldset w-full`
+- `resources/views/coverage-requirements/_form.blade.php:104` — `fieldset-label`
+- `resources/views/coverage-requirements/_form.blade.php:104` — `Notizen`
+- `resources/views/coverage-requirements/_form.blade.php:105` — `notes`
+- `resources/views/coverage-requirements/_form.blade.php:105` — `textarea textarea-bordered w-full`
+- `resources/views/coverage-requirements/_form.blade.php:105` — `notes`
+- `resources/views/coverage-requirements/_form_dialog.blade.php:5` — `duty-plans.coverage.update`
+- `resources/views/coverage-requirements/_form_dialog.blade.php:6` — `duty-plans.coverage.store`
+- `resources/views/coverage-requirements/_form_dialog.blade.php:10` — `Soll-Besetzung bearbeiten`
+- `resources/views/coverage-requirements/_form_dialog.blade.php:10` — `Soll-Besetzung anlegen`
+- `resources/views/coverage-requirements/_form_dialog.blade.php:13` — `primary`
+- `resources/views/coverage-requirements/_form_dialog.blade.php:15` — `POST'`
+- `resources/views/coverage-requirements/_form_dialog.blade.php:16` — `data-entry-form`
+- `resources/views/coverage-requirements/_form_dialog.blade.php:17` — `Speichern`
+- `resources/views/coverage-requirements/_form_dialog.blade.php:17` — `Anlegen`
+- `resources/views/coverage-requirements/_form_dialog.blade.php:19` — `dutyPlan`
+- `resources/views/coverage-requirements/_form_dialog.blade.php:19` — `requirement`
+- `resources/views/coverage-requirements/_form_dialog.blade.php:23` — `duty-plans.coverage.destroy`
+- `resources/views/coverage-requirements/_form_dialog.blade.php:25` — `Wirklich löschen?`
+- `resources/views/coverage-requirements/_form_dialog.blade.php:26` — `Löschen`
+- `resources/views/coverage-requirements/_form_dialog.blade.php:28` — `submit`
+- `resources/views/coverage-requirements/_form_dialog.blade.php:28` — `btn btn-error btn-outline btn-sm gap-2`
+- `resources/views/coverage-requirements/_form_dialog.blade.php:29` — `delete`
+- `resources/views/coverage-requirements/_form_dialog.blade.php:29` — `Soll-Besetzung löschen`
+- `resources/views/customers/import.blade.php:3` — `content`
+- `resources/views/customers/import.blade.php:4` — `container mx-auto p-6 max-w-2xl`
+- `resources/views/customers/import.blade.php:5` — `flex items-center justify-between mb-6`
+- `resources/views/customers/import.blade.php:6` — `text-2xl font-semibold`
+- `resources/views/customers/import.blade.php:7` — `btn btn-ghost btn-sm`
+- `resources/views/customers/import.blade.php:7` — `Zurück`
+- `resources/views/customers/import.blade.php:10` — `error`
+- `resources/views/customers/import.blade.php:11` — `alert alert-error mb-4`
+- `resources/views/customers/import.blade.php:11` — `error`
+- `resources/views/customers/import.blade.php:14` — `card bg-base-100 shadow`
+- `resources/views/customers/import.blade.php:15` — `card-body`
+- `resources/views/customers/import.blade.php:16` — `space-y-4`
+- `resources/views/customers/import.blade.php:19` — `label`
+- `resources/views/customers/import.blade.php:19` — `file`
+- `resources/views/customers/import.blade.php:20` — `label-text`
+- `resources/views/customers/import.blade.php:20` — `CSV-Datei`
+- `resources/views/customers/import.blade.php:22` — `file`
+- `resources/views/customers/import.blade.php:22` — `file`
+- `resources/views/customers/import.blade.php:22` — `file`
+- `resources/views/customers/import.blade.php:23` — `file`
+- `resources/views/customers/import.blade.php:24` — `file`
+- `resources/views/customers/import.blade.php:25` — `text-error text-sm mt-1`
+- `resources/views/customers/import.blade.php:30` — `font-semibold`
+- `resources/views/customers/import.blade.php:31` — `list-disc ml-5 mt-2 space-y-1`
+- `resources/views/customers/import.blade.php:34` — `Existierende Kunden werden über die Spalte `
+- `resources/views/customers/import.blade.php:39` — `flex gap-2`
+- `resources/views/customers/import.blade.php:40` — `submit`
+- `resources/views/customers/import.blade.php:40` — `btn btn-primary`
+- `resources/views/customers/import.blade.php:40` — `Importieren`
+- `resources/views/customers/import.blade.php:41` — `btn btn-ghost btn-sm`
+- `resources/views/customers/import.blade.php:41` — `Vorlage herunterladen`
+- `resources/views/customers/index.blade.php:2` — `title`
+- `resources/views/customers/index.blade.php:2` — `Kunden`
+- `resources/views/customers/index.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/customers/index.blade.php:3` — `nav-title`
+- `resources/views/customers/index.blade.php:3` — `Kunden`
+- `resources/views/customers/index.blade.php:7` — `name`
+- `resources/views/customers/index.blade.php:9` — `active`
+- `resources/views/customers/index.blade.php:12` — `desc`
+- `resources/views/customers/index.blade.php:14` — `status`
+- `resources/views/customers/index.blade.php:14` — `sort`
+- `resources/views/customers/index.blade.php:17` — `asc' ? `
+- `resources/views/customers/index.blade.php:20` — `content`
+- `resources/views/customers/index.blade.php:21` — `flex h-full min-h-0 w-full flex-col gap-4 overflow-auto`
+- `resources/views/customers/index.blade.php:23` — `flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/customers/index.blade.php:24` — `join`
+- `resources/views/customers/index.blade.php:25` — `hidden`
+- `resources/views/customers/index.blade.php:25` — `status`
+- `resources/views/customers/index.blade.php:26` — `text`
+- `resources/views/customers/index.blade.php:28` — `submit`
+- `resources/views/customers/index.blade.php:28` — `btn btn-sm btn-ghost join-item gap-1`
+- `resources/views/customers/index.blade.php:29` — `search`
+- `resources/views/customers/index.blade.php:30` — `Suchen`
+- `resources/views/customers/index.blade.php:33` — `flex flex-wrap items-center gap-2`
+- `resources/views/customers/index.blade.php:34` — `status`
+- `resources/views/customers/index.blade.php:35` — `btn btn-sm btn-ghost gap-1`
+- `resources/views/customers/index.blade.php:36` — `download`
+- `resources/views/customers/index.blade.php:37` — `CSV-Export`
+- `resources/views/customers/index.blade.php:40` — `btn btn-sm btn-ghost gap-1`
+- `resources/views/customers/index.blade.php:41` — `upload`
+- `resources/views/customers/index.blade.php:42` — `CSV-Import`
+- `resources/views/customers/index.blade.php:44` — `customers.lexoffice.push-all`
+- `resources/views/customers/index.blade.php:46` — `Alle nicht synchronisierten Kunden zu Lexoffice übertragen?`
+- `resources/views/customers/index.blade.php:47` — `sync`
+- `resources/views/customers/index.blade.php:48` — `info`
+- `resources/views/customers/index.blade.php:49` — `Synchronisieren`
+- `resources/views/customers/index.blade.php:51` — `submit`
+- `resources/views/customers/index.blade.php:51` — `btn btn-sm btn-ghost gap-1`
+- `resources/views/customers/index.blade.php:52` — `sync`
+- `resources/views/customers/index.blade.php:57` — `create`
+- `resources/views/customers/index.blade.php:58` — `btn btn-sm btn-primary gap-1`
+- `resources/views/customers/index.blade.php:60` — `Kunde`
+- `resources/views/customers/index.blade.php:67` — `tablist`
+- `resources/views/customers/index.blade.php:67` — `tabs tabs-box self-start`
+- `resources/views/customers/index.blade.php:68` — `status`
+- `resources/views/customers/index.blade.php:68` — `active', 'q`
+- `resources/views/customers/index.blade.php:69` — `active' ? 'tab-active`
+- `resources/views/customers/index.blade.php:69` — `Aktiv`
+- `resources/views/customers/index.blade.php:70` — `status`
+- `resources/views/customers/index.blade.php:71` — `tab-active`
+- `resources/views/customers/index.blade.php:71` — `Bereit zur Abrechnung`
+- `resources/views/customers/index.blade.php:72` — `status`
+- `resources/views/customers/index.blade.php:72` — `archived', 'q`
+- `resources/views/customers/index.blade.php:73` — `archived' ? 'tab-active`
+- `resources/views/customers/index.blade.php:73` — `Archiv`
+- `resources/views/customers/index.blade.php:81` — `Noch keine Kunden in dieser Ansicht.`
+- `resources/views/customers/index.blade.php:85` — `overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/customers/index.blade.php:86` — `table table-zebra table-sm`
+- `resources/views/customers/index.blade.php:90` — `link link-hover`
+- `resources/views/customers/index.blade.php:90` — `name`
+- `resources/views/customers/index.blade.php:90` — `Name`
+- `resources/views/customers/index.blade.php:90` — `name`
+- `resources/views/customers/index.blade.php:91` — `link link-hover`
+- `resources/views/customers/index.blade.php:91` — `number`
+- `resources/views/customers/index.blade.php:91` — `number`
+- `resources/views/customers/index.blade.php:92` — `link link-hover`
+- `resources/views/customers/index.blade.php:92` — `company`
+- `resources/views/customers/index.blade.php:92` — `Firma`
+- `resources/views/customers/index.blade.php:92` — `company`
+- `resources/views/customers/index.blade.php:93` — `E-Mail`
+- `resources/views/customers/index.blade.php:95` — `text-right`
+- `resources/views/customers/index.blade.php:95` — `Stundensatz`
+- `resources/views/customers/index.blade.php:96` — `text-right`
+- `resources/views/customers/index.blade.php:96` — `Projekte`
+- `resources/views/customers/index.blade.php:102` — `hover`
+- `resources/views/customers/index.blade.php:104` — `inline-block h-3 w-3 rounded-full`
+- `resources/views/customers/index.blade.php:108` — `link link-hover font-medium`
+- `resources/views/customers/index.blade.php:110` — `badge badge-ghost badge-xs ml-1`
+- `resources/views/customers/index.blade.php:110` — `archiviert`
+- `resources/views/customers/index.blade.php:113` — `badge badge-warning badge-xs ml-1`
+- `resources/views/customers/index.blade.php:113` — `nicht abrechenbar`
+- `resources/views/customers/index.blade.php:122` — `text-right tabular-nums`
+- `resources/views/customers/index.blade.php:129` — `text-right tabular-nums`
+- `resources/views/customers/index.blade.php:130` — `text-right`
+- `resources/views/customers/index.blade.php:131` — `update`
+- `resources/views/customers/index.blade.php:133` — `btn btn-ghost btn-xs`
+- `resources/views/customers/index.blade.php:133` — `Bearbeiten`
+- `resources/views/customers/index.blade.php:142` — `px-1`
+- `resources/views/customers/_form_dialog.blade.php:9` — `Kunde bearbeiten`
+- `resources/views/customers/_form_dialog.blade.php:9` — `Neuer Kunde`
+- `resources/views/customers/_form_dialog.blade.php:10` — `Kunde`
+- `resources/views/customers/_form_dialog.blade.php:11` — `badge`
+- `resources/views/customers/_form_dialog.blade.php:12` — `primary`
+- `resources/views/customers/_form_dialog.blade.php:14` — `POST'`
+- `resources/views/customers/_form_dialog.blade.php:15` — `data-entry-form`
+- `resources/views/customers/_form_dialog.blade.php:16` — `Speichern`
+- `resources/views/customers/_form_dialog.blade.php:16` — `Anlegen`
+- `resources/views/customers/_form_dialog.blade.php:18` — `hidden`
+- `resources/views/customers/_form_dialog.blade.php:21` — `Stammdaten`
+- `resources/views/customers/_form_dialog.blade.php:21` — `badge`
+- `resources/views/customers/_form_dialog.blade.php:21` — `primary`
+- `resources/views/customers/_form_dialog.blade.php:22` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:23` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:23` — `Name`
+- `resources/views/customers/_form_dialog.blade.php:24` — `name`
+- `resources/views/customers/_form_dialog.blade.php:24` — `text`
+- `resources/views/customers/_form_dialog.blade.php:25` — `input input-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:26` — `name`
+- `resources/views/customers/_form_dialog.blade.php:27` — `name`
+- `resources/views/customers/_form_dialog.blade.php:27` — `text-error text-sm`
+- `resources/views/customers/_form_dialog.blade.php:29` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:30` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:30` — `Kundennummer`
+- `resources/views/customers/_form_dialog.blade.php:31` — `number`
+- `resources/views/customers/_form_dialog.blade.php:31` — `text`
+- `resources/views/customers/_form_dialog.blade.php:32` — `input input-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:33` — `number`
+- `resources/views/customers/_form_dialog.blade.php:34` — `number`
+- `resources/views/customers/_form_dialog.blade.php:34` — `text-error text-sm`
+- `resources/views/customers/_form_dialog.blade.php:37` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:38` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:38` — `Firma`
+- `resources/views/customers/_form_dialog.blade.php:39` — `company`
+- `resources/views/customers/_form_dialog.blade.php:39` — `text`
+- `resources/views/customers/_form_dialog.blade.php:40` — `input input-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:41` — `company`
+- `resources/views/customers/_form_dialog.blade.php:43` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:44` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:44` — `USt-IdNr.`
+- `resources/views/customers/_form_dialog.blade.php:45` — `text`
+- `resources/views/customers/_form_dialog.blade.php:46` — `input input-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:51` — `Kontakt`
+- `resources/views/customers/_form_dialog.blade.php:51` — `call`
+- `resources/views/customers/_form_dialog.blade.php:51` — `info`
+- `resources/views/customers/_form_dialog.blade.php:52` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:53` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:53` — `Ansprechpartner`
+- `resources/views/customers/_form_dialog.blade.php:54` — `text`
+- `resources/views/customers/_form_dialog.blade.php:55` — `input input-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:58` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:59` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:59` — `E-Mail`
+- `resources/views/customers/_form_dialog.blade.php:60` — `email`
+- `resources/views/customers/_form_dialog.blade.php:60` — `email`
+- `resources/views/customers/_form_dialog.blade.php:61` — `input input-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:62` — `email`
+- `resources/views/customers/_form_dialog.blade.php:63` — `email`
+- `resources/views/customers/_form_dialog.blade.php:63` — `text-error text-sm`
+- `resources/views/customers/_form_dialog.blade.php:66` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:67` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:67` — `Telefon`
+- `resources/views/customers/_form_dialog.blade.php:68` — `phone`
+- `resources/views/customers/_form_dialog.blade.php:68` — `text`
+- `resources/views/customers/_form_dialog.blade.php:69` — `input input-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:70` — `phone`
+- `resources/views/customers/_form_dialog.blade.php:72` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:73` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:73` — `Mobil`
+- `resources/views/customers/_form_dialog.blade.php:74` — `mobile`
+- `resources/views/customers/_form_dialog.blade.php:74` — `text`
+- `resources/views/customers/_form_dialog.blade.php:75` — `input input-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:76` — `mobile`
+- `resources/views/customers/_form_dialog.blade.php:80` — `Adresse`
+- `resources/views/customers/_form_dialog.blade.php:80` — `home`
+- `resources/views/customers/_form_dialog.blade.php:80` — `ghost`
+- `resources/views/customers/_form_dialog.blade.php:82` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:83` — `address`
+- `resources/views/customers/_form_dialog.blade.php:84` — `textarea textarea-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:84` — `address`
+- `resources/views/customers/_form_dialog.blade.php:85` — `Wird nur genutzt, wenn die strukturierten Felder darunter leer sind.`
+- `resources/views/customers/_form_dialog.blade.php:89` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:90` — `text`
+- `resources/views/customers/_form_dialog.blade.php:91` — `input input-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:95` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:96` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:97` — `text`
+- `resources/views/customers/_form_dialog.blade.php:98` — `input input-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:101` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:102` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:103` — `text`
+- `resources/views/customers/_form_dialog.blade.php:104` — `input input-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:108` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:109` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:110` — `country`
+- `resources/views/customers/_form_dialog.blade.php:110` — `text`
+- `resources/views/customers/_form_dialog.blade.php:111` — `input input-bordered w-full uppercase`
+- `resources/views/customers/_form_dialog.blade.php:112` — `country`
+- `resources/views/customers/_form_dialog.blade.php:114` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:115` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:115` — `Homepage`
+- `resources/views/customers/_form_dialog.blade.php:116` — `homepage`
+- `resources/views/customers/_form_dialog.blade.php:117` — `input input-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:118` — `homepage`
+- `resources/views/customers/_form_dialog.blade.php:119` — `homepage`
+- `resources/views/customers/_form_dialog.blade.php:119` — `text-error text-sm`
+- `resources/views/customers/_form_dialog.blade.php:123` — `payments`
+- `resources/views/customers/_form_dialog.blade.php:123` — `warning`
+- `resources/views/customers/_form_dialog.blade.php:124` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:125` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:125` — `Währung`
+- `resources/views/customers/_form_dialog.blade.php:126` — `currency`
+- `resources/views/customers/_form_dialog.blade.php:126` — `text`
+- `resources/views/customers/_form_dialog.blade.php:127` — `input input-bordered w-full uppercase`
+- `resources/views/customers/_form_dialog.blade.php:128` — `currency`
+- `resources/views/customers/_form_dialog.blade.php:130` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:131` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:131` — `Zeitzone`
+- `resources/views/customers/_form_dialog.blade.php:132` — `timezone`
+- `resources/views/customers/_form_dialog.blade.php:132` — `text`
+- `resources/views/customers/_form_dialog.blade.php:133` — `input input-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:134` — `timezone`
+- `resources/views/customers/_form_dialog.blade.php:136` — `timezone`
+- `resources/views/customers/_form_dialog.blade.php:136` — `text-error text-sm`
+- `resources/views/customers/_form_dialog.blade.php:139` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:140` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:140` — `Stundensatz`
+- `resources/views/customers/_form_dialog.blade.php:141` — `number`
+- `resources/views/customers/_form_dialog.blade.php:142` — `input input-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:145` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:146` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:146` — `Interner Satz`
+- `resources/views/customers/_form_dialog.blade.php:147` — `number`
+- `resources/views/customers/_form_dialog.blade.php:148` — `input input-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:152` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:153` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:153` — `Farbe`
+- `resources/views/customers/_form_dialog.blade.php:154` — `color`
+- `resources/views/customers/_form_dialog.blade.php:154` — `color`
+- `resources/views/customers/_form_dialog.blade.php:155` — `color`
+- `resources/views/customers/_form_dialog.blade.php:156` — `input input-bordered h-10 w-20 p-1`
+- `resources/views/customers/_form_dialog.blade.php:158` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:159` — `fieldset-label cursor-pointer gap-3`
+- `resources/views/customers/_form_dialog.blade.php:160` — `hidden`
+- `resources/views/customers/_form_dialog.blade.php:160` — `billable`
+- `resources/views/customers/_form_dialog.blade.php:161` — `checkbox`
+- `resources/views/customers/_form_dialog.blade.php:161` — `billable`
+- `resources/views/customers/_form_dialog.blade.php:161` — `toggle toggle-primary`
+- `resources/views/customers/_form_dialog.blade.php:162` — `billable`
+- `resources/views/customers/_form_dialog.blade.php:163` — `Abrechenbar`
+- `resources/views/customers/_form_dialog.blade.php:168` — `Notizen`
+- `resources/views/customers/_form_dialog.blade.php:168` — `description`
+- `resources/views/customers/_form_dialog.blade.php:168` — `ghost`
+- `resources/views/customers/_form_dialog.blade.php:169` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:170` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:171` — `comment`
+- `resources/views/customers/_form_dialog.blade.php:172` — `textarea textarea-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:172` — `comment`
+- `resources/views/customers/_form_dialog.blade.php:175` — `fieldset`
+- `resources/views/customers/_form_dialog.blade.php:176` — `fieldset-label`
+- `resources/views/customers/_form_dialog.blade.php:176` — `Rechnungstext`
+- `resources/views/customers/_form_dialog.blade.php:178` — `textarea textarea-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:186` — `name`
+- `resources/views/customers/_form_dialog.blade.php:186` — `email`
+- `resources/views/customers/_form_dialog.blade.php:186` — `phone`
+- `resources/views/customers/_form_dialog.blade.php:186` — `primary`
+- `resources/views/customers/_form_dialog.blade.php:190` — `rounded-box border border-base-300 p-3`
+- `resources/views/customers/_form_dialog.blade.php:191` — `mb-2 flex items-center justify-between`
+- `resources/views/customers/_form_dialog.blade.php:192` — `font-medium text-sm`
+- `resources/views/customers/_form_dialog.blade.php:192` — `Ansprechpartner`
+- `resources/views/customers/_form_dialog.blade.php:193` — `button`
+- `resources/views/customers/_form_dialog.blade.php:193` — `btn btn-xs btn-ghost`
+- `resources/views/customers/_form_dialog.blade.php:193` — `Person`
+- `resources/views/customers/_form_dialog.blade.php:195` — `space-y-2`
+- `resources/views/customers/_form_dialog.blade.php:198` — `text`
+- `resources/views/customers/_form_dialog.blade.php:198` — `name`
+- `resources/views/customers/_form_dialog.blade.php:199` — `Name`
+- `resources/views/customers/_form_dialog.blade.php:201` — `email`
+- `resources/views/customers/_form_dialog.blade.php:201` — `email`
+- `resources/views/customers/_form_dialog.blade.php:202` — `E-Mail`
+- `resources/views/customers/_form_dialog.blade.php:204` — `text`
+- `resources/views/customers/_form_dialog.blade.php:204` — `phone`
+- `resources/views/customers/_form_dialog.blade.php:205` — `Telefon`
+- `resources/views/customers/_form_dialog.blade.php:208` — `hidden`
+- `resources/views/customers/_form_dialog.blade.php:209` — `checkbox`
+- `resources/views/customers/_form_dialog.blade.php:210` — `checkbox checkbox-xs`
+- `resources/views/customers/_form_dialog.blade.php:211` — `primary`
+- `resources/views/customers/_form_dialog.blade.php:212` — `Primär`
+- `resources/views/customers/_form_dialog.blade.php:214` — `button`
+- `resources/views/customers/_form_dialog.blade.php:218` — `text-error text-sm mt-1`
+- `resources/views/customers/_form_dialog.blade.php:226` — `label`
+- `resources/views/customers/_form_dialog.blade.php:226` — `label-text`
+- `resources/views/customers/_form_dialog.blade.php:226` — `Tags`
+- `resources/views/customers/_form_dialog.blade.php:228` — `select select-bordered w-full`
+- `resources/views/customers/_form_dialog.blade.php:234` — `text`
+- `resources/views/customers/_form_dialog.blade.php:235` — `input input-bordered w-full mt-2`
+- `resources/views/customers/_form_dialog.blade.php:254` — `click`
+- `resources/views/customers/_form_dialog.blade.php:258` — `input`
+- `resources/views/customers/_form_dialog.blade.php:259` — `checkbox`
+- `resources/views/customers/_form_dialog.blade.php:260` — `hidden`
+- `resources/views/customers/_form_dialog.blade.php:266` — `click`
+- `resources/views/customers/_form_dialog.blade.php:275` — `input`
+- `resources/views/customers/_form_dialog.blade.php:276` — `checkbox`
+- `resources/views/customers/_form_dialog.blade.php:277` — `hidden`
+- `resources/views/customers/show.blade.php:2` — `title`
+- `resources/views/customers/show.blade.php:2` — `Kunde`
+- `resources/views/customers/show.blade.php:3` — `nav-title`
+- `resources/views/customers/show.blade.php:5` — `content`
+- `resources/views/customers/show.blade.php:6` — `flex h-full min-h-0 w-full flex-col gap-4 overflow-auto`
+- `resources/views/customers/show.blade.php:8` — `flex flex-wrap items-start justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/customers/show.blade.php:9` — `min-w-0`
+- `resources/views/customers/show.blade.php:10` — `flex items-center gap-2`
+- `resources/views/customers/show.blade.php:11` — `inline-block h-3 w-3 rounded-full`
+- `resources/views/customers/show.blade.php:14` — `badge badge-ghost`
+- `resources/views/customers/show.blade.php:14` — `archiviert`
+- `resources/views/customers/show.blade.php:23` — `mt-1 flex flex-wrap gap-1`
+- `resources/views/customers/show.blade.php:25` — `badge badge-sm`
+- `resources/views/customers/show.blade.php:30` — `flex flex-wrap items-center gap-2`
+- `resources/views/customers/show.blade.php:31` — `update`
+- `resources/views/customers/show.blade.php:32` — `btn btn-sm btn-primary`
+- `resources/views/customers/show.blade.php:32` — `Bearbeiten`
+- `resources/views/customers/show.blade.php:36` — `btn btn-sm btn-ghost`
+- `resources/views/customers/show.blade.php:36` — `Wiederherstellen`
+- `resources/views/customers/show.blade.php:41` — `btn btn-sm btn-ghost`
+- `resources/views/customers/show.blade.php:41` — `Archivieren`
+- `resources/views/customers/show.blade.php:45` — `btn btn-sm btn-ghost`
+- `resources/views/customers/show.blade.php:45` — `Zurück`
+- `resources/views/customers/show.blade.php:51` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/customers/show.blade.php:52` — `Projekte`
+- `resources/views/customers/show.blade.php:55` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/customers/show.blade.php:56` — `Erfasste Zeit`
+- `resources/views/customers/show.blade.php:61` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/customers/show.blade.php:71` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-2`
+- `resources/views/customers/show.blade.php:72` — `font-semibold`
+- `resources/views/customers/show.blade.php:72` — `Kontakt`
+- `resources/views/customers/show.blade.php:74` — `Ansprechpartner`
+- `resources/views/customers/show.blade.php:75` — `E-Mail`
+- `resources/views/customers/show.blade.php:75` — `link`
+- `resources/views/customers/show.blade.php:76` — `Telefon`
+- `resources/views/customers/show.blade.php:77` — `Mobil`
+- `resources/views/customers/show.blade.php:78` — `Homepage`
+- `resources/views/customers/show.blade.php:78` — `link`
+- `resources/views/customers/show.blade.php:78` — `noopener`
+- `resources/views/customers/show.blade.php:80` — `Adresse`
+- `resources/views/customers/show.blade.php:81` — `whitespace-pre-line`
+- `resources/views/customers/show.blade.php:84` — `Adresse`
+- `resources/views/customers/show.blade.php:84` — `whitespace-pre-line`
+- `resources/views/customers/show.blade.php:86` — `Land`
+- `resources/views/customers/show.blade.php:88` — `name`
+- `resources/views/customers/show.blade.php:90` — `pt-3`
+- `resources/views/customers/show.blade.php:91` — `mb-1 text-sm font-semibold`
+- `resources/views/customers/show.blade.php:91` — `Ansprechpartner`
+- `resources/views/customers/show.blade.php:92` — `divide-y divide-base-300 text-sm`
+- `resources/views/customers/show.blade.php:94` — `py-2 flex flex-wrap items-center gap-x-3 gap-y-1`
+- `resources/views/customers/show.blade.php:95` — `font-medium`
+- `resources/views/customers/show.blade.php:95` — `name`
+- `resources/views/customers/show.blade.php:96` — `primary`
+- `resources/views/customers/show.blade.php:96` — `badge badge-primary badge-xs`
+- `resources/views/customers/show.blade.php:96` — `Primär`
+- `resources/views/customers/show.blade.php:97` — `email`
+- `resources/views/customers/show.blade.php:97` — `link link-hover`
+- `resources/views/customers/show.blade.php:97` — `email`
+- `resources/views/customers/show.blade.php:97` — `email`
+- `resources/views/customers/show.blade.php:98` — `phone`
+- `resources/views/customers/show.blade.php:98` — `phone`
+- `resources/views/customers/show.blade.php:106` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-2`
+- `resources/views/customers/show.blade.php:107` — `font-semibold`
+- `resources/views/customers/show.blade.php:107` — `Abrechnung`
+- `resources/views/customers/show.blade.php:109` — `Abrechenbar`
+- `resources/views/customers/show.blade.php:110` — `Nein`
+- `resources/views/customers/show.blade.php:111` — `USt-IdNr.`
+- `resources/views/customers/show.blade.php:112` — `Währung`
+- `resources/views/customers/show.blade.php:113` — `Zeitzone`
+- `resources/views/customers/show.blade.php:115` — `Stundensatz`
+- `resources/views/customers/show.blade.php:119` — `Interner Satz`
+- `resources/views/customers/show.blade.php:124` — `pt-2 text-sm`
+- `resources/views/customers/show.blade.php:125` — `Rechnungstext`
+- `resources/views/customers/show.blade.php:126` — `whitespace-pre-line`
+- `resources/views/customers/show.blade.php:133` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/customers/show.blade.php:134` — `mb-3 flex items-center justify-between`
+- `resources/views/customers/show.blade.php:135` — `font-semibold`
+- `resources/views/customers/show.blade.php:135` — `Projekte`
+- `resources/views/customers/show.blade.php:137` — `btn btn-sm btn-primary`
+- `resources/views/customers/show.blade.php:138` — `material-symbols-outlined text-base`
+- `resources/views/customers/show.blade.php:139` — `Stundenzettel`
+- `resources/views/customers/show.blade.php:146` — `flex items-center gap-2 min-w-0`
+- `resources/views/customers/show.blade.php:147` — `material-symbols-outlined text-primary text-base`
+- `resources/views/customers/show.blade.php:148` — `link link-hover truncate font-medium`
+- `resources/views/customers/show.blade.php:149` — `badge badge-sm`
+- `resources/views/customers/show.blade.php:149` — `Standardprojekt`
+- `resources/views/customers/show.blade.php:156` — `Diesem Kunden sind noch keine Projekte zugeordnet.`
+- `resources/views/customers/show.blade.php:158` — `divide-y divide-base-300`
+- `resources/views/customers/show.blade.php:160` — `flex items-center justify-between py-2`
+- `resources/views/customers/show.blade.php:161` — `flex items-center gap-2 min-w-0`
+- `resources/views/customers/show.blade.php:162` — `inline-block h-3 w-3 rounded-full`
+- `resources/views/customers/show.blade.php:163` — `link link-hover truncate`
+- `resources/views/customers/show.blade.php:165` — `material-symbols-outlined text-primary text-base`
+- `resources/views/customers/show.blade.php:165` — `Standardprojekt`
+- `resources/views/customers/show.blade.php:177` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/customers/show.blade.php:177` — `month`
+- `resources/views/customers/show.blade.php:178` — `mb-3 flex items-center justify-between`
+- `resources/views/customers/show.blade.php:179` — `font-semibold`
+- `resources/views/customers/show.blade.php:179` — `Auswertung`
+- `resources/views/customers/show.blade.php:180` — `tablist`
+- `resources/views/customers/show.blade.php:180` — `tabs tabs-boxed tabs-sm`
+- `resources/views/customers/show.blade.php:181` — `tab-active`
+- `resources/views/customers/show.blade.php:181` — `month`
+- `resources/views/customers/show.blade.php:181` — `month'`
+- `resources/views/customers/show.blade.php:181` — `Aktueller Monat`
+- `resources/views/customers/show.blade.php:182` — `tab-active`
+- `resources/views/customers/show.blade.php:182` — `total`
+- `resources/views/customers/show.blade.php:182` — `total'`
+- `resources/views/customers/show.blade.php:182` — `Gesamt`
+- `resources/views/customers/show.blade.php:185` — `month`
+- `resources/views/customers/show.blade.php:185` — `total`
+- `resources/views/customers/show.blade.php:187` — `mb-3 grid grid-cols-2 gap-3 text-sm`
+- `resources/views/customers/show.blade.php:188` — `rounded-box bg-base-200 p-3`
+- `resources/views/customers/show.blade.php:189` — `Stunden gesamt`
+- `resources/views/customers/show.blade.php:192` — `rounded-box bg-base-200 p-3`
+- `resources/views/customers/show.blade.php:193` — `davon abrechenbar`
+- `resources/views/customers/show.blade.php:198` — `table table-sm`
+- `resources/views/customers/show.blade.php:201` — `Projekt`
+- `resources/views/customers/show.blade.php:202` — `text-right`
+- `resources/views/customers/show.blade.php:202` — `Stunden`
+- `resources/views/customers/show.blade.php:203` — `text-right`
+- `resources/views/customers/show.blade.php:203` — `abrechenbar`
+- `resources/views/customers/show.blade.php:211` — `material-symbols-outlined text-primary text-sm align-middle`
+- `resources/views/customers/show.blade.php:213` — `name`
+- `resources/views/customers/show.blade.php:215` — `text-right`
+- `resources/views/customers/show.blade.php:215` — `minutes`
+- `resources/views/customers/show.blade.php:216` — `text-right`
+- `resources/views/customers/show.blade.php:228` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/customers/show.blade.php:229` — `mb-3 font-semibold`
+- `resources/views/customers/show.blade.php:229` — `Anhänge`
+- `resources/views/customers/show.blade.php:231` — `Keine Anhänge.`
+- `resources/views/customers/show.blade.php:233` — `divide-y divide-base-300 text-sm`
+- `resources/views/customers/show.blade.php:235` — `flex items-center justify-between gap-2 py-2`
+- `resources/views/customers/show.blade.php:236` — `min-w-0 truncate`
+- `resources/views/customers/show.blade.php:237` — `link link-hover`
+- `resources/views/customers/show.blade.php:240` — `delete`
+- `resources/views/customers/show.blade.php:243` — `Anhang löschen?`
+- `resources/views/customers/show.blade.php:244` — `delete`
+- `resources/views/customers/show.blade.php:245` — `error`
+- `resources/views/customers/show.blade.php:246` — `Löschen`
+- `resources/views/customers/show.blade.php:248` — `btn btn-xs btn-ghost text-error`
+- `resources/views/customers/show.blade.php:248` — `Löschen`
+- `resources/views/customers/show.blade.php:255` — `update`
+- `resources/views/customers/show.blade.php:256` — `type`
+- `resources/views/customers/show.blade.php:256` — `customer', 'id`
+- `resources/views/customers/show.blade.php:256` — `mt-3 flex items-center gap-2`
+- `resources/views/customers/show.blade.php:258` — `file`
+- `resources/views/customers/show.blade.php:258` — `file`
+- `resources/views/customers/show.blade.php:258` — `file-input file-input-sm file-input-bordered`
+- `resources/views/customers/show.blade.php:259` — `btn btn-sm btn-primary`
+- `resources/views/customers/show.blade.php:259` — `Hochladen`
+- `resources/views/customers/show.blade.php:266` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/customers/show.blade.php:267` — `mb-3 font-semibold`
+- `resources/views/customers/show.blade.php:267` — `Verlauf`
+- `resources/views/customers/show.blade.php:268` — `divide-y divide-base-300 text-sm`
+- `resources/views/customers/show.blade.php:270` — `flex items-center justify-between gap-2 py-2`
+- `resources/views/customers/show.blade.php:271` — `badge badge-ghost badge-sm`
+- `resources/views/customers/show.blade.php:280` — `update`
+- `resources/views/customers/show.blade.php:281` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-4`
+- `resources/views/customers/show.blade.php:282` — `flex flex-wrap items-center justify-between gap-2`
+- `resources/views/customers/show.blade.php:283` — `font-semibold`
+- `resources/views/customers/show.blade.php:283` — `Lexoffice`
+- `resources/views/customers/show.blade.php:285` — `badge badge-success badge-sm`
+- `resources/views/customers/show.blade.php:285` — `Kontakt verknüpft`
+- `resources/views/customers/show.blade.php:287` — `badge badge-ghost badge-sm`
+- `resources/views/customers/show.blade.php:287` — `Noch nicht verknüpft`
+- `resources/views/customers/show.blade.php:292` — `space-y-2`
+- `resources/views/customers/show.blade.php:295` — `Kunde als Kontakt in Lexoffice anlegen oder aktualisieren.`
+- `resources/views/customers/show.blade.php:297` — `btn btn-sm btn-primary`
+- `resources/views/customers/show.blade.php:298` — `Kontakt aktualisieren`
+- `resources/views/customers/show.blade.php:298` — `Kontakt anlegen`
+- `resources/views/customers/show.blade.php:302` — `customers.lexoffice.time-export`
+- `resources/views/customers/show.blade.php:302` — `space-y-2`
+- `resources/views/customers/show.blade.php:305` — `Abrechenbare, noch nicht übertragene Zeiten als Beleg übertragen.`
+- `resources/views/customers/show.blade.php:307` — `grid grid-cols-2 gap-2`
+- `resources/views/customers/show.blade.php:308` — `form-control`
+- `resources/views/customers/show.blade.php:309` — `label-text text-xs`
+- `resources/views/customers/show.blade.php:310` — `date`
+- `resources/views/customers/show.blade.php:310` — `from`
+- `resources/views/customers/show.blade.php:310` — `input input-sm input-bordered`
+- `resources/views/customers/show.blade.php:312` — `form-control`
+- `resources/views/customers/show.blade.php:313` — `label-text text-xs`
+- `resources/views/customers/show.blade.php:314` — `date`
+- `resources/views/customers/show.blade.php:314` — `input input-sm input-bordered`
+- `resources/views/customers/show.blade.php:317` — `btn btn-sm btn-primary`
+- `resources/views/customers/show.blade.php:317` — `Zeiten übertragen`
+- `resources/views/customers/show.blade.php:323` — `mb-1 text-sm font-semibold`
+- `resources/views/customers/show.blade.php:323` — `Letzte Belege`
+- `resources/views/customers/show.blade.php:324` — `divide-y divide-base-300 text-sm`
+- `resources/views/customers/show.blade.php:326` — `flex items-center justify-between py-1`
+- `resources/views/customers/show.blade.php:327` — `text-xs`
+- `resources/views/layouts/print.blade.php:4` — `utf-8`
+- `resources/views/layouts/print.blade.php:5` — `Druckansicht`
+- `resources/views/layouts/print.blade.php:7` — `A4 portrait`
+- `resources/views/layouts/print.blade.php:7` — `A4 landscape`
+- `resources/views/layouts/print.blade.php:7` — `A3 landscape`
+- `resources/views/layouts/print.blade.php:7` — `A3 portrait`
+- `resources/views/layouts/print.blade.php:8` — `A4 portrait`
+- `resources/views/layouts/print.blade.php:18` — `Segoe UI`
+- `resources/views/layouts/print.blade.php:18` — `Helvetica Neue`
+- `resources/views/layouts/print.blade.php:133` — `print-styles`
+- `resources/views/layouts/print.blade.php:136` — `toolbar no-print`
+- `resources/views/layouts/print.blade.php:138` — `Zurück`
+- `resources/views/layouts/print.blade.php:140` — `button`
+- `resources/views/layouts/print.blade.php:140` — `primary`
+- `resources/views/layouts/print.blade.php:143` — `content`
+- `resources/views/layouts/app.blade.php:4` — `utf-8`
+- `resources/views/layouts/app.blade.php:5` — `viewport`
+- `resources/views/layouts/app.blade.php:6` — `csrf-token`
+- `resources/views/layouts/app.blade.php:7` — `geocode-url`
+- `resources/views/layouts/app.blade.php:10` — `workDiaryTheme`
+- `resources/views/layouts/app.blade.php:12` — `corporate`
+- `resources/views/layouts/app.blade.php:14` — `data-theme`
+- `resources/views/layouts/app.blade.php:15` — `corporate' ? 'light`
+- `resources/views/layouts/app.blade.php:15` — `dark`
+- `resources/views/layouts/app.blade.php:18` — `title`
+- `resources/views/layouts/app.blade.php:18` — `app.name', 'WorkDiary`
+- `resources/views/layouts/app.blade.php:19` — `preconnect`
+- `resources/views/layouts/app.blade.php:20` — `stylesheet`
+- `resources/views/layouts/app.blade.php:21` — `stylesheet`
+- `resources/views/layouts/app.blade.php:41` — `left`
+- `resources/views/layouts/app.blade.php:41` — `right`
+- `resources/views/layouts/app.blade.php:41` — `center`
+- `resources/views/layouts/app.blade.php:51` — `left right`
+- `resources/views/layouts/app.blade.php:51` — `center center`
+- `resources/views/layouts/app.blade.php:61` — `left center right`
+- `resources/views/layouts/app.blade.php:107` — `page`
+- `resources/views/layouts/app.blade.php:116` — `page`
+- `resources/views/layouts/app.blade.php:118` — `FILL' 1, 'wght`
+- `resources/views/layouts/app.blade.php:182` — `Material Symbols Outlined`
+- `resources/views/layouts/app.blade.php:194` — `liga`
+- `resources/views/layouts/app.blade.php:196` — `FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz`
+- `resources/views/layouts/app.blade.php:206` — `IBM Plex Sans`
+- `resources/views/layouts/app.blade.php:213` — `legacy`
+- `resources/views/layouts/app.blade.php:213` — `legacy`
+- `resources/views/layouts/app.blade.php:213` — `legacy`
+- `resources/views/layouts/app.blade.php:215` — `legacy' ? 'bg-base-200`
+- `resources/views/layouts/app.blade.php:215` — `bg-linear-to-b from-base-200 to-base-300`
+- `resources/views/layouts/app.blade.php:217` — `legacy`
+- `resources/views/layouts/app.blade.php:219` — `legacy`
+- `resources/views/layouts/app.blade.php:219` — `legacy`
+- `resources/views/layouts/app.blade.php:220` — `legacy' ? 'legacy.diary.index`
+- `resources/views/layouts/app.blade.php:221` — `legacy' ? 'legacy.diary.create`
+- `resources/views/layouts/app.blade.php:222` — `home`
+- `resources/views/layouts/app.blade.php:223` — `legacy`
+- `resources/views/layouts/app.blade.php:228` — `label`
+- `resources/views/layouts/app.blade.php:228` — `Deutsch`
+- `resources/views/layouts/app.blade.php:228` — `code`
+- `resources/views/layouts/app.blade.php:229` — `label`
+- `resources/views/layouts/app.blade.php:229` — `Englisch`
+- `resources/views/layouts/app.blade.php:229` — `code`
+- `resources/views/layouts/app.blade.php:233` — `app-header`
+- `resources/views/layouts/app.blade.php:233` — `sticky top-0 z-50 bg-base-100 border-b border-base-300 shadow-xs`
+- `resources/views/layouts/app.blade.php:235` — `nav-center`
+- `resources/views/layouts/app.blade.php:240` — `header-left flex items-center`
+- `resources/views/layouts/app.blade.php:241` — `home`
+- `resources/views/layouts/app.blade.php:241` — `flex items-center gap-2 group min-w-0`
+- `resources/views/layouts/app.blade.php:244` — `nav-title`
+- `resources/views/layouts/app.blade.php:244` — `Tagebuch`
+- `resources/views/layouts/app.blade.php:248` — `header-center`
+- `resources/views/layouts/app.blade.php:249` — `nav-center`
+- `resources/views/layouts/app.blade.php:250` — `nav-center`
+- `resources/views/layouts/app.blade.php:252` — `center`
+- `resources/views/layouts/app.blade.php:256` — `header-right`
+- `resources/views/layouts/app.blade.php:262` — `route`
+- `resources/views/layouts/app.blade.php:262` — `legacy.diary.week',           'label`
+- `resources/views/layouts/app.blade.php:262` — `Wochenansicht`
+- `resources/views/layouts/app.blade.php:262` — `icon`
+- `resources/views/layouts/app.blade.php:262` — `modal`
+- `resources/views/layouts/app.blade.php:262` — `matches`
+- `resources/views/layouts/app.blade.php:263` — `route`
+- `resources/views/layouts/app.blade.php:263` — `label`
+- `resources/views/layouts/app.blade.php:263` — `Arbeitsliste`
+- `resources/views/layouts/app.blade.php:263` — `icon`
+- `resources/views/layouts/app.blade.php:263` — `modal`
+- `resources/views/layouts/app.blade.php:263` — `matches`
+- `resources/views/layouts/app.blade.php:264` — `route`
+- `resources/views/layouts/app.blade.php:264` — `legacy.archive.index',        'label`
+- `resources/views/layouts/app.blade.php:264` — `Archiv`
+- `resources/views/layouts/app.blade.php:264` — `icon`
+- `resources/views/layouts/app.blade.php:264` — `modal`
+- `resources/views/layouts/app.blade.php:264` — `matches`
+- `resources/views/layouts/app.blade.php:265` — `route`
+- `resources/views/layouts/app.blade.php:265` — `legacy.callcenter.notdienst', 'label`
+- `resources/views/layouts/app.blade.php:265` — `Zentrale`
+- `resources/views/layouts/app.blade.php:265` — `icon`
+- `resources/views/layouts/app.blade.php:265` — `modal`
+- `resources/views/layouts/app.blade.php:265` — `matches`
+- `resources/views/layouts/app.blade.php:268` — `route`
+- `resources/views/layouts/app.blade.php:268` — `label`
+- `resources/views/layouts/app.blade.php:268` — `Arbeitsliste`
+- `resources/views/layouts/app.blade.php:268` — `icon`
+- `resources/views/layouts/app.blade.php:268` — `modal`
+- `resources/views/layouts/app.blade.php:268` — `matches`
+- `resources/views/layouts/app.blade.php:269` — `route`
+- `resources/views/layouts/app.blade.php:269` — `week.index',               'label`
+- `resources/views/layouts/app.blade.php:269` — `Wochenansicht`
+- `resources/views/layouts/app.blade.php:269` — `icon`
+- `resources/views/layouts/app.blade.php:269` — `modal`
+- `resources/views/layouts/app.blade.php:269` — `matches`
+- `resources/views/layouts/app.blade.php:270` — `route`
+- `resources/views/layouts/app.blade.php:270` — `kanban.index',             'label`
+- `resources/views/layouts/app.blade.php:270` — `Kanban`
+- `resources/views/layouts/app.blade.php:270` — `icon`
+- `resources/views/layouts/app.blade.php:270` — `modal`
+- `resources/views/layouts/app.blade.php:270` — `matches`
+- `resources/views/layouts/app.blade.php:271` — `route`
+- `resources/views/layouts/app.blade.php:271` — `duty-plans.index',         'label`
+- `resources/views/layouts/app.blade.php:271` — `Dienstpläne`
+- `resources/views/layouts/app.blade.php:271` — `icon`
+- `resources/views/layouts/app.blade.php:271` — `modal`
+- `resources/views/layouts/app.blade.php:271` — `matches`
+- `resources/views/layouts/app.blade.php:272` — `route`
+- `resources/views/layouts/app.blade.php:272` — `schedule.index',           'label`
+- `resources/views/layouts/app.blade.php:272` — `Schichtplan`
+- `resources/views/layouts/app.blade.php:272` — `icon`
+- `resources/views/layouts/app.blade.php:272` — `schedule',         'modal`
+- `resources/views/layouts/app.blade.php:272` — `matches`
+- `resources/views/layouts/app.blade.php:273` — `route`
+- `resources/views/layouts/app.blade.php:273` — `timesheets.index',         'label`
+- `resources/views/layouts/app.blade.php:273` — `Stundenzettel`
+- `resources/views/layouts/app.blade.php:273` — `icon`
+- `resources/views/layouts/app.blade.php:273` — `description',      'modal`
+- `resources/views/layouts/app.blade.php:273` — `matches`
+- `resources/views/layouts/app.blade.php:274` — `route`
+- `resources/views/layouts/app.blade.php:274` — `customers.index',          'label`
+- `resources/views/layouts/app.blade.php:274` — `Kunden`
+- `resources/views/layouts/app.blade.php:274` — `icon`
+- `resources/views/layouts/app.blade.php:274` — `badge',            'modal`
+- `resources/views/layouts/app.blade.php:274` — `matches`
+- `resources/views/layouts/app.blade.php:275` — `route`
+- `resources/views/layouts/app.blade.php:275` — `projects.index',           'label`
+- `resources/views/layouts/app.blade.php:275` — `Projekte`
+- `resources/views/layouts/app.blade.php:275` — `icon`
+- `resources/views/layouts/app.blade.php:275` — `modal`
+- `resources/views/layouts/app.blade.php:275` — `matches`
+- `resources/views/layouts/app.blade.php:276` — `route`
+- `resources/views/layouts/app.blade.php:276` — `invoices.index',           'label`
+- `resources/views/layouts/app.blade.php:276` — `Rechnungen`
+- `resources/views/layouts/app.blade.php:276` — `icon`
+- `resources/views/layouts/app.blade.php:276` — `modal`
+- `resources/views/layouts/app.blade.php:276` — `matches`
+- `resources/views/layouts/app.blade.php:277` — `route`
+- `resources/views/layouts/app.blade.php:277` — `flex.index',               'label`
+- `resources/views/layouts/app.blade.php:277` — `Gleitzeit`
+- `resources/views/layouts/app.blade.php:277` — `icon`
+- `resources/views/layouts/app.blade.php:277` — `modal`
+- `resources/views/layouts/app.blade.php:277` — `matches`
+- `resources/views/layouts/app.blade.php:278` — `route`
+- `resources/views/layouts/app.blade.php:278` — `archive.index',            'label`
+- `resources/views/layouts/app.blade.php:278` — `Archiv`
+- `resources/views/layouts/app.blade.php:278` — `icon`
+- `resources/views/layouts/app.blade.php:278` — `modal`
+- `resources/views/layouts/app.blade.php:278` — `matches`
+- `resources/views/layouts/app.blade.php:284` — `route`
+- `resources/views/layouts/app.blade.php:284` — `legacy.users.index', 'label`
+- `resources/views/layouts/app.blade.php:284` — `Mitarbeiter`
+- `resources/views/layouts/app.blade.php:284` — `icon`
+- `resources/views/layouts/app.blade.php:284` — `group',           'modal`
+- `resources/views/layouts/app.blade.php:285` — `route`
+- `resources/views/layouts/app.blade.php:285` — `holidays.index',     'label`
+- `resources/views/layouts/app.blade.php:285` — `Feiertage`
+- `resources/views/layouts/app.blade.php:285` — `icon`
+- `resources/views/layouts/app.blade.php:285` — `celebration',     'modal`
+- `resources/views/layouts/app.blade.php:287` — `route`
+- `resources/views/layouts/app.blade.php:287` — `qualifications.index',         'label`
+- `resources/views/layouts/app.blade.php:287` — `Qualifikationen`
+- `resources/views/layouts/app.blade.php:287` — `icon`
+- `resources/views/layouts/app.blade.php:287` — `modal`
+- `resources/views/layouts/app.blade.php:288` — `route`
+- `resources/views/layouts/app.blade.php:288` — `shift-types.index',             'label`
+- `resources/views/layouts/app.blade.php:288` — `Schichttypen`
+- `resources/views/layouts/app.blade.php:288` — `icon`
+- `resources/views/layouts/app.blade.php:288` — `modal`
+- `resources/views/layouts/app.blade.php:289` — `route`
+- `resources/views/layouts/app.blade.php:289` — `materials.index',               'label`
+- `resources/views/layouts/app.blade.php:289` — `Materialien`
+- `resources/views/layouts/app.blade.php:289` — `icon`
+- `resources/views/layouts/app.blade.php:289` — `inventory',        'modal`
+- `resources/views/layouts/app.blade.php:290` — `route`
+- `resources/views/layouts/app.blade.php:290` — `tags.index',                    'label`
+- `resources/views/layouts/app.blade.php:290` — `Tags`
+- `resources/views/layouts/app.blade.php:290` — `icon`
+- `resources/views/layouts/app.blade.php:290` — `label',            'modal`
+- `resources/views/layouts/app.blade.php:291` — `route`
+- `resources/views/layouts/app.blade.php:291` — `flex.admin',                    'label`
+- `resources/views/layouts/app.blade.php:291` — `Gleitzeit Team`
+- `resources/views/layouts/app.blade.php:291` — `icon`
+- `resources/views/layouts/app.blade.php:291` — `groups',           'modal`
+- `resources/views/layouts/app.blade.php:292` — `route`
+- `resources/views/layouts/app.blade.php:292` — `admin.organizations.index',     'label`
+- `resources/views/layouts/app.blade.php:292` — `Organisationen`
+- `resources/views/layouts/app.blade.php:292` — `icon`
+- `resources/views/layouts/app.blade.php:292` — `modal`
+- `resources/views/layouts/app.blade.php:294` — `route`
+- `resources/views/layouts/app.blade.php:294` — `audit.index',                       'label`
+- `resources/views/layouts/app.blade.php:294` — `Audit-Log`
+- `resources/views/layouts/app.blade.php:294` — `icon`
+- `resources/views/layouts/app.blade.php:294` — `modal`
+- `resources/views/layouts/app.blade.php:295` — `route`
+- `resources/views/layouts/app.blade.php:295` — `admin.plugins.index',                'label`
+- `resources/views/layouts/app.blade.php:295` — `Plugins`
+- `resources/views/layouts/app.blade.php:295` — `icon`
+- `resources/views/layouts/app.blade.php:295` — `extension',        'modal`
+- `resources/views/layouts/app.blade.php:296` — `route`
+- `resources/views/layouts/app.blade.php:296` — `admin.legacy-migration.index',      'label`
+- `resources/views/layouts/app.blade.php:296` — `Legacy-Migration`
+- `resources/views/layouts/app.blade.php:296` — `icon`
+- `resources/views/layouts/app.blade.php:296` — `modal`
+- `resources/views/layouts/app.blade.php:298` — `manage-members`
+- `resources/views/layouts/app.blade.php:299` — `route`
+- `resources/views/layouts/app.blade.php:299` — `org.members.index', 'label`
+- `resources/views/layouts/app.blade.php:299` — `Mitglieder`
+- `resources/views/layouts/app.blade.php:299` — `icon`
+- `resources/views/layouts/app.blade.php:299` — `badge', 'modal`
+- `resources/views/layouts/app.blade.php:302` — `route`
+- `resources/views/layouts/app.blade.php:302` — `activity-categories.index', 'label`
+- `resources/views/layouts/app.blade.php:302` — `Tätigkeitskategorien`
+- `resources/views/layouts/app.blade.php:302` — `icon`
+- `resources/views/layouts/app.blade.php:302` — `category', 'modal`
+- `resources/views/layouts/app.blade.php:307` — `route`
+- `resources/views/layouts/app.blade.php:307` — `account.profile.edit',  'label`
+- `resources/views/layouts/app.blade.php:307` — `Profil bearbeiten`
+- `resources/views/layouts/app.blade.php:307` — `modal`
+- `resources/views/layouts/app.blade.php:308` — `route`
+- `resources/views/layouts/app.blade.php:308` — `account.password.edit', 'label`
+- `resources/views/layouts/app.blade.php:308` — `Passwort ändern`
+- `resources/views/layouts/app.blade.php:308` — `modal`
+- `resources/views/layouts/app.blade.php:309` — `route`
+- `resources/views/layouts/app.blade.php:309` — `account.work-schedule', 'label`
+- `resources/views/layouts/app.blade.php:309` — `Arbeitszeit-Modell`
+- `resources/views/layouts/app.blade.php:309` — `modal`
+- `resources/views/layouts/app.blade.php:311` — `route`
+- `resources/views/layouts/app.blade.php:311` — `legacy.account.password.edit', 'label`
+- `resources/views/layouts/app.blade.php:311` — `Passwort ändern`
+- `resources/views/layouts/app.blade.php:311` — `modal`
+- `resources/views/layouts/app.blade.php:313` — `route`
+- `resources/views/layouts/app.blade.php:313` — `profile.api-tokens.index', 'label`
+- `resources/views/layouts/app.blade.php:313` — `API-Tokens`
+- `resources/views/layouts/app.blade.php:313` — `modal`
+- `resources/views/layouts/app.blade.php:315` — `route`
+- `resources/views/layouts/app.blade.php:316` — `route`
+- `resources/views/layouts/app.blade.php:317` — `route`
+- `resources/views/layouts/app.blade.php:328` — `work',
+                                    'label`
+- `resources/views/layouts/app.blade.php:329` — `Tagesgeschäft`
+- `resources/views/layouts/app.blade.php:330` — `collapsible`
+- `resources/views/layouts/app.blade.php:331` — `items`
+- `resources/views/layouts/app.blade.php:332` — `route`
+- `resources/views/layouts/app.blade.php:332` — `today.show',      'label`
+- `resources/views/layouts/app.blade.php:332` — `Heute`
+- `resources/views/layouts/app.blade.php:332` — `icon`
+- `resources/views/layouts/app.blade.php:332` — `today',             'modal`
+- `resources/views/layouts/app.blade.php:332` — `matches`
+- `resources/views/layouts/app.blade.php:333` — `route`
+- `resources/views/layouts/app.blade.php:333` — `label`
+- `resources/views/layouts/app.blade.php:333` — `Arbeitsliste`
+- `resources/views/layouts/app.blade.php:333` — `icon`
+- `resources/views/layouts/app.blade.php:333` — `modal`
+- `resources/views/layouts/app.blade.php:333` — `matches`
+- `resources/views/layouts/app.blade.php:334` — `route`
+- `resources/views/layouts/app.blade.php:334` — `week.index',      'label`
+- `resources/views/layouts/app.blade.php:334` — `Wochenansicht`
+- `resources/views/layouts/app.blade.php:334` — `icon`
+- `resources/views/layouts/app.blade.php:334` — `modal`
+- `resources/views/layouts/app.blade.php:334` — `matches`
+- `resources/views/layouts/app.blade.php:335` — `route`
+- `resources/views/layouts/app.blade.php:335` — `kanban.index',    'label`
+- `resources/views/layouts/app.blade.php:335` — `Kanban`
+- `resources/views/layouts/app.blade.php:335` — `icon`
+- `resources/views/layouts/app.blade.php:335` — `modal`
+- `resources/views/layouts/app.blade.php:335` — `matches`
+- `resources/views/layouts/app.blade.php:336` — `route`
+- `resources/views/layouts/app.blade.php:336` — `attendance.index','label`
+- `resources/views/layouts/app.blade.php:336` — `Stempeluhr`
+- `resources/views/layouts/app.blade.php:336` — `icon`
+- `resources/views/layouts/app.blade.php:336` — `modal`
+- `resources/views/layouts/app.blade.php:336` — `matches`
+- `resources/views/layouts/app.blade.php:340` — `plan',
+                                    'label`
+- `resources/views/layouts/app.blade.php:341` — `Planung`
+- `resources/views/layouts/app.blade.php:342` — `collapsible`
+- `resources/views/layouts/app.blade.php:343` — `items`
+- `resources/views/layouts/app.blade.php:344` — `route`
+- `resources/views/layouts/app.blade.php:344` — `duty-plans.index', 'label`
+- `resources/views/layouts/app.blade.php:344` — `Dienstpläne`
+- `resources/views/layouts/app.blade.php:344` — `icon`
+- `resources/views/layouts/app.blade.php:344` — `modal`
+- `resources/views/layouts/app.blade.php:344` — `matches`
+- `resources/views/layouts/app.blade.php:345` — `route`
+- `resources/views/layouts/app.blade.php:345` — `schedule.index',   'label`
+- `resources/views/layouts/app.blade.php:345` — `Schichtplan`
+- `resources/views/layouts/app.blade.php:345` — `icon`
+- `resources/views/layouts/app.blade.php:345` — `schedule',        'modal`
+- `resources/views/layouts/app.blade.php:345` — `matches`
+- `resources/views/layouts/app.blade.php:346` — `route`
+- `resources/views/layouts/app.blade.php:346` — `timesheets.index', 'label`
+- `resources/views/layouts/app.blade.php:346` — `Stundenzettel`
+- `resources/views/layouts/app.blade.php:346` — `icon`
+- `resources/views/layouts/app.blade.php:346` — `description',     'modal`
+- `resources/views/layouts/app.blade.php:346` — `matches`
+- `resources/views/layouts/app.blade.php:347` — `route`
+- `resources/views/layouts/app.blade.php:347` — `flex.index',       'label`
+- `resources/views/layouts/app.blade.php:347` — `Gleitzeit`
+- `resources/views/layouts/app.blade.php:347` — `icon`
+- `resources/views/layouts/app.blade.php:347` — `modal`
+- `resources/views/layouts/app.blade.php:347` — `matches`
+- `resources/views/layouts/app.blade.php:348` — `route`
+- `resources/views/layouts/app.blade.php:348` — `travel-logs.index','label`
+- `resources/views/layouts/app.blade.php:348` — `Fahrtenbuch`
+- `resources/views/layouts/app.blade.php:348` — `icon`
+- `resources/views/layouts/app.blade.php:348` — `modal`
+- `resources/views/layouts/app.blade.php:348` — `matches`
+- `resources/views/layouts/app.blade.php:349` — `route`
+- `resources/views/layouts/app.blade.php:349` — `service-orders.index','label`
+- `resources/views/layouts/app.blade.php:349` — `Aufträge`
+- `resources/views/layouts/app.blade.php:349` — `icon`
+- `resources/views/layouts/app.blade.php:349` — `assignment',      'modal`
+- `resources/views/layouts/app.blade.php:349` — `matches`
+- `resources/views/layouts/app.blade.php:350` — `route`
+- `resources/views/layouts/app.blade.php:350` — `tours.index',      'label`
+- `resources/views/layouts/app.blade.php:350` — `Touren`
+- `resources/views/layouts/app.blade.php:350` — `icon`
+- `resources/views/layouts/app.blade.php:350` — `route',           'modal`
+- `resources/views/layouts/app.blade.php:350` — `matches`
+- `resources/views/layouts/app.blade.php:354` — `fleet',
+                                    'label`
+- `resources/views/layouts/app.blade.php:355` — `Fuhrpark`
+- `resources/views/layouts/app.blade.php:356` — `collapsible`
+- `resources/views/layouts/app.blade.php:357` — `items`
+- `resources/views/layouts/app.blade.php:358` — `route`
+- `resources/views/layouts/app.blade.php:358` — `vehicles.index',    'label`
+- `resources/views/layouts/app.blade.php:358` — `Fahrzeuge`
+- `resources/views/layouts/app.blade.php:358` — `icon`
+- `resources/views/layouts/app.blade.php:358` — `modal`
+- `resources/views/layouts/app.blade.php:358` — `matches`
+- `resources/views/layouts/app.blade.php:359` — `route`
+- `resources/views/layouts/app.blade.php:359` — `energy-logs.index', 'label`
+- `resources/views/layouts/app.blade.php:359` — `icon`
+- `resources/views/layouts/app.blade.php:359` — `modal`
+- `resources/views/layouts/app.blade.php:359` — `matches`
+- `resources/views/layouts/app.blade.php:363` — `data',
+                                    'label`
+- `resources/views/layouts/app.blade.php:364` — `Stammdaten`
+- `resources/views/layouts/app.blade.php:365` — `collapsible`
+- `resources/views/layouts/app.blade.php:366` — `items`
+- `resources/views/layouts/app.blade.php:367` — `route`
+- `resources/views/layouts/app.blade.php:367` — `customers.index', 'label`
+- `resources/views/layouts/app.blade.php:367` — `Kunden`
+- `resources/views/layouts/app.blade.php:367` — `icon`
+- `resources/views/layouts/app.blade.php:367` — `badge',          'modal`
+- `resources/views/layouts/app.blade.php:367` — `matches`
+- `resources/views/layouts/app.blade.php:368` — `route`
+- `resources/views/layouts/app.blade.php:368` — `projects.index',  'label`
+- `resources/views/layouts/app.blade.php:368` — `Projekte`
+- `resources/views/layouts/app.blade.php:368` — `icon`
+- `resources/views/layouts/app.blade.php:368` — `modal`
+- `resources/views/layouts/app.blade.php:368` — `matches`
+- `resources/views/layouts/app.blade.php:372` — `reports',
+                                    'label`
+- `resources/views/layouts/app.blade.php:373` — `Auswertungen`
+- `resources/views/layouts/app.blade.php:374` — `collapsible`
+- `resources/views/layouts/app.blade.php:375` — `items`
+- `resources/views/layouts/app.blade.php:376` — `route`
+- `resources/views/layouts/app.blade.php:376` — `reports.my-month',         'label`
+- `resources/views/layouts/app.blade.php:376` — `Mein Monat`
+- `resources/views/layouts/app.blade.php:376` — `icon`
+- `resources/views/layouts/app.blade.php:376` — `modal`
+- `resources/views/layouts/app.blade.php:376` — `matches`
+- `resources/views/layouts/app.blade.php:376` — `reports.my-month`
+- `resources/views/layouts/app.blade.php:377` — `route`
+- `resources/views/layouts/app.blade.php:377` — `reports.my-year',          'label`
+- `resources/views/layouts/app.blade.php:377` — `Mein Jahr`
+- `resources/views/layouts/app.blade.php:377` — `icon`
+- `resources/views/layouts/app.blade.php:377` — `modal`
+- `resources/views/layouts/app.blade.php:377` — `matches`
+- `resources/views/layouts/app.blade.php:377` — `reports.my-year`
+- `resources/views/layouts/app.blade.php:378` — `route`
+- `resources/views/layouts/app.blade.php:378` — `reports.work-balance',     'label`
+- `resources/views/layouts/app.blade.php:378` — `Arbeitsbilanz`
+- `resources/views/layouts/app.blade.php:378` — `icon`
+- `resources/views/layouts/app.blade.php:378` — `balance',             'modal`
+- `resources/views/layouts/app.blade.php:378` — `matches`
+- `resources/views/layouts/app.blade.php:378` — `reports.work-balance`
+- `resources/views/layouts/app.blade.php:379` — `route`
+- `resources/views/layouts/app.blade.php:379` — `reports.week-by-user',     'label`
+- `resources/views/layouts/app.blade.php:379` — `Woche pro Mitarbeiter`
+- `resources/views/layouts/app.blade.php:379` — `icon`
+- `resources/views/layouts/app.blade.php:379` — `modal`
+- `resources/views/layouts/app.blade.php:379` — `matches`
+- `resources/views/layouts/app.blade.php:379` — `reports.week-by-user`
+- `resources/views/layouts/app.blade.php:380` — `route`
+- `resources/views/layouts/app.blade.php:380` — `reports.customer-project', 'label`
+- `resources/views/layouts/app.blade.php:380` — `icon`
+- `resources/views/layouts/app.blade.php:380` — `modal`
+- `resources/views/layouts/app.blade.php:380` — `matches`
+- `resources/views/layouts/app.blade.php:380` — `reports.customer-project`
+- `resources/views/layouts/app.blade.php:381` — `route`
+- `resources/views/layouts/app.blade.php:381` — `reports.project-details',  'label`
+- `resources/views/layouts/app.blade.php:381` — `Projekt-Details`
+- `resources/views/layouts/app.blade.php:381` — `icon`
+- `resources/views/layouts/app.blade.php:381` — `analytics',           'modal`
+- `resources/views/layouts/app.blade.php:381` — `matches`
+- `resources/views/layouts/app.blade.php:381` — `reports.project-details`
+- `resources/views/layouts/app.blade.php:385` — `archive',
+                                    'label`
+- `resources/views/layouts/app.blade.php:386` — `Archiv`
+- `resources/views/layouts/app.blade.php:387` — `collapsible`
+- `resources/views/layouts/app.blade.php:388` — `items`
+- `resources/views/layouts/app.blade.php:389` — `route`
+- `resources/views/layouts/app.blade.php:389` — `archive.index', 'label`
+- `resources/views/layouts/app.blade.php:389` — `Archiv-Übersicht`
+- `resources/views/layouts/app.blade.php:389` — `icon`
+- `resources/views/layouts/app.blade.php:389` — `modal`
+- `resources/views/layouts/app.blade.php:389` — `matches`
+- `resources/views/layouts/app.blade.php:399` — `matches`
+- `resources/views/layouts/app.blade.php:400` — `route`
+- `resources/views/layouts/app.blade.php:401` — `modal`
+- `resources/views/layouts/app.blade.php:402` — `btn-primary`
+- `resources/views/layouts/app.blade.php:402` — `btn-ghost`
+- `resources/views/layouts/app.blade.php:403` — `label`
+- `resources/views/layouts/app.blade.php:409` — `btn btn-sm btn-ghost`
+- `resources/views/layouts/app.blade.php:409` — `Navigation`
+- `resources/views/layouts/app.blade.php:412` — `matches`
+- `resources/views/layouts/app.blade.php:414` — `route`
+- `resources/views/layouts/app.blade.php:415` — `modal`
+- `resources/views/layouts/app.blade.php:416` — `active`
+- `resources/views/layouts/app.blade.php:417` — `label`
+- `resources/views/layouts/app.blade.php:425` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:426` — `btn-primary`
+- `resources/views/layouts/app.blade.php:426` — `btn-ghost`
+- `resources/views/layouts/app.blade.php:426` — `Verwaltung`
+- `resources/views/layouts/app.blade.php:427` — `Verwaltung`
+- `resources/views/layouts/app.blade.php:431` — `route`
+- `resources/views/layouts/app.blade.php:433` — `route`
+- `resources/views/layouts/app.blade.php:433` — `active`
+- `resources/views/layouts/app.blade.php:434` — `label`
+- `resources/views/layouts/app.blade.php:443` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:444` — `btn-primary`
+- `resources/views/layouts/app.blade.php:444` — `btn-ghost`
+- `resources/views/layouts/app.blade.php:444` — `Administration`
+- `resources/views/layouts/app.blade.php:445` — `Admin`
+- `resources/views/layouts/app.blade.php:449` — `route`
+- `resources/views/layouts/app.blade.php:451` — `route`
+- `resources/views/layouts/app.blade.php:451` — `active`
+- `resources/views/layouts/app.blade.php:452` — `label`
+- `resources/views/layouts/app.blade.php:460` — `btn btn-sm btn-primary`
+- `resources/views/layouts/app.blade.php:460` — `Neuer Eintrag`
+- `resources/views/layouts/app.blade.php:463` — `button`
+- `resources/views/layouts/app.blade.php:464` — `app-sidebar-toggle`
+- `resources/views/layouts/app.blade.php:466` — `Navigation öffnen`
+- `resources/views/layouts/app.blade.php:467` — `app-sidebar`
+- `resources/views/layouts/app.blade.php:468` — `false`
+- `resources/views/layouts/app.blade.php:469` — `h-5 w-5`
+- `resources/views/layouts/app.blade.php:469` — `none`
+- `resources/views/layouts/app.blade.php:469` — `currentColor`
+- `resources/views/layouts/app.blade.php:470` — `round`
+- `resources/views/layouts/app.blade.php:470` — `round`
+- `resources/views/layouts/app.blade.php:470` — `M4 6h16M4 12h16M4 18h16`
+- `resources/views/layouts/app.blade.php:475` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:477` — `btn-primary`
+- `resources/views/layouts/app.blade.php:477` — `btn-ghost`
+- `resources/views/layouts/app.blade.php:478` — `Verwaltung`
+- `resources/views/layouts/app.blade.php:479` — `Verwaltung`
+- `resources/views/layouts/app.blade.php:484` — `route`
+- `resources/views/layouts/app.blade.php:486` — `route`
+- `resources/views/layouts/app.blade.php:486` — `menu-active`
+- `resources/views/layouts/app.blade.php:487` — `icon`
+- `resources/views/layouts/app.blade.php:487` — `tune'`
+- `resources/views/layouts/app.blade.php:488` — `truncate`
+- `resources/views/layouts/app.blade.php:488` — `label`
+- `resources/views/layouts/app.blade.php:497` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:499` — `btn-primary`
+- `resources/views/layouts/app.blade.php:499` — `btn-ghost`
+- `resources/views/layouts/app.blade.php:500` — `System`
+- `resources/views/layouts/app.blade.php:501` — `System`
+- `resources/views/layouts/app.blade.php:502` — `settings`
+- `resources/views/layouts/app.blade.php:506` — `route`
+- `resources/views/layouts/app.blade.php:508` — `route`
+- `resources/views/layouts/app.blade.php:508` — `menu-active`
+- `resources/views/layouts/app.blade.php:509` — `icon`
+- `resources/views/layouts/app.blade.php:509` — `tune'`
+- `resources/views/layouts/app.blade.php:510` — `truncate`
+- `resources/views/layouts/app.blade.php:510` — `label`
+- `resources/views/layouts/app.blade.php:525` — `relative flex size-2`
+- `resources/views/layouts/app.blade.php:526` — `absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75`
+- `resources/views/layouts/app.blade.php:527` — `relative inline-flex size-2 rounded-full bg-primary`
+- `resources/views/layouts/app.blade.php:531` — `leading-none`
+- `resources/views/layouts/app.blade.php:533` — `submit`
+- `resources/views/layouts/app.blade.php:533` — `btn btn-xs btn-ghost btn-square text-error`
+- `resources/views/layouts/app.blade.php:533` — `Stoppen`
+- `resources/views/layouts/app.blade.php:533` — `Stoppen`
+- `resources/views/layouts/app.blade.php:544` — `time`
+- `resources/views/layouts/app.blade.php:547` — `badge`
+- `resources/views/layouts/app.blade.php:550` — `attendance.clock-out`
+- `resources/views/layouts/app.blade.php:550` — `leading-none`
+- `resources/views/layouts/app.blade.php:552` — `submit`
+- `resources/views/layouts/app.blade.php:552` — `btn btn-xs btn-ghost btn-square text-warning`
+- `resources/views/layouts/app.blade.php:552` — `Ausstempeln`
+- `resources/views/layouts/app.blade.php:552` — `Ausstempeln`
+- `resources/views/layouts/app.blade.php:553` — `logout`
+- `resources/views/layouts/app.blade.php:558` — `attendance.clock-in`
+- `resources/views/layouts/app.blade.php:558` — `leading-none`
+- `resources/views/layouts/app.blade.php:560` — `submit`
+- `resources/views/layouts/app.blade.php:560` — `btn btn-xs btn-success gap-1`
+- `resources/views/layouts/app.blade.php:560` — `Einstempeln`
+- `resources/views/layouts/app.blade.php:561` — `login`
+- `resources/views/layouts/app.blade.php:562` — `Einstempeln`
+- `resources/views/layouts/app.blade.php:569` — `button`
+- `resources/views/layouts/app.blade.php:569` — `Farbschema wechseln`
+- `resources/views/layouts/app.blade.php:569` — `Farbschema wechseln`
+- `resources/views/layouts/app.blade.php:569` — `btn btn-sm btn-ghost btn-square`
+- `resources/views/layouts/app.blade.php:570` — `text-base leading-none`
+- `resources/views/layouts/app.blade.php:572` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:573` — `btn btn-sm btn-ghost btn-square`
+- `resources/views/layouts/app.blade.php:573` — `Sprache wechseln`
+- `resources/views/layouts/app.blade.php:573` — `Sprache wechseln`
+- `resources/views/layouts/app.blade.php:574` — `h-4 w-4`
+- `resources/views/layouts/app.blade.php:574` — `none`
+- `resources/views/layouts/app.blade.php:574` — `currentColor`
+- `resources/views/layouts/app.blade.php:575` — `round`
+- `resources/views/layouts/app.blade.php:575` — `round`
+- `resources/views/layouts/app.blade.php:575` — `M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zm0 0c2.5 0 4-4.03 4-9s-1.5-9-4-9m0 18c-2.5 0-4-4.03-4-9s1.5-9 4-9M3 12h18`
+- `resources/views/layouts/app.blade.php:583` — `submit`
+- `resources/views/layouts/app.blade.php:583` — `active`
+- `resources/views/layouts/app.blade.php:584` — `code`
+- `resources/views/layouts/app.blade.php:585` — `label`
+- `resources/views/layouts/app.blade.php:587` — `ml-auto opacity-60`
+- `resources/views/layouts/app.blade.php:598` — `legacy`
+- `resources/views/layouts/app.blade.php:599` — `mode-switch-form`
+- `resources/views/layouts/app.blade.php:600` — `flex items-center gap-1.5`
+- `resources/views/layouts/app.blade.php:602` — `hidden`
+- `resources/views/layouts/app.blade.php:602` — `origin`
+- `resources/views/layouts/app.blade.php:603` — `mode-switch-toggle`
+- `resources/views/layouts/app.blade.php:606` — `Modus wechseln`
+- `resources/views/layouts/app.blade.php:609` — `submit`
+- `resources/views/layouts/app.blade.php:609` — `mode-switch-toggle`
+- `resources/views/layouts/app.blade.php:609` — `switch`
+- `resources/views/layouts/app.blade.php:610` — `true`
+- `resources/views/layouts/app.blade.php:610` — `false`
+- `resources/views/layouts/app.blade.php:611` — `Legacy-Modus`
+- `resources/views/layouts/app.blade.php:612` — `Modus wechseln`
+- `resources/views/layouts/app.blade.php:616` — `bg-primary`
+- `resources/views/layouts/app.blade.php:616` — `bg-base-300`
+- `resources/views/layouts/app.blade.php:619` — `translate-x-4`
+- `resources/views/layouts/app.blade.php:619` — `translate-x-0`
+- `resources/views/layouts/app.blade.php:623` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:625` — `btn-primary`
+- `resources/views/layouts/app.blade.php:625` — `btn-ghost`
+- `resources/views/layouts/app.blade.php:627` — `Benutzermenü`
+- `resources/views/layouts/app.blade.php:629` — `max-w-32 truncate`
+- `resources/views/layouts/app.blade.php:633` — `route`
+- `resources/views/layouts/app.blade.php:635` — `route`
+- `resources/views/layouts/app.blade.php:636` — `modal`
+- `resources/views/layouts/app.blade.php:637` — `active`
+- `resources/views/layouts/app.blade.php:638` — `label`
+- `resources/views/layouts/app.blade.php:643` — `logout`
+- `resources/views/layouts/app.blade.php:643` — `w-full`
+- `resources/views/layouts/app.blade.php:645` — `submit`
+- `resources/views/layouts/app.blade.php:645` — `flex w-full items-center gap-2 text-error`
+- `resources/views/layouts/app.blade.php:646` — `Abmelden`
+- `resources/views/layouts/app.blade.php:655` — `button`
+- `resources/views/layouts/app.blade.php:655` — `Farbschema wechseln`
+- `resources/views/layouts/app.blade.php:655` — `Farbschema wechseln`
+- `resources/views/layouts/app.blade.php:655` — `btn btn-sm btn-ghost btn-square`
+- `resources/views/layouts/app.blade.php:656` — `text-base leading-none`
+- `resources/views/layouts/app.blade.php:658` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:659` — `btn btn-sm btn-ghost btn-square`
+- `resources/views/layouts/app.blade.php:659` — `Sprache wechseln`
+- `resources/views/layouts/app.blade.php:659` — `Sprache wechseln`
+- `resources/views/layouts/app.blade.php:660` — `h-4 w-4`
+- `resources/views/layouts/app.blade.php:660` — `none`
+- `resources/views/layouts/app.blade.php:660` — `currentColor`
+- `resources/views/layouts/app.blade.php:661` — `round`
+- `resources/views/layouts/app.blade.php:661` — `round`
+- `resources/views/layouts/app.blade.php:661` — `M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zm0 0c2.5 0 4-4.03 4-9s-1.5-9-4-9m0 18c-2.5 0-4-4.03-4-9s1.5-9 4-9M3 12h18`
+- `resources/views/layouts/app.blade.php:669` — `submit`
+- `resources/views/layouts/app.blade.php:669` — `active`
+- `resources/views/layouts/app.blade.php:670` — `code`
+- `resources/views/layouts/app.blade.php:671` — `label`
+- `resources/views/layouts/app.blade.php:673` — `ml-auto opacity-60`
+- `resources/views/layouts/app.blade.php:681` — `login`
+- `resources/views/layouts/app.blade.php:681` — `btn btn-sm btn-primary`
+- `resources/views/layouts/app.blade.php:681` — `Anmelden`
+- `resources/views/layouts/app.blade.php:696` — `app-sidebar`
+- `resources/views/layouts/app.blade.php:699` — `Hauptnavigation`
+- `resources/views/layouts/app.blade.php:701` — `flex flex-col gap-3 overflow-y-auto overflow-x-hidden px-2 py-3`
+- `resources/views/layouts/app.blade.php:704` — `sidebar-cta btn btn-sm btn-primary w-full gap-2`
+- `resources/views/layouts/app.blade.php:705` — `Neuer Eintrag`
+- `resources/views/layouts/app.blade.php:707` — `sidebar-cta-text`
+- `resources/views/layouts/app.blade.php:707` — `Neuer Eintrag`
+- `resources/views/layouts/app.blade.php:710` — `flex flex-col gap-4`
+- `resources/views/layouts/app.blade.php:713` — `items`
+- `resources/views/layouts/app.blade.php:714` — `matches`
+- `resources/views/layouts/app.blade.php:714` — `route`
+- `resources/views/layouts/app.blade.php:717` — `collapsible`
+- `resources/views/layouts/app.blade.php:718` — `sidebar-section sidebar-section-collapsible`
+- `resources/views/layouts/app.blade.php:719` — `sidebar-section-summary`
+- `resources/views/layouts/app.blade.php:720` — `icon`
+- `resources/views/layouts/app.blade.php:720` — `folder'`
+- `resources/views/layouts/app.blade.php:720` — `sidebar-section-icon`
+- `resources/views/layouts/app.blade.php:721` — `flex-1 truncate`
+- `resources/views/layouts/app.blade.php:721` — `label`
+- `resources/views/layouts/app.blade.php:722` — `sidebar-section-chevron`
+- `resources/views/layouts/app.blade.php:724` — `menu menu-sm w-full gap-0.5 p-0 pt-1`
+- `resources/views/layouts/app.blade.php:725` — `items`
+- `resources/views/layouts/app.blade.php:726` — `matches`
+- `resources/views/layouts/app.blade.php:726` — `route`
+- `resources/views/layouts/app.blade.php:728` — `route`
+- `resources/views/layouts/app.blade.php:729` — `modal`
+- `resources/views/layouts/app.blade.php:730` — `menu-active`
+- `resources/views/layouts/app.blade.php:731` — `label`
+- `resources/views/layouts/app.blade.php:732` — `icon`
+- `resources/views/layouts/app.blade.php:732` — `circle'`
+- `resources/views/layouts/app.blade.php:733` — `truncate transition-opacity duration-150`
+- `resources/views/layouts/app.blade.php:733` — `label`
+- `resources/views/layouts/app.blade.php:740` — `sidebar-section`
+- `resources/views/layouts/app.blade.php:741` — `label`
+- `resources/views/layouts/app.blade.php:742` — `menu menu-sm w-full gap-0.5 p-0`
+- `resources/views/layouts/app.blade.php:743` — `items`
+- `resources/views/layouts/app.blade.php:744` — `matches`
+- `resources/views/layouts/app.blade.php:744` — `route`
+- `resources/views/layouts/app.blade.php:746` — `route`
+- `resources/views/layouts/app.blade.php:747` — `modal`
+- `resources/views/layouts/app.blade.php:748` — `menu-active`
+- `resources/views/layouts/app.blade.php:749` — `label`
+- `resources/views/layouts/app.blade.php:750` — `icon`
+- `resources/views/layouts/app.blade.php:750` — `circle'`
+- `resources/views/layouts/app.blade.php:751` — `truncate transition-opacity duration-150`
+- `resources/views/layouts/app.blade.php:751` — `label`
+- `resources/views/layouts/app.blade.php:761` — `mt-auto pt-2`
+- `resources/views/layouts/app.blade.php:762` — `button`
+- `resources/views/layouts/app.blade.php:763` — `app-sidebar-collapse`
+- `resources/views/layouts/app.blade.php:764` — `btn btn-sm btn-ghost w-full justify-center gap-2`
+- `resources/views/layouts/app.blade.php:768` — `Einklappen`
+- `resources/views/layouts/app.blade.php:773` — `app-sidebar-backdrop`
+- `resources/views/layouts/app.blade.php:783` — `app-header`
+- `resources/views/layouts/app.blade.php:790` — `function`
+- `resources/views/layouts/app.blade.php:793` — `resize`
+- `resources/views/layouts/app.blade.php:795` — `load`
+- `resources/views/layouts/app.blade.php:800` — `mode-toast`
+- `resources/views/layouts/app.blade.php:802` — `polite`
+- `resources/views/layouts/app.blade.php:804` — `text-base`
+- `resources/views/layouts/app.blade.php:804` — `legacy' ? `
+- `resources/views/layouts/app.blade.php:805` — `font-medium`
+- `resources/views/layouts/app.blade.php:810` — `mode-toast`
+- `resources/views/layouts/app.blade.php:822` — `max-w-none`
+- `resources/views/layouts/app.blade.php:822` — `max-w-screen-2xl`
+- `resources/views/layouts/app.blade.php:824` — `wrapper-height-class', `
+- `resources/views/layouts/app.blade.php:825` — `success`
+- `resources/views/layouts/app.blade.php:826` — `alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs`
+- `resources/views/layouts/app.blade.php:827` — `success`
+- `resources/views/layouts/app.blade.php:830` — `error`
+- `resources/views/layouts/app.blade.php:831` — `alert alert-error mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs`
+- `resources/views/layouts/app.blade.php:832` — `error`
+- `resources/views/layouts/app.blade.php:835` — `info`
+- `resources/views/layouts/app.blade.php:836` — `alert alert-info mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs`
+- `resources/views/layouts/app.blade.php:837` — `info`
+- `resources/views/layouts/app.blade.php:841` — `main-class', '`
+- `resources/views/layouts/app.blade.php:842` — `content`
+- `resources/views/layouts/app.blade.php:846` — `fixed inset-x-0 bottom-0 z-50 h-12 bg-base-100 border-t border-base-300 shadow-xs`
+- `resources/views/layouts/app.blade.php:848` — `Alle Rechte vorbehalten.`
+- `resources/views/layouts/app.blade.php:852` — `action-confirm-dialog`
+- `resources/views/layouts/app.blade.php:853` — `false`
+- `resources/views/layouts/app.blade.php:855` — `warning`
+- `resources/views/layouts/app.blade.php:856` — `help`
+- `resources/views/layouts/app.blade.php:857` — `Aktion bestätigen`
+- `resources/views/layouts/app.blade.php:858` — `action-confirm-header`
+- `resources/views/layouts/app.blade.php:859` — `action-confirm-icon-wrap`
+- `resources/views/layouts/app.blade.php:860` — `action-confirm-icon`
+- `resources/views/layouts/app.blade.php:861` — `action-confirm-title`
+- `resources/views/layouts/app.blade.php:862` — `action-confirm-message`
+- `resources/views/layouts/app.blade.php:862` — `Möchtest du diese Aktion wirklich ausführen?`
+- `resources/views/layouts/app.blade.php:865` — `button`
+- `resources/views/layouts/app.blade.php:865` — `btn btn-ghost gap-2`
+- `resources/views/layouts/app.blade.php:866` — `close`
+- `resources/views/layouts/app.blade.php:866` — `Abbrechen`
+- `resources/views/layouts/app.blade.php:868` — `action-confirm-submit`
+- `resources/views/layouts/app.blade.php:868` — `button`
+- `resources/views/layouts/app.blade.php:868` — `btn btn-error gap-2`
+- `resources/views/layouts/app.blade.php:869` — `check`
+- `resources/views/layouts/app.blade.php:869` — `Ausführen`
+- `resources/views/layouts/app.blade.php:874` — `action-notify-dialog`
+- `resources/views/layouts/app.blade.php:875` — `false`
+- `resources/views/layouts/app.blade.php:877` — `info`
+- `resources/views/layouts/app.blade.php:878` — `info`
+- `resources/views/layouts/app.blade.php:879` — `Hinweis`
+- `resources/views/layouts/app.blade.php:880` — `action-notify-header`
+- `resources/views/layouts/app.blade.php:881` — `action-notify-icon-wrap`
+- `resources/views/layouts/app.blade.php:882` — `action-notify-icon`
+- `resources/views/layouts/app.blade.php:883` — `action-notify-title`
+- `resources/views/layouts/app.blade.php:884` — `action-notify-message`
+- `resources/views/layouts/app.blade.php:887` — `action-notify-ok`
+- `resources/views/layouts/app.blade.php:887` — `button`
+- `resources/views/layouts/app.blade.php:887` — `btn btn-primary gap-2`
+- `resources/views/layouts/app.blade.php:888` — `check`
+- `resources/views/layouts/app.blade.php:900` — `data-theme`
+- `resources/views/layouts/app.blade.php:901` — `corporate' ? 'light`
+- `resources/views/layouts/app.blade.php:901` — `dark`
+- `resources/views/layouts/app.blade.php:902` — `workDiaryTheme`
+- `resources/views/layouts/app.blade.php:904` — `corporate' ? `
+- `resources/views/layouts/app.blade.php:908` — `data-theme`
+- `resources/views/layouts/app.blade.php:908` — `corporate' ? 'corporate`
+- `resources/views/layouts/app.blade.php:912` — `click`
+- `resources/views/layouts/app.blade.php:913` — `data-theme`
+- `resources/views/layouts/app.blade.php:913` — `corporate' ? 'dim`
+- `resources/views/layouts/app.blade.php:913` — `corporate`
+- `resources/views/layouts/app.blade.php:918` — `action-confirm-dialog`
+- `resources/views/layouts/app.blade.php:919` — `action-confirm-title`
+- `resources/views/layouts/app.blade.php:920` — `action-confirm-message`
+- `resources/views/layouts/app.blade.php:921` — `action-confirm-submit`
+- `resources/views/layouts/app.blade.php:922` — `action-confirm-header`
+- `resources/views/layouts/app.blade.php:923` — `action-confirm-icon-wrap`
+- `resources/views/layouts/app.blade.php:924` — `action-confirm-icon`
+- `resources/views/layouts/app.blade.php:925` — `action-notify-dialog`
+- `resources/views/layouts/app.blade.php:926` — `action-notify-title`
+- `resources/views/layouts/app.blade.php:927` — `action-notify-message`
+- `resources/views/layouts/app.blade.php:928` — `action-notify-header`
+- `resources/views/layouts/app.blade.php:929` — `action-notify-icon-wrap`
+- `resources/views/layouts/app.blade.php:930` — `action-notify-icon`
+- `resources/views/layouts/app.blade.php:931` — `action-notify-ok`
+- `resources/views/layouts/app.blade.php:967` — `material-symbols-outlined`
+- `resources/views/layouts/app.blade.php:975` — `primary`
+- `resources/views/layouts/app.blade.php:975` — `warning`
+- `resources/views/layouts/app.blade.php:977` — `Aktion bestätigen`
+- `resources/views/layouts/app.blade.php:980` — `Möchtest du diese Aktion wirklich ausführen?`
+- `resources/views/layouts/app.blade.php:983` — `help`
+- `resources/views/layouts/app.blade.php:983` — `warning`
+- `resources/views/layouts/app.blade.php:986` — `Ausführen`
+- `resources/views/layouts/app.blade.php:987` — `btn-error', 'btn-primary', 'btn-warning', 'btn-success', 'btn-info`
+- `resources/views/layouts/app.blade.php:988` — `btn-primary`
+- `resources/views/layouts/app.blade.php:988` — `primary' ? 'btn-primary`
+- `resources/views/layouts/app.blade.php:988` — `success' ? 'btn-success`
+- `resources/views/layouts/app.blade.php:988` — `info' ? 'btn-info`
+- `resources/views/layouts/app.blade.php:988` — `btn-error`
+- `resources/views/layouts/app.blade.php:990` — `function`
+- `resources/views/layouts/app.blade.php:997` — `info`
+- `resources/views/layouts/app.blade.php:998` — `info`
+- `resources/views/layouts/app.blade.php:998` — `warning`
+- `resources/views/layouts/app.blade.php:998` — `cancel`
+- `resources/views/layouts/app.blade.php:998` — `info`
+- `resources/views/layouts/app.blade.php:998` — `info`
+- `resources/views/layouts/app.blade.php:1000` — `Hinweis`
+- `resources/views/layouts/app.blade.php:1001` — `Erfolg`
+- `resources/views/layouts/app.blade.php:1002` — `Achtung`
+- `resources/views/layouts/app.blade.php:1003` — `Fehler`
+- `resources/views/layouts/app.blade.php:1006` — `Hinweis`
+- `resources/views/layouts/app.blade.php:1012` — `info`
+- `resources/views/layouts/app.blade.php:1016` — `btn-error', 'btn-primary', 'btn-warning', 'btn-success', 'btn-info`
+- `resources/views/layouts/app.blade.php:1017` — `error' ? 'btn-error`
+- `resources/views/layouts/app.blade.php:1017` — `warning' ? 'btn-warning`
+- `resources/views/layouts/app.blade.php:1017` — `success' ? 'btn-success`
+- `resources/views/layouts/app.blade.php:1017` — `btn-primary`
+- `resources/views/layouts/app.blade.php:1020` — `function`
+- `resources/views/layouts/app.blade.php:1033` — `string`
+- `resources/views/layouts/app.blade.php:1045` — `string`
+- `resources/views/layouts/app.blade.php:1050` — `close`
+- `resources/views/layouts/app.blade.php:1058` — `submit`
+- `resources/views/layouts/app.blade.php:1064` — `data-confirm-dialog`
+- `resources/views/layouts/app.blade.php:1073` — `data-confirm-title`
+- `resources/views/layouts/app.blade.php:1074` — `data-confirm-message`
+- `resources/views/layouts/app.blade.php:1075` — `data-confirm-label`
+- `resources/views/layouts/app.blade.php:1076` — `data-confirm-icon`
+- `resources/views/layouts/app.blade.php:1077` — `data-confirm-tone`
+- `resources/views/layouts/app.blade.php:1082` — `click`
+- `resources/views/layouts/app.blade.php:1089` — `form`
+- `resources/views/layouts/app.blade.php:1090` — `data-confirm-dialog`
+- `resources/views/layouts/app.blade.php:1097` — `submit`
+- `resources/views/layouts/app.blade.php:1107` — `confirmed-action`
+- `resources/views/layouts/app.blade.php:1112` — `data-confirm-title`
+- `resources/views/layouts/app.blade.php:1113` — `data-confirm-message`
+- `resources/views/layouts/app.blade.php:1114` — `data-confirm-label`
+- `resources/views/layouts/app.blade.php:1115` — `data-confirm-icon`
+- `resources/views/layouts/app.blade.php:1116` — `data-confirm-tone`
+- `resources/views/layouts/app.blade.php:1120` — `click`
+- `resources/views/layouts/app.blade.php:1134` — `close`
+- `resources/views/layouts/app.blade.php:1145` — `app-sidebar`
+- `resources/views/layouts/app.blade.php:1146` — `app-sidebar-toggle`
+- `resources/views/layouts/app.blade.php:1147` — `app-sidebar-backdrop`
+- `resources/views/layouts/app.blade.php:1148` — `app-sidebar-collapse`
+- `resources/views/layouts/app.blade.php:1153` — `sidebar-collapsed`
+- `resources/views/layouts/app.blade.php:1159` — `workDiarySidebarCollapsed`
+- `resources/views/layouts/app.blade.php:1163` — `click`
+- `resources/views/layouts/app.blade.php:1164` — `sidebar-collapsed`
+- `resources/views/layouts/app.blade.php:1166` — `workDiarySidebarCollapsed', next ? '1`
+- `resources/views/layouts/app.blade.php:1177` — `translate-x-0`
+- `resources/views/layouts/app.blade.php:1178` — `hidden`
+- `resources/views/layouts/app.blade.php:1179` — `aria-expanded', 'true`
+- `resources/views/layouts/app.blade.php:1185` — `translate-x-0`
+- `resources/views/layouts/app.blade.php:1186` — `hidden`
+- `resources/views/layouts/app.blade.php:1187` — `aria-expanded', 'false`
+- `resources/views/layouts/app.blade.php:1191` — `click`
+- `resources/views/layouts/app.blade.php:1192` — `aria-expanded`
+- `resources/views/layouts/app.blade.php:1192` — `true`
+- `resources/views/layouts/app.blade.php:1197` — `click`
+- `resources/views/layouts/app.blade.php:1201` — `click`
+- `resources/views/layouts/app.blade.php:1206` — `keydown`
+- `resources/views/layouts/app.blade.php:1207` — `Escape`
+- `resources/views/layouts/app.blade.php:1209` — `resize`
+- `resources/views/layouts/app.blade.php:1212` — `hidden`
+- `resources/views/layouts/app.blade.php:1213` — `aria-expanded', 'false`
+- `resources/views/layouts/app.blade.php:1218` — `scripts`
+- `resources/views/timesheets/_signature_pad.blade.php:2` — `mt-3 flex flex-col gap-3`
+- `resources/views/timesheets/_signature_pad.blade.php:4` — `text`
+- `resources/views/timesheets/_signature_pad.blade.php:4` — `customerName`
+- `resources/views/timesheets/_signature_pad.blade.php:4` — `Name`
+- `resources/views/timesheets/_signature_pad.blade.php:5` — `input input-bordered input-sm`
+- `resources/views/timesheets/_signature_pad.blade.php:6` — `text`
+- `resources/views/timesheets/_signature_pad.blade.php:6` — `customerRole`
+- `resources/views/timesheets/_signature_pad.blade.php:7` — `input input-bordered input-sm`
+- `resources/views/timesheets/_signature_pad.blade.php:8` — `email`
+- `resources/views/timesheets/_signature_pad.blade.php:8` — `customerEmail`
+- `resources/views/timesheets/_signature_pad.blade.php:9` — `input input-bordered input-sm`
+- `resources/views/timesheets/_signature_pad.blade.php:12` — `rounded-box border border-base-300 bg-white p-2`
+- `resources/views/timesheets/_signature_pad.blade.php:13` — `canvas`
+- `resources/views/timesheets/_signature_pad.blade.php:13` — `block w-full rounded touch-none`
+- `resources/views/timesheets/_signature_pad.blade.php:16` — `flex flex-wrap items-center gap-2`
+- `resources/views/timesheets/_signature_pad.blade.php:17` — `button`
+- `resources/views/timesheets/_signature_pad.blade.php:17` — `btn btn-sm`
+- `resources/views/timesheets/_signature_pad.blade.php:17` — `Leeren`
+- `resources/views/timesheets/_signature_pad.blade.php:18` — `Mit dem Klick auf `
+- `resources/views/timesheets/_signature_pad.blade.php:21` — `flex`
+- `resources/views/timesheets/_signature_pad.blade.php:23` — `hidden`
+- `resources/views/timesheets/_signature_pad.blade.php:23` — `signature`
+- `resources/views/timesheets/_signature_pad.blade.php:23` — `sigInput`
+- `resources/views/timesheets/_signature_pad.blade.php:24` — `hidden`
+- `resources/views/timesheets/_signature_pad.blade.php:24` — `customerName`
+- `resources/views/timesheets/_signature_pad.blade.php:25` — `hidden`
+- `resources/views/timesheets/_signature_pad.blade.php:25` — `customerRole`
+- `resources/views/timesheets/_signature_pad.blade.php:26` — `hidden`
+- `resources/views/timesheets/_signature_pad.blade.php:26` — `customerEmail`
+- `resources/views/timesheets/_signature_pad.blade.php:27` — `btn btn-primary btn-sm`
+- `resources/views/timesheets/_signature_pad.blade.php:27` — `Signieren`
+- `resources/views/timesheets/_signature_pad.blade.php:31` — `scripts`
+- `resources/views/timesheets/_signature_pad.blade.php:50` — `resize`
+- `resources/views/timesheets/index.blade.php:2` — `title`
+- `resources/views/timesheets/index.blade.php:2` — `Stundenzettel`
+- `resources/views/timesheets/index.blade.php:3` — `nav-title`
+- `resources/views/timesheets/index.blade.php:3` — `Stundenzettel`
+- `resources/views/timesheets/index.blade.php:5` — `content`
+- `resources/views/timesheets/index.blade.php:6` — `flex h-full min-h-0 w-full flex-col gap-4 overflow-auto`
+- `resources/views/timesheets/index.blade.php:10` — `create`
+- `resources/views/timesheets/index.blade.php:11` — `button`
+- `resources/views/timesheets/index.blade.php:11` — `btn btn-sm btn-primary gap-1`
+- `resources/views/timesheets/index.blade.php:11` — `quick-timesheet-dialog`
+- `resources/views/timesheets/index.blade.php:13` — `Stundenzettel`
+- `resources/views/timesheets/index.blade.php:22` — `Bereich`
+- `resources/views/timesheets/index.blade.php:22` — `ts-scope`
+- `resources/views/timesheets/index.blade.php:23` — `ts-scope`
+- `resources/views/timesheets/index.blade.php:23` — `scope`
+- `resources/views/timesheets/index.blade.php:23` — `select select-sm select-bordered`
+- `resources/views/timesheets/index.blade.php:24` — `mine`
+- `resources/views/timesheets/index.blade.php:24` — `mine`
+- `resources/views/timesheets/index.blade.php:24` — `Eigene`
+- `resources/views/timesheets/index.blade.php:25` — `team`
+- `resources/views/timesheets/index.blade.php:25` — `team`
+- `resources/views/timesheets/index.blade.php:25` — `Team`
+- `resources/views/timesheets/index.blade.php:29` — `Status`
+- `resources/views/timesheets/index.blade.php:29` — `ts-status`
+- `resources/views/timesheets/index.blade.php:30` — `ts-status`
+- `resources/views/timesheets/index.blade.php:30` — `status`
+- `resources/views/timesheets/index.blade.php:30` — `select select-sm select-bordered`
+- `resources/views/timesheets/index.blade.php:31` — `Alle Status`
+- `resources/views/timesheets/index.blade.php:33` — `status`
+- `resources/views/timesheets/index.blade.php:39` — `rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/timesheets/index.blade.php:41` — `Keine Stundenzettel gefunden.`
+- `resources/views/timesheets/index.blade.php:43` — `overflow-x-auto`
+- `resources/views/timesheets/index.blade.php:44` — `table table-sm`
+- `resources/views/timesheets/index.blade.php:47` — `scope', 'project', 'status`
+- `resources/views/timesheets/index.blade.php:48` — `desc'`
+- `resources/views/timesheets/index.blade.php:48` — `Datum`
+- `resources/views/timesheets/index.blade.php:49` — `desc'`
+- `resources/views/timesheets/index.blade.php:49` — `Projekt`
+- `resources/views/timesheets/index.blade.php:50` — `desc'`
+- `resources/views/timesheets/index.blade.php:50` — `Mitarbeiter`
+- `resources/views/timesheets/index.blade.php:51` — `text-right`
+- `resources/views/timesheets/index.blade.php:51` — `Arbeit`
+- `resources/views/timesheets/index.blade.php:52` — `status`
+- `resources/views/timesheets/index.blade.php:52` — `desc'`
+- `resources/views/timesheets/index.blade.php:52` — `Status`
+- `resources/views/timesheets/index.blade.php:61` — `text-error`
+- `resources/views/timesheets/index.blade.php:65` — `text-right tabular-nums`
+- `resources/views/timesheets/index.blade.php:67` — `text-right`
+- `resources/views/timesheets/index.blade.php:68` — `btn btn-xs`
+- `resources/views/timesheets/index.blade.php:68` — `Öffnen`
+- `resources/views/timesheets/index.blade.php:75` — `border-t border-base-300 px-4 py-3`
+- `resources/views/timesheets/index.blade.php:80` — `create`
+- `resources/views/timesheets/index.blade.php:81` — `quick-timesheet-dialog`
+- `resources/views/timesheets/index.blade.php:82` — `false`
+- `resources/views/timesheets/index.blade.php:84` — `primary`
+- `resources/views/timesheets/index.blade.php:85` — `timer`
+- `resources/views/timesheets/index.blade.php:86` — `Stundenzettel`
+- `resources/views/timesheets/index.blade.php:87` — `Stundenzettel anlegen`
+- `resources/views/timesheets/index.blade.php:90` — `Anlegen`
+- `resources/views/timesheets/index.blade.php:92` — `Kunde`
+- `resources/views/timesheets/index.blade.php:92` — `business`
+- `resources/views/timesheets/index.blade.php:92` — `primary`
+- `resources/views/timesheets/index.blade.php:93` — `fieldset`
+- `resources/views/timesheets/index.blade.php:94` — `fieldset-label`
+- `resources/views/timesheets/index.blade.php:94` — `Kunde`
+- `resources/views/timesheets/index.blade.php:95` — `select select-bordered w-full`
+- `resources/views/timesheets/index.blade.php:97` — `name`
+- `resources/views/timesheets/index.blade.php:97` — `id','name`
+- `resources/views/timesheets/index.blade.php:105` — `Zeitraum`
+- `resources/views/timesheets/index.blade.php:105` — `event`
+- `resources/views/timesheets/index.blade.php:105` — `info`
+- `resources/views/timesheets/index.blade.php:106` — `fieldset`
+- `resources/views/timesheets/index.blade.php:107` — `fieldset-label`
+- `resources/views/timesheets/index.blade.php:107` — `Datum`
+- `resources/views/timesheets/index.blade.php:108` — `date`
+- `resources/views/timesheets/index.blade.php:108` — `Y-m-d`
+- `resources/views/timesheets/index.blade.php:108` — `input input-bordered w-full`
+- `resources/views/timesheets/_form_body.blade.php:3` — `Stammdaten`
+- `resources/views/timesheets/_form_body.blade.php:3` — `description`
+- `resources/views/timesheets/_form_body.blade.php:3` — `primary`
+- `resources/views/timesheets/_form_body.blade.php:5` — `fieldset-label`
+- `resources/views/timesheets/_form_body.blade.php:5` — `Datum`
+- `resources/views/timesheets/_form_body.blade.php:6` — `date`
+- `resources/views/timesheets/_form_body.blade.php:7` — `Y-m-d`
+- `resources/views/timesheets/_form_body.blade.php:8` — `input input-bordered w-full`
+- `resources/views/timesheets/_form_body.blade.php:9` — `text-error text-xs mt-1`
+- `resources/views/timesheets/_form_body.blade.php:12` — `fieldset-label`
+- `resources/views/timesheets/_form_body.blade.php:13` — `text`
+- `resources/views/timesheets/_form_body.blade.php:15` — `input input-bordered w-full`
+- `resources/views/timesheets/_form_body.blade.php:17` — `fieldset`
+- `resources/views/timesheets/_form_body.blade.php:18` — `fieldset-label`
+- `resources/views/timesheets/_form_body.blade.php:19` — `text`
+- `resources/views/timesheets/_form_body.blade.php:21` — `input input-bordered w-full`
+- `resources/views/timesheets/_form_body.blade.php:23` — `fieldset`
+- `resources/views/timesheets/_form_body.blade.php:24` — `fieldset-label`
+- `resources/views/timesheets/_form_body.blade.php:24` — `E-Mail`
+- `resources/views/timesheets/_form_body.blade.php:25` — `email`
+- `resources/views/timesheets/_form_body.blade.php:27` — `input input-bordered w-full`
+- `resources/views/timesheets/_form_body.blade.php:31` — `Notizen`
+- `resources/views/timesheets/_form_body.blade.php:31` — `notes`
+- `resources/views/timesheets/_form_body.blade.php:31` — `ghost`
+- `resources/views/timesheets/_form_body.blade.php:32` — `fieldset`
+- `resources/views/timesheets/_form_body.blade.php:33` — `notes`
+- `resources/views/timesheets/_form_body.blade.php:33` — `textarea textarea-bordered w-full`
+- `resources/views/timesheets/_form_body.blade.php:33` — `notes`
+- `resources/views/timesheets/_form_body.blade.php:38` — `alert alert-error text-sm`
+- `resources/views/timesheets/_form_body.blade.php:39` — `list-disc pl-5`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:3` — `Zeile hinzufügen`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:4` — `Zeiteintrag`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:5` — `schedule`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:6` — `primary`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:9` — `data-entry-form`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:10` — `Hinzufügen`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:12` — `Zeit`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:12` — `schedule`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:12` — `primary`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:13` — `fieldset`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:14` — `fieldset-label`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:14` — `Start`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:15` — `datetime-local`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:15` — `input input-bordered w-full`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:17` — `fieldset`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:18` — `fieldset-label`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:18` — `Ende`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:19` — `datetime-local`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:19` — `input input-bordered w-full`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:21` — `fieldset`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:22` — `fieldset-label`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:23` — `number`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:23` — `input input-bordered w-full`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:25` — `fieldset`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:26` — `fieldset-label`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:27` — `kind`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:27` — `select select-bordered w-full`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:28` — `work`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:28` — `Arbeit`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:29` — `travel`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:29` — `Anfahrt`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:30` — `standby`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:30` — `Bereitschaft`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:35` — `Bezug`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:35` — `task`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:35` — `info`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:36` — `fieldset`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:37` — `fieldset-label`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:37` — `Aufgabe`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:38` — `select select-bordered w-full`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:45` — `fieldset`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:46` — `fieldset-label`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:46` — `Beschreibung`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:47` — `text`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:47` — `description`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:47` — `input input-bordered w-full`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:52` — `alert alert-error text-sm`
+- `resources/views/timesheets/_entry_form_dialog.blade.php:53` — `list-disc pl-5`
+- `resources/views/timesheets/_form_dialog.blade.php:9` — `Stundenzettel bearbeiten`
+- `resources/views/timesheets/_form_dialog.blade.php:9` — `Stundenzettel anlegen`
+- `resources/views/timesheets/_form_dialog.blade.php:11` — `description`
+- `resources/views/timesheets/_form_dialog.blade.php:12` — `primary`
+- `resources/views/timesheets/_form_dialog.blade.php:14` — `POST'`
+- `resources/views/timesheets/_form_dialog.blade.php:15` — `data-entry-form`
+- `resources/views/timesheets/_form_dialog.blade.php:16` — `Speichern`
+- `resources/views/timesheets/_form_dialog.blade.php:24` — `Stundenzettel wirklich löschen?`
+- `resources/views/timesheets/_form_dialog.blade.php:25` — `Löschen`
+- `resources/views/timesheets/_form_dialog.blade.php:27` — `submit`
+- `resources/views/timesheets/_form_dialog.blade.php:27` — `btn btn-ghost btn-sm text-error`
+- `resources/views/timesheets/_form_dialog.blade.php:27` — `Löschen`
+- `resources/views/timesheets/show.blade.php:2` — `title`
+- `resources/views/timesheets/show.blade.php:2` — `Stundenzettel`
+- `resources/views/timesheets/show.blade.php:4` — `content`
+- `resources/views/timesheets/show.blade.php:10` — `flex h-full min-h-0 w-full flex-col gap-4 overflow-auto`
+- `resources/views/timesheets/show.blade.php:13` — `flex flex-wrap items-start justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/timesheets/show.blade.php:15` — `flex flex-wrap items-center gap-2`
+- `resources/views/timesheets/show.blade.php:17` — `Stundenzettel`
+- `resources/views/timesheets/show.blade.php:22` — `link`
+- `resources/views/timesheets/show.blade.php:27` — `flex flex-wrap gap-2`
+- `resources/views/timesheets/show.blade.php:29` — `btn btn-sm btn-ghost`
+- `resources/views/timesheets/show.blade.php:29` — `Kopfdaten`
+- `resources/views/timesheets/show.blade.php:31` — `btn btn-sm btn-primary`
+- `resources/views/timesheets/show.blade.php:31` — `Einreichen`
+- `resources/views/timesheets/show.blade.php:33` — `projects.timesheets.magic-link`
+- `resources/views/timesheets/show.blade.php:34` — `btn btn-sm btn-secondary`
+- `resources/views/timesheets/show.blade.php:34` — `Sign-Link an Kunden`
+- `resources/views/timesheets/show.blade.php:37` — `btn btn-sm`
+- `resources/views/timesheets/show.blade.php:39` — `lock`
+- `resources/views/timesheets/show.blade.php:42` — `btn btn-sm btn-warning`
+- `resources/views/timesheets/show.blade.php:42` — `Sperren`
+- `resources/views/timesheets/show.blade.php:46` — `btn btn-sm`
+- `resources/views/timesheets/show.blade.php:46` — `Entsperren`
+- `resources/views/timesheets/show.blade.php:53` — `success`
+- `resources/views/timesheets/show.blade.php:54` — `alert alert-success`
+- `resources/views/timesheets/show.blade.php:54` — `success`
+- `resources/views/timesheets/show.blade.php:59` — `rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs`
+- `resources/views/timesheets/show.blade.php:60` — `text-2xl font-bold`
+- `resources/views/timesheets/show.blade.php:61` — `Arbeit`
+- `resources/views/timesheets/show.blade.php:63` — `rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs`
+- `resources/views/timesheets/show.blade.php:64` — `text-2xl font-bold`
+- `resources/views/timesheets/show.blade.php:65` — `Pause`
+- `resources/views/timesheets/show.blade.php:67` — `rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs`
+- `resources/views/timesheets/show.blade.php:68` — `text-2xl font-bold`
+- `resources/views/timesheets/show.blade.php:69` — `Material netto`
+- `resources/views/timesheets/show.blade.php:74` — `rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/timesheets/show.blade.php:75` — `flex items-center justify-between border-b border-base-300 px-4 py-3`
+- `resources/views/timesheets/show.blade.php:76` — `Zeiteinträge`
+- `resources/views/timesheets/show.blade.php:79` — `btn btn-sm btn-primary`
+- `resources/views/timesheets/show.blade.php:80` — `Zeile hinzufügen`
+- `resources/views/timesheets/show.blade.php:85` — `overflow-x-auto`
+- `resources/views/timesheets/show.blade.php:86` — `table table-sm`
+- `resources/views/timesheets/show.blade.php:89` — `Start`
+- `resources/views/timesheets/show.blade.php:90` — `Ende`
+- `resources/views/timesheets/show.blade.php:91` — `text-right`
+- `resources/views/timesheets/show.blade.php:91` — `Pause`
+- `resources/views/timesheets/show.blade.php:92` — `text-right`
+- `resources/views/timesheets/show.blade.php:92` — `Dauer`
+- `resources/views/timesheets/show.blade.php:94` — `Aufgabe`
+- `resources/views/timesheets/show.blade.php:95` — `Beschreibung`
+- `resources/views/timesheets/show.blade.php:102` — `tabular-nums`
+- `resources/views/timesheets/show.blade.php:103` — `tabular-nums`
+- `resources/views/timesheets/show.blade.php:104` — `text-right tabular-nums`
+- `resources/views/timesheets/show.blade.php:105` — `text-right tabular-nums`
+- `resources/views/timesheets/show.blade.php:109` — `text-right`
+- `resources/views/timesheets/show.blade.php:113` — `Löschen?`
+- `resources/views/timesheets/show.blade.php:114` — `delete`
+- `resources/views/timesheets/show.blade.php:115` — `error`
+- `resources/views/timesheets/show.blade.php:116` — `Löschen`
+- `resources/views/timesheets/show.blade.php:118` — `btn btn-xs btn-ghost text-error`
+- `resources/views/timesheets/show.blade.php:132` — `rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/timesheets/show.blade.php:133` — `flex items-center justify-between border-b border-base-300 px-4 py-3`
+- `resources/views/timesheets/show.blade.php:134` — `Verbrauchsmaterial`
+- `resources/views/timesheets/show.blade.php:137` — `btn btn-sm btn-primary`
+- `resources/views/timesheets/show.blade.php:138` — `Material erfassen`
+- `resources/views/timesheets/show.blade.php:143` — `overflow-x-auto`
+- `resources/views/timesheets/show.blade.php:144` — `table table-sm`
+- `resources/views/timesheets/show.blade.php:147` — `Bezeichnung`
+- `resources/views/timesheets/show.blade.php:148` — `text-right`
+- `resources/views/timesheets/show.blade.php:148` — `Menge`
+- `resources/views/timesheets/show.blade.php:149` — `Einheit`
+- `resources/views/timesheets/show.blade.php:150` — `text-right`
+- `resources/views/timesheets/show.blade.php:150` — `EP netto`
+- `resources/views/timesheets/show.blade.php:151` — `text-right`
+- `resources/views/timesheets/show.blade.php:151` — `Summe netto`
+- `resources/views/timesheets/show.blade.php:159` — `text-right tabular-nums`
+- `resources/views/timesheets/show.blade.php:161` — `text-right tabular-nums`
+- `resources/views/timesheets/show.blade.php:162` — `text-right tabular-nums`
+- `resources/views/timesheets/show.blade.php:163` — `text-right`
+- `resources/views/timesheets/show.blade.php:167` — `Löschen?`
+- `resources/views/timesheets/show.blade.php:168` — `delete`
+- `resources/views/timesheets/show.blade.php:169` — `error`
+- `resources/views/timesheets/show.blade.php:170` — `Löschen`
+- `resources/views/timesheets/show.blade.php:172` — `btn btn-xs btn-ghost text-error`
+- `resources/views/timesheets/show.blade.php:186` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/timesheets/show.blade.php:187` — `Kundenfreigabe`
+- `resources/views/timesheets/show.blade.php:191` — `text-sm`
+- `resources/views/timesheets/show.blade.php:195` — `Signiert am`
+- `resources/views/timesheets/show.blade.php:203` — `signature`
+- `resources/views/timesheets/show.blade.php:203` — `max-h-40 rounded border border-base-300 bg-white p-2`
+- `resources/views/timesheets/show.blade.php:209` — `action`
+- `resources/views/timesheets/show.blade.php:210` — `timesheet`
+- `resources/views/timesheets/_material_form_dialog.blade.php:3` — `Material erfassen`
+- `resources/views/timesheets/_material_form_dialog.blade.php:4` — `Verbrauchsmaterial`
+- `resources/views/timesheets/_material_form_dialog.blade.php:5` — `category`
+- `resources/views/timesheets/_material_form_dialog.blade.php:6` — `primary`
+- `resources/views/timesheets/_material_form_dialog.blade.php:9` — `data-entry-form`
+- `resources/views/timesheets/_material_form_dialog.blade.php:10` — `Hinzufügen`
+- `resources/views/timesheets/_material_form_dialog.blade.php:12` — `Material`
+- `resources/views/timesheets/_material_form_dialog.blade.php:12` — `category`
+- `resources/views/timesheets/_material_form_dialog.blade.php:12` — `primary`
+- `resources/views/timesheets/_material_form_dialog.blade.php:14` — `fieldset-label`
+- `resources/views/timesheets/_material_form_dialog.blade.php:15` — `select select-bordered w-full`
+- `resources/views/timesheets/_material_form_dialog.blade.php:16` — `frei`
+- `resources/views/timesheets/_material_form_dialog.blade.php:29` — `fieldset-label`
+- `resources/views/timesheets/_material_form_dialog.blade.php:29` — `Bezeichnung`
+- `resources/views/timesheets/_material_form_dialog.blade.php:30` — `text`
+- `resources/views/timesheets/_material_form_dialog.blade.php:30` — `description`
+- `resources/views/timesheets/_material_form_dialog.blade.php:30` — `input input-bordered w-full`
+- `resources/views/timesheets/_material_form_dialog.blade.php:32` — `fieldset`
+- `resources/views/timesheets/_material_form_dialog.blade.php:33` — `fieldset-label`
+- `resources/views/timesheets/_material_form_dialog.blade.php:33` — `Menge`
+- `resources/views/timesheets/_material_form_dialog.blade.php:34` — `number`
+- `resources/views/timesheets/_material_form_dialog.blade.php:34` — `quantity`
+- `resources/views/timesheets/_material_form_dialog.blade.php:34` — `input input-bordered w-full`
+- `resources/views/timesheets/_material_form_dialog.blade.php:36` — `fieldset`
+- `resources/views/timesheets/_material_form_dialog.blade.php:37` — `fieldset-label`
+- `resources/views/timesheets/_material_form_dialog.blade.php:37` — `Einheit`
+- `resources/views/timesheets/_material_form_dialog.blade.php:38` — `text`
+- `resources/views/timesheets/_material_form_dialog.blade.php:38` — `unit`
+- `resources/views/timesheets/_material_form_dialog.blade.php:38` — `Stk.`
+- `resources/views/timesheets/_material_form_dialog.blade.php:38` — `input input-bordered w-full`
+- `resources/views/timesheets/_material_form_dialog.blade.php:40` — `fieldset`
+- `resources/views/timesheets/_material_form_dialog.blade.php:41` — `fieldset-label`
+- `resources/views/timesheets/_material_form_dialog.blade.php:41` — `EP netto`
+- `resources/views/timesheets/_material_form_dialog.blade.php:42` — `number`
+- `resources/views/timesheets/_material_form_dialog.blade.php:42` — `input input-bordered w-full`
+- `resources/views/timesheets/_material_form_dialog.blade.php:44` — `fieldset`
+- `resources/views/timesheets/_material_form_dialog.blade.php:45` — `fieldset-label`
+- `resources/views/timesheets/_material_form_dialog.blade.php:46` — `number`
+- `resources/views/timesheets/_material_form_dialog.blade.php:46` — `input input-bordered w-full`
+- `resources/views/timesheets/_material_form_dialog.blade.php:51` — `alert alert-error text-sm`
+- `resources/views/timesheets/_material_form_dialog.blade.php:52` — `list-disc pl-5`
+- `resources/views/materials/index.blade.php:2` — `title`
+- `resources/views/materials/index.blade.php:2` — `Materialien`
+- `resources/views/materials/index.blade.php:3` — `nav-title`
+- `resources/views/materials/index.blade.php:3` — `Materialien`
+- `resources/views/materials/index.blade.php:4` — `content`
+- `resources/views/materials/index.blade.php:5` — `flex h-full min-h-0 w-full flex-col gap-4 overflow-auto`
+- `resources/views/materials/index.blade.php:6` — `flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/materials/index.blade.php:7` — `flex gap-2`
+- `resources/views/materials/index.blade.php:8` — `search`
+- `resources/views/materials/index.blade.php:8` — `input input-sm input-bordered`
+- `resources/views/materials/index.blade.php:9` — `btn btn-sm btn-ghost gap-1`
+- `resources/views/materials/index.blade.php:9` — `search`
+- `resources/views/materials/index.blade.php:9` — `Suchen`
+- `resources/views/materials/index.blade.php:11` — `flex gap-2`
+- `resources/views/materials/index.blade.php:12` — `create`
+- `resources/views/materials/index.blade.php:13` — `btn btn-sm btn-primary gap-1`
+- `resources/views/materials/index.blade.php:14` — `Material`
+- `resources/views/materials/index.blade.php:20` — `rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/materials/index.blade.php:21` — `overflow-x-auto`
+- `resources/views/materials/index.blade.php:22` — `table table-sm`
+- `resources/views/materials/index.blade.php:26` — `asc'`
+- `resources/views/materials/index.blade.php:27` — `name`
+- `resources/views/materials/index.blade.php:27` — `asc'`
+- `resources/views/materials/index.blade.php:27` — `name`
+- `resources/views/materials/index.blade.php:27` — `Name`
+- `resources/views/materials/index.blade.php:28` — `unit`
+- `resources/views/materials/index.blade.php:28` — `asc'`
+- `resources/views/materials/index.blade.php:28` — `Einheit`
+- `resources/views/materials/index.blade.php:29` — `text-right`
+- `resources/views/materials/index.blade.php:29` — `price`
+- `resources/views/materials/index.blade.php:29` — `asc'`
+- `resources/views/materials/index.blade.php:29` — `EP netto`
+- `resources/views/materials/index.blade.php:30` — `text-right`
+- `resources/views/materials/index.blade.php:30` — `asc'`
+- `resources/views/materials/index.blade.php:31` — `provider`
+- `resources/views/materials/index.blade.php:31` — `asc'`
+- `resources/views/materials/index.blade.php:31` — `Quelle`
+- `resources/views/materials/index.blade.php:41` — `text-right`
+- `resources/views/materials/index.blade.php:42` — `text-right`
+- `resources/views/materials/index.blade.php:43` — `local`
+- `resources/views/materials/index.blade.php:44` — `text-right`
+- `resources/views/materials/index.blade.php:45` — `update`
+- `resources/views/materials/index.blade.php:46` — `btn btn-xs`
+- `resources/views/materials/index.blade.php:46` — `Bearbeiten`
+- `resources/views/materials/index.blade.php:48` — `delete`
+- `resources/views/materials/index.blade.php:49` — `inline`
+- `resources/views/materials/index.blade.php:51` — `Löschen?`
+- `resources/views/materials/index.blade.php:52` — `delete`
+- `resources/views/materials/index.blade.php:53` — `error`
+- `resources/views/materials/index.blade.php:54` — `Löschen`
+- `resources/views/materials/index.blade.php:56` — `btn btn-xs btn-ghost text-error`
+- `resources/views/materials/index.blade.php:67` — `border-t border-base-300 px-4 py-3`
+- `resources/views/materials/_form_body.blade.php:3` — `Stammdaten`
+- `resources/views/materials/_form_body.blade.php:3` — `category`
+- `resources/views/materials/_form_body.blade.php:3` — `primary`
+- `resources/views/materials/_form_body.blade.php:5` — `fieldset-label`
+- `resources/views/materials/_form_body.blade.php:5` — `Name`
+- `resources/views/materials/_form_body.blade.php:6` — `text`
+- `resources/views/materials/_form_body.blade.php:6` — `name`
+- `resources/views/materials/_form_body.blade.php:6` — `name`
+- `resources/views/materials/_form_body.blade.php:6` — `input input-bordered w-full`
+- `resources/views/materials/_form_body.blade.php:8` — `fieldset`
+- `resources/views/materials/_form_body.blade.php:9` — `fieldset-label`
+- `resources/views/materials/_form_body.blade.php:10` — `text`
+- `resources/views/materials/_form_body.blade.php:10` — `input input-bordered w-full`
+- `resources/views/materials/_form_body.blade.php:12` — `fieldset`
+- `resources/views/materials/_form_body.blade.php:13` — `fieldset-label`
+- `resources/views/materials/_form_body.blade.php:13` — `Einheit`
+- `resources/views/materials/_form_body.blade.php:14` — `text`
+- `resources/views/materials/_form_body.blade.php:14` — `unit`
+- `resources/views/materials/_form_body.blade.php:14` — `unit`
+- `resources/views/materials/_form_body.blade.php:14` — `input input-bordered w-full`
+- `resources/views/materials/_form_body.blade.php:18` — `payments`
+- `resources/views/materials/_form_body.blade.php:18` — `info`
+- `resources/views/materials/_form_body.blade.php:19` — `fieldset`
+- `resources/views/materials/_form_body.blade.php:20` — `fieldset-label`
+- `resources/views/materials/_form_body.blade.php:20` — `EP netto`
+- `resources/views/materials/_form_body.blade.php:21` — `number`
+- `resources/views/materials/_form_body.blade.php:22` — `input input-bordered w-full`
+- `resources/views/materials/_form_body.blade.php:24` — `fieldset`
+- `resources/views/materials/_form_body.blade.php:25` — `fieldset-label`
+- `resources/views/materials/_form_body.blade.php:26` — `number`
+- `resources/views/materials/_form_body.blade.php:27` — `input input-bordered w-full`
+- `resources/views/materials/_form_body.blade.php:30` — `label cursor-pointer justify-start gap-3`
+- `resources/views/materials/_form_body.blade.php:31` — `hidden`
+- `resources/views/materials/_form_body.blade.php:32` — `checkbox`
+- `resources/views/materials/_form_body.blade.php:32` — `checkbox checkbox-sm`
+- `resources/views/materials/_form_body.blade.php:33` — `fieldset-label`
+- `resources/views/materials/_form_body.blade.php:33` — `Aktiv`
+- `resources/views/materials/_form_body.blade.php:39` — `alert alert-error text-sm`
+- `resources/views/materials/_form_body.blade.php:40` — `list-disc pl-5`
+- `resources/views/materials/_form_dialog.blade.php:9` — `Material bearbeiten`
+- `resources/views/materials/_form_dialog.blade.php:9` — `Material anlegen`
+- `resources/views/materials/_form_dialog.blade.php:10` — `Materialien`
+- `resources/views/materials/_form_dialog.blade.php:11` — `category`
+- `resources/views/materials/_form_dialog.blade.php:12` — `primary`
+- `resources/views/materials/_form_dialog.blade.php:14` — `POST'`
+- `resources/views/materials/_form_dialog.blade.php:15` — `data-entry-form`
+- `resources/views/materials/_form_dialog.blade.php:16` — `Speichern`
+- `resources/views/materials/_form_dialog.blade.php:18` — `material`
+- `resources/views/materials/_form_dialog.blade.php:24` — `Material wirklich löschen?`
+- `resources/views/materials/_form_dialog.blade.php:25` — `Löschen`
+- `resources/views/materials/_form_dialog.blade.php:27` — `submit`
+- `resources/views/materials/_form_dialog.blade.php:27` — `btn btn-error btn-outline btn-sm gap-2`
+- `resources/views/materials/_form_dialog.blade.php:28` — `delete`
+- `resources/views/materials/_form_dialog.blade.php:28` — `Löschen`
+- `resources/views/components/icon.blade.php:2` — `name',
+    'filled`
+- `resources/views/components/icon.blade.php:4` — `weight`
+- `resources/views/components/icon.blade.php:5` — `size`
+- `resources/views/components/icon.blade.php:9` — `material-symbols-outlined leading-none align-middle shrink-0 select-none`
+- `resources/views/components/icon.blade.php:10` — `wght`
+- `resources/views/components/icon.blade.php:11` — `true`
+- `resources/views/components/status-badge.blade.php:2` — `tone`
+- `resources/views/components/status-badge.blade.php:2` — `ghost',
+    'size`
+- `resources/views/components/status-badge.blade.php:3` — `sm',
+    'label`
+- `resources/views/components/status-badge.blade.php:5` — `outline`
+- `resources/views/components/status-badge.blade.php:9` — `primary', 'secondary', 'accent', 'success', 'warning', 'error', 'info', 'ghost', 'neutral`
+- `resources/views/components/status-badge.blade.php:10` — `ghost`
+- `resources/views/components/status-badge.blade.php:11` — `xs', 'sm', 'md', 'lg`
+- `resources/views/components/status-badge.blade.php:14` — `badge',
+        'badge-`
+- `resources/views/components/status-badge.blade.php:16` — `badge-outline`
+- `resources/views/components/status-badge.blade.php:16` — `badge-`
+- `resources/views/components/status-badge.blade.php:20` — `class`
+- `resources/views/components/empty-state.blade.php:2` — `icon`
+- `resources/views/components/empty-state.blade.php:3` — `title`
+- `resources/views/components/empty-state.blade.php:4` — `message`
+- `resources/views/components/empty-state.blade.php:5` — `tone`
+- `resources/views/components/empty-state.blade.php:5` — `ghost`
+- `resources/views/components/empty-state.blade.php:10` — `primary`
+- `resources/views/components/empty-state.blade.php:11` — `success`
+- `resources/views/components/empty-state.blade.php:12` — `warning`
+- `resources/views/components/empty-state.blade.php:13` — `error`
+- `resources/views/components/empty-state.blade.php:14` — `info`
+- `resources/views/components/empty-state.blade.php:15` — `ghost`
+- `resources/views/components/empty-state.blade.php:19` — `class`
+- `resources/views/components/empty-state.blade.php:21` — `text-3xl opacity-70`
+- `resources/views/components/empty-state.blade.php:35` — `mt-2`
+- `resources/views/components/modal.blade.php:26` — `title`
+- `resources/views/components/modal.blade.php:27` — `eyebrow`
+- `resources/views/components/modal.blade.php:28` — `icon`
+- `resources/views/components/modal.blade.php:29` — `badge`
+- `resources/views/components/modal.blade.php:30` — `badgeTone`
+- `resources/views/components/modal.blade.php:30` — `ghost',
+    'tone`
+- `resources/views/components/modal.blade.php:31` — `primary',
+    'size`
+- `resources/views/components/modal.blade.php:32` — `lg',
+    'embedded`
+- `resources/views/components/modal.blade.php:34` — `action`
+- `resources/views/components/modal.blade.php:35` — `method`
+- `resources/views/components/modal.blade.php:35` — `POST',
+    'enctype`
+- `resources/views/components/modal.blade.php:37` — `autocomplete`
+- `resources/views/components/modal.blade.php:37` — `on',
+    'submitLabel`
+- `resources/views/components/modal.blade.php:39` — `cancelLabel`
+- `resources/views/components/modal.blade.php:40` — `closeLabel`
+- `resources/views/components/modal.blade.php:41` — `submitClass`
+- `resources/views/components/modal.blade.php:41` — `btn-primary',
+    'hideFooter`
+- `resources/views/components/modal.blade.php:43` — `formClass`
+- `resources/views/components/modal.blade.php:44` — `formId`
+- `resources/views/components/modal.blade.php:45` — `formData`
+- `resources/views/components/modal.blade.php:46` — `headerId`
+- `resources/views/components/modal.blade.php:47` — `iconId`
+- `resources/views/components/modal.blade.php:48` — `iconWrapId`
+- `resources/views/components/modal.blade.php:49` — `titleId`
+- `resources/views/components/modal.blade.php:50` — `bodyId`
+- `resources/views/components/modal.blade.php:55` — `primary`
+- `resources/views/components/modal.blade.php:56` — `success`
+- `resources/views/components/modal.blade.php:57` — `warning`
+- `resources/views/components/modal.blade.php:58` — `error`
+- `resources/views/components/modal.blade.php:59` — `info`
+- `resources/views/components/modal.blade.php:60` — `ghost`
+- `resources/views/components/modal.blade.php:64` — `primary`
+- `resources/views/components/modal.blade.php:65` — `success`
+- `resources/views/components/modal.blade.php:66` — `warning`
+- `resources/views/components/modal.blade.php:67` — `error`
+- `resources/views/components/modal.blade.php:68` — `info`
+- `resources/views/components/modal.blade.php:69` — `ghost`
+- `resources/views/components/modal.blade.php:73` — `max-w-sm',
+        'md`
+- `resources/views/components/modal.blade.php:74` — `max-w-md',
+        'lg`
+- `resources/views/components/modal.blade.php:75` — `max-w-3xl',
+        'xl`
+- `resources/views/components/modal.blade.php:76` — `max-w-5xl',
+        '2xl`
+- `resources/views/components/modal.blade.php:77` — `max-w-7xl`
+- `resources/views/components/modal.blade.php:78` — `max-w-3xl`
+- `resources/views/components/modal.blade.php:81` — `PUT', 'PATCH', 'DELETE`
+- `resources/views/components/modal.blade.php:85` — `Speichern`
+- `resources/views/components/modal.blade.php:86` — `Abbrechen`
+- `resources/views/components/modal.blade.php:87` — `Schließen`
+- `resources/views/components/modal.blade.php:100` — `modal`
+- `resources/views/components/modal.blade.php:128` — `class`
+- `resources/views/components/modal.blade.php:128` — `wd-dialog`
+- `resources/views/components/modal.blade.php:150` — `min-w-0 flex-1`
+- `resources/views/components/modal.blade.php:165` — `button`
+- `resources/views/components/modal.blade.php:168` — `close`
+- `resources/views/components/modal.blade.php:188` — `button`
+- `resources/views/components/modal.blade.php:188` — `btn btn-ghost gap-2`
+- `resources/views/components/modal.blade.php:189` — `close`
+- `resources/views/components/modal.blade.php:191` — `submit`
+- `resources/views/components/modal.blade.php:192` — `check`
+- `resources/views/components/modal.blade.php:195` — `button`
+- `resources/views/components/modal.blade.php:195` — `btn btn-primary gap-2`
+- `resources/views/components/modal.blade.php:196` — `close`
+- `resources/views/components/modal.blade.php:210` — `dialog`
+- `resources/views/components/modal.blade.php:210` — `modal-backdrop`
+- `resources/views/components/form-group.blade.php:2` — `legend`
+- `resources/views/components/form-group.blade.php:3` — `description`
+- `resources/views/components/form-group.blade.php:4` — `icon`
+- `resources/views/components/form-group.blade.php:5` — `tone`
+- `resources/views/components/form-group.blade.php:5` — `ghost',
+    'cols`
+- `resources/views/components/form-group.blade.php:7` — `compact`
+- `resources/views/components/form-group.blade.php:11` — `primary', 'success', 'warning', 'error', 'info', 'ghost`
+- `resources/views/components/form-group.blade.php:12` — `wd-fieldset--`
+- `resources/views/components/form-group.blade.php:13` — `wd-fieldset--ghost`
+- `resources/views/components/form-group.blade.php:22` — `class`
+- `resources/views/components/form-group.blade.php:22` — `wd-fieldset `
+- `resources/views/components/form-group.blade.php:26` — `true`
+- `resources/views/components/user-select.blade.php:2` — `name',
+    'users`
+- `resources/views/components/user-select.blade.php:4` — `selected`
+- `resources/views/components/user-select.blade.php:5` — `placeholder`
+- `resources/views/components/user-select.blade.php:6` — `required`
+- `resources/views/components/user-select.blade.php:7` — `includeBlank`
+- `resources/views/components/user-select.blade.php:9` — `labelKey`
+- `resources/views/components/user-select.blade.php:9` — `name',
+    'valueKey`
+- `resources/views/components/user-select.blade.php:22` — `class`
+- `resources/views/components/user-select.blade.php:22` — `select select-bordered w-full`
+- `resources/views/components/user-select.blade.php:39` — `mt-1 text-xs text-error`
+- `resources/views/components/date-range.blade.php:2` — `fromName`
+- `resources/views/components/date-range.blade.php:2` — `from',
+    'toName`
+- `resources/views/components/date-range.blade.php:3` — `to',
+    'from`
+- `resources/views/components/date-range.blade.php:6` — `type`
+- `resources/views/components/date-range.blade.php:6` — `date`
+- `resources/views/components/date-range.blade.php:7` — `layout`
+- `resources/views/components/date-range.blade.php:7` — `join`
+- `resources/views/components/date-range.blade.php:8` — `label`
+- `resources/views/components/date-range.blade.php:9` — `fromLabel`
+- `resources/views/components/date-range.blade.php:10` — `toLabel`
+- `resources/views/components/date-range.blade.php:11` — `fromId`
+- `resources/views/components/date-range.blade.php:12` — `toId`
+- `resources/views/components/date-range.blade.php:13` — `size`
+- `resources/views/components/date-range.blade.php:14` — `required`
+- `resources/views/components/date-range.blade.php:15` — `fromError`
+- `resources/views/components/date-range.blade.php:16` — `toError`
+- `resources/views/components/date-range.blade.php:19` — `gridClass`
+- `resources/views/components/date-range.blade.php:20` — `labelClass`
+- `resources/views/components/date-range.blade.php:21` — `inputClass`
+- `resources/views/components/date-range.blade.php:22` — `formControl`
+- `resources/views/components/date-range.blade.php:29` — `input-`
+- `resources/views/components/date-range.blade.php:30` — `input input-bordered `
+- `resources/views/components/date-range.blade.php:31` — `fieldset-label`
+- `resources/views/components/date-range.blade.php:31` — `label text-sm font-semibold pb-1`
+- `resources/views/components/date-range.blade.php:34` — `split`
+- `resources/views/components/date-range.blade.php:35` — `class`
+- `resources/views/components/date-range.blade.php:37` — `fieldset`
+- `resources/views/components/date-range.blade.php:38` — `fieldset-label`
+- `resources/views/components/date-range.blade.php:49` — `text-error text-sm`
+- `resources/views/components/date-range.blade.php:51` — `fieldset`
+- `resources/views/components/date-range.blade.php:52` — `fieldset-label`
+- `resources/views/components/date-range.blade.php:63` — `text-error text-sm`
+- `resources/views/components/date-range.blade.php:78` — `mt-1 text-sm text-error`
+- `resources/views/components/date-range.blade.php:92` — `mt-1 text-sm text-error`
+- `resources/views/components/date-range.blade.php:97` — `class`
+- `resources/views/components/date-range.blade.php:97` — `fieldset w-full`
+- `resources/views/components/date-range.blade.php:97` — `flex flex-col`
+- `resources/views/components/date-range.blade.php:100` — `fieldset-label`
+- `resources/views/components/date-range.blade.php:102` — `label py-1`
+- `resources/views/components/date-range.blade.php:105` — `join w-full`
+- `resources/views/components/legacy-week-grid.blade.php:2` — `users`
+- `resources/views/components/legacy-week-grid.blade.php:3` — `days`
+- `resources/views/components/legacy-week-grid.blade.php:4` — `hours`
+- `resources/views/components/legacy-week-grid.blade.php:5` — `entriesByUserDay`
+- `resources/views/components/legacy-week-grid.blade.php:6` — `oncallByUserDay`
+- `resources/views/components/legacy-week-grid.blade.php:7` — `notdienstByUserDay`
+- `resources/views/components/legacy-week-grid.blade.php:8` — `selectedWeek`
+- `resources/views/components/legacy-week-grid.blade.php:9` — `monday`
+- `resources/views/components/legacy-week-grid.blade.php:10` — `entryRoute`
+- `resources/views/components/legacy-week-grid.blade.php:11` — `scrollId`
+- `resources/views/components/legacy-week-grid.blade.php:11` — `week-scroll',
+    'tableId`
+- `resources/views/components/legacy-week-grid.blade.php:12` — `week-table',
+    'toggleId`
+- `resources/views/components/legacy-week-grid.blade.php:13` — `week-fit-toggle',
+    'storageKey`
+- `resources/views/components/legacy-week-grid.blade.php:14` — `workDiaryWeekFit`
+- `resources/views/components/legacy-week-grid.blade.php:24` — `min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs mt-4`
+- `resources/views/components/legacy-week-grid.blade.php:25` — `h-full overflow-auto`
+- `resources/views/components/legacy-week-grid.blade.php:26` — `week-table`
+- `resources/views/components/legacy-week-grid.blade.php:30` — `Y-m-d`
+- `resources/views/components/legacy-week-grid.blade.php:34` — `kheute`
+- `resources/views/components/legacy-week-grid.blade.php:37` — `kopf`
+- `resources/views/components/legacy-week-grid.blade.php:48` — `mitb`
+- `resources/views/components/legacy-week-grid.blade.php:49` — `mitn`
+- `resources/views/components/legacy-week-grid.blade.php:66` — `grau`
+- `resources/views/components/legacy-week-grid.blade.php:66` — `mitte`
+- `resources/views/components/legacy-week-grid.blade.php:82` — `rogb`
+- `resources/views/components/legacy-week-grid.blade.php:83` — `rogn`
+- `resources/views/components/legacy-week-grid.blade.php:89` — `work`
+- `resources/views/components/legacy-week-grid.blade.php:92` — `logb`
+- `resources/views/components/legacy-week-grid.blade.php:93` — `logn`
+- `resources/views/components/legacy-week-grid.blade.php:97` — `logb`
+- `resources/views/components/legacy-week-grid.blade.php:98` — `logn`
+- `resources/views/components/legacy-week-grid.blade.php:118` — `grau`
+- `resources/views/components/legacy-week-grid.blade.php:118` — `mitte`
+- `resources/views/components/legacy-week-grid.blade.php:139` — `week-table--fit`
+- `resources/views/components/legacy-week-grid.blade.php:142` — `week-table--fit`
+- `resources/views/components/legacy-week-grid.blade.php:151` — `change`
+- `resources/views/components/page-toolbar.blade.php:2` — `title`
+- `resources/views/components/page-toolbar.blade.php:3` — `subtitle`
+- `resources/views/components/page-toolbar.blade.php:4` — `badge`
+- `resources/views/components/page-toolbar.blade.php:5` — `badgeTone`
+- `resources/views/components/page-toolbar.blade.php:5` — `primary`
+- `resources/views/components/page-toolbar.blade.php:15` — `flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/components/page-toolbar.blade.php:17` — `min-w-0 flex flex-col gap-0.5`
+- `resources/views/components/page-toolbar.blade.php:19` — `flex flex-wrap items-center gap-2 min-w-0`
+- `resources/views/components/page-toolbar.blade.php:37` — `flex flex-wrap items-center gap-2`
+- `resources/views/components/map.blade.php:13` — `scripts`
+- `resources/views/components/map.blade.php:16` — `markers`
+- `resources/views/components/map.blade.php:17` — `route`
+- `resources/views/components/map.blade.php:18` — `center`
+- `resources/views/components/map.blade.php:19` — `zoom`
+- `resources/views/components/map.blade.php:20` — `height`
+- `resources/views/components/map.blade.php:25` — `wd-map-`
+- `resources/views/components/map.blade.php:27` — `tiles`
+- `resources/views/components/map.blade.php:29` — `attribution`
+- `resources/views/components/map.blade.php:30` — `maxZoom`
+- `resources/views/components/map.blade.php:32` — `center`
+- `resources/views/components/map.blade.php:33` — `zoom`
+- `resources/views/components/map.blade.php:34` — `markers`
+- `resources/views/components/map.blade.php:37` — `label`
+- `resources/views/components/map.blade.php:37` — `label`
+- `resources/views/components/map.blade.php:39` — `route`
+- `resources/views/components/map.blade.php:48` — `class`
+- `resources/views/components/map.blade.php:48` — `rounded-box border border-base-300 overflow-hidden`
+- `resources/views/components/map.blade.php:52` — `scripts`
+- `resources/views/components/filter-field.blade.php:2` — `label`
+- `resources/views/components/filter-field.blade.php:4` — `class`
+- `resources/views/components/table.blade.php:2` — `size`
+- `resources/views/components/table.blade.php:2` — `sm',
+    'zebra`
+- `resources/views/components/table.blade.php:4` — `pinRows`
+- `resources/views/components/table.blade.php:5` — `scroll`
+- `resources/views/components/table.blade.php:10` — `table`
+- `resources/views/components/table.blade.php:12` — `table-zebra`
+- `resources/views/components/table.blade.php:13` — `table-pin-rows`
+- `resources/views/components/table.blade.php:16` — `flex'
+        ? 'min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100`
+- `resources/views/components/table.blade.php:18` — `overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/components/table.blade.php:22` — `flex`
+- `resources/views/components/table.blade.php:23` — `h-full overflow-auto`
+- `resources/views/components/page-title.blade.php:2` — `title`
+- `resources/views/components/page-title.blade.php:3` — `subtitle`
+- `resources/views/components/page-title.blade.php:4` — `badge`
+- `resources/views/components/page-title.blade.php:5` — `badgeTone`
+- `resources/views/components/page-title.blade.php:5` — `primary`
+- `resources/views/components/page-title.blade.php:8` — `flex flex-wrap items-start justify-between gap-3`
+- `resources/views/components/page-title.blade.php:9` — `min-w-0`
+- `resources/views/components/page-title.blade.php:10` — `flex flex-wrap items-center gap-2`
+- `resources/views/components/page-title.blade.php:23` — `flex flex-wrap items-center gap-2`
+- `resources/views/components/kpi-tile.blade.php:2` — `label`
+- `resources/views/components/kpi-tile.blade.php:3` — `value`
+- `resources/views/components/kpi-tile.blade.php:4` — `tone`
+- `resources/views/components/kpi-tile.blade.php:4` — `neutral',
+    'hint`
+- `resources/views/components/kpi-tile.blade.php:6` — `href`
+- `resources/views/components/kpi-tile.blade.php:7` — `active`
+- `resources/views/components/kpi-tile.blade.php:8` — `format`
+- `resources/views/components/kpi-tile.blade.php:13` — `primary`
+- `resources/views/components/kpi-tile.blade.php:14` — `info`
+- `resources/views/components/kpi-tile.blade.php:15` — `success`
+- `resources/views/components/kpi-tile.blade.php:16` — `warning`
+- `resources/views/components/kpi-tile.blade.php:17` — `error`
+- `resources/views/components/kpi-tile.blade.php:18` — `secondary`
+- `resources/views/components/kpi-tile.blade.php:19` — `neutral`
+- `resources/views/components/kpi-tile.blade.php:19` — `border-base-300`
+- `resources/views/components/kpi-tile.blade.php:20` — `border-base-300`
+- `resources/views/components/kpi-tile.blade.php:23` — `primary`
+- `resources/views/components/kpi-tile.blade.php:23` — `text-base-content',
+        'info`
+- `resources/views/components/kpi-tile.blade.php:24` — `text-info',
+        'success`
+- `resources/views/components/kpi-tile.blade.php:25` — `text-success',
+        'warning`
+- `resources/views/components/kpi-tile.blade.php:26` — `text-warning',
+        'error`
+- `resources/views/components/kpi-tile.blade.php:27` — `text-error',
+        'secondary`
+- `resources/views/components/kpi-tile.blade.php:28` — `text-secondary',
+        'neutral`
+- `resources/views/components/kpi-tile.blade.php:29` — `text-base-content`
+- `resources/views/components/kpi-tile.blade.php:30` — `text-base-content`
+- `resources/views/components/kpi-tile.blade.php:32` — `rounded-box border bg-base-100 px-4 py-3 shadow-xs `
+- `resources/views/components/kpi-tile.blade.php:42` — `decimal`
+- `resources/views/components/action-buttons.blade.php:2` — `showRoute`
+- `resources/views/components/action-buttons.blade.php:3` — `showParams`
+- `resources/views/components/action-buttons.blade.php:4` — `editRoute`
+- `resources/views/components/action-buttons.blade.php:5` — `editParams`
+- `resources/views/components/action-buttons.blade.php:6` — `deleteRoute`
+- `resources/views/components/action-buttons.blade.php:7` — `deleteParams`
+- `resources/views/components/action-buttons.blade.php:8` — `deleteConfirm`
+- `resources/views/components/action-buttons.blade.php:9` — `size`
+- `resources/views/components/action-buttons.blade.php:13` — `Wirklich löschen?`
+- `resources/views/components/action-buttons.blade.php:15` — `btn-sm',
+        'md`
+- `resources/views/components/action-buttons.blade.php:17` — `btn-xs`
+- `resources/views/components/action-buttons.blade.php:21` — `class`
+- `resources/views/components/action-buttons.blade.php:21` — `flex flex-wrap items-center gap-1`
+- `resources/views/components/action-buttons.blade.php:25` — `Anzeigen`
+- `resources/views/components/action-buttons.blade.php:26` — `Anzeigen`
+- `resources/views/components/action-buttons.blade.php:37` — `Bearbeiten`
+- `resources/views/components/action-buttons.blade.php:38` — `Bearbeiten`
+- `resources/views/components/action-buttons.blade.php:47` — `inline`
+- `resources/views/components/action-buttons.blade.php:50` — `delete`
+- `resources/views/components/action-buttons.blade.php:51` — `error`
+- `resources/views/components/action-buttons.blade.php:52` — `Löschen`
+- `resources/views/components/action-buttons.blade.php:55` — `submit`
+- `resources/views/components/action-buttons.blade.php:57` — `Löschen`
+- `resources/views/components/action-buttons.blade.php:58` — `Löschen`
+- `resources/views/components/pagination-info.blade.php:2` — `paginator',
+    'showLinks`
+- `resources/views/components/pagination-info.blade.php:6` — `total`
+- `resources/views/components/pagination-info.blade.php:7` — `class`
+- `resources/views/components/pagination-info.blade.php:10` — `from`
+- `resources/views/components/pagination-info.blade.php:12` — `total`
+- `resources/views/components/tag-input.blade.php:2` — `name`
+- `resources/views/components/tag-input.blade.php:3` — `newName`
+- `resources/views/components/tag-input.blade.php:4` — `available`
+- `resources/views/components/tag-input.blade.php:5` — `selected`
+- `resources/views/components/tag-input.blade.php:6` — `allowCreate`
+- `resources/views/components/tag-input.blade.php:7` — `placeholder`
+- `resources/views/components/tag-input.blade.php:18` — `class`
+- `resources/views/components/tag-input.blade.php:18` — `flex flex-col gap-2`
+- `resources/views/components/tag-input.blade.php:26` — `name`
+- `resources/views/components/tag-input.blade.php:36` — `text`
+- `resources/views/components/tag-input.blade.php:45` — `text-xs text-error`
+- `resources/views/components/tag-input.blade.php:48` — `text-xs text-error`
+- `resources/views/components/header-date-range.blade.php:1` — `align`
+- `resources/views/components/header-date-range.blade.php:9` — `today`
+- `resources/views/components/header-date-range.blade.php:9` — `Heute`
+- `resources/views/components/header-date-range.blade.php:10` — `Letzte 7 Tage`
+- `resources/views/components/header-date-range.blade.php:11` — `Diese Woche`
+- `resources/views/components/header-date-range.blade.php:12` — `Letzte 30 Tage`
+- `resources/views/components/header-date-range.blade.php:13` — `Dieser Monat`
+- `resources/views/components/header-date-range.blade.php:14` — `Letzter Monat`
+- `resources/views/components/header-date-range.blade.php:15` — `Letzte 90 Tage`
+- `resources/views/components/header-date-range.blade.php:16` — `Dieses Jahr`
+- `resources/views/components/header-date-range.blade.php:18` — `preset`
+- `resources/views/components/header-date-range.blade.php:19` — `from`
+- `resources/views/components/header-date-range.blade.php:21` — `isoWeekLabel`
+- `resources/views/components/header-date-range.blade.php:22` — `center' ? 'dropdown-center`
+- `resources/views/components/header-date-range.blade.php:22` — `dropdown-end`
+- `resources/views/components/header-date-range.blade.php:25` — `flex items-center gap-1`
+- `resources/views/components/header-date-range.blade.php:26` — `ui.date-range.shift`
+- `resources/views/components/header-date-range.blade.php:26` — `m-0 p-0`
+- `resources/views/components/header-date-range.blade.php:28` — `hidden`
+- `resources/views/components/header-date-range.blade.php:28` — `direction`
+- `resources/views/components/header-date-range.blade.php:28` — `prev`
+- `resources/views/components/header-date-range.blade.php:29` — `submit`
+- `resources/views/components/header-date-range.blade.php:31` — `Vorige Periode`
+- `resources/views/components/header-date-range.blade.php:31` — `Vorige Periode`
+- `resources/views/components/header-date-range.blade.php:39` — `Zeitraum auswählen`
+- `resources/views/components/header-date-range.blade.php:42` — `label`
+- `resources/views/components/header-date-range.blade.php:55` — `Schnellauswahl`
+- `resources/views/components/header-date-range.blade.php:57` — `menu menu-sm gap-0.5 p-0`
+- `resources/views/components/header-date-range.blade.php:60` — `ui.date-range.update`
+- `resources/views/components/header-date-range.blade.php:60` — `m-0 p-0`
+- `resources/views/components/header-date-range.blade.php:62` — `hidden`
+- `resources/views/components/header-date-range.blade.php:62` — `preset`
+- `resources/views/components/header-date-range.blade.php:63` — `submit`
+- `resources/views/components/header-date-range.blade.php:67` — `check`
+- `resources/views/components/header-date-range.blade.php:76` — `Eigener Zeitraum`
+- `resources/views/components/header-date-range.blade.php:85` — `ui.date-range.update`
+- `resources/views/components/header-date-range.blade.php:88` — `hidden`
+- `resources/views/components/header-date-range.blade.php:88` — `preset`
+- `resources/views/components/header-date-range.blade.php:88` — `custom`
+- `resources/views/components/header-date-range.blade.php:92` — `false`
+- `resources/views/components/header-date-range.blade.php:95` — `w-60`
+- `resources/views/components/header-date-range.blade.php:96` — `submit`
+- `resources/views/components/header-date-range.blade.php:98` — `Übernehmen`
+- `resources/views/components/header-date-range.blade.php:98` — `Übernehmen`
+- `resources/views/components/header-date-range.blade.php:99` — `check`
+- `resources/views/components/header-date-range.blade.php:103` — `ui.date-range.shift`
+- `resources/views/components/header-date-range.blade.php:103` — `m-0 p-0`
+- `resources/views/components/header-date-range.blade.php:105` — `hidden`
+- `resources/views/components/header-date-range.blade.php:105` — `direction`
+- `resources/views/components/header-date-range.blade.php:105` — `next`
+- `resources/views/components/header-date-range.blade.php:106` — `submit`
+- `resources/views/components/header-date-range.blade.php:108` — `Nächste Periode`
+- `resources/views/components/header-date-range.blade.php:108` — `Nächste Periode`
+- `resources/views/components/sort-th.blade.php:2` — `column',
+    'route',
+    'params`
+- `resources/views/components/sort-th.blade.php:5` — `sort`
+- `resources/views/components/sort-th.blade.php:6` — `desc',
+    'default`
+- `resources/views/components/sort-th.blade.php:12` — `desc`
+- `resources/views/components/sort-th.blade.php:12` — `asc' ? 'asc`
+- `resources/views/components/sort-th.blade.php:12` — `desc`
+- `resources/views/components/sort-th.blade.php:14` — `desc`
+- `resources/views/components/sort-th.blade.php:15` — `asc' ? `
+- `resources/views/components/sort-th.blade.php:19` — `sort`
+- `resources/views/components/sort-th.blade.php:23` — `class`
+- `resources/views/components/sort-th.blade.php:23` — `link link-hover whitespace-nowrap`
+- `resources/views/components/sort-th.blade.php:26` — `ml-1',
+        `
+- `resources/views/components/sort-th.blade.php:28` — `text-base-content`
+- `resources/views/components/filter-bar.blade.php:2` — `action`
+- `resources/views/components/filter-bar.blade.php:3` — `method`
+- `resources/views/components/filter-bar.blade.php:3` — `GET',
+    'reset`
+- `resources/views/components/filter-bar.blade.php:5` — `submitLabel`
+- `resources/views/components/filter-bar.blade.php:16` — `flex-none rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/components/filter-bar.blade.php:24` — `flex flex-wrap items-end gap-3`
+- `resources/views/components/filter-bar.blade.php:27` — `ml-auto flex items-end gap-2`
+- `resources/views/components/filter-bar.blade.php:31` — `submit`
+- `resources/views/components/filter-bar.blade.php:31` — `btn btn-primary btn-sm gap-1`
+- `resources/views/components/filter-bar.blade.php:33` — `Filtern`
+- `resources/views/components/filter-bar.blade.php:36` — `btn btn-ghost btn-sm gap-1`
+- `resources/views/components/filter-bar.blade.php:38` — `Zurücksetzen`
+- `resources/views/profile/api-tokens.blade.php:3` — `content`
+- `resources/views/profile/api-tokens.blade.php:5` — `text-2xl font-semibold`
+- `resources/views/profile/api-tokens.blade.php:5` — `API-Tokens`
+- `resources/views/profile/api-tokens.blade.php:8` — `space-y-2`
+- `resources/views/profile/api-tokens.blade.php:9` — `font-semibold`
+- `resources/views/profile/api-tokens.blade.php:9` — `Neuer Token erstellt`
+- `resources/views/profile/api-tokens.blade.php:10` — `text-sm`
+- `resources/views/profile/api-tokens.blade.php:11` — `block break-all rounded bg-base-200 p-2 text-sm`
+- `resources/views/profile/api-tokens.blade.php:16` — `profile.api-tokens.store`
+- `resources/views/profile/api-tokens.blade.php:16` — `card border border-base-300 bg-base-100 p-4`
+- `resources/views/profile/api-tokens.blade.php:18` — `form-control`
+- `resources/views/profile/api-tokens.blade.php:19` — `label`
+- `resources/views/profile/api-tokens.blade.php:19` — `name`
+- `resources/views/profile/api-tokens.blade.php:19` — `Token-Name`
+- `resources/views/profile/api-tokens.blade.php:20` — `name`
+- `resources/views/profile/api-tokens.blade.php:20` — `name`
+- `resources/views/profile/api-tokens.blade.php:20` — `text`
+- `resources/views/profile/api-tokens.blade.php:20` — `input input-bordered`
+- `resources/views/profile/api-tokens.blade.php:22` — `name`
+- `resources/views/profile/api-tokens.blade.php:22` — `text-error text-sm`
+- `resources/views/profile/api-tokens.blade.php:23` — `card-actions justify-end mt-3`
+- `resources/views/profile/api-tokens.blade.php:24` — `submit`
+- `resources/views/profile/api-tokens.blade.php:24` — `btn btn-primary btn-sm`
+- `resources/views/profile/api-tokens.blade.php:24` — `Erstellen`
+- `resources/views/profile/api-tokens.blade.php:31` — `Name`
+- `resources/views/profile/api-tokens.blade.php:32` — `Erstellt`
+- `resources/views/profile/api-tokens.blade.php:33` — `Zuletzt benutzt`
+- `resources/views/profile/api-tokens.blade.php:43` — `text-right`
+- `resources/views/profile/api-tokens.blade.php:44` — `profile.api-tokens.destroy`
+- `resources/views/profile/api-tokens.blade.php:44` — `inline`
+- `resources/views/profile/api-tokens.blade.php:46` — `Token wirklich widerrufen?`
+- `resources/views/profile/api-tokens.blade.php:47` — `Widerrufen`
+- `resources/views/profile/api-tokens.blade.php:50` — `submit`
+- `resources/views/profile/api-tokens.blade.php:50` — `btn btn-ghost btn-xs text-error`
+- `resources/views/profile/api-tokens.blade.php:50` — `Widerrufen`
+- `resources/views/profile/api-tokens.blade.php:55` — `text-center opacity-60`
+- `resources/views/profile/api-tokens.blade.php:55` — `Keine Einträge.`
+- `resources/views/diary/_show_dialog.blade.php:1` — `space-y-6`
+- `resources/views/diary/export-pdf.blade.php:4` — `utf-8`
+- `resources/views/diary/export-pdf.blade.php:5` — `Tagebuch-Export`
+- `resources/views/diary/export-pdf.blade.php:7` — `Segoe UI`
+- `resources/views/diary/export-pdf.blade.php:27` — `actions no-print`
+- `resources/views/diary/export-pdf.blade.php:31` — `Tagebuch-Export`
+- `resources/views/diary/export-pdf.blade.php:32` — `meta`
+- `resources/views/diary/export-pdf.blade.php:33` — `Erstellt am`
+- `resources/views/diary/export-pdf.blade.php:34` — `Einträge`
+- `resources/views/diary/export-pdf.blade.php:36` — `Filter aktiv`
+- `resources/views/diary/export-pdf.blade.php:44` — `Status`
+- `resources/views/diary/export-pdf.blade.php:45` — `Mitarbeiter`
+- `resources/views/diary/export-pdf.blade.php:48` — `Inhalt`
+- `resources/views/diary/export-pdf.blade.php:49` — `Antwort`
+- `resources/views/diary/export-pdf.blade.php:50` — `Tags`
+- `resources/views/diary/export-pdf.blade.php:63` — `name`
+- `resources/views/diary/index.blade.php:2` — `title`
+- `resources/views/diary/index.blade.php:2` — `Tagebuch`
+- `resources/views/diary/index.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/diary/index.blade.php:3` — `nav-title`
+- `resources/views/diary/index.blade.php:3` — `Alle Einträge`
+- `resources/views/diary/index.blade.php:5` — `content`
+- `resources/views/diary/index.blade.php:6` — `flex h-full min-h-0 flex-col gap-4`
+- `resources/views/diary/index.blade.php:8` — `flex-none rounded-box border border-base-300 bg-base-100 p-5 shadow-xs`
+- `resources/views/diary/index.blade.php:9` — `flex flex-wrap items-end gap-4`
+- `resources/views/diary/index.blade.php:11` — `Suche`
+- `resources/views/diary/index.blade.php:12` — `search`
+- `resources/views/diary/index.blade.php:12` — `input input-bordered input-sm w-full`
+- `resources/views/diary/index.blade.php:14` — `flex-1 min-w-40`
+- `resources/views/diary/index.blade.php:15` — `Status`
+- `resources/views/diary/index.blade.php:16` — `status`
+- `resources/views/diary/index.blade.php:16` — `select select-bordered select-sm w-full`
+- `resources/views/diary/index.blade.php:17` — `status`
+- `resources/views/diary/index.blade.php:17` — `Alle`
+- `resources/views/diary/index.blade.php:18` — `status`
+- `resources/views/diary/index.blade.php:18` — `Offen`
+- `resources/views/diary/index.blade.php:19` — `status`
+- `resources/views/diary/index.blade.php:19` — `Problem`
+- `resources/views/diary/index.blade.php:20` — `status`
+- `resources/views/diary/index.blade.php:20` — `Bestätigt`
+- `resources/views/diary/index.blade.php:21` — `status`
+- `resources/views/diary/index.blade.php:21` — `Erledigt`
+- `resources/views/diary/index.blade.php:27` — `select select-bordered select-sm`
+- `resources/views/diary/index.blade.php:35` — `flex items-center gap-2 pb-2`
+- `resources/views/diary/index.blade.php:36` — `checkbox`
+- `resources/views/diary/index.blade.php:36` — `mine`
+- `resources/views/diary/index.blade.php:36` — `mine`
+- `resources/views/diary/index.blade.php:36` — `mine`
+- `resources/views/diary/index.blade.php:36` — `checkbox checkbox-primary checkbox-sm`
+- `resources/views/diary/index.blade.php:37` — `mine`
+- `resources/views/diary/index.blade.php:37` — `Nur meine`
+- `resources/views/diary/index.blade.php:39` — `flex items-center gap-2 pb-2`
+- `resources/views/diary/index.blade.php:40` — `checkbox`
+- `resources/views/diary/index.blade.php:40` — `archived`
+- `resources/views/diary/index.blade.php:40` — `archived`
+- `resources/views/diary/index.blade.php:40` — `archived`
+- `resources/views/diary/index.blade.php:40` — `checkbox checkbox-primary checkbox-sm`
+- `resources/views/diary/index.blade.php:41` — `archived`
+- `resources/views/diary/index.blade.php:41` — `Archivierte zeigen`
+- `resources/views/diary/index.blade.php:43` — `submit`
+- `resources/views/diary/index.blade.php:43` — `btn btn-primary btn-sm`
+- `resources/views/diary/index.blade.php:43` — `Filtern`
+- `resources/views/diary/index.blade.php:45` — `btn btn-ghost btn-sm`
+- `resources/views/diary/index.blade.php:45` — `Zurücksetzen`
+- `resources/views/diary/index.blade.php:47` — `dropdown dropdown-end`
+- `resources/views/diary/index.blade.php:48` — `btn btn-sm btn-outline`
+- `resources/views/diary/index.blade.php:48` — `Export`
+- `resources/views/diary/index.blade.php:49` — `dropdown-content menu z-50 mt-1 w-44 rounded-box border border-base-300 bg-base-100 p-2 shadow`
+- `resources/views/diary/index.blade.php:60` — `all',   'label`
+- `resources/views/diary/index.blade.php:60` — `Gesamt`
+- `resources/views/diary/index.blade.php:60` — `tone`
+- `resources/views/diary/index.blade.php:60` — `primary`
+- `resources/views/diary/index.blade.php:61` — `open',  'label`
+- `resources/views/diary/index.blade.php:61` — `Offen`
+- `resources/views/diary/index.blade.php:61` — `tone`
+- `resources/views/diary/index.blade.php:61` — `warning`
+- `resources/views/diary/index.blade.php:62` — `alert', 'label`
+- `resources/views/diary/index.blade.php:62` — `Probleme`
+- `resources/views/diary/index.blade.php:62` — `tone`
+- `resources/views/diary/index.blade.php:62` — `error`
+- `resources/views/diary/index.blade.php:63` — `done',  'label`
+- `resources/views/diary/index.blade.php:63` — `Erledigt`
+- `resources/views/diary/index.blade.php:63` — `tone`
+- `resources/views/diary/index.blade.php:63` — `success`
+- `resources/views/diary/index.blade.php:66` — `label`
+- `resources/views/diary/index.blade.php:68` — `tone`
+- `resources/views/diary/index.blade.php:73` — `min-h-0 flex-1 overflow-y-auto pr-1 space-y-3`
+- `resources/views/diary/index.blade.php:77` — `flex flex-wrap items-center gap-3 mb-3`
+- `resources/views/diary/index.blade.php:79` — `badge badge-sm',
+                            'badge-success`
+- `resources/views/diary/index.blade.php:80` — `done',
+                            'badge-info`
+- `resources/views/diary/index.blade.php:81` — `progress',
+                            'badge-warning`
+- `resources/views/diary/index.blade.php:82` — `open',
+                            'badge-error`
+- `resources/views/diary/index.blade.php:83` — `alert',
+                            'badge-ghost`
+- `resources/views/diary/index.blade.php:84` — `neutral`
+- `resources/views/diary/index.blade.php:87` — `badge badge-sm badge-neutral`
+- `resources/views/diary/index.blade.php:87` — `Archiviert`
+- `resources/views/diary/index.blade.php:91` — `text-base leading-relaxed text-base-content`
+- `resources/views/diary/index.blade.php:103` — `mt-2 flex flex-wrap gap-1`
+- `resources/views/diary/index.blade.php:105` — `badge badge-outline badge-sm`
+- `resources/views/diary/index.blade.php:120` — `btn btn-outline btn-primary btn-sm text-center`
+- `resources/views/diary/index.blade.php:120` — `Details`
+- `resources/views/diary/index.blade.php:121` — `update`
+- `resources/views/diary/index.blade.php:122` — `btn btn-ghost btn-sm text-center`
+- `resources/views/diary/index.blade.php:122` — `Bearbeiten`
+- `resources/views/diary/index.blade.php:130` — `ml-2 text-primary underline`
+- `resources/views/diary/index.blade.php:130` — `Filter zurücksetzen`
+- `resources/views/diary/index.blade.php:138` — `flex-none`
+- `resources/views/diary/_form_body.blade.php:11` — `hidden`
+- `resources/views/diary/_form_fields.blade.php:11` — `Zuordnung`
+- `resources/views/diary/_form_fields.blade.php:11` — `person`
+- `resources/views/diary/_form_fields.blade.php:11` — `primary`
+- `resources/views/diary/_form_fields.blade.php:12` — `fieldset`
+- `resources/views/diary/_form_fields.blade.php:13` — `fieldset-label`
+- `resources/views/diary/_form_fields.blade.php:13` — `Benutzer`
+- `resources/views/diary/_form_fields.blade.php:24` — `text-error text-sm`
+- `resources/views/diary/_form_fields.blade.php:30` — `Eintrag`
+- `resources/views/diary/_form_fields.blade.php:30` — `edit`
+- `resources/views/diary/_form_fields.blade.php:30` — `primary`
+- `resources/views/diary/_form_fields.blade.php:31` — `fieldset`
+- `resources/views/diary/_form_fields.blade.php:32` — `fieldset-label`
+- `resources/views/diary/_form_fields.blade.php:32` — `content`
+- `resources/views/diary/_form_fields.blade.php:32` — `Inhalt`
+- `resources/views/diary/_form_fields.blade.php:34` — `content`
+- `resources/views/diary/_form_fields.blade.php:35` — `content`
+- `resources/views/diary/_form_fields.blade.php:37` — `content`
+- `resources/views/diary/_form_fields.blade.php:38` — `Beschreibe den Vorgang...`
+- `resources/views/diary/_form_fields.blade.php:39` — `content`
+- `resources/views/diary/_form_fields.blade.php:40` — `content`
+- `resources/views/diary/_form_fields.blade.php:41` — `text-error text-sm`
+- `resources/views/diary/_form_fields.blade.php:45` — `fieldset`
+- `resources/views/diary/_form_fields.blade.php:46` — `fieldset-label`
+- `resources/views/diary/_form_fields.blade.php:46` — `response`
+- `resources/views/diary/_form_fields.blade.php:46` — `Rückmeldung`
+- `resources/views/diary/_form_fields.blade.php:48` — `response`
+- `resources/views/diary/_form_fields.blade.php:49` — `response`
+- `resources/views/diary/_form_fields.blade.php:51` — `textarea textarea-bordered w-full`
+- `resources/views/diary/_form_fields.blade.php:53` — `response`
+- `resources/views/diary/_form_fields.blade.php:57` — `traffic`
+- `resources/views/diary/_form_fields.blade.php:57` — `info`
+- `resources/views/diary/_form_fields.blade.php:59` — `fieldset-label`
+- `resources/views/diary/_form_fields.blade.php:59` — `status`
+- `resources/views/diary/_form_fields.blade.php:59` — `Status`
+- `resources/views/diary/_form_fields.blade.php:61` — `status`
+- `resources/views/diary/_form_fields.blade.php:62` — `status`
+- `resources/views/diary/_form_fields.blade.php:63` — `status`
+- `resources/views/diary/_form_fields.blade.php:65` — `status`
+- `resources/views/diary/_form_fields.blade.php:65` — `Offen`
+- `resources/views/diary/_form_fields.blade.php:66` — `status`
+- `resources/views/diary/_form_fields.blade.php:66` — `Problem`
+- `resources/views/diary/_form_fields.blade.php:67` — `status`
+- `resources/views/diary/_form_fields.blade.php:67` — `Bestätigt`
+- `resources/views/diary/_form_fields.blade.php:68` — `status`
+- `resources/views/diary/_form_fields.blade.php:68` — `Erledigt`
+- `resources/views/diary/_form_fields.blade.php:70` — `status`
+- `resources/views/diary/_form_fields.blade.php:71` — `text-error text-sm`
+- `resources/views/diary/_form_fields.blade.php:76` — `fieldset-label`
+- `resources/views/diary/_form_fields.blade.php:76` — `Zeitraum`
+- `resources/views/diary/_form_fields.blade.php:78` — `datetime-local`
+- `resources/views/diary/_form_fields.blade.php:85` — `false`
+- `resources/views/diary/_form_fields.blade.php:86` — `w-full`
+- `resources/views/diary/_form_fields.blade.php:88` — `text-error text-sm`
+- `resources/views/diary/_form_fields.blade.php:89` — `text-error text-sm`
+- `resources/views/diary/_form_fields.blade.php:93` — `Tags`
+- `resources/views/diary/_form_fields.blade.php:93` — `flag`
+- `resources/views/diary/_form_fields.blade.php:93` — `success`
+- `resources/views/diary/_form_fields.blade.php:94` — `fieldset`
+- `resources/views/diary/_form_fields.blade.php:97` — `flex flex-wrap gap-2 mb-3`
+- `resources/views/diary/_form_fields.blade.php:99` — `cursor-pointer`
+- `resources/views/diary/_form_fields.blade.php:100` — `checkbox`
+- `resources/views/diary/_form_fields.blade.php:101` — `strval`
+- `resources/views/diary/_form_fields.blade.php:102` — `peer sr-only`
+- `resources/views/diary/_form_fields.blade.php:111` — `text`
+- `resources/views/diary/_form_fields.blade.php:112` — `input input-bordered input-sm w-full`
+- `resources/views/diary/_form_fields.blade.php:113` — `Neue Tags durch Komma getrennt`
+- `resources/views/diary/_form_dialog.blade.php:3` — `Eintrag bearbeiten`
+- `resources/views/diary/_form_dialog.blade.php:3` — `Neuen Eintrag anlegen`
+- `resources/views/diary/_form_dialog.blade.php:4` — `Tagebuch`
+- `resources/views/diary/_form_dialog.blade.php:6` — `Bearbeiten`
+- `resources/views/diary/_form_dialog.blade.php:7` — `outline`
+- `resources/views/diary/_form_dialog.blade.php:8` — `primary`
+- `resources/views/diary/_form_dialog.blade.php:10` — `POST'`
+- `resources/views/diary/_form_dialog.blade.php:11` — `data-entry-form`
+- `resources/views/diary/_form_dialog.blade.php:12` — `Speichern`
+- `resources/views/diary/_form_dialog.blade.php:12` — `Eintrag anlegen`
+- `resources/views/diary/_form_dialog.blade.php:13` — `isDialog`
+- `resources/views/diary/show.blade.php:2` — `title`
+- `resources/views/diary/show.blade.php:3` — `nav-title`
+- `resources/views/diary/show.blade.php:3` — `Eintrag`
+- `resources/views/diary/show.blade.php:5` — `content`
+- `resources/views/diary/show.blade.php:6` — `flex h-full min-h-0 w-full flex-col gap-4`
+- `resources/views/diary/show.blade.php:7` — `min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/diary/show.blade.php:9` — `isDialog`
+- `resources/views/diary/show.blade.php:10` — `text-center`
+- `resources/views/diary/show.blade.php:11` — `Zurück zur Liste`
+- `resources/views/diary/_show_body.blade.php:5` — `pr-10`
+- `resources/views/diary/_show_body.blade.php:6` — `flex flex-wrap items-center gap-3`
+- `resources/views/diary/_show_body.blade.php:8` — `badge badge-sm',
+                'badge-success`
+- `resources/views/diary/_show_body.blade.php:9` — `done',
+                'badge-info`
+- `resources/views/diary/_show_body.blade.php:10` — `progress',
+                'badge-warning`
+- `resources/views/diary/_show_body.blade.php:11` — `open',
+                'badge-error`
+- `resources/views/diary/_show_body.blade.php:12` — `alert',
+                'badge-ghost`
+- `resources/views/diary/_show_body.blade.php:13` — `neutral`
+- `resources/views/diary/_show_body.blade.php:17` — `badge badge-neutral`
+- `resources/views/diary/_show_body.blade.php:17` — `Archiviert`
+- `resources/views/diary/_show_body.blade.php:20` — `badge badge-outline badge-warning`
+- `resources/views/diary/_show_body.blade.php:25` — `flex gap-2`
+- `resources/views/diary/_show_body.blade.php:26` — `update`
+- `resources/views/diary/_show_body.blade.php:27` — `btn btn-ghost btn-sm`
+- `resources/views/diary/_show_body.blade.php:27` — `Bearbeiten`
+- `resources/views/diary/_show_body.blade.php:29` — `archive`
+- `resources/views/diary/_show_body.blade.php:33` — `btn btn-outline btn-sm`
+- `resources/views/diary/_show_body.blade.php:33` — `Wiederherstellen`
+- `resources/views/diary/_show_body.blade.php:38` — `btn btn-outline btn-sm`
+- `resources/views/diary/_show_body.blade.php:38` — `Archivieren`
+- `resources/views/diary/_show_body.blade.php:42` — `delete`
+- `resources/views/diary/_show_body.blade.php:47` — `Eintrag löschen`
+- `resources/views/diary/_show_body.blade.php:48` — `Der Eintrag wird dauerhaft gelöscht. Möchtest du fortfahren?`
+- `resources/views/diary/_show_body.blade.php:49` — `Löschen`
+- `resources/views/diary/_show_body.blade.php:52` — `btn btn-error btn-outline btn-sm`
+- `resources/views/diary/_show_body.blade.php:52` — `Löschen`
+- `resources/views/diary/_show_body.blade.php:58` — `Inhalt`
+- `resources/views/diary/_show_body.blade.php:59` — `whitespace-pre-wrap leading-relaxed text-base-content`
+- `resources/views/diary/_show_body.blade.php:62` — `mt-4 flex flex-wrap gap-2`
+- `resources/views/diary/_show_body.blade.php:65` — `badge badge-outline`
+- `resources/views/diary/_show_body.blade.php:75` — `Rückmeldung`
+- `resources/views/diary/_show_body.blade.php:76` — `whitespace-pre-wrap leading-relaxed text-base-content`
+- `resources/views/diary/_show_body.blade.php:81` — `rounded-xl border border-base-300 bg-base-200 px-4 py-3`
+- `resources/views/diary/_show_body.blade.php:83` — `text-base-content`
+- `resources/views/diary/_show_body.blade.php:85` — `rounded-xl border border-base-300 bg-base-200 px-4 py-3`
+- `resources/views/diary/_show_body.blade.php:87` — `text-base-content`
+- `resources/views/diary/_show_body.blade.php:89` — `rounded-xl border border-base-300 bg-base-200 px-4 py-3`
+- `resources/views/diary/_show_body.blade.php:90` — `Erstellt`
+- `resources/views/diary/_show_body.blade.php:91` — `text-base-content`
+- `resources/views/diary/_show_body.blade.php:93` — `rounded-xl border border-base-300 bg-base-200 px-4 py-3`
+- `resources/views/diary/_show_body.blade.php:94` — `Geändert`
+- `resources/views/diary/_show_body.blade.php:95` — `text-base-content`
+- `resources/views/diary/_show_body.blade.php:101` — `rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/diary/_show_body.blade.php:119` — `comments`
+- `resources/views/diary/_show_body.blade.php:119` — `rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/diary/_show_body.blade.php:120` — `Kommentare`
+- `resources/views/diary/_show_body.blade.php:122` — `space-y-3 mb-4`
+- `resources/views/diary/_show_body.blade.php:124` — `rounded-box border border-base-300 bg-base-200 p-4`
+- `resources/views/diary/_show_body.blade.php:125` — `flex flex-wrap items-center justify-between gap-2 mb-2`
+- `resources/views/diary/_show_body.blade.php:126` — `text-sm`
+- `resources/views/diary/_show_body.blade.php:127` — `font-semibold`
+- `resources/views/diary/_show_body.blade.php:130` — `bearbeitet`
+- `resources/views/diary/_show_body.blade.php:133` — `flex gap-1`
+- `resources/views/diary/_show_body.blade.php:134` — `update`
+- `resources/views/diary/_show_body.blade.php:135` — `button`
+- `resources/views/diary/_show_body.blade.php:135` — `btn btn-ghost btn-xs`
+- `resources/views/diary/_show_body.blade.php:135` — `hidden`
+- `resources/views/diary/_show_body.blade.php:135` — `Bearbeiten`
+- `resources/views/diary/_show_body.blade.php:137` — `delete`
+- `resources/views/diary/_show_body.blade.php:138` — `inline`
+- `resources/views/diary/_show_body.blade.php:140` — `Kommentar löschen`
+- `resources/views/diary/_show_body.blade.php:141` — `Kommentar wird dauerhaft gelöscht.`
+- `resources/views/diary/_show_body.blade.php:142` — `Löschen`
+- `resources/views/diary/_show_body.blade.php:144` — `btn btn-ghost btn-xs text-error`
+- `resources/views/diary/_show_body.blade.php:144` — `Löschen`
+- `resources/views/diary/_show_body.blade.php:149` — `whitespace-pre-wrap text-sm`
+- `resources/views/diary/_show_body.blade.php:151` — `update`
+- `resources/views/diary/_show_body.blade.php:152` — `hidden mt-3 space-y-2`
+- `resources/views/diary/_show_body.blade.php:154` — `body`
+- `resources/views/diary/_show_body.blade.php:154` — `textarea textarea-bordered textarea-sm w-full`
+- `resources/views/diary/_show_body.blade.php:155` — `submit`
+- `resources/views/diary/_show_body.blade.php:155` — `btn btn-primary btn-xs`
+- `resources/views/diary/_show_body.blade.php:155` — `Speichern`
+- `resources/views/diary/_show_body.blade.php:160` — `Noch keine Kommentare.`
+- `resources/views/diary/_show_body.blade.php:164` — `create`
+- `resources/views/diary/_show_body.blade.php:165` — `space-y-2`
+- `resources/views/diary/_show_body.blade.php:167` — `body`
+- `resources/views/diary/_show_body.blade.php:168` — `body`
+- `resources/views/diary/_show_body.blade.php:169` — `Kommentar schreiben...`
+- `resources/views/diary/_show_body.blade.php:169` — `body`
+- `resources/views/diary/_show_body.blade.php:170` — `body`
+- `resources/views/diary/_show_body.blade.php:170` — `text-sm text-error`
+- `resources/views/diary/_show_body.blade.php:171` — `submit`
+- `resources/views/diary/_show_body.blade.php:171` — `btn btn-primary btn-sm`
+- `resources/views/diary/_show_body.blade.php:171` — `Kommentieren`
+- `resources/views/diary/_show_body.blade.php:176` — `parent`
+- `resources/views/diary/_show_body.blade.php:176` — `parentType`
+- `resources/views/diary/_show_body.blade.php:176` — `diary`
+- `resources/views/org/members/index.blade.php:2` — `title`
+- `resources/views/org/members/index.blade.php:2` — `Mitglieder`
+- `resources/views/org/members/index.blade.php:3` — `nav-title`
+- `resources/views/org/members/index.blade.php:3` — `Mitglieder`
+- `resources/views/org/members/index.blade.php:4` — `content`
+- `resources/views/org/members/index.blade.php:6` — `flex justify-end`
+- `resources/views/org/members/index.blade.php:7` — `btn btn-primary btn-sm`
+- `resources/views/org/members/index.blade.php:8` — `Mitglied anlegen`
+- `resources/views/org/members/index.blade.php:15` — `name`
+- `resources/views/org/members/index.blade.php:15` — `asc'`
+- `resources/views/org/members/index.blade.php:15` — `name`
+- `resources/views/org/members/index.blade.php:15` — `Name`
+- `resources/views/org/members/index.blade.php:16` — `email`
+- `resources/views/org/members/index.blade.php:16` — `asc'`
+- `resources/views/org/members/index.blade.php:16` — `E-Mail`
+- `resources/views/org/members/index.blade.php:17` — `Rolle`
+- `resources/views/org/members/index.blade.php:24` — `font-medium`
+- `resources/views/org/members/index.blade.php:28` — `badge badge-sm badge-outline`
+- `resources/views/org/members/index.blade.php:31` — `text-right`
+- `resources/views/org/members/index.blade.php:32` — `flex justify-end gap-2`
+- `resources/views/org/members/index.blade.php:33` — `btn btn-ghost btn-xs`
+- `resources/views/org/members/index.blade.php:33` — `Bearbeiten`
+- `resources/views/org/members/index.blade.php:36` — `Mitglied wirklich entfernen?`
+- `resources/views/org/members/index.blade.php:37` — `Entfernen`
+- `resources/views/org/members/index.blade.php:39` — `submit`
+- `resources/views/org/members/index.blade.php:39` — `btn btn-ghost btn-xs text-error`
+- `resources/views/org/members/index.blade.php:39` — `Entfernen`
+- `resources/views/org/members/index.blade.php:46` — `Keine Mitglieder vorhanden.`
+- `resources/views/org/members/_form.blade.php:3` — `Mitgliedsdaten`
+- `resources/views/org/members/_form.blade.php:3` — `person`
+- `resources/views/org/members/_form.blade.php:3` — `primary`
+- `resources/views/org/members/_form.blade.php:5` — `fieldset-label`
+- `resources/views/org/members/_form.blade.php:5` — `Vollständiger Name`
+- `resources/views/org/members/_form.blade.php:6` — `text`
+- `resources/views/org/members/_form.blade.php:6` — `name`
+- `resources/views/org/members/_form.blade.php:6` — `name`
+- `resources/views/org/members/_form.blade.php:7` — `name`
+- `resources/views/org/members/_form.blade.php:8` — `name`
+- `resources/views/org/members/_form.blade.php:8` — `text-error text-sm`
+- `resources/views/org/members/_form.blade.php:11` — `fieldset`
+- `resources/views/org/members/_form.blade.php:12` — `fieldset-label`
+- `resources/views/org/members/_form.blade.php:12` — `E-Mail-Adresse`
+- `resources/views/org/members/_form.blade.php:13` — `email`
+- `resources/views/org/members/_form.blade.php:13` — `email`
+- `resources/views/org/members/_form.blade.php:13` — `email`
+- `resources/views/org/members/_form.blade.php:14` — `email`
+- `resources/views/org/members/_form.blade.php:15` — `email`
+- `resources/views/org/members/_form.blade.php:15` — `text-error text-sm`
+- `resources/views/org/members/_form.blade.php:18` — `fieldset`
+- `resources/views/org/members/_form.blade.php:19` — `fieldset-label`
+- `resources/views/org/members/_form.blade.php:19` — `Rolle`
+- `resources/views/org/members/_form.blade.php:20` — `role`
+- `resources/views/org/members/_form.blade.php:20` — `role`
+- `resources/views/org/members/_form.blade.php:22` — `role`
+- `resources/views/org/members/_form.blade.php:27` — `role`
+- `resources/views/org/members/_form.blade.php:27` — `text-error text-sm`
+- `resources/views/org/members/_form.blade.php:32` — `Initial-Passwort`
+- `resources/views/org/members/_form.blade.php:32` — `lock`
+- `resources/views/org/members/_form.blade.php:32` — `warning`
+- `resources/views/org/members/_form.blade.php:33` — `Das Mitglied wird beim ersten Login aufgefordert, das Passwort zu ändern.`
+- `resources/views/org/members/_form.blade.php:34` — `fieldset`
+- `resources/views/org/members/_form.blade.php:35` — `fieldset-label`
+- `resources/views/org/members/_form.blade.php:35` — `Passwort`
+- `resources/views/org/members/_form.blade.php:36` — `password`
+- `resources/views/org/members/_form.blade.php:36` — `password`
+- `resources/views/org/members/_form.blade.php:36` — `password`
+- `resources/views/org/members/_form.blade.php:37` — `Mindestens 8 Zeichen`
+- `resources/views/org/members/_form.blade.php:38` — `password`
+- `resources/views/org/members/_form.blade.php:38` — `text-error text-sm`
+- `resources/views/org/members/_form.blade.php:40` — `fieldset`
+- `resources/views/org/members/_form.blade.php:41` — `fieldset-label`
+- `resources/views/org/members/_form.blade.php:41` — `Passwort bestätigen`
+- `resources/views/org/members/_form.blade.php:42` — `password`
+- `resources/views/org/members/_form.blade.php:42` — `input input-bordered w-full`
+- `resources/views/org/members/_form_dialog.blade.php:10` — `Mitglied bearbeiten`
+- `resources/views/org/members/_form_dialog.blade.php:10` — `Mitglied anlegen`
+- `resources/views/org/members/_form_dialog.blade.php:11` — `Mitgliederverwaltung`
+- `resources/views/org/members/_form_dialog.blade.php:12` — `group`
+- `resources/views/org/members/_form_dialog.blade.php:13` — `primary`
+- `resources/views/org/members/_form_dialog.blade.php:15` — `POST'`
+- `resources/views/org/members/_form_dialog.blade.php:16` — `data-entry-form`
+- `resources/views/org/members/_form_dialog.blade.php:17` — `Speichern`
+- `resources/views/org/members/_form_dialog.blade.php:17` — `Anlegen`
+- `resources/views/org/members/_form_dialog.blade.php:19` — `member`
+- `resources/views/org/members/_form_dialog.blade.php:19` — `roles`
+- `resources/views/org/members/_form_dialog.blade.php:22` — `alert alert-error text-sm`
+- `resources/views/org/members/_form_dialog.blade.php:23` — `list-disc pl-5`
+- `resources/views/kanban/_card.blade.php:9` — `font-medium`
+- `resources/views/kanban/_card.blade.php:12` — `mt-1 line-clamp-3 text-sm text-base-content`
+- `resources/views/kanban/_card.blade.php:14` — `mt-1 flex flex-wrap gap-1`
+- `resources/views/kanban/_card.blade.php:16` — `badge badge-xs`
+- `resources/views/kanban/index.blade.php:2` — `title`
+- `resources/views/kanban/index.blade.php:2` — `Kanban`
+- `resources/views/kanban/index.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/kanban/index.blade.php:3` — `nav-title`
+- `resources/views/kanban/index.blade.php:3` — `Kanban`
+- `resources/views/kanban/index.blade.php:4` — `wrapper-height-class', `
+- `resources/views/kanban/index.blade.php:5` — `main-class', 'min-h-0 overflow-clip flex flex-col`
+- `resources/views/kanban/index.blade.php:7` — `content`
+- `resources/views/kanban/index.blade.php:8` — `flex h-full min-h-0 w-full flex-col gap-4`
+- `resources/views/kanban/index.blade.php:10` — `flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/kanban/index.blade.php:11` — `flex flex-wrap items-center gap-2`
+- `resources/views/kanban/index.blade.php:12` — `join`
+- `resources/views/kanban/index.blade.php:13` — `scope`
+- `resources/views/kanban/index.blade.php:13` — `mine`
+- `resources/views/kanban/index.blade.php:14` — `btn-ghost`
+- `resources/views/kanban/index.blade.php:14` — `btn-primary`
+- `resources/views/kanban/index.blade.php:14` — `Meine`
+- `resources/views/kanban/index.blade.php:15` — `scope`
+- `resources/views/kanban/index.blade.php:15` — `team`
+- `resources/views/kanban/index.blade.php:16` — `btn-primary`
+- `resources/views/kanban/index.blade.php:16` — `btn-ghost`
+- `resources/views/kanban/index.blade.php:16` — `Team`
+- `resources/views/kanban/index.blade.php:20` — `btn btn-sm btn-primary gap-1`
+- `resources/views/kanban/index.blade.php:21` — `Eintrag`
+- `resources/views/kanban/index.blade.php:27` — `count`
+- `resources/views/kanban/index.blade.php:37` — `flex min-h-0 flex-col rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/kanban/index.blade.php:39` — `flex items-center justify-between border-b border-base-300 px-3 py-2`
+- `resources/views/kanban/index.blade.php:40` — `flex items-center gap-2`
+- `resources/views/kanban/index.blade.php:41` — `tone`
+- `resources/views/kanban/index.blade.php:42` — `label`
+- `resources/views/kanban/index.blade.php:44` — `badge badge-sm`
+- `resources/views/kanban/index.blade.php:46` — `flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-2`
+- `resources/views/kanban/index.blade.php:48` — `entry`
+- `resources/views/kanban/index.blade.php:50` — `hidden`
+- `resources/views/kanban/index.blade.php:50` — `Keine Einträge`
+- `resources/views/kanban/index.blade.php:67` — `draggable', 'true`
+- `resources/views/kanban/index.blade.php:68` — `dragstart`
+- `resources/views/kanban/index.blade.php:70` — `opacity-50`
+- `resources/views/kanban/index.blade.php:71` — `move`
+- `resources/views/kanban/index.blade.php:74` — `dragend`
+- `resources/views/kanban/index.blade.php:75` — `opacity-50`
+- `resources/views/kanban/index.blade.php:82` — `dragover`
+- `resources/views/kanban/index.blade.php:85` — `ring-2', 'ring-primary`
+- `resources/views/kanban/index.blade.php:87` — `dragleave`
+- `resources/views/kanban/index.blade.php:88` — `ring-2', 'ring-primary`
+- `resources/views/kanban/index.blade.php:90` — `drop`
+- `resources/views/kanban/index.blade.php:92` — `ring-2', 'ring-primary`
+- `resources/views/kanban/index.blade.php:105` — `Content-Type`
+- `resources/views/kanban/index.blade.php:106` — `X-CSRF-TOKEN`
+- `resources/views/kanban/index.blade.php:107` — `Accept`
+- `resources/views/kanban/index.blade.php:111` — `http `
+- `resources/views/kanban/index.blade.php:127` — `hidden`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:3` — `scheduled-shifts.update`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:7` — `Schicht bearbeiten`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:9` — `event`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:10` — `primary`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:13` — `data-entry-form`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:14` — `Speichern`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:17` — `alert alert-error text-sm`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:18` — `list-disc pl-5`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:22` — `Zuordnung`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:22` — `person`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:22` — `primary`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:23` — `fieldset`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:24` — `fieldset-label`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:24` — `Mitarbeiter`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:25` — `select select-bordered w-full`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:31` — `fieldset`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:32` — `fieldset-label`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:32` — `Schichttyp`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:33` — `select select-bordered w-full`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:42` — `schedule`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:42` — `info`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:43` — `fieldset`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:44` — `fieldset-label`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:44` — `Datum`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:45` — `date`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:45` — `date`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:46` — `date`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:46` — `Y-m-d`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:47` — `input input-bordered w-full`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:49` — `fieldset`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:50` — `fieldset-label`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:50` — `Status`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:51` — `status`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:51` — `select select-bordered w-full`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:53` — `status`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:58` — `split`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:59` — `time`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:62` — `Beginn`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:63` — `Ende`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:67` — `contents`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:71` — `Notiz`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:71` — `description`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:71` — `ghost`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:72` — `fieldset`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:73` — `fieldset-label`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:73` — `Notiz`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:74` — `note`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:74` — `textarea textarea-bordered w-full`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:74` — `note`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:78` — `delete`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:80` — `scheduled-shifts.destroy`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:82` — `Wirklich löschen?`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:83` — `Löschen`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:85` — `submit`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:85` — `btn btn-error btn-outline btn-sm gap-2`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:86` — `delete`
+- `resources/views/scheduled-shifts/_form_dialog.blade.php:86` — `Schicht löschen`
+- `resources/views/scheduled-shifts/show.blade.php:2` — `title`
+- `resources/views/scheduled-shifts/show.blade.php:2` — `Schicht`
+- `resources/views/scheduled-shifts/show.blade.php:3` — `nav-title`
+- `resources/views/scheduled-shifts/show.blade.php:3` — `date`
+- `resources/views/scheduled-shifts/show.blade.php:5` — `content`
+- `resources/views/scheduled-shifts/show.blade.php:6` — `space-y-6`
+- `resources/views/scheduled-shifts/show.blade.php:7` — `flex flex-wrap items-center justify-between gap-2`
+- `resources/views/scheduled-shifts/show.blade.php:15` — `flex items-center gap-2`
+- `resources/views/scheduled-shifts/show.blade.php:16` — `update`
+- `resources/views/scheduled-shifts/show.blade.php:17` — `scheduled-shifts.edit`
+- `resources/views/scheduled-shifts/show.blade.php:17` — `btn btn-primary btn-sm`
+- `resources/views/scheduled-shifts/show.blade.php:17` — `Bearbeiten`
+- `resources/views/scheduled-shifts/show.blade.php:19` — `btn btn-ghost btn-sm`
+- `resources/views/scheduled-shifts/show.blade.php:19` — `Zurück`
+- `resources/views/scheduled-shifts/show.blade.php:23` — `success`
+- `resources/views/scheduled-shifts/show.blade.php:23` — `alert alert-success`
+- `resources/views/scheduled-shifts/show.blade.php:23` — `success`
+- `resources/views/scheduled-shifts/show.blade.php:25` — `card border border-base-300 bg-base-100 shadow-xs max-w-2xl`
+- `resources/views/scheduled-shifts/show.blade.php:27` — `Mitarbeiter`
+- `resources/views/scheduled-shifts/show.blade.php:28` — `Datum`
+- `resources/views/scheduled-shifts/show.blade.php:29` — `Beginn`
+- `resources/views/scheduled-shifts/show.blade.php:30` — `Ende`
+- `resources/views/scheduled-shifts/show.blade.php:31` — `Schichttyp`
+- `resources/views/scheduled-shifts/show.blade.php:32` — `Status`
+- `resources/views/scheduled-shifts/show.blade.php:34` — `Notiz`
+- `resources/views/scheduled-shifts/show.blade.php:39` — `delete`
+- `resources/views/scheduled-shifts/show.blade.php:40` — `scheduled-shifts.destroy`
+- `resources/views/scheduled-shifts/show.blade.php:42` — `Wirklich löschen?`
+- `resources/views/scheduled-shifts/show.blade.php:43` — `Löschen`
+- `resources/views/scheduled-shifts/show.blade.php:45` — `submit`
+- `resources/views/scheduled-shifts/show.blade.php:45` — `btn btn-error btn-sm`
+- `resources/views/scheduled-shifts/show.blade.php:45` — `Löschen`
+- `resources/views/attendances/_panel.blade.php:2` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/attendances/_panel.blade.php:3` — `flex items-center justify-between gap-2`
+- `resources/views/attendances/_panel.blade.php:4` — `Stempeluhr`
+- `resources/views/attendances/_panel.blade.php:6` — `badge badge-success badge-sm`
+- `resources/views/attendances/_panel.blade.php:6` — `Offen`
+- `resources/views/attendances/_panel.blade.php:8` — `badge badge-ghost badge-sm`
+- `resources/views/attendances/_panel.blade.php:8` — `Geschlossen`
+- `resources/views/attendances/_panel.blade.php:13` — `mt-2`
+- `resources/views/attendances/_panel.blade.php:17` — `time`
+- `resources/views/attendances/_panel.blade.php:23` — `attendance.clock-out`
+- `resources/views/attendances/_panel.blade.php:23` — `mt-3 flex flex-wrap items-end gap-2`
+- `resources/views/attendances/_panel.blade.php:25` — `form-control`
+- `resources/views/attendances/_panel.blade.php:26` — `label py-0`
+- `resources/views/attendances/_panel.blade.php:26` — `label-text text-xs`
+- `resources/views/attendances/_panel.blade.php:27` — `number`
+- `resources/views/attendances/_panel.blade.php:27` — `input input-bordered input-sm w-24`
+- `resources/views/attendances/_panel.blade.php:29` — `submit`
+- `resources/views/attendances/_panel.blade.php:29` — `btn btn-sm btn-warning gap-1`
+- `resources/views/attendances/_panel.blade.php:30` — `logout`
+- `resources/views/attendances/_panel.blade.php:30` — `Ausstempeln`
+- `resources/views/attendances/_panel.blade.php:34` — `mt-1`
+- `resources/views/attendances/_panel.blade.php:36` — `submit`
+- `resources/views/attendances/_panel.blade.php:36` — `btn btn-xs btn-ghost text-error`
+- `resources/views/attendances/_panel.blade.php:36` — `Stempelung verwerfen`
+- `resources/views/attendances/_panel.blade.php:40` — `Nicht eingestempelt.`
+- `resources/views/attendances/_panel.blade.php:41` — `attendance.clock-in`
+- `resources/views/attendances/_panel.blade.php:41` — `mt-3`
+- `resources/views/attendances/_panel.blade.php:43` — `submit`
+- `resources/views/attendances/_panel.blade.php:43` — `btn btn-sm btn-success gap-1`
+- `resources/views/attendances/_panel.blade.php:44` — `login`
+- `resources/views/attendances/_panel.blade.php:44` — `Einstempeln`
+- `resources/views/attendances/index.blade.php:2` — `title`
+- `resources/views/attendances/index.blade.php:2` — `Stempelungen`
+- `resources/views/attendances/index.blade.php:3` — `nav-title`
+- `resources/views/attendances/index.blade.php:3` — `Stempelungen`
+- `resources/views/attendances/index.blade.php:5` — `content`
+- `resources/views/attendances/index.blade.php:15` — `flex flex-wrap items-end justify-between gap-3`
+- `resources/views/attendances/index.blade.php:17` — `Stempelungen`
+- `resources/views/attendances/index.blade.php:22` — `btn btn-ghost btn-sm`
+- `resources/views/attendances/index.blade.php:23` — `today`
+- `resources/views/attendances/index.blade.php:23` — `Heute-Übersicht`
+- `resources/views/attendances/index.blade.php:27` — `success`
+- `resources/views/attendances/index.blade.php:28` — `alert alert-success`
+- `resources/views/attendances/index.blade.php:28` — `success`
+- `resources/views/attendances/index.blade.php:30` — `error`
+- `resources/views/attendances/index.blade.php:31` — `alert alert-error`
+- `resources/views/attendances/index.blade.php:31` — `error`
+- `resources/views/attendances/index.blade.php:36` — `current`
+- `resources/views/attendances/index.blade.php:40` — `rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/attendances/index.blade.php:41` — `overflow-x-auto`
+- `resources/views/attendances/index.blade.php:42` — `table table-sm`
+- `resources/views/attendances/index.blade.php:45` — `Datum`
+- `resources/views/attendances/index.blade.php:46` — `Beginn`
+- `resources/views/attendances/index.blade.php:47` — `Ende`
+- `resources/views/attendances/index.blade.php:48` — `text-right`
+- `resources/views/attendances/index.blade.php:48` — `Pause`
+- `resources/views/attendances/index.blade.php:49` — `text-right`
+- `resources/views/attendances/index.blade.php:49` — `Dauer`
+- `resources/views/attendances/index.blade.php:50` — `Status`
+- `resources/views/attendances/index.blade.php:51` — `Quelle`
+- `resources/views/attendances/index.blade.php:58` — `tabular-nums`
+- `resources/views/attendances/index.blade.php:59` — `tabular-nums`
+- `resources/views/attendances/index.blade.php:60` — `text-right tabular-nums`
+- `resources/views/attendances/index.blade.php:61` — `text-right tabular-nums`
+- `resources/views/attendances/index.blade.php:69` — `badge-success`
+- `resources/views/attendances/index.blade.php:69` — `badge-ghost`
+- `resources/views/attendances/index.blade.php:74` — `Keine Stempelungen im Zeitraum.`
+- `resources/views/vendor/pagination/daisyui-simple.blade.php:2` — `navigation`
+- `resources/views/vendor/pagination/daisyui-simple.blade.php:2` — `Pagination Navigation`
+- `resources/views/vendor/pagination/daisyui-simple.blade.php:2` — `join flex w-full justify-between`
+- `resources/views/vendor/pagination/daisyui-simple.blade.php:4` — `button`
+- `resources/views/vendor/pagination/daisyui-simple.blade.php:4` — `join-item btn btn-sm btn-outline`
+- `resources/views/vendor/pagination/daisyui-simple.blade.php:4` — `Zurück`
+- `resources/views/vendor/pagination/daisyui-simple.blade.php:6` — `prev`
+- `resources/views/vendor/pagination/daisyui-simple.blade.php:6` — `join-item btn btn-sm btn-outline btn-primary`
+- `resources/views/vendor/pagination/daisyui-simple.blade.php:6` — `Zurück`
+- `resources/views/vendor/pagination/daisyui-simple.blade.php:9` — `join-item btn btn-sm btn-ghost no-animation pointer-events-none`
+- `resources/views/vendor/pagination/daisyui-simple.blade.php:14` — `next`
+- `resources/views/vendor/pagination/daisyui-simple.blade.php:14` — `join-item btn btn-sm btn-outline btn-primary`
+- `resources/views/vendor/pagination/daisyui-simple.blade.php:14` — `Weiter`
+- `resources/views/vendor/pagination/daisyui-simple.blade.php:16` — `button`
+- `resources/views/vendor/pagination/daisyui-simple.blade.php:16` — `join-item btn btn-sm btn-outline`
+- `resources/views/vendor/pagination/daisyui-simple.blade.php:16` — `Weiter`
+- `resources/views/activity-categories/index.blade.php:2` — `title`
+- `resources/views/activity-categories/index.blade.php:2` — `Tätigkeiten`
+- `resources/views/activity-categories/index.blade.php:3` — `nav-title`
+- `resources/views/activity-categories/index.blade.php:3` — `Tätigkeiten`
+- `resources/views/activity-categories/index.blade.php:10` — `content`
+- `resources/views/activity-categories/index.blade.php:12` — `flex flex-wrap items-end justify-between gap-3`
+- `resources/views/activity-categories/index.blade.php:14` — `Tätigkeiten`
+- `resources/views/activity-categories/index.blade.php:15` — `Verwaltet die Kategorien für nicht-projektgebundene Arbeitszeit.`
+- `resources/views/activity-categories/index.blade.php:19` — `success`
+- `resources/views/activity-categories/index.blade.php:19` — `alert alert-success`
+- `resources/views/activity-categories/index.blade.php:19` — `success`
+- `resources/views/activity-categories/index.blade.php:21` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/activity-categories/index.blade.php:22` — `Neue Tätigkeit`
+- `resources/views/activity-categories/index.blade.php:23` — `activity-categories.store`
+- `resources/views/activity-categories/index.blade.php:26` — `label-text text-xs`
+- `resources/views/activity-categories/index.blade.php:26` — `Schlüssel`
+- `resources/views/activity-categories/index.blade.php:27` — `input input-bordered input-sm`
+- `resources/views/activity-categories/index.blade.php:30` — `label-text text-xs`
+- `resources/views/activity-categories/index.blade.php:30` — `Bezeichnung`
+- `resources/views/activity-categories/index.blade.php:31` — `label`
+- `resources/views/activity-categories/index.blade.php:31` — `input input-bordered input-sm`
+- `resources/views/activity-categories/index.blade.php:34` — `label-text text-xs`
+- `resources/views/activity-categories/index.blade.php:35` — `select select-bordered select-sm`
+- `resources/views/activity-categories/index.blade.php:42` — `label-text text-xs`
+- `resources/views/activity-categories/index.blade.php:42` — `Reihenfolge`
+- `resources/views/activity-categories/index.blade.php:43` — `number`
+- `resources/views/activity-categories/index.blade.php:43` — `input input-bordered input-sm`
+- `resources/views/activity-categories/index.blade.php:46` — `label cursor-pointer gap-2`
+- `resources/views/activity-categories/index.blade.php:46` — `checkbox`
+- `resources/views/activity-categories/index.blade.php:46` — `checkbox checkbox-sm`
+- `resources/views/activity-categories/index.blade.php:46` — `label-text text-xs`
+- `resources/views/activity-categories/index.blade.php:46` — `Zählt als Arbeit`
+- `resources/views/activity-categories/index.blade.php:47` — `label cursor-pointer gap-2`
+- `resources/views/activity-categories/index.blade.php:47` — `checkbox`
+- `resources/views/activity-categories/index.blade.php:47` — `checkbox checkbox-sm`
+- `resources/views/activity-categories/index.blade.php:47` — `label-text text-xs`
+- `resources/views/activity-categories/index.blade.php:47` — `Standardmäßig abrechenbar`
+- `resources/views/activity-categories/index.blade.php:48` — `label cursor-pointer gap-2`
+- `resources/views/activity-categories/index.blade.php:48` — `checkbox`
+- `resources/views/activity-categories/index.blade.php:48` — `active`
+- `resources/views/activity-categories/index.blade.php:48` — `checkbox checkbox-sm`
+- `resources/views/activity-categories/index.blade.php:48` — `label-text text-xs`
+- `resources/views/activity-categories/index.blade.php:48` — `Aktiv`
+- `resources/views/activity-categories/index.blade.php:50` — `submit`
+- `resources/views/activity-categories/index.blade.php:50` — `Anlegen`
+- `resources/views/activity-categories/index.blade.php:54` — `rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/activity-categories/index.blade.php:55` — `overflow-x-auto`
+- `resources/views/activity-categories/index.blade.php:56` — `table table-sm`
+- `resources/views/activity-categories/index.blade.php:58` — `Schlüssel`
+- `resources/views/activity-categories/index.blade.php:58` — `Bezeichnung`
+- `resources/views/activity-categories/index.blade.php:58` — `text-center`
+- `resources/views/activity-categories/index.blade.php:58` — `Arbeit`
+- `resources/views/activity-categories/index.blade.php:58` — `text-center`
+- `resources/views/activity-categories/index.blade.php:58` — `Abrechenbar`
+- `resources/views/activity-categories/index.blade.php:58` — `text-center`
+- `resources/views/activity-categories/index.blade.php:58` — `Aktiv`
+- `resources/views/activity-categories/index.blade.php:63` — `text-xs`
+- `resources/views/activity-categories/index.blade.php:65` — `badge badge-sm badge-ghost`
+- `resources/views/activity-categories/index.blade.php:66` — `text-center`
+- `resources/views/activity-categories/index.blade.php:67` — `text-center`
+- `resources/views/activity-categories/index.blade.php:68` — `text-center`
+- `resources/views/activity-categories/index.blade.php:69` — `text-right`
+- `resources/views/activity-categories/index.blade.php:70` — `activity-categories.destroy`
+- `resources/views/activity-categories/index.blade.php:70` — `inline`
+- `resources/views/activity-categories/index.blade.php:72` — `btn btn-ghost btn-xs text-error`
+- `resources/views/activity-categories/index.blade.php:72` — `Wirklich löschen?`
+- `resources/views/activity-categories/index.blade.php:72` — `Löschen`
+- `resources/views/activity-categories/index.blade.php:77` — `Noch keine Tätigkeiten.`
+- `resources/views/shifts/_form_body.blade.php:8` — `note`
+- `resources/views/shifts/_form_body.blade.php:14` — `hidden`
+- `resources/views/shifts/_form_body.blade.php:16` — `hidden`
+- `resources/views/shifts/_form_body.blade.php:20` — `Zuordnung`
+- `resources/views/shifts/_form_body.blade.php:20` — `person`
+- `resources/views/shifts/_form_body.blade.php:20` — `primary`
+- `resources/views/shifts/_form_body.blade.php:21` — `fieldset w-full`
+- `resources/views/shifts/_form_body.blade.php:22` — `fieldset-label`
+- `resources/views/shifts/_form_body.blade.php:22` — `Mitarbeiter`
+- `resources/views/shifts/_form_body.blade.php:23` — `select select-bordered w-full`
+- `resources/views/shifts/_form_body.blade.php:25` — `name`
+- `resources/views/shifts/_form_body.blade.php:32` — `Zeitraum`
+- `resources/views/shifts/_form_body.blade.php:32` — `schedule`
+- `resources/views/shifts/_form_body.blade.php:32` — `info`
+- `resources/views/shifts/_form_body.blade.php:33` — `fieldset`
+- `resources/views/shifts/_form_body.blade.php:35` — `datetime-local`
+- `resources/views/shifts/_form_body.blade.php:40` — `Beginn`
+- `resources/views/shifts/_form_body.blade.php:41` — `Ende`
+- `resources/views/shifts/_form_body.blade.php:42` — `false`
+- `resources/views/shifts/_form_body.blade.php:44` — `w-full`
+- `resources/views/shifts/_form_body.blade.php:46` — `text-error text-sm`
+- `resources/views/shifts/_form_body.blade.php:47` — `text-error text-sm`
+- `resources/views/shifts/_form_body.blade.php:51` — `Details`
+- `resources/views/shifts/_form_body.blade.php:51` — `description`
+- `resources/views/shifts/_form_body.blade.php:51` — `ghost`
+- `resources/views/shifts/_form_body.blade.php:52` — `fieldset w-full`
+- `resources/views/shifts/_form_body.blade.php:53` — `fieldset-label`
+- `resources/views/shifts/_form_body.blade.php:53` — `Notiz`
+- `resources/views/shifts/_form_body.blade.php:54` — `note`
+- `resources/views/shifts/_form_body.blade.php:54` — `textarea textarea-bordered w-full`
+- `resources/views/shifts/_form_body.blade.php:59` — `alert alert-error`
+- `resources/views/shifts/_form_body.blade.php:60` — `list-disc pl-5`
+- `resources/views/shifts/_form_dialog.blade.php:2` — `Bereitschaft bearbeiten`
+- `resources/views/shifts/_form_dialog.blade.php:2` — `Neue Bereitschaft`
+- `resources/views/shifts/_form_dialog.blade.php:3` — `Bereitschaftsdienst`
+- `resources/views/shifts/_form_dialog.blade.php:4` — `schedule`
+- `resources/views/shifts/_form_dialog.blade.php:5` — `info`
+- `resources/views/shifts/_form_dialog.blade.php:7` — `POST'`
+- `resources/views/shifts/_form_dialog.blade.php:8` — `data-entry-form`
+- `resources/views/shifts/_form_dialog.blade.php:9` — `Speichern`
+- `resources/views/shifts/_form_dialog.blade.php:9` — `Bereitschaft anlegen`
+- `resources/views/shifts/_form_dialog.blade.php:16` — `Wirklich löschen?`
+- `resources/views/shifts/_form_dialog.blade.php:17` — `Löschen`
+- `resources/views/shifts/_form_dialog.blade.php:19` — `hidden`
+- `resources/views/shifts/_form_dialog.blade.php:20` — `submit`
+- `resources/views/shifts/_form_dialog.blade.php:20` — `btn btn-error btn-outline btn-sm gap-2`
+- `resources/views/shifts/_form_dialog.blade.php:21` — `delete`
+- `resources/views/shifts/_form_dialog.blade.php:21` — `Bereitschaft löschen`
+- `resources/views/pdf/timesheet.blade.php:4` — `utf-8`
+- `resources/views/pdf/timesheet.blade.php:27` — `meta`
+- `resources/views/pdf/timesheet.blade.php:38` — `right`
+- `resources/views/pdf/timesheet.blade.php:39` — `right`
+- `resources/views/pdf/timesheet.blade.php:48` — `right`
+- `resources/views/pdf/timesheet.blade.php:49` — `right`
+- `resources/views/pdf/timesheet.blade.php:63` — `totals`
+- `resources/views/pdf/timesheet.blade.php:64` — `right`
+- `resources/views/pdf/timesheet.blade.php:64` — `right`
+- `resources/views/pdf/timesheet.blade.php:65` — `right`
+- `resources/views/pdf/timesheet.blade.php:65` — `right`
+- `resources/views/pdf/timesheet.blade.php:72` — `right`
+- `resources/views/pdf/timesheet.blade.php:73` — `right`
+- `resources/views/pdf/timesheet.blade.php:73` — `right`
+- `resources/views/pdf/timesheet.blade.php:80` — `right`
+- `resources/views/pdf/timesheet.blade.php:82` — `right`
+- `resources/views/pdf/timesheet.blade.php:83` — `right`
+- `resources/views/pdf/timesheet.blade.php:90` — `totals`
+- `resources/views/pdf/timesheet.blade.php:91` — `right`
+- `resources/views/pdf/timesheet.blade.php:91` — `right`
+- `resources/views/pdf/timesheet.blade.php:96` — `grid2`
+- `resources/views/pdf/timesheet.blade.php:104` — `small`
+- `resources/views/pdf/timesheet.blade.php:104` — `datetime`
+- `resources/views/pdf/timesheet.blade.php:107` — `small`
+- `resources/views/pdf/timesheet.blade.php:107` — `hash`
+- `resources/views/pdf/timesheet.blade.php:112` — `signature`
+- `resources/views/pdf/timesheet.blade.php:114` — `small`
+- `resources/views/projects/_milestone_dialog.blade.php:13` — `Milestone bearbeiten`
+- `resources/views/projects/_milestone_dialog.blade.php:13` — `Neuer Milestone`
+- `resources/views/projects/_milestone_dialog.blade.php:14` — `Milestone`
+- `resources/views/projects/_milestone_dialog.blade.php:15` — `flag`
+- `resources/views/projects/_milestone_dialog.blade.php:17` — `ghost'`
+- `resources/views/projects/_milestone_dialog.blade.php:18` — `primary`
+- `resources/views/projects/_milestone_dialog.blade.php:20` — `POST'`
+- `resources/views/projects/_milestone_dialog.blade.php:21` — `data-entry-form`
+- `resources/views/projects/_milestone_dialog.blade.php:22` — `Speichern`
+- `resources/views/projects/_milestone_dialog.blade.php:22` — `Anlegen`
+- `resources/views/projects/_milestone_dialog.blade.php:24` — `hidden`
+- `resources/views/projects/_milestone_dialog.blade.php:27` — `Milestone`
+- `resources/views/projects/_milestone_dialog.blade.php:27` — `flag`
+- `resources/views/projects/_milestone_dialog.blade.php:27` — `primary`
+- `resources/views/projects/_milestone_dialog.blade.php:28` — `fieldset`
+- `resources/views/projects/_milestone_dialog.blade.php:29` — `fieldset-label`
+- `resources/views/projects/_milestone_dialog.blade.php:29` — `Titel`
+- `resources/views/projects/_milestone_dialog.blade.php:30` — `title`
+- `resources/views/projects/_milestone_dialog.blade.php:30` — `text`
+- `resources/views/projects/_milestone_dialog.blade.php:31` — `input input-bordered w-full`
+- `resources/views/projects/_milestone_dialog.blade.php:32` — `title`
+- `resources/views/projects/_milestone_dialog.blade.php:33` — `title`
+- `resources/views/projects/_milestone_dialog.blade.php:33` — `mt-1 text-sm text-error`
+- `resources/views/projects/_milestone_dialog.blade.php:36` — `fieldset`
+- `resources/views/projects/_milestone_dialog.blade.php:37` — `fieldset-label`
+- `resources/views/projects/_milestone_dialog.blade.php:37` — `Beschreibung`
+- `resources/views/projects/_milestone_dialog.blade.php:38` — `description`
+- `resources/views/projects/_milestone_dialog.blade.php:38` — `textarea textarea-bordered w-full`
+- `resources/views/projects/_milestone_dialog.blade.php:38` — `description`
+- `resources/views/projects/_milestone_dialog.blade.php:42` — `event`
+- `resources/views/projects/_milestone_dialog.blade.php:42` — `info`
+- `resources/views/projects/_milestone_dialog.blade.php:43` — `fieldset`
+- `resources/views/projects/_milestone_dialog.blade.php:44` — `fieldset-label`
+- `resources/views/projects/_milestone_dialog.blade.php:44` — `Fälligkeitsdatum`
+- `resources/views/projects/_milestone_dialog.blade.php:45` — `date`
+- `resources/views/projects/_milestone_dialog.blade.php:46` — `input input-bordered w-full`
+- `resources/views/projects/_milestone_dialog.blade.php:47` — `Y-m-d`
+- `resources/views/projects/_milestone_dialog.blade.php:50` — `fieldset items-end`
+- `resources/views/projects/_milestone_dialog.blade.php:51` — `label cursor-pointer items-center gap-3`
+- `resources/views/projects/_milestone_dialog.blade.php:52` — `hidden`
+- `resources/views/projects/_milestone_dialog.blade.php:53` — `checkbox`
+- `resources/views/projects/_milestone_dialog.blade.php:53` — `checkbox checkbox-sm checkbox-success`
+- `resources/views/projects/_milestone_dialog.blade.php:54` — `checked`
+- `resources/views/projects/_milestone_dialog.blade.php:55` — `text-sm`
+- `resources/views/projects/_milestone_dialog.blade.php:55` — `Milestone abgeschlossen`
+- `resources/views/projects/_overview_tab.blade.php:13` — `rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs`
+- `resources/views/projects/_overview_tab.blade.php:15` — `Offene Aufgaben`
+- `resources/views/projects/_overview_tab.blade.php:17` — `rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs`
+- `resources/views/projects/_overview_tab.blade.php:19` — `Gesamtstunden`
+- `resources/views/projects/_overview_tab.blade.php:21` — `rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs`
+- `resources/views/projects/_overview_tab.blade.php:23` — `Erledigte Aufgaben`
+- `resources/views/projects/_overview_tab.blade.php:25` — `rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs`
+- `resources/views/projects/_overview_tab.blade.php:29` — `kein Datum`
+- `resources/views/projects/_overview_tab.blade.php:32` — `Kein Milestone`
+- `resources/views/projects/_overview_tab.blade.php:34` — `Nächster Milestone`
+- `resources/views/projects/_overview_tab.blade.php:40` — `rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/projects/_overview_tab.blade.php:41` — `flex items-center justify-between border-b border-base-300 px-4 py-3`
+- `resources/views/projects/_overview_tab.blade.php:42` — `Milestones`
+- `resources/views/projects/_overview_tab.blade.php:43` — `create`
+- `resources/views/projects/_overview_tab.blade.php:45` — `btn btn-xs btn-ghost`
+- `resources/views/projects/_overview_tab.blade.php:45` — `Milestone`
+- `resources/views/projects/_overview_tab.blade.php:48` — `divide-y divide-base-300`
+- `resources/views/projects/_overview_tab.blade.php:52` — `status`
+- `resources/views/projects/_overview_tab.blade.php:55` — `flex flex-wrap items-center gap-3 px-4 py-3`
+- `resources/views/projects/_overview_tab.blade.php:60` — `min-w-0 flex-1`
+- `resources/views/projects/_overview_tab.blade.php:61` — `flex flex-wrap items-center gap-2`
+- `resources/views/projects/_overview_tab.blade.php:70` — `mt-1.5 flex items-center gap-2`
+- `resources/views/projects/_overview_tab.blade.php:71` — `progress progress-primary h-1.5 flex-1`
+- `resources/views/projects/_overview_tab.blade.php:76` — `flex gap-1`
+- `resources/views/projects/_overview_tab.blade.php:77` — `update`
+- `resources/views/projects/_overview_tab.blade.php:79` — `btn btn-xs btn-ghost`
+- `resources/views/projects/_overview_tab.blade.php:79` — `Edit`
+- `resources/views/projects/_overview_tab.blade.php:81` — `delete`
+- `resources/views/projects/_overview_tab.blade.php:84` — `Milestone löschen`
+- `resources/views/projects/_overview_tab.blade.php:85` — `Aufgaben bleiben erhalten, werden aber vom Milestone getrennt.`
+- `resources/views/projects/_overview_tab.blade.php:86` — `Löschen`
+- `resources/views/projects/_overview_tab.blade.php:88` — `btn btn-xs btn-ghost text-error`
+- `resources/views/projects/_overview_tab.blade.php:97` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/projects/_overview_tab.blade.php:98` — `flex items-center justify-between`
+- `resources/views/projects/_overview_tab.blade.php:99` — `Noch keine Milestones angelegt.`
+- `resources/views/projects/_overview_tab.blade.php:100` — `create`
+- `resources/views/projects/_overview_tab.blade.php:102` — `btn btn-xs btn-ghost`
+- `resources/views/projects/_overview_tab.blade.php:102` — `Milestone`
+- `resources/views/projects/_overview_tab.blade.php:109` — `rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/projects/_overview_tab.blade.php:110` — `flex items-center justify-between border-b border-base-300 px-4 py-3`
+- `resources/views/projects/_overview_tab.blade.php:111` — `Letzte Einträge`
+- `resources/views/projects/_overview_tab.blade.php:112` — `project`
+- `resources/views/projects/_overview_tab.blade.php:113` — `Alle im Tagebuch`
+- `resources/views/projects/_overview_tab.blade.php:115` — `divide-y divide-base-300`
+- `resources/views/projects/_overview_tab.blade.php:117` — `px-4 py-3`
+- `resources/views/projects/_overview_tab.blade.php:118` — `block`
+- `resources/views/projects/_overview_tab.blade.php:123` — `line-clamp-2 text-sm`
+- `resources/views/projects/_overview_tab.blade.php:127` — `Keine Einträge zugeordnet.`
+- `resources/views/projects/_billing_tab.blade.php:4` — `priority`
+- `resources/views/projects/_billing_tab.blade.php:5` — `name`
+- `resources/views/projects/_billing_tab.blade.php:5` — `name', `
+- `resources/views/projects/_billing_tab.blade.php:7` — `service`
+- `resources/views/projects/_billing_tab.blade.php:7` — `Dienstleistung`
+- `resources/views/projects/_billing_tab.blade.php:7` — `material`
+- `resources/views/projects/_billing_tab.blade.php:7` — `Material`
+- `resources/views/projects/_billing_tab.blade.php:7` — `custom`
+- `resources/views/projects/_billing_tab.blade.php:7` — `Sonstige`
+- `resources/views/projects/_billing_tab.blade.php:19` — `card bg-base-100 shadow`
+- `resources/views/projects/_billing_tab.blade.php:20` — `card-body space-y-4`
+- `resources/views/projects/_billing_tab.blade.php:21` — `flex items-center justify-between`
+- `resources/views/projects/_billing_tab.blade.php:22` — `card-title`
+- `resources/views/projects/_billing_tab.blade.php:25` — `text-sm opacity-70`
+- `resources/views/projects/_billing_tab.blade.php:30` — `alert alert-info text-sm`
+- `resources/views/projects/_billing_tab.blade.php:31` — `count`
+- `resources/views/projects/_billing_tab.blade.php:36` — `italic opacity-60`
+- `resources/views/projects/_billing_tab.blade.php:36` — `Noch keine Regeln definiert. Beim Rechnungs-Export wird der Default-Stundensatz genommen.`
+- `resources/views/projects/_billing_tab.blade.php:38` — `overflow-x-auto`
+- `resources/views/projects/_billing_tab.blade.php:39` — `table table-zebra table-sm`
+- `resources/views/projects/_billing_tab.blade.php:43` — `Lexoffice-Artikel`
+- `resources/views/projects/_billing_tab.blade.php:44` — `Item-Typ`
+- `resources/views/projects/_billing_tab.blade.php:45` — `Einheit`
+- `resources/views/projects/_billing_tab.blade.php:48` — `Prio`
+- `resources/views/projects/_billing_tab.blade.php:57` — `badge`
+- `resources/views/projects/_billing_tab.blade.php:59` — `badge badge-ghost`
+- `resources/views/projects/_billing_tab.blade.php:67` — `opacity-60`
+- `resources/views/projects/_billing_tab.blade.php:75` — `text-right`
+- `resources/views/projects/_billing_tab.blade.php:76` — `projects.billing-rules.destroy`
+- `resources/views/projects/_billing_tab.blade.php:76` — `inline`
+- `resources/views/projects/_billing_tab.blade.php:78` — `Regel wirklich löschen?`
+- `resources/views/projects/_billing_tab.blade.php:79` — `delete`
+- `resources/views/projects/_billing_tab.blade.php:80` — `error`
+- `resources/views/projects/_billing_tab.blade.php:81` — `Löschen`
+- `resources/views/projects/_billing_tab.blade.php:84` — `btn btn-xs btn-ghost text-error`
+- `resources/views/projects/_billing_tab.blade.php:84` — `submit`
+- `resources/views/projects/_billing_tab.blade.php:85` — `Löschen`
+- `resources/views/projects/_billing_tab.blade.php:96` — `divider`
+- `resources/views/projects/_billing_tab.blade.php:98` — `flex justify-end`
+- `resources/views/projects/_billing_tab.blade.php:99` — `projects.billing-rules.create`
+- `resources/views/projects/_billing_tab.blade.php:99` — `btn btn-sm btn-primary`
+- `resources/views/projects/_billing_tab.blade.php:100` — `Neue Regel hinzufügen`
+- `resources/views/projects/_task_row.blade.php:4` — `inline-block h-2 w-2 shrink-0 rounded-full`
+- `resources/views/projects/_task_row.blade.php:8` — `update`
+- `resources/views/projects/_task_row.blade.php:9` — `flex items-center`
+- `resources/views/projects/_task_row.blade.php:11` — `submit`
+- `resources/views/projects/_task_row.blade.php:12` — `checkbox-success`
+- `resources/views/projects/_task_row.blade.php:19` — `bg-success border-success`
+- `resources/views/projects/_task_row.blade.php:19` — `border-base-300`
+- `resources/views/projects/_task_row.blade.php:23` — `min-w-0 flex-1`
+- `resources/views/projects/_task_row.blade.php:35` — `text-error`
+- `resources/views/projects/_task_row.blade.php:40` — `status`
+- `resources/views/projects/_task_row.blade.php:47` — `flex shrink-0 gap-1`
+- `resources/views/projects/_task_row.blade.php:48` — `update`
+- `resources/views/projects/_task_row.blade.php:50` — `btn btn-xs btn-ghost`
+- `resources/views/projects/_task_row.blade.php:50` — `Edit`
+- `resources/views/projects/_task_row.blade.php:52` — `delete`
+- `resources/views/projects/_task_row.blade.php:55` — `Aufgabe löschen`
+- `resources/views/projects/_task_row.blade.php:56` — `Sub-Aufgaben werden ebenfalls gelöscht.`
+- `resources/views/projects/_task_row.blade.php:57` — `Löschen`
+- `resources/views/projects/_task_row.blade.php:59` — `btn btn-xs btn-ghost text-error`
+- `resources/views/projects/_time_tab.blade.php:6` — `flex flex-col gap-3`
+- `resources/views/projects/_time_tab.blade.php:9` — `rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs`
+- `resources/views/projects/_time_tab.blade.php:11` — `Gesamt`
+- `resources/views/projects/_time_tab.blade.php:13` — `rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs`
+- `resources/views/projects/_time_tab.blade.php:15` — `Dieser Monat`
+- `resources/views/projects/_time_tab.blade.php:17` — `rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs`
+- `resources/views/projects/_time_tab.blade.php:19` — `Meine Stunden`
+- `resources/views/projects/_time_tab.blade.php:24` — `rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/projects/_time_tab.blade.php:25` — `flex items-center justify-between border-b border-base-300 px-4 py-3`
+- `resources/views/projects/_time_tab.blade.php:26` — `Zeiteinträge`
+- `resources/views/projects/_time_tab.blade.php:27` — `create`
+- `resources/views/projects/_time_tab.blade.php:28` — `projects.time-entries.create`
+- `resources/views/projects/_time_tab.blade.php:29` — `btn btn-sm btn-primary`
+- `resources/views/projects/_time_tab.blade.php:29` — `Zeiteintrag`
+- `resources/views/projects/_time_tab.blade.php:33` — `Noch keine Zeiteinträge erfasst.`
+- `resources/views/projects/_time_tab.blade.php:35` — `overflow-x-auto`
+- `resources/views/projects/_time_tab.blade.php:36` — `table table-sm`
+- `resources/views/projects/_time_tab.blade.php:39` — `date`
+- `resources/views/projects/_time_tab.blade.php:39` — `desc`
+- `resources/views/projects/_time_tab.blade.php:39` — `Datum`
+- `resources/views/projects/_time_tab.blade.php:40` — `Mitarbeitende`
+- `resources/views/projects/_time_tab.blade.php:41` — `text-right`
+- `resources/views/projects/_time_tab.blade.php:41` — `number`
+- `resources/views/projects/_time_tab.blade.php:41` — `Zeit`
+- `resources/views/projects/_time_tab.blade.php:42` — `Aufgabe`
+- `resources/views/projects/_time_tab.blade.php:43` — `Beschreibung`
+- `resources/views/projects/_time_tab.blade.php:50` — `whitespace-nowrap text-xs`
+- `resources/views/projects/_time_tab.blade.php:50` — `Y-m-d`
+- `resources/views/projects/_time_tab.blade.php:51` — `text-xs`
+- `resources/views/projects/_time_tab.blade.php:52` — `whitespace-nowrap text-right text-xs font-medium`
+- `resources/views/projects/_time_tab.blade.php:55` — `whitespace-nowrap`
+- `resources/views/projects/_time_tab.blade.php:56` — `update`
+- `resources/views/projects/_time_tab.blade.php:57` — `projects.time-entries.edit`
+- `resources/views/projects/_time_tab.blade.php:58` — `btn btn-xs btn-ghost`
+- `resources/views/projects/_time_tab.blade.php:58` — `Edit`
+- `resources/views/projects/_time_tab.blade.php:60` — `delete`
+- `resources/views/projects/_time_tab.blade.php:61` — `projects.time-entries.destroy`
+- `resources/views/projects/_time_tab.blade.php:63` — `Zeiteintrag löschen`
+- `resources/views/projects/_time_tab.blade.php:64` — `Löschen`
+- `resources/views/projects/_time_tab.blade.php:65` — `inline`
+- `resources/views/projects/_time_tab.blade.php:67` — `btn btn-xs btn-ghost text-error`
+- `resources/views/projects/_time_entry_dialog.blade.php:5` — `projects.time-entries.update`
+- `resources/views/projects/_time_entry_dialog.blade.php:6` — `projects.time-entries.store`
+- `resources/views/projects/_time_entry_dialog.blade.php:8` — `projects.time-entries.edit`
+- `resources/views/projects/_time_entry_dialog.blade.php:9` — `projects.time-entries.create`
+- `resources/views/projects/_time_entry_dialog.blade.php:12` — `minutes`
+- `resources/views/projects/_time_entry_dialog.blade.php:18` — `Zeiteintrag bearbeiten`
+- `resources/views/projects/_time_entry_dialog.blade.php:18` — `Zeiteintrag erfassen`
+- `resources/views/projects/_time_entry_dialog.blade.php:19` — `Zeiterfassung`
+- `resources/views/projects/_time_entry_dialog.blade.php:20` — `timer`
+- `resources/views/projects/_time_entry_dialog.blade.php:21` — `primary`
+- `resources/views/projects/_time_entry_dialog.blade.php:23` — `POST'`
+- `resources/views/projects/_time_entry_dialog.blade.php:24` — `time-entry-form`
+- `resources/views/projects/_time_entry_dialog.blade.php:25` — `data-entry-form`
+- `resources/views/projects/_time_entry_dialog.blade.php:26` — `Speichern`
+- `resources/views/projects/_time_entry_dialog.blade.php:26` — `Erfassen`
+- `resources/views/projects/_time_entry_dialog.blade.php:28` — `hidden`
+- `resources/views/projects/_time_entry_dialog.blade.php:32` — `hidden`
+- `resources/views/projects/_time_entry_dialog.blade.php:32` — `minutes`
+- `resources/views/projects/_time_entry_dialog.blade.php:34` — `Zeit`
+- `resources/views/projects/_time_entry_dialog.blade.php:34` — `timer`
+- `resources/views/projects/_time_entry_dialog.blade.php:34` — `primary`
+- `resources/views/projects/_time_entry_dialog.blade.php:35` — `fieldset`
+- `resources/views/projects/_time_entry_dialog.blade.php:36` — `fieldset-label`
+- `resources/views/projects/_time_entry_dialog.blade.php:36` — `Datum`
+- `resources/views/projects/_time_entry_dialog.blade.php:37` — `date`
+- `resources/views/projects/_time_entry_dialog.blade.php:37` — `date`
+- `resources/views/projects/_time_entry_dialog.blade.php:38` — `input input-bordered w-full`
+- `resources/views/projects/_time_entry_dialog.blade.php:39` — `date`
+- `resources/views/projects/_time_entry_dialog.blade.php:39` — `Y-m-d`
+- `resources/views/projects/_time_entry_dialog.blade.php:39` — `Y-m-d`
+- `resources/views/projects/_time_entry_dialog.blade.php:41` — `date`
+- `resources/views/projects/_time_entry_dialog.blade.php:41` — `text-error text-sm`
+- `resources/views/projects/_time_entry_dialog.blade.php:44` — `fieldset`
+- `resources/views/projects/_time_entry_dialog.blade.php:45` — `fieldset-label`
+- `resources/views/projects/_time_entry_dialog.blade.php:46` — `text`
+- `resources/views/projects/_time_entry_dialog.blade.php:47` — `input input-bordered w-full`
+- `resources/views/projects/_time_entry_dialog.blade.php:52` — `minutes`
+- `resources/views/projects/_time_entry_dialog.blade.php:52` — `text-error text-sm`
+- `resources/views/projects/_time_entry_dialog.blade.php:56` — `Tätigkeit`
+- `resources/views/projects/_time_entry_dialog.blade.php:56` — `description`
+- `resources/views/projects/_time_entry_dialog.blade.php:56` — `info`
+- `resources/views/projects/_time_entry_dialog.blade.php:58` — `fieldset`
+- `resources/views/projects/_time_entry_dialog.blade.php:59` — `fieldset-label`
+- `resources/views/projects/_time_entry_dialog.blade.php:60` — `select select-bordered w-full`
+- `resources/views/projects/_time_entry_dialog.blade.php:61` — `Keine Aufgabe`
+- `resources/views/projects/_time_entry_dialog.blade.php:69` — `fieldset`
+- `resources/views/projects/_time_entry_dialog.blade.php:70` — `fieldset-label`
+- `resources/views/projects/_time_entry_dialog.blade.php:70` — `Beschreibung`
+- `resources/views/projects/_time_entry_dialog.blade.php:71` — `description`
+- `resources/views/projects/_time_entry_dialog.blade.php:71` — `text`
+- `resources/views/projects/_time_entry_dialog.blade.php:72` — `input input-bordered w-full`
+- `resources/views/projects/_time_entry_dialog.blade.php:73` — `description`
+- `resources/views/projects/_time_entry_dialog.blade.php:93` — `input`
+- `resources/views/projects/_time_entry_dialog.blade.php:98` — `time-entry-form`
+- `resources/views/projects/_time_entry_dialog.blade.php:98` — `submit`
+- `resources/views/projects/_diary_tab.blade.php:2` — `rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/projects/_diary_tab.blade.php:3` — `flex items-center justify-between border-b border-base-300 px-4 py-3`
+- `resources/views/projects/_diary_tab.blade.php:4` — `Tagebucheinträge`
+- `resources/views/projects/_diary_tab.blade.php:5` — `project`
+- `resources/views/projects/_diary_tab.blade.php:6` — `btn btn-sm btn-ghost`
+- `resources/views/projects/_diary_tab.blade.php:6` — `Im Tagebuch öffnen`
+- `resources/views/projects/_diary_tab.blade.php:8` — `divide-y divide-base-300`
+- `resources/views/projects/_diary_tab.blade.php:10` — `flex flex-wrap items-start justify-between gap-2 px-4 py-3`
+- `resources/views/projects/_diary_tab.blade.php:11` — `min-w-0 flex-1`
+- `resources/views/projects/_diary_tab.blade.php:16` — `badge badge-xs`
+- `resources/views/projects/_diary_tab.blade.php:19` — `line-clamp-2 text-sm`
+- `resources/views/projects/_diary_tab.blade.php:23` — `Keine Einträge zugeordnet.`
+- `resources/views/projects/_tasks_tab.blade.php:9` — `status`
+- `resources/views/projects/_tasks_tab.blade.php:12` — `none`
+- `resources/views/projects/_tasks_tab.blade.php:21` — `flex flex-col gap-3`
+- `resources/views/projects/_tasks_tab.blade.php:23` — `flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-100 p-3 shadow-xs`
+- `resources/views/projects/_tasks_tab.blade.php:24` — `flex flex-wrap gap-2`
+- `resources/views/projects/_tasks_tab.blade.php:26` — `join`
+- `resources/views/projects/_tasks_tab.blade.php:28` — `Alle`
+- `resources/views/projects/_tasks_tab.blade.php:28` — `Offen`
+- `resources/views/projects/_tasks_tab.blade.php:28` — `In Arbeit`
+- `resources/views/projects/_tasks_tab.blade.php:28` — `Erledigt`
+- `resources/views/projects/_tasks_tab.blade.php:32` — `btn-primary`
+- `resources/views/projects/_tasks_tab.blade.php:32` — `btn-ghost`
+- `resources/views/projects/_tasks_tab.blade.php:37` — `select select-xs select-bordered`
+- `resources/views/projects/_tasks_tab.blade.php:39` — `selected`
+- `resources/views/projects/_tasks_tab.blade.php:39` — `Alle Milestones`
+- `resources/views/projects/_tasks_tab.blade.php:40` — `none', `
+- `resources/views/projects/_tasks_tab.blade.php:41` — `none' ? 'selected`
+- `resources/views/projects/_tasks_tab.blade.php:41` — `Ohne Milestone`
+- `resources/views/projects/_tasks_tab.blade.php:44` — `selected`
+- `resources/views/projects/_tasks_tab.blade.php:49` — `create`
+- `resources/views/projects/_tasks_tab.blade.php:51` — `btn btn-sm btn-primary`
+- `resources/views/projects/_tasks_tab.blade.php:51` — `Aufgabe`
+- `resources/views/projects/_tasks_tab.blade.php:57` — `Keine Aufgaben vorhanden.`
+- `resources/views/projects/_tasks_tab.blade.php:64` — `rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/projects/_tasks_tab.blade.php:68` — `bg-base-300`
+- `resources/views/projects/_tasks_tab.blade.php:73` — `font-normal normal-case opacity-60`
+- `resources/views/projects/_tasks_tab.blade.php:76` — `Ohne Milestone`
+- `resources/views/projects/_tasks_tab.blade.php:79` — `divide-y divide-base-300`
+- `resources/views/projects/_tasks_tab.blade.php:80` — `position`
+- `resources/views/projects/_tasks_tab.blade.php:81` — `task`
+- `resources/views/projects/_tasks_tab.blade.php:81` — `indent`
+- `resources/views/projects/_tasks_tab.blade.php:82` — `position`
+- `resources/views/projects/_tasks_tab.blade.php:83` — `task`
+- `resources/views/projects/_tasks_tab.blade.php:83` — `indent`
+- `resources/views/projects/_tasks_tab.blade.php:85` — `create`
+- `resources/views/projects/_tasks_tab.blade.php:87` — `px-4 py-1.5 pl-12`
+- `resources/views/projects/_tasks_tab.blade.php:88` — `project`
+- `resources/views/projects/_tasks_tab.blade.php:91` — `Sub-Aufgabe`
+- `resources/views/projects/_timesheets_tab.blade.php:2` — `flex flex-col gap-3`
+- `resources/views/projects/_timesheets_tab.blade.php:3` — `rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/projects/_timesheets_tab.blade.php:4` — `flex items-center justify-between border-b border-base-300 px-4 py-3`
+- `resources/views/projects/_timesheets_tab.blade.php:5` — `Stundenzettel`
+- `resources/views/projects/_timesheets_tab.blade.php:6` — `create`
+- `resources/views/projects/_timesheets_tab.blade.php:7` — `btn btn-sm btn-primary`
+- `resources/views/projects/_timesheets_tab.blade.php:8` — `Stundenzettel`
+- `resources/views/projects/_timesheets_tab.blade.php:14` — `Noch keine Stundenzettel erfasst.`
+- `resources/views/projects/_timesheets_tab.blade.php:16` — `overflow-x-auto`
+- `resources/views/projects/_timesheets_tab.blade.php:17` — `table table-sm`
+- `resources/views/projects/_timesheets_tab.blade.php:20` — `date`
+- `resources/views/projects/_timesheets_tab.blade.php:20` — `desc`
+- `resources/views/projects/_timesheets_tab.blade.php:20` — `Datum`
+- `resources/views/projects/_timesheets_tab.blade.php:21` — `Mitarbeiter`
+- `resources/views/projects/_timesheets_tab.blade.php:22` — `text-right`
+- `resources/views/projects/_timesheets_tab.blade.php:22` — `duration`
+- `resources/views/projects/_timesheets_tab.blade.php:22` — `Arbeit`
+- `resources/views/projects/_timesheets_tab.blade.php:23` — `text-right`
+- `resources/views/projects/_timesheets_tab.blade.php:23` — `number`
+- `resources/views/projects/_timesheets_tab.blade.php:23` — `Material netto`
+- `resources/views/projects/_timesheets_tab.blade.php:24` — `Status`
+- `resources/views/projects/_timesheets_tab.blade.php:35` — `text-error`
+- `resources/views/projects/_timesheets_tab.blade.php:36` — `Y-m-d`
+- `resources/views/projects/_timesheets_tab.blade.php:38` — `text-right tabular-nums`
+- `resources/views/projects/_timesheets_tab.blade.php:39` — `text-right tabular-nums`
+- `resources/views/projects/_timesheets_tab.blade.php:41` — `text-right`
+- `resources/views/projects/_timesheets_tab.blade.php:42` — `btn btn-xs`
+- `resources/views/projects/_timesheets_tab.blade.php:42` — `Öffnen`
+- `resources/views/projects/index.blade.php:2` — `title`
+- `resources/views/projects/index.blade.php:2` — `Projekte`
+- `resources/views/projects/index.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/projects/index.blade.php:3` — `nav-title`
+- `resources/views/projects/index.blade.php:3` — `Projekte`
+- `resources/views/projects/index.blade.php:5` — `content`
+- `resources/views/projects/index.blade.php:8` — `Alle`
+- `resources/views/projects/index.blade.php:9` — `Aktiv`
+- `resources/views/projects/index.blade.php:10` — `Pausiert`
+- `resources/views/projects/index.blade.php:11` — `Archiviert`
+- `resources/views/projects/index.blade.php:14` — `flex h-full min-h-0 w-full flex-col gap-4 overflow-auto`
+- `resources/views/projects/index.blade.php:16` — `flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/projects/index.blade.php:17` — `join`
+- `resources/views/projects/index.blade.php:19` — `status`
+- `resources/views/projects/index.blade.php:20` — `btn-primary`
+- `resources/views/projects/index.blade.php:20` — `btn-ghost`
+- `resources/views/projects/index.blade.php:23` — `flex flex-wrap items-center gap-2`
+- `resources/views/projects/index.blade.php:24` — `create`
+- `resources/views/projects/index.blade.php:25` — `btn btn-sm btn-primary gap-1`
+- `resources/views/projects/index.blade.php:27` — `Projekt`
+- `resources/views/projects/index.blade.php:35` — `Noch keine Projekte angelegt.`
+- `resources/views/projects/index.blade.php:42` — `status`
+- `resources/views/projects/index.blade.php:53` — `flex items-start justify-between gap-2`
+- `resources/views/projects/index.blade.php:54` — `flex items-center gap-2 min-w-0`
+- `resources/views/projects/index.blade.php:55` — `inline-block h-3 w-3 shrink-0 rounded-full`
+- `resources/views/projects/index.blade.php:68` — `Sub-Projekt von`
+- `resources/views/projects/index.blade.php:68` — `font-medium`
+- `resources/views/projects/index.blade.php:72` — `grid grid-cols-4 gap-2 text-center text-xs`
+- `resources/views/projects/index.blade.php:74` — `font-semibold`
+- `resources/views/projects/index.blade.php:75` — `Offen`
+- `resources/views/projects/index.blade.php:78` — `font-semibold text-error`
+- `resources/views/projects/index.blade.php:79` — `Problem`
+- `resources/views/projects/index.blade.php:82` — `font-semibold`
+- `resources/views/projects/index.blade.php:83` — `Bestätigt`
+- `resources/views/projects/index.blade.php:86` — `font-semibold`
+- `resources/views/projects/index.blade.php:87` — `Erledigt`
+- `resources/views/projects/index.blade.php:97` — `keine Aktivität`
+- `resources/views/projects/_form_dialog.blade.php:6` — `name`
+- `resources/views/projects/_form_dialog.blade.php:6` — `id', 'name`
+- `resources/views/projects/_form_dialog.blade.php:15` — `name`
+- `resources/views/projects/_form_dialog.blade.php:16` — `id', 'name', `
+- `resources/views/projects/_form_dialog.blade.php:21` — `Projekt bearbeiten`
+- `resources/views/projects/_form_dialog.blade.php:21` — `Neues Projekt`
+- `resources/views/projects/_form_dialog.blade.php:22` — `Projekt`
+- `resources/views/projects/_form_dialog.blade.php:23` — `folder`
+- `resources/views/projects/_form_dialog.blade.php:25` — `ghost'`
+- `resources/views/projects/_form_dialog.blade.php:26` — `primary`
+- `resources/views/projects/_form_dialog.blade.php:28` — `POST'`
+- `resources/views/projects/_form_dialog.blade.php:29` — `data-entry-form`
+- `resources/views/projects/_form_dialog.blade.php:30` — `Speichern`
+- `resources/views/projects/_form_dialog.blade.php:30` — `Anlegen`
+- `resources/views/projects/_form_dialog.blade.php:38` — `space-y-4`
+- `resources/views/projects/_form_dialog.blade.php:40` — `hidden`
+- `resources/views/projects/_form_dialog.blade.php:43` — `Stammdaten`
+- `resources/views/projects/_form_dialog.blade.php:43` — `folder`
+- `resources/views/projects/_form_dialog.blade.php:43` — `primary`
+- `resources/views/projects/_form_dialog.blade.php:44` — `fieldset`
+- `resources/views/projects/_form_dialog.blade.php:45` — `fieldset-label`
+- `resources/views/projects/_form_dialog.blade.php:45` — `Name`
+- `resources/views/projects/_form_dialog.blade.php:46` — `name`
+- `resources/views/projects/_form_dialog.blade.php:46` — `text`
+- `resources/views/projects/_form_dialog.blade.php:47` — `input input-bordered w-full`
+- `resources/views/projects/_form_dialog.blade.php:48` — `name`
+- `resources/views/projects/_form_dialog.blade.php:49` — `name`
+- `resources/views/projects/_form_dialog.blade.php:49` — `text-error text-sm`
+- `resources/views/projects/_form_dialog.blade.php:52` — `fieldset`
+- `resources/views/projects/_form_dialog.blade.php:53` — `fieldset-label`
+- `resources/views/projects/_form_dialog.blade.php:53` — `Beschreibung`
+- `resources/views/projects/_form_dialog.blade.php:54` — `description`
+- `resources/views/projects/_form_dialog.blade.php:55` — `textarea textarea-bordered w-full`
+- `resources/views/projects/_form_dialog.blade.php:55` — `description`
+- `resources/views/projects/_form_dialog.blade.php:56` — `description`
+- `resources/views/projects/_form_dialog.blade.php:56` — `text-error text-sm`
+- `resources/views/projects/_form_dialog.blade.php:60` — `Zuordnung`
+- `resources/views/projects/_form_dialog.blade.php:60` — `link`
+- `resources/views/projects/_form_dialog.blade.php:60` — `info`
+- `resources/views/projects/_form_dialog.blade.php:61` — `fieldset`
+- `resources/views/projects/_form_dialog.blade.php:62` — `fieldset-label`
+- `resources/views/projects/_form_dialog.blade.php:62` — `Übergeordnetes Projekt`
+- `resources/views/projects/_form_dialog.blade.php:63` — `select select-bordered w-full`
+- `resources/views/projects/_form_dialog.blade.php:63` — `parentId`
+- `resources/views/projects/_form_dialog.blade.php:71` — `Sub-Projekte erben Customer und Abrechnung vom Parent.`
+- `resources/views/projects/_form_dialog.blade.php:72` — `text-error text-sm`
+- `resources/views/projects/_form_dialog.blade.php:75` — `fieldset`
+- `resources/views/projects/_form_dialog.blade.php:76` — `fieldset-label`
+- `resources/views/projects/_form_dialog.blade.php:76` — `Kunde`
+- `resources/views/projects/_form_dialog.blade.php:77` — `select select-bordered w-full`
+- `resources/views/projects/_form_dialog.blade.php:77` — `customerSelect`
+- `resources/views/projects/_form_dialog.blade.php:77` — `hasParent`
+- `resources/views/projects/_form_dialog.blade.php:85` — `text-error text-sm`
+- `resources/views/projects/_form_dialog.blade.php:87` — `hasParent`
+- `resources/views/projects/_form_dialog.blade.php:88` — `Customer wird vom Parent-Projekt übernommen.`
+- `resources/views/projects/_form_dialog.blade.php:92` — `event`
+- `resources/views/projects/_form_dialog.blade.php:92` — `success`
+- `resources/views/projects/_form_dialog.blade.php:93` — `fieldset`
+- `resources/views/projects/_form_dialog.blade.php:94` — `fieldset-label`
+- `resources/views/projects/_form_dialog.blade.php:94` — `Status`
+- `resources/views/projects/_form_dialog.blade.php:95` — `status`
+- `resources/views/projects/_form_dialog.blade.php:95` — `select select-bordered w-full`
+- `resources/views/projects/_form_dialog.blade.php:97` — `status`
+- `resources/views/projects/_form_dialog.blade.php:97` — `active`
+- `resources/views/projects/_form_dialog.blade.php:98` — `active`
+- `resources/views/projects/_form_dialog.blade.php:98` — `Aktiv`
+- `resources/views/projects/_form_dialog.blade.php:98` — `paused`
+- `resources/views/projects/_form_dialog.blade.php:98` — `Pausiert`
+- `resources/views/projects/_form_dialog.blade.php:98` — `archived`
+- `resources/views/projects/_form_dialog.blade.php:98` — `Archiviert`
+- `resources/views/projects/_form_dialog.blade.php:104` — `fieldset`
+- `resources/views/projects/_form_dialog.blade.php:105` — `fieldset-label`
+- `resources/views/projects/_form_dialog.blade.php:105` — `Farbe`
+- `resources/views/projects/_form_dialog.blade.php:106` — `color`
+- `resources/views/projects/_form_dialog.blade.php:106` — `color`
+- `resources/views/projects/_form_dialog.blade.php:107` — `color`
+- `resources/views/projects/_form_dialog.blade.php:108` — `input input-bordered h-10 w-20 p-1`
+- `resources/views/projects/_form_dialog.blade.php:112` — `split`
+- `resources/views/projects/_form_dialog.blade.php:113` — `Y-m-d`
+- `resources/views/projects/_form_dialog.blade.php:114` — `Y-m-d`
+- `resources/views/projects/_form_dialog.blade.php:117` — `Start`
+- `resources/views/projects/_form_dialog.blade.php:118` — `Ende`
+- `resources/views/projects/_form_dialog.blade.php:121` — `contents`
+- `resources/views/projects/_form_dialog.blade.php:128` — `Abrechnung`
+- `resources/views/projects/_form_dialog.blade.php:128` — `payments`
+- `resources/views/projects/_form_dialog.blade.php:128` — `warning`
+- `resources/views/projects/_form_dialog.blade.php:129` — `fieldset`
+- `resources/views/projects/_form_dialog.blade.php:130` — `label cursor-pointer justify-start gap-2`
+- `resources/views/projects/_form_dialog.blade.php:131` — `hidden`
+- `resources/views/projects/_form_dialog.blade.php:132` — `checkbox`
+- `resources/views/projects/_form_dialog.blade.php:132` — `checkbox checkbox-sm`
+- `resources/views/projects/_form_dialog.blade.php:134` — `label-text`
+- `resources/views/projects/_form_dialog.blade.php:134` — `Standardprojekt für diesen Kunden`
+- `resources/views/projects/show.blade.php:2` — `title`
+- `resources/views/projects/show.blade.php:2` — `Projekt`
+- `resources/views/projects/show.blade.php:3` — `nav-title`
+- `resources/views/projects/show.blade.php:5` — `content`
+- `resources/views/projects/show.blade.php:6` — `flex h-full min-h-0 w-full flex-col gap-4 overflow-auto`
+- `resources/views/projects/show.blade.php:9` — `flex flex-wrap items-start justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/projects/show.blade.php:10` — `flex min-w-0 items-start gap-3`
+- `resources/views/projects/show.blade.php:11` — `mt-1 inline-block h-4 w-4 shrink-0 rounded-full`
+- `resources/views/projects/show.blade.php:12` — `min-w-0`
+- `resources/views/projects/show.blade.php:13` — `flex flex-wrap items-center gap-2`
+- `resources/views/projects/show.blade.php:22` — `Start`
+- `resources/views/projects/show.blade.php:25` — `Ende`
+- `resources/views/projects/show.blade.php:30` — `flex flex-wrap gap-2`
+- `resources/views/projects/show.blade.php:31` — `update`
+- `resources/views/projects/show.blade.php:32` — `btn btn-sm btn-ghost`
+- `resources/views/projects/show.blade.php:32` — `Bearbeiten`
+- `resources/views/projects/show.blade.php:34` — `delete`
+- `resources/views/projects/show.blade.php:35` — `inline`
+- `resources/views/projects/show.blade.php:37` — `Projekt löschen`
+- `resources/views/projects/show.blade.php:38` — `Verknüpfungen zu Einträgen werden gelöst.`
+- `resources/views/projects/show.blade.php:39` — `Löschen`
+- `resources/views/projects/show.blade.php:41` — `btn btn-sm btn-ghost text-error`
+- `resources/views/projects/show.blade.php:41` — `Löschen`
+- `resources/views/projects/show.blade.php:48` — `flex min-h-0 flex-col gap-4`
+- `resources/views/projects/show.blade.php:49` — `tablist`
+- `resources/views/projects/show.blade.php:50` — `overview`
+- `resources/views/projects/show.blade.php:50` — `tab-active`
+- `resources/views/projects/show.blade.php:50` — `overview`
+- `resources/views/projects/show.blade.php:51` — `Übersicht`
+- `resources/views/projects/show.blade.php:53` — `tasks`
+- `resources/views/projects/show.blade.php:53` — `tab-active`
+- `resources/views/projects/show.blade.php:53` — `tasks`
+- `resources/views/projects/show.blade.php:54` — `Aufgaben`
+- `resources/views/projects/show.blade.php:55` — `open`
+- `resources/views/projects/show.blade.php:57` — `badge badge-xs badge-primary ml-1`
+- `resources/views/projects/show.blade.php:60` — `time`
+- `resources/views/projects/show.blade.php:60` — `tab-active`
+- `resources/views/projects/show.blade.php:60` — `time`
+- `resources/views/projects/show.blade.php:61` — `Zeiterfassung`
+- `resources/views/projects/show.blade.php:63` — `timesheets`
+- `resources/views/projects/show.blade.php:63` — `tab-active`
+- `resources/views/projects/show.blade.php:63` — `timesheets`
+- `resources/views/projects/show.blade.php:64` — `Stundenzettel`
+- `resources/views/projects/show.blade.php:66` — `diary`
+- `resources/views/projects/show.blade.php:66` — `tab-active`
+- `resources/views/projects/show.blade.php:66` — `diary`
+- `resources/views/projects/show.blade.php:67` — `Tagebuch`
+- `resources/views/projects/show.blade.php:70` — `billing`
+- `resources/views/projects/show.blade.php:70` — `tab-active`
+- `resources/views/projects/show.blade.php:70` — `billing`
+- `resources/views/projects/show.blade.php:71` — `Abrechnung`
+- `resources/views/projects/show.blade.php:76` — `overview'`
+- `resources/views/projects/show.blade.php:79` — `tasks'`
+- `resources/views/projects/show.blade.php:82` — `time'`
+- `resources/views/projects/show.blade.php:85` — `timesheets'`
+- `resources/views/projects/show.blade.php:88` — `diary'`
+- `resources/views/projects/show.blade.php:92` — `billing'`
+- `resources/views/projects/show.blade.php:101` — `overview', 'tasks', 'time', 'timesheets', 'diary', 'billing`
+- `resources/views/projects/show.blade.php:104` — `overview`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:3` — `Neue Abrechnungs-Regel`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:6` — `primary`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:7` — `projects.billing-rules.store`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:9` — `data-entry-form`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:10` — `Regel speichern`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:12` — `Zuordnung`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:12` — `rule`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:12` — `primary`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:13` — `fieldset`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:14` — `fieldset-label`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:14` — `Tätigkeitsart`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:15` — `select select-bordered w-full`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:22` — `fieldset`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:23` — `fieldset-label`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:23` — `Item-Typ`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:24` — `select select-bordered w-full`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:31` — `fieldset-label`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:31` — `Lexoffice-Artikel`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:32` — `select select-bordered w-full`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:48` — `payments`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:48` — `info`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:49` — `fieldset`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:50` — `fieldset-label`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:50` — `Einheit`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:51` — `text`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:51` — `Stunde`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:51` — `input input-bordered w-full`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:53` — `fieldset`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:54` — `fieldset-label`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:55` — `number`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:55` — `input input-bordered w-full`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:57` — `fieldset`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:58` — `fieldset-label`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:59` — `number`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:59` — `input input-bordered w-full`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:61` — `fieldset`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:62` — `fieldset-label`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:62` — `Priorität`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:63` — `number`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:63` — `priority`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:63` — `input input-bordered w-full`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:68` — `alert alert-error text-sm`
+- `resources/views/projects/_billing_rule_form_dialog.blade.php:69` — `list-disc pl-5`
+- `resources/views/projects/_task_dialog.blade.php:12` — `Offen`
+- `resources/views/projects/_task_dialog.blade.php:12` — `In Arbeit`
+- `resources/views/projects/_task_dialog.blade.php:12` — `Erledigt`
+- `resources/views/projects/_task_dialog.blade.php:13` — `Niedrig`
+- `resources/views/projects/_task_dialog.blade.php:13` — `Mittel`
+- `resources/views/projects/_task_dialog.blade.php:13` — `Hoch`
+- `resources/views/projects/_task_dialog.blade.php:13` — `Dringend`
+- `resources/views/projects/_task_dialog.blade.php:17` — `Aufgabe bearbeiten`
+- `resources/views/projects/_task_dialog.blade.php:17` — `Neue Aufgabe`
+- `resources/views/projects/_task_dialog.blade.php:18` — `Aufgabe`
+- `resources/views/projects/_task_dialog.blade.php:21` — `ghost'`
+- `resources/views/projects/_task_dialog.blade.php:22` — `primary`
+- `resources/views/projects/_task_dialog.blade.php:24` — `POST'`
+- `resources/views/projects/_task_dialog.blade.php:25` — `data-entry-form`
+- `resources/views/projects/_task_dialog.blade.php:26` — `Speichern`
+- `resources/views/projects/_task_dialog.blade.php:26` — `Anlegen`
+- `resources/views/projects/_task_dialog.blade.php:28` — `hidden`
+- `resources/views/projects/_task_dialog.blade.php:31` — `Aufgabe`
+- `resources/views/projects/_task_dialog.blade.php:31` — `primary`
+- `resources/views/projects/_task_dialog.blade.php:32` — `fieldset`
+- `resources/views/projects/_task_dialog.blade.php:33` — `fieldset-label`
+- `resources/views/projects/_task_dialog.blade.php:33` — `Titel`
+- `resources/views/projects/_task_dialog.blade.php:34` — `title`
+- `resources/views/projects/_task_dialog.blade.php:34` — `text`
+- `resources/views/projects/_task_dialog.blade.php:35` — `input input-bordered w-full`
+- `resources/views/projects/_task_dialog.blade.php:36` — `title`
+- `resources/views/projects/_task_dialog.blade.php:37` — `title`
+- `resources/views/projects/_task_dialog.blade.php:37` — `text-error text-sm`
+- `resources/views/projects/_task_dialog.blade.php:40` — `fieldset`
+- `resources/views/projects/_task_dialog.blade.php:41` — `fieldset-label`
+- `resources/views/projects/_task_dialog.blade.php:41` — `Beschreibung`
+- `resources/views/projects/_task_dialog.blade.php:42` — `description`
+- `resources/views/projects/_task_dialog.blade.php:42` — `textarea textarea-bordered w-full`
+- `resources/views/projects/_task_dialog.blade.php:42` — `description`
+- `resources/views/projects/_task_dialog.blade.php:46` — `traffic`
+- `resources/views/projects/_task_dialog.blade.php:46` — `info`
+- `resources/views/projects/_task_dialog.blade.php:47` — `fieldset`
+- `resources/views/projects/_task_dialog.blade.php:48` — `fieldset-label`
+- `resources/views/projects/_task_dialog.blade.php:48` — `Status`
+- `resources/views/projects/_task_dialog.blade.php:49` — `status`
+- `resources/views/projects/_task_dialog.blade.php:49` — `select select-bordered w-full`
+- `resources/views/projects/_task_dialog.blade.php:51` — `status`
+- `resources/views/projects/_task_dialog.blade.php:56` — `fieldset`
+- `resources/views/projects/_task_dialog.blade.php:57` — `fieldset-label`
+- `resources/views/projects/_task_dialog.blade.php:57` — `Priorität`
+- `resources/views/projects/_task_dialog.blade.php:58` — `priority`
+- `resources/views/projects/_task_dialog.blade.php:58` — `select select-bordered w-full`
+- `resources/views/projects/_task_dialog.blade.php:60` — `priority`
+- `resources/views/projects/_task_dialog.blade.php:65` — `fieldset`
+- `resources/views/projects/_task_dialog.blade.php:66` — `fieldset-label`
+- `resources/views/projects/_task_dialog.blade.php:66` — `Fälligkeitsdatum`
+- `resources/views/projects/_task_dialog.blade.php:67` — `date`
+- `resources/views/projects/_task_dialog.blade.php:68` — `input input-bordered w-full`
+- `resources/views/projects/_task_dialog.blade.php:69` — `Y-m-d`
+- `resources/views/projects/_task_dialog.blade.php:72` — `fieldset`
+- `resources/views/projects/_task_dialog.blade.php:73` — `fieldset-label`
+- `resources/views/projects/_task_dialog.blade.php:73` — `Zuweisung`
+- `resources/views/projects/_task_dialog.blade.php:74` — `select select-bordered w-full`
+- `resources/views/projects/_task_dialog.blade.php:75` — `Nicht zugewiesen`
+- `resources/views/projects/_task_dialog.blade.php:84` — `Verknüpfung`
+- `resources/views/projects/_task_dialog.blade.php:84` — `link`
+- `resources/views/projects/_task_dialog.blade.php:84` — `ghost`
+- `resources/views/projects/_task_dialog.blade.php:86` — `fieldset`
+- `resources/views/projects/_task_dialog.blade.php:87` — `fieldset-label`
+- `resources/views/projects/_task_dialog.blade.php:87` — `Milestone`
+- `resources/views/projects/_task_dialog.blade.php:88` — `select select-bordered w-full`
+- `resources/views/projects/_task_dialog.blade.php:89` — `Kein Milestone`
+- `resources/views/projects/_task_dialog.blade.php:98` — `fieldset`
+- `resources/views/projects/_task_dialog.blade.php:99` — `fieldset-label`
+- `resources/views/projects/_task_dialog.blade.php:99` — `Übergeordnete Aufgabe`
+- `resources/views/projects/_task_dialog.blade.php:100` — `select select-bordered w-full`
+- `resources/views/projects/_task_dialog.blade.php:101` — `Keine`
+- `resources/views/time-entries/_admin_form_dialog.blade.php:6` — `admin-time-entries.update`
+- `resources/views/time-entries/_admin_form_dialog.blade.php:7` — `admin-time-entries.store`
+- `resources/views/time-entries/_admin_form_dialog.blade.php:10` — `Verwaltungszeit bearbeiten`
+- `resources/views/time-entries/_admin_form_dialog.blade.php:10` — `Verwaltungszeit erfassen`
+- `resources/views/time-entries/_admin_form_dialog.blade.php:13` — `primary`
+- `resources/views/time-entries/_admin_form_dialog.blade.php:15` — `POST'`
+- `resources/views/time-entries/_admin_form_dialog.blade.php:16` — `data-entry-form`
+- `resources/views/time-entries/_admin_form_dialog.blade.php:17` — `Speichern`
+- `resources/views/time-entries/_admin_form_dialog.blade.php:17` — `Erfassen`
+- `resources/views/time-entries/_admin_form_dialog.blade.php:23` — `admin-time-entries.destroy`
+- `resources/views/time-entries/_admin_form_dialog.blade.php:25` — `Wirklich löschen?`
+- `resources/views/time-entries/_admin_form_dialog.blade.php:26` — `Löschen`
+- `resources/views/time-entries/_admin_form_dialog.blade.php:28` — `submit`
+- `resources/views/time-entries/_admin_form_dialog.blade.php:28` — `btn btn-ghost btn-sm text-error`
+- `resources/views/time-entries/_admin_form_dialog.blade.php:28` — `Löschen`
+- `resources/views/time-entries/_admin_form_body.blade.php:6` — `Verwaltung`
+- `resources/views/time-entries/_admin_form_body.blade.php:7` — `Besprechung`
+- `resources/views/time-entries/_admin_form_body.blade.php:8` — `Schulung`
+- `resources/views/time-entries/_admin_form_body.blade.php:9` — `Intern`
+- `resources/views/time-entries/_admin_form_body.blade.php:11` — `Pause`
+- `resources/views/time-entries/_admin_form_body.blade.php:12` — `Sonstiges`
+- `resources/views/time-entries/_admin_form_body.blade.php:16` — `Eckdaten`
+- `resources/views/time-entries/_admin_form_body.blade.php:16` — `primary`
+- `resources/views/time-entries/_admin_form_body.blade.php:17` — `fieldset`
+- `resources/views/time-entries/_admin_form_body.blade.php:18` — `fieldset-label`
+- `resources/views/time-entries/_admin_form_body.blade.php:18` — `Datum`
+- `resources/views/time-entries/_admin_form_body.blade.php:19` — `date`
+- `resources/views/time-entries/_admin_form_body.blade.php:19` — `date`
+- `resources/views/time-entries/_admin_form_body.blade.php:19` — `date`
+- `resources/views/time-entries/_admin_form_body.blade.php:19` — `input input-bordered w-full`
+- `resources/views/time-entries/_admin_form_body.blade.php:21` — `fieldset`
+- `resources/views/time-entries/_admin_form_body.blade.php:22` — `fieldset-label`
+- `resources/views/time-entries/_admin_form_body.blade.php:23` — `number`
+- `resources/views/time-entries/_admin_form_body.blade.php:23` — `minutes`
+- `resources/views/time-entries/_admin_form_body.blade.php:23` — `minutes`
+- `resources/views/time-entries/_admin_form_body.blade.php:23` — `input input-bordered w-full`
+- `resources/views/time-entries/_admin_form_body.blade.php:26` — `fieldset-label`
+- `resources/views/time-entries/_admin_form_body.blade.php:26` — `Tätigkeitstyp`
+- `resources/views/time-entries/_admin_form_body.blade.php:27` — `select select-bordered w-full`
+- `resources/views/time-entries/_admin_form_body.blade.php:29` — `admin`
+- `resources/views/time-entries/_admin_form_body.blade.php:34` — `fieldset-label`
+- `resources/views/time-entries/_admin_form_body.blade.php:35` — `select select-bordered w-full`
+- `resources/views/time-entries/_admin_form_body.blade.php:36` — `keine Kategorie`
+- `resources/views/time-entries/_admin_form_body.blade.php:46` — `schedule`
+- `resources/views/time-entries/_admin_form_body.blade.php:46` — `info`
+- `resources/views/time-entries/_admin_form_body.blade.php:47` — `fieldset`
+- `resources/views/time-entries/_admin_form_body.blade.php:48` — `fieldset-label`
+- `resources/views/time-entries/_admin_form_body.blade.php:48` — `Beginn`
+- `resources/views/time-entries/_admin_form_body.blade.php:49` — `datetime-local`
+- `resources/views/time-entries/_admin_form_body.blade.php:49` — `input input-bordered w-full`
+- `resources/views/time-entries/_admin_form_body.blade.php:51` — `fieldset`
+- `resources/views/time-entries/_admin_form_body.blade.php:52` — `fieldset-label`
+- `resources/views/time-entries/_admin_form_body.blade.php:52` — `Ende`
+- `resources/views/time-entries/_admin_form_body.blade.php:53` — `datetime-local`
+- `resources/views/time-entries/_admin_form_body.blade.php:53` — `input input-bordered w-full`
+- `resources/views/time-entries/_admin_form_body.blade.php:56` — `hidden`
+- `resources/views/time-entries/_admin_form_body.blade.php:58` — `time`
+- `resources/views/time-entries/_admin_form_body.blade.php:63` — `Beschreibung`
+- `resources/views/time-entries/_admin_form_body.blade.php:63` — `description`
+- `resources/views/time-entries/_admin_form_body.blade.php:63` — `ghost`
+- `resources/views/time-entries/_admin_form_body.blade.php:64` — `fieldset`
+- `resources/views/time-entries/_admin_form_body.blade.php:65` — `description`
+- `resources/views/time-entries/_admin_form_body.blade.php:65` — `textarea textarea-bordered w-full`
+- `resources/views/time-entries/_admin_form_body.blade.php:65` — `description`
+- `resources/views/time-entries/_admin_form_body.blade.php:70` — `alert alert-error text-sm`
+- `resources/views/time-entries/_admin_form_body.blade.php:71` — `list-disc pl-5`
+- `resources/views/invoices/index.blade.php:3` — `title`
+- `resources/views/invoices/index.blade.php:3` — `Rechnungen`
+- `resources/views/invoices/index.blade.php:4` — `nav-title`
+- `resources/views/invoices/index.blade.php:4` — `Rechnungen`
+- `resources/views/invoices/index.blade.php:6` — `content`
+- `resources/views/invoices/index.blade.php:7` — `space-y-4`
+- `resources/views/invoices/index.blade.php:8` — `flex justify-between items-center`
+- `resources/views/invoices/index.blade.php:9` — `text-2xl font-bold`
+- `resources/views/invoices/index.blade.php:9` — `Rechnungen`
+- `resources/views/invoices/index.blade.php:10` — `btn btn-primary btn-sm`
+- `resources/views/invoices/index.blade.php:11` — `Neue Rechnung`
+- `resources/views/invoices/index.blade.php:15` — `status`
+- `resources/views/invoices/index.blade.php:16` — `alert alert-success`
+- `resources/views/invoices/index.blade.php:16` — `status`
+- `resources/views/invoices/index.blade.php:19` — `overflow-x-auto bg-base-100 rounded-box shadow`
+- `resources/views/invoices/index.blade.php:20` — `table table-zebra table-sm`
+- `resources/views/invoices/index.blade.php:23` — `Nummer`
+- `resources/views/invoices/index.blade.php:24` — `Kunde`
+- `resources/views/invoices/index.blade.php:25` — `Datum`
+- `resources/views/invoices/index.blade.php:26` — `Status`
+- `resources/views/invoices/index.blade.php:27` — `text-right`
+- `resources/views/invoices/index.blade.php:27` — `Summe`
+- `resources/views/invoices/index.blade.php:34` — `link`
+- `resources/views/invoices/index.blade.php:37` — `badge badge-outline`
+- `resources/views/invoices/index.blade.php:38` — `text-right`
+- `resources/views/invoices/index.blade.php:39` — `btn btn-xs`
+- `resources/views/invoices/index.blade.php:39` — `Anzeigen`
+- `resources/views/invoices/index.blade.php:42` — `text-center opacity-60`
+- `resources/views/invoices/index.blade.php:42` — `Keine Rechnungen vorhanden.`
+- `resources/views/invoices/_form_body.blade.php:3` — `Filter`
+- `resources/views/invoices/_form_body.blade.php:3` — `primary`
+- `resources/views/invoices/_form_body.blade.php:5` — `fieldset-label`
+- `resources/views/invoices/_form_body.blade.php:5` — `Kunde`
+- `resources/views/invoices/_form_body.blade.php:6` — `select select-bordered w-full`
+- `resources/views/invoices/_form_body.blade.php:14` — `fieldset-label`
+- `resources/views/invoices/_form_body.blade.php:15` — `select select-bordered w-full`
+- `resources/views/invoices/_form_body.blade.php:16` — `alle Projekte des Kunden`
+- `resources/views/invoices/_form_body.blade.php:22` — `fieldset`
+- `resources/views/invoices/_form_body.blade.php:23` — `fieldset-label`
+- `resources/views/invoices/_form_body.blade.php:24` — `date`
+- `resources/views/invoices/_form_body.blade.php:24` — `from`
+- `resources/views/invoices/_form_body.blade.php:24` — `from`
+- `resources/views/invoices/_form_body.blade.php:24` — `input input-bordered w-full`
+- `resources/views/invoices/_form_body.blade.php:26` — `fieldset`
+- `resources/views/invoices/_form_body.blade.php:27` — `fieldset-label`
+- `resources/views/invoices/_form_body.blade.php:28` — `date`
+- `resources/views/invoices/_form_body.blade.php:28` — `input input-bordered w-full`
+- `resources/views/invoices/_form_body.blade.php:33` — `alert alert-error text-sm`
+- `resources/views/invoices/_form_body.blade.php:34` — `list-disc pl-5`
+- `resources/views/invoices/_form_dialog.blade.php:3` — `Rechnung aus Zeiteinträgen erstellen`
+- `resources/views/invoices/_form_dialog.blade.php:4` — `Neue Rechnung`
+- `resources/views/invoices/_form_dialog.blade.php:6` — `primary`
+- `resources/views/invoices/_form_dialog.blade.php:9` — `data-entry-form`
+- `resources/views/invoices/_form_dialog.blade.php:10` — `Entwurf erstellen`
+- `resources/views/invoices/pdf.blade.php:4` — `utf-8`
+- `resources/views/invoices/pdf.blade.php:5` — `Rechnung`
+- `resources/views/invoices/pdf.blade.php:7` — `DejaVu Sans`
+- `resources/views/invoices/pdf.blade.php:21` — `header`
+- `resources/views/invoices/pdf.blade.php:22` — `left`
+- `resources/views/invoices/pdf.blade.php:29` — `right`
+- `resources/views/invoices/pdf.blade.php:30` — `Rechnung`
+- `resources/views/invoices/pdf.blade.php:32` — `Datum`
+- `resources/views/invoices/pdf.blade.php:33` — `Fällig`
+- `resources/views/invoices/pdf.blade.php:41` — `Beschreibung`
+- `resources/views/invoices/pdf.blade.php:42` — `Menge`
+- `resources/views/invoices/pdf.blade.php:43` — `Einzelpreis`
+- `resources/views/invoices/pdf.blade.php:44` — `Betrag`
+- `resources/views/invoices/pdf.blade.php:59` — `Zwischensumme`
+- `resources/views/invoices/pdf.blade.php:60` — `USt.`
+- `resources/views/invoices/pdf.blade.php:61` — `Gesamt`
+- `resources/views/invoices/show.blade.php:3` — `title`
+- `resources/views/invoices/show.blade.php:4` — `nav-title`
+- `resources/views/invoices/show.blade.php:6` — `content`
+- `resources/views/invoices/show.blade.php:7` — `space-y-4`
+- `resources/views/invoices/show.blade.php:8` — `status`
+- `resources/views/invoices/show.blade.php:9` — `alert alert-success`
+- `resources/views/invoices/show.blade.php:9` — `status`
+- `resources/views/invoices/show.blade.php:12` — `flex flex-wrap justify-between items-center gap-2`
+- `resources/views/invoices/show.blade.php:14` — `text-2xl font-bold`
+- `resources/views/invoices/show.blade.php:14` — `Rechnung`
+- `resources/views/invoices/show.blade.php:15` — `text-sm opacity-70`
+- `resources/views/invoices/show.blade.php:17` — `badge badge-outline`
+- `resources/views/invoices/show.blade.php:20` — `flex gap-2`
+- `resources/views/invoices/show.blade.php:21` — `btn btn-sm`
+- `resources/views/invoices/show.blade.php:22` — `issue`
+- `resources/views/invoices/show.blade.php:24` — `btn btn-sm btn-primary`
+- `resources/views/invoices/show.blade.php:24` — `Stellen`
+- `resources/views/invoices/show.blade.php:29` — `btn btn-sm btn-success`
+- `resources/views/invoices/show.blade.php:29` — `Bezahlt markieren`
+- `resources/views/invoices/show.blade.php:32` — `delete`
+- `resources/views/invoices/show.blade.php:35` — `Wirklich löschen?`
+- `resources/views/invoices/show.blade.php:36` — `delete`
+- `resources/views/invoices/show.blade.php:37` — `error`
+- `resources/views/invoices/show.blade.php:38` — `Löschen`
+- `resources/views/invoices/show.blade.php:40` — `btn btn-sm btn-error btn-outline`
+- `resources/views/invoices/show.blade.php:40` — `Löschen`
+- `resources/views/invoices/show.blade.php:46` — `overflow-x-auto bg-base-100 rounded-box shadow`
+- `resources/views/invoices/show.blade.php:47` — `table table-sm`
+- `resources/views/invoices/show.blade.php:51` — `Beschreibung`
+- `resources/views/invoices/show.blade.php:52` — `text-right`
+- `resources/views/invoices/show.blade.php:52` — `Menge`
+- `resources/views/invoices/show.blade.php:53` — `text-right`
+- `resources/views/invoices/show.blade.php:53` — `Einzelpreis`
+- `resources/views/invoices/show.blade.php:54` — `text-right`
+- `resources/views/invoices/show.blade.php:54` — `Betrag`
+- `resources/views/invoices/show.blade.php:62` — `text-right`
+- `resources/views/invoices/show.blade.php:63` — `text-right`
+- `resources/views/invoices/show.blade.php:64` — `text-right`
+- `resources/views/invoices/show.blade.php:67` — `text-center opacity-60`
+- `resources/views/invoices/show.blade.php:67` — `Keine Positionen.`
+- `resources/views/invoices/show.blade.php:71` — `text-right`
+- `resources/views/invoices/show.blade.php:71` — `Zwischensumme`
+- `resources/views/invoices/show.blade.php:71` — `text-right`
+- `resources/views/invoices/show.blade.php:72` — `text-right`
+- `resources/views/invoices/show.blade.php:72` — `USt.`
+- `resources/views/invoices/show.blade.php:72` — `text-right`
+- `resources/views/invoices/show.blade.php:73` — `text-right font-bold`
+- `resources/views/invoices/show.blade.php:73` — `Gesamt`
+- `resources/views/invoices/show.blade.php:73` — `text-right font-bold`
+- `resources/views/travel-logs/index.blade.php:3` — `title`
+- `resources/views/travel-logs/index.blade.php:3` — `Fahrtenbuch`
+- `resources/views/travel-logs/index.blade.php:5` — `content`
+- `resources/views/travel-logs/index.blade.php:6` — `space-y-4`
+- `resources/views/travel-logs/index.blade.php:7` — `flex flex-wrap items-center justify-between gap-3`
+- `resources/views/travel-logs/index.blade.php:9` — `text-xl font-semibold`
+- `resources/views/travel-logs/index.blade.php:9` — `Fahrtenbuch`
+- `resources/views/travel-logs/index.blade.php:11` — `Erfasste Fahrten`
+- `resources/views/travel-logs/index.blade.php:14` — `Zeitraum übernommen aus dem Header. Mit der Auswahl oben links wechseln.`
+- `resources/views/travel-logs/index.blade.php:17` — `flex flex-wrap gap-2`
+- `resources/views/travel-logs/index.blade.php:18` — `travel-logs.create`
+- `resources/views/travel-logs/index.blade.php:18` — `btn btn-sm btn-primary`
+- `resources/views/travel-logs/index.blade.php:19` — `Neue Fahrt`
+- `resources/views/travel-logs/index.blade.php:21` — `travel-logs.export`
+- `resources/views/travel-logs/index.blade.php:21` — `from`
+- `resources/views/travel-logs/index.blade.php:22` — `btn btn-sm btn-ghost`
+- `resources/views/travel-logs/index.blade.php:23` — `download`
+- `resources/views/travel-logs/index.blade.php:23` — `CSV-Export`
+- `resources/views/travel-logs/index.blade.php:30` — `rounded-box border border-base-300 bg-base-100 p-3`
+- `resources/views/travel-logs/index.blade.php:31` — `Gefahrene Kilometer`
+- `resources/views/travel-logs/index.blade.php:32` — `text-2xl font-semibold`
+- `resources/views/travel-logs/index.blade.php:34` — `rounded-box border border-base-300 bg-base-100 p-3`
+- `resources/views/travel-logs/index.blade.php:35` — `Erstattung`
+- `resources/views/travel-logs/index.blade.php:36` — `text-2xl font-semibold`
+- `resources/views/travel-logs/index.blade.php:36` — `reimbursement`
+- `resources/views/travel-logs/index.blade.php:40` — `overflow-x-auto rounded-box border border-base-300 bg-base-100`
+- `resources/views/travel-logs/index.blade.php:41` — `table table-sm`
+- `resources/views/travel-logs/index.blade.php:44` — `Datum`
+- `resources/views/travel-logs/index.blade.php:46` — `Nach`
+- `resources/views/travel-logs/index.blade.php:47` — `text-right`
+- `resources/views/travel-logs/index.blade.php:48` — `Fahrzeug`
+- `resources/views/travel-logs/index.blade.php:49` — `text-right`
+- `resources/views/travel-logs/index.blade.php:49` — `Erstattung`
+- `resources/views/travel-logs/index.blade.php:50` — `Zweck`
+- `resources/views/travel-logs/index.blade.php:60` — `text-right`
+- `resources/views/travel-logs/index.blade.php:63` — `badge badge-ghost badge-xs ml-1`
+- `resources/views/travel-logs/index.blade.php:67` — `badge badge-ghost badge-sm`
+- `resources/views/travel-logs/index.blade.php:69` — `text-right`
+- `resources/views/travel-logs/index.blade.php:72` — `max-w-xs truncate`
+- `resources/views/travel-logs/index.blade.php:73` — `text-right`
+- `resources/views/travel-logs/index.blade.php:74` — `travel-logs.edit`
+- `resources/views/travel-logs/index.blade.php:74` — `btn btn-xs btn-ghost`
+- `resources/views/travel-logs/index.blade.php:74` — `Bearbeiten`
+- `resources/views/travel-logs/index.blade.php:75` — `travel-logs.destroy`
+- `resources/views/travel-logs/index.blade.php:75` — `inline`
+- `resources/views/travel-logs/index.blade.php:77` — `Fahrt wirklich löschen?`
+- `resources/views/travel-logs/index.blade.php:78` — `Löschen`
+- `resources/views/travel-logs/index.blade.php:80` — `submit`
+- `resources/views/travel-logs/index.blade.php:80` — `btn btn-xs btn-ghost text-error`
+- `resources/views/travel-logs/index.blade.php:80` — `Löschen`
+- `resources/views/travel-logs/index.blade.php:85` — `Keine Fahrten im gewählten Zeitraum.`
+- `resources/views/travel-logs/_form_body.blade.php:3` — `Fahrt`
+- `resources/views/travel-logs/_form_body.blade.php:3` — `primary`
+- `resources/views/travel-logs/_form_body.blade.php:4` — `fieldset`
+- `resources/views/travel-logs/_form_body.blade.php:5` — `fieldset-label`
+- `resources/views/travel-logs/_form_body.blade.php:5` — `Datum`
+- `resources/views/travel-logs/_form_body.blade.php:6` — `date`
+- `resources/views/travel-logs/_form_body.blade.php:6` — `date`
+- `resources/views/travel-logs/_form_body.blade.php:6` — `date`
+- `resources/views/travel-logs/_form_body.blade.php:6` — `input input-bordered w-full`
+- `resources/views/travel-logs/_form_body.blade.php:8` — `fieldset`
+- `resources/views/travel-logs/_form_body.blade.php:9` — `fieldset-label`
+- `resources/views/travel-logs/_form_body.blade.php:9` — `Fahrzeug`
+- `resources/views/travel-logs/_form_body.blade.php:10` — `vehicle`
+- `resources/views/travel-logs/_form_body.blade.php:10` — `select select-bordered w-full`
+- `resources/views/travel-logs/_form_body.blade.php:12` — `vehicle`
+- `resources/views/travel-logs/_form_body.blade.php:12` — `private`
+- `resources/views/travel-logs/_form_body.blade.php:20` — `fieldset-label`
+- `resources/views/travel-logs/_form_body.blade.php:21` — `text`
+- `resources/views/travel-logs/_form_body.blade.php:21` — `input input-bordered w-full`
+- `resources/views/travel-logs/_form_body.blade.php:24` — `fieldset-label`
+- `resources/views/travel-logs/_form_body.blade.php:25` — `text`
+- `resources/views/travel-logs/_form_body.blade.php:25` — `input input-bordered w-full`
+- `resources/views/travel-logs/_form_body.blade.php:29` — `info`
+- `resources/views/travel-logs/_form_body.blade.php:30` — `fieldset`
+- `resources/views/travel-logs/_form_body.blade.php:31` — `fieldset-label`
+- `resources/views/travel-logs/_form_body.blade.php:32` — `number`
+- `resources/views/travel-logs/_form_body.blade.php:34` — `input input-bordered w-full`
+- `resources/views/travel-logs/_form_body.blade.php:36` — `fieldset`
+- `resources/views/travel-logs/_form_body.blade.php:37` — `fieldset-label`
+- `resources/views/travel-logs/_form_body.blade.php:38` — `number`
+- `resources/views/travel-logs/_form_body.blade.php:40` — `input input-bordered w-full`
+- `resources/views/travel-logs/_form_body.blade.php:41` — `Auto aus Fahrzeugtyp`
+- `resources/views/travel-logs/_form_body.blade.php:43` — `fieldset`
+- `resources/views/travel-logs/_form_body.blade.php:44` — `fieldset-label`
+- `resources/views/travel-logs/_form_body.blade.php:44` — `Start`
+- `resources/views/travel-logs/_form_body.blade.php:45` — `datetime-local`
+- `resources/views/travel-logs/_form_body.blade.php:47` — `input input-bordered w-full`
+- `resources/views/travel-logs/_form_body.blade.php:49` — `fieldset`
+- `resources/views/travel-logs/_form_body.blade.php:50` — `fieldset-label`
+- `resources/views/travel-logs/_form_body.blade.php:50` — `Ende`
+- `resources/views/travel-logs/_form_body.blade.php:51` — `datetime-local`
+- `resources/views/travel-logs/_form_body.blade.php:53` — `input input-bordered w-full`
+- `resources/views/travel-logs/_form_body.blade.php:57` — `Zuordnung`
+- `resources/views/travel-logs/_form_body.blade.php:57` — `link`
+- `resources/views/travel-logs/_form_body.blade.php:57` — `success`
+- `resources/views/travel-logs/_form_body.blade.php:58` — `fieldset`
+- `resources/views/travel-logs/_form_body.blade.php:59` — `fieldset-label`
+- `resources/views/travel-logs/_form_body.blade.php:60` — `select select-bordered w-full`
+- `resources/views/travel-logs/_form_body.blade.php:67` — `fieldset`
+- `resources/views/travel-logs/_form_body.blade.php:68` — `fieldset-label`
+- `resources/views/travel-logs/_form_body.blade.php:69` — `select select-bordered w-full`
+- `resources/views/travel-logs/_form_body.blade.php:77` — `fieldset-label`
+- `resources/views/travel-logs/_form_body.blade.php:77` — `Zweck`
+- `resources/views/travel-logs/_form_body.blade.php:78` — `text`
+- `resources/views/travel-logs/_form_body.blade.php:78` — `purpose`
+- `resources/views/travel-logs/_form_body.blade.php:78` — `purpose`
+- `resources/views/travel-logs/_form_body.blade.php:78` — `input input-bordered w-full`
+- `resources/views/travel-logs/_form_body.blade.php:82` — `ghost`
+- `resources/views/travel-logs/_form_body.blade.php:83` — `fieldset`
+- `resources/views/travel-logs/_form_body.blade.php:84` — `label cursor-pointer justify-start gap-3`
+- `resources/views/travel-logs/_form_body.blade.php:85` — `hidden`
+- `resources/views/travel-logs/_form_body.blade.php:86` — `checkbox`
+- `resources/views/travel-logs/_form_body.blade.php:87` — `checkbox checkbox-sm`
+- `resources/views/travel-logs/_form_body.blade.php:88` — `fieldset-label`
+- `resources/views/travel-logs/_form_body.blade.php:91` — `fieldset`
+- `resources/views/travel-logs/_form_body.blade.php:92` — `label cursor-pointer justify-start gap-3`
+- `resources/views/travel-logs/_form_body.blade.php:93` — `hidden`
+- `resources/views/travel-logs/_form_body.blade.php:93` — `reimbursable`
+- `resources/views/travel-logs/_form_body.blade.php:94` — `checkbox`
+- `resources/views/travel-logs/_form_body.blade.php:94` — `reimbursable`
+- `resources/views/travel-logs/_form_body.blade.php:95` — `reimbursable`
+- `resources/views/travel-logs/_form_body.blade.php:95` — `checkbox checkbox-sm`
+- `resources/views/travel-logs/_form_body.blade.php:96` — `fieldset-label`
+- `resources/views/travel-logs/_form_body.blade.php:96` — `Erstattungsfähig`
+- `resources/views/travel-logs/_form_body.blade.php:100` — `fieldset-label`
+- `resources/views/travel-logs/_form_body.blade.php:100` — `Notizen`
+- `resources/views/travel-logs/_form_body.blade.php:101` — `notes`
+- `resources/views/travel-logs/_form_body.blade.php:101` — `textarea textarea-bordered w-full`
+- `resources/views/travel-logs/_form_body.blade.php:101` — `notes`
+- `resources/views/travel-logs/_form_body.blade.php:106` — `alert alert-error text-sm`
+- `resources/views/travel-logs/_form_body.blade.php:107` — `list-disc pl-5`
+- `resources/views/travel-logs/_form_dialog.blade.php:4` — `travel-logs.update`
+- `resources/views/travel-logs/_form_dialog.blade.php:5` — `travel-logs.store`
+- `resources/views/travel-logs/_form_dialog.blade.php:9` — `Fahrt bearbeiten`
+- `resources/views/travel-logs/_form_dialog.blade.php:9` — `Neue Fahrt erfassen`
+- `resources/views/travel-logs/_form_dialog.blade.php:10` — `Fahrtenbuch`
+- `resources/views/travel-logs/_form_dialog.blade.php:12` — `primary`
+- `resources/views/travel-logs/_form_dialog.blade.php:14` — `POST'`
+- `resources/views/travel-logs/_form_dialog.blade.php:15` — `data-entry-form`
+- `resources/views/travel-logs/_form_dialog.blade.php:16` — `Speichern`
+- `resources/views/travel-logs/_form_dialog.blade.php:16` — `Erfassen`
+- `resources/views/travel-logs/_form_dialog.blade.php:22` — `travel-logs.destroy`
+- `resources/views/travel-logs/_form_dialog.blade.php:24` — `Fahrt wirklich löschen?`
+- `resources/views/travel-logs/_form_dialog.blade.php:25` — `Löschen`
+- `resources/views/travel-logs/_form_dialog.blade.php:27` — `submit`
+- `resources/views/travel-logs/_form_dialog.blade.php:27` — `btn btn-error btn-outline btn-sm gap-2`
+- `resources/views/travel-logs/_form_dialog.blade.php:28` — `delete`
+- `resources/views/travel-logs/_form_dialog.blade.php:28` — `Löschen`
+- `resources/views/vehicles/index.blade.php:3` — `title`
+- `resources/views/vehicles/index.blade.php:3` — `Fuhrpark`
+- `resources/views/vehicles/index.blade.php:5` — `content`
+- `resources/views/vehicles/index.blade.php:6` — `space-y-4`
+- `resources/views/vehicles/index.blade.php:7` — `flex flex-wrap items-center justify-between gap-3`
+- `resources/views/vehicles/index.blade.php:9` — `text-xl font-semibold`
+- `resources/views/vehicles/index.blade.php:9` — `Fuhrpark`
+- `resources/views/vehicles/index.blade.php:10` — `Fahrzeuge der Organisation`
+- `resources/views/vehicles/index.blade.php:12` — `flex flex-wrap gap-2`
+- `resources/views/vehicles/index.blade.php:13` — `btn btn-sm btn-primary`
+- `resources/views/vehicles/index.blade.php:14` — `Neues Fahrzeug`
+- `resources/views/vehicles/index.blade.php:16` — `archived`
+- `resources/views/vehicles/index.blade.php:16` — `btn btn-sm btn-ghost`
+- `resources/views/vehicles/index.blade.php:18` — `Aktive zeigen`
+- `resources/views/vehicles/index.blade.php:20` — `Archiv zeigen`
+- `resources/views/vehicles/index.blade.php:26` — `overflow-x-auto rounded-box border border-base-300 bg-base-100`
+- `resources/views/vehicles/index.blade.php:27` — `table table-sm`
+- `resources/views/vehicles/index.blade.php:30` — `Kennzeichen`
+- `resources/views/vehicles/index.blade.php:31` — `Bezeichnung`
+- `resources/views/vehicles/index.blade.php:33` — `Antrieb`
+- `resources/views/vehicles/index.blade.php:34` — `Standardfahrer`
+- `resources/views/vehicles/index.blade.php:35` — `text-right`
+- `resources/views/vehicles/index.blade.php:36` — `text-right`
+- `resources/views/vehicles/index.blade.php:36` — `Tachostand`
+- `resources/views/vehicles/index.blade.php:42` — `opacity-60`
+- `resources/views/vehicles/index.blade.php:43` — `font-mono`
+- `resources/views/vehicles/index.blade.php:45` — `badge badge-ghost badge-sm`
+- `resources/views/vehicles/index.blade.php:46` — `badge badge-ghost badge-sm`
+- `resources/views/vehicles/index.blade.php:48` — `text-right`
+- `resources/views/vehicles/index.blade.php:55` — `text-right`
+- `resources/views/vehicles/index.blade.php:56` — `text-right`
+- `resources/views/vehicles/index.blade.php:57` — `btn btn-xs btn-ghost`
+- `resources/views/vehicles/index.blade.php:57` — `Bearbeiten`
+- `resources/views/vehicles/index.blade.php:59` — `inline`
+- `resources/views/vehicles/index.blade.php:61` — `submit`
+- `resources/views/vehicles/index.blade.php:61` — `btn btn-xs btn-ghost`
+- `resources/views/vehicles/index.blade.php:61` — `Reaktivieren`
+- `resources/views/vehicles/index.blade.php:64` — `inline`
+- `resources/views/vehicles/index.blade.php:66` — `Fahrzeug wirklich archivieren?`
+- `resources/views/vehicles/index.blade.php:67` — `Archivieren`
+- `resources/views/vehicles/index.blade.php:69` — `submit`
+- `resources/views/vehicles/index.blade.php:69` — `btn btn-xs btn-ghost text-error`
+- `resources/views/vehicles/index.blade.php:69` — `Archivieren`
+- `resources/views/vehicles/index.blade.php:75` — `Keine Fahrzeuge erfasst.`
+- `resources/views/vehicles/_form_body.blade.php:3` — `Stammdaten`
+- `resources/views/vehicles/_form_body.blade.php:3` — `primary`
+- `resources/views/vehicles/_form_body.blade.php:4` — `fieldset`
+- `resources/views/vehicles/_form_body.blade.php:5` — `fieldset-label`
+- `resources/views/vehicles/_form_body.blade.php:5` — `Kennzeichen`
+- `resources/views/vehicles/_form_body.blade.php:6` — `text`
+- `resources/views/vehicles/_form_body.blade.php:9` — `text-error text-sm`
+- `resources/views/vehicles/_form_body.blade.php:11` — `fieldset`
+- `resources/views/vehicles/_form_body.blade.php:12` — `fieldset-label`
+- `resources/views/vehicles/_form_body.blade.php:12` — `Bezeichnung`
+- `resources/views/vehicles/_form_body.blade.php:13` — `text`
+- `resources/views/vehicles/_form_body.blade.php:13` — `label`
+- `resources/views/vehicles/_form_body.blade.php:14` — `label`
+- `resources/views/vehicles/_form_body.blade.php:15` — `label`
+- `resources/views/vehicles/_form_body.blade.php:16` — `label`
+- `resources/views/vehicles/_form_body.blade.php:16` — `text-error text-sm`
+- `resources/views/vehicles/_form_body.blade.php:18` — `fieldset`
+- `resources/views/vehicles/_form_body.blade.php:19` — `fieldset-label`
+- `resources/views/vehicles/_form_body.blade.php:20` — `select select-bordered w-full`
+- `resources/views/vehicles/_form_body.blade.php:26` — `fieldset`
+- `resources/views/vehicles/_form_body.blade.php:27` — `fieldset-label`
+- `resources/views/vehicles/_form_body.blade.php:27` — `Antrieb`
+- `resources/views/vehicles/_form_body.blade.php:28` — `propulsion`
+- `resources/views/vehicles/_form_body.blade.php:28` — `select select-bordered w-full`
+- `resources/views/vehicles/_form_body.blade.php:30` — `propulsion`
+- `resources/views/vehicles/_form_body.blade.php:34` — `fieldset`
+- `resources/views/vehicles/_form_body.blade.php:35` — `fieldset-label`
+- `resources/views/vehicles/_form_body.blade.php:35` — `Eigentum`
+- `resources/views/vehicles/_form_body.blade.php:36` — `ownership`
+- `resources/views/vehicles/_form_body.blade.php:36` — `select select-bordered w-full`
+- `resources/views/vehicles/_form_body.blade.php:36` — `ownership`
+- `resources/views/vehicles/_form_body.blade.php:38` — `ownership`
+- `resources/views/vehicles/_form_body.blade.php:38` — `owned`
+- `resources/views/vehicles/_form_body.blade.php:42` — `fieldset`
+- `resources/views/vehicles/_form_body.blade.php:43` — `fieldset-label`
+- `resources/views/vehicles/_form_body.blade.php:43` — `Standardfahrer`
+- `resources/views/vehicles/_form_body.blade.php:44` — `select select-bordered w-full`
+- `resources/views/vehicles/_form_body.blade.php:53` — `bolt`
+- `resources/views/vehicles/_form_body.blade.php:53` — `info`
+- `resources/views/vehicles/_form_body.blade.php:54` — `fieldset`
+- `resources/views/vehicles/_form_body.blade.php:55` — `fieldset-label`
+- `resources/views/vehicles/_form_body.blade.php:56` — `number`
+- `resources/views/vehicles/_form_body.blade.php:58` — `input input-bordered w-full`
+- `resources/views/vehicles/_form_body.blade.php:60` — `fieldset`
+- `resources/views/vehicles/_form_body.blade.php:61` — `fieldset-label`
+- `resources/views/vehicles/_form_body.blade.php:62` — `number`
+- `resources/views/vehicles/_form_body.blade.php:64` — `input input-bordered w-full`
+- `resources/views/vehicles/_form_body.blade.php:66` — `fieldset`
+- `resources/views/vehicles/_form_body.blade.php:67` — `fieldset-label`
+- `resources/views/vehicles/_form_body.blade.php:68` — `number`
+- `resources/views/vehicles/_form_body.blade.php:70` — `input input-bordered w-full`
+- `resources/views/vehicles/_form_body.blade.php:72` — `fieldset`
+- `resources/views/vehicles/_form_body.blade.php:73` — `fieldset-label`
+- `resources/views/vehicles/_form_body.blade.php:74` — `number`
+- `resources/views/vehicles/_form_body.blade.php:76` — `input input-bordered w-full`
+- `resources/views/vehicles/_form_body.blade.php:79` — `fieldset-label`
+- `resources/views/vehicles/_form_body.blade.php:79` — `WLTP-Verbrauch`
+- `resources/views/vehicles/_form_body.blade.php:80` — `number`
+- `resources/views/vehicles/_form_body.blade.php:82` — `input input-bordered w-full`
+- `resources/views/vehicles/_form_body.blade.php:86` — `rental'`
+- `resources/views/vehicles/_form_body.blade.php:87` — `Mietvertrag`
+- `resources/views/vehicles/_form_body.blade.php:87` — `warning`
+- `resources/views/vehicles/_form_body.blade.php:88` — `fieldset`
+- `resources/views/vehicles/_form_body.blade.php:89` — `fieldset-label`
+- `resources/views/vehicles/_form_body.blade.php:89` — `Anbieter`
+- `resources/views/vehicles/_form_body.blade.php:90` — `text`
+- `resources/views/vehicles/_form_body.blade.php:92` — `input input-bordered w-full`
+- `resources/views/vehicles/_form_body.blade.php:94` — `fieldset`
+- `resources/views/vehicles/_form_body.blade.php:95` — `fieldset-label`
+- `resources/views/vehicles/_form_body.blade.php:96` — `number`
+- `resources/views/vehicles/_form_body.blade.php:98` — `input input-bordered w-full`
+- `resources/views/vehicles/_form_body.blade.php:100` — `fieldset`
+- `resources/views/vehicles/_form_body.blade.php:101` — `fieldset-label`
+- `resources/views/vehicles/_form_body.blade.php:101` — `Mietbeginn`
+- `resources/views/vehicles/_form_body.blade.php:102` — `date`
+- `resources/views/vehicles/_form_body.blade.php:104` — `input input-bordered w-full`
+- `resources/views/vehicles/_form_body.blade.php:106` — `fieldset`
+- `resources/views/vehicles/_form_body.blade.php:107` — `fieldset-label`
+- `resources/views/vehicles/_form_body.blade.php:107` — `Mietende`
+- `resources/views/vehicles/_form_body.blade.php:108` — `date`
+- `resources/views/vehicles/_form_body.blade.php:110` — `input input-bordered w-full`
+- `resources/views/vehicles/_form_body.blade.php:112` — `fieldset`
+- `resources/views/vehicles/_form_body.blade.php:113` — `fieldset-label`
+- `resources/views/vehicles/_form_body.blade.php:114` — `number`
+- `resources/views/vehicles/_form_body.blade.php:116` — `input input-bordered w-full`
+- `resources/views/vehicles/_form_body.blade.php:118` — `fieldset`
+- `resources/views/vehicles/_form_body.blade.php:119` — `fieldset-label`
+- `resources/views/vehicles/_form_body.blade.php:120` — `number`
+- `resources/views/vehicles/_form_body.blade.php:122` — `input input-bordered w-full`
+- `resources/views/vehicles/_form_body.blade.php:127` — `Notizen`
+- `resources/views/vehicles/_form_body.blade.php:127` — `ghost`
+- `resources/views/vehicles/_form_body.blade.php:128` — `fieldset`
+- `resources/views/vehicles/_form_body.blade.php:129` — `fieldset-label`
+- `resources/views/vehicles/_form_body.blade.php:129` — `Notizen`
+- `resources/views/vehicles/_form_body.blade.php:130` — `notes`
+- `resources/views/vehicles/_form_body.blade.php:130` — `textarea textarea-bordered w-full`
+- `resources/views/vehicles/_form_body.blade.php:130` — `notes`
+- `resources/views/vehicles/_form_body.blade.php:135` — `alert alert-error text-sm`
+- `resources/views/vehicles/_form_body.blade.php:136` — `list-disc pl-5`
+- `resources/views/vehicles/_form_dialog.blade.php:9` — `Fahrzeug bearbeiten`
+- `resources/views/vehicles/_form_dialog.blade.php:9` — `Neues Fahrzeug`
+- `resources/views/vehicles/_form_dialog.blade.php:10` — `Fuhrpark`
+- `resources/views/vehicles/_form_dialog.blade.php:12` — `primary`
+- `resources/views/vehicles/_form_dialog.blade.php:14` — `POST'`
+- `resources/views/vehicles/_form_dialog.blade.php:15` — `data-entry-form`
+- `resources/views/vehicles/_form_dialog.blade.php:16` — `Speichern`
+- `resources/views/vehicles/_form_dialog.blade.php:16` — `Anlegen`
+- `resources/views/vehicles/_form_dialog.blade.php:18` — `ownership`
+- `resources/views/vehicles/_form_dialog.blade.php:18` — `owned`
+- `resources/views/vehicles/_form_dialog.blade.php:18` — `space-y-4`
+- `resources/views/vehicles/_form_dialog.blade.php:19` — `vehicle`
+- `resources/views/vehicles/_form_dialog.blade.php:26` — `Fahrzeug wirklich archivieren?`
+- `resources/views/vehicles/_form_dialog.blade.php:27` — `Archivieren`
+- `resources/views/vehicles/_form_dialog.blade.php:29` — `submit`
+- `resources/views/vehicles/_form_dialog.blade.php:29` — `btn btn-error btn-outline btn-sm gap-2`
+- `resources/views/vehicles/_form_dialog.blade.php:30` — `delete`
+- `resources/views/vehicles/_form_dialog.blade.php:30` — `Archivieren`
+- `resources/views/week/_grid.blade.php:14` — `start`
+- `resources/views/week/_grid.blade.php:15` — `days`
+- `resources/views/week/_grid.blade.php:16` — `shiftsByDay`
+- `resources/views/week/_grid.blade.php:17` — `assignmentsByDay`
+- `resources/views/week/_grid.blade.php:18` — `entriesByDay`
+- `resources/views/week/_grid.blade.php:19` — `coreTop`
+- `resources/views/week/_grid.blade.php:20` — `coreBottom`
+- `resources/views/week/_grid.blade.php:21` — `extTop`
+- `resources/views/week/_grid.blade.php:22` — `extBottom`
+- `resources/views/week/_grid.blade.php:23` — `coreDays`
+- `resources/views/week/_grid.blade.php:24` — `extDays`
+- `resources/views/week/_grid.blade.php:27` — `wd-week-scroll min-h-0 flex-1 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/week/_grid.blade.php:28` — `wd-week-grid`
+- `resources/views/week/_grid.blade.php:30` — `wd-week-corner`
+- `resources/views/week/_grid.blade.php:39` — `is-today`
+- `resources/views/week/_grid.blade.php:39` — `is-weekend`
+- `resources/views/week/_grid.blade.php:39` — `is-sunday`
+- `resources/views/week/_grid.blade.php:39` — `is-holiday`
+- `resources/views/week/_grid.blade.php:50` — `wd-week-hours`
+- `resources/views/week/_grid.blade.php:52` — `wd-week-hour-label`
+- `resources/views/week/_grid.blade.php:66` — `is-today`
+- `resources/views/week/_grid.blade.php:66` — `Y-m-d`
+- `resources/views/week/_grid.blade.php:76` — `wd-week-band wd-week-band--off`
+- `resources/views/week/_grid.blade.php:79` — `wd-week-band wd-week-band--extended`
+- `resources/views/week/_grid.blade.php:82` — `wd-week-band wd-week-band--extended`
+- `resources/views/week/_grid.blade.php:85` — `wd-week-band wd-week-band--off`
+- `resources/views/week/_grid.blade.php:88` — `wd-week-band wd-week-band--off`
+- `resources/views/week/_grid.blade.php:93` — `wd-week-hour-row`
+- `resources/views/week/_grid.blade.php:100` — `Bereitschaft`
+- `resources/views/week/_grid.blade.php:102` — `update`
+- `resources/views/week/_grid.blade.php:105` — `wd-week-shift`
+- `resources/views/week/_grid.blade.php:106` — `height`
+- `resources/views/week/_grid.blade.php:108` — `wd-week-shift-label`
+- `resources/views/week/_grid.blade.php:111` — `wd-week-shift`
+- `resources/views/week/_grid.blade.php:111` — `height`
+- `resources/views/week/_grid.blade.php:112` — `wd-week-shift-label`
+- `resources/views/week/_grid.blade.php:121` — `Notdienst`
+- `resources/views/week/_grid.blade.php:123` — `update`
+- `resources/views/week/_grid.blade.php:126` — `wd-week-emergency`
+- `resources/views/week/_grid.blade.php:127` — `height`
+- `resources/views/week/_grid.blade.php:129` — `wd-week-emergency-label`
+- `resources/views/week/_grid.blade.php:132` — `wd-week-emergency`
+- `resources/views/week/_grid.blade.php:132` — `height`
+- `resources/views/week/_grid.blade.php:133` — `wd-week-emergency-label`
+- `resources/views/week/_grid.blade.php:141` — `entry`
+- `resources/views/week/_grid.blade.php:142` — `wd-week-entry--neutral`
+- `resources/views/week/_grid.blade.php:144` — `left`
+- `resources/views/week/_grid.blade.php:145` — `width`
+- `resources/views/week/_grid.blade.php:149` — `height`
+- `resources/views/week/_grid.blade.php:151` — `wd-week-entry-time`
+- `resources/views/week/_grid.blade.php:152` — `wd-week-entry-text`
+- `resources/views/week/index.blade.php:2` — `title`
+- `resources/views/week/index.blade.php:2` — `Wochenansicht`
+- `resources/views/week/index.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/week/index.blade.php:3` — `nav-title`
+- `resources/views/week/index.blade.php:3` — `Wochenansicht`
+- `resources/views/week/index.blade.php:4` — `wrapper-height-class', `
+- `resources/views/week/index.blade.php:5` — `main-class', 'min-h-0 overflow-clip flex flex-col`
+- `resources/views/week/index.blade.php:10` — `done`
+- `resources/views/week/index.blade.php:10` — `wd-week-entry--done',
+        'progress`
+- `resources/views/week/index.blade.php:11` — `wd-week-entry--progress',
+        'open`
+- `resources/views/week/index.blade.php:12` — `wd-week-entry--open',
+        'alert`
+- `resources/views/week/index.blade.php:13` — `wd-week-entry--alert',
+        'neutral`
+- `resources/views/week/index.blade.php:14` — `wd-week-entry--neutral`
+- `resources/views/week/index.blade.php:18` — `intval`
+- `resources/views/week/index.blade.php:22` — `coreTop`
+- `resources/views/week/index.blade.php:22` — `core`
+- `resources/views/week/index.blade.php:22` — `start`
+- `resources/views/week/index.blade.php:23` — `coreBottom`
+- `resources/views/week/index.blade.php:23` — `core`
+- `resources/views/week/index.blade.php:24` — `extTop`
+- `resources/views/week/index.blade.php:24` — `extended`
+- `resources/views/week/index.blade.php:24` — `start`
+- `resources/views/week/index.blade.php:25` — `extBottom`
+- `resources/views/week/index.blade.php:25` — `extended`
+- `resources/views/week/index.blade.php:26` — `coreDays`
+- `resources/views/week/index.blade.php:26` — `core`
+- `resources/views/week/index.blade.php:26` — `days`
+- `resources/views/week/index.blade.php:27` — `extDays`
+- `resources/views/week/index.blade.php:27` — `extended`
+- `resources/views/week/index.blade.php:27` — `days`
+- `resources/views/week/index.blade.php:32` — `content`
+- `resources/views/week/index.blade.php:33` — `wd-week flex h-full min-h-0 flex-col gap-4`
+- `resources/views/week/index.blade.php:38` — `flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/week/index.blade.php:39` — `flex flex-wrap items-center gap-3`
+- `resources/views/week/index.blade.php:42` — `count`
+- `resources/views/week/index.blade.php:46` — `Zeitraum-Auswahl im Header oben rechts.`
+- `resources/views/week/index.blade.php:50` — `flex items-center gap-3`
+- `resources/views/week/index.blade.php:51` — `flex cursor-pointer items-center gap-2 text-sm`
+- `resources/views/week/index.blade.php:51` — `Ansicht an Bildschirm anpassen`
+- `resources/views/week/index.blade.php:52` — `currentColor`
+- `resources/views/week/index.blade.php:53` — `M3 4a1 1 0 011-1h3a1 1 0 010 2H5.414l2.293 2.293a1 1 0 01-1.414 1.414L4 6.414V8a1 1 0 01-2 0V4zm14 0a1 1 0 00-1-1h-3a1 1 0 000 2h1.586l-2.293 2.293a1 1 0 001.414 1.414L16 6.414V8a1 1 0 002 0V4zm-3 12a1 1 0 001-1v-3a1 1 0 00-2 0v1.586l-2.293-2.293a1 1 0 00-1.414 1.414L13.586 16H12a1 1 0 000 2h3zm-8 0a1 1 0 01-1-1v-3a1 1 0 012 0v1.586l2.293-2.293a1 1 0 011.414 1.414L6.414 16H8a1 1 0 010 2H5z`
+- `resources/views/week/index.blade.php:55` — `Auf Bildschirm`
+- `resources/views/week/index.blade.php:56` — `checkbox`
+- `resources/views/week/index.blade.php:56` — `wd-week-fit-btn`
+- `resources/views/week/index.blade.php:56` — `toggle toggle-sm toggle-primary`
+- `resources/views/week/index.blade.php:59` — `join`
+- `resources/views/week/index.blade.php:60` — `scope`
+- `resources/views/week/index.blade.php:60` — `mine`
+- `resources/views/week/index.blade.php:61` — `btn-ghost`
+- `resources/views/week/index.blade.php:61` — `btn-primary`
+- `resources/views/week/index.blade.php:61` — `Meine Woche`
+- `resources/views/week/index.blade.php:62` — `scope`
+- `resources/views/week/index.blade.php:62` — `team`
+- `resources/views/week/index.blade.php:63` — `btn-primary`
+- `resources/views/week/index.blade.php:63` — `btn-ghost`
+- `resources/views/week/index.blade.php:63` — `Team-Woche`
+- `resources/views/week/index.blade.php:70` — `inline-flex items-center gap-2`
+- `resources/views/week/index.blade.php:70` — `wd-week-legend wd-week-band--core`
+- `resources/views/week/index.blade.php:70` — `Kernarbeitszeit`
+- `resources/views/week/index.blade.php:71` — `inline-flex items-center gap-2`
+- `resources/views/week/index.blade.php:71` — `wd-week-legend wd-week-band--extended`
+- `resources/views/week/index.blade.php:71` — `Erweiterte Arbeitszeit`
+- `resources/views/week/index.blade.php:72` — `inline-flex items-center gap-2`
+- `resources/views/week/index.blade.php:72` — `wd-week-legend wd-week-shift`
+- `resources/views/week/index.blade.php:72` — `Bereitschaft`
+- `resources/views/week/index.blade.php:73` — `inline-flex items-center gap-2`
+- `resources/views/week/index.blade.php:73` — `wd-week-legend wd-week-emergency`
+- `resources/views/week/index.blade.php:73` — `Notdienst`
+- `resources/views/week/index.blade.php:74` — `inline-flex items-center gap-2`
+- `resources/views/week/index.blade.php:74` — `wd-week-legend wd-week-entry--open`
+- `resources/views/week/index.blade.php:74` — `Offen`
+- `resources/views/week/index.blade.php:75` — `inline-flex items-center gap-2`
+- `resources/views/week/index.blade.php:75` — `wd-week-legend wd-week-entry--alert`
+- `resources/views/week/index.blade.php:75` — `Problem`
+- `resources/views/week/index.blade.php:76` — `inline-flex items-center gap-2`
+- `resources/views/week/index.blade.php:76` — `wd-week-legend wd-week-entry--progress`
+- `resources/views/week/index.blade.php:76` — `Bestätigt`
+- `resources/views/week/index.blade.php:77` — `inline-flex items-center gap-2`
+- `resources/views/week/index.blade.php:77` — `wd-week-legend wd-week-entry--done`
+- `resources/views/week/index.blade.php:77` — `Erledigt`
+- `resources/views/week/index.blade.php:82` — `tablist`
+- `resources/views/week/index.blade.php:82` — `tabs tabs-box`
+- `resources/views/week/index.blade.php:84` — `scope`
+- `resources/views/week/index.blade.php:84` — `team`
+- `resources/views/week/index.blade.php:85` — `tab-active`
+- `resources/views/week/index.blade.php:86` — `Alle`
+- `resources/views/week/index.blade.php:96` — `scope`
+- `resources/views/week/index.blade.php:96` — `team', 'user`
+- `resources/views/week/index.blade.php:97` — `tab-active`
+- `resources/views/week/index.blade.php:99` — `inline-block h-2.5 w-2.5 rounded-full`
+- `resources/views/week/index.blade.php:108` — `alert alert-warning text-sm`
+- `resources/views/week/index.blade.php:111` — `total`
+- `resources/views/week/index.blade.php:112` — `shown`
+- `resources/views/week/index.blade.php:120` — `tablist`
+- `resources/views/week/index.blade.php:120` — `tabs tabs-box flex-nowrap overflow-x-auto`
+- `resources/views/week/index.blade.php:122` — `button`
+- `resources/views/week/index.blade.php:124` — `tab-active`
+- `resources/views/week/index.blade.php:125` — `font-semibold`
+- `resources/views/week/index.blade.php:125` — `isoWeek`
+- `resources/views/week/index.blade.php:126` — `shortLabel`
+- `resources/views/week/index.blade.php:134` — `alert alert-info`
+- `resources/views/week/index.blade.php:135` — `Keine Wochen im gewählten Zeitraum.`
+- `resources/views/week/index.blade.php:140` — `service`
+- `resources/views/week/index.blade.php:141` — `holidays`
+- `resources/views/week/index.blade.php:142` — `hours`
+- `resources/views/week/index.blade.php:143` — `statusToneClass`
+- `resources/views/week/index.blade.php:144` — `bands`
+- `resources/views/week/index.blade.php:149` — `hidden`
+- `resources/views/week/index.blade.php:152` — `service`
+- `resources/views/week/index.blade.php:153` — `holidays`
+- `resources/views/week/index.blade.php:154` — `hours`
+- `resources/views/week/index.blade.php:155` — `statusToneClass`
+- `resources/views/week/index.blade.php:156` — `bands`
+- `resources/views/week/index.blade.php:165` — `workDiaryWeekCalFit`
+- `resources/views/week/index.blade.php:166` — `wd-week-fit-btn`
+- `resources/views/week/index.blade.php:175` — `wd-week-grid--fit`
+- `resources/views/week/index.blade.php:183` — `hidden`
+- `resources/views/week/index.blade.php:184` — `hidden`
+- `resources/views/week/index.blade.php:186` — `wd-week-grid--fit`
+- `resources/views/week/index.blade.php:198` — `change`
+- `resources/views/week/index.blade.php:205` — `resize`
+- `resources/views/week/index.blade.php:216` — `click`
+- `resources/views/week/index.blade.php:217` — `data-week-tab`
+- `resources/views/week/index.blade.php:219` — `tab-active`
+- `resources/views/week/index.blade.php:222` — `hidden`
+- `resources/views/week/index.blade.php:222` — `data-week-pane`
+- `resources/views/week/index.blade.php:237` — `wd-week-create-menu`
+- `resources/views/week/index.blade.php:238` — `fixed z-50 hidden min-w-44 rounded-box border border-base-300 bg-base-100 p-1 text-sm shadow-xl`
+- `resources/views/week/index.blade.php:239` — `menu`
+- `resources/views/week/index.blade.php:239` — `Neu anlegen`
+- `resources/views/week/index.blade.php:241` — `diary`
+- `resources/views/week/index.blade.php:241` — `Tagebucheintrag`
+- `resources/views/week/index.blade.php:242` — `shift`
+- `resources/views/week/index.blade.php:242` — `Bereitschaft`
+- `resources/views/week/index.blade.php:243` — `assignment`
+- `resources/views/week/index.blade.php:243` — `Notdienst`
+- `resources/views/week/index.blade.php:247` — `wd-week-create-menu`
+- `resources/views/week/index.blade.php:252` — `date`
+- `resources/views/week/index.blade.php:273` — `hidden`
+- `resources/views/week/index.blade.php:281` — `data-wd-menu-kind`
+- `resources/views/week/index.blade.php:286` — `hidden`
+- `resources/views/week/index.blade.php:295` — `click`
+- `resources/views/week/index.blade.php:301` — `data-date`
+- `resources/views/week/index.blade.php:308` — `click`
+- `resources/views/week/index.blade.php:311` — `keydown`
+- `resources/views/week/index.blade.php:312` — `Escape`
+- `resources/views/week/index.blade.php:315` — `click`
+- `resources/views/tags/index.blade.php:2` — `title`
+- `resources/views/tags/index.blade.php:2` — `Tags`
+- `resources/views/tags/index.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/tags/index.blade.php:3` — `nav-title`
+- `resources/views/tags/index.blade.php:3` — `Tags`
+- `resources/views/tags/index.blade.php:5` — `content`
+- `resources/views/tags/index.blade.php:7` — `flex justify-end`
+- `resources/views/tags/index.blade.php:8` — `create`
+- `resources/views/tags/index.blade.php:10` — `btn btn-sm btn-primary`
+- `resources/views/tags/index.blade.php:16` — `true`
+- `resources/views/tags/index.blade.php:16` — `flex`
+- `resources/views/tags/index.blade.php:17` — `bg-base-200`
+- `resources/views/tags/index.blade.php:19` — `name`
+- `resources/views/tags/index.blade.php:19` — `asc'`
+- `resources/views/tags/index.blade.php:19` — `name`
+- `resources/views/tags/index.blade.php:20` — `text-right`
+- `resources/views/tags/index.blade.php:20` — `diary`
+- `resources/views/tags/index.blade.php:20` — `asc'`
+- `resources/views/tags/index.blade.php:20` — `Tagebuch`
+- `resources/views/tags/index.blade.php:21` — `text-right`
+- `resources/views/tags/index.blade.php:21` — `shifts`
+- `resources/views/tags/index.blade.php:21` — `asc'`
+- `resources/views/tags/index.blade.php:21` — `Bereitschaft`
+- `resources/views/tags/index.blade.php:22` — `text-right`
+- `resources/views/tags/index.blade.php:22` — `assignments`
+- `resources/views/tags/index.blade.php:22` — `asc'`
+- `resources/views/tags/index.blade.php:22` — `Notdienst`
+- `resources/views/tags/index.blade.php:23` — `text-right`
+- `resources/views/tags/index.blade.php:23` — `Aktionen`
+- `resources/views/tags/index.blade.php:28` — `hover`
+- `resources/views/tags/index.blade.php:30` — `badge badge-outline`
+- `resources/views/tags/index.blade.php:34` — `text-right`
+- `resources/views/tags/index.blade.php:35` — `text-right`
+- `resources/views/tags/index.blade.php:36` — `text-right`
+- `resources/views/tags/index.blade.php:37` — `text-right`
+- `resources/views/tags/index.blade.php:38` — `update`
+- `resources/views/tags/index.blade.php:39` — `btn btn-xs btn-ghost`
+- `resources/views/tags/index.blade.php:39` — `Bearbeiten`
+- `resources/views/tags/index.blade.php:39` — `Bearbeiten`
+- `resources/views/tags/index.blade.php:40` — `h-4 w-4`
+- `resources/views/tags/index.blade.php:40` — `none`
+- `resources/views/tags/index.blade.php:40` — `currentColor`
+- `resources/views/tags/index.blade.php:40` — `round`
+- `resources/views/tags/index.blade.php:40` — `round`
+- `resources/views/tags/index.blade.php:40` — `M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z`
+- `resources/views/tags/index.blade.php:43` — `delete`
+- `resources/views/tags/index.blade.php:44` — `inline`
+- `resources/views/tags/index.blade.php:46` — `Tag löschen`
+- `resources/views/tags/index.blade.php:47` — `Tag wird inklusive aller Verknüpfungen entfernt.`
+- `resources/views/tags/index.blade.php:48` — `Löschen`
+- `resources/views/tags/index.blade.php:50` — `btn btn-xs btn-ghost text-error`
+- `resources/views/tags/index.blade.php:50` — `Löschen`
+- `resources/views/tags/index.blade.php:50` — `Löschen`
+- `resources/views/tags/index.blade.php:51` — `h-4 w-4`
+- `resources/views/tags/index.blade.php:51` — `none`
+- `resources/views/tags/index.blade.php:51` — `currentColor`
+- `resources/views/tags/index.blade.php:51` — `round`
+- `resources/views/tags/index.blade.php:51` — `round`
+- `resources/views/tags/index.blade.php:51` — `M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3`
+- `resources/views/tags/index.blade.php:58` — `Noch keine Tags angelegt.`
+- `resources/views/tags/_form_dialog.blade.php:9` — `Tag bearbeiten`
+- `resources/views/tags/_form_dialog.blade.php:9` — `Neuer Tag`
+- `resources/views/tags/_form_dialog.blade.php:10` — `Schlagwort`
+- `resources/views/tags/_form_dialog.blade.php:11` — `label`
+- `resources/views/tags/_form_dialog.blade.php:12` — `success`
+- `resources/views/tags/_form_dialog.blade.php:14` — `POST'`
+- `resources/views/tags/_form_dialog.blade.php:15` — `data-entry-form`
+- `resources/views/tags/_form_dialog.blade.php:16` — `Speichern`
+- `resources/views/tags/_form_dialog.blade.php:16` — `Anlegen`
+- `resources/views/tags/_form_dialog.blade.php:18` — `hidden`
+- `resources/views/tags/_form_dialog.blade.php:21` — `Tag-Daten`
+- `resources/views/tags/_form_dialog.blade.php:21` — `label`
+- `resources/views/tags/_form_dialog.blade.php:21` — `success`
+- `resources/views/tags/_form_dialog.blade.php:22` — `fieldset`
+- `resources/views/tags/_form_dialog.blade.php:23` — `fieldset-label`
+- `resources/views/tags/_form_dialog.blade.php:23` — `Name`
+- `resources/views/tags/_form_dialog.blade.php:24` — `name`
+- `resources/views/tags/_form_dialog.blade.php:24` — `text`
+- `resources/views/tags/_form_dialog.blade.php:25` — `input input-bordered w-full`
+- `resources/views/tags/_form_dialog.blade.php:26` — `name`
+- `resources/views/tags/_form_dialog.blade.php:27` — `name`
+- `resources/views/tags/_form_dialog.blade.php:27` — `text-error text-sm`
+- `resources/views/tags/_form_dialog.blade.php:30` — `fieldset`
+- `resources/views/tags/_form_dialog.blade.php:31` — `fieldset-label`
+- `resources/views/tags/_form_dialog.blade.php:31` — `Farbe`
+- `resources/views/tags/_form_dialog.blade.php:32` — `color`
+- `resources/views/tags/_form_dialog.blade.php:32` — `color`
+- `resources/views/tags/_form_dialog.blade.php:33` — `color`
+- `resources/views/tags/_form_dialog.blade.php:34` — `input input-bordered h-10 w-full p-1`
+- `resources/views/reports/work-balance.blade.php:3` — `title`
+- `resources/views/reports/work-balance.blade.php:3` — `Arbeitsbilanz`
+- `resources/views/reports/work-balance.blade.php:13` — `content`
+- `resources/views/reports/work-balance.blade.php:14` — `space-y-4`
+- `resources/views/reports/work-balance.blade.php:15` — `flex flex-wrap items-center justify-between gap-3`
+- `resources/views/reports/work-balance.blade.php:17` — `text-xl font-semibold`
+- `resources/views/reports/work-balance.blade.php:17` — `Arbeitsbilanz`
+- `resources/views/reports/work-balance.blade.php:22` — `Zeitraum übernommen aus dem Header. Mit der Auswahl oben links wechseln.`
+- `resources/views/reports/work-balance.blade.php:25` — `flex flex-wrap items-end gap-2`
+- `resources/views/reports/work-balance.blade.php:27` — `reports.work-balance`
+- `resources/views/reports/work-balance.blade.php:28` — `flex items-end gap-2`
+- `resources/views/reports/work-balance.blade.php:29` — `user', 'export`
+- `resources/views/reports/work-balance.blade.php:30` — `hidden`
+- `resources/views/reports/work-balance.blade.php:32` — `form-control`
+- `resources/views/reports/work-balance.blade.php:33` — `label-text text-xs`
+- `resources/views/reports/work-balance.blade.php:33` — `Mitarbeiter`
+- `resources/views/reports/work-balance.blade.php:34` — `user`
+- `resources/views/reports/work-balance.blade.php:34` — `select select-bordered select-sm`
+- `resources/views/reports/work-balance.blade.php:45` — `reports.work-balance`
+- `resources/views/reports/work-balance.blade.php:45` — `export`
+- `resources/views/reports/work-balance.blade.php:46` — `btn btn-sm btn-outline gap-1`
+- `resources/views/reports/work-balance.blade.php:53` — `rounded-box border border-base-300 bg-base-100 p-3`
+- `resources/views/reports/work-balance.blade.php:54` — `Soll`
+- `resources/views/reports/work-balance.blade.php:55` — `text-2xl font-semibold`
+- `resources/views/reports/work-balance.blade.php:57` — `rounded-box border border-base-300 bg-base-100 p-3`
+- `resources/views/reports/work-balance.blade.php:58` — `Anwesenheit`
+- `resources/views/reports/work-balance.blade.php:59` — `text-2xl font-semibold`
+- `resources/views/reports/work-balance.blade.php:61` — `rounded-box border border-base-300 bg-base-100 p-3`
+- `resources/views/reports/work-balance.blade.php:62` — `Erfasst`
+- `resources/views/reports/work-balance.blade.php:63` — `text-2xl font-semibold`
+- `resources/views/reports/work-balance.blade.php:65` — `rounded-box border border-base-300 bg-base-100 p-3`
+- `resources/views/reports/work-balance.blade.php:66` — `Unverteilt`
+- `resources/views/reports/work-balance.blade.php:67` — `text-2xl font-semibold`
+- `resources/views/reports/work-balance.blade.php:70` — `Saldo`
+- `resources/views/reports/work-balance.blade.php:71` — `text-success`
+- `resources/views/reports/work-balance.blade.php:71` — `text-error`
+- `resources/views/reports/work-balance.blade.php:78` — `rounded-box border border-base-300 bg-base-100 p-3`
+- `resources/views/reports/work-balance.blade.php:79` — `Verteilung nach Tätigkeit`
+- `resources/views/reports/work-balance.blade.php:80` — `flex flex-wrap gap-2`
+- `resources/views/reports/work-balance.blade.php:82` — `badge badge-outline gap-2 px-3 py-3`
+- `resources/views/reports/work-balance.blade.php:91` — `overflow-x-auto rounded-box border border-base-300 bg-base-100`
+- `resources/views/reports/work-balance.blade.php:92` — `table table-sm`
+- `resources/views/reports/work-balance.blade.php:95` — `Datum`
+- `resources/views/reports/work-balance.blade.php:96` — `text-right`
+- `resources/views/reports/work-balance.blade.php:96` — `Soll`
+- `resources/views/reports/work-balance.blade.php:97` — `text-right`
+- `resources/views/reports/work-balance.blade.php:97` — `Anwesenheit`
+- `resources/views/reports/work-balance.blade.php:98` — `text-right`
+- `resources/views/reports/work-balance.blade.php:98` — `Pause`
+- `resources/views/reports/work-balance.blade.php:99` — `text-right`
+- `resources/views/reports/work-balance.blade.php:99` — `Erfasst`
+- `resources/views/reports/work-balance.blade.php:100` — `text-right`
+- `resources/views/reports/work-balance.blade.php:100` — `Unverteilt`
+- `resources/views/reports/work-balance.blade.php:101` — `text-right`
+- `resources/views/reports/work-balance.blade.php:101` — `Saldo`
+- `resources/views/reports/work-balance.blade.php:110` — `font-mono`
+- `resources/views/reports/work-balance.blade.php:110` — `D, d.m.Y`
+- `resources/views/reports/work-balance.blade.php:111` — `text-right`
+- `resources/views/reports/work-balance.blade.php:112` — `text-right`
+- `resources/views/reports/work-balance.blade.php:114` — `text-right`
+- `resources/views/reports/work-balance.blade.php:115` — `text-right text-warning`
+- `resources/views/reports/work-balance.blade.php:116` — `text-success`
+- `resources/views/reports/work-balance.blade.php:116` — `text-error`
+- `resources/views/reports/work-balance.blade.php:123` — `font-semibold`
+- `resources/views/reports/work-balance.blade.php:124` — `Summe`
+- `resources/views/reports/work-balance.blade.php:125` — `text-right`
+- `resources/views/reports/work-balance.blade.php:126` — `text-right`
+- `resources/views/reports/work-balance.blade.php:127` — `text-right`
+- `resources/views/reports/work-balance.blade.php:128` — `text-right`
+- `resources/views/reports/work-balance.blade.php:129` — `text-right`
+- `resources/views/reports/work-balance.blade.php:130` — `text-success`
+- `resources/views/reports/work-balance.blade.php:130` — `text-error`
+- `resources/views/reports/work-balance-pdf.blade.php:4` — `UTF-8`
+- `resources/views/reports/work-balance-pdf.blade.php:5` — `Arbeitsbilanz`
+- `resources/views/reports/work-balance-pdf.blade.php:34` — `Arbeitsbilanz`
+- `resources/views/reports/work-balance-pdf.blade.php:35` — `meta`
+- `resources/views/reports/work-balance-pdf.blade.php:36` — `Erstellt`
+- `resources/views/reports/work-balance-pdf.blade.php:39` — `summary`
+- `resources/views/reports/work-balance-pdf.blade.php:41` — `label`
+- `resources/views/reports/work-balance-pdf.blade.php:41` — `Soll`
+- `resources/views/reports/work-balance-pdf.blade.php:41` — `value`
+- `resources/views/reports/work-balance-pdf.blade.php:42` — `label`
+- `resources/views/reports/work-balance-pdf.blade.php:42` — `Anwesenheit`
+- `resources/views/reports/work-balance-pdf.blade.php:42` — `value`
+- `resources/views/reports/work-balance-pdf.blade.php:43` — `label`
+- `resources/views/reports/work-balance-pdf.blade.php:43` — `Pause`
+- `resources/views/reports/work-balance-pdf.blade.php:43` — `value`
+- `resources/views/reports/work-balance-pdf.blade.php:44` — `label`
+- `resources/views/reports/work-balance-pdf.blade.php:44` — `Erfasst`
+- `resources/views/reports/work-balance-pdf.blade.php:44` — `value`
+- `resources/views/reports/work-balance-pdf.blade.php:45` — `label`
+- `resources/views/reports/work-balance-pdf.blade.php:45` — `Unverteilt`
+- `resources/views/reports/work-balance-pdf.blade.php:45` — `value`
+- `resources/views/reports/work-balance-pdf.blade.php:46` — `label`
+- `resources/views/reports/work-balance-pdf.blade.php:46` — `Saldo`
+- `resources/views/reports/work-balance-pdf.blade.php:53` — `summary`
+- `resources/views/reports/work-balance-pdf.blade.php:57` — `label`
+- `resources/views/reports/work-balance-pdf.blade.php:58` — `value`
+- `resources/views/reports/work-balance-pdf.blade.php:65` — `days`
+- `resources/views/reports/work-balance-pdf.blade.php:68` — `Datum`
+- `resources/views/reports/work-balance-pdf.blade.php:69` — `Soll`
+- `resources/views/reports/work-balance-pdf.blade.php:70` — `Anwesenheit`
+- `resources/views/reports/work-balance-pdf.blade.php:71` — `Pause`
+- `resources/views/reports/work-balance-pdf.blade.php:72` — `Erfasst`
+- `resources/views/reports/work-balance-pdf.blade.php:73` — `Unverteilt`
+- `resources/views/reports/work-balance-pdf.blade.php:74` — `Saldo`
+- `resources/views/reports/work-balance-pdf.blade.php:95` — `Summe`
+- `resources/views/reports/work-balance-pdf.blade.php:106` — `footer`
+- `resources/views/reports/work-balance-pdf.blade.php:107` — `Arbeitsbilanz`
+- `resources/views/reports/customer-project.blade.php:2` — `title`
+- `resources/views/reports/customer-project.blade.php:3` — `nav-title`
+- `resources/views/reports/customer-project.blade.php:5` — `content`
+- `resources/views/reports/customer-project.blade.php:17` — `flex h-full min-h-0 w-full flex-col gap-4 overflow-auto`
+- `resources/views/reports/customer-project.blade.php:19` — `reports.customer-project`
+- `resources/views/reports/customer-project.blade.php:19` — `reports.customer-project`
+- `resources/views/reports/customer-project.blade.php:21` — `Bereich`
+- `resources/views/reports/customer-project.blade.php:21` — `rep-scope`
+- `resources/views/reports/customer-project.blade.php:22` — `rep-scope`
+- `resources/views/reports/customer-project.blade.php:22` — `scope`
+- `resources/views/reports/customer-project.blade.php:22` — `select select-sm select-bordered`
+- `resources/views/reports/customer-project.blade.php:23` — `mine`
+- `resources/views/reports/customer-project.blade.php:23` — `mine`
+- `resources/views/reports/customer-project.blade.php:23` — `Nur meine`
+- `resources/views/reports/customer-project.blade.php:24` — `team`
+- `resources/views/reports/customer-project.blade.php:24` — `team`
+- `resources/views/reports/customer-project.blade.php:24` — `Gesamtes Team`
+- `resources/views/reports/customer-project.blade.php:29` — `reports.customer-project`
+- `resources/views/reports/customer-project.blade.php:29` — `scope`
+- `resources/views/reports/customer-project.blade.php:29` — `export`
+- `resources/views/reports/customer-project.blade.php:29` — `btn btn-sm btn-outline gap-1`
+- `resources/views/reports/customer-project.blade.php:30` — `download`
+- `resources/views/reports/customer-project.blade.php:32` — `reports.customer-project`
+- `resources/views/reports/customer-project.blade.php:32` — `scope`
+- `resources/views/reports/customer-project.blade.php:32` — `export`
+- `resources/views/reports/customer-project.blade.php:32` — `btn btn-sm btn-outline gap-1`
+- `resources/views/reports/customer-project.blade.php:38` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/reports/customer-project.blade.php:39` — `mb-3 flex flex-wrap items-baseline justify-between gap-2`
+- `resources/views/reports/customer-project.blade.php:41` — `Aggregierte Stunden und Erlöse pro Kunde und Projekt im gewählten Zeitraum.`
+- `resources/views/reports/customer-project.blade.php:43` — `flex items-baseline gap-4`
+- `resources/views/reports/customer-project.blade.php:44` — `flex items-baseline gap-2`
+- `resources/views/reports/customer-project.blade.php:46` — `text-primary`
+- `resources/views/reports/customer-project.blade.php:50` — `flex items-baseline gap-2`
+- `resources/views/reports/customer-project.blade.php:52` — `text-primary`
+- `resources/views/reports/customer-project.blade.php:61` — `Keine Zeiteinträge im gewählten Zeitraum.`
+- `resources/views/reports/customer-project.blade.php:64` — `overflow-x-auto`
+- `resources/views/reports/customer-project.blade.php:65` — `table table-zebra table-sm`
+- `resources/views/reports/customer-project.blade.php:69` — `text-right`
+- `resources/views/reports/customer-project.blade.php:69` — `Stunden`
+- `resources/views/reports/customer-project.blade.php:70` — `text-right`
+- `resources/views/reports/customer-project.blade.php:70` — `Erlös`
+- `resources/views/reports/customer-project.blade.php:76` — `font-semibold text-base-content`
+- `resources/views/reports/customer-project.blade.php:77` — `customer`
+- `resources/views/reports/customer-project.blade.php:77` — `Ohne Kunde`
+- `resources/views/reports/customer-project.blade.php:79` — `text-right font-semibold tabular-nums text-base-content`
+- `resources/views/reports/customer-project.blade.php:79` — `minutes`
+- `resources/views/reports/customer-project.blade.php:80` — `text-right font-semibold tabular-nums text-base-content`
+- `resources/views/reports/customer-project.blade.php:80` — `rate`
+- `resources/views/reports/customer-project.blade.php:82` — `projects`
+- `resources/views/reports/customer-project.blade.php:85` — `project`
+- `resources/views/reports/customer-project.blade.php:86` — `mr-2 inline-block size-2 rounded-full align-middle`
+- `resources/views/reports/customer-project.blade.php:86` — `project`
+- `resources/views/reports/customer-project.blade.php:88` — `project`
+- `resources/views/reports/customer-project.blade.php:89` — `project`
+- `resources/views/reports/customer-project.blade.php:90` — `project`
+- `resources/views/reports/customer-project.blade.php:93` — `text-right tabular-nums`
+- `resources/views/reports/customer-project.blade.php:93` — `minutes`
+- `resources/views/reports/customer-project.blade.php:94` — `text-right tabular-nums`
+- `resources/views/reports/customer-project.blade.php:94` — `rate`
+- `resources/views/reports/customer-project.blade.php:100` — `font-bold`
+- `resources/views/reports/customer-project.blade.php:101` — `Gesamt`
+- `resources/views/reports/customer-project.blade.php:102` — `text-right`
+- `resources/views/reports/customer-project.blade.php:103` — `text-right`
+- `resources/views/reports/week-by-user.blade.php:2` — `title`
+- `resources/views/reports/week-by-user.blade.php:2` — `Woche pro Mitarbeiter`
+- `resources/views/reports/week-by-user.blade.php:3` — `nav-title`
+- `resources/views/reports/week-by-user.blade.php:3` — `Woche pro Mitarbeiter`
+- `resources/views/reports/week-by-user.blade.php:5` — `content`
+- `resources/views/reports/week-by-user.blade.php:16` — `flex h-full min-h-0 w-full flex-col gap-4 overflow-auto`
+- `resources/views/reports/week-by-user.blade.php:18` — `reports.week-by-user`
+- `resources/views/reports/week-by-user.blade.php:18` — `reports.week-by-user`
+- `resources/views/reports/week-by-user.blade.php:20` — `Bereich`
+- `resources/views/reports/week-by-user.blade.php:20` — `rep-scope`
+- `resources/views/reports/week-by-user.blade.php:21` — `rep-scope`
+- `resources/views/reports/week-by-user.blade.php:21` — `scope`
+- `resources/views/reports/week-by-user.blade.php:21` — `select select-sm select-bordered`
+- `resources/views/reports/week-by-user.blade.php:22` — `mine`
+- `resources/views/reports/week-by-user.blade.php:22` — `mine`
+- `resources/views/reports/week-by-user.blade.php:22` — `Nur meine`
+- `resources/views/reports/week-by-user.blade.php:23` — `team`
+- `resources/views/reports/week-by-user.blade.php:23` — `team`
+- `resources/views/reports/week-by-user.blade.php:23` — `Gesamtes Team`
+- `resources/views/reports/week-by-user.blade.php:28` — `reports.week-by-user`
+- `resources/views/reports/week-by-user.blade.php:28` — `scope`
+- `resources/views/reports/week-by-user.blade.php:28` — `export`
+- `resources/views/reports/week-by-user.blade.php:28` — `btn btn-sm btn-outline gap-1`
+- `resources/views/reports/week-by-user.blade.php:29` — `download`
+- `resources/views/reports/week-by-user.blade.php:31` — `reports.week-by-user`
+- `resources/views/reports/week-by-user.blade.php:31` — `scope`
+- `resources/views/reports/week-by-user.blade.php:31` — `export`
+- `resources/views/reports/week-by-user.blade.php:31` — `btn btn-sm btn-outline gap-1`
+- `resources/views/reports/week-by-user.blade.php:37` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/reports/week-by-user.blade.php:38` — `mb-3 flex flex-wrap items-baseline justify-between gap-2`
+- `resources/views/reports/week-by-user.blade.php:40` — `flex items-baseline gap-4`
+- `resources/views/reports/week-by-user.blade.php:41` — `flex items-baseline gap-2`
+- `resources/views/reports/week-by-user.blade.php:43` — `text-primary`
+- `resources/views/reports/week-by-user.blade.php:47` — `flex items-baseline gap-2`
+- `resources/views/reports/week-by-user.blade.php:49` — `text-primary`
+- `resources/views/reports/week-by-user.blade.php:58` — `Keine Einträge in dieser Woche.`
+- `resources/views/reports/week-by-user.blade.php:61` — `overflow-x-auto`
+- `resources/views/reports/week-by-user.blade.php:62` — `table table-zebra table-sm`
+- `resources/views/reports/week-by-user.blade.php:65` — `Mitarbeiter`
+- `resources/views/reports/week-by-user.blade.php:67` — `text-right`
+- `resources/views/reports/week-by-user.blade.php:69` — `text-right`
+- `resources/views/reports/week-by-user.blade.php:69` — `Stunden`
+- `resources/views/reports/week-by-user.blade.php:70` — `text-right`
+- `resources/views/reports/week-by-user.blade.php:76` — `font-medium`
+- `resources/views/reports/week-by-user.blade.php:77` — `days`
+- `resources/views/reports/week-by-user.blade.php:80` — `text-right font-semibold`
+- `resources/views/reports/week-by-user.blade.php:80` — `total`
+- `resources/views/reports/week-by-user.blade.php:81` — `text-right`
+- `resources/views/reports/week-by-user.blade.php:81` — `rate`
+- `resources/views/reports/week-by-user.blade.php:86` — `font-bold`
+- `resources/views/reports/week-by-user.blade.php:89` — `text-right`
+- `resources/views/reports/week-by-user.blade.php:91` — `text-right`
+- `resources/views/reports/week-by-user.blade.php:92` — `text-right`
+- `resources/views/reports/my-month.blade.php:2` — `title`
+- `resources/views/reports/my-month.blade.php:2` — `Mein Monat`
+- `resources/views/reports/my-month.blade.php:3` — `nav-title`
+- `resources/views/reports/my-month.blade.php:3` — `Mein Monat`
+- `resources/views/reports/my-month.blade.php:5` — `content`
+- `resources/views/reports/my-month.blade.php:16` — `work`
+- `resources/views/reports/my-month.blade.php:16` — `Arbeit`
+- `resources/views/reports/my-month.blade.php:17` — `travel`
+- `resources/views/reports/my-month.blade.php:17` — `Reise`
+- `resources/views/reports/my-month.blade.php:18` — `standby`
+- `resources/views/reports/my-month.blade.php:18` — `Bereitschaft`
+- `resources/views/reports/my-month.blade.php:21` — `work`
+- `resources/views/reports/my-month.blade.php:21` — `badge-primary',
+        'travel`
+- `resources/views/reports/my-month.blade.php:22` — `badge-info',
+        'standby`
+- `resources/views/reports/my-month.blade.php:23` — `badge-warning`
+- `resources/views/reports/my-month.blade.php:27` — `flex h-full min-h-0 w-full flex-col gap-4 overflow-auto`
+- `resources/views/reports/my-month.blade.php:29` — `reports.my-month`
+- `resources/views/reports/my-month.blade.php:29` — `reports.my-month`
+- `resources/views/reports/my-month.blade.php:31` — `reports.my-month`
+- `resources/views/reports/my-month.blade.php:31` — `export`
+- `resources/views/reports/my-month.blade.php:31` — `btn btn-sm btn-outline gap-1`
+- `resources/views/reports/my-month.blade.php:32` — `download`
+- `resources/views/reports/my-month.blade.php:34` — `reports.my-month`
+- `resources/views/reports/my-month.blade.php:34` — `export`
+- `resources/views/reports/my-month.blade.php:34` — `btn btn-sm btn-outline gap-1`
+- `resources/views/reports/my-month.blade.php:40` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/reports/my-month.blade.php:41` — `mb-3 flex flex-wrap items-baseline justify-between gap-2`
+- `resources/views/reports/my-month.blade.php:43` — `Tagesweise Übersicht aller eigenen Zeiteinträge im Monat.`
+- `resources/views/reports/my-month.blade.php:45` — `flex items-baseline gap-4`
+- `resources/views/reports/my-month.blade.php:46` — `flex items-baseline gap-2`
+- `resources/views/reports/my-month.blade.php:48` — `text-primary`
+- `resources/views/reports/my-month.blade.php:50` — `flex items-baseline gap-2`
+- `resources/views/reports/my-month.blade.php:52` — `text-primary`
+- `resources/views/reports/my-month.blade.php:59` — `Keine Zeiteinträge in diesem Monat.`
+- `resources/views/reports/my-month.blade.php:62` — `overflow-x-auto`
+- `resources/views/reports/my-month.blade.php:63` — `table table-zebra table-sm`
+- `resources/views/reports/my-month.blade.php:66` — `Datum`
+- `resources/views/reports/my-month.blade.php:67` — `Zeit`
+- `resources/views/reports/my-month.blade.php:71` — `text-right`
+- `resources/views/reports/my-month.blade.php:71` — `Dauer`
+- `resources/views/reports/my-month.blade.php:72` — `text-right`
+- `resources/views/reports/my-month.blade.php:72` — `Erlös`
+- `resources/views/reports/my-month.blade.php:79` — `dd, DD.MM.`
+- `resources/views/reports/my-month.blade.php:86` — `minutes`
+- `resources/views/reports/my-month.blade.php:87` — `rate`
+- `resources/views/reports/my-month.blade.php:89` — `entries`
+- `resources/views/reports/my-month.blade.php:92` — `tabular-nums text-sm`
+- `resources/views/reports/my-month.blade.php:100` — `badge-ghost`
+- `resources/views/reports/my-month.blade.php:102` — `text-sm`
+- `resources/views/reports/my-month.blade.php:108` — `mr-1 inline-block size-2 rounded-full align-middle`
+- `resources/views/reports/my-month.blade.php:115` — `font-medium`
+- `resources/views/reports/my-month.blade.php:122` — `text-right tabular-nums`
+- `resources/views/reports/my-month.blade.php:123` — `text-right tabular-nums`
+- `resources/views/reports/my-month.blade.php:129` — `font-bold`
+- `resources/views/reports/my-month.blade.php:130` — `Gesamt`
+- `resources/views/reports/my-month.blade.php:131` — `text-right`
+- `resources/views/reports/my-month.blade.php:132` — `text-right`
+- `resources/views/reports/pdf/customer-project.blade.php:4` — `utf-8`
+- `resources/views/reports/pdf/customer-project.blade.php:23` — `meta`
+- `resources/views/reports/pdf/customer-project.blade.php:26` — `team' ? 'Team`
+- `resources/views/reports/pdf/customer-project.blade.php:26` — `Eigene`
+- `resources/views/reports/pdf/customer-project.blade.php:35` — `right`
+- `resources/views/reports/pdf/customer-project.blade.php:36` — `right`
+- `resources/views/reports/pdf/customer-project.blade.php:42` — `minutes`
+- `resources/views/reports/pdf/customer-project.blade.php:43` — `minutes`
+- `resources/views/reports/pdf/customer-project.blade.php:44` — `customer`
+- `resources/views/reports/pdf/customer-project.blade.php:44` — `customer`
+- `resources/views/reports/pdf/customer-project.blade.php:46` — `customer-row`
+- `resources/views/reports/pdf/customer-project.blade.php:49` — `right`
+- `resources/views/reports/pdf/customer-project.blade.php:50` — `right`
+- `resources/views/reports/pdf/customer-project.blade.php:50` — `rate`
+- `resources/views/reports/pdf/customer-project.blade.php:52` — `projects`
+- `resources/views/reports/pdf/customer-project.blade.php:54` — `minutes`
+- `resources/views/reports/pdf/customer-project.blade.php:55` — `minutes`
+- `resources/views/reports/pdf/customer-project.blade.php:57` — `project-row`
+- `resources/views/reports/pdf/customer-project.blade.php:58` — `project`
+- `resources/views/reports/pdf/customer-project.blade.php:59` — `project`
+- `resources/views/reports/pdf/customer-project.blade.php:60` — `right`
+- `resources/views/reports/pdf/customer-project.blade.php:61` — `right`
+- `resources/views/reports/pdf/customer-project.blade.php:61` — `rate`
+- `resources/views/reports/pdf/customer-project.blade.php:69` — `totals`
+- `resources/views/reports/pdf/customer-project.blade.php:72` — `right`
+- `resources/views/reports/pdf/customer-project.blade.php:73` — `right`
+- `resources/views/reports/pdf/week-by-user.blade.php:4` — `utf-8`
+- `resources/views/reports/pdf/week-by-user.blade.php:21` — `meta`
+- `resources/views/reports/pdf/week-by-user.blade.php:28` — `right`
+- `resources/views/reports/pdf/week-by-user.blade.php:30` — `right`
+- `resources/views/reports/pdf/week-by-user.blade.php:31` — `right`
+- `resources/views/reports/pdf/week-by-user.blade.php:37` — `total`
+- `resources/views/reports/pdf/week-by-user.blade.php:38` — `total`
+- `resources/views/reports/pdf/week-by-user.blade.php:42` — `days`
+- `resources/views/reports/pdf/week-by-user.blade.php:47` — `right`
+- `resources/views/reports/pdf/week-by-user.blade.php:49` — `right`
+- `resources/views/reports/pdf/week-by-user.blade.php:50` — `right`
+- `resources/views/reports/pdf/week-by-user.blade.php:50` — `rate`
+- `resources/views/reports/pdf/week-by-user.blade.php:66` — `right`
+- `resources/views/reports/pdf/week-by-user.blade.php:68` — `right`
+- `resources/views/reports/pdf/week-by-user.blade.php:69` — `right`
+- `resources/views/reports/pdf/my-month.blade.php:4` — `utf-8`
+- `resources/views/reports/pdf/my-month.blade.php:26` — `meta`
+- `resources/views/reports/pdf/my-month.blade.php:30` — `minutes`
+- `resources/views/reports/pdf/my-month.blade.php:31` — `minutes`
+- `resources/views/reports/pdf/my-month.blade.php:37` — `dddd, DD.MM.YYYY`
+- `resources/views/reports/pdf/my-month.blade.php:38` — `right`
+- `resources/views/reports/pdf/my-month.blade.php:39` — `right`
+- `resources/views/reports/pdf/my-month.blade.php:39` — `rate`
+- `resources/views/reports/pdf/my-month.blade.php:46` — `right`
+- `resources/views/reports/pdf/my-month.blade.php:47` — `right`
+- `resources/views/reports/pdf/my-month.blade.php:51` — `entries`
+- `resources/views/reports/pdf/my-month.blade.php:59` — `badge`
+- `resources/views/reports/pdf/my-month.blade.php:62` — `small`
+- `resources/views/reports/pdf/my-month.blade.php:64` — `small`
+- `resources/views/reports/pdf/my-month.blade.php:67` — `right`
+- `resources/views/reports/pdf/my-month.blade.php:68` — `right`
+- `resources/views/reports/pdf/my-month.blade.php:81` — `totals`
+- `resources/views/reports/pdf/my-month.blade.php:83` — `right`
+- `resources/views/reports/pdf/my-month.blade.php:84` — `right`
+- `resources/views/reports/pdf/my-month.blade.php:85` — `right`
+- `resources/views/reports/pdf/project-details.blade.php:4` — `utf-8`
+- `resources/views/reports/pdf/project-details.blade.php:22` — `meta`
+- `resources/views/reports/pdf/project-details.blade.php:27` — `right`
+- `resources/views/reports/pdf/project-details.blade.php:27` — `right`
+- `resources/views/reports/pdf/project-details.blade.php:32` — `minutes`
+- `resources/views/reports/pdf/project-details.blade.php:33` — `minutes`
+- `resources/views/reports/pdf/project-details.blade.php:37` — `right`
+- `resources/views/reports/pdf/project-details.blade.php:37` — `minutes`
+- `resources/views/reports/pdf/project-details.blade.php:38` — `right`
+- `resources/views/reports/pdf/project-details.blade.php:38` — `rate`
+- `resources/views/reports/pdf/project-details.blade.php:47` — `right`
+- `resources/views/reports/pdf/project-details.blade.php:47` — `right`
+- `resources/views/reports/pdf/project-details.blade.php:55` — `right`
+- `resources/views/reports/pdf/project-details.blade.php:55` — `right`
+- `resources/views/reports/pdf/project-details.blade.php:60` — `minutes`
+- `resources/views/reports/pdf/project-details.blade.php:61` — `minutes`
+- `resources/views/reports/pdf/project-details.blade.php:65` — `right`
+- `resources/views/reports/pdf/project-details.blade.php:66` — `right`
+- `resources/views/reports/pdf/project-details.blade.php:66` — `rate`
+- `resources/views/reports/project-details.blade.php:2` — `title`
+- `resources/views/reports/project-details.blade.php:2` — `Projekt-Details`
+- `resources/views/reports/project-details.blade.php:3` — `nav-title`
+- `resources/views/reports/project-details.blade.php:3` — `Projekt-Details`
+- `resources/views/reports/project-details.blade.php:5` — `content`
+- `resources/views/reports/project-details.blade.php:16` — `flex h-full min-h-0 w-full flex-col gap-4 overflow-auto`
+- `resources/views/reports/project-details.blade.php:18` — `reports.project-details`
+- `resources/views/reports/project-details.blade.php:18` — `reports.project-details`
+- `resources/views/reports/project-details.blade.php:19` — `Projekt`
+- `resources/views/reports/project-details.blade.php:19` — `rep-project`
+- `resources/views/reports/project-details.blade.php:20` — `rep-project`
+- `resources/views/reports/project-details.blade.php:20` — `select select-sm select-bordered`
+- `resources/views/reports/project-details.blade.php:30` — `reports.project-details`
+- `resources/views/reports/project-details.blade.php:30` — `export`
+- `resources/views/reports/project-details.blade.php:30` — `btn btn-sm btn-outline gap-1`
+- `resources/views/reports/project-details.blade.php:31` — `download`
+- `resources/views/reports/project-details.blade.php:33` — `reports.project-details`
+- `resources/views/reports/project-details.blade.php:33` — `export`
+- `resources/views/reports/project-details.blade.php:33` — `btn btn-sm btn-outline gap-1`
+- `resources/views/reports/project-details.blade.php:41` — `alert`
+- `resources/views/reports/project-details.blade.php:41` — `Kein Projekt vorhanden.`
+- `resources/views/reports/project-details.blade.php:43` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/reports/project-details.blade.php:44` — `mb-3 flex flex-wrap items-baseline justify-between gap-2`
+- `resources/views/reports/project-details.blade.php:51` — `flex items-baseline gap-4`
+- `resources/views/reports/project-details.blade.php:52` — `flex items-baseline gap-2`
+- `resources/views/reports/project-details.blade.php:54` — `text-primary`
+- `resources/views/reports/project-details.blade.php:56` — `flex items-baseline gap-2`
+- `resources/views/reports/project-details.blade.php:58` — `text-primary`
+- `resources/views/reports/project-details.blade.php:63` — `overflow-x-auto`
+- `resources/views/reports/project-details.blade.php:64` — `table table-zebra table-sm`
+- `resources/views/reports/project-details.blade.php:67` — `Monat`
+- `resources/views/reports/project-details.blade.php:68` — `text-right`
+- `resources/views/reports/project-details.blade.php:68` — `Stunden`
+- `resources/views/reports/project-details.blade.php:69` — `text-right`
+- `resources/views/reports/project-details.blade.php:69` — `Erlös`
+- `resources/views/reports/project-details.blade.php:76` — `minutes`
+- `resources/views/reports/project-details.blade.php:76` — `minutes`
+- `resources/views/reports/project-details.blade.php:77` — `text-right`
+- `resources/views/reports/project-details.blade.php:77` — `rate`
+- `resources/views/reports/project-details.blade.php:82` — `font-bold`
+- `resources/views/reports/project-details.blade.php:83` — `Jahr`
+- `resources/views/reports/project-details.blade.php:84` — `text-right`
+- `resources/views/reports/project-details.blade.php:85` — `text-right`
+- `resources/views/reports/project-details.blade.php:92` — `Aufteilung pro Mitarbeiter`
+- `resources/views/reports/project-details.blade.php:93` — `overflow-x-auto`
+- `resources/views/reports/project-details.blade.php:94` — `table table-zebra table-sm`
+- `resources/views/reports/project-details.blade.php:97` — `Mitarbeiter`
+- `resources/views/reports/project-details.blade.php:98` — `text-right`
+- `resources/views/reports/project-details.blade.php:98` — `Stunden`
+- `resources/views/reports/project-details.blade.php:99` — `text-right`
+- `resources/views/reports/project-details.blade.php:99` — `Erlös`
+- `resources/views/reports/project-details.blade.php:106` — `text-right`
+- `resources/views/reports/project-details.blade.php:106` — `minutes`
+- `resources/views/reports/project-details.blade.php:107` — `text-right`
+- `resources/views/reports/project-details.blade.php:107` — `rate`
+- `resources/views/reports/project-details.blade.php:112` — `font-bold`
+- `resources/views/reports/project-details.blade.php:113` — `Gesamt`
+- `resources/views/reports/project-details.blade.php:114` — `text-right`
+- `resources/views/reports/project-details.blade.php:115` — `text-right`
+- `resources/views/reports/my-year.blade.php:2` — `title`
+- `resources/views/reports/my-year.blade.php:2` — `Mein Jahr`
+- `resources/views/reports/my-year.blade.php:3` — `nav-title`
+- `resources/views/reports/my-year.blade.php:3` — `Mein Jahr`
+- `resources/views/reports/my-year.blade.php:5` — `content`
+- `resources/views/reports/my-year.blade.php:38` — `flex h-full min-h-0 w-full flex-col gap-4 overflow-auto`
+- `resources/views/reports/my-year.blade.php:40` — `reports.my-year`
+- `resources/views/reports/my-year.blade.php:40` — `reports.my-year`
+- `resources/views/reports/my-year.blade.php:41` — `rep-kind`
+- `resources/views/reports/my-year.blade.php:42` — `rep-kind`
+- `resources/views/reports/my-year.blade.php:42` — `kind`
+- `resources/views/reports/my-year.blade.php:42` — `select select-sm select-bordered`
+- `resources/views/reports/my-year.blade.php:43` — `Alle`
+- `resources/views/reports/my-year.blade.php:44` — `work`
+- `resources/views/reports/my-year.blade.php:44` — `work`
+- `resources/views/reports/my-year.blade.php:44` — `Arbeit`
+- `resources/views/reports/my-year.blade.php:45` — `travel`
+- `resources/views/reports/my-year.blade.php:45` — `travel`
+- `resources/views/reports/my-year.blade.php:45` — `Reise`
+- `resources/views/reports/my-year.blade.php:46` — `standby`
+- `resources/views/reports/my-year.blade.php:46` — `standby`
+- `resources/views/reports/my-year.blade.php:46` — `Bereitschaft`
+- `resources/views/reports/my-year.blade.php:51` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/reports/my-year.blade.php:52` — `mb-3 flex flex-wrap items-center justify-between gap-2`
+- `resources/views/reports/my-year.blade.php:56` — `flex items-baseline gap-2`
+- `resources/views/reports/my-year.blade.php:57` — `Jahressumme`
+- `resources/views/reports/my-year.blade.php:58` — `text-primary`
+- `resources/views/reports/my-year.blade.php:66` — `Keine Zeiteinträge für dieses Jahr.`
+- `resources/views/reports/my-year.blade.php:69` — `overflow-x-auto`
+- `resources/views/reports/my-year.blade.php:70` — `table table-xs w-full text-center tabular-nums`
+- `resources/views/reports/my-year.blade.php:73` — `Monat`
+- `resources/views/reports/my-year.blade.php:93` — `keine Einträge`
+- `resources/views/reports/my-year.blade.php:108` — `text-base-content`
+- `resources/views/service-orders/index.blade.php:3` — `title`
+- `resources/views/service-orders/index.blade.php:3` — `Aufträge`
+- `resources/views/service-orders/index.blade.php:5` — `content`
+- `resources/views/service-orders/index.blade.php:6` — `space-y-4`
+- `resources/views/service-orders/index.blade.php:7` — `flex flex-wrap items-center justify-between gap-3`
+- `resources/views/service-orders/index.blade.php:9` — `text-xl font-semibold`
+- `resources/views/service-orders/index.blade.php:9` — `Service-Aufträge`
+- `resources/views/service-orders/index.blade.php:14` — `flex flex-wrap gap-2`
+- `resources/views/service-orders/index.blade.php:15` — `service-orders.create`
+- `resources/views/service-orders/index.blade.php:15` — `btn btn-sm btn-primary`
+- `resources/views/service-orders/index.blade.php:16` — `Neuer Auftrag`
+- `resources/views/service-orders/index.blade.php:21` — `flex flex-wrap items-end gap-2 rounded-box border border-base-300 bg-base-100 p-3`
+- `resources/views/service-orders/index.blade.php:23` — `label-text`
+- `resources/views/service-orders/index.blade.php:23` — `Status`
+- `resources/views/service-orders/index.blade.php:24` — `status`
+- `resources/views/service-orders/index.blade.php:24` — `select select-bordered select-sm`
+- `resources/views/service-orders/index.blade.php:25` — `alle`
+- `resources/views/service-orders/index.blade.php:33` — `label-text`
+- `resources/views/service-orders/index.blade.php:33` — `Mitarbeiter`
+- `resources/views/service-orders/index.blade.php:34` — `user`
+- `resources/views/service-orders/index.blade.php:34` — `select select-bordered select-sm`
+- `resources/views/service-orders/index.blade.php:35` — `alle`
+- `resources/views/service-orders/index.blade.php:42` — `btn btn-sm`
+- `resources/views/service-orders/index.blade.php:42` — `Filtern`
+- `resources/views/service-orders/index.blade.php:45` — `overflow-x-auto rounded-box border border-base-300 bg-base-100`
+- `resources/views/service-orders/index.blade.php:46` — `table table-sm`
+- `resources/views/service-orders/index.blade.php:49` — `Datum`
+- `resources/views/service-orders/index.blade.php:50` — `Titel`
+- `resources/views/service-orders/index.blade.php:51` — `Kunde`
+- `resources/views/service-orders/index.blade.php:53` — `Status`
+- `resources/views/service-orders/index.blade.php:54` — `Tour`
+- `resources/views/service-orders/index.blade.php:63` — `service-orders.show`
+- `resources/views/service-orders/index.blade.php:63` — `link`
+- `resources/views/service-orders/index.blade.php:64` — `normal`
+- `resources/views/service-orders/index.blade.php:65` — `badge badge-warning badge-xs ml-1`
+- `resources/views/service-orders/index.blade.php:70` — `badge badge-ghost badge-sm`
+- `resources/views/service-orders/index.blade.php:73` — `link link-hover`
+- `resources/views/service-orders/index.blade.php:77` — `text-right`
+- `resources/views/service-orders/index.blade.php:78` — `service-orders.edit`
+- `resources/views/service-orders/index.blade.php:78` — `btn btn-xs btn-ghost`
+- `resources/views/service-orders/index.blade.php:78` — `Bearbeiten`
+- `resources/views/service-orders/index.blade.php:79` — `service-orders.destroy`
+- `resources/views/service-orders/index.blade.php:79` — `inline`
+- `resources/views/service-orders/index.blade.php:81` — `Auftrag wirklich löschen?`
+- `resources/views/service-orders/index.blade.php:82` — `Löschen`
+- `resources/views/service-orders/index.blade.php:84` — `submit`
+- `resources/views/service-orders/index.blade.php:84` — `btn btn-xs btn-ghost text-error`
+- `resources/views/service-orders/index.blade.php:84` — `Löschen`
+- `resources/views/service-orders/index.blade.php:89` — `Keine Aufträge im gewählten Zeitraum.`
+- `resources/views/service-orders/_form_body.blade.php:3` — `Allgemein`
+- `resources/views/service-orders/_form_body.blade.php:3` — `assignment`
+- `resources/views/service-orders/_form_body.blade.php:3` — `primary`
+- `resources/views/service-orders/_form_body.blade.php:5` — `fieldset-label`
+- `resources/views/service-orders/_form_body.blade.php:5` — `Titel`
+- `resources/views/service-orders/_form_body.blade.php:6` — `text`
+- `resources/views/service-orders/_form_body.blade.php:6` — `title`
+- `resources/views/service-orders/_form_body.blade.php:7` — `title`
+- `resources/views/service-orders/_form_body.blade.php:8` — `title`
+- `resources/views/service-orders/_form_body.blade.php:9` — `title`
+- `resources/views/service-orders/_form_body.blade.php:9` — `text-error text-sm`
+- `resources/views/service-orders/_form_body.blade.php:11` — `fieldset`
+- `resources/views/service-orders/_form_body.blade.php:12` — `fieldset-label`
+- `resources/views/service-orders/_form_body.blade.php:12` — `Termin`
+- `resources/views/service-orders/_form_body.blade.php:13` — `date`
+- `resources/views/service-orders/_form_body.blade.php:15` — `input input-bordered w-full`
+- `resources/views/service-orders/_form_body.blade.php:17` — `fieldset`
+- `resources/views/service-orders/_form_body.blade.php:18` — `fieldset-label`
+- `resources/views/service-orders/_form_body.blade.php:19` — `number`
+- `resources/views/service-orders/_form_body.blade.php:21` — `input input-bordered w-full`
+- `resources/views/service-orders/_form_body.blade.php:23` — `fieldset`
+- `resources/views/service-orders/_form_body.blade.php:24` — `fieldset-label`
+- `resources/views/service-orders/_form_body.blade.php:24` — `Kunde`
+- `resources/views/service-orders/_form_body.blade.php:25` — `select select-bordered w-full`
+- `resources/views/service-orders/_form_body.blade.php:32` — `fieldset`
+- `resources/views/service-orders/_form_body.blade.php:33` — `fieldset-label`
+- `resources/views/service-orders/_form_body.blade.php:33` — `Projekt`
+- `resources/views/service-orders/_form_body.blade.php:34` — `select select-bordered w-full`
+- `resources/views/service-orders/_form_body.blade.php:41` — `fieldset`
+- `resources/views/service-orders/_form_body.blade.php:42` — `fieldset-label`
+- `resources/views/service-orders/_form_body.blade.php:42` — `Mitarbeiter`
+- `resources/views/service-orders/_form_body.blade.php:43` — `select select-bordered w-full`
+- `resources/views/service-orders/_form_body.blade.php:44` — `offen`
+- `resources/views/service-orders/_form_body.blade.php:50` — `fieldset`
+- `resources/views/service-orders/_form_body.blade.php:51` — `fieldset-label`
+- `resources/views/service-orders/_form_body.blade.php:51` — `Priorität`
+- `resources/views/service-orders/_form_body.blade.php:52` — `priority`
+- `resources/views/service-orders/_form_body.blade.php:52` — `select select-bordered w-full`
+- `resources/views/service-orders/_form_body.blade.php:54` — `priority`
+- `resources/views/service-orders/_form_body.blade.php:54` — `normal`
+- `resources/views/service-orders/_form_body.blade.php:59` — `fieldset`
+- `resources/views/service-orders/_form_body.blade.php:60` — `fieldset-label`
+- `resources/views/service-orders/_form_body.blade.php:60` — `Status`
+- `resources/views/service-orders/_form_body.blade.php:61` — `status`
+- `resources/views/service-orders/_form_body.blade.php:61` — `select select-bordered w-full`
+- `resources/views/service-orders/_form_body.blade.php:63` — `status`
+- `resources/views/service-orders/_form_body.blade.php:70` — `Einsatzort`
+- `resources/views/service-orders/_form_body.blade.php:70` — `home`
+- `resources/views/service-orders/_form_body.blade.php:70` — `info`
+- `resources/views/service-orders/_form_body.blade.php:72` — `fieldset-label`
+- `resources/views/service-orders/_form_body.blade.php:72` — `Straße`
+- `resources/views/service-orders/_form_body.blade.php:73` — `text`
+- `resources/views/service-orders/_form_body.blade.php:73` — `input input-bordered w-full`
+- `resources/views/service-orders/_form_body.blade.php:75` — `fieldset`
+- `resources/views/service-orders/_form_body.blade.php:76` — `fieldset-label`
+- `resources/views/service-orders/_form_body.blade.php:77` — `text`
+- `resources/views/service-orders/_form_body.blade.php:77` — `input input-bordered w-full`
+- `resources/views/service-orders/_form_body.blade.php:79` — `fieldset`
+- `resources/views/service-orders/_form_body.blade.php:80` — `fieldset-label`
+- `resources/views/service-orders/_form_body.blade.php:81` — `text`
+- `resources/views/service-orders/_form_body.blade.php:81` — `input input-bordered w-full`
+- `resources/views/service-orders/_form_body.blade.php:83` — `fieldset`
+- `resources/views/service-orders/_form_body.blade.php:84` — `fieldset-label`
+- `resources/views/service-orders/_form_body.blade.php:85` — `text`
+- `resources/views/service-orders/_form_body.blade.php:85` — `input input-bordered w-full`
+- `resources/views/service-orders/_form_body.blade.php:87` — `fieldset`
+- `resources/views/service-orders/_form_body.blade.php:88` — `fieldset-label`
+- `resources/views/service-orders/_form_body.blade.php:89` — `number`
+- `resources/views/service-orders/_form_body.blade.php:89` — `input input-bordered w-full`
+- `resources/views/service-orders/_form_body.blade.php:91` — `fieldset`
+- `resources/views/service-orders/_form_body.blade.php:92` — `fieldset-label`
+- `resources/views/service-orders/_form_body.blade.php:93` — `number`
+- `resources/views/service-orders/_form_body.blade.php:93` — `input input-bordered w-full`
+- `resources/views/service-orders/_form_body.blade.php:97` — `Zeitfenster`
+- `resources/views/service-orders/_form_body.blade.php:97` — `schedule`
+- `resources/views/service-orders/_form_body.blade.php:97` — `warning`
+- `resources/views/service-orders/_form_body.blade.php:98` — `fieldset`
+- `resources/views/service-orders/_form_body.blade.php:99` — `fieldset-label`
+- `resources/views/service-orders/_form_body.blade.php:99` — `Frühestens`
+- `resources/views/service-orders/_form_body.blade.php:100` — `time`
+- `resources/views/service-orders/_form_body.blade.php:100` — `input input-bordered w-full`
+- `resources/views/service-orders/_form_body.blade.php:102` — `fieldset`
+- `resources/views/service-orders/_form_body.blade.php:103` — `fieldset-label`
+- `resources/views/service-orders/_form_body.blade.php:103` — `Spätestens`
+- `resources/views/service-orders/_form_body.blade.php:104` — `time`
+- `resources/views/service-orders/_form_body.blade.php:104` — `input input-bordered w-full`
+- `resources/views/service-orders/_form_body.blade.php:108` — `ghost`
+- `resources/views/service-orders/_form_body.blade.php:109` — `fieldset`
+- `resources/views/service-orders/_form_body.blade.php:110` — `fieldset-label`
+- `resources/views/service-orders/_form_body.blade.php:110` — `Beschreibung`
+- `resources/views/service-orders/_form_body.blade.php:111` — `description`
+- `resources/views/service-orders/_form_body.blade.php:111` — `textarea textarea-bordered w-full`
+- `resources/views/service-orders/_form_body.blade.php:111` — `description`
+- `resources/views/service-orders/_form_body.blade.php:113` — `fieldset`
+- `resources/views/service-orders/_form_body.blade.php:114` — `fieldset-label`
+- `resources/views/service-orders/_form_body.blade.php:114` — `Notizen`
+- `resources/views/service-orders/_form_body.blade.php:115` — `notes`
+- `resources/views/service-orders/_form_body.blade.php:115` — `textarea textarea-bordered w-full`
+- `resources/views/service-orders/_form_body.blade.php:115` — `notes`
+- `resources/views/service-orders/_form_body.blade.php:120` — `alert alert-error text-sm`
+- `resources/views/service-orders/_form_body.blade.php:121` — `list-disc pl-5`
+- `resources/views/service-orders/_form_dialog.blade.php:4` — `service-orders.update`
+- `resources/views/service-orders/_form_dialog.blade.php:5` — `service-orders.store`
+- `resources/views/service-orders/_form_dialog.blade.php:9` — `Auftrag bearbeiten`
+- `resources/views/service-orders/_form_dialog.blade.php:9` — `Neuer Auftrag`
+- `resources/views/service-orders/_form_dialog.blade.php:10` — `Service-Aufträge`
+- `resources/views/service-orders/_form_dialog.blade.php:11` — `assignment`
+- `resources/views/service-orders/_form_dialog.blade.php:13` — `ghost`
+- `resources/views/service-orders/_form_dialog.blade.php:13` — `ghost'`
+- `resources/views/service-orders/_form_dialog.blade.php:14` — `primary`
+- `resources/views/service-orders/_form_dialog.blade.php:16` — `POST'`
+- `resources/views/service-orders/_form_dialog.blade.php:17` — `data-entry-form`
+- `resources/views/service-orders/_form_dialog.blade.php:18` — `Speichern`
+- `resources/views/service-orders/_form_dialog.blade.php:18` — `Anlegen`
+- `resources/views/service-orders/_form_dialog.blade.php:20` — `order`
+- `resources/views/service-orders/_form_dialog.blade.php:24` — `service-orders.destroy`
+- `resources/views/service-orders/_form_dialog.blade.php:26` — `Auftrag wirklich löschen?`
+- `resources/views/service-orders/_form_dialog.blade.php:27` — `Löschen`
+- `resources/views/service-orders/_form_dialog.blade.php:29` — `submit`
+- `resources/views/service-orders/_form_dialog.blade.php:29` — `btn btn-error btn-outline btn-sm gap-2`
+- `resources/views/service-orders/_form_dialog.blade.php:30` — `delete`
+- `resources/views/service-orders/_form_dialog.blade.php:30` — `Löschen`
+- `resources/views/service-orders/show.blade.php:3` — `title`
+- `resources/views/service-orders/show.blade.php:5` — `content`
+- `resources/views/service-orders/show.blade.php:6` — `w-full space-y-4`
+- `resources/views/service-orders/show.blade.php:7` — `flex flex-wrap items-center justify-between gap-3`
+- `resources/views/service-orders/show.blade.php:9` — `text-xl font-semibold`
+- `resources/views/service-orders/show.blade.php:12` — `badge badge-ghost badge-sm`
+- `resources/views/service-orders/show.blade.php:13` — `badge badge-outline badge-sm`
+- `resources/views/service-orders/show.blade.php:16` — `flex gap-2`
+- `resources/views/service-orders/show.blade.php:17` — `service-orders.edit`
+- `resources/views/service-orders/show.blade.php:17` — `btn btn-sm`
+- `resources/views/service-orders/show.blade.php:17` — `Bearbeiten`
+- `resources/views/service-orders/show.blade.php:18` — `service-orders.index`
+- `resources/views/service-orders/show.blade.php:18` — `btn btn-sm btn-ghost`
+- `resources/views/service-orders/show.blade.php:18` — `Zurück`
+- `resources/views/service-orders/show.blade.php:22` — `rounded-box border border-base-300 bg-base-100 p-4`
+- `resources/views/service-orders/show.blade.php:24` — `Kunde`
+- `resources/views/service-orders/show.blade.php:25` — `Projekt`
+- `resources/views/service-orders/show.blade.php:26` — `Mitarbeiter`
+- `resources/views/service-orders/show.blade.php:26` — `offen`
+- `resources/views/service-orders/show.blade.php:27` — `Adresse`
+- `resources/views/service-orders/show.blade.php:29` — `Zeitfenster`
+- `resources/views/service-orders/show.blade.php:32` — `Tour`
+- `resources/views/service-orders/show.blade.php:35` — `link`
+- `resources/views/service-orders/show.blade.php:43` — `mt-4 text-sm font-medium`
+- `resources/views/service-orders/show.blade.php:43` — `Beschreibung`
+- `resources/views/service-orders/show.blade.php:44` — `whitespace-pre-line text-sm`
+- `resources/views/service-orders/show.blade.php:50` — `label`
+- `resources/views/audit/index.blade.php:2` — `title`
+- `resources/views/audit/index.blade.php:2` — `Audit-Log`
+- `resources/views/audit/index.blade.php:3` — `nav-title`
+- `resources/views/audit/index.blade.php:3` — `Audit-Log`
+- `resources/views/audit/index.blade.php:5` — `content`
+- `resources/views/audit/index.blade.php:14` — `flex flex-wrap gap-2 rounded-box border border-base-300 bg-base-100 p-3 shadow-xs`
+- `resources/views/audit/index.blade.php:15` — `event`
+- `resources/views/audit/index.blade.php:15` — `select select-bordered select-sm`
+- `resources/views/audit/index.blade.php:16` — `Aktion`
+- `resources/views/audit/index.blade.php:18` — `event`
+- `resources/views/audit/index.blade.php:21` — `type`
+- `resources/views/audit/index.blade.php:21` — `select select-bordered select-sm`
+- `resources/views/audit/index.blade.php:24` — `type`
+- `resources/views/audit/index.blade.php:27` — `select select-bordered select-sm`
+- `resources/views/audit/index.blade.php:28` — `Benutzer`
+- `resources/views/audit/index.blade.php:33` — `btn btn-primary btn-sm`
+- `resources/views/audit/index.blade.php:33` — `Filtern`
+- `resources/views/audit/index.blade.php:34` — `btn btn-ghost btn-sm`
+- `resources/views/audit/index.blade.php:34` — `Zurücksetzen`
+- `resources/views/audit/index.blade.php:37` — `min-h-0 flex-1 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/audit/index.blade.php:38` — `table table-xs table-zebra table-pin-rows w-full`
+- `resources/views/audit/index.blade.php:39` — `bg-base-200`
+- `resources/views/audit/index.blade.php:42` — `whitespace-nowrap`
+- `resources/views/audit/index.blade.php:42` — `desc'`
+- `resources/views/audit/index.blade.php:42` — `Zeit`
+- `resources/views/audit/index.blade.php:43` — `desc'`
+- `resources/views/audit/index.blade.php:43` — `Benutzer`
+- `resources/views/audit/index.blade.php:44` — `event`
+- `resources/views/audit/index.blade.php:44` — `desc'`
+- `resources/views/audit/index.blade.php:44` — `Aktion`
+- `resources/views/audit/index.blade.php:45` — `desc'`
+- `resources/views/audit/index.blade.php:46` — `Objekt`
+- `resources/views/audit/index.blade.php:47` — `Änderungen`
+- `resources/views/audit/index.blade.php:48` — `desc'`
+- `resources/views/audit/index.blade.php:53` — `hover`
+- `resources/views/audit/index.blade.php:54` — `whitespace-nowrap text-xs`
+- `resources/views/audit/index.blade.php:55` — `text-xs`
+- `resources/views/audit/index.blade.php:56` — `badge badge-sm`
+- `resources/views/audit/index.blade.php:57` — `text-xs`
+- `resources/views/audit/index.blade.php:58` — `text-xs`
+- `resources/views/audit/index.blade.php:59` — `max-w-md`
+- `resources/views/audit/index.blade.php:62` — `Anzeigen`
+- `resources/views/audit/index.blade.php:63` — `mt-1 max-h-40 overflow-auto whitespace-pre-wrap break-all rounded bg-base-200 p-2 text-xs`
+- `resources/views/audit/index.blade.php:70` — `Keine Einträge.`
+- `resources/views/audit/index.blade.php:76` — `flex-none`
+- `resources/views/energy-logs/index.blade.php:3` — `title`
+- `resources/views/energy-logs/index.blade.php:5` — `content`
+- `resources/views/energy-logs/index.blade.php:6` — `space-y-4`
+- `resources/views/energy-logs/index.blade.php:7` — `flex flex-wrap items-center justify-between gap-3`
+- `resources/views/energy-logs/index.blade.php:9` — `text-xl font-semibold`
+- `resources/views/energy-logs/index.blade.php:14` — `Zeitraum übernommen aus dem Header. Mit der Auswahl oben links wechseln.`
+- `resources/views/energy-logs/index.blade.php:17` — `flex flex-wrap gap-2`
+- `resources/views/energy-logs/index.blade.php:18` — `energy-logs.create`
+- `resources/views/energy-logs/index.blade.php:18` — `btn btn-sm btn-primary`
+- `resources/views/energy-logs/index.blade.php:19` — `Neuer Eintrag`
+- `resources/views/energy-logs/index.blade.php:24` — `flex flex-wrap gap-2 items-end`
+- `resources/views/energy-logs/index.blade.php:26` — `form-control`
+- `resources/views/energy-logs/index.blade.php:27` — `label-text`
+- `resources/views/energy-logs/index.blade.php:27` — `Nutzer`
+- `resources/views/energy-logs/index.blade.php:28` — `user`
+- `resources/views/energy-logs/index.blade.php:28` — `select select-bordered select-sm`
+- `resources/views/energy-logs/index.blade.php:30` — `user`
+- `resources/views/energy-logs/index.blade.php:30` — `Alle`
+- `resources/views/energy-logs/index.blade.php:32` — `user`
+- `resources/views/energy-logs/index.blade.php:37` — `form-control`
+- `resources/views/energy-logs/index.blade.php:38` — `label-text`
+- `resources/views/energy-logs/index.blade.php:38` — `Fahrzeug`
+- `resources/views/energy-logs/index.blade.php:39` — `vehicle`
+- `resources/views/energy-logs/index.blade.php:39` — `select select-bordered select-sm`
+- `resources/views/energy-logs/index.blade.php:40` — `Alle Fahrzeuge`
+- `resources/views/energy-logs/index.blade.php:46` — `user', 'vehicle`
+- `resources/views/energy-logs/index.blade.php:47` — `hidden`
+- `resources/views/energy-logs/index.blade.php:52` — `rounded-box border border-base-300 bg-base-100 p-3`
+- `resources/views/energy-logs/index.blade.php:53` — `Liter gesamt`
+- `resources/views/energy-logs/index.blade.php:54` — `text-2xl font-semibold`
+- `resources/views/energy-logs/index.blade.php:54` — `liters`
+- `resources/views/energy-logs/index.blade.php:56` — `rounded-box border border-base-300 bg-base-100 p-3`
+- `resources/views/energy-logs/index.blade.php:57` — `kWh gesamt`
+- `resources/views/energy-logs/index.blade.php:58` — `text-2xl font-semibold`
+- `resources/views/energy-logs/index.blade.php:60` — `rounded-box border border-base-300 bg-base-100 p-3`
+- `resources/views/energy-logs/index.blade.php:61` — `Kosten`
+- `resources/views/energy-logs/index.blade.php:62` — `text-2xl font-semibold`
+- `resources/views/energy-logs/index.blade.php:62` — `cost`
+- `resources/views/energy-logs/index.blade.php:64` — `rounded-box border border-base-300 bg-base-100 p-3`
+- `resources/views/energy-logs/index.blade.php:66` — `text-2xl font-semibold`
+- `resources/views/energy-logs/index.blade.php:66` — `distance`
+- `resources/views/energy-logs/index.blade.php:70` — `overflow-x-auto rounded-box border border-base-300 bg-base-100`
+- `resources/views/energy-logs/index.blade.php:71` — `table table-sm`
+- `resources/views/energy-logs/index.blade.php:74` — `Zeitpunkt`
+- `resources/views/energy-logs/index.blade.php:75` — `Fahrzeug`
+- `resources/views/energy-logs/index.blade.php:76` — `Nutzer`
+- `resources/views/energy-logs/index.blade.php:78` — `text-right`
+- `resources/views/energy-logs/index.blade.php:78` — `Menge`
+- `resources/views/energy-logs/index.blade.php:79` — `text-right`
+- `resources/views/energy-logs/index.blade.php:79` — `Kosten`
+- `resources/views/energy-logs/index.blade.php:80` — `text-right`
+- `resources/views/energy-logs/index.blade.php:80` — `Tacho`
+- `resources/views/energy-logs/index.blade.php:81` — `text-right`
+- `resources/views/energy-logs/index.blade.php:81` — `Δ km`
+- `resources/views/energy-logs/index.blade.php:92` — `badge badge-sm`
+- `resources/views/energy-logs/index.blade.php:94` — `badge badge-ghost badge-sm`
+- `resources/views/energy-logs/index.blade.php:97` — `badge badge-ghost badge-sm`
+- `resources/views/energy-logs/index.blade.php:100` — `text-right`
+- `resources/views/energy-logs/index.blade.php:100` — `kwh' ? 'kWh`
+- `resources/views/energy-logs/index.blade.php:101` — `text-right`
+- `resources/views/energy-logs/index.blade.php:102` — `text-right`
+- `resources/views/energy-logs/index.blade.php:103` — `text-right`
+- `resources/views/energy-logs/index.blade.php:104` — `text-right`
+- `resources/views/energy-logs/index.blade.php:105` — `energy-logs.edit`
+- `resources/views/energy-logs/index.blade.php:105` — `btn btn-xs btn-ghost`
+- `resources/views/energy-logs/index.blade.php:105` — `Bearbeiten`
+- `resources/views/energy-logs/index.blade.php:106` — `energy-logs.destroy`
+- `resources/views/energy-logs/index.blade.php:106` — `inline`
+- `resources/views/energy-logs/index.blade.php:108` — `Eintrag wirklich löschen?`
+- `resources/views/energy-logs/index.blade.php:109` — `Löschen`
+- `resources/views/energy-logs/index.blade.php:111` — `submit`
+- `resources/views/energy-logs/index.blade.php:111` — `btn btn-xs btn-ghost text-error`
+- `resources/views/energy-logs/index.blade.php:111` — `Löschen`
+- `resources/views/energy-logs/index.blade.php:116` — `Keine Einträge im gewählten Zeitraum.`
+- `resources/views/energy-logs/_form_body.blade.php:3` — `primary`
+- `resources/views/energy-logs/_form_body.blade.php:4` — `fieldset`
+- `resources/views/energy-logs/_form_body.blade.php:5` — `fieldset-label`
+- `resources/views/energy-logs/_form_body.blade.php:5` — `Fahrzeug`
+- `resources/views/energy-logs/_form_body.blade.php:6` — `select select-bordered w-full`
+- `resources/views/energy-logs/_form_body.blade.php:13` — `fieldset`
+- `resources/views/energy-logs/_form_body.blade.php:14` — `fieldset-label`
+- `resources/views/energy-logs/_form_body.blade.php:15` — `select select-bordered w-full`
+- `resources/views/energy-logs/_form_body.blade.php:17` — `fuel`
+- `resources/views/energy-logs/_form_body.blade.php:21` — `fieldset`
+- `resources/views/energy-logs/_form_body.blade.php:22` — `fieldset-label`
+- `resources/views/energy-logs/_form_body.blade.php:22` — `Kraftstoff`
+- `resources/views/energy-logs/_form_body.blade.php:23` — `select select-bordered w-full`
+- `resources/views/energy-logs/_form_body.blade.php:30` — `fieldset`
+- `resources/views/energy-logs/_form_body.blade.php:31` — `fieldset-label`
+- `resources/views/energy-logs/_form_body.blade.php:31` — `Ladetyp`
+- `resources/views/energy-logs/_form_body.blade.php:32` — `select select-bordered w-full`
+- `resources/views/energy-logs/_form_body.blade.php:41` — `payments`
+- `resources/views/energy-logs/_form_body.blade.php:41` — `info`
+- `resources/views/energy-logs/_form_body.blade.php:42` — `fieldset`
+- `resources/views/energy-logs/_form_body.blade.php:43` — `fieldset-label`
+- `resources/views/energy-logs/_form_body.blade.php:43` — `Menge`
+- `resources/views/energy-logs/_form_body.blade.php:44` — `number`
+- `resources/views/energy-logs/_form_body.blade.php:44` — `quantity`
+- `resources/views/energy-logs/_form_body.blade.php:45` — `quantity`
+- `resources/views/energy-logs/_form_body.blade.php:46` — `input input-bordered w-full`
+- `resources/views/energy-logs/_form_body.blade.php:48` — `fieldset`
+- `resources/views/energy-logs/_form_body.blade.php:49` — `fieldset-label`
+- `resources/views/energy-logs/_form_body.blade.php:50` — `number`
+- `resources/views/energy-logs/_form_body.blade.php:52` — `input input-bordered w-full`
+- `resources/views/energy-logs/_form_body.blade.php:54` — `fieldset`
+- `resources/views/energy-logs/_form_body.blade.php:55` — `fieldset-label`
+- `resources/views/energy-logs/_form_body.blade.php:55` — `Tachostand`
+- `resources/views/energy-logs/_form_body.blade.php:56` — `number`
+- `resources/views/energy-logs/_form_body.blade.php:58` — `input input-bordered w-full`
+- `resources/views/energy-logs/_form_body.blade.php:60` — `fieldset`
+- `resources/views/energy-logs/_form_body.blade.php:61` — `fieldset-label`
+- `resources/views/energy-logs/_form_body.blade.php:62` — `text`
+- `resources/views/energy-logs/_form_body.blade.php:64` — `input input-bordered w-full`
+- `resources/views/energy-logs/_form_body.blade.php:68` — `schedule`
+- `resources/views/energy-logs/_form_body.blade.php:68` — `success`
+- `resources/views/energy-logs/_form_body.blade.php:69` — `fieldset`
+- `resources/views/energy-logs/_form_body.blade.php:70` — `fieldset-label`
+- `resources/views/energy-logs/_form_body.blade.php:70` — `Beginn`
+- `resources/views/energy-logs/_form_body.blade.php:71` — `datetime-local`
+- `resources/views/energy-logs/_form_body.blade.php:73` — `input input-bordered w-full`
+- `resources/views/energy-logs/_form_body.blade.php:75` — `fieldset`
+- `resources/views/energy-logs/_form_body.blade.php:76` — `fieldset-label`
+- `resources/views/energy-logs/_form_body.blade.php:76` — `Ende`
+- `resources/views/energy-logs/_form_body.blade.php:77` — `datetime-local`
+- `resources/views/energy-logs/_form_body.blade.php:79` — `input input-bordered w-full`
+- `resources/views/energy-logs/_form_body.blade.php:81` — `fieldset`
+- `resources/views/energy-logs/_form_body.blade.php:82` — `fieldset-label`
+- `resources/views/energy-logs/_form_body.blade.php:83` — `number`
+- `resources/views/energy-logs/_form_body.blade.php:85` — `input input-bordered w-full`
+- `resources/views/energy-logs/_form_body.blade.php:87` — `fieldset`
+- `resources/views/energy-logs/_form_body.blade.php:88` — `fieldset-label`
+- `resources/views/energy-logs/_form_body.blade.php:89` — `number`
+- `resources/views/energy-logs/_form_body.blade.php:91` — `input input-bordered w-full`
+- `resources/views/energy-logs/_form_body.blade.php:95` — `Notizen`
+- `resources/views/energy-logs/_form_body.blade.php:95` — `ghost`
+- `resources/views/energy-logs/_form_body.blade.php:96` — `fieldset`
+- `resources/views/energy-logs/_form_body.blade.php:97` — `fieldset-label`
+- `resources/views/energy-logs/_form_body.blade.php:97` — `Notizen`
+- `resources/views/energy-logs/_form_body.blade.php:98` — `notes`
+- `resources/views/energy-logs/_form_body.blade.php:98` — `textarea textarea-bordered w-full`
+- `resources/views/energy-logs/_form_body.blade.php:98` — `notes`
+- `resources/views/energy-logs/_form_body.blade.php:103` — `alert alert-error text-sm`
+- `resources/views/energy-logs/_form_body.blade.php:104` — `list-disc pl-5`
+- `resources/views/energy-logs/_form_dialog.blade.php:4` — `energy-logs.update`
+- `resources/views/energy-logs/_form_dialog.blade.php:5` — `energy-logs.store`
+- `resources/views/energy-logs/_form_dialog.blade.php:9` — `Eintrag bearbeiten`
+- `resources/views/energy-logs/_form_dialog.blade.php:12` — `primary`
+- `resources/views/energy-logs/_form_dialog.blade.php:14` — `POST'`
+- `resources/views/energy-logs/_form_dialog.blade.php:15` — `data-entry-form`
+- `resources/views/energy-logs/_form_dialog.blade.php:16` — `Speichern`
+- `resources/views/energy-logs/_form_dialog.blade.php:22` — `energy-logs.destroy`
+- `resources/views/energy-logs/_form_dialog.blade.php:24` — `Eintrag wirklich löschen?`
+- `resources/views/energy-logs/_form_dialog.blade.php:25` — `Löschen`
+- `resources/views/energy-logs/_form_dialog.blade.php:27` — `submit`
+- `resources/views/energy-logs/_form_dialog.blade.php:27` — `btn btn-error btn-outline btn-sm gap-2`
+- `resources/views/energy-logs/_form_dialog.blade.php:28` — `delete`
+- `resources/views/energy-logs/_form_dialog.blade.php:28` — `Löschen`
+- `resources/views/qualifications/index.blade.php:2` — `title`
+- `resources/views/qualifications/index.blade.php:2` — `Qualifikationen`
+- `resources/views/qualifications/index.blade.php:3` — `nav-title`
+- `resources/views/qualifications/index.blade.php:3` — `Qualifikationen`
+- `resources/views/qualifications/index.blade.php:4` — `content`
+- `resources/views/qualifications/index.blade.php:6` — `flex justify-end`
+- `resources/views/qualifications/index.blade.php:7` — `create`
+- `resources/views/qualifications/index.blade.php:8` — `btn btn-primary btn-sm`
+- `resources/views/qualifications/index.blade.php:9` — `Qualifikation anlegen`
+- `resources/views/qualifications/index.blade.php:17` — `name`
+- `resources/views/qualifications/index.blade.php:17` — `asc'`
+- `resources/views/qualifications/index.blade.php:17` — `name`
+- `resources/views/qualifications/index.blade.php:17` — `Name`
+- `resources/views/qualifications/index.blade.php:18` — `abbreviation`
+- `resources/views/qualifications/index.blade.php:18` — `asc'`
+- `resources/views/qualifications/index.blade.php:18` — `Kürzel`
+- `resources/views/qualifications/index.blade.php:19` — `Beschreibung`
+- `resources/views/qualifications/index.blade.php:20` — `text-center`
+- `resources/views/qualifications/index.blade.php:20` — `users`
+- `resources/views/qualifications/index.blade.php:20` — `asc'`
+- `resources/views/qualifications/index.blade.php:20` — `Mitarbeiter`
+- `resources/views/qualifications/index.blade.php:21` — `text-center`
+- `resources/views/qualifications/index.blade.php:21` — `asc'`
+- `resources/views/qualifications/index.blade.php:21` — `Aktiv`
+- `resources/views/qualifications/index.blade.php:27` — `opacity-50`
+- `resources/views/qualifications/index.blade.php:28` — `font-medium`
+- `resources/views/qualifications/index.blade.php:31` — `text-center`
+- `resources/views/qualifications/index.blade.php:32` — `text-center`
+- `resources/views/qualifications/index.blade.php:34` — `badge badge-success badge-sm`
+- `resources/views/qualifications/index.blade.php:36` — `badge badge-ghost badge-sm`
+- `resources/views/qualifications/index.blade.php:36` — `Nein`
+- `resources/views/qualifications/index.blade.php:39` — `text-right`
+- `resources/views/qualifications/index.blade.php:40` — `flex justify-end gap-2`
+- `resources/views/qualifications/index.blade.php:41` — `update`
+- `resources/views/qualifications/index.blade.php:42` — `btn btn-ghost btn-xs`
+- `resources/views/qualifications/index.blade.php:42` — `Bearbeiten`
+- `resources/views/qualifications/index.blade.php:44` — `delete`
+- `resources/views/qualifications/index.blade.php:47` — `Qualifikation wirklich löschen?`
+- `resources/views/qualifications/index.blade.php:48` — `Löschen`
+- `resources/views/qualifications/index.blade.php:50` — `btn btn-ghost btn-xs text-error`
+- `resources/views/qualifications/index.blade.php:50` — `Löschen`
+- `resources/views/qualifications/index.blade.php:58` — `Noch keine Qualifikationen vorhanden.`
+- `resources/views/qualifications/_form.blade.php:3` — `Stammdaten`
+- `resources/views/qualifications/_form.blade.php:3` — `school`
+- `resources/views/qualifications/_form.blade.php:3` — `primary`
+- `resources/views/qualifications/_form.blade.php:4` — `fieldset`
+- `resources/views/qualifications/_form.blade.php:5` — `fieldset-label`
+- `resources/views/qualifications/_form.blade.php:5` — `Name`
+- `resources/views/qualifications/_form.blade.php:6` — `text`
+- `resources/views/qualifications/_form.blade.php:6` — `name`
+- `resources/views/qualifications/_form.blade.php:6` — `name`
+- `resources/views/qualifications/_form.blade.php:7` — `name`
+- `resources/views/qualifications/_form.blade.php:8` — `name`
+- `resources/views/qualifications/_form.blade.php:8` — `text-error text-sm`
+- `resources/views/qualifications/_form.blade.php:11` — `fieldset`
+- `resources/views/qualifications/_form.blade.php:12` — `fieldset-label`
+- `resources/views/qualifications/_form.blade.php:12` — `Kürzel`
+- `resources/views/qualifications/_form.blade.php:13` — `text`
+- `resources/views/qualifications/_form.blade.php:13` — `abbreviation`
+- `resources/views/qualifications/_form.blade.php:13` — `abbreviation`
+- `resources/views/qualifications/_form.blade.php:14` — `abbreviation`
+- `resources/views/qualifications/_form.blade.php:15` — `abbreviation`
+- `resources/views/qualifications/_form.blade.php:15` — `text-error text-sm`
+- `resources/views/qualifications/_form.blade.php:19` — `fieldset-label`
+- `resources/views/qualifications/_form.blade.php:19` — `Beschreibung`
+- `resources/views/qualifications/_form.blade.php:20` — `description`
+- `resources/views/qualifications/_form.blade.php:20` — `description`
+- `resources/views/qualifications/_form.blade.php:20` — `description`
+- `resources/views/qualifications/_form.blade.php:21` — `description`
+- `resources/views/qualifications/_form.blade.php:21` — `text-error text-sm`
+- `resources/views/qualifications/_form.blade.php:25` — `label cursor-pointer gap-3`
+- `resources/views/qualifications/_form.blade.php:26` — `fieldset-label`
+- `resources/views/qualifications/_form.blade.php:26` — `Aktiv`
+- `resources/views/qualifications/_form.blade.php:27` — `hidden`
+- `resources/views/qualifications/_form.blade.php:28` — `checkbox`
+- `resources/views/qualifications/_form.blade.php:28` — `checkbox checkbox-primary`
+- `resources/views/qualifications/_form_dialog.blade.php:10` — `Qualifikation bearbeiten`
+- `resources/views/qualifications/_form_dialog.blade.php:10` — `Qualifikation anlegen`
+- `resources/views/qualifications/_form_dialog.blade.php:11` — `Qualifikationen`
+- `resources/views/qualifications/_form_dialog.blade.php:12` — `school`
+- `resources/views/qualifications/_form_dialog.blade.php:13` — `primary`
+- `resources/views/qualifications/_form_dialog.blade.php:15` — `POST'`
+- `resources/views/qualifications/_form_dialog.blade.php:16` — `data-entry-form`
+- `resources/views/qualifications/_form_dialog.blade.php:17` — `Speichern`
+- `resources/views/qualifications/_form_dialog.blade.php:17` — `Anlegen`
+- `resources/views/qualifications/_form_dialog.blade.php:19` — `qualification`
+- `resources/views/qualifications/_form_dialog.blade.php:22` — `alert alert-error text-sm`
+- `resources/views/qualifications/_form_dialog.blade.php:23` — `list-disc pl-5`
+- `resources/views/qualifications/_form_dialog.blade.php:31` — `Wirklich löschen?`
+- `resources/views/qualifications/_form_dialog.blade.php:32` — `Löschen`
+- `resources/views/qualifications/_form_dialog.blade.php:34` — `submit`
+- `resources/views/qualifications/_form_dialog.blade.php:34` — `btn btn-error btn-outline btn-sm gap-2`
+- `resources/views/qualifications/_form_dialog.blade.php:35` — `delete`
+- `resources/views/qualifications/_form_dialog.blade.php:35` — `Qualifikation löschen`
+- `resources/views/shift-types/index.blade.php:2` — `title`
+- `resources/views/shift-types/index.blade.php:2` — `Schichttypen`
+- `resources/views/shift-types/index.blade.php:3` — `nav-title`
+- `resources/views/shift-types/index.blade.php:3` — `Schichttypen`
+- `resources/views/shift-types/index.blade.php:5` — `content`
+- `resources/views/shift-types/index.blade.php:6` — `space-y-6`
+- `resources/views/shift-types/index.blade.php:7` — `flex justify-end`
+- `resources/views/shift-types/index.blade.php:8` — `shift-types.create`
+- `resources/views/shift-types/index.blade.php:8` — `btn btn-primary btn-sm`
+- `resources/views/shift-types/index.blade.php:8` — `Neuer Schichttyp`
+- `resources/views/shift-types/index.blade.php:11` — `success`
+- `resources/views/shift-types/index.blade.php:12` — `alert alert-success`
+- `resources/views/shift-types/index.blade.php:12` — `success`
+- `resources/views/shift-types/index.blade.php:14` — `error`
+- `resources/views/shift-types/index.blade.php:15` — `alert alert-error`
+- `resources/views/shift-types/index.blade.php:15` — `error`
+- `resources/views/shift-types/index.blade.php:18` — `overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/shift-types/index.blade.php:19` — `table table-zebra table-pin-rows`
+- `resources/views/shift-types/index.blade.php:20` — `bg-base-200`
+- `resources/views/shift-types/index.blade.php:22` — `Name`
+- `resources/views/shift-types/index.blade.php:23` — `Kürzel`
+- `resources/views/shift-types/index.blade.php:24` — `Standardzeit`
+- `resources/views/shift-types/index.blade.php:25` — `Status`
+- `resources/views/shift-types/index.blade.php:26` — `text-right`
+- `resources/views/shift-types/index.blade.php:26` — `number`
+- `resources/views/shift-types/index.blade.php:26` — `Verwendet`
+- `resources/views/shift-types/index.blade.php:27` — `w-32 text-right`
+- `resources/views/shift-types/index.blade.php:27` — `Aktion`
+- `resources/views/shift-types/index.blade.php:32` — `hover`
+- `resources/views/shift-types/index.blade.php:33` — `flex items-center gap-2`
+- `resources/views/shift-types/index.blade.php:34` — `inline-block w-3 h-3 rounded`
+- `resources/views/shift-types/index.blade.php:37` — `font-mono`
+- `resources/views/shift-types/index.blade.php:38` — `whitespace-nowrap`
+- `resources/views/shift-types/index.blade.php:45` — `badge badge-success badge-sm`
+- `resources/views/shift-types/index.blade.php:45` — `Aktiv`
+- `resources/views/shift-types/index.blade.php:47` — `badge badge-ghost badge-sm`
+- `resources/views/shift-types/index.blade.php:47` — `Inaktiv`
+- `resources/views/shift-types/index.blade.php:50` — `text-right`
+- `resources/views/shift-types/index.blade.php:51` — `text-right whitespace-nowrap`
+- `resources/views/shift-types/index.blade.php:52` — `shift-types.edit`
+- `resources/views/shift-types/index.blade.php:52` — `btn btn-ghost btn-sm`
+- `resources/views/shift-types/index.blade.php:52` — `Bearbeiten`
+- `resources/views/shift-types/index.blade.php:53` — `shift-types.destroy`
+- `resources/views/shift-types/index.blade.php:53` — `inline`
+- `resources/views/shift-types/index.blade.php:55` — `Wirklich löschen?`
+- `resources/views/shift-types/index.blade.php:56` — `Löschen`
+- `resources/views/shift-types/index.blade.php:58` — `submit`
+- `resources/views/shift-types/index.blade.php:58` — `btn btn-ghost btn-sm text-error`
+- `resources/views/shift-types/index.blade.php:58` — `Löschen`
+- `resources/views/shift-types/index.blade.php:63` — `Keine Einträge.`
+- `resources/views/shift-types/_form.blade.php:2` — `alert alert-error`
+- `resources/views/shift-types/_form.blade.php:3` — `list-disc pl-5`
+- `resources/views/shift-types/_form.blade.php:9` — `Stammdaten`
+- `resources/views/shift-types/_form.blade.php:9` — `sync`
+- `resources/views/shift-types/_form.blade.php:9` — `primary`
+- `resources/views/shift-types/_form.blade.php:10` — `fieldset w-full`
+- `resources/views/shift-types/_form.blade.php:11` — `fieldset-label`
+- `resources/views/shift-types/_form.blade.php:11` — `Name`
+- `resources/views/shift-types/_form.blade.php:12` — `text`
+- `resources/views/shift-types/_form.blade.php:12` — `name`
+- `resources/views/shift-types/_form.blade.php:12` — `name`
+- `resources/views/shift-types/_form.blade.php:12` — `input input-bordered w-full`
+- `resources/views/shift-types/_form.blade.php:14` — `fieldset w-full items-end`
+- `resources/views/shift-types/_form.blade.php:15` — `fieldset-label`
+- `resources/views/shift-types/_form.blade.php:15` — `Aktiv`
+- `resources/views/shift-types/_form.blade.php:16` — `checkbox`
+- `resources/views/shift-types/_form.blade.php:17` — `toggle toggle-primary`
+- `resources/views/shift-types/_form.blade.php:20` — `fieldset w-full`
+- `resources/views/shift-types/_form.blade.php:21` — `fieldset-label`
+- `resources/views/shift-types/_form.blade.php:21` — `Kürzel`
+- `resources/views/shift-types/_form.blade.php:22` — `text`
+- `resources/views/shift-types/_form.blade.php:22` — `abbreviation`
+- `resources/views/shift-types/_form.blade.php:22` — `abbreviation`
+- `resources/views/shift-types/_form.blade.php:22` — `input input-bordered w-full`
+- `resources/views/shift-types/_form.blade.php:24` — `fieldset w-full`
+- `resources/views/shift-types/_form.blade.php:25` — `fieldset-label`
+- `resources/views/shift-types/_form.blade.php:25` — `Farbe`
+- `resources/views/shift-types/_form.blade.php:26` — `color`
+- `resources/views/shift-types/_form.blade.php:26` — `color`
+- `resources/views/shift-types/_form.blade.php:26` — `color`
+- `resources/views/shift-types/_form.blade.php:26` — `input input-bordered w-full h-10 p-1`
+- `resources/views/shift-types/_form.blade.php:30` — `Standardzeiten`
+- `resources/views/shift-types/_form.blade.php:30` — `schedule`
+- `resources/views/shift-types/_form.blade.php:30` — `info`
+- `resources/views/shift-types/_form.blade.php:32` — `time`
+- `resources/views/shift-types/_form.blade.php:35` — `Beginn`
+- `resources/views/shift-types/_form.blade.php:36` — `Ende`
+- `resources/views/shift-types/_form.blade.php:37` — `Standardzeiten`
+- `resources/views/shift-types/_form_dialog.blade.php:5` — `shift-types.update`
+- `resources/views/shift-types/_form_dialog.blade.php:6` — `shift-types.store`
+- `resources/views/shift-types/_form_dialog.blade.php:10` — `Schichttyp bearbeiten`
+- `resources/views/shift-types/_form_dialog.blade.php:10` — `Schichttyp anlegen`
+- `resources/views/shift-types/_form_dialog.blade.php:11` — `Schichttypen`
+- `resources/views/shift-types/_form_dialog.blade.php:12` — `sync`
+- `resources/views/shift-types/_form_dialog.blade.php:13` — `primary`
+- `resources/views/shift-types/_form_dialog.blade.php:15` — `POST'`
+- `resources/views/shift-types/_form_dialog.blade.php:16` — `data-entry-form`
+- `resources/views/shift-types/_form_dialog.blade.php:17` — `Speichern`
+- `resources/views/shift-types/_form_dialog.blade.php:17` — `Anlegen`
+- `resources/views/shift-types/_form_dialog.blade.php:19` — `type`
+- `resources/views/shift-types/_form_dialog.blade.php:23` — `shift-types.destroy`
+- `resources/views/shift-types/_form_dialog.blade.php:25` — `Wirklich löschen?`
+- `resources/views/shift-types/_form_dialog.blade.php:26` — `Löschen`
+- `resources/views/shift-types/_form_dialog.blade.php:28` — `submit`
+- `resources/views/shift-types/_form_dialog.blade.php:28` — `btn btn-error btn-outline btn-sm gap-2`
+- `resources/views/shift-types/_form_dialog.blade.php:29` — `delete`
+- `resources/views/shift-types/_form_dialog.blade.php:29` — `Schichttyp löschen`
+- `resources/views/account/_profile_dialog.blade.php:6` — `Profil`
+- `resources/views/account/_profile_dialog.blade.php:7` — `Konto`
+- `resources/views/account/_profile_dialog.blade.php:8` — `person`
+- `resources/views/account/_profile_dialog.blade.php:9` — `info`
+- `resources/views/account/_profile_dialog.blade.php:12` — `data-entry-form`
+- `resources/views/account/_profile_dialog.blade.php:13` — `Speichern`
+- `resources/views/account/_profile_dialog.blade.php:15` — `hidden`
+- `resources/views/account/_profile_dialog.blade.php:18` — `Profildaten`
+- `resources/views/account/_profile_dialog.blade.php:18` — `person`
+- `resources/views/account/_profile_dialog.blade.php:18` — `info`
+- `resources/views/account/_profile_dialog.blade.php:19` — `fieldset`
+- `resources/views/account/_profile_dialog.blade.php:20` — `fieldset-label`
+- `resources/views/account/_profile_dialog.blade.php:20` — `name`
+- `resources/views/account/_profile_dialog.blade.php:20` — `Name`
+- `resources/views/account/_profile_dialog.blade.php:21` — `text`
+- `resources/views/account/_profile_dialog.blade.php:21` — `name`
+- `resources/views/account/_profile_dialog.blade.php:21` — `name`
+- `resources/views/account/_profile_dialog.blade.php:21` — `name`
+- `resources/views/account/_profile_dialog.blade.php:21` — `input input-bordered w-full`
+- `resources/views/account/_profile_dialog.blade.php:22` — `name`
+- `resources/views/account/_profile_dialog.blade.php:22` — `mt-1 text-sm text-error`
+- `resources/views/account/_profile_dialog.blade.php:25` — `fieldset`
+- `resources/views/account/_profile_dialog.blade.php:26` — `fieldset-label`
+- `resources/views/account/_profile_dialog.blade.php:26` — `email`
+- `resources/views/account/_profile_dialog.blade.php:26` — `E-Mail`
+- `resources/views/account/_profile_dialog.blade.php:27` — `email`
+- `resources/views/account/_profile_dialog.blade.php:27` — `email`
+- `resources/views/account/_profile_dialog.blade.php:27` — `email`
+- `resources/views/account/_profile_dialog.blade.php:27` — `email`
+- `resources/views/account/_profile_dialog.blade.php:27` — `input input-bordered w-full`
+- `resources/views/account/_profile_dialog.blade.php:28` — `email`
+- `resources/views/account/_profile_dialog.blade.php:28` — `mt-1 text-sm text-error`
+- `resources/views/account/_profile_dialog.blade.php:33` — `btn btn-sm btn-ghost gap-2`
+- `resources/views/account/_profile_dialog.blade.php:34` — `lock`
+- `resources/views/account/_profile_dialog.blade.php:34` — `Passwort ändern`
+- `resources/views/account/_password_dialog.blade.php:6` — `Passwort ändern`
+- `resources/views/account/_password_dialog.blade.php:7` — `Konto`
+- `resources/views/account/_password_dialog.blade.php:8` — `lock`
+- `resources/views/account/_password_dialog.blade.php:9` — `warning`
+- `resources/views/account/_password_dialog.blade.php:12` — `data-entry-form`
+- `resources/views/account/_password_dialog.blade.php:13` — `Speichern`
+- `resources/views/account/_password_dialog.blade.php:15` — `alert alert-warning mb-4`
+- `resources/views/account/_password_dialog.blade.php:16` — `Bitte legen Sie ein neues Passwort fest, bevor Sie weiterarbeiten.`
+- `resources/views/account/_password_dialog.blade.php:20` — `warning`
+- `resources/views/account/_password_dialog.blade.php:21` — `alert alert-warning mb-4`
+- `resources/views/account/_password_dialog.blade.php:21` — `warning`
+- `resources/views/account/_password_dialog.blade.php:25` — `hidden`
+- `resources/views/account/_password_dialog.blade.php:29` — `Aktuelles Passwort`
+- `resources/views/account/_password_dialog.blade.php:29` — `info`
+- `resources/views/account/_password_dialog.blade.php:30` — `fieldset`
+- `resources/views/account/_password_dialog.blade.php:31` — `fieldset-label`
+- `resources/views/account/_password_dialog.blade.php:31` — `Aktuelles Passwort`
+- `resources/views/account/_password_dialog.blade.php:32` — `password`
+- `resources/views/account/_password_dialog.blade.php:32` — `current-password`
+- `resources/views/account/_password_dialog.blade.php:32` — `input input-bordered w-full`
+- `resources/views/account/_password_dialog.blade.php:33` — `mt-1 text-sm text-error`
+- `resources/views/account/_password_dialog.blade.php:38` — `Neues Passwort`
+- `resources/views/account/_password_dialog.blade.php:38` — `lock`
+- `resources/views/account/_password_dialog.blade.php:38` — `warning`
+- `resources/views/account/_password_dialog.blade.php:39` — `fieldset`
+- `resources/views/account/_password_dialog.blade.php:40` — `fieldset-label`
+- `resources/views/account/_password_dialog.blade.php:40` — `password`
+- `resources/views/account/_password_dialog.blade.php:40` — `Neues Passwort`
+- `resources/views/account/_password_dialog.blade.php:41` — `password`
+- `resources/views/account/_password_dialog.blade.php:41` — `password`
+- `resources/views/account/_password_dialog.blade.php:41` — `password`
+- `resources/views/account/_password_dialog.blade.php:41` — `new-password`
+- `resources/views/account/_password_dialog.blade.php:41` — `input input-bordered w-full`
+- `resources/views/account/_password_dialog.blade.php:42` — `password`
+- `resources/views/account/_password_dialog.blade.php:42` — `mt-1 text-sm text-error`
+- `resources/views/account/_password_dialog.blade.php:45` — `fieldset`
+- `resources/views/account/_password_dialog.blade.php:46` — `fieldset-label`
+- `resources/views/account/_password_dialog.blade.php:46` — `Bestätigen`
+- `resources/views/account/_password_dialog.blade.php:47` — `password`
+- `resources/views/account/_password_dialog.blade.php:47` — `new-password`
+- `resources/views/account/_password_dialog.blade.php:47` — `input input-bordered w-full`
+- `resources/views/legacy/archive/week.blade.php:2` — `title`
+- `resources/views/legacy/archive/week.blade.php:2` — `Archiv`
+- `resources/views/legacy/archive/week.blade.php:2` — `Wochenansicht`
+- `resources/views/legacy/archive/week.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/legacy/archive/week.blade.php:3` — `nav-title`
+- `resources/views/legacy/archive/week.blade.php:3` — `Wochenansicht`
+- `resources/views/legacy/archive/week.blade.php:3` — `Archiv`
+- `resources/views/legacy/archive/week.blade.php:4` — `wrapper-height-class', `
+- `resources/views/legacy/archive/week.blade.php:5` — `main-class', 'min-h-0 overflow-clip flex flex-col`
+- `resources/views/legacy/archive/week.blade.php:7` — `content`
+- `resources/views/legacy/archive/week.blade.php:19` — `flex-none flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/legacy/archive/week.blade.php:20` — `flex flex-wrap items-center gap-2`
+- `resources/views/legacy/archive/week.blade.php:21` — `badge badge-neutral mr-1`
+- `resources/views/legacy/archive/week.blade.php:21` — `Archiv`
+- `resources/views/legacy/archive/week.blade.php:23` — `week`
+- `resources/views/legacy/archive/week.blade.php:24` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/archive/week.blade.php:26` — `btn btn-sm btn-outline`
+- `resources/views/legacy/archive/week.blade.php:26` — `Heute`
+- `resources/views/legacy/archive/week.blade.php:27` — `week`
+- `resources/views/legacy/archive/week.blade.php:28` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/archive/week.blade.php:30` — `flex items-center gap-2 ml-2`
+- `resources/views/legacy/archive/week.blade.php:31` — `week`
+- `resources/views/legacy/archive/week.blade.php:32` — `input input-bordered input-sm`
+- `resources/views/legacy/archive/week.blade.php:42` — `flex flex-wrap items-center gap-3`
+- `resources/views/legacy/archive/week.blade.php:44` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/archive/week.blade.php:44` — `Archivliste`
+- `resources/views/legacy/archive/week.blade.php:45` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/archive/week.blade.php:45` — `Aktive Wochenansicht`
+- `resources/views/legacy/archive/week.blade.php:49` — `inline-flex items-center gap-1.5`
+- `resources/views/legacy/archive/week.blade.php:50` — `Bereitschaft`
+- `resources/views/legacy/archive/week.blade.php:52` — `inline-flex items-center gap-1.5`
+- `resources/views/legacy/archive/week.blade.php:53` — `Notdienst`
+- `resources/views/legacy/archive/week.blade.php:58` — `flex cursor-pointer items-center gap-2 text-sm`
+- `resources/views/legacy/archive/week.blade.php:58` — `Ansicht an Bildschirm anpassen`
+- `resources/views/legacy/archive/week.blade.php:59` — `currentColor`
+- `resources/views/legacy/archive/week.blade.php:60` — `M3 4a1 1 0 011-1h3a1 1 0 010 2H5.414l2.293 2.293a1 1 0 01-1.414 1.414L4 6.414V8a1 1 0 01-2 0V4zm14 0a1 1 0 00-1-1h-3a1 1 0 000 2h1.586l-2.293 2.293a1 1 0 001.414 1.414L16 6.414V8a1 1 0 002 0V4zm-3 12a1 1 0 001-1v-3a1 1 0 00-2 0v1.586l-2.293-2.293a1 1 0 00-1.414 1.414L13.586 16H12a1 1 0 000 2h3zm-8 0a1 1 0 01-1-1v-3a1 1 0 012 0v1.586l2.293-2.293a1 1 0 011.414 1.414L6.414 16H8a1 1 0 010 2H5z`
+- `resources/views/legacy/archive/week.blade.php:62` — `Auf Bildschirm`
+- `resources/views/legacy/archive/week.blade.php:63` — `checkbox`
+- `resources/views/legacy/archive/week.blade.php:63` — `week-fit-toggle`
+- `resources/views/legacy/archive/week.blade.php:63` — `toggle toggle-sm toggle-primary`
+- `resources/views/legacy/archive/week.blade.php:69` — `min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs mt-4`
+- `resources/views/legacy/archive/week.blade.php:70` — `week-scroll`
+- `resources/views/legacy/archive/week.blade.php:70` — `h-full overflow-auto`
+- `resources/views/legacy/archive/week.blade.php:74` — `week-table`
+- `resources/views/legacy/archive/week.blade.php:74` — `week-table`
+- `resources/views/legacy/archive/week.blade.php:78` — `Y-m-d`
+- `resources/views/legacy/archive/week.blade.php:84` — `kheute`
+- `resources/views/legacy/archive/week.blade.php:85` — `kfeiertag`
+- `resources/views/legacy/archive/week.blade.php:88` — `kopf`
+- `resources/views/legacy/archive/week.blade.php:101` — `mitb`
+- `resources/views/legacy/archive/week.blade.php:102` — `mitn`
+- `resources/views/legacy/archive/week.blade.php:106` — `true`
+- `resources/views/legacy/archive/week.blade.php:110` — `Feiertag`
+- `resources/views/legacy/archive/week.blade.php:122` — `grau`
+- `resources/views/legacy/archive/week.blade.php:122` — `mitte`
+- `resources/views/legacy/archive/week.blade.php:138` — `rogb`
+- `resources/views/legacy/archive/week.blade.php:139` — `rogn`
+- `resources/views/legacy/archive/week.blade.php:145` — `work`
+- `resources/views/legacy/archive/week.blade.php:148` — `logb`
+- `resources/views/legacy/archive/week.blade.php:149` — `logn`
+- `resources/views/legacy/archive/week.blade.php:153` — `logb`
+- `resources/views/legacy/archive/week.blade.php:154` — `logn`
+- `resources/views/legacy/archive/week.blade.php:162` — `grau`
+- `resources/views/legacy/archive/week.blade.php:162` — `mitte`
+- `resources/views/legacy/archive/week.blade.php:173` — `week-scroll`
+- `resources/views/legacy/archive/week.blade.php:174` — `week-table`
+- `resources/views/legacy/archive/week.blade.php:175` — `week-fit-toggle`
+- `resources/views/legacy/archive/week.blade.php:177` — `workDiaryWeekFit`
+- `resources/views/legacy/archive/week.blade.php:183` — `week-table--fit`
+- `resources/views/legacy/archive/week.blade.php:187` — `week-table--fit`
+- `resources/views/legacy/archive/week.blade.php:196` — `change`
+- `resources/views/legacy/archive/_show_dialog.blade.php:4` — `Archiv-Eintrag`
+- `resources/views/legacy/archive/_show_dialog.blade.php:7` — `neutral`
+- `resources/views/legacy/archive/_show_dialog.blade.php:7` — `success`
+- `resources/views/legacy/archive/_show_dialog.blade.php:7` — `warning`
+- `resources/views/legacy/archive/_show_dialog.blade.php:7` — `error`
+- `resources/views/legacy/archive/_show_dialog.blade.php:7` — `ghost`
+- `resources/views/legacy/archive/_show_dialog.blade.php:8` — `ghost`
+- `resources/views/legacy/archive/index.blade.php:2` — `title`
+- `resources/views/legacy/archive/index.blade.php:2` — `Archiv`
+- `resources/views/legacy/archive/index.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/legacy/archive/index.blade.php:3` — `nav-title`
+- `resources/views/legacy/archive/index.blade.php:3` — `Archiv`
+- `resources/views/legacy/archive/index.blade.php:5` — `content`
+- `resources/views/legacy/archive/index.blade.php:10` — `auftraege`
+- `resources/views/legacy/archive/index.blade.php:10` — `label`
+- `resources/views/legacy/archive/index.blade.php:10` — `Aufträge`
+- `resources/views/legacy/archive/index.blade.php:10` — `count`
+- `resources/views/legacy/archive/index.blade.php:10` — `auftraege`
+- `resources/views/legacy/archive/index.blade.php:11` — `bereitschaft`
+- `resources/views/legacy/archive/index.blade.php:11` — `label`
+- `resources/views/legacy/archive/index.blade.php:11` — `Bereitschaft`
+- `resources/views/legacy/archive/index.blade.php:11` — `count`
+- `resources/views/legacy/archive/index.blade.php:11` — `bereitschaft`
+- `resources/views/legacy/archive/index.blade.php:12` — `notdienst`
+- `resources/views/legacy/archive/index.blade.php:12` — `label`
+- `resources/views/legacy/archive/index.blade.php:12` — `Notdienst`
+- `resources/views/legacy/archive/index.blade.php:12` — `count`
+- `resources/views/legacy/archive/index.blade.php:12` — `notdienst`
+- `resources/views/legacy/archive/index.blade.php:13` — `urlaub`
+- `resources/views/legacy/archive/index.blade.php:13` — `label`
+- `resources/views/legacy/archive/index.blade.php:13` — `Urlaub`
+- `resources/views/legacy/archive/index.blade.php:13` — `count`
+- `resources/views/legacy/archive/index.blade.php:13` — `urlaub`
+- `resources/views/legacy/archive/index.blade.php:15` — `auftraege`
+- `resources/views/legacy/archive/index.blade.php:16` — `from`
+- `resources/views/legacy/archive/index.blade.php:20` — `from`
+- `resources/views/legacy/archive/index.blade.php:20` — `status`
+- `resources/views/legacy/archive/index.blade.php:27` — `desc`
+- `resources/views/legacy/archive/index.blade.php:29` — `desc`
+- `resources/views/legacy/archive/index.blade.php:32` — `sort`
+- `resources/views/legacy/archive/index.blade.php:36` — `asc' ? `
+- `resources/views/legacy/archive/index.blade.php:38` — `auftraege`
+- `resources/views/legacy/archive/index.blade.php:41` — `label`
+- `resources/views/legacy/archive/index.blade.php:41` — `Gesamt`
+- `resources/views/legacy/archive/index.blade.php:42` — `value`
+- `resources/views/legacy/archive/index.blade.php:42` — `total`
+- `resources/views/legacy/archive/index.blade.php:43` — `border`
+- `resources/views/legacy/archive/index.blade.php:43` — `border-base-300',
+                    'href`
+- `resources/views/legacy/archive/index.blade.php:45` — `active`
+- `resources/views/legacy/archive/index.blade.php:48` — `label`
+- `resources/views/legacy/archive/index.blade.php:48` — `Erledigt`
+- `resources/views/legacy/archive/index.blade.php:49` — `value`
+- `resources/views/legacy/archive/index.blade.php:49` — `erledigt`
+- `resources/views/legacy/archive/index.blade.php:50` — `border`
+- `resources/views/legacy/archive/index.blade.php:51` — `href`
+- `resources/views/legacy/archive/index.blade.php:51` — `status`
+- `resources/views/legacy/archive/index.blade.php:52` — `active`
+- `resources/views/legacy/archive/index.blade.php:55` — `label`
+- `resources/views/legacy/archive/index.blade.php:55` — `Offen`
+- `resources/views/legacy/archive/index.blade.php:56` — `value`
+- `resources/views/legacy/archive/index.blade.php:56` — `offen`
+- `resources/views/legacy/archive/index.blade.php:57` — `border`
+- `resources/views/legacy/archive/index.blade.php:58` — `href`
+- `resources/views/legacy/archive/index.blade.php:58` — `status`
+- `resources/views/legacy/archive/index.blade.php:59` — `active`
+- `resources/views/legacy/archive/index.blade.php:62` — `label`
+- `resources/views/legacy/archive/index.blade.php:62` — `Mit Eskalation`
+- `resources/views/legacy/archive/index.blade.php:63` — `value`
+- `resources/views/legacy/archive/index.blade.php:63` — `alert`
+- `resources/views/legacy/archive/index.blade.php:64` — `border`
+- `resources/views/legacy/archive/index.blade.php:65` — `href`
+- `resources/views/legacy/archive/index.blade.php:65` — `status`
+- `resources/views/legacy/archive/index.blade.php:66` — `active`
+- `resources/views/legacy/archive/index.blade.php:69` — `urlaub`
+- `resources/views/legacy/archive/index.blade.php:71` — `label`
+- `resources/views/legacy/archive/index.blade.php:71` — `Gesamt`
+- `resources/views/legacy/archive/index.blade.php:71` — `value`
+- `resources/views/legacy/archive/index.blade.php:71` — `total`
+- `resources/views/legacy/archive/index.blade.php:71` — `border`
+- `resources/views/legacy/archive/index.blade.php:71` — `border-base-300',   'href`
+- `resources/views/legacy/archive/index.blade.php:71` — `active`
+- `resources/views/legacy/archive/index.blade.php:72` — `label`
+- `resources/views/legacy/archive/index.blade.php:72` — `Abgelehnt`
+- `resources/views/legacy/archive/index.blade.php:72` — `value`
+- `resources/views/legacy/archive/index.blade.php:72` — `rejected`
+- `resources/views/legacy/archive/index.blade.php:72` — `border`
+- `resources/views/legacy/archive/index.blade.php:72` — `href`
+- `resources/views/legacy/archive/index.blade.php:72` — `active`
+- `resources/views/legacy/archive/index.blade.php:73` — `label`
+- `resources/views/legacy/archive/index.blade.php:73` — `Storniert`
+- `resources/views/legacy/archive/index.blade.php:73` — `value`
+- `resources/views/legacy/archive/index.blade.php:73` — `cancelled`
+- `resources/views/legacy/archive/index.blade.php:73` — `border`
+- `resources/views/legacy/archive/index.blade.php:73` — `href`
+- `resources/views/legacy/archive/index.blade.php:73` — `active`
+- `resources/views/legacy/archive/index.blade.php:74` — `label`
+- `resources/views/legacy/archive/index.blade.php:74` — `Abgelaufen`
+- `resources/views/legacy/archive/index.blade.php:74` — `value`
+- `resources/views/legacy/archive/index.blade.php:74` — `expired`
+- `resources/views/legacy/archive/index.blade.php:74` — `border`
+- `resources/views/legacy/archive/index.blade.php:74` — `href`
+- `resources/views/legacy/archive/index.blade.php:74` — `active`
+- `resources/views/legacy/archive/index.blade.php:78` — `label`
+- `resources/views/legacy/archive/index.blade.php:78` — `Gesamt`
+- `resources/views/legacy/archive/index.blade.php:79` — `value`
+- `resources/views/legacy/archive/index.blade.php:79` — `total`
+- `resources/views/legacy/archive/index.blade.php:80` — `border`
+- `resources/views/legacy/archive/index.blade.php:80` — `border-base-300',
+                        'href`
+- `resources/views/legacy/archive/index.blade.php:82` — `active`
+- `resources/views/legacy/archive/index.blade.php:85` — `label`
+- `resources/views/legacy/archive/index.blade.php:86` — `value`
+- `resources/views/legacy/archive/index.blade.php:86` — `longest`
+- `resources/views/legacy/archive/index.blade.php:87` — `border`
+- `resources/views/legacy/archive/index.blade.php:88` — `href`
+- `resources/views/legacy/archive/index.blade.php:89` — `active`
+- `resources/views/legacy/archive/index.blade.php:92` — `label`
+- `resources/views/legacy/archive/index.blade.php:93` — `value`
+- `resources/views/legacy/archive/index.blade.php:94` — `border`
+- `resources/views/legacy/archive/index.blade.php:95` — `href`
+- `resources/views/legacy/archive/index.blade.php:96` — `active`
+- `resources/views/legacy/archive/index.blade.php:99` — `label`
+- `resources/views/legacy/archive/index.blade.php:99` — `Mitarbeiter`
+- `resources/views/legacy/archive/index.blade.php:100` — `value`
+- `resources/views/legacy/archive/index.blade.php:100` — `users`
+- `resources/views/legacy/archive/index.blade.php:101` — `border`
+- `resources/views/legacy/archive/index.blade.php:102` — `href`
+- `resources/views/legacy/archive/index.blade.php:103` — `active`
+- `resources/views/legacy/archive/index.blade.php:111` — `flex flex-wrap items-center justify-between gap-3`
+- `resources/views/legacy/archive/index.blade.php:112` — `flex flex-wrap items-center gap-3`
+- `resources/views/legacy/archive/index.blade.php:113` — `badge badge-neutral`
+- `resources/views/legacy/archive/index.blade.php:113` — `Archiv`
+- `resources/views/legacy/archive/index.blade.php:114` — `tablist`
+- `resources/views/legacy/archive/index.blade.php:114` — `tabs tabs-box`
+- `resources/views/legacy/archive/index.blade.php:118` — `tab-active`
+- `resources/views/legacy/archive/index.blade.php:119` — `label`
+- `resources/views/legacy/archive/index.blade.php:120` — `badge badge-sm ml-2`
+- `resources/views/legacy/archive/index.blade.php:120` — `count`
+- `resources/views/legacy/archive/index.blade.php:125` — `flex flex-wrap items-center gap-2`
+- `resources/views/legacy/archive/index.blade.php:126` — `urlaub`
+- `resources/views/legacy/archive/index.blade.php:126` — `urlaub`
+- `resources/views/legacy/archive/index.blade.php:126` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/archive/index.blade.php:127` — `Aktive Arbeitsliste`
+- `resources/views/legacy/archive/index.blade.php:130` — `btn btn-sm btn-outline`
+- `resources/views/legacy/archive/index.blade.php:131` — `Archiv-Wochenansicht`
+- `resources/views/legacy/archive/index.blade.php:139` — `hidden`
+- `resources/views/legacy/archive/index.blade.php:140` — `flex flex-wrap items-end gap-3`
+- `resources/views/legacy/archive/index.blade.php:142` — `flex flex-1 flex-col min-w-44`
+- `resources/views/legacy/archive/index.blade.php:143` — `label py-1`
+- `resources/views/legacy/archive/index.blade.php:143` — `Mitarbeiter`
+- `resources/views/legacy/archive/index.blade.php:144` — `user`
+- `resources/views/legacy/archive/index.blade.php:144` — `select select-bordered select-sm w-full`
+- `resources/views/legacy/archive/index.blade.php:145` — `Alle`
+- `resources/views/legacy/archive/index.blade.php:147` — `user`
+- `resources/views/legacy/archive/index.blade.php:152` — `auftraege`
+- `resources/views/legacy/archive/index.blade.php:153` — `flex flex-1 flex-col min-w-44`
+- `resources/views/legacy/archive/index.blade.php:154` — `label py-1`
+- `resources/views/legacy/archive/index.blade.php:154` — `Status`
+- `resources/views/legacy/archive/index.blade.php:155` — `status`
+- `resources/views/legacy/archive/index.blade.php:155` — `select select-bordered select-sm w-full`
+- `resources/views/legacy/archive/index.blade.php:156` — `Alle`
+- `resources/views/legacy/archive/index.blade.php:157` — `Offen`
+- `resources/views/legacy/archive/index.blade.php:158` — `Problem`
+- `resources/views/legacy/archive/index.blade.php:159` — `Bestätigt`
+- `resources/views/legacy/archive/index.blade.php:160` — `Erledigt`
+- `resources/views/legacy/archive/index.blade.php:163` — `urlaub`
+- `resources/views/legacy/archive/index.blade.php:164` — `flex flex-1 flex-col min-w-40`
+- `resources/views/legacy/archive/index.blade.php:165` — `label py-1`
+- `resources/views/legacy/archive/index.blade.php:166` — `vtype`
+- `resources/views/legacy/archive/index.blade.php:166` — `select select-bordered select-sm w-full`
+- `resources/views/legacy/archive/index.blade.php:167` — `Alle Typen`
+- `resources/views/legacy/archive/index.blade.php:168` — `vtype`
+- `resources/views/legacy/archive/index.blade.php:168` — `Urlaub`
+- `resources/views/legacy/archive/index.blade.php:169` — `vtype`
+- `resources/views/legacy/archive/index.blade.php:169` — `Krank`
+- `resources/views/legacy/archive/index.blade.php:170` — `vtype`
+- `resources/views/legacy/archive/index.blade.php:170` — `Sonderurlaub`
+- `resources/views/legacy/archive/index.blade.php:171` — `vtype`
+- `resources/views/legacy/archive/index.blade.php:171` — `Unbezahlt`
+- `resources/views/legacy/archive/index.blade.php:174` — `flex flex-1 flex-col min-w-40`
+- `resources/views/legacy/archive/index.blade.php:175` — `label py-1`
+- `resources/views/legacy/archive/index.blade.php:175` — `Status`
+- `resources/views/legacy/archive/index.blade.php:176` — `vstatus`
+- `resources/views/legacy/archive/index.blade.php:176` — `select select-bordered select-sm w-full`
+- `resources/views/legacy/archive/index.blade.php:177` — `Alle Status`
+- `resources/views/legacy/archive/index.blade.php:178` — `vstatus`
+- `resources/views/legacy/archive/index.blade.php:178` — `Abgelehnt`
+- `resources/views/legacy/archive/index.blade.php:179` — `vstatus`
+- `resources/views/legacy/archive/index.blade.php:179` — `Storniert`
+- `resources/views/legacy/archive/index.blade.php:180` — `vstatus`
+- `resources/views/legacy/archive/index.blade.php:180` — `Abgelaufen`
+- `resources/views/legacy/archive/index.blade.php:184` — `flex items-center gap-2 pb-2`
+- `resources/views/legacy/archive/index.blade.php:185` — `checkbox`
+- `resources/views/legacy/archive/index.blade.php:185` — `mine`
+- `resources/views/legacy/archive/index.blade.php:185` — `mine`
+- `resources/views/legacy/archive/index.blade.php:185` — `mine`
+- `resources/views/legacy/archive/index.blade.php:185` — `toggle toggle-sm toggle-primary`
+- `resources/views/legacy/archive/index.blade.php:186` — `mine`
+- `resources/views/legacy/archive/index.blade.php:186` — `label-text text-sm`
+- `resources/views/legacy/archive/index.blade.php:186` — `Nur meine`
+- `resources/views/legacy/archive/index.blade.php:190` — `from`
+- `resources/views/legacy/archive/index.blade.php:191` — `ml-auto flex items-end gap-2`
+- `resources/views/legacy/archive/index.blade.php:192` — `submit`
+- `resources/views/legacy/archive/index.blade.php:192` — `btn btn-sm btn-primary`
+- `resources/views/legacy/archive/index.blade.php:192` — `Filtern`
+- `resources/views/legacy/archive/index.blade.php:194` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/archive/index.blade.php:194` — `Zurücksetzen`
+- `resources/views/legacy/archive/index.blade.php:204` — `rounded-box border bg-base-100 px-4 py-3 shadow-xs `
+- `resources/views/legacy/archive/index.blade.php:204` — `border`
+- `resources/views/legacy/archive/index.blade.php:205` — `active`
+- `resources/views/legacy/archive/index.blade.php:207` — `href`
+- `resources/views/legacy/archive/index.blade.php:208` — `href`
+- `resources/views/legacy/archive/index.blade.php:210` — `label`
+- `resources/views/legacy/archive/index.blade.php:211` — `value`
+- `resources/views/legacy/archive/index.blade.php:215` — `label`
+- `resources/views/legacy/archive/index.blade.php:216` — `value`
+- `resources/views/legacy/archive/index.blade.php:223` — `flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/legacy/archive/index.blade.php:224` — `urlaub`
+- `resources/views/legacy/archive/index.blade.php:225` — `table table-sm table-zebra table-pin-rows`
+- `resources/views/legacy/archive/index.blade.php:226` — `bg-base-200`
+- `resources/views/legacy/archive/index.blade.php:229` — `w-32`
+- `resources/views/legacy/archive/index.blade.php:229` — `mitarbeiter`
+- `resources/views/legacy/archive/index.blade.php:229` — `link link-hover`
+- `resources/views/legacy/archive/index.blade.php:229` — `Mitarbeiter`
+- `resources/views/legacy/archive/index.blade.php:229` — `mitarbeiter`
+- `resources/views/legacy/archive/index.blade.php:231` — `link link-hover`
+- `resources/views/legacy/archive/index.blade.php:232` — `w-28 whitespace-nowrap`
+- `resources/views/legacy/archive/index.blade.php:232` — `link link-hover`
+- `resources/views/legacy/archive/index.blade.php:233` — `w-28 whitespace-nowrap`
+- `resources/views/legacy/archive/index.blade.php:233` — `link link-hover`
+- `resources/views/legacy/archive/index.blade.php:234` — `status`
+- `resources/views/legacy/archive/index.blade.php:234` — `link link-hover`
+- `resources/views/legacy/archive/index.blade.php:234` — `Status`
+- `resources/views/legacy/archive/index.blade.php:234` — `status`
+- `resources/views/legacy/archive/index.blade.php:235` — `max-w-xs`
+- `resources/views/legacy/archive/index.blade.php:235` — `Notiz`
+- `resources/views/legacy/archive/index.blade.php:242` — `badge-success`
+- `resources/views/legacy/archive/index.blade.php:243` — `badge-error`
+- `resources/views/legacy/archive/index.blade.php:244` — `badge-ghost`
+- `resources/views/legacy/archive/index.blade.php:245` — `badge-neutral`
+- `resources/views/legacy/archive/index.blade.php:248` — `Abgelaufen`
+- `resources/views/legacy/archive/index.blade.php:249` — `Abgelehnt`
+- `resources/views/legacy/archive/index.blade.php:250` — `Storniert`
+- `resources/views/legacy/archive/index.blade.php:254` — `Urlaub`
+- `resources/views/legacy/archive/index.blade.php:255` — `Krank`
+- `resources/views/legacy/archive/index.blade.php:256` — `Sonderurlaub`
+- `resources/views/legacy/archive/index.blade.php:257` — `Unbezahlt`
+- `resources/views/legacy/archive/index.blade.php:261` — `hover`
+- `resources/views/legacy/archive/index.blade.php:263` — `whitespace-nowrap`
+- `resources/views/legacy/archive/index.blade.php:265` — `whitespace-nowrap`
+- `resources/views/legacy/archive/index.blade.php:272` — `Keine Einträge.`
+- `resources/views/legacy/archive/index.blade.php:276` — `auftraege`
+- `resources/views/legacy/archive/index.blade.php:277` — `table table-sm table-zebra table-pin-rows`
+- `resources/views/legacy/archive/index.blade.php:278` — `bg-base-200`
+- `resources/views/legacy/archive/index.blade.php:280` — `w-32`
+- `resources/views/legacy/archive/index.blade.php:280` — `mitarbeiter`
+- `resources/views/legacy/archive/index.blade.php:280` — `link link-hover`
+- `resources/views/legacy/archive/index.blade.php:280` — `Mitarbeiter`
+- `resources/views/legacy/archive/index.blade.php:280` — `mitarbeiter`
+- `resources/views/legacy/archive/index.blade.php:281` — `w-24 text-center`
+- `resources/views/legacy/archive/index.blade.php:281` — `status`
+- `resources/views/legacy/archive/index.blade.php:281` — `link link-hover`
+- `resources/views/legacy/archive/index.blade.php:281` — `Status`
+- `resources/views/legacy/archive/index.blade.php:281` — `status`
+- `resources/views/legacy/archive/index.blade.php:282` — `w-28 whitespace-nowrap`
+- `resources/views/legacy/archive/index.blade.php:282` — `link link-hover`
+- `resources/views/legacy/archive/index.blade.php:283` — `w-28 whitespace-nowrap`
+- `resources/views/legacy/archive/index.blade.php:283` — `link link-hover`
+- `resources/views/legacy/archive/index.blade.php:284` — `Inhalt`
+- `resources/views/legacy/archive/index.blade.php:292` — `badge-neutral`
+- `resources/views/legacy/archive/index.blade.php:293` — `badge-success`
+- `resources/views/legacy/archive/index.blade.php:294` — `badge-warning`
+- `resources/views/legacy/archive/index.blade.php:295` — `badge-error`
+- `resources/views/legacy/archive/index.blade.php:296` — `badge-ghost`
+- `resources/views/legacy/archive/index.blade.php:299` — `hover`
+- `resources/views/legacy/archive/index.blade.php:300` — `whitespace-nowrap`
+- `resources/views/legacy/archive/index.blade.php:301` — `link link-hover`
+- `resources/views/legacy/archive/index.blade.php:305` — `text-center`
+- `resources/views/legacy/archive/index.blade.php:310` — `text-sm`
+- `resources/views/legacy/archive/index.blade.php:311` — `link link-hover`
+- `resources/views/legacy/archive/index.blade.php:317` — `Keine Einträge.`
+- `resources/views/legacy/archive/index.blade.php:321` — `bereitschaft`
+- `resources/views/legacy/archive/index.blade.php:322` — `table table-sm table-zebra table-pin-rows`
+- `resources/views/legacy/archive/index.blade.php:323` — `bg-base-200`
+- `resources/views/legacy/archive/index.blade.php:325` — `w-32`
+- `resources/views/legacy/archive/index.blade.php:325` — `mitarbeiter`
+- `resources/views/legacy/archive/index.blade.php:325` — `link link-hover`
+- `resources/views/legacy/archive/index.blade.php:325` — `Mitarbeiter`
+- `resources/views/legacy/archive/index.blade.php:325` — `mitarbeiter`
+- `resources/views/legacy/archive/index.blade.php:326` — `w-28 whitespace-nowrap`
+- `resources/views/legacy/archive/index.blade.php:326` — `link link-hover`
+- `resources/views/legacy/archive/index.blade.php:327` — `w-28 whitespace-nowrap`
+- `resources/views/legacy/archive/index.blade.php:327` — `link link-hover`
+- `resources/views/legacy/archive/index.blade.php:328` — `Dauer`
+- `resources/views/legacy/archive/index.blade.php:338` — `hover`
+- `resources/views/legacy/archive/index.blade.php:339` — `whitespace-nowrap`
+- `resources/views/legacy/archive/index.blade.php:340` — `whitespace-nowrap text-xs`
+- `resources/views/legacy/archive/index.blade.php:341` — `whitespace-nowrap text-xs`
+- `resources/views/legacy/archive/index.blade.php:345` — `Keine Einträge.`
+- `resources/views/legacy/archive/index.blade.php:349` — `notdienst`
+- `resources/views/legacy/archive/index.blade.php:350` — `table table-sm table-zebra table-pin-rows`
+- `resources/views/legacy/archive/index.blade.php:351` — `bg-base-200`
+- `resources/views/legacy/archive/index.blade.php:353` — `w-32`
+- `resources/views/legacy/archive/index.blade.php:353` — `mitarbeiter`
+- `resources/views/legacy/archive/index.blade.php:353` — `link link-hover`
+- `resources/views/legacy/archive/index.blade.php:353` — `Mitarbeiter`
+- `resources/views/legacy/archive/index.blade.php:353` — `mitarbeiter`
+- `resources/views/legacy/archive/index.blade.php:354` — `w-28 whitespace-nowrap`
+- `resources/views/legacy/archive/index.blade.php:354` — `link link-hover`
+- `resources/views/legacy/archive/index.blade.php:355` — `w-28 whitespace-nowrap`
+- `resources/views/legacy/archive/index.blade.php:355` — `link link-hover`
+- `resources/views/legacy/archive/index.blade.php:356` — `Dauer`
+- `resources/views/legacy/archive/index.blade.php:366` — `hover`
+- `resources/views/legacy/archive/index.blade.php:367` — `whitespace-nowrap`
+- `resources/views/legacy/archive/index.blade.php:368` — `whitespace-nowrap text-xs`
+- `resources/views/legacy/archive/index.blade.php:369` — `whitespace-nowrap text-xs`
+- `resources/views/legacy/archive/index.blade.php:373` — `Keine Einträge.`
+- `resources/views/legacy/archive/index.blade.php:383` — `bereitschaft`
+- `resources/views/legacy/archive/index.blade.php:384` — `notdienst`
+- `resources/views/legacy/archive/index.blade.php:385` — `urlaub`
+- `resources/views/legacy/archive/index.blade.php:390` — `flex-none`
+- `resources/views/legacy/archive/index.blade.php:392` — `Seite`
+- `resources/views/legacy/archive/index.blade.php:393` — `Einträge`
+- `resources/views/legacy/archive/index.blade.php:396` — `rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-xs`
+- `resources/views/legacy/archive/index.blade.php:397` — `vendor.pagination.daisyui-simple`
+- `resources/views/legacy/archive/index.blade.php:405` — `flex-none rounded-box border border-base-300 bg-base-200`
+- `resources/views/legacy/archive/index.blade.php:406` — `cursor-pointer px-4 py-2 text-sm font-semibold`
+- `resources/views/legacy/archive/index.blade.php:407` — `Archivierung starten`
+- `resources/views/legacy/archive/index.blade.php:409` — `px-4 pb-4 pt-2`
+- `resources/views/legacy/archive/index.blade.php:411` — `flex flex-wrap items-end gap-3`
+- `resources/views/legacy/archive/index.blade.php:413` — `label py-0 text-xs font-semibold`
+- `resources/views/legacy/archive/index.blade.php:413` — `Archiv bis`
+- `resources/views/legacy/archive/index.blade.php:414` — `months`
+- `resources/views/legacy/archive/index.blade.php:414` — `select select-bordered select-sm`
+- `resources/views/legacy/archive/index.blade.php:415` — `Monate`
+- `resources/views/legacy/archive/index.blade.php:416` — `Monate`
+- `resources/views/legacy/archive/index.blade.php:417` — `Monate`
+- `resources/views/legacy/archive/index.blade.php:418` — `Monate`
+- `resources/views/legacy/archive/index.blade.php:422` — `label py-0 text-xs font-semibold`
+- `resources/views/legacy/archive/index.blade.php:422` — `Mitarbeiter`
+- `resources/views/legacy/archive/index.blade.php:422` — `Optional`
+- `resources/views/legacy/archive/index.blade.php:423` — `user`
+- `resources/views/legacy/archive/index.blade.php:423` — `select select-bordered select-sm`
+- `resources/views/legacy/archive/index.blade.php:424` — `Alle`
+- `resources/views/legacy/archive/index.blade.php:430` — `submit`
+- `resources/views/legacy/archive/index.blade.php:430` — `btn btn-warning btn-sm`
+- `resources/views/legacy/archive/index.blade.php:432` — `Archivierung starten`
+- `resources/views/legacy/archive/index.blade.php:433` — `Archivierung wirklich starten?`
+- `resources/views/legacy/archive/index.blade.php:434` — `Starten`
+- `resources/views/legacy/archive/index.blade.php:435` — `Archivierung starten`
+- `resources/views/legacy/archive/show.blade.php:2` — `title`
+- `resources/views/legacy/archive/show.blade.php:2` — `Archiv`
+- `resources/views/legacy/archive/show.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/legacy/archive/show.blade.php:3` — `nav-title`
+- `resources/views/legacy/archive/show.blade.php:3` — `Archiv`
+- `resources/views/legacy/archive/show.blade.php:5` — `content`
+- `resources/views/legacy/archive/show.blade.php:6` — `mb-4`
+- `resources/views/legacy/archive/show.blade.php:7` — `link link-hover text-sm`
+- `resources/views/legacy/archive/show.blade.php:7` — `Zur Archivliste`
+- `resources/views/legacy/archive/show.blade.php:9` — `rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/legacy/archive/show.blade.php:10` — `isDialog`
+- `resources/views/legacy/archive/_show_body.blade.php:5` — `badge-neutral`
+- `resources/views/legacy/archive/_show_body.blade.php:6` — `badge-success`
+- `resources/views/legacy/archive/_show_body.blade.php:7` — `badge-warning`
+- `resources/views/legacy/archive/_show_body.blade.php:8` — `badge-error`
+- `resources/views/legacy/archive/_show_body.blade.php:9` — `badge-ghost`
+- `resources/views/legacy/archive/_show_body.blade.php:13` — `mb-6 flex flex-wrap items-center gap-2 text-sm`
+- `resources/views/legacy/archive/_show_body.blade.php:16` — `Unbekannt`
+- `resources/views/legacy/archive/_show_body.blade.php:19` — `badge badge-sm badge-ghost ml-auto`
+- `resources/views/legacy/archive/_show_body.blade.php:22` — `Inhalt`
+- `resources/views/legacy/archive/_show_body.blade.php:23` — `whitespace-pre-wrap leading-relaxed text-base-content`
+- `resources/views/legacy/archive/_show_body.blade.php:27` — `Rückmeldung`
+- `resources/views/legacy/archive/_show_body.blade.php:28` — `whitespace-pre-wrap leading-relaxed text-base-content`
+- `resources/views/legacy/archive/_show_body.blade.php:33` — `rounded-xl border border-base-300 bg-base-200 px-4 py-3`
+- `resources/views/legacy/archive/_show_body.blade.php:35` — `text-base-content`
+- `resources/views/legacy/archive/_show_body.blade.php:37` — `rounded-xl border border-base-300 bg-base-200 px-4 py-3`
+- `resources/views/legacy/archive/_show_body.blade.php:39` — `text-base-content`
+- `resources/views/legacy/archive/_show_body.blade.php:41` — `rounded-xl border border-base-300 bg-base-200 px-4 py-3`
+- `resources/views/legacy/archive/_show_body.blade.php:42` — `Aktuell`
+- `resources/views/legacy/archive/_show_body.blade.php:43` — `text-base-content`
+- `resources/views/legacy/callcenter/login.blade.php:2` — `title`
+- `resources/views/legacy/callcenter/login.blade.php:2` — `Callcenter Login`
+- `resources/views/legacy/callcenter/login.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/legacy/callcenter/login.blade.php:3` — `nav-title`
+- `resources/views/legacy/callcenter/login.blade.php:3` — `Zentrale Login`
+- `resources/views/legacy/callcenter/login.blade.php:5` — `content`
+- `resources/views/legacy/callcenter/login.blade.php:6` — `mx-auto max-w-md`
+- `resources/views/legacy/callcenter/login.blade.php:7` — `rounded-box border border-base-300 bg-base-100 p-5`
+- `resources/views/legacy/callcenter/login.blade.php:8` — `mb-3 text-base font-bold`
+- `resources/views/legacy/callcenter/login.blade.php:8` — `Notdienstplan Login`
+- `resources/views/legacy/callcenter/login.blade.php:9` — `space-y-4`
+- `resources/views/legacy/callcenter/login.blade.php:12` — `username`
+- `resources/views/legacy/callcenter/login.blade.php:12` — `label text-sm font-semibold pb-1`
+- `resources/views/legacy/callcenter/login.blade.php:12` — `Nutzer`
+- `resources/views/legacy/callcenter/login.blade.php:13` — `username`
+- `resources/views/legacy/callcenter/login.blade.php:13` — `username`
+- `resources/views/legacy/callcenter/login.blade.php:13` — `text`
+- `resources/views/legacy/callcenter/login.blade.php:13` — `username`
+- `resources/views/legacy/callcenter/login.blade.php:13` — `username`
+- `resources/views/legacy/callcenter/login.blade.php:14` — `username`
+- `resources/views/legacy/callcenter/login.blade.php:14` — `mt-2 text-sm text-error`
+- `resources/views/legacy/callcenter/login.blade.php:17` — `password`
+- `resources/views/legacy/callcenter/login.blade.php:17` — `label text-sm font-semibold pb-1`
+- `resources/views/legacy/callcenter/login.blade.php:17` — `Passwort`
+- `resources/views/legacy/callcenter/login.blade.php:18` — `password`
+- `resources/views/legacy/callcenter/login.blade.php:18` — `password`
+- `resources/views/legacy/callcenter/login.blade.php:18` — `password`
+- `resources/views/legacy/callcenter/login.blade.php:18` — `input input-bordered input-sm w-full`
+- `resources/views/legacy/callcenter/login.blade.php:20` — `flex items-center gap-2 pt-1`
+- `resources/views/legacy/callcenter/login.blade.php:21` — `submit`
+- `resources/views/legacy/callcenter/login.blade.php:21` — `btn btn-primary btn-sm`
+- `resources/views/legacy/callcenter/login.blade.php:21` — `Anmelden`
+- `resources/views/legacy/callcenter/login.blade.php:22` — `home`
+- `resources/views/legacy/callcenter/login.blade.php:22` — `btn btn-ghost btn-sm`
+- `resources/views/legacy/callcenter/login.blade.php:22` — `Zurück`
+- `resources/views/legacy/callcenter/notdienst.blade.php:2` — `title`
+- `resources/views/legacy/callcenter/notdienst.blade.php:2` — `Zentrale`
+- `resources/views/legacy/callcenter/notdienst.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/legacy/callcenter/notdienst.blade.php:3` — `nav-title`
+- `resources/views/legacy/callcenter/notdienst.blade.php:3` — `Zentrale`
+- `resources/views/legacy/callcenter/notdienst.blade.php:5` — `content`
+- `resources/views/legacy/callcenter/notdienst.blade.php:8` — `flex flex-none flex-wrap items-center gap-2`
+- `resources/views/legacy/callcenter/notdienst.blade.php:11` — `Eingeloggt als`
+- `resources/views/legacy/callcenter/notdienst.blade.php:13` — `inline`
+- `resources/views/legacy/callcenter/notdienst.blade.php:15` — `submit`
+- `resources/views/legacy/callcenter/notdienst.blade.php:15` — `link link-primary text-xs`
+- `resources/views/legacy/callcenter/notdienst.blade.php:15` — `Abmelden`
+- `resources/views/legacy/callcenter/notdienst.blade.php:19` — `week`
+- `resources/views/legacy/callcenter/notdienst.blade.php:20` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/callcenter/notdienst.blade.php:21` — `text-sm font-semibold`
+- `resources/views/legacy/callcenter/notdienst.blade.php:24` — `week`
+- `resources/views/legacy/callcenter/notdienst.blade.php:25` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/callcenter/notdienst.blade.php:28` — `btn btn-sm btn-outline`
+- `resources/views/legacy/callcenter/notdienst.blade.php:28` — `Aktuelle Woche`
+- `resources/views/legacy/callcenter/notdienst.blade.php:31` — `Stand`
+- `resources/views/legacy/callcenter/notdienst.blade.php:31` — `dddd, DD.MM.YYYY`
+- `resources/views/legacy/callcenter/notdienst.blade.php:40` — `Y-m-d`
+- `resources/views/legacy/callcenter/notdienst.blade.php:41` — `Y-m-d`
+- `resources/views/legacy/callcenter/notdienst.blade.php:43` — `alert',      'label`
+- `resources/views/legacy/callcenter/notdienst.blade.php:43` — `Probleme`
+- `resources/views/legacy/callcenter/notdienst.blade.php:43` — `value`
+- `resources/views/legacy/callcenter/notdienst.blade.php:43` — `alert`
+- `resources/views/legacy/callcenter/notdienst.blade.php:43` — `border`
+- `resources/views/legacy/callcenter/notdienst.blade.php:43` — `tone`
+- `resources/views/legacy/callcenter/notdienst.blade.php:43` — `text-error',           'params`
+- `resources/views/legacy/callcenter/notdienst.blade.php:43` — `status`
+- `resources/views/legacy/callcenter/notdienst.blade.php:43` — `from`
+- `resources/views/legacy/callcenter/notdienst.blade.php:44` — `open',       'label`
+- `resources/views/legacy/callcenter/notdienst.blade.php:44` — `Offen`
+- `resources/views/legacy/callcenter/notdienst.blade.php:44` — `value`
+- `resources/views/legacy/callcenter/notdienst.blade.php:44` — `open`
+- `resources/views/legacy/callcenter/notdienst.blade.php:44` — `border`
+- `resources/views/legacy/callcenter/notdienst.blade.php:44` — `tone`
+- `resources/views/legacy/callcenter/notdienst.blade.php:44` — `text-warning',         'params`
+- `resources/views/legacy/callcenter/notdienst.blade.php:44` — `status`
+- `resources/views/legacy/callcenter/notdienst.blade.php:44` — `from`
+- `resources/views/legacy/callcenter/notdienst.blade.php:45` — `progress',   'label`
+- `resources/views/legacy/callcenter/notdienst.blade.php:45` — `Bestätigt`
+- `resources/views/legacy/callcenter/notdienst.blade.php:45` — `value`
+- `resources/views/legacy/callcenter/notdienst.blade.php:45` — `progress`
+- `resources/views/legacy/callcenter/notdienst.blade.php:45` — `border`
+- `resources/views/legacy/callcenter/notdienst.blade.php:45` — `tone`
+- `resources/views/legacy/callcenter/notdienst.blade.php:45` — `text-success',         'params`
+- `resources/views/legacy/callcenter/notdienst.blade.php:45` — `status`
+- `resources/views/legacy/callcenter/notdienst.blade.php:45` — `from`
+- `resources/views/legacy/callcenter/notdienst.blade.php:46` — `doneRecent', 'label`
+- `resources/views/legacy/callcenter/notdienst.blade.php:46` — `value`
+- `resources/views/legacy/callcenter/notdienst.blade.php:46` — `doneRecent`
+- `resources/views/legacy/callcenter/notdienst.blade.php:46` — `border`
+- `resources/views/legacy/callcenter/notdienst.blade.php:46` — `border-base-300',   'tone`
+- `resources/views/legacy/callcenter/notdienst.blade.php:46` — `params`
+- `resources/views/legacy/callcenter/notdienst.blade.php:46` — `status`
+- `resources/views/legacy/callcenter/notdienst.blade.php:46` — `from`
+- `resources/views/legacy/callcenter/notdienst.blade.php:50` — `params`
+- `resources/views/legacy/callcenter/notdienst.blade.php:51` — `border`
+- `resources/views/legacy/callcenter/notdienst.blade.php:52` — `date`
+- `resources/views/legacy/callcenter/notdienst.blade.php:52` — `params`
+- `resources/views/legacy/callcenter/notdienst.blade.php:52` — `from`
+- `resources/views/legacy/callcenter/notdienst.blade.php:53` — `flex items-center justify-between`
+- `resources/views/legacy/callcenter/notdienst.blade.php:54` — `label`
+- `resources/views/legacy/callcenter/notdienst.blade.php:57` — `tone`
+- `resources/views/legacy/callcenter/notdienst.blade.php:57` — `value`
+- `resources/views/legacy/callcenter/notdienst.blade.php:64` — `Status-Mix aktiv`
+- `resources/views/legacy/callcenter/notdienst.blade.php:66` — `alert`
+- `resources/views/legacy/callcenter/notdienst.blade.php:67` — `open`
+- `resources/views/legacy/callcenter/notdienst.blade.php:68` — `progress`
+- `resources/views/legacy/callcenter/notdienst.blade.php:75` — `Aktuell keine offenen Vorgänge.`
+- `resources/views/legacy/callcenter/notdienst.blade.php:77` — `mt-2 flex h-2 w-full overflow-hidden rounded-full bg-base-200`
+- `resources/views/legacy/callcenter/notdienst.blade.php:78` — `bg-error`
+- `resources/views/legacy/callcenter/notdienst.blade.php:79` — `bg-warning`
+- `resources/views/legacy/callcenter/notdienst.blade.php:80` — `bg-success`
+- `resources/views/legacy/callcenter/notdienst.blade.php:83` — `inline-block size-2 rounded-full bg-error align-middle`
+- `resources/views/legacy/callcenter/notdienst.blade.php:83` — `Probleme`
+- `resources/views/legacy/callcenter/notdienst.blade.php:83` — `font-semibold`
+- `resources/views/legacy/callcenter/notdienst.blade.php:84` — `inline-block size-2 rounded-full bg-warning align-middle`
+- `resources/views/legacy/callcenter/notdienst.blade.php:84` — `Offen`
+- `resources/views/legacy/callcenter/notdienst.blade.php:84` — `font-semibold`
+- `resources/views/legacy/callcenter/notdienst.blade.php:85` — `inline-block size-2 rounded-full bg-success align-middle`
+- `resources/views/legacy/callcenter/notdienst.blade.php:85` — `Bestätigt`
+- `resources/views/legacy/callcenter/notdienst.blade.php:85` — `font-semibold`
+- `resources/views/legacy/callcenter/notdienst.blade.php:91` — `Y-m-d`
+- `resources/views/legacy/callcenter/notdienst.blade.php:92` — `Y-m-d`
+- `resources/views/legacy/callcenter/notdienst.blade.php:93` — `Y-m-d`
+- `resources/views/legacy/callcenter/notdienst.blade.php:95` — `mt-3 grid grid-cols-3 gap-2 text-center`
+- `resources/views/legacy/callcenter/notdienst.blade.php:96` — `status`
+- `resources/views/legacy/callcenter/notdienst.blade.php:98` — `date`
+- `resources/views/legacy/callcenter/notdienst.blade.php:99` — `Überfällig`
+- `resources/views/legacy/callcenter/notdienst.blade.php:100` — `text-error`
+- `resources/views/legacy/callcenter/notdienst.blade.php:102` — `status`
+- `resources/views/legacy/callcenter/notdienst.blade.php:104` — `date`
+- `resources/views/legacy/callcenter/notdienst.blade.php:105` — `Heute fällig`
+- `resources/views/legacy/callcenter/notdienst.blade.php:106` — `text-warning`
+- `resources/views/legacy/callcenter/notdienst.blade.php:108` — `status`
+- `resources/views/legacy/callcenter/notdienst.blade.php:110` — `date`
+- `resources/views/legacy/callcenter/notdienst.blade.php:111` — `Nächste 7d`
+- `resources/views/legacy/callcenter/notdienst.blade.php:123` — `flex-none overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/legacy/callcenter/notdienst.blade.php:125` — `Wochenplan`
+- `resources/views/legacy/callcenter/notdienst.blade.php:130` — `overflow-x-auto`
+- `resources/views/legacy/callcenter/notdienst.blade.php:131` — `table table-xs`
+- `resources/views/legacy/callcenter/notdienst.blade.php:134` — `sticky top-0 left-0 z-20 bg-base-200`
+- `resources/views/legacy/callcenter/notdienst.blade.php:134` — `Dienst`
+- `resources/views/legacy/callcenter/notdienst.blade.php:137` — `isToday`
+- `resources/views/legacy/callcenter/notdienst.blade.php:139` — `isHoliday`
+- `resources/views/legacy/callcenter/notdienst.blade.php:141` — `isSunday`
+- `resources/views/legacy/callcenter/notdienst.blade.php:143` — `isSaturday`
+- `resources/views/legacy/callcenter/notdienst.blade.php:145` — `bg-base-200`
+- `resources/views/legacy/callcenter/notdienst.blade.php:148` — `isHoliday`
+- `resources/views/legacy/callcenter/notdienst.blade.php:148` — `holidayName`
+- `resources/views/legacy/callcenter/notdienst.blade.php:149` — `font-semibold`
+- `resources/views/legacy/callcenter/notdienst.blade.php:149` — `date`
+- `resources/views/legacy/callcenter/notdienst.blade.php:150` — `date`
+- `resources/views/legacy/callcenter/notdienst.blade.php:151` — `isHoliday`
+- `resources/views/legacy/callcenter/notdienst.blade.php:152` — `holidayName`
+- `resources/views/legacy/callcenter/notdienst.blade.php:160` — `font-semibold whitespace-nowrap sticky left-0 z-10 bg-base-100`
+- `resources/views/legacy/callcenter/notdienst.blade.php:160` — `Notdienst`
+- `resources/views/legacy/callcenter/notdienst.blade.php:162` — `isToday`
+- `resources/views/legacy/callcenter/notdienst.blade.php:162` — `isHoliday`
+- `resources/views/legacy/callcenter/notdienst.blade.php:163` — `user`
+- `resources/views/legacy/callcenter/notdienst.blade.php:164` — `user`
+- `resources/views/legacy/callcenter/notdienst.blade.php:169` — `font-semibold whitespace-nowrap sticky left-0 z-10 bg-base-100`
+- `resources/views/legacy/callcenter/notdienst.blade.php:169` — `Bereitschaft`
+- `resources/views/legacy/callcenter/notdienst.blade.php:171` — `isToday`
+- `resources/views/legacy/callcenter/notdienst.blade.php:171` — `isHoliday`
+- `resources/views/legacy/callcenter/notdienst.blade.php:172` — `user`
+- `resources/views/legacy/callcenter/notdienst.blade.php:173` — `user`
+- `resources/views/legacy/callcenter/notdienst.blade.php:185` — `label`
+- `resources/views/legacy/callcenter/notdienst.blade.php:185` — `Heute`
+- `resources/views/legacy/callcenter/notdienst.blade.php:185` — `dd, DD.MM.`
+- `resources/views/legacy/callcenter/notdienst.blade.php:185` — `tone`
+- `resources/views/legacy/callcenter/notdienst.blade.php:186` — `label`
+- `resources/views/legacy/callcenter/notdienst.blade.php:186` — `Morgen`
+- `resources/views/legacy/callcenter/notdienst.blade.php:186` — `dd, DD.MM.`
+- `resources/views/legacy/callcenter/notdienst.blade.php:186` — `tone`
+- `resources/views/legacy/callcenter/notdienst.blade.php:186` — `border-base-300`
+- `resources/views/legacy/callcenter/notdienst.blade.php:188` — `tone`
+- `resources/views/legacy/callcenter/notdienst.blade.php:189` — `flex items-center justify-between`
+- `resources/views/legacy/callcenter/notdienst.blade.php:190` — `label`
+- `resources/views/legacy/callcenter/notdienst.blade.php:193` — `mt-2 space-y-2`
+- `resources/views/legacy/callcenter/notdienst.blade.php:195` — `Notdienst`
+- `resources/views/legacy/callcenter/notdienst.blade.php:196` — `text-sm font-semibold`
+- `resources/views/legacy/callcenter/notdienst.blade.php:196` — `user`
+- `resources/views/legacy/callcenter/notdienst.blade.php:197` — `email`
+- `resources/views/legacy/callcenter/notdienst.blade.php:198` — `email`
+- `resources/views/legacy/callcenter/notdienst.blade.php:198` — `link link-primary text-xs`
+- `resources/views/legacy/callcenter/notdienst.blade.php:198` — `email`
+- `resources/views/legacy/callcenter/notdienst.blade.php:202` — `Bereitschaft`
+- `resources/views/legacy/callcenter/notdienst.blade.php:203` — `text-sm font-semibold`
+- `resources/views/legacy/callcenter/notdienst.blade.php:203` — `user`
+- `resources/views/legacy/callcenter/notdienst.blade.php:204` — `email`
+- `resources/views/legacy/callcenter/notdienst.blade.php:205` — `email`
+- `resources/views/legacy/callcenter/notdienst.blade.php:205` — `link link-primary text-xs`
+- `resources/views/legacy/callcenter/notdienst.blade.php:205` — `email`
+- `resources/views/legacy/callcenter/notdienst.blade.php:218` — `mt-2 space-y-1 text-xs`
+- `resources/views/legacy/callcenter/notdienst.blade.php:220` — `flex items-center justify-between gap-2`
+- `resources/views/legacy/callcenter/notdienst.blade.php:221` — `date`
+- `resources/views/legacy/callcenter/notdienst.blade.php:221` — `date`
+- `resources/views/legacy/callcenter/notdienst.blade.php:222` — `font-semibold`
+- `resources/views/legacy/callcenter/notdienst.blade.php:222` — `user`
+- `resources/views/legacy/callcenter/notdienst.blade.php:226` — `flex items-center justify-between gap-2`
+- `resources/views/legacy/callcenter/notdienst.blade.php:227` — `date`
+- `resources/views/legacy/callcenter/notdienst.blade.php:227` — `date`
+- `resources/views/legacy/callcenter/notdienst.blade.php:228` — `font-semibold`
+- `resources/views/legacy/callcenter/notdienst.blade.php:228` — `user`
+- `resources/views/legacy/callcenter/notdienst.blade.php:239` — `rounded-box border border-base-300 bg-base-100 p-3 shadow-xs`
+- `resources/views/legacy/callcenter/notdienst.blade.php:240` — `flex items-center justify-between`
+- `resources/views/legacy/callcenter/notdienst.blade.php:242` — `count`
+- `resources/views/legacy/callcenter/notdienst.blade.php:245` — `mt-3 flex h-20 items-end gap-1`
+- `resources/views/legacy/callcenter/notdienst.blade.php:248` — `count`
+- `resources/views/legacy/callcenter/notdienst.blade.php:249` — `date`
+- `resources/views/legacy/callcenter/notdienst.blade.php:250` — `bg-primary`
+- `resources/views/legacy/callcenter/notdienst.blade.php:250` — `count`
+- `resources/views/legacy/callcenter/notdienst.blade.php:250` — `bg-base-200`
+- `resources/views/legacy/callcenter/notdienst.blade.php:252` — `group flex flex-1 flex-col items-center gap-1`
+- `resources/views/legacy/callcenter/notdienst.blade.php:253` — `date`
+- `resources/views/legacy/callcenter/notdienst.blade.php:253` — `count`
+- `resources/views/legacy/callcenter/notdienst.blade.php:260` — `date`
+- `resources/views/legacy/callcenter/notdienst.blade.php:261` — `date`
+- `resources/views/legacy/callcenter/notdienst.blade.php:266` — `rounded-box border border-base-300 bg-base-100 p-3 shadow-xs`
+- `resources/views/legacy/callcenter/notdienst.blade.php:269` — `Keine offenen Zuweisungen.`
+- `resources/views/legacy/callcenter/notdienst.blade.php:272` — `mt-2 space-y-1.5 text-xs`
+- `resources/views/legacy/callcenter/notdienst.blade.php:279` — `flex items-center justify-between`
+- `resources/views/legacy/callcenter/notdienst.blade.php:280` — `truncate font-semibold`
+- `resources/views/legacy/callcenter/notdienst.blade.php:283` — `mt-0.5 h-1.5 w-full overflow-hidden rounded-full bg-base-200`
+- `resources/views/legacy/callcenter/notdienst.blade.php:295` — `flex-none rounded-box border border-base-300 bg-base-100 p-3 shadow-xs`
+- `resources/views/legacy/callcenter/notdienst.blade.php:299` — `flex items-center justify-between gap-2`
+- `resources/views/legacy/callcenter/notdienst.blade.php:300` — `date`
+- `resources/views/legacy/callcenter/notdienst.blade.php:300` — `dd, DD.MM.YYYY`
+- `resources/views/legacy/callcenter/notdienst.blade.php:301` — `name`
+- `resources/views/legacy/callcenter/notdienst.blade.php:302` — `badge badge-xs badge-ghost`
+- `resources/views/legacy/callcenter/notdienst.blade.php:302` — `daysAway`
+- `resources/views/legacy/callcenter/notdienst.blade.php:311` — `flex min-h-0 flex-col overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/legacy/callcenter/notdienst.blade.php:313` — `flex items-center gap-2`
+- `resources/views/legacy/callcenter/notdienst.blade.php:314` — `Offene Meldungen`
+- `resources/views/legacy/callcenter/notdienst.blade.php:315` — `badge badge-xs badge-ghost`
+- `resources/views/legacy/callcenter/notdienst.blade.php:317` — `status`
+- `resources/views/legacy/callcenter/notdienst.blade.php:317` — `link link-hover text-xs`
+- `resources/views/legacy/callcenter/notdienst.blade.php:317` — `Alle anzeigen`
+- `resources/views/legacy/callcenter/notdienst.blade.php:319` — `min-h-0 flex-1 overflow-auto`
+- `resources/views/legacy/callcenter/notdienst.blade.php:321` — `true`
+- `resources/views/legacy/callcenter/notdienst.blade.php:322` — `bg-base-200`
+- `resources/views/legacy/callcenter/notdienst.blade.php:324` — `w-20 text-center`
+- `resources/views/legacy/callcenter/notdienst.blade.php:324` — `Status`
+- `resources/views/legacy/callcenter/notdienst.blade.php:325` — `Inhalt`
+- `resources/views/legacy/callcenter/notdienst.blade.php:326` — `w-24 whitespace-nowrap`
+- `resources/views/legacy/callcenter/notdienst.blade.php:334` — `badge-neutral`
+- `resources/views/legacy/callcenter/notdienst.blade.php:335` — `badge-success`
+- `resources/views/legacy/callcenter/notdienst.blade.php:336` — `badge-warning`
+- `resources/views/legacy/callcenter/notdienst.blade.php:337` — `badge-error`
+- `resources/views/legacy/callcenter/notdienst.blade.php:338` — `badge-ghost`
+- `resources/views/legacy/callcenter/notdienst.blade.php:350` — `text-center`
+- `resources/views/legacy/callcenter/notdienst.blade.php:351` — `max-w-md`
+- `resources/views/legacy/callcenter/notdienst.blade.php:352` — `block link link-hover`
+- `resources/views/legacy/callcenter/notdienst.blade.php:354` — `line-clamp-2`
+- `resources/views/legacy/callcenter/notdienst.blade.php:357` — `whitespace-nowrap`
+- `resources/views/legacy/callcenter/notdienst.blade.php:361` — `heute`
+- `resources/views/legacy/callcenter/notdienst.blade.php:374` — `Keine offenen Meldungen.`
+- `resources/views/legacy/oncall/index.blade.php:2` — `title`
+- `resources/views/legacy/oncall/index.blade.php:2` — `Bereitschaft`
+- `resources/views/legacy/oncall/index.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/legacy/oncall/index.blade.php:3` — `nav-title`
+- `resources/views/legacy/oncall/index.blade.php:3` — `Bereitschaft`
+- `resources/views/legacy/oncall/index.blade.php:5` — `content`
+- `resources/views/legacy/oncall/index.blade.php:11` — `tablist`
+- `resources/views/legacy/oncall/index.blade.php:11` — `tabs tabs-box flex-none self-start`
+- `resources/views/legacy/oncall/index.blade.php:12` — `tab tab-active`
+- `resources/views/legacy/oncall/index.blade.php:12` — `Bereitschaft`
+- `resources/views/legacy/oncall/index.blade.php:13` — `Notdienst`
+- `resources/views/legacy/oncall/index.blade.php:17` — `flex flex-col min-w-48`
+- `resources/views/legacy/oncall/index.blade.php:18` — `label py-1`
+- `resources/views/legacy/oncall/index.blade.php:18` — `Mitarbeiter`
+- `resources/views/legacy/oncall/index.blade.php:19` — `user`
+- `resources/views/legacy/oncall/index.blade.php:19` — `select select-bordered select-sm w-full`
+- `resources/views/legacy/oncall/index.blade.php:20` — `Alle`
+- `resources/views/legacy/oncall/index.blade.php:22` — `user`
+- `resources/views/legacy/oncall/index.blade.php:27` — `from`
+- `resources/views/legacy/oncall/index.blade.php:28` — `submit`
+- `resources/views/legacy/oncall/index.blade.php:28` — `btn btn-sm btn-primary`
+- `resources/views/legacy/oncall/index.blade.php:28` — `Filtern`
+- `resources/views/legacy/oncall/index.blade.php:30` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/oncall/index.blade.php:30` — `Zurücksetzen`
+- `resources/views/legacy/oncall/index.blade.php:33` — `btn btn-sm btn-outline`
+- `resources/views/legacy/oncall/index.blade.php:33` — `Neue Bereitschaft`
+- `resources/views/legacy/oncall/index.blade.php:39` — `Gesamt`
+- `resources/views/legacy/oncall/index.blade.php:39` — `border-base-300`
+- `resources/views/legacy/oncall/index.blade.php:40` — `today`
+- `resources/views/legacy/oncall/index.blade.php:40` — `Heute aktiv`
+- `resources/views/legacy/oncall/index.blade.php:41` — `upcoming`
+- `resources/views/legacy/oncall/index.blade.php:41` — `Kommend`
+- `resources/views/legacy/oncall/index.blade.php:42` — `past`
+- `resources/views/legacy/oncall/index.blade.php:42` — `Vergangen`
+- `resources/views/legacy/oncall/index.blade.php:54` — `true`
+- `resources/views/legacy/oncall/index.blade.php:54` — `flex`
+- `resources/views/legacy/oncall/index.blade.php:55` — `bg-base-200`
+- `resources/views/legacy/oncall/index.blade.php:57` — `w-16 text-center`
+- `resources/views/legacy/oncall/index.blade.php:58` — `Mitarbeiter`
+- `resources/views/legacy/oncall/index.blade.php:59` — `w-32 text-center`
+- `resources/views/legacy/oncall/index.blade.php:60` — `w-32 text-center`
+- `resources/views/legacy/oncall/index.blade.php:61` — `w-32 text-right`
+- `resources/views/legacy/oncall/index.blade.php:61` — `Aktion`
+- `resources/views/legacy/oncall/index.blade.php:66` — `hover`
+- `resources/views/legacy/oncall/index.blade.php:67` — `text-center`
+- `resources/views/legacy/oncall/index.blade.php:68` — `Unbekannt`
+- `resources/views/legacy/oncall/index.blade.php:71` — `text-right whitespace-nowrap`
+- `resources/views/legacy/oncall/index.blade.php:73` — `inline-flex items-center justify-end gap-1 whitespace-nowrap`
+- `resources/views/legacy/oncall/index.blade.php:74` — `btn btn-xs btn-ghost`
+- `resources/views/legacy/oncall/index.blade.php:74` — `Bearbeiten`
+- `resources/views/legacy/oncall/index.blade.php:74` — `Bearbeiten`
+- `resources/views/legacy/oncall/index.blade.php:75` — `h-4 w-4`
+- `resources/views/legacy/oncall/index.blade.php:75` — `none`
+- `resources/views/legacy/oncall/index.blade.php:75` — `currentColor`
+- `resources/views/legacy/oncall/index.blade.php:75` — `round`
+- `resources/views/legacy/oncall/index.blade.php:75` — `round`
+- `resources/views/legacy/oncall/index.blade.php:75` — `M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z`
+- `resources/views/legacy/oncall/index.blade.php:77` — `inline`
+- `resources/views/legacy/oncall/index.blade.php:79` — `Eintrag wirklich löschen?`
+- `resources/views/legacy/oncall/index.blade.php:80` — `Löschen`
+- `resources/views/legacy/oncall/index.blade.php:83` — `btn btn-xs btn-ghost text-error`
+- `resources/views/legacy/oncall/index.blade.php:83` — `Löschen`
+- `resources/views/legacy/oncall/index.blade.php:83` — `Löschen`
+- `resources/views/legacy/oncall/index.blade.php:84` — `h-4 w-4`
+- `resources/views/legacy/oncall/index.blade.php:84` — `none`
+- `resources/views/legacy/oncall/index.blade.php:84` — `currentColor`
+- `resources/views/legacy/oncall/index.blade.php:84` — `round`
+- `resources/views/legacy/oncall/index.blade.php:84` — `round`
+- `resources/views/legacy/oncall/index.blade.php:84` — `M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3`
+- `resources/views/legacy/oncall/index.blade.php:93` — `Keine Bereitschaftseinträge gefunden.`
+- `resources/views/legacy/oncall/index.blade.php:99` — `flex-none rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-xs`
+- `resources/views/legacy/oncall/index.blade.php:100` — `flex flex-wrap items-center justify-between gap-2`
+- `resources/views/legacy/oncall/index.blade.php:102` — `Seite`
+- `resources/views/legacy/oncall/index.blade.php:103` — `Einträge`
+- `resources/views/legacy/oncall/index.blade.php:106` — `vendor.pagination.daisyui-simple`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:10` — `Bereitschaft bearbeiten`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:10` — `Bereitschaft neu`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:11` — `Legacy`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:12` — `schedule`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:13` — `info`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:15` — `POST'`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:16` — `data-entry-form`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:17` — `Speichern`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:19` — `hidden`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:22` — `fieldset`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:23` — `user`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:23` — `fieldset-label`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:23` — `Mitarbeiter`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:24` — `user`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:24` — `user`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:24` — `user`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:26` — `user`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:29` — `user`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:29` — `text-error text-sm`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:32` — `fieldset`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:33` — `fieldset-label`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:33` — `Zeitraum`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:39` — `Y-m-d`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:40` — `Y-m-d`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:41` — `false`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:42` — `w-full`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:44` — `text-error text-sm`
+- `resources/views/legacy/oncall/_form_dialog.blade.php:45` — `text-error text-sm`
+- `resources/views/legacy/diary/week.blade.php:2` — `title', `
+- `resources/views/legacy/diary/week.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/legacy/diary/week.blade.php:3` — `nav-title`
+- `resources/views/legacy/diary/week.blade.php:3` — `Wochenansicht`
+- `resources/views/legacy/diary/week.blade.php:5` — `wrapper-height-class', `
+- `resources/views/legacy/diary/week.blade.php:6` — `main-class', 'min-h-0 overflow-clip flex flex-col`
+- `resources/views/legacy/diary/week.blade.php:8` — `content`
+- `resources/views/legacy/diary/week.blade.php:20` — `flex-none flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/legacy/diary/week.blade.php:21` — `flex flex-wrap items-center gap-2`
+- `resources/views/legacy/diary/week.blade.php:22` — `badge badge-primary mr-1`
+- `resources/views/legacy/diary/week.blade.php:22` — `Aktiv`
+- `resources/views/legacy/diary/week.blade.php:24` — `week`
+- `resources/views/legacy/diary/week.blade.php:25` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/diary/week.blade.php:27` — `btn btn-sm btn-outline`
+- `resources/views/legacy/diary/week.blade.php:27` — `Heute`
+- `resources/views/legacy/diary/week.blade.php:28` — `week`
+- `resources/views/legacy/diary/week.blade.php:29` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/diary/week.blade.php:31` — `flex items-center gap-2 ml-2`
+- `resources/views/legacy/diary/week.blade.php:32` — `week`
+- `resources/views/legacy/diary/week.blade.php:33` — `input input-bordered input-sm`
+- `resources/views/legacy/diary/week.blade.php:43` — `flex flex-wrap items-center gap-3`
+- `resources/views/legacy/diary/week.blade.php:46` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/diary/week.blade.php:46` — `Archivwoche`
+- `resources/views/legacy/diary/week.blade.php:51` — `inline-flex items-center gap-1.5`
+- `resources/views/legacy/diary/week.blade.php:52` — `Bereitschaft`
+- `resources/views/legacy/diary/week.blade.php:54` — `inline-flex items-center gap-1.5`
+- `resources/views/legacy/diary/week.blade.php:55` — `Notdienst`
+- `resources/views/legacy/diary/week.blade.php:60` — `flex cursor-pointer items-center gap-2 text-sm`
+- `resources/views/legacy/diary/week.blade.php:60` — `Ansicht an Bildschirm anpassen`
+- `resources/views/legacy/diary/week.blade.php:61` — `currentColor`
+- `resources/views/legacy/diary/week.blade.php:62` — `M3 4a1 1 0 011-1h3a1 1 0 010 2H5.414l2.293 2.293a1 1 0 01-1.414 1.414L4 6.414V8a1 1 0 01-2 0V4zm14 0a1 1 0 00-1-1h-3a1 1 0 000 2h1.586l-2.293 2.293a1 1 0 001.414 1.414L16 6.414V8a1 1 0 002 0V4zm-3 12a1 1 0 001-1v-3a1 1 0 00-2 0v1.586l-2.293-2.293a1 1 0 00-1.414 1.414L13.586 16H12a1 1 0 000 2h3zm-8 0a1 1 0 01-1-1v-3a1 1 0 012 0v1.586l2.293-2.293a1 1 0 011.414 1.414L6.414 16H8a1 1 0 010 2H5z`
+- `resources/views/legacy/diary/week.blade.php:64` — `Auf Bildschirm`
+- `resources/views/legacy/diary/week.blade.php:65` — `checkbox`
+- `resources/views/legacy/diary/week.blade.php:65` — `week-fit-toggle`
+- `resources/views/legacy/diary/week.blade.php:65` — `toggle toggle-sm toggle-primary`
+- `resources/views/legacy/diary/week.blade.php:71` — `min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs mt-4`
+- `resources/views/legacy/diary/week.blade.php:72` — `week-scroll`
+- `resources/views/legacy/diary/week.blade.php:72` — `h-full overflow-auto`
+- `resources/views/legacy/diary/week.blade.php:77` — `week-table`
+- `resources/views/legacy/diary/week.blade.php:77` — `week-table`
+- `resources/views/legacy/diary/week.blade.php:81` — `Y-m-d`
+- `resources/views/legacy/diary/week.blade.php:87` — `kheute`
+- `resources/views/legacy/diary/week.blade.php:88` — `kfeiertag`
+- `resources/views/legacy/diary/week.blade.php:91` — `kopf`
+- `resources/views/legacy/diary/week.blade.php:105` — `mitb`
+- `resources/views/legacy/diary/week.blade.php:106` — `mitn`
+- `resources/views/legacy/diary/week.blade.php:110` — `true`
+- `resources/views/legacy/diary/week.blade.php:114` — `Feiertag`
+- `resources/views/legacy/diary/week.blade.php:128` — `grau`
+- `resources/views/legacy/diary/week.blade.php:128` — `mitte`
+- `resources/views/legacy/diary/week.blade.php:144` — `rogb`
+- `resources/views/legacy/diary/week.blade.php:145` — `rogn`
+- `resources/views/legacy/diary/week.blade.php:151` — `work`
+- `resources/views/legacy/diary/week.blade.php:154` — `logb`
+- `resources/views/legacy/diary/week.blade.php:155` — `logn`
+- `resources/views/legacy/diary/week.blade.php:159` — `logb`
+- `resources/views/legacy/diary/week.blade.php:160` — `logn`
+- `resources/views/legacy/diary/week.blade.php:168` — `grau`
+- `resources/views/legacy/diary/week.blade.php:168` — `mitte`
+- `resources/views/legacy/diary/week.blade.php:179` — `week-scroll`
+- `resources/views/legacy/diary/week.blade.php:180` — `week-table`
+- `resources/views/legacy/diary/week.blade.php:181` — `week-fit-toggle`
+- `resources/views/legacy/diary/week.blade.php:183` — `workDiaryWeekFit`
+- `resources/views/legacy/diary/week.blade.php:190` — `week-table--fit`
+- `resources/views/legacy/diary/week.blade.php:195` — `week-table--fit`
+- `resources/views/legacy/diary/week.blade.php:204` — `change`
+- `resources/views/legacy/diary/_show_dialog.blade.php:8` — `Legacy Eintrag`
+- `resources/views/legacy/diary/_show_dialog.blade.php:9` — `info`
+- `resources/views/legacy/diary/_show_dialog.blade.php:11` — `neutral`
+- `resources/views/legacy/diary/_show_dialog.blade.php:11` — `success`
+- `resources/views/legacy/diary/_show_dialog.blade.php:11` — `warning`
+- `resources/views/legacy/diary/_show_dialog.blade.php:11` — `error`
+- `resources/views/legacy/diary/_show_dialog.blade.php:11` — `ghost`
+- `resources/views/legacy/diary/_show_dialog.blade.php:12` — `ghost`
+- `resources/views/legacy/diary/_show_dialog.blade.php:18` — `inline`
+- `resources/views/legacy/diary/_show_dialog.blade.php:20` — `Eintrag löschen`
+- `resources/views/legacy/diary/_show_dialog.blade.php:21` — `Legacy-Eintrag wirklich löschen?`
+- `resources/views/legacy/diary/_show_dialog.blade.php:22` — `Löschen`
+- `resources/views/legacy/diary/_show_dialog.blade.php:25` — `submit`
+- `resources/views/legacy/diary/_show_dialog.blade.php:25` — `btn btn-sm btn-error btn-outline gap-2`
+- `resources/views/legacy/diary/_show_dialog.blade.php:26` — `delete`
+- `resources/views/legacy/diary/_show_dialog.blade.php:26` — `Löschen`
+- `resources/views/legacy/diary/_show_dialog.blade.php:32` — `btn btn-sm btn-primary gap-2`
+- `resources/views/legacy/diary/_show_dialog.blade.php:33` — `edit`
+- `resources/views/legacy/diary/_show_dialog.blade.php:33` — `Bearbeiten`
+- `resources/views/legacy/diary/_show_dialog.blade.php:35` — `button`
+- `resources/views/legacy/diary/_show_dialog.blade.php:35` — `btn btn-sm btn-ghost gap-2`
+- `resources/views/legacy/diary/_show_dialog.blade.php:36` — `close`
+- `resources/views/legacy/diary/_show_dialog.blade.php:36` — `Schließen`
+- `resources/views/legacy/diary/index.blade.php:2` — `title`
+- `resources/views/legacy/diary/index.blade.php:2` — `Arbeitsliste`
+- `resources/views/legacy/diary/index.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/legacy/diary/index.blade.php:3` — `nav-title`
+- `resources/views/legacy/diary/index.blade.php:3` — `Arbeitsliste`
+- `resources/views/legacy/diary/index.blade.php:5` — `content`
+- `resources/views/legacy/diary/index.blade.php:8` — `desc`
+- `resources/views/legacy/diary/index.blade.php:11` — `desc`
+- `resources/views/legacy/diary/index.blade.php:12` — `sort`
+- `resources/views/legacy/diary/index.blade.php:14` — `asc' ? `
+- `resources/views/legacy/diary/index.blade.php:16` — `auftraege`
+- `resources/views/legacy/diary/index.blade.php:16` — `label`
+- `resources/views/legacy/diary/index.blade.php:16` — `Aufträge`
+- `resources/views/legacy/diary/index.blade.php:16` — `count`
+- `resources/views/legacy/diary/index.blade.php:16` — `auftraege`
+- `resources/views/legacy/diary/index.blade.php:17` — `bereitschaft`
+- `resources/views/legacy/diary/index.blade.php:17` — `label`
+- `resources/views/legacy/diary/index.blade.php:17` — `Bereitschaft`
+- `resources/views/legacy/diary/index.blade.php:17` — `count`
+- `resources/views/legacy/diary/index.blade.php:17` — `bereitschaft`
+- `resources/views/legacy/diary/index.blade.php:18` — `notdienst`
+- `resources/views/legacy/diary/index.blade.php:18` — `label`
+- `resources/views/legacy/diary/index.blade.php:18` — `Notdienst`
+- `resources/views/legacy/diary/index.blade.php:18` — `count`
+- `resources/views/legacy/diary/index.blade.php:18` — `notdienst`
+- `resources/views/legacy/diary/index.blade.php:19` — `urlaub`
+- `resources/views/legacy/diary/index.blade.php:19` — `label`
+- `resources/views/legacy/diary/index.blade.php:19` — `Urlaub`
+- `resources/views/legacy/diary/index.blade.php:19` — `count`
+- `resources/views/legacy/diary/index.blade.php:19` — `urlaub`
+- `resources/views/legacy/diary/index.blade.php:25` — `flex flex-wrap items-center justify-between gap-3`
+- `resources/views/legacy/diary/index.blade.php:26` — `flex flex-wrap items-center gap-3`
+- `resources/views/legacy/diary/index.blade.php:27` — `badge badge-primary`
+- `resources/views/legacy/diary/index.blade.php:27` — `Aktiv`
+- `resources/views/legacy/diary/index.blade.php:28` — `tablist`
+- `resources/views/legacy/diary/index.blade.php:28` — `tabs tabs-box flex-none`
+- `resources/views/legacy/diary/index.blade.php:32` — `tab-active`
+- `resources/views/legacy/diary/index.blade.php:33` — `label`
+- `resources/views/legacy/diary/index.blade.php:34` — `badge badge-sm ml-2`
+- `resources/views/legacy/diary/index.blade.php:34` — `count`
+- `resources/views/legacy/diary/index.blade.php:39` — `flex items-center gap-2`
+- `resources/views/legacy/diary/index.blade.php:40` — `auftraege`
+- `resources/views/legacy/diary/index.blade.php:42` — `btn btn-sm btn-outline`
+- `resources/views/legacy/diary/index.blade.php:44` — `bereitschaft`
+- `resources/views/legacy/diary/index.blade.php:46` — `btn btn-sm btn-outline`
+- `resources/views/legacy/diary/index.blade.php:48` — `notdienst`
+- `resources/views/legacy/diary/index.blade.php:50` — `btn btn-sm btn-outline`
+- `resources/views/legacy/diary/index.blade.php:53` — `create`
+- `resources/views/legacy/diary/index.blade.php:54` — `btn btn-sm btn-outline`
+- `resources/views/legacy/diary/index.blade.php:57` — `urlaub`
+- `resources/views/legacy/diary/index.blade.php:58` — `auftraege' ? 'auftraege`
+- `resources/views/legacy/diary/index.blade.php:58` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/diary/index.blade.php:58` — `Archiv`
+- `resources/views/legacy/diary/index.blade.php:60` — `urlaub`
+- `resources/views/legacy/diary/index.blade.php:60` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/diary/index.blade.php:60` — `Alle Anträge`
+- `resources/views/legacy/diary/index.blade.php:66` — `auftraege`
+- `resources/views/legacy/diary/index.blade.php:68` — `hidden`
+- `resources/views/legacy/diary/index.blade.php:68` — `auftraege`
+- `resources/views/legacy/diary/index.blade.php:69` — `hidden`
+- `resources/views/legacy/diary/index.blade.php:69` — `sort`
+- `resources/views/legacy/diary/index.blade.php:70` — `hidden`
+- `resources/views/legacy/diary/index.blade.php:71` — `flex flex-wrap items-end gap-3`
+- `resources/views/legacy/diary/index.blade.php:74` — `flex flex-1 flex-col min-w-44`
+- `resources/views/legacy/diary/index.blade.php:75` — `label py-1`
+- `resources/views/legacy/diary/index.blade.php:75` — `Mitarbeiter`
+- `resources/views/legacy/diary/index.blade.php:76` — `user`
+- `resources/views/legacy/diary/index.blade.php:76` — `select select-bordered select-sm w-full`
+- `resources/views/legacy/diary/index.blade.php:77` — `Alle`
+- `resources/views/legacy/diary/index.blade.php:79` — `user`
+- `resources/views/legacy/diary/index.blade.php:84` — `flex flex-1 flex-col min-w-48`
+- `resources/views/legacy/diary/index.blade.php:85` — `label py-1`
+- `resources/views/legacy/diary/index.blade.php:85` — `Status`
+- `resources/views/legacy/diary/index.blade.php:86` — `status`
+- `resources/views/legacy/diary/index.blade.php:86` — `select select-bordered select-sm w-full`
+- `resources/views/legacy/diary/index.blade.php:87` — `status`
+- `resources/views/legacy/diary/index.blade.php:87` — `Alle`
+- `resources/views/legacy/diary/index.blade.php:88` — `status`
+- `resources/views/legacy/diary/index.blade.php:88` — `Offen`
+- `resources/views/legacy/diary/index.blade.php:89` — `status`
+- `resources/views/legacy/diary/index.blade.php:89` — `Problem`
+- `resources/views/legacy/diary/index.blade.php:90` — `status`
+- `resources/views/legacy/diary/index.blade.php:90` — `Bestätigt`
+- `resources/views/legacy/diary/index.blade.php:91` — `status`
+- `resources/views/legacy/diary/index.blade.php:91` — `Erledigt`
+- `resources/views/legacy/diary/index.blade.php:94` — `from`
+- `resources/views/legacy/diary/index.blade.php:95` — `label cursor-pointer gap-2 py-1`
+- `resources/views/legacy/diary/index.blade.php:96` — `checkbox`
+- `resources/views/legacy/diary/index.blade.php:96` — `mine`
+- `resources/views/legacy/diary/index.blade.php:96` — `mine`
+- `resources/views/legacy/diary/index.blade.php:96` — `toggle toggle-sm toggle-primary`
+- `resources/views/legacy/diary/index.blade.php:97` — `label-text text-sm`
+- `resources/views/legacy/diary/index.blade.php:97` — `Nur meine`
+- `resources/views/legacy/diary/index.blade.php:99` — `ml-auto flex items-end gap-2`
+- `resources/views/legacy/diary/index.blade.php:100` — `submit`
+- `resources/views/legacy/diary/index.blade.php:100` — `btn btn-sm btn-primary`
+- `resources/views/legacy/diary/index.blade.php:100` — `Filtern`
+- `resources/views/legacy/diary/index.blade.php:102` — `auftraege`
+- `resources/views/legacy/diary/index.blade.php:102` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/diary/index.blade.php:102` — `Zurücksetzen`
+- `resources/views/legacy/diary/index.blade.php:111` — `status`
+- `resources/views/legacy/diary/index.blade.php:113` — `Gesamt`
+- `resources/views/legacy/diary/index.blade.php:113` — `all',  'border-base-300`
+- `resources/views/legacy/diary/index.blade.php:114` — `open`
+- `resources/views/legacy/diary/index.blade.php:114` — `Offen`
+- `resources/views/legacy/diary/index.blade.php:115` — `alert`
+- `resources/views/legacy/diary/index.blade.php:115` — `Probleme`
+- `resources/views/legacy/diary/index.blade.php:116` — `done`
+- `resources/views/legacy/diary/index.blade.php:116` — `Erledigt`
+- `resources/views/legacy/diary/index.blade.php:122` — `status`
+- `resources/views/legacy/diary/index.blade.php:123` — `auftraege`
+- `resources/views/legacy/diary/index.blade.php:136` — `min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/legacy/diary/index.blade.php:137` — `bulk-form`
+- `resources/views/legacy/diary/index.blade.php:137` — `flex h-full flex-col`
+- `resources/views/legacy/diary/index.blade.php:140` — `Bulk-Aktionen`
+- `resources/views/legacy/diary/index.blade.php:141` — `bulk-count`
+- `resources/views/legacy/diary/index.blade.php:141` — `badge badge-sm badge-ghost`
+- `resources/views/legacy/diary/index.blade.php:141` — `ausgewählt`
+- `resources/views/legacy/diary/index.blade.php:142` — `action`
+- `resources/views/legacy/diary/index.blade.php:142` — `select select-bordered select-sm`
+- `resources/views/legacy/diary/index.blade.php:148` — `delete`
+- `resources/views/legacy/diary/index.blade.php:148` — `Löschen`
+- `resources/views/legacy/diary/index.blade.php:150` — `submit`
+- `resources/views/legacy/diary/index.blade.php:150` — `bulk-apply`
+- `resources/views/legacy/diary/index.blade.php:150` — `btn btn-sm btn-primary`
+- `resources/views/legacy/diary/index.blade.php:150` — `Anwenden`
+- `resources/views/legacy/diary/index.blade.php:152` — `min-h-0 flex-1 overflow-auto`
+- `resources/views/legacy/diary/index.blade.php:153` — `table table-sm table-zebra table-pin-rows`
+- `resources/views/legacy/diary/index.blade.php:154` — `bg-base-200`
+- `resources/views/legacy/diary/index.blade.php:156` — `checkbox`
+- `resources/views/legacy/diary/index.blade.php:156` — `bulk-toggle-all`
+- `resources/views/legacy/diary/index.blade.php:156` — `checkbox checkbox-sm`
+- `resources/views/legacy/diary/index.blade.php:156` — `Alle auswählen`
+- `resources/views/legacy/diary/index.blade.php:157` — `w-24 text-center`
+- `resources/views/legacy/diary/index.blade.php:157` — `status`
+- `resources/views/legacy/diary/index.blade.php:157` — `link link-hover`
+- `resources/views/legacy/diary/index.blade.php:157` — `Status`
+- `resources/views/legacy/diary/index.blade.php:157` — `status`
+- `resources/views/legacy/diary/index.blade.php:158` — `w-32`
+- `resources/views/legacy/diary/index.blade.php:158` — `mitarbeiter`
+- `resources/views/legacy/diary/index.blade.php:158` — `link link-hover`
+- `resources/views/legacy/diary/index.blade.php:158` — `Mitarbeiter`
+- `resources/views/legacy/diary/index.blade.php:158` — `mitarbeiter`
+- `resources/views/legacy/diary/index.blade.php:159` — `Inhalt`
+- `resources/views/legacy/diary/index.blade.php:160` — `w-56`
+- `resources/views/legacy/diary/index.blade.php:160` — `Antwort`
+- `resources/views/legacy/diary/index.blade.php:161` — `w-28`
+- `resources/views/legacy/diary/index.blade.php:161` — `link link-hover`
+- `resources/views/legacy/diary/index.blade.php:162` — `w-28`
+- `resources/views/legacy/diary/index.blade.php:162` — `link link-hover`
+- `resources/views/legacy/diary/index.blade.php:163` — `w-24 whitespace-nowrap text-right`
+- `resources/views/legacy/diary/index.blade.php:163` — `Aktion`
+- `resources/views/legacy/diary/index.blade.php:170` — `badge-neutral`
+- `resources/views/legacy/diary/index.blade.php:171` — `badge-success`
+- `resources/views/legacy/diary/index.blade.php:172` — `badge-warning`
+- `resources/views/legacy/diary/index.blade.php:173` — `badge-error`
+- `resources/views/legacy/diary/index.blade.php:174` — `badge-ghost`
+- `resources/views/legacy/diary/index.blade.php:179` — `hover`
+- `resources/views/legacy/diary/index.blade.php:182` — `checkbox`
+- `resources/views/legacy/diary/index.blade.php:182` — `checkbox checkbox-sm bulk-row`
+- `resources/views/legacy/diary/index.blade.php:182` — `Auswählen`
+- `resources/views/legacy/diary/index.blade.php:185` — `text-center`
+- `resources/views/legacy/diary/index.blade.php:186` — `Unbekannt`
+- `resources/views/legacy/diary/index.blade.php:187` — `max-w-md truncate`
+- `resources/views/legacy/diary/index.blade.php:188` — `max-w-xs truncate`
+- `resources/views/legacy/diary/index.blade.php:191` — `whitespace-nowrap text-right`
+- `resources/views/legacy/diary/index.blade.php:192` — `btn btn-xs btn-ghost`
+- `resources/views/legacy/diary/index.blade.php:192` — `Details`
+- `resources/views/legacy/diary/index.blade.php:193` — `h-4 w-4`
+- `resources/views/legacy/diary/index.blade.php:193` — `none`
+- `resources/views/legacy/diary/index.blade.php:193` — `currentColor`
+- `resources/views/legacy/diary/index.blade.php:193` — `round`
+- `resources/views/legacy/diary/index.blade.php:193` — `round`
+- `resources/views/legacy/diary/index.blade.php:193` — `M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z`
+- `resources/views/legacy/diary/index.blade.php:193` — `round`
+- `resources/views/legacy/diary/index.blade.php:193` — `round`
+- `resources/views/legacy/diary/index.blade.php:193` — `M15 12a3 3 0 11-6 0 3 3 0 016 0z`
+- `resources/views/legacy/diary/index.blade.php:196` — `btn btn-xs btn-ghost`
+- `resources/views/legacy/diary/index.blade.php:196` — `Bearbeiten`
+- `resources/views/legacy/diary/index.blade.php:197` — `h-4 w-4`
+- `resources/views/legacy/diary/index.blade.php:197` — `none`
+- `resources/views/legacy/diary/index.blade.php:197` — `currentColor`
+- `resources/views/legacy/diary/index.blade.php:197` — `round`
+- `resources/views/legacy/diary/index.blade.php:197` — `round`
+- `resources/views/legacy/diary/index.blade.php:197` — `M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z`
+- `resources/views/legacy/diary/index.blade.php:203` — `Keine Legacy-Einträge gefunden.`
+- `resources/views/legacy/diary/index.blade.php:212` — `bulk-form`
+- `resources/views/legacy/diary/index.blade.php:214` — `bulk-toggle-all`
+- `resources/views/legacy/diary/index.blade.php:215` — `bulk-count`
+- `resources/views/legacy/diary/index.blade.php:216` — `bulk-apply`
+- `resources/views/legacy/diary/index.blade.php:220` — `ausgewählt`
+- `resources/views/legacy/diary/index.blade.php:228` — `change`
+- `resources/views/legacy/diary/index.blade.php:229` — `change`
+- `resources/views/legacy/diary/index.blade.php:229` — `bulk-row`
+- `resources/views/legacy/diary/index.blade.php:234` — `action`
+- `resources/views/legacy/diary/index.blade.php:237` — `delete`
+- `resources/views/legacy/diary/index.blade.php:241` — `Löschen`
+- `resources/views/legacy/diary/index.blade.php:249` — `flex-none`
+- `resources/views/legacy/diary/index.blade.php:250` — `Seite`
+- `resources/views/legacy/diary/index.blade.php:250` — `Einträge`
+- `resources/views/legacy/diary/index.blade.php:252` — `rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-xs`
+- `resources/views/legacy/diary/index.blade.php:253` — `vendor.pagination.daisyui-simple`
+- `resources/views/legacy/diary/index.blade.php:260` — `bereitschaft`
+- `resources/views/legacy/diary/index.blade.php:262` — `hidden`
+- `resources/views/legacy/diary/index.blade.php:262` — `bereitschaft`
+- `resources/views/legacy/diary/index.blade.php:263` — `flex flex-wrap items-end gap-3`
+- `resources/views/legacy/diary/index.blade.php:265` — `flex flex-col min-w-48`
+- `resources/views/legacy/diary/index.blade.php:266` — `label py-1`
+- `resources/views/legacy/diary/index.blade.php:266` — `Mitarbeiter`
+- `resources/views/legacy/diary/index.blade.php:267` — `user`
+- `resources/views/legacy/diary/index.blade.php:267` — `select select-bordered select-sm w-full`
+- `resources/views/legacy/diary/index.blade.php:268` — `Alle`
+- `resources/views/legacy/diary/index.blade.php:272` — `user`
+- `resources/views/legacy/diary/index.blade.php:277` — `from`
+- `resources/views/legacy/diary/index.blade.php:278` — `ml-auto flex items-end gap-2`
+- `resources/views/legacy/diary/index.blade.php:279` — `submit`
+- `resources/views/legacy/diary/index.blade.php:279` — `btn btn-sm btn-primary`
+- `resources/views/legacy/diary/index.blade.php:279` — `Filtern`
+- `resources/views/legacy/diary/index.blade.php:281` — `bereitschaft`
+- `resources/views/legacy/diary/index.blade.php:281` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/diary/index.blade.php:281` — `Zurücksetzen`
+- `resources/views/legacy/diary/index.blade.php:287` — `Gesamt`
+- `resources/views/legacy/diary/index.blade.php:287` — `border-base-300`
+- `resources/views/legacy/diary/index.blade.php:287` — `today`
+- `resources/views/legacy/diary/index.blade.php:287` — `Heute aktiv`
+- `resources/views/legacy/diary/index.blade.php:287` — `upcoming`
+- `resources/views/legacy/diary/index.blade.php:287` — `Kommend`
+- `resources/views/legacy/diary/index.blade.php:287` — `past`
+- `resources/views/legacy/diary/index.blade.php:287` — `Vergangen`
+- `resources/views/legacy/diary/index.blade.php:294` — `flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/legacy/diary/index.blade.php:295` — `table table-sm table-zebra table-pin-rows`
+- `resources/views/legacy/diary/index.blade.php:296` — `bg-base-200`
+- `resources/views/legacy/diary/index.blade.php:298` — `mitarbeiter`
+- `resources/views/legacy/diary/index.blade.php:298` — `link link-hover`
+- `resources/views/legacy/diary/index.blade.php:298` — `Mitarbeiter`
+- `resources/views/legacy/diary/index.blade.php:298` — `mitarbeiter`
+- `resources/views/legacy/diary/index.blade.php:299` — `w-32 text-center`
+- `resources/views/legacy/diary/index.blade.php:299` — `link link-hover`
+- `resources/views/legacy/diary/index.blade.php:300` — `w-32 text-center`
+- `resources/views/legacy/diary/index.blade.php:300` — `link link-hover`
+- `resources/views/legacy/diary/index.blade.php:301` — `w-32 text-right`
+- `resources/views/legacy/diary/index.blade.php:301` — `Aktion`
+- `resources/views/legacy/diary/index.blade.php:306` — `hover`
+- `resources/views/legacy/diary/index.blade.php:307` — `Unbekannt`
+- `resources/views/legacy/diary/index.blade.php:310` — `text-right whitespace-nowrap`
+- `resources/views/legacy/diary/index.blade.php:312` — `btn btn-xs btn-ghost`
+- `resources/views/legacy/diary/index.blade.php:312` — `Bearbeiten`
+- `resources/views/legacy/diary/index.blade.php:313` — `h-4 w-4`
+- `resources/views/legacy/diary/index.blade.php:313` — `none`
+- `resources/views/legacy/diary/index.blade.php:313` — `currentColor`
+- `resources/views/legacy/diary/index.blade.php:313` — `round`
+- `resources/views/legacy/diary/index.blade.php:313` — `round`
+- `resources/views/legacy/diary/index.blade.php:313` — `M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z`
+- `resources/views/legacy/diary/index.blade.php:315` — `inline`
+- `resources/views/legacy/diary/index.blade.php:317` — `Eintrag wirklich löschen?`
+- `resources/views/legacy/diary/index.blade.php:318` — `Löschen`
+- `resources/views/legacy/diary/index.blade.php:320` — `btn btn-xs btn-ghost text-error`
+- `resources/views/legacy/diary/index.blade.php:320` — `Löschen`
+- `resources/views/legacy/diary/index.blade.php:321` — `h-4 w-4`
+- `resources/views/legacy/diary/index.blade.php:321` — `none`
+- `resources/views/legacy/diary/index.blade.php:321` — `currentColor`
+- `resources/views/legacy/diary/index.blade.php:321` — `round`
+- `resources/views/legacy/diary/index.blade.php:321` — `round`
+- `resources/views/legacy/diary/index.blade.php:321` — `M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3`
+- `resources/views/legacy/diary/index.blade.php:328` — `Keine Bereitschaftseinträge gefunden.`
+- `resources/views/legacy/diary/index.blade.php:334` — `flex-none`
+- `resources/views/legacy/diary/index.blade.php:335` — `Seite`
+- `resources/views/legacy/diary/index.blade.php:335` — `Einträge`
+- `resources/views/legacy/diary/index.blade.php:337` — `rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-xs`
+- `resources/views/legacy/diary/index.blade.php:338` — `vendor.pagination.daisyui-simple`
+- `resources/views/legacy/diary/index.blade.php:345` — `notdienst`
+- `resources/views/legacy/diary/index.blade.php:347` — `hidden`
+- `resources/views/legacy/diary/index.blade.php:347` — `notdienst`
+- `resources/views/legacy/diary/index.blade.php:348` — `flex flex-wrap items-end gap-3`
+- `resources/views/legacy/diary/index.blade.php:350` — `flex flex-col min-w-48`
+- `resources/views/legacy/diary/index.blade.php:351` — `label py-1`
+- `resources/views/legacy/diary/index.blade.php:351` — `Mitarbeiter`
+- `resources/views/legacy/diary/index.blade.php:352` — `user`
+- `resources/views/legacy/diary/index.blade.php:352` — `select select-bordered select-sm w-full`
+- `resources/views/legacy/diary/index.blade.php:353` — `Alle`
+- `resources/views/legacy/diary/index.blade.php:357` — `user`
+- `resources/views/legacy/diary/index.blade.php:362` — `from`
+- `resources/views/legacy/diary/index.blade.php:363` — `ml-auto flex items-end gap-2`
+- `resources/views/legacy/diary/index.blade.php:364` — `submit`
+- `resources/views/legacy/diary/index.blade.php:364` — `btn btn-sm btn-primary`
+- `resources/views/legacy/diary/index.blade.php:364` — `Filtern`
+- `resources/views/legacy/diary/index.blade.php:366` — `notdienst`
+- `resources/views/legacy/diary/index.blade.php:366` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/diary/index.blade.php:366` — `Zurücksetzen`
+- `resources/views/legacy/diary/index.blade.php:372` — `Gesamt`
+- `resources/views/legacy/diary/index.blade.php:372` — `border-base-300`
+- `resources/views/legacy/diary/index.blade.php:372` — `today`
+- `resources/views/legacy/diary/index.blade.php:372` — `Heute aktiv`
+- `resources/views/legacy/diary/index.blade.php:372` — `upcoming`
+- `resources/views/legacy/diary/index.blade.php:372` — `Kommend`
+- `resources/views/legacy/diary/index.blade.php:372` — `past`
+- `resources/views/legacy/diary/index.blade.php:372` — `Vergangen`
+- `resources/views/legacy/diary/index.blade.php:379` — `flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/legacy/diary/index.blade.php:380` — `table table-sm table-zebra table-pin-rows`
+- `resources/views/legacy/diary/index.blade.php:381` — `bg-base-200`
+- `resources/views/legacy/diary/index.blade.php:383` — `mitarbeiter`
+- `resources/views/legacy/diary/index.blade.php:383` — `link link-hover`
+- `resources/views/legacy/diary/index.blade.php:383` — `Mitarbeiter`
+- `resources/views/legacy/diary/index.blade.php:383` — `mitarbeiter`
+- `resources/views/legacy/diary/index.blade.php:384` — `w-32 text-center`
+- `resources/views/legacy/diary/index.blade.php:384` — `link link-hover`
+- `resources/views/legacy/diary/index.blade.php:385` — `w-32 text-center`
+- `resources/views/legacy/diary/index.blade.php:385` — `link link-hover`
+- `resources/views/legacy/diary/index.blade.php:386` — `w-32 text-right`
+- `resources/views/legacy/diary/index.blade.php:386` — `Aktion`
+- `resources/views/legacy/diary/index.blade.php:391` — `hover`
+- `resources/views/legacy/diary/index.blade.php:392` — `Unbekannt`
+- `resources/views/legacy/diary/index.blade.php:395` — `text-right whitespace-nowrap`
+- `resources/views/legacy/diary/index.blade.php:397` — `btn btn-xs btn-ghost`
+- `resources/views/legacy/diary/index.blade.php:397` — `Bearbeiten`
+- `resources/views/legacy/diary/index.blade.php:398` — `h-4 w-4`
+- `resources/views/legacy/diary/index.blade.php:398` — `none`
+- `resources/views/legacy/diary/index.blade.php:398` — `currentColor`
+- `resources/views/legacy/diary/index.blade.php:398` — `round`
+- `resources/views/legacy/diary/index.blade.php:398` — `round`
+- `resources/views/legacy/diary/index.blade.php:398` — `M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z`
+- `resources/views/legacy/diary/index.blade.php:400` — `inline`
+- `resources/views/legacy/diary/index.blade.php:402` — `Eintrag wirklich löschen?`
+- `resources/views/legacy/diary/index.blade.php:403` — `Löschen`
+- `resources/views/legacy/diary/index.blade.php:405` — `btn btn-xs btn-ghost text-error`
+- `resources/views/legacy/diary/index.blade.php:405` — `Löschen`
+- `resources/views/legacy/diary/index.blade.php:406` — `h-4 w-4`
+- `resources/views/legacy/diary/index.blade.php:406` — `none`
+- `resources/views/legacy/diary/index.blade.php:406` — `currentColor`
+- `resources/views/legacy/diary/index.blade.php:406` — `round`
+- `resources/views/legacy/diary/index.blade.php:406` — `round`
+- `resources/views/legacy/diary/index.blade.php:406` — `M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3`
+- `resources/views/legacy/diary/index.blade.php:413` — `Keine Notdienst-Einträge gefunden.`
+- `resources/views/legacy/diary/index.blade.php:419` — `flex-none`
+- `resources/views/legacy/diary/index.blade.php:420` — `Seite`
+- `resources/views/legacy/diary/index.blade.php:420` — `Einträge`
+- `resources/views/legacy/diary/index.blade.php:422` — `rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-xs`
+- `resources/views/legacy/diary/index.blade.php:423` — `vendor.pagination.daisyui-simple`
+- `resources/views/legacy/diary/index.blade.php:429` — `urlaub`
+- `resources/views/legacy/diary/index.blade.php:431` — `hidden`
+- `resources/views/legacy/diary/index.blade.php:431` — `urlaub`
+- `resources/views/legacy/diary/index.blade.php:432` — `flex flex-wrap items-end gap-3`
+- `resources/views/legacy/diary/index.blade.php:434` — `flex flex-1 flex-col min-w-44`
+- `resources/views/legacy/diary/index.blade.php:435` — `label py-1`
+- `resources/views/legacy/diary/index.blade.php:435` — `Mitarbeiter`
+- `resources/views/legacy/diary/index.blade.php:436` — `select select-bordered select-sm w-full`
+- `resources/views/legacy/diary/index.blade.php:437` — `Alle`
+- `resources/views/legacy/diary/index.blade.php:445` — `flex flex-1 flex-col min-w-40`
+- `resources/views/legacy/diary/index.blade.php:446` — `label py-1`
+- `resources/views/legacy/diary/index.blade.php:447` — `vtype`
+- `resources/views/legacy/diary/index.blade.php:447` — `select select-bordered select-sm w-full`
+- `resources/views/legacy/diary/index.blade.php:448` — `Alle Typen`
+- `resources/views/legacy/diary/index.blade.php:449` — `vtype`
+- `resources/views/legacy/diary/index.blade.php:449` — `Urlaub`
+- `resources/views/legacy/diary/index.blade.php:450` — `vtype`
+- `resources/views/legacy/diary/index.blade.php:450` — `Krank`
+- `resources/views/legacy/diary/index.blade.php:451` — `vtype`
+- `resources/views/legacy/diary/index.blade.php:451` — `Sonderurlaub`
+- `resources/views/legacy/diary/index.blade.php:452` — `vtype`
+- `resources/views/legacy/diary/index.blade.php:452` — `Unbezahlt`
+- `resources/views/legacy/diary/index.blade.php:455` — `flex flex-1 flex-col min-w-40`
+- `resources/views/legacy/diary/index.blade.php:456` — `label py-1`
+- `resources/views/legacy/diary/index.blade.php:456` — `Status`
+- `resources/views/legacy/diary/index.blade.php:457` — `vstatus`
+- `resources/views/legacy/diary/index.blade.php:457` — `select select-bordered select-sm w-full`
+- `resources/views/legacy/diary/index.blade.php:458` — `Alle Status`
+- `resources/views/legacy/diary/index.blade.php:459` — `vstatus`
+- `resources/views/legacy/diary/index.blade.php:459` — `Ausstehend`
+- `resources/views/legacy/diary/index.blade.php:460` — `vstatus`
+- `resources/views/legacy/diary/index.blade.php:460` — `Genehmigt`
+- `resources/views/legacy/diary/index.blade.php:461` — `vstatus`
+- `resources/views/legacy/diary/index.blade.php:461` — `Abgelehnt`
+- `resources/views/legacy/diary/index.blade.php:462` — `vstatus`
+- `resources/views/legacy/diary/index.blade.php:462` — `Storniert`
+- `resources/views/legacy/diary/index.blade.php:466` — `flex items-center gap-2 pb-2`
+- `resources/views/legacy/diary/index.blade.php:467` — `checkbox`
+- `resources/views/legacy/diary/index.blade.php:467` — `mine`
+- `resources/views/legacy/diary/index.blade.php:467` — `mine`
+- `resources/views/legacy/diary/index.blade.php:467` — `mine`
+- `resources/views/legacy/diary/index.blade.php:467` — `toggle toggle-sm toggle-primary`
+- `resources/views/legacy/diary/index.blade.php:468` — `mine`
+- `resources/views/legacy/diary/index.blade.php:468` — `label-text text-sm`
+- `resources/views/legacy/diary/index.blade.php:468` — `Nur meine`
+- `resources/views/legacy/diary/index.blade.php:471` — `from`
+- `resources/views/legacy/diary/index.blade.php:472` — `ml-auto flex items-end gap-2`
+- `resources/views/legacy/diary/index.blade.php:473` — `submit`
+- `resources/views/legacy/diary/index.blade.php:473` — `btn btn-sm btn-primary`
+- `resources/views/legacy/diary/index.blade.php:473` — `Filtern`
+- `resources/views/legacy/diary/index.blade.php:475` — `urlaub`
+- `resources/views/legacy/diary/index.blade.php:475` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/diary/index.blade.php:475` — `Zurücksetzen`
+- `resources/views/legacy/diary/index.blade.php:482` — `total`
+- `resources/views/legacy/diary/index.blade.php:482` — `Gesamt`
+- `resources/views/legacy/diary/index.blade.php:482` — `border-base-300`
+- `resources/views/legacy/diary/index.blade.php:483` — `pending`
+- `resources/views/legacy/diary/index.blade.php:483` — `Ausstehend`
+- `resources/views/legacy/diary/index.blade.php:484` — `approved`
+- `resources/views/legacy/diary/index.blade.php:485` — `rejected`
+- `resources/views/legacy/diary/index.blade.php:485` — `Abgelehnt`
+- `resources/views/legacy/diary/index.blade.php:493` — `flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/legacy/diary/index.blade.php:494` — `table table-sm table-zebra table-pin-rows`
+- `resources/views/legacy/diary/index.blade.php:495` — `bg-base-200`
+- `resources/views/legacy/diary/index.blade.php:498` — `mitarbeiter`
+- `resources/views/legacy/diary/index.blade.php:498` — `link link-hover`
+- `resources/views/legacy/diary/index.blade.php:498` — `Mitarbeiter`
+- `resources/views/legacy/diary/index.blade.php:498` — `mitarbeiter`
+- `resources/views/legacy/diary/index.blade.php:500` — `link link-hover`
+- `resources/views/legacy/diary/index.blade.php:501` — `link link-hover`
+- `resources/views/legacy/diary/index.blade.php:502` — `link link-hover`
+- `resources/views/legacy/diary/index.blade.php:503` — `status`
+- `resources/views/legacy/diary/index.blade.php:503` — `link link-hover`
+- `resources/views/legacy/diary/index.blade.php:503` — `Status`
+- `resources/views/legacy/diary/index.blade.php:503` — `status`
+- `resources/views/legacy/diary/index.blade.php:504` — `max-w-xs`
+- `resources/views/legacy/diary/index.blade.php:504` — `Notiz`
+- `resources/views/legacy/diary/index.blade.php:505` — `w-24 text-right`
+- `resources/views/legacy/diary/index.blade.php:505` — `Aktion`
+- `resources/views/legacy/diary/index.blade.php:512` — `badge-warning`
+- `resources/views/legacy/diary/index.blade.php:513` — `badge-success`
+- `resources/views/legacy/diary/index.blade.php:514` — `badge-error`
+- `resources/views/legacy/diary/index.blade.php:515` — `badge-ghost`
+- `resources/views/legacy/diary/index.blade.php:516` — `badge-neutral`
+- `resources/views/legacy/diary/index.blade.php:519` — `Ausstehend`
+- `resources/views/legacy/diary/index.blade.php:520` — `Genehmigt`
+- `resources/views/legacy/diary/index.blade.php:521` — `Abgelehnt`
+- `resources/views/legacy/diary/index.blade.php:522` — `Storniert`
+- `resources/views/legacy/diary/index.blade.php:526` — `Urlaub`
+- `resources/views/legacy/diary/index.blade.php:527` — `Krank`
+- `resources/views/legacy/diary/index.blade.php:528` — `Sonderurlaub`
+- `resources/views/legacy/diary/index.blade.php:529` — `Unbezahlt`
+- `resources/views/legacy/diary/index.blade.php:533` — `hover`
+- `resources/views/legacy/diary/index.blade.php:537` — `whitespace-nowrap`
+- `resources/views/legacy/diary/index.blade.php:538` — `whitespace-nowrap`
+- `resources/views/legacy/diary/index.blade.php:539` — `whitespace-nowrap`
+- `resources/views/legacy/diary/index.blade.php:542` — `whitespace-nowrap text-right`
+- `resources/views/legacy/diary/index.blade.php:543` — `update`
+- `resources/views/legacy/diary/index.blade.php:545` — `btn btn-xs btn-ghost`
+- `resources/views/legacy/diary/index.blade.php:545` — `Bearbeiten`
+- `resources/views/legacy/diary/index.blade.php:546` — `h-4 w-4`
+- `resources/views/legacy/diary/index.blade.php:546` — `none`
+- `resources/views/legacy/diary/index.blade.php:546` — `currentColor`
+- `resources/views/legacy/diary/index.blade.php:546` — `round`
+- `resources/views/legacy/diary/index.blade.php:546` — `round`
+- `resources/views/legacy/diary/index.blade.php:546` — `M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z`
+- `resources/views/legacy/diary/index.blade.php:552` — `Keine Einträge.`
+- `resources/views/legacy/diary/index.blade.php:558` — `flex-none`
+- `resources/views/legacy/diary/index.blade.php:559` — `Seite`
+- `resources/views/legacy/diary/index.blade.php:559` — `Einträge`
+- `resources/views/legacy/diary/index.blade.php:561` — `rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-xs`
+- `resources/views/legacy/diary/index.blade.php:562` — `vendor.pagination.daisyui-simple`
+- `resources/views/legacy/diary/_form_body.blade.php:11` — `hidden`
+- `resources/views/legacy/diary/_form_fields.blade.php:4` — `user`
+- `resources/views/legacy/diary/_form_fields.blade.php:4` — `mb-2 block text-sm font-medium text-base-content`
+- `resources/views/legacy/diary/_form_fields.blade.php:4` — `Mitarbeiter`
+- `resources/views/legacy/diary/_form_fields.blade.php:5` — `user`
+- `resources/views/legacy/diary/_form_fields.blade.php:5` — `user`
+- `resources/views/legacy/diary/_form_fields.blade.php:5` — `user`
+- `resources/views/legacy/diary/_form_fields.blade.php:7` — `user`
+- `resources/views/legacy/diary/_form_fields.blade.php:10` — `user`
+- `resources/views/legacy/diary/_form_fields.blade.php:11` — `mt-2 text-sm text-error`
+- `resources/views/legacy/diary/_form_fields.blade.php:17` — `inhalt`
+- `resources/views/legacy/diary/_form_fields.blade.php:17` — `mb-2 block text-sm font-medium text-base-content`
+- `resources/views/legacy/diary/_form_fields.blade.php:17` — `Inhalt`
+- `resources/views/legacy/diary/_form_fields.blade.php:17` — `text-error`
+- `resources/views/legacy/diary/_form_fields.blade.php:18` — `inhalt`
+- `resources/views/legacy/diary/_form_fields.blade.php:18` — `inhalt`
+- `resources/views/legacy/diary/_form_fields.blade.php:18` — `inhalt`
+- `resources/views/legacy/diary/_form_fields.blade.php:18` — `Beschreibe den Vorgang...`
+- `resources/views/legacy/diary/_form_fields.blade.php:18` — `inhalt`
+- `resources/views/legacy/diary/_form_fields.blade.php:19` — `inhalt`
+- `resources/views/legacy/diary/_form_fields.blade.php:20` — `mt-2 text-sm text-error`
+- `resources/views/legacy/diary/_form_fields.blade.php:25` — `antwort`
+- `resources/views/legacy/diary/_form_fields.blade.php:25` — `mb-2 block text-sm font-medium text-base-content`
+- `resources/views/legacy/diary/_form_fields.blade.php:25` — `Rückmeldung`
+- `resources/views/legacy/diary/_form_fields.blade.php:26` — `antwort`
+- `resources/views/legacy/diary/_form_fields.blade.php:26` — `antwort`
+- `resources/views/legacy/diary/_form_fields.blade.php:26` — `textarea textarea-bordered textarea-sm w-full`
+- `resources/views/legacy/diary/_form_fields.blade.php:26` — `antwort`
+- `resources/views/legacy/diary/_form_fields.blade.php:30` — `gelesen`
+- `resources/views/legacy/diary/_form_fields.blade.php:30` — `mb-2 block text-sm font-medium text-base-content`
+- `resources/views/legacy/diary/_form_fields.blade.php:30` — `Status`
+- `resources/views/legacy/diary/_form_fields.blade.php:30` — `text-error`
+- `resources/views/legacy/diary/_form_fields.blade.php:31` — `gelesen`
+- `resources/views/legacy/diary/_form_fields.blade.php:31` — `gelesen`
+- `resources/views/legacy/diary/_form_fields.blade.php:31` — `gelesen`
+- `resources/views/legacy/diary/_form_fields.blade.php:32` — `gelesen`
+- `resources/views/legacy/diary/_form_fields.blade.php:32` — `Offen`
+- `resources/views/legacy/diary/_form_fields.blade.php:33` — `gelesen`
+- `resources/views/legacy/diary/_form_fields.blade.php:33` — `Problem`
+- `resources/views/legacy/diary/_form_fields.blade.php:34` — `gelesen`
+- `resources/views/legacy/diary/_form_fields.blade.php:34` — `Bestätigt`
+- `resources/views/legacy/diary/_form_fields.blade.php:35` — `gelesen`
+- `resources/views/legacy/diary/_form_fields.blade.php:35` — `Erledigt`
+- `resources/views/legacy/diary/_form_fields.blade.php:37` — `gelesen`
+- `resources/views/legacy/diary/_form_fields.blade.php:38` — `mt-2 text-sm text-error`
+- `resources/views/legacy/diary/_form_fields.blade.php:42` — `fieldset`
+- `resources/views/legacy/diary/_form_fields.blade.php:43` — `fieldset-label`
+- `resources/views/legacy/diary/_form_fields.blade.php:43` — `Zeitraum`
+- `resources/views/legacy/diary/_form_fields.blade.php:45` — `datetime-local`
+- `resources/views/legacy/diary/_form_fields.blade.php:52` — `false`
+- `resources/views/legacy/diary/_form_fields.blade.php:53` — `w-full`
+- `resources/views/legacy/diary/_form_fields.blade.php:55` — `text-error text-sm`
+- `resources/views/legacy/diary/_form_fields.blade.php:56` — `text-error text-sm`
+- `resources/views/legacy/diary/_form_fields.blade.php:59` — `flex items-center gap-3 rounded-box border border-base-300 bg-base-200 px-3 py-2`
+- `resources/views/legacy/diary/_form_fields.blade.php:60` — `checkbox`
+- `resources/views/legacy/diary/_form_fields.blade.php:60` — `checkbox checkbox-sm`
+- `resources/views/legacy/diary/_form_fields.blade.php:61` — `text-sm`
+- `resources/views/legacy/diary/_form_fields.blade.php:61` — `E-Mail-Hinweis senden`
+- `resources/views/legacy/diary/_form_fields.blade.php:65` — `Felder mit`
+- `resources/views/legacy/diary/_form_fields.blade.php:65` — `text-error`
+- `resources/views/legacy/diary/_form_fields.blade.php:65` — `sind erforderlich.`
+- `resources/views/legacy/diary/_form_dialog.blade.php:3` — `Legacy-Eintrag bearbeiten`
+- `resources/views/legacy/diary/_form_dialog.blade.php:3` — `Neuen Legacy-Eintrag anlegen`
+- `resources/views/legacy/diary/_form_dialog.blade.php:4` — `Legacy Eintrag`
+- `resources/views/legacy/diary/_form_dialog.blade.php:5` — `info`
+- `resources/views/legacy/diary/_form_dialog.blade.php:6` — `Bearbeiten`
+- `resources/views/legacy/diary/_form_dialog.blade.php:7` — `outline`
+- `resources/views/legacy/diary/_form_dialog.blade.php:8` — `warning`
+- `resources/views/legacy/diary/_form_dialog.blade.php:10` — `POST'`
+- `resources/views/legacy/diary/_form_dialog.blade.php:11` — `data-entry-form`
+- `resources/views/legacy/diary/_form_dialog.blade.php:12` — `Speichern`
+- `resources/views/legacy/diary/_form_dialog.blade.php:12` — `Eintrag anlegen`
+- `resources/views/legacy/diary/_form_dialog.blade.php:13` — `isDialog`
+- `resources/views/legacy/diary/show.blade.php:2` — `title`
+- `resources/views/legacy/diary/show.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/legacy/diary/show.blade.php:3` — `nav-title`
+- `resources/views/legacy/diary/show.blade.php:3` — `Eintrag`
+- `resources/views/legacy/diary/show.blade.php:5` — `content`
+- `resources/views/legacy/diary/show.blade.php:13` — `from`
+- `resources/views/legacy/diary/show.blade.php:13` — `Y-m-d`
+- `resources/views/legacy/diary/show.blade.php:14` — `Y-m-d`
+- `resources/views/legacy/diary/show.blade.php:19` — `min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/legacy/diary/show.blade.php:21` — `isDialog`
+- `resources/views/legacy/diary/show.blade.php:25` — `flex-none flex flex-wrap items-center justify-center gap-3`
+- `resources/views/legacy/diary/show.blade.php:26` — `Zurück zur Legacy-Liste`
+- `resources/views/legacy/diary/show.blade.php:27` — `Zur Wochenansicht`
+- `resources/views/legacy/diary/_show_body.blade.php:5` — `badge-neutral`
+- `resources/views/legacy/diary/_show_body.blade.php:6` — `badge-success`
+- `resources/views/legacy/diary/_show_body.blade.php:7` — `badge-warning`
+- `resources/views/legacy/diary/_show_body.blade.php:8` — `badge-error`
+- `resources/views/legacy/diary/_show_body.blade.php:9` — `badge-ghost`
+- `resources/views/legacy/diary/_show_body.blade.php:13` — `mb-6 flex flex-wrap items-center justify-between gap-3`
+- `resources/views/legacy/diary/_show_body.blade.php:14` — `flex flex-wrap items-center gap-2 text-sm`
+- `resources/views/legacy/diary/_show_body.blade.php:17` — `Unbekannt`
+- `resources/views/legacy/diary/_show_body.blade.php:22` — `flex items-center gap-2`
+- `resources/views/legacy/diary/_show_body.blade.php:23` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/diary/_show_body.blade.php:24` — `edit`
+- `resources/views/legacy/diary/_show_body.blade.php:24` — `Bearbeiten`
+- `resources/views/legacy/diary/_show_body.blade.php:26` — `inline`
+- `resources/views/legacy/diary/_show_body.blade.php:28` — `Eintrag löschen`
+- `resources/views/legacy/diary/_show_body.blade.php:29` — `Legacy-Eintrag wirklich löschen?`
+- `resources/views/legacy/diary/_show_body.blade.php:30` — `Löschen`
+- `resources/views/legacy/diary/_show_body.blade.php:33` — `btn btn-sm btn-error btn-outline`
+- `resources/views/legacy/diary/_show_body.blade.php:34` — `delete`
+- `resources/views/legacy/diary/_show_body.blade.php:34` — `Löschen`
+- `resources/views/legacy/diary/_show_body.blade.php:41` — `Inhalt`
+- `resources/views/legacy/diary/_show_body.blade.php:42` — `whitespace-pre-wrap leading-relaxed text-base-content`
+- `resources/views/legacy/diary/_show_body.blade.php:46` — `Rückmeldung`
+- `resources/views/legacy/diary/_show_body.blade.php:47` — `whitespace-pre-wrap leading-relaxed text-base-content`
+- `resources/views/legacy/diary/_show_body.blade.php:52` — `rounded-xl border border-base-300 bg-base-200 px-4 py-3`
+- `resources/views/legacy/diary/_show_body.blade.php:54` — `text-base-content`
+- `resources/views/legacy/diary/_show_body.blade.php:56` — `rounded-xl border border-base-300 bg-base-200 px-4 py-3`
+- `resources/views/legacy/diary/_show_body.blade.php:58` — `text-base-content`
+- `resources/views/legacy/diary/_show_body.blade.php:60` — `rounded-xl border border-base-300 bg-base-200 px-4 py-3`
+- `resources/views/legacy/diary/_show_body.blade.php:61` — `Aktuell`
+- `resources/views/legacy/diary/_show_body.blade.php:62` — `text-base-content`
+- `resources/views/legacy/overview/index.blade.php:2` — `title`
+- `resources/views/legacy/overview/index.blade.php:2` — `Überblick`
+- `resources/views/legacy/overview/index.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/legacy/overview/index.blade.php:3` — `nav-title`
+- `resources/views/legacy/overview/index.blade.php:3` — `Überblick`
+- `resources/views/legacy/overview/index.blade.php:5` — `content`
+- `resources/views/legacy/overview/index.blade.php:8` — `all',   'label`
+- `resources/views/legacy/overview/index.blade.php:8` — `Alle Aufträge`
+- `resources/views/legacy/overview/index.blade.php:8` — `count`
+- `resources/views/legacy/overview/index.blade.php:8` — `class`
+- `resources/views/legacy/overview/index.blade.php:8` — `border-base-300', 'status`
+- `resources/views/legacy/overview/index.blade.php:9` — `open',  'label`
+- `resources/views/legacy/overview/index.blade.php:9` — `Offen`
+- `resources/views/legacy/overview/index.blade.php:9` — `count`
+- `resources/views/legacy/overview/index.blade.php:9` — `open`
+- `resources/views/legacy/overview/index.blade.php:9` — `class`
+- `resources/views/legacy/overview/index.blade.php:9` — `border-warning text-warning', 'status`
+- `resources/views/legacy/overview/index.blade.php:10` — `work',  'label`
+- `resources/views/legacy/overview/index.blade.php:10` — `In Arbeit`
+- `resources/views/legacy/overview/index.blade.php:10` — `count`
+- `resources/views/legacy/overview/index.blade.php:10` — `work`
+- `resources/views/legacy/overview/index.blade.php:10` — `class`
+- `resources/views/legacy/overview/index.blade.php:10` — `border-info text-info',       'status`
+- `resources/views/legacy/overview/index.blade.php:11` — `alert', 'label`
+- `resources/views/legacy/overview/index.blade.php:11` — `Eskaliert`
+- `resources/views/legacy/overview/index.blade.php:11` — `count`
+- `resources/views/legacy/overview/index.blade.php:11` — `alert`
+- `resources/views/legacy/overview/index.blade.php:11` — `class`
+- `resources/views/legacy/overview/index.blade.php:11` — `border-error text-error',     'status`
+- `resources/views/legacy/overview/index.blade.php:12` — `done',  'label`
+- `resources/views/legacy/overview/index.blade.php:12` — `Erledigt`
+- `resources/views/legacy/overview/index.blade.php:12` — `count`
+- `resources/views/legacy/overview/index.blade.php:12` — `done`
+- `resources/views/legacy/overview/index.blade.php:12` — `class`
+- `resources/views/legacy/overview/index.blade.php:12` — `border-success text-success', 'status`
+- `resources/views/legacy/overview/index.blade.php:19` — `Status`
+- `resources/views/legacy/overview/index.blade.php:22` — `status`
+- `resources/views/legacy/overview/index.blade.php:22` — `status`
+- `resources/views/legacy/overview/index.blade.php:23` — `class`
+- `resources/views/legacy/overview/index.blade.php:24` — `text-2xl font-bold`
+- `resources/views/legacy/overview/index.blade.php:24` — `count`
+- `resources/views/legacy/overview/index.blade.php:25` — `text-xs uppercase tracking-wider opacity-80`
+- `resources/views/legacy/overview/index.blade.php:25` — `label`
+- `resources/views/legacy/overview/index.blade.php:33` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/legacy/overview/index.blade.php:34` — `mb-3 flex items-center justify-between`
+- `resources/views/legacy/overview/index.blade.php:36` — `Bereitschaft heute`
+- `resources/views/legacy/overview/index.blade.php:38` — `btn btn-xs btn-ghost`
+- `resources/views/legacy/overview/index.blade.php:38` — `Alle`
+- `resources/views/legacy/overview/index.blade.php:41` — `Niemand im Bereitschaftsdienst.`
+- `resources/views/legacy/overview/index.blade.php:43` — `space-y-2`
+- `resources/views/legacy/overview/index.blade.php:46` — `font-semibold`
+- `resources/views/legacy/overview/index.blade.php:56` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/legacy/overview/index.blade.php:57` — `mb-3 flex items-center justify-between`
+- `resources/views/legacy/overview/index.blade.php:59` — `Notdienst heute`
+- `resources/views/legacy/overview/index.blade.php:61` — `btn btn-xs btn-ghost`
+- `resources/views/legacy/overview/index.blade.php:61` — `Alle`
+- `resources/views/legacy/overview/index.blade.php:64` — `Niemand im Notdienst.`
+- `resources/views/legacy/overview/index.blade.php:66` — `space-y-2`
+- `resources/views/legacy/overview/index.blade.php:69` — `font-semibold`
+- `resources/views/legacy/overview/index.blade.php:81` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/legacy/overview/index.blade.php:82` — `mb-3 flex items-center justify-between`
+- `resources/views/legacy/overview/index.blade.php:84` — `Nächste Feiertage`
+- `resources/views/legacy/overview/index.blade.php:86` — `btn btn-xs btn-ghost`
+- `resources/views/legacy/overview/index.blade.php:86` — `Verwaltung`
+- `resources/views/legacy/overview/index.blade.php:89` — `alert alert-warning mb-3 py-2 text-sm`
+- `resources/views/legacy/overview/index.blade.php:90` — `Heute`
+- `resources/views/legacy/overview/index.blade.php:90` — `font-semibold`
+- `resources/views/legacy/overview/index.blade.php:94` — `Keine bevorstehenden Feiertage.`
+- `resources/views/legacy/overview/index.blade.php:100` — `date`
+- `resources/views/legacy/overview/index.blade.php:100` — `D, d.m.Y`
+- `resources/views/legacy/overview/index.blade.php:102` — `truncate font-semibold`
+- `resources/views/legacy/overview/index.blade.php:102` — `name`
+- `resources/views/legacy/overview/index.blade.php:103` — `name`
+- `resources/views/legacy/users/index.blade.php:2` — `title`
+- `resources/views/legacy/users/index.blade.php:2` — `Mitarbeiter`
+- `resources/views/legacy/users/index.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/legacy/users/index.blade.php:3` — `nav-title`
+- `resources/views/legacy/users/index.blade.php:3` — `Mitarbeiter`
+- `resources/views/legacy/users/index.blade.php:5` — `content`
+- `resources/views/legacy/users/index.blade.php:8` — `flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/legacy/users/index.blade.php:10` — `btn btn-primary btn-sm gap-1`
+- `resources/views/legacy/users/index.blade.php:11` — `Neuer Mitarbeiter`
+- `resources/views/legacy/users/index.blade.php:14` — `flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/legacy/users/index.blade.php:15` — `table table-xs table-zebra table-pin-rows w-full`
+- `resources/views/legacy/users/index.blade.php:16` — `bg-base-200`
+- `resources/views/legacy/users/index.blade.php:18` — `Name`
+- `resources/views/legacy/users/index.blade.php:19` — `E-Mail`
+- `resources/views/legacy/users/index.blade.php:20` — `w-24 text-right`
+- `resources/views/legacy/users/index.blade.php:20` — `Aktion`
+- `resources/views/legacy/users/index.blade.php:25` — `hover`
+- `resources/views/legacy/users/index.blade.php:28` — `whitespace-nowrap text-right`
+- `resources/views/legacy/users/index.blade.php:29` — `btn btn-xs btn-ghost`
+- `resources/views/legacy/users/index.blade.php:29` — `Bearbeiten`
+- `resources/views/legacy/users/index.blade.php:29` — `Bearbeiten`
+- `resources/views/legacy/users/index.blade.php:30` — `h-4 w-4`
+- `resources/views/legacy/users/index.blade.php:30` — `none`
+- `resources/views/legacy/users/index.blade.php:30` — `currentColor`
+- `resources/views/legacy/users/index.blade.php:30` — `round`
+- `resources/views/legacy/users/index.blade.php:30` — `round`
+- `resources/views/legacy/users/index.blade.php:30` — `M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z`
+- `resources/views/legacy/users/index.blade.php:32` — `inline`
+- `resources/views/legacy/users/index.blade.php:34` — `Mitarbeiter wirklich löschen?`
+- `resources/views/legacy/users/index.blade.php:35` — `Löschen`
+- `resources/views/legacy/users/index.blade.php:38` — `btn btn-xs btn-ghost text-error`
+- `resources/views/legacy/users/index.blade.php:38` — `Löschen`
+- `resources/views/legacy/users/index.blade.php:38` — `Löschen`
+- `resources/views/legacy/users/index.blade.php:39` — `h-4 w-4`
+- `resources/views/legacy/users/index.blade.php:39` — `none`
+- `resources/views/legacy/users/index.blade.php:39` — `currentColor`
+- `resources/views/legacy/users/index.blade.php:39` — `round`
+- `resources/views/legacy/users/index.blade.php:39` — `round`
+- `resources/views/legacy/users/index.blade.php:39` — `M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3`
+- `resources/views/legacy/users/index.blade.php:46` — `Keine Mitarbeiter gefunden.`
+- `resources/views/legacy/users/_form_dialog.blade.php:9` — `Mitarbeiter bearbeiten`
+- `resources/views/legacy/users/_form_dialog.blade.php:9` — `Mitarbeiter anlegen`
+- `resources/views/legacy/users/_form_dialog.blade.php:10` — `Legacy`
+- `resources/views/legacy/users/_form_dialog.blade.php:11` — `person`
+- `resources/views/legacy/users/_form_dialog.blade.php:12` — `primary`
+- `resources/views/legacy/users/_form_dialog.blade.php:14` — `POST'`
+- `resources/views/legacy/users/_form_dialog.blade.php:15` — `data-entry-form`
+- `resources/views/legacy/users/_form_dialog.blade.php:16` — `Speichern`
+- `resources/views/legacy/users/_form_dialog.blade.php:18` — `hidden`
+- `resources/views/legacy/users/_form_dialog.blade.php:22` — `uname`
+- `resources/views/legacy/users/_form_dialog.blade.php:22` — `label text-sm font-semibold pb-1`
+- `resources/views/legacy/users/_form_dialog.blade.php:22` — `Name`
+- `resources/views/legacy/users/_form_dialog.blade.php:23` — `uname`
+- `resources/views/legacy/users/_form_dialog.blade.php:23` — `uname`
+- `resources/views/legacy/users/_form_dialog.blade.php:23` — `text`
+- `resources/views/legacy/users/_form_dialog.blade.php:23` — `uname`
+- `resources/views/legacy/users/_form_dialog.blade.php:23` — `uname`
+- `resources/views/legacy/users/_form_dialog.blade.php:24` — `uname`
+- `resources/views/legacy/users/_form_dialog.blade.php:24` — `mt-2 text-sm text-error`
+- `resources/views/legacy/users/_form_dialog.blade.php:28` — `userpw`
+- `resources/views/legacy/users/_form_dialog.blade.php:28` — `label text-sm font-semibold pb-1`
+- `resources/views/legacy/users/_form_dialog.blade.php:29` — `Passwort`
+- `resources/views/legacy/users/_form_dialog.blade.php:30` — `leer lassen um beizubehalten`
+- `resources/views/legacy/users/_form_dialog.blade.php:32` — `userpw`
+- `resources/views/legacy/users/_form_dialog.blade.php:32` — `userpw`
+- `resources/views/legacy/users/_form_dialog.blade.php:32` — `password`
+- `resources/views/legacy/users/_form_dialog.blade.php:32` — `userpw`
+- `resources/views/legacy/users/_form_dialog.blade.php:32` — `new-password`
+- `resources/views/legacy/users/_form_dialog.blade.php:32` — `userpw`
+- `resources/views/legacy/users/_form_dialog.blade.php:33` — `userpw`
+- `resources/views/legacy/users/_form_dialog.blade.php:33` — `mt-2 text-sm text-error`
+- `resources/views/legacy/users/_form_dialog.blade.php:37` — `email`
+- `resources/views/legacy/users/_form_dialog.blade.php:37` — `label text-sm font-semibold pb-1`
+- `resources/views/legacy/users/_form_dialog.blade.php:37` — `E-Mail`
+- `resources/views/legacy/users/_form_dialog.blade.php:38` — `email`
+- `resources/views/legacy/users/_form_dialog.blade.php:38` — `email`
+- `resources/views/legacy/users/_form_dialog.blade.php:38` — `email`
+- `resources/views/legacy/users/_form_dialog.blade.php:38` — `email`
+- `resources/views/legacy/users/_form_dialog.blade.php:38` — `email`
+- `resources/views/legacy/users/_form_dialog.blade.php:39` — `email`
+- `resources/views/legacy/users/_form_dialog.blade.php:39` — `mt-2 text-sm text-error`
+- `resources/views/legacy/account/_password_dialog.blade.php:6` — `Passwort ändern`
+- `resources/views/legacy/account/_password_dialog.blade.php:7` — `Legacy`
+- `resources/views/legacy/account/_password_dialog.blade.php:8` — `lock`
+- `resources/views/legacy/account/_password_dialog.blade.php:9` — `warning`
+- `resources/views/legacy/account/_password_dialog.blade.php:12` — `data-entry-form`
+- `resources/views/legacy/account/_password_dialog.blade.php:13` — `Ändern`
+- `resources/views/legacy/account/_password_dialog.blade.php:15` — `hidden`
+- `resources/views/legacy/account/_password_dialog.blade.php:19` — `label text-sm font-semibold pb-1`
+- `resources/views/legacy/account/_password_dialog.blade.php:19` — `Altes Passwort`
+- `resources/views/legacy/account/_password_dialog.blade.php:20` — `password`
+- `resources/views/legacy/account/_password_dialog.blade.php:21` — `mt-2 text-sm text-error`
+- `resources/views/legacy/account/_password_dialog.blade.php:25` — `password`
+- `resources/views/legacy/account/_password_dialog.blade.php:25` — `label text-sm font-semibold pb-1`
+- `resources/views/legacy/account/_password_dialog.blade.php:25` — `Neues Passwort`
+- `resources/views/legacy/account/_password_dialog.blade.php:26` — `password`
+- `resources/views/legacy/account/_password_dialog.blade.php:26` — `password`
+- `resources/views/legacy/account/_password_dialog.blade.php:26` — `password`
+- `resources/views/legacy/account/_password_dialog.blade.php:26` — `password`
+- `resources/views/legacy/account/_password_dialog.blade.php:27` — `password`
+- `resources/views/legacy/account/_password_dialog.blade.php:27` — `mt-2 text-sm text-error`
+- `resources/views/legacy/account/_password_dialog.blade.php:31` — `label text-sm font-semibold pb-1`
+- `resources/views/legacy/account/_password_dialog.blade.php:32` — `password`
+- `resources/views/legacy/account/_password_dialog.blade.php:32` — `input input-bordered w-full`
+- `resources/views/legacy/notdienst/index.blade.php:2` — `title`
+- `resources/views/legacy/notdienst/index.blade.php:2` — `Notdienst`
+- `resources/views/legacy/notdienst/index.blade.php:2` — `app.name', 'WorkDiary`
+- `resources/views/legacy/notdienst/index.blade.php:3` — `nav-title`
+- `resources/views/legacy/notdienst/index.blade.php:3` — `Notdienst`
+- `resources/views/legacy/notdienst/index.blade.php:5` — `content`
+- `resources/views/legacy/notdienst/index.blade.php:11` — `tablist`
+- `resources/views/legacy/notdienst/index.blade.php:11` — `tabs tabs-box flex-none self-start`
+- `resources/views/legacy/notdienst/index.blade.php:12` — `Bereitschaft`
+- `resources/views/legacy/notdienst/index.blade.php:13` — `tab tab-active`
+- `resources/views/legacy/notdienst/index.blade.php:13` — `Notdienst`
+- `resources/views/legacy/notdienst/index.blade.php:17` — `flex flex-col min-w-48`
+- `resources/views/legacy/notdienst/index.blade.php:18` — `label py-1`
+- `resources/views/legacy/notdienst/index.blade.php:18` — `Mitarbeiter`
+- `resources/views/legacy/notdienst/index.blade.php:19` — `user`
+- `resources/views/legacy/notdienst/index.blade.php:19` — `select select-bordered select-sm w-full`
+- `resources/views/legacy/notdienst/index.blade.php:20` — `Alle`
+- `resources/views/legacy/notdienst/index.blade.php:22` — `user`
+- `resources/views/legacy/notdienst/index.blade.php:27` — `from`
+- `resources/views/legacy/notdienst/index.blade.php:28` — `submit`
+- `resources/views/legacy/notdienst/index.blade.php:28` — `btn btn-sm btn-primary`
+- `resources/views/legacy/notdienst/index.blade.php:28` — `Filtern`
+- `resources/views/legacy/notdienst/index.blade.php:30` — `btn btn-sm btn-ghost`
+- `resources/views/legacy/notdienst/index.blade.php:30` — `Zurücksetzen`
+- `resources/views/legacy/notdienst/index.blade.php:33` — `btn btn-sm btn-outline`
+- `resources/views/legacy/notdienst/index.blade.php:33` — `Neuer Notdienst`
+- `resources/views/legacy/notdienst/index.blade.php:39` — `Gesamt`
+- `resources/views/legacy/notdienst/index.blade.php:39` — `border-base-300`
+- `resources/views/legacy/notdienst/index.blade.php:40` — `today`
+- `resources/views/legacy/notdienst/index.blade.php:40` — `Heute aktiv`
+- `resources/views/legacy/notdienst/index.blade.php:41` — `upcoming`
+- `resources/views/legacy/notdienst/index.blade.php:41` — `Kommend`
+- `resources/views/legacy/notdienst/index.blade.php:42` — `past`
+- `resources/views/legacy/notdienst/index.blade.php:42` — `Vergangen`
+- `resources/views/legacy/notdienst/index.blade.php:54` — `true`
+- `resources/views/legacy/notdienst/index.blade.php:54` — `flex`
+- `resources/views/legacy/notdienst/index.blade.php:55` — `bg-base-200`
+- `resources/views/legacy/notdienst/index.blade.php:57` — `w-16 text-center`
+- `resources/views/legacy/notdienst/index.blade.php:58` — `Mitarbeiter`
+- `resources/views/legacy/notdienst/index.blade.php:59` — `w-32 text-center`
+- `resources/views/legacy/notdienst/index.blade.php:60` — `w-32 text-center`
+- `resources/views/legacy/notdienst/index.blade.php:61` — `w-32 text-right`
+- `resources/views/legacy/notdienst/index.blade.php:61` — `Aktion`
+- `resources/views/legacy/notdienst/index.blade.php:66` — `hover`
+- `resources/views/legacy/notdienst/index.blade.php:67` — `text-center`
+- `resources/views/legacy/notdienst/index.blade.php:68` — `Unbekannt`
+- `resources/views/legacy/notdienst/index.blade.php:71` — `text-right whitespace-nowrap`
+- `resources/views/legacy/notdienst/index.blade.php:73` — `inline-flex items-center justify-end gap-1 whitespace-nowrap`
+- `resources/views/legacy/notdienst/index.blade.php:74` — `btn btn-xs btn-ghost`
+- `resources/views/legacy/notdienst/index.blade.php:74` — `Bearbeiten`
+- `resources/views/legacy/notdienst/index.blade.php:74` — `Bearbeiten`
+- `resources/views/legacy/notdienst/index.blade.php:75` — `h-4 w-4`
+- `resources/views/legacy/notdienst/index.blade.php:75` — `none`
+- `resources/views/legacy/notdienst/index.blade.php:75` — `currentColor`
+- `resources/views/legacy/notdienst/index.blade.php:75` — `round`
+- `resources/views/legacy/notdienst/index.blade.php:75` — `round`
+- `resources/views/legacy/notdienst/index.blade.php:75` — `M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z`
+- `resources/views/legacy/notdienst/index.blade.php:77` — `inline`
+- `resources/views/legacy/notdienst/index.blade.php:79` — `Eintrag wirklich löschen?`
+- `resources/views/legacy/notdienst/index.blade.php:80` — `Löschen`
+- `resources/views/legacy/notdienst/index.blade.php:83` — `btn btn-xs btn-ghost text-error`
+- `resources/views/legacy/notdienst/index.blade.php:83` — `Löschen`
+- `resources/views/legacy/notdienst/index.blade.php:83` — `Löschen`
+- `resources/views/legacy/notdienst/index.blade.php:84` — `h-4 w-4`
+- `resources/views/legacy/notdienst/index.blade.php:84` — `none`
+- `resources/views/legacy/notdienst/index.blade.php:84` — `currentColor`
+- `resources/views/legacy/notdienst/index.blade.php:84` — `round`
+- `resources/views/legacy/notdienst/index.blade.php:84` — `round`
+- `resources/views/legacy/notdienst/index.blade.php:84` — `M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3`
+- `resources/views/legacy/notdienst/index.blade.php:93` — `Keine Notdienst-Einträge gefunden.`
+- `resources/views/legacy/notdienst/index.blade.php:100` — `flex-none rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-xs`
+- `resources/views/legacy/notdienst/index.blade.php:100` — `vendor.pagination.daisyui-simple`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:10` — `Notdienst bearbeiten`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:10` — `Notdienst neu`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:11` — `Legacy`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:12` — `warning`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:13` — `warning`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:15` — `POST'`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:16` — `data-entry-form`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:17` — `Speichern`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:19` — `hidden`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:22` — `fieldset`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:23` — `user`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:23` — `fieldset-label`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:23` — `Mitarbeiter`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:24` — `user`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:24` — `user`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:24` — `user`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:26` — `user`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:29` — `user`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:29` — `text-error text-sm`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:32` — `fieldset`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:33` — `fieldset-label`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:33` — `Zeitraum`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:39` — `Y-m-d`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:40` — `Y-m-d`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:41` — `false`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:42` — `w-full`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:44` — `text-error text-sm`
+- `resources/views/legacy/notdienst/_form_dialog.blade.php:45` — `text-error text-sm`
+- `resources/views/dashboard/index.blade.php:2` — `title`
+- `resources/views/dashboard/index.blade.php:2` — `Dashboard`
+- `resources/views/dashboard/index.blade.php:3` — `nav-title`
+- `resources/views/dashboard/index.blade.php:3` — `Dashboard`
+- `resources/views/dashboard/index.blade.php:5` — `content`
+- `resources/views/dashboard/index.blade.php:15` — `flex flex-wrap items-end justify-between gap-3`
+- `resources/views/dashboard/index.blade.php:17` — `Hallo`
+- `resources/views/dashboard/index.blade.php:20` — `flex flex-wrap gap-2`
+- `resources/views/dashboard/index.blade.php:21` — `btn btn-primary btn-sm`
+- `resources/views/dashboard/index.blade.php:21` — `Neuer Eintrag`
+- `resources/views/dashboard/index.blade.php:22` — `btn btn-ghost btn-sm`
+- `resources/views/dashboard/index.blade.php:22` — `Wochenansicht`
+- `resources/views/dashboard/index.blade.php:23` — `btn btn-ghost btn-sm`
+- `resources/views/dashboard/index.blade.php:23` — `Tagebuch`
+- `resources/views/dashboard/index.blade.php:29` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/dashboard/index.blade.php:30` — `Meine offenen Einträge`
+- `resources/views/dashboard/index.blade.php:33` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/dashboard/index.blade.php:34` — `In Bearbeitung`
+- `resources/views/dashboard/index.blade.php:37` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/dashboard/index.blade.php:38` — `Anstehende Schichten`
+- `resources/views/dashboard/index.blade.php:41` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/dashboard/index.blade.php:42` — `Anstehende Notdienste`
+- `resources/views/dashboard/index.blade.php:49` — `Team`
+- `resources/views/dashboard/index.blade.php:60` — `Heute archiviert`
+- `resources/views/dashboard/index.blade.php:64` — `Mitarbeitende`
+- `resources/views/dashboard/index.blade.php:74` — `rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/dashboard/index.blade.php:75` — `Heute`
+- `resources/views/dashboard/index.blade.php:77` — `Keine Schicht heute.`
+- `resources/views/dashboard/index.blade.php:79` — `space-y-2`
+- `resources/views/dashboard/index.blade.php:81` — `flex items-center justify-between gap-3 rounded-box border border-base-300 bg-base-200 px-3 py-2 text-sm`
+- `resources/views/dashboard/index.blade.php:82` — `inline-flex items-center gap-1`
+- `resources/views/dashboard/index.blade.php:82` — `event`
+- `resources/views/dashboard/index.blade.php:91` — `rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/dashboard/index.blade.php:92` — `Nächste Schichten`
+- `resources/views/dashboard/index.blade.php:94` — `Keine geplanten Schichten.`
+- `resources/views/dashboard/index.blade.php:96` — `space-y-2 text-sm`
+- `resources/views/dashboard/index.blade.php:98` — `flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 px-3 py-2`
+- `resources/views/dashboard/index.blade.php:108` — `rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/dashboard/index.blade.php:109` — `Nächste Notdienste`
+- `resources/views/dashboard/index.blade.php:111` — `Keine geplanten Notdienste.`
+- `resources/views/dashboard/index.blade.php:113` — `space-y-2 text-sm`
+- `resources/views/dashboard/index.blade.php:115` — `flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 px-3 py-2`
+- `resources/views/dashboard/index.blade.php:116` — `inline-flex items-center gap-1`
+- `resources/views/dashboard/index.blade.php:125` — `rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/dashboard/index.blade.php:129` — `rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/dashboard/index.blade.php:130` — `mb-3 flex items-center justify-between`
+- `resources/views/dashboard/index.blade.php:131` — `Nächste geplante Schichten`
+- `resources/views/dashboard/index.blade.php:132` — `btn btn-xs btn-ghost`
+- `resources/views/dashboard/index.blade.php:135` — `Keine geplanten Schichten in den nächsten 7 Tagen.`
+- `resources/views/dashboard/index.blade.php:137` — `space-y-1.5 text-sm`
+- `resources/views/dashboard/index.blade.php:139` — `flex items-center gap-2 rounded-box border border-base-300 bg-base-200 px-3 py-2`
+- `resources/views/dashboard/index.blade.php:144` — `font-medium`
+- `resources/views/dashboard/index.blade.php:144` — `D d.m.`
+- `resources/views/dashboard/index.blade.php:159` — `rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/dashboard/index.blade.php:160` — `Meine letzten Einträge`
+- `resources/views/dashboard/index.blade.php:162` — `Noch keine Einträge.`
+- `resources/views/dashboard/index.blade.php:164` — `space-y-2 text-sm`
+- `resources/views/dashboard/index.blade.php:166` — `rounded-box border border-base-300 bg-base-200 px-3 py-2`
+- `resources/views/dashboard/index.blade.php:167` — `link link-primary block`
+- `resources/views/dashboard/index.blade.php:176` — `rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/dashboard/index.blade.php:177` — `Neue Kommentare auf meinen Einträgen`
+- `resources/views/dashboard/index.blade.php:179` — `Noch keine Kommentare.`
+- `resources/views/dashboard/index.blade.php:181` — `space-y-2 text-sm`
+- `resources/views/dashboard/index.blade.php:183` — `rounded-box border border-base-300 bg-base-200 px-3 py-2`
+- `resources/views/dashboard/index.blade.php:185` — `link block`
+- `resources/views/dashboard/index.blade.php:193` — `rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/dashboard/index.blade.php:194` — `Neue Anhänge auf meinen Einträgen`
+- `resources/views/dashboard/index.blade.php:196` — `Noch keine Anhänge.`
+- `resources/views/dashboard/index.blade.php:198` — `space-y-2 text-sm`
+- `resources/views/dashboard/index.blade.php:200` — `flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 px-3 py-2`
+- `resources/views/dashboard/index.blade.php:201` — `link link-primary break-all`
+- `resources/views/dashboard/index.blade.php:211` — `rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/dashboard/index.blade.php:212` — `Letzte Team-Aktivität`
+- `resources/views/dashboard/index.blade.php:214` — `Noch keine Aktivität.`
+- `resources/views/dashboard/index.blade.php:216` — `space-y-2 text-sm`
+- `resources/views/dashboard/index.blade.php:218` — `rounded-box border border-base-300 bg-base-200 px-3 py-2`
+- `resources/views/dashboard/index.blade.php:220` — `link block`
+- `resources/views/home.blade.php:4` — `utf-8`
+- `resources/views/home.blade.php:5` — `viewport`
+- `resources/views/home.blade.php:8` — `workDiaryTheme`
+- `resources/views/home.blade.php:10` — `corporate`
+- `resources/views/home.blade.php:12` — `data-theme`
+- `resources/views/home.blade.php:13` — `corporate' ? 'light`
+- `resources/views/home.blade.php:13` — `dark`
+- `resources/views/home.blade.php:16` — `app.name', 'WorkDiary`
+- `resources/views/home.blade.php:17` — `preconnect`
+- `resources/views/home.blade.php:18` — `stylesheet`
+- `resources/views/home.blade.php:25` — `IBM Plex Sans`
+- `resources/views/home.blade.php:41` — `min-h-screen bg-primary-content text-base-content`
+- `resources/views/home.blade.php:47` — `legacy`
+- `resources/views/home.blade.php:48` — `legacy' ? 'legacy.diary.index`
+- `resources/views/home.blade.php:49` — `legacy' ? 'legacy.diary.create`
+- `resources/views/home.blade.php:51` — `fixed inset-x-0 top-0 z-50 border-b border-base-300 bg-base-100 shadow-xs`
+- `resources/views/home.blade.php:53` — `home`
+- `resources/views/home.blade.php:55` — `button`
+- `resources/views/home.blade.php:55` — `Farbschema wechseln`
+- `resources/views/home.blade.php:55` — `Farbschema wechseln`
+- `resources/views/home.blade.php:55` — `btn btn-sm btn-ghost btn-square`
+- `resources/views/home.blade.php:56` — `text-base leading-none`
+- `resources/views/home.blade.php:59` — `btn btn-sm btn-ghost`
+- `resources/views/home.blade.php:60` — `btn btn-sm btn-primary`
+- `resources/views/home.blade.php:62` — `login`
+- `resources/views/home.blade.php:62` — `btn btn-sm btn-primary`
+- `resources/views/home.blade.php:69` — `mb-6 rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/home.blade.php:73` — `Operations Dashboard`
+- `resources/views/home.blade.php:77` — `Aktiver Modus`
+- `resources/views/home.blade.php:78` — `legacy' ? 'badge-warning`
+- `resources/views/home.blade.php:78` — `badge-primary`
+- `resources/views/home.blade.php:78` — `legacy`
+- `resources/views/home.blade.php:78` — `Legacy`
+- `resources/views/home.blade.php:81` — `mt-5 flex flex-wrap gap-3`
+- `resources/views/home.blade.php:84` — `list`
+- `resources/views/home.blade.php:85` — `status`
+- `resources/views/home.blade.php:85` — `warning`
+- `resources/views/home.blade.php:87` — `login`
+- `resources/views/home.blade.php:87` — `login`
+- `resources/views/home.blade.php:93` — `rounded-box border border-base-300 bg-base-100 px-4 py-3 shadow-xs`
+- `resources/views/home.blade.php:94` — `font-medium text-base-content`
+- `resources/views/home.blade.php:94` — `Datenquelle`
+- `resources/views/home.blade.php:106` — `logout`
+- `resources/views/home.blade.php:106` — `inline`
+- `resources/views/home.blade.php:108` — `abmelden`
+- `resources/views/home.blade.php:116` — `space-y-6`
+- `resources/views/home.blade.php:120` — `badge badge-ghost badge-sm`
+- `resources/views/home.blade.php:120` — `Einträge`
+- `resources/views/home.blade.php:122` — `Gesamtbestand im Legacy-Tagebuch`
+- `resources/views/home.blade.php:125` — `badge badge-warning badge-sm`
+- `resources/views/home.blade.php:125` — `Offen`
+- `resources/views/home.blade.php:127` — `Sofort in Bearbeitung nehmen`
+- `resources/views/home.blade.php:130` — `badge badge-error badge-sm`
+- `resources/views/home.blade.php:130` — `Probleme`
+- `resources/views/home.blade.php:132` — `Eskalationen mit Handlungsbedarf`
+- `resources/views/home.blade.php:135` — `badge badge-primary badge-sm`
+- `resources/views/home.blade.php:135` — `Team`
+- `resources/views/home.blade.php:137` — `Verfügbare Mitarbeitende`
+- `resources/views/home.blade.php:141` — `rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/home.blade.php:142` — `flex flex-wrap items-center justify-between gap-4`
+- `resources/views/home.blade.php:144` — `badge badge-error badge-sm`
+- `resources/views/home.blade.php:144` — `Prioritäten`
+- `resources/views/home.blade.php:145` — `Jetzt wichtig`
+- `resources/views/home.blade.php:146` — `Problem- und offene Einträge als direkte Arbeitsliste.`
+- `resources/views/home.blade.php:148` — `status`
+- `resources/views/home.blade.php:148` — `btn btn-error btn-outline btn-sm`
+- `resources/views/home.blade.php:151` — `mt-5 space-y-3`
+- `resources/views/home.blade.php:153` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/home.blade.php:154` — `flex flex-wrap items-center gap-2`
+- `resources/views/home.blade.php:156` — `badge badge-sm',
+                                                'badge-warning`
+- `resources/views/home.blade.php:158` — `badge-error`
+- `resources/views/home.blade.php:160` — `Unbekannt`
+- `resources/views/home.blade.php:162` — `mt-3 text-base-content`
+- `resources/views/home.blade.php:162` — `Ohne Beschreibung`
+- `resources/views/home.blade.php:163` — `offen`
+- `resources/views/home.blade.php:163` — `offen`
+- `resources/views/home.blade.php:166` — `Keine priorisierten Einträge gefunden.`
+- `resources/views/home.blade.php:171` — `rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/home.blade.php:174` — `Aktuelle Arbeitslage`
+- `resources/views/home.blade.php:175` — `Neueste Einträge aus dem laufenden Betrieb.`
+- `resources/views/home.blade.php:182` — `mt-5 space-y-3`
+- `resources/views/home.blade.php:186` — `flex flex-wrap items-center gap-3`
+- `resources/views/home.blade.php:188` — `badge badge-sm',
+                                                    'badge-success`
+- `resources/views/home.blade.php:189` — `done',
+                                                    'badge-info`
+- `resources/views/home.blade.php:190` — `progress',
+                                                    'badge-warning`
+- `resources/views/home.blade.php:191` — `open',
+                                                    'badge-error`
+- `resources/views/home.blade.php:192` — `alert',
+                                                    'badge-ghost`
+- `resources/views/home.blade.php:193` — `neutral`
+- `resources/views/home.blade.php:195` — `Unbekannt`
+- `resources/views/home.blade.php:197` — `mt-3 text-lg font-semibold text-base-content`
+- `resources/views/home.blade.php:197` — `Ohne Beschreibung`
+- `resources/views/home.blade.php:199` — `offen`
+- `resources/views/home.blade.php:200` — `offen`
+- `resources/views/home.blade.php:201` — `unbekannt`
+- `resources/views/home.blade.php:205` — `Noch keine Rückmeldung im Altsystem.`
+- `resources/views/home.blade.php:216` — `rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/home.blade.php:217` — `Produktzugang erforderlich`
+- `resources/views/home.blade.php:219` — `mt-4`
+- `resources/views/home.blade.php:219` — `login`
+- `resources/views/home.blade.php:224` — `space-y-6`
+- `resources/views/home.blade.php:225` — `rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/home.blade.php:226` — `Heute arbeiten`
+- `resources/views/home.blade.php:227` — `mt-5 space-y-4`
+- `resources/views/home.blade.php:229` — `font-semibold text-base-content`
+- `resources/views/home.blade.php:230` — `Arbeitsliste filtern und zuerst kritische Probleme bearbeiten.`
+- `resources/views/home.blade.php:233` — `font-semibold text-base-content`
+- `resources/views/home.blade.php:234` — `Vorgänge sauber erfassen, Zeitraum und Status direkt setzen.`
+- `resources/views/home.blade.php:237` — `font-semibold text-base-content`
+- `resources/views/home.blade.php:238` — `Offene Antworten finalisieren und auf erledigt setzen.`
+- `resources/views/home.blade.php:241` — `status`
+- `resources/views/home.blade.php:247` — `rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/home.blade.php:248` — `flex items-center justify-between gap-4`
+- `resources/views/home.blade.php:249` — `Team`
+- `resources/views/home.blade.php:250` — `badge badge-ghost`
+- `resources/views/home.blade.php:252` — `mt-5 space-y-3`
+- `resources/views/home.blade.php:255` — `font-semibold text-base-content`
+- `resources/views/home.blade.php:256` — `Keine E-Mail im Altbestand`
+- `resources/views/home.blade.php:259` — `Teamdaten werden eingeblendet, sobald die Legacy-DB erreichbar ist.`
+- `resources/views/home.blade.php:268` — `fixed inset-x-0 bottom-0 z-50 border-t border-base-300 bg-base-100 shadow-xs`
+- `resources/views/home.blade.php:280` — `data-theme`
+- `resources/views/home.blade.php:281` — `corporate' ? 'light`
+- `resources/views/home.blade.php:281` — `dark`
+- `resources/views/home.blade.php:282` — `workDiaryTheme`
+- `resources/views/home.blade.php:284` — `corporate' ? `
+- `resources/views/home.blade.php:288` — `data-theme`
+- `resources/views/home.blade.php:288` — `corporate' ? 'corporate`
+- `resources/views/home.blade.php:292` — `click`
+- `resources/views/home.blade.php:293` — `data-theme`
+- `resources/views/home.blade.php:293` — `corporate' ? 'dim`
+- `resources/views/home.blade.php:293` — `corporate`
+- `resources/views/vacations/index.blade.php:3` — `nav-title`
+- `resources/views/vacations/index.blade.php:3` — `Urlaub`
+- `resources/views/vacations/index.blade.php:5` — `content`
+- `resources/views/vacations/index.blade.php:9` — `flex flex-none justify-end`
+- `resources/views/vacations/index.blade.php:10` — `create`
+- `resources/views/vacations/index.blade.php:12` — `btn btn-primary btn-sm`
+- `resources/views/vacations/index.blade.php:14` — `Neuer Antrag`
+- `resources/views/vacations/index.blade.php:21` — `Ausstehend`
+- `resources/views/vacations/index.blade.php:21` — `pending`
+- `resources/views/vacations/index.blade.php:21` — `warning`
+- `resources/views/vacations/index.blade.php:22` — `approved`
+- `resources/views/vacations/index.blade.php:22` — `success`
+- `resources/views/vacations/index.blade.php:23` — `total`
+- `resources/views/vacations/index.blade.php:23` — `neutral`
+- `resources/views/vacations/index.blade.php:27` — `flex flex-none flex-wrap items-center gap-2`
+- `resources/views/vacations/index.blade.php:28` — `flex flex-wrap items-center gap-2`
+- `resources/views/vacations/index.blade.php:30` — `select select-bordered select-sm`
+- `resources/views/vacations/index.blade.php:31` — `Alle Mitarbeiter`
+- `resources/views/vacations/index.blade.php:33` — `name`
+- `resources/views/vacations/index.blade.php:38` — `status`
+- `resources/views/vacations/index.blade.php:38` — `select select-bordered select-sm`
+- `resources/views/vacations/index.blade.php:39` — `Alle Status`
+- `resources/views/vacations/index.blade.php:41` — `status`
+- `resources/views/vacations/index.blade.php:45` — `type`
+- `resources/views/vacations/index.blade.php:45` — `select select-bordered select-sm`
+- `resources/views/vacations/index.blade.php:46` — `Alle Typen`
+- `resources/views/vacations/index.blade.php:47` — `type`
+- `resources/views/vacations/index.blade.php:47` — `Urlaub`
+- `resources/views/vacations/index.blade.php:48` — `type`
+- `resources/views/vacations/index.blade.php:48` — `Krank`
+- `resources/views/vacations/index.blade.php:49` — `type`
+- `resources/views/vacations/index.blade.php:49` — `Sonderurlaub`
+- `resources/views/vacations/index.blade.php:50` — `type`
+- `resources/views/vacations/index.blade.php:50` — `Unbezahlt`
+- `resources/views/vacations/index.blade.php:54` — `btn btn-ghost btn-sm`
+- `resources/views/vacations/index.blade.php:54` — `Zurücksetzen`
+- `resources/views/vacations/index.blade.php:60` — `success`
+- `resources/views/vacations/index.blade.php:61` — `alert alert-success flex-none text-sm py-2`
+- `resources/views/vacations/index.blade.php:61` — `success`
+- `resources/views/vacations/index.blade.php:65` — `min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 shadow-xs`
+- `resources/views/vacations/index.blade.php:66` — `h-full overflow-auto`
+- `resources/views/vacations/index.blade.php:67` — `table table-sm table-zebra table-pin-rows w-full`
+- `resources/views/vacations/index.blade.php:68` — `bg-base-200`
+- `resources/views/vacations/index.blade.php:71` — `Mitarbeiter`
+- `resources/views/vacations/index.blade.php:73` — `Zeitraum`
+- `resources/views/vacations/index.blade.php:74` — `Tage`
+- `resources/views/vacations/index.blade.php:76` — `Status`
+- `resources/views/vacations/index.blade.php:77` — `Notiz`
+- `resources/views/vacations/index.blade.php:78` — `w-px`
+- `resources/views/vacations/index.blade.php:86` — `hover`
+- `resources/views/vacations/index.blade.php:88` — `font-medium`
+- `resources/views/vacations/index.blade.php:90` — `whitespace-nowrap`
+- `resources/views/vacations/index.blade.php:96` — `tabular-nums`
+- `resources/views/vacations/index.blade.php:98` — `badge badge-sm badge-ghost`
+- `resources/views/vacations/index.blade.php:103` — `tooltip tooltip-right`
+- `resources/views/vacations/index.blade.php:104` — `inline h-3 w-3 text-error`
+- `resources/views/vacations/index.blade.php:104` — `none`
+- `resources/views/vacations/index.blade.php:104` — `currentColor`
+- `resources/views/vacations/index.blade.php:104` — `round`
+- `resources/views/vacations/index.blade.php:104` — `round`
+- `resources/views/vacations/index.blade.php:104` — `M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z`
+- `resources/views/vacations/index.blade.php:110` — `flex items-center gap-1`
+- `resources/views/vacations/index.blade.php:112` — `decide`
+- `resources/views/vacations/index.blade.php:114` — `inline`
+- `resources/views/vacations/index.blade.php:116` — `submit`
+- `resources/views/vacations/index.blade.php:117` — `Genehmigen`
+- `resources/views/vacations/index.blade.php:118` — `btn btn-xs btn-ghost text-success`
+- `resources/views/vacations/index.blade.php:119` — `h-4 w-4`
+- `resources/views/vacations/index.blade.php:119` — `none`
+- `resources/views/vacations/index.blade.php:119` — `currentColor`
+- `resources/views/vacations/index.blade.php:119` — `round`
+- `resources/views/vacations/index.blade.php:119` — `round`
+- `resources/views/vacations/index.blade.php:119` — `M5 13l4 4L19 7`
+- `resources/views/vacations/index.blade.php:122` — `vacations.reject-form`
+- `resources/views/vacations/index.blade.php:123` — `Ablehnen`
+- `resources/views/vacations/index.blade.php:124` — `btn btn-xs btn-ghost text-error`
+- `resources/views/vacations/index.blade.php:126` — `h-4 w-4`
+- `resources/views/vacations/index.blade.php:126` — `none`
+- `resources/views/vacations/index.blade.php:126` — `currentColor`
+- `resources/views/vacations/index.blade.php:126` — `round`
+- `resources/views/vacations/index.blade.php:126` — `round`
+- `resources/views/vacations/index.blade.php:126` — `M6 18L18 6M6 6l12 12`
+- `resources/views/vacations/index.blade.php:132` — `update`
+- `resources/views/vacations/index.blade.php:134` — `Bearbeiten`
+- `resources/views/vacations/index.blade.php:135` — `btn btn-xs btn-ghost`
+- `resources/views/vacations/index.blade.php:137` — `h-4 w-4`
+- `resources/views/vacations/index.blade.php:137` — `none`
+- `resources/views/vacations/index.blade.php:137` — `currentColor`
+- `resources/views/vacations/index.blade.php:137` — `round`
+- `resources/views/vacations/index.blade.php:137` — `round`
+- `resources/views/vacations/index.blade.php:137` — `M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01-1.414.586H9v-2.414z`
+- `resources/views/vacations/index.blade.php:142` — `cancel`
+- `resources/views/vacations/index.blade.php:143` — `inline`
+- `resources/views/vacations/index.blade.php:145` — `Urlaubsantrag wirklich stornieren?`
+- `resources/views/vacations/index.blade.php:146` — `Stornieren`
+- `resources/views/vacations/index.blade.php:148` — `submit`
+- `resources/views/vacations/index.blade.php:149` — `Stornieren`
+- `resources/views/vacations/index.blade.php:150` — `btn btn-xs btn-ghost text-warning`
+- `resources/views/vacations/index.blade.php:151` — `h-4 w-4`
+- `resources/views/vacations/index.blade.php:151` — `none`
+- `resources/views/vacations/index.blade.php:151` — `currentColor`
+- `resources/views/vacations/index.blade.php:151` — `round`
+- `resources/views/vacations/index.blade.php:151` — `round`
+- `resources/views/vacations/index.blade.php:151` — `M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636`
+- `resources/views/vacations/index.blade.php:157` — `delete`
+- `resources/views/vacations/index.blade.php:158` — `inline`
+- `resources/views/vacations/index.blade.php:160` — `Urlaubsantrag wirklich löschen?`
+- `resources/views/vacations/index.blade.php:161` — `Löschen`
+- `resources/views/vacations/index.blade.php:163` — `submit`
+- `resources/views/vacations/index.blade.php:164` — `Löschen`
+- `resources/views/vacations/index.blade.php:165` — `btn btn-xs btn-ghost text-error`
+- `resources/views/vacations/index.blade.php:166` — `h-4 w-4`
+- `resources/views/vacations/index.blade.php:166` — `none`
+- `resources/views/vacations/index.blade.php:166` — `currentColor`
+- `resources/views/vacations/index.blade.php:166` — `round`
+- `resources/views/vacations/index.blade.php:166` — `round`
+- `resources/views/vacations/index.blade.php:166` — `M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3m-7 0h8`
+- `resources/views/vacations/index.blade.php:176` — `Keine Einträge gefunden.`
+- `resources/views/vacations/index.blade.php:187` — `flex-none`
+- `resources/views/vacations/_form_dialog.blade.php:10` — `Urlaub`
+- `resources/views/vacations/_form_dialog.blade.php:11` — `Krank`
+- `resources/views/vacations/_form_dialog.blade.php:12` — `Sonderurlaub`
+- `resources/views/vacations/_form_dialog.blade.php:13` — `Unbezahlt`
+- `resources/views/vacations/_form_dialog.blade.php:18` — `Urlaubsantrag bearbeiten`
+- `resources/views/vacations/_form_dialog.blade.php:18` — `Urlaubsantrag stellen`
+- `resources/views/vacations/_form_dialog.blade.php:19` — `Urlaubsverwaltung`
+- `resources/views/vacations/_form_dialog.blade.php:21` — `success`
+- `resources/views/vacations/_form_dialog.blade.php:23` — `POST'`
+- `resources/views/vacations/_form_dialog.blade.php:24` — `data-entry-form`
+- `resources/views/vacations/_form_dialog.blade.php:25` — `Speichern`
+- `resources/views/vacations/_form_dialog.blade.php:25` — `Antrag stellen`
+- `resources/views/vacations/_form_dialog.blade.php:28` — `hidden`
+- `resources/views/vacations/_form_dialog.blade.php:32` — `Zuordnung`
+- `resources/views/vacations/_form_dialog.blade.php:32` — `person`
+- `resources/views/vacations/_form_dialog.blade.php:32` — `primary`
+- `resources/views/vacations/_form_dialog.blade.php:33` — `fieldset`
+- `resources/views/vacations/_form_dialog.blade.php:34` — `fieldset-label`
+- `resources/views/vacations/_form_dialog.blade.php:34` — `vac-user`
+- `resources/views/vacations/_form_dialog.blade.php:34` — `Mitarbeiter`
+- `resources/views/vacations/_form_dialog.blade.php:35` — `vac-user`
+- `resources/views/vacations/_form_dialog.blade.php:35` — `select select-bordered w-full`
+- `resources/views/vacations/_form_dialog.blade.php:37` — `name`
+- `resources/views/vacations/_form_dialog.blade.php:44` — `Antrag`
+- `resources/views/vacations/_form_dialog.blade.php:44` — `success`
+- `resources/views/vacations/_form_dialog.blade.php:45` — `fieldset`
+- `resources/views/vacations/_form_dialog.blade.php:46` — `fieldset-label`
+- `resources/views/vacations/_form_dialog.blade.php:46` — `vac-type`
+- `resources/views/vacations/_form_dialog.blade.php:47` — `vac-type`
+- `resources/views/vacations/_form_dialog.blade.php:47` — `type`
+- `resources/views/vacations/_form_dialog.blade.php:47` — `select select-bordered w-full`
+- `resources/views/vacations/_form_dialog.blade.php:49` — `type`
+- `resources/views/vacations/_form_dialog.blade.php:54` — `fieldset`
+- `resources/views/vacations/_form_dialog.blade.php:55` — `fieldset-label`
+- `resources/views/vacations/_form_dialog.blade.php:55` — `Zeitraum`
+- `resources/views/vacations/_form_dialog.blade.php:57` — `date`
+- `resources/views/vacations/_form_dialog.blade.php:58` — `Y-m-d`
+- `resources/views/vacations/_form_dialog.blade.php:59` — `Y-m-d`
+- `resources/views/vacations/_form_dialog.blade.php:64` — `false`
+- `resources/views/vacations/_form_dialog.blade.php:66` — `w-full`
+- `resources/views/vacations/_form_dialog.blade.php:68` — `text-error text-sm`
+- `resources/views/vacations/_form_dialog.blade.php:69` — `text-error text-sm`
+- `resources/views/vacations/_form_dialog.blade.php:73` — `Begründung`
+- `resources/views/vacations/_form_dialog.blade.php:73` — `description`
+- `resources/views/vacations/_form_dialog.blade.php:73` — `ghost`
+- `resources/views/vacations/_form_dialog.blade.php:74` — `fieldset`
+- `resources/views/vacations/_form_dialog.blade.php:75` — `fieldset-label`
+- `resources/views/vacations/_form_dialog.blade.php:75` — `vac-note`
+- `resources/views/vacations/_form_dialog.blade.php:75` — `Notiz`
+- `resources/views/vacations/_form_dialog.blade.php:76` — `vac-note`
+- `resources/views/vacations/_form_dialog.blade.php:76` — `note`
+- `resources/views/vacations/_form_dialog.blade.php:76` — `textarea textarea-bordered w-full`
+- `resources/views/vacations/_form_dialog.blade.php:76` — `note`
+- `resources/views/vacations/_form_dialog.blade.php:81` — `alert alert-error text-sm`
+- `resources/views/vacations/_form_dialog.blade.php:82` — `list-disc pl-5`
+- `resources/views/vacations/_reject_dialog.blade.php:3` — `vacations.reject-form`
+- `resources/views/vacations/_reject_dialog.blade.php:7` — `Urlaubsantrag ablehnen`
+- `resources/views/vacations/_reject_dialog.blade.php:8` — `Urlaubsverwaltung`
+- `resources/views/vacations/_reject_dialog.blade.php:9` — `cancel`
+- `resources/views/vacations/_reject_dialog.blade.php:10` — `error`
+- `resources/views/vacations/_reject_dialog.blade.php:13` — `data-entry-form`
+- `resources/views/vacations/_reject_dialog.blade.php:14` — `Ablehnen`
+- `resources/views/vacations/_reject_dialog.blade.php:15` — `btn-error`
+- `resources/views/vacations/_reject_dialog.blade.php:18` — `font-semibold`
+- `resources/views/vacations/_reject_dialog.blade.php:23` — `hidden`
+- `resources/views/vacations/_reject_dialog.blade.php:25` — `Begründung`
+- `resources/views/vacations/_reject_dialog.blade.php:25` — `cancel`
+- `resources/views/vacations/_reject_dialog.blade.php:25` — `error`
+- `resources/views/vacations/_reject_dialog.blade.php:26` — `fieldset`
+- `resources/views/vacations/_reject_dialog.blade.php:27` — `fieldset-label`
+- `resources/views/vacations/_reject_dialog.blade.php:27` — `reject-reason`
+- `resources/views/vacations/_reject_dialog.blade.php:28` — `reject-reason`
+- `resources/views/vacations/_reject_dialog.blade.php:28` — `textarea textarea-bordered w-full`
+- `resources/views/assignments/_form_body.blade.php:7` — `reason`
+- `resources/views/assignments/_form_body.blade.php:14` — `hidden`
+- `resources/views/assignments/_form_body.blade.php:16` — `hidden`
+- `resources/views/assignments/_form_body.blade.php:20` — `Mitarbeiter`
+- `resources/views/assignments/_form_body.blade.php:20` — `person`
+- `resources/views/assignments/_form_body.blade.php:20` — `primary`
+- `resources/views/assignments/_form_body.blade.php:21` — `fieldset w-full`
+- `resources/views/assignments/_form_body.blade.php:22` — `fieldset-label`
+- `resources/views/assignments/_form_body.blade.php:22` — `Mitarbeiter`
+- `resources/views/assignments/_form_body.blade.php:23` — `select select-bordered w-full`
+- `resources/views/assignments/_form_body.blade.php:25` — `name`
+- `resources/views/assignments/_form_body.blade.php:32` — `Einsatz`
+- `resources/views/assignments/_form_body.blade.php:32` — `warning`
+- `resources/views/assignments/_form_body.blade.php:32` — `error`
+- `resources/views/assignments/_form_body.blade.php:33` — `fieldset`
+- `resources/views/assignments/_form_body.blade.php:34` — `fieldset-label`
+- `resources/views/assignments/_form_body.blade.php:34` — `Zeitraum`
+- `resources/views/assignments/_form_body.blade.php:36` — `datetime-local`
+- `resources/views/assignments/_form_body.blade.php:41` — `Beginn`
+- `resources/views/assignments/_form_body.blade.php:42` — `Ende`
+- `resources/views/assignments/_form_body.blade.php:43` — `false`
+- `resources/views/assignments/_form_body.blade.php:45` — `w-full`
+- `resources/views/assignments/_form_body.blade.php:47` — `text-error text-sm`
+- `resources/views/assignments/_form_body.blade.php:48` — `text-error text-sm`
+- `resources/views/assignments/_form_body.blade.php:51` — `fieldset w-full`
+- `resources/views/assignments/_form_body.blade.php:52` — `fieldset-label`
+- `resources/views/assignments/_form_body.blade.php:53` — `select select-bordered w-full`
+- `resources/views/assignments/_form_body.blade.php:64` — `Grund`
+- `resources/views/assignments/_form_body.blade.php:64` — `description`
+- `resources/views/assignments/_form_body.blade.php:64` — `ghost`
+- `resources/views/assignments/_form_body.blade.php:65` — `fieldset w-full`
+- `resources/views/assignments/_form_body.blade.php:66` — `fieldset-label`
+- `resources/views/assignments/_form_body.blade.php:66` — `Grund`
+- `resources/views/assignments/_form_body.blade.php:67` — `reason`
+- `resources/views/assignments/_form_body.blade.php:67` — `textarea textarea-bordered w-full`
+- `resources/views/assignments/_form_body.blade.php:72` — `alert alert-error`
+- `resources/views/assignments/_form_body.blade.php:73` — `list-disc pl-5`
+- `resources/views/assignments/_form_dialog.blade.php:2` — `Notdienst bearbeiten`
+- `resources/views/assignments/_form_dialog.blade.php:2` — `Neuer Notdienst`
+- `resources/views/assignments/_form_dialog.blade.php:3` — `Notdienst-Einsatz`
+- `resources/views/assignments/_form_dialog.blade.php:4` — `warning`
+- `resources/views/assignments/_form_dialog.blade.php:5` — `error`
+- `resources/views/assignments/_form_dialog.blade.php:7` — `POST'`
+- `resources/views/assignments/_form_dialog.blade.php:8` — `data-entry-form`
+- `resources/views/assignments/_form_dialog.blade.php:9` — `Speichern`
+- `resources/views/assignments/_form_dialog.blade.php:9` — `Notdienst anlegen`
+- `resources/views/assignments/_form_dialog.blade.php:16` — `Wirklich löschen?`
+- `resources/views/assignments/_form_dialog.blade.php:17` — `Löschen`
+- `resources/views/assignments/_form_dialog.blade.php:19` — `hidden`
+- `resources/views/assignments/_form_dialog.blade.php:20` — `submit`
+- `resources/views/assignments/_form_dialog.blade.php:20` — `btn btn-error btn-outline btn-sm gap-2`
+- `resources/views/assignments/_form_dialog.blade.php:21` — `delete`
+- `resources/views/assignments/_form_dialog.blade.php:21` — `Notdienst löschen`
+- `resources/views/duty-plans/index.blade.php:2` — `title`
+- `resources/views/duty-plans/index.blade.php:2` — `Dienstpläne`
+- `resources/views/duty-plans/index.blade.php:3` — `nav-title`
+- `resources/views/duty-plans/index.blade.php:3` — `Dienstpläne`
+- `resources/views/duty-plans/index.blade.php:4` — `content`
+- `resources/views/duty-plans/index.blade.php:6` — `flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/duty-plans/index.blade.php:7` — `flex flex-wrap items-center gap-2`
+- `resources/views/duty-plans/index.blade.php:8` — `period`
+- `resources/views/duty-plans/index.blade.php:8` — `select select-sm select-bordered`
+- `resources/views/duty-plans/index.blade.php:9` — `Alle Zeiträume`
+- `resources/views/duty-plans/index.blade.php:14` — `status`
+- `resources/views/duty-plans/index.blade.php:14` — `select select-sm select-bordered`
+- `resources/views/duty-plans/index.blade.php:15` — `Alle Status`
+- `resources/views/duty-plans/index.blade.php:21` — `flex items-center gap-2`
+- `resources/views/duty-plans/index.blade.php:22` — `create`
+- `resources/views/duty-plans/index.blade.php:23` — `duty-plans.create`
+- `resources/views/duty-plans/index.blade.php:23` — `btn btn-primary btn-sm gap-1`
+- `resources/views/duty-plans/index.blade.php:24` — `Dienstplan anlegen`
+- `resources/views/duty-plans/index.blade.php:33` — `status`
+- `resources/views/duty-plans/index.blade.php:33` — `period`
+- `resources/views/duty-plans/index.blade.php:34` — `name`
+- `resources/views/duty-plans/index.blade.php:34` — `duty-plans.index`
+- `resources/views/duty-plans/index.blade.php:34` — `desc'`
+- `resources/views/duty-plans/index.blade.php:34` — `Titel`
+- `resources/views/duty-plans/index.blade.php:35` — `duty-plans.index`
+- `resources/views/duty-plans/index.blade.php:35` — `desc'`
+- `resources/views/duty-plans/index.blade.php:35` — `Zeitraum`
+- `resources/views/duty-plans/index.blade.php:36` — `duty-plans.index`
+- `resources/views/duty-plans/index.blade.php:36` — `desc'`
+- `resources/views/duty-plans/index.blade.php:37` — `text-center`
+- `resources/views/duty-plans/index.blade.php:37` — `shifts`
+- `resources/views/duty-plans/index.blade.php:37` — `duty-plans.index`
+- `resources/views/duty-plans/index.blade.php:37` — `desc'`
+- `resources/views/duty-plans/index.blade.php:37` — `Schichten`
+- `resources/views/duty-plans/index.blade.php:38` — `status`
+- `resources/views/duty-plans/index.blade.php:38` — `duty-plans.index`
+- `resources/views/duty-plans/index.blade.php:38` — `desc'`
+- `resources/views/duty-plans/index.blade.php:38` — `Status`
+- `resources/views/duty-plans/index.blade.php:45` — `font-medium`
+- `resources/views/duty-plans/index.blade.php:46` — `duty-plans.show`
+- `resources/views/duty-plans/index.blade.php:46` — `link link-hover`
+- `resources/views/duty-plans/index.blade.php:52` — `badge badge-sm badge-outline`
+- `resources/views/duty-plans/index.blade.php:54` — `text-center`
+- `resources/views/duty-plans/index.blade.php:57` — `badge badge-success badge-sm`
+- `resources/views/duty-plans/index.blade.php:59` — `badge badge-ghost badge-sm`
+- `resources/views/duty-plans/index.blade.php:62` — `text-right`
+- `resources/views/duty-plans/index.blade.php:63` — `flex justify-end gap-2`
+- `resources/views/duty-plans/index.blade.php:64` — `duty-plans.show`
+- `resources/views/duty-plans/index.blade.php:64` — `btn btn-ghost btn-xs`
+- `resources/views/duty-plans/index.blade.php:64` — `Ansehen`
+- `resources/views/duty-plans/index.blade.php:65` — `update`
+- `resources/views/duty-plans/index.blade.php:66` — `duty-plans.edit`
+- `resources/views/duty-plans/index.blade.php:66` — `btn btn-ghost btn-xs`
+- `resources/views/duty-plans/index.blade.php:66` — `Bearbeiten`
+- `resources/views/duty-plans/index.blade.php:68` — `delete`
+- `resources/views/duty-plans/index.blade.php:69` — `duty-plans.destroy`
+- `resources/views/duty-plans/index.blade.php:71` — `Dienstplan wirklich löschen?`
+- `resources/views/duty-plans/index.blade.php:72` — `Löschen`
+- `resources/views/duty-plans/index.blade.php:74` — `btn btn-ghost btn-xs text-error`
+- `resources/views/duty-plans/index.blade.php:74` — `Löschen`
+- `resources/views/duty-plans/index.blade.php:82` — `Noch keine Dienstpläne vorhanden.`
+- `resources/views/duty-plans/_form.blade.php:3` — `Stammdaten`
+- `resources/views/duty-plans/_form.blade.php:3` — `assignment`
+- `resources/views/duty-plans/_form.blade.php:3` — `primary`
+- `resources/views/duty-plans/_form.blade.php:4` — `fieldset`
+- `resources/views/duty-plans/_form.blade.php:5` — `fieldset-label`
+- `resources/views/duty-plans/_form.blade.php:5` — `Titel`
+- `resources/views/duty-plans/_form.blade.php:6` — `text`
+- `resources/views/duty-plans/_form.blade.php:6` — `title`
+- `resources/views/duty-plans/_form.blade.php:6` — `title`
+- `resources/views/duty-plans/_form.blade.php:7` — `title`
+- `resources/views/duty-plans/_form.blade.php:8` — `title`
+- `resources/views/duty-plans/_form.blade.php:8` — `text-error text-sm`
+- `resources/views/duty-plans/_form.blade.php:11` — `fieldset`
+- `resources/views/duty-plans/_form.blade.php:12` — `fieldset-label`
+- `resources/views/duty-plans/_form.blade.php:12` — `Zeitraum-Typ`
+- `resources/views/duty-plans/_form.blade.php:20` — `text-error text-sm`
+- `resources/views/duty-plans/_form.blade.php:24` — `event`
+- `resources/views/duty-plans/_form.blade.php:24` — `info`
+- `resources/views/duty-plans/_form.blade.php:25` — `fieldset`
+- `resources/views/duty-plans/_form.blade.php:26` — `fieldset-label`
+- `resources/views/duty-plans/_form.blade.php:26` — `Zeitraum`
+- `resources/views/duty-plans/_form.blade.php:28` — `date`
+- `resources/views/duty-plans/_form.blade.php:33` — `false`
+- `resources/views/duty-plans/_form.blade.php:37` — `w-full`
+- `resources/views/duty-plans/_form.blade.php:39` — `text-error text-sm mt-1`
+- `resources/views/duty-plans/_form.blade.php:40` — `text-error text-sm mt-1`
+- `resources/views/duty-plans/_form.blade.php:43` — `fieldset`
+- `resources/views/duty-plans/_form.blade.php:44` — `fieldset-label`
+- `resources/views/duty-plans/_form.blade.php:44` — `Mindestbesetzung pro Schicht`
+- `resources/views/duty-plans/_form.blade.php:45` — `number`
+- `resources/views/duty-plans/_form.blade.php:47` — `text-error text-sm`
+- `resources/views/duty-plans/_form.blade.php:51` — `Notiz`
+- `resources/views/duty-plans/_form.blade.php:51` — `description`
+- `resources/views/duty-plans/_form.blade.php:51` — `ghost`
+- `resources/views/duty-plans/_form.blade.php:52` — `fieldset`
+- `resources/views/duty-plans/_form.blade.php:53` — `fieldset-label`
+- `resources/views/duty-plans/_form.blade.php:53` — `Notiz`
+- `resources/views/duty-plans/_form.blade.php:54` — `note`
+- `resources/views/duty-plans/_form.blade.php:54` — `note`
+- `resources/views/duty-plans/_form.blade.php:54` — `note`
+- `resources/views/duty-plans/_form.blade.php:55` — `note`
+- `resources/views/duty-plans/_form.blade.php:55` — `text-error text-sm`
+- `resources/views/duty-plans/_form_dialog.blade.php:5` — `duty-plans.update`
+- `resources/views/duty-plans/_form_dialog.blade.php:6` — `duty-plans.store`
+- `resources/views/duty-plans/_form_dialog.blade.php:10` — `Dienstplan bearbeiten`
+- `resources/views/duty-plans/_form_dialog.blade.php:10` — `Dienstplan anlegen`
+- `resources/views/duty-plans/_form_dialog.blade.php:11` — `Dienstplanung`
+- `resources/views/duty-plans/_form_dialog.blade.php:12` — `assignment`
+- `resources/views/duty-plans/_form_dialog.blade.php:13` — `primary`
+- `resources/views/duty-plans/_form_dialog.blade.php:15` — `POST'`
+- `resources/views/duty-plans/_form_dialog.blade.php:16` — `data-entry-form`
+- `resources/views/duty-plans/_form_dialog.blade.php:17` — `Speichern`
+- `resources/views/duty-plans/_form_dialog.blade.php:17` — `Anlegen`
+- `resources/views/duty-plans/_form_dialog.blade.php:19` — `plan`
+- `resources/views/duty-plans/_form_dialog.blade.php:22` — `alert alert-error text-sm`
+- `resources/views/duty-plans/_form_dialog.blade.php:23` — `list-disc pl-5`
+- `resources/views/duty-plans/show.blade.php:2` — `title`
+- `resources/views/duty-plans/show.blade.php:3` — `nav-title`
+- `resources/views/duty-plans/show.blade.php:4` — `content`
+- `resources/views/duty-plans/show.blade.php:7` — `flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/duty-plans/show.blade.php:8` — `flex flex-wrap items-center gap-2`
+- `resources/views/duty-plans/show.blade.php:10` — `success`
+- `resources/views/duty-plans/show.blade.php:10` — `ghost`
+- `resources/views/duty-plans/show.blade.php:14` — `flex flex-wrap items-center gap-2`
+- `resources/views/duty-plans/show.blade.php:15` — `update`
+- `resources/views/duty-plans/show.blade.php:17` — `duty-plans.publish`
+- `resources/views/duty-plans/show.blade.php:19` — `btn btn-success btn-sm`
+- `resources/views/duty-plans/show.blade.php:19` — `Veröffentlichen`
+- `resources/views/duty-plans/show.blade.php:22` — `duty-plans.retract`
+- `resources/views/duty-plans/show.blade.php:24` — `btn btn-warning btn-sm`
+- `resources/views/duty-plans/show.blade.php:24` — `Zurück zu Entwurf`
+- `resources/views/duty-plans/show.blade.php:27` — `duty-plans.edit`
+- `resources/views/duty-plans/show.blade.php:27` — `btn btn-ghost btn-sm`
+- `resources/views/duty-plans/show.blade.php:27` — `Bearbeiten`
+- `resources/views/duty-plans/show.blade.php:29` — `view`
+- `resources/views/duty-plans/show.blade.php:30` — `duty-plans.coverage.index`
+- `resources/views/duty-plans/show.blade.php:30` — `btn btn-outline btn-sm`
+- `resources/views/duty-plans/show.blade.php:30` — `Soll-Besetzung`
+- `resources/views/duty-plans/show.blade.php:32` — `dropdown dropdown-end`
+- `resources/views/duty-plans/show.blade.php:33` — `btn btn-outline btn-sm`
+- `resources/views/duty-plans/show.blade.php:33` — `Drucken`
+- `resources/views/duty-plans/show.blade.php:34` — `menu dropdown-content z-1 mt-2 w-72 rounded-box bg-base-100 p-2 shadow`
+- `resources/views/duty-plans/show.blade.php:35` — `menu-title`
+- `resources/views/duty-plans/show.blade.php:35` — `Layout wählen`
+- `resources/views/duty-plans/show.blade.php:36` — `print.duty-plan.roster`
+- `resources/views/duty-plans/show.blade.php:37` — `print.duty-plan.week`
+- `resources/views/duty-plans/show.blade.php:38` — `print.duty-plan.day`
+- `resources/views/duty-plans/show.blade.php:38` — `date`
+- `resources/views/duty-plans/show.blade.php:39` — `menu-title`
+- `resources/views/duty-plans/show.blade.php:39` — `Datenschutz`
+- `resources/views/duty-plans/show.blade.php:40` — `print.duty-plan.roster`
+- `resources/views/duty-plans/show.blade.php:40` — `anonymous`
+- `resources/views/duty-plans/show.blade.php:40` — `Aushang anonymisiert`
+- `resources/views/duty-plans/show.blade.php:43` — `duty-plans.index`
+- `resources/views/duty-plans/show.blade.php:43` — `btn btn-ghost btn-sm`
+- `resources/views/duty-plans/show.blade.php:43` — `Übersicht`
+- `resources/views/duty-plans/show.blade.php:48` — `alert alert-info text-sm`
+- `resources/views/duty-plans/show.blade.php:52` — `rounded-box border border-base-300 bg-base-100 p-3`
+- `resources/views/duty-plans/show.blade.php:53` — `cursor-pointer font-semibold`
+- `resources/views/duty-plans/show.blade.php:54` — `mt-3`
+- `resources/views/duty-plans/show.blade.php:55` — `dutyPlan`
+- `resources/views/duty-plans/show.blade.php:60` — `overflow-x-auto rounded-box border border-base-300`
+- `resources/views/duty-plans/show.blade.php:61` — `table table-sm w-full`
+- `resources/views/duty-plans/show.blade.php:62` — `bg-base-200`
+- `resources/views/duty-plans/show.blade.php:64` — `whitespace-nowrap`
+- `resources/views/duty-plans/show.blade.php:64` — `Datum`
+- `resources/views/duty-plans/show.blade.php:65` — `Schichten`
+- `resources/views/duty-plans/show.blade.php:72` — `whitespace-nowrap font-medium w-32`
+- `resources/views/duty-plans/show.blade.php:80` — `flex flex-wrap gap-1`
+- `resources/views/duty-plans/show.blade.php:82` — `badge badge-sm`
+- `resources/views/print/on_call_a4.blade.php:3` — `content`
+- `resources/views/print/on_call_a4.blade.php:14` — `title`
+- `resources/views/print/on_call_a4.blade.php:15` — `subtitle`
+- `resources/views/print/on_call_a4.blade.php:17` — `extraMeta`
+- `resources/views/print/on_call_a4.blade.php:17` — `Anonymisiert`
+- `resources/views/print/on_call_a4.blade.php:18` — `Bereitschaft`
+- `resources/views/print/on_call_a4.blade.php:19` — `Notdienste`
+- `resources/views/print/on_call_a4.blade.php:22` — `Bereitschaft`
+- `resources/views/print/on_call_a4.blade.php:24` — `muted`
+- `resources/views/print/on_call_a4.blade.php:24` — `Keine Bereitschaften im gewählten Zeitraum.`
+- `resources/views/print/on_call_a4.blade.php:35` — `Mitarbeiter`
+- `resources/views/print/on_call_a4.blade.php:36` — `Beginn`
+- `resources/views/print/on_call_a4.blade.php:37` — `Ende`
+- `resources/views/print/on_call_a4.blade.php:38` — `Notiz`
+- `resources/views/print/on_call_a4.blade.php:54` — `Notdienste`
+- `resources/views/print/on_call_a4.blade.php:56` — `muted`
+- `resources/views/print/on_call_a4.blade.php:56` — `Keine Notdienste im gewählten Zeitraum.`
+- `resources/views/print/on_call_a4.blade.php:67` — `Mitarbeiter`
+- `resources/views/print/on_call_a4.blade.php:68` — `Beginn`
+- `resources/views/print/on_call_a4.blade.php:69` — `Ende`
+- `resources/views/print/on_call_a4.blade.php:70` — `Grund`
+- `resources/views/print/on_call_a4.blade.php:86` — `footer`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:3` — `content`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:20` — `intval`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:21` — `intval`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:42` — `title`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:43` — `subtitle`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:45` — `extraMeta`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:45` — `Summe`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:60` — `Datum`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:61` — `Schicht`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:62` — `Beginn`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:63` — `Ende`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:64` — `Notiz`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:72` — `weekend`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:73` — `holiday`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:83` — `muted`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:101` — `muted`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:113` — `badge`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:129` — `footer`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:131` — `Summe`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:3` — `content`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:13` — `Feiertag`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:16` — `Anonymisiert`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:30` — `title`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:31` — `subtitle`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:33` — `extraMeta`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:33` — `Schichten`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:37` — `muted`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:37` — `Keine Schichten an diesem Tag.`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:39` — `Übersicht`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:50` — `Mitarbeiter`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:51` — `Schichttyp`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:52` — `Beginn`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:53` — `Ende`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:54` — `Notiz`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:63` — `badge`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:77` — `Zeitstrahl`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:92` — `timeline-row`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:93` — `timeline-name`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:94` — `timeline-bar`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:96` — `block`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:100` — `block`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:101` — `ganztägig`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:107` — `timeline-axis`
+- `resources/views/print/duty_plan_a4_day_briefing.blade.php:115` — `footer`
+- `resources/views/print/_header.blade.php:8` — `header`
+- `resources/views/print/_header.blade.php:10` — `title`
+- `resources/views/print/_header.blade.php:12` — `subtitle`
+- `resources/views/print/_header.blade.php:15` — `meta`
+- `resources/views/print/_header.blade.php:19` — `Erstellt am`
+- `resources/views/print/duty_plan_a4_week.blade.php:3` — `content`
+- `resources/views/print/duty_plan_a4_week.blade.php:17` — `title`
+- `resources/views/print/duty_plan_a4_week.blade.php:18` — `subtitle`
+- `resources/views/print/duty_plan_a4_week.blade.php:18` — `Anonymisiert`
+- `resources/views/print/duty_plan_a4_week.blade.php:20` — `extraMeta`
+- `resources/views/print/duty_plan_a4_week.blade.php:24` — `muted`
+- `resources/views/print/duty_plan_a4_week.blade.php:24` — `Keine Schichten in dieser Woche.`
+- `resources/views/print/duty_plan_a4_week.blade.php:35` — `Mitarbeiter`
+- `resources/views/print/duty_plan_a4_week.blade.php:40` — `weekend center`
+- `resources/views/print/duty_plan_a4_week.blade.php:40` — `center`
+- `resources/views/print/duty_plan_a4_week.blade.php:41` — `holiday center`
+- `resources/views/print/duty_plan_a4_week.blade.php:45` — `small`
+- `resources/views/print/duty_plan_a4_week.blade.php:48` — `small muted`
+- `resources/views/print/duty_plan_a4_week.blade.php:62` — `weekend`
+- `resources/views/print/duty_plan_a4_week.blade.php:63` — `holiday`
+- `resources/views/print/duty_plan_a4_week.blade.php:76` — `badge`
+- `resources/views/print/duty_plan_a4_week.blade.php:77` — `small`
+- `resources/views/print/duty_plan_a4_week.blade.php:88` — `legend`
+- `resources/views/print/duty_plan_a4_week.blade.php:89` — `Legende`
+- `resources/views/print/duty_plan_a4_week.blade.php:91` — `badge`
+- `resources/views/print/duty_plan_a4_week.blade.php:97` — `footer`
+- `resources/views/print/duty_plan_a3_roster.blade.php:3` — `content`
+- `resources/views/print/duty_plan_a3_roster.blade.php:15` — `Zeitraum`
+- `resources/views/print/duty_plan_a3_roster.blade.php:19` — `Mitarbeiter`
+- `resources/views/print/duty_plan_a3_roster.blade.php:24` — `title`
+- `resources/views/print/duty_plan_a3_roster.blade.php:25` — `subtitle`
+- `resources/views/print/duty_plan_a3_roster.blade.php:25` — `Anonymisierte Variante`
+- `resources/views/print/duty_plan_a3_roster.blade.php:27` — `extraMeta`
+- `resources/views/print/duty_plan_a3_roster.blade.php:31` — `muted`
+- `resources/views/print/duty_plan_a3_roster.blade.php:31` — `Keine Schichten in diesem Plan.`
+- `resources/views/print/duty_plan_a3_roster.blade.php:46` — `Mitarbeiter`
+- `resources/views/print/duty_plan_a3_roster.blade.php:51` — `weekend center`
+- `resources/views/print/duty_plan_a3_roster.blade.php:51` — `center`
+- `resources/views/print/duty_plan_a3_roster.blade.php:52` — `holiday center`
+- `resources/views/print/duty_plan_a3_roster.blade.php:56` — `small`
+- `resources/views/print/duty_plan_a3_roster.blade.php:72` — `weekend center`
+- `resources/views/print/duty_plan_a3_roster.blade.php:72` — `center`
+- `resources/views/print/duty_plan_a3_roster.blade.php:73` — `holiday center`
+- `resources/views/print/duty_plan_a3_roster.blade.php:83` — `badge`
+- `resources/views/print/duty_plan_a3_roster.blade.php:93` — `legend`
+- `resources/views/print/duty_plan_a3_roster.blade.php:94` — `Legende`
+- `resources/views/print/duty_plan_a3_roster.blade.php:96` — `badge`
+- `resources/views/print/duty_plan_a3_roster.blade.php:104` — `dutyPlan`
+- `resources/views/print/duty_plan_a3_roster.blade.php:104` — `compact`
+- `resources/views/print/duty_plan_a3_roster.blade.php:104` — `forPrint`
+- `resources/views/print/duty_plan_a3_roster.blade.php:108` — `footer`
+- `resources/views/print/vacation_year_a4.blade.php:3` — `content`
+- `resources/views/print/vacation_year_a4.blade.php:16` — `A' approved, 'P' pending, '`
+- `resources/views/print/vacation_year_a4.blade.php:30` — `title`
+- `resources/views/print/vacation_year_a4.blade.php:31` — `subtitle`
+- `resources/views/print/vacation_year_a4.blade.php:36` — `muted`
+- `resources/views/print/vacation_year_a4.blade.php:36` — `year`
+- `resources/views/print/vacation_year_a4.blade.php:59` — `weekend center small`
+- `resources/views/print/vacation_year_a4.blade.php:59` — `center small`
+- `resources/views/print/vacation_year_a4.blade.php:60` — `holiday center small`
+- `resources/views/print/vacation_year_a4.blade.php:76` — `weekend center`
+- `resources/views/print/vacation_year_a4.blade.php:76` — `center`
+- `resources/views/print/vacation_year_a4.blade.php:77` — `holiday center`
+- `resources/views/print/vacation_year_a4.blade.php:80` — `A' ? `
+- `resources/views/print/vacation_year_a4.blade.php:80` — `P' ? `
+- `resources/views/print/vacation_year_a4.blade.php:92` — `legend`
+- `resources/views/print/vacation_year_a4.blade.php:94` — `badge`
+- `resources/views/print/vacation_year_a4.blade.php:95` — `badge`
+- `resources/views/print/vacation_year_a4.blade.php:96` — `badge`
+- `resources/views/print/vacation_year_a4.blade.php:97` — `badge`
+- `resources/views/print/vacation_year_a4.blade.php:101` — `footer`
+- `resources/views/print/vacation_year_a4.blade.php:102` — `Urlaubsübersicht`
+- `resources/views/today/show.blade.php:2` — `title`
+- `resources/views/today/show.blade.php:2` — `Heute`
+- `resources/views/today/show.blade.php:3` — `nav-title`
+- `resources/views/today/show.blade.php:3` — `Heute`
+- `resources/views/today/show.blade.php:25` — `content`
+- `resources/views/today/show.blade.php:28` — `flex flex-wrap items-end justify-between gap-3`
+- `resources/views/today/show.blade.php:30` — `Heute`
+- `resources/views/today/show.blade.php:31` — `l, d.m.Y`
+- `resources/views/today/show.blade.php:33` — `flex flex-wrap gap-2`
+- `resources/views/today/show.blade.php:34` — `admin-time-entries.create`
+- `resources/views/today/show.blade.php:34` — `date`
+- `resources/views/today/show.blade.php:34` — `btn btn-sm btn-primary`
+- `resources/views/today/show.blade.php:34` — `Verwaltungszeit`
+- `resources/views/today/show.blade.php:35` — `date`
+- `resources/views/today/show.blade.php:35` — `btn btn-sm btn-ghost`
+- `resources/views/today/show.blade.php:35` — `Vortag`
+- `resources/views/today/show.blade.php:36` — `btn btn-sm btn-ghost`
+- `resources/views/today/show.blade.php:36` — `Heute`
+- `resources/views/today/show.blade.php:37` — `date`
+- `resources/views/today/show.blade.php:37` — `btn btn-sm btn-ghost`
+- `resources/views/today/show.blade.php:37` — `Folgetag`
+- `resources/views/today/show.blade.php:38` — `btn btn-sm btn-ghost`
+- `resources/views/today/show.blade.php:38` — `badge`
+- `resources/views/today/show.blade.php:38` — `Stempelungen`
+- `resources/views/today/show.blade.php:42` — `success`
+- `resources/views/today/show.blade.php:42` — `alert alert-success`
+- `resources/views/today/show.blade.php:42` — `success`
+- `resources/views/today/show.blade.php:43` — `error`
+- `resources/views/today/show.blade.php:43` — `alert alert-error`
+- `resources/views/today/show.blade.php:43` — `error`
+- `resources/views/today/show.blade.php:47` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/today/show.blade.php:48` — `Soll`
+- `resources/views/today/show.blade.php:52` — `Anwesenheit`
+- `resources/views/today/show.blade.php:56` — `Erfasst`
+- `resources/views/today/show.blade.php:59` — `border-base-300 bg-base-100`
+- `resources/views/today/show.blade.php:60` — `Unverteilt`
+- `resources/views/today/show.blade.php:65` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/today/show.blade.php:66` — `flex flex-wrap items-center justify-between gap-2`
+- `resources/views/today/show.blade.php:67` — `Tagesfortschritt`
+- `resources/views/today/show.blade.php:68` — `Saldo`
+- `resources/views/today/show.blade.php:68` — `text-success`
+- `resources/views/today/show.blade.php:68` — `text-error`
+- `resources/views/today/show.blade.php:70` — `progress-success`
+- `resources/views/today/show.blade.php:70` — `progress-warning`
+- `resources/views/today/show.blade.php:75` — `current`
+- `resources/views/today/show.blade.php:78` — `rounded-box border border-base-300 bg-base-100 p-4 shadow-xs`
+- `resources/views/today/show.blade.php:79` — `Aufteilung nach Tätigkeit`
+- `resources/views/today/show.blade.php:80` — `mt-2 space-y-1 text-sm`
+- `resources/views/today/show.blade.php:82` — `flex items-center justify-between gap-2`
+- `resources/views/today/show.blade.php:83` — `capitalize`
+- `resources/views/today/show.blade.php:83` — `unbekannt`
+- `resources/views/today/show.blade.php:84` — `minutes`
+- `resources/views/today/show.blade.php:84` — `count`
+- `resources/views/today/show.blade.php:93` — `rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/today/show.blade.php:94` — `flex items-center justify-between gap-2 border-b border-base-300 p-3`
+- `resources/views/today/show.blade.php:95` — `Stempelungen`
+- `resources/views/today/show.blade.php:98` — `overflow-x-auto`
+- `resources/views/today/show.blade.php:99` — `table table-sm`
+- `resources/views/today/show.blade.php:101` — `Beginn`
+- `resources/views/today/show.blade.php:101` — `Ende`
+- `resources/views/today/show.blade.php:101` — `text-right`
+- `resources/views/today/show.blade.php:101` — `Pause`
+- `resources/views/today/show.blade.php:101` — `text-right`
+- `resources/views/today/show.blade.php:101` — `Dauer`
+- `resources/views/today/show.blade.php:101` — `Status`
+- `resources/views/today/show.blade.php:106` — `tabular-nums`
+- `resources/views/today/show.blade.php:107` — `tabular-nums`
+- `resources/views/today/show.blade.php:108` — `text-right tabular-nums`
+- `resources/views/today/show.blade.php:109` — `text-right tabular-nums`
+- `resources/views/today/show.blade.php:110` — `badge-success`
+- `resources/views/today/show.blade.php:110` — `badge-ghost`
+- `resources/views/today/show.blade.php:113` — `Noch keine Stempelung heute.`
+- `resources/views/today/show.blade.php:120` — `rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/today/show.blade.php:121` — `flex items-center justify-between gap-2 border-b border-base-300 p-3`
+- `resources/views/today/show.blade.php:122` — `Zeiteinträge`
+- `resources/views/today/show.blade.php:125` — `overflow-x-auto`
+- `resources/views/today/show.blade.php:126` — `table table-sm`
+- `resources/views/today/show.blade.php:128` — `Zeit`
+- `resources/views/today/show.blade.php:128` — `Tätigkeit`
+- `resources/views/today/show.blade.php:128` — `text-right`
+- `resources/views/today/show.blade.php:128` — `Min.`
+- `resources/views/today/show.blade.php:133` — `tabular-nums text-xs`
+- `resources/views/today/show.blade.php:141` — `badge badge-sm badge-ghost capitalize`
+- `resources/views/today/show.blade.php:143` — `text-sm`
+- `resources/views/today/show.blade.php:145` — `font-medium`
+- `resources/views/today/show.blade.php:153` — `text-right tabular-nums`
+- `resources/views/today/show.blade.php:156` — `Noch keine Einträge heute.`
+- `resources/views/schedule/partials/_month_matrix.blade.php:23` — `date`
+- `resources/views/schedule/partials/_month_matrix.blade.php:25` — `isToday`
+- `resources/views/schedule/partials/_month_matrix.blade.php:26` — `isWeekend`
+- `resources/views/schedule/partials/_month_matrix.blade.php:27` — `isSunday`
+- `resources/views/schedule/partials/_month_matrix.blade.php:28` — `isHoliday`
+- `resources/views/schedule/partials/_month_matrix.blade.php:29` — `holidayName`
+- `resources/views/schedule/partials/_month_matrix.blade.php:30` — `inMonth`
+- `resources/views/schedule/partials/_month_matrix.blade.php:39` — `schedule-month-matrix w-full`
+- `resources/views/schedule/partials/_month_matrix.blade.php:53` — `date`
+- `resources/views/schedule/partials/_month_matrix.blade.php:59` — `inMonth`
+- `resources/views/schedule/partials/_month_matrix.blade.php:61` — `isHoliday`
+- `resources/views/schedule/partials/_month_matrix.blade.php:63` — `isToday`
+- `resources/views/schedule/partials/_month_matrix.blade.php:65` — `isWeekend`
+- `resources/views/schedule/partials/_month_matrix.blade.php:72` — `inMonth`
+- `resources/views/schedule/partials/_month_matrix.blade.php:73` — `inMonth`
+- `resources/views/schedule/partials/_month_matrix.blade.php:75` — `date`
+- `resources/views/schedule/partials/_month_matrix.blade.php:77` — `date`
+- `resources/views/schedule/partials/_month_matrix.blade.php:79` — `date`
+- `resources/views/schedule/partials/_month_matrix.blade.php:83` — `isToday`
+- `resources/views/schedule/partials/_month_matrix.blade.php:83` — `flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-content`
+- `resources/views/schedule/partials/_month_matrix.blade.php:83` — `inMonth`
+- `resources/views/schedule/partials/_month_matrix.blade.php:83` — `isSunday`
+- `resources/views/schedule/partials/_month_matrix.blade.php:83` — `text-error font-semibold`
+- `resources/views/schedule/partials/_month_matrix.blade.php:87` — `isHoliday`
+- `resources/views/schedule/partials/_month_matrix.blade.php:88` — `holidayName`
+- `resources/views/schedule/partials/_month_matrix.blade.php:89` — `holidayName`
+- `resources/views/schedule/partials/_month_matrix.blade.php:97` — `messages`
+- `resources/views/schedule/partials/_month_matrix.blade.php:103` — `true`
+- `resources/views/schedule/partials/_month_matrix.blade.php:107` — `Schicht`
+- `resources/views/schedule/partials/_month_matrix.blade.php:110` — `font-normal opacity-80`
+- `resources/views/schedule/partials/_month_matrix.blade.php:113` — `severity`
+- `resources/views/schedule/partials/_month_matrix.blade.php:113` — `error' ? 'text-error`
+- `resources/views/schedule/partials/_month_matrix.blade.php:113` — `text-warning`
+- `resources/views/schedule/partials/_month_matrix.blade.php:113` — `true`
+- `resources/views/schedule/partials/_month_matrix.blade.php:119` — `mehr`
+- `resources/views/schedule/partials/_month_matrix.blade.php:123` — `date`
+- `resources/views/schedule/partials/_month_matrix.blade.php:125` — `missing`
+- `resources/views/schedule/partials/_month_matrix.blade.php:126` — `button`
+- `resources/views/schedule/partials/_month_matrix.blade.php:127` — `inMonth`
+- `resources/views/schedule/partials/_month_matrix.blade.php:128` — `date`
+- `resources/views/schedule/partials/_month_matrix.blade.php:132` — `inMonth`
+- `resources/views/schedule/partials/_month_matrix.blade.php:133` — `color`
+- `resources/views/schedule/partials/_month_matrix.blade.php:133` — `color`
+- `resources/views/schedule/partials/_month_matrix.blade.php:134` — `Offene Schicht`
+- `resources/views/schedule/partials/_month_matrix.blade.php:134` — `name`
+- `resources/views/schedule/partials/_month_matrix.blade.php:135` — `abbreviation`
+- `resources/views/schedule/partials/_month_matrix.blade.php:142` — `inMonth`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:2` — `shift-type-manager`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:3` — `false`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:5` — `primary`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:6` — `sync`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:7` — `Schichttypen verwalten`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:8` — `Schichtplan`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:11` — `Vorhandene Schichttypen`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:11` — `list`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:11` — `primary`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:12` — `overflow-x-auto rounded-box border border-base-300`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:13` — `table table-sm w-full`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:17` — `Kürzel`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:18` — `Name`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:21` — `Aktiv`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:25` — `shift-type-table-body`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:29` — `inline-block h-4 w-4 rounded`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:31` — `font-mono font-bold`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:36` — `badge-success`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:36` — `badge-ghost`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:37` — `nein`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:40` — `text-right`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:41` — `button`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:43` — `btn btn-xs btn-ghost`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:43` — `Bearbeiten`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:44` — `button`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:46` — `btn btn-xs btn-ghost text-error`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:46` — `Löschen`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:50` — `Noch keine Schichttypen angelegt.`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:58` — `shift-type-form-group`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:58` — `Neuen Schichttyp anlegen`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:58` — `success`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:58` — `mt-4`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:59` — `shift-type-form-title`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:59` — `text-sm font-semibold`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:59` — `Neuen Schichttyp anlegen`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:61` — `shift-type-form`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:61` — `space-y-3`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:62` — `hidden`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:62` — `shift-type-id`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:64` — `flex flex-wrap items-center gap-3`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:65` — `flex cursor-pointer items-center gap-1.5 text-sm`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:66` — `Farbe`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:67` — `color`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:67` — `shift-type-color`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:67` — `color`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:68` — `h-7 w-9 cursor-pointer rounded border border-base-300 p-0.5`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:70` — `flex cursor-pointer items-center gap-2 text-sm`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:71` — `Aktiv`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:72` — `checkbox`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:72` — `shift-type-active`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:72` — `toggle toggle-primary toggle-sm`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:77` — `fieldset`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:78` — `fieldset-label`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:78` — `Name`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:79` — `text`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:79` — `shift-type-name`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:79` — `name`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:80` — `input input-bordered w-full`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:80` — `z.B. Frühschicht`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:82` — `fieldset`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:83` — `fieldset-label`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:83` — `Kürzel`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:84` — `text`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:84` — `shift-type-abbr`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:84` — `abbreviation`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:85` — `input input-bordered w-full font-mono uppercase`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:85` — `z.B. F`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:88` — `fieldset-label`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:89` — `join w-full`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:90` — `time`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:90` — `shift-type-start`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:91` — `join-item input input-bordered flex-1 min-w-0`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:93` — `time`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:93` — `shift-type-end`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:94` — `join-item input input-bordered flex-1 min-w-0`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:100` — `shift-type-error`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:100` — `alert alert-error alert-sm hidden text-sm`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:102` — `flex justify-between`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:103` — `button`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:103` — `shift-type-reset`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:103` — `btn btn-sm btn-ghost`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:103` — `Zurücksetzen`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:104` — `submit`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:104` — `shift-type-save`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:104` — `btn btn-sm btn-primary`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:104` — `Speichern`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:112` — `DOMContentLoaded`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:113` — `btn-open-type-manager`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:113` — `click`
+- `resources/views/schedule/partials/_shift_type_manager.blade.php:114` — `shift-type-manager`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:2` — `shift-dialog`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:3` — `false`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:5` — `primary`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:6` — `event`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:7` — `Schichtplan`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:8` — `Schicht anlegen`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:9` — `shift-dialog-title`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:11` — `shift-dialog-form`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:11` — `space-y-4`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:12` — `hidden`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:12` — `shift-dialog-id`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:15` — `Zuordnung`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:15` — `person`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:15` — `primary`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:17` — `fieldset`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:18` — `fieldset-label`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:18` — `Mitarbeiter`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:19` — `shift-dialog-user`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:19` — `select select-bordered w-full`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:26` — `hidden`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:26` — `shift-dialog-user`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:29` — `fieldset`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:30` — `fieldset-label`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:30` — `Datum`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:31` — `date`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:31` — `shift-dialog-date`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:31` — `date`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:31` — `input input-bordered w-full`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:36` — `Schicht`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:36` — `schedule`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:36` — `info`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:37` — `fieldset`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:38` — `fieldset-label`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:38` — `Schichttyp`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:39` — `shift-dialog-type`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:39` — `select select-bordered w-full`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:40` — `kein Typ`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:48` — `time`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:51` — `shift-dialog-start`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:52` — `shift-dialog-end`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:57` — `w-full`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:62` — `Details`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:62` — `description`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:62` — `ghost`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:63` — `fieldset`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:64` — `fieldset-label`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:64` — `Notiz`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:65` — `shift-dialog-note`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:65` — `note`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:66` — `textarea textarea-bordered w-full resize-none`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:69` — `shift-dialog-status-row`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:69` — `hidden`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:70` — `fieldset`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:71` — `fieldset-label`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:71` — `Status`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:72` — `shift-dialog-status`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:72` — `status`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:72` — `select select-bordered w-full`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:74` — `status`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:81` — `shift-dialog-error`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:81` — `alert alert-error alert-sm hidden text-sm`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:83` — `shift-dialog-compliance`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:83` — `alert alert-warning alert-sm hidden flex-col items-start gap-2 text-sm`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:84` — `font-semibold`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:84` — `Compliance-Hinweise`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:85` — `shift-dialog-compliance-list`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:85` — `list-disc list-inside space-y-1`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:86` — `cursor-pointer label justify-start gap-2 hidden`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:86` — `shift-dialog-override-row`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:87` — `checkbox`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:87` — `shift-dialog-override`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:87` — `checkbox checkbox-sm`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:88` — `label-text`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:94` — `button`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:94` — `shift-dialog-delete`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:94` — `btn btn-sm btn-error btn-outline gap-2 hidden`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:95` — `delete`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:95` — `Löschen`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:100` — `button`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:100` — `shift-dialog-publish`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:100` — `btn btn-sm btn-info gap-2 hidden`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:101` — `publish`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:101` — `Veröffentlichen`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:103` — `button`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:103` — `shift-dialog-confirm`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:103` — `btn btn-sm btn-success gap-2 hidden`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:104` — `Bestätigen`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:106` — `button`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:106` — `btn btn-sm btn-ghost gap-2`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:107` — `close`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:107` — `Abbrechen`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:109` — `submit`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:109` — `shift-dialog-form`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:109` — `shift-dialog-save`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:109` — `btn btn-sm btn-primary gap-2`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:110` — `check`
+- `resources/views/schedule/partials/_shift_dialog.blade.php:110` — `Speichern`
+- `resources/views/schedule/partials/_week_matrix.blade.php:17` — `date`
+- `resources/views/schedule/partials/_week_matrix.blade.php:18` — `label`
+- `resources/views/schedule/partials/_week_matrix.blade.php:18` — `D d.m.`
+- `resources/views/schedule/partials/_week_matrix.blade.php:19` — `isToday`
+- `resources/views/schedule/partials/_week_matrix.blade.php:20` — `isWeekend`
+- `resources/views/schedule/partials/_week_matrix.blade.php:21` — `isSunday`
+- `resources/views/schedule/partials/_week_matrix.blade.php:22` — `isHoliday`
+- `resources/views/schedule/partials/_week_matrix.blade.php:23` — `holidayName`
+- `resources/views/schedule/partials/_week_matrix.blade.php:34` — `schedule-matrix w-full select-none`
+- `resources/views/schedule/partials/_week_matrix.blade.php:37` — `sticky top-0 z-20 flex border-b border-base-300 bg-base-100 shadow-xs`
+- `resources/views/schedule/partials/_week_matrix.blade.php:39` — `Mitarbeiter`
+- `resources/views/schedule/partials/_week_matrix.blade.php:43` — `isToday`
+- `resources/views/schedule/partials/_week_matrix.blade.php:45` — `isSunday`
+- `resources/views/schedule/partials/_week_matrix.blade.php:47` — `isWeekend`
+- `resources/views/schedule/partials/_week_matrix.blade.php:52` — `isHoliday`
+- `resources/views/schedule/partials/_week_matrix.blade.php:55` — `label`
+- `resources/views/schedule/partials/_week_matrix.blade.php:56` — `isHoliday`
+- `resources/views/schedule/partials/_week_matrix.blade.php:57` — `holidayName`
+- `resources/views/schedule/partials/_week_matrix.blade.php:58` — `holidayName`
+- `resources/views/schedule/partials/_week_matrix.blade.php:71` — `sticky left-0 z-10 flex w-36 shrink-0 items-center border-r border-base-300 bg-base-100 px-3 py-2 text-sm font-medium`
+- `resources/views/schedule/partials/_week_matrix.blade.php:72` — `truncate`
+- `resources/views/schedule/partials/_week_matrix.blade.php:78` — `date`
+- `resources/views/schedule/partials/_week_matrix.blade.php:79` — `isToday`
+- `resources/views/schedule/partials/_week_matrix.blade.php:81` — `isWeekend`
+- `resources/views/schedule/partials/_week_matrix.blade.php:86` — `isHoliday`
+- `resources/views/schedule/partials/_week_matrix.blade.php:87` — `cursor-pointer`
+- `resources/views/schedule/partials/_week_matrix.blade.php:92` — `date`
+- `resources/views/schedule/partials/_week_matrix.blade.php:94` — `date`
+- `resources/views/schedule/partials/_week_matrix.blade.php:96` — `date`
+- `resources/views/schedule/partials/_week_matrix.blade.php:103` — `messages`
+- `resources/views/schedule/partials/_week_matrix.blade.php:109` — `true`
+- `resources/views/schedule/partials/_week_matrix.blade.php:113` — `Schicht`
+- `resources/views/schedule/partials/_week_matrix.blade.php:116` — `font-normal opacity-80`
+- `resources/views/schedule/partials/_week_matrix.blade.php:119` — `severity`
+- `resources/views/schedule/partials/_week_matrix.blade.php:119` — `error' ? 'text-error`
+- `resources/views/schedule/partials/_week_matrix.blade.php:119` — `text-warning`
+- `resources/views/schedule/partials/_week_matrix.blade.php:119` — `true`
+- `resources/views/schedule/partials/_week_matrix.blade.php:132` — `Keine Schichten in diesem Zeitraum.`
+- `resources/views/schedule/partials/_week_matrix.blade.php:137` — `date`
+- `resources/views/schedule/partials/_week_matrix.blade.php:142` — `Offen`
+- `resources/views/schedule/partials/_week_matrix.blade.php:145` — `date`
+- `resources/views/schedule/partials/_week_matrix.blade.php:146` — `schedule-cell relative min-h-12 min-w-32 flex-1 border-r border-base-300 p-1`
+- `resources/views/schedule/partials/_week_matrix.blade.php:148` — `missing`
+- `resources/views/schedule/partials/_week_matrix.blade.php:149` — `button`
+- `resources/views/schedule/partials/_week_matrix.blade.php:151` — `date`
+- `resources/views/schedule/partials/_week_matrix.blade.php:156` — `color`
+- `resources/views/schedule/partials/_week_matrix.blade.php:156` — `color`
+- `resources/views/schedule/partials/_week_matrix.blade.php:157` — `Offene Schicht`
+- `resources/views/schedule/partials/_week_matrix.blade.php:157` — `name`
+- `resources/views/schedule/partials/_week_matrix.blade.php:158` — `abbreviation`
+- `resources/views/schedule/index.blade.php:2` — `title`
+- `resources/views/schedule/index.blade.php:2` — `Schichtplan`
+- `resources/views/schedule/index.blade.php:3` — `nav-title`
+- `resources/views/schedule/index.blade.php:3` — `Schichtplan`
+- `resources/views/schedule/index.blade.php:5` — `content`
+- `resources/views/schedule/index.blade.php:20` — `month`
+- `resources/views/schedule/index.blade.php:28` — `bg-base-100!`
+- `resources/views/schedule/index.blade.php:29` — `hidden`
+- `resources/views/schedule/index.blade.php:29` — `view`
+- `resources/views/schedule/index.blade.php:34` — `join`
+- `resources/views/schedule/index.blade.php:35` — `view`
+- `resources/views/schedule/index.blade.php:35` — `week', 'user`
+- `resources/views/schedule/index.blade.php:36` — `week' ? 'btn-primary`
+- `resources/views/schedule/index.blade.php:36` — `btn-ghost`
+- `resources/views/schedule/index.blade.php:36` — `Woche`
+- `resources/views/schedule/index.blade.php:37` — `view`
+- `resources/views/schedule/index.blade.php:37` — `month', 'user`
+- `resources/views/schedule/index.blade.php:38` — `month' ? 'btn-primary`
+- `resources/views/schedule/index.blade.php:38` — `btn-ghost`
+- `resources/views/schedule/index.blade.php:38` — `Monat`
+- `resources/views/schedule/index.blade.php:42` — `user`
+- `resources/views/schedule/index.blade.php:43` — `Alle Mitarbeiter`
+- `resources/views/schedule/index.blade.php:50` — `view`
+- `resources/views/schedule/index.blade.php:50` — `btn btn-sm btn-ghost`
+- `resources/views/schedule/index.blade.php:50` — `Zurücksetzen`
+- `resources/views/schedule/index.blade.php:54` — `ml-auto flex flex-wrap items-center gap-2`
+- `resources/views/schedule/index.blade.php:55` — `button`
+- `resources/views/schedule/index.blade.php:55` — `btn-open-type-manager`
+- `resources/views/schedule/index.blade.php:55` — `btn btn-sm btn-ghost`
+- `resources/views/schedule/index.blade.php:55` — `Schichttypen`
+- `resources/views/schedule/index.blade.php:56` — `btn btn-sm btn-ghost`
+- `resources/views/schedule/index.blade.php:56` — `Import`
+- `resources/views/schedule/index.blade.php:57` — `dropdown dropdown-end`
+- `resources/views/schedule/index.blade.php:58` — `btn btn-sm btn-ghost`
+- `resources/views/schedule/index.blade.php:58` — `Drucken`
+- `resources/views/schedule/index.blade.php:59` — `menu dropdown-content z-1 mt-2 w-72 rounded-box bg-base-100 p-2 shadow`
+- `resources/views/schedule/index.blade.php:60` — `menu-title`
+- `resources/views/schedule/index.blade.php:60` — `Übersichten`
+- `resources/views/schedule/index.blade.php:61` — `print.on-call`
+- `resources/views/schedule/index.blade.php:62` — `year`
+- `resources/views/schedule/index.blade.php:62` — `Urlaubsübersicht `
+- `resources/views/schedule/index.blade.php:70` — `success`
+- `resources/views/schedule/index.blade.php:71` — `alert alert-success alert-sm my-2 py-2`
+- `resources/views/schedule/index.blade.php:71` — `success`
+- `resources/views/schedule/index.blade.php:74` — `alert alert-warning alert-sm my-2 py-2`
+- `resources/views/schedule/index.blade.php:75` — `list-disc pl-4 text-xs`
+- `resources/views/schedule/index.blade.php:84` — `min-h-0 flex-1 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs`
+- `resources/views/schedule/index.blade.php:85` — `month`
+- `resources/views/schedule/index.blade.php:104` — `true`
+- `resources/views/schedule/index.blade.php:104` — `false`
+- `resources/views/schedule/import/index.blade.php:2` — `title`
+- `resources/views/schedule/import/index.blade.php:2` — `Schichtplan importieren`
+- `resources/views/schedule/import/index.blade.php:3` — `nav-title`
+- `resources/views/schedule/import/index.blade.php:3` — `Schichtplan Import`
+- `resources/views/schedule/import/index.blade.php:5` — `content`
+- `resources/views/schedule/import/index.blade.php:6` — `w-full px-4 py-8`
+- `resources/views/schedule/import/index.blade.php:8` — `mb-6 flex items-center gap-3`
+- `resources/views/schedule/import/index.blade.php:9` — `btn btn-sm btn-ghost`
+- `resources/views/schedule/import/index.blade.php:9` — `Zurück`
+- `resources/views/schedule/import/index.blade.php:12` — `error`
+- `resources/views/schedule/import/index.blade.php:13` — `alert alert-error mb-4`
+- `resources/views/schedule/import/index.blade.php:13` — `error`
+- `resources/views/schedule/import/index.blade.php:16` — `card bg-base-100 shadow-sm border border-base-300`
+- `resources/views/schedule/import/index.blade.php:17` — `card-body`
+- `resources/views/schedule/import/index.blade.php:18` — `card-title text-base`
+- `resources/views/schedule/import/index.blade.php:18` — `CSV oder Excel-Datei hochladen`
+- `resources/views/schedule/import/index.blade.php:21` — `Die erste Zeile muss Spaltenköpfe enthalten.`
+- `resources/views/schedule/import/index.blade.php:27` — `form-control mb-4`
+- `resources/views/schedule/import/index.blade.php:28` — `label`
+- `resources/views/schedule/import/index.blade.php:28` — `label-text`
+- `resources/views/schedule/import/index.blade.php:28` — `Datei auswählen`
+- `resources/views/schedule/import/index.blade.php:29` — `file`
+- `resources/views/schedule/import/index.blade.php:29` — `file`
+- `resources/views/schedule/import/index.blade.php:30` — `file`
+- `resources/views/schedule/import/index.blade.php:32` — `file`
+- `resources/views/schedule/import/index.blade.php:33` — `label`
+- `resources/views/schedule/import/index.blade.php:33` — `label-text-alt text-error`
+- `resources/views/schedule/import/index.blade.php:37` — `form-control mb-6`
+- `resources/views/schedule/import/index.blade.php:38` — `label`
+- `resources/views/schedule/import/index.blade.php:39` — `label-text`
+- `resources/views/schedule/import/index.blade.php:39` — `Standard-Status für importierte Schichten`
+- `resources/views/schedule/import/index.blade.php:41` — `select select-bordered w-full`
+- `resources/views/schedule/import/index.blade.php:43` — `draft`
+- `resources/views/schedule/import/index.blade.php:48` — `card-actions justify-end`
+- `resources/views/schedule/import/index.blade.php:49` — `submit`
+- `resources/views/schedule/import/index.blade.php:49` — `btn btn-primary`
+- `resources/views/schedule/import/index.blade.php:56` — `mb-2 font-semibold`
+- `resources/views/schedule/import/index.blade.php:56` — `Hinweise zum Format`
+- `resources/views/schedule/import/index.blade.php:62` — `Im nächsten Schritt können die Spalten gemappt werden.`
+- `resources/views/schedule/import/preview.blade.php:2` — `title`
+- `resources/views/schedule/import/preview.blade.php:2` — `Import-Vorschau`
+- `resources/views/schedule/import/preview.blade.php:3` — `nav-title`
+- `resources/views/schedule/import/preview.blade.php:5` — `content`
+- `resources/views/schedule/import/preview.blade.php:6` — `w-full px-4 py-8`
+- `resources/views/schedule/import/preview.blade.php:8` — `mb-4 flex items-center gap-3`
+- `resources/views/schedule/import/preview.blade.php:9` — `btn btn-sm btn-ghost`
+- `resources/views/schedule/import/preview.blade.php:9` — `Zurück`
+- `resources/views/schedule/import/preview.blade.php:15` — `font-medium`
+- `resources/views/schedule/import/preview.blade.php:17` — `Zeilen erkannt`
+- `resources/views/schedule/import/preview.blade.php:21` — `mb-6 overflow-x-auto rounded-box border border-base-300`
+- `resources/views/schedule/import/preview.blade.php:22` — `table table-sm w-full`
+- `resources/views/schedule/import/preview.blade.php:26` — `bg-base-200 font-mono text-xs`
+- `resources/views/schedule/import/preview.blade.php:41` — `weitere Zeilen`
+- `resources/views/schedule/import/preview.blade.php:46` — `card bg-base-100 shadow-sm border border-base-300`
+- `resources/views/schedule/import/preview.blade.php:48` — `hidden`
+- `resources/views/schedule/import/preview.blade.php:49` — `hidden`
+- `resources/views/schedule/import/preview.blade.php:51` — `card-body`
+- `resources/views/schedule/import/preview.blade.php:52` — `card-title text-base mb-4`
+- `resources/views/schedule/import/preview.blade.php:52` — `Welche Spalte enthält was?`
+- `resources/views/schedule/import/preview.blade.php:57` — `form-control`
+- `resources/views/schedule/import/preview.blade.php:58` — `label`
+- `resources/views/schedule/import/preview.blade.php:58` — `label-text font-medium`
+- `resources/views/schedule/import/preview.blade.php:58` — `Datum`
+- `resources/views/schedule/import/preview.blade.php:59` — `select select-bordered select-sm`
+- `resources/views/schedule/import/preview.blade.php:60` — `Spalte wählen`
+- `resources/views/schedule/import/preview.blade.php:62` — `datum`
+- `resources/views/schedule/import/preview.blade.php:62` — `date`
+- `resources/views/schedule/import/preview.blade.php:68` — `form-control`
+- `resources/views/schedule/import/preview.blade.php:69` — `label`
+- `resources/views/schedule/import/preview.blade.php:69` — `label-text font-medium`
+- `resources/views/schedule/import/preview.blade.php:69` — `Mitarbeiter`
+- `resources/views/schedule/import/preview.blade.php:70` — `select select-bordered select-sm`
+- `resources/views/schedule/import/preview.blade.php:71` — `Spalte wählen`
+- `resources/views/schedule/import/preview.blade.php:73` — `name`
+- `resources/views/schedule/import/preview.blade.php:73` — `user`
+- `resources/views/schedule/import/preview.blade.php:73` — `mitarbeiter`
+- `resources/views/schedule/import/preview.blade.php:79` — `form-control`
+- `resources/views/schedule/import/preview.blade.php:80` — `label`
+- `resources/views/schedule/import/preview.blade.php:80` — `label-text`
+- `resources/views/schedule/import/preview.blade.php:80` — `Schichttyp`
+- `resources/views/schedule/import/preview.blade.php:81` — `select select-bordered select-sm`
+- `resources/views/schedule/import/preview.blade.php:82` — `nicht vorhanden`
+- `resources/views/schedule/import/preview.blade.php:84` — `schicht`
+- `resources/views/schedule/import/preview.blade.php:84` — `type`
+- `resources/views/schedule/import/preview.blade.php:90` — `form-control`
+- `resources/views/schedule/import/preview.blade.php:91` — `label`
+- `resources/views/schedule/import/preview.blade.php:91` — `label-text`
+- `resources/views/schedule/import/preview.blade.php:92` — `select select-bordered select-sm`
+- `resources/views/schedule/import/preview.blade.php:93` — `nicht vorhanden`
+- `resources/views/schedule/import/preview.blade.php:95` — `start`
+- `resources/views/schedule/import/preview.blade.php:95` — `beginn`
+- `resources/views/schedule/import/preview.blade.php:101` — `form-control`
+- `resources/views/schedule/import/preview.blade.php:102` — `label`
+- `resources/views/schedule/import/preview.blade.php:102` — `label-text`
+- `resources/views/schedule/import/preview.blade.php:103` — `select select-bordered select-sm`
+- `resources/views/schedule/import/preview.blade.php:104` — `nicht vorhanden`
+- `resources/views/schedule/import/preview.blade.php:106` — `ende`
+- `resources/views/schedule/import/preview.blade.php:112` — `form-control`
+- `resources/views/schedule/import/preview.blade.php:113` — `label`
+- `resources/views/schedule/import/preview.blade.php:113` — `label-text`
+- `resources/views/schedule/import/preview.blade.php:114` — `select select-bordered select-sm`
+- `resources/views/schedule/import/preview.blade.php:115` — `nicht vorhanden`
+- `resources/views/schedule/import/preview.blade.php:117` — `notiz`
+- `resources/views/schedule/import/preview.blade.php:117` — `note`
+- `resources/views/schedule/import/preview.blade.php:117` — `bemerkung`
+- `resources/views/schedule/import/preview.blade.php:124` — `card-actions mt-6 justify-between`
+- `resources/views/schedule/import/preview.blade.php:125` — `btn btn-sm btn-ghost`
+- `resources/views/schedule/import/preview.blade.php:125` — `Abbrechen`
+- `resources/views/schedule/import/preview.blade.php:126` — `submit`
+- `resources/views/schedule/import/preview.blade.php:126` — `btn btn-primary`
+- `resources/views/schedule/import/preview.blade.php:126` — `Import durchführen`
+- `resources/views/attachments/_panel.blade.php:9` — `attachments`
+- `resources/views/attachments/_panel.blade.php:9` — `rounded-box border border-base-300 bg-base-100 p-6 shadow-xs`
+- `resources/views/attachments/_panel.blade.php:10` — `Anhänge`
+- `resources/views/attachments/_panel.blade.php:12` — `space-y-2 mb-4`
+- `resources/views/attachments/_panel.blade.php:14` — `flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 p-3`
+- `resources/views/attachments/_panel.blade.php:15` — `flex min-w-0 items-center gap-3`
+- `resources/views/attachments/_panel.blade.php:16` — `text-xl`
+- `resources/views/attachments/_panel.blade.php:19` — `min-w-0`
+- `resources/views/attachments/_panel.blade.php:20` — `link link-primary text-sm break-all`
+- `resources/views/attachments/_panel.blade.php:28` — `delete`
+- `resources/views/attachments/_panel.blade.php:29` — `inline`
+- `resources/views/attachments/_panel.blade.php:31` — `Anhang löschen`
+- `resources/views/attachments/_panel.blade.php:32` — `Anhang wird dauerhaft gelöscht.`
+- `resources/views/attachments/_panel.blade.php:33` — `Löschen`
+- `resources/views/attachments/_panel.blade.php:35` — `btn btn-ghost btn-xs text-error`
+- `resources/views/attachments/_panel.blade.php:35` — `Löschen`
+- `resources/views/attachments/_panel.blade.php:40` — `Noch keine Anhänge.`
+- `resources/views/attachments/_panel.blade.php:44` — `create`
+- `resources/views/attachments/_panel.blade.php:45` — `type`
+- `resources/views/attachments/_panel.blade.php:45` — `flex flex-wrap items-center gap-2`
+- `resources/views/attachments/_panel.blade.php:47` — `file`
+- `resources/views/attachments/_panel.blade.php:47` — `file`
+- `resources/views/attachments/_panel.blade.php:47` — `file`
+- `resources/views/attachments/_panel.blade.php:48` — `submit`
+- `resources/views/attachments/_panel.blade.php:48` — `btn btn-primary btn-sm`
+- `resources/views/attachments/_panel.blade.php:48` — `Hochladen`
+- `resources/views/attachments/_panel.blade.php:49` — `file`
+- `resources/views/attachments/_panel.blade.php:49` — `basis-full text-sm text-error`
+- `resources/views/errors/database-unavailable.blade.php:4` — `UTF-8`
+- `resources/views/errors/database-unavailable.blade.php:5` — `viewport`
+- `resources/views/errors/database-unavailable.blade.php:9` — `workDiaryTheme`
+- `resources/views/errors/database-unavailable.blade.php:11` — `corporate`
+- `resources/views/errors/database-unavailable.blade.php:12` — `data-theme`
+- `resources/views/errors/database-unavailable.blade.php:13` — `corporate' ? 'light`
+- `resources/views/errors/database-unavailable.blade.php:13` — `dark`
+- `resources/views/errors/database-unavailable.blade.php:15` — `data-theme', 'corporate`
+- `resources/views/errors/database-unavailable.blade.php:19` — `Datenbank nicht erreichbar`
+- `resources/views/errors/database-unavailable.blade.php:19` — `app.name', 'WorkDiary`
+- `resources/views/errors/database-unavailable.blade.php:20` — `preconnect`
+- `resources/views/errors/database-unavailable.blade.php:21` — `stylesheet`
+- `resources/views/errors/database-unavailable.blade.php:22` — `stylesheet`
+- `resources/views/errors/database-unavailable.blade.php:25` — `Material Symbols Outlined`
+- `resources/views/errors/database-unavailable.blade.php:35` — `liga`
+- `resources/views/errors/database-unavailable.blade.php:37` — `FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz`
+- `resources/views/errors/database-unavailable.blade.php:45` — `min-h-screen bg-gradient-to-b from-base-200 to-base-300 text-base-content`
+- `resources/views/errors/database-unavailable.blade.php:46` — `IBM Plex Sans`
+- `resources/views/errors/database-unavailable.blade.php:47` — `flex min-h-screen items-center justify-center px-4`
+- `resources/views/errors/database-unavailable.blade.php:48` — `w-full max-w-lg rounded-3xl border border-base-300 bg-base-100 p-8 text-center shadow-lg`
+- `resources/views/errors/database-unavailable.blade.php:50` — `material-symbols-outlined`
+- `resources/views/errors/database-unavailable.blade.php:50` — `FILL' 1, 'wght`
+- `resources/views/errors/database-unavailable.blade.php:52` — `mb-2 text-2xl font-semibold`
+- `resources/views/errors/database-unavailable.blade.php:52` — `Space Grotesk`
+- `resources/views/errors/database-unavailable.blade.php:53` — `Datenbank vorübergehend nicht erreichbar`
+- `resources/views/errors/database-unavailable.blade.php:56` — `Wir können die Datenbank gerade nicht erreichen. Bitte versuche es in wenigen Augenblicken erneut. Falls das Problem bestehen bleibt, wende dich an deine Administration.`
+- `resources/views/errors/database-unavailable.blade.php:58` — `mt-6 flex justify-center gap-2`
+- `resources/views/errors/database-unavailable.blade.php:59` — `button`
+- `resources/views/errors/database-unavailable.blade.php:59` — `btn btn-primary btn-sm gap-1`
+- `resources/views/errors/database-unavailable.blade.php:60` — `material-symbols-outlined`
+- `resources/views/errors/database-unavailable.blade.php:61` — `Erneut versuchen`
+- `resources/views/errors/database-unavailable.blade.php:65` — `mt-6 text-left text-xs`
+- `resources/views/errors/database-unavailable.blade.php:66` — `Technische Details`
+
+## JS
+
+- `resources/js/app.js:1` — `alpinejs`
+- `resources/js/app.js:2` — `flatpickr`
+- `resources/js/app.js:14` — `default`
+- `resources/js/app.js:18` — `Y-m-d`
+- `resources/js/app.js:23` — `datetime-local`
+- `resources/js/app.js:45` — `dialog`
+- `resources/js/app.js:55` — `fixed`
+- `resources/js/app.js:80` — `Y-m-d`
+- `resources/js/app.js:85` — `datetime-local`
+- `resources/js/app.js:110` — `value`
+- `resources/js/app.js:155` — `weekTableFit`
+- `resources/js/app.js:163` — `change`
+- `resources/js/app.js:177` — `undefined`
+- `resources/js/app.js:178` — `loading`
+- `resources/js/app.js:179` — `DOMContentLoaded`
+- `resources/js/app.js:187` — `change`
+- `resources/js/app.js:194` — `data-recurrence-show`
+- `resources/js/app.js:203` — `click`
+- `resources/js/app.js:206` — `dialog`
+- `resources/js/app.js:209` — `function`
+- `resources/js/app.js:216` — `undefined`
+- `resources/js/app.js:224` — `dialog`
+- `resources/js/app.js:225` — `entry-modal`
+- `resources/js/app.js:226` — `modal`
+- `resources/js/app.js:229` — `entry-modal-body`
+- `resources/js/app.js:231` — `dialog`
+- `resources/js/app.js:231` — `modal-backdrop`
+- `resources/js/app.js:232` — `Close`
+- `resources/js/app.js:238` — `click`
+- `resources/js/app.js:251` — `dialog`
+- `resources/js/app.js:260` — `data-recurrence-show`
+- `resources/js/app.js:267` — `function`
+- `resources/js/app.js:269` — `datetime-local`
+- `resources/js/app.js:286` — `submit`
+- `resources/js/app.js:290` — `action`
+- `resources/js/app.js:292` — `method`
+- `resources/js/app.js:297` — `submit`
+- `resources/js/app.js:306` — `X-Entry-Dialog`
+- `resources/js/app.js:307` — `X-Requested-With`
+- `resources/js/app.js:307` — `XMLHttpRequest`
+- `resources/js/app.js:314` — `content-type`
+- `resources/js/app.js:333` — `function`
+- `resources/js/app.js:335` — `warning`
+- `resources/js/app.js:354` — `function`
+- `resources/js/app.js:356` — `error`
+- `resources/js/app.js:377` — `function`
+- `resources/js/app.js:383` — `p-6 space-y-3`
+- `resources/js/app.js:384` — `text-sm text-error`
+- `resources/js/app.js:385` — `noopener`
+- `resources/js/app.js:385` — `btn btn-sm btn-ghost`
+- `resources/js/app.js:393` — `X-Requested-With`
+- `resources/js/app.js:393` — `XMLHttpRequest`
+- `resources/js/app.js:416` — `function`
+- `resources/js/app.js:432` — `click`
+- `resources/js/app.js:460` — `geocode-url`
+- `resources/js/app.js:461` — `content`
+- `resources/js/app.js:465` — `csrf-token`
+- `resources/js/app.js:466` — `content`
+- `resources/js/app.js:469` — `opacity-70`
+- `resources/js/app.js:474` — `Content-Type`
+- `resources/js/app.js:476` — `X-CSRF-TOKEN`
+- `resources/js/app.js:477` — `X-Requested-With`
+- `resources/js/app.js:477` — `XMLHttpRequest`
+- `resources/js/app.js:479` — `same-origin`
+- `resources/js/app.js:492` — `error`
+- `resources/js/app.js:494` — `opacity-70`
+- `resources/js/schedule.js:18` — `function`
+- `resources/js/schedule.js:19` — `error`
+- `resources/js/schedule.js:29` — `DOMContentLoaded`
+- `resources/js/schedule.js:35` — `btn-open-type-manager`
+- `resources/js/schedule.js:36` — `click`
+- `resources/js/schedule.js:37` — `shift-type-manager`
+- `resources/js/schedule.js:42` — `shift-dialog-form`
+- `resources/js/schedule.js:43` — `submit`
+- `resources/js/schedule.js:45` — `shift-dialog-delete`
+- `resources/js/schedule.js:46` — `click`
+- `resources/js/schedule.js:48` — `shift-dialog-publish`
+- `resources/js/schedule.js:49` — `click`
+- `resources/js/schedule.js:51` — `shift-dialog-confirm`
+- `resources/js/schedule.js:52` — `click`
+- `resources/js/schedule.js:56` — `shift-type-form`
+- `resources/js/schedule.js:57` — `submit`
+- `resources/js/schedule.js:61` — `shift-dialog-type`
+- `resources/js/schedule.js:62` — `change`
+- `resources/js/schedule.js:76` — `shift-dialog-start`
+- `resources/js/schedule.js:77` — `shift-dialog-end`
+- `resources/js/schedule.js:145` — `shift-dialog`
+- `resources/js/schedule.js:151` — `shift-dialog-form`
+- `resources/js/schedule.js:152` — `shift-dialog-id`
+- `resources/js/schedule.js:153` — `shift-dialog-error`
+- `resources/js/schedule.js:153` — `hidden`
+- `resources/js/schedule.js:154` — `shift-dialog-compliance`
+- `resources/js/schedule.js:154` — `hidden`
+- `resources/js/schedule.js:156` — `shift-dialog-override-row`
+- `resources/js/schedule.js:157` — `hidden`
+- `resources/js/schedule.js:158` — `shift-dialog-override`
+- `resources/js/schedule.js:161` — `shift-dialog-delete`
+- `resources/js/schedule.js:162` — `hidden`
+- `resources/js/schedule.js:164` — `shift-dialog-status-row`
+- `resources/js/schedule.js:165` — `hidden`
+- `resources/js/schedule.js:172` — `draft`
+- `resources/js/schedule.js:173` — `published`
+- `resources/js/schedule.js:175` — `shift-dialog-publish`
+- `resources/js/schedule.js:176` — `hidden`
+- `resources/js/schedule.js:178` — `shift-dialog-confirm`
+- `resources/js/schedule.js:179` — `hidden`
+- `resources/js/schedule.js:180` — `shift-dialog-title`
+- `resources/js/schedule.js:181` — `Schicht bearbeiten`
+- `resources/js/schedule.js:182` — `Schicht anlegen`
+- `resources/js/schedule.js:185` — `shift-dialog-user`
+- `resources/js/schedule.js:186` — `shift-dialog-date`
+- `resources/js/schedule.js:187` — `shift-dialog-type`
+- `resources/js/schedule.js:188` — `shift-dialog-start`
+- `resources/js/schedule.js:189` — `shift-dialog-end`
+- `resources/js/schedule.js:190` — `shift-dialog-note`
+- `resources/js/schedule.js:191` — `shift-dialog-status`
+- `resources/js/schedule.js:200` — `draft`
+- `resources/js/schedule.js:213` — `shift-dialog-id`
+- `resources/js/schedule.js:215` — `shift-dialog-error`
+- `resources/js/schedule.js:216` — `shift-dialog-save`
+- `resources/js/schedule.js:217` — `shift-dialog-compliance`
+- `resources/js/schedule.js:218` — `shift-dialog-compliance-list`
+- `resources/js/schedule.js:219` — `shift-dialog-override-row`
+- `resources/js/schedule.js:220` — `shift-dialog-override`
+- `resources/js/schedule.js:222` — `hidden`
+- `resources/js/schedule.js:227` — `shift-dialog-user`
+- `resources/js/schedule.js:228` — `shift-dialog-date`
+- `resources/js/schedule.js:230` — `shift-dialog-type`
+- `resources/js/schedule.js:231` — `shift-dialog-start`
+- `resources/js/schedule.js:232` — `shift-dialog-end`
+- `resources/js/schedule.js:233` — `shift-dialog-note`
+- `resources/js/schedule.js:237` — `shift-dialog-status`
+- `resources/js/schedule.js:256` — `shift-dialog`
+- `resources/js/schedule.js:261` — `shift-dialog`
+- `resources/js/schedule.js:269` — `Fehler beim Speichern.`
+- `resources/js/schedule.js:270` — `hidden`
+- `resources/js/schedule.js:274` — `Speichern`
+- `resources/js/schedule.js:279` — `shift-dialog-compliance`
+- `resources/js/schedule.js:280` — `shift-dialog-compliance-list`
+- `resources/js/schedule.js:281` — `shift-dialog-override-row`
+- `resources/js/schedule.js:287` — `string`
+- `resources/js/schedule.js:290` — `hidden`
+- `resources/js/schedule.js:292` — `hidden`
+- `resources/js/schedule.js:297` — `shift-dialog-id`
+- `resources/js/schedule.js:301` — `Schicht wirklich löschen?`
+- `resources/js/schedule.js:302` — `Löschen`
+- `resources/js/schedule.js:309` — `shift-dialog`
+- `resources/js/schedule.js:312` — `Fehler beim Löschen.`
+- `resources/js/schedule.js:317` — `shift-dialog-id`
+- `resources/js/schedule.js:321` — `shift-dialog`
+- `resources/js/schedule.js:324` — `Fehler beim Veröffentlichen.`
+- `resources/js/schedule.js:329` — `shift-dialog-id`
+- `resources/js/schedule.js:333` — `shift-dialog`
+- `resources/js/schedule.js:336` — `Fehler beim Bestätigen.`
+- `resources/js/schedule.js:343` — `shift-type-form`
+- `resources/js/schedule.js:344` — `shift-type-id`
+- `resources/js/schedule.js:345` — `shift-type-name`
+- `resources/js/schedule.js:346` — `shift-type-abbr`
+- `resources/js/schedule.js:347` — `shift-type-color`
+- `resources/js/schedule.js:348` — `shift-type-start`
+- `resources/js/schedule.js:351` — `shift-type-end`
+- `resources/js/schedule.js:354` — `shift-type-active`
+- `resources/js/schedule.js:357` — `shift-type-form-title`
+- `resources/js/schedule.js:358` — `Schichttyp bearbeiten`
+- `resources/js/schedule.js:360` — `shift-type-error`
+- `resources/js/schedule.js:360` — `hidden`
+- `resources/js/schedule.js:364` — `shift-type-form`
+- `resources/js/schedule.js:365` — `shift-type-id`
+- `resources/js/schedule.js:366` — `shift-type-form-title`
+- `resources/js/schedule.js:367` — `Neuen Schichttyp anlegen`
+- `resources/js/schedule.js:369` — `shift-type-color`
+- `resources/js/schedule.js:370` — `shift-type-active`
+- `resources/js/schedule.js:371` — `shift-type-error`
+- `resources/js/schedule.js:371` — `hidden`
+- `resources/js/schedule.js:377` — `shift-type-id`
+- `resources/js/schedule.js:379` — `shift-type-error`
+- `resources/js/schedule.js:380` — `shift-type-save`
+- `resources/js/schedule.js:382` — `hidden`
+- `resources/js/schedule.js:385` — `shift-type-active`
+- `resources/js/schedule.js:387` — `shift-type-name`
+- `resources/js/schedule.js:388` — `shift-type-abbr`
+- `resources/js/schedule.js:389` — `shift-type-color`
+- `resources/js/schedule.js:391` — `shift-type-start`
+- `resources/js/schedule.js:393` — `shift-type-end`
+- `resources/js/schedule.js:413` — `Fehler beim Speichern.`
+- `resources/js/schedule.js:414` — `hidden`
+- `resources/js/schedule.js:424` — `Schichttyp wirklich löschen?`
+- `resources/js/schedule.js:425` — `Löschen`
+- `resources/js/schedule.js:434` — `Fehler beim Löschen.`
+- `resources/js/schedule.js:439` — `shift-dialog-type`
+- `resources/js/schedule.js:442` — `option`
+- `resources/js/schedule.js:452` — `shift-dialog-type`
+- `resources/js/schedule.js:468` — `shift-dialog-type`
+- `resources/js/schedule.js:481` — `span.inline-block`
+- `resources/js/schedule.js:495` — `shift-type-table-body`
+- `resources/js/schedule.js:498` — `data-type-row`
+- `resources/js/schedule.js:500` — `inline-block h-4 w-4 rounded`
+- `resources/js/schedule.js:501` — `font-mono font-bold`
+- `resources/js/schedule.js:505` — `badge-success`
+- `resources/js/schedule.js:505` — `badge-ghost`
+- `resources/js/schedule.js:506` — `text-right`
+- `resources/js/schedule.js:507` — `button`
+- `resources/js/schedule.js:507` — `btn btn-xs btn-ghost`
+- `resources/js/schedule.js:508` — `button`
+- `resources/js/schedule.js:508` — `btn btn-xs btn-ghost text-error`
+- `resources/js/schedule.js:522` — `Content-Type`
+- `resources/js/schedule.js:524` — `X-CSRF-TOKEN`
+- `resources/js/sortable-tables.js:8` — `string`
+- `resources/js/sortable-tables.js:9` — `number`
+- `resources/js/sortable-tables.js:13` — `data-sort-value`
+- `resources/js/sortable-tables.js:14` — `duration`
+- `resources/js/sortable-tables.js:14` — `Hh MMm`
+- `resources/js/sortable-tables.js:15` — `data-sort-value`
+- `resources/js/sortable-tables.js:98` — `number`
+- `resources/js/sortable-tables.js:124` — `duration`
+- `resources/js/sortable-tables.js:145` — `string`
+- `resources/js/sortable-tables.js:175` — `text-base-content`
+- `resources/js/sortable-tables.js:179` — `text-base-content`
+- `resources/js/sortable-tables.js:194` — `cursor-pointer`
+- `resources/js/sortable-tables.js:194` — `select-none`
+- `resources/js/sortable-tables.js:195` — `click`
+- `resources/js/sortable-tables.js:217` — `loading`
+- `resources/js/sortable-tables.js:218` — `DOMContentLoaded`
+- `resources/js/map.js:15` — `tiles`
+- `resources/js/map.js:15` — `attribution`
+- `resources/js/map.js:15` — `maxZoom`
+- `resources/js/map.js:16` — `center`
+- `resources/js/map.js:18` — `markers`
+- `resources/js/map.js:18` — `label`
+- `resources/js/map.js:19` — `route`
+- `resources/js/map.js:24` — `leaflet`
+- `resources/js/map.js:25` — `leaflet-defaulticon-compatibility`
+- `resources/js/map.js:30` — `data-config`
+- `resources/js/map.js:65` — `number`
+- `resources/js/map.js:65` — `number`
+- `resources/js/map.js:75` — `object`
+- `resources/js/map.js:125` — `loading`
+- `resources/js/map.js:126` — `DOMContentLoaded`
+- `resources/js/push.js:13` — `csrf-token`
+- `resources/js/push.js:18` — `serviceWorker`
+- `resources/js/push.js:18` — `PushManager`
+- `resources/js/push.js:25` — `serviceWorker`
+- `resources/js/push.js:26` — `PushManager`
+- `resources/js/push.js:27` — `Notification`
+- `resources/js/push.js:32` — `unsupported`
+- `resources/js/push.js:42` — `granted`
+- `resources/js/push.js:61` — `Content-Type`
+- `resources/js/push.js:63` — `X-CSRF-TOKEN`
+- `resources/js/push.js:68` — `aesgcm`
+- `resources/js/push.js:84` — `Content-Type`
+- `resources/js/push.js:86` — `X-CSRF-TOKEN`
+- `resources/js/push.js:98` — `click`
+- `resources/js/push.js:101` — `unsupported`
+- `resources/js/push.js:124` — `badge badge-sm badge-success`
+- `resources/js/push.js:127` — `badge badge-sm badge-ghost`
+- `resources/js/push.js:130` — `badge badge-sm badge-error`
+- `resources/js/i18n.js:17` — `replace`
+- `resources/js/i18n.js:21` — `undefined`
+- `resources/js/i18n.js:26` — `string`
+- `resources/js/i18n.js:38` — `undefined`
+- `resources/js/i18n.js:38` — `function`

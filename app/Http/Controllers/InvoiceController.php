@@ -23,10 +23,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
-class InvoiceController extends Controller
-{
-    public function index(Request $request): View
-    {
+class InvoiceController extends Controller {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', Invoice::class);
         $invoices = Invoice::query()
             ->with(['customer'])
@@ -37,8 +35,7 @@ class InvoiceController extends Controller
         return view('invoices.index', compact('invoices', 'statuses'));
     }
 
-    public function create(Request $request): View
-    {
+    public function create(Request $request): View {
         Gate::authorize('create', Invoice::class);
         $customers = Customer::query()->orderBy('name')->get();
         $projects = Project::query()->orderBy('name')->get();
@@ -46,11 +43,10 @@ class InvoiceController extends Controller
         $defaultFrom = $globalRange['from']->toDateString();
         $defaultTo = $globalRange['to']->toDateString();
 
-        return view('invoices.create', compact('customers', 'projects', 'defaultFrom', 'defaultTo'));
+        return view('invoices._form_dialog', compact('customers', 'projects', 'defaultFrom', 'defaultTo'));
     }
 
-    public function store(Request $request, InvoiceGenerator $gen): RedirectResponse
-    {
+    public function store(Request $request, InvoiceGenerator $gen): RedirectResponse {
         Gate::authorize('create', Invoice::class);
         $data = $request->validate([
             'customer_id' => ['required', 'integer', 'exists:customers,id'],
@@ -72,24 +68,21 @@ class InvoiceController extends Controller
         return redirect()->route('invoices.show', $invoice)->with('status', __('Rechnungsentwurf erstellt.'));
     }
 
-    public function show(Invoice $invoice): View
-    {
+    public function show(Invoice $invoice): View {
         Gate::authorize('view', $invoice);
         $invoice->load(['items', 'customer', 'project']);
 
         return view('invoices.show', compact('invoice'));
     }
 
-    public function destroy(Invoice $invoice): RedirectResponse
-    {
+    public function destroy(Invoice $invoice): RedirectResponse {
         Gate::authorize('delete', $invoice);
         $invoice->delete();
 
         return redirect()->route('invoices.index')->with('status', __('Rechnung gelöscht.'));
     }
 
-    public function issue(Invoice $invoice): RedirectResponse
-    {
+    public function issue(Invoice $invoice): RedirectResponse {
         Gate::authorize('issue', $invoice);
         $invoice->update([
             'status' => Invoice::STATUS_ISSUED,
@@ -100,8 +93,7 @@ class InvoiceController extends Controller
         return redirect()->route('invoices.show', $invoice)->with('status', __('Rechnung gestellt.'));
     }
 
-    public function pay(Invoice $invoice): RedirectResponse
-    {
+    public function pay(Invoice $invoice): RedirectResponse {
         Gate::authorize('pay', $invoice);
         $invoice->update([
             'status' => Invoice::STATUS_PAID,
@@ -111,13 +103,12 @@ class InvoiceController extends Controller
         return redirect()->route('invoices.show', $invoice)->with('status', __('Rechnung bezahlt.'));
     }
 
-    public function pdf(Invoice $invoice): SymfonyResponse
-    {
+    public function pdf(Invoice $invoice): SymfonyResponse {
         Gate::authorize('view', $invoice);
         $invoice->load(['items', 'customer', 'project']);
 
         return Pdf::loadView('invoices.pdf', ['invoice' => $invoice])
             ->setPaper('a4')
-            ->download('rechnung-'.$invoice->number.'.pdf');
+            ->download('rechnung-' . $invoice->number . '.pdf');
     }
 }

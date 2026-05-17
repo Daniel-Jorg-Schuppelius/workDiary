@@ -3,7 +3,7 @@
 @section('title', $order->title)
 
 @section('content')
-    <div class="mx-auto max-w-3xl space-y-4">
+    <div class="w-full space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h1 class="text-xl font-semibold">{{ $order->title }}</h1>
@@ -14,7 +14,7 @@
                 </div>
             </div>
             <div class="flex gap-2">
-                <a href="{{ route('service-orders.edit', $order) }}" class="btn btn-sm">{{ __('Bearbeiten') }}</a>
+                <a href="{{ route('service-orders.edit', $order) }}" data-entry-modal-trigger class="btn btn-sm">{{ __('Bearbeiten') }}</a>
                 <a href="{{ route('service-orders.index') }}" class="btn btn-sm btn-ghost">{{ __('Zurück') }}</a>
             </div>
         </div>

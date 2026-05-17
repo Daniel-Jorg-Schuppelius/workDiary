@@ -11,29 +11,30 @@
         \App\Models\Project::STATUS_ARCHIVED => __('Archiviert'),
     ];
 @endphp
-<div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
-    {{-- Toolbar --}}
-    <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <div class="join">
-            @foreach ($statusOptions as $value => $label)
-                <a href="{{ route('projects.index', $value === '' ? [] : ['status' => $value]) }}"
-                   class="join-item btn btn-sm {{ $statusFilter === $value ? 'btn-primary' : 'btn-ghost' }}">{{ $label }}</a>
-            @endforeach
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-            @can('create', App\Models\Project::class)
-                <a href="{{ route('projects.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
-                    <x-icon name="add" />
-                    <span>{{ __('Projekt') }}</span>
-                </a>
-            @endcan
-        </div>
-    </div>
+<x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <div class="join">
+                @foreach ($statusOptions as $value => $label)
+                    <a href="{{ route('projects.index', $value === '' ? [] : ['status' => $value]) }}"
+                       class="join-item btn btn-sm {{ $statusFilter === $value ? 'btn-primary' : 'btn-ghost' }}">{{ $label }}</a>
+                @endforeach
+            </div>
+            <x-slot:actions>
+                @can('create', App\Models\Project::class)
+                    <a href="{{ route('projects.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
+                        <x-icon name="add" />
+                        <span>{{ __('Projekt') }}</span>
+                    </a>
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if ($projects->isEmpty())
-        <div class="rounded-box border border-base-300 bg-base-100 p-10 text-center text-base-content/60">
-            {{ __('Noch keine Projekte angelegt.') }}
-        </div>
+        <x-card>
+            <x-empty-state :title="__('Noch keine Projekte angelegt')" />
+        </x-card>
     @else
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             @foreach ($projects as $project)
@@ -102,5 +103,5 @@
             @endforeach
         </div>
     @endif
-</div>
+</x-page-shell>
 @endsection

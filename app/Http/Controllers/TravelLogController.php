@@ -25,16 +25,15 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class TravelLogController extends Controller
-{
+class TravelLogController extends Controller {
     use ResolvesGlobalDateRange;
 
     public function __construct(
         private readonly TravelLogService $service,
-    ) {}
+    ) {
+    }
 
-    public function index(Request $request): View
-    {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', TravelLog::class);
 
         [$from, $to] = $this->resolveRange($request);
@@ -66,8 +65,7 @@ class TravelLogController extends Controller
         ]);
     }
 
-    public function create(Request $request): View
-    {
+    public function create(Request $request): View {
         Gate::authorize('create', TravelLog::class);
 
         return view('travel-logs.form', [
@@ -80,8 +78,7 @@ class TravelLogController extends Controller
         ]);
     }
 
-    public function store(SaveTravelLogRequest $request): RedirectResponse
-    {
+    public function store(SaveTravelLogRequest $request): RedirectResponse {
         Gate::authorize('create', TravelLog::class);
 
         $data = $request->validated();
@@ -96,8 +93,7 @@ class TravelLogController extends Controller
             ->with('success', __('Fahrt erfasst (:km km).', ['km' => number_format((float) $log->distance_km, 2, ',', '.')]));
     }
 
-    public function edit(TravelLog $travelLog): View
-    {
+    public function edit(TravelLog $travelLog): View {
         Gate::authorize('update', $travelLog);
 
         return view('travel-logs.form', [
@@ -110,8 +106,7 @@ class TravelLogController extends Controller
         ]);
     }
 
-    public function update(SaveTravelLogRequest $request, TravelLog $travelLog): RedirectResponse
-    {
+    public function update(SaveTravelLogRequest $request, TravelLog $travelLog): RedirectResponse {
         Gate::authorize('update', $travelLog);
 
         $this->service->update($travelLog, $request->validated());
@@ -120,8 +115,7 @@ class TravelLogController extends Controller
             ->with('success', __('Fahrt aktualisiert.'));
     }
 
-    public function destroy(TravelLog $travelLog): RedirectResponse
-    {
+    public function destroy(TravelLog $travelLog): RedirectResponse {
         Gate::authorize('delete', $travelLog);
 
         $this->service->delete($travelLog);
@@ -130,8 +124,7 @@ class TravelLogController extends Controller
             ->with('success', __('Fahrt gelöscht.'));
     }
 
-    public function export(Request $request): StreamedResponse
-    {
+    public function export(Request $request): StreamedResponse {
         Gate::authorize('viewAny', TravelLog::class);
 
         [$from, $to] = $this->resolveRange($request);
@@ -191,8 +184,7 @@ class TravelLogController extends Controller
      *
      * @return array{0: CarbonImmutable, 1: CarbonImmutable}
      */
-    private function resolveRange(Request $request): array
-    {
+    private function resolveRange(Request $request): array {
         if ($request->filled('from') && $request->filled('to')) {
             $from = CarbonImmutable::parse((string) $request->query('from'))->startOfDay();
             $to = CarbonImmutable::parse((string) $request->query('to'))->endOfDay();

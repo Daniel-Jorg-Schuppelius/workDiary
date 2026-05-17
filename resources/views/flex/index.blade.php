@@ -27,7 +27,7 @@
         return $sign . intdiv($abs, 60) . ':' . str_pad((string)($abs % 60), 2, '0', STR_PAD_LEFT) . ' h';
     };
 @endphp
-<div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
+<x-page-shell>
     @if($isAdmin && $users->isNotEmpty())
         <div role="tablist" class="tabs tabs-box">
             @foreach ($users as $u)
@@ -107,5 +107,5 @@
             </table>
         </div>
     </div>
-</div>
+</x-page-shell>
 @endsection

@@ -3,20 +3,20 @@
 @section('title', __('Touren'))
 
 @section('content')
-    <div class="space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h1 class="text-xl font-semibold">{{ __('Touren') }}</h1>
-                <p class="text-sm text-base-content/60">
-                    {{ $from->format('d.m.Y') }} – {{ $to->format('d.m.Y') }}
-                </p>
-            </div>
-            <a href="{{ route('tours.create') }}" class="btn btn-sm btn-primary">
-                <x-icon name="add" /> {{ __('Neue Tour') }}
-            </a>
-        </div>
+    <x-page-shell>
+        <x-slot:toolbar>
+            <x-page-toolbar :title="__('Touren')"
+                            :subtitle="$from->format('d.m.Y') . ' – ' . $to->format('d.m.Y')">
+                <x-slot:actions>
+                    <a href="{{ route('tours.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
+                        <x-icon name="add" /> {{ __('Neue Tour') }}
+                    </a>
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
 
-        <form method="GET" class="flex flex-wrap items-end gap-2 rounded-box border border-base-300 bg-base-100 p-3">
+        <x-card>
+            <form method="GET" class="flex flex-wrap items-end gap-2">
             <div>
                 <label class="label-text">{{ __('Status') }}</label>
                 <select name="status" class="select select-bordered select-sm">
@@ -38,9 +38,11 @@
                 </div>
             @endif
             <button class="btn btn-sm">{{ __('Filtern') }}</button>
-        </form>
+            </form>
+        </x-card>
 
-        <div class="overflow-x-auto rounded-box border border-base-300 bg-base-100">
+        <x-card padding="p-0">
+            <div class="overflow-x-auto">
             <table class="table table-sm">
                 <thead>
                     <tr>
@@ -71,19 +73,22 @@
                             <td class="text-right">
                                 <a href="{{ route('tours.edit', $tour) }}" class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a>
                                 <form method="POST" action="{{ route('tours.destroy', $tour) }}" class="inline"
-                                      onsubmit="return confirm('{{ __('Tour wirklich löschen?') }}');">
+                                      data-confirm-dialog
+                                      data-confirm-message="{{ __('Tour wirklich löschen?') }}"
+                                      data-confirm-label="{{ __('Löschen') }}">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Löschen') }}</button>
                                 </form>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="py-6 text-center text-base-content/60">{{ __('Keine Touren im gewählten Zeitraum.') }}</td></tr>
+                        <tr><td colspan="8" class="p-0"><x-empty-state :compact="true" :title="__('Keine Touren im gewählten Zeitraum')" /></td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+        </x-card>
 
         {{ $tours->links() }}
-    </div>
+    </x-page-shell>
 @endsection

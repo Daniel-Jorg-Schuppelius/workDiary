@@ -51,8 +51,7 @@ use Illuminate\Support\Carbon;
  *
  * @property-read int $break_minutes_total
  */
-class Attendance extends Model
-{
+class Attendance extends Model {
     use Auditable;
     use BelongsToOrganization;
 
@@ -117,8 +116,7 @@ class Attendance extends Model
         'updated_by',
     ];
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'started_at' => 'datetime',
             'ended_at' => 'datetime',
@@ -133,8 +131,7 @@ class Attendance extends Model
         ];
     }
 
-    protected static function booted(): void
-    {
+    protected static function booted(): void {
         static::saving(function (Attendance $a): void {
             if (! $a->date && $a->started_at) {
                 $a->date = $a->started_at->copy()->startOfDay();
@@ -165,39 +162,71 @@ class Attendance extends Model
     }
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo
-    {
+    public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function closer(): BelongsTo
-    {
+    public function closer(): BelongsTo {
         return $this->belongsTo(User::class, 'closed_by');
     }
 
     /** @return HasMany<TimeEntry, $this> */
-    public function timeEntries(): HasMany
-    {
+    public function timeEntries(): HasMany {
         return $this->hasMany(TimeEntry::class);
     }
 
     /** @return HasMany<TravelLog, $this> */
-    public function travelLogs(): HasMany
-    {
+    public function travelLogs(): HasMany {
         return $this->hasMany(TravelLog::class);
     }
 
-    public function isOpen(): bool
-    {
+    public function isOpen(): bool {
         return $this->ended_at === null;
+    }
+
+    /**
+     * Localised label for the attendance status (defaults to the current
+     * status of the model when no argument is supplied).
+     */
+    public function statusLabel(?string $status = null): string {
+        $key = $status ?? (string) $this->status;
+        if ($key === '') {
+            return '';
+        }
+
+        return (string) __('attendance.status.'.$key);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function statusLabels(): array {
+        $labels = [];
+        foreach (self::STATUSES as $status) {
+            $labels[$status] = (string) __('attendance.status.'.$status);
+        }
+
+        return $labels;
+    }
+
+    /**
+     * Localised label for the attendance source (defaults to the current
+     * source of the model when no argument is supplied).
+     */
+    public function sourceLabel(?string $source = null): string {
+        $key = $source ?? (string) $this->source;
+        if ($key === '') {
+            return '';
+        }
+
+        return (string) __('attendance.source.'.$key);
     }
 
     /**
      * Convenience accessor: sum of automatic and manual breaks in minutes.
      */
-    public function getBreakMinutesTotalAttribute(): int
-    {
+    public function getBreakMinutesTotalAttribute(): int {
         return (int) ($this->break_minutes_auto ?? 0)
             + (int) ($this->break_minutes_manual ?? 0);
     }
@@ -206,8 +235,7 @@ class Attendance extends Model
      * @param  Builder<Attendance>  $q
      * @return Builder<Attendance>
      */
-    public function scopeOpen(Builder $q): Builder
-    {
+    public function scopeOpen(Builder $q): Builder {
         return $q->whereNull('ended_at');
     }
 
@@ -215,8 +243,7 @@ class Attendance extends Model
      * @param  Builder<Attendance>  $q
      * @return Builder<Attendance>
      */
-    public function scopeForUser(Builder $q, int $userId): Builder
-    {
+    public function scopeForUser(Builder $q, int $userId): Builder {
         return $q->where('user_id', $userId);
     }
 
@@ -224,8 +251,7 @@ class Attendance extends Model
      * @param  Builder<Attendance>  $q
      * @return Builder<Attendance>
      */
-    public function scopeOnDate(Builder $q, string|Carbon $date): Builder
-    {
+    public function scopeOnDate(Builder $q, string|Carbon $date): Builder {
         $d = $date instanceof Carbon ? $date->toDateString() : $date;
 
         return $q->where('date', $d);

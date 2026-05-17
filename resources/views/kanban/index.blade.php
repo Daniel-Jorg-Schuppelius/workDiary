@@ -5,22 +5,23 @@
 @section('main-class', 'min-h-0 overflow-clip flex flex-col')
 
 @section('content')
-<div class="flex h-full min-h-0 w-full flex-col gap-4">
+<x-page-shell>
     {{-- Toolbar --}}
-    <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <div class="flex flex-wrap items-center gap-2">
+    <x-slot:toolbar>
+        <x-page-toolbar>
             <div class="join">
                 <a href="{{ route('kanban.index', ['scope' => 'mine']) }}"
                    class="join-item btn btn-sm {{ $teamScope ? 'btn-ghost' : 'btn-primary' }}">{{ __('Meine') }}</a>
                 <a href="{{ route('kanban.index', ['scope' => 'team']) }}"
                    class="join-item btn btn-sm {{ $teamScope ? 'btn-primary' : 'btn-ghost' }}">{{ __('Team') }}</a>
             </div>
-        </div>
-
-        <a href="{{ route('diary.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
-            <x-icon name="add" /><span>{{ __('Eintrag') }}</span>
-        </a>
-    </div>
+            <x-slot:actions>
+                <a href="{{ route('diary.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
+                    <x-icon name="add" /><span>{{ __('Eintrag') }}</span>
+                </a>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if ($isLimited)
         <div class="rounded-box border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-base-content/80">
@@ -52,7 +53,7 @@
             </section>
         @endforeach
     </div>
-</div>
+</x-page-shell>
 
 <script>
 (function () {

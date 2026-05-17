@@ -3,18 +3,22 @@
 @section('nav-title', __('Urlaub'))
 
 @section('content')
-<div class="h-[calc(100dvh-11rem)] flex flex-col gap-4">
+<x-page-shell>
 
     {{-- Aktionen --}}
-    <div class="flex flex-none justify-end">
-        @can('create', \App\Models\Vacation::class)
-            <a href="{{ route('vacations.create') }}?dialog=1"
-               class="btn btn-primary btn-sm"
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:actions>
+                @can('create', \App\Models\Vacation::class)
+                    <a href="{{ route('vacations.create') }}?dialog=1"
+                       class="btn btn-primary btn-sm"
                data-entry-modal-trigger>
                 + {{ __('Neuer Antrag') }}
             </a>
         @endcan
-    </div>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     {{-- KPI-Tiles --}}
     <div class="grid grid-cols-1 gap-3 flex-none sm:grid-cols-3">
@@ -56,15 +60,7 @@
         </form>
     </div>
 
-    {{-- Flash --}}
-    @if (session('success'))
-        <div class="alert alert-success flex-none text-sm py-2">{{ session('success') }}</div>
-    @endif
-
-    {{-- Table --}}
-    <div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 shadow-xs">
-        <div class="h-full overflow-auto">
-            <table class="table table-sm table-zebra table-pin-rows w-full">
+    <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm">
                 <thead class="bg-base-200">
                     <tr>
                         @if ($isAdmin)
@@ -172,20 +168,18 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ $isAdmin ? 7 : 6 }}" class="text-center text-base-content/50 py-8">
-                                {{ __('Keine Einträge gefunden.') }}
+                            <td colspan="{{ $isAdmin ? 7 : 6 }}" class="p-0">
+                                <x-empty-state :compact="true" :title="__('Keine Einträge gefunden')" />
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
-            </table>
-        </div>
-    </div>
+    </x-table>
 
     {{-- Pagination --}}
     @if ($vacations->hasPages())
         <div class="flex-none">{{ $vacations->links() }}</div>
     @endif
 
-</div>
+</x-page-shell>
 @endsection

@@ -18,11 +18,17 @@ use App\Models\Timesheet;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
 
-class TimesheetEntryController extends Controller
-{
-    public function store(Project $project, Timesheet $timesheet, SaveTimesheetEntryRequest $request): RedirectResponse
-    {
+class TimesheetEntryController extends Controller {
+    public function create(Project $project, Timesheet $timesheet): View {
+        Gate::authorize('update', $timesheet);
+        $tasks = $project->tasks()->orderBy('title')->get(['id', 'title']);
+
+        return view('timesheets._entry_form_dialog', compact('project', 'timesheet', 'tasks'));
+    }
+
+    public function store(Project $project, Timesheet $timesheet, SaveTimesheetEntryRequest $request): RedirectResponse {
         Gate::authorize('update', $timesheet);
 
         $data = $request->validated();
@@ -37,8 +43,7 @@ class TimesheetEntryController extends Controller
         return back()->with('success', __('Zeile hinzugefügt.'));
     }
 
-    public function update(Project $project, Timesheet $timesheet, TimeEntry $entry, SaveTimesheetEntryRequest $request): RedirectResponse
-    {
+    public function update(Project $project, Timesheet $timesheet, TimeEntry $entry, SaveTimesheetEntryRequest $request): RedirectResponse {
         Gate::authorize('update', $timesheet);
         abort_unless((int) $entry->timesheet_id === (int) $timesheet->id, 404);
 
@@ -47,8 +52,7 @@ class TimesheetEntryController extends Controller
         return back()->with('success', __('Zeile aktualisiert.'));
     }
 
-    public function destroy(Project $project, Timesheet $timesheet, TimeEntry $entry): RedirectResponse
-    {
+    public function destroy(Project $project, Timesheet $timesheet, TimeEntry $entry): RedirectResponse {
         Gate::authorize('update', $timesheet);
         abort_unless((int) $entry->timesheet_id === (int) $timesheet->id, 404);
 

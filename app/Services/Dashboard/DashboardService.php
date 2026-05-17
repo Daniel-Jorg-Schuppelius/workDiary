@@ -73,12 +73,14 @@ class DashboardService
             ->orderBy('start_at')
             ->get();
 
+        $recentLimit = (int) setting('ui.dashboard.recent_limit', 5);
+
         $recentEntries = DiaryEntry::query()
             ->where('user_id', $user->id)
             ->where('is_archived', false)
             ->select(['id', 'user_id', 'content', 'status', 'start_at', 'updated_at'])
             ->latest('updated_at')
-            ->limit(5)
+            ->limit($recentLimit)
             ->get();
 
         // Subquery statt pluck() + large IN-Klausel
@@ -88,7 +90,7 @@ class DashboardService
             ->whereIn('diary_entry_id', $userEntryIds)
             ->with(['user:id,name', 'diaryEntry:id,content,user_id'])
             ->latest()
-            ->limit(5)
+            ->limit($recentLimit)
             ->get();
 
         $recentAttachments = Attachment::query()
@@ -96,7 +98,7 @@ class DashboardService
             ->whereIn('attachable_id', $userEntryIds)
             ->with('uploader:id,name')
             ->latest()
-            ->limit(5)
+            ->limit($recentLimit)
             ->get();
 
         $upcomingScheduledShifts = ScheduledShift::query()
@@ -116,8 +118,8 @@ class DashboardService
                 'upcoming_emergencies' => $upcomingEmergencies->count(),
             ],
             'today_shifts' => $todayShifts,
-            'upcoming_shifts' => $upcomingShifts->take(5),
-            'upcoming_emergencies' => $upcomingEmergencies->take(5),
+            'upcoming_shifts' => $upcomingShifts->take($recentLimit),
+            'upcoming_emergencies' => $upcomingEmergencies->take($recentLimit),
             'recent_entries' => $recentEntries,
             'recent_comments' => $recentComments,
             'recent_attachments' => $recentAttachments,

@@ -12,16 +12,29 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SaveProjectBillingRuleRequest;
+use App\Models\LexofficeArticle;
 use App\Models\Project;
 use App\Models\ProjectBillingRule;
+use App\Models\TimeEntry;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-class ProjectBillingRuleController extends Controller
-{
-    public function store(Project $project, SaveProjectBillingRuleRequest $request): RedirectResponse
-    {
+class ProjectBillingRuleController extends Controller {
+    public function create(Project $project, Request $request): View {
+        $this->ensureBillingManager($request);
+
+        return view('projects._billing_rule_form_dialog', [
+            'project' => $project,
+            'rule' => new ProjectBillingRule,
+            'articles' => LexofficeArticle::active()->orderBy('name')->get(['external_id', 'name', 'unit_name', 'net_unit_price', 'vat_rate']),
+            'kinds' => TimeEntry::KINDS,
+            'itemTypes' => ['service' => __('Dienstleistung'), 'material' => __('Material'), 'custom' => __('Sonstige')],
+        ]);
+    }
+
+    public function store(Project $project, SaveProjectBillingRuleRequest $request): RedirectResponse {
         $this->ensureBillingManager($request);
 
         $data = $request->validated();
@@ -57,8 +70,7 @@ class ProjectBillingRuleController extends Controller
             ->with('success', __('Abrechnungs-Regel aktualisiert.'));
     }
 
-    public function destroy(Project $project, ProjectBillingRule $billingRule): RedirectResponse
-    {
+    public function destroy(Project $project, ProjectBillingRule $billingRule): RedirectResponse {
         $this->ensureBillingManager(request());
         $this->ensureSameProject($project, $billingRule);
 
@@ -69,15 +81,13 @@ class ProjectBillingRuleController extends Controller
             ->with('success', __('Abrechnungs-Regel gelöscht.'));
     }
 
-    private function ensureBillingManager(Request $request): void
-    {
+    private function ensureBillingManager(Request $request): void {
         if ($request->user()?->canManageBilling() !== true) {
             throw new AccessDeniedHttpException;
         }
     }
 
-    private function ensureSameProject(Project $project, ProjectBillingRule $billingRule): void
-    {
+    private function ensureSameProject(Project $project, ProjectBillingRule $billingRule): void {
         if ((int) $billingRule->project_id !== (int) $project->id) {
             throw new AccessDeniedHttpException;
         }

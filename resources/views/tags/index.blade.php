@@ -3,14 +3,18 @@
 @section('nav-title', __('Tags'))
 
 @section('content')
-<div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
-    <div class="flex justify-end">
-        @can('create', App\Models\Tag::class)
-            @if (auth()->user()->isAdmin())
-                <a href="{{ route('tags.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">{{ __('+ Neuer Tag') }}</a>
-            @endif
-        @endcan
-    </div>
+<x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:actions>
+                @can('create', App\Models\Tag::class)
+                    @if (auth()->user()->isAdmin())
+                        <a href="{{ route('tags.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">{{ __('+ Neuer Tag') }}</a>
+                    @endif
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     {{-- Tag-Liste --}}
     <x-table :pin-rows="true" scroll="flex">
@@ -55,7 +59,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="text-center text-base-content/60 py-6">{{ __('Noch keine Tags angelegt.') }}</td></tr>
+                    <tr><td colspan="5" class="p-0"><x-empty-state :compact="true" :title="__('Noch keine Tags angelegt')" /></td></tr>
                 @endforelse
             </tbody>
     </x-table>
@@ -63,5 +67,5 @@
     @if ($tags->hasPages())
         <div>{{ $tags->links('pagination::simple-tailwind') }}</div>
     @endif
-</div>
+</x-page-shell>
 @endsection

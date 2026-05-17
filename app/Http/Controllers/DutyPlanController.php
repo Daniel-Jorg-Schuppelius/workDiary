@@ -47,7 +47,7 @@ class DutyPlanController extends Controller
             'shifts' => 'shifts_count',
         ], 'from_date', 'desc');
 
-        $plans = $query->paginate(20)->withQueryString();
+        $plans = $query->paginate((int) setting('pagination.duty_plans', 20))->withQueryString();
 
         return view('duty-plans.index', compact('plans', 'status', 'period', 'sort', 'dir'));
     }
@@ -157,7 +157,7 @@ class DutyPlanController extends Controller
             'from_date' => ['required', 'date'],
             'to_date' => ['required', 'date', 'gte:from_date'],
             'min_staff' => ['nullable', 'integer', 'min:0', 'max:255'],
-            'note' => ['nullable', 'string', 'max:2000'],
+            'note' => ['nullable', 'string', 'max:' . (int) setting('validation.duty_plan.note_max', 2000)],
         ]);
     }
 }

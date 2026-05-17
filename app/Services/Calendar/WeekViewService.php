@@ -180,9 +180,10 @@ class WeekViewService
         $dayStart = $day->startOfDay();
         $dayEnd = $day->addDay()->startOfDay();
 
+        $slotMinutes = (int) setting('ui.calendar.slot_minutes', 30);
         $effectiveStart = $start->lessThan($dayStart) ? $dayStart : $start;
         $effectiveEnd = $end === null
-            ? $effectiveStart->addMinutes(30)
+            ? $effectiveStart->addMinutes($slotMinutes)
             : ($end->greaterThan($dayEnd) ? $dayEnd : $end);
 
         if ($effectiveEnd->lessThanOrEqualTo($effectiveStart)) {
@@ -220,7 +221,7 @@ class WeekViewService
             $items[] = [
                 'entry' => $entry,
                 'startMin' => $start->lessThan($day->startOfDay()) ? 0 : $start->diffInMinutes($day->startOfDay(), true),
-                'endMin' => ($end ?? $start->addMinutes(30))->diffInMinutes($day->startOfDay(), true),
+                'endMin' => ($end ?? $start->addMinutes((int) setting('ui.calendar.slot_minutes', 30)))->diffInMinutes($day->startOfDay(), true),
                 'top' => $p['top'],
                 'height' => $p['height'],
             ];

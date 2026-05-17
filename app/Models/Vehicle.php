@@ -46,7 +46,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class Vehicle extends Model {
+class Vehicle extends Model
+{
     use Auditable;
     use BelongsToOrganization;
 
@@ -147,11 +148,13 @@ class Vehicle extends Model {
         'wltp_consumption' => 'decimal:3',
     ];
 
-    public function isElectric(): bool {
+    public function isElectric(): bool
+    {
         return in_array($this->propulsion, [self::PROPULSION_ELECTRIC, self::PROPULSION_HYBRID], true);
     }
 
-    public function isRental(): bool {
+    public function isRental(): bool
+    {
         return $this->ownership === self::OWNERSHIP_RENTAL;
     }
 
@@ -159,7 +162,8 @@ class Vehicle extends Model {
      * Rental cars are bookable only within their rental period; non-rental
      * vehicles are always considered available (active scope governs the rest).
      */
-    public function isAvailableOn(\DateTimeInterface $date): bool {
+    public function isAvailableOn(\DateTimeInterface $date): bool
+    {
         if (! $this->isRental()) {
             return true;
         }
@@ -174,7 +178,8 @@ class Vehicle extends Model {
         return true;
     }
 
-    public function expectedEnergyUnit(): ?string {
+    public function expectedEnergyUnit(): ?string
+    {
         return match ($this->propulsion) {
             self::PROPULSION_ELECTRIC => 'kwh',
             self::PROPULSION_MUSCLE, self::PROPULSION_OTHER => null,
@@ -182,7 +187,8 @@ class Vehicle extends Model {
         };
     }
 
-    public function displayName(): string {
+    public function displayName(): string
+    {
         $name = trim((string) $this->label);
         if ($name === '') {
             return (string) $this->license_plate;
@@ -195,7 +201,8 @@ class Vehicle extends Model {
      * @param  Builder<Vehicle>  $query
      * @return Builder<Vehicle>
      */
-    public function scopeActive(Builder $query): Builder {
+    public function scopeActive(Builder $query): Builder
+    {
         return $query->whereNull('archived_at');
     }
 
@@ -203,24 +210,28 @@ class Vehicle extends Model {
      * @param  Builder<Vehicle>  $query
      * @return Builder<Vehicle>
      */
-    public function scopeForUser(Builder $query, int $userId): Builder {
+    public function scopeForUser(Builder $query, int $userId): Builder
+    {
         return $query->where(function (Builder $q) use ($userId): void {
             $q->whereNull('default_user_id')->orWhere('default_user_id', $userId);
         });
     }
 
     /** @return BelongsTo<User, $this> */
-    public function defaultUser(): BelongsTo {
+    public function defaultUser(): BelongsTo
+    {
         return $this->belongsTo(User::class, 'default_user_id');
     }
 
     /** @return HasMany<EnergyLog, $this> */
-    public function energyLogs(): HasMany {
+    public function energyLogs(): HasMany
+    {
         return $this->hasMany(EnergyLog::class);
     }
 
     /** @return HasMany<TravelLog, $this> */
-    public function travelLogs(): HasMany {
+    public function travelLogs(): HasMany
+    {
         return $this->hasMany(TravelLog::class);
     }
 }

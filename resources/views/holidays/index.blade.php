@@ -8,32 +8,34 @@
     $years = range($currentYear - 2, $currentYear + 3);
 @endphp
 
-<div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
-    {{-- Filter & Aktionen --}}
-    <form method="GET" action="{{ route('holidays.index') }}"
-          class="flex-none rounded-box border border-base-300 bg-base-100 p-4 shadow-xs md:p-5">
-        <div class="flex flex-wrap items-end gap-3">
-            <div class="flex flex-col min-w-32">
-                <label for="filter-year" class="label py-1">
-                    <span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Jahr') }}</span>
-                </label>
-                <select id="filter-year" name="year" class="select select-bordered select-sm" onchange="this.form.submit()">
-                    @foreach ($years as $y)
-                        <option value="{{ $y }}" @selected($y === $year)>{{ $y }}</option>
-                    @endforeach
-                </select>
+<x-page-shell overflow="clip">
+    <x-slot:toolbar>
+        <x-card>
+        <form method="GET" action="{{ route('holidays.index') }}">
+            <div class="flex flex-wrap items-end gap-3">
+                <div class="flex flex-col min-w-32">
+                    <label for="filter-year" class="label py-1">
+                        <span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Jahr') }}</span>
+                    </label>
+                    <select id="filter-year" name="year" class="select select-bordered select-sm" onchange="this.form.submit()">
+                        @foreach ($years as $y)
+                            <option value="{{ $y }}" @selected($y === $year)>{{ $y }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="ml-auto flex items-end gap-2">
+                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Filtern') }}</button>
+                    @if ((int) $year !== $currentYear)
+                        <a href="{{ route('holidays.index') }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
+                    @endif
+                    <a href="{{ route('holidays.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
+                        + {{ __('Eigener Feiertag') }}
+                    </a>
+                </div>
             </div>
-            <div class="ml-auto flex items-end gap-2">
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('Filtern') }}</button>
-                @if ((int) $year !== $currentYear)
-                    <a href="{{ route('holidays.index') }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
-                @endif
-                <a href="{{ route('holidays.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
-                    + {{ __('Eigener Feiertag') }}
-                </a>
-            </div>
-        </div>
-    </form>
+        </form>
+        </x-card>
+    </x-slot:toolbar>
 
     {{-- Tabs: Jahresübersicht | Eigene Feiertage --}}
     <div role="tablist" class="tabs tabs-box w-fit">
@@ -104,7 +106,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="py-6 text-center text-base-content/70">{{ __('Keine Feiertage in diesem Jahr.') }}</td>
+                        <td colspan="5" class="p-0"><x-empty-state :compact="true" :title="__('Keine Feiertage in diesem Jahr')" /></td>
                     </tr>
                 @endforelse
             </tbody>
@@ -156,13 +158,13 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="py-6 text-center text-base-content/70">{{ __('Keine eigenen Feiertage vorhanden.') }}</td>
+                        <td colspan="4" class="p-0"><x-empty-state :compact="true" :title="__('Keine eigenen Feiertage vorhanden')" /></td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
-</div>
+</x-page-shell>
 
 <script>
     (function () {

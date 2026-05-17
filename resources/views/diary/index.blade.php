@@ -3,7 +3,7 @@
 @section('nav-title', __('Alle Einträge'))
 
 @section('content')
-<div class="flex h-full min-h-0 flex-col gap-4">
+<x-page-shell overflow="clip">
     {{-- Filter-Leiste --}}
     <form method="GET" action="{{ route('diary.index') }}" class="flex-none rounded-box border border-base-300 bg-base-100 p-5 shadow-xs">
         <div class="flex flex-wrap items-end gap-4">
@@ -139,5 +139,5 @@
             {{ $entries->links('pagination::simple-tailwind') }}
         </div>
     @endif
-</div>
+</x-page-shell>
 @endsection

@@ -18,10 +18,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class OrganizationController extends Controller
-{
-    public function index(Request $request): View
-    {
+class OrganizationController extends Controller {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', Organization::class);
 
         $query = Organization::query()->withoutGlobalScopes()->withCount('users');
@@ -35,25 +33,23 @@ class OrganizationController extends Controller
             'users' => 'users_count',
         ], 'name', 'asc');
 
-        $organizations = $query->paginate(25)->withQueryString();
+        $organizations = $query->paginate((int) setting('pagination.organizations', 25))->withQueryString();
 
         return view('admin.organizations.index', compact('organizations', 'sort', 'dir'));
     }
 
-    public function create(): View
-    {
+    public function create(): View {
         Gate::authorize('create', Organization::class);
 
-        return view('admin.organizations.create');
+        return view('admin.organizations._form_dialog', ['organization' => new Organization]);
     }
 
-    public function store(Request $request): RedirectResponse
-    {
+    public function store(Request $request): RedirectResponse {
         Gate::authorize('create', Organization::class);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'plan' => ['required', 'in:'.implode(',', Organization::$plans)],
+            'plan' => ['required', 'in:' . implode(',', Organization::$plans)],
             'locale' => ['required', 'string', 'max:10'],
             'timezone' => ['required', 'string', 'max:64'],
             'is_active' => ['boolean'],
@@ -67,57 +63,100 @@ class OrganizationController extends Controller
             ->with('success', __('Organisation wurde erstellt.'));
     }
 
-    public function edit(Organization $organization): View
-    {
+    public function edit(Organization $organization): View {
         Gate::authorize('update', $organization);
 
-        return view('admin.organizations.edit', compact('organization'));
+        return view('admin.organizations._form_dialog', compact('organization'));
     }
 
-    public function update(Request $request, Organization $organization): RedirectResponse
-    {
+    public function update(Request $request, Organization $organization): RedirectResponse {
         Gate::authorize('update', $organization);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'plan' => ['required', 'in:'.implode(',', Organization::$plans)],
+            'plan' => ['required', 'in:' . implode(',', Organization::$plans)],
             'locale' => ['required', 'string', 'max:10'],
             'timezone' => ['required', 'string', 'max:64'],
             'is_active' => ['boolean'],
             'compliance' => ['sometimes', 'array'],
-            'compliance.mode' => ['sometimes', 'in:'.implode(',', Organization::$complianceModes)],
+            'compliance.mode' => ['sometimes', 'in:' . implode(',', Organization::$complianceModes)],
             'compliance.max_hours_day' => ['sometimes', 'integer', 'min:1', 'max:24'],
             'compliance.min_rest_hours' => ['sometimes', 'integer', 'min:1', 'max:24'],
             'compliance.max_hours_week' => ['sometimes', 'integer', 'min:1', 'max:168'],
             'compliance.max_consecutive_days' => ['sometimes', 'integer', 'min:1', 'max:14'],
             'compliance.rules' => ['sometimes', 'array'],
             'compliance.rules.*' => ['boolean'],
+            // Generic per-group overrides. Werte sind immer Strings (Form-Input);
+            // leere Strings werden weiter unten verworfen → Fallback auf config().
+            'settings' => ['sometimes', 'array'],
+            'settings.pagination' => ['sometimes', 'array'],
+            'settings.pagination.*' => ['nullable', 'integer', 'min:1', 'max:1000'],
+            'settings.invoicing' => ['sometimes', 'array'],
+            'settings.invoicing.default_tax_rate' => ['nullable', 'string', 'max:8'],
+            'settings.invoicing.default_currency' => ['nullable', 'string', 'size:3'],
+            'settings.invoicing.time_unit' => ['nullable', 'string', 'max:8'],
+            'settings.uploads' => ['sometimes', 'array'],
+            'settings.uploads.*' => ['nullable', 'integer', 'min:1', 'max:1048576'],
+            'settings.validation' => ['sometimes', 'array'],
+            'settings.validation.*' => ['sometimes', 'array'],
+            'settings.validation.*.*' => ['nullable', 'integer', 'min:1', 'max:100000'],
+            'settings.notifications' => ['sometimes', 'array'],
+            'settings.notifications.push' => ['sometimes', 'array'],
+            'settings.notifications.push.body_truncate' => ['nullable', 'integer', 'min:20', 'max:500'],
+            'settings.ui' => ['sometimes', 'array'],
+            'settings.ui.*' => ['sometimes', 'array'],
+            'settings.ui.*.*' => ['nullable', 'integer', 'min:1', 'max:1000'],
         ]);
 
         $data['is_active'] = $request->boolean('is_active', true);
 
+        // Eingehende Override-Gruppen rekursiv mit Bestand mergen; leere Werte
+        // werden entfernt, damit der systemweite config()-Default greift.
+        /** @var array<string,mixed> $existingSettings */
+        $existingSettings = (array) ($organization->settings ?? []);
+        $mergedSettings = $existingSettings;
+
+        if (array_key_exists('settings', $data) && is_array($data['settings'])) {
+            foreach ($data['settings'] as $group => $values) {
+                if (! is_array($values)) {
+                    continue;
+                }
+                $clean = $this->stripEmpty($values);
+                $existingGroup = isset($mergedSettings[$group]) && is_array($mergedSettings[$group])
+                    ? $mergedSettings[$group]
+                    : [];
+                $next = array_replace_recursive($existingGroup, $clean);
+                $next = $this->stripEmpty($next);
+                if ($next === []) {
+                    unset($mergedSettings[$group]);
+                } else {
+                    $mergedSettings[$group] = $next;
+                }
+            }
+            unset($data['settings']);
+        }
+
         // Compliance ggf. in settings einbetten.
         if (array_key_exists('compliance', $data)) {
-            /** @var array<string,mixed> $settings */
-            $settings = (array) ($organization->settings ?? []);
             /** @var array<string,mixed> $existingCompliance */
-            $existingCompliance = isset($settings['compliance']) && is_array($settings['compliance'])
-                ? $settings['compliance']
+            $existingCompliance = isset($mergedSettings['compliance']) && is_array($mergedSettings['compliance'])
+                ? $mergedSettings['compliance']
                 : [];
-            $settings['compliance'] = array_replace(
+            $mergedSettings['compliance'] = array_replace(
                 $existingCompliance,
                 $data['compliance'],
             );
             // Boolean-Konvertierung für rules
-            if (isset($settings['compliance']['rules']) && is_array($settings['compliance']['rules'])) {
-                $settings['compliance']['rules'] = array_map(
-                    static fn ($v) => filter_var($v, FILTER_VALIDATE_BOOL),
-                    $settings['compliance']['rules'],
+            if (isset($mergedSettings['compliance']['rules']) && is_array($mergedSettings['compliance']['rules'])) {
+                $mergedSettings['compliance']['rules'] = array_map(
+                    static fn($v) => filter_var($v, FILTER_VALIDATE_BOOL),
+                    $mergedSettings['compliance']['rules'],
                 );
             }
-            $data['settings'] = $settings;
             unset($data['compliance']);
         }
+
+        $data['settings'] = $mergedSettings;
 
         $organization->update($data);
 
@@ -125,13 +164,39 @@ class OrganizationController extends Controller
             ->with('success', __('Organisation wurde aktualisiert.'));
     }
 
-    public function destroy(Organization $organization): RedirectResponse
-    {
+    public function destroy(Organization $organization): RedirectResponse {
         Gate::authorize('delete', $organization);
 
         $organization->delete();
 
         return redirect()->route('admin.organizations.index')
             ->with('success', __('Organisation wurde gelöscht.'));
+    }
+
+    /**
+     * Entfernt leere Strings / nulls (rekursiv) aus einem Settings-Array.
+     * Verbleibende leere Sub-Arrays werden ebenfalls entfernt, damit
+     * config()-Fallbacks greifen.
+     *
+     * @param  array<string,mixed>  $values
+     * @return array<string,mixed>
+     */
+    private function stripEmpty(array $values): array
+    {
+        $out = [];
+        foreach ($values as $k => $v) {
+            if (is_array($v)) {
+                $cleaned = $this->stripEmpty($v);
+                if ($cleaned !== []) {
+                    $out[$k] = $cleaned;
+                }
+                continue;
+            }
+            if ($v === null || $v === '') {
+                continue;
+            }
+            $out[$k] = $v;
+        }
+        return $out;
     }
 }

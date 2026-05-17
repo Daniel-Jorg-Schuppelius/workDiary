@@ -26,12 +26,10 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-class ServiceOrderController extends Controller
-{
+class ServiceOrderController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request): View
-    {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', ServiceOrder::class);
 
         /** @var User $auth */
@@ -73,11 +71,10 @@ class ServiceOrderController extends Controller
         ]);
     }
 
-    public function create(Request $request): View
-    {
+    public function create(Request $request): View {
         Gate::authorize('create', ServiceOrder::class);
 
-        return view('service-orders.form', [
+        return view('service-orders._form_dialog', [
             'order' => null,
             'date' => $request->date('date')?->toDateString() ?? CarbonImmutable::today()->toDateString(),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
@@ -88,8 +85,7 @@ class ServiceOrderController extends Controller
         ]);
     }
 
-    public function store(SaveServiceOrderRequest $request): RedirectResponse
-    {
+    public function store(SaveServiceOrderRequest $request): RedirectResponse {
         Gate::authorize('create', ServiceOrder::class);
 
         /** @var User $auth */
@@ -107,8 +103,7 @@ class ServiceOrderController extends Controller
             ->with('success', __('Auftrag :title angelegt.', ['title' => $order->title]));
     }
 
-    public function show(ServiceOrder $serviceOrder): View
-    {
+    public function show(ServiceOrder $serviceOrder): View {
         Gate::authorize('view', $serviceOrder);
 
         $serviceOrder->load(['customer', 'project', 'assignedUser', 'tour']);
@@ -116,11 +111,10 @@ class ServiceOrderController extends Controller
         return view('service-orders.show', ['order' => $serviceOrder]);
     }
 
-    public function edit(ServiceOrder $serviceOrder): View
-    {
+    public function edit(ServiceOrder $serviceOrder): View {
         Gate::authorize('update', $serviceOrder);
 
-        return view('service-orders.form', [
+        return view('service-orders._form_dialog', [
             'order' => $serviceOrder,
             'date' => $serviceOrder->scheduled_for?->toDateString(),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
@@ -131,8 +125,7 @@ class ServiceOrderController extends Controller
         ]);
     }
 
-    public function update(SaveServiceOrderRequest $request, ServiceOrder $serviceOrder): RedirectResponse
-    {
+    public function update(SaveServiceOrderRequest $request, ServiceOrder $serviceOrder): RedirectResponse {
         Gate::authorize('update', $serviceOrder);
 
         /** @var User $auth */
@@ -146,8 +139,7 @@ class ServiceOrderController extends Controller
             ->with('success', __('Auftrag aktualisiert.'));
     }
 
-    public function destroy(ServiceOrder $serviceOrder): RedirectResponse
-    {
+    public function destroy(ServiceOrder $serviceOrder): RedirectResponse {
         Gate::authorize('delete', $serviceOrder);
 
         $serviceOrder->delete();
@@ -159,8 +151,7 @@ class ServiceOrderController extends Controller
     /**
      * @return array{0: CarbonImmutable, 1: CarbonImmutable}
      */
-    private function resolveRange(Request $request): array
-    {
+    private function resolveRange(Request $request): array {
         if ($request->filled('from') && $request->filled('to')) {
             $from = CarbonImmutable::parse((string) $request->query('from'))->startOfDay();
             $to = CarbonImmutable::parse((string) $request->query('to'))->endOfDay();
@@ -173,8 +164,7 @@ class ServiceOrderController extends Controller
         return [$range['from']->startOfDay(), $range['to']->endOfDay()];
     }
 
-    private function resolveTargetUser(Request $request, User $authUser): ?User
-    {
+    private function resolveTargetUser(Request $request, User $authUser): ?User {
         if (! $request->filled('user')) {
             return $authUser;
         }
@@ -206,8 +196,7 @@ class ServiceOrderController extends Controller
     }
 
     /** @return Collection<int, User> */
-    private function loadSelectableUsers(): Collection
-    {
+    private function loadSelectableUsers(): Collection {
         /** @var Collection<int, User> $users */
         $users = User::query()->orderBy('name')->get(['id', 'name']);
 

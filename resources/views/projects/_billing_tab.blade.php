@@ -95,61 +95,10 @@
 
         <div class="divider"></div>
 
-        <h3 class="font-semibold">{{ __('Neue Regel hinzufügen') }}</h3>
-        <form method="POST" action="{{ route('projects.billing-rules.store', $project) }}" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            @csrf
-            <div>
-                <label class="label"><span class="label-text">{{ __('Tätigkeitsart') }}</span></label>
-                <select name="applies_to_kind" class="select select-bordered w-full">
-                    <option value="">{{ __('Alle (Fallback)') }}</option>
-                    @foreach ($kinds as $k)
-                        <option value="{{ $k }}">{{ $k }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="label"><span class="label-text">{{ __('Lexoffice-Artikel') }}</span></label>
-                <select name="lexoffice_article_id" class="select select-bordered w-full">
-                    <option value="">{{ __('— ohne Artikel —') }}</option>
-                    @foreach ($articles as $art)
-                        <option value="{{ $art->external_id }}">
-                            {{ $art->name }}@if ($art->net_unit_price !== null) — {{ number_format((float) $art->net_unit_price, 2, ',', '.') }} €@endif
-                        </option>
-                    @endforeach
-                </select>
-                @if ($articles->isEmpty())
-                    <p class="text-xs opacity-60 mt-1">
-                        {{ __('Noch keine Artikel synchronisiert. Führe :cmd aus.', ['cmd' => 'php artisan lexoffice:sync-articles']) }}
-                    </p>
-                @endif
-            </div>
-            <div>
-                <label class="label"><span class="label-text">{{ __('Item-Typ') }}</span></label>
-                <select name="item_type" class="select select-bordered w-full">
-                    @foreach ($itemTypes as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="label"><span class="label-text">{{ __('Einheit') }}</span></label>
-                <input type="text" name="unit_name" class="input input-bordered w-full" placeholder="Stunde">
-            </div>
-            <div>
-                <label class="label"><span class="label-text">{{ __('VAT %') }}</span></label>
-                <input type="number" step="0.01" min="0" max="100" name="vat_rate" class="input input-bordered w-full" placeholder="19">
-            </div>
-            <div>
-                <label class="label"><span class="label-text">{{ __('Preis (netto)') }}</span></label>
-                <input type="number" step="0.0001" min="0" name="net_unit_price" class="input input-bordered w-full">
-            </div>
-            <div>
-                <label class="label"><span class="label-text">{{ __('Priorität') }}</span></label>
-                <input type="number" step="1" min="0" max="1000" name="priority" value="0" class="input input-bordered w-full">
-            </div>
-            <div class="flex items-end">
-                <button type="submit" class="btn btn-primary w-full">{{ __('Regel speichern') }}</button>
-            </div>
-        </form>
+        <div class="flex justify-end">
+            <a href="{{ route('projects.billing-rules.create', $project) }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
+                + {{ __('Neue Regel hinzufügen') }}
+            </a>
+        </div>
     </div>
 </div>

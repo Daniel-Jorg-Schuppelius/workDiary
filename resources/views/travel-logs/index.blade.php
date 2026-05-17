@@ -3,27 +3,22 @@
 @section('title', __('Fahrtenbuch'))
 
 @section('content')
-    <div class="space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h1 class="text-xl font-semibold">{{ __('Fahrtenbuch') }}</h1>
-                <p class="text-sm text-base-content/60">
-                    {{ __('Erfasste Fahrten') }} — {{ $from->format('d.m.Y') }} – {{ $to->format('d.m.Y') }}
-                </p>
-                <p class="text-xs text-base-content/50">
-                    {{ __('Zeitraum übernommen aus dem Header. Mit der Auswahl oben links wechseln.') }}
-                </p>
-            </div>
-            <div class="flex flex-wrap gap-2">
-                <a href="{{ route('travel-logs.create') }}" class="btn btn-sm btn-primary">
-                    <x-icon name="add" /> {{ __('Neue Fahrt') }}
-                </a>
-                <a href="{{ route('travel-logs.export', array_merge(request()->query(), ['from' => $from->toDateString(), 'to' => $to->toDateString()])) }}"
-                   class="btn btn-sm btn-ghost">
-                    <x-icon name="download" /> {{ __('CSV-Export') }}
-                </a>
-            </div>
-        </div>
+    <x-page-shell>
+        <x-slot:toolbar>
+            <x-page-toolbar :title="__('Fahrtenbuch')"
+                            :subtitle="__('Erfasste Fahrten') . ' — ' . $from->format('d.m.Y') . ' – ' . $to->format('d.m.Y')">
+                {{ __('Zeitraum übernommen aus dem Header. Mit der Auswahl oben links wechseln.') }}
+                <x-slot:actions>
+                    <a href="{{ route('travel-logs.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
+                        <x-icon name="add" /> {{ __('Neue Fahrt') }}
+                    </a>
+                    <a href="{{ route('travel-logs.export', array_merge(request()->query(), ['from' => $from->toDateString(), 'to' => $to->toDateString()])) }}"
+                       class="btn btn-sm btn-ghost">
+                        <x-icon name="download" /> {{ __('CSV-Export') }}
+                    </a>
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
 
 
         <div class="grid gap-3 sm:grid-cols-2">
@@ -37,7 +32,8 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto rounded-box border border-base-300 bg-base-100">
+        <x-card padding="p-0">
+            <div class="overflow-x-auto">
             <table class="table table-sm">
                 <thead>
                     <tr>
@@ -71,21 +67,24 @@
                             </td>
                             <td class="max-w-xs truncate">{{ $log->purpose }}</td>
                             <td class="text-right">
-                                <a href="{{ route('travel-logs.edit', $log) }}" class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a>
+                                <a href="{{ route('travel-logs.edit', $log) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a>
                                 <form method="POST" action="{{ route('travel-logs.destroy', $log) }}" class="inline"
-                                      onsubmit="return confirm('{{ __('Fahrt wirklich löschen?') }}');">
+                                      data-confirm-dialog
+                                      data-confirm-message="{{ __('Fahrt wirklich löschen?') }}"
+                                      data-confirm-label="{{ __('Löschen') }}">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Löschen') }}</button>
                                 </form>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="py-6 text-center text-base-content/60">{{ __('Keine Fahrten im gewählten Zeitraum.') }}</td></tr>
+                        <tr><td colspan="8" class="p-0"><x-empty-state :compact="true" :title="__('Keine Fahrten im gewählten Zeitraum')" /></td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+        </x-card>
 
         {{ $logs->links() }}
-    </div>
+    </x-page-shell>
 @endsection

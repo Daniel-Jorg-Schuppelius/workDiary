@@ -1,7 +1,6 @@
 {{-- Bereitschaft: Tabelle --}}
 <?php $p = array_merge($filters ?? [], ['tab' => 'bereitschaft']); ?>
-<div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-    <table class="table table-zebra table-pin-rows">
+<x-table scroll="flex" :pinRows="true" :zebra="true">
         <thead class="bg-base-200">
             <tr>
                 <th><x-sort-th column="mitarbeiter" :route="route('duties.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Mitarbeiter') }}</x-sort-th></th>
@@ -27,11 +26,10 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="5" class="py-6 text-center text-base-content/60">{{ __('Keine Einträge.') }}</td></tr>
+                <tr><td colspan="5" class="p-0"><x-empty-state :compact="true" :title="__('Keine Einträge')" /></td></tr>
             @endforelse
         </tbody>
-    </table>
-</div>
+</x-table>
 @if ($shifts->total() > 0)
     @include('duties._pagination', ['paginator' => $shifts])
 @endif

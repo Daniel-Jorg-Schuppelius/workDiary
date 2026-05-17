@@ -8,19 +8,13 @@
 @endphp
 
 @section('content')
-    <div class="mx-auto w-full max-w-screen-xl space-y-6 px-4 py-4 xl:px-8">
-        <div class="flex flex-wrap items-end justify-between gap-3">
-            <div>
-                <h1 class="font-['Space_Grotesk'] text-2xl font-bold">{{ __('Tätigkeiten') }}</h1>
-                <p class="text-sm text-base-content/60">{{ __('Verwaltet die Kategorien für nicht-projektgebundene Arbeitszeit.') }}</p>
-            </div>
-        </div>
+    <x-page-shell gap="6">
+        <x-slot:toolbar>
+            <x-page-toolbar :title="__('Tätigkeiten')" :subtitle="__('Verwaltet die Kategorien für nicht-projektgebundene Arbeitszeit.')" />
+        </x-slot:toolbar>
 
-        @if (session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
-
-        <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Neue Tätigkeit') }}</h2>
-            <form method="POST" action="{{ route('activity-categories.store') }}" class="mt-3 grid gap-3 md:grid-cols-4">
+        <x-card :title="__('Neue Tätigkeit')">
+            <form method="POST" action="{{ route('activity-categories.store') }}" class="grid gap-3 md:grid-cols-4">
                 @csrf
                 <label class="form-control md:col-span-1">
                     <span class="label-text text-xs">{{ __('Schlüssel') }}</span>
@@ -49,9 +43,9 @@
                 </div>
                 <button type="submit" class="btn btn-sm btn-primary md:col-span-1">{{ __('Anlegen') }}</button>
             </form>
-        </section>
+        </x-card>
 
-        <section class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+        <x-card padding="p-0">
             <div class="overflow-x-auto">
                 <table class="table table-sm">
                     <thead>
@@ -74,11 +68,11 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="py-6 text-center text-sm text-base-content/60">{{ __('Noch keine Tätigkeiten.') }}</td></tr>
+                            <tr><td colspan="7" class="p-0"><x-empty-state :compact="true" :title="__('Noch keine Tätigkeiten')" /></td></tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-        </section>
-    </div>
+        </x-card>
+    </x-page-shell>
 @endsection

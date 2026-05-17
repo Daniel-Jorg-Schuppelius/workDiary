@@ -18,26 +18,26 @@
 @endphp
 
 @section('content')
-<div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
-    {{-- Toolbar: Aktionen + Suche --}}
-    <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <form method="GET" action="{{ route('customers.index') }}" class="join">
-            <input type="hidden" name="status" value="{{ $status }}">
-            <input type="text" name="q" value="{{ $search }}" placeholder="{{ __('Suche…') }}"
-                   class="input input-sm input-bordered join-item w-full sm:w-48">
-            <button type="submit" class="btn btn-sm btn-ghost join-item gap-1">
-                <x-icon name="search" />
-                <span class="hidden sm:inline">{{ __('Suchen') }}</span>
-            </button>
-        </form>
-        <div class="flex flex-wrap items-center gap-2">
-            <a href="{{ route('customers.export', array_filter(['status' => $status, 'q' => $search])) }}"
-               class="btn btn-sm btn-ghost gap-1">
-                <x-icon name="download" />
-                <span>{{ __('CSV-Export') }}</span>
-            </a>
-            @if (auth()->user()?->canManageBilling())
-                <a href="{{ route('customers.import.form') }}" class="btn btn-sm btn-ghost gap-1">
+<x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <form method="GET" action="{{ route('customers.index') }}" class="join">
+                <input type="hidden" name="status" value="{{ $status }}">
+                <input type="text" name="q" value="{{ $search }}" placeholder="{{ __('Suche…') }}"
+                       class="input input-sm input-bordered join-item w-full sm:w-48">
+                <button type="submit" class="btn btn-sm btn-ghost join-item gap-1">
+                    <x-icon name="search" />
+                    <span class="hidden sm:inline">{{ __('Suchen') }}</span>
+                </button>
+            </form>
+            <x-slot:actions>
+                <a href="{{ route('customers.export', array_filter(['status' => $status, 'q' => $search])) }}"
+                   class="btn btn-sm btn-ghost gap-1">
+                    <x-icon name="download" />
+                    <span>{{ __('CSV-Export') }}</span>
+                </a>
+                @if (auth()->user()?->canManageBilling())
+                    <a href="{{ route('customers.import.form') }}" class="btn btn-sm btn-ghost gap-1">
                     <x-icon name="upload" />
                     <span>{{ __('CSV-Import') }}</span>
                 </a>
@@ -60,8 +60,9 @@
                     <span>{{ __('Kunde') }}</span>
                 </a>
             @endcan
-        </div>
-    </div>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     {{-- Tabs: Status --}}
     <div role="tablist" class="tabs tabs-box self-start">
@@ -74,15 +75,12 @@
     </div>
 
     @if ($customers->total() === 0)
-        <div class="rounded-box border border-base-300 bg-base-100 p-10 text-center text-base-content/60">
-            @if ($search !== '')
-                {{ __('Keine Kunden für „:q" gefunden.', ['q' => $search]) }}
-            @else
-                {{ __('Noch keine Kunden in dieser Ansicht.') }}
-            @endif
-        </div>
+        <x-card>
+            <x-empty-state :title="$search !== '' ? __('Keine Kunden für „:q“ gefunden.', ['q' => $search]) : __('Noch keine Kunden in dieser Ansicht')" />
+        </x-card>
     @else
-        <div class="overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
+        <x-card padding="p-0">
+            <div class="overflow-x-auto">
             <table class="table table-zebra table-sm">
                 <thead>
                     <tr>
@@ -137,11 +135,12 @@
                 @endforeach
                 </tbody>
             </table>
-        </div>
+            </div>
+        </x-card>
 
         <div class="px-1">
             {{ $customers->links() }}
         </div>
     @endif
-</div>
+</x-page-shell>
 @endsection

@@ -22,7 +22,7 @@
         : $from->translatedFormat('d.m.') . ' – ' . $to->translatedFormat('d.m.Y') . ' KW ' . $from->weekOfYear;
 @endphp
 
-<div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
+<x-page-shell overflow="clip">
 
     {{-- ── Filter & Toolbar ────────────────────────────────────────────── --}}
     <x-filter-bar :action="route('schedule.index')" class="bg-base-100!">
@@ -67,9 +67,6 @@
     </x-filter-bar>
 
     {{-- ── Flash messages ──────────────────────────────────────────────── --}}
-    @if (session('success'))
-        <div class="alert alert-success alert-sm my-2 py-2">{{ session('success') }}</div>
-    @endif
     @if (session('import_errors'))
         <div class="alert alert-warning alert-sm my-2 py-2">
             <ul class="list-disc pl-4 text-xs">
@@ -89,7 +86,7 @@
         @endif
     </div>
 
-</div>
+</x-page-shell>
 
 {{-- ── Shift dialog ─────────────────────────────────────────────────────── --}}
 @include('schedule.partials._shift_dialog')

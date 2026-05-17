@@ -10,32 +10,35 @@
         /** @var array<string, string> $types */
         /** @var array<string, string> $filters */
     @endphp
-    <div class="mx-auto flex h-[calc(100dvh-11rem)] w-full max-w-screen-2xl flex-col gap-4 px-4 xl:px-8 2xl:px-12">
-        <form method="GET" class="flex flex-wrap gap-2 rounded-box border border-base-300 bg-base-100 p-3 shadow-xs">
-            <select name="event" class="select select-bordered select-sm">
-                <option value="">{{ __('Aktion') }}</option>
-                @foreach ($events as $ev)
-                    <option value="{{ $ev }}" @selected(($filters['event'] ?? '') === $ev)>{{ $ev }}</option>
-                @endforeach
-            </select>
-            <select name="type" class="select select-bordered select-sm">
-                <option value="">{{ __('Typ') }}</option>
-                @foreach ($types as $key => $class)
-                    <option value="{{ $key }}" @selected(($filters['type'] ?? '') === $key)>{{ $key }}</option>
-                @endforeach
-            </select>
-            <select name="user_id" class="select select-bordered select-sm">
-                <option value="">{{ __('Benutzer') }}</option>
-                @foreach ($users as $u)
-                    <option value="{{ $u->id }}" @selected((int) ($filters['user_id'] ?? 0) === $u->id)>{{ $u->name }}</option>
-                @endforeach
-            </select>
-            <button class="btn btn-primary btn-sm">{{ __('Filtern') }}</button>
-            <a href="{{ route('audit.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurücksetzen') }}</a>
-        </form>
+    <x-page-shell>
+        <x-slot:toolbar>
+            <x-card>
+            <form method="GET" class="flex flex-wrap gap-2">
+                <select name="event" class="select select-bordered select-sm">
+                    <option value="">{{ __('Aktion') }}</option>
+                    @foreach ($events as $ev)
+                        <option value="{{ $ev }}" @selected(($filters['event'] ?? '') === $ev)>{{ $ev }}</option>
+                    @endforeach
+                </select>
+                <select name="type" class="select select-bordered select-sm">
+                    <option value="">{{ __('Typ') }}</option>
+                    @foreach ($types as $key => $class)
+                        <option value="{{ $key }}" @selected(($filters['type'] ?? '') === $key)>{{ $key }}</option>
+                    @endforeach
+                </select>
+                <select name="user_id" class="select select-bordered select-sm">
+                    <option value="">{{ __('Benutzer') }}</option>
+                    @foreach ($users as $u)
+                        <option value="{{ $u->id }}" @selected((int) ($filters['user_id'] ?? 0) === $u->id)>{{ $u->name }}</option>
+                    @endforeach
+                </select>
+                <button class="btn btn-primary btn-sm">{{ __('Filtern') }}</button>
+                <a href="{{ route('audit.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurücksetzen') }}</a>
+            </form>
+            </x-card>
+        </x-slot:toolbar>
 
-        <div class="min-h-0 flex-1 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <table class="table table-xs table-zebra table-pin-rows w-full">
+        <x-table scroll="flex" :pinRows="true" :zebra="true" size="xs">
                 <thead class="bg-base-200">
                     <tr>
                         <?php $p = $filters ?? []; ?>
@@ -67,12 +70,11 @@
                             <td class="text-xs text-base-content/60">{{ $log->ip }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="text-center text-sm text-base-content/60 py-6">{{ __('Keine Einträge.') }}</td></tr>
+                        <tr><td colspan="7" class="p-0"><x-empty-state :compact="true" :title="__('Keine Einträge')" /></td></tr>
                     @endforelse
                 </tbody>
-        </table>
-        </div>
+        </x-table>
 
         <div class="flex-none">{{ $logs->links() }}</div>
-    </div>
+    </x-page-shell>
 @endsection

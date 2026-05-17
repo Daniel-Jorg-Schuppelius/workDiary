@@ -63,7 +63,7 @@ class CommentController extends Controller
     private function validateBody(Request $request): string
     {
         return $request->validate([
-            'body' => ['required', 'string', 'max:5000'],
+            'body' => ['required', 'string', 'max:' . (int) setting('validation.comment.body_max', 5000)],
         ])['body'];
     }
 }

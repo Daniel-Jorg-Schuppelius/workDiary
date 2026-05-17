@@ -46,7 +46,7 @@ class ScheduleImportController extends Controller
         }
 
         $request->validate([
-            'file' => ['required', 'file', 'mimes:csv,txt,xlsx,xls', 'max:10240'],
+            'file' => ['required', 'file', 'mimes:csv,txt,xlsx,xls', 'max:' . (int) setting('uploads.csv_import_kb', 10240)],
         ]);
 
         $file = $request->file('file');

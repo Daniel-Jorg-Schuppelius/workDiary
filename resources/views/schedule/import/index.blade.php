@@ -3,24 +3,20 @@
 @section('nav-title', __('Schichtplan Import'))
 
 @section('content')
-<div class="mx-auto max-w-2xl px-4 py-8">
-
-    <div class="mb-6 flex items-center gap-3">
-        <a href="{{ route('schedule.index') }}" class="btn btn-sm btn-ghost">← {{ __('Zurück') }}</a>
-    </div>
+<x-page-shell gap="6">
+    <x-slot:toolbar>
+        <x-page-toolbar :title="__('Schichtplan Import')">
+            <x-slot:actions>
+                <a href="{{ route('schedule.index') }}" class="btn btn-sm btn-ghost">← {{ __('Zurück') }}</a>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if (session('error'))
-        <div class="alert alert-error mb-4">{{ session('error') }}</div>
+        <div class="alert alert-error">{{ session('error') }}</div>
     @endif
 
-    <div class="card bg-base-100 shadow-sm border border-base-300">
-        <div class="card-body">
-            <h2 class="card-title text-base">{{ __('CSV oder Excel-Datei hochladen') }}</h2>
-            <p class="text-sm text-base-content/60 mb-4">
-                {{ __('Unterstützte Formate: .csv (Semikolon-getrennt), .xlsx, .xls') }}<br>
-                {{ __('Die erste Zeile muss Spaltenköpfe enthalten.') }}
-            </p>
-
+    <x-card :title="__('CSV oder Excel-Datei hochladen')" :subtitle="__('Unterstützte Formate: .csv (Semikolon-getrennt), .xlsx, .xls') . ' · ' . __('Die erste Zeile muss Spaltenköpfe enthalten.')">
             <form method="POST" action="{{ route('schedule.import.preview') }}" enctype="multipart/form-data">
                 @csrf
 
@@ -49,10 +45,9 @@
                     <button type="submit" class="btn btn-primary">{{ __('Weiter →') }}</button>
                 </div>
             </form>
-        </div>
-    </div>
+    </x-card>
 
-    <div class="mt-6 rounded-box border border-base-300 bg-base-200/40 p-4 text-sm">
+    <div class="rounded-box border border-base-300 bg-base-200/40 p-4 text-sm">
         <h3 class="mb-2 font-semibold">{{ __('Hinweise zum Format') }}</h3>
         <ul class="list-disc space-y-1 pl-5 text-base-content/70">
             <li>{{ __('Pflichtfelder: Datum, Mitarbeiter (Name oder E-Mail)') }}</li>
@@ -63,5 +58,5 @@
         </ul>
     </div>
 
-</div>
+</x-page-shell>
 @endsection

@@ -26,7 +26,7 @@
 
         <div class="flex flex-wrap gap-2">
             @if($editable)
-                <a href="{{ route('projects.timesheets.edit', [$project, $timesheet]) }}" class="btn btn-sm btn-ghost">{{ __('Kopfdaten') }}</a>
+                <a href="{{ route('projects.timesheets.edit', [$project, $timesheet]) }}" data-entry-modal-trigger class="btn btn-sm btn-ghost">{{ __('Kopfdaten') }}</a>
                 <form method="POST" action="{{ route('projects.timesheets.submit', [$project, $timesheet]) }}">@csrf
                     <button class="btn btn-sm btn-primary">{{ __('Einreichen') }}</button>
                 </form>
@@ -50,10 +50,6 @@
         </div>
     </div>
 
-    @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
     {{-- Summary --}}
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div class="rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs">
@@ -74,48 +70,13 @@
     <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
         <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Zeiteinträge') }}</span>
+            @if($editable)
+                <a href="{{ route('projects.timesheets.entries.create', [$project, $timesheet]) }}"
+                   data-entry-modal-trigger class="btn btn-sm btn-primary">
+                    <x-icon name="add" size="sm" /> {{ __('Zeile hinzufügen') }}
+                </a>
+            @endif
         </header>
-
-        @if($editable)
-            <form method="POST" action="{{ route('projects.timesheets.entries.store', [$project, $timesheet]) }}"
-                  class="flex flex-wrap items-end gap-2 border-b border-base-300 px-4 py-3">
-                @csrf
-                <div>
-                    <label class="label-text text-xs">{{ __('Start') }}</label>
-                    <input type="datetime-local" name="started_at" class="input input-sm input-bordered" required>
-                </div>
-                <div>
-                    <label class="label-text text-xs">{{ __('Ende') }}</label>
-                    <input type="datetime-local" name="ended_at" class="input input-sm input-bordered" required>
-                </div>
-                <div>
-                    <label class="label-text text-xs">{{ __('Pause min') }}</label>
-                    <input type="number" name="break_minutes" value="0" min="0" max="480" class="input input-sm input-bordered w-24">
-                </div>
-                <div>
-                    <label class="label-text text-xs">{{ __('Art') }}</label>
-                    <select name="kind" class="select select-sm select-bordered">
-                        <option value="work">{{ __('Arbeit') }}</option>
-                        <option value="travel">{{ __('Anfahrt') }}</option>
-                        <option value="standby">{{ __('Bereitschaft') }}</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="label-text text-xs">{{ __('Aufgabe') }}</label>
-                    <select name="task_id" class="select select-sm select-bordered">
-                        <option value="">—</option>
-                        @foreach($tasks as $t)
-                            <option value="{{ $t->id }}">{{ $t->title }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="flex-1 min-w-[180px]">
-                    <label class="label-text text-xs">{{ __('Beschreibung') }}</label>
-                    <input type="text" name="description" class="input input-sm input-bordered w-full">
-                </div>
-                <button class="btn btn-sm btn-primary">+ {{ __('Zeile') }}</button>
-            </form>
-        @endif
 
         <div class="overflow-x-auto">
             <table class="table table-sm">
@@ -167,44 +128,13 @@
     <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
         <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Verbrauchsmaterial') }}</span>
+            @if($editable)
+                <a href="{{ route('projects.timesheets.materials.create', [$project, $timesheet]) }}"
+                   data-entry-modal-trigger class="btn btn-sm btn-primary">
+                    <x-icon name="add" size="sm" /> {{ __('Material erfassen') }}
+                </a>
+            @endif
         </header>
-
-        @if($editable)
-            <form method="POST" action="{{ route('projects.timesheets.materials.store', [$project, $timesheet]) }}"
-                  class="flex flex-wrap items-end gap-2 border-b border-base-300 px-4 py-3">
-                @csrf
-                <div>
-                    <label class="label-text text-xs">{{ __('Aus Stamm') }}</label>
-                    <select name="material_id" class="select select-sm select-bordered">
-                        <option value="">— {{ __('frei') }} —</option>
-                        @foreach($materials as $m)
-                            <option value="{{ $m->id }}">{{ $m->name }} ({{ $m->unit }})</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="flex-1 min-w-[160px]">
-                    <label class="label-text text-xs">{{ __('Bezeichnung') }}</label>
-                    <input type="text" name="description" class="input input-sm input-bordered w-full" required>
-                </div>
-                <div>
-                    <label class="label-text text-xs">{{ __('Menge') }}</label>
-                    <input type="number" step="0.001" min="0.001" name="quantity" value="1" class="input input-sm input-bordered w-24" required>
-                </div>
-                <div>
-                    <label class="label-text text-xs">{{ __('Einheit') }}</label>
-                    <input type="text" name="unit" value="Stk." class="input input-sm input-bordered w-20" required>
-                </div>
-                <div>
-                    <label class="label-text text-xs">{{ __('EP netto') }}</label>
-                    <input type="number" step="0.0001" min="0" name="unit_price" class="input input-sm input-bordered w-28">
-                </div>
-                <div>
-                    <label class="label-text text-xs">{{ __('USt %') }}</label>
-                    <input type="number" step="0.01" min="0" max="100" name="tax_rate" class="input input-sm input-bordered w-20">
-                </div>
-                <button class="btn btn-sm btn-primary">+ {{ __('Material') }}</button>
-            </form>
-        @endif
 
         <div class="overflow-x-auto">
             <table class="table table-sm">
@@ -248,12 +178,10 @@
         </div>
     </div>
 
-    {{-- Signatur --}}
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Kundenfreigabe') }}</h2>
-
+    {{-- Signatur — kompakte Karte unterhalb des Stundenzettels --}}
+    <x-card :title="__('Kundenfreigabe')" class="max-w-xl">
         @if($timesheet->isSigned() || $timesheet->isLocked())
-            <div class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div class="text-sm">
                     <div><strong>{{ $timesheet->customer_name }}</strong> @if($timesheet->customer_role) ({{ $timesheet->customer_role }}) @endif</div>
                     @if($timesheet->customer_email)<div>{{ $timesheet->customer_email }}</div>@endif
@@ -266,7 +194,7 @@
                 @if($timesheet->signatureAttachment)
                     <div>
                         <img src="{{ route('attachments.show', $timesheet->signatureAttachment) }}"
-                             alt="signature" class="max-h-40 rounded border border-base-300 bg-white p-2">
+                             alt="signature" class="max-h-32 rounded border border-base-300 bg-white p-2">
                     </div>
                 @endif
             </div>
@@ -275,7 +203,9 @@
                 'action'        => route('projects.timesheets.sign', [$project, $timesheet]),
                 'timesheet'     => $timesheet,
             ])
+        @else
+            <x-empty-state :message="__('Stundenzettel ist noch nicht zur Signatur freigegeben.')" />
         @endif
-    </div>
+    </x-card>
 </div>
 @endsection

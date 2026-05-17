@@ -95,6 +95,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Available Locales
+    |--------------------------------------------------------------------------
+    |
+    | List of locales the UI is allowed to switch to. `de` and `en` ship with
+    | full translations; `fr` and `it` are structural placeholders that fall
+    | back to English content until proper translations are provided.
+    |
+    */
+
+    'available_locales' => array_filter(array_map('trim', explode(',', (string) env('APP_AVAILABLE_LOCALES', 'de,en,fr,it')))),
+
+    /*
+    |--------------------------------------------------------------------------
     | Encryption Key
     |--------------------------------------------------------------------------
     |

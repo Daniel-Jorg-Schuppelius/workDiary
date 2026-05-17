@@ -4,6 +4,7 @@ import "flatpickr/dist/flatpickr.min.css";
 import { German } from "flatpickr/dist/l10n/de.js";
 import weekSelect from "flatpickr/dist/plugins/weekSelect/weekSelect.js";
 import { bindPushToggle } from "./push.js";
+import { __ } from "./i18n.js";
 import "./sortable-tables.js";
 
 window.Alpine = Alpine;
@@ -328,16 +329,15 @@ document.addEventListener("click", (event) => {
                             payload && payload.errors
                                 ? Object.values(payload.errors).flat()[0]
                                 : null;
+                        const checkInputMsg = __("js.dialog.check_input");
                         if (typeof window.notifyAction === "function") {
                             window.notifyAction({
                                 tone: "warning",
-                                message: firstError || "Bitte Eingaben prüfen.",
+                                message: firstError || checkInputMsg,
                             });
                         } else {
                             // eslint-disable-next-line no-alert
-                            window.alert(
-                                firstError || "Bitte Eingaben prüfen.",
-                            );
+                            window.alert(firstError || checkInputMsg);
                         }
                         return;
                     }
@@ -350,14 +350,15 @@ document.addEventListener("click", (event) => {
                         bindDialogForms(dialogBody);
                     }
                 } catch (_error) {
+                    const saveFailedMsg = __("js.dialog.save_failed");
                     if (typeof window.notifyAction === "function") {
                         window.notifyAction({
                             tone: "error",
-                            message: "Dialog konnte nicht gespeichert werden.",
+                            message: saveFailedMsg,
                         });
                     } else {
                         // eslint-disable-next-line no-alert
-                        window.alert("Dialog konnte nicht gespeichert werden.");
+                        window.alert(saveFailedMsg);
                     }
                 } finally {
                     if (submitButton) submitButton.disabled = false;
@@ -370,11 +371,21 @@ document.addEventListener("click", (event) => {
         const { dialog: modal, dialogBody: body } = ensureDialog();
         const url = withDialogParam(rawUrl);
 
-        body.innerHTML =
-            '<div class="p-6 text-sm text-base-content/70">Lade…</div>';
+        const loadingMsg = __("js.dialog.loading");
+        const loadFailedMsg = __("js.dialog.load_failed");
+        body.innerHTML = `<div class="p-6 text-sm text-base-content/70">${loadingMsg}</div>`;
         if (typeof modal.showModal === "function") {
             modal.showModal();
         }
+
+        const renderLoadError = () => {
+            body.innerHTML = `
+                <div class="p-6 space-y-3">
+                    <p class="text-sm text-error">${loadFailedMsg}</p>
+                    <a href="${rawUrl}" target="_blank" rel="noopener" class="btn btn-sm btn-ghost">${__("js.dialog.open_in_new_tab")}</a>
+                </div>
+            `;
+        };
 
         try {
             const response = await fetch(url, {
@@ -385,12 +396,7 @@ document.addEventListener("click", (event) => {
             const html = await response.text();
 
             if (!response.ok) {
-                body.innerHTML = `
-                    <div class="p-6 space-y-3">
-                        <p class="text-sm text-error">Dialog konnte nicht geladen werden.</p>
-                        <a href="${rawUrl}" target="_blank" rel="noopener" class="btn btn-sm btn-ghost">Seite in neuem Tab öffnen</a>
-                    </div>
-                `;
+                renderLoadError();
                 return;
             }
 
@@ -398,12 +404,7 @@ document.addEventListener("click", (event) => {
             initDynamicFields(body);
             bindDialogForms(body);
         } catch (_error) {
-            body.innerHTML = `
-                <div class="p-6 space-y-3">
-                    <p class="text-sm text-error">Dialog konnte nicht geladen werden.</p>
-                    <a href="${rawUrl}" target="_blank" rel="noopener" class="btn btn-sm btn-ghost">Seite in neuem Tab öffnen</a>
-                </div>
-            `;
+            renderLoadError();
         }
     };
 
@@ -448,6 +449,59 @@ document.addEventListener("click", (event) => {
 
             event.preventDefault();
             openEntryDialog(href);
+        },
+        true,
+    );
+
+    // Delegated geocoding handler for travel-log inputs.
+    // Works both in static pages and within AJAX-injected dialog content.
+    const geocodeAddressInput = async (input) => {
+        const url = document
+            .querySelector('meta[name="geocode-url"]')
+            ?.getAttribute("content");
+        if (!url) return;
+        const csrf =
+            document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content") ?? "";
+        const q = input.value.trim();
+        if (q.length < 3) return;
+        input.classList.add("opacity-70");
+        try {
+            const res = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "X-CSRF-TOKEN": csrf,
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({ query: q }),
+            });
+            if (!res.ok) {
+                input.dataset.geocode = "miss";
+                return;
+            }
+            const data = await res.json();
+            input.dataset.geocode = "hit";
+            input.dataset.lat = data.lat;
+            input.dataset.lng = data.lng;
+            input.title = data.display_name || `${data.lat}, ${data.lng}`;
+        } catch (_error) {
+            input.dataset.geocode = "error";
+        } finally {
+            input.classList.remove("opacity-70");
+        }
+    };
+
+    document.addEventListener(
+        "blur",
+        (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLInputElement)) return;
+            if (!target.matches("input[data-travel-geocode]")) return;
+            geocodeAddressInput(target);
         },
         true,
     );

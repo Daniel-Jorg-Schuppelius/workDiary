@@ -3,6 +3,8 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="geocode-url" content="{{ route('api.internal.geocode') }}">
         <script>
             (function () {
                 var savedTheme = localStorage.getItem('workDiaryTheme');
@@ -195,6 +197,9 @@
             }
         </style>
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+            <script>
+                window.__translations = @json(app(\App\Services\I18n\JsTranslationProvider::class)->all());
+            </script>
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @else
             <style>
@@ -276,7 +281,9 @@
                             $manageNavItems = [];
                             $adminNavItems  = [];
                             if ($isLegacyAdmin) {
-                                $manageNavItems[] = ['route' => 'legacy.users.index', 'label' => __('Mitarbeiter'), 'icon' => 'group',           'modal' => false];
+                                if ($isLegacyMode) {
+                                    $manageNavItems[] = ['route' => 'legacy.users.index', 'label' => __('Mitarbeiter'), 'icon' => 'group',           'modal' => false];
+                                }
                                 $manageNavItems[] = ['route' => 'holidays.index',     'label' => __('Feiertage'),   'icon' => 'celebration',     'modal' => false];
                                 if (! $isLegacyMode) {
                                     $manageNavItems[] = ['route' => 'qualifications.index',         'label' => __('Qualifikationen'),  'icon' => 'workspace_premium','modal' => false];
@@ -291,7 +298,7 @@
                                 $adminNavItems[] = ['route' => 'admin.legacy-migration.index',      'label' => __('Legacy-Migration'), 'icon' => 'sync_alt',         'modal' => false];
                             }
                             if (! $isLegacyMode && \Illuminate\Support\Facades\Gate::allows('manage-members')) {
-                                $manageNavItems[] = ['route' => 'org.members.index', 'label' => __('Mitglieder'), 'icon' => 'badge', 'modal' => false];
+                                $manageNavItems[] = ['route' => 'org.members.index', 'label' => __('Mitarbeiter'), 'icon' => 'group', 'modal' => false];
                             }
                             if (! $isLegacyMode) {
                                 $manageNavItems[] = ['route' => 'activity-categories.index', 'label' => __('Tätigkeitskategorien'), 'icon' => 'category', 'modal' => false];
@@ -468,9 +475,11 @@
 
                             @if (! empty($manageNavItems))
                                 <div class="dropdown dropdown-end">
-                                    <label tabindex="0" class="btn btn-sm {{ $isManageActive ? 'btn-primary' : 'btn-ghost' }} gap-1" title="{{ __('Verwaltung') }}">
+                                    <label tabindex="0"
+                                           class="btn btn-sm btn-square {{ $isManageActive ? 'btn-primary' : 'btn-ghost' }}"
+                                           title="{{ __('Verwaltung') }}"
+                                           aria-label="{{ __('Verwaltung') }}">
                                         <x-icon name="manage_accounts" class="text-[1.1rem]" />
-                                        <span class="hidden sm:inline">{{ __('Verwaltung') }}</span>
                                     </label>
                                     <ul tabindex="0" class="dropdown-content menu z-50 w-[min(15rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
                                         @foreach ($manageNavItems as $item)
@@ -488,9 +497,11 @@
 
                             @if (! empty($adminNavItems))
                                 <div class="dropdown dropdown-end">
-                                    <label tabindex="0" class="btn btn-sm {{ $isAdminActive ? 'btn-primary' : 'btn-ghost' }} gap-1" title="{{ __('System') }}">
+                                    <label tabindex="0"
+                                           class="btn btn-sm btn-square {{ $isAdminActive ? 'btn-primary' : 'btn-ghost' }}"
+                                           title="{{ __('System') }}"
+                                           aria-label="{{ __('System') }}">
                                         <x-icon name="settings" class="text-[1.1rem]" />
-                                        <span class="hidden sm:inline">{{ __('System') }}</span>
                                     </label>
                                     <ul tabindex="0" class="dropdown-content menu z-50 w-[min(15rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
                                         @foreach ($adminNavItems as $item)
@@ -612,8 +623,12 @@
                                 </form>
                             @endif
                             <div class="dropdown dropdown-end">
-                                <label tabindex="0" class="btn btn-sm {{ $isUserActive ? 'btn-primary' : 'btn-ghost' }}" title="{{ Auth::user()->name }}">
-                                    ⎋ <span class="ml-1 max-w-32 truncate">{{ Auth::user()->name }}</span>
+                                <label tabindex="0"
+                                       class="btn btn-sm gap-1.5 {{ $isUserActive ? 'btn-primary' : 'btn-ghost' }}"
+                                       title="{{ Auth::user()->name }}"
+                                       aria-label="{{ __('Benutzermenü') }}">
+                                    <x-icon name="account_circle" class="text-[1.65rem]" />
+                                    <span class="max-w-32 truncate">{{ Auth::user()->name }}</span>
                                 </label>
                                 <ul tabindex="0" class="dropdown-content menu z-50 w-[min(14rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
                                     @foreach ($userNavItems as $item)

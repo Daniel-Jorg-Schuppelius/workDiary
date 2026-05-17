@@ -2,14 +2,18 @@
 @section('title', __('Qualifikationen'))
 @section('nav-title', __('Qualifikationen'))
 @section('content')
-<div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
-    <div class="flex justify-end">
-        @can('create', \App\Models\Qualification::class)
-            <a href="{{ route('qualifications.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
-                + {{ __('Qualifikation anlegen') }}
-            </a>
-        @endcan
-    </div>
+<x-page-shell gap="6">
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:actions>
+                @can('create', \App\Models\Qualification::class)
+                    <a href="{{ route('qualifications.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
+                        + {{ __('Qualifikation anlegen') }}
+                    </a>
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <x-table>
         <thead>
@@ -55,11 +59,11 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="py-8 text-center text-base-content/50">{{ __('Noch keine Qualifikationen vorhanden.') }}</td>
+                    <td colspan="6" class="p-0"><x-empty-state :compact="true" :title="__('Noch keine Qualifikationen vorhanden')" /></td>
                 </tr>
             @endforelse
         </tbody>
     </x-table>
     <div>{{ $qualifications->links() }}</div>
-</div>
+</x-page-shell>
 @endsection

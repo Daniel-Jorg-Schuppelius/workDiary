@@ -3,23 +3,18 @@
 @section('title', __('Tank- & Ladelog'))
 
 @section('content')
-    <div class="space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h1 class="text-xl font-semibold">{{ __('Tank- & Ladelog') }}</h1>
-                <p class="text-sm text-base-content/60">
-                    {{ $from->format('d.m.Y') }} – {{ $to->format('d.m.Y') }}
-                </p>
-                <p class="text-xs text-base-content/50">
-                    {{ __('Zeitraum übernommen aus dem Header. Mit der Auswahl oben links wechseln.') }}
-                </p>
-            </div>
-            <div class="flex flex-wrap gap-2">
-                <a href="{{ route('energy-logs.create') }}" class="btn btn-sm btn-primary">
-                    <x-icon name="add" /> {{ __('Neuer Eintrag') }}
-                </a>
-            </div>
-        </div>
+    <x-page-shell>
+        <x-slot:toolbar>
+            <x-page-toolbar :title="__('Tank- & Ladelog')"
+                            :subtitle="$from->format('d.m.Y') . ' – ' . $to->format('d.m.Y')">
+                {{ __('Zeitraum übernommen aus dem Header. Mit der Auswahl oben links wechseln.') }}
+                <x-slot:actions>
+                    <a href="{{ route('energy-logs.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
+                        <x-icon name="add" /> {{ __('Neuer Eintrag') }}
+                    </a>
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
 
         <form method="GET" class="flex flex-wrap gap-2 items-end">
             @if ($selectableUsers)
@@ -67,7 +62,8 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto rounded-box border border-base-300 bg-base-100">
+        <x-card padding="p-0">
+            <div class="overflow-x-auto">
             <table class="table table-sm">
                 <thead>
                     <tr>
@@ -102,21 +98,24 @@
                             <td class="text-right">{{ $log->odometer_km !== null ? number_format($log->odometer_km, 0, ',', '.') : '—' }}</td>
                             <td class="text-right">{{ $log->distance_since_last !== null ? number_format($log->distance_since_last, 0, ',', '.') : '—' }}</td>
                             <td class="text-right">
-                                <a href="{{ route('energy-logs.edit', $log) }}" class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a>
+                                <a href="{{ route('energy-logs.edit', $log) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a>
                                 <form method="POST" action="{{ route('energy-logs.destroy', $log) }}" class="inline"
-                                      onsubmit="return confirm('{{ __('Eintrag wirklich löschen?') }}');">
+                                      data-confirm-dialog
+                                      data-confirm-message="{{ __('Eintrag wirklich löschen?') }}"
+                                      data-confirm-label="{{ __('Löschen') }}">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Löschen') }}</button>
                                 </form>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="9" class="py-6 text-center text-base-content/60">{{ __('Keine Einträge im gewählten Zeitraum.') }}</td></tr>
+                        <tr><td colspan="9" class="p-0"><x-empty-state :compact="true" :title="__('Keine Einträge im gewählten Zeitraum')" /></td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+        </x-card>
 
         {{ $logs->links() }}
-    </div>
+    </x-page-shell>
 @endsection

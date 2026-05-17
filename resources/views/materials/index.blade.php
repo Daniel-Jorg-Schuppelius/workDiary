@@ -2,22 +2,24 @@
 @section('title', __('Materialien'))
 @section('nav-title', __('Materialien'))
 @section('content')
-<div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
-    <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <form method="GET" class="flex gap-2">
-            <input type="search" name="q" value="{{ $q }}" placeholder="{{ __('Suche…') }}" class="input input-sm input-bordered">
-            <button class="btn btn-sm btn-ghost gap-1"><x-icon name="search" /><span class="hidden sm:inline">{{ __('Suchen') }}</span></button>
-        </form>
-        <div class="flex gap-2">
-            @can('create', \App\Models\Material::class)
-                <a href="{{ route('materials.create') }}" class="btn btn-sm btn-primary gap-1">
-                    <x-icon name="add" /><span>{{ __('Material') }}</span>
-                </a>
-            @endcan
-        </div>
-    </div>
+<x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <form method="GET" class="flex gap-2">
+                <input type="search" name="q" value="{{ $q }}" placeholder="{{ __('Suche…') }}" class="input input-sm input-bordered">
+                <button class="btn btn-sm btn-ghost gap-1"><x-icon name="search" /><span class="hidden sm:inline">{{ __('Suchen') }}</span></button>
+            </form>
+            <x-slot:actions>
+                @can('create', \App\Models\Material::class)
+                    <a href="{{ route('materials.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
+                        <x-icon name="add" /><span>{{ __('Material') }}</span>
+                    </a>
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
-    <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+    <x-card padding="p-0">
         <div class="overflow-x-auto">
             <table class="table table-sm">
                 <thead>
@@ -43,7 +45,7 @@
                             <td>{{ $m->external_provider ?: 'local' }}</td>
                             <td class="text-right">
                                 @can('update', $m)
-                                    <a href="{{ route('materials.edit', $m) }}" class="btn btn-xs">{{ __('Bearbeiten') }}</a>
+                                    <a href="{{ route('materials.edit', $m) }}" data-entry-modal-trigger class="btn btn-xs">{{ __('Bearbeiten') }}</a>
                                 @endcan
                                 @can('delete', $m)
                                     <form method="POST" action="{{ route('materials.destroy', $m) }}" class="inline"
@@ -59,12 +61,12 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="px-4 py-3 text-sm text-base-content/60">—</td></tr>
+                        <tr><td colspan="7" class="p-0"><x-empty-state :compact="true" :title="__('Noch keine Materialien')" /></td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
         <div class="border-t border-base-300 px-4 py-3">{{ $materials->links() }}</div>
-    </div>
-</div>
+    </x-card>
+</x-page-shell>
 @endsection

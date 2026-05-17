@@ -18,13 +18,16 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveTourRequest extends FormRequest {
-    public function authorize(): bool {
+class SaveTourRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
         return true;
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array {
+    public function rules(): array
+    {
         return [
             'user_id' => ['required', 'integer', Rule::exists('users', 'id')],
             'vehicle_id' => ['nullable', 'integer', Rule::exists('vehicles', 'id')],
@@ -41,7 +44,8 @@ class SaveTourRequest extends FormRequest {
         ];
     }
 
-    public function withValidator(Validator $validator): void {
+    public function withValidator(Validator $validator): void
+    {
         $validator->after(function (Validator $v): void {
             $vehicleId = $this->input('vehicle_id');
             $date = $this->input('tour_date');

@@ -71,3 +71,39 @@ if (! function_exists('monthsArray')) {
         return Month::toArray($leadingZero, $locale);
     }
 }
+
+if (! function_exists('setting')) {
+    /**
+     * Tenant-aware configuration accessor.
+     *
+     * Resolution order:
+     *   1. Organization::settings[<group>][<rest>] when an active org is bound
+     *   2. config('<group>.<rest>') (file-based default, env-overridable)
+     *   3. $default (hard fallback)
+     *
+     * Example:  setting('pagination.customers', 25)
+     */
+    function setting(string $key, mixed $default = null): mixed
+    {
+        [$group, $rest] = array_pad(explode('.', $key, 2), 2, null);
+        if ($group === null || $rest === null || $rest === '') {
+            return config($key, $default);
+        }
+
+        if (app()->bound('currentOrganization')) {
+            $org = app('currentOrganization');
+            if ($org instanceof \App\Models\Organization) {
+                /** @var array<string, mixed> $settings */
+                $settings = (array) ($org->settings ?? []);
+                /** @var array<string, mixed> $stored */
+                $stored = (array) ($settings[$group] ?? []);
+                $value = data_get($stored, $rest, \INF);
+                if ($value !== \INF) {
+                    return $value;
+                }
+            }
+        }
+
+        return config($key, $default);
+    }
+}

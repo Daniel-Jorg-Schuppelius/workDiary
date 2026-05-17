@@ -149,7 +149,8 @@ class TourOptimizer
         $bestDist = $this->totalDistance($best, $matrix, $hasStart, $hasEnd, $n);
         $size = count($best);
 
-        for ($iter = 0; $iter < self::MAX_TWO_OPT_ITERATIONS; $iter++) {
+        $maxIter = (int) setting('routing.tour_optimizer.iterations', self::MAX_TWO_OPT_ITERATIONS);
+        for ($iter = 0; $iter < $maxIter; $iter++) {
             $improved = false;
             for ($i = 0; $i < $size - 1; $i++) {
                 for ($j = $i + 1; $j < $size; $j++) {

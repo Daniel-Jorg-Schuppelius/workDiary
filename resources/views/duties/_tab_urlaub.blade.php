@@ -1,7 +1,6 @@
 {{-- Urlaub: Tabelle --}}
 <?php $p = array_merge($filters ?? [], ['tab' => 'urlaub']); ?>
-<div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-    <table class="table table-sm table-zebra table-pin-rows w-full">
+<x-table scroll="flex" :pinRows="true" :zebra="true" size="sm">
         <thead class="bg-base-200">
             <tr>
                 @if ($isAdmin)
@@ -107,14 +106,13 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ $isAdmin ? 7 : 6 }}" class="py-8 text-center text-base-content/50">
-                        {{ __('Keine Einträge gefunden.') }}
+                    <td colspan="{{ $isAdmin ? 7 : 6 }}" class="p-0">
+                        <x-empty-state :compact="true" :title="__('Keine Einträge gefunden')" />
                     </td>
                 </tr>
             @endforelse
         </tbody>
-    </table>
-</div>
+</x-table>
 @if ($vacations->hasPages())
     @include('duties._pagination', ['paginator' => $vacations])
 @endif

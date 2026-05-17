@@ -89,18 +89,18 @@ class CustomerCsvImporter
     {
         $path = $file->getRealPath();
         if ($path === false || ! is_readable($path)) {
-            return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => ['Datei nicht lesbar.']];
+            return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => [(string) __('errors.csv.unreadable')]];
         }
 
         try {
             $headerRow = CsvFacade::readHeader($path);
         } catch (Throwable $e) {
-            return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => ['Kopfzeile fehlt oder unlesbar: '.$e->getMessage()]];
+            return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => [(string) __('errors.csv.header_missing', ['error' => $e->getMessage()])]];
         }
 
         $columns = $this->mapHeaders($headerRow);
         if (! in_array('name', $columns, true)) {
-            return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => ['Pflichtspalte "Name" nicht gefunden.']];
+            return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => [(string) __('errors.csv.name_column_missing')]];
         }
 
         $created = 0;

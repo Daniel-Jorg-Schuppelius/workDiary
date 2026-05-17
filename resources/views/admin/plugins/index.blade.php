@@ -3,15 +3,12 @@
 @section('nav-title', __('Plugins'))
 
 @section('content')
-<div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Registrierte Plugins') }}</h1>
-        <p class="mt-1 text-sm text-base-content/60">
-            {{ __('Plugins werden über config/plugins.php registriert. Konfiguration erfolgt aktuell über .env.') }}
-        </p>
-    </div>
+<x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar :title="__('Registrierte Plugins')" :subtitle="__('Plugins werden über config/plugins.php registriert. Konfiguration erfolgt aktuell über .env.')" />
+    </x-slot:toolbar>
 
-    <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+    <x-card padding="p-0">
         <div class="overflow-x-auto">
             <table class="table table-sm">
                 <thead>
@@ -48,14 +45,17 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-6 text-center text-sm text-base-content/60">
-                                {{ __('Keine Plugins registriert. Aktiviere z. B. Lexoffice mit LEXOFFICE_ENABLED=true und LEXOFFICE_API_KEY=… in der .env.') }}
+                            <td colspan="6" class="p-0">
+                                <x-empty-state
+                                    :compact="true"
+                                    :title="__('Keine Plugins registriert')"
+                                    :message="__('Aktiviere z. B. Lexoffice mit LEXOFFICE_ENABLED=true und LEXOFFICE_API_KEY=… in der .env.')" />
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-    </div>
-</div>
+    </x-card>
+</x-page-shell>
 @endsection

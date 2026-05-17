@@ -27,14 +27,12 @@ use Illuminate\Support\Facades\DB;
  *
  * Idempotent: skips users/dates that already have an attendance record.
  */
-class AttendanceBackfillCommand extends Command
-{
+class AttendanceBackfillCommand extends Command {
     protected $signature = 'attendance:backfill {--dry-run : Nur anzeigen, nichts schreiben}';
 
     protected $description = 'Erzeugt Anwesenheits-Sessions aus vorhandenen Zeiteinträgen.';
 
-    public function handle(): int
-    {
+    public function handle(): int {
         $dryRun = (bool) $this->option('dry-run');
         $created = 0;
         $linked = 0;
@@ -98,7 +96,7 @@ class AttendanceBackfillCommand extends Command
 
         $bar->finish();
         $this->newLine();
-        $this->info(($dryRun ? '[dry-run] ' : '')."Created {$created} attendance(s), linked {$linked} entries.");
+        $this->info(($dryRun ? '[dry-run] ' : '') . "Created {$created} attendance(s), linked {$linked} entries.");
 
         return self::SUCCESS;
     }

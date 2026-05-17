@@ -18,8 +18,10 @@ use Illuminate\Support\Facades\Schema;
  * temporarily rented cars (with inclusive-kilometer contracts and an
  * excess per-km surcharge).
  */
-return new class extends Migration {
-    public function up(): void {
+return new class extends Migration
+{
+    public function up(): void
+    {
         Schema::table('vehicles', function (Blueprint $table): void {
             // owned | leased | rental
             $table->string('ownership', 16)->default('owned')->after('propulsion');
@@ -34,7 +36,8 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::table('vehicles', function (Blueprint $table): void {
             $table->dropIndex(['ownership', 'rental_end']);
             $table->dropColumn([

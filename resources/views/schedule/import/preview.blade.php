@@ -3,7 +3,7 @@
 @section('nav-title', __('Import: Spalten zuordnen'))
 
 @section('content')
-<div class="mx-auto max-w-4xl px-4 py-8">
+<div class="w-full px-4 py-8">
 
     <div class="mb-4 flex items-center gap-3">
         <a href="{{ route('schedule.import') }}" class="btn btn-sm btn-ghost">← {{ __('Zurück') }}</a>

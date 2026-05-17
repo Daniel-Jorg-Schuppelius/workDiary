@@ -134,7 +134,7 @@
         <div class="mb-3 flex items-center justify-between">
             <h2 class="font-semibold">{{ __('Projekte') }} ({{ $projects->count() }})</h2>
             @isset($defaultProject)
-                <a href="{{ route('projects.timesheets.create', $defaultProject) }}" class="btn btn-sm btn-primary">
+                <a href="{{ route('projects.timesheets.create', $defaultProject) }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
                     <span class="material-symbols-outlined text-base">add</span>
                     {{ __('Stundenzettel') }}
                 </a>

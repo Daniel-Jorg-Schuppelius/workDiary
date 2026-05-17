@@ -132,4 +132,62 @@ class Organization extends Model
         /** @var array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, rules:array<string,bool>} $merged */
         return $merged;
     }
+
+    /**
+     * Generic merger: returns the organisation's overrides for the given
+     * settings group merged on top of the matching `config/<group>.php`
+     * defaults. Returns the raw config when no overrides are stored.
+     *
+     * @return array<string, mixed>
+     */
+    public function groupSettings(string $group): array
+    {
+        /** @var array<string, mixed> $defaults */
+        $defaults = (array) config($group, []);
+        /** @var array<string, mixed> $settings */
+        $settings = (array) ($this->settings ?? []);
+        /** @var array<string, mixed> $stored */
+        $stored = (array) ($settings[$group] ?? []);
+
+        /** @var array<string, mixed> $merged */
+        $merged = array_replace_recursive($defaults, $stored);
+
+        return $merged;
+    }
+
+    /** @return array<string, mixed> */
+    public function paginationSettings(): array
+    {
+        return $this->groupSettings('pagination');
+    }
+
+    /** @return array<string, mixed> */
+    public function invoicingSettings(): array
+    {
+        return $this->groupSettings('invoicing');
+    }
+
+    /** @return array<string, mixed> */
+    public function uploadSettings(): array
+    {
+        return $this->groupSettings('uploads');
+    }
+
+    /** @return array<string, mixed> */
+    public function validationSettings(): array
+    {
+        return $this->groupSettings('validation');
+    }
+
+    /** @return array<string, mixed> */
+    public function notificationSettings(): array
+    {
+        return $this->groupSettings('notifications');
+    }
+
+    /** @return array<string, mixed> */
+    public function uiSettings(): array
+    {
+        return $this->groupSettings('ui');
+    }
 }

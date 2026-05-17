@@ -23,24 +23,20 @@
 @endphp
 
 @section('content')
-    <div class="mx-auto w-full max-w-screen-xl space-y-6 px-4 py-4 xl:px-8">
+    <div class="w-full space-y-6 px-4 py-4 xl:px-8">
 
         <div class="flex flex-wrap items-end justify-between gap-3">
             <div>
-                <h1 class="font-['Space_Grotesk'] text-2xl font-bold">{{ __('Heute') }}</h1>
                 <p class="text-sm text-base-content/60">{{ $day->translatedFormat('l, d.m.Y') }}</p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <a href="{{ route('admin-time-entries.create', ['date' => $day->toDateString()]) }}" class="btn btn-sm btn-primary"><x-icon name="add" /> {{ __('Verwaltungszeit') }}</a>
+                <a href="{{ route('admin-time-entries.create', ['date' => $day->toDateString()]) }}" data-entry-modal-trigger class="btn btn-sm btn-primary"><x-icon name="add" /> {{ __('Verwaltungszeit') }}</a>
                 <a href="{{ route('today.show', ['date' => $day->copy()->subDay()->toDateString()]) }}" class="btn btn-sm btn-ghost">← {{ __('Vortag') }}</a>
                 <a href="{{ route('today.show') }}" class="btn btn-sm btn-ghost">{{ __('Heute') }}</a>
                 <a href="{{ route('today.show', ['date' => $day->copy()->addDay()->toDateString()]) }}" class="btn btn-sm btn-ghost">{{ __('Folgetag') }} →</a>
                 <a href="{{ route('attendance.index') }}" class="btn btn-sm btn-ghost"><x-icon name="badge" /> {{ __('Stempelungen') }}</a>
             </div>
         </div>
-
-        @if (session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
-        @if (session('error'))<div class="alert alert-error">{{ session('error') }}</div>@endif
 
         {{-- Soll / Ist / Saldo --}}
         <section class="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -107,7 +103,7 @@
                                         <td class="tabular-nums">{{ optional($a->ended_at)->format('H:i') ?? '—' }}</td>
                                         <td class="text-right tabular-nums">{{ $a->break_minutes_total }}</td>
                                         <td class="text-right tabular-nums">{{ $fmt((int) ($a->duration_minutes ?? 0)) }}</td>
-                                        <td><span class="badge badge-sm {{ $a->isOpen() ? 'badge-success' : 'badge-ghost' }}">{{ $a->status }}</span></td>
+                                        <td><span class="badge badge-sm {{ $a->isOpen() ? 'badge-success' : 'badge-ghost' }}">{{ $a->statusLabel() }}</span></td>
                                     </tr>
                                 @empty
                                     <tr><td colspan="5" class="py-4 text-center text-sm text-base-content/60">{{ __('Noch keine Stempelung heute.') }}</td></tr>

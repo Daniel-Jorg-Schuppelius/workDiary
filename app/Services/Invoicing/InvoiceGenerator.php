@@ -58,8 +58,8 @@ class InvoiceGenerator
                 'project_id' => $project?->id,
                 'number' => $this->nextNumber($customer->organization_id),
                 'status' => Invoice::STATUS_DRAFT,
-                'currency' => $customer->currency ?: 'EUR',
-                'tax_rate' => '19.00',
+                'currency' => $customer->currency ?: (string) setting('invoicing.default_currency', 'EUR'),
+                'tax_rate' => (string) setting('invoicing.default_tax_rate', '19.00'),
                 'created_by' => Auth::id(),
             ]);
 
@@ -85,13 +85,13 @@ class InvoiceGenerator
                     continue;
                 }
                 $rate = (float) ($entry->hourly_rate ?: $customer->hourly_rate ?: 0);
-                $description = trim((string) ($entry->description ?: 'Leistung am '.optional($entry->date)->format('d.m.Y')));
+                $description = trim((string) ($entry->description ?: __('invoicing.service_on', ['date' => optional($entry->date)->format('d.m.Y')])));
 
                 $invoice->items()->create([
                     'time_entry_id' => $entry->id,
                     'description' => $description,
                     'quantity' => (string) $hours,
-                    'unit' => 'h',
+                    'unit' => (string) __('invoicing.unit_hour'),
                     'unit_price' => (string) $rate,
                     'position' => ++$position,
                 ]);

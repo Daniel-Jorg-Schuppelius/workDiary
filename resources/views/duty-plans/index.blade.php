@@ -2,30 +2,32 @@
 @section('title', __('Dienstpläne'))
 @section('nav-title', __('Dienstpläne'))
 @section('content')
-<div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
-    <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <form method="GET" class="flex flex-wrap items-center gap-2">
-            <select name="period" class="select select-sm select-bordered" onchange="this.form.submit()">
-                <option value="">{{ __('Alle Zeiträume') }}</option>
-                @foreach (\App\Models\DutyPlan::$periodTypes as $pt)
-                    <option value="{{ $pt }}" @selected($period === $pt)>{{ __('duty_plan.period.' . $pt) }}</option>
-                @endforeach
-            </select>
-            <select name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
-                <option value="">{{ __('Alle Status') }}</option>
-                @foreach (\App\Models\DutyPlan::$statuses as $st)
-                    <option value="{{ $st }}" @selected($status === $st)>{{ __('duty_plan.status.' . $st) }}</option>
-                @endforeach
-            </select>
-        </form>
-        <div class="flex items-center gap-2">
-            @can('create', \App\Models\DutyPlan::class)
-                <a href="{{ route('duty-plans.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm gap-1">
-                    <x-icon name="add" /><span>{{ __('Dienstplan anlegen') }}</span>
-                </a>
-            @endcan
-        </div>
-    </div>
+<x-page-shell gap="6">
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <form method="GET" class="flex flex-wrap items-center gap-2">
+                <select name="period" class="select select-sm select-bordered" onchange="this.form.submit()">
+                    <option value="">{{ __('Alle Zeiträume') }}</option>
+                    @foreach (\App\Models\DutyPlan::$periodTypes as $pt)
+                        <option value="{{ $pt }}" @selected($period === $pt)>{{ __('duty_plan.period.' . $pt) }}</option>
+                    @endforeach
+                </select>
+                <select name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
+                    <option value="">{{ __('Alle Status') }}</option>
+                    @foreach (\App\Models\DutyPlan::$statuses as $st)
+                        <option value="{{ $st }}" @selected($status === $st)>{{ __('duty_plan.status.' . $st) }}</option>
+                    @endforeach
+                </select>
+            </form>
+            <x-slot:actions>
+                @can('create', \App\Models\DutyPlan::class)
+                    <a href="{{ route('duty-plans.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm gap-1">
+                        <x-icon name="add" /><span>{{ __('Dienstplan anlegen') }}</span>
+                    </a>
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <x-table>
         <thead>
@@ -79,11 +81,11 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="py-8 text-center text-base-content/50">{{ __('Noch keine Dienstpläne vorhanden.') }}</td>
+                    <td colspan="6" class="p-0"><x-empty-state :compact="true" :title="__('Noch keine Dienstpläne vorhanden')" /></td>
                 </tr>
             @endforelse
         </tbody>
     </x-table>
     <div>{{ $plans->links() }}</div>
-</div>
+</x-page-shell>
 @endsection

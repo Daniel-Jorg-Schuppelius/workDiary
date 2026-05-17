@@ -20,8 +20,6 @@
             </div>
         </div>
 
-        @if (session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
-
         <div class="card border border-base-300 bg-base-100 shadow-xs max-w-2xl">
             <div class="card-body grid gap-3 sm:grid-cols-2">
                 <div><span class="text-xs uppercase text-base-content/60">{{ __('Mitarbeiter') }}</span><div>{{ $shift->user?->name ?? '—' }}</div></div>

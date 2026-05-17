@@ -20,10 +20,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class WorkScheduleController extends Controller
-{
-    public function edit(User $user, WorkScheduleResolver $resolver): View
-    {
+class WorkScheduleController extends Controller {
+    public function edit(User $user, WorkScheduleResolver $resolver): View {
         Gate::authorize('create', WorkSchedule::class); // Admin via before-Hook
 
         $schedule = $user->workSchedule() ?? new WorkSchedule(WorkScheduleResolver::defaults() + [
@@ -31,11 +29,10 @@ class WorkScheduleController extends Controller
             'valid_from' => now()->startOfMonth(),
         ]);
 
-        return view('work-schedules.edit', compact('user', 'schedule'));
+        return view('work-schedules._form_dialog', compact('user', 'schedule'));
     }
 
-    public function update(User $user, SaveWorkScheduleRequest $request): RedirectResponse
-    {
+    public function update(User $user, SaveWorkScheduleRequest $request): RedirectResponse {
         Gate::authorize('create', WorkSchedule::class);
 
         $data = $request->validated();
@@ -56,8 +53,7 @@ class WorkScheduleController extends Controller
             ->with('success', __('Arbeitszeit-Modell gespeichert.'));
     }
 
-    public function self(): View
-    {
+    public function self(): View {
         /** @var User $user */
         $user = Auth::user();
 

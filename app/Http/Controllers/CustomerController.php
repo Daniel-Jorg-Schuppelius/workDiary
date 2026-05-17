@@ -55,7 +55,7 @@ class CustomerController extends Controller
             })
             ->withCount('projects')
             ->orderBy($sort, $dir)
-            ->paginate(25)
+            ->paginate((int) setting('pagination.customers', 25))
             ->withQueryString();
 
         return view('customers.index', [
@@ -377,7 +377,7 @@ class CustomerController extends Controller
         }
 
         $request->validate([
-            'file' => ['required', 'file', 'mimetypes:text/csv,text/plain,application/csv,application/vnd.ms-excel', 'max:10240'],
+            'file' => ['required', 'file', 'mimetypes:text/csv,text/plain,application/csv,application/vnd.ms-excel', 'max:' . (int) setting('uploads.csv_import_kb', 10240)],
         ]);
 
         $file = $request->file('file');

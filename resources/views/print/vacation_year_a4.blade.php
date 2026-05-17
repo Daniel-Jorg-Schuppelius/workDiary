@@ -28,12 +28,12 @@
 
 @include('print._header', [
     'title'     => $title,
-    'subtitle'  => ($anonymous ? __('Anonymisiert') . ' · ' : '') . $users->count() . ' ' . __('Mitarbeiter'),
+    'subtitle'  => ($anonymous ? __('pdf.vacation_year.anonymized') . ' · ' : '') . $users->count() . ' ' . __('pdf.vacation_year.employees'),
     'org'       => $org ?? null,
 ])
 
 @if ($users->isEmpty())
-    <p class="muted">{{ __('Keine Urlaubsdaten für') }} {{ $year }}.</p>
+    <p class="muted">{{ __('pdf.vacation_year.no_data', ['year' => $year]) }}</p>
 @else
     @foreach (range(1, 12) as $monthNum)
         @php
@@ -51,7 +51,7 @@
             </colgroup>
             <thead>
                 <tr>
-                    <th>{{ __('Mitarbeiter') }}</th>
+                    <th>{{ __('pdf.vacation_year.employees') }}</th>
                     @for ($d = 1; $d <= $daysInMonth; $d++)
                         @php
                             $cur    = $monthStart->day($d);
@@ -90,11 +90,11 @@
     @endforeach
 
     <div class="legend">
-        <strong>{{ __('Legende') }}:</strong>
-        <span><span class="badge" style="background:#10b981;">A</span> {{ __('Genehmigt') }}</span>
-        <span><span class="badge" style="background:#f59e0b;">P</span> {{ __('Beantragt') }}</span>
-        <span><span class="badge" style="background:#fff5d6;color:#111;">{{ __('Feiertag') }}</span></span>
-        <span><span class="badge" style="background:#f4f4f4;color:#111;">{{ __('Wochenende') }}</span></span>
+        <strong>{{ __('pdf.vacation_year.legend') }}:</strong>
+        <span><span class="badge" style="background:#10b981;">A</span> {{ __('pdf.vacation_year.approved') }}</span>
+        <span><span class="badge" style="background:#f59e0b;">P</span> {{ __('pdf.vacation_year.pending') }}</span>
+        <span><span class="badge" style="background:#fff5d6;color:#111;">{{ __('pdf.vacation_year.holiday') }}</span></span>
+        <span><span class="badge" style="background:#f4f4f4;color:#111;">{{ __('pdf.vacation_year.weekend') }}</span></span>
     </div>
 @endif
 

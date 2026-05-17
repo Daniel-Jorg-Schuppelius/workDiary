@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="de">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
 <meta charset="utf-8">
-<title>Stundenzettel #{{ $timesheet->id }}</title>
+<title>{{ __('pdf.timesheet.title_with_id', ['id' => $timesheet->id]) }}</title>
 <style>
     @page { margin: 18mm 16mm; }
     body  { font-family: DejaVu Sans, sans-serif; font-size: 10pt; color: #111; }
@@ -23,20 +23,20 @@
 </head>
 <body>
 
-<h1>Stundenzettel</h1>
+<h1>{{ __('pdf.timesheet.title') }}</h1>
 <div class="meta">
-    Datum: <strong>{{ optional($timesheet->work_date)->format('d.m.Y') }}</strong> ·
-    Projekt: <strong>{{ $timesheet->project?->name }}</strong> ·
-    Mitarbeiter: <strong>{{ $timesheet->user?->name }}</strong> ·
-    Status: {{ $timesheet->status }}
+    {{ __('timesheet.fields.date') }}: <strong>{{ optional($timesheet->work_date)->format('d.m.Y') }}</strong> ·
+    {{ __('timesheet.fields.project') }}: <strong>{{ $timesheet->project?->name }}</strong> ·
+    {{ __('timesheet.fields.user') }}: <strong>{{ $timesheet->user?->name }}</strong> ·
+    {{ __('timesheet.fields.status') }}: {{ $timesheet->status }}
 </div>
 
-<h2>Zeiteinträge</h2>
+<h2>{{ __('timesheet.sections.entries') }}</h2>
 <table>
     <thead>
         <tr>
-            <th>Start</th><th>Ende</th><th class="right">Pause min</th>
-            <th class="right">Dauer</th><th>Art</th><th>Beschreibung</th>
+            <th>{{ __('timesheet.fields.started_at') }}</th><th>{{ __('timesheet.fields.ended_at') }}</th><th class="right">{{ __('timesheet.fields.break_minutes') }}</th>
+            <th class="right">{{ __('timesheet.fields.duration') }}</th><th>{{ __('timesheet.fields.kind') }}</th><th>{{ __('timesheet.fields.description') }}</th>
         </tr>
     </thead>
     <tbody>
@@ -61,11 +61,11 @@
     $mT = (int)$timesheet->total_work_minutes % 60;
 @endphp
 <table class="totals">
-    <tr><td class="right">Arbeit gesamt:</td><td class="right" style="width:80pt;"><strong>{{ $hT }}:{{ str_pad((string)$mT,2,'0',STR_PAD_LEFT) }} h</strong></td></tr>
-    <tr><td class="right">Pause gesamt:</td><td class="right">{{ (int) $timesheet->total_break_minutes }} min</td></tr>
+    <tr><td class="right">{{ __('timesheet.totals.work') }}:</td><td class="right" style="width:80pt;"><strong>{{ $hT }}:{{ str_pad((string)$mT,2,'0',STR_PAD_LEFT) }} h</strong></td></tr>
+    <tr><td class="right">{{ __('timesheet.totals.break') }}:</td><td class="right">{{ (int) $timesheet->total_break_minutes }} min</td></tr>
 </table>
 
-<h2>Verbrauchsmaterial</h2>
+<h2>{{ __('timesheet.sections.materials') }}</h2>
 <table>
     <thead>
         <tr>
@@ -88,11 +88,11 @@
     </tbody>
 </table>
 <table class="totals">
-    <tr><td class="right">Material netto gesamt:</td><td class="right" style="width:80pt;"><strong>{{ number_format((float)$timesheet->total_material_net, 2, ',', '.') }} €</strong></td></tr>
+    <tr><td class="right">{{ __('timesheet.totals.material_net') }}:</td><td class="right" style="width:80pt;"><strong>{{ number_format((float)$timesheet->total_material_net, 2, ',', '.') }} €</strong></td></tr>
 </table>
 
 <div class="sig">
-    <h2>Kundenfreigabe</h2>
+    <h2>{{ __('timesheet.sections.customer_release') }}</h2>
     <table class="grid2">
         <tr>
             <td>
@@ -101,17 +101,17 @@
                 </div>
                 @if($timesheet->customer_email)<div>{{ $timesheet->customer_email }}</div>@endif
                 @if($timesheet->signed_at)
-                    <div class="small">Signiert am {{ $timesheet->signed_at->format('d.m.Y H:i') }}
-                        @if($timesheet->signed_ip) · IP {{ $timesheet->signed_ip }} @endif
+                    <div class="small">{{ __('timesheet.signature.signed_at', ['datetime' => $timesheet->signed_at->format('d.m.Y H:i')]) }}
+                        @if($timesheet->signed_ip) · {{ __('timesheet.signature.ip', ['ip' => $timesheet->signed_ip]) }} @endif
                     </div>
-                    <div class="small">SHA-256: {{ $timesheet->signature_hash }}</div>
+                    <div class="small">{{ __('timesheet.signature.hash', ['hash' => $timesheet->signature_hash]) }}</div>
                 @endif
             </td>
             <td>
                 @if(! empty($signaturePng))
                     <img src="{{ $signaturePng }}" alt="signature">
                 @else
-                    <div class="small">— keine Unterschrift —</div>
+                    <div class="small">{{ __('timesheet.signature.none') }}</div>
                 @endif
             </td>
         </tr>
@@ -119,7 +119,7 @@
 </div>
 
 @if($timesheet->notes)
-    <h2>Notizen</h2>
+    <h2>{{ __('timesheet.sections.notes') }}</h2>
     <p>{!! nl2br(e($timesheet->notes)) !!}</p>
 @endif
 

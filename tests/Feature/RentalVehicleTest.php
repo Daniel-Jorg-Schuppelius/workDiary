@@ -22,18 +22,21 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class RentalVehicleTest extends TestCase {
+class RentalVehicleTest extends TestCase
+{
     use RefreshDatabase;
     use WithOrganization;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         config()->set('timesheet.travel.auto_create_time_entry', false);
     }
 
-    public function test_vehicle_form_accepts_rental_fields(): void {
+    public function test_vehicle_form_accepts_rental_fields(): void
+    {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 
         $this->actingAs($admin)
@@ -60,7 +63,8 @@ class RentalVehicleTest extends TestCase {
         $this->assertTrue($vehicle->isRental());
     }
 
-    public function test_rental_requires_provider_and_dates(): void {
+    public function test_rental_requires_provider_and_dates(): void
+    {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 
         $this->actingAs($admin)
@@ -75,7 +79,8 @@ class RentalVehicleTest extends TestCase {
             ->assertSessionHasErrors(['rental_provider', 'rental_start', 'rental_end']);
     }
 
-    public function test_tour_save_rejects_rental_outside_period(): void {
+    public function test_tour_save_rejects_rental_outside_period(): void
+    {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $driver = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $vehicle = Vehicle::factory()->rental()->create([
@@ -96,7 +101,8 @@ class RentalVehicleTest extends TestCase {
             ->assertSessionHasErrors(['vehicle_id']);
     }
 
-    public function test_tour_save_accepts_rental_within_period(): void {
+    public function test_tour_save_accepts_rental_within_period(): void
+    {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $driver = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $vehicle = Vehicle::factory()->rental()->create([
@@ -115,7 +121,8 @@ class RentalVehicleTest extends TestCase {
             ->assertSessionDoesntHaveErrors();
     }
 
-    public function test_materialize_marks_rental_vehicle_legs(): void {
+    public function test_materialize_marks_rental_vehicle_legs(): void
+    {
         $driver = User::factory()->user()->create([
             'organization_id' => $this->organization->id,
             'home_lat' => 52.5,
@@ -148,7 +155,8 @@ class RentalVehicleTest extends TestCase {
         }
     }
 
-    public function test_is_available_on_respects_rental_window(): void {
+    public function test_is_available_on_respects_rental_window(): void
+    {
         $vehicle = Vehicle::factory()->rental()->make([
             'rental_start' => '2026-05-01',
             'rental_end' => '2026-05-31',

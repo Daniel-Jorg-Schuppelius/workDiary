@@ -3,22 +3,20 @@
 @section('title', __('Aufträge'))
 
 @section('content')
-    <div class="space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h1 class="text-xl font-semibold">{{ __('Service-Aufträge') }}</h1>
-                <p class="text-sm text-base-content/60">
-                    {{ $from->format('d.m.Y') }} – {{ $to->format('d.m.Y') }}
-                </p>
-            </div>
-            <div class="flex flex-wrap gap-2">
-                <a href="{{ route('service-orders.create') }}" class="btn btn-sm btn-primary">
-                    <x-icon name="add" /> {{ __('Neuer Auftrag') }}
-                </a>
-            </div>
-        </div>
+    <x-page-shell>
+        <x-slot:toolbar>
+            <x-page-toolbar :title="__('Service-Aufträge')"
+                            :subtitle="$from->format('d.m.Y') . ' – ' . $to->format('d.m.Y')">
+                <x-slot:actions>
+                    <a href="{{ route('service-orders.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
+                        <x-icon name="add" /> {{ __('Neuer Auftrag') }}
+                    </a>
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
 
-        <form method="GET" class="flex flex-wrap items-end gap-2 rounded-box border border-base-300 bg-base-100 p-3">
+        <x-card>
+            <form method="GET" class="flex flex-wrap items-end gap-2">
             <div>
                 <label class="label-text">{{ __('Status') }}</label>
                 <select name="status" class="select select-bordered select-sm">
@@ -40,9 +38,11 @@
                 </div>
             @endif
             <button class="btn btn-sm">{{ __('Filtern') }}</button>
-        </form>
+            </form>
+        </x-card>
 
-        <div class="overflow-x-auto rounded-box border border-base-300 bg-base-100">
+        <x-card padding="p-0">
+            <div class="overflow-x-auto">
             <table class="table table-sm">
                 <thead>
                     <tr>
@@ -75,21 +75,24 @@
                                 @endif
                             </td>
                             <td class="text-right">
-                                <a href="{{ route('service-orders.edit', $order) }}" class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a>
+                                <a href="{{ route('service-orders.edit', $order) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a>
                                 <form method="POST" action="{{ route('service-orders.destroy', $order) }}" class="inline"
-                                      onsubmit="return confirm('{{ __('Auftrag wirklich löschen?') }}');">
+                                      data-confirm-dialog
+                                      data-confirm-message="{{ __('Auftrag wirklich löschen?') }}"
+                                      data-confirm-label="{{ __('Löschen') }}">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Löschen') }}</button>
                                 </form>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="py-6 text-center text-base-content/60">{{ __('Keine Aufträge im gewählten Zeitraum.') }}</td></tr>
+                        <tr><td colspan="7" class="p-0"><x-empty-state :compact="true" :title="__('Keine Aufträge im gewählten Zeitraum')" /></td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+        </x-card>
 
         {{ $orders->links() }}
-    </div>
+    </x-page-shell>
 @endsection

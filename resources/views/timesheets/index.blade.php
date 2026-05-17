@@ -3,18 +3,19 @@
 @section('nav-title', __('Stundenzettel'))
 
 @section('content')
-<div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
-    {{-- Toolbar (CTA) --}}
-    <x-page-toolbar>
-        <x-slot:actions>
-            @can('create', \App\Models\Timesheet::class)
-                <button type="button" class="btn btn-sm btn-primary gap-1" onclick="document.getElementById('quick-timesheet-dialog').showModal()">
-                    <x-icon name="add" />
-                    <span>{{ __('Stundenzettel') }}</span>
-                </button>
-            @endcan
-        </x-slot:actions>
-    </x-page-toolbar>
+<x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:actions>
+                @can('create', \App\Models\Timesheet::class)
+                    <button type="button" class="btn btn-sm btn-primary gap-1" onclick="document.getElementById('quick-timesheet-dialog').showModal()">
+                        <x-icon name="add" />
+                        <span>{{ __('Stundenzettel') }}</span>
+                    </button>
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     {{-- Filter --}}
     <x-filter-bar :action="route('timesheets.index')" :reset="route('timesheets.index')">
@@ -36,46 +37,47 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
-        @if($timesheets->isEmpty())
-            <div class="px-4 py-6 text-sm text-base-content/60">{{ __('Keine Stundenzettel gefunden.') }}</div>
-        @else
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <?php $p = request()->only('scope', 'project', 'status'); ?>
-                            <th><x-sort-th column="work_date" :route="route('timesheets.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'" default="work_date">{{ __('Datum') }}</x-sort-th></th>
-                            <th><x-sort-th column="project_id" :route="route('timesheets.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Projekt') }}</x-sort-th></th>
-                            <th><x-sort-th column="user_id" :route="route('timesheets.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Mitarbeiter') }}</x-sort-th></th>
-                            <th class="text-right">{{ __('Arbeit') }}</th>
-                            <th><x-sort-th column="status" :route="route('timesheets.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Status') }}</x-sort-th></th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($timesheets as $ts)
-                            <?php $h = intdiv((int)$ts->total_work_minutes, 60); ?>
-                            <?php $m = (int)$ts->total_work_minutes % 60; ?>
-                            <?php $tsIsSunday = $ts->work_date && \Carbon\Carbon::parse($ts->work_date)->isSunday(); ?>
-                            <tr class="{{ $tsIsSunday ? 'text-error' : '' }}">
-                                <td>{{ optional($ts->work_date)->format('d.m.Y') }}</td>
-                                <td>{{ $ts->project?->name }}</td>
-                                <td>{{ $ts->user?->name }}</td>
-                                <td class="text-right tabular-nums">{{ $h }}:{{ str_pad((string)$m,2,'0',STR_PAD_LEFT) }} h</td>
-                                <td><span class="badge badge-sm badge-{{ $ts->statusTone() }}">{{ $ts->statusLabel() }}</span></td>
-                                <td class="text-right">
-                                    <a href="{{ route('projects.timesheets.show', [$ts->project, $ts]) }}" class="btn btn-xs">{{ __('Öffnen') }}</a>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            <div class="border-t border-base-300 px-4 py-3">{{ $timesheets->links() }}</div>
-        @endif
-    </div>
-</div>
+    @if($timesheets->isEmpty())
+        <x-card>
+            <x-empty-state
+                :title="__('Keine Stundenzettel gefunden')"
+                :message="__('Lege den ersten Stundenzettel über den Button oben rechts an.')"
+            />
+        </x-card>
+    @else
+        <x-table>
+            <thead>
+                <tr>
+                    <?php $p = request()->only('scope', 'project', 'status'); ?>
+                    <th><x-sort-th column="work_date" :route="route('timesheets.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'" default="work_date">{{ __('Datum') }}</x-sort-th></th>
+                    <th><x-sort-th column="project_id" :route="route('timesheets.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Projekt') }}</x-sort-th></th>
+                    <th><x-sort-th column="user_id" :route="route('timesheets.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Mitarbeiter') }}</x-sort-th></th>
+                    <th class="text-right">{{ __('Arbeit') }}</th>
+                    <th><x-sort-th column="status" :route="route('timesheets.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Status') }}</x-sort-th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($timesheets as $ts)
+                    <?php $h = intdiv((int)$ts->total_work_minutes, 60); ?>
+                    <?php $m = (int)$ts->total_work_minutes % 60; ?>
+                    <?php $tsIsSunday = $ts->work_date && \Carbon\Carbon::parse($ts->work_date)->isSunday(); ?>
+                    <tr class="{{ $tsIsSunday ? 'text-error' : '' }}">
+                        <td>{{ optional($ts->work_date)->format('d.m.Y') }}</td>
+                        <td>{{ $ts->project?->name }}</td>
+                        <td>{{ $ts->user?->name }}</td>
+                        <td class="text-right tabular-nums">{{ $h }}:{{ str_pad((string)$m,2,'0',STR_PAD_LEFT) }} h</td>
+                        <td><span class="badge badge-sm badge-{{ $ts->statusTone() }}">{{ $ts->statusLabel() }}</span></td>
+                        <td class="text-right">
+                            <a href="{{ route('projects.timesheets.show', [$ts->project, $ts]) }}" class="btn btn-xs">{{ __('Öffnen') }}</a>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </x-table>
+        <div>{{ $timesheets->links() }}</div>
+    @endif
+</x-page-shell>
 
 @can('create', \App\Models\Timesheet::class)
     <x-modal id="quick-timesheet-dialog"

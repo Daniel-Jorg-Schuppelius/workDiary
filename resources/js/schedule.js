@@ -5,6 +5,8 @@
  * Functions exposed globally so inline handlers in Blade can call them.
  */
 
+import { __ } from "./i18n.js";
+
 /* ──────────────────────────── State ──────────────────────────── */
 
 let _cfg = null; // window.__scheduleConfig
@@ -111,7 +113,7 @@ window.scheduleDropCell = function (event, date, userId) {
     apiFetch("PATCH", `${_cfg.routes.shiftsUpdate}/${id}`, body)
         .then(() => window.location.reload())
         .catch((err) =>
-            notifyError(err.message ?? __("Fehler beim Verschieben.")),
+            notifyError(err.message ?? __("js.schedule.move_failed")),
         );
 };
 

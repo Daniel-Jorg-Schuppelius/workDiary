@@ -3,20 +3,16 @@
 @section('nav-title', __('Schichttypen'))
 
 @section('content')
-    <div class="space-y-6">
-        <div class="flex justify-end">
-            <a href="{{ route('shift-types.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">{{ __('Neuer Schichttyp') }}</a>
-        </div>
+    <x-page-shell gap="6">
+        <x-slot:toolbar>
+            <x-page-toolbar>
+                <x-slot:actions>
+                    <a href="{{ route('shift-types.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">{{ __('Neuer Schichttyp') }}</a>
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
 
-        @if (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-error">{{ session('error') }}</div>
-        @endif
-
-        <div class="overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-            <table class="table table-zebra table-pin-rows" data-sortable>
+        <x-table :pinRows="true" :zebra="true">
                 <thead class="bg-base-200">
                     <tr>
                         <th data-sort data-sort-default="asc">{{ __('Name') }}</th>
@@ -60,10 +56,9 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="py-6 text-center text-base-content/60">{{ __('Keine Einträge.') }}</td></tr>
+                        <tr><td colspan="6" class="p-0"><x-empty-state :compact="true" :title="__('Keine Einträge')" /></td></tr>
                     @endforelse
                 </tbody>
-            </table>
-        </div>
-    </div>
+        </x-table>
+    </x-page-shell>
 @endsection

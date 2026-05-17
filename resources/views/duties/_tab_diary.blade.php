@@ -47,12 +47,15 @@
             </div>
         </article>
     @empty
-        <div class="rounded-box border border-dashed border-base-300 bg-base-100 p-8 text-center text-base-content/70">
-            {{ __('Keine Einträge gefunden.') }}
-            @if (! empty($tabFilters))
-                <a href="{{ route('duties.index', ['tab' => 'diary']) }}" class="ml-2 text-primary underline">{{ __('Filter zurücksetzen') }}</a>
-            @endif
-        </div>
+        <x-card>
+            <x-empty-state :title="__('Keine Einträge gefunden')">
+                @if (! empty($tabFilters))
+                    <x-slot:action>
+                        <a href="{{ route('duties.index', ['tab' => 'diary']) }}" class="btn btn-sm btn-ghost">{{ __('Filter zurücksetzen') }}</a>
+                    </x-slot:action>
+                @endif
+            </x-empty-state>
+        </x-card>
     @endforelse
 </div>
 @if ($entries->total() > 0)

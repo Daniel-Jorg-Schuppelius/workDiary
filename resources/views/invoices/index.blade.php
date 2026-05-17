@@ -4,19 +4,23 @@
 @section('nav-title', __('Rechnungen'))
 
 @section('content')
-<div class="space-y-4">
-    <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-bold">{{ __('Rechnungen') }}</h1>
-        <a href="{{ route('invoices.create') }}" class="btn btn-primary btn-sm">
-            <x-icon name="add"/> {{ __('Neue Rechnung') }}
-        </a>
-    </div>
+<x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:actions>
+                <a href="{{ route('invoices.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
+                    <x-icon name="add"/> {{ __('Neue Rechnung') }}
+                </a>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
 
-    <div class="overflow-x-auto bg-base-100 rounded-box shadow">
+    <x-card padding="p-0">
+        <div class="overflow-x-auto">
         <table class="table table-zebra table-sm">
             <thead>
                 <tr>
@@ -39,12 +43,13 @@
                         <td><a href="{{ route('invoices.show', $invoice) }}" class="btn btn-xs">{{ __('Anzeigen') }}</a></td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="text-center opacity-60">{{ __('Keine Rechnungen vorhanden.') }}</td></tr>
+                    <tr><td colspan="6" class="p-0"><x-empty-state :compact="true" :title="__('Keine Rechnungen vorhanden')" /></td></tr>
                 @endforelse
             </tbody>
         </table>
-    </div>
+        </div>
+    </x-card>
 
     {{ $invoices->links() }}
-</div>
+</x-page-shell>
 @endsection

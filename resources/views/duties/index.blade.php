@@ -13,7 +13,7 @@
         $tabFilters = array_filter($filters ?? [], fn($v) => $v !== null && $v !== '');
     @endphp
 
-    <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
+    <x-page-shell overflow="clip">
 
         {{-- Toolbar: Status-Badge + Aktions-Buttons --}}
         <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
@@ -197,6 +197,6 @@
                 @break
         @endswitch
 
-    </div>
+    </x-page-shell>
 @endsection
 

@@ -3,27 +3,26 @@
 @section('title', __('Fuhrpark'))
 
 @section('content')
-    <div class="space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h1 class="text-xl font-semibold">{{ __('Fuhrpark') }}</h1>
-                <p class="text-sm text-base-content/60">{{ __('Fahrzeuge der Organisation') }}</p>
-            </div>
-            <div class="flex flex-wrap gap-2">
-                <a href="{{ route('vehicles.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
-                    <x-icon name="add" /> {{ __('Neues Fahrzeug') }}
-                </a>
-                <a href="{{ route('vehicles.index', ['archived' => $showArchived ? null : 1]) }}" class="btn btn-sm btn-ghost">
-                    @if ($showArchived)
-                        {{ __('Aktive zeigen') }}
-                    @else
-                        {{ __('Archiv zeigen') }}
-                    @endif
-                </a>
-            </div>
-        </div>
+    <x-page-shell>
+        <x-slot:toolbar>
+            <x-page-toolbar :title="__('Fuhrpark')" :subtitle="__('Fahrzeuge der Organisation')">
+                <x-slot:actions>
+                    <a href="{{ route('vehicles.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
+                        <x-icon name="add" /> {{ __('Neues Fahrzeug') }}
+                    </a>
+                    <a href="{{ route('vehicles.index', ['archived' => $showArchived ? null : 1]) }}" class="btn btn-sm btn-ghost">
+                        @if ($showArchived)
+                            {{ __('Aktive zeigen') }}
+                        @else
+                            {{ __('Archiv zeigen') }}
+                        @endif
+                    </a>
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
 
-        <div class="overflow-x-auto rounded-box border border-base-300 bg-base-100">
+        <x-card padding="p-0">
+            <div class="overflow-x-auto">
             <table class="table table-sm">
                 <thead>
                     <tr>
@@ -72,12 +71,13 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="py-6 text-center text-base-content/60">{{ __('Keine Fahrzeuge erfasst.') }}</td></tr>
+                        <tr><td colspan="8" class="p-0"><x-empty-state :compact="true" :title="__('Keine Fahrzeuge erfasst')" /></td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+        </x-card>
 
         {{ $vehicles->links() }}
-    </div>
+    </x-page-shell>
 @endsection

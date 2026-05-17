@@ -36,7 +36,7 @@ class TagController extends Controller
             'assignments' => 'assignments_count',
         ], 'name', 'asc');
 
-        $tags = $query->paginate(50)->withQueryString();
+        $tags = $query->paginate((int) setting('pagination.tags', 50))->withQueryString();
 
         return view('tags.index', compact('tags', 'sort', 'dir'));
     }
@@ -53,7 +53,7 @@ class TagController extends Controller
         Gate::authorize('create', Tag::class);
 
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:60', Rule::unique('tags', 'name')],
+            'name' => ['required', 'string', 'max:' . (int) setting('validation.tag.name_max', 60), Rule::unique('tags', 'name')],
             'color' => ['nullable', 'string', 'max:16'],
         ]);
 
@@ -78,7 +78,7 @@ class TagController extends Controller
         Gate::authorize('update', $tag);
 
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:60', Rule::unique('tags', 'name')->ignore($tag->id)],
+            'name' => ['required', 'string', 'max:' . (int) setting('validation.tag.name_max', 60), Rule::unique('tags', 'name')->ignore($tag->id)],
             'color' => ['nullable', 'string', 'max:16'],
         ]);
 

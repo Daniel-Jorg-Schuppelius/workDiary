@@ -49,7 +49,7 @@
             );
     @endphp
 
-    <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
+    <x-page-shell overflow="clip">
 
         {{-- Toolbar: Archiv-Badge + Cross-Link --}}
         <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
@@ -205,7 +205,7 @@
                                 <td class="max-w-xs truncate text-sm text-base-content/70">{{ $v->note ?? '—' }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="{{ $isAdmin ? 6 : 5 }}" class="py-6 text-center text-base-content/60">{{ __('Keine Einträge.') }}</td></tr>
+                            <tr><td colspan="{{ $isAdmin ? 6 : 5 }}" class="p-0"><x-empty-state :compact="true" :title="__('Keine Einträge')" /></td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -242,7 +242,7 @@
                                 <td class="text-sm">{{ truncate($entry->content ?? '', 160) }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="py-6 text-center text-base-content/60">{{ __('Keine Einträge.') }}</td></tr>
+                            <tr><td colspan="6" class="p-0"><x-empty-state :compact="true" :title="__('Keine Einträge')" /></td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -275,7 +275,7 @@
                                 <td class="max-w-xs truncate text-sm">{{ $entry->note ?? '—' }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="py-6 text-center text-base-content/60">{{ __('Keine Einträge.') }}</td></tr>
+                            <tr><td colspan="5" class="p-0"><x-empty-state :compact="true" :title="__('Keine Einträge')" /></td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -308,7 +308,7 @@
                                 <td class="max-w-xs truncate text-sm">{{ $entry->reason ?? '—' }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="py-6 text-center text-base-content/60">{{ __('Keine Einträge.') }}</td></tr>
+                            <tr><td colspan="5" class="p-0"><x-empty-state :compact="true" :title="__('Keine Einträge')" /></td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -352,13 +352,9 @@
                     <button type="submit" class="btn btn-warning btn-sm"
                             data-confirm-dialog
                             data-confirm-title="{{ __('Archivierung starten') }}"
-                            data-confirm-message="{{ __('Archivierung wirklich starten?') }}"
-                            data-confirm-label="{{ __('Starten') }}">
-                        {{ __('Archivierung starten') }}
-                    </button>
                 </form>
             </details>
         @endif
 
-    </div>
+    </x-page-shell>
 @endsection

@@ -60,4 +60,15 @@ return [
     'cache' => [
         'ttl_days' => (int) env('ROUTING_CACHE_TTL_DAYS', 365),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tour optimizer
+    |--------------------------------------------------------------------------
+    | Iterations the 2-opt heuristic runs before stopping. Higher values yield
+    | slightly better routes at the cost of CPU time.
+    */
+    'tour_optimizer' => [
+        'iterations' => (int) env('ROUTING_TOUR_OPTIMIZER_ITERATIONS', 50),
+    ],
 ];

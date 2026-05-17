@@ -2,30 +2,26 @@
 @section('title', __('Soll-Besetzung') . ' – ' . $dutyPlan->title)
 @section('nav-title', __('Soll-Besetzung'))
 @section('content')
-<div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
-    <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <div>
-            <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Soll-Besetzung') }}</h1>
-            <p class="text-sm text-base-content/70">
-                {{ $dutyPlan->title }} · {{ $dutyPlan->from_date->format('d.m.Y') }} – {{ $dutyPlan->to_date->format('d.m.Y') }}
-            </p>
-        </div>
-        <div class="flex items-center gap-2">
-            @can('create', \App\Models\CoverageRequirement::class)
-                <a href="{{ route('duty-plans.coverage.create', $dutyPlan) }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
-                    + {{ __('Anforderung hinzufügen') }}
-                </a>
-            @endcan
-            <a href="{{ route('duty-plans.show', $dutyPlan) }}" class="btn btn-ghost btn-sm">← {{ __('Zurück') }}</a>
-        </div>
-    </div>
+<x-page-shell gap="6">
+    <x-slot:toolbar>
+        <x-page-toolbar :title="__('Soll-Besetzung')" :subtitle="$dutyPlan->title . ' · ' . $dutyPlan->from_date->format('d.m.Y') . ' – ' . $dutyPlan->to_date->format('d.m.Y')">
+            <x-slot:actions>
+                @can('create', \App\Models\CoverageRequirement::class)
+                    <a href="{{ route('duty-plans.coverage.create', $dutyPlan) }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
+                        + {{ __('Anforderung hinzufügen') }}
+                    </a>
+                @endcan
+                <a href="{{ route('duty-plans.show', $dutyPlan) }}" class="btn btn-ghost btn-sm">← {{ __('Zurück') }}</a>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if ($requirements->isEmpty())
-        <div class="rounded-box border border-base-300 bg-base-100 p-8 text-center text-base-content/60">
-            {{ __('Noch keine Soll-Besetzungen für diesen Dienstplan definiert.') }}
-            <br>
-            <span class="text-sm">{{ __('Hinweis: Ohne Anforderungen gilt die Mindestbesetzung des Dienstplans:') }} <strong>{{ $dutyPlan->min_staff }}</strong></span>
-        </div>
+        <x-card>
+            <x-empty-state
+                :title="__('Noch keine Soll-Besetzungen für diesen Dienstplan definiert.')"
+                :message="__('Hinweis: Ohne Anforderungen gilt die Mindestbesetzung des Dienstplans:') . ' ' . $dutyPlan->min_staff" />
+        </x-card>
     @else
         <x-table>
             <thead>
@@ -100,5 +96,5 @@
             </tbody>
         </x-table>
     @endif
-</div>
+</x-page-shell>
 @endsection

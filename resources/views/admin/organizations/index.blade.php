@@ -4,12 +4,16 @@
 @section('nav-title', __('Organisationen'))
 
 @section('content')
-<div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
-    <div class="flex justify-end">
-        <a href="{{ route('admin.organizations.create') }}" class="btn btn-primary btn-sm">
-            + {{ __('Organisation anlegen') }}
-        </a>
-    </div>
+<x-page-shell gap="6">
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:actions>
+                <a href="{{ route('admin.organizations.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
+                    + {{ __('Organisation anlegen') }}
+                </a>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <x-table>
         <thead>
@@ -44,7 +48,7 @@
                     <td class="text-sm text-base-content/60">{{ $org->created_at?->toDateString() }}</td>
                     <td class="text-right">
                         <div class="flex justify-end gap-2">
-                            <a href="{{ route('admin.organizations.edit', $org) }}" class="btn btn-ghost btn-xs">{{ __('Bearbeiten') }}</a>
+                            <a href="{{ route('admin.organizations.edit', $org) }}" data-entry-modal-trigger class="btn btn-ghost btn-xs">{{ __('Bearbeiten') }}</a>
                             <form method="POST" action="{{ route('admin.organizations.destroy', $org) }}"
                                   data-confirm-dialog
                                   data-confirm-message="{{ __('Organisation wirklich löschen?') }}"
@@ -57,12 +61,12 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="text-center text-base-content/50 py-8">{{ __('Keine Organisationen vorhanden.') }}</td>
+                    <td colspan="7" class="p-0"><x-empty-state :compact="true" :title="__('Keine Organisationen vorhanden')" /></td>
                 </tr>
             @endforelse
         </tbody>
     </x-table>
 
     <div>{{ $organizations->links() }}</div>
-</div>
+</x-page-shell>
 @endsection
