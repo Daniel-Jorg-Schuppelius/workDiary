@@ -167,6 +167,33 @@
             body.sidebar-collapsed #app-sidebar details.sidebar-section-collapsible > ul { display: block !important; }
             body.sidebar-collapsed #app-sidebar .sidebar-section-chevron,
             body.sidebar-collapsed #app-sidebar .sidebar-section-icon { display: none; }
+
+            /* Sidebar-Layout: Items scrollen, Footer (Collapse-Button) bleibt sticky
+               am unteren Rand der Sidebar sichtbar. */
+            #app-sidebar .sidebar-shell {
+                display: flex;
+                flex-direction: column;
+                height: calc(100dvh - var(--app-header-h) - var(--app-footer-h));
+            }
+            #app-sidebar .sidebar-items {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+            #app-sidebar .sidebar-header {
+                flex: 0 0 auto;
+                border-bottom: 1px solid var(--color-base-300);
+                background-color: var(--color-base-100);
+            }
+            #app-sidebar .sidebar-footer {
+                flex: 0 0 auto;
+                border-top: 1px solid var(--color-base-300);
+                background-color: var(--color-base-100);
+            }
+            /* Collapsed-Mode: Header-Padding minimieren, Dropdown-Trigger zentriert. */
+            body.sidebar-collapsed #app-sidebar .sidebar-header { padding-left: .25rem; padding-right: .25rem; }
+            body.sidebar-collapsed #app-sidebar .sidebar-cta-menu { min-width: 16rem; }
             /* Material Symbols Outlined ist eine Single-Color-Variable-Font und folgt automatisch
                currentColor — sie funktioniert in jedem DaisyUI-Theme, auf jedem Hintergrund und in
                allen Button-/Badge-/Alert-Farben ohne weitere CSS-Hacks. */
@@ -324,7 +351,7 @@
                                 $sidebarSections[] = [
                                     'key'         => 'work',
                                     'label'       => __('Tagesgeschäft'),
-                                    'collapsible' => false,
+                                    'collapsible' => true,
                                     'items'       => [
                                         ['route' => 'today.show',      'label' => __('Heute'),         'icon' => 'today',             'modal' => false, 'matches' => ['today.show']],
                                         ['route' => $indexRoute,       'label' => __('Arbeitsliste'),  'icon' => 'list_alt',          'modal' => false, 'matches' => [$indexRoute, 'diary.*']],
@@ -336,7 +363,7 @@
                                 $sidebarSections[] = [
                                     'key'         => 'plan',
                                     'label'       => __('Planung'),
-                                    'collapsible' => false,
+                                    'collapsible' => true,
                                     'items'       => [
                                         ['route' => 'duty-plans.index', 'label' => __('Dienstpläne'),   'icon' => 'event_available', 'modal' => false, 'matches' => ['duty-plans.*']],
                                         ['route' => 'schedule.index',   'label' => __('Schichtplan'),   'icon' => 'schedule',        'modal' => false, 'matches' => ['schedule.*']],
@@ -350,7 +377,7 @@
                                 $sidebarSections[] = [
                                     'key'         => 'fleet',
                                     'label'       => __('Fuhrpark'),
-                                    'collapsible' => false,
+                                    'collapsible' => true,
                                     'items'       => [
                                         ['route' => 'vehicles.index',    'label' => __('Fahrzeuge'),       'icon' => 'directions_car',  'modal' => false, 'matches' => ['vehicles.*']],
                                         ['route' => 'energy-logs.index', 'label' => __('Tank & Ladelog'),  'icon' => 'local_gas_station','modal' => false, 'matches' => ['energy-logs.*']],
@@ -359,7 +386,7 @@
                                 $sidebarSections[] = [
                                     'key'         => 'data',
                                     'label'       => __('Stammdaten'),
-                                    'collapsible' => false,
+                                    'collapsible' => true,
                                     'items'       => [
                                         ['route' => 'customers.index', 'label' => __('Kunden'),   'icon' => 'badge',          'modal' => false, 'matches' => ['customers.*']],
                                         ['route' => 'projects.index',  'label' => __('Projekte'), 'icon' => 'folder_special', 'modal' => false, 'matches' => ['projects.*']],
@@ -368,7 +395,7 @@
                                 $sidebarSections[] = [
                                     'key'         => 'reports',
                                     'label'       => __('Auswertungen'),
-                                    'collapsible' => false,
+                                    'collapsible' => true,
                                     'items'       => [
                                         ['route' => 'reports.my-month',         'label' => __('Mein Monat'),         'icon' => 'calendar_view_week',  'modal' => false, 'matches' => ['reports.my-month']],
                                         ['route' => 'reports.my-year',          'label' => __('Mein Jahr'),          'icon' => 'calendar_view_month', 'modal' => false, 'matches' => ['reports.my-year']],
@@ -391,7 +418,7 @@
                                 $sidebarSections[] = [
                                     'key'         => 'archive',
                                     'label'       => __('Archiv'),
-                                    'collapsible' => false,
+                                    'collapsible' => true,
                                     'items'       => [
                                         ['route' => 'archive.index', 'label' => __('Archiv-Übersicht'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['archive.*']],
                                     ],
@@ -705,24 +732,100 @@
                style="top: var(--app-header-h); bottom: var(--app-footer-h);"
                aria-label="{{ __('Hauptnavigation') }}"
                data-sidebar>
-            <div class="flex flex-col gap-3 overflow-y-auto overflow-x-hidden px-2 py-3"
-                 style="height: calc(100dvh - var(--app-header-h) - var(--app-footer-h));">
-                <a href="{{ route($createRoute) }}" data-entry-modal-trigger
-                   class="sidebar-cta btn btn-sm btn-primary w-full gap-2"
-                   title="{{ __('Neuer Eintrag') }}">
-                    <x-icon name="add_circle" />
-                    <span class="sidebar-cta-text">{{ __('Neuer Eintrag') }}</span>
-                </a>
+            <div class="sidebar-shell">
+                @php
+                    $createGroups = [
+                        [
+                            'label' => __('Tagesgeschäft'),
+                            'items' => [
+                                ['route' => 'diary.create',              'label' => __('Tagebucheintrag'), 'icon' => 'edit_note'],
+                                ['route' => 'admin-time-entries.create', 'label' => __('Verwaltungszeit'), 'icon' => 'schedule'],
+                            ],
+                        ],
+                        [
+                            'label' => __('Planung'),
+                            'items' => [
+                                ['route' => 'duty-plans.create',     'label' => __('Dienstplan'),  'icon' => 'event_available'],
+                                ['route' => 'vacations.create',      'label' => __('Urlaub'),      'icon' => 'beach_access'],
+                                ['route' => 'travel-logs.create',    'label' => __('Fahrtbuch'),   'icon' => 'route'],
+                                ['route' => 'service-orders.create', 'label' => __('Auftrag'),     'icon' => 'assignment'],
+                                ['route' => 'tours.create',          'label' => __('Tour'),        'icon' => 'directions_bus'],
+                            ],
+                        ],
+                        [
+                            'label' => __('Fuhrpark'),
+                            'items' => [
+                                ['route' => 'vehicles.create',    'label' => __('Fahrzeug'),     'icon' => 'directions_car'],
+                                ['route' => 'energy-logs.create', 'label' => __('Tank-/Ladelog'),'icon' => 'local_gas_station'],
+                            ],
+                        ],
+                        [
+                            'label' => __('Stammdaten'),
+                            'items' => [
+                                ['route' => 'customers.create',      'label' => __('Kunde'),        'icon' => 'badge'],
+                                ['route' => 'projects.create',       'label' => __('Projekt'),      'icon' => 'folder_special'],
+                                ['route' => 'shift-types.create',    'label' => __('Schichttyp'),   'icon' => 'label'],
+                                ['route' => 'qualifications.create', 'label' => __('Qualifikation'),'icon' => 'verified'],
+                            ],
+                        ],
+                    ];
+                    // Nicht registrierte Routen herausfiltern, leere Gruppen entfernen.
+                    $createGroups = collect($createGroups)
+                        ->map(function ($g) {
+                            $g['items'] = collect($g['items'])->filter(fn ($i) => \Illuminate\Support\Facades\Route::has($i['route']))->values()->all();
+                            return $g;
+                        })
+                        ->filter(fn ($g) => ! empty($g['items']))
+                        ->values()
+                        ->all();
+                @endphp
 
-                <div class="flex flex-col gap-4">
-                    @foreach ($sidebarSections as $section)
-                        @php
-                            $sectionActive = collect($section['items'])->contains(
-                                fn ($i) => collect($i['matches'] ?? [$i['route']])->contains(fn ($m) => request()->routeIs($m))
-                            );
-                        @endphp
-                        @if (! empty($section['collapsible']))
-                            <details class="sidebar-section sidebar-section-collapsible" @if ($sectionActive) open @endif>
+                <div class="sidebar-header px-2 py-3">
+                    <div class="dropdown dropdown-bottom dropdown-start w-full">
+                        <div tabindex="0" role="button"
+                             class="sidebar-cta btn btn-sm btn-primary w-full gap-2"
+                             title="{{ __('Neu …') }}"
+                             aria-label="{{ __('Neuen Eintrag erstellen') }}">
+                            <x-icon name="add_circle" />
+                            <span class="sidebar-cta-text flex-1 text-left">{{ __('Neu …') }}</span>
+                            <x-icon name="expand_more" class="sidebar-cta-text text-[1.1rem] opacity-80" />
+                        </div>
+                        <ul tabindex="0"
+                            class="sidebar-cta-menu dropdown-content menu menu-sm z-50 mt-2 w-64 max-h-[70vh] overflow-y-auto rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
+                            @foreach ($createGroups as $gi => $group)
+                                @if ($gi > 0)
+                                    <li><div class="divider my-1"></div></li>
+                                @endif
+                                <li class="menu-title">
+                                    <span class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-base-content/55">{{ $group['label'] }}</span>
+                                </li>
+                                @foreach ($group['items'] as $item)
+                                    <li>
+                                        <a href="{{ route($item['route']) }}"
+                                           data-entry-modal-trigger
+                                           class="flex items-center gap-3"
+                                           title="{{ $item['label'] }}">
+                                            <x-icon :name="$item['icon'] ?? 'add'" />
+                                            <span class="truncate">{{ $item['label'] }}</span>
+                                        </a>
+                                    </li>
+                                @endforeach
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="sidebar-items flex flex-col gap-4 px-2 py-3">
+                    <div class="flex flex-col gap-4">
+                        @foreach ($sidebarSections as $section)
+                            @php
+                                $sectionActive = collect($section['items'])->contains(
+                                    fn ($i) => collect($i['matches'] ?? [$i['route']])->contains(fn ($m) => request()->routeIs($m))
+                                );
+                            @endphp
+                            <details class="sidebar-section sidebar-section-collapsible"
+                                     data-sidebar-section-key="{{ $section['key'] }}"
+                                     @if ($sectionActive) open @endif>
                                 <summary class="sidebar-section-summary">
                                     <x-icon :name="$section['icon'] ?? 'folder'" class="sidebar-section-icon" />
                                     <span data-sidebar-label class="flex-1 truncate">{{ $section['label'] }}</span>
@@ -743,29 +846,11 @@
                                     @endforeach
                                 </ul>
                             </details>
-                        @else
-                            <div class="sidebar-section">
-                                <p data-sidebar-section class="px-2 pb-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-base-content/50 transition-opacity duration-150">{{ $section['label'] }}</p>
-                                <ul class="menu menu-sm w-full gap-0.5 p-0">
-                                    @foreach ($section['items'] as $item)
-                                        @php $active = collect($item['matches'] ?? [$item['route']])->contains(fn ($m) => request()->routeIs($m)); @endphp
-                                        <li>
-                                            <a href="{{ route($item['route']) }}"
-                                               @if (! empty($item['modal'])) data-entry-modal-trigger @endif
-                                               class="menu-link flex items-center gap-3 {{ $active ? 'menu-active' : '' }}"
-                                               title="{{ $item['label'] }}">
-                                                <x-icon :name="$item['icon'] ?? 'circle'" />
-                                                <span data-sidebar-label class="truncate transition-opacity duration-150">{{ $item['label'] }}</span>
-                                            </a>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
-                    @endforeach
+                        @endforeach
+                    </div>
                 </div>
 
-                <div class="mt-auto pt-2">
+                <div class="sidebar-footer px-2 py-2">
                     <button type="button"
                             id="app-sidebar-collapse"
                             class="btn btn-sm btn-ghost w-full justify-center gap-2"
@@ -1173,6 +1258,27 @@
                             try { localStorage.setItem('workDiarySidebarCollapsed', next ? '1' : '0'); } catch (e) { /* ignore */ }
                         });
                     }
+
+                    // Persistenz pro Sektion (<details data-sidebar-section-key="…">)
+                    (function () {
+                        var STORAGE_KEY = 'workDiarySidebarSections';
+                        var store = {};
+                        try {
+                            var raw = localStorage.getItem(STORAGE_KEY);
+                            if (raw) { store = JSON.parse(raw) || {}; }
+                        } catch (e) { store = {}; }
+                        var sections = document.querySelectorAll('#app-sidebar details[data-sidebar-section-key]');
+                        sections.forEach(function (details) {
+                            var key = details.getAttribute('data-sidebar-section-key');
+                            if (key && Object.prototype.hasOwnProperty.call(store, key)) {
+                                details.open = store[key] === 1 || store[key] === '1' || store[key] === true;
+                            }
+                            details.addEventListener('toggle', function () {
+                                store[key] = details.open ? 1 : 0;
+                                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); } catch (e) { /* ignore */ }
+                            });
+                        });
+                    })();
 
                     function isDesktop() {
                         return window.matchMedia('(min-width: 1024px)').matches;
