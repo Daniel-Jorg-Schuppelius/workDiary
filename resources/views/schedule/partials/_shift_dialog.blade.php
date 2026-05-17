@@ -1,16 +1,18 @@
 {{-- Shift create/edit dialog — native <dialog>, no Alpine.js --}}
-<dialog id="shift-dialog" class="modal">
-    <div class="modal-box w-full max-w-lg">
+<x-modal id="shift-dialog"
+         :embedded="false"
+         size="lg"
+         tone="primary"
+         icon="event"
+         :eyebrow="__('Schichtplan')"
+         :title="__('Schicht anlegen')"
+         titleId="shift-dialog-title">
 
-        <div class="mb-4 flex items-center justify-between">
-            <h3 id="shift-dialog-title" class="text-lg font-bold">{{ __('Schicht anlegen') }}</h3>
-            <button type="button" onclick="document.getElementById('shift-dialog').close()" class="btn btn-sm btn-circle btn-ghost">✕</button>
-        </div>
+    <form id="shift-dialog-form" class="space-y-4" novalidate>
+        <input type="hidden" id="shift-dialog-id" name="id" value="">
 
-        <form id="shift-dialog-form" class="space-y-4" novalidate>
-            <input type="hidden" id="shift-dialog-id" name="id" value="">
-
-            {{-- User --}}
+        {{-- Mitarbeiter / Datum --}}
+        <x-form-group :legend="__('Zuordnung')" icon="person" tone="primary" cols="2">
             @if (auth()->user()->isAdmin())
                 <div class="fieldset">
                     <label class="fieldset-label">{{ __('Mitarbeiter') }}</label>
@@ -24,13 +26,14 @@
                 <input type="hidden" id="shift-dialog-user" name="user_id" value="{{ auth()->id() }}">
             @endif
 
-            {{-- Date --}}
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('Datum') }}</label>
                 <input type="date" id="shift-dialog-date" name="date" class="input input-bordered w-full" required>
             </div>
+        </x-form-group>
 
-            {{-- Shift type --}}
+        {{-- Schichttyp + Zeit --}}
+        <x-form-group :legend="__('Schicht')" icon="schedule" tone="info">
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('Schichttyp') }}</label>
                 <select id="shift-dialog-type" name="shift_type_id" class="select select-bordered w-full">
@@ -41,7 +44,6 @@
                 </select>
             </div>
 
-            {{-- Times --}}
             <x-date-range
                 type="time"
                 fromName="start_time"
@@ -54,15 +56,16 @@
                 formControl
                 class="w-full"
             />
+        </x-form-group>
 
-            {{-- Note --}}
+        {{-- Notiz + Status --}}
+        <x-form-group :legend="__('Details')" icon="description" tone="ghost">
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('Notiz') }}</label>
                 <textarea id="shift-dialog-note" name="note" rows="2" maxlength="1000"
                           class="textarea textarea-bordered w-full resize-none"></textarea>
             </div>
 
-            {{-- Status (edit only) --}}
             <div id="shift-dialog-status-row" class="hidden">
                 <div class="fieldset">
                     <label class="fieldset-label">{{ __('Status') }}</label>
@@ -73,28 +76,38 @@
                     </select>
                 </div>
             </div>
+        </x-form-group>
 
-            <div id="shift-dialog-error" class="alert alert-error alert-sm hidden text-sm"></div>
+        <div id="shift-dialog-error" class="alert alert-error alert-sm hidden text-sm"></div>
 
-            <div id="shift-dialog-compliance" class="alert alert-warning alert-sm hidden flex-col items-start gap-2 text-sm">
-                <div class="font-semibold">{{ __('Compliance-Hinweise') }}</div>
-                <ul id="shift-dialog-compliance-list" class="list-disc list-inside space-y-1"></ul>
-                <label class="cursor-pointer label justify-start gap-2 hidden" id="shift-dialog-override-row">
-                    <input type="checkbox" id="shift-dialog-override" class="checkbox checkbox-sm">
-                    <span class="label-text">{{ __('Trotzdem speichern (Override)') }}</span>
-                </label>
-            </div>
+        <div id="shift-dialog-compliance" class="alert alert-warning alert-sm hidden flex-col items-start gap-2 text-sm">
+            <div class="font-semibold">{{ __('Compliance-Hinweise') }}</div>
+            <ul id="shift-dialog-compliance-list" class="list-disc list-inside space-y-1"></ul>
+            <label class="cursor-pointer label justify-start gap-2 hidden" id="shift-dialog-override-row">
+                <input type="checkbox" id="shift-dialog-override" class="checkbox checkbox-sm">
+                <span class="label-text">{{ __('Trotzdem speichern (Override)') }}</span>
+            </label>
+        </div>
+    </form>
 
-            <div class="modal-action mt-0 flex justify-between">
-                <button type="button" id="shift-dialog-delete" class="btn btn-sm btn-error btn-outline hidden">{{ __('Löschen') }}</button>
-                <div class="flex flex-wrap gap-2 justify-end">
-                    <button type="button" id="shift-dialog-publish" class="btn btn-sm btn-info hidden">{{ __('Veröffentlichen') }}</button>
-                    <button type="button" id="shift-dialog-confirm" class="btn btn-sm btn-success hidden">{{ __('Bestätigen') }}</button>
-                    <button type="button" onclick="document.getElementById('shift-dialog').close()" class="btn btn-sm btn-ghost">{{ __('Abbrechen') }}</button>
-                    <button type="submit" id="shift-dialog-save" class="btn btn-sm btn-primary">{{ __('Speichern') }}</button>
-                </div>
-            </div>
-        </form>
-    </div>
-    <form method="dialog" class="modal-backdrop"><button>close</button></form>
-</dialog>
+    <x-slot:footerExtra>
+        <button type="button" id="shift-dialog-delete" class="btn btn-sm btn-error btn-outline gap-2 hidden">
+            <x-icon name="delete" /> {{ __('Löschen') }}
+        </button>
+    </x-slot:footerExtra>
+
+    <x-slot:actions>
+        <button type="button" id="shift-dialog-publish" class="btn btn-sm btn-info gap-2 hidden">
+            <x-icon name="publish" /> {{ __('Veröffentlichen') }}
+        </button>
+        <button type="button" id="shift-dialog-confirm" class="btn btn-sm btn-success gap-2 hidden">
+            <x-icon name="check_circle" /> {{ __('Bestätigen') }}
+        </button>
+        <button type="button" data-entry-modal-close class="btn btn-sm btn-ghost gap-2">
+            <x-icon name="close" /> {{ __('Abbrechen') }}
+        </button>
+        <button type="submit" form="shift-dialog-form" id="shift-dialog-save" class="btn btn-sm btn-primary gap-2">
+            <x-icon name="check" /> {{ __('Speichern') }}
+        </button>
+    </x-slot:actions>
+</x-modal>

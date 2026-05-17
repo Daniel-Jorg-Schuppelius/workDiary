@@ -6,27 +6,21 @@
         : route('org.members.store');
 @endphp
 
-<x-dialog
+<x-modal
     :title="$isEdit ? __('Mitglied bearbeiten') : __('Mitglied anlegen')"
     :eyebrow="__('Mitgliederverwaltung')"
-    icon="👥"
-    tone="primary">
+    icon="group"
+    tone="primary"
+    :action="$action"
+    :method="$isEdit ? 'PUT' : 'POST'"
+    :form-data="['data-entry-form' => '']"
+    :submit-label="$isEdit ? __('Speichern') : __('Anlegen')">
 
-    <form method="POST" action="{{ $action }}" class="space-y-4" data-entry-form>
-        @csrf
-        @if ($isEdit) @method('PUT') @endif
+    @include('org.members._form', ['member' => $member ?? null, 'roles' => $roles])
 
-        @include('org.members._form', ['member' => $member ?? null, 'roles' => $roles])
-
-        @if ($errors->any())
-            <div class="alert alert-error text-sm">
-                <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-            </div>
-        @endif
-
-        <div class="flex flex-wrap items-center gap-3 pt-2">
-            <button type="submit" class="btn btn-primary btn-sm">{{ $isEdit ? __('Speichern') : __('Anlegen') }}</button>
-            <button type="button" class="btn btn-ghost btn-sm" data-entry-modal-close>{{ __('Abbrechen') }}</button>
+    @if ($errors->any())
+        <div class="alert alert-error text-sm">
+            <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
         </div>
-    </form>
-</x-dialog>
+    @endif
+</x-modal>

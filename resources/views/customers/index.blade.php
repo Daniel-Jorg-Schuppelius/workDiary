@@ -42,7 +42,11 @@
                     <span>{{ __('CSV-Import') }}</span>
                 </a>
                 <form method="POST" action="{{ route('customers.lexoffice.push-all') }}"
-                      onsubmit="return confirm('{{ __('Alle nicht synchronisierten Kunden zu Lexoffice übertragen?') }}');">
+                      data-confirm-dialog
+                      data-confirm-message="{{ __('Alle nicht synchronisierten Kunden zu Lexoffice übertragen?') }}"
+                      data-confirm-icon="sync"
+                      data-confirm-tone="info"
+                      data-confirm-label="{{ __('Synchronisieren') }}">
                     @csrf
                     <button type="submit" class="btn btn-sm btn-ghost gap-1">
                         <x-icon name="sync" />

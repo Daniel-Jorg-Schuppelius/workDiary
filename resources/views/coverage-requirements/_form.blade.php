@@ -28,8 +28,8 @@
     </div>
 @endif
 
-<div class="grid gap-4 sm:grid-cols-2">
-    <label class="fieldset w-full sm:col-span-2">
+<x-form-group :legend="__('Schichttyp')" icon="bar_chart" tone="primary">
+    <label class="fieldset w-full">
         <div class="fieldset-label">{{ __('Schichttyp') }} *</div>
         <select name="shift_type_id" required class="select select-bordered w-full">
             <option value="">— {{ __('bitte wählen') }} —</option>
@@ -40,7 +40,9 @@
             @endforeach
         </select>
     </label>
+</x-form-group>
 
+<x-form-group :legend="__('Wann')" icon="event" tone="info" cols="2">
     <label class="fieldset w-full">
         <div class="fieldset-label">{{ __('Wochentag') }}</div>
         <select name="weekday" class="select select-bordered w-full">
@@ -60,7 +62,9 @@
                class="input input-bordered w-full">
         <div class="fieldset-label text-xs text-base-content/60">{{ __('Überschreibt Wochentag-Regel') }}</div>
     </label>
+</x-form-group>
 
+<x-form-group :legend="__('Besetzung')" icon="group" tone="success" cols="2">
     <label class="fieldset w-full">
         <div class="fieldset-label">{{ __('Min. Personen') }} *</div>
         <input type="number" name="min_staff" min="0" max="99" required
@@ -75,10 +79,11 @@
                class="input input-bordered w-full">
         <div class="fieldset-label text-xs text-base-content/60">{{ __('Leer = unbegrenzt') }}</div>
     </label>
+</x-form-group>
 
-    @if ($qualifications->isNotEmpty())
-        <div class="fieldset w-full sm:col-span-2">
-            <div class="fieldset-label">{{ __('Erforderliche Qualifikationen') }}</div>
+@if ($qualifications->isNotEmpty())
+    <x-form-group :legend="__('Erforderliche Qualifikationen')" icon="school" tone="warning">
+        <div class="fieldset w-full">
             <div class="grid gap-2 sm:grid-cols-2">
                 @foreach ($qualifications as $q)
                     <label class="label cursor-pointer justify-start gap-2">
@@ -91,10 +96,12 @@
                 @endforeach
             </div>
         </div>
-    @endif
+    </x-form-group>
+@endif
 
-    <label class="fieldset w-full sm:col-span-2">
+<x-form-group :legend="__('Notizen')" icon="description" tone="ghost">
+    <label class="fieldset w-full">
         <div class="fieldset-label">{{ __('Notizen') }}</div>
         <textarea name="notes" maxlength="500" rows="2" class="textarea textarea-bordered w-full">{{ old('notes', $requirement?->notes) }}</textarea>
     </label>
-</div>
+</x-form-group>

@@ -14,22 +14,24 @@
     $mm = str_pad((string) ((int) $currentMinutes % 60), 2, '0', STR_PAD_LEFT);
 @endphp
 
-<x-dialog
+<x-modal
     :title="$entry ? __('Zeiteintrag bearbeiten') : __('Zeiteintrag erfassen')"
     :eyebrow="__('Zeiterfassung')"
-    icon="⏱"
-    tone="primary">
-    <form method="POST" action="{{ $action }}" class="space-y-4" id="time-entry-form" data-entry-form>
-        @csrf
-        @if ($entry) @method('PUT') @endif
-        @if ($isDialog)
-            <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
-        @endif
+    icon="timer"
+    tone="primary"
+    :action="$action"
+    :method="$entry ? 'PUT' : 'POST'"
+    form-id="time-entry-form"
+    :form-data="['data-entry-form' => '']"
+    :submit-label="$entry ? __('Speichern') : __('Erfassen')">
+    @if ($isDialog)
+        <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
+    @endif
 
-        {{-- Minuten als verstecktes Feld; wird per JS aus HH:MM befüllt --}}
-        <input type="hidden" name="minutes" id="time_minutes_hidden" value="{{ $currentMinutes }}">
+    {{-- Minuten als verstecktes Feld; wird per JS aus HH:MM befüllt --}}
+    <input type="hidden" name="minutes" id="time_minutes_hidden" value="{{ $currentMinutes }}">
 
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <x-form-group :legend="__('Zeit')" icon="timer" tone="primary" cols="2">
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('Datum') }}</label>
                 <input name="date" type="date"
@@ -49,39 +51,29 @@
                        required>
                 @error('minutes')<p class="text-error text-sm">{{ $message }}</p>@enderror
             </div>
-        </div>
+        </x-form-group>
 
-        @if ($tasks->isNotEmpty())
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Aufgabe (optional)') }}</label>
-                <select name="task_id" class="select select-bordered w-full">
-                    <option value="">{{ __('Keine Aufgabe') }}</option>
-                    @foreach ($tasks as $t)
-                        <option value="{{ $t->id }}" @selected(old('task_id', $entry?->task_id) == $t->id)>{{ $t->title }}</option>
-                    @endforeach
-                </select>
-            </div>
-        @endif
-
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Beschreibung') }}</label>
-            <input name="description" type="text" maxlength="500"
-                   class="input input-bordered w-full"
-                   value="{{ old('description', $entry?->description) }}">
-        </div>
-
-        <div class="flex flex-wrap items-center gap-3 pt-2">
-            <button type="submit" class="btn btn-sm btn-primary">
-                {{ $entry ? __('Speichern') : __('Erfassen') }}
-            </button>
-            @if ($isDialog)
-                <button type="button" class="btn btn-sm btn-ghost" data-entry-modal-close>{{ __('Abbrechen') }}</button>
-            @else
-                <a href="{{ route('projects.show', $project) }}#time" class="btn btn-sm btn-ghost">{{ __('Abbrechen') }}</a>
+        <x-form-group :legend="__('Tätigkeit')" icon="description" tone="info">
+            @if ($tasks->isNotEmpty())
+                <div class="fieldset">
+                    <label class="fieldset-label">{{ __('Aufgabe (optional)') }}</label>
+                    <select name="task_id" class="select select-bordered w-full">
+                        <option value="">{{ __('Keine Aufgabe') }}</option>
+                        @foreach ($tasks as $t)
+                            <option value="{{ $t->id }}" @selected(old('task_id', $entry?->task_id) == $t->id)>{{ $t->title }}</option>
+                        @endforeach
+                    </select>
+                </div>
             @endif
-        </div>
-    </form>
-</x-dialog>
+
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Beschreibung') }}</label>
+                <input name="description" type="text" maxlength="500"
+                       class="input input-bordered w-full"
+                       value="{{ old('description', $entry?->description) }}">
+            </div>
+        </x-form-group>
+</x-modal>
 
 <script>
 (function () {

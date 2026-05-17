@@ -743,7 +743,7 @@
              class="fixed bottom-24 left-1/2 z-200 -translate-x-1/2 translate-y-0 opacity-100 transition-all duration-500"
              aria-live="polite">
             <div class="flex items-center gap-3 rounded-2xl border border-base-300 bg-base-100/90 px-5 py-3 text-sm shadow-xl backdrop-blur-sm">
-                <span class="text-base">{{ $effectiveMode === 'legacy' ? '🗂' : '✨' }}</span>
+                <span class="text-base"><x-icon :name="$effectiveMode === 'legacy' ? 'folder_open' : 'auto_awesome'" /></span>
                 <span class="font-medium">{{ session('mode_toast') }}</span>
             </div>
         </div>
@@ -791,18 +791,46 @@
             </div>
         </footer>
 
-        <dialog id="action-confirm-dialog" class="modal">
-                <div class="modal-box">
-                    <h3 id="action-confirm-title" class="text-lg font-bold">{{ __('Aktion bestätigen') }}</h3>
-                    <p id="action-confirm-message" class="py-4 text-sm text-base-content/75">{{ __('Möchtest du diese Aktion wirklich ausführen?') }}</p>
-                    <div class="modal-action">
-                        <form method="dialog">
-                            <button class="btn btn-ghost">{{ __('Abbrechen') }}</button>
-                        </form>
-                        <button id="action-confirm-submit" type="button" class="btn btn-error">{{ __('Ausführen') }}</button>
-                    </div>
-                </div>
-            </dialog>
+        <x-modal id="action-confirm-dialog"
+                 :embedded="false"
+                 size="md"
+                 tone="warning"
+                 icon="help"
+                 :title="__('Aktion bestätigen')"
+                 headerId="action-confirm-header"
+                 iconWrapId="action-confirm-icon-wrap"
+                 iconId="action-confirm-icon"
+                 titleId="action-confirm-title">
+            <p id="action-confirm-message" class="text-sm text-base-content/75">{{ __('Möchtest du diese Aktion wirklich ausführen?') }}</p>
+
+            <x-slot:actions>
+                <button type="button" class="btn btn-ghost gap-2" data-entry-modal-close>
+                    <x-icon name="close" /> {{ __('Abbrechen') }}
+                </button>
+                <button id="action-confirm-submit" type="button" class="btn btn-error gap-2">
+                    <x-icon name="check" /> {{ __('Ausführen') }}
+                </button>
+            </x-slot:actions>
+        </x-modal>
+
+        <x-modal id="action-notify-dialog"
+                 :embedded="false"
+                 size="md"
+                 tone="info"
+                 icon="info"
+                 :title="__('Hinweis')"
+                 headerId="action-notify-header"
+                 iconWrapId="action-notify-icon-wrap"
+                 iconId="action-notify-icon"
+                 titleId="action-notify-title">
+            <p id="action-notify-message" class="whitespace-pre-line text-sm text-base-content/80"></p>
+
+            <x-slot:actions>
+                <button id="action-notify-ok" type="button" class="btn btn-primary gap-2" data-entry-modal-close>
+                    <x-icon name="check" /> {{ __('OK') }}
+                </button>
+            </x-slot:actions>
+        </x-modal>
 
         <script>
                 (function () {
@@ -833,20 +861,106 @@
                     var confirmTitle = document.getElementById('action-confirm-title');
                     var confirmMessage = document.getElementById('action-confirm-message');
                     var confirmSubmit = document.getElementById('action-confirm-submit');
+                    var confirmHeader = document.getElementById('action-confirm-header');
+                    var confirmIconWrap = document.getElementById('action-confirm-icon-wrap');
+                    var confirmIcon = document.getElementById('action-confirm-icon');
+                    var notifyDialog = document.getElementById('action-notify-dialog');
+                    var notifyTitle = document.getElementById('action-notify-title');
+                    var notifyMessage = document.getElementById('action-notify-message');
+                    var notifyHeader = document.getElementById('action-notify-header');
+                    var notifyIconWrap = document.getElementById('action-notify-icon-wrap');
+                    var notifyIcon = document.getElementById('action-notify-icon');
+                    var notifyOk = document.getElementById('action-notify-ok');
                     var pendingForm = null;
                     var pendingResolve = null;
+                    var pendingNotifyResolve = null;
+
+                    var toneAccents = {
+                        primary: { header: 'from-primary/15 via-primary/5 to-transparent', icon: 'bg-primary/15 text-primary' },
+                        success: { header: 'from-success/15 via-success/5 to-transparent', icon: 'bg-success/15 text-success' },
+                        warning: { header: 'from-warning/15 via-warning/5 to-transparent', icon: 'bg-warning/15 text-warning' },
+                        error:   { header: 'from-error/15 via-error/5 to-transparent',     icon: 'bg-error/15 text-error' },
+                        info:    { header: 'from-info/15 via-info/5 to-transparent',       icon: 'bg-info/15 text-info' },
+                        ghost:   { header: 'from-base-300/40 via-base-200/30 to-transparent', icon: 'bg-base-300 text-base-content/70' }
+                    };
+                    var toneClasses = [];
+                    Object.keys(toneAccents).forEach(function (k) {
+                        toneAccents[k].header.split(' ').forEach(function (c) { if (toneClasses.indexOf(c) < 0) toneClasses.push(c); });
+                        toneAccents[k].icon.split(' ').forEach(function (c) { if (toneClasses.indexOf(c) < 0) toneClasses.push(c); });
+                    });
+
+                    function applyTone(headerEl, iconWrapEl, tone) {
+                        var accent = toneAccents[tone] || toneAccents.warning;
+                        toneClasses.forEach(function (c) {
+                            headerEl.classList.remove(c);
+                            iconWrapEl.classList.remove(c);
+                        });
+                        accent.header.split(' ').forEach(function (c) { headerEl.classList.add(c); });
+                        accent.icon.split(' ').forEach(function (c) { iconWrapEl.classList.add(c); });
+                    }
+
+                    // Rendert einen Icon-Bezeichner in das Icon-Element.
+                    // Akzeptiert Material-Symbol-Namen (a-z0-9_) ODER beliebige
+                    // Emojis/Roh-HTML als Backwards-Compat.
+                    function renderIcon(el, value) {
+                        if (!el) return;
+                        var v = (value == null) ? '' : String(value);
+                        if (v !== '' && /^[a-z0-9_]+$/.test(v)) {
+                            el.innerHTML = '<span class="material-symbols-outlined">' + v + '</span>';
+                        } else {
+                            el.textContent = v;
+                        }
+                    }
 
                     function openConfirm(opts) {
                         opts = opts || {};
+                        var tone = opts.tone || (opts.dangerous === false ? 'primary' : 'warning');
                         if (confirmTitle) {
                             confirmTitle.textContent = opts.title || '{{ __('Aktion bestätigen') }}';
                         }
                         if (confirmMessage) {
                             confirmMessage.textContent = opts.message || '{{ __('Möchtest du diese Aktion wirklich ausführen?') }}';
                         }
+                        if (confirmIcon) {
+                            renderIcon(confirmIcon, opts.icon || (opts.dangerous === false ? 'help' : 'warning'));
+                        }
+                        applyTone(confirmHeader, confirmIconWrap, tone);
                         confirmSubmit.textContent = opts.label || '{{ __('Ausführen') }}';
+                        confirmSubmit.classList.remove('btn-error', 'btn-primary', 'btn-warning', 'btn-success', 'btn-info');
+                        var btnTone = opts.dangerous === false ? 'btn-primary' : (tone === 'primary' ? 'btn-primary' : (tone === 'success' ? 'btn-success' : (tone === 'info' ? 'btn-info' : 'btn-error')));
+                        confirmSubmit.classList.add(btnTone);
                         if (typeof confirmDialog.showModal === 'function') {
                             confirmDialog.showModal();
+                        }
+                    }
+
+                    function openNotify(opts) {
+                        opts = opts || {};
+                        var tone = opts.tone || 'info';
+                        var defaultIcons = { info: 'info', success: 'check_circle', warning: 'warning', error: 'cancel', primary: 'info', ghost: 'info' };
+                        var defaultTitles = {
+                            info:    '{{ __('Hinweis') }}',
+                            success: '{{ __('Erfolg') }}',
+                            warning: '{{ __('Achtung') }}',
+                            error:   '{{ __('Fehler') }}'
+                        };
+                        if (notifyTitle) {
+                            notifyTitle.textContent = opts.title || defaultTitles[tone] || '{{ __('Hinweis') }}';
+                        }
+                        if (notifyMessage) {
+                            notifyMessage.textContent = opts.message || '';
+                        }
+                        if (notifyIcon) {
+                            renderIcon(notifyIcon, opts.icon || defaultIcons[tone] || 'info');
+                        }
+                        applyTone(notifyHeader, notifyIconWrap, tone);
+                        if (notifyOk) {
+                            notifyOk.classList.remove('btn-error', 'btn-primary', 'btn-warning', 'btn-success', 'btn-info');
+                            var okTone = tone === 'error' ? 'btn-error' : (tone === 'warning' ? 'btn-warning' : (tone === 'success' ? 'btn-success' : 'btn-primary'));
+                            notifyOk.classList.add(okTone);
+                        }
+                        if (typeof notifyDialog.showModal === 'function') {
+                            notifyDialog.showModal();
                         }
                     }
 
@@ -861,6 +975,26 @@
                             openConfirm(typeof opts === 'string' ? { message: opts } : opts);
                         });
                     };
+
+                    // Programmatic API: returns Promise<void>
+                    window.notifyAction = function (opts) {
+                        if (!notifyDialog) {
+                            try { window.alert((opts && opts.message) || String(opts || '')); } catch (e) { /* ignore */ }
+                            return Promise.resolve();
+                        }
+                        return new Promise(function (resolve) {
+                            pendingNotifyResolve = resolve;
+                            openNotify(typeof opts === 'string' ? { message: opts } : opts);
+                        });
+                    };
+
+                    if (notifyDialog) {
+                        notifyDialog.addEventListener('close', function () {
+                            var r = pendingNotifyResolve;
+                            pendingNotifyResolve = null;
+                            if (r) r();
+                        });
+                    }
 
                     if (confirmDialog && confirmSubmit) {
                         document.addEventListener('submit', function (event) {
@@ -881,6 +1015,8 @@
                                 title:   form.getAttribute('data-confirm-title') || undefined,
                                 message: form.getAttribute('data-confirm-message') || undefined,
                                 label:   form.getAttribute('data-confirm-label') || undefined,
+                                icon:    form.getAttribute('data-confirm-icon') || undefined,
+                                tone:    form.getAttribute('data-confirm-tone') || undefined,
                             });
                         });
 
@@ -918,6 +1054,8 @@
                                 title:   trigger.getAttribute('data-confirm-title') || undefined,
                                 message: trigger.getAttribute('data-confirm-message') || undefined,
                                 label:   trigger.getAttribute('data-confirm-label') || undefined,
+                                icon:    trigger.getAttribute('data-confirm-icon') || undefined,
+                                tone:    trigger.getAttribute('data-confirm-tone') || undefined,
                             });
                         });
 

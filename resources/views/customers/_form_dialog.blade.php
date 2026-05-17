@@ -5,19 +5,20 @@
     $dialogUrl = ($customer ? route('customers.edit', $customer) : route('customers.create')) . '?dialog=1';
 @endphp
 
-<x-dialog
+<x-modal
     :title="$customer ? __('Kunde bearbeiten') : __('Neuer Kunde')"
     :eyebrow="__('Kunde')"
-    icon="◉"
-    tone="primary">
-    <form method="POST" action="{{ $action }}" class="space-y-4" data-entry-form>
-        @csrf
-        @if ($customer) @method('PUT') @endif
-        @if ($isDialog)
-            <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
-        @endif
+    icon="badge"
+    tone="primary"
+    :action="$action"
+    :method="$customer ? 'PUT' : 'POST'"
+    :form-data="['data-entry-form' => '']"
+    :submit-label="$customer ? __('Speichern') : __('Anlegen')">
+    @if ($isDialog)
+        <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
+    @endif
 
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <x-form-group :legend="__('Stammdaten')" icon="badge" tone="primary" cols="2">
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('Name') }} *</label>
                 <input name="name" type="text" required maxlength="200"
@@ -45,7 +46,9 @@
                        class="input input-bordered w-full"
                        value="{{ old('vat_id', $customer?->vat_id) }}">
             </div>
+        </x-form-group>
 
+        <x-form-group :legend="__('Kontakt')" icon="call" tone="info" cols="2">
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('Ansprechpartner') }}</label>
                 <input name="contact_name" type="text" maxlength="200"
@@ -72,15 +75,17 @@
                        class="input input-bordered w-full"
                        value="{{ old('mobile', $customer?->mobile) }}">
             </div>
+        </x-form-group>
 
-            <div class="fieldset sm:col-span-2">
+        <x-form-group :legend="__('Adresse')" icon="home" tone="ghost" cols="2">
+            <div class="fieldset md:col-span-2">
                 <label class="fieldset-label">{{ __('Adresse (Freitext, optional)') }}</label>
                 <textarea name="address" rows="2" maxlength="1000"
                           class="textarea textarea-bordered w-full">{{ old('address', $customer?->address) }}</textarea>
                 <p class="text-xs text-base-content/60 mt-1">{{ __('Wird nur genutzt, wenn die strukturierten Felder darunter leer sind.') }}</p>
             </div>
 
-            <div class="fieldset sm:col-span-2">
+            <div class="fieldset md:col-span-2">
                 <label class="fieldset-label">{{ __('Straße / Hausnr.') }}</label>
                 <input name="address_street" type="text" maxlength="255"
                        class="input input-bordered w-full"
@@ -113,7 +118,9 @@
                        value="{{ old('homepage', $customer?->homepage) }}">
                 @error('homepage')<p class="text-error text-sm">{{ $message }}</p>@enderror
             </div>
+        </x-form-group>
 
+        <x-form-group :legend="__('Abrechnung & Darstellung')" icon="payments" tone="warning" cols="2">
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('Währung') }}</label>
                 <input name="currency" type="text" maxlength="3" required
@@ -156,19 +163,21 @@
                     <span>{{ __('Abrechenbar') }}</span>
                 </label>
             </div>
+        </x-form-group>
 
-            <div class="fieldset sm:col-span-2">
+        <x-form-group :legend="__('Notizen')" icon="description" tone="ghost">
+            <div class="fieldset">
                 <label class="fieldset-label">{{ __('Notiz (intern)') }}</label>
                 <textarea name="comment" rows="2" maxlength="5000"
                           class="textarea textarea-bordered w-full">{{ old('comment', $customer?->comment) }}</textarea>
             </div>
 
-            <div class="fieldset sm:col-span-2">
+            <div class="fieldset">
                 <label class="fieldset-label">{{ __('Rechnungstext') }}</label>
                 <textarea name="invoice_text" rows="2" maxlength="5000"
                           class="textarea textarea-bordered w-full">{{ old('invoice_text', $customer?->invoice_text) }}</textarea>
             </div>
-        </div>
+        </x-form-group>
 
         @php
             $contactPersons = old('contact_persons', $customer?->contact_persons ?? []);
@@ -188,13 +197,13 @@
                     <div class="grid grid-cols-1 gap-2 sm:grid-cols-12 items-center" data-contact-row>
                         <input type="text" name="contact_persons[{{ $i }}][name]" value="{{ $cp['name'] ?? '' }}"
                                placeholder="{{ __('Name') }}" maxlength="200"
-                               class="input input-sm input-bordered sm:col-span-3">
+                               class="input input-bordered sm:col-span-3">
                         <input type="email" name="contact_persons[{{ $i }}][email]" value="{{ $cp['email'] ?? '' }}"
                                placeholder="{{ __('E-Mail') }}" maxlength="255"
-                               class="input input-sm input-bordered sm:col-span-4">
+                               class="input input-bordered sm:col-span-4">
                         <input type="text" name="contact_persons[{{ $i }}][phone]" value="{{ $cp['phone'] ?? '' }}"
                                placeholder="{{ __('Telefon') }}" maxlength="64"
-                               class="input input-sm input-bordered sm:col-span-3">
+                               class="input input-bordered sm:col-span-3">
                         <label class="label cursor-pointer gap-1 text-xs sm:col-span-1">
                             <input type="hidden" name="contact_persons[{{ $i }}][primary]" value="0">
                             <input type="checkbox" name="contact_persons[{{ $i }}][primary]" value="1"
@@ -223,19 +232,9 @@
                 </select>
             @endif
             <input type="text" name="new_tags" value="{{ old('new_tags', '') }}" placeholder="{{ __('Neue Tags (kommagetrennt)') }}"
-                   maxlength="500" class="input input-sm input-bordered w-full mt-2">
+                   maxlength="500" class="input input-bordered w-full mt-2">
         </div>
-
-        <div class="flex flex-wrap items-center gap-3 pt-2">
-            <button type="submit" class="btn btn-sm btn-primary">{{ $customer ? __('Speichern') : __('Anlegen') }}</button>
-            @if ($isDialog)
-                <button type="button" class="btn btn-sm btn-ghost" data-entry-modal-close>{{ __('Abbrechen') }}</button>
-            @else
-                <a href="{{ route('customers.index') }}" class="btn btn-sm btn-ghost">{{ __('Abbrechen') }}</a>
-            @endif
-        </div>
-    </form>
-</x-dialog>
+</x-modal>
 
 <script>
 (function () {

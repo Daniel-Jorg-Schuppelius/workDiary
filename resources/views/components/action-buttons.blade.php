@@ -45,7 +45,11 @@
         <form method="POST"
               action="{{ route($deleteRoute, $deleteParams) }}"
               class="inline"
-              onsubmit="return confirm('{{ $confirm }}')">
+              data-confirm-dialog
+              data-confirm-message="{{ $confirm }}"
+              data-confirm-icon="delete"
+              data-confirm-tone="error"
+              data-confirm-label="{{ __('Löschen') }}">
             @csrf
             @method('DELETE')
             <button type="submit"

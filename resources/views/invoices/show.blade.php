@@ -30,7 +30,12 @@
                 </form>
             @endcan
             @can('delete', $invoice)
-                <form method="POST" action="{{ route('invoices.destroy', $invoice) }}" onsubmit="return confirm('{{ __('Wirklich löschen?') }}')">
+                <form method="POST" action="{{ route('invoices.destroy', $invoice) }}"
+                      data-confirm-dialog
+                      data-confirm-message="{{ __('Wirklich löschen?') }}"
+                      data-confirm-icon="delete"
+                      data-confirm-tone="error"
+                      data-confirm-label="{{ __('Löschen') }}">
                     @csrf @method('DELETE')
                     <button class="btn btn-sm btn-error btn-outline">{{ __('Löschen') }}</button>
                 </form>

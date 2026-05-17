@@ -1,8 +1,7 @@
 {{-- Erwartet: $assignment, $isEdit, $isDialog, $canAssignOthers, $assignableUsers, $shiftOptions, $prefillStartAt, $prefillEndAt, $prefillUserId --}}
 @php
     $isDialog = $isDialog ?? false;
-    $action = $isEdit ? route('assignments.update', $assignment) : route('assignments.store');
-    $cancelUrl = route('duties.index', ['tab' => 'notdienst']);
+    $isEdit = $isEdit ?? false;
     $startAt = old('start_at', $assignment?->start_at?->format('Y-m-d\TH:i') ?? $prefillStartAt ?? '');
     $endAt = old('end_at', $assignment?->end_at?->format('Y-m-d\TH:i') ?? $prefillEndAt ?? '');
     $reason = old('reason', $assignment?->reason ?? '');
@@ -12,15 +11,13 @@
     $dialogUrl = ($isEdit ? route('assignments.edit', $assignment) : route('assignments.create')) . '?dialog=1';
 @endphp
 
-<form method="POST" action="{{ $action }}" class="space-y-4" data-entry-form>
-    @csrf
-    @if ($isEdit) @method('PUT') @endif
-    <input type="hidden" name="_back" value="{{ $back }}">
-    @if ($isDialog)
-        <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
-    @endif
+<input type="hidden" name="_back" value="{{ $back }}">
+@if ($isDialog)
+    <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
+@endif
 
-    @if ($canAssignOthers)
+@if ($canAssignOthers)
+    <x-form-group :legend="__('Mitarbeiter')" icon="person" tone="primary">
         <div class="fieldset w-full">
             <label class="fieldset-label">{{ __('Mitarbeiter') }}</label>
             <select name="user_id" class="select select-bordered w-full">
@@ -29,8 +26,10 @@
                 @endforeach
             </select>
         </div>
-    @endif
+    </x-form-group>
+@endif
 
+<x-form-group :legend="__('Einsatz')" icon="warning" tone="error">
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Zeitraum') }} *</label>
         <x-date-range
@@ -60,35 +59,17 @@
             @endforeach
         </select>
     </div>
+</x-form-group>
 
+<x-form-group :legend="__('Grund')" icon="description" tone="ghost">
     <div class="fieldset w-full">
         <label class="fieldset-label">{{ __('Grund') }}</label>
         <textarea name="reason" rows="3" class="textarea textarea-bordered w-full">{{ $reason }}</textarea>
     </div>
+</x-form-group>
 
-    @if ($errors->any())
-        <div class="alert alert-error">
-            <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-        </div>
-    @endif
-
-    <div class="flex flex-wrap items-center gap-3 pt-2">
-        <button type="submit" class="btn btn-sm btn-primary">{{ $isEdit ? __('Speichern') : __('Notdienst anlegen') }}</button>
-        @if ($isDialog)
-            <button type="button" class="btn btn-sm btn-ghost" data-entry-modal-close>{{ __('Abbrechen') }}</button>
-        @else
-            <a href="{{ $cancelUrl }}" class="btn btn-sm btn-ghost">{{ __('Abbrechen') }}</a>
-        @endif
+@if ($errors->any())
+    <div class="alert alert-error">
+        <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
     </div>
-</form>
-
-@if ($isEdit)
-    <form method="POST" action="{{ route('assignments.destroy', $assignment) }}" class="mt-3"
-          data-confirm-dialog
-          data-confirm-message="{{ __('Wirklich löschen?') }}"
-          data-confirm-label="{{ __('Löschen') }}">
-        @csrf @method('DELETE')
-        <input type="hidden" name="_back" value="{{ $back }}">
-        <button type="submit" class="btn btn-sm btn-error btn-outline">{{ __('Notdienst löschen') }}</button>
-    </form>
 @endif

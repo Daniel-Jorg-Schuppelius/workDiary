@@ -10,6 +10,18 @@
 let _cfg = null; // window.__scheduleConfig
 let _dragShiftId = null; // shift id being dragged
 
+/* ──────────────────── Notify helper ──────────────────────────── */
+
+function notifyError(message) {
+    if (typeof window.notifyAction === "function") {
+        window.notifyAction({ tone: "error", message: String(message) });
+    } else {
+        // Fallback nur falls Layout-JS noch nicht geladen.
+        // eslint-disable-next-line no-alert
+        window.alert(String(message));
+    }
+}
+
 /* ──────────────────────── Bootstrap ──────────────────────────── */
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -98,7 +110,9 @@ window.scheduleDropCell = function (event, date, userId) {
 
     apiFetch("PATCH", `${_cfg.routes.shiftsUpdate}/${id}`, body)
         .then(() => window.location.reload())
-        .catch((err) => alert(err.message ?? __("Fehler beim Verschieben.")));
+        .catch((err) =>
+            notifyError(err.message ?? __("Fehler beim Verschieben.")),
+        );
 };
 
 /* ─────────────────────── Shift dialog ────────────────────────── */
@@ -293,7 +307,7 @@ async function onShiftDialogDelete() {
         document.getElementById("shift-dialog").close();
         window.location.reload();
     } catch (err) {
-        alert(err.message ?? _t("Fehler beim Löschen."));
+        notifyError(err.message ?? _t("Fehler beim Löschen."));
     }
 }
 
@@ -305,7 +319,7 @@ async function onShiftDialogPublish() {
         document.getElementById("shift-dialog").close();
         window.location.reload();
     } catch (err) {
-        alert(err.message ?? _t("Fehler beim Veröffentlichen."));
+        notifyError(err.message ?? _t("Fehler beim Veröffentlichen."));
     }
 }
 
@@ -317,7 +331,7 @@ async function onShiftDialogConfirm() {
         document.getElementById("shift-dialog").close();
         window.location.reload();
     } catch (err) {
-        alert(err.message ?? _t("Fehler beim Bestätigen."));
+        notifyError(err.message ?? _t("Fehler beim Bestätigen."));
     }
 }
 
@@ -415,7 +429,7 @@ window.shiftTypeDelete = async function (typeId) {
         document.querySelector(`[data-type-row="${typeId}"]`)?.remove();
         removeTypeOption(typeId);
     } catch (err) {
-        alert(err.message ?? _t("Fehler beim Löschen."));
+        notifyError(err.message ?? _t("Fehler beim Löschen."));
     }
 };
 

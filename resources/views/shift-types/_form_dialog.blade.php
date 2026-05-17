@@ -6,31 +6,29 @@
         : route('shift-types.store');
 @endphp
 
-<x-dialog
+<x-modal
     :title="$isEdit ? __('Schichttyp bearbeiten') : __('Schichttyp anlegen')"
     :eyebrow="__('Schichttypen')"
-    icon="🔄"
-    tone="primary">
+    icon="sync"
+    tone="primary"
+    :action="$action"
+    :method="$isEdit ? 'PUT' : 'POST'"
+    :form-data="['data-entry-form' => '']"
+    :submit-label="$isEdit ? __('Speichern') : __('Anlegen')">
 
-    <form method="POST" action="{{ $action }}" class="space-y-4" data-entry-form>
-        @csrf
-        @if ($isEdit) @method('PUT') @endif
-
-        @include('shift-types._form', ['type' => $type])
-
-        <div class="flex flex-wrap items-center gap-3 pt-2">
-            <button type="submit" class="btn btn-primary btn-sm">{{ $isEdit ? __('Speichern') : __('Anlegen') }}</button>
-            <button type="button" class="btn btn-ghost btn-sm" data-entry-modal-close>{{ __('Abbrechen') }}</button>
-        </div>
-    </form>
+    @include('shift-types._form', ['type' => $type])
 
     @if ($isEdit)
-        <form method="POST" action="{{ route('shift-types.destroy', $type) }}" class="mt-3"
-              data-confirm-dialog
-              data-confirm-message="{{ __('Wirklich löschen?') }}"
-              data-confirm-label="{{ __('Löschen') }}">
-            @csrf @method('DELETE')
-            <button type="submit" class="btn btn-error btn-outline btn-sm">{{ __('Schichttyp löschen') }}</button>
-        </form>
+        <x-slot:footerExtra>
+            <form method="POST" action="{{ route('shift-types.destroy', $type) }}"
+                  data-confirm-dialog
+                  data-confirm-message="{{ __('Wirklich löschen?') }}"
+                  data-confirm-label="{{ __('Löschen') }}">
+                @csrf @method('DELETE')
+                <button type="submit" class="btn btn-error btn-outline btn-sm gap-2">
+                    <x-icon name="delete" /> {{ __('Schichttyp löschen') }}
+                </button>
+            </form>
+        </x-slot:footerExtra>
     @endif
-</x-dialog>
+</x-modal>

@@ -79,7 +79,7 @@
                     <ul class="space-y-2">
                         @foreach ($user['today_shifts'] as $shift)
                             <li class="flex items-center justify-between gap-3 rounded-box border border-base-300 bg-base-200 px-3 py-2 text-sm">
-                                <span>📅 {{ $shift->start_at->format('H:i') }} – {{ $shift->end_at->format('H:i') }}</span>
+                                <span class="inline-flex items-center gap-1"><x-icon name="event" /> {{ $shift->start_at->format('H:i') }} – {{ $shift->end_at->format('H:i') }}</span>
                                 <span class="text-base-content/60">{{ $shift->note ? truncate($shift->note, 40) : '' }}</span>
                             </li>
                         @endforeach
@@ -113,7 +113,7 @@
                     <ul class="space-y-2 text-sm">
                         @foreach ($user['upcoming_emergencies'] as $em)
                             <li class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 px-3 py-2">
-                                <span>🚨 {{ $em->start_at->format('d.m. H:i') }} – {{ $em->end_at->format('d.m. H:i') }}</span>
+                                <span class="inline-flex items-center gap-1"><x-icon name="priority_high" /> {{ $em->start_at->format('d.m. H:i') }} – {{ $em->end_at->format('d.m. H:i') }}</span>
                                 @if ($em->reason)<span class="text-base-content/60">{{ truncate($em->reason, 50) }}</span>@endif
                             </li>
                         @endforeach

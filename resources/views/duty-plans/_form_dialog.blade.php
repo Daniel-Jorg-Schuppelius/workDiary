@@ -6,27 +6,21 @@
         : route('duty-plans.store');
 @endphp
 
-<x-dialog
+<x-modal
     :title="$isEdit ? __('Dienstplan bearbeiten') : __('Dienstplan anlegen')"
     :eyebrow="__('Dienstplanung')"
-    icon="📋"
-    tone="primary">
+    icon="assignment"
+    tone="primary"
+    :action="$action"
+    :method="$isEdit ? 'PUT' : 'POST'"
+    :form-data="['data-entry-form' => '']"
+    :submit-label="$isEdit ? __('Speichern') : __('Anlegen')">
 
-    <form method="POST" action="{{ $action }}" class="space-y-4" data-entry-form>
-        @csrf
-        @if ($isEdit) @method('PUT') @endif
+    @include('duty-plans._form', ['plan' => $dutyPlan ?? null])
 
-        @include('duty-plans._form', ['plan' => $dutyPlan ?? null])
-
-        @if ($errors->any())
-            <div class="alert alert-error text-sm">
-                <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-            </div>
-        @endif
-
-        <div class="flex flex-wrap items-center gap-3 pt-2">
-            <button type="submit" class="btn btn-primary btn-sm">{{ $isEdit ? __('Speichern') : __('Anlegen') }}</button>
-            <button type="button" class="btn btn-ghost btn-sm" data-entry-modal-close>{{ __('Abbrechen') }}</button>
+    @if ($errors->any())
+        <div class="alert alert-error text-sm">
+            <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
         </div>
-    </form>
-</x-dialog>
+    @endif
+</x-modal>

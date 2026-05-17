@@ -6,53 +6,42 @@
     $dialogUrl = ($isEdit ? route('legacy.notdienst.edit', $item) : route('legacy.notdienst.create')) . '?dialog=1';
 @endphp
 
-<x-dialog
+<x-modal
     :title="$isEdit ? __('Notdienst bearbeiten') : __('Notdienst neu')"
     :eyebrow="__('Legacy')"
-    icon="🚨"
-    tone="warning">
-    <form method="POST" action="{{ $action }}" class="space-y-5" data-entry-form>
-        @csrf
-        @if ($isEdit)
-            @method('PUT')
-        @endif
-        @if ($isDialog)
-            <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
-        @endif
+    icon="warning"
+    tone="warning"
+    :action="$action"
+    :method="$isEdit ? 'PUT' : 'POST'"
+    :form-data="['data-entry-form' => '']"
+    :submit-label="__('Speichern')">
+    @if ($isDialog)
+        <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
+    @endif
 
-        <div class="fieldset">
-            <label for="user" class="fieldset-label">{{ __('Mitarbeiter') }}</label>
-            <select id="user" name="user" class="select select-bordered w-full @error('user') select-error @enderror">
-                @foreach ($users as $legacyUser)
-                    <option value="{{ $legacyUser->id }}" @selected((int) old('user', $item?->user) === (int) $legacyUser->id)>{{ $legacyUser->uname }}</option>
-                @endforeach
-            </select>
-            @error('user')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
+    <div class="fieldset">
+        <label for="user" class="fieldset-label">{{ __('Mitarbeiter') }}</label>
+        <select id="user" name="user" class="select select-bordered w-full @error('user') select-error @enderror">
+            @foreach ($users as $legacyUser)
+                <option value="{{ $legacyUser->id }}" @selected((int) old('user', $item?->user) === (int) $legacyUser->id)>{{ $legacyUser->uname }}</option>
+            @endforeach
+        </select>
+        @error('user')<p class="text-error text-sm">{{ $message }}</p>@enderror
+    </div>
 
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Zeitraum') }}</label>
-            <x-date-range
-                fromName="von"
-                toName="bis"
-                fromId="von"
-                toId="bis"
-                :from="old('von', $item?->von?->format('Y-m-d'))"
-                :to="old('bis', $item?->bis?->format('Y-m-d'))"
-                :label="false"
-                class="w-full"
-            />
-            @error('von')<p class="text-error text-sm">{{ $message }}</p>@enderror
-            @error('bis')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
-
-        <div class="flex gap-2 pt-1">
-            <button type="submit" class="btn btn-primary btn-sm">{{ __('Speichern') }}</button>
-            @if ($isDialog)
-                <button type="button" class="btn btn-ghost btn-sm" data-entry-modal-close>{{ __('Abbrechen') }}</button>
-            @else
-                <a href="{{ route('legacy.notdienst.index') }}" class="btn btn-ghost btn-sm">{{ __('Abbrechen') }}</a>
-            @endif
-        </div>
-    </form>
-</x-dialog>
+    <div class="fieldset">
+        <label class="fieldset-label">{{ __('Zeitraum') }}</label>
+        <x-date-range
+            fromName="von"
+            toName="bis"
+            fromId="von"
+            toId="bis"
+            :from="old('von', $item?->von?->format('Y-m-d'))"
+            :to="old('bis', $item?->bis?->format('Y-m-d'))"
+            :label="false"
+            class="w-full"
+        />
+        @error('von')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        @error('bis')<p class="text-error text-sm">{{ $message }}</p>@enderror
+    </div>
+</x-modal>

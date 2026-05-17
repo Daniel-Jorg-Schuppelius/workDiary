@@ -78,32 +78,36 @@
 </div>
 
 @can('create', \App\Models\Timesheet::class)
-    <dialog id="quick-timesheet-dialog" class="modal">
-        <div class="modal-box">
-            <h3 class="mb-3 font-semibold">{{ __('Stundenzettel anlegen') }}</h3>
-            <form method="POST" action="{{ route('timesheets.quick') }}" class="flex flex-col gap-3">
-                @csrf
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('Kunde') }}</label>
-                    <select name="customer_id" required class="select select-bordered w-full">
-                        <option value="">{{ __('Kunde wählen…') }}</option>
-                        @foreach (\App\Models\Customer::query()->whereNull('archived_at')->orderBy('name')->get(['id','name']) as $c)
-                            <option value="{{ $c->id }}">{{ $c->name }}</option>
-                        @endforeach
-                    </select>
-                    <p class="text-xs text-base-content/60">{{ __('Ohne Projektwahl landet der Stundenzettel im Standardprojekt des Kunden (z. B. Wartung).') }}</p>
-                </div>
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('Datum') }}</label>
-                    <input type="date" name="work_date" value="{{ now()->format('Y-m-d') }}" class="input input-bordered w-full">
-                </div>
-                <div class="modal-action">
-                    <button type="button" class="btn btn-sm btn-ghost" onclick="document.getElementById('quick-timesheet-dialog').close()">{{ __('Abbrechen') }}</button>
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Anlegen') }}</button>
-                </div>
-            </form>
-        </div>
-        <form method="dialog" class="modal-backdrop"><button>close</button></form>
-    </dialog>
+    <x-modal id="quick-timesheet-dialog"
+             :embedded="false"
+             size="lg"
+             tone="primary"
+             icon="timer"
+             :eyebrow="__('Stundenzettel')"
+             :title="__('Stundenzettel anlegen')"
+             :action="route('timesheets.quick')"
+             method="POST"
+             :submitLabel="__('Anlegen')">
+
+        <x-form-group :legend="__('Kunde')" icon="business" tone="primary">
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Kunde') }}</label>
+                <select name="customer_id" required class="select select-bordered w-full">
+                    <option value="">{{ __('Kunde wählen…') }}</option>
+                    @foreach (\App\Models\Customer::query()->whereNull('archived_at')->orderBy('name')->get(['id','name']) as $c)
+                        <option value="{{ $c->id }}">{{ $c->name }}</option>
+                    @endforeach
+                </select>
+                <p class="text-xs text-base-content/60">{{ __('Ohne Projektwahl landet der Stundenzettel im Standardprojekt des Kunden (z. B. Wartung).') }}</p>
+            </div>
+        </x-form-group>
+
+        <x-form-group :legend="__('Zeitraum')" icon="event" tone="info">
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Datum') }}</label>
+                <input type="date" name="work_date" value="{{ now()->format('Y-m-d') }}" class="input input-bordered w-full">
+            </div>
+        </x-form-group>
+    </x-modal>
 @endcan
 @endsection

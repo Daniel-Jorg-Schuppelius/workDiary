@@ -46,7 +46,12 @@
                                     <a href="{{ route('materials.edit', $m) }}" class="btn btn-xs">{{ __('Bearbeiten') }}</a>
                                 @endcan
                                 @can('delete', $m)
-                                    <form method="POST" action="{{ route('materials.destroy', $m) }}" class="inline" onsubmit="return confirm('{{ __('Löschen?') }}')">
+                                    <form method="POST" action="{{ route('materials.destroy', $m) }}" class="inline"
+                                          data-confirm-dialog
+                                          data-confirm-message="{{ __('Löschen?') }}"
+                                          data-confirm-icon="delete"
+                                          data-confirm-tone="error"
+                                          data-confirm-label="{{ __('Löschen') }}">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-xs btn-ghost text-error">×</button>
                                     </form>

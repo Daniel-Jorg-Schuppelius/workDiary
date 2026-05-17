@@ -238,7 +238,12 @@
                             <span class="text-base-content/60">· {{ number_format($att->size / 1024, 0, ',', '.') }} KB</span>
                         </div>
                         @can('delete', $att)
-                        <form method="POST" action="{{ route('attachments.destroy', $att) }}" onsubmit="return confirm('{{ __('Anhang löschen?') }}')">
+                        <form method="POST" action="{{ route('attachments.destroy', $att) }}"
+                              data-confirm-dialog
+                              data-confirm-message="{{ __('Anhang löschen?') }}"
+                              data-confirm-icon="delete"
+                              data-confirm-tone="error"
+                              data-confirm-label="{{ __('Löschen') }}">
                             @csrf @method('DELETE')
                             <button class="btn btn-xs btn-ghost text-error">{{ __('Löschen') }}</button>
                         </form>

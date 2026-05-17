@@ -144,7 +144,11 @@
                             <td class="text-right">
                                 @if($editable)
                                     <form method="POST" action="{{ route('projects.timesheets.entries.destroy', [$project, $timesheet, $e]) }}"
-                                          onsubmit="return confirm('{{ __('Löschen?') }}')">
+                                          data-confirm-dialog
+                                          data-confirm-message="{{ __('Löschen?') }}"
+                                          data-confirm-icon="delete"
+                                          data-confirm-tone="error"
+                                          data-confirm-label="{{ __('Löschen') }}">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-xs btn-ghost text-error">×</button>
                                     </form>
@@ -225,7 +229,11 @@
                             <td class="text-right">
                                 @if($editable)
                                     <form method="POST" action="{{ route('projects.timesheets.materials.destroy', [$project, $timesheet, $u]) }}"
-                                          onsubmit="return confirm('{{ __('Löschen?') }}')">
+                                          data-confirm-dialog
+                                          data-confirm-message="{{ __('Löschen?') }}"
+                                          data-confirm-icon="delete"
+                                          data-confirm-tone="error"
+                                          data-confirm-label="{{ __('Löschen') }}">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-xs btn-ghost text-error">×</button>
                                     </form>

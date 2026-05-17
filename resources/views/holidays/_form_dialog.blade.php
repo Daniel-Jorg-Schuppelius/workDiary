@@ -25,87 +25,80 @@
     ];
 @endphp
 
-<x-dialog
+<x-modal
     :title="$isEdit ? __('Feiertag bearbeiten') : __('Feiertag anlegen')"
     :eyebrow="__('Kalender')"
-    icon="🎉"
-    tone="warning">
-    <form method="POST" action="{{ $action }}" class="space-y-4" data-entry-form data-recurrence-form>
-        @csrf
-        @if ($isEdit)
-            @method('PUT')
-        @endif
-        @if ($isDialog)
-            <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
-        @endif
+    icon="celebration"
+    tone="warning"
+    :action="$action"
+    :method="$isEdit ? 'PUT' : 'POST'"
+    :form-data="['data-entry-form' => '', 'data-recurrence-form' => '']"
+    :submit-label="$isEdit ? __('Speichern') : __('Anlegen')">
+    @if ($isDialog)
+        <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
+    @endif
 
-        {{-- Wiederholungs-Typ --}}
-        <div class="fieldset">
-            <label class="fieldset-label" for="recurrence-mode">{{ __('Typ') }}</label>
-            <select id="recurrence-mode" name="recurrence_mode"
-                    class="select select-bordered w-full"
-                    data-recurrence-select>
-                <option value="once"     @selected(old('recurrence_mode', $recurrenceMode) === 'once')>{{ __('Einmalig') }}</option>
-                <option value="yearly"   @selected(old('recurrence_mode', $recurrenceMode) === 'yearly')>{{ __('Jährlich – festes Datum') }}</option>
-                <option value="relative" @selected(old('recurrence_mode', $recurrenceMode) === 'relative')>{{ __('Relativer Wochentag (z. B. letzter Freitag)') }}</option>
-            </select>
-        </div>
-
-        {{-- Datum (für einmalig / jährlich-fest) --}}
-        <div class="fieldset" data-recurrence-show="once yearly">
-            <label class="fieldset-label" for="holiday-date">
-                {{ __('Datum') }}
-                <span class="ml-auto text-xs text-base-content/50" data-recurrence-show="yearly">{{ __('Nur Tag & Monat werden verwendet') }}</span>
-            </label>
-            <input id="holiday-date" type="date" name="date"
-                   value="{{ old('date', optional($holiday?->date)->format('Y-m-d')) }}"
-                   class="input input-bordered w-full {{ $errors->has('date') ? 'input-error' : '' }}" >
-            @if ($errors->has('date'))
-                <p class="text-error text-sm">{{ $errors->first('date') }}</p>
-            @endif
-        </div>
-
-        {{-- Relative Felder (Woche / Wochentag / Monat) --}}
-        <div data-recurrence-show="relative" class="grid grid-cols-3 gap-3">
+    <x-form-group :legend="__('Wiederholung')" icon="sync" tone="warning">
             <div class="fieldset">
-                <label class="fieldset-label" for="rec-week">{{ __('Woche') }}</label>
-                <select id="rec-week" name="recurrence_week" class="select select-bordered w-full">
-                    @foreach ($weekNumbers as $val => $label)
-                        <option value="{{ $val }}" @selected((int) old('recurrence_week', $holiday?->recurrence_week ?? 1) === $val)>{{ $label }}</option>
-                    @endforeach
+                <label class="fieldset-label" for="recurrence-mode">{{ __('Typ') }}</label>
+                <select id="recurrence-mode" name="recurrence_mode"
+                        class="select select-bordered w-full"
+                        data-recurrence-select>
+                    <option value="once"     @selected(old('recurrence_mode', $recurrenceMode) === 'once')>{{ __('Einmalig') }}</option>
+                    <option value="yearly"   @selected(old('recurrence_mode', $recurrenceMode) === 'yearly')>{{ __('Jährlich – festes Datum') }}</option>
+                    <option value="relative" @selected(old('recurrence_mode', $recurrenceMode) === 'relative')>{{ __('Relativer Wochentag (z. B. letzter Freitag)') }}</option>
                 </select>
             </div>
-            <div class="fieldset">
-                <label class="fieldset-label" for="rec-weekday">{{ __('Wochentag') }}</label>
-                <select id="rec-weekday" name="recurrence_weekday" class="select select-bordered w-full">
-                    @foreach ($weekdays as $val => $label)
-                        <option value="{{ $val }}" @selected((int) old('recurrence_weekday', $holiday?->recurrence_weekday ?? 1) === $val)>{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label" for="rec-month">{{ __('Monat') }}</label>
-                <select id="rec-month" name="recurrence_month" class="select select-bordered w-full">
-                    <option value="">{{ __('Jeden Monat') }}</option>
-                    @foreach ($monthNames as $val => $label)
-                        <option value="{{ $val }}" @selected((int) old('recurrence_month', $holiday?->recurrence_month ?? 0) === $val)>{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
 
-        {{-- Name --}}
-        <div class="fieldset">
-            <label class="fieldset-label" for="holiday-name">{{ __('Name') }}</label>
-            <input id="holiday-name" type="text" name="name" value="{{ old('name', $holiday?->name) }}" maxlength="120" class="input input-bordered w-full {{ $errors->has('name') ? 'input-error' : '' }}" required>
-            @if ($errors->has('name'))
-                <p class="text-error text-sm">{{ $errors->first('name') }}</p>
-            @endif
-        </div>
+            <div class="fieldset" data-recurrence-show="once yearly">
+                <label class="fieldset-label" for="holiday-date">
+                    {{ __('Datum') }}
+                    <span class="ml-auto text-xs text-base-content/50" data-recurrence-show="yearly">{{ __('Nur Tag & Monat werden verwendet') }}</span>
+                </label>
+                <input id="holiday-date" type="date" name="date"
+                       value="{{ old('date', optional($holiday?->date)->format('Y-m-d')) }}"
+                       class="input input-bordered w-full {{ $errors->has('date') ? 'input-error' : '' }}" >
+                @if ($errors->has('date'))
+                    <p class="text-error text-sm">{{ $errors->first('date') }}</p>
+                @endif
+            </div>
 
-        <div class="flex flex-wrap items-center gap-3 pt-2">
-            <button type="submit" class="btn btn-sm btn-primary">{{ $isEdit ? __('Speichern') : __('Anlegen') }}</button>
-            <button type="button" class="btn btn-sm btn-ghost" data-entry-modal-close>{{ __('Abbrechen') }}</button>
-        </div>
-    </form>
-</x-dialog>
+            <div data-recurrence-show="relative" class="grid grid-cols-1 gap-3 md:grid-cols-3">
+                <div class="fieldset">
+                    <label class="fieldset-label" for="rec-week">{{ __('Woche') }}</label>
+                    <select id="rec-week" name="recurrence_week" class="select select-bordered w-full">
+                        @foreach ($weekNumbers as $val => $label)
+                            <option value="{{ $val }}" @selected((int) old('recurrence_week', $holiday?->recurrence_week ?? 1) === $val)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="fieldset">
+                    <label class="fieldset-label" for="rec-weekday">{{ __('Wochentag') }}</label>
+                    <select id="rec-weekday" name="recurrence_weekday" class="select select-bordered w-full">
+                        @foreach ($weekdays as $val => $label)
+                            <option value="{{ $val }}" @selected((int) old('recurrence_weekday', $holiday?->recurrence_weekday ?? 1) === $val)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="fieldset">
+                    <label class="fieldset-label" for="rec-month">{{ __('Monat') }}</label>
+                    <select id="rec-month" name="recurrence_month" class="select select-bordered w-full">
+                        <option value="">{{ __('Jeden Monat') }}</option>
+                        @foreach ($monthNames as $val => $label)
+                            <option value="{{ $val }}" @selected((int) old('recurrence_month', $holiday?->recurrence_month ?? 0) === $val)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        </x-form-group>
+
+        <x-form-group :legend="__('Bezeichnung')" icon="label" tone="primary">
+            <div class="fieldset">
+                <label class="fieldset-label" for="holiday-name">{{ __('Name') }}</label>
+                <input id="holiday-name" type="text" name="name" value="{{ old('name', $holiday?->name) }}" maxlength="120" class="input input-bordered w-full {{ $errors->has('name') ? 'input-error' : '' }}" required>
+                @if ($errors->has('name'))
+                    <p class="text-error text-sm">{{ $errors->first('name') }}</p>
+                @endif
+            </div>
+        </x-form-group>
+</x-modal>

@@ -23,6 +23,9 @@
         scroll-behavior: smooth;
         /* Week calendar: height per hour row – adjust to scale the grid */
         --wd-hour-h: 2.5rem;
+        /* Dialoge: zentrale Max-Höhe – luftiger als 100vh,
+           siehe /memories/repo/workdiary-dialog-rules.md */
+        --wd-dialog-max-h: 68vh;
     }
 
     body {
@@ -467,16 +470,29 @@
     }
     /* Bei knappem Platz Schrift verkleinern. */
     @media (max-width: 1100px) {
-        .wd-week-day-header { padding: 0.375rem 0.25rem; }
-        .wd-week-day-header .text-lg { font-size: 0.95rem; }
+        .wd-week-day-header {
+            padding: 0.375rem 0.25rem;
+        }
+        .wd-week-day-header .text-lg {
+            font-size: 0.95rem;
+        }
     }
     @media (max-width: 760px) {
-        .wd-week-day-header { padding: 0.25rem 0.125rem; }
-        .wd-week-day-header .text-lg { font-size: 0.8rem; }
-        .wd-week-day-header .text-xs { font-size: 0.6rem; letter-spacing: 0.1em; }
+        .wd-week-day-header {
+            padding: 0.25rem 0.125rem;
+        }
+        .wd-week-day-header .text-lg {
+            font-size: 0.8rem;
+        }
+        .wd-week-day-header .text-xs {
+            font-size: 0.6rem;
+            letter-spacing: 0.1em;
+        }
         /* "+"-Dropdown bei sehr schmalen Zellen ausblenden, damit das
            Datum vollständig sichtbar bleibt. */
-        .wd-week-day-header .dropdown { display: none; }
+        .wd-week-day-header .dropdown {
+            display: none;
+        }
     }
 
     .wd-week-day-header.is-today {
@@ -852,5 +868,273 @@
 
     .schedule-month-matrix .schedule-cell {
         min-height: 5.5rem;
+    }
+}
+
+/* ── Dialoge / Modals ────────────────────────────────────────── */
+/* HARTE REGEL: jeder Dialog hat eine max. Höhe und der Body scrollt.
+   Header & Footer bleiben sichtbar. Siehe /memories/repo/workdiary-dialog-rules.md */
+@layer components {
+    /* x-dialog Wrapper: füllt die .modal-box und ordnet Header/Body/Footer als Flex-Column an */
+    .wd-dialog {
+        display: flex;
+        flex-direction: column;
+        max-height: var(--wd-dialog-max-h, 68vh);
+        min-height: 0;
+    }
+
+    .wd-dialog__header,
+    .wd-dialog__footer {
+        flex: 0 0 auto;
+    }
+
+    .wd-dialog__body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    /* Vertikaler Abstand zwischen direkten Slot-Children im Dialog-Body
+       (Form-Groups, Alerts, Hidden-Container, etc.). Ersetzt das früher
+       per Inline-<form class="space-y-4"> gesetzte Spacing. */
+    .wd-dialog__body > * + * {
+        margin-top: 1rem;
+    }
+
+    /* Einheitliche Eingabefeld-Höhe innerhalb von Form-Dialogen.
+       Überschreibt input-sm/select-sm (z. B. aus <x-date-range>) auf md.
+       Gilt für ALLE Inputs im Dialog-Body — egal ob in <x-form-group>
+       oder direkt in <div class="fieldset"> (Legacy-Dialoge). */
+    .wd-dialog__body .input,
+    .wd-dialog__body .select {
+        min-height: 3rem;
+        height: 3rem;
+        font-size: 0.875rem;
+    }
+    .wd-dialog__body .textarea {
+        min-height: 4.5rem;
+        font-size: 0.875rem;
+    }
+
+    /* In x-form-dialog wird .wd-dialog in ein <form> in .modal-box gewickelt –
+       sicherstellen, dass die Höhe bis zur .modal-box durchgereicht wird. */
+    .modal-box > form,
+    .modal-box > form > .wd-dialog {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    .modal-box > form > .wd-dialog {
+        max-height: none; /* .modal-box begrenzt bereits die Höhe */
+        height: 100%;
+    }
+
+    /* Ad-hoc-Dialoge (ohne x-dialog): einheitliche Max-Höhe + Scroll im Body.
+       Markup-Konvention: <div class="modal-box wd-modal-box"> ... </div> */
+    .modal-box.wd-modal-box {
+        display: flex;
+        flex-direction: column;
+        max-height: var(--wd-dialog-max-h, 68vh);
+        overflow: hidden; /* der innere .wd-modal-body scrollt */
+    }
+
+    .modal-box.wd-modal-box > .wd-modal-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    /* ── Footer ───────────────────────────────────────────────── */
+    .wd-dialog__footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1.5rem;
+        border-top: 2px solid var(--color-base-300);
+        background-color: color-mix(
+            in srgb,
+            var(--color-base-200) 60%,
+            var(--color-base-100)
+        );
+        box-shadow: 0 -2px 6px -4px
+            color-mix(in srgb, var(--color-base-content) 18%, transparent);
+    }
+
+    .wd-dialog__footer-extra {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .wd-dialog__footer-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        margin-inline-start: auto;
+        justify-content: flex-end;
+    }
+
+    /* ── Close-Button (oben rechts) ───────────────────────────── */
+    .wd-dialog__close {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        z-index: 20;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        padding: 0;
+        border-radius: 0.5rem;
+        border: 2px solid var(--color-error);
+        color: var(--color-error);
+        background-color: color-mix(
+            in srgb,
+            var(--color-base-100) 70%,
+            transparent
+        );
+        line-height: 1;
+        cursor: pointer;
+        transition:
+            background-color 0.15s ease,
+            color 0.15s ease,
+            box-shadow 0.15s ease;
+    }
+
+    .wd-dialog__close .material-symbols-outlined {
+        font-size: 1.5rem;
+        font-variation-settings:
+            "FILL" 0,
+            "wght" 700;
+    }
+
+    .wd-dialog__close:hover,
+    .wd-dialog__close:focus-visible {
+        background-color: var(--color-error);
+        color: var(--color-error-content, white);
+        box-shadow: 0 4px 12px -4px
+            color-mix(in srgb, var(--color-error) 70%, transparent);
+        outline: none;
+    }
+
+    .wd-dialog__close:active {
+        background-color: color-mix(in srgb, var(--color-error) 85%, black);
+    }
+
+    /* ── Form-Group / Groupbox (<x-form-group>) ───────────────── */
+    .wd-fieldset {
+        position: relative;
+        border: 1px solid var(--color-base-300);
+        border-left-width: 4px;
+        border-radius: var(--radius-box, 1rem);
+        padding: 1.25rem 1rem 1rem;
+        margin: 0;
+        background-color: color-mix(
+            in srgb,
+            var(--color-base-100) 60%,
+            transparent
+        );
+    }
+
+    .wd-fieldset.wd-fieldset--compact {
+        padding: 0.75rem 0.75rem 0.5rem;
+    }
+
+    .wd-fieldset__legend {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-inline-start: 0.25rem;
+        padding: 0.15rem 0.6rem;
+        border-radius: 0.375rem;
+        background-color: var(--color-base-200);
+        color: color-mix(in srgb, var(--color-base-content) 75%, transparent);
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        line-height: 1.4;
+    }
+
+    .wd-fieldset__legend-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        line-height: 1;
+    }
+
+    .wd-fieldset__legend-icon .material-symbols-outlined {
+        font-size: 1.1rem;
+        line-height: 1;
+        font-variation-settings:
+            "FILL" 0,
+            "wght" 600;
+    }
+
+    .wd-fieldset__description {
+        margin: 0.25rem 0 0.5rem;
+        font-size: 0.8rem;
+        color: color-mix(in srgb, var(--color-base-content) 70%, transparent);
+    }
+
+    .wd-fieldset__grid {
+        display: grid;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+    }
+
+    .wd-fieldset__grid--cols-1 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .wd-fieldset__grid--cols-2 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .wd-fieldset__grid--cols-3 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    @media (min-width: 768px) {
+        .wd-fieldset__grid--cols-2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .wd-fieldset__grid--cols-3 {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    /* Tone-Akzent: nur die linke Border färben */
+    .wd-fieldset--primary {
+        border-left-color: var(--color-primary);
+    }
+    .wd-fieldset--success {
+        border-left-color: var(--color-success);
+    }
+    .wd-fieldset--warning {
+        border-left-color: var(--color-warning);
+    }
+    .wd-fieldset--error {
+        border-left-color: var(--color-error);
+    }
+    .wd-fieldset--info {
+        border-left-color: var(--color-info);
+    }
+    .wd-fieldset--ghost {
+        border-left-color: var(--color-base-300);
+    }
+
+    /* Innerhalb wd-fieldset sollen die einzelnen .fieldset-Divs (DaisyUI)
+       keine zusätzliche Margin haben */
+    .wd-fieldset__grid > .fieldset {
+        margin: 0;
     }
 }

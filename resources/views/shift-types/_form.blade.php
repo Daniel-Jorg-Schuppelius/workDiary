@@ -6,7 +6,7 @@
     </div>
 @endif
 
-<div class="grid gap-4 sm:grid-cols-2">
+<x-form-group :legend="__('Stammdaten')" icon="sync" tone="primary" cols="2">
     <label class="fieldset w-full">
         <div class="fieldset-label">{{ __('Name') }} *</div>
         <input type="text" name="name" maxlength="100" required value="{{ old('name', $type?->name) }}" class="input input-bordered w-full" autofocus />
@@ -25,6 +25,9 @@
         <div class="fieldset-label">{{ __('Farbe') }} *</div>
         <input type="color" name="color" required value="{{ old('color', $type?->color ?? '#3b82f6') }}" class="input input-bordered w-full h-10 p-1" />
     </label>
+</x-form-group>
+
+<x-form-group :legend="__('Standardzeiten')" icon="schedule" tone="info">
     <x-date-range
         type="time"
         fromName="default_start_time"
@@ -35,6 +38,5 @@
         :from="old('default_start_time', $type?->default_start_time)"
         :to="old('default_end_time', $type?->default_end_time)"
         formControl
-        class="sm:col-span-2"
     />
-</div>
+</x-form-group>

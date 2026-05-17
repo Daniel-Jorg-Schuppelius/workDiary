@@ -191,6 +191,21 @@ document.addEventListener("change", (e) => {
     });
 });
 
+// Generischer Dialog-Close-Handler:
+// Schließt den nächsten umgebenden <dialog> für jedes [data-entry-modal-close]-Element.
+// Ergänzt den entry-modal-spezifischen Handler weiter unten und greift für alle
+// Standalone-<x-modal :embedded="false">-Dialoge (action-confirm, shift-dialog, …).
+document.addEventListener("click", (event) => {
+    const close = event.target.closest("[data-entry-modal-close]");
+    if (!close) return;
+    const dialog = close.closest("dialog");
+    if (!dialog) return;
+    event.preventDefault();
+    if (typeof dialog.close === "function") {
+        dialog.close();
+    }
+});
+
 // Entry-Dialog: lädt Form/Detailansichten mit ?dialog=1 in ein globales <dialog>
 (() => {
     if (typeof document === "undefined") return;
@@ -309,7 +324,17 @@ document.addEventListener("change", (e) => {
                             payload && payload.errors
                                 ? Object.values(payload.errors).flat()[0]
                                 : null;
-                        window.alert(firstError || "Bitte Eingaben prüfen.");
+                        if (typeof window.notifyAction === "function") {
+                            window.notifyAction({
+                                tone: "warning",
+                                message: firstError || "Bitte Eingaben prüfen.",
+                            });
+                        } else {
+                            // eslint-disable-next-line no-alert
+                            window.alert(
+                                firstError || "Bitte Eingaben prüfen.",
+                            );
+                        }
                         return;
                     }
 
@@ -321,7 +346,15 @@ document.addEventListener("change", (e) => {
                         bindDialogForms(dialogBody);
                     }
                 } catch (_error) {
-                    window.alert("Dialog konnte nicht gespeichert werden.");
+                    if (typeof window.notifyAction === "function") {
+                        window.notifyAction({
+                            tone: "error",
+                            message: "Dialog konnte nicht gespeichert werden.",
+                        });
+                    } else {
+                        // eslint-disable-next-line no-alert
+                        window.alert("Dialog konnte nicht gespeichert werden.");
+                    }
                 } finally {
                     if (submitButton) submitButton.disabled = false;
                 }

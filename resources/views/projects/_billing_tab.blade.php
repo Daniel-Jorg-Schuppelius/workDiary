@@ -73,11 +73,15 @@
                                 <td>{{ $rule->net_unit_price !== null ? number_format((float) $rule->net_unit_price, 2, ',', '.') : '—' }}</td>
                                 <td>{{ $rule->priority }}</td>
                                 <td class="text-right">
-                                    <form method="POST" action="{{ route('projects.billing-rules.destroy', [$project, $rule]) }}" class="inline">
+                                    <form method="POST" action="{{ route('projects.billing-rules.destroy', [$project, $rule]) }}" class="inline"
+                                          data-confirm-dialog
+                                          data-confirm-message="{{ __('Regel wirklich löschen?') }}"
+                                          data-confirm-icon="delete"
+                                          data-confirm-tone="error"
+                                          data-confirm-label="{{ __('Löschen') }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="btn btn-xs btn-ghost text-error" type="submit"
-                                                onclick="return confirm('{{ __('Regel wirklich löschen?') }}')">
+                                        <button class="btn btn-xs btn-ghost text-error" type="submit">
                                             {{ __('Löschen') }}
                                         </button>
                                     </form>
