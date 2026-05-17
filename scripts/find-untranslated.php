@@ -18,14 +18,14 @@
 
 declare(strict_types=1);
 
-const ROOT = __DIR__.'/..';
+const ROOT = __DIR__ . '/..';
 
 $targets = [
-    'blade' => ROOT.'/resources/views',
-    'js' => ROOT.'/resources/js',
+    'blade' => ROOT . '/resources/views',
+    'js' => ROOT . '/resources/js',
 ];
 
-$reportPath = ROOT.'/storage/reports/untranslated.md';
+$reportPath = ROOT . '/storage/reports/untranslated.md';
 @mkdir(dirname($reportPath), 0775, true);
 
 /**
@@ -49,8 +49,7 @@ $whitelist = [
 /**
  * @return iterable<\SplFileInfo>
  */
-function walk(string $dir, string $ext): iterable
-{
+function walk(string $dir, string $ext): iterable {
     if (! is_dir($dir)) {
         return;
     }
@@ -63,8 +62,7 @@ function walk(string $dir, string $ext): iterable
     }
 }
 
-function isWhitelisted(string $value, array $patterns): bool
-{
+function isWhitelisted(string $value, array $patterns): bool {
     foreach ($patterns as $p) {
         if (preg_match($p, $value)) {
             return true;
@@ -78,8 +76,7 @@ function isWhitelisted(string $value, array $patterns): bool
  * Returns true if the literal at $offset inside $content already sits
  * within a translation call (looking back a short window).
  */
-function isAlreadyTranslated(string $content, int $offset): bool
-{
+function isAlreadyTranslated(string $content, int $offset): bool {
     $window = substr($content, max(0, $offset - 30), 30);
 
     return (bool) preg_match('/(?:__|trans|@lang|window\.__|\\bt)\s*\(\s*$/', $window);
@@ -104,7 +101,7 @@ foreach (walk($targets['blade'], '.blade.php') as $file) {
             }
             $line = substr_count(substr($content, 0, $offset), "\n") + 1;
             $hits['blade'][] = [
-                'file' => str_replace(ROOT.'/', '', $file->getPathname()),
+                'file' => str_replace(ROOT . '/', '', $file->getPathname()),
                 'line' => $line,
                 'value' => $value,
             ];
@@ -133,7 +130,7 @@ foreach (walk($targets['js'], '.js') as $file) {
             }
             $line = substr_count(substr($content, 0, $offset), "\n") + 1;
             $hits['js'][] = [
-                'file' => str_replace(ROOT.'/', '', $file->getPathname()),
+                'file' => str_replace(ROOT . '/', '', $file->getPathname()),
                 'line' => $line,
                 'value' => $value,
             ];
@@ -146,17 +143,17 @@ $total = count($hits['blade']) + count($hits['js']);
 $lines = [];
 $lines[] = '# Untranslated strings report';
 $lines[] = '';
-$lines[] = 'Generated: '.date('c');
+$lines[] = 'Generated: ' . date('c');
 $lines[] = '';
-$lines[] = '- Blade hits: '.count($hits['blade']);
-$lines[] = '- JS hits:    '.count($hits['js']);
+$lines[] = '- Blade hits: ' . count($hits['blade']);
+$lines[] = '- JS hits:    ' . count($hits['js']);
 $lines[] = '';
 
 foreach ($hits as $bucket => $entries) {
     if (! $entries) {
         continue;
     }
-    $lines[] = '## '.strtoupper($bucket);
+    $lines[] = '## ' . strtoupper($bucket);
     $lines[] = '';
     foreach ($entries as $h) {
         $lines[] = sprintf('- `%s:%d` — `%s`', $h['file'], $h['line'], str_replace('`', "'", $h['value']));

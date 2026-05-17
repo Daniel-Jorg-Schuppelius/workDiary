@@ -17,8 +17,7 @@
  * optional `replace` object.
  */
 function translate(key, replace) {
-    const dict =
-        (typeof window !== "undefined" && window.__translations) || {};
+    const dict = (typeof window !== "undefined" && window.__translations) || {};
     let value = Object.prototype.hasOwnProperty.call(dict, key)
         ? dict[key]
         : key;

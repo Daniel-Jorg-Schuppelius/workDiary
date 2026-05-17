@@ -21,8 +21,7 @@ use Illuminate\Support\Arr;
  * can be serialised to JSON and read by client-side code through the
  * `window.__()` helper.
  */
-class JsTranslationProvider
-{
+class JsTranslationProvider {
     /**
      * Lang files under lang/{locale}/ whose contents are exposed to JS.
      *
@@ -30,7 +29,8 @@ class JsTranslationProvider
      */
     private const EXPOSED_GROUPS = ['js'];
 
-    public function __construct(private readonly Translator $translator) {}
+    public function __construct(private readonly Translator $translator) {
+    }
 
     /**
      * Returns a flat ['group.subkey' => 'translation'] map for the given
@@ -38,8 +38,7 @@ class JsTranslationProvider
      *
      * @return array<string, string>
      */
-    public function all(?string $locale = null): array
-    {
+    public function all(?string $locale = null): array {
         $locale ??= $this->translator->getLocale();
         $flat = [];
 
@@ -51,7 +50,7 @@ class JsTranslationProvider
             }
             foreach (Arr::dot($raw) as $key => $value) {
                 if (is_string($value)) {
-                    $flat[$group.'.'.$key] = $value;
+                    $flat[$group . '.' . $key] = $value;
                 }
             }
         }

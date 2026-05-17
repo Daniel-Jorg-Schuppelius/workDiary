@@ -19,10 +19,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class DutyPlanController extends Controller
-{
-    public function index(Request $request): View
-    {
+class DutyPlanController extends Controller {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', DutyPlan::class);
 
         $status = $request->query('status', '');
@@ -52,8 +50,7 @@ class DutyPlanController extends Controller
         return view('duty-plans.index', compact('plans', 'status', 'period', 'sort', 'dir'));
     }
 
-    public function create(): View
-    {
+    public function create(): View {
         Gate::authorize('create', DutyPlan::class);
 
         return view('duty-plans._form_dialog', [
@@ -62,8 +59,7 @@ class DutyPlanController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
-    {
+    public function store(Request $request): RedirectResponse {
         Gate::authorize('create', DutyPlan::class);
 
         $data = $this->validated($request);
@@ -75,8 +71,7 @@ class DutyPlanController extends Controller
             ->with('success', __('Dienstplan wurde angelegt.'));
     }
 
-    public function show(DutyPlan $dutyPlan): View
-    {
+    public function show(DutyPlan $dutyPlan): View {
         Gate::authorize('view', $dutyPlan);
 
         $dutyPlan->load(['shifts.user:id,name', 'shifts.shiftType']);
@@ -84,7 +79,7 @@ class DutyPlanController extends Controller
         // Schichten nach Datum gruppieren
         $shiftsByDate = $dutyPlan->shifts
             ->sortBy(['date', 'start_time'])
-            ->groupBy(fn ($s) => $s->date->toDateString());
+            ->groupBy(fn($s) => $s->date->toDateString());
 
         // Datumsreihe generieren
         $dates = [];
@@ -97,8 +92,7 @@ class DutyPlanController extends Controller
         return view('duty-plans.show', compact('dutyPlan', 'shiftsByDate', 'dates'));
     }
 
-    public function edit(DutyPlan $dutyPlan): View
-    {
+    public function edit(DutyPlan $dutyPlan): View {
         Gate::authorize('update', $dutyPlan);
 
         return view('duty-plans._form_dialog', [
@@ -107,8 +101,7 @@ class DutyPlanController extends Controller
         ]);
     }
 
-    public function update(Request $request, DutyPlan $dutyPlan): RedirectResponse
-    {
+    public function update(Request $request, DutyPlan $dutyPlan): RedirectResponse {
         Gate::authorize('update', $dutyPlan);
 
         $data = $this->validated($request);
@@ -120,8 +113,7 @@ class DutyPlanController extends Controller
             ->with('success', __('Dienstplan wurde gespeichert.'));
     }
 
-    public function destroy(DutyPlan $dutyPlan): RedirectResponse
-    {
+    public function destroy(DutyPlan $dutyPlan): RedirectResponse {
         Gate::authorize('delete', $dutyPlan);
 
         $dutyPlan->delete();
@@ -130,8 +122,7 @@ class DutyPlanController extends Controller
             ->with('success', __('Dienstplan wurde gelöscht.'));
     }
 
-    public function publish(DutyPlan $dutyPlan): RedirectResponse
-    {
+    public function publish(DutyPlan $dutyPlan): RedirectResponse {
         Gate::authorize('update', $dutyPlan);
 
         $dutyPlan->update(['status' => DutyPlan::STATUS_PUBLISHED, 'updated_by' => Auth::id()]);
@@ -139,8 +130,7 @@ class DutyPlanController extends Controller
         return back()->with('success', __('Dienstplan wurde veröffentlicht.'));
     }
 
-    public function retract(DutyPlan $dutyPlan): RedirectResponse
-    {
+    public function retract(DutyPlan $dutyPlan): RedirectResponse {
         Gate::authorize('update', $dutyPlan);
 
         $dutyPlan->update(['status' => DutyPlan::STATUS_DRAFT, 'updated_by' => Auth::id()]);
@@ -149,11 +139,10 @@ class DutyPlanController extends Controller
     }
 
     /** @return array<string, mixed> */
-    private function validated(Request $request): array
-    {
+    private function validated(Request $request): array {
         return $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'period_type' => ['required', 'in:'.implode(',', DutyPlan::$periodTypes)],
+            'period_type' => ['required', 'in:' . implode(',', DutyPlan::$periodTypes)],
             'from_date' => ['required', 'date'],
             'to_date' => ['required', 'date', 'gte:from_date'],
             'min_staff' => ['nullable', 'integer', 'min:0', 'max:255'],

@@ -6,4 +6,4 @@
  * remain in sync with lang/en/attendance.php.
  */
 
-return require __DIR__.'/../en/attendance.php';
+return require __DIR__ . '/../en/attendance.php';

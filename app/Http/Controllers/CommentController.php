@@ -18,10 +18,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
-class CommentController extends Controller
-{
-    public function store(Request $request, DiaryEntry $diary): RedirectResponse
-    {
+class CommentController extends Controller {
+    public function store(Request $request, DiaryEntry $diary): RedirectResponse {
         Gate::authorize('create', Comment::class);
 
         $diary->comments()->create([
@@ -35,8 +33,7 @@ class CommentController extends Controller
             ->with('success', __('Kommentar gespeichert.'));
     }
 
-    public function update(Request $request, Comment $comment): RedirectResponse
-    {
+    public function update(Request $request, Comment $comment): RedirectResponse {
         Gate::authorize('update', $comment);
 
         $comment->update(['body' => $this->validateBody($request)]);
@@ -47,8 +44,7 @@ class CommentController extends Controller
             ->with('success', __('Kommentar aktualisiert.'));
     }
 
-    public function destroy(Comment $comment): RedirectResponse
-    {
+    public function destroy(Comment $comment): RedirectResponse {
         Gate::authorize('delete', $comment);
 
         $diaryEntry = $comment->diaryEntry;
@@ -60,8 +56,7 @@ class CommentController extends Controller
             ->with('success', __('Kommentar gelöscht.'));
     }
 
-    private function validateBody(Request $request): string
-    {
+    private function validateBody(Request $request): string {
         return $request->validate([
             'body' => ['required', 'string', 'max:' . (int) setting('validation.comment.body_max', 5000)],
         ])['body'];
