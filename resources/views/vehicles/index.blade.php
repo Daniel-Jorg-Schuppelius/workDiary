@@ -10,7 +10,7 @@
                 <p class="text-sm text-base-content/60">{{ __('Fahrzeuge der Organisation') }}</p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <a href="{{ route('vehicles.create') }}" class="btn btn-sm btn-primary">
+                <a href="{{ route('vehicles.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
                     <x-icon name="add" /> {{ __('Neues Fahrzeug') }}
                 </a>
                 <a href="{{ route('vehicles.index', ['archived' => $showArchived ? null : 1]) }}" class="btn btn-sm btn-ghost">
@@ -54,7 +54,7 @@
                             </td>
                             <td class="text-right">{{ $vehicle->odometer_km !== null ? number_format($vehicle->odometer_km, 0, ',', '.') . ' km' : '—' }}</td>
                             <td class="text-right">
-                                <a href="{{ route('vehicles.edit', $vehicle) }}" class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a>
+                                <a href="{{ route('vehicles.edit', $vehicle) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a>
                                 @if ($vehicle->archived_at)
                                     <form method="POST" action="{{ route('vehicles.restore', $vehicle) }}" class="inline">
                                         @csrf
@@ -62,7 +62,9 @@
                                     </form>
                                 @else
                                     <form method="POST" action="{{ route('vehicles.destroy', $vehicle) }}" class="inline"
-                                          onsubmit="return confirm('{{ __('Fahrzeug wirklich archivieren?') }}');">
+                                          data-confirm-dialog
+                                          data-confirm-message="{{ __('Fahrzeug wirklich archivieren?') }}"
+                                          data-confirm-label="{{ __('Archivieren') }}">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Archivieren') }}</button>
                                     </form>

@@ -48,6 +48,8 @@ use Illuminate\Support\Carbon;
  * @property int|null $updated_by
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ *
+ * @property-read int $break_minutes_total
  */
 class Attendance extends Model
 {

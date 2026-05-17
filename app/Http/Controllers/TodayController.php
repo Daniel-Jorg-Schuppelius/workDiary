@@ -29,6 +29,7 @@ class TodayController extends Controller
 
     public function show(Request $request): View
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         $day = $request->date('date')?->startOfDay() ?? CarbonImmutable::today();
 
@@ -47,7 +48,7 @@ class TodayController extends Controller
 
         $targetMinutes = $this->flex->targetMinutes($user, $day);
         $attendanceMinutes = (int) $attendances->sum(function (Attendance $a): int {
-            if ($a->duration_minutes !== null && $a->duration_minutes > 0) {
+            if ($a->duration_minutes > 0) {
                 return (int) $a->duration_minutes;
             }
             // open attendance: count from started_at to now

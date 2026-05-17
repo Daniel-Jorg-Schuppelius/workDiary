@@ -39,7 +39,7 @@ class AttendanceBackfillCommand extends Command
         $created = 0;
         $linked = 0;
 
-        $rows = TimeEntry::query()
+        $rows = DB::table((new TimeEntry())->getTable())
             ->whereNotNull('started_at')
             ->whereNotNull('ended_at')
             ->whereNull('attendance_id')
@@ -62,8 +62,8 @@ class AttendanceBackfillCommand extends Command
                 continue;
             }
 
-            $start = CarbonImmutable::parse($row->min_start);
-            $end = CarbonImmutable::parse($row->max_end);
+            $start = CarbonImmutable::parse((string) $row->min_start);
+            $end = CarbonImmutable::parse((string) $row->max_end);
 
             if ($dryRun) {
                 $created++;

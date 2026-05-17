@@ -44,7 +44,7 @@ class VehicleController extends Controller {
     public function create(): View {
         Gate::authorize('create', Vehicle::class);
 
-        return view('vehicles.form', [
+        return view('vehicles._form_dialog', [
             'vehicle' => null,
             'users' => User::query()->orderBy('name')->get(['id', 'name']),
             'types' => Vehicle::TYPES,
@@ -70,7 +70,7 @@ class VehicleController extends Controller {
     public function edit(Vehicle $vehicle): View {
         Gate::authorize('update', $vehicle);
 
-        return view('vehicles.form', [
+        return view('vehicles._form_dialog', [
             'vehicle' => $vehicle,
             'users' => User::query()->orderBy('name')->get(['id', 'name']),
             'types' => Vehicle::TYPES,

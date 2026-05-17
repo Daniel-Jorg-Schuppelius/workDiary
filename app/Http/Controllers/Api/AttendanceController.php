@@ -46,8 +46,11 @@ class AttendanceController extends Controller
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
         try {
-            $a = $this->clock->clockIn(Auth::user(), $data);
+            $a = $this->clock->clockIn($user, $data);
         } catch (RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 409);
         }
@@ -67,7 +70,10 @@ class AttendanceController extends Controller
             'break_minutes' => ['nullable', 'integer', 'min:0', 'max:600'],
         ]);
 
-        $a = $this->clock->clockOut(Auth::user(), $data);
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $a = $this->clock->clockOut($user, $data);
         if (! $a) {
             return response()->json(['message' => 'No open attendance.'], 404);
         }

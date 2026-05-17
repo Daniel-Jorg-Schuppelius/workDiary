@@ -102,7 +102,7 @@ class AttendanceClockService
                 throw new RuntimeException('ended_at must be after started_at.');
             }
 
-            $attendance->ended_at = $end;
+            $attendance->ended_at = Carbon::instance($end);
             $attendance->ended_lat = $context['lat'] ?? null;
             $attendance->ended_lng = $context['lng'] ?? null;
             $attendance->ended_device = $context['device'] ?? null;
@@ -174,6 +174,7 @@ class AttendanceClockService
             ->chunkById(100, function ($chunk) use (&$count): void {
                 foreach ($chunk as $attendance) {
                     /** @var Attendance $attendance */
+                    \assert($attendance->started_at !== null);
                     $attendance->ended_at = $attendance->started_at
                         ->copy()
                         ->addMinutes($this->maxOpenMinutes);

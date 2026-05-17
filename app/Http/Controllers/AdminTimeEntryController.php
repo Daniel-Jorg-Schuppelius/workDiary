@@ -53,17 +53,20 @@ class AdminTimeEntryController extends Controller
     {
         Gate::authorize('create', TimeEntry::class);
 
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
         $data = $request->validated();
-        $data['user_id'] = Auth::id();
+        $data['user_id'] = $user->id;
         $data['kind'] = TimeEntry::KIND_WORK;
 
         if (! empty($data['activity_category_id'])) {
             $cat = ActivityCategory::find($data['activity_category_id']);
             if ($cat) {
-                $data['organization_id'] = $cat->organization_id ?? Auth::user()->organization_id;
+                $data['organization_id'] = $cat->organization_id ?? $user->organization_id;
             }
         }
-        $data['organization_id'] ??= Auth::user()->organization_id;
+        $data['organization_id'] ??= $user->organization_id;
 
         TimeEntry::create($data);
 

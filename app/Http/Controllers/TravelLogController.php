@@ -16,13 +16,13 @@ use App\Http\Requests\SaveTravelLogRequest;
 use App\Models\Customer;
 use App\Models\Project;
 use App\Models\TravelLog;
-use App\Services\Travel\MileageRateResolver;
 use App\Services\Travel\TravelLogService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TravelLogController extends Controller
@@ -31,10 +31,9 @@ class TravelLogController extends Controller
 
     public function __construct(
         private readonly TravelLogService $service,
-        private readonly MileageRateResolver $rates,
     ) {}
 
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         Gate::authorize('viewAny', TravelLog::class);
 
@@ -67,7 +66,7 @@ class TravelLogController extends Controller
         ]);
     }
 
-    public function create(Request $request)
+    public function create(Request $request): View
     {
         Gate::authorize('create', TravelLog::class);
 
@@ -87,7 +86,9 @@ class TravelLogController extends Controller
 
         $data = $request->validated();
         $data['user_id'] = Auth::id();
-        $data['organization_id'] = Auth::user()->organization_id;
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $data['organization_id'] = $user->organization_id;
 
         $log = $this->service->create($data);
 
@@ -95,7 +96,7 @@ class TravelLogController extends Controller
             ->with('success', __('Fahrt erfasst (:km km).', ['km' => number_format((float) $log->distance_km, 2, ',', '.')]));
     }
 
-    public function edit(TravelLog $travelLog)
+    public function edit(TravelLog $travelLog): View
     {
         Gate::authorize('update', $travelLog);
 
@@ -146,6 +147,9 @@ class TravelLogController extends Controller
 
         return response()->streamDownload(function () use ($logs): void {
             $out = fopen('php://output', 'w');
+            if ($out === false) {
+                return;
+            }
             fputcsv($out, [
                 'Datum',
                 'Von',
@@ -170,8 +174,8 @@ class TravelLogController extends Controller
                     (string) $log->vehicle,
                     number_format((float) ($log->rate_per_km ?? 0), 4, ',', ''),
                     number_format((float) $log->reimbursement_total, 2, ',', ''),
-                    $log->project?->name ?? '',
-                    $log->customer?->name ?? '',
+                    $log->project->name ?? '',
+                    $log->customer->name ?? '',
                     (string) $log->purpose,
                     (int) $log->duration_minutes,
                 ], ';');

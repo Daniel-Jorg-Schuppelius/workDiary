@@ -44,9 +44,12 @@ class AttendanceController extends Controller
             ->paginate(50)
             ->withQueryString();
 
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
         return view('attendances.index', [
             'attendances' => $attendances,
-            'current' => $this->clock->current(Auth::user()),
+            'current' => $this->clock->current($user),
             'from' => $from,
             'to' => $to,
         ]);
@@ -75,8 +78,11 @@ class AttendanceController extends Controller
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
         try {
-            $this->clock->clockIn(Auth::user(), $data);
+            $this->clock->clockIn($user, $data);
         } catch (RuntimeException $e) {
             return back()->with('error', __('Bereits eingestempelt.'));
         }
@@ -96,7 +102,10 @@ class AttendanceController extends Controller
             'break_minutes' => ['nullable', 'integer', 'min:0', 'max:600'],
         ]);
 
-        $closed = $this->clock->clockOut(Auth::user(), $data);
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $closed = $this->clock->clockOut($user, $data);
         if (! $closed) {
             return back()->with('error', __('Keine offene Stempelung gefunden.'));
         }
@@ -112,7 +121,10 @@ class AttendanceController extends Controller
             'minutes' => ['required', 'integer', 'min:1', 'max:600'],
         ]);
 
-        $this->clock->addBreak(Auth::user(), (int) $data['minutes']);
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $this->clock->addBreak($user, (int) $data['minutes']);
 
         return back()->with('success', __('Pause hinzugefügt.'));
     }
@@ -120,7 +132,9 @@ class AttendanceController extends Controller
     public function cancel(): RedirectResponse
     {
         Gate::authorize('create', Attendance::class);
-        $this->clock->cancel(Auth::user());
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $this->clock->cancel($user);
 
         return back()->with('success', __('Stempelung verworfen.'));
     }
@@ -138,7 +152,7 @@ class AttendanceController extends Controller
         ]);
 
         $attendance->fill($data);
-        $attendance->updated_by = Auth::id();
+        $attendance->updated_by = (int) Auth::id();
         $attendance->save();
 
         return back()->with('success', __('Stempelung aktualisiert.'));
