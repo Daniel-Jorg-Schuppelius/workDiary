@@ -26,12 +26,10 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 /**
  * Materialverbrauch im Zeitraum, basierend auf MaterialUsage über Timesheet.work_date.
  */
-class MaterialReportController extends Controller
-{
+class MaterialReportController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request): View|SymfonyResponse
-    {
+    public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         $authUser = Auth::user();
         $isAdmin = $authUser instanceof User && $authUser->isAdmin();
@@ -77,8 +75,7 @@ class MaterialReportController extends Controller
      *   totals: array{materials:int, usage_count:int, line_total_net:float}
      * }
      */
-    private function aggregate(string $from, string $to, string $scope, int $userId): array
-    {
+    private function aggregate(string $from, string $to, string $scope, int $userId): array {
         $q = MaterialUsage::query()
             ->with(['material:id,sku,name,unit'])
             ->whereHas('timesheet', function ($w) use ($from, $to, $scope, $userId): void {
@@ -100,7 +97,7 @@ class MaterialReportController extends Controller
             $sku = $material?->sku;
             $name = $material !== null ? $material->name : (string) ($u->description ?? __('Ohne Material'));
             $unit = (string) $u->unit;
-            $key = ($mid ?? 'null').'|'.$unit;
+            $key = ($mid ?? 'null') . '|' . $unit;
 
             if (! isset($byKey[$key])) {
                 $byKey[$key] = [
@@ -120,9 +117,9 @@ class MaterialReportController extends Controller
         }
 
         $rows = array_values($byKey);
-        usort($rows, static fn ($a, $b): int => $b['line_total_net'] <=> $a['line_total_net']);
+        usort($rows, static fn($a, $b): int => $b['line_total_net'] <=> $a['line_total_net']);
 
-        $distinctMaterials = count(array_unique(array_map(static fn ($r): string => ($r['material_id'] ?? 'null').'', $rows)));
+        $distinctMaterials = count(array_unique(array_map(static fn($r): string => ($r['material_id'] ?? 'null') . '', $rows)));
 
         return [
             'rows' => $rows,
@@ -137,8 +134,7 @@ class MaterialReportController extends Controller
     /**
      * @param  array{rows: array<int, array{material_id:int|null, sku:string|null, name:string, unit:string, quantity:float, line_total_net:float, usage_count:int}>, totals: array{materials:int, usage_count:int, line_total_net:float}}  $agg
      */
-    private function exportCsv(array $agg, string $from, string $to): Response
-    {
+    private function exportCsv(array $agg, string $from, string $to): Response {
         $filename = sprintf('materialien_%s_%s.csv', $from, $to);
         $rows = [];
         $rows[] = ['SKU', 'Material', 'Einheit', 'Menge', 'Verwendungen', 'Netto €'];
@@ -159,24 +155,23 @@ class MaterialReportController extends Controller
             $csv .= implode(';', array_map(static function ($v): string {
                 $s = (string) $v;
                 if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"'.str_replace('"', '""', $s).'"';
+                    $s = '"' . str_replace('"', '""', $s) . '"';
                 }
 
                 return $s;
-            }, $row))."\r\n";
+            }, $row)) . "\r\n";
         }
 
-        return response("\xEF\xBB\xBF".$csv, 200, [
+        return response("\xEF\xBB\xBF" . $csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 
     /**
      * @param  array{rows: array<int, array{material_id:int|null, sku:string|null, name:string, unit:string, quantity:float, line_total_net:float, usage_count:int}>, totals: array{materials:int, usage_count:int, line_total_net:float}}  $agg
      */
-    private function exportPdf(array $agg, string $from, string $to, string $scope): SymfonyResponse
-    {
+    private function exportPdf(array $agg, string $from, string $to, string $scope): SymfonyResponse {
         $filename = sprintf('materialien_%s_%s.pdf', $from, $to);
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = Pdf::loadView('reports.pdf.materials', [

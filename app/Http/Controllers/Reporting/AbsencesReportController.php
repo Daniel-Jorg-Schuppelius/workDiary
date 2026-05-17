@@ -29,14 +29,13 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Urlaubs- und Flex-Auswertung: Werktage pro Abwesenheits-Typ
  * sowie Flex-Bewegung und aktueller Flex-Saldo je Mitarbeiter.
  */
-class AbsencesReportController extends Controller
-{
+class AbsencesReportController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function __construct(private readonly HolidayService $holidayService) {}
+    public function __construct(private readonly HolidayService $holidayService) {
+    }
 
-    public function index(Request $request): View|SymfonyResponse
-    {
+    public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         $authUser = Auth::user();
         $isAdmin = $authUser instanceof User && $authUser->isAdmin();
@@ -68,8 +67,7 @@ class AbsencesReportController extends Controller
         ]);
     }
 
-    private function resolveScope(Request $request, bool $isAdmin): string
-    {
+    private function resolveScope(Request $request, bool $isAdmin): string {
         $scope = $request->string('scope', 'mine')->toString();
         if ($scope !== 'team' || ! $isAdmin) {
             $scope = 'mine';
@@ -90,8 +88,7 @@ class AbsencesReportController extends Controller
      *   flex_balance_minutes:int|null
      * }>
      */
-    private function aggregate(Carbon $from, Carbon $to, string $scope, int $userId): array
-    {
+    private function aggregate(Carbon $from, Carbon $to, string $scope, int $userId): array {
         $vacQ = Vacation::query()->scopes(['overlapping' => [$from, $to]]);
         if ($scope === 'mine') {
             $vacQ->where('user_id', $userId);
@@ -181,7 +178,11 @@ class AbsencesReportController extends Controller
         foreach ($users as $user) {
             $uid = (int) $user->id;
             $abs = $absByUser[$uid] ?? [
-                'vacation_days' => 0, 'sick_days' => 0, 'special_days' => 0, 'unpaid_days' => 0, 'pending_days' => 0,
+                'vacation_days' => 0,
+                'sick_days' => 0,
+                'special_days' => 0,
+                'unpaid_days' => 0,
+                'pending_days' => 0,
             ];
             $rows[] = [
                 'user' => $user,
@@ -198,8 +199,7 @@ class AbsencesReportController extends Controller
         return $rows;
     }
 
-    private function countWorkdays(Carbon $start, Carbon $end): int
-    {
+    private function countWorkdays(Carbon $start, Carbon $end): int {
         if ($start->greaterThan($end)) {
             return 0;
         }
@@ -220,8 +220,7 @@ class AbsencesReportController extends Controller
      * @param  array<int, array{user: User, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int|null}>  $rows
      * @return array{users:int, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int}
      */
-    private function totals(array $rows): array
-    {
+    private function totals(array $rows): array {
         $t = [
             'users' => count($rows),
             'vacation_days' => 0,
@@ -249,8 +248,7 @@ class AbsencesReportController extends Controller
      * @param  array<int, array{user: User, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int|null}>  $rows
      * @param  array{users:int, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int}  $totals
      */
-    private function exportCsv(array $rows, array $totals, string $from, string $to): Response
-    {
+    private function exportCsv(array $rows, array $totals, string $from, string $to): Response {
         $filename = sprintf('abwesenheiten_%s_%s.csv', $from, $to);
         $fmt = static function (int $m): string {
             $sign = $m < 0 ? '-' : '';
@@ -287,16 +285,16 @@ class AbsencesReportController extends Controller
             $csv .= implode(';', array_map(static function ($v): string {
                 $s = (string) $v;
                 if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"'.str_replace('"', '""', $s).'"';
+                    $s = '"' . str_replace('"', '""', $s) . '"';
                 }
 
                 return $s;
-            }, $row))."\r\n";
+            }, $row)) . "\r\n";
         }
 
-        return response("\xEF\xBB\xBF".$csv, 200, [
+        return response("\xEF\xBB\xBF" . $csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 
@@ -304,8 +302,7 @@ class AbsencesReportController extends Controller
      * @param  array<int, array{user: User, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int|null}>  $rows
      * @param  array{users:int, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int}  $totals
      */
-    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope): SymfonyResponse
-    {
+    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope): SymfonyResponse {
         $filename = sprintf('abwesenheiten_%s_%s.pdf', $from, $to);
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = Pdf::loadView('reports.pdf.absences', [
