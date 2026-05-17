@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,8 +18,10 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
-class HomeController extends Controller {
-    public function __invoke(): View|RedirectResponse {
+class HomeController extends Controller
+{
+    public function __invoke(): View|RedirectResponse
+    {
         $currentMode = session('work_mode', 'legacy');
         $canViewSensitive = Auth::check();
         $legacyConfigured = filled(config('database.connections.legacy.database'));
@@ -71,7 +74,8 @@ class HomeController extends Controller {
         ]);
     }
 
-    public function switchMode(Request $request, string $mode): RedirectResponse {
+    public function switchMode(Request $request, string $mode): RedirectResponse
+    {
         if (! in_array($mode, ['legacy', 'new'], true)) {
             return back()->with('success', __('Unbekannter Modus.'));
         }
@@ -93,7 +97,8 @@ class HomeController extends Controller {
             ->with('mode_toast', $mode === 'legacy' ? __('Legacy-Modus aktiviert.') : __('Neuer Modus aktiviert.'));
     }
 
-    private function resolveModeRoute(string $origin, string $mode): string {
+    private function resolveModeRoute(string $origin, string $mode): string
+    {
         if ($origin === 'home') {
             return 'home';
         }

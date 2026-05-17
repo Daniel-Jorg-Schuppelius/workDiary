@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,14 +19,15 @@ use App\Models\Vacation;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 
-class FlexCalculator {
-    public function __construct(protected WorkScheduleResolver $resolver) {
-    }
+class FlexCalculator
+{
+    public function __construct(protected WorkScheduleResolver $resolver) {}
 
     /**
      * Tagessoll in Minuten (0 wenn Feiertag, Wochenende oder Urlaub).
      */
-    public function targetMinutes(User $user, CarbonInterface $day): int {
+    public function targetMinutes(User $user, CarbonInterface $day): int
+    {
         if ($this->isHoliday($day) || $this->isVacation($user, $day)) {
             return 0;
         }
@@ -37,17 +39,41 @@ class FlexCalculator {
         return (int) $schedule->daily_target_minutes;
     }
 
-    public function actualMinutes(User $user, CarbonInterface $day): int {
+    public function actualMinutes(User $user, CarbonInterface $day): int
+    {
         return (int) TimeEntry::query()
             ->where('user_id', $user->id)
             ->whereDate('date', $day->toDateString())
+            ->whereIn('kind', $this->countedKinds())
+            ->whereNotIn('activity_type', $this->excludedActivityTypes())
             ->sum('minutes');
+    }
+
+    /**
+     * @return array<int, string> TimeEntry kinds that count toward Ist-Arbeitszeit.
+     */
+    protected function countedKinds(): array
+    {
+        $kinds = (array) config('timesheet.flex.count_kinds', [TimeEntry::KIND_WORK, TimeEntry::KIND_TRAVEL]);
+
+        return array_values(array_map('strval', $kinds));
+    }
+
+    /**
+     * @return array<int, string> activity_types that must never count (Pausen, Abwesenheit).
+     */
+    protected function excludedActivityTypes(): array
+    {
+        $excl = (array) config('timesheet.flex.exclude_activity_types', [TimeEntry::ACTIVITY_BREAK, TimeEntry::ACTIVITY_ABSENCE]);
+
+        return array_values(array_map('strval', $excl));
     }
 
     /**
      * @return array{target:int, actual:int, balance:int}
      */
-    public function dailyBalance(User $user, CarbonInterface $day): array {
+    public function dailyBalance(User $user, CarbonInterface $day): array
+    {
         $target = $this->targetMinutes($user, $day);
         $actual = $this->actualMinutes($user, $day);
 
@@ -61,7 +87,8 @@ class FlexCalculator {
     /**
      * @return array{target:int, actual:int, balance:int, days:array<string, array{target:int, actual:int, balance:int}>}
      */
-    public function monthlyBalance(User $user, int $year, int $month): array {
+    public function monthlyBalance(User $user, int $year, int $month): array
+    {
         $start = CarbonImmutable::create($year, $month, 1)->startOfMonth();
         $end = $start->endOfMonth();
 
@@ -84,7 +111,8 @@ class FlexCalculator {
         ];
     }
 
-    public function recompute(User $user, int $year, int $month): FlexBalance {
+    public function recompute(User $user, int $year, int $month): FlexBalance
+    {
         $b = $this->monthlyBalance($user, $year, $month);
 
         return FlexBalance::query()->updateOrCreate(
@@ -98,19 +126,21 @@ class FlexCalculator {
         );
     }
 
-    protected function isHoliday(CarbonInterface $day): bool {
+    protected function isHoliday(CarbonInterface $day): bool
+    {
         $year = (int) $day->year;
         $iso = $day->toDateString();
 
         $dates = collect(Holiday::all())
-            ->flatMap(fn(Holiday $h) => $h->is_recurring ? $h->resolveForYear($year) : [optional($h->date)->format('Y-m-d')])
+            ->flatMap(fn (Holiday $h) => $h->is_recurring ? $h->resolveForYear($year) : [optional($h->date)->format('Y-m-d')])
             ->filter()
             ->values();
 
         return $dates->contains($iso);
     }
 
-    protected function isVacation(User $user, CarbonInterface $day): bool {
+    protected function isVacation(User $user, CarbonInterface $day): bool
+    {
         return Vacation::query()
             ->where('user_id', $user->id)
             ->where('status', Vacation::STATUS_APPROVED)

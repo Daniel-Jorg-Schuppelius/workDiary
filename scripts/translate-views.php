@@ -9,9 +9,9 @@
  *
  * Aufruf:  php scripts/translate-views.php
  */
-$root = __DIR__ . '/..';
-$viewsDir = $root . '/resources/views';
-$jsonFile = $root . '/lang/en.json';
+$root = __DIR__.'/..';
+$viewsDir = $root.'/resources/views';
+$jsonFile = $root.'/lang/en.json';
 
 // Map: DE-Original  =>  EN-Übersetzung
 $map = [
@@ -182,11 +182,13 @@ $map = [
 ];
 
 // Pattern: schützt vor Doppel-Übersetzung indem __( bereits umgebene Strings ausgeschlossen werden.
-function escapeForHtml(string $s): string {
+function escapeForHtml(string $s): string
+{
     return htmlspecialchars($s, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 }
 
-function bladeEscape(string $s): string {
+function bladeEscape(string $s): string
+{
     // Für die Verwendung innerhalb von __('...') in Blade
     return str_replace(['\\', "'"], ['\\\\', "\\'"], $s);
 }
@@ -208,15 +210,15 @@ foreach ($rii as $file) {
         $deB = bladeEscape($de);
 
         // 1) >Text< (HTML-Textknoten, an Wortgrenzen)
-        $pattern = '/(?<=>)[\s]*' . preg_quote($deH, '/') . '[\s]*(?=<)/u';
+        $pattern = '/(?<=>)[\s]*'.preg_quote($deH, '/').'[\s]*(?=<)/u';
         $content = preg_replace_callback($pattern, function ($m) use ($deB) {
-            return "{{ __('" . $deB . "') }}";
+            return "{{ __('".$deB."') }}";
         }, $content);
 
         // 2) title="Text" / aria-label="Text" / placeholder="Text" / alt="Text"
-        $attrPattern = '/(\s(?:title|aria-label|placeholder|alt)=)"' . preg_quote($deH, '/') . '"/u';
+        $attrPattern = '/(\s(?:title|aria-label|placeholder|alt)=)"'.preg_quote($deH, '/').'"/u';
         $content = preg_replace_callback($attrPattern, function ($m) use ($deB) {
-            return $m[1] . '"{{ __(\'' . $deB . '\') }}"';
+            return $m[1].'"{{ __(\''.$deB.'\') }}"';
         }, $content);
     }
 
@@ -225,7 +227,7 @@ foreach ($rii as $file) {
         $totalReplacements += $diff;
         $filesChanged++;
         file_put_contents($path, $content);
-        echo '✓ ' . str_replace($root . '/', '', $path) . " (+{$diff})\n";
+        echo '✓ '.str_replace($root.'/', '', $path)." (+{$diff})\n";
     }
 }
 
@@ -239,5 +241,5 @@ foreach ($map as $de => $en) {
     }
 }
 ksort($existing, SORT_NATURAL | SORT_FLAG_CASE);
-file_put_contents($jsonFile, json_encode($existing, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n");
-echo 'lang/en.json aktualisiert (' . count($existing) . " Keys).\n";
+file_put_contents($jsonFile, json_encode($existing, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)."\n");
+echo 'lang/en.json aktualisiert ('.count($existing)." Keys).\n";

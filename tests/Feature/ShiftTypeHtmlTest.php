@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,42 +18,50 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class ShiftTypeHtmlTest extends TestCase {
+class ShiftTypeHtmlTest extends TestCase
+{
     use RefreshDatabase;
     use WithOrganization;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
     }
 
-    private function admin(): User {
+    private function admin(): User
+    {
         return User::factory()->admin()->create(['organization_id' => $this->organization->id]);
     }
 
-    private function user(): User {
+    private function user(): User
+    {
         return User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
-    public function test_guest_redirected(): void {
+    public function test_guest_redirected(): void
+    {
         $this->get(route('shift-types.index'))->assertRedirect(route('login'));
     }
 
-    public function test_non_admin_forbidden(): void {
+    public function test_non_admin_forbidden(): void
+    {
         $this->actingAs($this->user())
             ->get(route('shift-types.index'))
             ->assertForbidden();
     }
 
-    public function test_admin_can_view_index(): void {
+    public function test_admin_can_view_index(): void
+    {
         $this->actingAs($this->admin())
             ->get(route('shift-types.index'))
             ->assertOk()
             ->assertViewIs('shift-types.index');
     }
 
-    public function test_admin_can_create_shift_type(): void {
+    public function test_admin_can_create_shift_type(): void
+    {
         $this->actingAs($this->admin())
             ->post(route('shift-types.store'), [
                 'name' => 'Frühschicht',
@@ -65,7 +74,8 @@ class ShiftTypeHtmlTest extends TestCase {
         $this->assertDatabaseHas('shift_types', ['name' => 'Frühschicht', 'abbreviation' => 'F']);
     }
 
-    public function test_admin_can_update_shift_type(): void {
+    public function test_admin_can_update_shift_type(): void
+    {
         $type = ShiftType::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
@@ -82,7 +92,8 @@ class ShiftTypeHtmlTest extends TestCase {
         $this->assertDatabaseHas('shift_types', ['id' => $type->id, 'name' => 'Spätschicht']);
     }
 
-    public function test_admin_can_delete_unused_shift_type(): void {
+    public function test_admin_can_delete_unused_shift_type(): void
+    {
         $type = ShiftType::factory()->create([
             'organization_id' => $this->organization->id,
         ]);

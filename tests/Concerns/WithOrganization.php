@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,10 +23,12 @@ use App\Models\Organization;
  *   // in setUp() or directly in a test:
  *   $this->setUpOrganization();
  */
-trait WithOrganization {
+trait WithOrganization
+{
     protected Organization $organization;
 
-    protected function setUpOrganization(?array $attributes = []): void {
+    protected function setUpOrganization(?array $attributes = []): void
+    {
         $this->organization = Organization::factory()->create($attributes);
         app()->instance('currentOrganization', $this->organization);
     }

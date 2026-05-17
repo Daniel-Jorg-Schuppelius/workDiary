@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,7 +20,8 @@ use Tests\Concerns\WithGlobalDateRange;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class MyMonthReportTest extends TestCase {
+class MyMonthReportTest extends TestCase
+{
     use RefreshDatabase;
     use WithGlobalDateRange;
     use WithOrganization;
@@ -28,7 +30,8 @@ class MyMonthReportTest extends TestCase {
 
     private Project $project;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -41,14 +44,16 @@ class MyMonthReportTest extends TestCase {
         ]);
     }
 
-    public function test_route_renders(): void {
+    public function test_route_renders(): void
+    {
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeMonth(2030, 4))
             ->get(route('reports.my-month'));
         $response->assertOk();
     }
 
-    public function test_lists_entries_grouped_by_day(): void {
+    public function test_lists_entries_grouped_by_day(): void
+    {
         TimeEntry::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -68,11 +73,13 @@ class MyMonthReportTest extends TestCase {
         $response->assertSee('2:30 h', false);
     }
 
-    public function test_requires_authentication(): void {
+    public function test_requires_authentication(): void
+    {
         $this->get(route('reports.my-month'))->assertRedirect(route('login'));
     }
 
-    public function test_csv_export_returns_download(): void {
+    public function test_csv_export_returns_download(): void
+    {
         TimeEntry::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -93,7 +100,8 @@ class MyMonthReportTest extends TestCase {
         $this->assertStringContainsString('120', $response->getContent() ?: ''); // 2h = 120 min
     }
 
-    public function test_pdf_export_returns_download(): void {
+    public function test_pdf_export_returns_download(): void
+    {
         TimeEntry::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,

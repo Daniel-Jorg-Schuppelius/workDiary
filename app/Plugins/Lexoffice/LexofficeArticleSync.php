@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,17 +23,18 @@ use RuntimeException;
  *
  * Quelle: https://developers.lexoffice.io/docs/#articles-endpoint
  */
-class LexofficeArticleSync {
+class LexofficeArticleSync
+{
     public function __construct(
         private readonly ?string $apiKey,
         private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{created: int, updated: int, archived: int}
      */
-    public function sync(Organization $organization): array {
+    public function sync(Organization $organization): array
+    {
         if ($this->apiKey === null || $this->apiKey === '') {
             throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
         }
@@ -46,13 +48,13 @@ class LexofficeArticleSync {
         do {
             $response = Http::withToken($this->apiKey)
                 ->acceptJson()
-                ->get($this->baseUrl . '/articles', [
+                ->get($this->baseUrl.'/articles', [
                     'page' => $page,
                     'size' => $pageSize,
                 ]);
 
             if (! $response->successful()) {
-                throw new RuntimeException('Lexoffice articles request failed: ' . $response->status() . ' ' . $response->body());
+                throw new RuntimeException('Lexoffice articles request failed: '.$response->status().' '.$response->body());
             }
 
             /** @var array<string, mixed> $body */
@@ -106,7 +108,7 @@ class LexofficeArticleSync {
         $archived = LexofficeArticle::query()
             ->where('organization_id', $organization->id)
             ->whereNull('archived_at')
-            ->when($seen, fn($q) => $q->whereNotIn('external_id', $seen))
+            ->when($seen, fn ($q) => $q->whereNotIn('external_id', $seen))
             ->update(['archived_at' => now()]);
 
         return [

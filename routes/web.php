@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -9,10 +10,13 @@
  */
 
 use App\Http\Controllers\AccountPasswordController;
+use App\Http\Controllers\ActivityCategoryController;
 use App\Http\Controllers\Admin\PluginController as AdminPluginController;
+use App\Http\Controllers\AdminTimeEntryController;
 use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\ArchiveController;
 use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\TenantRegistrationController;
@@ -25,7 +29,9 @@ use App\Http\Controllers\DiaryExportController;
 use App\Http\Controllers\DutyController;
 use App\Http\Controllers\DutyPlanController;
 use App\Http\Controllers\EmergencyAssignmentController;
+use App\Http\Controllers\EnergyLogController;
 use App\Http\Controllers\FlexController;
+use App\Http\Controllers\GeocodeController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvoiceController;
@@ -49,9 +55,11 @@ use App\Http\Controllers\Reporting\MyMonthReportController;
 use App\Http\Controllers\Reporting\MyYearReportController;
 use App\Http\Controllers\Reporting\ProjectDetailsReportController;
 use App\Http\Controllers\Reporting\WeekByUserReportController;
+use App\Http\Controllers\Reporting\WorkBalanceReportController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ScheduledShiftController;
 use App\Http\Controllers\ScheduleImportController;
+use App\Http\Controllers\ServiceOrderController;
 use App\Http\Controllers\ShiftTypeController;
 use App\Http\Controllers\StopwatchController;
 use App\Http\Controllers\TagController;
@@ -61,8 +69,12 @@ use App\Http\Controllers\TimesheetController;
 use App\Http\Controllers\TimesheetEntryController;
 use App\Http\Controllers\TimesheetMaterialController;
 use App\Http\Controllers\TimesheetSignatureController;
+use App\Http\Controllers\TodayController;
+use App\Http\Controllers\TourController;
+use App\Http\Controllers\TravelLogController;
 use App\Http\Controllers\UI\DateRangeController;
 use App\Http\Controllers\VacationController;
+use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\WeekController;
 use App\Http\Controllers\WorkScheduleController;
 use Illuminate\Support\Facades\Route;
@@ -142,12 +154,12 @@ Route::middleware('auth')->group(function () {
         Route::get('vacations', [PrintController::class, 'vacationYear'])->name('vacations');
     });
 
-    Route::get('shifts', fn() => redirect()->route('duties.index'))->name('shifts.index');
-    Route::get('assignments', fn() => redirect()->route('duties.index', ['tab' => 'notdienst']))->name('assignments.index');
+    Route::get('shifts', fn () => redirect()->route('duties.index'))->name('shifts.index');
+    Route::get('assignments', fn () => redirect()->route('duties.index', ['tab' => 'notdienst']))->name('assignments.index');
     Route::resource('shifts', OnCallShiftController::class)->except(['show', 'index'])->parameters(['shifts' => 'shift']);
     Route::resource('assignments', EmergencyAssignmentController::class)->except(['show', 'index'])->parameters(['assignments' => 'assignment']);
 
-    Route::get('vacations', fn() => redirect()->route('duties.index', ['tab' => 'urlaub']))->name('vacations.index');
+    Route::get('vacations', fn () => redirect()->route('duties.index', ['tab' => 'urlaub']))->name('vacations.index');
     Route::resource('vacations', VacationController::class)->except(['show', 'index']);
     Route::patch('vacations/{vacation}/approve', [VacationController::class, 'approve'])->name('vacations.approve');
     Route::patch('vacations/{vacation}/reject', [VacationController::class, 'reject'])->name('vacations.reject');
@@ -219,6 +231,81 @@ Route::middleware('auth')->group(function () {
     Route::get('stopwatch', [StopwatchController::class, 'current'])->name('stopwatch.current');
     Route::post('stopwatch/start', [StopwatchController::class, 'start'])->name('stopwatch.start');
     Route::post('stopwatch/stop', [StopwatchController::class, 'stop'])->name('stopwatch.stop');
+    // ── Stempeluhr / Anwesenheit ──────────────────────────────────────────────────────────
+    Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+    Route::get('attendance/current', [AttendanceController::class, 'current'])->name('attendance.current');
+    Route::post('attendance/clock-in', [AttendanceController::class, 'clockIn'])->name('attendance.clock-in');
+    Route::post('attendance/clock-out', [AttendanceController::class, 'clockOut'])->name('attendance.clock-out');
+    Route::post('attendance/break', [AttendanceController::class, 'break'])->name('attendance.break');
+    Route::post('attendance/cancel', [AttendanceController::class, 'cancel'])->name('attendance.cancel');
+    Route::put('attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update');
+    Route::delete('attendance/{attendance}', [AttendanceController::class, 'destroy'])->name('attendance.destroy');
+
+    // ── Tages-Dashboard ───────────────────────────────────────────────────
+    Route::get('today', [TodayController::class, 'show'])->name('today.show');
+
+    // ── Verwaltungszeiten ( nicht-projektgebundene TimeEntries ) ───────────────────────
+    Route::get('time-entries/admin/create', [AdminTimeEntryController::class, 'create'])->name('admin-time-entries.create');
+    Route::post('time-entries/admin', [AdminTimeEntryController::class, 'store'])->name('admin-time-entries.store');
+    Route::get('time-entries/admin/{timeEntry}/edit', [AdminTimeEntryController::class, 'edit'])->name('admin-time-entries.edit');
+    Route::put('time-entries/admin/{timeEntry}', [AdminTimeEntryController::class, 'update'])->name('admin-time-entries.update');
+    Route::delete('time-entries/admin/{timeEntry}', [AdminTimeEntryController::class, 'destroy'])->name('admin-time-entries.destroy');
+
+    // ── Tätigkeitskategorien (Admin) ────────────────────────────────────────
+    Route::get('activity-categories', [ActivityCategoryController::class, 'index'])->name('activity-categories.index');
+    Route::post('activity-categories', [ActivityCategoryController::class, 'store'])->name('activity-categories.store');
+    Route::put('activity-categories/{activityCategory}', [ActivityCategoryController::class, 'update'])->name('activity-categories.update');
+    Route::delete('activity-categories/{activityCategory}', [ActivityCategoryController::class, 'destroy'])->name('activity-categories.destroy');
+
+    // ── Fahrtenbuch ────────────────────────────────────────────────────
+    Route::get('travel-logs', [TravelLogController::class, 'index'])->name('travel-logs.index');
+    Route::get('travel-logs/export', [TravelLogController::class, 'export'])->name('travel-logs.export');
+    Route::get('travel-logs/create', [TravelLogController::class, 'create'])->name('travel-logs.create');
+    Route::post('travel-logs', [TravelLogController::class, 'store'])->name('travel-logs.store');
+    Route::get('travel-logs/{travelLog}/edit', [TravelLogController::class, 'edit'])->name('travel-logs.edit');
+    Route::put('travel-logs/{travelLog}', [TravelLogController::class, 'update'])->name('travel-logs.update');
+    Route::delete('travel-logs/{travelLog}', [TravelLogController::class, 'destroy'])->name('travel-logs.destroy');
+
+    // ── Serviceaufträge ────────────────────────────────────────────────
+    Route::get('service-orders', [ServiceOrderController::class, 'index'])->name('service-orders.index');
+    Route::get('service-orders/create', [ServiceOrderController::class, 'create'])->name('service-orders.create');
+    Route::post('service-orders', [ServiceOrderController::class, 'store'])->name('service-orders.store');
+    Route::get('service-orders/{serviceOrder}', [ServiceOrderController::class, 'show'])->name('service-orders.show');
+    Route::get('service-orders/{serviceOrder}/edit', [ServiceOrderController::class, 'edit'])->name('service-orders.edit');
+    Route::put('service-orders/{serviceOrder}', [ServiceOrderController::class, 'update'])->name('service-orders.update');
+    Route::delete('service-orders/{serviceOrder}', [ServiceOrderController::class, 'destroy'])->name('service-orders.destroy');
+
+    // ── Touren ─────────────────────────────────────────────────────────
+    Route::get('tours', [TourController::class, 'index'])->name('tours.index');
+    Route::get('tours/create', [TourController::class, 'create'])->name('tours.create');
+    Route::post('tours', [TourController::class, 'store'])->name('tours.store');
+    Route::get('tours/{tour}', [TourController::class, 'show'])->name('tours.show');
+    Route::get('tours/{tour}/edit', [TourController::class, 'edit'])->name('tours.edit');
+    Route::put('tours/{tour}', [TourController::class, 'update'])->name('tours.update');
+    Route::delete('tours/{tour}', [TourController::class, 'destroy'])->name('tours.destroy');
+    Route::post('tours/{tour}/optimize', [TourController::class, 'optimize'])->name('tours.optimize');
+    Route::post('tours/{tour}/start', [TourController::class, 'start'])->name('tours.start');
+    Route::post('tours/{tour}/complete', [TourController::class, 'complete'])->name('tours.complete');
+    Route::post('tours/{tour}/materialize', [TourController::class, 'materialize'])->name('tours.materialize');
+
+    // ── Fuhrpark ───────────────────────────────────────────────────────
+    Route::get('vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
+    Route::get('vehicles/create', [VehicleController::class, 'create'])->name('vehicles.create');
+    Route::post('vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
+    Route::get('vehicles/{vehicle}/edit', [VehicleController::class, 'edit'])->name('vehicles.edit');
+    Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
+    Route::delete('vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
+    Route::post('vehicles/{vehicle}/restore', [VehicleController::class, 'restore'])->name('vehicles.restore');
+
+    Route::get('energy-logs', [EnergyLogController::class, 'index'])->name('energy-logs.index');
+    Route::get('energy-logs/create', [EnergyLogController::class, 'create'])->name('energy-logs.create');
+    Route::post('energy-logs', [EnergyLogController::class, 'store'])->name('energy-logs.store');
+    Route::get('energy-logs/{energyLog}/edit', [EnergyLogController::class, 'edit'])->name('energy-logs.edit');
+    Route::put('energy-logs/{energyLog}', [EnergyLogController::class, 'update'])->name('energy-logs.update');
+    Route::delete('energy-logs/{energyLog}', [EnergyLogController::class, 'destroy'])->name('energy-logs.destroy');
+
+    // ── Geocoding (intern) ──────────────────────────────────────────────
+    Route::post('api/internal/geocode', GeocodeController::class)->name('api.internal.geocode');
 
     // ── Globale Zeitauswahl (Header-Widget) ─────────────────────────────────
     Route::post('ui/date-range', [DateRangeController::class, 'update'])->name('ui.date-range.update');
@@ -234,6 +321,7 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/customer-project', [CustomerProjectReportController::class, 'index'])->name('reports.customer-project');
     Route::get('reports/week-by-user', [WeekByUserReportController::class, 'index'])->name('reports.week-by-user');
     Route::get('reports/project-details', [ProjectDetailsReportController::class, 'index'])->name('reports.project-details');
+    Route::get('reports/work-balance', [WorkBalanceReportController::class, 'index'])->name('reports.work-balance');
 
     // ── Material-Stamm (Admin) ──────────────────────────────────────────────
     Route::resource('materials', MaterialController::class)->except('show');

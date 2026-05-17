@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -20,9 +21,11 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
-class DashboardService {
+class DashboardService
+{
     /** @return array<string, mixed> */
-    public function summarize(User $user, ?CarbonImmutable $now = null): array {
+    public function summarize(User $user, ?CarbonImmutable $now = null): array
+    {
         $now ??= CarbonImmutable::now();
 
         return [
@@ -35,7 +38,8 @@ class DashboardService {
     /**
      * @return array<string, mixed>
      */
-    private function personal(User $user, CarbonImmutable $now): array {
+    private function personal(User $user, CarbonImmutable $now): array
+    {
         $weekEnd = $now->addDays(7);
 
         // Einzel-Query statt 2× COUNT für Diary-Einträge
@@ -125,7 +129,8 @@ class DashboardService {
     /**
      * @return array<string, mixed>
      */
-    private function team(CarbonImmutable $now): array {
+    private function team(CarbonImmutable $now): array
+    {
         // Einzel-Query statt 2× COUNT
         /** @var object{open_cnt: int|string, progress_cnt: int|string}|null $entryCounts */
         $entryCounts = DiaryEntry::query()

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,14 +19,17 @@ use App\Services\Compliance\ComplianceViolation;
 use App\Services\Compliance\ResolvesShiftTiming;
 
 /** Erkennt zeitlich überlappende Schichten desselben Mitarbeiters. */
-final class OverlapRule implements ComplianceRule {
+final class OverlapRule implements ComplianceRule
+{
     use ResolvesShiftTiming;
 
-    public function key(): string {
+    public function key(): string
+    {
         return 'overlap';
     }
 
-    public function check(ScheduledShift $shift, array $settings): array {
+    public function check(ScheduledShift $shift, array $settings): array
+    {
         $iv = $this->resolveInterval($shift);
         if ($iv === null) {
             return [];
@@ -36,7 +40,7 @@ final class OverlapRule implements ComplianceRule {
             ->where('user_id', $shift->user_id)
             ->where('status', '!=', ScheduledShift::STATUS_CANCELLED)
             ->whereBetween('date', [$start->copy()->subDay()->toDateString(), $end->copy()->addDay()->toDateString()])
-            ->when($shift->id, fn($q) => $q->where('id', '!=', $shift->id))
+            ->when($shift->id, fn ($q) => $q->where('id', '!=', $shift->id))
             ->with('shiftType')
             ->get();
 

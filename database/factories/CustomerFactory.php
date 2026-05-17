@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,10 +18,12 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<Customer>
  */
-class CustomerFactory extends Factory {
+class CustomerFactory extends Factory
+{
     protected $model = Customer::class;
 
-    public function definition(): array {
+    public function definition(): array
+    {
         $company = fake()->company();
 
         return [
@@ -54,11 +57,13 @@ class CustomerFactory extends Factory {
         ];
     }
 
-    public function archived(): static {
+    public function archived(): static
+    {
         return $this->state(['archived_at' => now()]);
     }
 
-    public function notBillable(): static {
+    public function notBillable(): static
+    {
         return $this->state(['billable' => false]);
     }
 }

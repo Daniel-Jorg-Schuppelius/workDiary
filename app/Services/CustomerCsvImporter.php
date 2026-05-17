@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -31,7 +32,8 @@ use Throwable;
  *
  * Rückgabe: ImportResult mit Anzahl angelegt/aktualisiert/übersprungen + Fehlerliste.
  */
-class CustomerCsvImporter {
+class CustomerCsvImporter
+{
     /** Map: Header-Bezeichner (klein, getrimmt) → DB-Spalte */
     private const HEADER_MAP = [
         'name' => 'name',
@@ -83,7 +85,8 @@ class CustomerCsvImporter {
     /**
      * @return array{created:int, updated:int, skipped:int, errors:list<string>}
      */
-    public function import(UploadedFile $file, ?int $organizationId): array {
+    public function import(UploadedFile $file, ?int $organizationId): array
+    {
         $path = $file->getRealPath();
         if ($path === false || ! is_readable($path)) {
             return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => ['Datei nicht lesbar.']];
@@ -92,7 +95,7 @@ class CustomerCsvImporter {
         try {
             $headerRow = CsvFacade::readHeader($path);
         } catch (Throwable $e) {
-            return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => ['Kopfzeile fehlt oder unlesbar: ' . $e->getMessage()]];
+            return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => ['Kopfzeile fehlt oder unlesbar: '.$e->getMessage()]];
         }
 
         $columns = $this->mapHeaders($headerRow);
@@ -163,7 +166,8 @@ class CustomerCsvImporter {
      * @param  list<string>  $headerRow
      * @return array<int, string|null>
      */
-    private function mapHeaders(array $headerRow): array {
+    private function mapHeaders(array $headerRow): array
+    {
         $out = [];
         foreach ($headerRow as $i => $h) {
             $key = StringFacade::isNullOrEmpty($h) ? '' : mb_strtolower(trim($h));
@@ -173,7 +177,8 @@ class CustomerCsvImporter {
         return $out;
     }
 
-    private function castValue(string $col, string $val): mixed {
+    private function castValue(string $col, string $val): mixed
+    {
         return match ($col) {
             'billable' => in_array(mb_strtolower($val), ['1', 'ja', 'yes', 'true', 'wahr'], true),
             'hourly_rate', 'internal_rate' => NumberFacade::parseDecimal($val, CountryCode::Germany),

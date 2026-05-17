@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,10 +18,12 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<CoverageRequirement>
  */
-class CoverageRequirementFactory extends Factory {
+class CoverageRequirementFactory extends Factory
+{
     protected $model = CoverageRequirement::class;
 
-    public function definition(): array {
+    public function definition(): array
+    {
         return [
             'duty_plan_id' => null,
             'shift_type_id' => ShiftType::factory(),
@@ -33,14 +36,16 @@ class CoverageRequirementFactory extends Factory {
         ];
     }
 
-    public function forDate(string $date): static {
+    public function forDate(string $date): static
+    {
         return $this->state([
             'specific_date' => $date,
             'weekday' => null,
         ]);
     }
 
-    public function forWeekday(int $weekday): static {
+    public function forWeekday(int $weekday): static
+    {
         return $this->state([
             'weekday' => $weekday,
             'specific_date' => null,

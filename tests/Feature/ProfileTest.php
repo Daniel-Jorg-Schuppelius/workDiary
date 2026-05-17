@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,15 +16,18 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class ProfileTest extends TestCase {
+class ProfileTest extends TestCase
+{
     use RefreshDatabase;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
     }
 
-    public function test_user_can_view_profile(): void {
+    public function test_user_can_view_profile(): void
+    {
         $user = User::factory()->user()->create();
         $this->actingAs($user)
             ->get(route('account.profile.edit'))
@@ -31,7 +35,8 @@ class ProfileTest extends TestCase {
             ->assertSee($user->email);
     }
 
-    public function test_user_can_update_name_and_email(): void {
+    public function test_user_can_update_name_and_email(): void
+    {
         $user = User::factory()->user()->create(['name' => 'Alt', 'email' => 'alt@example.test']);
 
         $this->actingAs($user)->put(route('account.profile.update'), [
@@ -44,7 +49,8 @@ class ProfileTest extends TestCase {
         $this->assertSame('neu@example.test', $user->email);
     }
 
-    public function test_email_must_be_unique(): void {
+    public function test_email_must_be_unique(): void
+    {
         User::factory()->user()->create(['email' => 'taken@example.test']);
         $user = User::factory()->user()->create();
 

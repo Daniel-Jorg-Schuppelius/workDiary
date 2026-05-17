@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,10 +18,12 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<DutyPlan>
  */
-class DutyPlanFactory extends Factory {
+class DutyPlanFactory extends Factory
+{
     protected $model = DutyPlan::class;
 
-    public function definition(): array {
+    public function definition(): array
+    {
         $from = fake()->dateTimeBetween('-1 month', '+1 month');
         $to = (clone $from)->modify('+6 days');
 
@@ -35,19 +38,23 @@ class DutyPlanFactory extends Factory {
         ];
     }
 
-    public function draft(): static {
+    public function draft(): static
+    {
         return $this->state(['status' => DutyPlan::STATUS_DRAFT]);
     }
 
-    public function published(): static {
+    public function published(): static
+    {
         return $this->state(['status' => DutyPlan::STATUS_PUBLISHED]);
     }
 
-    public function weekly(): static {
+    public function weekly(): static
+    {
         return $this->state(['period_type' => DutyPlan::PERIOD_WEEKLY]);
     }
 
-    public function monthly(): static {
+    public function monthly(): static
+    {
         $from = fake()->dateTimeBetween('-1 month', '+1 month');
         $to = Carbon::parse($from)->endOfMonth();
 

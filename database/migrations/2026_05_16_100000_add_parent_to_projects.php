@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,8 +18,10 @@ use Illuminate\Support\Facades\Schema;
  * einen Baum bilden können. Sub-Projekte erben Customer und Abrechnungs-
  * einstellungen vom Parent (Logik im Model).
  */
-return new class extends Migration {
-    public function up(): void {
+return new class extends Migration
+{
+    public function up(): void
+    {
         Schema::table('projects', function (Blueprint $table): void {
             $table->foreignId('parent_id')
                 ->nullable()
@@ -29,7 +32,8 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::table('projects', function (Blueprint $table): void {
             $table->dropForeign(['parent_id']);
             $table->dropIndex(['parent_id']);

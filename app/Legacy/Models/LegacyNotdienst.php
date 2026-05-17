@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -29,7 +30,8 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyNotdienst whereUser($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyNotdienst whereVon($value)
  */
-class LegacyNotdienst extends Model {
+class LegacyNotdienst extends Model
+{
     protected $connection = 'legacy';
 
     protected $table = 'notdnst';
@@ -40,18 +42,21 @@ class LegacyNotdienst extends Model {
 
     protected $primaryKey = 'id';
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'von' => 'date',
             'bis' => 'date',
         ];
     }
 
-    public function mitarbeiter(): BelongsTo {
+    public function mitarbeiter(): BelongsTo
+    {
         return $this->belongsTo(LegacyUser::class, 'user', 'id');
     }
 
-    public function user(): BelongsTo {
+    public function user(): BelongsTo
+    {
         return $this->mitarbeiter();
     }
 }

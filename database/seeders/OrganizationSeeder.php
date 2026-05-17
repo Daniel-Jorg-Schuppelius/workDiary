@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,8 +15,10 @@ use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
-class OrganizationSeeder extends Seeder {
-    public function run(): void {
+class OrganizationSeeder extends Seeder
+{
+    public function run(): void
+    {
         $org = Organization::firstOrCreate(
             ['slug' => 'default'],
             [

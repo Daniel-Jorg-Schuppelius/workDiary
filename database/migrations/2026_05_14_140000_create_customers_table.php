@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,8 +18,10 @@ use Illuminate\Support\Facades\Schema;
  * default billing data (currency, timezone, hourly rate). Inspired by the
  * Kimai (https://github.com/kimai/kimai) data model.
  */
-return new class extends Migration {
-    public function up(): void {
+return new class extends Migration
+{
+    public function up(): void
+    {
         Schema::create('customers', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('organization_id')->nullable()->constrained('organizations')->nullOnDelete();
@@ -52,7 +55,8 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::dropIfExists('customers');
     }
 };

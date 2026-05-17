@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -12,8 +13,10 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void {
+return new class extends Migration
+{
+    public function up(): void
+    {
         Schema::create('project_billing_rules', function (Blueprint $table) {
             $table->id();
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
@@ -33,7 +36,8 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::dropIfExists('project_billing_rules');
     }
 };

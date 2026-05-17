@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -28,7 +29,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $external_id
  * @property bool $is_active
  */
-class Material extends Model {
+class Material extends Model
+{
     use Auditable;
     use BelongsToOrganization;
 
@@ -36,7 +38,8 @@ class Material extends Model {
     use HasFactory;
 
     /** @param array<string, mixed> $attributes */
-    public function __construct(array $attributes = []) {
+    public function __construct(array $attributes = [])
+    {
         parent::__construct($attributes);
     }
 
@@ -52,7 +55,8 @@ class Material extends Model {
         'is_active',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'default_unit_price' => 'decimal:4',
             'tax_rate' => 'decimal:2',

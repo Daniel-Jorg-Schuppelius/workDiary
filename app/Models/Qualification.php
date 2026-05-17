@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -31,7 +32,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class Qualification extends Model {
+class Qualification extends Model
+{
     use Auditable;
     use BelongsToOrganization;
 
@@ -47,14 +49,16 @@ class Qualification extends Model {
         'created_by',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'is_active' => 'boolean',
         ];
     }
 
     /** @return BelongsTo<User, $this> */
-    public function creator(): BelongsTo {
+    public function creator(): BelongsTo
+    {
         return $this->belongsTo(User::class, 'created_by');
     }
 
@@ -63,7 +67,8 @@ class Qualification extends Model {
      *
      * @return BelongsToMany<User, $this>
      */
-    public function users(): BelongsToMany {
+    public function users(): BelongsToMany
+    {
         return $this->belongsToMany(User::class, 'user_qualifications')
             ->withPivot(['valid_from', 'valid_until'])
             ->withTimestamps();
@@ -74,7 +79,8 @@ class Qualification extends Model {
      *
      * @return BelongsToMany<ShiftType, $this>
      */
-    public function shiftTypes(): BelongsToMany {
+    public function shiftTypes(): BelongsToMany
+    {
         return $this->belongsToMany(ShiftType::class, 'shift_type_qualifications');
     }
 
@@ -82,7 +88,8 @@ class Qualification extends Model {
      * @param  Builder<Qualification>  $query
      * @return Builder<Qualification>
      */
-    public function scopeActive(Builder $query): Builder {
+    public function scopeActive(Builder $query): Builder
+    {
         return $query->where('is_active', true);
     }
 }

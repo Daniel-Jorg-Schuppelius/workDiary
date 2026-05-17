@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -23,7 +24,8 @@ use Illuminate\Http\Request;
  * sowie eine Default-Richtung. Rückgabe ist das effektiv angewandte Tupel
  * `[key, dir]`, mit dem die View die Sort-Icons rendert.
  */
-final class SortableQuery {
+final class SortableQuery
+{
     /**
      * @template TModel of \Illuminate\Database\Eloquent\Model
      *

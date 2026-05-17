@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -29,7 +30,8 @@ use Carbon\CarbonImmutable;
  * Mappings between local entities and Lexoffice ids are persisted in the
  * external_references table. The plugin id is "lexoffice".
  */
-class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
+class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter
+{
     public const ID = 'lexoffice';
 
     public const EXT_TYPE_CONTACT = 'contact';
@@ -38,41 +40,48 @@ class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
 
     public function __construct(
         private readonly LexofficeService $service,
-    ) {
-    }
+    ) {}
 
-    public function id(): string {
+    public function id(): string
+    {
         return self::ID;
     }
 
-    public function name(): string {
+    public function name(): string
+    {
         return 'Lexoffice';
     }
 
-    public function version(): string {
+    public function version(): string
+    {
         return '0.1.0';
     }
 
-    public function description(): string {
+    public function description(): string
+    {
         return __('Synchronisiert Kunden mit Lexoffice und überträgt erfasste Zeiten als Beleg.');
     }
 
-    public function isEnabled(): bool {
+    public function isEnabled(): bool
+    {
         return (bool) config('plugins.lexoffice.enabled') && $this->service->isConfigured();
     }
 
-    public function capabilities(): array {
+    public function capabilities(): array
+    {
         return [
             PluginCapability::CONTACT_SYNC,
             PluginCapability::TIME_EXPORT,
         ];
     }
 
-    public function adminPanel(): ?array {
+    public function adminPanel(): ?array
+    {
         return null; // Settings live in .env / config/plugins.php for now.
     }
 
-    public function pushContact(Customer $customer): string {
+    public function pushContact(Customer $customer): string
+    {
         $externalId = $this->service->createContact($customer);
 
         ExternalReference::updateOrCreate(
@@ -92,9 +101,10 @@ class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
         return $externalId;
     }
 
-    public function exportCustomerTime(Customer $customer, CarbonImmutable $from, CarbonImmutable $to): array {
+    public function exportCustomerTime(Customer $customer, CarbonImmutable $from, CarbonImmutable $to): array
+    {
         $entries = TimeEntry::query()
-            ->whereHas('project', fn($q) => $q->where('customer_id', $customer->id))
+            ->whereHas('project', fn ($q) => $q->where('customer_id', $customer->id))
             ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
             ->where('billable', true)
             ->where('exported', false)

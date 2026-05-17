@@ -293,6 +293,9 @@
                             if (! $isLegacyMode && \Illuminate\Support\Facades\Gate::allows('manage-members')) {
                                 $manageNavItems[] = ['route' => 'org.members.index', 'label' => __('Mitglieder'), 'icon' => 'badge', 'modal' => false];
                             }
+                            if (! $isLegacyMode) {
+                                $manageNavItems[] = ['route' => 'activity-categories.index', 'label' => __('Tätigkeitskategorien'), 'icon' => 'category', 'modal' => false];
+                            }
 
                             $userNavItems = [];
                             if (! $isLegacyMode) {
@@ -321,9 +324,11 @@
                                     'label'       => __('Tagesgeschäft'),
                                     'collapsible' => false,
                                     'items'       => [
-                                        ['route' => $indexRoute,    'label' => __('Arbeitsliste'),  'icon' => 'list_alt',          'modal' => false, 'matches' => [$indexRoute, 'diary.*']],
-                                        ['route' => 'week.index',   'label' => __('Wochenansicht'), 'icon' => 'calendar_view_week','modal' => false, 'matches' => ['week.index']],
-                                        ['route' => 'kanban.index', 'label' => __('Kanban'),        'icon' => 'view_kanban',       'modal' => false, 'matches' => ['kanban.index']],
+                                        ['route' => 'today.show',      'label' => __('Heute'),         'icon' => 'today',             'modal' => false, 'matches' => ['today.show']],
+                                        ['route' => $indexRoute,       'label' => __('Arbeitsliste'),  'icon' => 'list_alt',          'modal' => false, 'matches' => [$indexRoute, 'diary.*']],
+                                        ['route' => 'week.index',      'label' => __('Wochenansicht'), 'icon' => 'calendar_view_week','modal' => false, 'matches' => ['week.index']],
+                                        ['route' => 'kanban.index',    'label' => __('Kanban'),        'icon' => 'view_kanban',       'modal' => false, 'matches' => ['kanban.index']],
+                                        ['route' => 'attendance.index','label' => __('Stempeluhr'),    'icon' => 'punch_clock',       'modal' => false, 'matches' => ['attendance.*']],
                                     ],
                                 ];
                                 $sidebarSections[] = [
@@ -335,6 +340,18 @@
                                         ['route' => 'schedule.index',   'label' => __('Schichtplan'),   'icon' => 'schedule',        'modal' => false, 'matches' => ['schedule.*']],
                                         ['route' => 'timesheets.index', 'label' => __('Stundenzettel'), 'icon' => 'description',     'modal' => false, 'matches' => ['timesheets.*', 'projects.timesheets.*']],
                                         ['route' => 'flex.index',       'label' => __('Gleitzeit'),     'icon' => 'hourglass_top',   'modal' => false, 'matches' => ['flex.*']],
+                                        ['route' => 'travel-logs.index','label' => __('Fahrtenbuch'),   'icon' => 'directions_car',  'modal' => false, 'matches' => ['travel-logs.*']],
+                                        ['route' => 'service-orders.index','label' => __('Aufträge'),    'icon' => 'assignment',      'modal' => false, 'matches' => ['service-orders.*']],
+                                        ['route' => 'tours.index',      'label' => __('Touren'),        'icon' => 'route',           'modal' => false, 'matches' => ['tours.*']],
+                                    ],
+                                ];
+                                $sidebarSections[] = [
+                                    'key'         => 'fleet',
+                                    'label'       => __('Fuhrpark'),
+                                    'collapsible' => false,
+                                    'items'       => [
+                                        ['route' => 'vehicles.index',    'label' => __('Fahrzeuge'),       'icon' => 'directions_car',  'modal' => false, 'matches' => ['vehicles.*']],
+                                        ['route' => 'energy-logs.index', 'label' => __('Tank & Ladelog'),  'icon' => 'local_gas_station','modal' => false, 'matches' => ['energy-logs.*']],
                                     ],
                                 ];
                                 $sidebarSections[] = [
@@ -353,6 +370,7 @@
                                     'items'       => [
                                         ['route' => 'reports.my-month',         'label' => __('Mein Monat'),         'icon' => 'calendar_view_week',  'modal' => false, 'matches' => ['reports.my-month']],
                                         ['route' => 'reports.my-year',          'label' => __('Mein Jahr'),          'icon' => 'calendar_view_month', 'modal' => false, 'matches' => ['reports.my-year']],
+                                        ['route' => 'reports.work-balance',     'label' => __('Arbeitsbilanz'),      'icon' => 'balance',             'modal' => false, 'matches' => ['reports.work-balance']],
                                         ['route' => 'reports.week-by-user',     'label' => __('Woche pro Mitarbeiter'), 'icon' => 'date_range',       'modal' => false, 'matches' => ['reports.week-by-user']],
                                         ['route' => 'reports.customer-project', 'label' => __('Kunden & Projekte'), 'icon' => 'pie_chart',           'modal' => false, 'matches' => ['reports.customer-project']],
                                         ['route' => 'reports.project-details',  'label' => __('Projekt-Details'),    'icon' => 'analytics',           'modal' => false, 'matches' => ['reports.project-details']],
@@ -508,6 +526,33 @@
                                         </button>
                                     </form>
                                 </div>
+                            @endif
+                        @endisset
+
+                        @isset($attendanceCurrent)
+                            @if ($attendanceCurrent)
+                                <div class="flex items-center gap-1.5 rounded-box border border-success/40 bg-success/10 px-2 py-1 shadow-xs"
+                                     title="{{ __('Eingestempelt seit :time', ['time' => $attendanceCurrent->started_at?->format('H:i')]) }}"
+                                     x-data="{ s: 0 }"
+                                     x-init="s = Math.max(0, Math.floor((Date.now() - new Date('{{ $attendanceCurrent->started_at?->toIso8601String() }}').getTime())/1000)); setInterval(() => s++, 1000);">
+                                    <x-icon name="badge" class="text-[1rem] text-success" />
+                                    <span class="font-['Space_Grotesk'] text-sm font-semibold tabular-nums text-success"
+                                          x-text="String(Math.floor(s/3600)).padStart(2,'0') + ':' + String(Math.floor((s%3600)/60)).padStart(2,'0')">00:00</span>
+                                    <form method="POST" action="{{ route('attendance.clock-out') }}" class="leading-none">
+                                        @csrf
+                                        <button type="submit" class="btn btn-xs btn-ghost btn-square text-warning" title="{{ __('Ausstempeln') }}" aria-label="{{ __('Ausstempeln') }}">
+                                            <x-icon name="logout" />
+                                        </button>
+                                    </form>
+                                </div>
+                            @else
+                                <form method="POST" action="{{ route('attendance.clock-in') }}" class="leading-none">
+                                    @csrf
+                                    <button type="submit" class="btn btn-xs btn-success gap-1" title="{{ __('Einstempeln') }}">
+                                        <x-icon name="login" class="text-[1rem]" />
+                                        <span class="hidden sm:inline">{{ __('Einstempeln') }}</span>
+                                    </button>
+                                </form>
                             @endif
                         @endisset
 

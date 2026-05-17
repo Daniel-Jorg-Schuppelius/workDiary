@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -25,11 +26,15 @@ use Illuminate\Support\Carbon;
  * @property int|null $timesheet_id
  * @property int|null $task_id
  * @property int|null $user_id
+ * @property int|null $activity_category_id
+ * @property int|null $attendance_id
+ * @property int|null $travel_log_id
  * @property Carbon|null $date
  * @property Carbon|null $started_at
  * @property Carbon|null $ended_at
  * @property int $break_minutes
  * @property string $kind
+ * @property string $activity_type
  * @property int $minutes
  * @property string|null $description
  * @property bool $billable
@@ -39,7 +44,8 @@ use Illuminate\Support\Carbon;
  * @property float|null $internal_rate
  * @property bool $exported
  */
-class TimeEntry extends Model {
+class TimeEntry extends Model
+{
     use BelongsToOrganization;
 
     /** @use HasFactory<TimeEntryFactory> */
@@ -54,17 +60,57 @@ class TimeEntry extends Model {
     /** @var array<int, string> */
     public const KINDS = [self::KIND_WORK, self::KIND_TRAVEL, self::KIND_STANDBY];
 
+    // High-level distribution category. When ACTIVITY_PROJECT, project_id
+    // must be set. Other values use activity_category_id for reporting.
+    public const ACTIVITY_PROJECT = 'project';
+
+    public const ACTIVITY_ADMIN = 'admin';
+
+    public const ACTIVITY_TRAINING = 'training';
+
+    public const ACTIVITY_MEETING = 'meeting';
+
+    public const ACTIVITY_INTERNAL = 'internal';
+
+    public const ACTIVITY_TRAVEL = 'travel';
+
+    public const ACTIVITY_BREAK = 'break';
+
+    public const ACTIVITY_ABSENCE = 'absence';
+
+    public const ACTIVITY_STANDBY = 'standby';
+
+    public const ACTIVITY_OTHER = 'other';
+
+    /** @var array<int, string> */
+    public const ACTIVITY_TYPES = [
+        self::ACTIVITY_PROJECT,
+        self::ACTIVITY_ADMIN,
+        self::ACTIVITY_TRAINING,
+        self::ACTIVITY_MEETING,
+        self::ACTIVITY_INTERNAL,
+        self::ACTIVITY_TRAVEL,
+        self::ACTIVITY_BREAK,
+        self::ACTIVITY_ABSENCE,
+        self::ACTIVITY_STANDBY,
+        self::ACTIVITY_OTHER,
+    ];
+
     protected $fillable = [
         'organization_id',
         'project_id',
         'timesheet_id',
         'task_id',
         'user_id',
+        'activity_category_id',
+        'attendance_id',
+        'travel_log_id',
         'date',
         'started_at',
         'ended_at',
         'break_minutes',
         'kind',
+        'activity_type',
         'minutes',
         'description',
         'billable',
@@ -75,7 +121,8 @@ class TimeEntry extends Model {
         'exported',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'date' => 'date',
             'started_at' => 'datetime',
@@ -91,8 +138,26 @@ class TimeEntry extends Model {
         ];
     }
 
-    protected static function booted(): void {
+    protected static function booted(): void
+    {
         static::saving(function (TimeEntry $entry): void {
+            // Default activity_type from kind / project presence.
+            if (empty($entry->activity_type)) {
+                $entry->activity_type = match (true) {
+                    $entry->project_id !== null => self::ACTIVITY_PROJECT,
+                    $entry->kind === self::KIND_TRAVEL => self::ACTIVITY_TRAVEL,
+                    $entry->kind === self::KIND_STANDBY => self::ACTIVITY_STANDBY,
+                    default => self::ACTIVITY_ADMIN,
+                };
+            }
+
+            // Enforce: project_id is required when activity_type=project.
+            if ($entry->activity_type === self::ACTIVITY_PROJECT && $entry->project_id === null) {
+                throw new \InvalidArgumentException(
+                    'TimeEntry with activity_type=project requires a project_id.'
+                );
+            }
+
             if ($entry->started_at && $entry->ended_at) {
                 $diff = (int) $entry->started_at->diffInMinutes($entry->ended_at, false);
                 $diff = max(0, $diff - (int) ($entry->break_minutes ?? 0));
@@ -125,26 +190,54 @@ class TimeEntry extends Model {
     }
 
     /** @return BelongsTo<Project, $this> */
-    public function project(): BelongsTo {
+    public function project(): BelongsTo
+    {
         return $this->belongsTo(Project::class);
     }
 
     /** @return BelongsTo<Timesheet, $this> */
-    public function timesheet(): BelongsTo {
+    public function timesheet(): BelongsTo
+    {
         return $this->belongsTo(Timesheet::class);
     }
 
     /** @return BelongsTo<Task, $this> */
-    public function task(): BelongsTo {
+    public function task(): BelongsTo
+    {
         return $this->belongsTo(Task::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo {
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 
-    public function hoursFormatted(): string {
+    /** @return BelongsTo<ActivityCategory, $this> */
+    public function activityCategory(): BelongsTo
+    {
+        return $this->belongsTo(ActivityCategory::class);
+    }
+
+    /** @return BelongsTo<Attendance, $this> */
+    public function attendance(): BelongsTo
+    {
+        return $this->belongsTo(Attendance::class);
+    }
+
+    /** @return BelongsTo<TravelLog, $this> */
+    public function travelLog(): BelongsTo
+    {
+        return $this->belongsTo(TravelLog::class);
+    }
+
+    public function isProjectWork(): bool
+    {
+        return $this->activity_type === self::ACTIVITY_PROJECT;
+    }
+
+    public function hoursFormatted(): string
+    {
         $h = intdiv($this->minutes, 60);
         $m = $this->minutes % 60;
 

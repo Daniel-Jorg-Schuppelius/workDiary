@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Sat May 16 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,32 +23,40 @@ use CommonToolkit\Helper\Data\StringHelper;
  * - Sinnvolle Defaults für deutschsprachige Inhalte.
  * - Erweiterbar um App-spezifische String-Operationen (z. B. printable_initials).
  */
-final class StringFacade {
-    public static function isNullOrEmpty(?string $value): bool {
+final class StringFacade
+{
+    public static function isNullOrEmpty(?string $value): bool
+    {
         return StringHelper::isNullOrEmpty($value);
     }
 
-    public static function truncate(?string $text, int $maxLength, string $suffix = '...', bool $trim = false): string {
+    public static function truncate(?string $text, int $maxLength, string $suffix = '...', bool $trim = false): string
+    {
         return StringHelper::truncate($text, $maxLength, $suffix, $trim);
     }
 
-    public static function mask(string $value, int $visibleStart = 3, int $visibleEnd = 3, string $maskChar = '*'): string {
+    public static function mask(string $value, int $visibleStart = 3, int $visibleEnd = 3, string $maskChar = '*'): string
+    {
         return StringHelper::mask($value, $visibleStart, $visibleEnd, $maskChar);
     }
 
-    public static function normalizeWhitespace(?string $value): string {
+    public static function normalizeWhitespace(?string $value): string
+    {
         return StringHelper::normalizeWhitespace($value);
     }
 
-    public static function sanitizePrintable(?string $value): string {
+    public static function sanitizePrintable(?string $value): string
+    {
         return StringHelper::sanitizePrintable($value);
     }
 
-    public static function stripBom(string $value): string {
+    public static function stripBom(string $value): string
+    {
         return StringHelper::stripBom($value);
     }
 
-    public static function toUtf8(string $value, string $fromEncoding): string {
+    public static function toUtf8(string $value, string $fromEncoding): string
+    {
         return StringHelper::convertToUtf8($value, $fromEncoding);
     }
 
@@ -55,7 +64,8 @@ final class StringFacade {
      * Datenschutz-freundliche Initialen, z. B. "Max Schuppelius" => "M.S.".
      * Wird in anonymisierten Print-Layouts genutzt.
      */
-    public static function printableInitials(?string $name, int $maxParts = 3): string {
+    public static function printableInitials(?string $name, int $maxParts = 3): string
+    {
         if ($name === null || trim($name) === '') {
             return '—';
         }
@@ -63,7 +73,7 @@ final class StringFacade {
         $parts = preg_split('/\s+/u', trim($name)) ?: [];
         $parts = array_slice($parts, 0, $maxParts);
         $initials = array_map(
-            static fn(string $part): string => mb_strtoupper(mb_substr($part, 0, 1)) . '.',
+            static fn (string $part): string => mb_strtoupper(mb_substr($part, 0, 1)).'.',
             $parts,
         );
 

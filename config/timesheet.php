@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -29,6 +30,44 @@ return [
 
     'pdf' => [
         'disk' => env('TIMESHEET_PDF_DISK', 'local'),
+    ],
+
+    // Which TimeEntry rows are considered "arbeitszeitwirksam" for the
+    // Gleitzeit / WorkBalance reports. Defaults match a typical contract:
+    //   - "work" and "travel" minutes count toward Ist-Arbeitszeit
+    //   - "break" and "absence" activity types are NEVER counted (pauses
+    //     are reported separately; absences are time off, not Ist).
+    'flex' => [
+        'count_kinds' => ['work', 'travel'],
+        'exclude_activity_types' => ['break', 'absence'],
+    ],
+
+    // Statutory break rules (German ArbZG §4 by default):
+    //   > 6 h work → at least 30 min break
+    //   > 9 h work → at least 45 min break
+    // When `auto_apply` is true, Attendance::saving() fills the gap into
+    // `break_minutes_auto` whenever the recorded breaks fall short.
+    'breaks' => [
+        'rules' => [
+            ['after_minutes' => 360, 'required_minutes' => 30],
+            ['after_minutes' => 540, 'required_minutes' => 45],
+        ],
+        'auto_apply' => (bool) env('TIMESHEET_BREAK_AUTO_APPLY', true),
+    ],
+
+    'travel' => [        // Default reimbursement rate per kilometer in EUR per vehicle type.
+        // Overridable per-organization later via DB settings.
+        'rates' => [
+            'private' => (float) env('TRAVEL_RATE_PRIVATE_KM', 0.30),
+            'company' => (float) env('TRAVEL_RATE_COMPANY_KM', 0.00),
+            'public_transport' => (float) env('TRAVEL_RATE_PUBLIC_KM', 0.00),
+            'bicycle' => (float) env('TRAVEL_RATE_BICYCLE_KM', 0.05),
+            'foot' => 0.0,
+            'other' => (float) env('TRAVEL_RATE_OTHER_KM', 0.00),
+        ],
+        // Whether to automatically create a paired TimeEntry (kind=travel) when
+        // started_at/ended_at are provided on a TravelLog.
+        'auto_create_time_entry' => (bool) env('TRAVEL_AUTO_TIME_ENTRY', true),
     ],
 
     'providers' => [

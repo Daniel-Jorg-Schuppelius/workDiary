@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,15 +18,17 @@ use Illuminate\Support\Str;
 /**
  * @extends Factory<Organization>
  */
-class OrganizationFactory extends Factory {
+class OrganizationFactory extends Factory
+{
     protected $model = Organization::class;
 
-    public function definition(): array {
+    public function definition(): array
+    {
         $name = fake()->company();
 
         return [
             'name' => $name,
-            'slug' => Str::slug($name) . '-' . Str::lower(Str::random(4)),
+            'slug' => Str::slug($name).'-'.Str::lower(Str::random(4)),
             'plan' => Organization::PLAN_FREE,
             'locale' => 'de',
             'timezone' => 'Europe/Berlin',
@@ -34,15 +37,18 @@ class OrganizationFactory extends Factory {
         ];
     }
 
-    public function pro(): static {
+    public function pro(): static
+    {
         return $this->state(['plan' => Organization::PLAN_PRO]);
     }
 
-    public function enterprise(): static {
+    public function enterprise(): static
+    {
         return $this->state(['plan' => Organization::PLAN_ENTERPRISE]);
     }
 
-    public function inactive(): static {
+    public function inactive(): static
+    {
         return $this->state(['is_active' => false]);
     }
 }

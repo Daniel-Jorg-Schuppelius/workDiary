@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -29,7 +30,8 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyArchiveOnCall whereUser($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyArchiveOnCall whereVon($value)
  */
-class LegacyArchiveOnCall extends Model {
+class LegacyArchiveOnCall extends Model
+{
     protected $connection = 'legacy';
 
     protected $table = 'a_bereit';
@@ -42,7 +44,8 @@ class LegacyArchiveOnCall extends Model {
 
     public $incrementing = false;
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'id' => 'integer',
             'von' => 'date',
@@ -50,7 +53,8 @@ class LegacyArchiveOnCall extends Model {
         ];
     }
 
-    public function mitarbeiter(): BelongsTo {
+    public function mitarbeiter(): BelongsTo
+    {
         return $this->belongsTo(LegacyUser::class, 'user', 'id');
     }
 }

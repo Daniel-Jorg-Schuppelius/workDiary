@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,12 +19,15 @@ use App\Services\Compliance\ComplianceViolation;
 use Carbon\CarbonImmutable;
 
 /** Max. Anzahl aufeinanderfolgender Arbeitstage (default 6). */
-final class ConsecutiveDaysRule implements ComplianceRule {
-    public function key(): string {
+final class ConsecutiveDaysRule implements ComplianceRule
+{
+    public function key(): string
+    {
         return 'consecutive_days';
     }
 
-    public function check(ScheduledShift $shift, array $settings): array {
+    public function check(ScheduledShift $shift, array $settings): array
+    {
         $max = (int) $settings['max_consecutive_days'];
         $date = CarbonImmutable::parse($shift->date->format('Y-m-d'));
 
@@ -32,11 +36,11 @@ final class ConsecutiveDaysRule implements ComplianceRule {
             ->where('user_id', $shift->user_id)
             ->where('status', '!=', ScheduledShift::STATUS_CANCELLED)
             ->whereBetween('date', [$date->subDays(14)->toDateString(), $date->addDays(14)->toDateString()])
-            ->when($shift->id, fn($q) => $q->where('id', '!=', $shift->id))
+            ->when($shift->id, fn ($q) => $q->where('id', '!=', $shift->id))
             ->get(['id', 'date']);
 
         $dates = collect([$date->toDateString()])
-            ->merge($rows->pluck('date')->map(fn($d) => CarbonImmutable::parse($d->format('Y-m-d'))->toDateString()))
+            ->merge($rows->pluck('date')->map(fn ($d) => CarbonImmutable::parse($d->format('Y-m-d'))->toDateString()))
             ->unique()
             ->sort()
             ->values()
@@ -74,7 +78,7 @@ final class ConsecutiveDaysRule implements ComplianceRule {
                         'max' => $max,
                         'start' => $start->format('d.m.Y'),
                     ]),
-                    relatedShiftIds: $rows->pluck('id')->map(fn($id) => (int) $id)->all(),
+                    relatedShiftIds: $rows->pluck('id')->map(fn ($id) => (int) $id)->all(),
                     context: ['streak' => $streak, 'max' => $max],
                 ),
             ];

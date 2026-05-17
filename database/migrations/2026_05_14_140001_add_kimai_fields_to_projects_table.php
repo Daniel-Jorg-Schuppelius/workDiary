@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,8 +16,10 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Adds Kimai-style billing/budget fields to projects.
  */
-return new class extends Migration {
-    public function up(): void {
+return new class extends Migration
+{
+    public function up(): void
+    {
         Schema::table('projects', function (Blueprint $table): void {
             $table->foreignId('customer_id')->nullable()->after('id')
                 ->constrained('customers')->nullOnDelete();
@@ -36,7 +39,8 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::table('projects', function (Blueprint $table): void {
             $table->dropForeign(['customer_id']);
             $table->dropIndex(['customer_id']);

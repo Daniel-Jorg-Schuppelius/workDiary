@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,12 +14,15 @@ namespace App\Observers;
 use App\Models\User;
 use App\Support\LookupCache;
 
-class UserObserver {
-    public function saved(User $user): void {
+class UserObserver
+{
+    public function saved(User $user): void
+    {
         LookupCache::forgetUserDropdown();
     }
 
-    public function deleted(User $user): void {
+    public function deleted(User $user): void
+    {
         LookupCache::forgetUserDropdown();
     }
 }

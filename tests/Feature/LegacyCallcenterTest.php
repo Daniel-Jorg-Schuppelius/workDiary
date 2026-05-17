@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,16 +16,19 @@ use Illuminate\Support\Facades\DB;
 use Tests\Concerns\UsesLegacySqlite;
 use Tests\TestCase;
 
-class LegacyCallcenterTest extends TestCase {
+class LegacyCallcenterTest extends TestCase
+{
     use RefreshDatabase;
     use UsesLegacySqlite;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->useLegacySqlite();
     }
 
-    public function test_callcenter_login_succeeds_and_stores_session(): void {
+    public function test_callcenter_login_succeeds_and_stores_session(): void
+    {
         DB::connection('legacy')->table('calluser')->insert([
             'uname' => 'agent',
             'userpw' => 'secret',
@@ -38,7 +42,8 @@ class LegacyCallcenterTest extends TestCase {
         $this->assertSame('agent', session('legacy_callcenter_user'));
     }
 
-    public function test_callcenter_login_is_rate_limited_after_repeated_failures(): void {
+    public function test_callcenter_login_is_rate_limited_after_repeated_failures(): void
+    {
         for ($attempt = 0; $attempt < 5; $attempt++) {
             $this->from(route('legacy.callcenter.login'))->post(route('legacy.callcenter.login.submit'), [
                 'username' => 'agent',

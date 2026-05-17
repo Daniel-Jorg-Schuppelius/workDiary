@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -28,7 +29,8 @@ use Illuminate\Support\Carbon;
  * @property array<string, mixed>|null $payload
  * @property Carbon|null $synced_at
  */
-class ExternalReference extends Model {
+class ExternalReference extends Model
+{
     use BelongsToOrganization;
 
     /** @use HasFactory<Factory<static>> */
@@ -45,7 +47,8 @@ class ExternalReference extends Model {
         'synced_at',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'payload' => 'array',
             'synced_at' => 'datetime',
@@ -53,7 +56,8 @@ class ExternalReference extends Model {
     }
 
     /** @return MorphTo<Model, $this> */
-    public function referenceable(): MorphTo {
+    public function referenceable(): MorphTo
+    {
         return $this->morphTo();
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,15 +16,18 @@ use App\Models\Customer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 
-class CustomerObserver {
-    public function created(Customer $customer): void {
+class CustomerObserver
+{
+    public function created(Customer $customer): void
+    {
         $this->log($customer, 'created', $customer->getAttributes());
         // Standardprojekt automatisch anlegen, damit Ad-hoc-/Notfallaufträge
         // sofort einen sauberen Container für Stundenzettel/Zeiteinträge haben.
         $customer->defaultProjectOrCreate();
     }
 
-    public function updated(Customer $customer): void {
+    public function updated(Customer $customer): void
+    {
         $changes = $customer->getChanges();
         unset($changes['updated_at']);
         if ($changes === []) {
@@ -41,12 +45,14 @@ class CustomerObserver {
         ]);
     }
 
-    public function deleted(Customer $customer): void {
+    public function deleted(Customer $customer): void
+    {
         $this->log($customer, 'deleted', $customer->getOriginal());
     }
 
     /** @param  array<string, mixed>  $changes */
-    private function log(Customer $customer, string $event, array $changes): void {
+    private function log(Customer $customer, string $event, array $changes): void
+    {
         AuditLog::query()->create([
             'organization_id' => $customer->organization_id,
             'user_id' => Auth::id(),

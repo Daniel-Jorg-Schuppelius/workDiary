@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -26,10 +27,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-class DutyController extends Controller {
+class DutyController extends Controller
+{
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request, HolidayService $holidayService): View|RedirectResponse {
+    public function index(Request $request, HolidayService $holidayService): View|RedirectResponse
+    {
         // Backward-Compat: ?from=&to= einmalig in den globalen Context.
         if ($request->filled('from') || $request->filled('to')) {
             app(DateRangeContext::class)->set(
@@ -102,7 +105,8 @@ class DutyController extends Controller {
     /**
      * @return EloquentBuilder<DiaryEntry>
      */
-    private function buildDiaryQuery(Request $request, string $rangeFrom, string $rangeTo): EloquentBuilder {
+    private function buildDiaryQuery(Request $request, string $rangeFrom, string $rangeTo): EloquentBuilder
+    {
         /** @var EloquentBuilder<DiaryEntry> $diaryQuery */
         $diaryQuery = DiaryEntry::query()
             ->select(['id', 'user_id', 'content', 'status', 'is_archived', 'start_at', 'end_at', 'created_at'])
@@ -120,12 +124,12 @@ class DutyController extends Controller {
         }
         $q = trim((string) $request->query('q', ''));
         if ($q !== '') {
-            $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $q) . '%';
-            $diaryQuery->where(fn($w) => $w->where('content', 'like', $like)->orWhere('response', 'like', $like));
+            $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $q).'%';
+            $diaryQuery->where(fn ($w) => $w->where('content', 'like', $like)->orWhere('response', 'like', $like));
         }
         $tagId = $request->integer('tag');
         if ($tagId > 0) {
-            $diaryQuery->whereHas('tags', fn($tq) => $tq->where('tags.id', $tagId));
+            $diaryQuery->whereHas('tags', fn ($tq) => $tq->where('tags.id', $tagId));
         }
 
         return $diaryQuery;
@@ -134,7 +138,8 @@ class DutyController extends Controller {
     /**
      * @return EloquentBuilder<OnCallShift>
      */
-    private function buildShiftQuery(string $rangeFrom, string $rangeTo): EloquentBuilder {
+    private function buildShiftQuery(string $rangeFrom, string $rangeTo): EloquentBuilder
+    {
         /** @var EloquentBuilder<OnCallShift> $q */
         $q = OnCallShift::query()
             ->with('user:id,name')
@@ -149,7 +154,8 @@ class DutyController extends Controller {
     /**
      * @return EloquentBuilder<Vacation>
      */
-    private function buildVacationQuery(Request $request, User $authUser, bool $isAdmin, string $rangeFrom, string $rangeTo): EloquentBuilder {
+    private function buildVacationQuery(Request $request, User $authUser, bool $isAdmin, string $rangeFrom, string $rangeTo): EloquentBuilder
+    {
         /** @var EloquentBuilder<Vacation> $vacationQuery */
         $vacationQuery = Vacation::query()
             ->with('user:id,name')
@@ -175,7 +181,8 @@ class DutyController extends Controller {
     /**
      * @return EloquentBuilder<EmergencyAssignment>
      */
-    private function buildAssignmentQuery(string $rangeFrom, string $rangeTo): EloquentBuilder {
+    private function buildAssignmentQuery(string $rangeFrom, string $rangeTo): EloquentBuilder
+    {
         /** @var EloquentBuilder<EmergencyAssignment> $q */
         $q = EmergencyAssignment::query()
             ->with(['user:id,name', 'shift:id,start_at,end_at,user_id'])
@@ -190,14 +197,15 @@ class DutyController extends Controller {
     /**
      * @return array{all:int, open:int, alert:int, done:int}
      */
-    private function computeDiaryCounts(): array {
+    private function computeDiaryCounts(): array
+    {
         $row = DiaryEntry::query()
             ->where('is_archived', false)
             ->toBase()
             ->selectRaw(
-                'COUNT(*) as cnt_all,' .
-                    'COUNT(CASE WHEN status = 2 THEN 1 END) as cnt_open,' .
-                    'COUNT(CASE WHEN status = 3 THEN 1 END) as cnt_alert,' .
+                'COUNT(*) as cnt_all,'.
+                    'COUNT(CASE WHEN status = 2 THEN 1 END) as cnt_open,'.
+                    'COUNT(CASE WHEN status = 3 THEN 1 END) as cnt_alert,'.
                     'COUNT(CASE WHEN status = -1 THEN 1 END) as cnt_done'
             )
             ->first();
@@ -218,10 +226,11 @@ class DutyController extends Controller {
      * @param  EloquentBuilder<TModel>  $query
      * @return array{total:int, longest:int, avg:float|int, users:int}
      */
-    private function computeDurationKpis(EloquentBuilder $query, int $total): array {
+    private function computeDurationKpis(EloquentBuilder $query, int $total): array
+    {
         $durations = (clone $query)->get(['start_at', 'end_at'])
             /** @phpstan-ignore property.notFound, property.notFound */
-            ->map(fn($r) => $r->start_at && $r->end_at
+            ->map(fn ($r) => $r->start_at && $r->end_at
                 ? (int) $r->start_at->startOfDay()->diffInDays($r->end_at->startOfDay()) + 1
                 : 0);
 
@@ -237,7 +246,8 @@ class DutyController extends Controller {
      * @param  EloquentBuilder<Vacation>  $query
      * @return array{total:int, pending:int, approved:int, rejected:int}
      */
-    private function computeVacationKpis(EloquentBuilder $query): array {
+    private function computeVacationKpis(EloquentBuilder $query): array
+    {
         return [
             'total' => (clone $query)->count(),
             'pending' => (clone $query)->where('status', Vacation::STATUS_PENDING)->count(),

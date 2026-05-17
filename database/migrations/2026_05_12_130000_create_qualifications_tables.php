@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -12,8 +13,10 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void {
+return new class extends Migration
+{
+    public function up(): void
+    {
         // Qualifikationskatalog (org-spezifisch)
         Schema::create('qualifications', function (Blueprint $table): void {
             $table->id();
@@ -48,7 +51,8 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::dropIfExists('shift_type_qualifications');
         Schema::dropIfExists('user_qualifications');
         Schema::dropIfExists('qualifications');

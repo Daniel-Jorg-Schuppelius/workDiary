@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,8 +14,10 @@ namespace Tests\Concerns;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
-trait UsesLegacySqlite {
-    protected function useLegacySqlite(): void {
+trait UsesLegacySqlite
+{
+    protected function useLegacySqlite(): void
+    {
         Config::set('database.connections.legacy', [
             'driver' => 'sqlite',
             'database' => ':memory:',

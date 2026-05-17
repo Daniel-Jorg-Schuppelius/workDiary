@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,7 +19,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class MilestoneTest extends TestCase {
+class MilestoneTest extends TestCase
+{
     use RefreshDatabase;
     use WithOrganization;
 
@@ -26,7 +28,8 @@ class MilestoneTest extends TestCase {
 
     private Project $project;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -42,7 +45,8 @@ class MilestoneTest extends TestCase {
         ]);
     }
 
-    public function test_user_can_create_milestone(): void {
+    public function test_user_can_create_milestone(): void
+    {
         $this->actingAs($this->user)
             ->post(route('projects.milestones.store', $this->project), [
                 'title' => 'Sprint 1',
@@ -59,7 +63,8 @@ class MilestoneTest extends TestCase {
         ]);
     }
 
-    public function test_owner_can_update_milestone(): void {
+    public function test_owner_can_update_milestone(): void
+    {
         $milestone = Milestone::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -83,7 +88,8 @@ class MilestoneTest extends TestCase {
         ]);
     }
 
-    public function test_non_owner_cannot_update_milestone(): void {
+    public function test_non_owner_cannot_update_milestone(): void
+    {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $milestone = Milestone::create([
             'organization_id' => $this->organization->id,
@@ -102,7 +108,8 @@ class MilestoneTest extends TestCase {
             ->assertForbidden();
     }
 
-    public function test_non_owner_cannot_delete_milestone(): void {
+    public function test_non_owner_cannot_delete_milestone(): void
+    {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $milestone = Milestone::create([
             'organization_id' => $this->organization->id,
@@ -118,7 +125,8 @@ class MilestoneTest extends TestCase {
             ->assertForbidden();
     }
 
-    public function test_owner_can_delete_milestone(): void {
+    public function test_owner_can_delete_milestone(): void
+    {
         $milestone = Milestone::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,

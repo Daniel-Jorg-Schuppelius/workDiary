@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,14 +19,17 @@ use App\Services\Compliance\ComplianceViolation;
 use App\Services\Compliance\ResolvesShiftTiming;
 
 /** ArbZG §3: max. Tagesarbeitszeit (Standard 10h, ggf. erweitert auf 8h Durchschnitt). */
-final class MaxDailyHoursRule implements ComplianceRule {
+final class MaxDailyHoursRule implements ComplianceRule
+{
     use ResolvesShiftTiming;
 
-    public function key(): string {
+    public function key(): string
+    {
         return 'max_daily_hours';
     }
 
-    public function check(ScheduledShift $shift, array $settings): array {
+    public function check(ScheduledShift $shift, array $settings): array
+    {
         $maxH = (float) $settings['max_hours_day'];
         $iv = $this->resolveInterval($shift);
         if ($iv === null) {
@@ -39,7 +43,7 @@ final class MaxDailyHoursRule implements ComplianceRule {
             ->where('user_id', $shift->user_id)
             ->where('status', '!=', ScheduledShift::STATUS_CANCELLED)
             ->whereDate('date', $dateStr)
-            ->when($shift->id, fn($q) => $q->where('id', '!=', $shift->id))
+            ->when($shift->id, fn ($q) => $q->where('id', '!=', $shift->id))
             ->with('shiftType')
             ->get();
 
@@ -58,7 +62,7 @@ final class MaxDailyHoursRule implements ComplianceRule {
                         'h' => number_format($hours, 1, ',', ''),
                         'max' => $maxH,
                     ]),
-                    relatedShiftIds: $sameDay->pluck('id')->map(fn($id) => (int) $id)->all(),
+                    relatedShiftIds: $sameDay->pluck('id')->map(fn ($id) => (int) $id)->all(),
                     context: ['hours' => $hours, 'max' => $maxH],
                 ),
             ];

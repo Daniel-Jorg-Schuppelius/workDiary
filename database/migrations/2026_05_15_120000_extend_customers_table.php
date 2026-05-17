@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,8 +19,10 @@ use Illuminate\Support\Facades\Schema;
  *  - mehrere Kontaktpersonen als JSON
  *  - automatischer Suchindex auf Name
  */
-return new class extends Migration {
-    public function up(): void {
+return new class extends Migration
+{
+    public function up(): void
+    {
         Schema::table('customers', function (Blueprint $table): void {
             $table->string('address_street', 255)->nullable()->after('address');
             $table->string('address_zip', 32)->nullable()->after('address_street');
@@ -30,7 +33,8 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::table('customers', function (Blueprint $table): void {
             $table->dropIndex('customers_name_idx');
             $table->dropColumn(['address_street', 'address_zip', 'address_city', 'contact_persons']);

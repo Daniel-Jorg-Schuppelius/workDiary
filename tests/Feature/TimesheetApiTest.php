@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,7 +20,8 @@ use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class TimesheetApiTest extends TestCase {
+class TimesheetApiTest extends TestCase
+{
     use RefreshDatabase;
     use WithOrganization;
 
@@ -27,7 +29,8 @@ class TimesheetApiTest extends TestCase {
 
     private Project $project;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -40,7 +43,8 @@ class TimesheetApiTest extends TestCase {
         ]);
     }
 
-    public function test_create_and_list_timesheet_via_api(): void {
+    public function test_create_and_list_timesheet_via_api(): void
+    {
         Sanctum::actingAs($this->user);
 
         $this->postJson(route('api.timesheets.store', $this->project), [
@@ -55,7 +59,8 @@ class TimesheetApiTest extends TestCase {
             ->assertJsonCount(1, 'data');
     }
 
-    public function test_unauthenticated_request_is_rejected(): void {
+    public function test_unauthenticated_request_is_rejected(): void
+    {
         $this->getJson(route('api.timesheets.index'))->assertUnauthorized();
     }
 }

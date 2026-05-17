@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,7 +19,8 @@ use Illuminate\Contracts\Session\Session;
  * reports and invoice flows. Persisted in the session so the choice
  * survives navigation between pages.
  */
-class DateRangeContext {
+class DateRangeContext
+{
     public const PRESET_TODAY = 'today';
 
     public const PRESET_THIS_WEEK = 'this_week';
@@ -56,13 +58,13 @@ class DateRangeContext {
 
     private const KEY_TO = 'ui.daterange.to';
 
-    public function __construct(private readonly Session $session) {
-    }
+    public function __construct(private readonly Session $session) {}
 
     /**
      * @return array{from: CarbonImmutable, to: CarbonImmutable, preset: string, label: string, unit: string, isoWeekLabel: ?string}
      */
-    public function current(): array {
+    public function current(): array
+    {
         $preset = (string) $this->session->get(self::KEY_PRESET, self::PRESET_THIS_MONTH);
         if (! in_array($preset, self::PRESETS, true)) {
             $preset = self::PRESET_THIS_MONTH;
@@ -98,7 +100,8 @@ class DateRangeContext {
      * entspricht (z.B. „Letzter Monat“ wird zu Custom). Bei Custom-Ranges
      * wird um die Länge des Ranges verschoben.
      */
-    public function shift(int $direction): void {
+    public function shift(int $direction): void
+    {
         $direction = $direction >= 0 ? 1 : -1;
         $state = $this->current();
         $from = $state['from'];
@@ -135,7 +138,8 @@ class DateRangeContext {
         $this->session->put(self::KEY_TO, $newTo->toDateString());
     }
 
-    private function unitFor(string $preset, CarbonImmutable $from, CarbonImmutable $to): string {
+    private function unitFor(string $preset, CarbonImmutable $from, CarbonImmutable $to): string
+    {
         switch ($preset) {
             case self::PRESET_TODAY:
                 return 'day';
@@ -164,7 +168,8 @@ class DateRangeContext {
         return 'custom';
     }
 
-    private function isoWeekLabel(CarbonImmutable $from, CarbonImmutable $to): ?string {
+    private function isoWeekLabel(CarbonImmutable $from, CarbonImmutable $to): ?string
+    {
         if (! $from->equalTo($from->startOfWeek()) || ! $to->equalTo($from->endOfWeek())) {
             return null;
         }
@@ -176,7 +181,8 @@ class DateRangeContext {
      * Persist a new range. For non-custom presets the dates are derived
      * dynamically and the supplied $from/$to are ignored.
      */
-    public function set(string $preset, ?string $from = null, ?string $to = null): void {
+    public function set(string $preset, ?string $from = null, ?string $to = null): void
+    {
         if (! in_array($preset, self::PRESETS, true)) {
             $preset = self::PRESET_THIS_MONTH;
         }
@@ -199,7 +205,8 @@ class DateRangeContext {
     /**
      * @return array{0: CarbonImmutable, 1: CarbonImmutable}
      */
-    private function resolvePreset(string $preset): array {
+    private function resolvePreset(string $preset): array
+    {
         $now = CarbonImmutable::now();
 
         return match ($preset) {
@@ -217,7 +224,8 @@ class DateRangeContext {
         };
     }
 
-    private function parseDate(string $raw): ?CarbonImmutable {
+    private function parseDate(string $raw): ?CarbonImmutable
+    {
         if ($raw === '') {
             return null;
         }
@@ -228,7 +236,8 @@ class DateRangeContext {
         }
     }
 
-    private function labelFor(string $preset, CarbonImmutable $from, CarbonImmutable $to): string {
+    private function labelFor(string $preset, CarbonImmutable $from, CarbonImmutable $to): string
+    {
         return match ($preset) {
             self::PRESET_TODAY => __('Heute'),
             self::PRESET_THIS_WEEK => __('Diese Woche'),
@@ -238,7 +247,7 @@ class DateRangeContext {
             self::PRESET_LAST_7_DAYS => __('Letzte 7 Tage'),
             self::PRESET_LAST_30_DAYS => __('Letzte 30 Tage'),
             self::PRESET_LAST_90_DAYS => __('Letzte 90 Tage'),
-            default => $from->format('d.m.Y') . ' – ' . $to->format('d.m.Y'),
+            default => $from->format('d.m.Y').' – '.$to->format('d.m.Y'),
         };
     }
 }

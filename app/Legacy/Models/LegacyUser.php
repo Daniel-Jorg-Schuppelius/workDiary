@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -30,7 +31,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyUser whereUname($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyUser whereUserpw($value)
  */
-class LegacyUser extends Model {
+class LegacyUser extends Model
+{
     protected $connection = 'legacy';
 
     protected $table = 'user';
@@ -41,7 +43,8 @@ class LegacyUser extends Model {
 
     protected $primaryKey = 'id';
 
-    public function entries(): HasMany {
+    public function entries(): HasMany
+    {
         return $this->hasMany(LegacyDiaryEntry::class, 'user', 'id');
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,6 +18,7 @@ use App\Models\Customer;
  * with the external system (e.g. as a Lexoffice contact). The returned string
  * is the external id, persisted via ExternalReference.
  */
-interface ContactSyncer {
+interface ContactSyncer
+{
     public function pushContact(Customer $customer): string;
 }

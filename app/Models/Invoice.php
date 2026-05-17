@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -42,7 +43,8 @@ use Illuminate\Support\Carbon;
  * @property-read Customer $customer
  * @property-read Project|null $project
  */
-class Invoice extends Model {
+class Invoice extends Model
+{
     use BelongsToOrganization;
 
     /** @use HasFactory<Factory<static>> */
@@ -77,7 +79,8 @@ class Invoice extends Model {
         'created_by',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'issued_on' => 'date',
             'due_on' => 'date',
@@ -90,21 +93,25 @@ class Invoice extends Model {
     }
 
     /** @return BelongsTo<Customer, $this> */
-    public function customer(): BelongsTo {
+    public function customer(): BelongsTo
+    {
         return $this->belongsTo(Customer::class);
     }
 
     /** @return BelongsTo<Project, $this> */
-    public function project(): BelongsTo {
+    public function project(): BelongsTo
+    {
         return $this->belongsTo(Project::class);
     }
 
     /** @return HasMany<InvoiceItem, $this> */
-    public function items(): HasMany {
+    public function items(): HasMany
+    {
         return $this->hasMany(InvoiceItem::class)->orderBy('position');
     }
 
-    public function recalculate(): void {
+    public function recalculate(): void
+    {
         $sub = 0.0;
         foreach ($this->items as $item) {
             $sub += (float) $item->amount;

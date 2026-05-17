@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,7 +15,8 @@ namespace App\Services\Compliance;
 
 use App\Models\ScheduledShift;
 
-interface ComplianceRule {
+interface ComplianceRule
+{
     /** Eindeutiger Schalter-Key in `compliance.rules`. */
     public function key(): string;
 

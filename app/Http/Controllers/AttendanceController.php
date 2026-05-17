@@ -1,0 +1,154 @@
+<?php
+
+/*
+ * Created on   : Sun May 17 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : AttendanceController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Http\Controllers;
+
+use App\Models\Attendance;
+use App\Services\Attendance\AttendanceClockService;
+use Carbon\CarbonImmutable;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
+use RuntimeException;
+
+class AttendanceController extends Controller
+{
+    public function __construct(protected AttendanceClockService $clock) {}
+
+    /**
+     * Lists attendances for the authenticated user (current month by default).
+     */
+    public function index(Request $request): View
+    {
+        Gate::authorize('viewAny', Attendance::class);
+
+        $from = $request->date('from')?->startOfDay()
+            ?? CarbonImmutable::now()->startOfMonth();
+        $to = $request->date('to')?->endOfDay()
+            ?? CarbonImmutable::now()->endOfMonth();
+
+        $attendances = Attendance::query()
+            ->where('user_id', Auth::id())
+            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->orderByDesc('started_at')
+            ->paginate(50)
+            ->withQueryString();
+
+        return view('attendances.index', [
+            'attendances' => $attendances,
+            'current' => $this->clock->current(Auth::user()),
+            'from' => $from,
+            'to' => $to,
+        ]);
+    }
+
+    /**
+     * Tiny widget endpoint returning the current open attendance (for header).
+     */
+    public function current(): View
+    {
+        $user = Auth::user();
+
+        return view('attendances._panel', [
+            'current' => $user ? $this->clock->current($user) : null,
+        ]);
+    }
+
+    public function clockIn(Request $request): RedirectResponse
+    {
+        Gate::authorize('create', Attendance::class);
+
+        $data = $request->validate([
+            'lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180'],
+            'device' => ['nullable', 'string', 'max:64'],
+            'note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        try {
+            $this->clock->clockIn(Auth::user(), $data);
+        } catch (RuntimeException $e) {
+            return back()->with('error', __('Bereits eingestempelt.'));
+        }
+
+        return back()->with('success', __('Eingestempelt.'));
+    }
+
+    public function clockOut(Request $request): RedirectResponse
+    {
+        Gate::authorize('create', Attendance::class);
+
+        $data = $request->validate([
+            'lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180'],
+            'device' => ['nullable', 'string', 'max:64'],
+            'note' => ['nullable', 'string', 'max:1000'],
+            'break_minutes' => ['nullable', 'integer', 'min:0', 'max:600'],
+        ]);
+
+        $closed = $this->clock->clockOut(Auth::user(), $data);
+        if (! $closed) {
+            return back()->with('error', __('Keine offene Stempelung gefunden.'));
+        }
+
+        return back()->with('success', __('Ausgestempelt.'));
+    }
+
+    public function break(Request $request): RedirectResponse
+    {
+        Gate::authorize('create', Attendance::class);
+
+        $data = $request->validate([
+            'minutes' => ['required', 'integer', 'min:1', 'max:600'],
+        ]);
+
+        $this->clock->addBreak(Auth::user(), (int) $data['minutes']);
+
+        return back()->with('success', __('Pause hinzugefügt.'));
+    }
+
+    public function cancel(): RedirectResponse
+    {
+        Gate::authorize('create', Attendance::class);
+        $this->clock->cancel(Auth::user());
+
+        return back()->with('success', __('Stempelung verworfen.'));
+    }
+
+    public function update(Request $request, Attendance $attendance): RedirectResponse
+    {
+        Gate::authorize('update', $attendance);
+
+        $data = $request->validate([
+            'started_at' => ['required', 'date'],
+            'ended_at' => ['nullable', 'date', 'after:started_at'],
+            'break_minutes_manual' => ['nullable', 'integer', 'min:0', 'max:600'],
+            'note' => ['nullable', 'string', 'max:1000'],
+            'status' => ['nullable', 'string', 'in:'.implode(',', Attendance::STATUSES)],
+        ]);
+
+        $attendance->fill($data);
+        $attendance->updated_by = Auth::id();
+        $attendance->save();
+
+        return back()->with('success', __('Stempelung aktualisiert.'));
+    }
+
+    public function destroy(Attendance $attendance): RedirectResponse
+    {
+        Gate::authorize('delete', $attendance);
+        $attendance->delete();
+
+        return back()->with('success', __('Stempelung gelöscht.'));
+    }
+}

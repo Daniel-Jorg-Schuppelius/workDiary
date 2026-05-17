@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,11 +20,13 @@ use App\Models\TimeEntry;
  * A non-null fixed_rate on the entry overrides hourly calculation and yields a
  * flat fee regardless of duration.
  */
-class RateCalculator {
+class RateCalculator
+{
     /**
      * Resolve the effective hourly rate for the given entry.
      */
-    public function resolveHourlyRate(TimeEntry $entry): ?float {
+    public function resolveHourlyRate(TimeEntry $entry): ?float
+    {
         if ($entry->hourly_rate !== null) {
             return (float) $entry->hourly_rate;
         }
@@ -54,7 +57,8 @@ class RateCalculator {
     /**
      * Resolve the effective internal (cost) rate for the given entry.
      */
-    public function resolveInternalRate(TimeEntry $entry): ?float {
+    public function resolveInternalRate(TimeEntry $entry): ?float
+    {
         $user = $entry->user;
         if ($user && $user->internal_rate !== null) {
             return (float) $user->internal_rate;
@@ -82,7 +86,8 @@ class RateCalculator {
      * Determine whether the entry should be considered billable, taking the
      * project/customer billable flags into account.
      */
-    public function isBillable(TimeEntry $entry): bool {
+    public function isBillable(TimeEntry $entry): bool
+    {
         if (! $entry->billable) {
             return false;
         }
@@ -106,7 +111,8 @@ class RateCalculator {
      *
      * @return array{rate: float, internal_rate: float, hourly_rate: float|null}
      */
-    public function compute(TimeEntry $entry): array {
+    public function compute(TimeEntry $entry): array
+    {
         $hours = ((int) $entry->minutes) / 60.0;
 
         if ($entry->fixed_rate !== null) {

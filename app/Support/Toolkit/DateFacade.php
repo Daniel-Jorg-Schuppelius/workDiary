@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Sat May 16 2026
  * Author       : Daniel Jörg Schuppelius
@@ -24,34 +25,42 @@ use DateTimeInterface;
  * App-Code soll für nicht-Eloquent Datumsoperationen diese Facade nutzen
  * (statt direktem Carbon-Code mit unklarem Verhalten an Format-Grenzen).
  */
-final class DateFacade {
-    public static function tryParse(string $value): ?DateTimeImmutable {
+final class DateFacade
+{
+    public static function tryParse(string $value): ?DateTimeImmutable
+    {
         return DateHelper::parseFlexible($value);
     }
 
-    public static function isValid(string $value, DateTimeFormat $preferredFormat = DateTimeFormat::DE): bool {
+    public static function isValid(string $value, DateTimeFormat $preferredFormat = DateTimeFormat::DE): bool
+    {
         $format = null;
 
         return DateHelper::isDate($value, $format, $preferredFormat);
     }
 
-    public static function isWeekend(DateTimeInterface $date): bool {
+    public static function isWeekend(DateTimeInterface $date): bool
+    {
         return DateHelper::isWeekend($date);
     }
 
-    public static function diffInDays(DateTimeInterface $start, DateTimeInterface $end): int {
+    public static function diffInDays(DateTimeInterface $start, DateTimeInterface $end): int
+    {
         return DateHelper::diffInDays($start, $end);
     }
 
-    public static function isToday(DateTimeInterface $date): bool {
+    public static function isToday(DateTimeInterface $date): bool
+    {
         return DateHelper::isToday($date);
     }
 
-    public static function isPast(DateTimeInterface $date): bool {
+    public static function isPast(DateTimeInterface $date): bool
+    {
         return DateHelper::isPast($date);
     }
 
-    public static function isFuture(DateTimeInterface $date): bool {
+    public static function isFuture(DateTimeInterface $date): bool
+    {
         return DateHelper::isFuture($date);
     }
 
@@ -60,7 +69,8 @@ final class DateFacade {
      *
      * @return list<string>
      */
-    public static function weekdayAbbreviations(string $locale = 'de', bool $long = false): array {
+    public static function weekdayAbbreviations(string $locale = 'de', bool $long = false): array
+    {
         $days = [
             Weekday::MONDAY,
             Weekday::TUESDAY,

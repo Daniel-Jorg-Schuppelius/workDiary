@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -50,7 +51,7 @@ Route::middleware('auth')->group(function (): void {
 
     // Read-only-Routen (immer erlaubt)
     Route::get('legacy/diary/week', [LegacyDiaryController::class, 'week'])->name('legacy.diary.week');
-    Route::get('legacy/overview', fn() => redirect()->route('legacy.callcenter.notdienst'))->name('legacy.overview.index');
+    Route::get('legacy/overview', fn () => redirect()->route('legacy.callcenter.notdienst'))->name('legacy.overview.index');
     Route::get('legacy/archive', [LegacyArchiveController::class, 'index'])->name('legacy.archive.index');
     Route::get('legacy/archive/week', [LegacyArchiveController::class, 'week'])->name('legacy.archive.week');
     Route::get('legacy/archive/{entry}', [LegacyArchiveController::class, 'show'])

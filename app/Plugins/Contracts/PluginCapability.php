@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,7 +15,8 @@ namespace App\Plugins\Contracts;
  * Capability identifiers used by plugins to advertise what they can do.
  * Plugins may implement zero or more capability interfaces.
  */
-final class PluginCapability {
+final class PluginCapability
+{
     /** Plugin can push customer contact data to an external system. */
     public const CONTACT_SYNC = 'contact_sync';
 

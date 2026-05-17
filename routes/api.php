@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -9,6 +10,7 @@
  */
 
 use App\Http\Controllers\Api\AttachmentController;
+use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\DashboardController;
@@ -90,6 +92,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('stopwatch', [StopwatchController::class, 'current'])->name('api.stopwatch.current');
     Route::post('stopwatch/start', [StopwatchController::class, 'start'])->name('api.stopwatch.start');
     Route::post('stopwatch/stop', [StopwatchController::class, 'stop'])->name('api.stopwatch.stop');
+
+    Route::get('attendance/current', [AttendanceController::class, 'current'])->name('api.attendance.current');
+    Route::post('attendance/clock-in', [AttendanceController::class, 'clockIn'])->name('api.attendance.clock-in');
+    Route::post('attendance/clock-out', [AttendanceController::class, 'clockOut'])->name('api.attendance.clock-out');
 
     Route::get('flex/summary', [FlexController::class, 'summary'])->name('api.flex.summary');
 

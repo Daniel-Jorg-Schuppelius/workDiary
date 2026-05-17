@@ -11,6 +11,11 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+/* Alpine.js: blendet Elemente mit x-cloak aus, bis Alpine sie initialisiert hat. */
+[x-cloak] {
+    display: none !important;
+}
+
 @theme {
     --font-sans:
         "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif,

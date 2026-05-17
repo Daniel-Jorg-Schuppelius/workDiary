@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -52,7 +53,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $archived_at
  * @property int|null $created_by
  */
-class Customer extends Model {
+class Customer extends Model
+{
     use BelongsToOrganization;
     use HasAttachments;
 
@@ -78,6 +80,8 @@ class Customer extends Model {
         'address_street',
         'address_zip',
         'address_city',
+        'address_lat',
+        'address_lng',
         'country',
         'currency',
         'timezone',
@@ -91,17 +95,21 @@ class Customer extends Model {
         'created_by',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'billable' => 'boolean',
             'archived_at' => 'datetime',
             'hourly_rate' => 'decimal:2',
             'internal_rate' => 'decimal:2',
+            'address_lat' => 'decimal:7',
+            'address_lng' => 'decimal:7',
             'contact_persons' => 'array',
         ];
     }
 
-    protected static function booted(): void {
+    protected static function booted(): void
+    {
         static::creating(function (self $customer): void {
             if ($customer->number === null || $customer->number === '') {
                 $customer->number = self::nextNumberFor($customer->organization_id);
@@ -112,29 +120,33 @@ class Customer extends Model {
     /**
      * Berechnet die nächste freie Kundennummer im Schema "K-XXXX" für die Organisation.
      */
-    public static function nextNumberFor(?int $organizationId): string {
+    public static function nextNumberFor(?int $organizationId): string
+    {
         $max = self::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
             ->where('number', 'like', 'K-%')
             ->pluck('number')
-            ->map(static fn($n) => (int) preg_replace('/\D/', '', (string) $n))
+            ->map(static fn ($n) => (int) preg_replace('/\D/', '', (string) $n))
             ->max() ?? 0;
 
         return sprintf('K-%04d', $max + 1);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function creator(): BelongsTo {
+    public function creator(): BelongsTo
+    {
         return $this->belongsTo(User::class, 'created_by');
     }
 
     /** @return HasMany<Project, $this> */
-    public function projects(): HasMany {
+    public function projects(): HasMany
+    {
         return $this->hasMany(Project::class);
     }
 
-    public function defaultProject(): ?Project {
+    public function defaultProject(): ?Project
+    {
         return $this->projects()->where('is_default', true)->first();
     }
 
@@ -143,7 +155,8 @@ class Customer extends Model {
      * Wird vom CustomerObserver bei `created` aufgerufen und steht auch
      * UI-/Service-seitig als Fallback bereit (z. B. Quick-Stundenzettel).
      */
-    public function defaultProjectOrCreate(): Project {
+    public function defaultProjectOrCreate(): Project
+    {
         $existing = $this->defaultProject();
         if ($existing instanceof Project) {
             return $existing;
@@ -164,19 +177,23 @@ class Customer extends Model {
     }
 
     /** @phpstan-ignore-next-line missingType.generics */
-    public function externalReferences(): MorphMany {
+    public function externalReferences(): MorphMany
+    {
         return $this->morphMany(ExternalReference::class, 'referenceable');
     }
 
-    public function isArchived(): bool {
+    public function isArchived(): bool
+    {
         return $this->archived_at !== null;
     }
 
-    public function hasProjects(): bool {
+    public function hasProjects(): bool
+    {
         return $this->projects()->exists();
     }
 
-    public function hasNonDefaultProjects(): bool {
+    public function hasNonDefaultProjects(): bool
+    {
         return $this->projects()->where('is_default', false)->exists();
     }
 
@@ -186,7 +203,8 @@ class Customer extends Model {
      *
      * @return array{name: ?string, email: ?string, phone: ?string}
      */
-    public function primaryContact(): array {
+    public function primaryContact(): array
+    {
         $persons = $this->contact_persons ?? [];
         $primary = collect($persons)->firstWhere('primary', true) ?? ($persons[0] ?? []);
 
@@ -203,12 +221,13 @@ class Customer extends Model {
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
-    public function scopeSearch(Builder $query, ?string $term): Builder {
+    public function scopeSearch(Builder $query, ?string $term): Builder
+    {
         $term = trim((string) $term);
         if ($term === '') {
             return $query;
         }
-        $like = '%' . $term . '%';
+        $like = '%'.$term.'%';
 
         return $query->where(function (Builder $q) use ($like): void {
             $q->where('name', 'like', $like)
@@ -224,7 +243,8 @@ class Customer extends Model {
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
-    public function scopeWithUnexportedBillable(Builder $query): Builder {
+    public function scopeWithUnexportedBillable(Builder $query): Builder
+    {
         return $query->whereHas('projects.timeEntries', function (Builder $q): void {
             $q->where('billable', true)->where('exported', false);
         });

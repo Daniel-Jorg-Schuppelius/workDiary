@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,7 +14,8 @@ namespace App\Services\Material;
 use App\Models\Material;
 use Illuminate\Support\Collection;
 
-interface MaterialProviderInterface {
+interface MaterialProviderInterface
+{
     public function name(): string;
 
     /**

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,8 +15,10 @@ use App\Models\Material;
 use App\Models\Organization;
 use Illuminate\Database\Seeder;
 
-class MaterialSeeder extends Seeder {
-    public function run(): void {
+class MaterialSeeder extends Seeder
+{
+    public function run(): void
+    {
         $org = Organization::where('slug', 'default')->first();
         if (! $org) {
             return;

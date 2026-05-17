@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,17 +19,20 @@ use Illuminate\Support\Facades\Http;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class LexofficeArticleSyncTest extends TestCase {
+class LexofficeArticleSyncTest extends TestCase
+{
     use RefreshDatabase;
     use WithOrganization;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
     }
 
-    public function test_sync_creates_articles_from_paginated_response(): void {
+    public function test_sync_creates_articles_from_paginated_response(): void
+    {
         Http::fakeSequence('https://api.lexoffice.io/v1/articles*')
             ->push([
                 'content' => [
@@ -78,7 +82,8 @@ class LexofficeArticleSyncTest extends TestCase {
         ]);
     }
 
-    public function test_sync_archives_missing_articles_and_is_idempotent(): void {
+    public function test_sync_archives_missing_articles_and_is_idempotent(): void
+    {
         $callCount = 0;
         Http::fake(function () use (&$callCount) {
             $callCount++;

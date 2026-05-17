@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,38 +19,45 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class QualificationTest extends TestCase {
+class QualificationTest extends TestCase
+{
     use RefreshDatabase;
     use WithOrganization;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
     }
 
-    private function admin(): User {
+    private function admin(): User
+    {
         return User::factory()->admin()->create(['organization_id' => $this->organization->id]);
     }
 
-    private function regularUser(): User {
+    private function regularUser(): User
+    {
         return User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
     // ── Zugriffskontrolle ────────────────────────────────────────────────────
 
-    public function test_guest_cannot_access_qualifications(): void {
+    public function test_guest_cannot_access_qualifications(): void
+    {
         $this->get(route('qualifications.index'))->assertRedirect(route('login'));
     }
 
-    public function test_org_member_can_view_index(): void {
+    public function test_org_member_can_view_index(): void
+    {
         $this->actingAs($this->regularUser())
             ->get(route('qualifications.index'))
             ->assertOk()
             ->assertViewIs('qualifications.index');
     }
 
-    public function test_non_admin_cannot_open_create_form(): void {
+    public function test_non_admin_cannot_open_create_form(): void
+    {
         $this->actingAs($this->regularUser())
             ->get(route('qualifications.create'))
             ->assertForbidden();
@@ -57,7 +65,8 @@ class QualificationTest extends TestCase {
 
     // ── CRUD ─────────────────────────────────────────────────────────────────
 
-    public function test_admin_can_create_qualification(): void {
+    public function test_admin_can_create_qualification(): void
+    {
         $this->actingAs($this->admin())
             ->post(route('qualifications.store'), [
                 'name' => 'Erste Hilfe',
@@ -73,7 +82,8 @@ class QualificationTest extends TestCase {
         ]);
     }
 
-    public function test_name_must_be_unique_within_org(): void {
+    public function test_name_must_be_unique_within_org(): void
+    {
         Qualification::factory()->create([
             'organization_id' => $this->organization->id,
             'name' => 'Doppelt',
@@ -87,7 +97,8 @@ class QualificationTest extends TestCase {
             ->assertSessionHasErrors('name');
     }
 
-    public function test_admin_can_update_qualification(): void {
+    public function test_admin_can_update_qualification(): void
+    {
         $qual = Qualification::factory()->create(['organization_id' => $this->organization->id]);
 
         $this->actingAs($this->admin())
@@ -100,7 +111,8 @@ class QualificationTest extends TestCase {
         $this->assertDatabaseHas('qualifications', ['id' => $qual->id, 'name' => 'Aktualisiert']);
     }
 
-    public function test_admin_can_delete_qualification(): void {
+    public function test_admin_can_delete_qualification(): void
+    {
         $qual = Qualification::factory()->create(['organization_id' => $this->organization->id]);
 
         $this->actingAs($this->admin())
@@ -110,7 +122,8 @@ class QualificationTest extends TestCase {
         $this->assertDatabaseMissing('qualifications', ['id' => $qual->id]);
     }
 
-    public function test_non_admin_cannot_delete(): void {
+    public function test_non_admin_cannot_delete(): void
+    {
         $qual = Qualification::factory()->create(['organization_id' => $this->organization->id]);
 
         $this->actingAs($this->regularUser())
@@ -120,7 +133,8 @@ class QualificationTest extends TestCase {
 
     // ── Mandanten-Isolierung ─────────────────────────────────────────────────
 
-    public function test_qualifications_from_other_org_not_visible(): void {
+    public function test_qualifications_from_other_org_not_visible(): void
+    {
         $otherOrg = Organization::factory()->create();
         Qualification::factory()->create([
             'organization_id' => $otherOrg->id,

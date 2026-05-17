@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Adds (or skips if present) a standard file header to all project PHP files.
  * - License: AGPL-3.0-or-later
@@ -16,24 +17,27 @@ $marker = 'Author       : Daniel Jörg Schuppelius';
 
 $todayDate = date('D M d Y');
 
-function gitCreatedDate(string $relPath, string $fallback): string {
+function gitCreatedDate(string $relPath, string $fallback): string
+{
     $cmd = sprintf(
         "git log --diff-filter=A --follow --format='%%ad' --date=format:'%%a %%b %%d %%Y' -- %s 2>/dev/null | tail -1",
         escapeshellarg($relPath)
     );
     $out = trim((string) shell_exec($cmd));
+
     return $out !== '' ? $out : $fallback;
 }
 
-function buildHeader(string $filename, string $date): string {
+function buildHeader(string $filename, string $date): string
+{
     return "/*\n"
-        . " * Created on   : {$date}\n"
-        . " * Author       : Daniel Jörg Schuppelius\n"
-        . " * Author Uri   : https://schuppelius.org\n"
-        . " * Filename     : {$filename}\n"
-        . " * License      : AGPL-3.0-or-later\n"
-        . " * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html\n"
-        . " */\n";
+        ." * Created on   : {$date}\n"
+        ." * Author       : Daniel Jörg Schuppelius\n"
+        ." * Author Uri   : https://schuppelius.org\n"
+        ." * Filename     : {$filename}\n"
+        ." * License      : AGPL-3.0-or-later\n"
+        ." * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html\n"
+        ." */\n";
 }
 
 $processed = 0;
@@ -42,14 +46,14 @@ $skipped = 0;
 $updated = 0;
 
 foreach ($dirs as $dir) {
-    $absDir = $root . '/' . $dir;
-    if (!is_dir($absDir)) {
+    $absDir = $root.'/'.$dir;
+    if (! is_dir($absDir)) {
         continue;
     }
     $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($absDir, RecursiveDirectoryIterator::SKIP_DOTS));
     foreach ($rii as $file) {
         /** @var SplFileInfo $file */
-        if (!$file->isFile() || $file->getExtension() !== 'php') {
+        if (! $file->isFile() || $file->getExtension() !== 'php') {
             continue;
         }
         $path = $file->getPathname();
@@ -76,12 +80,14 @@ foreach ($dirs as $dir) {
             } else {
                 $skipped++;
             }
+
             continue;
         }
 
         // Must begin with <?php opener.
-        if (!preg_match('/^<\?php\s*\R/', $content, $m)) {
+        if (! preg_match('/^<\?php\s*\R/', $content, $m)) {
             $skipped++;
+
             continue;
         }
 
@@ -92,7 +98,7 @@ foreach ($dirs as $dir) {
         $rest = substr($content, strlen($opener));
         // Ensure exactly one blank line between header and following code.
         $rest = ltrim($rest, "\r\n");
-        $new = $opener . $header . "\n" . $rest;
+        $new = $opener.$header."\n".$rest;
         file_put_contents($path, $new);
         $inserted++;
     }

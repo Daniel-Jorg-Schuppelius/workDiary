@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,11 +18,13 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use RuntimeException;
 
-class Stopwatch {
+class Stopwatch
+{
     /**
      * Liefert den aktuell laufenden Eintrag des Users (started_at gesetzt, ended_at null).
      */
-    public function current(User $user): ?TimeEntry {
+    public function current(User $user): ?TimeEntry
+    {
         return TimeEntry::query()
             ->where('user_id', $user->id)
             ->whereNotNull('started_at')
@@ -30,7 +33,8 @@ class Stopwatch {
             ->first();
     }
 
-    public function start(User $user, Timesheet $timesheet, ?int $taskId = null, ?string $description = null): TimeEntry {
+    public function start(User $user, Timesheet $timesheet, ?int $taskId = null, ?string $description = null): TimeEntry
+    {
         if ($this->current($user)) {
             throw new RuntimeException('A running entry already exists.');
         }
@@ -56,7 +60,8 @@ class Stopwatch {
         ]);
     }
 
-    public function stop(User $user): ?TimeEntry {
+    public function stop(User $user): ?TimeEntry
+    {
         $entry = $this->current($user);
         if (! $entry) {
             return null;

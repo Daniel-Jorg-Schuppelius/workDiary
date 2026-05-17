@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,8 +17,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 
 /** @implements Scope<Model> */
-class OrganizationScope implements Scope {
-    public function apply(Builder $builder, Model $model): void {
+class OrganizationScope implements Scope
+{
+    public function apply(Builder $builder, Model $model): void
+    {
         if (! app()->bound('currentOrganization')) {
             return;
         }
@@ -26,7 +29,7 @@ class OrganizationScope implements Scope {
         $org = app('currentOrganization');
 
         if ($org instanceof Organization) {
-            $builder->where($model->getTable() . '.organization_id', $org->id);
+            $builder->where($model->getTable().'.organization_id', $org->id);
         }
     }
 }

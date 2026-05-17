@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,17 +22,20 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class ArchiveTest extends TestCase {
+class ArchiveTest extends TestCase
+{
     use RefreshDatabase;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         config()->set('archive.threshold_days', 30);
         app(DateRangeContext::class)->set(DateRangeContext::PRESET_THIS_YEAR);
     }
 
-    public function test_archive_service_archives_old_done_entries_only(): void {
+    public function test_archive_service_archives_old_done_entries_only(): void
+    {
         $user = User::factory()->user()->create();
         $now = CarbonImmutable::parse('2026-04-30 12:00');
 
@@ -59,7 +63,8 @@ class ArchiveTest extends TestCase {
         $this->assertFalse($recentDone->fresh()->is_archived);
     }
 
-    public function test_archive_service_archives_old_shifts_and_assignments(): void {
+    public function test_archive_service_archives_old_shifts_and_assignments(): void
+    {
         $user = User::factory()->user()->create();
         $now = CarbonImmutable::parse('2026-04-30 12:00');
 
@@ -85,7 +90,8 @@ class ArchiveTest extends TestCase {
         $this->assertTrue($oldAssignment->fresh()->is_archived);
     }
 
-    public function test_owner_can_archive_and_restore_entry(): void {
+    public function test_owner_can_archive_and_restore_entry(): void
+    {
         $user = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($user)->create(['status' => -1]);
 
@@ -104,7 +110,8 @@ class ArchiveTest extends TestCase {
         $this->assertNull($entry->fresh()->archived_at);
     }
 
-    public function test_other_user_cannot_archive_foreign_entry(): void {
+    public function test_other_user_cannot_archive_foreign_entry(): void
+    {
         $owner = User::factory()->user()->create();
         $other = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($owner)->create();
@@ -114,7 +121,8 @@ class ArchiveTest extends TestCase {
             ->assertForbidden();
     }
 
-    public function test_admin_can_archive_any_entry(): void {
+    public function test_admin_can_archive_any_entry(): void
+    {
         $admin = User::factory()->admin()->create();
         $owner = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($owner)->create();
@@ -126,7 +134,8 @@ class ArchiveTest extends TestCase {
         $this->assertTrue($entry->fresh()->is_archived);
     }
 
-    public function test_index_excludes_archived_by_default_and_includes_with_filter(): void {
+    public function test_index_excludes_archived_by_default_and_includes_with_filter(): void
+    {
         $user = User::factory()->user()->create();
         DiaryEntry::factory()->for($user)->create(['is_archived' => false, 'content' => 'Sichtbar Eintrag']);
         DiaryEntry::factory()->for($user)->create(['is_archived' => true, 'archived_at' => now(), 'content' => 'Archiviert Eintrag']);
@@ -144,7 +153,8 @@ class ArchiveTest extends TestCase {
             ->assertSee('Archiviert Eintrag');
     }
 
-    public function test_admin_can_trigger_archive_run_route(): void {
+    public function test_admin_can_trigger_archive_run_route(): void
+    {
         $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)
@@ -152,7 +162,8 @@ class ArchiveTest extends TestCase {
             ->assertRedirect();
     }
 
-    public function test_non_admin_cannot_trigger_archive_run_route(): void {
+    public function test_non_admin_cannot_trigger_archive_run_route(): void
+    {
         $user = User::factory()->user()->create();
 
         $this->actingAs($user)
@@ -160,7 +171,8 @@ class ArchiveTest extends TestCase {
             ->assertForbidden();
     }
 
-    public function test_archive_run_command_executes(): void {
+    public function test_archive_run_command_executes(): void
+    {
         $this->artisan('archive:run', ['--days' => 30])
             ->assertSuccessful();
     }

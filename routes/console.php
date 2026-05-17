@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,5 +19,10 @@ Artisan::command('inspire', function () {
 
 Schedule::command('archive:run')
     ->dailyAt((string) config('archive.schedule_at', '03:00'))
+    ->withoutOverlapping()
+    ->onOneServer();
+
+Schedule::command('attendance:close-open')
+    ->everyFifteenMinutes()
     ->withoutOverlapping()
     ->onOneServer();

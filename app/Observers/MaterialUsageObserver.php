@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -12,12 +13,15 @@ namespace App\Observers;
 
 use App\Models\MaterialUsage;
 
-class MaterialUsageObserver {
-    public function saved(MaterialUsage $usage): void {
+class MaterialUsageObserver
+{
+    public function saved(MaterialUsage $usage): void
+    {
         $usage->timesheet?->recalcTotals();
     }
 
-    public function deleted(MaterialUsage $usage): void {
+    public function deleted(MaterialUsage $usage): void
+    {
         $usage->timesheet?->recalcTotals();
     }
 }

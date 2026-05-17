@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,23 +15,26 @@ use App\Models\Material;
 use App\Services\Material\MaterialProviderInterface;
 use Illuminate\Support\Collection;
 
-class LocalMaterialProvider implements MaterialProviderInterface {
-    public function name(): string {
+class LocalMaterialProvider implements MaterialProviderInterface
+{
+    public function name(): string
+    {
         return 'local';
     }
 
     /**
      * @return Collection<int, Material>
      */
-    public function search(string $query, int $limit = 20): Collection {
+    public function search(string $query, int $limit = 20): Collection
+    {
         $q = trim($query);
 
         return Material::query()
             ->where('is_active', true)
             ->when($q !== '', function ($builder) use ($q): void {
                 $builder->where(function ($w) use ($q): void {
-                    $w->where('name', 'like', '%' . $q . '%')
-                        ->orWhere('sku', 'like', '%' . $q . '%');
+                    $w->where('name', 'like', '%'.$q.'%')
+                        ->orWhere('sku', 'like', '%'.$q.'%');
                 });
             })
             ->orderBy('name')
@@ -38,7 +42,8 @@ class LocalMaterialProvider implements MaterialProviderInterface {
             ->get();
     }
 
-    public function sync(): int {
+    public function sync(): int
+    {
         return 0;
     }
 }

@@ -7,9 +7,9 @@
  *
  * Aufruf: php scripts/translate-controllers.php
  */
-$root = __DIR__ . '/..';
-$dir = $root . '/app/Http/Controllers';
-$jsonFile = $root . '/lang/en.json';
+$root = __DIR__.'/..';
+$dir = $root.'/app/Http/Controllers';
+$jsonFile = $root.'/lang/en.json';
 
 $map = [
     'Bereitschaft angelegt.' => 'Standby created.',
@@ -56,10 +56,10 @@ foreach ($rii as $file) {
     foreach ($map as $de => $en) {
         $deEsc = addcslashes($de, "'");
         // 1) Single-quoted: '...'
-        $content = str_replace("'" . $deEsc . "'", "__('" . $deEsc . "')", $content);
+        $content = str_replace("'".$deEsc."'", "__('".$deEsc."')", $content);
         // 2) Double-quoted (selten, aber sicher)
         $deEscD = addcslashes($de, '"');
-        $content = str_replace('"' . $deEscD . '"', "__('" . $deEsc . "')", $content);
+        $content = str_replace('"'.$deEscD.'"', "__('".$deEsc."')", $content);
     }
 
     if ($content !== $original) {
@@ -67,7 +67,7 @@ foreach ($rii as $file) {
         $totalReplacements += $diff;
         $filesChanged++;
         file_put_contents($path, $content);
-        echo '✓ ' . str_replace($root . '/', '', $path) . " (+{$diff})\n";
+        echo '✓ '.str_replace($root.'/', '', $path)." (+{$diff})\n";
     }
 }
 
@@ -81,5 +81,5 @@ foreach ($map as $de => $en) {
     }
 }
 ksort($existing, SORT_NATURAL | SORT_FLAG_CASE);
-file_put_contents($jsonFile, json_encode($existing, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n");
-echo 'lang/en.json: ' . count($existing) . " Keys.\n";
+file_put_contents($jsonFile, json_encode($existing, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)."\n");
+echo 'lang/en.json: '.count($existing)." Keys.\n";

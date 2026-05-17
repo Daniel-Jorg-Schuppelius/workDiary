@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,10 +19,12 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<Milestone>
  */
-class MilestoneFactory extends Factory {
+class MilestoneFactory extends Factory
+{
     protected $model = Milestone::class;
 
-    public function definition(): array {
+    public function definition(): array
+    {
         return [
             'project_id' => Project::factory(),
             'created_by' => User::factory(),
@@ -33,7 +36,8 @@ class MilestoneFactory extends Factory {
         ];
     }
 
-    public function completed(): static {
+    public function completed(): static
+    {
         return $this->state(['is_completed' => true]);
     }
 }

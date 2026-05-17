@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -26,7 +27,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Carbon $start_at
  * @property Carbon $end_at
  */
-class EmergencyAssignment extends Model {
+class EmergencyAssignment extends Model
+{
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
@@ -47,7 +49,8 @@ class EmergencyAssignment extends Model {
         'is_archived',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'start_at' => 'datetime',
             'end_at' => 'datetime',
@@ -56,17 +59,20 @@ class EmergencyAssignment extends Model {
     }
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo {
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 
     /** @return BelongsTo<OnCallShift, $this> */
-    public function shift(): BelongsTo {
+    public function shift(): BelongsTo
+    {
         return $this->belongsTo(OnCallShift::class, 'on_call_shift_id');
     }
 
     /** @return HasMany<DiaryEntry, $this> */
-    public function diaryEntries(): HasMany {
+    public function diaryEntries(): HasMany
+    {
         return $this->hasMany(DiaryEntry::class);
     }
 
@@ -74,7 +80,8 @@ class EmergencyAssignment extends Model {
      * @param  Builder<EmergencyAssignment>  $query
      * @return Builder<EmergencyAssignment>
      */
-    public function scopeOverlapping(Builder $query, \DateTimeInterface $start, \DateTimeInterface $end): Builder {
+    public function scopeOverlapping(Builder $query, \DateTimeInterface $start, \DateTimeInterface $end): Builder
+    {
         return $query->where('start_at', '<', $end)->where('end_at', '>', $start);
     }
 }

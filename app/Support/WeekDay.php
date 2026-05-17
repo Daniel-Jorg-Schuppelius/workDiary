@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Sat May 16 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,7 +18,8 @@ namespace App\Support;
  * Dient zur Vermeidung der Intelephense-Warnung PHP6606
  * (Carbon-Konstanten werden über Kind-Klassen referenziert).
  */
-final class WeekDay {
+final class WeekDay
+{
     public const SUNDAY = 0;
 
     public const MONDAY = 1;

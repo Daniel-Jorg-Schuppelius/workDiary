@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,7 +22,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class DiaryEntry extends Model {
+class DiaryEntry extends Model
+{
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
@@ -47,7 +49,8 @@ class DiaryEntry extends Model {
         'archived_at',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'start_at' => 'datetime',
             'end_at' => 'datetime',
@@ -58,31 +61,37 @@ class DiaryEntry extends Model {
     }
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo {
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 
     /** @return BelongsTo<Project, $this> */
-    public function project(): BelongsTo {
+    public function project(): BelongsTo
+    {
         return $this->belongsTo(Project::class);
     }
 
     /** @return BelongsTo<OnCallShift, $this> */
-    public function shift(): BelongsTo {
+    public function shift(): BelongsTo
+    {
         return $this->belongsTo(OnCallShift::class, 'on_call_shift_id');
     }
 
     /** @return BelongsTo<EmergencyAssignment, $this> */
-    public function emergency(): BelongsTo {
+    public function emergency(): BelongsTo
+    {
         return $this->belongsTo(EmergencyAssignment::class, 'emergency_assignment_id');
     }
 
     /** @return HasMany<Comment, $this> */
-    public function comments(): HasMany {
+    public function comments(): HasMany
+    {
         return $this->hasMany(Comment::class)->orderBy('created_at');
     }
 
-    public function statusLabel(): string {
+    public function statusLabel(): string
+    {
         return match ($this->status) {
             -1 => __('Erledigt'),
             1 => __('Bestätigt'),
@@ -92,7 +101,8 @@ class DiaryEntry extends Model {
         };
     }
 
-    public function statusTone(): string {
+    public function statusTone(): string
+    {
         return match ($this->status) {
             -1 => 'done',
             1 => 'progress',
@@ -103,7 +113,8 @@ class DiaryEntry extends Model {
     }
 
     /** @param Builder<DiaryEntry> $query */
-    public function scopeNotArchived(Builder $query): void {
+    public function scopeNotArchived(Builder $query): void
+    {
         $query->where('is_archived', false);
     }
 
@@ -111,7 +122,8 @@ class DiaryEntry extends Model {
      *
      * @param  Builder<DiaryEntry>  $query
      */
-    public function scopeOpen(Builder $query): void {
+    public function scopeOpen(Builder $query): void
+    {
         $query->whereIn('status', [2, 3]);
     }
 
@@ -119,7 +131,8 @@ class DiaryEntry extends Model {
      *
      * @param  Builder<DiaryEntry>  $query
      */
-    public function scopeInProgress(Builder $query): void {
+    public function scopeInProgress(Builder $query): void
+    {
         $query->where('status', 1);
     }
 }

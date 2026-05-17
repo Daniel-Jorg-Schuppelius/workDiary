@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -25,8 +26,9 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property int|null $organization_id
- * @property int $project_id
+ * @property int|null $project_id
  * @property int $user_id
+ * @property string $kind
  * @property Carbon $work_date
  * @property string $status
  * @property string|null $customer_name
@@ -40,11 +42,15 @@ use Illuminate\Support\Carbon;
  * @property int|null $locked_by
  * @property string|null $notes
  * @property int $totals_minutes
+ * @property int $attendance_total_minutes
+ * @property int $entries_total_minutes
+ * @property int $untracked_minutes
  * @property string $totals_material_net
  * @property string|null $magic_token
  * @property Carbon|null $magic_expires_at
  */
-class Timesheet extends Model {
+class Timesheet extends Model
+{
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
@@ -53,7 +59,8 @@ class Timesheet extends Model {
     use HasFactory;
 
     /** @param array<string, mixed> $attributes */
-    public function __construct(array $attributes = []) {
+    public function __construct(array $attributes = [])
+    {
         parent::__construct($attributes);
     }
 
@@ -73,10 +80,18 @@ class Timesheet extends Model {
         self::STATUS_LOCKED,
     ];
 
+    public const KIND_PROJECT = 'project';
+
+    public const KIND_PERSONAL_DAY = 'personal_day';
+
+    /** @var array<int, string> */
+    public const KINDS = [self::KIND_PROJECT, self::KIND_PERSONAL_DAY];
+
     protected $fillable = [
         'organization_id',
         'project_id',
         'user_id',
+        'kind',
         'work_date',
         'status',
         'customer_name',
@@ -90,49 +105,62 @@ class Timesheet extends Model {
         'locked_by',
         'notes',
         'totals_minutes',
+        'attendance_total_minutes',
+        'entries_total_minutes',
+        'untracked_minutes',
         'totals_material_net',
         'magic_token',
         'magic_expires_at',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'work_date' => 'date',
             'signed_at' => 'datetime',
             'locked_at' => 'datetime',
             'magic_expires_at' => 'datetime',
             'totals_minutes' => 'integer',
+            'attendance_total_minutes' => 'integer',
+            'entries_total_minutes' => 'integer',
+            'untracked_minutes' => 'integer',
             'totals_material_net' => 'decimal:2',
         ];
     }
 
     /** @return BelongsTo<Project, $this> */
-    public function project(): BelongsTo {
+    public function project(): BelongsTo
+    {
         return $this->belongsTo(Project::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo {
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function locker(): BelongsTo {
+    public function locker(): BelongsTo
+    {
         return $this->belongsTo(User::class, 'locked_by');
     }
 
     /** @return BelongsTo<Attachment, $this> */
-    public function signatureAttachment(): BelongsTo {
+    public function signatureAttachment(): BelongsTo
+    {
         return $this->belongsTo(Attachment::class, 'signature_attachment_id');
     }
 
     /** @return HasMany<TimeEntry, $this> */
-    public function entries(): HasMany {
+    public function entries(): HasMany
+    {
         return $this->hasMany(TimeEntry::class)->orderBy('started_at')->orderBy('id');
     }
 
     /** @return HasMany<MaterialUsage, $this> */
-    public function materialUsages(): HasMany {
+    public function materialUsages(): HasMany
+    {
         return $this->hasMany(MaterialUsage::class)->orderBy('id');
     }
 
@@ -140,7 +168,8 @@ class Timesheet extends Model {
      * @param  Builder<Timesheet>  $q
      * @return Builder<Timesheet>
      */
-    public function scopeForUser(Builder $q, int $userId): Builder {
+    public function scopeForUser(Builder $q, int $userId): Builder
+    {
         return $q->where('user_id', $userId);
     }
 
@@ -148,7 +177,8 @@ class Timesheet extends Model {
      * @param  Builder<Timesheet>  $q
      * @return Builder<Timesheet>
      */
-    public function scopeInRange(Builder $q, CarbonInterface $from, CarbonInterface $to): Builder {
+    public function scopeInRange(Builder $q, CarbonInterface $from, CarbonInterface $to): Builder
+    {
         return $q->whereBetween('work_date', [$from->toDateString(), $to->toDateString()]);
     }
 
@@ -156,32 +186,45 @@ class Timesheet extends Model {
      * @param  Builder<Timesheet>  $q
      * @return Builder<Timesheet>
      */
-    public function scopeUnsigned(Builder $q): Builder {
+    public function scopeUnsigned(Builder $q): Builder
+    {
         return $q->whereIn('status', [self::STATUS_DRAFT, self::STATUS_SUBMITTED]);
     }
 
-    public function isSigned(): bool {
+    public function isSigned(): bool
+    {
         return in_array($this->status, [self::STATUS_SIGNED, self::STATUS_LOCKED], true);
     }
 
-    public function isLocked(): bool {
+    public function isLocked(): bool
+    {
         return $this->status === self::STATUS_LOCKED;
     }
 
-    public function canEdit(): bool {
+    public function canEdit(): bool
+    {
         return ! $this->isSigned();
     }
 
-    public function recalcTotals(): void {
+    public function recalcTotals(): void
+    {
         $this->loadMissing(['entries', 'materialUsages']);
         $minutes = (int) $this->entries->sum('minutes');
         $material = (float) $this->materialUsages->sum('line_total_net');
         $this->totals_minutes = $minutes;
+        $this->entries_total_minutes = $minutes;
+        $this->untracked_minutes = max(0, (int) $this->attendance_total_minutes - $minutes);
         $this->totals_material_net = (string) round($material, 2);
         $this->saveQuietly();
     }
 
-    public function statusLabel(): string {
+    public function isPersonalDay(): bool
+    {
+        return $this->kind === self::KIND_PERSONAL_DAY;
+    }
+
+    public function statusLabel(): string
+    {
         return match ($this->status) {
             self::STATUS_DRAFT => __('Entwurf'),
             self::STATUS_SUBMITTED => __('Eingereicht'),
@@ -191,7 +234,8 @@ class Timesheet extends Model {
         };
     }
 
-    public function statusTone(): string {
+    public function statusTone(): string
+    {
         return match ($this->status) {
             self::STATUS_DRAFT => 'neutral',
             self::STATUS_SUBMITTED => 'info',

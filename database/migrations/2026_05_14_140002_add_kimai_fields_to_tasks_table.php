@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,8 +17,10 @@ use Illuminate\Support\Facades\Schema;
  * Tasks act as Kimai "activities": time can be logged against them with
  * dedicated rate/budget overrides.
  */
-return new class extends Migration {
-    public function up(): void {
+return new class extends Migration
+{
+    public function up(): void
+    {
         Schema::table('tasks', function (Blueprint $table): void {
             $table->decimal('hourly_rate', 10, 2)->nullable()->after('priority');
             $table->decimal('internal_rate', 10, 2)->nullable()->after('hourly_rate');
@@ -34,7 +37,8 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::table('tasks', function (Blueprint $table): void {
             $table->dropIndex(['archived_at']);
             $table->dropIndex(['is_global']);

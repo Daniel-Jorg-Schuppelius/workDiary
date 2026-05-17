@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Mon May 11 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,10 +17,12 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<ShiftType>
  */
-class ShiftTypeFactory extends Factory {
+class ShiftTypeFactory extends Factory
+{
     protected $model = ShiftType::class;
 
-    public function definition(): array {
+    public function definition(): array
+    {
         $name = fake()->randomElement(['Frühdienst', 'Spätdienst', 'Nachtdienst', 'Wochenenddienst', 'Rufbereitschaft']);
         $abbr = mb_strtoupper(mb_substr($name, 0, 2));
         $colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
@@ -34,7 +37,8 @@ class ShiftTypeFactory extends Factory {
         ];
     }
 
-    public function inactive(): static {
+    public function inactive(): static
+    {
         return $this->state(['is_active' => false]);
     }
 }

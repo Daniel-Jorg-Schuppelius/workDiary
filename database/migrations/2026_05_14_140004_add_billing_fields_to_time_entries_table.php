@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,8 +23,10 @@ use Illuminate\Support\Facades\Schema;
  * - fixed_rate:   overrides hourly rate when set (flat fee)
  * - exported:     marked as exported to payroll/invoice (locked)
  */
-return new class extends Migration {
-    public function up(): void {
+return new class extends Migration
+{
+    public function up(): void
+    {
         Schema::table('time_entries', function (Blueprint $table): void {
             $table->boolean('billable')->default(true)->after('kind');
             $table->decimal('hourly_rate', 10, 2)->nullable()->after('billable');
@@ -37,7 +40,8 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::table('time_entries', function (Blueprint $table): void {
             $table->dropIndex(['billable']);
             $table->dropIndex(['exported']);

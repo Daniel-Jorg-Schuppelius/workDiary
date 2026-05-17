@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -24,15 +25,16 @@ use Illuminate\Support\Collection;
  * Berechnet pro Datum + Schichttyp die Anzahl fehlender Soll-Slots
  * (Soll aus aktiven `DutyPlan`s, Ist aus geladenen Schichten außer `cancelled`).
  */
-class OpenSlotService {
-    public function __construct(private readonly CoverageService $coverage) {
-    }
+class OpenSlotService
+{
+    public function __construct(private readonly CoverageService $coverage) {}
 
     /**
      * @param  Collection<int, ScheduledShift>  $shifts
      * @return array<string, list<array{shift_type_id:int, missing:int, name:string, abbreviation:string, color:string}>>
      */
-    public function compute(CarbonImmutable $from, CarbonImmutable $to, Collection $shifts): array {
+    public function compute(CarbonImmutable $from, CarbonImmutable $to, Collection $shifts): array
+    {
         $plans = DutyPlan::query()
             ->inPeriod($from->toDateString(), $to->toDateString())
             ->get();
@@ -58,7 +60,8 @@ class OpenSlotService {
      * @param  Collection<int, DutyPlan>  $plans
      * @return array<string, array<int, int>>
      */
-    private function aggregateRequirements(Collection $plans, CarbonPeriod $period): array {
+    private function aggregateRequirements(Collection $plans, CarbonPeriod $period): array
+    {
         $minByDate = [];
         foreach ($plans as $plan) {
             $reqs = $this->coverage->requirementsFor($plan, $period);
@@ -76,7 +79,8 @@ class OpenSlotService {
      * @param  Collection<int, ScheduledShift>  $shifts
      * @return array<string, array<int, int>>
      */
-    private function aggregateActualShifts(Collection $shifts): array {
+    private function aggregateActualShifts(Collection $shifts): array
+    {
         $actualByDate = [];
         foreach ($shifts as $shift) {
             if ($shift->status === ScheduledShift::STATUS_CANCELLED) {
@@ -97,7 +101,8 @@ class OpenSlotService {
      * @param  array<string, array<int, int>>  $minByDate
      * @return Collection<int, ShiftType>
      */
-    private function loadShiftTypes(array $minByDate): Collection {
+    private function loadShiftTypes(array $minByDate): Collection
+    {
         $stIds = [];
         foreach ($minByDate as $perType) {
             foreach ($perType as $stid => $_) {
@@ -114,7 +119,8 @@ class OpenSlotService {
      * @param  Collection<int, ShiftType>  $shiftTypes
      * @return array<string, list<array{shift_type_id:int, missing:int, name:string, abbreviation:string, color:string}>>
      */
-    private function buildResult(array $minByDate, array $actualByDate, Collection $shiftTypes): array {
+    private function buildResult(array $minByDate, array $actualByDate, Collection $shiftTypes): array
+    {
         $out = [];
         foreach ($minByDate as $date => $perType) {
             foreach ($perType as $stid => $min) {

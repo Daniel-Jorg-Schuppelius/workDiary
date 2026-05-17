@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -27,7 +28,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $tax_rate
  * @property string $line_total_net
  */
-class MaterialUsage extends Model {
+class MaterialUsage extends Model
+{
     use Auditable;
 
     /** @use HasFactory<Factory<static>> */
@@ -44,7 +46,8 @@ class MaterialUsage extends Model {
         'line_total_net',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'quantity' => 'decimal:3',
             'unit_price' => 'decimal:4',
@@ -53,7 +56,8 @@ class MaterialUsage extends Model {
         ];
     }
 
-    protected static function booted(): void {
+    protected static function booted(): void
+    {
         static::saving(function (MaterialUsage $usage): void {
             $qty = (float) $usage->quantity;
             $price = (float) ($usage->unit_price ?? 0);
@@ -62,12 +66,14 @@ class MaterialUsage extends Model {
     }
 
     /** @return BelongsTo<Timesheet, $this> */
-    public function timesheet(): BelongsTo {
+    public function timesheet(): BelongsTo
+    {
         return $this->belongsTo(Timesheet::class);
     }
 
     /** @return BelongsTo<Material, $this> */
-    public function material(): BelongsTo {
+    public function material(): BelongsTo
+    {
         return $this->belongsTo(Material::class);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -20,7 +21,8 @@ use Tests\Concerns\WithGlobalDateRange;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class ProjectDetailsReportTest extends TestCase {
+class ProjectDetailsReportTest extends TestCase
+{
     use RefreshDatabase;
     use WithGlobalDateRange;
     use WithOrganization;
@@ -29,7 +31,8 @@ class ProjectDetailsReportTest extends TestCase {
 
     private Project $project;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -47,7 +50,8 @@ class ProjectDetailsReportTest extends TestCase {
         ]);
     }
 
-    public function test_route_renders_with_project(): void {
+    public function test_route_renders_with_project(): void
+    {
         TimeEntry::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -66,7 +70,8 @@ class ProjectDetailsReportTest extends TestCase {
         $response->assertSee('Website-Relaunch');
     }
 
-    public function test_csv_export(): void {
+    public function test_csv_export(): void
+    {
         TimeEntry::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -88,7 +93,8 @@ class ProjectDetailsReportTest extends TestCase {
         $this->assertStringContainsString('120', $body);
     }
 
-    public function test_pdf_export(): void {
+    public function test_pdf_export(): void
+    {
         TimeEntry::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -109,7 +115,8 @@ class ProjectDetailsReportTest extends TestCase {
         $this->assertStringStartsWith('%PDF', (string) $response->getContent());
     }
 
-    public function test_requires_authentication(): void {
+    public function test_requires_authentication(): void
+    {
         $this->get(route('reports.project-details'))->assertRedirect(route('login'));
     }
 }

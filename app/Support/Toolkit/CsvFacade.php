@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Sat May 16 2026
  * Author       : Daniel Jörg Schuppelius
@@ -27,15 +28,18 @@ use Generator;
  * Bevorzugte API für CSV-Operationen im App-Code: liefert assoziative Zeilen
  * (Header zu Wert), kapselt Delimiter-Erkennung und Encoding.
  */
-final class CsvFacade {
-    public static function detectDelimiter(string $file, int $maxLines = 10): string {
+final class CsvFacade
+{
+    public static function detectDelimiter(string $file, int $maxLines = 10): string
+    {
         return CSVDocumentParser::detectDelimiter($file, $maxLines);
     }
 
     /**
      * @return list<string>
      */
-    public static function readHeader(string $file, ?string $delimiter = null): array {
+    public static function readHeader(string $file, ?string $delimiter = null): array
+    {
         $delimiter ??= self::detectDelimiter($file);
 
         return array_values(CSVDocumentParser::readHeader($file, $delimiter)->getColumnNames());
@@ -87,10 +91,11 @@ final class CsvFacade {
      * @param  list<string>  $headers
      * @param  list<array<string, scalar|null>>  $rows
      */
-    public static function buildCsv(array $headers, array $rows, string $delimiter = ';', string $enclosure = '"'): string {
+    public static function buildCsv(array $headers, array $rows, string $delimiter = ';', string $enclosure = '"'): string
+    {
         $builder = new CSVDocumentBuilder($delimiter, $enclosure);
 
-        $headerFields = array_map(static fn(string $h): HeaderField => new HeaderField($h, $enclosure), $headers);
+        $headerFields = array_map(static fn (string $h): HeaderField => new HeaderField($h, $enclosure), $headers);
         $builder->setHeader(new HeaderLine($headerFields, $delimiter, $enclosure));
 
         foreach ($rows as $row) {

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,29 +17,34 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class RolesTest extends TestCase {
+class RolesTest extends TestCase
+{
     use RefreshDatabase;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
     }
 
-    public function test_user_factory_admin_state_assigns_admin_role(): void {
+    public function test_user_factory_admin_state_assigns_admin_role(): void
+    {
         $admin = User::factory()->admin()->create();
 
         $this->assertTrue($admin->isAdmin());
         $this->assertTrue($admin->hasRole(User::ROLE_ADMIN));
     }
 
-    public function test_user_factory_user_state_assigns_user_role(): void {
+    public function test_user_factory_user_state_assigns_user_role(): void
+    {
         $user = User::factory()->user()->create();
 
         $this->assertFalse($user->isAdmin());
         $this->assertTrue($user->hasRole(User::ROLE_USER));
     }
 
-    public function test_owner_can_update_and_delete_own_entry(): void {
+    public function test_owner_can_update_and_delete_own_entry(): void
+    {
         $owner = User::factory()->user()->create();
         $entry = DiaryEntry::create([
             'user_id' => $owner->id,
@@ -52,7 +58,8 @@ class RolesTest extends TestCase {
         $this->assertTrue($owner->can('view', $entry));
     }
 
-    public function test_other_user_cannot_touch_foreign_entry(): void {
+    public function test_other_user_cannot_touch_foreign_entry(): void
+    {
         $owner = User::factory()->user()->create();
         $other = User::factory()->user()->create();
         $entry = DiaryEntry::create([
@@ -67,7 +74,8 @@ class RolesTest extends TestCase {
         $this->assertFalse($other->can('view', $entry));
     }
 
-    public function test_admin_can_touch_any_entry_via_before_hook(): void {
+    public function test_admin_can_touch_any_entry_via_before_hook(): void
+    {
         $owner = User::factory()->user()->create();
         $admin = User::factory()->admin()->create();
         $entry = DiaryEntry::create([

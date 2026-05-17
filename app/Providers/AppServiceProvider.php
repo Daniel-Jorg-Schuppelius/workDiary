@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -12,6 +13,7 @@ namespace App\Providers;
 
 use App\Legacy\Auth\LegacyUserProvider;
 use App\Listeners\AuthEventSubscriber;
+use App\Models\ActivityCategory;
 use App\Models\Attachment;
 use App\Models\Comment;
 use App\Models\CoverageRequirement;
@@ -29,6 +31,7 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\Timesheet;
+use App\Models\TravelLog;
 use App\Models\User;
 use App\Models\WorkSchedule;
 use App\Observers\AttachmentObserver;
@@ -41,6 +44,7 @@ use App\Observers\TagObserver;
 use App\Observers\TimeEntryObserver;
 use App\Observers\TimesheetObserver;
 use App\Observers\UserObserver;
+use App\Policies\ActivityCategoryPolicy;
 use App\Policies\CoverageRequirementPolicy;
 use App\Policies\DutyPlanPolicy;
 use App\Policies\MaterialPolicy;
@@ -53,7 +57,11 @@ use App\Policies\ShiftTypePolicy;
 use App\Policies\TaskPolicy;
 use App\Policies\TimeEntryPolicy;
 use App\Policies\TimesheetPolicy;
+use App\Policies\TravelLogPolicy;
 use App\Policies\WorkSchedulePolicy;
+use App\Services\Attendance\AttendanceClockService;
+use App\Services\Routing\NominatimGeocoder;
+use App\Services\Routing\OsrmRouter;
 use App\Services\Timesheet\Stopwatch;
 use App\Services\UI\DateRangeContext;
 use Carbon\CarbonImmutable;
@@ -67,11 +75,27 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
-class AppServiceProvider extends ServiceProvider {
-    public function register(): void {
+class AppServiceProvider extends ServiceProvider
+{
+    public function register(): void
+    {
+        $this->app->singleton(NominatimGeocoder::class, function ($app): NominatimGeocoder {
+            /** @var array<string, mixed> $cfg */
+            $cfg = (array) $app['config']->get('routing.nominatim', []);
+
+            return new NominatimGeocoder($cfg);
+        });
+
+        $this->app->singleton(OsrmRouter::class, function ($app): OsrmRouter {
+            /** @var array<string, mixed> $cfg */
+            $cfg = (array) $app['config']->get('routing.osrm', []);
+
+            return new OsrmRouter($cfg);
+        });
     }
 
-    public function boot(): void {
+    public function boot(): void
+    {
         Auth::provider('legacy', function ($app) {
             return new LegacyUserProvider($app['hash']);
         });
@@ -101,6 +125,8 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(Material::class, MaterialPolicy::class);
         Gate::policy(MaterialUsage::class, MaterialUsagePolicy::class);
         Gate::policy(WorkSchedule::class, WorkSchedulePolicy::class);
+        Gate::policy(ActivityCategory::class, ActivityCategoryPolicy::class);
+        Gate::policy(TravelLog::class, TravelLogPolicy::class);
 
         // manage-members: Org-Admin darf Mitglieder der eigenen Org verwalten
         Gate::define('manage-members', [OrganizationPolicy::class, 'manageMembers']);
@@ -108,6 +134,7 @@ class AppServiceProvider extends ServiceProvider {
         $this->configureRateLimiters();
 
         $this->registerStopwatchViewComposer();
+        $this->registerAttendanceViewComposer();
         $this->registerDateRangeViewComposer();
 
         Password::defaults(function () {
@@ -123,24 +150,25 @@ class AppServiceProvider extends ServiceProvider {
         });
     }
 
-    private function configureRateLimiters(): void {
+    private function configureRateLimiters(): void
+    {
         RateLimiter::for('login', function (Request $request) {
             $email = (string) $request->input('email', $request->input('username', ''));
 
             return [
-                Limit::perMinute(5)->by(strtolower($email) . '|' . $request->ip()),
+                Limit::perMinute(5)->by(strtolower($email).'|'.$request->ip()),
                 Limit::perMinute(20)->by($request->ip()),
             ];
         });
 
-        RateLimiter::for('register', fn(Request $request) => Limit::perMinute(3)->by($request->ip()));
+        RateLimiter::for('register', fn (Request $request) => Limit::perMinute(3)->by($request->ip()));
 
         RateLimiter::for('password', function (Request $request) {
             $userId = (string) ($request->user()?->getAuthIdentifier() ?? 'guest');
 
             return [
-                Limit::perMinute(5)->by('pwd:' . $userId . '|' . $request->ip()),
-                Limit::perHour(20)->by('pwd:' . $userId),
+                Limit::perMinute(5)->by('pwd:'.$userId.'|'.$request->ip()),
+                Limit::perHour(20)->by('pwd:'.$userId),
             ];
         });
     }
@@ -154,7 +182,8 @@ class AppServiceProvider extends ServiceProvider {
      * Login-Screen auch bei nicht erreichbarer Datenbank gerendert werden
      * können.
      */
-    private function registerStopwatchViewComposer(): void {
+    private function registerStopwatchViewComposer(): void
+    {
         View::composer('layouts.app', function ($view): void {
             $entry = null;
             try {
@@ -178,7 +207,31 @@ class AppServiceProvider extends ServiceProvider {
      * Fällt bei Session-/DB-Fehlern auf einen statischen Fallback zurück,
      * damit das Layout (z.B. die Fehlerseite) noch gerendert werden kann.
      */
-    private function registerDateRangeViewComposer(): void {
+    /**
+     * Stellt der App-Layout-View die aktuell offene Stempelung
+     * (Attendance|null) als $attendanceCurrent bereit, damit das
+     * Stempeluhr-Widget im Header den Live-Timer und die Clock-in/out-
+     * Buttons rendern kann.
+     */
+    private function registerAttendanceViewComposer(): void
+    {
+        View::composer('layouts.app', function ($view): void {
+            $current = null;
+            try {
+                $user = Auth::user();
+                if ($user instanceof User) {
+                    $current = app(AttendanceClockService::class)->current($user);
+                }
+            } catch (\Throwable $e) {
+                report($e);
+                $current = null;
+            }
+            $view->with('attendanceCurrent', $current);
+        });
+    }
+
+    private function registerDateRangeViewComposer(): void
+    {
         View::composer(['layouts.app', 'components.header-date-range'], function ($view): void {
             try {
                 $range = app(DateRangeContext::class)->current();
