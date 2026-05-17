@@ -5,7 +5,7 @@
 @section('content')
 <x-page-shell gap="6">
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('Schichtplan Import')">
+        <x-page-toolbar>
             <x-slot:actions>
                 <a href="{{ route('schedule.index') }}" class="btn btn-sm btn-ghost">← {{ __('Zurück') }}</a>
             </x-slot:actions>

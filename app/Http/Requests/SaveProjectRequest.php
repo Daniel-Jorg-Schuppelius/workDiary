@@ -36,7 +36,7 @@ class SaveProjectRequest extends FormRequest
             'status' => ['required', Rule::in(Project::STATUSES)],
             'starts_on' => ['nullable', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
-            'is_default' => ['sometimes', 'boolean', 'prohibited_unless:parent_id,'],
+            'is_default' => ['sometimes', 'boolean'],
             'customer_id' => ['nullable', 'integer', Rule::exists('customers', 'id')],
             'parent_id' => [
                 'nullable',

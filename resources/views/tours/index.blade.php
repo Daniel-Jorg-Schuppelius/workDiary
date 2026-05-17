@@ -4,42 +4,33 @@
 
 @section('content')
     <x-page-shell>
-        <x-slot:toolbar>
-            <x-page-toolbar :title="__('Touren')"
-                            :subtitle="$from->format('d.m.Y') . ' – ' . $to->format('d.m.Y')">
-                <x-slot:actions>
-                    <a href="{{ route('tours.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
-                        <x-icon name="add" /> {{ __('Neue Tour') }}
-                    </a>
-                </x-slot:actions>
-            </x-page-toolbar>
-        </x-slot:toolbar>
 
-        <x-card>
-            <form method="GET" class="flex flex-wrap items-end gap-2">
-            <div>
-                <label class="label-text">{{ __('Status') }}</label>
-                <select name="status" class="select select-bordered select-sm">
+
+        <x-filter-bar :action="route('tours.index')" :reset="route('tours.index')">
+            <x-filter-field :label="__('Status')" for="tours-status">
+                <select id="tours-status" name="status" class="select select-bordered select-sm">
                     <option value="">{{ __('alle') }}</option>
                     @foreach ($statuses as $st)
                         <option value="{{ $st }}" @selected($selectedStatus === $st)>{{ __($st) }}</option>
                     @endforeach
                 </select>
-            </div>
+            </x-filter-field>
             @if ($selectableUsers !== null)
-                <div>
-                    <label class="label-text">{{ __('Fahrer') }}</label>
-                    <select name="user" class="select select-bordered select-sm">
+                <x-filter-field :label="__('Fahrer')" for="tours-user">
+                    <select id="tours-user" name="user" class="select select-bordered select-sm">
                         <option value="all">{{ __('alle') }}</option>
                         @foreach ($selectableUsers as $u)
                             <option value="{{ $u->id }}" @selected($targetUser?->id === $u->id)>{{ $u->name }}</option>
                         @endforeach
                     </select>
-                </div>
+                </x-filter-field>
             @endif
-            <button class="btn btn-sm">{{ __('Filtern') }}</button>
-            </form>
-        </x-card>
+            <x-slot:extra>
+                <a href="{{ route('tours.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
+                    <x-icon name="add" /> {{ __('Neue Tour') }}
+                </a>
+            </x-slot:extra>
+        </x-filter-bar>
 
         <x-card padding="p-0">
             <div class="overflow-x-auto">

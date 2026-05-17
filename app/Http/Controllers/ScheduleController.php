@@ -22,7 +22,6 @@ use App\Models\User;
 use App\Services\Compliance\ShiftComplianceService;
 use App\Services\HolidayService;
 use App\Services\Schedule\OpenSlotService;
-use App\Support\WeekDay;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
@@ -39,11 +38,13 @@ class ScheduleController extends Controller
         /** @var User $auth */
         $auth = Auth::user();
 
-        $view = $request->query('view', 'week'); // week|month
         $userFilter = (int) $request->query('user', 0);
 
-        $anchor = $this->globalDateRange()['from'];
-        [$from, $to] = $this->periodBounds($anchor, $view);
+        $range = $this->globalDateRange();
+        $from = $range['from'];
+        $to = $range['to'];
+        $view = $from->diffInDays($to) <= 6 ? 'week' : 'month';
+        $anchor = $from;
 
         $shifts = $this->loadShifts($from, $to, $userFilter);
         $shiftsByDate = $shifts->groupBy(fn (ScheduledShift $s) => $s->date->toDateString());
@@ -114,12 +115,11 @@ class ScheduleController extends Controller
 
     public function apiIndex(Request $request): JsonResponse
     {
-        $view = $request->query('view', 'week');
         $userFilter = (int) $request->query('user', 0);
 
-        $anchor = $this->globalDateRange()['from'];
-
-        [$from, $to] = $this->periodBounds($anchor, $view);
+        $range = $this->globalDateRange();
+        $from = $range['from'];
+        $to = $range['to'];
 
         $query = ScheduledShift::query()
             ->with(['user:id,name', 'shiftType'])
@@ -226,19 +226,4 @@ class ScheduleController extends Controller
 
     // ── Helpers ─────────────────────────────────────────────────────────────
 
-    /**
-     * @return array{CarbonImmutable, CarbonImmutable}
-     */
-    private function periodBounds(CarbonImmutable $anchor, string $view): array
-    {
-        if ($view === 'month') {
-            $from = $anchor->startOfMonth();
-            $to = $anchor->endOfMonth();
-        } else {
-            $from = $anchor->startOfWeek(WeekDay::MONDAY);
-            $to = $from->endOfWeek(WeekDay::SUNDAY);
-        }
-
-        return [$from, $to];
-    }
 }

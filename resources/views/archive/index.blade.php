@@ -72,65 +72,48 @@
         </div>
 
         {{-- Filter --}}
-        <form method="GET" action="{{ route('archive.index') }}"
-              class="flex-none rounded-box border border-base-300 bg-base-100 p-4 shadow-xs md:p-5">
+        <x-filter-bar :action="route('archive.index')" :reset="! empty($tabFilters) ? route('archive.index', ['tab' => $tab]) : null">
             <input type="hidden" name="tab" value="{{ $tab }}">
-            <div class="flex flex-wrap items-end gap-3">
-                @if ($isAdmin)
-                    <div class="flex flex-1 flex-col min-w-44">
-                        <label class="label py-1">
-                            <span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</span>
-                        </label>
-                        <select name="user_id" class="select select-bordered select-sm w-full">
-                            <option value="">{{ __('Alle') }}</option>
-                            @foreach ($users as $u)
-                                <option value="{{ $u->id }}" @selected((int) ($filters['user_id'] ?? 0) === $u->id)>{{ $u->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                @endif
-                @if ($tab === 'diary')
-                    <div class="flex flex-1 flex-col min-w-44">
-                        <label class="label py-1">
-                            <span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Status') }}</span>
-                        </label>
-                        <select name="status" class="select select-bordered select-sm w-full">
-                            <option value="all"  @selected($currentStatus === 'all')>{{ __('Alle') }}</option>
-                            <option value="2"    @selected($currentStatus === '2')>{{ __('Offen') }}</option>
-                            <option value="3"    @selected($currentStatus === '3')>{{ __('Problem') }}</option>
-                            <option value="1"    @selected($currentStatus === '1')>{{ __('Bestätigt') }}</option>
-                            <option value="-1"   @selected($currentStatus === '-1')>{{ __('Erledigt') }}</option>
-                        </select>
-                    </div>
-                @elseif ($tab === 'urlaub')
-                    <div class="flex flex-1 flex-col min-w-40">
-                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Typ') }}</span></label>
-                        <select name="vtype" class="select select-bordered select-sm w-full">
-                            <option value="">{{ __('Alle Typen') }}</option>
-                            <option value="{{ \App\Models\Vacation::TYPE_VACATION }}" @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_VACATION)>{{ __('Urlaub') }}</option>
-                            <option value="{{ \App\Models\Vacation::TYPE_SICK }}"     @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_SICK)>{{ __('Krank') }}</option>
-                            <option value="{{ \App\Models\Vacation::TYPE_SPECIAL }}"  @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_SPECIAL)>{{ __('Sonderurlaub') }}</option>
-                            <option value="{{ \App\Models\Vacation::TYPE_UNPAID }}"   @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_UNPAID)>{{ __('Unbezahlt') }}</option>
-                        </select>
-                    </div>
-                    <div class="flex flex-1 flex-col min-w-40">
-                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Status') }}</span></label>
-                        <select name="vstatus" class="select select-bordered select-sm w-full">
-                            <option value="">{{ __('Alle Status') }}</option>
-                            <option value="{{ \App\Models\Vacation::STATUS_REJECTED }}"  @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_REJECTED)>{{ __('Abgelehnt') }}</option>
-                            <option value="{{ \App\Models\Vacation::STATUS_CANCELLED }}" @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_CANCELLED)>{{ __('Storniert') }}</option>
-                            <option value="{{ \App\Models\Vacation::STATUS_APPROVED }}"  @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_APPROVED)>{{ __('Abgelaufen') }}</option>
-                        </select>
-                    </div>
-                @endif
-                <div class="ml-auto flex items-end gap-2">
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Filtern') }}</button>
-                    @if (! empty($tabFilters))
-                        <a href="{{ route('archive.index', ['tab' => $tab]) }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
-                    @endif
-                </div>
-            </div>
-        </form>
+            @if ($isAdmin)
+                <x-filter-field :label="__('Mitarbeiter')" for="arc-user" class="flex-1 min-w-44">
+                    <select id="arc-user" name="user_id" class="select select-bordered select-sm w-full">
+                        <option value="">{{ __('Alle') }}</option>
+                        @foreach ($users as $u)
+                            <option value="{{ $u->id }}" @selected((int) ($filters['user_id'] ?? 0) === $u->id)>{{ $u->name }}</option>
+                        @endforeach
+                    </select>
+                </x-filter-field>
+            @endif
+            @if ($tab === 'diary')
+                <x-filter-field :label="__('Status')" for="arc-status" class="flex-1 min-w-44">
+                    <select id="arc-status" name="status" class="select select-bordered select-sm w-full">
+                        <option value="all"  @selected($currentStatus === 'all')>{{ __('Alle') }}</option>
+                        <option value="2"    @selected($currentStatus === '2')>{{ __('Offen') }}</option>
+                        <option value="3"    @selected($currentStatus === '3')>{{ __('Problem') }}</option>
+                        <option value="1"    @selected($currentStatus === '1')>{{ __('Bestätigt') }}</option>
+                        <option value="-1"   @selected($currentStatus === '-1')>{{ __('Erledigt') }}</option>
+                    </select>
+                </x-filter-field>
+            @elseif ($tab === 'urlaub')
+                <x-filter-field :label="__('Typ')" for="arc-vtype" class="flex-1 min-w-40">
+                    <select id="arc-vtype" name="vtype" class="select select-bordered select-sm w-full">
+                        <option value="">{{ __('Alle Typen') }}</option>
+                        <option value="{{ \App\Models\Vacation::TYPE_VACATION }}" @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_VACATION)>{{ __('Urlaub') }}</option>
+                        <option value="{{ \App\Models\Vacation::TYPE_SICK }}"     @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_SICK)>{{ __('Krank') }}</option>
+                        <option value="{{ \App\Models\Vacation::TYPE_SPECIAL }}"  @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_SPECIAL)>{{ __('Sonderurlaub') }}</option>
+                        <option value="{{ \App\Models\Vacation::TYPE_UNPAID }}"   @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_UNPAID)>{{ __('Unbezahlt') }}</option>
+                    </select>
+                </x-filter-field>
+                <x-filter-field :label="__('Status')" for="arc-vstatus" class="flex-1 min-w-40">
+                    <select id="arc-vstatus" name="vstatus" class="select select-bordered select-sm w-full">
+                        <option value="">{{ __('Alle Status') }}</option>
+                        <option value="{{ \App\Models\Vacation::STATUS_REJECTED }}"  @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_REJECTED)>{{ __('Abgelehnt') }}</option>
+                        <option value="{{ \App\Models\Vacation::STATUS_CANCELLED }}" @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_CANCELLED)>{{ __('Storniert') }}</option>
+                        <option value="{{ \App\Models\Vacation::STATUS_APPROVED }}"  @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_APPROVED)>{{ __('Abgelaufen') }}</option>
+                    </select>
+                </x-filter-field>
+            @endif
+        </x-filter-bar>
 
         {{-- KPI-Kacheln --}}
         <div class="flex-none grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

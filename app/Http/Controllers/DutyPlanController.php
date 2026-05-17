@@ -24,16 +24,12 @@ class DutyPlanController extends Controller {
         Gate::authorize('viewAny', DutyPlan::class);
 
         $status = $request->query('status', '');
-        $period = $request->query('period', '');
 
         $query = DutyPlan::query()
             ->withCount('shifts');
 
         if ($status && in_array($status, DutyPlan::$statuses, true)) {
             $query->where('status', $status);
-        }
-        if ($period && in_array($period, DutyPlan::$periodTypes, true)) {
-            $query->where('period_type', $period);
         }
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [
@@ -47,7 +43,7 @@ class DutyPlanController extends Controller {
 
         $plans = $query->paginate((int) setting('pagination.duty_plans', 20))->withQueryString();
 
-        return view('duty-plans.index', compact('plans', 'status', 'period', 'sort', 'dir'));
+        return view('duty-plans.index', compact('plans', 'status', 'sort', 'dir'));
     }
 
     public function create(): View {

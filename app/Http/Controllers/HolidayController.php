@@ -11,6 +11,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\AuditLog;
 use App\Models\Holiday;
 use App\Services\HolidayService;
@@ -24,11 +25,13 @@ use Illuminate\View\View;
 
 class HolidayController extends Controller
 {
+    use ResolvesGlobalDateRange;
+
     public function index(Request $request, HolidayService $holidayService): View
     {
         Gate::authorize('viewAny', AuditLog::class);
 
-        $year = (int) $request->query('year', (int) Carbon::now()->year);
+        $year = (int) $this->globalDateRange()['from']->year;
         if ($year < 1970 || $year > 2100) {
             $year = (int) Carbon::now()->year;
         }

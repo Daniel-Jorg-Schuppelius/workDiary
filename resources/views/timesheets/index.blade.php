@@ -4,19 +4,6 @@
 
 @section('content')
 <x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar>
-            <x-slot:actions>
-                @can('create', \App\Models\Timesheet::class)
-                    <button type="button" class="btn btn-sm btn-primary gap-1" onclick="document.getElementById('quick-timesheet-dialog').showModal()">
-                        <x-icon name="add" />
-                        <span>{{ __('Stundenzettel') }}</span>
-                    </button>
-                @endcan
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
-
     {{-- Filter --}}
     <x-filter-bar :action="route('timesheets.index')" :reset="route('timesheets.index')">
         @if($isAdmin)
@@ -35,6 +22,14 @@
                 @endforeach
             </select>
         </x-filter-field>
+        <x-slot:extra>
+            @can('create', \App\Models\Timesheet::class)
+                <button type="button" class="btn btn-sm btn-primary gap-1" onclick="document.getElementById('quick-timesheet-dialog').showModal()">
+                    <x-icon name="add" />
+                    <span>{{ __('Stundenzettel') }}</span>
+                </button>
+            @endcan
+        </x-slot:extra>
     </x-filter-bar>
 
     @if($timesheets->isEmpty())

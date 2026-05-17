@@ -6,12 +6,9 @@
     use App\Support\WeekDay;
     use Carbon\CarbonImmutable;
 
-    // Build calendar weeks
-    $monthStart = $anchor->startOfMonth();
-    $monthEnd   = $anchor->endOfMonth();
-    // Extend to full weeks (Mon–Sun)
-    $calStart   = $monthStart->startOfWeek(WeekDay::MONDAY);
-    $calEnd     = $monthEnd->endOfWeek(WeekDay::SUNDAY);
+    // Extend the global range to full weeks (Mon–Sun) for a calendar grid.
+    $calStart = $from->startOfWeek(WeekDay::MONDAY);
+    $calEnd   = $to->endOfWeek(WeekDay::SUNDAY);
 
     $weeks  = [];
     $cursor = $calStart;
@@ -27,7 +24,7 @@
                 'isSunday'    => $cursor->isSunday(),
                 'isHoliday'   => $holidayName !== null,
                 'holidayName' => $holidayName ?? '',
-                'inMonth'     => $cursor->month === $anchor->month,
+                'inMonth'     => $cursor->betweenIncluded($from, $to),
             ];
             $cursor = $cursor->addDay();
         }

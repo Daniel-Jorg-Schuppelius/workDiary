@@ -4,44 +4,37 @@
 
 @section('content')
     <x-page-shell>
-        <x-slot:toolbar>
-            <x-page-toolbar :title="__('Tank- & Ladelog')"
-                            :subtitle="$from->format('d.m.Y') . ' – ' . $to->format('d.m.Y')">
-                {{ __('Zeitraum übernommen aus dem Header. Mit der Auswahl oben links wechseln.') }}
-                <x-slot:actions>
-                    <a href="{{ route('energy-logs.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
-                        <x-icon name="add" /> {{ __('Neuer Eintrag') }}
-                    </a>
-                </x-slot:actions>
-            </x-page-toolbar>
-        </x-slot:toolbar>
 
-        <form method="GET" class="flex flex-wrap gap-2 items-end">
+
+        <x-filter-bar :action="route('energy-logs.index')" :reset="route('energy-logs.index')">
             @if ($selectableUsers)
-                <label class="form-control">
-                    <span class="label-text">{{ __('Nutzer') }}</span>
-                    <select name="user" class="select select-bordered select-sm" onchange="this.form.submit()">
+                <x-filter-field :label="__('Nutzer')" for="energy-user">
+                    <select id="energy-user" name="user" class="select select-bordered select-sm" onchange="this.form.submit()">
                         <option value="">{{ __('— eigene —') }}</option>
                         <option value="all" @selected(request('user') === 'all')>{{ __('Alle') }}</option>
                         @foreach ($selectableUsers as $u)
                             <option value="{{ $u->id }}" @selected((int) request('user') === (int) $u->id)>{{ $u->name }}</option>
                         @endforeach
                     </select>
-                </label>
+                </x-filter-field>
             @endif
-            <label class="form-control">
-                <span class="label-text">{{ __('Fahrzeug') }}</span>
-                <select name="vehicle" class="select select-bordered select-sm" onchange="this.form.submit()">
+            <x-filter-field :label="__('Fahrzeug')" for="energy-vehicle">
+                <select id="energy-vehicle" name="vehicle" class="select select-bordered select-sm" onchange="this.form.submit()">
                     <option value="">{{ __('Alle Fahrzeuge') }}</option>
                     @foreach ($vehicles as $v)
                         <option value="{{ $v->id }}" @selected($selectedVehicleId === (int) $v->id)>{{ $v->displayName() }}</option>
                     @endforeach
                 </select>
-            </label>
+            </x-filter-field>
             @foreach (request()->except(['user', 'vehicle']) as $k => $v)
                 <input type="hidden" name="{{ $k }}" value="{{ $v }}">
             @endforeach
-        </form>
+            <x-slot:extra>
+                <a href="{{ route('energy-logs.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
+                    <x-icon name="add" /> {{ __('Neuer Eintrag') }}
+                </a>
+            </x-slot:extra>
+        </x-filter-bar>
 
         <div class="grid gap-3 sm:grid-cols-4">
             <div class="rounded-box border border-base-300 bg-base-100 p-3">

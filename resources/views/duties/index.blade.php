@@ -59,83 +59,68 @@
         </div>
 
         {{-- Filter --}}
-        <form method="GET" action="{{ route('duties.index') }}"
-              class="flex-none rounded-box border border-base-300 bg-base-100 p-4 shadow-xs md:p-5">
+        <x-filter-bar :action="route('duties.index')" :reset="! empty($tabFilters) ? route('duties.index', ['tab' => $tab]) : null">
             <input type="hidden" name="tab" value="{{ $tab }}">
-            <div class="flex flex-wrap items-end gap-3">
-                @if ($tab === 'diary')
-                    <div class="flex-1 min-w-52">
-                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Suche') }}</span></label>
-                        <input type="search" name="q" value="{{ $filters['q'] ?? '' }}"
-                               placeholder="{{ __('Inhalt oder Antwort …') }}"
-                               class="input input-bordered input-sm w-full">
-                    </div>
-                    <div class="flex flex-1 flex-col min-w-40">
-                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Status') }}</span></label>
-                        <select name="status" class="select select-bordered select-sm w-full">
-                            <option value="all"  @selected(($filters['status'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
-                            <option value="2"    @selected(($filters['status'] ?? '') === '2')>{{ __('Offen') }}</option>
-                            <option value="3"    @selected(($filters['status'] ?? '') === '3')>{{ __('Problem') }}</option>
-                            <option value="1"    @selected(($filters['status'] ?? '') === '1')>{{ __('Bestätigt') }}</option>
-                            <option value="-1"   @selected(($filters['status'] ?? '') === '-1')>{{ __('Erledigt') }}</option>
+            @if ($tab === 'diary')
+                <x-filter-field :label="__('Suche')" for="duties-q" class="flex-1 min-w-52">
+                    <input id="duties-q" type="search" name="q" value="{{ $filters['q'] ?? '' }}"
+                           placeholder="{{ __('Inhalt oder Antwort …') }}"
+                           class="input input-bordered input-sm w-full">
+                </x-filter-field>
+                <x-filter-field :label="__('Status')" for="duties-status" class="flex-1 min-w-40">
+                    <select id="duties-status" name="status" class="select select-bordered select-sm w-full">
+                        <option value="all"  @selected(($filters['status'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
+                        <option value="2"    @selected(($filters['status'] ?? '') === '2')>{{ __('Offen') }}</option>
+                        <option value="3"    @selected(($filters['status'] ?? '') === '3')>{{ __('Problem') }}</option>
+                        <option value="1"    @selected(($filters['status'] ?? '') === '1')>{{ __('Bestätigt') }}</option>
+                        <option value="-1"   @selected(($filters['status'] ?? '') === '-1')>{{ __('Erledigt') }}</option>
+                    </select>
+                </x-filter-field>
+                @if ($allTags->isNotEmpty())
+                    <x-filter-field :label="__('Tag')" for="duties-tag" class="min-w-36">
+                        <select id="duties-tag" name="tag" class="select select-bordered select-sm">
+                            <option value="">—</option>
+                            @foreach ($allTags as $tag)
+                                <option value="{{ $tag->id }}" @selected((int) ($filters['tag'] ?? 0) === $tag->id)>{{ $tag->name }}</option>
+                            @endforeach
                         </select>
-                    </div>
-                    @if ($allTags->isNotEmpty())
-                        <div class="flex flex-col min-w-36">
-                            <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Tag') }}</span></label>
-                            <select name="tag" class="select select-bordered select-sm">
-                                <option value="">—</option>
-                                @foreach ($allTags as $tag)
-                                    <option value="{{ $tag->id }}" @selected((int) ($filters['tag'] ?? 0) === $tag->id)>{{ $tag->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @endif
-                    <div class="flex items-center gap-2 pb-2">
-                        <input type="checkbox" id="mine" name="mine" value="1" @checked(!empty($filters['mine'])) class="checkbox checkbox-primary checkbox-sm">
-                        <label for="mine" class="text-sm text-base-content/75">{{ __('Nur meine') }}</label>
-                    </div>
-                @elseif ($tab === 'urlaub')
-                    @if ($isAdmin)
-                        <div class="flex flex-1 flex-col min-w-44">
-                            <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</span></label>
-                            <select name="user_id" class="select select-bordered select-sm w-full">
-                                <option value="">{{ __('Alle') }}</option>
-                                @foreach ($users as $u)
-                                    <option value="{{ $u->id }}" @selected((int) ($filters['user_id'] ?? 0) === $u->id)>{{ $u->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @endif
-                    <div class="flex flex-1 flex-col min-w-40">
-                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Typ') }}</span></label>
-                        <select name="vtype" class="select select-bordered select-sm w-full">
-                            <option value="">{{ __('Alle Typen') }}</option>
-                            <option value="{{ \App\Models\Vacation::TYPE_VACATION }}" @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_VACATION)>{{ __('Urlaub') }}</option>
-                            <option value="{{ \App\Models\Vacation::TYPE_SICK }}"     @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_SICK)>{{ __('Krank') }}</option>
-                            <option value="{{ \App\Models\Vacation::TYPE_SPECIAL }}"  @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_SPECIAL)>{{ __('Sonderurlaub') }}</option>
-                            <option value="{{ \App\Models\Vacation::TYPE_UNPAID }}"   @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_UNPAID)>{{ __('Unbezahlt') }}</option>
-                        </select>
-                    </div>
-                    <div class="flex flex-1 flex-col min-w-40">
-                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Status') }}</span></label>
-                        <select name="vstatus" class="select select-bordered select-sm w-full">
-                            <option value="">{{ __('Alle Status') }}</option>
-                            <option value="{{ \App\Models\Vacation::STATUS_PENDING }}"   @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_PENDING)>{{ __('Ausstehend') }}</option>
-                            <option value="{{ \App\Models\Vacation::STATUS_APPROVED }}"  @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_APPROVED)>{{ __('Genehmigt') }}</option>
-                            <option value="{{ \App\Models\Vacation::STATUS_REJECTED }}"  @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_REJECTED)>{{ __('Abgelehnt') }}</option>
-                            <option value="{{ \App\Models\Vacation::STATUS_CANCELLED }}" @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_CANCELLED)>{{ __('Storniert') }}</option>
-                        </select>
-                    </div>
+                    </x-filter-field>
                 @endif
-                <div class="ml-auto flex items-end gap-2">
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Filtern') }}</button>
-                    @if (! empty($tabFilters))
-                        <a href="{{ route('duties.index', ['tab' => $tab]) }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
-                    @endif
-                </div>
-            </div>
-        </form>
+                <label class="flex items-center gap-2 pb-2">
+                    <input type="checkbox" id="mine" name="mine" value="1" @checked(!empty($filters['mine'])) class="checkbox checkbox-primary checkbox-sm">
+                    <span class="text-sm text-base-content/75">{{ __('Nur meine') }}</span>
+                </label>
+            @elseif ($tab === 'urlaub')
+                @if ($isAdmin)
+                    <x-filter-field :label="__('Mitarbeiter')" for="duties-user" class="flex-1 min-w-44">
+                        <select id="duties-user" name="user_id" class="select select-bordered select-sm w-full">
+                            <option value="">{{ __('Alle') }}</option>
+                            @foreach ($users as $u)
+                                <option value="{{ $u->id }}" @selected((int) ($filters['user_id'] ?? 0) === $u->id)>{{ $u->name }}</option>
+                            @endforeach
+                        </select>
+                    </x-filter-field>
+                @endif
+                <x-filter-field :label="__('Typ')" for="duties-vtype" class="flex-1 min-w-40">
+                    <select id="duties-vtype" name="vtype" class="select select-bordered select-sm w-full">
+                        <option value="">{{ __('Alle Typen') }}</option>
+                        <option value="{{ \App\Models\Vacation::TYPE_VACATION }}" @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_VACATION)>{{ __('Urlaub') }}</option>
+                        <option value="{{ \App\Models\Vacation::TYPE_SICK }}"     @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_SICK)>{{ __('Krank') }}</option>
+                        <option value="{{ \App\Models\Vacation::TYPE_SPECIAL }}"  @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_SPECIAL)>{{ __('Sonderurlaub') }}</option>
+                        <option value="{{ \App\Models\Vacation::TYPE_UNPAID }}"   @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_UNPAID)>{{ __('Unbezahlt') }}</option>
+                    </select>
+                </x-filter-field>
+                <x-filter-field :label="__('Status')" for="duties-vstatus" class="flex-1 min-w-40">
+                    <select id="duties-vstatus" name="vstatus" class="select select-bordered select-sm w-full">
+                        <option value="">{{ __('Alle Status') }}</option>
+                        <option value="{{ \App\Models\Vacation::STATUS_PENDING }}"   @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_PENDING)>{{ __('Ausstehend') }}</option>
+                        <option value="{{ \App\Models\Vacation::STATUS_APPROVED }}"  @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_APPROVED)>{{ __('Genehmigt') }}</option>
+                        <option value="{{ \App\Models\Vacation::STATUS_REJECTED }}"  @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_REJECTED)>{{ __('Abgelehnt') }}</option>
+                        <option value="{{ \App\Models\Vacation::STATUS_CANCELLED }}" @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_CANCELLED)>{{ __('Storniert') }}</option>
+                    </select>
+                </x-filter-field>
+            @endif
+        </x-filter-bar>
 
         {{-- KPI-Kacheln --}}
         @php

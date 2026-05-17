@@ -4,42 +4,33 @@
 
 @section('content')
     <x-page-shell>
-        <x-slot:toolbar>
-            <x-page-toolbar :title="__('Service-Aufträge')"
-                            :subtitle="$from->format('d.m.Y') . ' – ' . $to->format('d.m.Y')">
-                <x-slot:actions>
-                    <a href="{{ route('service-orders.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
-                        <x-icon name="add" /> {{ __('Neuer Auftrag') }}
-                    </a>
-                </x-slot:actions>
-            </x-page-toolbar>
-        </x-slot:toolbar>
 
-        <x-card>
-            <form method="GET" class="flex flex-wrap items-end gap-2">
-            <div>
-                <label class="label-text">{{ __('Status') }}</label>
-                <select name="status" class="select select-bordered select-sm">
+
+        <x-filter-bar :action="route('service-orders.index')" :reset="route('service-orders.index')">
+            <x-filter-field :label="__('Status')" for="so-status">
+                <select id="so-status" name="status" class="select select-bordered select-sm">
                     <option value="">{{ __('alle') }}</option>
                     @foreach ($statuses as $st)
                         <option value="{{ $st }}" @selected($selectedStatus === $st)>{{ __($st) }}</option>
                     @endforeach
                 </select>
-            </div>
+            </x-filter-field>
             @if ($selectableUsers !== null)
-                <div>
-                    <label class="label-text">{{ __('Mitarbeiter') }}</label>
-                    <select name="user" class="select select-bordered select-sm">
+                <x-filter-field :label="__('Mitarbeiter')" for="so-user">
+                    <select id="so-user" name="user" class="select select-bordered select-sm">
                         <option value="all">{{ __('alle') }}</option>
                         @foreach ($selectableUsers as $u)
                             <option value="{{ $u->id }}" @selected($targetUser?->id === $u->id)>{{ $u->name }}</option>
                         @endforeach
                     </select>
-                </div>
+                </x-filter-field>
             @endif
-            <button class="btn btn-sm">{{ __('Filtern') }}</button>
-            </form>
-        </x-card>
+            <x-slot:extra>
+                <a href="{{ route('service-orders.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
+                    <x-icon name="add" /> {{ __('Neuer Auftrag') }}
+                </a>
+            </x-slot:extra>
+        </x-filter-bar>
 
         <x-card padding="p-0">
             <div class="overflow-x-auto">

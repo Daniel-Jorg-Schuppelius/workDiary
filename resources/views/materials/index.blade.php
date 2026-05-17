@@ -3,21 +3,19 @@
 @section('nav-title', __('Materialien'))
 @section('content')
 <x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar>
-            <form method="GET" class="flex gap-2">
-                <input type="search" name="q" value="{{ $q }}" placeholder="{{ __('Suche…') }}" class="input input-sm input-bordered">
-                <button class="btn btn-sm btn-ghost gap-1"><x-icon name="search" /><span class="hidden sm:inline">{{ __('Suchen') }}</span></button>
-            </form>
-            <x-slot:actions>
-                @can('create', \App\Models\Material::class)
-                    <a href="{{ route('materials.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
-                        <x-icon name="add" /><span>{{ __('Material') }}</span>
-                    </a>
-                @endcan
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+    <x-filter-bar :action="route('materials.index')" :reset="$q !== '' ? route('materials.index') : null">
+        <x-filter-field :label="__('Suche')" for="mat-q" class="flex-1 min-w-60">
+            <input id="mat-q" type="search" name="q" value="{{ $q }}" placeholder="{{ __('Suche…') }}"
+                   class="input input-sm input-bordered">
+        </x-filter-field>
+        <x-slot:extra>
+            @can('create', \App\Models\Material::class)
+                <a href="{{ route('materials.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
+                    <x-icon name="add" /><span>{{ __('Material') }}</span>
+                </a>
+            @endcan
+        </x-slot:extra>
+    </x-filter-bar>
 
     <x-card padding="p-0">
         <div class="overflow-x-auto">

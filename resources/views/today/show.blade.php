@@ -23,20 +23,18 @@
 @endphp
 
 @section('content')
-    <div class="w-full space-y-6 px-4 py-4 xl:px-8">
-
-        <div class="flex flex-wrap items-end justify-between gap-3">
-            <div>
-                <p class="text-sm text-base-content/60">{{ $day->translatedFormat('l, d.m.Y') }}</p>
-            </div>
-            <div class="flex flex-wrap gap-2">
-                <a href="{{ route('admin-time-entries.create', ['date' => $day->toDateString()]) }}" data-entry-modal-trigger class="btn btn-sm btn-primary"><x-icon name="add" /> {{ __('Verwaltungszeit') }}</a>
-                <a href="{{ route('today.show', ['date' => $day->copy()->subDay()->toDateString()]) }}" class="btn btn-sm btn-ghost">← {{ __('Vortag') }}</a>
-                <a href="{{ route('today.show') }}" class="btn btn-sm btn-ghost">{{ __('Heute') }}</a>
-                <a href="{{ route('today.show', ['date' => $day->copy()->addDay()->toDateString()]) }}" class="btn btn-sm btn-ghost">{{ __('Folgetag') }} →</a>
-                <a href="{{ route('attendance.index') }}" class="btn btn-sm btn-ghost"><x-icon name="badge" /> {{ __('Stempelungen') }}</a>
-            </div>
-        </div>
+    <x-page-shell gap="6">
+        <x-slot:toolbar>
+            <x-page-toolbar :subtitle="$day->translatedFormat('l, d.m.Y')">
+                <x-slot:actions>
+                    <a href="{{ route('admin-time-entries.create', ['date' => $day->toDateString()]) }}" data-entry-modal-trigger class="btn btn-sm btn-primary"><x-icon name="add" /> {{ __('Verwaltungszeit') }}</a>
+                    <a href="{{ route('today.show', ['date' => $day->copy()->subDay()->toDateString()]) }}" class="btn btn-sm btn-ghost">← {{ __('Vortag') }}</a>
+                    <a href="{{ route('today.show') }}" class="btn btn-sm btn-ghost">{{ __('Heute') }}</a>
+                    <a href="{{ route('today.show', ['date' => $day->copy()->addDay()->toDateString()]) }}" class="btn btn-sm btn-ghost">{{ __('Folgetag') }} →</a>
+                    <a href="{{ route('attendance.index') }}" class="btn btn-sm btn-ghost"><x-icon name="badge" /> {{ __('Stempelungen') }}</a>
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
 
         {{-- Soll / Ist / Saldo --}}
         <section class="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -157,5 +155,5 @@
                 </section>
             </div>
         </div>
-    </div>
+    </x-page-shell>
 @endsection

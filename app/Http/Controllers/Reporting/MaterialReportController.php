@@ -1,0 +1,192 @@
+<?php
+
+/*
+ * Created on   : Sun May 17 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : MaterialReportController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Http\Controllers\Reporting;
+
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Controller;
+use App\Models\MaterialUsage;
+use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+
+/**
+ * Materialverbrauch im Zeitraum, basierend auf MaterialUsage über Timesheet.work_date.
+ */
+class MaterialReportController extends Controller
+{
+    use ResolvesGlobalDateRange;
+
+    public function index(Request $request): View|SymfonyResponse
+    {
+        $userId = (int) Auth::id();
+        $authUser = Auth::user();
+        $isAdmin = $authUser instanceof User && $authUser->isAdmin();
+        $scope = $request->string('scope', 'mine')->toString();
+        if ($scope !== 'team' || ! $isAdmin) {
+            $scope = 'mine';
+        }
+
+        $range = $this->globalDateRange();
+        $from = $range['from']->toDateString();
+        $to = $range['to']->toDateString();
+
+        $aggregation = $this->aggregate($from, $to, $scope, $userId);
+
+        if ($request->query('export') === 'csv') {
+            return $this->exportCsv($aggregation, $from, $to);
+        }
+        if ($request->query('export') === 'pdf') {
+            return $this->exportPdf($aggregation, $from, $to, $scope);
+        }
+
+        return view('reports.materials', [
+            'from' => $from,
+            'to' => $to,
+            'scope' => $scope,
+            'isAdmin' => $isAdmin,
+            'rows' => $aggregation['rows'],
+            'totals' => $aggregation['totals'],
+        ]);
+    }
+
+    /**
+     * @return array{
+     *   rows: array<int, array{
+     *     material_id: int|null,
+     *     sku: string|null,
+     *     name: string,
+     *     unit: string,
+     *     quantity: float,
+     *     line_total_net: float,
+     *     usage_count: int
+     *   }>,
+     *   totals: array{materials:int, usage_count:int, line_total_net:float}
+     * }
+     */
+    private function aggregate(string $from, string $to, string $scope, int $userId): array
+    {
+        $q = MaterialUsage::query()
+            ->with(['material:id,sku,name,unit'])
+            ->whereHas('timesheet', function ($w) use ($from, $to, $scope, $userId): void {
+                $w->whereBetween('work_date', [$from, $to]);
+                if ($scope === 'mine') {
+                    $w->where('user_id', $userId);
+                }
+            });
+
+        /** @var \Illuminate\Database\Eloquent\Collection<int, MaterialUsage> $usages */
+        $usages = $q->get(['id', 'material_id', 'timesheet_id', 'description', 'quantity', 'unit', 'unit_price', 'line_total_net']);
+
+        /** @var array<string, array{material_id: int|null, sku: string|null, name: string, unit: string, quantity: float, line_total_net: float, usage_count: int}> $byKey */
+        $byKey = [];
+        $sumNet = 0.0;
+        foreach ($usages as $u) {
+            $mid = $u->material_id !== null ? (int) $u->material_id : null;
+            $material = $mid !== null ? $u->material : null;
+            $sku = $material?->sku;
+            $name = $material !== null ? $material->name : (string) ($u->description ?? __('Ohne Material'));
+            $unit = (string) $u->unit;
+            $key = ($mid ?? 'null').'|'.$unit;
+
+            if (! isset($byKey[$key])) {
+                $byKey[$key] = [
+                    'material_id' => $mid,
+                    'sku' => $sku,
+                    'name' => $name,
+                    'unit' => $unit,
+                    'quantity' => 0.0,
+                    'line_total_net' => 0.0,
+                    'usage_count' => 0,
+                ];
+            }
+            $byKey[$key]['quantity'] += (float) $u->quantity;
+            $byKey[$key]['line_total_net'] += (float) $u->line_total_net;
+            $byKey[$key]['usage_count']++;
+            $sumNet += (float) $u->line_total_net;
+        }
+
+        $rows = array_values($byKey);
+        usort($rows, static fn ($a, $b): int => $b['line_total_net'] <=> $a['line_total_net']);
+
+        $distinctMaterials = count(array_unique(array_map(static fn ($r): string => ($r['material_id'] ?? 'null').'', $rows)));
+
+        return [
+            'rows' => $rows,
+            'totals' => [
+                'materials' => $distinctMaterials,
+                'usage_count' => $usages->count(),
+                'line_total_net' => $sumNet,
+            ],
+        ];
+    }
+
+    /**
+     * @param  array{rows: array<int, array{material_id:int|null, sku:string|null, name:string, unit:string, quantity:float, line_total_net:float, usage_count:int}>, totals: array{materials:int, usage_count:int, line_total_net:float}}  $agg
+     */
+    private function exportCsv(array $agg, string $from, string $to): Response
+    {
+        $filename = sprintf('materialien_%s_%s.csv', $from, $to);
+        $rows = [];
+        $rows[] = ['SKU', 'Material', 'Einheit', 'Menge', 'Verwendungen', 'Netto €'];
+        foreach ($agg['rows'] as $r) {
+            $rows[] = [
+                $r['sku'] ?? '',
+                $r['name'],
+                $r['unit'],
+                number_format($r['quantity'], 3, '.', ''),
+                $r['usage_count'],
+                number_format($r['line_total_net'], 2, '.', ''),
+            ];
+        }
+        $rows[] = ['', 'GESAMT', '', '', $agg['totals']['usage_count'], number_format($agg['totals']['line_total_net'], 2, '.', '')];
+
+        $csv = '';
+        foreach ($rows as $row) {
+            $csv .= implode(';', array_map(static function ($v): string {
+                $s = (string) $v;
+                if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
+                    $s = '"'.str_replace('"', '""', $s).'"';
+                }
+
+                return $s;
+            }, $row))."\r\n";
+        }
+
+        return response("\xEF\xBB\xBF".$csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+        ]);
+    }
+
+    /**
+     * @param  array{rows: array<int, array{material_id:int|null, sku:string|null, name:string, unit:string, quantity:float, line_total_net:float, usage_count:int}>, totals: array{materials:int, usage_count:int, line_total_net:float}}  $agg
+     */
+    private function exportPdf(array $agg, string $from, string $to, string $scope): SymfonyResponse
+    {
+        $filename = sprintf('materialien_%s_%s.pdf', $from, $to);
+        /** @var \Barryvdh\DomPDF\PDF $pdf */
+        $pdf = Pdf::loadView('reports.pdf.materials', [
+            'rows' => $agg['rows'],
+            'totals' => $agg['totals'],
+            'from' => $from,
+            'to' => $to,
+            'scope' => $scope,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->download($filename);
+    }
+}

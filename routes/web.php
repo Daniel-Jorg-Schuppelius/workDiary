@@ -50,10 +50,20 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PublicSignatureController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\QualificationController;
+use App\Http\Controllers\Reporting\AbsencesReportController;
+use App\Http\Controllers\Reporting\AttendanceReportController;
+use App\Http\Controllers\Reporting\AuditActivityReportController;
+use App\Http\Controllers\Reporting\BillingReportController;
+use App\Http\Controllers\Reporting\CoverageReportController;
 use App\Http\Controllers\Reporting\CustomerProjectReportController;
+use App\Http\Controllers\Reporting\FleetReportController;
+use App\Http\Controllers\Reporting\OnCallReportController;
+use App\Http\Controllers\Reporting\MaterialReportController;
 use App\Http\Controllers\Reporting\MyMonthReportController;
 use App\Http\Controllers\Reporting\MyYearReportController;
+use App\Http\Controllers\Reporting\OperationsReportController;
 use App\Http\Controllers\Reporting\ProjectDetailsReportController;
+use App\Http\Controllers\Reporting\QualificationReportController;
 use App\Http\Controllers\Reporting\WeekByUserReportController;
 use App\Http\Controllers\Reporting\WorkBalanceReportController;
 use App\Http\Controllers\ScheduleController;
@@ -324,6 +334,16 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/week-by-user', [WeekByUserReportController::class, 'index'])->name('reports.week-by-user');
     Route::get('reports/project-details', [ProjectDetailsReportController::class, 'index'])->name('reports.project-details');
     Route::get('reports/work-balance', [WorkBalanceReportController::class, 'index'])->name('reports.work-balance');
+    Route::get('reports/fleet', [FleetReportController::class, 'index'])->name('reports.fleet');
+    Route::get('reports/on-call', [OnCallReportController::class, 'index'])->name('reports.on-call');
+    Route::get('reports/coverage', [CoverageReportController::class, 'index'])->name('reports.coverage');
+    Route::get('reports/absences', [AbsencesReportController::class, 'index'])->name('reports.absences');
+    Route::get('reports/operations', [OperationsReportController::class, 'index'])->name('reports.operations');
+    Route::get('reports/materials', [MaterialReportController::class, 'index'])->name('reports.materials');
+    Route::get('reports/billing', [BillingReportController::class, 'index'])->name('reports.billing');
+    Route::get('reports/qualifications', [QualificationReportController::class, 'index'])->name('reports.qualifications');
+    Route::get('reports/attendance', [AttendanceReportController::class, 'index'])->name('reports.attendance');
+    Route::get('reports/audit-activity', [AuditActivityReportController::class, 'index'])->name('reports.audit-activity');
 
     // ── Material-Stamm (Admin) ──────────────────────────────────────────────
     Route::resource('materials', MaterialController::class)->except('show');

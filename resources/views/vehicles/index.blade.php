@@ -5,7 +5,7 @@
 @section('content')
     <x-page-shell>
         <x-slot:toolbar>
-            <x-page-toolbar :title="__('Fuhrpark')" :subtitle="__('Fahrzeuge der Organisation')">
+            <x-page-toolbar>
                 <x-slot:actions>
                     <a href="{{ route('vehicles.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
                         <x-icon name="add" /> {{ __('Neues Fahrzeug') }}

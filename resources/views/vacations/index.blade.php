@@ -5,21 +5,6 @@
 @section('content')
 <x-page-shell>
 
-    {{-- Aktionen --}}
-    <x-slot:toolbar>
-        <x-page-toolbar>
-            <x-slot:actions>
-                @can('create', \App\Models\Vacation::class)
-                    <a href="{{ route('vacations.create') }}?dialog=1"
-                       class="btn btn-primary btn-sm"
-               data-entry-modal-trigger>
-                + {{ __('Neuer Antrag') }}
-            </a>
-        @endcan
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
-
     {{-- KPI-Tiles --}}
     <div class="grid grid-cols-1 gap-3 flex-none sm:grid-cols-3">
         <x-kpi-tile :label="__('Ausstehend')"       :value="$counts['pending']"  tone="warning" />
@@ -27,38 +12,47 @@
         <x-kpi-tile :label="__('Gesamt (Jahr)')"    :value="$counts['total']"    tone="neutral" />
     </div>
 
-    {{-- Toolbar --}}
-    <div class="flex flex-none flex-wrap items-center gap-2">
-        <form method="GET" action="{{ route('vacations.index') }}" class="flex flex-wrap items-center gap-2">
-            @if ($isAdmin && $users->isNotEmpty())
-                <select name="user_id" class="select select-bordered select-sm" onchange="this.form.submit()">
+    {{-- Filter --}}
+    <x-filter-bar :action="route('vacations.index')" :reset="route('vacations.index')">
+        @if ($isAdmin && $users->isNotEmpty())
+            <x-filter-field :label="__('Mitarbeiter')" for="vac-user">
+                <select id="vac-user" name="user_id" class="select select-bordered select-sm" onchange="this.form.submit()">
                     <option value="">{{ __('Alle Mitarbeiter') }}</option>
                     @foreach ($users as $u)
                         <option value="{{ $u['id'] ?? $u->id }}" @selected((string) ($filters['user_id'] ?? '') === (string) ($u['id'] ?? $u->id))>{{ $u['name'] ?? $u->name }}</option>
                     @endforeach
                 </select>
-            @endif
+            </x-filter-field>
+        @endif
 
-            <select name="status" class="select select-bordered select-sm" onchange="this.form.submit()">
+        <x-filter-field :label="__('Status')" for="vac-status">
+            <select id="vac-status" name="status" class="select select-bordered select-sm" onchange="this.form.submit()">
                 <option value="">{{ __('Alle Status') }}</option>
                 @foreach (\App\Models\Vacation::$statuses as $s)
                     <option value="{{ $s }}" @selected(($filters['status'] ?? '') === $s)>{{ __($s) }}</option>
                 @endforeach
             </select>
+        </x-filter-field>
 
-            <select name="type" class="select select-bordered select-sm" onchange="this.form.submit()">
+        <x-filter-field :label="__('Typ')" for="vac-type">
+            <select id="vac-type" name="type" class="select select-bordered select-sm" onchange="this.form.submit()">
                 <option value="">{{ __('Alle Typen') }}</option>
                 <option value="{{ \App\Models\Vacation::TYPE_VACATION }}" @selected(($filters['type'] ?? '') === \App\Models\Vacation::TYPE_VACATION)>{{ __('Urlaub') }}</option>
                 <option value="{{ \App\Models\Vacation::TYPE_SICK }}"     @selected(($filters['type'] ?? '') === \App\Models\Vacation::TYPE_SICK)>{{ __('Krank') }}</option>
                 <option value="{{ \App\Models\Vacation::TYPE_SPECIAL }}"  @selected(($filters['type'] ?? '') === \App\Models\Vacation::TYPE_SPECIAL)>{{ __('Sonderurlaub') }}</option>
                 <option value="{{ \App\Models\Vacation::TYPE_UNPAID }}"   @selected(($filters['type'] ?? '') === \App\Models\Vacation::TYPE_UNPAID)>{{ __('Unbezahlt') }}</option>
             </select>
-
-            @if (array_filter($filters))
-                <a href="{{ route('vacations.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurücksetzen') }}</a>
-            @endif
-        </form>
-    </div>
+        </x-filter-field>
+        <x-slot:extra>
+            @can('create', \App\Models\Vacation::class)
+                <a href="{{ route('vacations.create') }}?dialog=1"
+                   class="btn btn-primary btn-sm"
+                   data-entry-modal-trigger>
+                    + {{ __('Neuer Antrag') }}
+                </a>
+            @endcan
+        </x-slot:extra>
+    </x-filter-bar>
 
     <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm">
                 <thead class="bg-base-200">

@@ -5,45 +5,38 @@
 @section('content')
 <x-page-shell overflow="clip">
     {{-- Filter-Leiste --}}
-    <form method="GET" action="{{ route('diary.index') }}" class="flex-none rounded-box border border-base-300 bg-base-100 p-5 shadow-xs">
-        <div class="flex flex-wrap items-end gap-4">
-            <div class="flex-1 w-full sm:min-w-60 sm:w-auto">
-                <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-base-content/60">{{ __('Suche') }}</label>
-                <input type="search" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="{{ __('Inhalt oder Antwort …') }}" class="input input-bordered input-sm w-full">
-            </div>
-            <div class="flex-1 min-w-40">
-                <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-base-content/60">{{ __('Status') }}</label>
-                <select name="status" class="select select-bordered select-sm w-full">
-                    <option value="all" @selected(($filters['status'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
-                    <option value="2" @selected(($filters['status'] ?? '') === '2')>{{ __('Offen') }}</option>
-                    <option value="3" @selected(($filters['status'] ?? '') === '3')>{{ __('Problem') }}</option>
-                    <option value="1" @selected(($filters['status'] ?? '') === '1')>{{ __('Bestätigt') }}</option>
-                    <option value="-1" @selected(($filters['status'] ?? '') === '-1')>{{ __('Erledigt') }}</option>
+    <x-filter-bar :action="route('diary.index')" :reset="array_filter($filters) ? route('diary.index') : null">
+        <x-filter-field :label="__('Suche')" for="diary-q" class="flex-1 min-w-60">
+            <input id="diary-q" type="search" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="{{ __('Inhalt oder Antwort …') }}" class="input input-bordered input-sm w-full">
+        </x-filter-field>
+        <x-filter-field :label="__('Status')" for="diary-status" class="min-w-40">
+            <select id="diary-status" name="status" class="select select-bordered select-sm w-full">
+                <option value="all" @selected(($filters['status'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
+                <option value="2" @selected(($filters['status'] ?? '') === '2')>{{ __('Offen') }}</option>
+                <option value="3" @selected(($filters['status'] ?? '') === '3')>{{ __('Problem') }}</option>
+                <option value="1" @selected(($filters['status'] ?? '') === '1')>{{ __('Bestätigt') }}</option>
+                <option value="-1" @selected(($filters['status'] ?? '') === '-1')>{{ __('Erledigt') }}</option>
+            </select>
+        </x-filter-field>
+        @if (($allTags ?? collect())->isNotEmpty())
+            <x-filter-field :label="__('Tag')" for="diary-tag">
+                <select id="diary-tag" name="tag" class="select select-bordered select-sm">
+                    <option value="">—</option>
+                    @foreach ($allTags as $tag)
+                        <option value="{{ $tag->id }}" @selected((int) ($filters['tag'] ?? 0) === $tag->id)>{{ $tag->name }}</option>
+                    @endforeach
                 </select>
-            </div>
-            @if (($allTags ?? collect())->isNotEmpty())
-                <div>
-                    <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-base-content/60">{{ __('Tag') }}</label>
-                    <select name="tag" class="select select-bordered select-sm">
-                        <option value="">—</option>
-                        @foreach ($allTags as $tag)
-                            <option value="{{ $tag->id }}" @selected((int) ($filters['tag'] ?? 0) === $tag->id)>{{ $tag->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            @endif
-            <div class="flex items-center gap-2 pb-2">
-                <input type="checkbox" id="mine" name="mine" value="1" @checked(!empty($filters['mine'])) class="checkbox checkbox-primary checkbox-sm">
-                <label for="mine" class="text-sm text-base-content/75">{{ __('Nur meine') }}</label>
-            </div>
-            <div class="flex items-center gap-2 pb-2">
-                <input type="checkbox" id="archived" name="archived" value="1" @checked(!empty($filters['archived'])) class="checkbox checkbox-primary checkbox-sm">
-                <label for="archived" class="text-sm text-base-content/75">{{ __('Archivierte zeigen') }}</label>
-            </div>
-            <button type="submit" class="btn btn-primary btn-sm">{{ __('Filtern') }}</button>
-            @if (array_filter($filters))
-                <a href="{{ route('diary.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurücksetzen') }}</a>
-            @endif
+            </x-filter-field>
+        @endif
+        <label class="flex items-center gap-2 pb-2">
+            <input type="checkbox" id="mine" name="mine" value="1" @checked(!empty($filters['mine'])) class="checkbox checkbox-primary checkbox-sm">
+            <span class="text-sm text-base-content/75">{{ __('Nur meine') }}</span>
+        </label>
+        <label class="flex items-center gap-2 pb-2">
+            <input type="checkbox" id="archived" name="archived" value="1" @checked(!empty($filters['archived'])) class="checkbox checkbox-primary checkbox-sm">
+            <span class="text-sm text-base-content/75">{{ __('Archivierte zeigen') }}</span>
+        </label>
+        <x-slot:extra>
             <div class="dropdown dropdown-end">
                 <label tabindex="0" class="btn btn-sm btn-outline">↓ {{ __('Export') }}</label>
                 <ul tabindex="0" class="dropdown-content menu z-50 mt-1 w-44 rounded-box border border-base-300 bg-base-100 p-2 shadow">
@@ -51,8 +44,8 @@
                     <li><a href="{{ route('diary.export.pdf', $filters) }}" target="_blank">{{ __('PDF (Druckansicht)') }}</a></li>
                 </ul>
             </div>
-        </div>
-    </form>
+        </x-slot:extra>
+    </x-filter-bar>
 
     {{-- Zähler --}}
     <div class="flex-none grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

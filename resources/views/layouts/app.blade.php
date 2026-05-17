@@ -197,9 +197,6 @@
             }
         </style>
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
-            <script>
-                window.__translations = @json(app(\App\Services\I18n\JsTranslationProvider::class)->all());
-            </script>
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @else
             <style>
@@ -281,9 +278,7 @@
                             $manageNavItems = [];
                             $adminNavItems  = [];
                             if ($isLegacyAdmin) {
-                                if ($isLegacyMode) {
-                                    $manageNavItems[] = ['route' => 'legacy.users.index', 'label' => __('Mitarbeiter'), 'icon' => 'group',           'modal' => false];
-                                }
+                                $manageNavItems[] = ['route' => 'legacy.users.index', 'label' => __('Mitarbeiter'), 'icon' => 'group',           'modal' => false];
                                 $manageNavItems[] = ['route' => 'holidays.index',     'label' => __('Feiertage'),   'icon' => 'celebration',     'modal' => false];
                                 if (! $isLegacyMode) {
                                     $manageNavItems[] = ['route' => 'qualifications.index',         'label' => __('Qualifikationen'),  'icon' => 'workspace_premium','modal' => false];
@@ -298,7 +293,7 @@
                                 $adminNavItems[] = ['route' => 'admin.legacy-migration.index',      'label' => __('Legacy-Migration'), 'icon' => 'sync_alt',         'modal' => false];
                             }
                             if (! $isLegacyMode && \Illuminate\Support\Facades\Gate::allows('manage-members')) {
-                                $manageNavItems[] = ['route' => 'org.members.index', 'label' => __('Mitarbeiter'), 'icon' => 'group', 'modal' => false];
+                                $manageNavItems[] = ['route' => 'org.members.index', 'label' => __('Mitglieder'), 'icon' => 'badge', 'modal' => false];
                             }
                             if (! $isLegacyMode) {
                                 $manageNavItems[] = ['route' => 'activity-categories.index', 'label' => __('Tätigkeitskategorien'), 'icon' => 'category', 'modal' => false];
@@ -381,6 +376,16 @@
                                         ['route' => 'reports.week-by-user',     'label' => __('Woche pro Mitarbeiter'), 'icon' => 'date_range',       'modal' => false, 'matches' => ['reports.week-by-user']],
                                         ['route' => 'reports.customer-project', 'label' => __('Kunden & Projekte'), 'icon' => 'pie_chart',           'modal' => false, 'matches' => ['reports.customer-project']],
                                         ['route' => 'reports.project-details',  'label' => __('Projekt-Details'),    'icon' => 'analytics',           'modal' => false, 'matches' => ['reports.project-details']],
+                                        ['route' => 'reports.fleet',            'label' => __('Fuhrpark'),           'icon' => 'directions_car',      'modal' => false, 'matches' => ['reports.fleet']],
+                                        ['route' => 'reports.on-call',          'label' => __('Notdienst'),          'icon' => 'notifications_active','modal' => false, 'matches' => ['reports.on-call']],
+                                        ['route' => 'reports.coverage',         'label' => __('Coverage'),           'icon' => 'group_work',          'modal' => false, 'matches' => ['reports.coverage']],
+                                        ['route' => 'reports.absences',         'label' => __('Urlaub & Flex'),      'icon' => 'event_busy',          'modal' => false, 'matches' => ['reports.absences']],
+                                        ['route' => 'reports.operations',       'label' => __('Operations'),         'icon' => 'assignment',          'modal' => false, 'matches' => ['reports.operations']],
+                                        ['route' => 'reports.materials',        'label' => __('Materialien'),        'icon' => 'inventory',           'modal' => false, 'matches' => ['reports.materials']],
+                                        ['route' => 'reports.billing',          'label' => __('Billing'),            'icon' => 'request_quote',       'modal' => false, 'matches' => ['reports.billing']],
+                                        ['route' => 'reports.qualifications',   'label' => __('Qualifikationen'),    'icon' => 'verified',            'modal' => false, 'matches' => ['reports.qualifications']],
+                                        ['route' => 'reports.attendance',       'label' => __('Anwesenheit'),        'icon' => 'co_present',          'modal' => false, 'matches' => ['reports.attendance']],
+                                        ['route' => 'reports.audit-activity',   'label' => __('Audit-Aktivität'),    'icon' => 'security',            'modal' => false, 'matches' => ['reports.audit-activity']],
                                     ],
                                 ];
                                 $sidebarSections[] = [

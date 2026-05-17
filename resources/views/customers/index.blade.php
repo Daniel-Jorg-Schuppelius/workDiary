@@ -21,15 +21,6 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
-            <form method="GET" action="{{ route('customers.index') }}" class="join">
-                <input type="hidden" name="status" value="{{ $status }}">
-                <input type="text" name="q" value="{{ $search }}" placeholder="{{ __('Suche…') }}"
-                       class="input input-sm input-bordered join-item w-full sm:w-48">
-                <button type="submit" class="btn btn-sm btn-ghost join-item gap-1">
-                    <x-icon name="search" />
-                    <span class="hidden sm:inline">{{ __('Suchen') }}</span>
-                </button>
-            </form>
             <x-slot:actions>
                 <a href="{{ route('customers.export', array_filter(['status' => $status, 'q' => $search])) }}"
                    class="btn btn-sm btn-ghost gap-1">
@@ -63,6 +54,14 @@
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    <x-filter-bar :action="route('customers.index')" :reset="$search !== '' ? route('customers.index', ['status' => $status]) : null">
+        <input type="hidden" name="status" value="{{ $status }}">
+        <x-filter-field :label="__('Suche')" for="cust-q" class="flex-1 min-w-60">
+            <input id="cust-q" type="text" name="q" value="{{ $search }}" placeholder="{{ __('Suche…') }}"
+                   class="input input-sm input-bordered">
+        </x-filter-field>
+    </x-filter-bar>
 
     {{-- Tabs: Status --}}
     <div role="tablist" class="tabs tabs-box self-start">

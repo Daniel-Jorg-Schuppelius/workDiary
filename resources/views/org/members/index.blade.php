@@ -4,7 +4,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('Mitarbeiter')">
+        <x-page-toolbar>
             <x-slot:actions>
                 <a href="{{ route('org.members.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
                     + {{ __('Mitarbeiter anlegen') }}

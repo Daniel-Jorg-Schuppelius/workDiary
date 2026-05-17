@@ -3,36 +3,28 @@
 @section('nav-title', __('Dienstpläne'))
 @section('content')
 <x-page-shell gap="6">
-    <x-slot:toolbar>
-        <x-page-toolbar>
-            <form method="GET" class="flex flex-wrap items-center gap-2">
-                <select name="period" class="select select-sm select-bordered" onchange="this.form.submit()">
-                    <option value="">{{ __('Alle Zeiträume') }}</option>
-                    @foreach (\App\Models\DutyPlan::$periodTypes as $pt)
-                        <option value="{{ $pt }}" @selected($period === $pt)>{{ __('duty_plan.period.' . $pt) }}</option>
-                    @endforeach
-                </select>
-                <select name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
-                    <option value="">{{ __('Alle Status') }}</option>
-                    @foreach (\App\Models\DutyPlan::$statuses as $st)
-                        <option value="{{ $st }}" @selected($status === $st)>{{ __('duty_plan.status.' . $st) }}</option>
-                    @endforeach
-                </select>
-            </form>
-            <x-slot:actions>
-                @can('create', \App\Models\DutyPlan::class)
-                    <a href="{{ route('duty-plans.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm gap-1">
-                        <x-icon name="add" /><span>{{ __('Dienstplan anlegen') }}</span>
-                    </a>
-                @endcan
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+    <x-filter-bar :action="route('duty-plans.index')" :reset="route('duty-plans.index')">
+        <x-filter-field :label="__('Status')" for="dp-status">
+            <select id="dp-status" name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
+                <option value="">{{ __('Alle Status') }}</option>
+                @foreach (\App\Models\DutyPlan::$statuses as $st)
+                    <option value="{{ $st }}" @selected($status === $st)>{{ __('duty_plan.status.' . $st) }}</option>
+                @endforeach
+            </select>
+        </x-filter-field>
+        <x-slot:extra>
+            @can('create', \App\Models\DutyPlan::class)
+                <a href="{{ route('duty-plans.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm gap-1">
+                    <x-icon name="add" /><span>{{ __('Dienstplan anlegen') }}</span>
+                </a>
+            @endcan
+        </x-slot:extra>
+    </x-filter-bar>
 
     <x-table>
         <thead>
             <tr>
-                <?php $p = ['status' => $status, 'period' => $period]; ?>
+                <?php $p = ['status' => $status]; ?>
                 <th><x-sort-th column="name" :route="route('duty-plans.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Titel') }}</x-sort-th></th>
                 <th><x-sort-th column="from_date" :route="route('duty-plans.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'" default="from_date">{{ __('Zeitraum') }}</x-sort-th></th>
                 <th><x-sort-th column="period_type" :route="route('duty-plans.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Typ') }}</x-sort-th></th>

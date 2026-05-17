@@ -12,30 +12,32 @@
     @endphp
     <x-page-shell>
         <x-slot:toolbar>
-            <x-card>
-            <form method="GET" class="flex flex-wrap gap-2">
-                <select name="event" class="select select-bordered select-sm">
-                    <option value="">{{ __('Aktion') }}</option>
-                    @foreach ($events as $ev)
-                        <option value="{{ $ev }}" @selected(($filters['event'] ?? '') === $ev)>{{ $ev }}</option>
-                    @endforeach
-                </select>
-                <select name="type" class="select select-bordered select-sm">
-                    <option value="">{{ __('Typ') }}</option>
-                    @foreach ($types as $key => $class)
-                        <option value="{{ $key }}" @selected(($filters['type'] ?? '') === $key)>{{ $key }}</option>
-                    @endforeach
-                </select>
-                <select name="user_id" class="select select-bordered select-sm">
-                    <option value="">{{ __('Benutzer') }}</option>
-                    @foreach ($users as $u)
-                        <option value="{{ $u->id }}" @selected((int) ($filters['user_id'] ?? 0) === $u->id)>{{ $u->name }}</option>
-                    @endforeach
-                </select>
-                <button class="btn btn-primary btn-sm">{{ __('Filtern') }}</button>
-                <a href="{{ route('audit.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurücksetzen') }}</a>
-            </form>
-            </x-card>
+            <x-filter-bar :action="route('audit.index')" :reset="route('audit.index')">
+                <x-filter-field :label="__('Aktion')" for="audit-event">
+                    <select id="audit-event" name="event" class="select select-bordered select-sm">
+                        <option value="">{{ __('alle') }}</option>
+                        @foreach ($events as $ev)
+                            <option value="{{ $ev }}" @selected(($filters['event'] ?? '') === $ev)>{{ $ev }}</option>
+                        @endforeach
+                    </select>
+                </x-filter-field>
+                <x-filter-field :label="__('Typ')" for="audit-type">
+                    <select id="audit-type" name="type" class="select select-bordered select-sm">
+                        <option value="">{{ __('alle') }}</option>
+                        @foreach ($types as $key => $class)
+                            <option value="{{ $key }}" @selected(($filters['type'] ?? '') === $key)>{{ $key }}</option>
+                        @endforeach
+                    </select>
+                </x-filter-field>
+                <x-filter-field :label="__('Benutzer')" for="audit-user">
+                    <select id="audit-user" name="user_id" class="select select-bordered select-sm">
+                        <option value="">{{ __('alle') }}</option>
+                        @foreach ($users as $u)
+                            <option value="{{ $u->id }}" @selected((int) ($filters['user_id'] ?? 0) === $u->id)>{{ $u->name }}</option>
+                        @endforeach
+                    </select>
+                </x-filter-field>
+            </x-filter-bar>
         </x-slot:toolbar>
 
         <x-table scroll="flex" :pinRows="true" :zebra="true" size="xs">

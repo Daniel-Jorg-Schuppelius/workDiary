@@ -12,7 +12,7 @@
 
     <x-page-shell gap="6">
         <x-slot:toolbar>
-            <x-page-toolbar :subtitle="$from->format('d.m.Y') . ' – ' . $to->format('d.m.Y')">
+            <x-page-toolbar>
                 <x-slot:actions>
                     <a href="{{ route('today.show') }}" class="btn btn-ghost btn-sm">
                         <x-icon name="today" /> {{ __('Heute-Übersicht') }}

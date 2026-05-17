@@ -16,28 +16,12 @@
     /** @var \App\Services\HolidayService $holidays */
     /** @var int $userFilter */
     /** @var bool $isAdmin */
-
-    $periodLabel = $view === 'month'
-        ? $anchor->translatedFormat('F Y')
-        : $from->translatedFormat('d.m.') . ' – ' . $to->translatedFormat('d.m.Y') . ' KW ' . $from->weekOfYear;
 @endphp
 
 <x-page-shell overflow="clip">
 
     {{-- ── Filter & Toolbar ────────────────────────────────────────────── --}}
     <x-filter-bar :action="route('schedule.index')" class="bg-base-100!">
-        <input type="hidden" name="view" value="{{ $view }}">
-
-        <span class="font-['Space_Grotesk'] text-sm font-semibold whitespace-nowrap">{{ $periodLabel }}</span>
-
-        {{-- View toggle --}}
-        <div class="join">
-            <a href="{{ route('schedule.index', array_filter(['view' => 'week', 'user' => $userFilter ?: null])) }}"
-               class="btn btn-sm join-item {{ $view === 'week' ? 'btn-primary' : 'btn-ghost' }}">{{ __('Woche') }}</a>
-            <a href="{{ route('schedule.index', array_filter(['view' => 'month', 'user' => $userFilter ?: null])) }}"
-               class="btn btn-sm join-item {{ $view === 'month' ? 'btn-primary' : 'btn-ghost' }}">{{ __('Monat') }}</a>
-        </div>
-
         {{-- User filter --}}
         <select name="user" class="select select-bordered select-sm w-full sm:w-auto sm:min-w-48" onchange="this.form.submit()">
             <option value="">{{ __('Alle Mitarbeiter') }}</option>
@@ -47,7 +31,7 @@
         </select>
 
         @if ($userFilter)
-            <a href="{{ route('schedule.index', ['view' => $view]) }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
+            <a href="{{ route('schedule.index') }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
         @endif
 
         @if ($isAdmin)

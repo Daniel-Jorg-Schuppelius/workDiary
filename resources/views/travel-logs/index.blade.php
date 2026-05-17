@@ -5,9 +5,7 @@
 @section('content')
     <x-page-shell>
         <x-slot:toolbar>
-            <x-page-toolbar :title="__('Fahrtenbuch')"
-                            :subtitle="__('Erfasste Fahrten') . ' — ' . $from->format('d.m.Y') . ' – ' . $to->format('d.m.Y')">
-                {{ __('Zeitraum übernommen aus dem Header. Mit der Auswahl oben links wechseln.') }}
+            <x-page-toolbar>
                 <x-slot:actions>
                     <a href="{{ route('travel-logs.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
                         <x-icon name="add" /> {{ __('Neue Fahrt') }}

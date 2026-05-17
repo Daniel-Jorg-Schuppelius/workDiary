@@ -3,38 +3,16 @@
 @section('nav-title', __('Feiertage'))
 
 @section('content')
-@php
-    $currentYear = (int) \Carbon\Carbon::now()->year;
-    $years = range($currentYear - 2, $currentYear + 3);
-@endphp
 
 <x-page-shell overflow="clip">
     <x-slot:toolbar>
-        <x-card>
-        <form method="GET" action="{{ route('holidays.index') }}">
-            <div class="flex flex-wrap items-end gap-3">
-                <div class="flex flex-col min-w-32">
-                    <label for="filter-year" class="label py-1">
-                        <span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Jahr') }}</span>
-                    </label>
-                    <select id="filter-year" name="year" class="select select-bordered select-sm" onchange="this.form.submit()">
-                        @foreach ($years as $y)
-                            <option value="{{ $y }}" @selected($y === $year)>{{ $y }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="ml-auto flex items-end gap-2">
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Filtern') }}</button>
-                    @if ((int) $year !== $currentYear)
-                        <a href="{{ route('holidays.index') }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
-                    @endif
-                    <a href="{{ route('holidays.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
-                        + {{ __('Eigener Feiertag') }}
-                    </a>
-                </div>
-            </div>
-        </form>
-        </x-card>
+        <x-page-toolbar>
+            <x-slot:actions>
+                <a href="{{ route('holidays.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
+                    + {{ __('Eigener Feiertag') }}
+                </a>
+            </x-slot:actions>
+        </x-page-toolbar>
     </x-slot:toolbar>
 
     {{-- Tabs: Jahresübersicht | Eigene Feiertage --}}

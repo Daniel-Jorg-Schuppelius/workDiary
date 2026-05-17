@@ -1,0 +1,120 @@
+@extends('layouts.app')
+@section('title', __('Audit-Aktivität'))
+@section('nav-title', __('Audit-Aktivität'))
+
+@section('content')
+@php
+    $eventLabels = [
+        'created'    => __('Angelegt'),
+        'updated'    => __('Geändert'),
+        'deleted'    => __('Gelöscht'),
+        'archived'   => __('Archiviert'),
+        'restored'   => __('Wiederhergestellt'),
+    ];
+    $shortType = function (?string $fqcn): string {
+        if ($fqcn === null || $fqcn === '') return '—';
+        $parts = explode('\\', $fqcn);
+        return end($parts) ?: $fqcn;
+    };
+@endphp
+
+<div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
+
+    <x-filter-bar :action="route('reports.audit-activity')" :reset="route('reports.audit-activity')">
+        <x-slot:extra>
+            <a href="{{ route('reports.audit-activity', ['export' => 'csv']) }}" class="btn btn-sm btn-outline gap-1">
+                <x-icon name="download" />CSV
+            </a>
+            <a href="{{ route('reports.audit-activity', ['export' => 'pdf']) }}" class="btn btn-sm btn-outline gap-1">
+                <x-icon name="picture_as_pdf" />PDF
+            </a>
+        </x-slot:extra>
+    </x-filter-bar>
+
+    <div class="stats stats-vertical sm:stats-horizontal w-full rounded-box border border-base-300 bg-base-100 shadow-xs">
+        <div class="stat"><div class="stat-title">{{ __('Events Σ') }}</div><div class="stat-value text-2xl">{{ $totals['total'] }}</div></div>
+        <div class="stat"><div class="stat-title">{{ __('Aktive User') }}</div><div class="stat-value text-2xl">{{ $totals['users'] }}</div></div>
+        <div class="stat"><div class="stat-title">{{ __('Entity-Typen') }}</div><div class="stat-value text-2xl">{{ $totals['types'] }}</div></div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Nach Event') }}</h3>
+            <table class="table table-zebra table-sm">
+                <thead><tr><th>{{ __('Event') }}</th><th class="text-right">{{ __('Anzahl') }}</th></tr></thead>
+                <tbody>
+                    @forelse ($byEvent as $ev => $c)
+                        <tr><td>{{ $eventLabels[$ev] ?? $ev }}</td><td class="text-right tabular-nums">{{ $c }}</td></tr>
+                    @empty
+                        <tr><td colspan="2" class="text-center text-base-content/50">{{ __('Keine Daten') }}</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Nach Entity-Typ (Top 20)') }}</h3>
+            <table class="table table-zebra table-sm">
+                <thead><tr><th>{{ __('Typ') }}</th><th class="text-right">{{ __('Anzahl') }}</th></tr></thead>
+                <tbody>
+                    @forelse ($byType as $t => $c)
+                        <tr><td class="text-xs">{{ $shortType($t) }}</td><td class="text-right tabular-nums">{{ $c }}</td></tr>
+                    @empty
+                        <tr><td colspan="2" class="text-center text-base-content/50">{{ __('Keine Daten') }}</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Nach User (Top 20)') }}</h3>
+            <table class="table table-zebra table-sm">
+                <thead><tr><th>{{ __('User') }}</th><th class="text-right">{{ __('Anzahl') }}</th></tr></thead>
+                <tbody>
+                    @forelse ($byUser as $u)
+                        <tr><td>{{ $u['user']?->name ?? '—' }}</td><td class="text-right tabular-nums">{{ $u['count'] }}</td></tr>
+                    @empty
+                        <tr><td colspan="2" class="text-center text-base-content/50">{{ __('Keine Daten') }}</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Letzte 100 Events') }}</h3>
+        @if ($recent->isEmpty())
+            <div class="rounded-box border border-base-300 bg-base-200 p-6 text-center text-sm text-base-content/60">
+                {{ __('Keine Events im Zeitraum.') }}
+            </div>
+        @else
+            <div class="overflow-x-auto">
+                <table class="table table-zebra table-xs">
+                    <thead>
+                        <tr>
+                            <th>{{ __('Zeitpunkt') }}</th>
+                            <th>{{ __('User') }}</th>
+                            <th>{{ __('Event') }}</th>
+                            <th>{{ __('Typ') }}</th>
+                            <th>{{ __('ID') }}</th>
+                            <th>{{ __('IP') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($recent as $log)
+                            <tr>
+                                <td class="tabular-nums">{{ optional($log->created_at)->format('d.m.Y H:i:s') }}</td>
+                                <td>{{ $log->user?->name ?? '—' }}</td>
+                                <td>{{ $eventLabels[$log->event] ?? $log->event }}</td>
+                                <td class="text-xs">{{ $shortType($log->auditable_type) }}</td>
+                                <td class="tabular-nums">{{ $log->auditable_id }}</td>
+                                <td class="text-xs text-base-content/60">{{ $log->ip }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
+</div>
+@endsection
