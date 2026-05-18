@@ -20,6 +20,7 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -30,10 +31,12 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Coverage / Soll-Ist-Besetzung: vergleicht CoverageRequirement-Sollvorgaben
  * gegen ScheduledShifts pro Schichttyp und Tag.
  */
-class CoverageReportController extends Controller {
+class CoverageReportController extends Controller
+{
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request): View|SymfonyResponse {
+    public function index(Request $request): View|SymfonyResponse
+    {
         $authUser = Auth::user();
         $isAdmin = $authUser instanceof User && $authUser->isAdmin();
         abort_unless($isAdmin, 403);
@@ -78,8 +81,9 @@ class CoverageReportController extends Controller {
      *   2: array{shift_types:int, required:int, scheduled:int, gap:int, fill_rate:float|null, days_under:int}
      * }
      */
-    private function aggregate(Carbon $from, Carbon $to): array {
-        /** @var \Illuminate\Database\Eloquent\Collection<int, ShiftType> $shiftTypes */
+    private function aggregate(Carbon $from, Carbon $to): array
+    {
+        /** @var Collection<int, ShiftType> $shiftTypes */
         $shiftTypes = ShiftType::query()->orderBy('name')->get();
         if ($shiftTypes->isEmpty()) {
             return [[], [], ['shift_types' => 0, 'required' => 0, 'scheduled' => 0, 'gap' => 0, 'fill_rate' => null, 'days_under' => 0]];
@@ -113,7 +117,7 @@ class CoverageReportController extends Controller {
             ->whereNotNull('shift_type_id')
             ->get(['date', 'shift_type_id'])
             ->each(function ($s) use (&$scheduledByKey): void {
-                $key = $s->date->toDateString() . '|' . $s->shift_type_id;
+                $key = $s->date->toDateString().'|'.$s->shift_type_id;
                 $scheduledByKey[$key] = ($scheduledByKey[$key] ?? 0) + 1;
             });
 
@@ -140,7 +144,7 @@ class CoverageReportController extends Controller {
                 if ($required <= 0) {
                     continue;
                 }
-                $scheduled = $scheduledByKey[$dateStr . '|' . $sid] ?? 0;
+                $scheduled = $scheduledByKey[$dateStr.'|'.$sid] ?? 0;
                 $gap = $scheduled - $required;
                 $reqSumBySid[$sid] = ($reqSumBySid[$sid] ?? 0) + $required;
                 $schedSumBySid[$sid] = ($schedSumBySid[$sid] ?? 0) + $scheduled;
@@ -182,7 +186,7 @@ class CoverageReportController extends Controller {
             $totUnderDays += $under;
         }
 
-        usort($underfilled, fn($a, $b) => $a['date'] <=> $b['date']);
+        usort($underfilled, fn ($a, $b) => $a['date'] <=> $b['date']);
 
         $totals = [
             'shift_types' => count($rows),
@@ -200,7 +204,8 @@ class CoverageReportController extends Controller {
      * @param  array<int, array{shiftType: ShiftType, required:int, scheduled:int, gap:int, fill_rate:float|null, days_under:int}>  $rows
      * @param  array{shift_types:int, required:int, scheduled:int, gap:int, fill_rate:float|null, days_under:int}  $totals
      */
-    private function exportCsv(array $rows, array $totals, string $from, string $to): Response {
+    private function exportCsv(array $rows, array $totals, string $from, string $to): Response
+    {
         $filename = sprintf('coverage_%s_%s.csv', $from, $to);
         $out = [['Schichttyp', 'Soll (Personentage)', 'Ist (Personentage)', 'Differenz', 'Erfüllung %', 'Tage mit Unterdeckung']];
         foreach ($rows as $r) {
@@ -227,16 +232,16 @@ class CoverageReportController extends Controller {
             $csv .= implode(';', array_map(static function ($v): string {
                 $s = (string) $v;
                 if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"' . str_replace('"', '""', $s) . '"';
+                    $s = '"'.str_replace('"', '""', $s).'"';
                 }
 
                 return $s;
-            }, $row)) . "\r\n";
+            }, $row))."\r\n";
         }
 
-        return response("\xEF\xBB\xBF" . $csv, 200, [
+        return response("\xEF\xBB\xBF".$csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
 
@@ -245,7 +250,8 @@ class CoverageReportController extends Controller {
      * @param  array<int, array{date:string, shiftType: ShiftType, required:int, scheduled:int, gap:int}>  $underfilled
      * @param  array{shift_types:int, required:int, scheduled:int, gap:int, fill_rate:float|null, days_under:int}  $totals
      */
-    private function exportPdf(array $rows, array $underfilled, array $totals, string $from, string $to): SymfonyResponse {
+    private function exportPdf(array $rows, array $underfilled, array $totals, string $from, string $to): SymfonyResponse
+    {
         $filename = sprintf('coverage_%s_%s.pdf', $from, $to);
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = Pdf::loadView('reports.pdf.coverage', [

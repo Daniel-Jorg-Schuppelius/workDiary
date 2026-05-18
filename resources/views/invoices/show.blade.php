@@ -4,7 +4,7 @@
 @section('nav-title', $invoice->number)
 
 @section('content')
-<div class="space-y-4">
+<x-page-shell>
     @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
@@ -74,5 +74,5 @@
             </tfoot>
         </table>
     </div>
-</div>
+</x-page-shell>
 @endsection

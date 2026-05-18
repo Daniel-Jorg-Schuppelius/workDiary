@@ -11,7 +11,7 @@
 
 namespace App\Services\Routing;
 
-use App\Models\ServiceOrder;
+use App\Models\DiaryEntry;
 use App\Models\Tour;
 use App\Models\TravelLog;
 use App\Models\User;
@@ -23,23 +23,23 @@ use RuntimeException;
 
 /**
  * High-level orchestration around the {@see Tour} aggregate: creation,
- * assignment of {@see ServiceOrder}s, optimisation via {@see TourOptimizer}
- * (with optional OSRM-backed routing) and the final hand-off to
- * {@see TravelLogService} which materialises the tour as actual travel logs.
+ * assignment of {@see DiaryEntry} stops (typed via EntryType), optimisation
+ * via {@see TourOptimizer} (with optional OSRM-backed routing) and the final
+ * hand-off to {@see TravelLogService} which materialises the tour as actual
+ * travel logs.
  */
-class TourService
-{
+class TourService {
     public function __construct(
         private readonly TourOptimizer $optimizer,
         private readonly OsrmRouter $router,
         private readonly TravelLogService $travelLogs,
-    ) {}
+    ) {
+    }
 
     /**
      * @param  list<int>  $orderIds  service-order IDs in the desired initial order
      */
-    public function createDraft(User $driver, CarbonInterface $date, array $orderIds = []): Tour
-    {
+    public function createDraft(User $driver, CarbonInterface $date, array $orderIds = []): Tour {
         return DB::transaction(function () use ($driver, $date, $orderIds): Tour {
             $tour = new Tour;
             $tour->organization_id = $driver->organization_id;
@@ -67,30 +67,31 @@ class TourService
     /**
      * @param  list<int>  $orderIds  ordered; tour_position is assigned in this order
      */
-    public function assignOrders(Tour $tour, array $orderIds): Tour
-    {
+    public function assignOrders(Tour $tour, array $orderIds): Tour {
         return DB::transaction(function () use ($tour, $orderIds): Tour {
-            // Release previously assigned orders no longer in the list.
-            ServiceOrder::query()
+            // Release previously assigned entries no longer in the list.
+            DiaryEntry::query()
                 ->where('tour_id', $tour->id)
                 ->whereNotIn('id', $orderIds)
-                ->update(['tour_id' => null, 'tour_position' => null, 'status' => ServiceOrder::STATUS_PLANNED]);
+                ->update(['tour_id' => null, 'tour_position' => null, 'status' => DiaryEntry::STATUS_OPEN]);
 
             $position = 1;
             foreach ($orderIds as $orderId) {
-                $order = ServiceOrder::query()->find($orderId);
-                if (! $order instanceof ServiceOrder) {
+                $entry = DiaryEntry::query()->find($orderId);
+                if (! $entry instanceof DiaryEntry) {
                     continue;
                 }
-                $order->tour_id = $tour->id;
-                $order->tour_position = $position++;
-                if ($order->assigned_user_id === null) {
-                    $order->assigned_user_id = $tour->user_id;
+                $attrs = [
+                    'tour_id' => $tour->id,
+                    'tour_position' => $position++,
+                ];
+                if ($entry->assigned_user_id === null) {
+                    $attrs['assigned_user_id'] = $tour->user_id;
                 }
-                if ($order->status === ServiceOrder::STATUS_PLANNED) {
-                    $order->status = ServiceOrder::STATUS_ASSIGNED;
+                if ($entry->status === DiaryEntry::STATUS_OPEN) {
+                    $attrs['status'] = DiaryEntry::STATUS_IN_PROGRESS;
                 }
-                $order->save();
+                $entry->fill($attrs)->save();
             }
 
             return $tour->refresh();
@@ -104,10 +105,9 @@ class TourService
      *
      * @return array{order: list<int>, distance_km: float, duration_minutes: int}
      */
-    public function recalculate(Tour $tour): array
-    {
+    public function recalculate(Tour $tour): array {
         return DB::transaction(function () use ($tour): array {
-            /** @var list<ServiceOrder> $stops */
+            /** @var list<DiaryEntry> $stops */
             $stops = $tour->orderedStops()->get()->all();
             $coords = [];
             $orderIds = [];
@@ -163,7 +163,7 @@ class TourService
 
             try {
                 if (count($routePoints) >= 2) {
-                    $coordPairs = array_map(static fn (Coordinate $c) => [$c->lng, $c->lat], $routePoints);
+                    $coordPairs = array_map(static fn(Coordinate $c) => [$c->lng, $c->lat], $routePoints);
                     $route = $this->router->route($coordPairs);
                     $distanceMeters = (int) round($route->distanceMeters);
                     $durationSeconds = $route->durationSeconds;
@@ -193,37 +193,33 @@ class TourService
         });
     }
 
-    public function plan(Tour $tour): Tour
-    {
+    public function plan(Tour $tour): Tour {
         $this->transitionTo($tour, Tour::STATUS_PLANNED, [Tour::STATUS_DRAFT]);
 
         return $tour->refresh();
     }
 
-    public function start(Tour $tour): Tour
-    {
+    public function start(Tour $tour): Tour {
         $this->transitionTo($tour, Tour::STATUS_IN_PROGRESS, [Tour::STATUS_DRAFT, Tour::STATUS_PLANNED]);
-        ServiceOrder::query()
+        DiaryEntry::query()
             ->where('tour_id', $tour->id)
-            ->where('status', ServiceOrder::STATUS_ASSIGNED)
-            ->update(['status' => ServiceOrder::STATUS_IN_PROGRESS]);
+            ->where('status', DiaryEntry::STATUS_OPEN)
+            ->update(['status' => DiaryEntry::STATUS_IN_PROGRESS]);
 
         return $tour->refresh();
     }
 
-    public function complete(Tour $tour): Tour
-    {
+    public function complete(Tour $tour): Tour {
         $this->transitionTo($tour, Tour::STATUS_COMPLETED, [Tour::STATUS_IN_PROGRESS, Tour::STATUS_PLANNED]);
-        ServiceOrder::query()
+        DiaryEntry::query()
             ->where('tour_id', $tour->id)
-            ->whereIn('status', [ServiceOrder::STATUS_ASSIGNED, ServiceOrder::STATUS_IN_PROGRESS])
-            ->update(['status' => ServiceOrder::STATUS_DONE]);
+            ->whereIn('status', [DiaryEntry::STATUS_OPEN, DiaryEntry::STATUS_IN_PROGRESS])
+            ->update(['status' => DiaryEntry::STATUS_DONE]);
 
         return $tour->refresh();
     }
 
-    public function cancel(Tour $tour): Tour
-    {
+    public function cancel(Tour $tour): Tour {
         $this->transitionTo($tour, Tour::STATUS_CANCELLED, [Tour::STATUS_DRAFT, Tour::STATUS_PLANNED, Tour::STATUS_IN_PROGRESS]);
 
         return $tour->refresh();
@@ -236,9 +232,8 @@ class TourService
      *
      * @return list<TravelLog>
      */
-    public function materializeToTravelLogs(Tour $tour): array
-    {
-        /** @var list<ServiceOrder> $stops */
+    public function materializeToTravelLogs(Tour $tour): array {
+        /** @var list<DiaryEntry> $stops */
         $stops = $tour->orderedStops()->get()->all();
         if ($stops === []) {
             return [];
@@ -269,7 +264,7 @@ class TourService
                     'from' => $previous,
                     'from_address' => $previousAddress,
                     'to' => $to,
-                    'to_address' => trim((string) ($stop->address_line ?? '').' '.($stop->address_city ?? '')),
+                    'to_address' => trim((string) ($stop->address_line ?? '') . ' ' . ($stop->address_city ?? '')),
                     'stop' => $stop,
                 ];
             }
@@ -289,7 +284,7 @@ class TourService
         $logs = [];
         foreach ($legs as $leg) {
             $distance = $this->haversineKm($leg['from'][0], $leg['from'][1], $leg['to'][0], $leg['to'][1]);
-            /** @var ServiceOrder|null $stop */
+            /** @var DiaryEntry|null $stop */
             $stop = $leg['stop'];
             $logs[] = $this->travelLogs->create([
                 'organization_id' => $tour->organization_id,
@@ -320,8 +315,7 @@ class TourService
     /**
      * @param  list<string>  $allowedFrom
      */
-    private function transitionTo(Tour $tour, string $target, array $allowedFrom): void
-    {
+    private function transitionTo(Tour $tour, string $target, array $allowedFrom): void {
         if (! in_array($tour->status, $allowedFrom, true)) {
             throw new RuntimeException(sprintf(
                 'Cannot transition tour from "%s" to "%s".',
@@ -333,8 +327,7 @@ class TourService
         $tour->save();
     }
 
-    private function haversineKm(float $lat1, float $lng1, float $lat2, float $lng2): float
-    {
+    private function haversineKm(float $lat1, float $lng1, float $lat2, float $lng2): float {
         $earth = 6_371.0;
         $dLat = deg2rad($lat2 - $lat1);
         $dLng = deg2rad($lng2 - $lng1);

@@ -19,6 +19,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -29,10 +30,12 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Fuhrpark-Auswertung: Kilometer, Verbrauch, Tank-/Ladekosten und €/km
  * pro Fahrzeug im gewählten Zeitraum.
  */
-class FleetReportController extends Controller {
+class FleetReportController extends Controller
+{
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request): View|SymfonyResponse {
+    public function index(Request $request): View|SymfonyResponse
+    {
         $userId = (int) Auth::id();
         $authUser = Auth::user();
         $isAdmin = $authUser instanceof User && $authUser->isAdmin();
@@ -64,7 +67,8 @@ class FleetReportController extends Controller {
         ]);
     }
 
-    private function resolveScope(Request $request, bool $isAdmin): string {
+    private function resolveScope(Request $request, bool $isAdmin): string
+    {
         $scope = $request->string('scope', 'mine')->toString();
         if ($scope !== 'team' || ! $isAdmin) {
             $scope = 'mine';
@@ -87,7 +91,8 @@ class FleetReportController extends Controller {
      *   last_odometer: int|null
      * }>
      */
-    private function aggregate(Carbon $from, Carbon $to, string $scope, int $userId): array {
+    private function aggregate(Carbon $from, Carbon $to, string $scope, int $userId): array
+    {
         $travelQuery = TravelLog::query()
             ->whereNotNull('vehicle_id')
             ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
@@ -141,7 +146,7 @@ class FleetReportController extends Controller {
         if ($vehicleIds === []) {
             return [];
         }
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Vehicle> $vehicles */
+        /** @var Collection<int, Vehicle> $vehicles */
         $vehicles = Vehicle::query()->whereIn('id', $vehicleIds)->orderBy('license_plate')->get();
 
         $rows = [];
@@ -173,7 +178,8 @@ class FleetReportController extends Controller {
      * @param  array<int, array{vehicle: Vehicle, trip_count:int, km:float, reimbursement:float, fuel_count:int, liters:float, kwh:float, energy_cost:float, cost_per_km:float|null, last_odometer:int|null}>  $rows
      * @return array{km:float, trip_count:int, fuel_count:int, liters:float, kwh:float, energy_cost:float, reimbursement:float, vehicles:int, avg_cost_per_km:float|null}
      */
-    private function totals(array $rows): array {
+    private function totals(array $rows): array
+    {
         $km = 0.0;
         $tripCount = 0;
         $fuelCount = 0;
@@ -208,7 +214,8 @@ class FleetReportController extends Controller {
      * @param  array<int, array{vehicle: Vehicle, trip_count:int, km:float, reimbursement:float, fuel_count:int, liters:float, kwh:float, energy_cost:float, cost_per_km:float|null, last_odometer:int|null}>  $rows
      * @param  array{km:float, trip_count:int, fuel_count:int, liters:float, kwh:float, energy_cost:float, reimbursement:float, vehicles:int, avg_cost_per_km:float|null}  $totals
      */
-    private function exportCsv(array $rows, array $totals, string $from, string $to): Response {
+    private function exportCsv(array $rows, array $totals, string $from, string $to): Response
+    {
         $filename = sprintf('fuhrpark_%s_%s.csv', $from, $to);
         $out = [['Kennzeichen', 'Bezeichnung', 'Antrieb', 'Fahrten', 'km', 'Erstattung', 'Tankungen', 'Liter', 'kWh', 'Energiekosten', '€/km', 'Tachostand']];
         foreach ($rows as $r) {
@@ -248,16 +255,16 @@ class FleetReportController extends Controller {
             $csv .= implode(';', array_map(static function ($v): string {
                 $s = (string) $v;
                 if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"' . str_replace('"', '""', $s) . '"';
+                    $s = '"'.str_replace('"', '""', $s).'"';
                 }
 
                 return $s;
-            }, $row)) . "\r\n";
+            }, $row))."\r\n";
         }
 
-        return response("\xEF\xBB\xBF" . $csv, 200, [
+        return response("\xEF\xBB\xBF".$csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
 
@@ -265,7 +272,8 @@ class FleetReportController extends Controller {
      * @param  array<int, array{vehicle: Vehicle, trip_count:int, km:float, reimbursement:float, fuel_count:int, liters:float, kwh:float, energy_cost:float, cost_per_km:float|null, last_odometer:int|null}>  $rows
      * @param  array{km:float, trip_count:int, fuel_count:int, liters:float, kwh:float, energy_cost:float, reimbursement:float, vehicles:int, avg_cost_per_km:float|null}  $totals
      */
-    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope): SymfonyResponse {
+    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope): SymfonyResponse
+    {
         $filename = sprintf('fuhrpark_%s_%s.pdf', $from, $to);
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = Pdf::loadView('reports.pdf.fleet', [

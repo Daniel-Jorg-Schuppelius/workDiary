@@ -73,6 +73,8 @@
                        value="{{ old('description', $entry?->description) }}">
             </div>
         </x-form-group>
+
+        @include('time-entries._edit_extras', ['entry' => $entry])
 </x-modal>
 
 <script>

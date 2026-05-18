@@ -13,7 +13,7 @@
     };
 @endphp
 
-<div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
+<x-page-shell>
 
     <x-filter-bar :action="route('reports.project-details')" :reset="route('reports.project-details')">
         <x-filter-field :label="__('Projekt')" for="rep-project">
@@ -120,5 +120,5 @@
             @endif
         </div>
     @endif
-</div>
+</x-page-shell>
 @endsection

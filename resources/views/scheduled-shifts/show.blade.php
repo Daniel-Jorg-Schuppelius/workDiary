@@ -3,7 +3,7 @@
 @section('nav-title', __('Schicht am :date', ['date' => $shift->date->format('d.m.Y')]))
 
 @section('content')
-    <div class="space-y-6">
+    <x-page-shell gap="6">
         <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="flex flex-wrap items-center gap-2 text-sm text-base-content/70">
                 @if ($shift->user)
@@ -43,5 +43,5 @@
                 <button type="submit" class="btn btn-error btn-sm">{{ __('Löschen') }}</button>
             </form>
         @endcan
-    </div>
+    </x-page-shell>
 @endsection

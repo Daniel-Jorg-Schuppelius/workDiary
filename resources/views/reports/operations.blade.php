@@ -31,7 +31,7 @@
     $label = fn (array $map, string $key) => $map[$key] ?? $key;
 @endphp
 
-<div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
+<x-page-shell>
 
     <x-filter-bar :action="route('reports.operations')" :reset="route('reports.operations')">
         @if ($isAdmin)
@@ -54,7 +54,7 @@
 
     <div class="stats stats-vertical sm:stats-horizontal w-full rounded-box border border-base-300 bg-base-100 shadow-xs">
         <div class="stat">
-            <div class="stat-title">{{ __('ServiceOrders') }}</div>
+            <div class="stat-title">{{ __('Service-Aufträge') }}</div>
             <div class="stat-value text-2xl">{{ $orders['total'] }}</div>
             <div class="stat-desc">{{ __('Abschluss') }}: {{ $pct($orders['completion_rate']) }}</div>
         </div>
@@ -78,7 +78,7 @@
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('ServiceOrders – Status') }}</h3>
+            <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Service-Aufträge – Status') }}</h3>
             <table class="table table-zebra table-sm">
                 <thead><tr><th>{{ __('Status') }}</th><th class="text-right">{{ __('Anzahl') }}</th></tr></thead>
                 <tbody>
@@ -87,7 +87,7 @@
                     @endforeach
                 </tbody>
             </table>
-            <h3 class="mt-4 mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('ServiceOrders – Priorität') }}</h3>
+            <h3 class="mt-4 mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Service-Aufträge – Priorität') }}</h3>
             <table class="table table-zebra table-sm">
                 <thead><tr><th>{{ __('Priorität') }}</th><th class="text-right">{{ __('Anzahl') }}</th></tr></thead>
                 <tbody>
@@ -123,9 +123,7 @@
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Touren – pro Mitarbeiter') }}</h3>
         @if (empty($tours['per_user']))
-            <div class="rounded-box border border-base-300 bg-base-200 p-6 text-center text-sm text-base-content/60">
-                {{ __('Keine Touren im Zeitraum.') }}
-            </div>
+            <x-empty-state :title="__('Keine Touren im Zeitraum.')" />
         @else
             <div class="overflow-x-auto">
                 <table class="table table-zebra table-sm">
@@ -159,5 +157,5 @@
             </div>
         @endif
     </div>
-</div>
+</x-page-shell>
 @endsection

@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use App\Models\User;
 use App\Services\Attendance\AttendanceClockService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,11 +21,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use RuntimeException;
 
-class AttendanceController extends Controller {
-    public function __construct(protected AttendanceClockService $clock) {
-    }
+class AttendanceController extends Controller
+{
+    public function __construct(protected AttendanceClockService $clock) {}
 
-    public function current(): JsonResponse {
+    public function current(): JsonResponse
+    {
         $user = Auth::user();
         $a = $user ? $this->clock->current($user) : null;
 
@@ -34,17 +36,18 @@ class AttendanceController extends Controller {
         ]);
     }
 
-    public function clockIn(Request $request): JsonResponse {
+    public function clockIn(Request $request): JsonResponse
+    {
         Gate::authorize('create', Attendance::class);
 
         $data = $request->validate([
             'lat' => ['nullable', 'numeric', 'between:-90,90'],
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
-            'device' => ['nullable', 'string', 'max:' . (int) setting('validation.attendance.device_max', 64)],
-            'note' => ['nullable', 'string', 'max:' . (int) setting('validation.attendance.note_max', 1000)],
+            'device' => ['nullable', 'string', 'max:'.(int) setting('validation.attendance.device_max', 64)],
+            'note' => ['nullable', 'string', 'max:'.(int) setting('validation.attendance.note_max', 1000)],
         ]);
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         try {
@@ -56,18 +59,19 @@ class AttendanceController extends Controller {
         return response()->json($this->serialize($a), 201);
     }
 
-    public function clockOut(Request $request): JsonResponse {
+    public function clockOut(Request $request): JsonResponse
+    {
         Gate::authorize('create', Attendance::class);
 
         $data = $request->validate([
             'lat' => ['nullable', 'numeric', 'between:-90,90'],
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
-            'device' => ['nullable', 'string', 'max:' . (int) setting('validation.attendance.device_max', 64)],
-            'note' => ['nullable', 'string', 'max:' . (int) setting('validation.attendance.note_max', 1000)],
-            'break_minutes' => ['nullable', 'integer', 'min:0', 'max:' . (int) setting('validation.attendance.break_minutes_max', 600)],
+            'device' => ['nullable', 'string', 'max:'.(int) setting('validation.attendance.device_max', 64)],
+            'note' => ['nullable', 'string', 'max:'.(int) setting('validation.attendance.note_max', 1000)],
+            'break_minutes' => ['nullable', 'integer', 'min:0', 'max:'.(int) setting('validation.attendance.break_minutes_max', 600)],
         ]);
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         $a = $this->clock->clockOut($user, $data);
@@ -81,7 +85,8 @@ class AttendanceController extends Controller {
     /**
      * @return array<string, mixed>
      */
-    private function serialize(Attendance $a): array {
+    private function serialize(Attendance $a): array
+    {
         return [
             'id' => $a->id,
             'user_id' => $a->user_id,

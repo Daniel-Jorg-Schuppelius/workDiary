@@ -11,12 +11,13 @@
 
 namespace Tests\Feature;
 
-use App\Models\ServiceOrder;
+use App\Models\DiaryEntry;
 use App\Models\Tour;
 use App\Models\TravelLog;
 use App\Models\User;
 use App\Services\Routing\TourService;
 use Carbon\CarbonImmutable;
+use Database\Seeders\EntryTypeSeeder;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -31,6 +32,7 @@ class TourTest extends TestCase
     {
         parent::setUp();
         $this->seed(RolesSeeder::class);
+        $this->seed(EntryTypeSeeder::class);
         $this->setUpOrganization();
         config()->set('timesheet.travel.auto_create_time_entry', false);
     }
@@ -61,7 +63,7 @@ class TourTest extends TestCase
         $service = app(TourService::class);
         $tour = $service->createDraft($driver, CarbonImmutable::parse('2026-06-01'));
 
-        $orders = ServiceOrder::factory()->count(3)->create([
+        $orders = DiaryEntry::factory()->service()->count(3)->create([
             'organization_id' => $this->organization->id,
             'scheduled_for' => '2026-06-01',
         ]);
@@ -72,7 +74,7 @@ class TourTest extends TestCase
         $this->assertSame(1, $orders[0]->tour_position);
         $this->assertSame(2, $orders[1]->tour_position);
         $this->assertSame(3, $orders[2]->tour_position);
-        $this->assertSame(ServiceOrder::STATUS_ASSIGNED, $orders[0]->status);
+        $this->assertSame(DiaryEntry::STATUS_IN_PROGRESS, $orders[0]->status);
         $this->assertSame((int) $driver->id, (int) $orders[0]->assigned_user_id);
     }
 
@@ -91,19 +93,19 @@ class TourTest extends TestCase
         $tour = $service->createDraft($driver, CarbonImmutable::parse('2026-06-01'));
 
         // Three stops with reverse-of-optimal initial order.
-        $reverse = ServiceOrder::factory()->create([
+        $reverse = DiaryEntry::factory()->service()->create([
             'organization_id' => $this->organization->id,
             'scheduled_for' => '2026-06-01',
             'address_lat' => 52.5,
             'address_lng' => 13.4,
         ]);
-        $middle = ServiceOrder::factory()->create([
+        $middle = DiaryEntry::factory()->service()->create([
             'organization_id' => $this->organization->id,
             'scheduled_for' => '2026-06-01',
             'address_lat' => 52.5,
             'address_lng' => 13.2,
         ]);
-        $near = ServiceOrder::factory()->create([
+        $near = DiaryEntry::factory()->service()->create([
             'organization_id' => $this->organization->id,
             'scheduled_for' => '2026-06-01',
             'address_lat' => 52.5,
@@ -141,13 +143,13 @@ class TourTest extends TestCase
         $service = app(TourService::class);
         $tour = $service->createDraft($driver, CarbonImmutable::parse('2026-06-01'));
 
-        $a = ServiceOrder::factory()->create([
+        $a = DiaryEntry::factory()->service()->create([
             'organization_id' => $this->organization->id,
             'scheduled_for' => '2026-06-01',
             'address_lat' => 52.5,
             'address_lng' => 13.1,
         ]);
-        $b = ServiceOrder::factory()->create([
+        $b = DiaryEntry::factory()->service()->create([
             'organization_id' => $this->organization->id,
             'scheduled_for' => '2026-06-01',
             'address_lat' => 52.5,

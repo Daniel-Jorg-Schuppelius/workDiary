@@ -13,13 +13,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Comment;
 use App\Models\DiaryEntry;
+use App\Models\TimeEntry;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
-class CommentController extends Controller {
-    public function store(Request $request, DiaryEntry $diary): RedirectResponse {
+class CommentController extends Controller
+{
+    public function store(Request $request, DiaryEntry $diary): RedirectResponse
+    {
         Gate::authorize('create', Comment::class);
 
         $diary->comments()->create([
@@ -27,38 +32,56 @@ class CommentController extends Controller {
             'body' => $this->validateBody($request),
         ]);
 
-        return redirect()
-            ->route('diary.show', $diary)
-            ->withFragment('comments')
+        return $this->redirectToParent($diary)
             ->with('success', __('Kommentar gespeichert.'));
     }
 
-    public function update(Request $request, Comment $comment): RedirectResponse {
+    public function update(Request $request, Comment $comment): RedirectResponse
+    {
         Gate::authorize('update', $comment);
 
         $comment->update(['body' => $this->validateBody($request)]);
 
-        return redirect()
-            ->route('diary.show', $comment->diaryEntry)
-            ->withFragment('comments')
+        return $this->redirectToParent($comment->commentable)
             ->with('success', __('Kommentar aktualisiert.'));
     }
 
-    public function destroy(Comment $comment): RedirectResponse {
+    public function destroy(Comment $comment): RedirectResponse
+    {
         Gate::authorize('delete', $comment);
 
-        $diaryEntry = $comment->diaryEntry;
+        $parent = $comment->commentable;
         $comment->delete();
 
-        return redirect()
-            ->route('diary.show', $diaryEntry)
-            ->withFragment('comments')
+        return $this->redirectToParent($parent)
             ->with('success', __('Kommentar gelöscht.'));
     }
 
-    private function validateBody(Request $request): string {
+    private function validateBody(Request $request): string
+    {
         return $request->validate([
-            'body' => ['required', 'string', 'max:' . (int) setting('validation.comment.body_max', 5000)],
+            'body' => ['required', 'string', 'max:'.(int) setting('validation.comment.body_max', 5000)],
         ])['body'];
+    }
+
+    private function redirectToParent(?Model $parent): RedirectResponse
+    {
+        if ($parent instanceof DiaryEntry) {
+            return redirect()
+                ->route('diary.show', $parent)
+                ->withFragment('comments');
+        }
+
+        if ($parent instanceof TimeEntry) {
+            $date = $parent->date instanceof \DateTimeInterface
+                ? Carbon::instance($parent->date)->toDateString()
+                : (string) $parent->date;
+
+            return redirect()
+                ->route('today.show', ['date' => $date])
+                ->withFragment('time-entry-'.$parent->getKey());
+        }
+
+        return redirect()->back()->withFragment('comments');
     }
 }

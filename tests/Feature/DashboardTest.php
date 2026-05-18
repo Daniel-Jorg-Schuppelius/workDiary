@@ -86,7 +86,7 @@ class DashboardTest extends TestCase
         $owner = User::factory()->user()->create();
         $other = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($owner)->create();
-        Comment::factory()->for($entry, 'diaryEntry')->for($other)->create(['body' => 'Wichtiger Hinweis von Kollege']);
+        Comment::factory()->for($other)->create(['commentable_type' => DiaryEntry::class, 'commentable_id' => $entry->id, 'body' => 'Wichtiger Hinweis von Kollege']);
 
         $this->actingAs($owner)
             ->get(route('dashboard'))

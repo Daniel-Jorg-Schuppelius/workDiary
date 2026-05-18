@@ -11,12 +11,13 @@
 
 namespace Tests\Feature;
 
-use App\Models\ServiceOrder;
+use App\Models\DiaryEntry;
 use App\Models\TravelLog;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\Routing\TourService;
 use Carbon\CarbonImmutable;
+use Database\Seeders\EntryTypeSeeder;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -31,6 +32,7 @@ class RentalVehicleTest extends TestCase
     {
         parent::setUp();
         $this->seed(RolesSeeder::class);
+        $this->seed(EntryTypeSeeder::class);
         $this->setUpOrganization();
         config()->set('timesheet.travel.auto_create_time_entry', false);
     }
@@ -139,7 +141,7 @@ class RentalVehicleTest extends TestCase
         $tour->vehicle_id = $vehicle->id;
         $tour->save();
 
-        $order = ServiceOrder::factory()->create([
+        $order = DiaryEntry::factory()->service()->create([
             'organization_id' => $this->organization->id,
             'scheduled_for' => '2026-05-15',
             'address_lat' => 52.5,

@@ -10,14 +10,18 @@
     :submit-label="__('Hinzufügen')"
 >
     <x-form-group :legend="__('Zeit')" icon="schedule" tone="primary" cols="2">
+        <input type="hidden" name="date" value="{{ optional($timesheet->work_date)->toDateString() }}">
         <div class="fieldset">
-            <label class="fieldset-label">{{ __('Start') }}</label>
-            <input type="datetime-local" name="started_at" required class="input input-bordered w-full">
+            <label class="fieldset-label">{{ __('Start (Uhrzeit)') }} *</label>
+            <input type="time" name="start_time" required class="input input-bordered w-full">
         </div>
         <div class="fieldset">
-            <label class="fieldset-label">{{ __('Ende') }}</label>
-            <input type="datetime-local" name="ended_at" required class="input input-bordered w-full">
+            <label class="fieldset-label">{{ __('Ende (Uhrzeit)') }} *</label>
+            <input type="time" name="end_time" required class="input input-bordered w-full">
         </div>
+        <p class="text-xs text-base-content/60 md:col-span-2">
+            {{ __('Datum stammt aus dem Stundenzettel (:date). Endet die Zeit nach Mitternacht? Einfach die kleinere Uhrzeit eintragen.', ['date' => optional($timesheet->work_date)->format('d.m.Y')]) }}
+        </p>
         <div class="fieldset">
             <label class="fieldset-label">{{ __('Pause (Min.)') }}</label>
             <input type="number" name="break_minutes" value="0" min="0" max="480" class="input input-bordered w-full">

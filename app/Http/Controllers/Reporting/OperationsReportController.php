@@ -13,12 +13,14 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Models\ServiceOrder;
+use App\Models\DiaryEntry;
+use App\Models\EntryType;
 use App\Models\Task;
 use App\Models\Tour;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -26,7 +28,8 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
- * Operations-Auswertung: ServiceOrders, Tasks und Touren im Zeitraum.
+ * Operations-Auswertung: Service-Aufträge (DiaryEntries vom EntryType
+ * "service"), Tasks und Touren im Zeitraum.
  */
 class OperationsReportController extends Controller {
     use ResolvesGlobalDateRange;
@@ -84,24 +87,36 @@ class OperationsReportController extends Controller {
      * }
      */
     private function aggregateOrders(Carbon $from, Carbon $to, string $scope, int $userId): array {
-        $q = ServiceOrder::query()->whereBetween('scheduled_for', [$from, $to]);
+        $q = DiaryEntry::query()
+            ->whereHas('entryType', fn($t) => $t->where('slug', EntryType::SLUG_SERVICE))
+            ->whereBetween('scheduled_for', [$from, $to]);
         if ($scope === 'mine') {
             $q->where('assigned_user_id', $userId);
         }
-        /** @var \Illuminate\Database\Eloquent\Collection<int, ServiceOrder> $rows */
+        /** @var Collection<int, DiaryEntry> $rows */
         $rows = $q->get(['status', 'priority', 'service_minutes']);
 
-        $byStatus = array_fill_keys(ServiceOrder::STATUSES, 0);
-        $byPriority = array_fill_keys(ServiceOrder::PRIORITIES, 0);
+        $statusMap = [
+            DiaryEntry::STATUS_OPEN => 'open',
+            DiaryEntry::STATUS_IN_PROGRESS => 'in_progress',
+            DiaryEntry::STATUS_DONE => 'done',
+            DiaryEntry::STATUS_PROBLEM => 'problem',
+        ];
+        $byStatus = array_fill_keys(array_values($statusMap), 0);
+        $byPriority = array_fill_keys(DiaryEntry::PRIORITIES, 0);
         $minutes = 0;
         foreach ($rows as $r) {
-            $byStatus[$r->status] = ($byStatus[$r->status] ?? 0) + 1;
-            $byPriority[$r->priority] = ($byPriority[$r->priority] ?? 0) + 1;
+            $label = $statusMap[$r->status] ?? 'open';
+            $byStatus[$label]++;
+            if ($r->priority !== null && isset($byPriority[$r->priority])) {
+                $byPriority[$r->priority]++;
+            }
             $minutes += (int) $r->service_minutes;
         }
         $total = $rows->count();
-        $relevant = $total - ($byStatus[ServiceOrder::STATUS_CANCELLED] ?? 0);
-        $done = $byStatus[ServiceOrder::STATUS_DONE] ?? 0;
+        // "problem" zählt nicht als abgeschlossen, wirkt aber nicht als Erfolg.
+        $done = $byStatus['done'];
+        $relevant = $total; // DiaryEntry kennt keinen "cancelled"-Status mehr.
 
         return [
             'total' => $total,
@@ -136,7 +151,7 @@ class OperationsReportController extends Controller {
                 $w->where('assigned_to', $userId)->orWhere('created_by', $userId);
             });
         }
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Task> $rows */
+        /** @var Collection<int, Task> $rows */
         $rows = $q->get(['status', 'priority', 'due_date']);
 
         $byStatus = array_fill_keys(Task::STATUSES, 0);
@@ -180,7 +195,7 @@ class OperationsReportController extends Controller {
         if ($scope === 'mine') {
             $q->where('user_id', $userId);
         }
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Tour> $rows */
+        /** @var Collection<int, Tour> $rows */
         $rows = $q->get(['user_id', 'planned_distance_km', 'planned_duration_minutes', 'status']);
 
         $total = $rows->count();
@@ -206,7 +221,7 @@ class OperationsReportController extends Controller {
 
         $perUser = [];
         if ($byUser !== []) {
-            /** @var \Illuminate\Database\Eloquent\Collection<int, User> $users */
+            /** @var Collection<int, User> $users */
             $users = User::query()->whereIn('id', array_keys($byUser))->orderBy('name')->get();
             foreach ($users as $u) {
                 $uid = (int) $u->id;
@@ -237,15 +252,15 @@ class OperationsReportController extends Controller {
         $filename = sprintf('operations_%s_%s.csv', $from, $to);
         $rows = [];
         $rows[] = ['Bereich', 'Kennzahl', 'Wert'];
-        $rows[] = ['ServiceOrders', 'Gesamt', $orders['total']];
-        $rows[] = ['ServiceOrders', 'Servicezeit (min)', $orders['service_minutes']];
+        $rows[] = ['Service-Aufträge', 'Gesamt', $orders['total']];
+        $rows[] = ['Service-Aufträge', 'Servicezeit (min)', $orders['service_minutes']];
         foreach ($orders['by_status'] as $st => $c) {
-            $rows[] = ['ServiceOrders', 'Status: ' . $st, $c];
+            $rows[] = ['Service-Aufträge', 'Status: ' . $st, $c];
         }
         foreach ($orders['by_priority'] as $p => $c) {
-            $rows[] = ['ServiceOrders', 'Priorität: ' . $p, $c];
+            $rows[] = ['Service-Aufträge', 'Priorität: ' . $p, $c];
         }
-        $rows[] = ['ServiceOrders', 'Abschlussquote %', $orders['completion_rate'] !== null ? number_format($orders['completion_rate'] * 100, 1, '.', '') : ''];
+        $rows[] = ['Service-Aufträge', 'Abschlussquote %', $orders['completion_rate'] !== null ? number_format($orders['completion_rate'] * 100, 1, '.', '') : ''];
 
         $rows[] = ['Tasks', 'Gesamt', $tasks['total']];
         $rows[] = ['Tasks', 'Überfällig', $tasks['overdue']];
@@ -265,7 +280,7 @@ class OperationsReportController extends Controller {
             $rows[] = [
                 'Touren',
                 'User: ' . $u['user']->name . ' (km / Min / Anz)',
-                sprintf('%s / %d / %d', number_format($u['distance_km'], 2, '.', ''), $u['minutes'], $u['count'])
+                sprintf('%s / %d / %d', number_format($u['distance_km'], 2, '.', ''), $u['minutes'], $u['count']),
             ];
         }
 

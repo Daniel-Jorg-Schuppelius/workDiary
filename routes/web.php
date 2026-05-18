@@ -11,6 +11,7 @@
 
 use App\Http\Controllers\AccountPasswordController;
 use App\Http\Controllers\ActivityCategoryController;
+use App\Http\Controllers\Admin\EntryTypeController;
 use App\Http\Controllers\Admin\PluginController as AdminPluginController;
 use App\Http\Controllers\AdminTimeEntryController;
 use App\Http\Controllers\ApiTokenController;
@@ -57,23 +58,25 @@ use App\Http\Controllers\Reporting\BillingReportController;
 use App\Http\Controllers\Reporting\CoverageReportController;
 use App\Http\Controllers\Reporting\CustomerProjectReportController;
 use App\Http\Controllers\Reporting\FleetReportController;
-use App\Http\Controllers\Reporting\OnCallReportController;
 use App\Http\Controllers\Reporting\MaterialReportController;
 use App\Http\Controllers\Reporting\MyMonthReportController;
 use App\Http\Controllers\Reporting\MyYearReportController;
+use App\Http\Controllers\Reporting\OnCallReportController;
 use App\Http\Controllers\Reporting\OperationsReportController;
 use App\Http\Controllers\Reporting\ProjectDetailsReportController;
 use App\Http\Controllers\Reporting\QualificationReportController;
+use App\Http\Controllers\Reporting\SicknessReportController;
 use App\Http\Controllers\Reporting\WeekByUserReportController;
 use App\Http\Controllers\Reporting\WorkBalanceReportController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ScheduledShiftController;
 use App\Http\Controllers\ScheduleImportController;
-use App\Http\Controllers\ServiceOrderController;
 use App\Http\Controllers\ShiftTypeController;
+use App\Http\Controllers\SickLeaveController;
 use App\Http\Controllers\StopwatchController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TimeEntryCommentController;
 use App\Http\Controllers\TimeEntryController;
 use App\Http\Controllers\TimesheetController;
 use App\Http\Controllers\TimesheetEntryController;
@@ -128,6 +131,7 @@ Route::middleware('auth')->group(function () {
     Route::post('diary/{diary}/archive', [DiaryController::class, 'archive'])->name('diary.archive');
     Route::post('diary/{diary}/restore', [DiaryController::class, 'restore'])->name('diary.restore');
     Route::post('diary/{diary}/comments', [CommentController::class, 'store'])->name('diary.comments.store');
+    Route::post('time-entries/{timeEntry}/comments', [TimeEntryCommentController::class, 'store'])->name('time-entries.comments.store');
     Route::put('comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
     Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
@@ -164,17 +168,24 @@ Route::middleware('auth')->group(function () {
         Route::get('vacations', [PrintController::class, 'vacationYear'])->name('vacations');
     });
 
-    Route::get('shifts', fn() => redirect()->route('duties.index'))->name('shifts.index');
-    Route::get('assignments', fn() => redirect()->route('duties.index', ['tab' => 'notdienst']))->name('assignments.index');
+    Route::get('shifts', fn () => redirect()->route('duties.index'))->name('shifts.index');
+    Route::get('assignments', fn () => redirect()->route('duties.index', ['tab' => 'notdienst']))->name('assignments.index');
     Route::resource('shifts', OnCallShiftController::class)->except(['show', 'index'])->parameters(['shifts' => 'shift']);
     Route::resource('assignments', EmergencyAssignmentController::class)->except(['show', 'index'])->parameters(['assignments' => 'assignment']);
 
-    Route::get('vacations', fn() => redirect()->route('duties.index', ['tab' => 'urlaub']))->name('vacations.index');
+    Route::get('vacations', fn () => redirect()->route('duties.index', ['tab' => 'urlaub']))->name('vacations.index');
     Route::resource('vacations', VacationController::class)->except(['show', 'index']);
     Route::patch('vacations/{vacation}/approve', [VacationController::class, 'approve'])->name('vacations.approve');
     Route::patch('vacations/{vacation}/reject', [VacationController::class, 'reject'])->name('vacations.reject');
     Route::get('vacations/{vacation}/reject-form', [VacationController::class, 'rejectForm'])->name('vacations.reject-form');
     Route::patch('vacations/{vacation}/cancel', [VacationController::class, 'cancel'])->name('vacations.cancel');
+
+    Route::get('sick-leaves', fn () => redirect()->route('duties.index', ['tab' => 'krank']))->name('sick-leaves.index');
+    Route::resource('sick-leaves', SickLeaveController::class)->except(['show', 'index'])
+        ->parameters(['sick-leaves' => 'sick_leave']);
+    Route::patch('sick-leaves/{sick_leave}/cancel', [SickLeaveController::class, 'cancel'])->name('sick-leaves.cancel');
+    Route::get('sick-leaves/{sick_leave}/attachments/{attachment}/download', [SickLeaveController::class, 'downloadAttachment'])
+        ->name('sick-leaves.attachments.download');
 
     Route::resource('tags', TagController::class)->except('show');
 
@@ -278,15 +289,6 @@ Route::middleware('auth')->group(function () {
     Route::put('travel-logs/{travelLog}', [TravelLogController::class, 'update'])->name('travel-logs.update');
     Route::delete('travel-logs/{travelLog}', [TravelLogController::class, 'destroy'])->name('travel-logs.destroy');
 
-    // ── Serviceaufträge ────────────────────────────────────────────────
-    Route::get('service-orders', [ServiceOrderController::class, 'index'])->name('service-orders.index');
-    Route::get('service-orders/create', [ServiceOrderController::class, 'create'])->name('service-orders.create');
-    Route::post('service-orders', [ServiceOrderController::class, 'store'])->name('service-orders.store');
-    Route::get('service-orders/{serviceOrder}', [ServiceOrderController::class, 'show'])->name('service-orders.show');
-    Route::get('service-orders/{serviceOrder}/edit', [ServiceOrderController::class, 'edit'])->name('service-orders.edit');
-    Route::put('service-orders/{serviceOrder}', [ServiceOrderController::class, 'update'])->name('service-orders.update');
-    Route::delete('service-orders/{serviceOrder}', [ServiceOrderController::class, 'destroy'])->name('service-orders.destroy');
-
     // ── Touren ─────────────────────────────────────────────────────────
     Route::get('tours', [TourController::class, 'index'])->name('tours.index');
     Route::get('tours/create', [TourController::class, 'create'])->name('tours.create');
@@ -338,6 +340,7 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/on-call', [OnCallReportController::class, 'index'])->name('reports.on-call');
     Route::get('reports/coverage', [CoverageReportController::class, 'index'])->name('reports.coverage');
     Route::get('reports/absences', [AbsencesReportController::class, 'index'])->name('reports.absences');
+    Route::get('reports/sickness', [SicknessReportController::class, 'index'])->name('reports.sickness');
     Route::get('reports/operations', [OperationsReportController::class, 'index'])->name('reports.operations');
     Route::get('reports/materials', [MaterialReportController::class, 'index'])->name('reports.materials');
     Route::get('reports/billing', [BillingReportController::class, 'index'])->name('reports.billing');
@@ -361,6 +364,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('admin/organizations', OrganizationController::class)
         ->names('admin.organizations')
         ->parameters(['organizations' => 'organization']);
+
+    Route::resource('admin/entry-types', EntryTypeController::class)
+        ->names('admin.entry-types')
+        ->parameters(['entry-types' => 'entryType'])
+        ->except('show');
 
     Route::resource('org/members', OrgMemberController::class)
         ->names('org.members')

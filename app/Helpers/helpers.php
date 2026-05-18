@@ -20,24 +20,28 @@ declare(strict_types=1);
  * gründen für Views und Legacy-Pfade bestehen.
  */
 
+use App\Models\Organization;
 use App\Support\Toolkit\DateFacade;
 use App\Support\Toolkit\StringFacade;
 use CommonToolkit\Enums\Month;
 
 if (! function_exists('truncate')) {
-    function truncate(?string $text, int $maxLength, string $suffix = '...', bool $trim = false): string {
+    function truncate(?string $text, int $maxLength, string $suffix = '...', bool $trim = false): string
+    {
         return StringFacade::truncate($text, $maxLength, $suffix, $trim);
     }
 }
 
 if (! function_exists('isNullOrEmpty')) {
-    function isNullOrEmpty(?string $value): bool {
+    function isNullOrEmpty(?string $value): bool
+    {
         return StringFacade::isNullOrEmpty($value);
     }
 }
 
 if (! function_exists('maskEmail')) {
-    function maskEmail(string $email, int $visibleStart = 3, int $visibleEnd = 3, string $maskChar = '*'): string {
+    function maskEmail(string $email, int $visibleStart = 3, int $visibleEnd = 3, string $maskChar = '*'): string
+    {
         return StringFacade::mask($email, $visibleStart, $visibleEnd, $maskChar);
     }
 }
@@ -46,13 +50,15 @@ if (! function_exists('weekdayAbbr')) {
     /**
      * @return list<string>
      */
-    function weekdayAbbr(string $locale = 'de', bool $long = false): array {
+    function weekdayAbbr(string $locale = 'de', bool $long = false): array
+    {
         return DateFacade::weekdayAbbreviations($locale, $long);
     }
 }
 
 if (! function_exists('printable_initials')) {
-    function printable_initials(?string $name, int $maxParts = 3): string {
+    function printable_initials(?string $name, int $maxParts = 3): string
+    {
         return StringFacade::printableInitials($name, $maxParts);
     }
 }
@@ -61,7 +67,8 @@ if (! function_exists('monthsArray')) {
     /**
      * @return array<string|int, string>
      */
-    function monthsArray(string $locale = 'de', bool $leadingZero = false): array {
+    function monthsArray(string $locale = 'de', bool $leadingZero = false): array
+    {
         return Month::toArray($leadingZero, $locale);
     }
 }
@@ -77,7 +84,8 @@ if (! function_exists('setting')) {
      *
      * Example:  setting('pagination.customers', 25)
      */
-    function setting(string $key, mixed $default = null): mixed {
+    function setting(string $key, mixed $default = null): mixed
+    {
         [$group, $rest] = array_pad(explode('.', $key, 2), 2, null);
         if ($group === null || $rest === null || $rest === '') {
             return config($key, $default);
@@ -85,7 +93,7 @@ if (! function_exists('setting')) {
 
         if (app()->bound('currentOrganization')) {
             $org = app('currentOrganization');
-            if ($org instanceof \App\Models\Organization) {
+            if ($org instanceof Organization) {
                 /** @var array<string, mixed> $settings */
                 $settings = (array) ($org->settings ?? []);
                 /** @var array<string, mixed> $stored */

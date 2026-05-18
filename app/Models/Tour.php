@@ -117,16 +117,16 @@ class Tour extends Model
         return $this->belongsTo(Vehicle::class);
     }
 
-    /** @return HasMany<ServiceOrder, $this> */
-    public function serviceOrders(): HasMany
+    /** @return HasMany<DiaryEntry, $this> */
+    public function diaryEntries(): HasMany
     {
-        return $this->hasMany(ServiceOrder::class);
+        return $this->hasMany(DiaryEntry::class);
     }
 
-    /** @return HasMany<ServiceOrder, $this> */
+    /** @return HasMany<DiaryEntry, $this> */
     public function orderedStops(): HasMany
     {
-        return $this->serviceOrders()
+        return $this->diaryEntries()
             ->orderByRaw('tour_position IS NULL')
             ->orderBy('tour_position')
             ->orderBy('id');

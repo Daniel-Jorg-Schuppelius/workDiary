@@ -20,8 +20,10 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class InvoiceGenerator {
-    public function nextNumber(?int $organizationId, ?CarbonInterface $when = null): string {
+class InvoiceGenerator
+{
+    public function nextNumber(?int $organizationId, ?CarbonInterface $when = null): string
+    {
         $when ??= Carbon::now();
         $year = (int) $when->format('Y');
         $prefix = sprintf('R%d-', $year);
@@ -29,7 +31,7 @@ class InvoiceGenerator {
         /** @var string|null $last */
         $last = Invoice::query()
             ->where('organization_id', $organizationId)
-            ->where('number', 'like', $prefix . '%')
+            ->where('number', 'like', $prefix.'%')
             ->orderByDesc('number')
             ->value('number');
 
@@ -38,7 +40,7 @@ class InvoiceGenerator {
             $seq = ((int) $m[1]) + 1;
         }
 
-        return $prefix . str_pad((string) $seq, 4, '0', STR_PAD_LEFT);
+        return $prefix.str_pad((string) $seq, 4, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -47,7 +49,8 @@ class InvoiceGenerator {
      *
      * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $range
      */
-    public function fromTimeEntries(Customer $customer, ?Project $project, array $range = []): Invoice {
+    public function fromTimeEntries(Customer $customer, ?Project $project, array $range = []): Invoice
+    {
         return DB::transaction(function () use ($customer, $project, $range): Invoice {
             $invoice = Invoice::create([
                 'organization_id' => $customer->organization_id,
@@ -63,7 +66,7 @@ class InvoiceGenerator {
             $query = TimeEntry::query()
                 ->where('billable', true)
                 ->where('exported', false)
-                ->whereHas('project', fn($q) => $q->where('customer_id', $customer->id));
+                ->whereHas('project', fn ($q) => $q->where('customer_id', $customer->id));
 
             if ($project !== null) {
                 $query->where('project_id', $project->id);

@@ -26,7 +26,8 @@ class CommentFactory extends Factory
     public function definition(): array
     {
         return [
-            'diary_entry_id' => DiaryEntry::factory(),
+            'commentable_type' => DiaryEntry::class,
+            'commentable_id' => DiaryEntry::factory(),
             'user_id' => User::factory(),
             'body' => fake()->sentence(),
         ];

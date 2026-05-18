@@ -9,7 +9,7 @@
         /** @var array|null $team */
     @endphp
 
-    <div class="mx-auto flex h-[calc(100dvh-11rem)] w-full max-w-screen-2xl flex-col gap-6 overflow-auto px-4 xl:px-8 2xl:px-12">
+    <x-page-shell gap="6" class="mx-auto max-w-screen-2xl px-4 xl:px-8 2xl:px-12">
 
         {{-- Header --}}
         <div class="flex flex-wrap items-end justify-between gap-3">
@@ -182,7 +182,7 @@
                         @foreach ($user['recent_comments'] as $comment)
                             <li class="rounded-box border border-base-300 bg-base-200 px-3 py-2">
                                 <div class="text-xs text-base-content/60">{{ optional($comment->user)->name ?? '—' }} · {{ $comment->created_at->diffForHumans() }}</div>
-                                <a href="{{ route('diary.show', $comment->diary_entry_id) }}#comments" class="link block">{{ truncate($comment->body, 100) }}</a>
+                                <a href="{{ route('diary.show', $comment->commentable_id) }}#comments" class="link block">{{ truncate($comment->body, 100) }}</a>
                             </li>
                         @endforeach
                     </ul>
@@ -217,12 +217,12 @@
                         @foreach ($team['recent_activity'] as $comment)
                             <li class="rounded-box border border-base-300 bg-base-200 px-3 py-2">
                                 <div class="text-xs text-base-content/60">{{ optional($comment->user)->name ?? '—' }} · {{ $comment->created_at->diffForHumans() }}</div>
-                                <a href="{{ route('diary.show', $comment->diary_entry_id) }}#comments" class="link block">{{ truncate($comment->body, 120) }}</a>
+                                <a href="{{ route('diary.show', $comment->commentable_id) }}#comments" class="link block">{{ truncate($comment->body, 120) }}</a>
                             </li>
                         @endforeach
                     </ul>
                 @endif
             </section>
         @endif
-    </div>
+    </x-page-shell>
 @endsection

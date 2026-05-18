@@ -7,7 +7,7 @@
     $pct = fn (float $v) => number_format($v * 100, 1, ',', '.') . ' %';
 @endphp
 
-<div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
+<x-page-shell>
 
     <x-filter-bar :action="route('reports.coverage')" :reset="route('reports.coverage')">
         <x-slot:extra>
@@ -54,9 +54,7 @@
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Pro Schichttyp') }}</h3>
         @if (empty($rows))
-            <div class="rounded-box border border-base-300 bg-base-200 p-6 text-center text-sm text-base-content/60">
-                {{ __('Keine Soll-Vorgaben oder Plan-Einträge im gewählten Zeitraum.') }}
-            </div>
+            <x-empty-state :title="__('Keine Soll-Vorgaben oder Plan-Einträge im gewählten Zeitraum.')" />
         @else
             <div class="overflow-x-auto">
                 <table class="table table-zebra table-sm">
@@ -141,5 +139,5 @@
             </div>
         </div>
     @endif
-</div>
+</x-page-shell>
 @endsection

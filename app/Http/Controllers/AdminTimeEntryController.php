@@ -15,6 +15,7 @@ use App\Http\Requests\SaveAdminTimeEntryRequest;
 use App\Models\ActivityCategory;
 use App\Models\Attendance;
 use App\Models\TimeEntry;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,8 +28,10 @@ use Illuminate\View\View;
  * specific project — e.g. team meetings, internal work, travel time without
  * a billable target, training, etc.
  */
-class AdminTimeEntryController extends Controller {
-    public function create(Request $request): View {
+class AdminTimeEntryController extends Controller
+{
+    public function create(Request $request): View
+    {
         Gate::authorize('create', TimeEntry::class);
 
         $date = $request->date('date')?->toDateString() ?? CarbonImmutable::today()->toDateString();
@@ -39,7 +42,7 @@ class AdminTimeEntryController extends Controller {
             ->orderByDesc('started_at')
             ->first();
 
-        return view('time-entries.admin-form', [
+        return view('time-entries._admin_form_dialog', [
             'entry' => null,
             'categories' => $categories,
             'date' => $date,
@@ -47,10 +50,11 @@ class AdminTimeEntryController extends Controller {
         ]);
     }
 
-    public function store(SaveAdminTimeEntryRequest $request): RedirectResponse {
+    public function store(SaveAdminTimeEntryRequest $request): RedirectResponse
+    {
         Gate::authorize('create', TimeEntry::class);
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         $data = $request->validated();
@@ -71,10 +75,11 @@ class AdminTimeEntryController extends Controller {
             ->with('success', __('Verwaltungszeit erfasst.'));
     }
 
-    public function edit(TimeEntry $timeEntry): View {
+    public function edit(TimeEntry $timeEntry): View
+    {
         Gate::authorize('update', $timeEntry);
 
-        return view('time-entries.admin-form', [
+        return view('time-entries._admin_form_dialog', [
             'entry' => $timeEntry,
             'categories' => ActivityCategory::query()->active()->orderBy('sort_order')->orderBy('label')->get(),
             'date' => $timeEntry->date?->toDateString(),
@@ -82,7 +87,8 @@ class AdminTimeEntryController extends Controller {
         ]);
     }
 
-    public function update(SaveAdminTimeEntryRequest $request, TimeEntry $timeEntry): RedirectResponse {
+    public function update(SaveAdminTimeEntryRequest $request, TimeEntry $timeEntry): RedirectResponse
+    {
         Gate::authorize('update', $timeEntry);
 
         $timeEntry->update($request->validated());
@@ -91,7 +97,8 @@ class AdminTimeEntryController extends Controller {
             ->with('success', __('Verwaltungszeit aktualisiert.'));
     }
 
-    public function destroy(TimeEntry $timeEntry): RedirectResponse {
+    public function destroy(TimeEntry $timeEntry): RedirectResponse
+    {
         Gate::authorize('delete', $timeEntry);
         $date = $timeEntry->date?->toDateString();
         $timeEntry->delete();

@@ -16,6 +16,7 @@ use App\Models\Qualification;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -38,7 +39,7 @@ class QualificationReportController extends Controller
         $today = Carbon::today();
         $warnDate = $today->copy()->addDays(self::EXPIRY_WARN_DAYS);
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Qualification> $qualifications */
+        /** @var Collection<int, Qualification> $qualifications */
         $qualifications = Qualification::query()
             ->orderBy('name')
             ->get(['id', 'name', 'abbreviation', 'is_active']);
@@ -49,7 +50,7 @@ class QualificationReportController extends Controller
         if (! $isAdmin) {
             $usersQuery->where('id', $userId);
         }
-        /** @var \Illuminate\Database\Eloquent\Collection<int, User> $users */
+        /** @var Collection<int, User> $users */
         $users = $usersQuery->with(['qualifications:id,name'])->get(['id', 'name']);
 
         /** @var array<int, array<int, array{valid_from: ?string, valid_until: ?string, state: string}>> $matrix */
@@ -111,8 +112,8 @@ class QualificationReportController extends Controller
     }
 
     /**
-     * @param  \Illuminate\Database\Eloquent\Collection<int, User>  $users
-     * @param  \Illuminate\Database\Eloquent\Collection<int, Qualification>  $qualifications
+     * @param  Collection<int, User>  $users
+     * @param  Collection<int, Qualification>  $qualifications
      * @param  array<int, array<int, array{valid_from: ?string, valid_until: ?string, state: string}>>  $matrix
      */
     private function exportCsv($users, $qualifications, array $matrix): Response
@@ -162,8 +163,8 @@ class QualificationReportController extends Controller
     }
 
     /**
-     * @param  \Illuminate\Database\Eloquent\Collection<int, User>  $users
-     * @param  \Illuminate\Database\Eloquent\Collection<int, Qualification>  $qualifications
+     * @param  Collection<int, User>  $users
+     * @param  Collection<int, Qualification>  $qualifications
      * @param  array<int, array<int, array{valid_from: ?string, valid_until: ?string, state: string}>>  $matrix
      * @param  array{total_assignments:int, expiring:int, expired:int}  $totals
      */

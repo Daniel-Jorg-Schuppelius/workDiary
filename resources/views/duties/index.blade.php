@@ -9,6 +9,7 @@
             'bereitschaft' => ['label' => __('Bereitschaft'), 'count' => $tabCounts['bereitschaft']],
             'notdienst'    => ['label' => __('Notdienst'),   'count' => $tabCounts['notdienst']],
             'urlaub'       => ['label' => __('Urlaub'),      'count' => $tabCounts['urlaub']],
+            'krank'        => ['label' => __('Krank'),       'count' => $tabCounts['krank']],
         ];
         $tabFilters = array_filter($filters ?? [], fn($v) => $v !== null && $v !== '');
     @endphp
@@ -31,14 +32,21 @@
                     <a href="{{ route('assignments.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
                         <x-icon name="add" /><span>{{ __('Neuer Notdienst') }}</span>
                     </a>
-                @else
+                @elseif ($tab === 'urlaub')
                     @can('create', \App\Models\Vacation::class)
                         <a href="{{ route('vacations.create') }}?dialog=1" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
                             <x-icon name="add" /><span>{{ __('Neuer Antrag') }}</span>
                         </a>
                     @endcan
                 @endif
-                @if ($tab !== 'urlaub')
+                @if ($tab === 'krank')
+                    @can('create', \App\Models\SickLeave::class)
+                        <a href="{{ route('sick-leaves.create') }}?dialog=1" data-entry-modal-trigger class="btn btn-sm btn-warning gap-1">
+                            <x-icon name="add" /><span>{{ __('Krank melden') }}</span>
+                        </a>
+                    @endcan
+                @endif
+                @if ($tab !== 'urlaub' && $tab !== 'krank')
                     <a href="{{ route('archive.index', ['tab' => $tab === 'diary' ? 'diary' : $tab]) }}" class="btn btn-sm btn-ghost gap-1">
                         <x-icon name="inventory_2" /><span>{{ __('Archiv') }}</span>
                     </a>
@@ -86,6 +94,16 @@
                         </select>
                     </x-filter-field>
                 @endif
+                @if (($entryTypes ?? collect())->isNotEmpty())
+                    <x-filter-field :label="__('Typ')" for="duties-entry-type" class="min-w-40">
+                        <select id="duties-entry-type" name="entry_type" class="select select-bordered select-sm w-full">
+                            <option value="">{{ __('Alle Typen') }}</option>
+                            @foreach ($entryTypes as $type)
+                                <option value="{{ $type->id }}" @selected((int) ($filters['entry_type'] ?? 0) === (int) $type->id)>{{ $type->label }}</option>
+                            @endforeach
+                        </select>
+                    </x-filter-field>
+                @endif
                 <label class="flex items-center gap-2 pb-2">
                     <input type="checkbox" id="mine" name="mine" value="1" @checked(!empty($filters['mine'])) class="checkbox checkbox-primary checkbox-sm">
                     <span class="text-sm text-base-content/75">{{ __('Nur meine') }}</span>
@@ -119,39 +137,68 @@
                         <option value="{{ \App\Models\Vacation::STATUS_CANCELLED }}" @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_CANCELLED)>{{ __('Storniert') }}</option>
                     </select>
                 </x-filter-field>
+            @elseif ($tab === 'krank')
+                @if ($isAdmin)
+                    <x-filter-field :label="__('Mitarbeiter')" for="duties-kuser" class="flex-1 min-w-44">
+                        <select id="duties-kuser" name="user_id" class="select select-bordered select-sm w-full">
+                            <option value="">{{ __('Alle') }}</option>
+                            @foreach ($users as $u)
+                                <option value="{{ $u->id }}" @selected((int) ($filters['user_id'] ?? 0) === $u->id)>{{ $u->name }}</option>
+                            @endforeach
+                        </select>
+                    </x-filter-field>
+                @endif
+                <x-filter-field :label="__('Art')" for="duties-kkind" class="flex-1 min-w-40">
+                    <select id="duties-kkind" name="kkind" class="select select-bordered select-sm w-full">
+                        <option value="">{{ __('Alle') }}</option>
+                        <option value="{{ \App\Models\SickLeave::KIND_INITIAL }}"   @selected(($filters['kkind'] ?? '') === \App\Models\SickLeave::KIND_INITIAL)>{{ __('Erstbescheinigung') }}</option>
+                        <option value="{{ \App\Models\SickLeave::KIND_FOLLOW_UP }}" @selected(($filters['kkind'] ?? '') === \App\Models\SickLeave::KIND_FOLLOW_UP)>{{ __('Folgebescheinigung') }}</option>
+                    </select>
+                </x-filter-field>
+                <x-filter-field :label="__('Status')" for="duties-kstatus" class="flex-1 min-w-40">
+                    <select id="duties-kstatus" name="kstatus" class="select select-bordered select-sm w-full">
+                        <option value="">{{ __('Alle Status') }}</option>
+                        <option value="active"    @selected(($filters['kstatus'] ?? '') === 'active')>{{ __('Aktiv') }}</option>
+                        <option value="cancelled" @selected(($filters['kstatus'] ?? '') === 'cancelled')>{{ __('Storniert') }}</option>
+                    </select>
+                </x-filter-field>
             @endif
         </x-filter-bar>
 
         {{-- KPI-Kacheln --}}
         @php
-            $kpiTiles = $tab === 'diary'
-                ? [
+            $kpiTiles = match ($tab) {
+                'diary' => [
                     ['label' => __('Gesamt'),   'value' => $diaryCounts['all'],   'tone' => 'neutral', 'href' => route('duties.index', array_merge($tabFilters, ['tab' => 'diary'])),                    'statusKey' => 'all'],
                     ['label' => __('Offen'),    'value' => $diaryCounts['open'],  'tone' => 'warning', 'href' => route('duties.index', array_merge($tabFilters, ['tab' => 'diary', 'status' => '2'])),  'statusKey' => '2'],
                     ['label' => __('Probleme'), 'value' => $diaryCounts['alert'], 'tone' => 'error',   'href' => route('duties.index', array_merge($tabFilters, ['tab' => 'diary', 'status' => '3'])),  'statusKey' => '3'],
                     ['label' => __('Erledigt'), 'value' => $diaryCounts['done'],  'tone' => 'success', 'href' => route('duties.index', array_merge($tabFilters, ['tab' => 'diary', 'status' => '-1'])), 'statusKey' => '-1'],
-                ]
-                : ($tab === 'bereitschaft'
-                    ? [
-                        ['label' => __('Gesamt'),                 'value' => $shiftKpis['total'],   'tone' => 'neutral',   'href' => null, 'statusKey' => null],
-                        ['label' => __('Längste Schicht (Tage)'), 'value' => $shiftKpis['longest'], 'tone' => 'info',      'href' => null, 'statusKey' => null],
-                        ['label' => __('Ø Dauer (Tage)'),         'value' => $shiftKpis['avg'],     'tone' => 'primary',   'href' => null, 'statusKey' => null, 'format' => 'decimal'],
-                        ['label' => __('Mitarbeiter'),            'value' => $shiftKpis['users'],   'tone' => 'secondary', 'href' => null, 'statusKey' => null],
-                    ]
-                    : ($tab === 'notdienst'
-                        ? [
-                            ['label' => __('Gesamt'),                 'value' => $assignmentKpis['total'],   'tone' => 'neutral',   'href' => null, 'statusKey' => null],
-                            ['label' => __('Längste Schicht (Tage)'), 'value' => $assignmentKpis['longest'], 'tone' => 'info',      'href' => null, 'statusKey' => null],
-                            ['label' => __('Ø Dauer (Tage)'),         'value' => $assignmentKpis['avg'],     'tone' => 'primary',   'href' => null, 'statusKey' => null, 'format' => 'decimal'],
-                            ['label' => __('Mitarbeiter'),            'value' => $assignmentKpis['users'],   'tone' => 'secondary', 'href' => null, 'statusKey' => null],
-                        ]
-                        : [
-                            ['label' => __('Gesamt'),           'value' => $vacationKpis['total'],    'tone' => 'neutral', 'href' => null, 'statusKey' => null],
-                            ['label' => __('Ausstehend'),       'value' => $vacationKpis['pending'],  'tone' => 'warning', 'href' => null, 'statusKey' => null],
-                            ['label' => __('Genehmigt (Jahr)'), 'value' => $vacationKpis['approved'], 'tone' => 'success', 'href' => null, 'statusKey' => null],
-                            ['label' => __('Abgelehnt'),        'value' => $vacationKpis['rejected'], 'tone' => 'error',   'href' => null, 'statusKey' => null],
-                        ]
-                    ));
+                ],
+                'bereitschaft' => [
+                    ['label' => __('Gesamt'),                 'value' => $shiftKpis['total'],   'tone' => 'neutral',   'href' => null, 'statusKey' => null],
+                    ['label' => __('Längste Schicht (Tage)'), 'value' => $shiftKpis['longest'], 'tone' => 'info',      'href' => null, 'statusKey' => null],
+                    ['label' => __('Ø Dauer (Tage)'),         'value' => $shiftKpis['avg'],     'tone' => 'primary',   'href' => null, 'statusKey' => null, 'format' => 'decimal'],
+                    ['label' => __('Mitarbeiter'),            'value' => $shiftKpis['users'],   'tone' => 'secondary', 'href' => null, 'statusKey' => null],
+                ],
+                'notdienst' => [
+                    ['label' => __('Gesamt'),                 'value' => $assignmentKpis['total'],   'tone' => 'neutral',   'href' => null, 'statusKey' => null],
+                    ['label' => __('Längste Schicht (Tage)'), 'value' => $assignmentKpis['longest'], 'tone' => 'info',      'href' => null, 'statusKey' => null],
+                    ['label' => __('Ø Dauer (Tage)'),         'value' => $assignmentKpis['avg'],     'tone' => 'primary',   'href' => null, 'statusKey' => null, 'format' => 'decimal'],
+                    ['label' => __('Mitarbeiter'),            'value' => $assignmentKpis['users'],   'tone' => 'secondary', 'href' => null, 'statusKey' => null],
+                ],
+                'krank' => [
+                    ['label' => __('Gesamt'),       'value' => $sickKpis['total'],     'tone' => 'neutral',   'href' => null, 'statusKey' => null],
+                    ['label' => __('Aktuell krank'),'value' => $sickKpis['active'],    'tone' => 'warning',   'href' => null, 'statusKey' => null],
+                    ['label' => __('Storniert'),    'value' => $sickKpis['cancelled'], 'tone' => 'error',     'href' => null, 'statusKey' => null],
+                    ['label' => __('Mitarbeiter'),  'value' => $sickKpis['users'],     'tone' => 'secondary', 'href' => null, 'statusKey' => null],
+                ],
+                default => [
+                    ['label' => __('Gesamt'),           'value' => $vacationKpis['total'],    'tone' => 'neutral', 'href' => null, 'statusKey' => null],
+                    ['label' => __('Ausstehend'),       'value' => $vacationKpis['pending'],  'tone' => 'warning', 'href' => null, 'statusKey' => null],
+                    ['label' => __('Genehmigt (Jahr)'), 'value' => $vacationKpis['approved'], 'tone' => 'success', 'href' => null, 'statusKey' => null],
+                    ['label' => __('Abgelehnt'),        'value' => $vacationKpis['rejected'], 'tone' => 'error',   'href' => null, 'statusKey' => null],
+                ],
+            };
             $activeStatus = (string) ($filters['status'] ?? 'all');
         @endphp
         <div class="flex-none grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -179,6 +226,9 @@
                 @break
             @case ('urlaub')
                 @include('duties._tab_urlaub')
+                @break
+            @case ('krank')
+                @include('duties._tab_krank')
                 @break
         @endswitch
 

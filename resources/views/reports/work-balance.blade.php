@@ -11,7 +11,7 @@
 @endphp
 
 @section('content')
-    <div class="space-y-4">
+    <x-page-shell>
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h1 class="text-xl font-semibold">{{ __('Arbeitsbilanz') }}</h1>
@@ -134,5 +134,5 @@
                 </tfoot>
             </table>
         </div>
-    </div>
+    </x-page-shell>
 @endsection

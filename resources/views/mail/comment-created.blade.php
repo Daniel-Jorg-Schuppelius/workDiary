@@ -3,12 +3,12 @@
 
 {{ __(':name hat einen Kommentar zu Eintrag #:id hinterlassen:', [
     'name' => optional($comment->user)->name ?? __('Unbekannt'),
-    'id' => $comment->diary_entry_id,
+    'id' => $comment->commentable_id,
 ]) }}
 
 > {{ $comment->body }}
 
-@component('mail::button', ['url' => route('diary.show', $comment->diary_entry_id) . '#comments'])
+@component('mail::button', ['url' => route('diary.show', $comment->commentable_id) . '#comments'])
 {{ __('Eintrag öffnen') }}
 @endcomponent
 

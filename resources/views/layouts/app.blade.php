@@ -314,6 +314,7 @@
                                     $manageNavItems[] = ['route' => 'tags.index',                    'label' => __('Tags'),             'icon' => 'label',            'modal' => false];
                                     $manageNavItems[] = ['route' => 'flex.admin',                    'label' => __('Gleitzeit Team'),   'icon' => 'groups',           'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.organizations.index',     'label' => __('Organisationen'),   'icon' => 'corporate_fare',   'modal' => false];
+                                    $adminNavItems[]  = ['route' => 'admin.entry-types.index',        'label' => __('Eintragstypen'),    'icon' => 'category',         'modal' => false];
                                 }
                                 $adminNavItems[] = ['route' => 'audit.index',                       'label' => __('Audit-Log'),        'icon' => 'fact_check',       'modal' => false];
                                 $adminNavItems[] = ['route' => 'admin.plugins.index',                'label' => __('Plugins'),          'icon' => 'extension',        'modal' => false];
@@ -370,7 +371,6 @@
                                         ['route' => 'timesheets.index', 'label' => __('Stundenzettel'), 'icon' => 'description',     'modal' => false, 'matches' => ['timesheets.*', 'projects.timesheets.*']],
                                         ['route' => 'flex.index',       'label' => __('Gleitzeit'),     'icon' => 'hourglass_top',   'modal' => false, 'matches' => ['flex.*']],
                                         ['route' => 'travel-logs.index','label' => __('Fahrtenbuch'),   'icon' => 'directions_car',  'modal' => false, 'matches' => ['travel-logs.*']],
-                                        ['route' => 'service-orders.index','label' => __('Aufträge'),    'icon' => 'assignment',      'modal' => false, 'matches' => ['service-orders.*']],
                                         ['route' => 'tours.index',      'label' => __('Touren'),        'icon' => 'route',           'modal' => false, 'matches' => ['tours.*']],
                                     ],
                                 ];
@@ -407,6 +407,7 @@
                                         ['route' => 'reports.on-call',          'label' => __('Notdienst'),          'icon' => 'notifications_active','modal' => false, 'matches' => ['reports.on-call']],
                                         ['route' => 'reports.coverage',         'label' => __('Coverage'),           'icon' => 'group_work',          'modal' => false, 'matches' => ['reports.coverage']],
                                         ['route' => 'reports.absences',         'label' => __('Urlaub & Flex'),      'icon' => 'event_busy',          'modal' => false, 'matches' => ['reports.absences']],
+                                        ['route' => 'reports.sickness',         'label' => __('Krankheiten'),        'icon' => 'sick',                'modal' => false, 'matches' => ['reports.sickness']],
                                         ['route' => 'reports.operations',       'label' => __('Operations'),         'icon' => 'assignment',          'modal' => false, 'matches' => ['reports.operations']],
                                         ['route' => 'reports.materials',        'label' => __('Materialien'),        'icon' => 'inventory',           'modal' => false, 'matches' => ['reports.materials']],
                                         ['route' => 'reports.billing',          'label' => __('Billing'),            'icon' => 'request_quote',       'modal' => false, 'matches' => ['reports.billing']],
@@ -748,7 +749,6 @@
                                 ['route' => 'duty-plans.create',     'label' => __('Dienstplan'),  'icon' => 'event_available'],
                                 ['route' => 'vacations.create',      'label' => __('Urlaub'),      'icon' => 'beach_access'],
                                 ['route' => 'travel-logs.create',    'label' => __('Fahrtbuch'),   'icon' => 'route'],
-                                ['route' => 'service-orders.create', 'label' => __('Auftrag'),     'icon' => 'assignment'],
                                 ['route' => 'tours.create',          'label' => __('Tour'),        'icon' => 'directions_bus'],
                             ],
                         ],

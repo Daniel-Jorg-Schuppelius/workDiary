@@ -35,4 +35,13 @@ class DiaryEntryObserver
             (int) $entry->status,
         );
     }
+
+    /**
+     * Polymorphic comments have no database-level FK cascade; remove them
+     * manually when their owning DiaryEntry is deleted.
+     */
+    public function deleting(DiaryEntry $entry): void
+    {
+        $entry->comments()->delete();
+    }
 }

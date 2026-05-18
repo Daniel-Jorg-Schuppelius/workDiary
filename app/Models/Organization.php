@@ -19,7 +19,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-class Organization extends Model {
+class Organization extends Model
+{
     use Auditable;
 
     /** @use HasFactory<OrganizationFactory> */
@@ -82,7 +83,8 @@ class Organization extends Model {
         'trial_ends_at',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'settings' => 'array',
             'is_active' => 'boolean',
@@ -90,14 +92,15 @@ class Organization extends Model {
         ];
     }
 
-    protected static function booted(): void {
+    protected static function booted(): void
+    {
         static::creating(function (Organization $org): void {
             if (! $org->slug) {
                 $base = Str::slug($org->name) ?: 'org';
                 $slug = $base;
                 $i = 2;
                 while (static::withoutGlobalScopes()->where('slug', $slug)->exists()) {
-                    $slug = $base . '-' . $i++;
+                    $slug = $base.'-'.$i++;
                 }
                 $org->slug = $slug;
             }
@@ -105,12 +108,14 @@ class Organization extends Model {
     }
 
     /** @return BelongsTo<User, $this> */
-    public function owner(): BelongsTo {
+    public function owner(): BelongsTo
+    {
         return $this->belongsTo(User::class, 'owner_id');
     }
 
     /** @return HasMany<User, $this> */
-    public function users(): HasMany {
+    public function users(): HasMany
+    {
         return $this->hasMany(User::class);
     }
 
@@ -119,7 +124,8 @@ class Organization extends Model {
      *
      * @return array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, rules:array<string,bool>}
      */
-    public function complianceSettings(): array {
+    public function complianceSettings(): array
+    {
         $stored = (array) ($this->settings['compliance'] ?? []);
         $merged = array_replace_recursive(self::COMPLIANCE_DEFAULTS, $stored);
 
@@ -134,7 +140,8 @@ class Organization extends Model {
      *
      * @return array<string, mixed>
      */
-    public function groupSettings(string $group): array {
+    public function groupSettings(string $group): array
+    {
         /** @var array<string, mixed> $defaults */
         $defaults = (array) config($group, []);
         /** @var array<string, mixed> $settings */
@@ -149,32 +156,38 @@ class Organization extends Model {
     }
 
     /** @return array<string, mixed> */
-    public function paginationSettings(): array {
+    public function paginationSettings(): array
+    {
         return $this->groupSettings('pagination');
     }
 
     /** @return array<string, mixed> */
-    public function invoicingSettings(): array {
+    public function invoicingSettings(): array
+    {
         return $this->groupSettings('invoicing');
     }
 
     /** @return array<string, mixed> */
-    public function uploadSettings(): array {
+    public function uploadSettings(): array
+    {
         return $this->groupSettings('uploads');
     }
 
     /** @return array<string, mixed> */
-    public function validationSettings(): array {
+    public function validationSettings(): array
+    {
         return $this->groupSettings('validation');
     }
 
     /** @return array<string, mixed> */
-    public function notificationSettings(): array {
+    public function notificationSettings(): array
+    {
         return $this->groupSettings('notifications');
     }
 
     /** @return array<string, mixed> */
-    public function uiSettings(): array {
+    public function uiSettings(): array
+    {
         return $this->groupSettings('ui');
     }
 }

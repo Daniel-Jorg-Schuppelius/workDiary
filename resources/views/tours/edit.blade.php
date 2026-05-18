@@ -4,7 +4,7 @@
 
 @section('content')
     @php
-        $stops = $tour->serviceOrders;
+        $stops = $tour->diaryEntries;
         $markers = [];
         if ($tour->start_lat && $tour->start_lng) {
             $markers[] = ['lat' => (float) $tour->start_lat, 'lng' => (float) $tour->start_lng, 'label' => __('Start')];
@@ -21,7 +21,7 @@
         $geometry = $tour->geometryArray();
     @endphp
 
-    <div class="space-y-4">
+    <x-page-shell>
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h1 class="text-xl font-semibold">
@@ -172,5 +172,5 @@
                 </div>
             </div>
         </div>
-    </div>
+    </x-page-shell>
 @endsection

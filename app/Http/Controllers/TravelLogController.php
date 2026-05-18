@@ -16,6 +16,7 @@ use App\Http\Requests\SaveTravelLogRequest;
 use App\Models\Customer;
 use App\Models\Project;
 use App\Models\TravelLog;
+use App\Models\User;
 use App\Services\Travel\TravelLogService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
@@ -68,7 +69,7 @@ class TravelLogController extends Controller {
     public function create(Request $request): View {
         Gate::authorize('create', TravelLog::class);
 
-        return view('travel-logs.form', [
+        return view('travel-logs._form_dialog', [
             'log' => null,
             'date' => $request->date('date')?->toDateString() ?? CarbonImmutable::today()->toDateString(),
             'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
@@ -83,7 +84,7 @@ class TravelLogController extends Controller {
 
         $data = $request->validated();
         $data['user_id'] = Auth::id();
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
         $data['organization_id'] = $user->organization_id;
 
@@ -96,7 +97,7 @@ class TravelLogController extends Controller {
     public function edit(TravelLog $travelLog): View {
         Gate::authorize('update', $travelLog);
 
-        return view('travel-logs.form', [
+        return view('travel-logs._form_dialog', [
             'log' => $travelLog,
             'date' => $travelLog->date?->toDateString(),
             'projects' => Project::query()->orderBy('name')->get(['id', 'name']),

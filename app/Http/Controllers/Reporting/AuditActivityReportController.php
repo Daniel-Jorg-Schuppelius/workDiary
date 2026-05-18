@@ -17,6 +17,7 @@ use App\Models\AuditLog;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -79,9 +80,9 @@ class AuditActivityReportController extends Controller
             $byUserCounts[(int) $uid] = (int) $c;
         }
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, User> $userModels */
+        /** @var Collection<int, User> $userModels */
         $userModels = $byUserCounts === []
-            ? new \Illuminate\Database\Eloquent\Collection
+            ? new Collection
             : User::query()->whereIn('id', array_keys($byUserCounts))->get(['id', 'name']);
         /** @var array<int, User> $usersById */
         $usersById = [];
@@ -99,7 +100,7 @@ class AuditActivityReportController extends Controller
         $distinctUsers = count($byUserCounts);
         $distinctTypes = count($byType);
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, AuditLog> $recent */
+        /** @var Collection<int, AuditLog> $recent */
         $recent = (clone $base)
             ->with('user:id,name')
             ->orderByDesc('created_at')
@@ -136,7 +137,7 @@ class AuditActivityReportController extends Controller
      * @param  array<string, int>  $byEvent
      * @param  array<string, int>  $byType
      * @param  array<int, array{user: ?User, count:int}>  $byUser
-     * @param  \Illuminate\Database\Eloquent\Collection<int, AuditLog>  $recent
+     * @param  Collection<int, AuditLog>  $recent
      */
     private function exportCsv(array $byEvent, array $byType, array $byUser, $recent, string $from, string $to): Response
     {
@@ -187,7 +188,7 @@ class AuditActivityReportController extends Controller
      * @param  array<string, int>  $byEvent
      * @param  array<string, int>  $byType
      * @param  array<int, array{user: ?User, count:int}>  $byUser
-     * @param  \Illuminate\Database\Eloquent\Collection<int, AuditLog>  $recent
+     * @param  Collection<int, AuditLog>  $recent
      * @param  array{total:int, users:int, types:int}  $totals
      */
     private function exportPdf(array $byEvent, array $byType, array $byUser, $recent, array $totals, string $from, string $to): SymfonyResponse

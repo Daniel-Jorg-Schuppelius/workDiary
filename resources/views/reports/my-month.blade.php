@@ -24,7 +24,7 @@
     ];
 @endphp
 
-<div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
+<x-page-shell>
 
     <x-filter-bar :action="route('reports.my-month')" :reset="route('reports.my-month')">
         <x-slot:extra>
@@ -55,9 +55,7 @@
         </div>
 
         @if (empty($byDay))
-            <div class="rounded-box border border-base-300 bg-base-200 p-6 text-center text-sm text-base-content/60">
-                {{ __('Keine Zeiteinträge in diesem Monat.') }}
-            </div>
+            <x-empty-state :title="__('Keine Zeiteinträge in diesem Monat.')" />
         @else
             <div class="overflow-x-auto">
                 <table class="table table-zebra table-sm">
@@ -136,5 +134,5 @@
             </div>
         @endif
     </div>
-</div>
+</x-page-shell>
 @endsection

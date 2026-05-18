@@ -2,7 +2,7 @@
 @section('title', $dutyPlan->title)
 @section('nav-title', $dutyPlan->title)
 @section('content')
-<div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
+<x-page-shell gap="6">
 
     <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         <div class="flex flex-wrap items-center gap-2">
@@ -96,5 +96,5 @@
             </tbody>
         </table>
     </div>
-</div>
+</x-page-shell>
 @endsection

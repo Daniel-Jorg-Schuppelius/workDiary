@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', __('Mein Arbeitszeit-Modell'))
 @section('content')
-<div class="w-full p-4 space-y-4">
+<x-page-shell>
     <div class="mb-4 flex items-center justify-between gap-3">
         <h1 class="font-['Space_Grotesk'] text-xl font-semibold">{{ __('Mein Arbeitszeit-Modell') }}</h1>
         @auth
@@ -21,5 +21,5 @@
         <li>{{ __('Rahmenzeit') }}: {{ substr((string)$s->frame_start, 0, 5) }} – {{ substr((string)$s->frame_end, 0, 5) }}</li>
         <li>{{ __('Pflichtpause') }}: {{ (int)$s->break_minutes }} min @ {{ (int)$s->break_after_minutes }} min</li>
     </ul>
-</div>
+</x-page-shell>
 @endsection

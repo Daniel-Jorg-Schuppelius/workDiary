@@ -28,6 +28,16 @@
                 </select>
             </x-filter-field>
         @endif
+        @if (($entryTypes ?? collect())->isNotEmpty())
+            <x-filter-field :label="__('Typ')" for="diary-entry-type" class="min-w-40">
+                <select id="diary-entry-type" name="entry_type" class="select select-bordered select-sm w-full">
+                    <option value="">{{ __('Alle Typen') }}</option>
+                    @foreach ($entryTypes as $type)
+                        <option value="{{ $type->id }}" @selected((int) ($filters['entry_type'] ?? 0) === (int) $type->id)>{{ $type->label }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+        @endif
         <label class="flex items-center gap-2 pb-2">
             <input type="checkbox" id="mine" name="mine" value="1" @checked(!empty($filters['mine'])) class="checkbox checkbox-primary checkbox-sm">
             <span class="text-sm text-base-content/75">{{ __('Nur meine') }}</span>

@@ -23,7 +23,8 @@ class CommentResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'diary_entry_id' => $this->diary_entry_id,
+            'commentable_type' => $this->commentable_type,
+            'commentable_id' => $this->commentable_id,
             'user' => new UserResource($this->whenLoaded('user')),
             'body' => $this->body,
             'created_at' => optional($this->created_at)->toIso8601String(),

@@ -3,7 +3,7 @@
 @section('nav-title', __('Kunden'))
 
 @php
-    /** @var \Illuminate\Contracts\Pagination\LengthAwarePaginator $customers */
+    /** @var \Illuminate\Pagination\LengthAwarePaginator $customers */
     $sort = $sort ?? 'name';
     $dir = $dir ?? 'asc';
     $status = $status ?? 'active';

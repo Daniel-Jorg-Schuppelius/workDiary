@@ -42,6 +42,7 @@ class Vacation extends Model
 
     public const TYPE_VACATION = 'vacation';
 
+    /** @deprecated Krankheit wird ab Mai 2026 über App\Models\SickLeave geführt; Konstante bleibt für historische Daten/Down-Migration. */
     public const TYPE_SICK = 'sick';
 
     public const TYPE_SPECIAL = 'special';
@@ -59,7 +60,6 @@ class Vacation extends Model
     /** @var list<string> */
     public static array $types = [
         self::TYPE_VACATION,
-        self::TYPE_SICK,
         self::TYPE_SPECIAL,
         self::TYPE_UNPAID,
     ];

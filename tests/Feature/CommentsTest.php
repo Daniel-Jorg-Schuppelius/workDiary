@@ -39,7 +39,8 @@ class CommentsTest extends TestCase
             ->assertRedirect();
 
         $this->assertDatabaseHas('comments', [
-            'diary_entry_id' => $entry->id,
+            'commentable_type' => DiaryEntry::class,
+            'commentable_id' => $entry->id,
             'user_id' => $author->id,
             'body' => 'Mein Kommentar',
         ]);
@@ -57,7 +58,7 @@ class CommentsTest extends TestCase
     {
         $author = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($author)->create();
-        $comment = Comment::factory()->for($entry, 'diaryEntry')->for($author)->create();
+        $comment = Comment::factory()->for($entry, 'commentable')->for($author)->create();
 
         $this->actingAs($author)
             ->put(route('comments.update', $comment), ['body' => 'updated'])
@@ -75,7 +76,7 @@ class CommentsTest extends TestCase
         $author = User::factory()->user()->create();
         $other = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($author)->create();
-        $comment = Comment::factory()->for($entry, 'diaryEntry')->for($author)->create();
+        $comment = Comment::factory()->for($entry, 'commentable')->for($author)->create();
 
         $this->actingAs($other)
             ->put(route('comments.update', $comment), ['body' => 'x'])
@@ -91,7 +92,7 @@ class CommentsTest extends TestCase
         $admin = User::factory()->admin()->create();
         $author = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($author)->create();
-        $comment = Comment::factory()->for($entry, 'diaryEntry')->for($author)->create();
+        $comment = Comment::factory()->for($entry, 'commentable')->for($author)->create();
 
         $this->actingAs($admin)
             ->delete(route('comments.destroy', $comment))
@@ -114,7 +115,7 @@ class CommentsTest extends TestCase
     {
         $user = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($user)->create();
-        Comment::factory()->for($entry, 'diaryEntry')->for($user)->create(['body' => 'Sichtbarer Inhalt']);
+        Comment::factory()->for($entry, 'commentable')->for($user)->create(['body' => 'Sichtbarer Inhalt']);
 
         $this->actingAs($user)
             ->get(route('diary.show', $entry))
@@ -126,7 +127,7 @@ class CommentsTest extends TestCase
     {
         $user = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($user)->create();
-        Comment::factory()->for($entry, 'diaryEntry')->for($user)->create();
+        Comment::factory()->for($entry, 'commentable')->for($user)->create();
 
         $entry->delete();
 

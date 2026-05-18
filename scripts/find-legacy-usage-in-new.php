@@ -47,7 +47,7 @@ $pattern = '/App\\\\Legacy\\\\[A-Za-z0-9_\\\\]+/';
 $hits = [];
 
 $iter = function (string $dir) use (&$iter, $root, $pattern, $allowList, &$hits): void {
-    $abs = $root . '/' . $dir;
+    $abs = $root.'/'.$dir;
     if (! is_dir($abs)) {
         return;
     }
@@ -92,22 +92,22 @@ foreach ($scanDirs as $d) {
 $asJson = in_array('--json', $argv, true);
 
 if ($asJson) {
-    fwrite(STDOUT, json_encode($hits, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL);
+    fwrite(STDOUT, json_encode($hits, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES).PHP_EOL);
     exit($hits === [] ? 0 : 1);
 }
 
-echo "# Legacy-Nutzung im neuen Bereich" . PHP_EOL . PHP_EOL;
+echo '# Legacy-Nutzung im neuen Bereich'.PHP_EOL.PHP_EOL;
 
 if ($hits === []) {
-    echo "Keine Treffer — sauber." . PHP_EOL;
+    echo 'Keine Treffer — sauber.'.PHP_EOL;
     exit(0);
 }
 
-echo "| Datei | Zeile | Symbol |" . PHP_EOL;
-echo "|-------|------:|--------|" . PHP_EOL;
+echo '| Datei | Zeile | Symbol |'.PHP_EOL;
+echo '|-------|------:|--------|'.PHP_EOL;
 foreach ($hits as $hit) {
-    printf("| %s | %d | `%s` |%s", $hit['file'], $hit['line'], $hit['symbol'], PHP_EOL);
+    printf('| %s | %d | `%s` |%s', $hit['file'], $hit['line'], $hit['symbol'], PHP_EOL);
 }
 
-echo PHP_EOL . sprintf('Treffer: %d', count($hits)) . PHP_EOL;
+echo PHP_EOL.sprintf('Treffer: %d', count($hits)).PHP_EOL;
 exit(1);

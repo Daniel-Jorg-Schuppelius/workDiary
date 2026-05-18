@@ -19,7 +19,9 @@ use App\Models\User;
 use App\Models\WorkSchedule;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Carbon\CarbonPeriod;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -85,7 +87,7 @@ class AttendanceReportController extends Controller
         if ($scope === 'mine') {
             $usersQuery->where('id', $userId);
         }
-        /** @var \Illuminate\Database\Eloquent\Collection<int, User> $users */
+        /** @var Collection<int, User> $users */
         $users = $usersQuery->get(['id', 'name']);
 
         if ($users->isEmpty()) {
@@ -114,7 +116,7 @@ class AttendanceReportController extends Controller
             ->map(static fn ($v): int => (int) $v)
             ->all();
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, WorkSchedule> $schedules */
+        /** @var Collection<int, WorkSchedule> $schedules */
         $schedules = WorkSchedule::query()
             ->whereIn('user_id', $userIds)
             ->where('valid_from', '<=', $to->toDateString())
@@ -183,7 +185,7 @@ class AttendanceReportController extends Controller
     /**
      * @param  list<WorkSchedule>  $schedules
      */
-    private function scheduleFor(\Carbon\CarbonInterface $day, array $schedules): ?WorkSchedule
+    private function scheduleFor(CarbonInterface $day, array $schedules): ?WorkSchedule
     {
         $match = null;
         foreach ($schedules as $s) {

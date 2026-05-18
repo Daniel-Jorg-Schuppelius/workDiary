@@ -7,7 +7,7 @@
     $fmtMin = fn(int $min) => intdiv($min, 60) . ':' . str_pad((string)($min % 60), 2, '0', STR_PAD_LEFT);
 @endphp
 
-<div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
+<x-page-shell>
 
     {{-- Header --}}
     <div class="flex flex-wrap items-start justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
@@ -207,5 +207,5 @@
             <x-empty-state :message="__('Stundenzettel ist noch nicht zur Signatur freigegeben.')" />
         @endif
     </x-card>
-</div>
+</x-page-shell>
 @endsection

@@ -28,6 +28,14 @@ return [
         'magic_minutes' => (int) env('TIMESHEET_MAGIC_MINUTES', 1440),
     ],
 
+    // How long a user may correct their OWN TimeEntry after the entry date.
+    // Admins always bypass this window (see TimeEntryPolicy). Additional hard
+    // locks (timesheet signed/locked, entry exported) cannot be overridden by
+    // the window — they require admin intervention.
+    'edit_window' => [
+        'days' => (int) env('TIMESHEET_EDIT_WINDOW_DAYS', 7),
+    ],
+
     'pdf' => [
         'disk' => env('TIMESHEET_PDF_DISK', 'local'),
     ],

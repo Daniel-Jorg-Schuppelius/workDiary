@@ -5,7 +5,44 @@
     $prefillStartAt = $prefillStartAt ?? null;
     $prefillUserId = $prefillUserId ?? 0;
     $defaultUserId = old('user_id', $entry?->user_id ?? ($prefillUserId ?: auth()->id()));
+
+    // Phase 6: EntryType-gesteuerte Felder
+    $entryTypes = $entryTypes ?? collect();
+    $entryTypeFlags = $entryTypeFlags ?? [];
+    $customerOptions = $customerOptions ?? collect();
+    $tourOptions = $tourOptions ?? collect();
+    $defaultEntryTypeId = old('entry_type_id', $entry?->entry_type_id ?? ($prefillEntryTypeId ?? 0));
+    // Initialer Flags-Block für Alpine (auch wenn nichts gewählt ist).
+    $initialFlags = $entryTypeFlags[(int) $defaultEntryTypeId] ?? [
+        'requires_customer' => false,
+        'requires_address' => false,
+        'requires_schedule' => false,
+        'requires_tour' => false,
+        'allow_priority' => false,
+        'allow_tour' => false,
+        'default_service_minutes' => null,
+        'default_priority' => null,
+        'default_status' => 2,
+    ];
 @endphp
+
+<div
+    x-data="{
+        entryTypeId: @js((int) $defaultEntryTypeId),
+        flagsMap: @js($entryTypeFlags),
+        flags: @js($initialFlags),
+        onTypeChange() {
+            const id = parseInt(this.entryTypeId || 0, 10);
+            const next = this.flagsMap[id] ?? {
+                requires_customer: false, requires_address: false, requires_schedule: false,
+                requires_tour: false, allow_priority: false, allow_tour: false,
+                default_service_minutes: null, default_priority: null, default_status: 2,
+            };
+            this.flags = next;
+        },
+    }"
+    class="space-y-4"
+>
 
 @if (! $isEdit && $canCreateForOthers && $assignableUsers->isNotEmpty())
     <x-form-group :legend="__('Zuordnung')" icon="person" tone="primary">
@@ -25,6 +62,58 @@
             @enderror
         </div>
     </x-form-group>
+@endif
+
+@if ($entryTypes->isNotEmpty())
+    <x-form-group :legend="__('Typ')" icon="category" tone="primary" cols="2">
+        <div class="fieldset md:col-span-2">
+            <label class="fieldset-label" for="entry_type_id">{{ __('Eintragstyp') }}</label>
+            <select
+                id="entry_type_id"
+                name="entry_type_id"
+                x-model.number="entryTypeId"
+                @change="onTypeChange()"
+                class="select select-bordered w-full @error('entry_type_id') select-error @enderror"
+            >
+                <option value="0">{{ __('— ohne Typ —') }}</option>
+                @foreach ($entryTypes as $type)
+                    <option value="{{ $type->id }}" @selected((int) $defaultEntryTypeId === (int) $type->id)>
+                        {{ $type->label }}
+                    </option>
+                @endforeach
+            </select>
+            @error('entry_type_id')
+                <p class="text-error text-sm">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div class="fieldset" x-show="entryTypeId > 0" x-cloak>
+            <label class="fieldset-label" for="title">{{ __('Titel') }}</label>
+            <input
+                type="text"
+                id="title"
+                name="title"
+                maxlength="200"
+                value="{{ old('title', $entry?->title) }}"
+                class="input input-bordered w-full @error('title') input-error @enderror"
+                placeholder="{{ __('Kurze Bezeichnung des Auftrags') }}"
+            >
+            @error('title')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="fieldset" x-show="flags.allow_priority" x-cloak>
+            <label class="fieldset-label" for="priority">{{ __('Priorität') }}</label>
+            <select id="priority" name="priority" class="select select-bordered w-full @error('priority') select-error @enderror">
+                <option value="">—</option>
+                @foreach (\App\Models\DiaryEntry::PRIORITIES as $p)
+                    <option value="{{ $p }}" @selected(old('priority', $entry?->priority) === $p)>{{ __(ucfirst($p)) }}</option>
+                @endforeach
+            </select>
+            @error('priority')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+    </x-form-group>
+@else
+    <input type="hidden" name="entry_type_id" value="0">
 @endif
 
 <x-form-group :legend="__('Eintrag')" icon="edit" tone="primary">
@@ -90,6 +179,178 @@
     </div>
 </x-form-group>
 
+{{-- Kunde / zugewiesener Benutzer (typabhängig) --}}
+<template x-if="flags.requires_customer">
+    <x-form-group :legend="__('Kunde & Zuweisung')" icon="badge" tone="secondary" cols="2">
+        <div class="fieldset">
+            <label class="fieldset-label" for="customer_id">{{ __('Kunde') }}</label>
+            <select
+                id="customer_id"
+                name="customer_id"
+                class="select select-bordered w-full @error('customer_id') select-error @enderror"
+            >
+                <option value="">—</option>
+                @foreach ($customerOptions as $c)
+                    <option value="{{ $c->id }}" @selected((int) old('customer_id', $entry?->customer_id) === (int) $c->id)>
+                        {{ $c->name }}@if ($c->company) — {{ $c->company }}@endif
+                    </option>
+                @endforeach
+            </select>
+            @error('customer_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="fieldset">
+            <label class="fieldset-label" for="assigned_user_id">{{ __('Zuständig') }}</label>
+            <select
+                id="assigned_user_id"
+                name="assigned_user_id"
+                class="select select-bordered w-full @error('assigned_user_id') select-error @enderror"
+            >
+                <option value="">—</option>
+                @foreach ($assignableUsers as $u)
+                    <option value="{{ $u->id }}" @selected((int) old('assigned_user_id', $entry?->assigned_user_id) === (int) $u->id)>{{ $u->name }}</option>
+                @endforeach
+            </select>
+            @error('assigned_user_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+    </x-form-group>
+</template>
+
+{{-- Termin / Zeitfenster / Servicedauer --}}
+<template x-if="flags.requires_schedule">
+    <x-form-group :legend="__('Termin & Servicezeit')" icon="event" tone="info" cols="3">
+        <div class="fieldset">
+            <label class="fieldset-label" for="scheduled_for">{{ __('Datum') }}</label>
+            <input
+                type="date"
+                id="scheduled_for"
+                name="scheduled_for"
+                value="{{ old('scheduled_for', optional($entry?->scheduled_for)->format('Y-m-d')) }}"
+                class="input input-bordered w-full @error('scheduled_for') input-error @enderror"
+            >
+            @error('scheduled_for')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="fieldset">
+            <label class="fieldset-label" for="time_window_start">{{ __('Zeitfenster ab') }}</label>
+            <input
+                type="time"
+                id="time_window_start"
+                name="time_window_start"
+                value="{{ old('time_window_start', $entry?->time_window_start) }}"
+                class="input input-bordered w-full @error('time_window_start') input-error @enderror"
+            >
+            @error('time_window_start')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="fieldset">
+            <label class="fieldset-label" for="time_window_end">{{ __('Zeitfenster bis') }}</label>
+            <input
+                type="time"
+                id="time_window_end"
+                name="time_window_end"
+                value="{{ old('time_window_end', $entry?->time_window_end) }}"
+                class="input input-bordered w-full @error('time_window_end') input-error @enderror"
+            >
+            @error('time_window_end')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="fieldset md:col-span-3">
+            <label class="fieldset-label" for="service_minutes">{{ __('Servicedauer (Minuten)') }}</label>
+            <input
+                type="number"
+                min="0"
+                step="5"
+                id="service_minutes"
+                name="service_minutes"
+                :placeholder="flags.default_service_minutes ?? ''"
+                value="{{ old('service_minutes', $entry?->service_minutes) }}"
+                class="input input-bordered w-full @error('service_minutes') input-error @enderror"
+            >
+            @error('service_minutes')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+    </x-form-group>
+</template>
+
+{{-- Adresse --}}
+<template x-if="flags.requires_address">
+    <x-form-group :legend="__('Adresse')" icon="location_on" tone="warning" cols="2">
+        <div class="fieldset md:col-span-2">
+            <label class="fieldset-label" for="address_line">{{ __('Straße & Nummer') }}</label>
+            <input type="text" id="address_line" name="address_line" maxlength="200"
+                value="{{ old('address_line', $entry?->address_line) }}"
+                class="input input-bordered w-full @error('address_line') input-error @enderror">
+            @error('address_line')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="fieldset">
+            <label class="fieldset-label" for="address_zip">{{ __('PLZ') }}</label>
+            <input type="text" id="address_zip" name="address_zip" maxlength="16"
+                value="{{ old('address_zip', $entry?->address_zip) }}"
+                class="input input-bordered w-full @error('address_zip') input-error @enderror">
+            @error('address_zip')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="fieldset">
+            <label class="fieldset-label" for="address_city">{{ __('Stadt') }}</label>
+            <input type="text" id="address_city" name="address_city" maxlength="120"
+                value="{{ old('address_city', $entry?->address_city) }}"
+                class="input input-bordered w-full @error('address_city') input-error @enderror">
+            @error('address_city')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="fieldset">
+            <label class="fieldset-label" for="address_country">{{ __('Land (ISO-2)') }}</label>
+            <input type="text" id="address_country" name="address_country" maxlength="2"
+                value="{{ old('address_country', $entry?->address_country) }}"
+                class="input input-bordered w-full uppercase @error('address_country') input-error @enderror">
+            @error('address_country')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="fieldset">
+            <label class="fieldset-label" for="address_lat">{{ __('Lat') }}</label>
+            <input type="number" step="0.0000001" id="address_lat" name="address_lat"
+                value="{{ old('address_lat', $entry?->address_lat) }}"
+                class="input input-bordered w-full @error('address_lat') input-error @enderror">
+            @error('address_lat')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="fieldset">
+            <label class="fieldset-label" for="address_lng">{{ __('Lng') }}</label>
+            <input type="number" step="0.0000001" id="address_lng" name="address_lng"
+                value="{{ old('address_lng', $entry?->address_lng) }}"
+                class="input input-bordered w-full @error('address_lng') input-error @enderror">
+            @error('address_lng')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+    </x-form-group>
+</template>
+
+{{-- Tour-Zuordnung --}}
+<template x-if="flags.allow_tour">
+    <x-form-group :legend="__('Tour')" icon="route" tone="accent" cols="2">
+        <div class="fieldset">
+            <label class="fieldset-label" for="tour_id">{{ __('Tour') }}</label>
+            <select id="tour_id" name="tour_id" class="select select-bordered w-full @error('tour_id') select-error @enderror">
+                <option value="">—</option>
+                @foreach ($tourOptions as $t)
+                    <option value="{{ $t->id }}" @selected((int) old('tour_id', $entry?->tour_id) === (int) $t->id)>
+                        {{ optional($t->tour_date)->format('Y-m-d') }} · {{ $t->name ?? '#'.$t->id }}
+                    </option>
+                @endforeach
+            </select>
+            @error('tour_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="fieldset">
+            <label class="fieldset-label" for="tour_position">{{ __('Position') }}</label>
+            <input type="number" min="0" id="tour_position" name="tour_position"
+                value="{{ old('tour_position', $entry?->tour_position) }}"
+                class="input input-bordered w-full @error('tour_position') input-error @enderror">
+            @error('tour_position')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+    </x-form-group>
+</template>
+
 <x-form-group :legend="__('Tags')" icon="flag" tone="success">
     <div class="fieldset">
         <?php $currentTagIds = old('tag_ids', $selectedTagIds ?? []); ?>
@@ -113,3 +374,5 @@
             placeholder="{{ __('Neue Tags durch Komma getrennt') }}">
     </div>
 </x-form-group>
+
+</div>

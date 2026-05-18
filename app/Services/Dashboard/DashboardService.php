@@ -21,9 +21,11 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
-class DashboardService {
+class DashboardService
+{
     /** @return array<string, mixed> */
-    public function summarize(User $user, ?CarbonImmutable $now = null): array {
+    public function summarize(User $user, ?CarbonImmutable $now = null): array
+    {
         $now ??= CarbonImmutable::now();
 
         return [
@@ -36,7 +38,8 @@ class DashboardService {
     /**
      * @return array<string, mixed>
      */
-    private function personal(User $user, CarbonImmutable $now): array {
+    private function personal(User $user, CarbonImmutable $now): array
+    {
         $weekEnd = $now->addDays(7);
 
         // Einzel-Query statt 2× COUNT für Diary-Einträge
@@ -84,8 +87,9 @@ class DashboardService {
         $userEntryIds = DiaryEntry::query()->where('user_id', $user->id)->select('id');
 
         $recentComments = Comment::query()
-            ->whereIn('diary_entry_id', $userEntryIds)
-            ->with(['user:id,name', 'diaryEntry:id,content,user_id'])
+            ->where('commentable_type', DiaryEntry::class)
+            ->whereIn('commentable_id', $userEntryIds)
+            ->with(['user:id,name', 'commentable:id,content,user_id'])
             ->latest()
             ->limit($recentLimit)
             ->get();
@@ -128,7 +132,8 @@ class DashboardService {
     /**
      * @return array<string, mixed>
      */
-    private function team(CarbonImmutable $now): array {
+    private function team(CarbonImmutable $now): array
+    {
         // Einzel-Query statt 2× COUNT
         /** @var object{open_cnt: int|string, progress_cnt: int|string}|null $entryCounts */
         $entryCounts = DiaryEntry::query()
@@ -144,8 +149,9 @@ class DashboardService {
         $userCount = User::query()->count();
 
         $recentActivity = Comment::query()
-            ->select(['id', 'user_id', 'diary_entry_id', 'body', 'created_at'])
-            ->with(['user:id,name', 'diaryEntry:id,content'])
+            ->where('commentable_type', DiaryEntry::class)
+            ->select(['id', 'user_id', 'commentable_type', 'commentable_id', 'body', 'created_at'])
+            ->with(['user:id,name', 'commentable:id,content'])
             ->latest()
             ->limit(8)
             ->get();

@@ -3,7 +3,7 @@
 @section('nav-title', $customer->name)
 
 @section('content')
-<div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
+<x-page-shell>
     {{-- Header --}}
     <div class="flex flex-wrap items-start justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         <div class="min-w-0">
@@ -334,5 +334,5 @@
         </div>
         @endcan
     @endif
-</div>
+</x-page-shell>
 @endsection

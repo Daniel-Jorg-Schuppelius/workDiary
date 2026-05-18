@@ -18,8 +18,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class OrganizationController extends Controller {
-    public function index(Request $request): View {
+class OrganizationController extends Controller
+{
+    public function index(Request $request): View
+    {
         Gate::authorize('viewAny', Organization::class);
 
         $query = Organization::query()->withoutGlobalScopes()->withCount('users');
@@ -38,18 +40,20 @@ class OrganizationController extends Controller {
         return view('admin.organizations.index', compact('organizations', 'sort', 'dir'));
     }
 
-    public function create(): View {
+    public function create(): View
+    {
         Gate::authorize('create', Organization::class);
 
         return view('admin.organizations._form_dialog', ['organization' => new Organization]);
     }
 
-    public function store(Request $request): RedirectResponse {
+    public function store(Request $request): RedirectResponse
+    {
         Gate::authorize('create', Organization::class);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'plan' => ['required', 'in:' . implode(',', Organization::$plans)],
+            'plan' => ['required', 'in:'.implode(',', Organization::$plans)],
             'locale' => ['required', 'string', 'max:10'],
             'timezone' => ['required', 'string', 'max:64'],
             'is_active' => ['boolean'],
@@ -63,23 +67,25 @@ class OrganizationController extends Controller {
             ->with('success', __('Organisation wurde erstellt.'));
     }
 
-    public function edit(Organization $organization): View {
+    public function edit(Organization $organization): View
+    {
         Gate::authorize('update', $organization);
 
         return view('admin.organizations._form_dialog', compact('organization'));
     }
 
-    public function update(Request $request, Organization $organization): RedirectResponse {
+    public function update(Request $request, Organization $organization): RedirectResponse
+    {
         Gate::authorize('update', $organization);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'plan' => ['required', 'in:' . implode(',', Organization::$plans)],
+            'plan' => ['required', 'in:'.implode(',', Organization::$plans)],
             'locale' => ['required', 'string', 'max:10'],
             'timezone' => ['required', 'string', 'max:64'],
             'is_active' => ['boolean'],
             'compliance' => ['sometimes', 'array'],
-            'compliance.mode' => ['sometimes', 'in:' . implode(',', Organization::$complianceModes)],
+            'compliance.mode' => ['sometimes', 'in:'.implode(',', Organization::$complianceModes)],
             'compliance.max_hours_day' => ['sometimes', 'integer', 'min:1', 'max:24'],
             'compliance.min_rest_hours' => ['sometimes', 'integer', 'min:1', 'max:24'],
             'compliance.max_hours_week' => ['sometimes', 'integer', 'min:1', 'max:168'],
@@ -149,7 +155,7 @@ class OrganizationController extends Controller {
             // Boolean-Konvertierung für rules
             if (isset($mergedSettings['compliance']['rules']) && is_array($mergedSettings['compliance']['rules'])) {
                 $mergedSettings['compliance']['rules'] = array_map(
-                    static fn($v) => filter_var($v, FILTER_VALIDATE_BOOL),
+                    static fn ($v) => filter_var($v, FILTER_VALIDATE_BOOL),
                     $mergedSettings['compliance']['rules'],
                 );
             }
@@ -164,7 +170,8 @@ class OrganizationController extends Controller {
             ->with('success', __('Organisation wurde aktualisiert.'));
     }
 
-    public function destroy(Organization $organization): RedirectResponse {
+    public function destroy(Organization $organization): RedirectResponse
+    {
         Gate::authorize('delete', $organization);
 
         $organization->delete();
@@ -190,6 +197,7 @@ class OrganizationController extends Controller {
                 if ($cleaned !== []) {
                     $out[$k] = $cleaned;
                 }
+
                 continue;
             }
             if ($v === null || $v === '') {
@@ -197,6 +205,7 @@ class OrganizationController extends Controller {
             }
             $out[$k] = $v;
         }
+
         return $out;
     }
 }

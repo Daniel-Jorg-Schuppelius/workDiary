@@ -15,6 +15,7 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use App\Policies\Concerns\ChecksOwnership;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Services\Timekeeping\TimeEntryEditPolicy;
 
 class TimeEntryPolicy
 {
@@ -38,11 +39,19 @@ class TimeEntryPolicy
 
     public function update(User $user, TimeEntry $entry): bool
     {
-        return $this->owns($user, $entry, 'user_id');
+        if (! $this->owns($user, $entry, 'user_id')) {
+            return false;
+        }
+
+        return app(TimeEntryEditPolicy::class)->canSelfEdit($entry);
     }
 
     public function delete(User $user, TimeEntry $entry): bool
     {
-        return $this->owns($user, $entry, 'user_id');
+        if (! $this->owns($user, $entry, 'user_id')) {
+            return false;
+        }
+
+        return app(TimeEntryEditPolicy::class)->canSelfEdit($entry);
     }
 }

@@ -20,6 +20,7 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -30,10 +31,12 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Billing-/Rechnungs-Auswertung: Status, Aging, Top-Kunden, unbillte Zeiten.
  * Nur für Administratoren (Org-weite Finanzdaten).
  */
-class BillingReportController extends Controller {
+class BillingReportController extends Controller
+{
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request): View|SymfonyResponse {
+    public function index(Request $request): View|SymfonyResponse
+    {
         $authUser = Auth::user();
         $isAdmin = $authUser instanceof User && $authUser->isAdmin();
         abort_unless($isAdmin, 403);
@@ -68,14 +71,15 @@ class BillingReportController extends Controller {
     /**
      * @return array<string, array{count:int, subtotal:float, tax:float, total:float}>
      */
-    private function aggregateByStatus(string $from, string $to): array {
+    private function aggregateByStatus(string $from, string $to): array
+    {
         $statuses = Invoice::STATUSES;
         $result = [];
         foreach ($statuses as $st) {
             $result[$st] = ['count' => 0, 'subtotal' => 0.0, 'tax' => 0.0, 'total' => 0.0];
         }
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Invoice> $invoices */
+        /** @var Collection<int, Invoice> $invoices */
         $invoices = Invoice::query()
             ->where(function ($w) use ($from, $to): void {
                 $w->whereBetween('issued_on', [$from, $to])
@@ -108,7 +112,8 @@ class BillingReportController extends Controller {
      *   open_total: float
      * }
      */
-    private function aggregateAging(Carbon $today): array {
+    private function aggregateAging(Carbon $today): array
+    {
         $buckets = [
             'current' => ['count' => 0, 'total' => 0.0],
             '1_7' => ['count' => 0, 'total' => 0.0],
@@ -117,7 +122,7 @@ class BillingReportController extends Controller {
             '30_plus' => ['count' => 0, 'total' => 0.0],
         ];
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Invoice> $invoices */
+        /** @var Collection<int, Invoice> $invoices */
         $invoices = Invoice::query()
             ->where('status', Invoice::STATUS_ISSUED)
             ->get(['due_on', 'issued_on', 'total']);
@@ -130,6 +135,7 @@ class BillingReportController extends Controller {
             if ($reference === null) {
                 $buckets['current']['count']++;
                 $buckets['current']['total'] += $total;
+
                 continue;
             }
             $daysOverdue = (int) Carbon::parse($reference)->startOfDay()->diffInDays($today, false);
@@ -154,8 +160,9 @@ class BillingReportController extends Controller {
     /**
      * @return array<int, array{customer: Customer, count:int, total:float}>
      */
-    private function aggregatePerCustomer(string $from, string $to): array {
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Invoice> $invoices */
+    private function aggregatePerCustomer(string $from, string $to): array
+    {
+        /** @var Collection<int, Invoice> $invoices */
         $invoices = Invoice::query()
             ->whereBetween('issued_on', [$from, $to])
             ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PAID])
@@ -176,7 +183,7 @@ class BillingReportController extends Controller {
             return [];
         }
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Customer> $customers */
+        /** @var Collection<int, Customer> $customers */
         $customers = Customer::query()->whereIn('id', array_keys($agg))->orderBy('name')->get();
         $rows = [];
         foreach ($customers as $c) {
@@ -187,7 +194,7 @@ class BillingReportController extends Controller {
                 'total' => $agg[$cid]['total'],
             ];
         }
-        usort($rows, static fn($a, $b): int => $b['total'] <=> $a['total']);
+        usort($rows, static fn ($a, $b): int => $b['total'] <=> $a['total']);
 
         return $rows;
     }
@@ -197,12 +204,13 @@ class BillingReportController extends Controller {
      *
      * @return array{count:int, minutes:int, projected_revenue:float}
      */
-    private function aggregateUnbilled(string $from, string $to): array {
+    private function aggregateUnbilled(string $from, string $to): array
+    {
         $billedIds = InvoiceItem::query()
             ->whereNotNull('time_entry_id')
             ->select('time_entry_id');
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, TimeEntry> $entries */
+        /** @var Collection<int, TimeEntry> $entries */
         $entries = TimeEntry::query()
             ->where('billable', true)
             ->whereBetween('date', [$from, $to])
@@ -232,7 +240,8 @@ class BillingReportController extends Controller {
      * @param  array<int, array{customer: Customer, count:int, total:float}>  $perCustomer
      * @param  array{count:int, minutes:int, projected_revenue:float}  $unbilled
      */
-    private function exportCsv(array $status, array $aging, array $perCustomer, array $unbilled, string $from, string $to): Response {
+    private function exportCsv(array $status, array $aging, array $perCustomer, array $unbilled, string $from, string $to): Response
+    {
         $filename = sprintf('billing_%s_%s.csv', $from, $to);
         $rows = [];
         $rows[] = ['Bereich', 'Schlüssel', 'Anzahl', 'Wert €'];
@@ -255,16 +264,16 @@ class BillingReportController extends Controller {
             $csv .= implode(';', array_map(static function ($v): string {
                 $s = (string) $v;
                 if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"' . str_replace('"', '""', $s) . '"';
+                    $s = '"'.str_replace('"', '""', $s).'"';
                 }
 
                 return $s;
-            }, $row)) . "\r\n";
+            }, $row))."\r\n";
         }
 
-        return response("\xEF\xBB\xBF" . $csv, 200, [
+        return response("\xEF\xBB\xBF".$csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
 
@@ -274,7 +283,8 @@ class BillingReportController extends Controller {
      * @param  array<int, array{customer: Customer, count:int, total:float}>  $perCustomer
      * @param  array{count:int, minutes:int, projected_revenue:float}  $unbilled
      */
-    private function exportPdf(array $status, array $aging, array $perCustomer, array $unbilled, string $from, string $to): SymfonyResponse {
+    private function exportPdf(array $status, array $aging, array $perCustomer, array $unbilled, string $from, string $to): SymfonyResponse
+    {
         $filename = sprintf('billing_%s_%s.pdf', $from, $to);
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = Pdf::loadView('reports.pdf.billing', [

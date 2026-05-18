@@ -41,7 +41,7 @@ class MailNotificationsTest extends TestCase
         $entry = DiaryEntry::factory()->for($owner)->create();
 
         $this->actingAs($other);
-        Comment::create(['diary_entry_id' => $entry->id, 'user_id' => $other->id, 'body' => 'Hi']);
+        Comment::create(['commentable_type' => DiaryEntry::class, 'commentable_id' => $entry->id, 'user_id' => $other->id, 'body' => 'Hi']);
 
         Mail::assertQueued(CommentCreatedMail::class, function ($mail) use ($owner) {
             return $mail->hasTo($owner->email);
@@ -82,7 +82,7 @@ class MailNotificationsTest extends TestCase
         $entry = DiaryEntry::factory()->for($owner)->create();
 
         $this->actingAs($other);
-        Comment::create(['diary_entry_id' => $entry->id, 'user_id' => $other->id, 'body' => 'Hi']);
+        Comment::create(['commentable_type' => DiaryEntry::class, 'commentable_id' => $entry->id, 'user_id' => $other->id, 'body' => 'Hi']);
 
         Mail::assertNothingQueued();
     }

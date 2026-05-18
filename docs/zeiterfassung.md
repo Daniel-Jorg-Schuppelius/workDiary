@@ -133,6 +133,56 @@ Der Report ist unter `reports/work-balance` erreichbar (Sidebar
 „Arbeitsbilanz") und unterstützt `?scope=year` sowie PDF-Export (DomPDF):
 `reports/work-balance?export=pdf`.
 
+## 7a. Krankheiten (Arbeitsunfähigkeit)
+
+Krankmeldungen werden im eigenen Modell `App\Models\SickLeave` verwaltet —
+unabhängig von `Vacation`. Das frühere `Vacation::TYPE_SICK` ist deprecated und
+wird nicht mehr für neue Datensätze verwendet (Bestandsdaten wandern per
+Migration in `sick_leaves`).
+
+### Datenmodell
+
+| Feld                                 | Bedeutung                                                                          |
+| ------------------------------------ | ---------------------------------------------------------------------------------- |
+| `kind`                               | `initial` (Erst-Bescheinigung) oder `follow_up` (Folge-AU, mit `follow_up_for_id`) |
+| `start_date` / `end_date`            | Krankheitszeitraum (inkl.)                                                         |
+| `au_number` / `doctor_name`          | Optionale Stammdaten der AU-Bescheinigung                                          |
+| `kasse_notified_at`                  | Zeitpunkt der Krankenkassen-Meldung (optional, manuell)                            |
+| `cancelled_at` / `cancel_reason`     | Stornierung — Datensatz bleibt für Audit erhalten                                  |
+| Polymorphe `attachments`             | AU-Bescheinigungs-Scans (PDF/JPG/PNG/HEIC) via `HasAttachments`                    |
+
+### AU-Pflicht & Upload
+
+`config/sickness.php#attachment_required_from_day` (Default `4`) erzwingt in
+`SaveSickLeaveRequest`, dass ab dem n. Kalendertag der Krankmeldung mindestens
+eine AU-Bescheinigung hochgeladen sein muss. Erlaubte Dateitypen und Größe sind
+ebenfalls dort konfiguriert. Downloads laufen ausschließlich über signierte
+URLs (`sick-leaves.attachments.download`).
+
+### Lohnfortzahlung (§ 3 EntgFG)
+
+`App\Services\Sickness\ContinuedPaymentService` berechnet pro Mitarbeiter den
+aktuellen Anspruch (`continued_pay_weeks` × 7 Kalendertage = i. d. R. 42 Tage).
+Eine _Krankheits-Episode_ umfasst zusammenhängende SickLeave-Einträge — Folge-
+Bescheinigungen (`follow_up_for_id`) verlängern die Episode, isolierte
+Krankmeldungen ohne Lücke von `chain_reset_after_months` Monaten ebenfalls
+(konservative Auslegung; Diagnose unbekannt). Der Status (`usedDays`,
+`remainingDays`, `exhausted`, `exhaustionDate`) wird im Tab _Duties → Krank_
+als Fortschrittsbalken angezeigt.
+
+### Workflow
+
+- Erfassen: Toolbar-Button „Krank melden" im Duties-Reiter _Krank_ öffnet das
+  Modal (`?dialog=1`). Nutzer dürfen nur sich selbst erfassen, Admins jeden.
+- Auto-Approve: Es gibt keinen Genehmigungsschritt — gemeldet = wirksam.
+- Stornieren: PATCH `sick-leaves.cancel` mit optionalem Grund; setzt
+  `cancelled_at`.
+- Reporting:
+  - `reports.absences` zählt _Werktage krank_ nun aus `sick_leaves` (nicht
+    mehr aus `vacations`).
+  - `reports.sickness` liefert detaillierte Episoden, AU-Quote und den
+    Lohnfortzahlungs-Status pro Mitarbeiter.
+
 ## 8. Konfigurations-Cheat-Sheet
 
 | Env-Variable                       | Default | Wirkung                                            |
@@ -143,6 +193,9 @@ Der Report ist unter `reports/work-balance` erreichbar (Sidebar
 | `TRAVEL_RATE_PRIVATE_KM`           | 0.30    | Erstattungssatz Privat-PKW (€/km)                  |
 | `TRAVEL_RATE_BICYCLE_KM`           | 0.05    | Erstattungssatz Fahrrad                            |
 | `TRAVEL_AUTO_TIME_ENTRY`           | true    | Reise-Zeiten automatisch als `TimeEntry` einbuchen |
+| `SICKNESS_AU_REQUIRED_FROM_DAY`    | 4       | Ab welchem Kalendertag eine AU-Bescheinigung Pflicht ist |
+| `SICKNESS_CONTINUED_PAY_WEEKS`     | 6       | Lohnfortzahlung nach § 3 EntgFG (Wochen)           |
+| `SICKNESS_CHAIN_RESET_MONTHS`      | 6       | Frist (Monate), nach der eine neue Krankheitsepisode den Anspruch zurücksetzt |
 
 ## 9. Wichtige Hinweise für Entwickler
 

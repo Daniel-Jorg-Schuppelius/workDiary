@@ -14,11 +14,13 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\FlexBalance;
+use App\Models\SickLeave;
 use App\Models\User;
 use App\Models\Vacation;
 use App\Services\HolidayService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -29,13 +31,14 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Urlaubs- und Flex-Auswertung: Werktage pro Abwesenheits-Typ
  * sowie Flex-Bewegung und aktueller Flex-Saldo je Mitarbeiter.
  */
-class AbsencesReportController extends Controller {
+class AbsencesReportController extends Controller
+{
     use ResolvesGlobalDateRange;
 
-    public function __construct(private readonly HolidayService $holidayService) {
-    }
+    public function __construct(private readonly HolidayService $holidayService) {}
 
-    public function index(Request $request): View|SymfonyResponse {
+    public function index(Request $request): View|SymfonyResponse
+    {
         $userId = (int) Auth::id();
         $authUser = Auth::user();
         $isAdmin = $authUser instanceof User && $authUser->isAdmin();
@@ -67,7 +70,8 @@ class AbsencesReportController extends Controller {
         ]);
     }
 
-    private function resolveScope(Request $request, bool $isAdmin): string {
+    private function resolveScope(Request $request, bool $isAdmin): string
+    {
         $scope = $request->string('scope', 'mine')->toString();
         if ($scope !== 'team' || ! $isAdmin) {
             $scope = 'mine';
@@ -88,12 +92,13 @@ class AbsencesReportController extends Controller {
      *   flex_balance_minutes:int|null
      * }>
      */
-    private function aggregate(Carbon $from, Carbon $to, string $scope, int $userId): array {
+    private function aggregate(Carbon $from, Carbon $to, string $scope, int $userId): array
+    {
         $vacQ = Vacation::query()->scopes(['overlapping' => [$from, $to]]);
         if ($scope === 'mine') {
             $vacQ->where('user_id', $userId);
         }
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Vacation> $vacations */
+        /** @var Collection<int, Vacation> $vacations */
         $vacations = $vacQ->get();
 
         $endYear = (int) $to->format('Y');
@@ -105,7 +110,7 @@ class AbsencesReportController extends Controller {
         if ($scope === 'mine') {
             $flexQ->where('user_id', $userId);
         }
-        /** @var \Illuminate\Database\Eloquent\Collection<int, FlexBalance> $flexAll */
+        /** @var Collection<int, FlexBalance> $flexAll */
         $flexAll = $flexQ->get();
 
         /** @var array<int, array{vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int}> $absByUser */
@@ -141,11 +146,30 @@ class AbsencesReportController extends Controller {
             }
             match ($v->type) {
                 Vacation::TYPE_VACATION => $absByUser[$uid]['vacation_days'] += $days,
-                Vacation::TYPE_SICK => $absByUser[$uid]['sick_days'] += $days,
                 Vacation::TYPE_SPECIAL => $absByUser[$uid]['special_days'] += $days,
                 Vacation::TYPE_UNPAID => $absByUser[$uid]['unpaid_days'] += $days,
                 default => null,
             };
+        }
+
+        $sickQ = SickLeave::query()
+            ->whereNull('cancelled_at')
+            ->where('end_date', '>=', $from->toDateString())
+            ->where('start_date', '<=', $to->toDateString());
+        if ($scope === 'mine') {
+            $sickQ->where('user_id', $userId);
+        }
+        /** @var Collection<int, SickLeave> $sickLeaves */
+        $sickLeaves = $sickQ->get();
+        foreach ($sickLeaves as $s) {
+            $uid = (int) $s->user_id;
+            $ensure($absByUser, $uid);
+            $start = $s->start_date->greaterThan($from) ? $s->start_date->copy() : $from->copy();
+            $end = $s->end_date->lessThan($to) ? $s->end_date->copy() : $to->copy();
+            $days = $this->countWorkdays($start, $end);
+            if ($days > 0) {
+                $absByUser[$uid]['sick_days'] += $days;
+            }
         }
 
         /** @var array<int, int> $flexChange */
@@ -171,7 +195,7 @@ class AbsencesReportController extends Controller {
         if ($userIds === []) {
             return [];
         }
-        /** @var \Illuminate\Database\Eloquent\Collection<int, User> $users */
+        /** @var Collection<int, User> $users */
         $users = User::query()->whereIn('id', $userIds)->orderBy('name')->get();
 
         $rows = [];
@@ -199,7 +223,8 @@ class AbsencesReportController extends Controller {
         return $rows;
     }
 
-    private function countWorkdays(Carbon $start, Carbon $end): int {
+    private function countWorkdays(Carbon $start, Carbon $end): int
+    {
         if ($start->greaterThan($end)) {
             return 0;
         }
@@ -220,7 +245,8 @@ class AbsencesReportController extends Controller {
      * @param  array<int, array{user: User, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int|null}>  $rows
      * @return array{users:int, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int}
      */
-    private function totals(array $rows): array {
+    private function totals(array $rows): array
+    {
         $t = [
             'users' => count($rows),
             'vacation_days' => 0,
@@ -248,7 +274,8 @@ class AbsencesReportController extends Controller {
      * @param  array<int, array{user: User, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int|null}>  $rows
      * @param  array{users:int, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int}  $totals
      */
-    private function exportCsv(array $rows, array $totals, string $from, string $to): Response {
+    private function exportCsv(array $rows, array $totals, string $from, string $to): Response
+    {
         $filename = sprintf('abwesenheiten_%s_%s.csv', $from, $to);
         $fmt = static function (int $m): string {
             $sign = $m < 0 ? '-' : '';
@@ -285,16 +312,16 @@ class AbsencesReportController extends Controller {
             $csv .= implode(';', array_map(static function ($v): string {
                 $s = (string) $v;
                 if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"' . str_replace('"', '""', $s) . '"';
+                    $s = '"'.str_replace('"', '""', $s).'"';
                 }
 
                 return $s;
-            }, $row)) . "\r\n";
+            }, $row))."\r\n";
         }
 
-        return response("\xEF\xBB\xBF" . $csv, 200, [
+        return response("\xEF\xBB\xBF".$csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
 
@@ -302,7 +329,8 @@ class AbsencesReportController extends Controller {
      * @param  array<int, array{user: User, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int|null}>  $rows
      * @param  array{users:int, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int}  $totals
      */
-    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope): SymfonyResponse {
+    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope): SymfonyResponse
+    {
         $filename = sprintf('abwesenheiten_%s_%s.pdf', $from, $to);
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = Pdf::loadView('reports.pdf.absences', [

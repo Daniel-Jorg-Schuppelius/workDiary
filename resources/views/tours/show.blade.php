@@ -4,7 +4,7 @@
 
 @section('content')
     @php
-        $stops = $tour->serviceOrders;
+        $stops = $tour->diaryEntries;
         $markers = [];
         if ($tour->start_lat && $tour->start_lng) {
             $markers[] = ['lat' => (float) $tour->start_lat, 'lng' => (float) $tour->start_lng, 'label' => __('Start')];
@@ -21,7 +21,7 @@
         $geometry = $tour->geometryArray();
     @endphp
 
-    <div class="space-y-4">
+    <x-page-shell>
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h1 class="text-xl font-semibold">{{ __('Tour') }} {{ $tour->name ?? ('#' . $tour->id) }}</h1>
@@ -74,10 +74,10 @@
                         @forelse ($stops as $s)
                             <tr>
                                 <td>{{ $s->tour_position }}</td>
-                                <td><a href="{{ route('service-orders.show', $s) }}" class="link">{{ $s->title }}</a></td>
+                                <td><a href="{{ route('diary.show', $s) }}" class="link">{{ $s->title }}</a></td>
                                 <td>{{ $s->customer?->name }}</td>
                                 <td>{{ $s->address_city }}</td>
-                                <td><span class="badge badge-ghost badge-xs">{{ __($s->status) }}</span></td>
+                                <td><span class="badge badge-ghost badge-xs">{{ $s->statusLabel() }}</span></td>
                             </tr>
                         @empty
                             <tr><td colspan="5" class="py-4 text-center text-base-content/60">{{ __('Keine Stopps zugewiesen.') }}</td></tr>
@@ -97,5 +97,5 @@
                 <p class="whitespace-pre-line text-sm">{{ $tour->notes }}</p>
             </div>
         @endif
-    </div>
+    </x-page-shell>
 @endsection

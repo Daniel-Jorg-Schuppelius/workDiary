@@ -45,13 +45,16 @@
 
 <x-form-group :legend="__('Zeitraum (optional)')" icon="schedule" tone="info" cols="2">
     <div class="fieldset">
-        <label class="fieldset-label">{{ __('Beginn') }}</label>
-        <input type="datetime-local" name="started_at" value="{{ old('started_at', $entry?->started_at?->format('Y-m-d\TH:i')) }}" class="input input-bordered w-full">
+        <label class="fieldset-label">{{ __('Beginn (Uhrzeit)') }}</label>
+        <input type="time" name="start_time" value="{{ old('start_time', $entry?->started_at?->format('H:i')) }}" class="input input-bordered w-full">
     </div>
     <div class="fieldset">
-        <label class="fieldset-label">{{ __('Ende') }}</label>
-        <input type="datetime-local" name="ended_at" value="{{ old('ended_at', $entry?->ended_at?->format('Y-m-d\TH:i')) }}" class="input input-bordered w-full">
+        <label class="fieldset-label">{{ __('Ende (Uhrzeit)') }}</label>
+        <input type="time" name="end_time" value="{{ old('end_time', $entry?->ended_at?->format('H:i')) }}" class="input input-bordered w-full">
     </div>
+    <p class="text-xs text-base-content/60 md:col-span-2">
+        {{ __('Tipp: Endet die Zeit nach Mitternacht? Einfach die kleinere Uhrzeit eintragen — der Folgetag wird automatisch ergänzt.') }}
+    </p>
     @if ($openAttendance)
         <input type="hidden" name="attendance_id" value="{{ $openAttendance->id }}">
         <p class="text-xs text-base-content/60 md:col-span-2">

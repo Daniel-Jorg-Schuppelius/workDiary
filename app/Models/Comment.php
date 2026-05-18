@@ -17,6 +17,7 @@ use Database\Factories\CommentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Comment extends Model
 {
@@ -26,12 +27,12 @@ class Comment extends Model
     /** @use HasFactory<CommentFactory> */
     use HasFactory;
 
-    protected $fillable = ['diary_entry_id', 'user_id', 'body'];
+    protected $fillable = ['commentable_type', 'commentable_id', 'user_id', 'body'];
 
-    /** @return BelongsTo<DiaryEntry, $this> */
-    public function diaryEntry(): BelongsTo
+    /** @return MorphTo<Model, $this> */
+    public function commentable(): MorphTo
     {
-        return $this->belongsTo(DiaryEntry::class);
+        return $this->morphTo();
     }
 
     /** @return BelongsTo<User, $this> */

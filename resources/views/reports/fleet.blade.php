@@ -9,7 +9,7 @@
     $num   = fn (float $v, int $d = 2) => number_format($v, $d, ',', '.');
 @endphp
 
-<div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
+<x-page-shell>
 
     <x-filter-bar :action="route('reports.fleet')" :reset="route('reports.fleet')">
         @if ($isAdmin)
@@ -64,9 +64,7 @@
 
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         @if (empty($rows))
-            <div class="rounded-box border border-base-300 bg-base-200 p-6 text-center text-sm text-base-content/60">
-                {{ __('Keine Fahrzeug-Daten im gewählten Zeitraum.') }}
-            </div>
+            <x-empty-state :title="__('Keine Fahrzeug-Daten im gewählten Zeitraum.')" />
         @else
             <div class="overflow-x-auto">
                 <table class="table table-zebra table-sm">
@@ -125,5 +123,5 @@
             </div>
         @endif
     </div>
-</div>
+</x-page-shell>
 @endsection

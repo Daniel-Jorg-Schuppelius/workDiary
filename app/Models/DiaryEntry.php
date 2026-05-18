@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class DiaryEntry extends Model
 {
@@ -33,18 +33,68 @@ class DiaryEntry extends Model
 
     use HasTags;
 
+    public const STATUS_DONE = -1;
+
+    public const STATUS_IN_PROGRESS = 1;
+
+    public const STATUS_OPEN = 2;
+
+    public const STATUS_PROBLEM = 3;
+
+    /** @var list<int> */
+    public const STATUSES = [
+        self::STATUS_OPEN,
+        self::STATUS_IN_PROGRESS,
+        self::STATUS_DONE,
+        self::STATUS_PROBLEM,
+    ];
+
+    public const PRIORITY_LOW = 'low';
+
+    public const PRIORITY_NORMAL = 'normal';
+
+    public const PRIORITY_HIGH = 'high';
+
+    public const PRIORITY_URGENT = 'urgent';
+
+    /** @var list<string> */
+    public const PRIORITIES = [
+        self::PRIORITY_LOW,
+        self::PRIORITY_NORMAL,
+        self::PRIORITY_HIGH,
+        self::PRIORITY_URGENT,
+    ];
+
     protected $fillable = [
         'organization_id',
+        'entry_type_id',
         'legacy_id',
         'user_id',
+        'assigned_user_id',
         'project_id',
+        'customer_id',
         'on_call_shift_id',
         'emergency_assignment_id',
+        'title',
         'content',
         'response',
         'status',
+        'priority',
         'start_at',
         'end_at',
+        'scheduled_for',
+        'time_window_start',
+        'time_window_end',
+        'service_minutes',
+        'address_line',
+        'address_zip',
+        'address_city',
+        'address_country',
+        'address_lat',
+        'address_lng',
+        'tour_id',
+        'tour_position',
+        'notes',
         'is_archived',
         'archived_at',
     ];
@@ -55,8 +105,13 @@ class DiaryEntry extends Model
             'start_at' => 'datetime',
             'end_at' => 'datetime',
             'archived_at' => 'datetime',
+            'scheduled_for' => 'date',
             'status' => 'integer',
             'is_archived' => 'boolean',
+            'service_minutes' => 'integer',
+            'tour_position' => 'integer',
+            'address_lat' => 'decimal:7',
+            'address_lng' => 'decimal:7',
         ];
     }
 
@@ -66,10 +121,39 @@ class DiaryEntry extends Model
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<User, $this> */
+    public function assignedUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_user_id');
+    }
+
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /** @return BelongsTo<Customer, $this> */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    /** @return BelongsTo<EntryType, $this> */
+    public function entryType(): BelongsTo
+    {
+        return $this->belongsTo(EntryType::class);
+    }
+
+    /** @return BelongsTo<Tour, $this> */
+    public function tour(): BelongsTo
+    {
+        return $this->belongsTo(Tour::class);
+    }
+
+    public function hasCoordinates(): bool
+    {
+        return $this->address_lat !== null && $this->address_lng !== null;
     }
 
     /** @return BelongsTo<OnCallShift, $this> */
@@ -84,10 +168,13 @@ class DiaryEntry extends Model
         return $this->belongsTo(EmergencyAssignment::class, 'emergency_assignment_id');
     }
 
-    /** @return HasMany<Comment, $this> */
-    public function comments(): HasMany
+    /** @return MorphMany<Comment, $this> */
+    public function comments(): MorphMany
     {
-        return $this->hasMany(Comment::class)->orderBy('created_at');
+        /** @var MorphMany<Comment, $this> $relation */
+        $relation = $this->morphMany(Comment::class, 'commentable')->orderBy('created_at');
+
+        return $relation;
     }
 
     public function statusLabel(): string

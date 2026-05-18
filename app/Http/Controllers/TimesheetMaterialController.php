@@ -20,15 +20,18 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class TimesheetMaterialController extends Controller {
-    public function create(Project $project, Timesheet $timesheet): View {
+class TimesheetMaterialController extends Controller
+{
+    public function create(Project $project, Timesheet $timesheet): View
+    {
         Gate::authorize('update', $timesheet);
         $materials = Material::query()->where('is_active', true)->orderBy('name')->get();
 
         return view('timesheets._material_form_dialog', compact('project', 'timesheet', 'materials'));
     }
 
-    public function store(Project $project, Timesheet $timesheet, SaveMaterialUsageRequest $request): RedirectResponse {
+    public function store(Project $project, Timesheet $timesheet, SaveMaterialUsageRequest $request): RedirectResponse
+    {
         Gate::authorize('update', $timesheet);
 
         $data = $request->validated();
@@ -48,7 +51,8 @@ class TimesheetMaterialController extends Controller {
         return back()->with('success', __('Material erfasst.'));
     }
 
-    public function update(Project $project, Timesheet $timesheet, MaterialUsage $usage, SaveMaterialUsageRequest $request): RedirectResponse {
+    public function update(Project $project, Timesheet $timesheet, MaterialUsage $usage, SaveMaterialUsageRequest $request): RedirectResponse
+    {
         Gate::authorize('update', $timesheet);
         abort_unless((int) $usage->timesheet_id === (int) $timesheet->id, 404);
 
@@ -57,7 +61,8 @@ class TimesheetMaterialController extends Controller {
         return back()->with('success', __('Material aktualisiert.'));
     }
 
-    public function destroy(Project $project, Timesheet $timesheet, MaterialUsage $usage): RedirectResponse {
+    public function destroy(Project $project, Timesheet $timesheet, MaterialUsage $usage): RedirectResponse
+    {
         Gate::authorize('update', $timesheet);
         abort_unless((int) $usage->timesheet_id === (int) $timesheet->id, 404);
 

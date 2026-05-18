@@ -35,7 +35,7 @@
     };
 @endphp
 
-<div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
+<x-page-shell>
 
     <x-filter-bar :action="route('reports.my-year')" :reset="route('reports.my-year')">
         <x-filter-field :label="__('Art')" for="rep-kind">
@@ -62,9 +62,7 @@
         </div>
 
         @if ($yearTotal === 0)
-            <div class="rounded-box border border-base-300 bg-base-200 p-6 text-center text-sm text-base-content/60">
-                {{ __('Keine Zeiteinträge für dieses Jahr.') }}
-            </div>
+            <x-empty-state :title="__('Keine Zeiteinträge für dieses Jahr.')" />
         @else
             <div class="overflow-x-auto">
                 <table class="table table-xs w-full text-center tabular-nums">
@@ -116,5 +114,5 @@
             </div>
         @endif
     </div>
-</div>
+</x-page-shell>
 @endsection

@@ -88,7 +88,7 @@ class AuditLogTest extends TestCase
         $user = User::factory()->user()->create();
         $this->actingAs($user);
         $entry = DiaryEntry::factory()->for($user)->create();
-        Comment::factory()->for($entry, 'diaryEntry')->for($user)->create();
+        Comment::factory()->for($user)->create(['commentable_type' => DiaryEntry::class, 'commentable_id' => $entry->id]);
 
         $this->actingAs($admin)
             ->get(route('audit.index', ['event' => 'created', 'type' => 'comment']))

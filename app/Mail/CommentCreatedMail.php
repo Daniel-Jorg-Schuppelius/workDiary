@@ -26,7 +26,7 @@ class CommentCreatedMail extends Mailable
 
     public function envelope(): Envelope
     {
-        $entryId = $this->comment->diary_entry_id;
+        $entryId = $this->comment->commentable_id;
 
         return new Envelope(subject: __('Neuer Kommentar zum Tagebuch-Eintrag #:id', ['id' => $entryId]));
     }

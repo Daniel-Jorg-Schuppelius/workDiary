@@ -12,8 +12,10 @@
 namespace App\Http\Requests;
 
 use App\Models\TravelLog;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class SaveTravelLogRequest extends FormRequest
 {
@@ -22,13 +24,61 @@ class SaveTravelLogRequest extends FormRequest
         return true;
     }
 
+    /**
+     * Compose `started_at` / `ended_at` from the separately submitted
+     * `date` + `start_time` / `end_time` time-only inputs. Day rolls over
+     * automatically when `end_time` <= `start_time`.
+     */
+    protected function prepareForValidation(): void
+    {
+        $date = is_string($this->input('date')) ? trim($this->input('date')) : null;
+        $startTime = is_string($this->input('start_time')) ? trim($this->input('start_time')) : null;
+        $endTime = is_string($this->input('end_time')) ? trim($this->input('end_time')) : null;
+
+        if (! $date || ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            return;
+        }
+        if (! $startTime || ! preg_match('/^\d{2}:\d{2}$/', $startTime)) {
+            return;
+        }
+
+        try {
+            $start = CarbonImmutable::createFromFormat('Y-m-d H:i', "$date $startTime");
+        } catch (\Throwable) {
+            $start = null;
+        }
+        if (! $start instanceof CarbonImmutable) {
+            return;
+        }
+
+        $merge = ['started_at' => $start->format('Y-m-d\TH:i')];
+
+        if ($endTime && preg_match('/^\d{2}:\d{2}$/', $endTime)) {
+            try {
+                $end = CarbonImmutable::createFromFormat('Y-m-d H:i', "$date $endTime");
+            } catch (\Throwable) {
+                $end = null;
+            }
+            if ($end instanceof CarbonImmutable) {
+                if ($end->lessThanOrEqualTo($start)) {
+                    $end = $end->addDay();
+                }
+                $merge['ended_at'] = $end->format('Y-m-d\TH:i');
+            }
+        }
+
+        $this->merge($merge);
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array
     {
         return [
             'date' => ['required', 'date'],
+            'start_time' => ['nullable', 'date_format:H:i'],
+            'end_time' => ['nullable', 'date_format:H:i'],
             'started_at' => ['nullable', 'date'],
-            'ended_at' => ['nullable', 'date', 'after:started_at'],
+            'ended_at' => ['nullable', 'date', 'after_or_equal:started_at'],
             'project_id' => ['nullable', 'integer', Rule::exists('projects', 'id')],
             'task_id' => ['nullable', 'integer', Rule::exists('tasks', 'id')],
             'customer_id' => ['nullable', 'integer', Rule::exists('customers', 'id')],
@@ -45,6 +95,15 @@ class SaveTravelLogRequest extends FormRequest
             'rate_per_km' => ['nullable', 'numeric', 'min:0', 'max:10'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function ($v): void {
+            if ($this->filled('end_time') && ! $this->filled('start_time')) {
+                $v->errors()->add('start_time', __('Startzeit erforderlich, wenn eine Endzeit angegeben ist.'));
+            }
+        });
     }
 
     /** @return array<string, mixed> */

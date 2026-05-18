@@ -12,6 +12,7 @@
 namespace App\Observers;
 
 use App\Models\Comment;
+use App\Models\DiaryEntry;
 use App\Services\MailNotifier;
 use App\Services\PushNotifier;
 
@@ -19,9 +20,14 @@ class CommentObserver
 {
     public function created(Comment $comment): void
     {
-        $comment->loadMissing('diaryEntry.user', 'user');
+        $comment->loadMissing('commentable', 'user');
 
-        app(PushNotifier::class)->newComment($comment);
-        app(MailNotifier::class)->commentCreated($comment);
+        // Diary-comment notifications keep their existing behavior; comments
+        // on other commentables (e.g. TimeEntry) currently have no dedicated
+        // notification flow.
+        if ($comment->commentable instanceof DiaryEntry) {
+            app(PushNotifier::class)->newComment($comment);
+            app(MailNotifier::class)->commentCreated($comment);
+        }
     }
 }

@@ -23,10 +23,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class HolidayController extends Controller {
+class HolidayController extends Controller
+{
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request, HolidayService $holidayService): View {
+    public function index(Request $request, HolidayService $holidayService): View
+    {
         Gate::authorize('viewAny', AuditLog::class);
 
         $year = (int) $this->globalDateRange()['from']->year;
@@ -57,7 +59,7 @@ class HolidayController extends Controller {
                     'custom' => $customForYear[$dateKey] ?? null,
                 ];
             })
-            ->sortBy(fn($h) => $h['date']->getTimestamp())
+            ->sortBy(fn ($h) => $h['date']->getTimestamp())
             ->values();
 
         return view('holidays.index', [
@@ -67,7 +69,8 @@ class HolidayController extends Controller {
         ]);
     }
 
-    public function create(): View {
+    public function create(): View
+    {
         Gate::authorize('viewAny', AuditLog::class);
 
         return view('holidays._form_dialog', [
@@ -77,7 +80,8 @@ class HolidayController extends Controller {
         ]);
     }
 
-    public function store(Request $request): RedirectResponse {
+    public function store(Request $request): RedirectResponse
+    {
         Gate::authorize('viewAny', AuditLog::class);
 
         $data = $this->validateInput($request);
@@ -90,7 +94,8 @@ class HolidayController extends Controller {
         return redirect()->route('holidays.index')->with('success', __('Feiertag angelegt.'));
     }
 
-    public function edit(Holiday $holiday): View {
+    public function edit(Holiday $holiday): View
+    {
         Gate::authorize('viewAny', AuditLog::class);
 
         return view('holidays._form_dialog', [
@@ -100,7 +105,8 @@ class HolidayController extends Controller {
         ]);
     }
 
-    public function update(Request $request, Holiday $holiday): RedirectResponse {
+    public function update(Request $request, Holiday $holiday): RedirectResponse
+    {
         Gate::authorize('viewAny', AuditLog::class);
 
         $data = $this->validateInput($request, $holiday);
@@ -112,7 +118,8 @@ class HolidayController extends Controller {
         return redirect()->route('holidays.index')->with('success', __('Feiertag aktualisiert.'));
     }
 
-    public function destroy(Holiday $holiday): RedirectResponse {
+    public function destroy(Holiday $holiday): RedirectResponse
+    {
         Gate::authorize('viewAny', AuditLog::class);
 
         $holiday->delete();
@@ -123,7 +130,8 @@ class HolidayController extends Controller {
     /**
      * @return array<string, mixed>
      */
-    private function validateInput(Request $request, ?Holiday $holiday = null): array {
+    private function validateInput(Request $request, ?Holiday $holiday = null): array
+    {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'recurrence_mode' => ['required', 'in:once,yearly,relative'],
@@ -151,7 +159,7 @@ class HolidayController extends Controller {
         // Duplikat-Prüfung nur für feste Feiertage
         if (! $isRelative) {
             $duplicate = Holiday::query()
-                ->when($holiday, fn($q) => $q->whereKeyNot($holiday->id))
+                ->when($holiday, fn ($q) => $q->whereKeyNot($holiday->id))
                 ->where('recurrence_type', 'fixed')
                 ->where('is_recurring', $isRecurring)
                 ->where('date', $result['date'])

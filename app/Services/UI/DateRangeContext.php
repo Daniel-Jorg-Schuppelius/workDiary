@@ -61,7 +61,7 @@ class DateRangeContext
     public function __construct(private readonly Session $session) {}
 
     /**
-     * @return array{from: CarbonImmutable, to: CarbonImmutable, preset: string, label: string, unit: string, isoWeekLabel: ?string}
+     * @return array{from: CarbonImmutable, to: CarbonImmutable, preset: string, effectivePreset: string, label: string, unit: string, isoWeekLabel: ?string}
      */
     public function current(): array
     {
@@ -83,14 +83,47 @@ class DateRangeContext
             $to = $from;
         }
 
+        $effective = $preset === self::PRESET_CUSTOM
+            ? ($this->detectMatchingPreset($from, $to) ?? self::PRESET_CUSTOM)
+            : $preset;
+
         return [
             'from' => $from,
             'to' => $to,
             'preset' => $preset,
-            'label' => $this->labelFor($preset, $from, $to),
-            'unit' => $this->unitFor($preset, $from, $to),
+            'effectivePreset' => $effective,
+            'label' => $this->labelFor($effective, $from, $to),
+            'unit' => $this->unitFor($effective, $from, $to),
             'isoWeekLabel' => $this->isoWeekLabel($from, $to),
         ];
+    }
+
+    /**
+     * Erkennt, ob ein beliebiger [from, to]-Range exakt einem der bekannten
+     * Presets entspricht (bezogen auf "heute"). Liefert den passenden Preset-
+     * Schlüssel oder null, wenn nichts matcht.
+     */
+    private function detectMatchingPreset(CarbonImmutable $from, CarbonImmutable $to): ?string
+    {
+        $candidates = [
+            self::PRESET_TODAY,
+            self::PRESET_THIS_WEEK,
+            self::PRESET_THIS_MONTH,
+            self::PRESET_LAST_MONTH,
+            self::PRESET_THIS_YEAR,
+            self::PRESET_LAST_7_DAYS,
+            self::PRESET_LAST_30_DAYS,
+            self::PRESET_LAST_90_DAYS,
+        ];
+
+        foreach ($candidates as $key) {
+            [$pf, $pt] = $this->resolvePreset($key);
+            if ($from->isSameDay($pf) && $to->isSameDay($pt)) {
+                return $key;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -247,7 +280,27 @@ class DateRangeContext
             self::PRESET_LAST_7_DAYS => __('Letzte 7 Tage'),
             self::PRESET_LAST_30_DAYS => __('Letzte 30 Tage'),
             self::PRESET_LAST_90_DAYS => __('Letzte 90 Tage'),
-            default => $from->format('d.m.Y').' – '.$to->format('d.m.Y'),
+            default => $this->customLabel($from, $to),
         };
+    }
+
+    private function customLabel(CarbonImmutable $from, CarbonImmutable $to): string
+    {
+        if ($from->isSameDay($to)) {
+            $today = CarbonImmutable::today();
+            if ($from->isSameDay($today)) {
+                return __('Heute');
+            }
+            if ($from->isSameDay($today->subDay())) {
+                return __('Gestern');
+            }
+            if ($from->isSameDay($today->addDay())) {
+                return __('Morgen');
+            }
+
+            return $from->format('d.m.Y');
+        }
+
+        return $from->format('d.m.Y').' – '.$to->format('d.m.Y');
     }
 }

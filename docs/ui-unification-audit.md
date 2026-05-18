@@ -11,49 +11,54 @@ Diese Checkliste dokumentiert den Rollout der Vereinheitlichung. Pro Seite:
 
 Statuswerte: ✅ erledigt · ⚠️ teilweise · ❌ offen · — nicht anwendbar
 
+> **Stand UI-Vereinheitlichung Rollout (abgeschlossen):** Alle neuen Bereichs-Seiten verwenden jetzt `<x-page-shell>` als Außencontainer. Leerzustände in Tabellen und auf Seiten verwenden `<x-empty-state>` (graues Feld in weißer `<x-card>`). Projekte werden als breite Liste mit eingerückten Unterprojekten dargestellt (Vorbild Arbeitslisten). Tabellen-Leerzustände orientieren sich an Stempeluhr/Stundenzettel.
+
 ## Status pro Feature-Ordner
 
 | Ordner                   | Shell | Card | Table | Empty | Modal | Legacy-frei | Notiz                                               |
 | ------------------------ | :---: | :--: | :---: | :---: | :---: | :---------: | --------------------------------------------------- |
-| `week/`                  |  ❌   |  ❌  |  ❌   |  ❌   |   —   |     ✅      | Design-Referenz, eigener Layout                     |
-| `org/members/`           |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      | Erste umgestellte Seite                             |
-| `timesheets/` (show)     |  ❌   |  ⚠️  |   —   |  ✅   |   —   |     ✅      | Signaturkarte umgestellt; Rest offen                |
-| `timesheets/` (index)    |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      |                                                     |
-| `duties/`                |  ❌   |  ❌  |  ⚠️   |  ✅   |  ✅   |     ✅      | Tab-Partials nutzen `<x-table>` + `<x-empty-state>` |
-| `duty-plans/`            |  ❌   |  ❌  |  ❌   |  ✅   |  ✅   |     ✅      |                                                     |
-| `coverage-requirements/` |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      |                                                     |
-| `on-call-shifts/`        |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      |                                                     |
-| `vacations/`             |  ❌   |  ❌  |  ❌   |  ✅   |  ✅   |     ✅      |                                                     |
-| `assignments/`           |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      |                                                     |
-| `projects/`              |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      | Tabs (Übersicht, Tasks, Timesheets, ...)            |
-| `tasks/`                 |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      |                                                     |
-| `time-entries/`          |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      |                                                     |
-| `invoices/`              |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      |                                                     |
-| `milestones/`            |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      |                                                     |
-| `billing-rules/`         |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      |                                                     |
-| `customers/`             |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      |                                                     |
-| `customers/import/`      |  ❌   |  ❌  |  ❌   |  ❌   |   —   |     ✅      | Importseite: inline Form OK                         |
-| `service-orders/`        |  ❌   |  ❌  |  ❌   |  ✅   |  ✅   |     ✅      |                                                     |
-| `tours/`                 |  ❌   |  ❌  |  ❌   |  ✅   |  ✅   |     ✅      |                                                     |
-| `travel-logs/`           |  ❌   |  ❌  |  ❌   |  ✅   |  ✅   |     ✅      |                                                     |
-| `vehicles/`              |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      |                                                     |
-| `energy-logs/`           |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      |                                                     |
-| `attendance/`            |  ❌   |  ❌  |  ❌   |  ✅   |  ✅   |     ✅      |                                                     |
-| `stopwatch/`             |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      |                                                     |
-| `flex/` (Gleitzeit)      |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      |                                                     |
-| `today/`                 |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      |                                                     |
-| `reports/`               |  ❌   |  ❌  |  ❌   |  ❌   |   —   |     ✅      | Filterleisten inline (gewollt)                      |
-| `archive/`               |  ❌   |  ❌  |  ❌   |  ✅   |  ✅   |     ✅      |                                                     |
-| `qualifications/`        |  ❌   |  ❌  |  ❌   |  ✅   |  ✅   |     ✅      |                                                     |
-| `shift-types/`           |  ❌   |  ❌  |  ❌   |  ✅   |  ✅   |     ✅      |                                                     |
-| `materials/`             |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      |                                                     |
-| `admin/organizations/`   |  ❌   |  ❌  |  ❌   |  ✅   |  ✅   |     ✅      |                                                     |
-| `admin/plugins/`         |  ❌   |  ❌  |  ❌   |  ✅   |  ✅   |     ✅      |                                                     |
-| `audit/`                 |  ❌   |  ❌  |  ❌   |  ✅   |   —   |     ✅      | Read-only Listing                                   |
-| `schedule/`              |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      | Komplex (Wochenmatrix)                              |
-| `kanban/`                |  ❌   |  ❌  |  ❌   |  ❌   |  ✅   |     ✅      |                                                     |
-| `holidays/`              |  ❌   |  ❌  |  ❌   |  ✅   |  ✅   |     ✅      |                                                     |
-| `tags/`                  |  ❌   |  ❌  |  ❌   |  ✅   |  ✅   |     ✅      |                                                     |
+| `week/`                  |  —   |  —  |  —   |  —   |   —   |     ✅      | Design-Referenz, eigener Layout                     |
+| `org/members/`           |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      | Referenzimplementierung                             |
+| `timesheets/` (show)     |  ✅   |  ✅  |   —   |  ✅   |   —   |     ✅      | Stundenzettel-Detail (Vorbild Empty-State)          |
+| `timesheets/` (index)    |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      | Stempeluhr (Vorbild leere Tabelle)                  |
+| `duties/`                |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `duty-plans/`            |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `coverage-requirements/` |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `on-call-shifts/`        |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `vacations/`             |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `sick-leaves/`           |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      | Modal in `duties?tab=krank`; AU-Pflicht ab Tag 4    |
+| `assignments/`           |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `projects/`              |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      | Breite Liste; Unterprojekte eingerückt              |
+| `tasks/`                 |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `time-entries/`          |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `invoices/`              |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `milestones/`            |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `billing-rules/`         |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `customers/`             |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `customers/import/`      |  —   |  —  |  —   |  —   |   —   |     ✅      | Importseite (Ausnahme: mehrstufiger Upload-Flow)    |
+| `tours/`                 |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      | (ehem. service-orders über DiaryEntry abgelöst)     |
+| `travel-logs/`           |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `vehicles/`              |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `energy-logs/`           |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `attendance/`            |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `stopwatch/`             |  ✅   |  ✅  |  —   |  —   |  ✅   |     ✅      |                                                     |
+| `flex/` (Gleitzeit)      |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      | `flex/admin` inkludiert `flex/index` (Shell dort)   |
+| `today/`                 |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `reports/`               |  ✅   |  ✅  |  ✅   |  ✅   |   —   |     ✅      | Filterleisten inline (gewollt)                      |
+| `archive/`               |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `qualifications/`        |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `shift-types/`           |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `materials/`             |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `admin/organizations/`   |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `admin/plugins/`         |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `audit/`                 |  ✅   |  ✅  |  ✅   |  ✅   |   —   |     ✅      | Read-only Listing                                   |
+| `schedule/`              |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      | Komplex (Wochenmatrix); Import-Subflow ausgenommen  |
+| `kanban/`                |  ✅   |  ✅  |  —   |  ✅   |  ✅   |     ✅      |                                                     |
+| `holidays/`              |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `tags/`                  |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      |                                                     |
+| `dashboard/`             |  ✅   |  ✅  |  —   |  ✅   |   —   |     ✅      | Übersichtsseite                                     |
+| `profile/api-tokens`     |  —   |  ✅  |  ✅   |  ✅   |   —   |     ✅      | Schmale, zentrierte Seite (eigener Container)       |
+| `work-schedules/`        |  ✅   |  ✅  |  —   |  —   |  ✅   |     ✅      |                                                     |
 
 ## Ausnahmen (bewusst inline)
 

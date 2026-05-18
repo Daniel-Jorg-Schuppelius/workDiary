@@ -14,8 +14,11 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveDiaryEntryRequest;
 use App\Legacy\Models\LegacyDiaryEntry;
+use App\Models\Customer;
 use App\Models\DiaryEntry;
+use App\Models\EntryType;
 use App\Models\Tag;
+use App\Models\Tour;
 use App\Models\User;
 use App\Services\Archive\ArchiveService;
 use App\Services\UI\DateRangeContext;
@@ -71,6 +74,7 @@ class DiaryController extends Controller
             'counts' => $counts,
             'filters' => $filters,
             'allTags' => $this->allTags(),
+            'entryTypes' => EntryType::query()->active()->ordered()->get(),
         ]);
     }
 
@@ -108,6 +112,11 @@ class DiaryController extends Controller
             $query->whereHas('tags', fn ($q) => $q->where('tags.id', $tagId));
         }
 
+        $entryTypeId = $request->integer('entry_type');
+        if ($entryTypeId > 0) {
+            $query->where('entry_type_id', $entryTypeId);
+        }
+
         $projectId = $request->integer('project');
         if ($projectId > 0) {
             $query->where('project_id', $projectId);
@@ -121,7 +130,7 @@ class DiaryController extends Controller
             });
         }
 
-        $filters = $request->only('status', 'mine', 'archived', 'tag', 'project', 'q');
+        $filters = $request->only('status', 'mine', 'archived', 'tag', 'project', 'q', 'entry_type');
         $filters['from'] = $range['from']->toDateString();
         $filters['to'] = $range['to']->toDateString();
 
@@ -140,6 +149,7 @@ class DiaryController extends Controller
         if ($prefillUserId > 0 && ! $canCreateForOthers) {
             $prefillUserId = 0;
         }
+        $prefillEntryTypeId = (int) $request->query('entry_type_id', 0);
 
         return view('diary._form_dialog', [
             'entry' => null,
@@ -151,7 +161,8 @@ class DiaryController extends Controller
             'assignableUsers' => $canCreateForOthers ? LookupCache::userDropdown() : collect(),
             'prefillStartAt' => $prefillDate,
             'prefillUserId' => $prefillUserId,
-        ]);
+            'prefillEntryTypeId' => $prefillEntryTypeId,
+        ] + $this->entryTypeFormData());
     }
 
     private function parsePrefillDate(?string $value): ?string
@@ -226,7 +237,7 @@ class DiaryController extends Controller
             'selectedTagIds' => $diary->tags->pluck('id')->all(),
             'canCreateForOthers' => $canCreateForOthers,
             'assignableUsers' => $canCreateForOthers ? LookupCache::userDropdown() : collect(),
-        ]);
+        ] + $this->entryTypeFormData());
     }
 
     public function update(SaveDiaryEntryRequest $request, DiaryEntry $diary): RedirectResponse
@@ -301,5 +312,33 @@ class DiaryController extends Controller
     private function allTags(): Collection
     {
         return LookupCache::tagOptions();
+    }
+
+    /**
+     * Liefert EntryTypes + Flags-Map + Kunden- & Tour-Optionen für die Formularansicht.
+     *
+     * @return array{entryTypes: Collection<int, EntryType>, entryTypeFlags: array<int, array<string, mixed>>, customerOptions: Collection<int, Customer>, tourOptions: Collection<int, Tour>}
+     */
+    private function entryTypeFormData(): array
+    {
+        /** @var Collection<int, EntryType> $types */
+        $types = EntryType::query()->active()->ordered()->get();
+        $flagsMap = $types->mapWithKeys(fn (EntryType $t) => [$t->id => $t->flagsArray()])->all();
+
+        /** @var Collection<int, Customer> $customers */
+        $customers = Customer::query()->orderBy('name')->limit(500)->get(['id', 'name', 'company']);
+
+        /** @var Collection<int, Tour> $tours */
+        $tours = Tour::query()
+            ->orderByDesc('tour_date')
+            ->limit(100)
+            ->get(['id', 'tour_date', 'name']);
+
+        return [
+            'entryTypes' => $types,
+            'entryTypeFlags' => $flagsMap,
+            'customerOptions' => $customers,
+            'tourOptions' => $tours,
+        ];
     }
 }

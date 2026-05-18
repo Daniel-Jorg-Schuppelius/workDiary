@@ -1,3 +1,3 @@
 <?php
 
-return require __DIR__ . '/../en/invoicing.php';
+return require __DIR__.'/../en/invoicing.php';

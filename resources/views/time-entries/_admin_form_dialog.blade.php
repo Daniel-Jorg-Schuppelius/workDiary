@@ -19,6 +19,10 @@
     @include('time-entries._admin_form_body')
 
     @if ($isEdit)
+        @include('time-entries._edit_extras', ['entry' => $entry])
+    @endif
+
+    @if ($isEdit)
         <x-slot:footerExtra>
             <form method="POST" action="{{ route('admin-time-entries.destroy', $entry) }}"
                   data-confirm-dialog

@@ -20,8 +20,10 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
-class TagController extends Controller {
-    public function index(Request $request): View {
+class TagController extends Controller
+{
+    public function index(Request $request): View
+    {
         Gate::authorize('viewAny', Tag::class);
 
         $query = Tag::query()->withCount(['diaryEntries', 'shifts', 'assignments']);
@@ -39,17 +41,19 @@ class TagController extends Controller {
         return view('tags.index', compact('tags', 'sort', 'dir'));
     }
 
-    public function create(Request $request): View {
+    public function create(Request $request): View
+    {
         Gate::authorize('create', Tag::class);
 
         return view('tags._form_dialog', ['tag' => null, 'isDialog' => true]);
     }
 
-    public function store(Request $request): RedirectResponse {
+    public function store(Request $request): RedirectResponse
+    {
         Gate::authorize('create', Tag::class);
 
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:' . (int) setting('validation.tag.name_max', 60), Rule::unique('tags', 'name')],
+            'name' => ['required', 'string', 'max:'.(int) setting('validation.tag.name_max', 60), Rule::unique('tags', 'name')],
             'color' => ['nullable', 'string', 'max:16'],
         ]);
 
@@ -62,17 +66,19 @@ class TagController extends Controller {
         return redirect()->route('tags.index')->with('success', __('Tag angelegt.'));
     }
 
-    public function edit(Request $request, Tag $tag): View {
+    public function edit(Request $request, Tag $tag): View
+    {
         Gate::authorize('update', $tag);
 
         return view('tags._form_dialog', ['tag' => $tag, 'isDialog' => true]);
     }
 
-    public function update(Request $request, Tag $tag): RedirectResponse {
+    public function update(Request $request, Tag $tag): RedirectResponse
+    {
         Gate::authorize('update', $tag);
 
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:' . (int) setting('validation.tag.name_max', 60), Rule::unique('tags', 'name')->ignore($tag->id)],
+            'name' => ['required', 'string', 'max:'.(int) setting('validation.tag.name_max', 60), Rule::unique('tags', 'name')->ignore($tag->id)],
             'color' => ['nullable', 'string', 'max:16'],
         ]);
 
@@ -81,7 +87,8 @@ class TagController extends Controller {
         return redirect()->route('tags.index')->with('success', __('Tag aktualisiert.'));
     }
 
-    public function destroy(Tag $tag): RedirectResponse {
+    public function destroy(Tag $tag): RedirectResponse
+    {
         Gate::authorize('delete', $tag);
 
         $tag->delete();

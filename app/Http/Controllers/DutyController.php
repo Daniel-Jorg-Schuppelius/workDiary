@@ -14,7 +14,9 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
+use App\Models\EntryType;
 use App\Models\OnCallShift;
+use App\Models\SickLeave;
 use App\Models\Tag;
 use App\Models\User;
 use App\Models\Vacation;
@@ -45,7 +47,7 @@ class DutyController extends Controller
         }
 
         $tab = (string) $request->query('tab', 'diary');
-        if (! in_array($tab, ['diary', 'bereitschaft', 'notdienst', 'urlaub'], true)) {
+        if (! in_array($tab, ['diary', 'bereitschaft', 'notdienst', 'urlaub', 'krank'], true)) {
             $tab = 'diary';
         }
 
@@ -61,25 +63,42 @@ class DutyController extends Controller
         $shiftQuery = $this->buildShiftQuery($rangeFrom, $rangeTo);
         $vacationQuery = $this->buildVacationQuery($request, $authUser, $isAdmin, $rangeFrom, $rangeTo);
         $assignmentQuery = $this->buildAssignmentQuery($rangeFrom, $rangeTo);
+        $sickQuery = $this->buildSickQuery($request, $authUser, $isAdmin, $rangeFrom, $rangeTo);
 
         $tabCounts = [
             'diary' => (clone $diaryQuery)->count(),
             'bereitschaft' => (clone $shiftQuery)->count(),
             'notdienst' => (clone $assignmentQuery)->count(),
             'urlaub' => (clone $vacationQuery)->count(),
+            'krank' => (clone $sickQuery)->count(),
         ];
 
         $shiftKpis = $this->computeDurationKpis($shiftQuery, $tabCounts['bereitschaft']);
         $assignmentKpis = $this->computeDurationKpis($assignmentQuery, $tabCounts['notdienst']);
         $vacationKpis = $this->computeVacationKpis($vacationQuery);
+        $sickKpis = $this->computeSickKpis($sickQuery);
+
+        $sicknessStatusUser = null;
+        $sicknessStatus = null;
+        if ($tab === 'krank') {
+            $statusUserId = $isAdmin
+                ? ($request->filled('user_id') ? (int) $request->user_id : null)
+                : (int) $authUser->id;
+            if ($statusUserId !== null) {
+                $sicknessStatusUser = User::find($statusUserId);
+                if ($sicknessStatusUser !== null) {
+                    $sicknessStatus = $sicknessStatusUser->currentSicknessStatus();
+                }
+            }
+        }
 
         $allTags = Tag::orderBy('name')->get(['id', 'name', 'color']);
         $users = $isAdmin ? User::query()->orderBy('name')->get(['id', 'name']) : collect();
-        $filters = $request->only('status', 'mine', 'q', 'tag', 'vtype', 'vstatus', 'user_id');
+        $filters = $request->only('status', 'mine', 'q', 'tag', 'vtype', 'vstatus', 'user_id', 'entry_type', 'kkind', 'kstatus');
         $filters['from'] = $rangeFrom;
         $filters['to'] = $rangeTo;
 
-        [$sort, $dir] = $this->applyTabSort($tab, $request, $diaryQuery, $shiftQuery, $assignmentQuery, $vacationQuery);
+        [$sort, $dir] = $this->applyTabSort($tab, $request, $diaryQuery, $shiftQuery, $assignmentQuery, $vacationQuery, $sickQuery);
 
         return view('duties.index', [
             'tab' => $tab,
@@ -89,11 +108,16 @@ class DutyController extends Controller
             'shiftKpis' => $shiftKpis,
             'assignmentKpis' => $assignmentKpis,
             'allTags' => $allTags,
+            'entryTypes' => EntryType::query()->active()->ordered()->get(),
             'entries' => $diaryQuery->paginate(20, ['*'], 'dpage')->withQueryString(),
             'shifts' => $shiftQuery->paginate(15, ['*'], 'spage')->withQueryString(),
             'assignments' => $assignmentQuery->paginate(15, ['*'], 'apage')->withQueryString(),
             'vacations' => $vacationQuery->paginate(15, ['*'], 'vpage')->withQueryString(),
             'vacationKpis' => $vacationKpis,
+            'sickLeaves' => $sickQuery->paginate(15, ['*'], 'kpage')->withQueryString(),
+            'sickKpis' => $sickKpis,
+            'sicknessStatus' => $sicknessStatus,
+            'sicknessStatusUser' => $sicknessStatusUser,
             'isAdmin' => $isAdmin,
             'users' => $users,
             'holidayService' => $holidayService,
@@ -130,6 +154,11 @@ class DutyController extends Controller
         $tagId = $request->integer('tag');
         if ($tagId > 0) {
             $diaryQuery->whereHas('tags', fn ($tq) => $tq->where('tags.id', $tagId));
+        }
+
+        $entryTypeId = $request->integer('entry_type');
+        if ($entryTypeId > 0) {
+            $diaryQuery->where('entry_type_id', $entryTypeId);
         }
 
         return $diaryQuery;
@@ -190,6 +219,37 @@ class DutyController extends Controller
             ->orderByDesc('start_at')
             ->whereDate('start_at', '>=', $rangeFrom)
             ->whereDate('start_at', '<=', $rangeTo);
+
+        return $q;
+    }
+
+    /**
+     * @return EloquentBuilder<SickLeave>
+     */
+    private function buildSickQuery(Request $request, User $authUser, bool $isAdmin, string $rangeFrom, string $rangeTo): EloquentBuilder
+    {
+        /** @var EloquentBuilder<SickLeave> $q */
+        $q = SickLeave::query()
+            ->with(['user:id,name', 'attachments'])
+            ->orderByDesc('start_date');
+
+        if (! $isAdmin) {
+            $q->where('user_id', $authUser->id);
+        } elseif ($request->filled('user_id')) {
+            $q->where('user_id', (int) $request->user_id);
+        }
+        if ($request->filled('kkind')) {
+            $q->where('kind', $request->kkind);
+        }
+        if ($request->filled('kstatus')) {
+            if ($request->kstatus === 'cancelled') {
+                $q->whereNotNull('cancelled_at');
+            } elseif ($request->kstatus === 'active') {
+                $q->whereNull('cancelled_at');
+            }
+        }
+        $q->where('end_date', '>=', $rangeFrom);
+        $q->where('start_date', '<=', $rangeTo);
 
         return $q;
     }
@@ -258,10 +318,30 @@ class DutyController extends Controller
     }
 
     /**
+     * @param  EloquentBuilder<SickLeave>  $query
+     * @return array{total:int, active:int, cancelled:int, users:int}
+     */
+    private function computeSickKpis(EloquentBuilder $query): array
+    {
+        $today = now()->toDateString();
+
+        return [
+            'total' => (clone $query)->count(),
+            'active' => (clone $query)->whereNull('cancelled_at')
+                ->where('start_date', '<=', $today)
+                ->where('end_date', '>=', $today)
+                ->count(),
+            'cancelled' => (clone $query)->whereNotNull('cancelled_at')->count(),
+            'users' => (clone $query)->distinct()->count('user_id'),
+        ];
+    }
+
+    /**
      * @param  EloquentBuilder<DiaryEntry>  $diaryQuery
      * @param  EloquentBuilder<OnCallShift>  $shiftQuery
      * @param  EloquentBuilder<EmergencyAssignment>  $assignmentQuery
      * @param  EloquentBuilder<Vacation>  $vacationQuery
+     * @param  EloquentBuilder<SickLeave>  $sickQuery
      * @return array{0:string,1:string}
      */
     private function applyTabSort(
@@ -271,6 +351,7 @@ class DutyController extends Controller
         EloquentBuilder $shiftQuery,
         EloquentBuilder $assignmentQuery,
         EloquentBuilder $vacationQuery,
+        EloquentBuilder $sickQuery,
     ): array {
         return match ($tab) {
             'diary' => SortableQuery::apply($diaryQuery, $request, [
@@ -294,6 +375,12 @@ class DutyController extends Controller
                 'mitarbeiter' => 'user_id',
                 'typ' => 'type',
                 'status' => 'status',
+                'von' => 'start_date',
+                'bis' => 'end_date',
+            ], 'von', 'desc'),
+            'krank' => SortableQuery::apply($sickQuery, $request, [
+                'mitarbeiter' => 'user_id',
+                'art' => 'kind',
                 'von' => 'start_date',
                 'bis' => 'end_date',
             ], 'von', 'desc'),

@@ -13,6 +13,8 @@ namespace App\Models;
 
 use App\Legacy\Models\LegacyUser;
 use App\Legacy\Support\LegacyRoleResolver;
+use App\Services\Sickness\ContinuedPaymentService;
+use App\Support\Sickness\ContinuedPaymentStatus;
 use Carbon\CarbonInterface;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -141,6 +143,20 @@ class User extends Authenticatable
     public function vacations(): HasMany
     {
         return $this->hasMany(Vacation::class);
+    }
+
+    /** @return HasMany<SickLeave, $this> */
+    public function sickLeaves(): HasMany
+    {
+        return $this->hasMany(SickLeave::class);
+    }
+
+    public function currentSicknessStatus(?CarbonInterface $on = null): ContinuedPaymentStatus
+    {
+        /** @var ContinuedPaymentService $svc */
+        $svc = app(ContinuedPaymentService::class);
+
+        return $svc->statusFor($this, $on);
     }
 
     /** @return HasMany<PushSubscription, $this> */

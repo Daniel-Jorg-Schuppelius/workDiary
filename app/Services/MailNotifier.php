@@ -28,11 +28,13 @@ class MailNotifier
             return;
         }
 
-        /** @var DiaryEntry|null $entry */
-        $entry = $comment->diaryEntry()->with('user', 'comments.user')->first();
-        if (! $entry) {
+        if (! $comment->commentable instanceof DiaryEntry) {
             return;
         }
+
+        /** @var DiaryEntry $entry */
+        $entry = $comment->commentable;
+        $entry->load('user', 'comments.user');
 
         $recipients = $this->commentRecipients($entry, $comment);
         if ($recipients->isEmpty()) {

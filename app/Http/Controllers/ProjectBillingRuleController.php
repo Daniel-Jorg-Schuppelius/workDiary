@@ -21,8 +21,10 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-class ProjectBillingRuleController extends Controller {
-    public function create(Project $project, Request $request): View {
+class ProjectBillingRuleController extends Controller
+{
+    public function create(Project $project, Request $request): View
+    {
         $this->ensureBillingManager($request);
 
         return view('projects._billing_rule_form_dialog', [
@@ -34,7 +36,8 @@ class ProjectBillingRuleController extends Controller {
         ]);
     }
 
-    public function store(Project $project, SaveProjectBillingRuleRequest $request): RedirectResponse {
+    public function store(Project $project, SaveProjectBillingRuleRequest $request): RedirectResponse
+    {
         $this->ensureBillingManager($request);
 
         $data = $request->validated();
@@ -70,7 +73,8 @@ class ProjectBillingRuleController extends Controller {
             ->with('success', __('Abrechnungs-Regel aktualisiert.'));
     }
 
-    public function destroy(Project $project, ProjectBillingRule $billingRule): RedirectResponse {
+    public function destroy(Project $project, ProjectBillingRule $billingRule): RedirectResponse
+    {
         $this->ensureBillingManager(request());
         $this->ensureSameProject($project, $billingRule);
 
@@ -81,13 +85,15 @@ class ProjectBillingRuleController extends Controller {
             ->with('success', __('Abrechnungs-Regel gelöscht.'));
     }
 
-    private function ensureBillingManager(Request $request): void {
+    private function ensureBillingManager(Request $request): void
+    {
         if ($request->user()?->canManageBilling() !== true) {
             throw new AccessDeniedHttpException;
         }
     }
 
-    private function ensureSameProject(Project $project, ProjectBillingRule $billingRule): void {
+    private function ensureSameProject(Project $project, ProjectBillingRule $billingRule): void
+    {
         if ((int) $billingRule->project_id !== (int) $project->id) {
             throw new AccessDeniedHttpException;
         }

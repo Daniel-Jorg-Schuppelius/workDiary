@@ -12,6 +12,7 @@
 namespace Database\Factories;
 
 use App\Models\DiaryEntry;
+use App\Models\EntryType;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -37,5 +38,35 @@ class DiaryEntryFactory extends Factory
             'is_archived' => false,
             'archived_at' => null,
         ];
+    }
+
+    /**
+     * Variante f\u00fcr Service-Auftr\u00e4ge (Pflege/IT/HLK): setzt EntryType=service
+     * und f\u00fcllt Auftragsfelder mit Defaults.
+     */
+    public function service(): self
+    {
+        return $this->state(function (array $attributes): array {
+            $orgId = $attributes['organization_id'] ?? null;
+            $type = EntryType::query()
+                ->withoutGlobalScopes()
+                ->where('slug', EntryType::SLUG_SERVICE)
+                ->when($orgId, fn ($q) => $q->where('organization_id', $orgId))
+                ->first()
+                ?? EntryType::query()
+                    ->withoutGlobalScopes()
+                    ->where('slug', EntryType::SLUG_SERVICE)
+                    ->whereNull('organization_id')
+                    ->first();
+
+            return [
+                'entry_type_id' => $type?->id,
+                'title' => fake()->sentence(3),
+                'priority' => 'normal',
+                'scheduled_for' => $attributes['scheduled_for'] ?? fake()->date(),
+                'service_minutes' => 60,
+                'status' => DiaryEntry::STATUS_OPEN,
+            ];
+        });
     }
 }

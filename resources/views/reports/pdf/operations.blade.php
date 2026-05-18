@@ -42,7 +42,7 @@
 
 <table class="kpis">
     <tr>
-        <td><div class="label">ServiceOrders</div><div class="value">{{ $orders['total'] }}</div></td>
+        <td><div class="label">Service-Aufträge</div><div class="value">{{ $orders['total'] }}</div></td>
         <td><div class="label">Servicezeit Σ</div><div class="value">{{ $fmtMin($orders['service_minutes']) }}</div></td>
         <td><div class="label">SO Abschluss</div><div class="value">{{ $pct($orders['completion_rate']) }}</div></td>
         <td><div class="label">Tasks (Überfällig)</div><div class="value">{{ $tasks['total'] }} ({{ $tasks['overdue'] }})</div></td>
@@ -54,7 +54,7 @@
 <table class="grid">
     <tr>
         <td>
-            <h2>ServiceOrders – Status</h2>
+            <h2>Service-Aufträge – Status</h2>
             <table class="data">
                 <thead><tr><th>Status</th><th class="right">Anzahl</th></tr></thead>
                 <tbody>
@@ -63,7 +63,7 @@
                     @endforeach
                 </tbody>
             </table>
-            <h2>ServiceOrders – Priorität</h2>
+            <h2>Service-Aufträge – Priorität</h2>
             <table class="data">
                 <thead><tr><th>Priorität</th><th class="right">Anzahl</th></tr></thead>
                 <tbody>
