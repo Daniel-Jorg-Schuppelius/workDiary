@@ -48,10 +48,9 @@
         @endif
     </div>
 
-    <form method="POST" action="{{ route('timesheets.public-sign.submit', $token) }}"
-          class="rounded-box bg-base-100 p-4 shadow">
+    <div class="rounded-box bg-base-100 p-4 shadow">
         @include('timesheets._signature_pad', ['action' => route('timesheets.public-sign.submit', $token), 'timesheet' => $timesheet])
-    </form>
+    </div>
 </main>
 </body>
 </html>

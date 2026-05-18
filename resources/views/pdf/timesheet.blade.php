@@ -15,10 +15,32 @@
     .meta  { font-size: 9pt; color: #555; margin-top: 2pt; }
     .totals td { border: 0; padding: 2pt 6pt; }
     .sig    { margin-top: 18pt; }
-    .sig img { max-height: 80pt; border: 1px solid #ddd; padding: 4pt; background: #fff; }
+    .sig .sig-box {
+        display: inline-block;
+        max-width: 94%;
+        border: 1px solid #ddd;
+        padding: 4pt;
+        background: #fff;
+        box-sizing: border-box;
+    }
+    .sig img {
+        display: block;
+        max-width: 100%;
+        width: auto;
+        height: auto;
+        max-height: 80pt;
+        border: 0;
+    }
     .small  { font-size: 8pt; color: #666; }
-    .grid2  { width: 100%; }
-    .grid2 td { width: 50%; border: 0; padding: 0 4pt 0 0; vertical-align: top; }
+    .grid2  { width: 100%; table-layout: fixed; }
+    .grid2 td {
+        width: 50%;
+        border: 0;
+        padding: 0 4pt 0 0;
+        vertical-align: top;
+        overflow: hidden;
+    }
+    .sig .small { word-break: break-word; overflow-wrap: anywhere; }
 </style>
 </head>
 <body>
@@ -28,7 +50,7 @@
     {{ __('timesheet.fields.date') }}: <strong>{{ optional($timesheet->work_date)->format('d.m.Y') }}</strong> ·
     {{ __('timesheet.fields.project') }}: <strong>{{ $timesheet->project?->name }}</strong> ·
     {{ __('timesheet.fields.user') }}: <strong>{{ $timesheet->user?->name }}</strong> ·
-    {{ __('timesheet.fields.status') }}: {{ $timesheet->status }}
+    {{ __('timesheet.fields.status') }}: {{ $timesheet->statusLabel() }}
 </div>
 
 <h2>{{ __('timesheet.sections.entries') }}</h2>
@@ -47,7 +69,14 @@
                 <td>{{ optional($e->ended_at)->format('H:i') }}</td>
                 <td class="right">{{ (int) $e->break_minutes }}</td>
                 <td class="right">{{ $h }}:{{ str_pad((string)$m,2,'0',STR_PAD_LEFT) }}</td>
-                <td>{{ $e->kind }}</td>
+                <td>
+                    {{ match ($e->kind) {
+                        \App\Models\TimeEntry::KIND_WORK => __('Arbeit'),
+                        \App\Models\TimeEntry::KIND_TRAVEL => __('Anfahrt'),
+                        \App\Models\TimeEntry::KIND_STANDBY => __('Bereitschaft'),
+                        default => (string) $e->kind,
+                    } }}
+                </td>
                 <td>{{ $e->description }}</td>
             </tr>
         @empty
@@ -109,7 +138,7 @@
             </td>
             <td>
                 @if(! empty($signaturePng))
-                    <img src="{{ $signaturePng }}" alt="signature">
+                    <span class="sig-box"><img src="{{ $signaturePng }}" alt="signature"></span>
                 @else
                     <div class="small">{{ __('timesheet.signature.none') }}</div>
                 @endif

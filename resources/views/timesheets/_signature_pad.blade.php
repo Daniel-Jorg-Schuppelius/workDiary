@@ -7,7 +7,7 @@
     nicht ins Leere läuft. requestAnimationFrame stellt sicher, dass offsetWidth > 0
     ist (Layout-Pass abgeschlossen). resize-Listener wird beim Alpine-destroy entfernt.
 --}}
-<div x-data="signaturePad()" x-init="init()" x-destroy="teardown()" class="flex w-full max-w-md flex-col gap-3">
+<div x-data="signaturePad()" x-init="init()" x-destroy="teardown()" class="flex w-full flex-col gap-3">
     <div class="grid grid-cols-1 gap-2">
         <input type="text" x-model="customerName" placeholder="{{ __('Name') }}"
                class="input input-bordered input-sm w-full" required value="{{ $timesheet->customer_name }}">
@@ -48,12 +48,9 @@ function signaturePad() {
         customerEmail: @json($timesheet->customer_email ?? ''),
 
         async init() {
-            let SignaturePad;
-            try {
-                const mod = await import('signature_pad');
-                SignaturePad = mod.default;
-            } catch (err) {
-                console.error('[signature-pad] Modul konnte nicht geladen werden:', err);
+            const SignaturePadClass = window.SignaturePad;
+            if (!SignaturePadClass) {
+                console.error('[signature-pad] Modul konnte nicht geladen werden: window.SignaturePad fehlt');
                 return;
             }
 
@@ -61,7 +58,7 @@ function signaturePad() {
             if (!c) return;
 
             // Pad zuerst instanziieren — damit Datenpunkte beim Resize erhalten bleiben.
-            this.pad = new SignaturePad(c, {
+            this.pad = new SignaturePadClass(c, {
                 penColor: '#111',
                 backgroundColor: 'rgba(255,255,255,0)',
             });

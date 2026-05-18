@@ -4,7 +4,16 @@
 @section('content')
 @php
     $editable = $timesheet->canEdit();
+    $canSign = auth()->user()?->can('sign', $timesheet) ?? false;
     $fmtMin = fn(int $min) => intdiv($min, 60) . ':' . str_pad((string)($min % 60), 2, '0', STR_PAD_LEFT);
+    $entryKindLabel = static function (?string $kind): string {
+        return match ($kind) {
+            \App\Models\TimeEntry::KIND_WORK => __('Arbeit'),
+            \App\Models\TimeEntry::KIND_TRAVEL => __('Anfahrt'),
+            \App\Models\TimeEntry::KIND_STANDBY => __('Bereitschaft'),
+            default => (string) $kind,
+        };
+    };
 @endphp
 
 <x-page-shell>
@@ -83,7 +92,7 @@
                     <td class="tabular-nums">{{ optional($e->ended_at)->format('H:i') }}</td>
                     <td class="text-right tabular-nums">{{ (int)$e->break_minutes }}</td>
                     <td class="text-right tabular-nums" data-sort-value="{{ (int) $e->minutes }}">{{ $fmtMin((int)$e->minutes) }}</td>
-                    <td>{{ $e->kind }}</td>
+                    <td>{{ $entryKindLabel($e->kind) }}</td>
                     <td>{{ $e->task?->title }}</td>
                     <td>{{ $e->description }}</td>
                     <td class="text-right">
@@ -101,7 +110,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">description</span>' :colspan="8" compact />
+                <x-table.empty :icon="false" :colspan="8" compact />
             @endforelse
         </x-table>
     </div>
@@ -150,32 +159,41 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">description</span>' :colspan="6" compact />
+                <x-table.empty :icon="false" :colspan="6" compact />
             @endforelse
         </x-table>
     </div>
 
     {{-- Signatur — kompakte Karte unterhalb des Stundenzettels --}}
-    <x-card :title="__('Kundenfreigabe')" class="max-w-xl">
+    <x-card :title="__('Kundenfreigabe')">
         @if($timesheet->isSigned() || $timesheet->isLocked())
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div class="text-sm">
-                    <div><strong>{{ $timesheet->customer_name }}</strong> @if($timesheet->customer_role) ({{ $timesheet->customer_role }}) @endif</div>
+                    <div><strong>{{ $timesheet->customer_name ?: __('Unbekannt') }}</strong> @if($timesheet->customer_role) ({{ $timesheet->customer_role }}) @endif</div>
                     @if($timesheet->customer_email)<div>{{ $timesheet->customer_email }}</div>@endif
-                    <div class="mt-1 text-base-content/60">
-                        {{ __('Signiert am') }}: {{ optional($timesheet->signed_at)->format('d.m.Y H:i') }}
-                        @if($timesheet->signed_ip) · IP {{ $timesheet->signed_ip }} @endif
-                    </div>
-                    <div class="text-xs break-all text-base-content/50">SHA-256: {{ $timesheet->signature_hash }}</div>
+                    @if($timesheet->signed_at || $timesheet->signed_ip)
+                        <div class="mt-1 text-base-content/60">
+                            @if($timesheet->signed_at)
+                                {{ __('Signiert am') }}: {{ optional($timesheet->signed_at)->format('d.m.Y H:i') }}
+                            @endif
+                            @if($timesheet->signed_ip)
+                                @if($timesheet->signed_at) · @endif
+                                IP {{ $timesheet->signed_ip }}
+                            @endif
+                        </div>
+                    @endif
+                    @if($timesheet->signature_hash)
+                        <div class="text-xs break-all text-base-content/50">SHA-256: {{ $timesheet->signature_hash }}</div>
+                    @endif
                 </div>
                 @if($timesheet->signatureAttachment)
                     <div>
-                        <img src="{{ route('attachments.show', $timesheet->signatureAttachment) }}"
+                        <img src="{{ \App\Http\Controllers\AttachmentController::downloadUrl($timesheet->signatureAttachment) }}"
                              alt="signature" class="max-h-32 rounded border border-base-300 bg-white p-2">
                     </div>
                 @endif
             </div>
-        @elseif($editable)
+        @elseif($canSign)
             @include('timesheets._signature_pad', [
                 'action'        => route('projects.timesheets.sign', [$project, $timesheet]),
                 'timesheet'     => $timesheet,

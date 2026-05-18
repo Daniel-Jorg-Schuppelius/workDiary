@@ -218,6 +218,45 @@ class Timesheet extends Model
         $this->saveQuietly();
     }
 
+    /**
+     * Backward-compatible Alias für bestehende Views/Exports.
+     *
+     * Historisch wurde in Blade/PDF `total_work_minutes` verwendet, im Modell
+     * wird jedoch `totals_minutes`/`entries_total_minutes` persistiert.
+     */
+    public function getTotalWorkMinutesAttribute(): int
+    {
+        if ($this->relationLoaded('entries')) {
+            return (int) $this->entries->sum('minutes');
+        }
+
+        return (int) $this->entries_total_minutes;
+    }
+
+    /**
+     * Dynamische Pausen-Summe über die Zeiteinträge.
+     */
+    public function getTotalBreakMinutesAttribute(): int
+    {
+        if ($this->relationLoaded('entries')) {
+            return (int) $this->entries->sum('break_minutes');
+        }
+
+        return (int) $this->entries()->sum('break_minutes');
+    }
+
+    /**
+     * Backward-compatible Alias für `totals_material_net`.
+     */
+    public function getTotalMaterialNetAttribute(): float
+    {
+        if ($this->relationLoaded('materialUsages')) {
+            return (float) $this->materialUsages->sum('line_total_net');
+        }
+
+        return (float) $this->totals_material_net;
+    }
+
     public function isPersonalDay(): bool
     {
         return $this->kind === self::KIND_PERSONAL_DAY;
@@ -228,7 +267,7 @@ class Timesheet extends Model
         return match ($this->status) {
             self::STATUS_DRAFT => __('Entwurf'),
             self::STATUS_SUBMITTED => __('Eingereicht'),
-            self::STATUS_SIGNED => __('Signiert'),
+            self::STATUS_SIGNED => $this->hasSignatureEvidence() ? __('Signiert') : __('Eingereicht'),
             self::STATUS_LOCKED => __('Gesperrt'),
             default => $this->status,
         };
@@ -239,9 +278,19 @@ class Timesheet extends Model
         return match ($this->status) {
             self::STATUS_DRAFT => 'neutral',
             self::STATUS_SUBMITTED => 'info',
-            self::STATUS_SIGNED => 'success',
+            self::STATUS_SIGNED => $this->hasSignatureEvidence() ? 'success' : 'info',
             self::STATUS_LOCKED => 'warning',
             default => 'ghost',
         };
+    }
+
+    /**
+     * Für die Anzeige gilt ein Stundenzettel nur dann als signiert,
+     * wenn nachvollziehbare Signaturdaten vorhanden sind.
+     */
+    public function hasSignatureEvidence(): bool
+    {
+        return $this->signed_at !== null
+            && ($this->signature_attachment_id !== null || ! empty($this->signature_hash));
     }
 }
