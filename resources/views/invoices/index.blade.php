@@ -8,9 +8,10 @@
     <x-slot:toolbar>
         <x-page-toolbar>
             <x-slot:actions>
-                <a href="{{ route('invoices.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
-                    <x-icon name="add"/> {{ __('Neue Rechnung') }}
-                </a>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('invoices.create')"
+                            show-label>{{ __('Neue Rechnung') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -43,7 +44,11 @@
                     <td>{{ optional($invoice->issued_on)->format('d.m.Y') ?? '-' }}</td>
                     <td><span class="badge badge-outline">{{ __($invoice->status) }}</span></td>
                     <td class="text-right">{{ number_format((float) $invoice->total, 2, ',', '.') }} {{ $invoice->currency }}</td>
-                    <td><a href="{{ route('invoices.show', $invoice) }}" class="btn btn-xs">{{ __('Anzeigen') }}</a></td>
+                    <td>
+                        <x-icon-btn icon="visibility"
+                                    :href="route('invoices.show', $invoice)"
+                                    :label="__('Anzeigen')" />
+                    </td>
                 </tr>
             @empty
                 <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>' :colspan="6" :title="__('Keine Rechnungen vorhanden')" compact />

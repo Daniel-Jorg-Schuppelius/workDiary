@@ -22,26 +22,20 @@
     @endphp
 
     <x-page-shell>
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h1 class="text-xl font-semibold">
-                    {{ __('Tour') }} {{ $tour->name ?? ('#' . $tour->id) }}
-                </h1>
-                <p class="text-sm text-base-content/60">
-                    {{ $tour->tour_date?->format('d.m.Y') }} ·
-                    <span class="badge badge-ghost badge-sm">{{ __($tour->status) }}</span> ·
-                    {{ number_format((float) $tour->planned_distance_km, 2, ',', '.') }} km ·
-                    {{ $tour->planned_duration_minutes }} min
-                </p>
+        <x-page-toolbar :title="__('Tour') . ' ' . ($tour->name ?? ('#' . $tour->id))" :badge="__($tour->status)" badge-tone="ghost">
+            <div class="text-sm text-base-content/70">
+                {{ $tour->tour_date?->format('d.m.Y') }} ·
+                {{ number_format((float) $tour->planned_distance_km, 2, ',', '.') }} km ·
+                {{ $tour->planned_duration_minutes }} min
             </div>
-            <div class="flex flex-wrap gap-2">
-                <form method="POST" action="{{ route('tours.optimize', $tour) }}">
+            <x-slot:actions>
+                <x-icon-btn icon="visibility" size="sm" :href="route('tours.show', $tour)" show-label>{{ __('Ansicht') }}</x-icon-btn>
+                <form method="POST" action="{{ route('tours.optimize', $tour) }}" class="inline">
                     @csrf
-                    <button class="btn btn-sm">{{ __('Optimieren') }}</button>
+                    <x-icon-btn icon="auto_awesome" size="sm" type="submit" show-label>{{ __('Optimieren') }}</x-icon-btn>
                 </form>
-                <a href="{{ route('tours.show', $tour) }}" class="btn btn-sm btn-ghost">{{ __('Ansicht') }}</a>
-            </div>
-        </div>
+            </x-slot:actions>
+        </x-page-toolbar>
 
         <div class="grid gap-4 lg:grid-cols-2">
             <form method="POST" action="{{ route('tours.update', $tour) }}"
@@ -130,8 +124,8 @@
                 </fieldset>
 
                 <div class="flex justify-end gap-2">
-                    <a href="{{ route('tours.index') }}" class="btn btn-sm btn-ghost">{{ __('Schließen') }}</a>
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Speichern') }}</button>
+                    <x-icon-btn icon="close" size="sm" :href="route('tours.index')" show-label>{{ __('Schließen') }}</x-icon-btn>
+                    <x-icon-btn icon="save" tone="primary" size="sm" type="submit" show-label>{{ __('Speichern') }}</x-icon-btn>
                 </div>
             </form>
 
@@ -165,7 +159,7 @@
                                 @endforeach
                             </ul>
                             <div class="mt-3 flex justify-end">
-                                <button class="btn btn-xs">{{ __('Auswahl übernehmen') }}</button>
+                                <x-icon-btn icon="check" type="submit" show-label>{{ __('Auswahl übernehmen') }}</x-icon-btn>
                             </div>
                         </form>
                     @endif

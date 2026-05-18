@@ -10,9 +10,10 @@
         </x-filter-field>
         <x-slot:extra>
             @can('create', \App\Models\Material::class)
-                <a href="{{ route('materials.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
-                    <x-icon name="add" /><span>{{ __('Material') }}</span>
-                </a>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('materials.create')"
+                            show-label>{{ __('Material') }}</x-icon-btn>
             @endcan
         </x-slot:extra>
     </x-filter-bar>
@@ -45,7 +46,10 @@
                     <td>{{ $m->external_provider ?: 'local' }}</td>
                     <td class="text-right">
                         @can('update', $m)
-                            <a href="{{ route('materials.edit', $m) }}" data-entry-modal-trigger class="btn btn-xs">{{ __('Bearbeiten') }}</a>
+                            <x-icon-btn icon="edit"
+                                        data-entry-modal-trigger
+                                        :href="route('materials.edit', $m)"
+                                        :label="__('Bearbeiten')" />
                         @endcan
                         @can('delete', $m)
                             <form method="POST" action="{{ route('materials.destroy', $m) }}" class="inline"
@@ -55,7 +59,7 @@
                                   data-confirm-tone="error"
                                   data-confirm-label="{{ __('Löschen') }}">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-xs btn-ghost text-error">×</button>
+                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                             </form>
                         @endcan
                     </td>

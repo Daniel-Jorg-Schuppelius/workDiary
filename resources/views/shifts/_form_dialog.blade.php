@@ -11,15 +11,13 @@
 
     @if ($isEdit)
         <x-slot:footerExtra>
-            <form method="POST" action="{{ route('shifts.destroy', $shift) }}"
+            <form method="POST" action="{{ route('shifts.destroy', $shift) }}" class="inline"
                   data-confirm-dialog
                   data-confirm-message="{{ __('Wirklich löschen?') }}"
                   data-confirm-label="{{ __('Löschen') }}">
                 @csrf @method('DELETE')
                 <input type="hidden" name="_back" value="{{ request()->query('_back') ?? url()->previous() }}">
-                <button type="submit" class="btn btn-error btn-outline btn-sm gap-2">
-                    <x-icon name="delete" /> {{ __('Bereitschaft löschen') }}
-                </button>
+                <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Bereitschaft löschen') }}</x-icon-btn>
             </form>
         </x-slot:footerExtra>
     @endif

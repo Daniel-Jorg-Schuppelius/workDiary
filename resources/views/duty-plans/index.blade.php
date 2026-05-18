@@ -14,9 +14,10 @@
         </x-filter-field>
         <x-slot:extra>
             @can('create', \App\Models\DutyPlan::class)
-                <a href="{{ route('duty-plans.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm gap-1">
-                    <x-icon name="add" /><span>{{ __('Dienstplan anlegen') }}</span>
-                </a>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('duty-plans.create')"
+                            show-label>{{ __('Dienstplan anlegen') }}</x-icon-btn>
             @endcan
         </x-slot:extra>
     </x-filter-bar>
@@ -56,19 +57,24 @@
                         @endif
                     </td>
                     <td class="text-right">
-                        <div class="flex justify-end gap-2">
-                            <a href="{{ route('duty-plans.show', $plan) }}" class="btn btn-ghost btn-xs">{{ __('Ansehen') }}</a>
+                        <div class="flex justify-end gap-1">
+                            <x-icon-btn icon="visibility"
+                                        :href="route('duty-plans.show', $plan)"
+                                        :label="__('Ansehen')" />
                             @can('update', $plan)
-                            <a href="{{ route('duty-plans.edit', $plan) }}" data-entry-modal-trigger class="btn btn-ghost btn-xs">{{ __('Bearbeiten') }}</a>
+                                <x-icon-btn icon="edit"
+                                            data-entry-modal-trigger
+                                            :href="route('duty-plans.edit', $plan)"
+                                            :label="__('Bearbeiten')" />
                             @endcan
                             @can('delete', $plan)
-                            <form method="POST" action="{{ route('duty-plans.destroy', $plan) }}"
-                                  data-confirm-dialog
-                                  data-confirm-message="{{ __('Dienstplan wirklich löschen?') }}"
-                                  data-confirm-label="{{ __('Löschen') }}">
-                                @csrf @method('DELETE')
-                                <button class="btn btn-ghost btn-xs text-error">{{ __('Löschen') }}</button>
-                            </form>
+                                <form method="POST" action="{{ route('duty-plans.destroy', $plan) }}" class="inline"
+                                      data-confirm-dialog
+                                      data-confirm-message="{{ __('Dienstplan wirklich löschen?') }}"
+                                      data-confirm-label="{{ __('Löschen') }}">
+                                    @csrf @method('DELETE')
+                                    <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
+                                </form>
                             @endcan
                         </div>
                     </td>

@@ -4,7 +4,7 @@
 <div class="container mx-auto p-6 max-w-2xl">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-semibold">{{ __('Kunden importieren (CSV)') }}</h1>
-        <a href="{{ route('customers.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurück') }}</a>
+        <x-icon-btn icon="arrow_back" size="sm" :href="route('customers.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
     </div>
 
     @if (session('error'))
@@ -37,8 +37,8 @@
                 </div>
 
                 <div class="flex gap-2">
-                    <button type="submit" class="btn btn-primary">{{ __('Importieren') }}</button>
-                    <a href="{{ route('customers.export') }}" class="btn btn-ghost btn-sm">{{ __('Vorlage herunterladen') }}</a>
+                    <x-icon-btn icon="upload" tone="primary" size="sm" type="submit" show-label>{{ __('Importieren') }}</x-icon-btn>
+                    <x-icon-btn icon="download" size="sm" :href="route('customers.export')" show-label>{{ __('Vorlage herunterladen') }}</x-icon-btn>
                 </div>
             </form>
         </div>

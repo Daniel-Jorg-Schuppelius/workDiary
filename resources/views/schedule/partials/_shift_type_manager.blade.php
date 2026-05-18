@@ -38,12 +38,12 @@
                                 </span>
                             </td>
                             <td class="text-right">
-                                <button type="button"
-                                        onclick="shiftTypeOpenEdit({{ $t->id }}, {{ json_encode($t) }})"
-                                        class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</button>
-                                <button type="button"
-                                        onclick="shiftTypeDelete({{ $t->id }})"
-                                        class="btn btn-xs btn-ghost text-error">{{ __('Löschen') }}</button>
+                                <x-icon-btn icon="edit" type="button"
+                                            onclick="shiftTypeOpenEdit({{ $t->id }}, {{ json_encode($t) }})"
+                                            :label="__('Bearbeiten')" />
+                                <x-icon-btn icon="delete" tone="error" type="button"
+                                            onclick="shiftTypeDelete({{ $t->id }})"
+                                            :label="__('Löschen')" />
                             </td>
                         </tr>
                     @empty
@@ -100,8 +100,8 @@
             <div id="shift-type-error" class="alert alert-error alert-sm hidden text-sm"></div>
 
             <div class="flex justify-between">
-                <button type="button" id="shift-type-reset" onclick="shiftTypeResetForm()" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</button>
-                <button type="submit" id="shift-type-save" class="btn btn-sm btn-primary">{{ __('Speichern') }}</button>
+                <x-icon-btn icon="restart_alt" size="sm" type="button" id="shift-type-reset" onclick="shiftTypeResetForm()" show-label>{{ __('Zurücksetzen') }}</x-icon-btn>
+                <x-icon-btn icon="save" tone="primary" size="sm" type="submit" id="shift-type-save" show-label>{{ __('Speichern') }}</x-icon-btn>
             </div>
         </form>
     </x-form-group>

@@ -31,22 +31,24 @@
         </select>
 
         @if ($userFilter)
-            <a href="{{ route('schedule.index') }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
+            <x-icon-btn icon="restart_alt" size="sm" :href="route('schedule.index')" show-label>{{ __('Zurücksetzen') }}</x-icon-btn>
         @endif
 
         @if ($isAdmin)
-            <div class="ml-auto flex flex-wrap items-center gap-2">
-                <button type="button" id="btn-open-type-manager" class="btn btn-sm btn-ghost">⚙ {{ __('Schichttypen') }}</button>
-                <a href="{{ route('schedule.import') }}" class="btn btn-sm btn-ghost">↑ {{ __('Import') }}</a>
+            <x-slot:extra>
+                <x-icon-btn icon="tune" size="sm" type="button" id="btn-open-type-manager" show-label>{{ __('Schichttypen') }}</x-icon-btn>
+                <x-icon-btn icon="upload" size="sm" :href="route('schedule.import')" show-label>{{ __('Import') }}</x-icon-btn>
                 <div class="dropdown dropdown-end">
-                    <label tabindex="0" class="btn btn-sm btn-ghost">🖨 {{ __('Drucken') }}</label>
+                    <label tabindex="0" class="btn btn-sm btn-ghost gap-1">
+                        <x-icon name="print" /><span>{{ __('Drucken') }}</span>
+                    </label>
                     <ul tabindex="0" class="menu dropdown-content z-1 mt-2 w-72 rounded-box bg-base-100 p-2 shadow">
                         <li class="menu-title">{{ __('Übersichten') }}</li>
                         <li><a href="{{ route('print.on-call') }}" target="_blank">{{ __('Bereitschaft & Notdienst (A4 quer)') }}</a></li>
                         <li><a href="{{ route('print.vacations', ['year' => $anchor->year]) }}" target="_blank">{{ __('Urlaubsübersicht ') . $anchor->year . __(' (A4 hoch)') }}</a></li>
                     </ul>
                 </div>
-            </div>
+            </x-slot:extra>
         @endif
     </x-filter-bar>
 

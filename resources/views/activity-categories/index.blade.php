@@ -41,7 +41,8 @@
                     <label class="label cursor-pointer gap-2"><input type="checkbox" name="billable_default" value="1" class="checkbox checkbox-sm"><span class="label-text text-xs">{{ __('Standardmäßig abrechenbar') }}</span></label>
                     <label class="label cursor-pointer gap-2"><input type="checkbox" name="active" value="1" checked class="checkbox checkbox-sm"><span class="label-text text-xs">{{ __('Aktiv') }}</span></label>
                 </div>
-                <button type="submit" class="btn btn-sm btn-primary md:col-span-1">{{ __('Anlegen') }}</button>
+                <x-icon-btn icon="add" tone="primary" size="sm" type="submit" class="md:col-span-1"
+                            show-label>{{ __('Anlegen') }}</x-icon-btn>
             </form>
         </x-card>
 
@@ -67,9 +68,12 @@
                         <td class="text-center">{!! $c->billable_default ? '✓' : '—' !!}</td>
                         <td class="text-center">{!! $c->active ? '✓' : '—' !!}</td>
                         <td class="text-right">
-                            <form method="POST" action="{{ route('activity-categories.destroy', $c) }}" class="inline">
+                            <form method="POST" action="{{ route('activity-categories.destroy', $c) }}" class="inline"
+                                  data-confirm-dialog
+                                  data-confirm-message="{{ __('Wirklich löschen?') }}"
+                                  data-confirm-label="{{ __('Löschen') }}">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-ghost btn-xs text-error" onclick="return confirm('{{ __('Wirklich löschen?') }}')">{{ __('Löschen') }}</button>
+                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                             </form>
                         </td>
                     </tr>

@@ -16,9 +16,10 @@
                    class="join-item btn btn-sm {{ $teamScope ? 'btn-primary' : 'btn-ghost' }}">{{ __('Team') }}</a>
             </div>
             <x-slot:actions>
-                <a href="{{ route('diary.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
-                    <x-icon name="add" /><span>{{ __('Eintrag') }}</span>
-                </a>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('diary.create')"
+                            show-label>{{ __('Eintrag') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

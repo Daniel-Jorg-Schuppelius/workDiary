@@ -16,16 +16,19 @@
                 </form>
                 <span class="text-base-content/30">|</span>
             @endif
-            <a href="{{ route('legacy.callcenter.notdienst', ['week' => $weekOffset - 1]) }}"
-               class="btn btn-sm btn-ghost">«</a>
+            <x-icon-btn icon="chevron_left" size="sm"
+                        :href="route('legacy.callcenter.notdienst', ['week' => $weekOffset - 1])"
+                        :label="__('Vorherige Woche')" />
             <span class="text-sm font-semibold">
                 {{ $rangeStart->format('d.m.Y') }} &ndash; {{ $rangeEnd->format('d.m.Y') }}
             </span>
-            <a href="{{ route('legacy.callcenter.notdienst', ['week' => $weekOffset + 1]) }}"
-               class="btn btn-sm btn-ghost">»</a>
+            <x-icon-btn icon="chevron_right" size="sm"
+                        :href="route('legacy.callcenter.notdienst', ['week' => $weekOffset + 1])"
+                        :label="__('Nächste Woche')" />
             @if ($weekOffset !== 0)
-                <a href="{{ route('legacy.callcenter.notdienst') }}"
-                   class="btn btn-sm btn-outline">{{ __('Aktuelle Woche') }}</a>
+                <x-icon-btn icon="today" tone="outline" size="sm"
+                            :href="route('legacy.callcenter.notdienst')"
+                            show-label>{{ __('Aktuelle Woche') }}</x-icon-btn>
             @endif
             <span class="ml-auto text-xs text-base-content/50">
                 {{ __('Stand') }}: {{ $today->isoFormat('dddd, DD.MM.YYYY') }}

@@ -14,9 +14,9 @@
         <x-slot:toolbar>
             <x-page-toolbar>
                 <x-slot:actions>
-                    <a href="{{ route('today.show') }}" class="btn btn-ghost btn-sm">
-                        <x-icon name="today" /> {{ __('Heute-Übersicht') }}
-                    </a>
+                    <x-icon-btn icon="today" size="sm"
+                                :href="route('today.show')"
+                                show-label>{{ __('Heute-Übersicht') }}</x-icon-btn>
                 </x-slot:actions>
             </x-page-toolbar>
         </x-slot:toolbar>

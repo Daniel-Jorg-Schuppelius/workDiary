@@ -189,6 +189,20 @@ class Project extends Model
                     ->update(['customer_id' => $newCustomerId]);
             }
 
+            if ($project->wasChanged('status')) {
+                $newStatus = $project->status;
+
+                // Sub-Projekte erben den Status rekursiv mit (Events feuern auch für deren Children).
+                static::query()
+                    ->where('parent_id', $project->id)
+                    ->where('status', '!=', $newStatus)
+                    ->get()
+                    ->each(function (Project $child) use ($newStatus): void {
+                        $child->status = $newStatus;
+                        $child->save();
+                    });
+            }
+
             if (! $project->is_default || $project->customer_id === null) {
                 return;
             }

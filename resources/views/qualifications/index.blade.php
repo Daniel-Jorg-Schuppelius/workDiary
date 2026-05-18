@@ -7,9 +7,10 @@
         <x-page-toolbar>
             <x-slot:actions>
                 @can('create', \App\Models\Qualification::class)
-                    <a href="{{ route('qualifications.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
-                        + {{ __('Qualifikation anlegen') }}
-                    </a>
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('qualifications.create')"
+                                show-label>{{ __('Qualifikation anlegen') }}</x-icon-btn>
                 @endcan
             </x-slot:actions>
         </x-page-toolbar>
@@ -43,18 +44,21 @@
                         @endif
                     </td>
                     <td class="text-right">
-                        <div class="flex justify-end gap-2">
+                        <div class="flex justify-end gap-1">
                             @can('update', $qual)
-                            <a href="{{ route('qualifications.edit', $qual) }}" data-entry-modal-trigger class="btn btn-ghost btn-xs">{{ __('Bearbeiten') }}</a>
+                                <x-icon-btn icon="edit"
+                                            data-entry-modal-trigger
+                                            :href="route('qualifications.edit', $qual)"
+                                            :label="__('Bearbeiten')" />
                             @endcan
                             @can('delete', $qual)
-                            <form method="POST" action="{{ route('qualifications.destroy', $qual) }}"
-                                  data-confirm-dialog
-                                  data-confirm-message="{{ __('Qualifikation wirklich löschen?') }}"
-                                  data-confirm-label="{{ __('Löschen') }}">
-                                @csrf @method('DELETE')
-                                <button class="btn btn-ghost btn-xs text-error">{{ __('Löschen') }}</button>
-                            </form>
+                                <form method="POST" action="{{ route('qualifications.destroy', $qual) }}" class="inline"
+                                      data-confirm-dialog
+                                      data-confirm-message="{{ __('Qualifikation wirklich löschen?') }}"
+                                      data-confirm-label="{{ __('Löschen') }}">
+                                    @csrf @method('DELETE')
+                                    <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
+                                </form>
                             @endcan
                         </div>
                     </td>

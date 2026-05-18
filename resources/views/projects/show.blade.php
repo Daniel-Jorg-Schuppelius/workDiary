@@ -5,31 +5,24 @@
 @section('content')
 <x-page-shell>
 
-    {{-- Projekt-Header --}}
-    <div class="flex flex-wrap items-start justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <div class="flex min-w-0 items-start gap-3">
-            <span class="mt-1 inline-block h-4 w-4 shrink-0 rounded-full" style="background:{{ $project->color ?: '#94a3b8' }}"></span>
-            <div class="min-w-0">
-                <div class="flex flex-wrap items-center gap-2">
-                    <h1 class="truncate font-['Space_Grotesk'] text-lg font-semibold">{{ $project->name }}</h1>
-                    <span class="badge badge-sm badge-{{ $project->statusTone() }}">{{ $project->statusLabel() }}</span>
-                </div>
-                @if ($project->description)
-                    <p class="mt-1 max-w-prose text-sm text-base-content/70">{{ $project->description }}</p>
-                @endif
-                <div class="mt-2 flex flex-wrap gap-3 text-xs text-base-content/60">
-                    @if ($project->starts_on)
-                        <span>{{ __('Start') }}: {{ $project->starts_on->format('d.m.Y') }}</span>
-                    @endif
-                    @if ($project->ends_on)
-                        <span>{{ __('Ende') }}: {{ $project->ends_on->format('d.m.Y') }}</span>
-                    @endif
-                </div>
-            </div>
+    <x-page-toolbar :title="$project->name" :badge="$project->statusLabel()" :badge-tone="$project->statusTone()">
+        @if ($project->description)
+            <p class="max-w-prose">{{ $project->description }}</p>
+        @endif
+        <div class="mt-1 flex flex-wrap gap-3 text-xs text-base-content/60">
+            @if ($project->starts_on)
+                <span>{{ __('Start') }}: {{ $project->starts_on->format('d.m.Y') }}</span>
+            @endif
+            @if ($project->ends_on)
+                <span>{{ __('Ende') }}: {{ $project->ends_on->format('d.m.Y') }}</span>
+            @endif
         </div>
-        <div class="flex flex-wrap gap-2">
+        <x-slot:actions>
             @can('update', $project)
-                <a href="{{ route('projects.edit', $project) }}" data-entry-modal-trigger class="btn btn-sm btn-ghost">{{ __('Bearbeiten') }}</a>
+                <x-icon-btn icon="edit" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('projects.edit', $project)"
+                            show-label>{{ __('Bearbeiten') }}</x-icon-btn>
             @endcan
             @can('delete', $project)
                 <form method="POST" action="{{ route('projects.destroy', $project) }}" class="inline"
@@ -38,11 +31,11 @@
                       data-confirm-message="{{ __('Verknüpfungen zu Einträgen werden gelöst.') }}"
                       data-confirm-label="{{ __('Löschen') }}">
                     @csrf @method('DELETE')
-                    <button class="btn btn-sm btn-ghost text-error">{{ __('Löschen') }}</button>
+                    <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
                 </form>
             @endcan
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-toolbar>
 
     {{-- Tabs --}}
     <div x-data="projectTabs()" class="flex min-h-0 flex-col gap-4">

@@ -47,8 +47,10 @@
             @endif
         </div>
         @can('create', Task::class)
-            <a href="{{ route('projects.tasks.create', $project) }}" data-entry-modal-trigger
-               class="btn btn-sm btn-primary">+ {{ __('Aufgabe') }}</a>
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('projects.tasks.create', $project)"
+                        show-label>{{ __('Aufgabe') }}</x-icon-btn>
         @endcan
     </div>
 
@@ -87,8 +89,8 @@
                                 <li class="px-4 py-1.5 pl-12">
                                     <a href="{{ route('projects.tasks.create', ['project' => $project, 'parent_id' => $task->id]) }}"
                                        data-entry-modal-trigger
-                                       class="text-xs text-base-content/40 hover:text-primary">
-                                        + {{ __('Sub-Aufgabe') }}
+                                       class="inline-flex items-center gap-1 text-xs text-base-content/40 hover:text-primary">
+                                        <x-icon name="add" /> {{ __('Sub-Aufgabe') }}
                                     </a>
                                 </li>
                             @endif

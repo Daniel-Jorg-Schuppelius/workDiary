@@ -22,41 +22,36 @@
     @endphp
 
     <x-page-shell>
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h1 class="text-xl font-semibold">{{ __('Tour') }} {{ $tour->name ?? ('#' . $tour->id) }}</h1>
-                <p class="text-sm text-base-content/60">
-                    {{ $tour->tour_date?->format('d.m.Y') }} · {{ $tour->user?->name }} · {{ $tour->vehicle?->license_plate ?? '—' }}
-                </p>
-                <p class="text-sm">
-                    <span class="badge badge-ghost badge-sm">{{ __($tour->status) }}</span>
-                    {{ number_format((float) $tour->planned_distance_km, 2, ',', '.') }} km ·
-                    {{ $tour->planned_duration_minutes }} min
-                </p>
+        <x-page-toolbar :title="__('Tour') . ' ' . ($tour->name ?? ('#' . $tour->id))" :badge="__($tour->status)" badge-tone="ghost">
+            <div class="text-sm text-base-content/70">
+                {{ $tour->tour_date?->format('d.m.Y') }} · {{ $tour->user?->name }} · {{ $tour->vehicle?->license_plate ?? '—' }}
+                · {{ number_format((float) $tour->planned_distance_km, 2, ',', '.') }} km · {{ $tour->planned_duration_minutes }} min
             </div>
-            <div class="flex flex-wrap gap-2">
-                <a href="{{ route('tours.edit', $tour) }}" class="btn btn-sm">{{ __('Bearbeiten') }}</a>
+            <x-slot:actions>
+                <x-icon-btn icon="edit" size="sm" :href="route('tours.edit', $tour)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                 @if (in_array($tour->status, ['draft', 'planned'], true))
-                    <form method="POST" action="{{ route('tours.start', $tour) }}">
+                    <form method="POST" action="{{ route('tours.start', $tour) }}" class="inline">
                         @csrf
-                        <button class="btn btn-sm btn-primary">{{ __('Starten') }}</button>
+                        <x-icon-btn icon="play_arrow" tone="primary" size="sm" type="submit" show-label>{{ __('Starten') }}</x-icon-btn>
                     </form>
                 @endif
                 @if (in_array($tour->status, ['planned', 'in_progress'], true))
-                    <form method="POST" action="{{ route('tours.complete', $tour) }}">
+                    <form method="POST" action="{{ route('tours.complete', $tour) }}" class="inline">
                         @csrf
-                        <button class="btn btn-sm btn-success">{{ __('Abschließen') }}</button>
+                        <x-icon-btn icon="check_circle" tone="success" size="sm" type="submit" show-label>{{ __('Abschließen') }}</x-icon-btn>
                     </form>
                 @endif
                 @if (in_array($tour->status, ['in_progress', 'completed'], true))
-                    <form method="POST" action="{{ route('tours.materialize', $tour) }}"
-                          onsubmit="return confirm('{{ __('Stopps als Fahrten ins Fahrtenbuch übernehmen?') }}');">
+                    <form method="POST" action="{{ route('tours.materialize', $tour) }}" class="inline"
+                          data-confirm-dialog
+                          data-confirm-message="{{ __('Stopps als Fahrten ins Fahrtenbuch übernehmen?') }}"
+                          data-confirm-label="{{ __('Übernehmen') }}">
                         @csrf
-                        <button class="btn btn-sm btn-ghost">{{ __('Als Fahrten übernehmen') }}</button>
+                        <x-icon-btn icon="directions_car" size="sm" type="submit" show-label>{{ __('Als Fahrten übernehmen') }}</x-icon-btn>
                     </form>
                 @endif
-            </div>
-        </div>
+            </x-slot:actions>
+        </x-page-toolbar>
 
         <div class="grid gap-4 lg:grid-cols-2">
             <div class="rounded-box border border-base-300 bg-base-100">

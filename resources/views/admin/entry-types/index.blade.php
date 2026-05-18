@@ -8,9 +8,10 @@
     <x-slot:toolbar>
         <x-page-toolbar>
             <x-slot:actions>
-                <a href="{{ route('admin.entry-types.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
-                    + {{ __('Eintragstyp anlegen') }}
-                </a>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('admin.entry-types.create')"
+                            show-label>{{ __('Eintragstyp anlegen') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -62,14 +63,17 @@
                         @endif
                     </td>
                     <td class="text-right">
-                        <div class="flex justify-end gap-2">
-                            <a href="{{ route('admin.entry-types.edit', $type) }}" data-entry-modal-trigger class="btn btn-ghost btn-xs">{{ __('Bearbeiten') }}</a>
-                            <form method="POST" action="{{ route('admin.entry-types.destroy', $type) }}"
+                        <div class="flex justify-end gap-1">
+                            <x-icon-btn icon="edit"
+                                        data-entry-modal-trigger
+                                        :href="route('admin.entry-types.edit', $type)"
+                                        :label="__('Bearbeiten')" />
+                            <form method="POST" action="{{ route('admin.entry-types.destroy', $type) }}" class="inline"
                                   data-confirm-dialog
                                   data-confirm-message="{{ __('Eintragstyp wirklich löschen?') }}"
                                   data-confirm-label="{{ __('Löschen') }}">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('Löschen') }}</button>
+                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                             </form>
                         </div>
                     </td>

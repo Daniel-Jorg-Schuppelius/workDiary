@@ -79,9 +79,7 @@
                                   data-confirm-label="{{ __('Löschen') }}">
                                 @csrf
                                 @method('DELETE')
-                                <button class="btn btn-xs btn-ghost text-error" type="submit">
-                                    {{ __('Löschen') }}
-                                </button>
+                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                             </form>
                         </td>
                     </tr>
@@ -92,9 +90,10 @@
         <div class="divider"></div>
 
         <div class="flex justify-end">
-            <a href="{{ route('projects.billing-rules.create', $project) }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
-                + {{ __('Neue Regel hinzufügen') }}
-            </a>
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('projects.billing-rules.create', $project)"
+                        show-label>{{ __('Neue Regel hinzufügen') }}</x-icon-btn>
         </div>
     </div>
 </div>

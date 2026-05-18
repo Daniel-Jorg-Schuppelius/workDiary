@@ -22,35 +22,35 @@
                 </span>
             @endif
         </div>
-        <div class="flex gap-2">
-            @can('update', $diary)
-                <a href="{{ route('diary.edit', $diary) }}" data-entry-modal-trigger class="btn btn-ghost btn-sm">{{ __('Bearbeiten') }}</a>
-            @endcan
+        <div class="flex flex-wrap gap-2">
             @can('archive', $diary)
                 @if ($diary->is_archived)
-                    <form method="POST" action="{{ route('diary.restore', $diary) }}">
+                    <form method="POST" action="{{ route('diary.restore', $diary) }}" class="inline">
                         @csrf
-                        <button class="btn btn-outline btn-sm">{{ __('Wiederherstellen') }}</button>
+                        <x-icon-btn icon="restore" tone="outline" size="sm" type="submit" show-label>{{ __('Wiederherstellen') }}</x-icon-btn>
                     </form>
                 @else
-                    <form method="POST" action="{{ route('diary.archive', $diary) }}">
+                    <form method="POST" action="{{ route('diary.archive', $diary) }}" class="inline">
                         @csrf
-                        <button class="btn btn-outline btn-sm">{{ __('Archivieren') }}</button>
+                        <x-icon-btn icon="archive" tone="outline" size="sm" type="submit" show-label>{{ __('Archivieren') }}</x-icon-btn>
                     </form>
                 @endif
             @endcan
             @can('delete', $diary)
-                <form
-                    method="POST"
-                    action="{{ route('diary.destroy', $diary) }}"
+                <form method="POST" action="{{ route('diary.destroy', $diary) }}" class="inline"
                     data-confirm-dialog
                     data-confirm-title="{{ __('Eintrag löschen') }}"
                     data-confirm-message="{{ __('Der Eintrag wird dauerhaft gelöscht. Möchtest du fortfahren?') }}"
-                    data-confirm-label="{{ __('Löschen') }}"
-                >
+                    data-confirm-label="{{ __('Löschen') }}">
                     @csrf @method('DELETE')
-                    <button class="btn btn-error btn-outline btn-sm">{{ __('Löschen') }}</button>
+                    <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
                 </form>
+            @endcan
+            @can('update', $diary)
+                <x-icon-btn icon="edit" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('diary.edit', $diary)"
+                            show-label>{{ __('Bearbeiten') }}</x-icon-btn>
             @endcan
         </div>
     </div>

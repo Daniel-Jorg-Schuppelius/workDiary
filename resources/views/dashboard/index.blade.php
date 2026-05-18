@@ -18,9 +18,12 @@
                 <p class="text-sm text-base-content/60">{{ $now->translatedFormat('l, d.m.Y H:i') }}</p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <a href="{{ route('diary.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">+ {{ __('Neuer Eintrag') }}</a>
-                <a href="{{ route('week.index') }}" class="btn btn-ghost btn-sm">{{ __('Wochenansicht') }}</a>
-                <a href="{{ route('diary.index') }}" class="btn btn-ghost btn-sm">{{ __('Tagebuch') }}</a>
+                <x-icon-btn icon="calendar_view_week" size="sm" :href="route('week.index')" show-label>{{ __('Wochenansicht') }}</x-icon-btn>
+                <x-icon-btn icon="menu_book" size="sm" :href="route('diary.index')" show-label>{{ __('Tagebuch') }}</x-icon-btn>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('diary.create')"
+                            show-label>{{ __('Neuer Eintrag') }}</x-icon-btn>
             </div>
         </div>
 

@@ -91,23 +91,13 @@
     </form>
 
     <x-slot:footerExtra>
-        <button type="button" id="shift-dialog-delete" class="btn btn-sm btn-error btn-outline gap-2 hidden">
-            <x-icon name="delete" /> {{ __('Löschen') }}
-        </button>
+        <x-icon-btn icon="delete" tone="error" size="sm" type="button" id="shift-dialog-delete" class="hidden" show-label>{{ __('Löschen') }}</x-icon-btn>
     </x-slot:footerExtra>
 
     <x-slot:actions>
-        <button type="button" id="shift-dialog-publish" class="btn btn-sm btn-info gap-2 hidden">
-            <x-icon name="publish" /> {{ __('Veröffentlichen') }}
-        </button>
-        <button type="button" id="shift-dialog-confirm" class="btn btn-sm btn-success gap-2 hidden">
-            <x-icon name="check_circle" /> {{ __('Bestätigen') }}
-        </button>
-        <button type="button" data-entry-modal-close class="btn btn-sm btn-ghost gap-2">
-            <x-icon name="close" /> {{ __('Abbrechen') }}
-        </button>
-        <button type="submit" form="shift-dialog-form" id="shift-dialog-save" class="btn btn-sm btn-primary gap-2">
-            <x-icon name="check" /> {{ __('Speichern') }}
-        </button>
+        <x-icon-btn icon="publish" tone="info" size="sm" type="button" id="shift-dialog-publish" class="hidden" show-label>{{ __('Veröffentlichen') }}</x-icon-btn>
+        <x-icon-btn icon="check_circle" tone="success" size="sm" type="button" id="shift-dialog-confirm" class="hidden" show-label>{{ __('Bestätigen') }}</x-icon-btn>
+        <x-icon-btn icon="close" size="sm" type="button" data-entry-modal-close show-label>{{ __('Abbrechen') }}</x-icon-btn>
+        <x-icon-btn icon="check" tone="primary" size="sm" type="submit" form="shift-dialog-form" id="shift-dialog-save" show-label>{{ __('Speichern') }}</x-icon-btn>
     </x-slot:actions>
 </x-modal>

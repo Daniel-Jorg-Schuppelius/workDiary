@@ -28,21 +28,26 @@
             @endif
         </div>
         <div class="flex flex-wrap items-center gap-2">
+            <x-icon-btn icon="arrow_back" size="sm"
+                        :href="route('customers.index')"
+                        show-label>{{ __('Zurück') }}</x-icon-btn>
             @can('update', $customer)
-                <a href="{{ route('customers.edit', $customer) }}" data-entry-modal-trigger class="btn btn-sm btn-primary">{{ __('Bearbeiten') }}</a>
                 @if ($customer->isArchived())
-                    <form method="POST" action="{{ route('customers.restore', $customer) }}">
+                    <form method="POST" action="{{ route('customers.restore', $customer) }}" class="inline">
                         @csrf
-                        <button class="btn btn-sm btn-ghost">{{ __('Wiederherstellen') }}</button>
+                        <x-icon-btn icon="restore" size="sm" type="submit" show-label>{{ __('Wiederherstellen') }}</x-icon-btn>
                     </form>
                 @else
-                    <form method="POST" action="{{ route('customers.archive', $customer) }}">
+                    <form method="POST" action="{{ route('customers.archive', $customer) }}" class="inline">
                         @csrf
-                        <button class="btn btn-sm btn-ghost">{{ __('Archivieren') }}</button>
+                        <x-icon-btn icon="archive" size="sm" type="submit" show-label>{{ __('Archivieren') }}</x-icon-btn>
                     </form>
                 @endif
+                <x-icon-btn icon="edit" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('customers.edit', $customer)"
+                            show-label>{{ __('Bearbeiten') }}</x-icon-btn>
             @endcan
-            <a href="{{ route('customers.index') }}" class="btn btn-sm btn-ghost">← {{ __('Zurück') }}</a>
         </div>
     </div>
 
@@ -236,14 +241,14 @@
                             <span class="text-base-content/60">· {{ number_format($att->size / 1024, 0, ',', '.') }} KB</span>
                         </div>
                         @can('delete', $att)
-                        <form method="POST" action="{{ route('attachments.destroy', $att) }}"
+                        <form method="POST" action="{{ route('attachments.destroy', $att) }}" class="inline"
                               data-confirm-dialog
                               data-confirm-message="{{ __('Anhang löschen?') }}"
                               data-confirm-icon="delete"
                               data-confirm-tone="error"
                               data-confirm-label="{{ __('Löschen') }}">
                             @csrf @method('DELETE')
-                            <button class="btn btn-xs btn-ghost text-error">{{ __('Löschen') }}</button>
+                            <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                         </form>
                         @endcan
                     </li>
@@ -254,7 +259,7 @@
         <form method="POST" action="{{ route('attachments.store', ['type' => 'customer', 'id' => $customer->id]) }}" enctype="multipart/form-data" class="mt-3 flex items-center gap-2">
             @csrf
             <input type="file" name="file" required class="file-input file-input-sm file-input-bordered">
-            <button class="btn btn-sm btn-primary">{{ __('Hochladen') }}</button>
+            <x-icon-btn icon="upload" tone="primary" size="sm" type="submit" show-label>{{ __('Hochladen') }}</x-icon-btn>
         </form>
         @endcan
     </div>
@@ -312,7 +317,7 @@
                             <input type="date" name="to" value="{{ now()->endOfMonth()->toDateString() }}" required class="input input-sm input-bordered">
                         </label>
                     </div>
-                    <button class="btn btn-sm btn-primary">{{ __('Zeiten übertragen') }}</button>
+                    <x-icon-btn icon="sync" tone="primary" size="sm" type="submit" show-label>{{ __('Zeiten übertragen') }}</x-icon-btn>
                 </form>
             </div>
 

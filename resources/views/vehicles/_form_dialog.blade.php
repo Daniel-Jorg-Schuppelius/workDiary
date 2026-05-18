@@ -21,14 +21,12 @@
 
     @if ($vehicle && ! $vehicle->archived_at)
         <x-slot:footerExtra>
-            <form method="POST" action="{{ route('vehicles.destroy', $vehicle) }}"
+            <form method="POST" action="{{ route('vehicles.destroy', $vehicle) }}" class="inline"
                   data-confirm-dialog
                   data-confirm-message="{{ __('Fahrzeug wirklich archivieren?') }}"
                   data-confirm-label="{{ __('Archivieren') }}">
                 @csrf @method('DELETE')
-                <button type="submit" class="btn btn-error btn-outline btn-sm gap-2">
-                    <x-icon name="delete" /> {{ __('Archivieren') }}
-                </button>
+                <x-icon-btn icon="archive" tone="error" size="sm" type="submit" show-label>{{ __('Archivieren') }}</x-icon-btn>
             </form>
         </x-slot:footerExtra>
     @endif

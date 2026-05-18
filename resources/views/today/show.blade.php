@@ -27,33 +27,31 @@
         <x-slot:toolbar>
             <x-page-toolbar :subtitle="$day->translatedFormat('l, d.m.Y')">
                 <x-slot:actions>
-                    <a href="{{ route('admin-time-entries.create', ['date' => $day->toDateString()]) }}" data-entry-modal-trigger class="btn btn-sm btn-primary"><x-icon name="add" /> {{ __('Verwaltungszeit') }}</a>
-                    <a href="{{ route('today.show', ['date' => $day->copy()->subDay()->toDateString()]) }}" class="btn btn-sm btn-ghost">← {{ __('Vortag') }}</a>
-                    <a href="{{ route('today.show') }}" class="btn btn-sm btn-ghost">{{ __('Heute') }}</a>
-                    <a href="{{ route('today.show', ['date' => $day->copy()->addDay()->toDateString()]) }}" class="btn btn-sm btn-ghost">{{ __('Folgetag') }} →</a>
-                    <a href="{{ route('attendance.index') }}" class="btn btn-sm btn-ghost"><x-icon name="badge" /> {{ __('Stempelungen') }}</a>
+                    <x-icon-btn icon="arrow_back" size="sm"
+                                :href="route('today.show', ['date' => $day->copy()->subDay()->toDateString()])"
+                                show-label>{{ __('Vortag') }}</x-icon-btn>
+                    <x-icon-btn icon="today" size="sm"
+                                :href="route('today.show')"
+                                show-label>{{ __('Heute') }}</x-icon-btn>
+                    <x-icon-btn icon="arrow_forward" size="sm"
+                                :href="route('today.show', ['date' => $day->copy()->addDay()->toDateString()])"
+                                show-label>{{ __('Folgetag') }}</x-icon-btn>
+                    <x-icon-btn icon="badge" size="sm"
+                                :href="route('attendance.index')"
+                                show-label>{{ __('Stempelungen') }}</x-icon-btn>
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('admin-time-entries.create', ['date' => $day->toDateString()])"
+                                show-label>{{ __('Verwaltungszeit') }}</x-icon-btn>
                 </x-slot:actions>
             </x-page-toolbar>
         </x-slot:toolbar>
 
-        {{-- Soll / Ist / Saldo --}}
         <section class="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-                <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Soll') }}</p>
-                <p class="mt-1 font-['Space_Grotesk'] text-3xl font-bold tabular-nums">{{ $fmt($targetMinutes) }}</p>
-            </div>
-            <div class="rounded-box border border-success/40 bg-success/5 p-4">
-                <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Anwesenheit') }}</p>
-                <p class="mt-1 font-['Space_Grotesk'] text-3xl font-bold tabular-nums">{{ $fmt($attendanceMinutes) }}</p>
-            </div>
-            <div class="rounded-box border border-info/40 bg-info/5 p-4">
-                <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Erfasst') }}</p>
-                <p class="mt-1 font-['Space_Grotesk'] text-3xl font-bold tabular-nums">{{ $fmt($entriesMinutes) }}</p>
-            </div>
-            <div class="rounded-box border {{ $untrackedMinutes > 0 ? 'border-warning/40 bg-warning/5' : 'border-base-300 bg-base-100' }} p-4">
-                <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Unverteilt') }}</p>
-                <p class="mt-1 font-['Space_Grotesk'] text-3xl font-bold tabular-nums">{{ $fmt($untrackedMinutes) }}</p>
-            </div>
+            <x-kpi-tile :label="__('Soll')"        :value="$fmt($targetMinutes)" />
+            <x-kpi-tile :label="__('Anwesenheit')" :value="$fmt($attendanceMinutes)" tone="success" />
+            <x-kpi-tile :label="__('Erfasst')"     :value="$fmt($entriesMinutes)"    tone="info" />
+            <x-kpi-tile :label="__('Unverteilt')"  :value="$fmt($untrackedMinutes)"  :tone="$untrackedMinutes > 0 ? 'warning' : 'neutral'" />
         </section>
 
         <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">

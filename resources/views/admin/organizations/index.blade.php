@@ -8,9 +8,10 @@
     <x-slot:toolbar>
         <x-page-toolbar>
             <x-slot:actions>
-                <a href="{{ route('admin.organizations.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
-                    + {{ __('Organisation anlegen') }}
-                </a>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('admin.organizations.create')"
+                            show-label>{{ __('Organisation anlegen') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -49,14 +50,17 @@
                     </td>
                     <td class="text-sm text-base-content/60">{{ $org->created_at?->toDateString() }}</td>
                     <td class="text-right">
-                        <div class="flex justify-end gap-2">
-                            <a href="{{ route('admin.organizations.edit', $org) }}" data-entry-modal-trigger class="btn btn-ghost btn-xs">{{ __('Bearbeiten') }}</a>
-                            <form method="POST" action="{{ route('admin.organizations.destroy', $org) }}"
+                        <div class="flex justify-end gap-1">
+                            <x-icon-btn icon="edit"
+                                        data-entry-modal-trigger
+                                        :href="route('admin.organizations.edit', $org)"
+                                        :label="__('Bearbeiten')" />
+                            <form method="POST" action="{{ route('admin.organizations.destroy', $org) }}" class="inline"
                                   data-confirm-dialog
                                   data-confirm-message="{{ __('Organisation wirklich löschen?') }}"
                                   data-confirm-label="{{ __('Löschen') }}">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('Löschen') }}</button>
+                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                             </form>
                         </div>
                     </td>

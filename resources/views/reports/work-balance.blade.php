@@ -42,10 +42,9 @@
                         </label>
                     </form>
                 @endif
-                <a href="{{ route('reports.work-balance', array_merge(request()->query(), ['export' => 'pdf'])) }}"
-                   class="btn btn-sm btn-outline gap-1">
-                    <x-icon name="picture_as_pdf" /> PDF
-                </a>
+                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
+                            :href="route('reports.work-balance', array_merge(request()->query(), ['export' => 'pdf']))"
+                            show-label>PDF</x-icon-btn>
             </div>
         </div>
 

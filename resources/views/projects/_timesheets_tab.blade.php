@@ -4,9 +4,10 @@
         <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Stundenzettel') }}</span>
             @can('create', \App\Models\Timesheet::class)
-                <a href="{{ route('projects.timesheets.create', $project) }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
-                    + {{ __('Stundenzettel') }}
-                </a>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('projects.timesheets.create', $project)"
+                            show-label>{{ __('Stundenzettel') }}</x-icon-btn>
             @endcan
         </header>
 
@@ -37,7 +38,9 @@
                         <td class="text-right tabular-nums">{{ number_format((float)$ts->total_material_net, 2, ',', '.') }} €</td>
                         <td><span class="badge badge-sm badge-{{ $ts->statusTone() }}">{{ $ts->statusLabel() }}</span></td>
                         <td class="text-right">
-                            <a href="{{ route('projects.timesheets.show', [$project, $ts]) }}" class="btn btn-xs">{{ __('Öffnen') }}</a>
+                            <x-icon-btn icon="open_in_new"
+                                        :href="route('projects.timesheets.show', [$project, $ts])"
+                                        :label="__('Öffnen')" />
                         </td>
                     </tr>
                 @endforeach

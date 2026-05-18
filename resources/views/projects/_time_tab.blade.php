@@ -25,8 +25,10 @@
         <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Zeiteinträge') }}</span>
             @can('create', \App\Models\TimeEntry::class)
-                <a href="{{ route('projects.time-entries.create', $project) }}"
-                   data-entry-modal-trigger class="btn btn-sm btn-primary">+ {{ __('Zeiteintrag') }}</a>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('projects.time-entries.create', $project)"
+                            show-label>{{ __('Zeiteintrag') }}</x-icon-btn>
             @endcan
         </header>
         @if ($timeEntries->isEmpty())
@@ -52,8 +54,10 @@
                         <td class="max-w-xs truncate text-xs text-base-content/70">{{ $entry->description }}</td>
                         <td class="whitespace-nowrap">
                             @can('update', $entry)
-                                <a href="{{ route('projects.time-entries.edit', [$project, $entry]) }}"
-                                   data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Edit') }}</a>
+                                <x-icon-btn icon="edit"
+                                            data-entry-modal-trigger
+                                            :href="route('projects.time-entries.edit', [$project, $entry])"
+                                            :label="__('Bearbeiten')" />
                             @endcan
                             @can('delete', $entry)
                                 <form method="POST" action="{{ route('projects.time-entries.destroy', [$project, $entry]) }}"
@@ -62,7 +66,7 @@
                                       data-confirm-label="{{ __('Löschen') }}"
                                       class="inline">
                                     @csrf @method('DELETE')
-                                    <button class="btn btn-xs btn-ghost text-error">{{ __('Del') }}</button>
+                                    <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                                 </form>
                             @endcan
                         </td>

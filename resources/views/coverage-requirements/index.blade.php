@@ -6,12 +6,15 @@
     <x-slot:toolbar>
         <x-page-toolbar :title="__('Soll-Besetzung')" :subtitle="$dutyPlan->title . ' · ' . $dutyPlan->from_date->format('d.m.Y') . ' – ' . $dutyPlan->to_date->format('d.m.Y')">
             <x-slot:actions>
+                <x-icon-btn icon="arrow_back" size="sm"
+                            :href="route('duty-plans.show', $dutyPlan)"
+                            show-label>{{ __('Zurück') }}</x-icon-btn>
                 @can('create', \App\Models\CoverageRequirement::class)
-                    <a href="{{ route('duty-plans.coverage.create', $dutyPlan) }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
-                        + {{ __('Anforderung hinzufügen') }}
-                    </a>
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('duty-plans.coverage.create', $dutyPlan)"
+                                show-label>{{ __('Anforderung hinzufügen') }}</x-icon-btn>
                 @endcan
-                <a href="{{ route('duty-plans.show', $dutyPlan) }}" class="btn btn-ghost btn-sm">← {{ __('Zurück') }}</a>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -76,17 +79,20 @@
                         </td>
                         <td class="text-sm text-base-content/70">{{ Str::limit((string) $req->notes, 40) }}</td>
                         <td class="text-right">
-                            <div class="flex justify-end gap-2">
+                            <div class="flex justify-end gap-1">
                                 @can('update', $req)
-                                    <a href="{{ route('duty-plans.coverage.edit', [$dutyPlan, $req]) }}" data-entry-modal-trigger class="btn btn-ghost btn-xs">{{ __('Bearbeiten') }}</a>
+                                    <x-icon-btn icon="edit"
+                                                data-entry-modal-trigger
+                                                :href="route('duty-plans.coverage.edit', [$dutyPlan, $req])"
+                                                :label="__('Bearbeiten')" />
                                 @endcan
                                 @can('delete', $req)
-                                    <form method="POST" action="{{ route('duty-plans.coverage.destroy', [$dutyPlan, $req]) }}"
+                                    <form method="POST" action="{{ route('duty-plans.coverage.destroy', [$dutyPlan, $req]) }}" class="inline"
                                           data-confirm-dialog
                                           data-confirm-message="{{ __('Anforderung wirklich löschen?') }}"
                                           data-confirm-label="{{ __('Löschen') }}">
                                         @csrf @method('DELETE')
-                                        <button class="btn btn-ghost btn-xs text-error">{{ __('Löschen') }}</button>
+                                        <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                                     </form>
                                 @endcan
                             </div>

@@ -18,8 +18,8 @@
                     <input id="password" name="password" type="password" class="input input-bordered input-sm w-full" required>
                 </div>
                 <div class="flex items-center gap-2 pt-1">
-                    <button type="submit" class="btn btn-primary btn-sm">{{ __('Anmelden') }}</button>
-                    <a href="{{ route('home') }}" class="btn btn-ghost btn-sm">{{ __('Zurück') }}</a>
+                    <x-icon-btn icon="login" tone="primary" size="sm" type="submit" show-label>{{ __('Anmelden') }}</x-icon-btn>
+                    <x-icon-btn icon="arrow_back" size="sm" :href="route('home')" show-label>{{ __('Zurück') }}</x-icon-btn>
                 </div>
             </form>
         </div>

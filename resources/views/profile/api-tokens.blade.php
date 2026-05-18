@@ -21,7 +21,7 @@
         </div>
         @error('name')<div class="text-error text-sm">{{ $message }}</div>@enderror
         <div class="card-actions justify-end mt-3">
-            <button type="submit" class="btn btn-primary btn-sm">{{ __('Erstellen') }}</button>
+            <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Erstellen') }}</x-icon-btn>
         </div>
     </form>
 
@@ -47,7 +47,7 @@
                                       data-confirm-label="{{ __('Widerrufen') }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('Widerrufen') }}</button>
+                                    <x-icon-btn icon="block" tone="error" type="submit" :label="__('Widerrufen')" />
                                 </form>
                             </td>
                         </tr>

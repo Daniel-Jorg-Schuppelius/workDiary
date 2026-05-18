@@ -51,13 +51,13 @@
 
     <x-page-shell overflow="clip">
 
-        {{-- Toolbar: Archiv-Badge + Cross-Link --}}
-        <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <span class="badge badge-neutral">{{ __('Archiv') }}</span>
-            <a href="{{ route('duties.index', ['tab' => match($tab) { 'diary' => 'diary', 'urlaub' => 'urlaub', default => $tab }]) }}" class="btn btn-sm btn-ghost gap-1">
-                <x-icon name="arrow_back" /><span>{{ __('Aktive Arbeitsliste') }}</span>
-            </a>
-        </div>
+        <x-page-toolbar :badge="__('Archiv')" badge-tone="neutral">
+            <x-slot:actions>
+                <x-icon-btn icon="arrow_back" size="sm"
+                            :href="route('duties.index', ['tab' => match($tab) { 'diary' => 'diary', 'urlaub' => 'urlaub', default => $tab }])"
+                            show-label>{{ __('Aktive Arbeitsliste') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
 
         {{-- Tabs --}}
         <div role="tablist" class="tabs tabs-box self-start">

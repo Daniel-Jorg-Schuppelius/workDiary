@@ -114,13 +114,13 @@
                 </div>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-                <a href="{{ route('legacy.diary.index', ['tab' => match($activeTab) { 'urlaub' => 'urlaub', default => $activeTab }]) }}" class="btn btn-sm btn-ghost">
-                    ← {{ __('Aktive Arbeitsliste') }}
-                </a>
+                <x-icon-btn icon="arrow_back" size="sm"
+                            :href="route('legacy.diary.index', ['tab' => match($activeTab) { 'urlaub' => 'urlaub', default => $activeTab }])"
+                            show-label>{{ __('Aktive Arbeitsliste') }}</x-icon-btn>
                 @if ($isAdmin)
-                    <a href="{{ route('legacy.archive.week') }}" class="btn btn-sm btn-outline">
-                        {{ __('Archiv-Wochenansicht') }}
-                    </a>
+                    <x-icon-btn icon="calendar_view_week" tone="outline" size="sm"
+                                :href="route('legacy.archive.week')"
+                                show-label>{{ __('Archiv-Wochenansicht') }}</x-icon-btn>
                 @endif
             </div>
         </div>
@@ -180,33 +180,35 @@
                 @endif
                 <x-date-range :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''" />
                 <div class="ml-auto flex items-end gap-2">
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Filtern') }}</button>
+                    <x-icon-btn icon="filter_alt" tone="primary" size="sm" type="submit" show-label>{{ __('Filtern') }}</x-icon-btn>
                     @if (! empty($tabFilters))
-                        <a href="{{ route('legacy.archive.index', ['tab' => $activeTab]) }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
+                        <x-icon-btn icon="restart_alt" size="sm"
+                                    :href="route('legacy.archive.index', ['tab' => $activeTab])"
+                                    show-label>{{ __('Zurücksetzen') }}</x-icon-btn>
                     @endif
                 </div>
             </div>
         </form>
 
-        {{-- KPI-Kacheln (per Tab, klickbare Filter) --}}
         <div class="flex-none grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            @php
+                $toneMap = [
+                    'border-base-300'      => 'neutral',
+                    'border-neutral/40'    => 'neutral',
+                    'border-warning/40'    => 'warning',
+                    'border-error/40'      => 'error',
+                    'border-info/40'       => 'info',
+                    'border-primary/40'    => 'primary',
+                    'border-secondary/40'  => 'secondary',
+                    'border-success/40'    => 'success',
+                ];
+            @endphp
             @foreach ($kpiTiles as $tile)
-                @php
-                    $tileBaseClass = 'rounded-box border bg-base-100 px-4 py-3 shadow-xs ' . $tile['border'];
-                    $activeRing = $tile['active'] ? ' border-primary ring-1 ring-primary/40' : '';
-                @endphp
-                @if (! empty($tile['href']))
-                    <a href="{{ $tile['href'] }}"
-                       class="{{ $tileBaseClass }} transition hover:border-primary hover:shadow-md{{ $activeRing }}">
-                        <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $tile['label'] }}</p>
-                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ number_format((int) $tile['value'], 0, ',', '.') }}</p>
-                    </a>
-                @else
-                    <div class="{{ $tileBaseClass }}">
-                        <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $tile['label'] }}</p>
-                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ number_format((int) $tile['value'], 0, ',', '.') }}</p>
-                    </div>
-                @endif
+                <x-kpi-tile :label="$tile['label']"
+                            :value="$tile['value']"
+                            :tone="$toneMap[$tile['border']] ?? 'neutral'"
+                            :href="$tile['href']"
+                            :active="$tile['active']" />
             @endforeach
         </div>
 
@@ -414,13 +416,12 @@
                                 @endforeach
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-warning btn-sm"
-                                data-confirm-dialog
-                                data-confirm-title="{{ __('Archivierung starten') }}"
-                                data-confirm-message="{{ __('Archivierung wirklich starten?') }}"
-                                data-confirm-label="{{ __('Starten') }}">
-                            {{ __('Archivierung starten') }}
-                        </button>
+                        <x-icon-btn icon="inventory_2" tone="warning" size="sm" type="submit"
+                                    data-confirm-dialog
+                                    data-confirm-title="{{ __('Archivierung starten') }}"
+                                    data-confirm-message="{{ __('Archivierung wirklich starten?') }}"
+                                    data-confirm-label="{{ __('Starten') }}"
+                                    show-label>{{ __('Archivierung starten') }}</x-icon-btn>
                     </div>
                 </form>
             </details>

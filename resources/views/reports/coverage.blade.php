@@ -11,12 +11,12 @@
 
     <x-filter-bar :action="route('reports.coverage')" :reset="route('reports.coverage')">
         <x-slot:extra>
-            <a href="{{ route('reports.coverage', ['export' => 'csv']) }}" class="btn btn-sm btn-outline gap-1">
-                <x-icon name="download" />CSV
-            </a>
-            <a href="{{ route('reports.coverage', ['export' => 'pdf']) }}" class="btn btn-sm btn-outline gap-1">
-                <x-icon name="picture_as_pdf" />PDF
-            </a>
+            <x-icon-btn icon="download" tone="outline" size="sm"
+                        :href="route('reports.coverage', ['export' => 'csv'])"
+                        show-label>CSV</x-icon-btn>
+            <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
+                        :href="route('reports.coverage', ['export' => 'pdf'])"
+                        show-label>PDF</x-icon-btn>
         </x-slot:extra>
     </x-filter-bar>
 

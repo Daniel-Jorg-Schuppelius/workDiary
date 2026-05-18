@@ -8,9 +8,10 @@
     <x-slot:toolbar>
         <x-page-toolbar>
             <x-slot:actions>
-                <a href="{{ route('holidays.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
-                    + {{ __('Eigener Feiertag') }}
-                </a>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('holidays.create')"
+                            show-label>{{ __('Eigener Feiertag') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -62,9 +63,10 @@
                     </td>
                     <td class="whitespace-nowrap text-right">
                         @if ($isCustom)
-                            <a href="{{ route('holidays.edit', $row['custom']) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}" aria-label="{{ __('Bearbeiten') }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                            </a>
+                            <x-icon-btn icon="edit"
+                                        data-entry-modal-trigger
+                                        :href="route('holidays.edit', $row['custom'])"
+                                        :label="__('Bearbeiten')" />
                             <form method="POST" action="{{ route('holidays.destroy', $row['custom']) }}" class="inline"
                                   data-confirm-dialog
                                   data-confirm-title="{{ __('Feiertag löschen') }}"
@@ -72,9 +74,7 @@
                                   data-confirm-label="{{ __('Löschen') }}">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-xs btn-ghost text-error" title="{{ __('Löschen') }}" aria-label="{{ __('Löschen') }}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3"/></svg>
-                                </button>
+                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                             </form>
                         @else
                             <span class="text-xs text-base-content/40">{{ __('—') }}</span>
@@ -113,9 +113,10 @@
                         @endif
                     </td>
                     <td class="text-right whitespace-nowrap">
-                        <a href="{{ route('holidays.edit', $holiday) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}" aria-label="{{ __('Bearbeiten') }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                        </a>
+                        <x-icon-btn icon="edit"
+                                    data-entry-modal-trigger
+                                    :href="route('holidays.edit', $holiday)"
+                                    :label="__('Bearbeiten')" />
                         <form method="POST" action="{{ route('holidays.destroy', $holiday) }}" class="inline"
                               data-confirm-dialog
                               data-confirm-title="{{ __('Feiertag löschen') }}"
@@ -123,9 +124,7 @@
                               data-confirm-label="{{ __('Löschen') }}">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-xs btn-ghost text-error" title="{{ __('Löschen') }}" aria-label="{{ __('Löschen') }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3"/></svg>
-                            </button>
+                            <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                         </form>
                     </td>
                 </tr>

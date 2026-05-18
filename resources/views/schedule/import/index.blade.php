@@ -7,7 +7,7 @@
     <x-slot:toolbar>
         <x-page-toolbar>
             <x-slot:actions>
-                <a href="{{ route('schedule.index') }}" class="btn btn-sm btn-ghost">← {{ __('Zurück') }}</a>
+                <x-icon-btn icon="arrow_back" size="sm" :href="route('schedule.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -42,7 +42,7 @@
                 </div>
 
                 <div class="card-actions justify-end">
-                    <button type="submit" class="btn btn-primary">{{ __('Weiter →') }}</button>
+                    <x-icon-btn icon="arrow_forward" tone="primary" type="submit" show-label>{{ __('Weiter') }}</x-icon-btn>
                 </div>
             </form>
     </x-card>

@@ -26,12 +26,12 @@
             </x-filter-field>
         @endif
         <x-slot:extra>
-            <a href="{{ route('reports.customer-project', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'csv'])) }}" class="btn btn-sm btn-outline gap-1">
-                <x-icon name="download" />CSV
-            </a>
-            <a href="{{ route('reports.customer-project', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'pdf'])) }}" class="btn btn-sm btn-outline gap-1">
-                <x-icon name="picture_as_pdf" />PDF
-            </a>
+            <x-icon-btn icon="download" tone="outline" size="sm"
+                        :href="route('reports.customer-project', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'csv']))"
+                        show-label>CSV</x-icon-btn>
+            <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
+                        :href="route('reports.customer-project', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'pdf']))"
+                        show-label>PDF</x-icon-btn>
         </x-slot:extra>
     </x-filter-bar>
 

@@ -34,19 +34,31 @@
             <div class="flex items-center gap-2">
                 @if ($tab === 'auftraege')
                     @if ($isAdmin)
-                        <a href="{{ route('legacy.diary.create') }}" data-entry-modal-trigger class="btn btn-sm btn-outline">{{ __('+ Neuer Eintrag') }}</a>
+                        <x-icon-btn icon="add" tone="outline" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('legacy.diary.create')"
+                                    show-label>{{ __('Neuer Eintrag') }}</x-icon-btn>
                     @endif
                 @elseif ($tab === 'bereitschaft')
                     @if ($isAdmin)
-                        <a href="{{ route('legacy.oncall.create') }}" data-entry-modal-trigger class="btn btn-sm btn-outline">{{ __('+ Neue Bereitschaft') }}</a>
+                        <x-icon-btn icon="add" tone="outline" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('legacy.oncall.create')"
+                                    show-label>{{ __('Neue Bereitschaft') }}</x-icon-btn>
                     @endif
                 @elseif ($tab === 'notdienst')
                     @if ($isAdmin)
-                        <a href="{{ route('legacy.notdienst.create') }}" data-entry-modal-trigger class="btn btn-sm btn-outline">{{ __('+ Neuer Notdienst') }}</a>
+                        <x-icon-btn icon="add" tone="outline" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('legacy.notdienst.create')"
+                                    show-label>{{ __('Neuer Notdienst') }}</x-icon-btn>
                     @endif
                 @else
                     @can('create', \App\Models\Vacation::class)
-                        <a href="{{ route('vacations.create') }}?dialog=1" data-entry-modal-trigger class="btn btn-sm btn-outline">{{ __('+ Neuer Antrag') }}</a>
+                        <x-icon-btn icon="add" tone="outline" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('vacations.create') . '?dialog=1'"
+                                    show-label>{{ __('Neuer Antrag') }}</x-icon-btn>
                     @endcan
                 @endif
                 @if ($tab !== 'urlaub')
@@ -92,9 +104,9 @@
                         <span class="label-text text-sm">{{ __('Nur meine') }}</span>
                     </label>
                     <div class="ml-auto flex items-end gap-2">
-                        <button type="submit" class="btn btn-sm btn-primary">{{ __('Filtern') }}</button>
+                        <x-icon-btn icon="filter_alt" tone="primary" size="sm" type="submit" show-label>{{ __('Filtern') }}</x-icon-btn>
                         @if (array_filter($tabFilters))
-                            <a href="{{ route('legacy.diary.index', ['tab' => 'auftraege']) }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
+                            <x-icon-btn icon="restart_alt" size="sm" :href="route('legacy.diary.index', ['tab' => 'auftraege'])" show-label>{{ __('Zurücksetzen') }}</x-icon-btn>
                         @endif
                     </div>
                 </div>
@@ -142,7 +154,7 @@
                             <option value="status_done">{{ __('Status → Erledigt') }}</option>
                             <option value="delete" data-confirm="1">{{ __('Löschen') }}</option>
                         </select>
-                        <button type="submit" id="bulk-apply" class="btn btn-sm btn-primary" disabled>{{ __('Anwenden') }}</button>
+                        <x-icon-btn icon="check" tone="primary" size="sm" type="submit" id="bulk-apply" disabled show-label>{{ __('Anwenden') }}</x-icon-btn>
                     </div>
                     <div class="min-h-0 flex-1 overflow-auto">
                         @php $p = array_merge($filters, ['tab' => 'auftraege']); @endphp
@@ -184,13 +196,15 @@
                                     <td>{{ $entry->von?->format('d.m.Y H:i') ?? '-' }}</td>
                                     <td>{{ $entry->bis?->format('d.m.Y H:i') ?? '-' }}</td>
                                     <td class="whitespace-nowrap text-right">
-                                        <a href="{{ route('legacy.diary.show', $entry) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Details') }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                        </a>
+                                        <x-icon-btn icon="visibility"
+                                                    data-entry-modal-trigger
+                                                    :href="route('legacy.diary.show', $entry)"
+                                                    :label="__('Details')" />
                                         @if ($canModify)
-                                            <a href="{{ route('legacy.diary.edit', $entry) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                            </a>
+                                            <x-icon-btn icon="edit"
+                                                        data-entry-modal-trigger
+                                                        :href="route('legacy.diary.edit', $entry)"
+                                                        :label="__('Bearbeiten')" />
                                         @endif
                                     </td>
                                 </tr>
@@ -270,9 +284,9 @@
                     @endif
                     <x-date-range :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''" />
                     <div class="ml-auto flex items-end gap-2">
-                        <button type="submit" class="btn btn-sm btn-primary">{{ __('Filtern') }}</button>
+                        <x-icon-btn icon="filter_alt" tone="primary" size="sm" type="submit" show-label>{{ __('Filtern') }}</x-icon-btn>
                         @if (array_filter($tabFilters))
-                            <a href="{{ route('legacy.diary.index', ['tab' => 'bereitschaft']) }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
+                            <x-icon-btn icon="restart_alt" size="sm" :href="route('legacy.diary.index', ['tab' => 'bereitschaft'])" show-label>{{ __('Zurücksetzen') }}</x-icon-btn>
                         @endif
                     </div>
                 </div>
@@ -303,17 +317,16 @@
                             <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->bis?->format('d.m.Y') ?? '-' }}</td>
                             <td class="text-right whitespace-nowrap">
                                 @if ($isAdmin)
-                                    <a href="{{ route('legacy.oncall.edit', $item) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                    </a>
+                                    <x-icon-btn icon="edit"
+                                                data-entry-modal-trigger
+                                                :href="route('legacy.oncall.edit', $item)"
+                                                :label="__('Bearbeiten')" />
                                     <form method="POST" action="{{ route('legacy.oncall.destroy', $item) }}" class="inline"
                                           data-confirm-dialog
                                           data-confirm-message="{{ __('Eintrag wirklich löschen?') }}"
                                           data-confirm-label="{{ __('Löschen') }}">
                                         @csrf @method('DELETE')
-                                        <button class="btn btn-xs btn-ghost text-error" title="{{ __('Löschen') }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3"/></svg>
-                                        </button>
+                                        <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                                     </form>
                                 @endif
                             </td>
@@ -354,9 +367,9 @@
                     @endif
                     <x-date-range :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''" />
                     <div class="ml-auto flex items-end gap-2">
-                        <button type="submit" class="btn btn-sm btn-primary">{{ __('Filtern') }}</button>
+                        <x-icon-btn icon="filter_alt" tone="primary" size="sm" type="submit" show-label>{{ __('Filtern') }}</x-icon-btn>
                         @if (array_filter($tabFilters))
-                            <a href="{{ route('legacy.diary.index', ['tab' => 'notdienst']) }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
+                            <x-icon-btn icon="restart_alt" size="sm" :href="route('legacy.diary.index', ['tab' => 'notdienst'])" show-label>{{ __('Zurücksetzen') }}</x-icon-btn>
                         @endif
                     </div>
                 </div>
@@ -387,17 +400,16 @@
                             <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->bis?->format('d.m.Y') ?? '-' }}</td>
                             <td class="text-right whitespace-nowrap">
                                 @if ($isAdmin)
-                                    <a href="{{ route('legacy.notdienst.edit', $item) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                    </a>
+                                    <x-icon-btn icon="edit"
+                                                data-entry-modal-trigger
+                                                :href="route('legacy.notdienst.edit', $item)"
+                                                :label="__('Bearbeiten')" />
                                     <form method="POST" action="{{ route('legacy.notdienst.destroy', $item) }}" class="inline"
                                           data-confirm-dialog
                                           data-confirm-message="{{ __('Eintrag wirklich löschen?') }}"
                                           data-confirm-label="{{ __('Löschen') }}">
                                         @csrf @method('DELETE')
-                                        <button class="btn btn-xs btn-ghost text-error" title="{{ __('Löschen') }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3"/></svg>
-                                        </button>
+                                        <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                                     </form>
                                 @endif
                             </td>
@@ -462,9 +474,9 @@
                     @endif
                     <x-date-range :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''" />
                     <div class="ml-auto flex items-end gap-2">
-                        <button type="submit" class="btn btn-sm btn-primary">{{ __('Filtern') }}</button>
+                        <x-icon-btn icon="filter_alt" tone="primary" size="sm" type="submit" show-label>{{ __('Filtern') }}</x-icon-btn>
                         @if (array_filter($tabFilters))
-                            <a href="{{ route('legacy.diary.index', ['tab' => 'urlaub']) }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
+                            <x-icon-btn icon="restart_alt" size="sm" :href="route('legacy.diary.index', ['tab' => 'urlaub'])" show-label>{{ __('Zurücksetzen') }}</x-icon-btn>
                         @endif
                     </div>
                 </div>
@@ -533,10 +545,10 @@
                             <td class="max-w-xs truncate text-base-content/70">{{ $v->note ?? '—' }}</td>
                             <td class="whitespace-nowrap text-right">
                                 @can('update', $v)
-                                    <a href="{{ route('vacations.edit', $v) }}" data-entry-modal-trigger
-                                       class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                    </a>
+                                    <x-icon-btn icon="edit"
+                                                data-entry-modal-trigger
+                                                :href="route('vacations.edit', $v)"
+                                                :label="__('Bearbeiten')" />
                                 @endcan
                             </td>
                         </tr>

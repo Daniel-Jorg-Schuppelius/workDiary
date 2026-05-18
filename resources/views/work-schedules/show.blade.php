@@ -2,17 +2,18 @@
 @section('title', __('Mein Arbeitszeit-Modell'))
 @section('content')
 <x-page-shell>
-    <div class="mb-4 flex items-center justify-between gap-3">
-        <h1 class="font-['Space_Grotesk'] text-xl font-semibold">{{ __('Mein Arbeitszeit-Modell') }}</h1>
+    <x-page-toolbar :title="__('Mein Arbeitszeit-Modell')">
         @auth
             @if (auth()->user()->isAdmin())
-                <a href="{{ route('users.work-schedule.edit', $user) }}" data-entry-modal-trigger
-                   class="btn btn-sm btn-primary">
-                    <x-icon name="edit" size="sm" /> {{ __('Bearbeiten') }}
-                </a>
+                <x-slot:actions>
+                    <x-icon-btn icon="edit" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('users.work-schedule.edit', $user)"
+                                show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                </x-slot:actions>
             @endif
         @endauth
-    </div>
+    </x-page-toolbar>
     @php $s = $schedule ?? (object) $defaults; @endphp
     <ul class="rounded-box border border-base-300 bg-base-100 p-4 text-sm shadow-xs">
         <li>{{ __('Wochenstunden') }}: <strong>{{ intdiv((int)$s->weekly_minutes, 60) }}:{{ str_pad((string)($s->weekly_minutes % 60),2,'0',STR_PAD_LEFT) }} h</strong></li>

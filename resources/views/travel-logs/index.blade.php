@@ -7,27 +7,21 @@
         <x-slot:toolbar>
             <x-page-toolbar>
                 <x-slot:actions>
-                    <a href="{{ route('travel-logs.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
-                        <x-icon name="add" /> {{ __('Neue Fahrt') }}
-                    </a>
-                    <a href="{{ route('travel-logs.export', array_merge(request()->query(), ['from' => $from->toDateString(), 'to' => $to->toDateString()])) }}"
-                       class="btn btn-sm btn-ghost">
-                        <x-icon name="download" /> {{ __('CSV-Export') }}
-                    </a>
+                    <x-icon-btn icon="download" size="sm"
+                                :href="route('travel-logs.export', array_merge(request()->query(), ['from' => $from->toDateString(), 'to' => $to->toDateString()]))"
+                                show-label>{{ __('CSV-Export') }}</x-icon-btn>
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('travel-logs.create')"
+                                show-label>{{ __('Neue Fahrt') }}</x-icon-btn>
                 </x-slot:actions>
             </x-page-toolbar>
         </x-slot:toolbar>
 
 
         <div class="grid gap-3 sm:grid-cols-2">
-            <div class="rounded-box border border-base-300 bg-base-100 p-3">
-                <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Gefahrene Kilometer') }}</div>
-                <div class="text-2xl font-semibold">{{ number_format($totals['distance_km'], 2, ',', '.') }} km</div>
-            </div>
-            <div class="rounded-box border border-base-300 bg-base-100 p-3">
-                <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Erstattung') }}</div>
-                <div class="text-2xl font-semibold">{{ number_format($totals['reimbursement'], 2, ',', '.') }} €</div>
-            </div>
+            <x-kpi-tile :label="__('Gefahrene Kilometer')" :value="number_format($totals['distance_km'], 2, ',', '.') . ' km'" />
+            <x-kpi-tile :label="__('Erstattung')" :value="number_format($totals['reimbursement'], 2, ',', '.') . ' €'" />
         </div>
 
         <x-card padding="p-0">
@@ -68,13 +62,16 @@
                         </td>
                         <td class="max-w-xs truncate">{{ $log->purpose }}</td>
                         <td class="text-right">
-                            <a href="{{ route('travel-logs.edit', $log) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a>
+                            <x-icon-btn icon="edit"
+                                        data-entry-modal-trigger
+                                        :href="route('travel-logs.edit', $log)"
+                                        :label="__('Bearbeiten')" />
                             <form method="POST" action="{{ route('travel-logs.destroy', $log) }}" class="inline"
                                   data-confirm-dialog
                                   data-confirm-message="{{ __('Fahrt wirklich löschen?') }}"
                                   data-confirm-label="{{ __('Löschen') }}">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Löschen') }}</button>
+                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                             </form>
                         </td>
                     </tr>

@@ -30,8 +30,9 @@
     </x-form-group>
 
     <x-slot:footerExtra>
-        <a href="{{ route('account.password.edit') }}" data-entry-modal-trigger class="btn btn-sm btn-ghost gap-2">
-            <x-icon name="lock" /> {{ __('Passwort ändern') }}
-        </a>
+        <x-icon-btn icon="lock" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('account.password.edit')"
+                    show-label>{{ __('Passwort ändern') }}</x-icon-btn>
     </x-slot:footerExtra>
 </x-modal>

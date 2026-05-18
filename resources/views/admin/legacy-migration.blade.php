@@ -43,10 +43,10 @@
                                 @endif
                             </td>
                             <td class="text-right">
-                                <form method="POST" action="{{ route('admin.legacy-migration.run') }}">
+                                <form method="POST" action="{{ route('admin.legacy-migration.run') }}" class="inline">
                                     @csrf
                                     <input type="hidden" name="type" value="{{ $key }}">
-                                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Importieren') }}</button>
+                                    <x-icon-btn icon="download" tone="primary" size="sm" type="submit" show-label>{{ __('Importieren') }}</x-icon-btn>
                                 </form>
                             </td>
                         </tr>
@@ -54,10 +54,10 @@
                 </tbody>
         </x-table>
 
-        <form method="POST" action="{{ route('admin.legacy-migration.run') }}">
+        <form method="POST" action="{{ route('admin.legacy-migration.run') }}" class="inline">
             @csrf
             <input type="hidden" name="type" value="all">
-            <button type="submit" class="btn btn-primary">{{ __('Alles importieren') }}</button>
+            <x-icon-btn icon="download" tone="primary" size="sm" type="submit" show-label>{{ __('Alles importieren') }}</x-icon-btn>
         </form>
     @endif
 </div>

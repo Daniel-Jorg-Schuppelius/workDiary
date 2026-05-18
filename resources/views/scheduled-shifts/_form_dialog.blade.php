@@ -77,14 +77,12 @@
 
     @can('delete', $shift)
         <x-slot:footerExtra>
-            <form method="POST" action="{{ route('scheduled-shifts.destroy', $shift) }}"
+            <form method="POST" action="{{ route('scheduled-shifts.destroy', $shift) }}" class="inline"
                   data-confirm-dialog
                   data-confirm-message="{{ __('Wirklich löschen?') }}"
                   data-confirm-label="{{ __('Löschen') }}">
                 @csrf @method('DELETE')
-                <button type="submit" class="btn btn-error btn-outline btn-sm gap-2">
-                    <x-icon name="delete" /> {{ __('Schicht löschen') }}
-                </button>
+                <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Schicht löschen') }}</x-icon-btn>
             </form>
         </x-slot:footerExtra>
     @endcan

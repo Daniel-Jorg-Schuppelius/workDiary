@@ -40,9 +40,16 @@
                 </div>
             </div>
             <div class="flex flex-col gap-2 md:items-end md:justify-between">
-                <a href="{{ route('diary.show', $entry) }}" data-entry-modal-trigger class="btn btn-outline btn-primary btn-sm">{{ __('Details') }}</a>
+                <x-icon-btn icon="visibility" tone="outline" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('diary.show', $entry)"
+                            class="btn-primary"
+                            show-label>{{ __('Details') }}</x-icon-btn>
                 @can('update', $entry)
-                    <a href="{{ route('diary.edit', $entry) }}" data-entry-modal-trigger class="btn btn-ghost btn-sm">{{ __('Bearbeiten') }}</a>
+                    <x-icon-btn icon="edit" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('diary.edit', $entry)"
+                                show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                 @endcan
             </div>
         </article>
@@ -51,7 +58,7 @@
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">menu_book</span>' :title="__('Keine Einträge gefunden')">
                 @if (! empty($tabFilters))
                     <x-slot:action>
-                        <a href="{{ route('duties.index', ['tab' => 'diary']) }}" class="btn btn-sm btn-ghost">{{ __('Filter zurücksetzen') }}</a>
+                        <x-icon-btn icon="restart_alt" size="sm" :href="route('duties.index', ['tab' => 'diary'])" show-label>{{ __('Filter zurücksetzen') }}</x-icon-btn>
                     </x-slot:action>
                 @endif
             </x-empty-state>

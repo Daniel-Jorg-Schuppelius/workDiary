@@ -190,7 +190,7 @@
         <div class="rounded-box border border-base-300 p-3" data-contact-persons>
             <div class="mb-2 flex items-center justify-between">
                 <h3 class="font-medium text-sm">{{ __('Ansprechpartner') }}</h3>
-                <button type="button" class="btn btn-xs btn-ghost" data-contact-add>+ {{ __('Person') }}</button>
+                <x-icon-btn icon="person_add" type="button" data-contact-add show-label>{{ __('Person') }}</x-icon-btn>
             </div>
             <div class="space-y-2" data-contact-rows>
                 @foreach ($contactPersons as $i => $cp)
@@ -211,7 +211,7 @@
                                    @checked($cp['primary'] ?? false)>
                             <span>{{ __('Primär') }}</span>
                         </label>
-                        <button type="button" class="btn btn-ghost btn-xs sm:col-span-1" data-contact-remove>×</button>
+                        <x-icon-btn icon="close" type="button" data-contact-remove class="sm:col-span-1" :label="__('Entfernen')" />
                     </div>
                 @endforeach
             </div>

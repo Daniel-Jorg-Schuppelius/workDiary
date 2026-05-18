@@ -7,7 +7,10 @@
         <x-slot:toolbar>
             <x-page-toolbar>
                 <x-slot:actions>
-                    <a href="{{ route('shift-types.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">{{ __('Neuer Schichttyp') }}</a>
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('shift-types.create')"
+                                show-label>{{ __('Neuer Schichttyp') }}</x-icon-btn>
                 </x-slot:actions>
             </x-page-toolbar>
         </x-slot:toolbar>
@@ -45,13 +48,16 @@
                             </td>
                             <td class="text-right">{{ $type->scheduled_shifts_count }}</td>
                             <td class="text-right whitespace-nowrap">
-                                <a href="{{ route('shift-types.edit', $type) }}" data-entry-modal-trigger class="btn btn-ghost btn-sm">{{ __('Bearbeiten') }}</a>
+                                <x-icon-btn icon="edit"
+                                            data-entry-modal-trigger
+                                            :href="route('shift-types.edit', $type)"
+                                            :label="__('Bearbeiten')" />
                                 <form action="{{ route('shift-types.destroy', $type) }}" method="POST" class="inline"
                                       data-confirm-dialog
                                       data-confirm-message="{{ __('Wirklich löschen?') }}"
                                       data-confirm-label="{{ __('Löschen') }}">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-ghost btn-sm text-error">{{ __('Löschen') }}</button>
+                                    <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                                 </form>
                             </td>
                         </tr>

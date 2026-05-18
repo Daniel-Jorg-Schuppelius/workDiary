@@ -16,43 +16,46 @@
 
     <x-page-shell overflow="clip">
 
-        {{-- Toolbar: Status-Badge + Aktions-Buttons --}}
-        <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <span class="badge badge-primary">{{ __('Aktiv') }}</span>
-            <div class="flex items-center gap-2">
+        <x-page-toolbar :badge="__('Aktiv')" badge-tone="primary">
+            <x-slot:actions>
+                @if ($tab !== 'urlaub' && $tab !== 'krank')
+                    <x-icon-btn icon="inventory_2" size="sm"
+                                :href="route('archive.index', ['tab' => $tab === 'diary' ? 'diary' : $tab])"
+                                show-label>{{ __('Archiv') }}</x-icon-btn>
+                @endif
                 @if ($tab === 'diary')
-                    <a href="{{ route('diary.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
-                        <x-icon name="add" /><span>{{ __('Neuer Auftrag') }}</span>
-                    </a>
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('diary.create')"
+                                show-label>{{ __('Neuer Auftrag') }}</x-icon-btn>
                 @elseif ($tab === 'bereitschaft')
-                    <a href="{{ route('shifts.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
-                        <x-icon name="add" /><span>{{ __('Neue Bereitschaft') }}</span>
-                    </a>
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('shifts.create')"
+                                show-label>{{ __('Neue Bereitschaft') }}</x-icon-btn>
                 @elseif ($tab === 'notdienst')
-                    <a href="{{ route('assignments.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
-                        <x-icon name="add" /><span>{{ __('Neuer Notdienst') }}</span>
-                    </a>
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('assignments.create')"
+                                show-label>{{ __('Neuer Notdienst') }}</x-icon-btn>
                 @elseif ($tab === 'urlaub')
                     @can('create', \App\Models\Vacation::class)
-                        <a href="{{ route('vacations.create') }}?dialog=1" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
-                            <x-icon name="add" /><span>{{ __('Neuer Antrag') }}</span>
-                        </a>
+                        <x-icon-btn icon="add" tone="primary" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('vacations.create') . '?dialog=1'"
+                                    show-label>{{ __('Neuer Antrag') }}</x-icon-btn>
                     @endcan
                 @endif
                 @if ($tab === 'krank')
                     @can('create', \App\Models\SickLeave::class)
-                        <a href="{{ route('sick-leaves.create') }}?dialog=1" data-entry-modal-trigger class="btn btn-sm btn-warning gap-1">
-                            <x-icon name="add" /><span>{{ __('Krank melden') }}</span>
-                        </a>
+                        <x-icon-btn icon="add" tone="warning" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('sick-leaves.create') . '?dialog=1'"
+                                    show-label>{{ __('Krank melden') }}</x-icon-btn>
                     @endcan
                 @endif
-                @if ($tab !== 'urlaub' && $tab !== 'krank')
-                    <a href="{{ route('archive.index', ['tab' => $tab === 'diary' ? 'diary' : $tab]) }}" class="btn btn-sm btn-ghost gap-1">
-                        <x-icon name="inventory_2" /><span>{{ __('Archiv') }}</span>
-                    </a>
-                @endif
-            </div>
-        </div>
+            </x-slot:actions>
+        </x-page-toolbar>
 
         {{-- Tabs --}}
         <div role="tablist" class="tabs tabs-box self-start">

@@ -48,7 +48,9 @@
         </label>
         <x-slot:extra>
             <div class="dropdown dropdown-end">
-                <label tabindex="0" class="btn btn-sm btn-outline">↓ {{ __('Export') }}</label>
+                <label tabindex="0" class="btn btn-sm btn-outline gap-1">
+                    <x-icon name="download" /><span>{{ __('Export') }}</span>
+                </label>
                 <ul tabindex="0" class="dropdown-content menu z-50 mt-1 w-44 rounded-box border border-base-300 bg-base-100 p-2 shadow">
                     <li><a href="{{ route('diary.export.csv', $filters) }}">{{ __('CSV') }}</a></li>
                     <li><a href="{{ route('diary.export.pdf', $filters) }}" target="_blank">{{ __('PDF (Druckansicht)') }}</a></li>
@@ -120,19 +122,30 @@
                     </div>
                 </div>
                 <div class="flex flex-col gap-2 md:items-end md:justify-between">
-                    <a href="{{ route('diary.show', $entry) }}" data-entry-modal-trigger class="btn btn-outline btn-primary btn-sm text-center">{{ __('Details') }}</a>
+                    <x-icon-btn icon="visibility" tone="outline" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('diary.show', $entry)"
+                                class="btn-primary"
+                                show-label>{{ __('Details') }}</x-icon-btn>
                     @can('update', $entry)
-                        <a href="{{ route('diary.edit', $entry) }}" data-entry-modal-trigger class="btn btn-ghost btn-sm text-center">{{ __('Bearbeiten') }}</a>
+                        <x-icon-btn icon="edit" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('diary.edit', $entry)"
+                                    show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                     @endcan
                 </div>
             </article>
         @empty
-            <div class="rounded-box border border-dashed border-base-300 bg-base-100 p-8 text-center text-base-content/70">
-                Keine Einträge gefunden.
+            <x-empty-state
+                icon='<span class="material-symbols-outlined" aria-hidden="true">menu_book</span>'
+                :title="__('Keine Einträge gefunden')"
+                :message="array_filter($filters) ? __('Versuche, die Filter zu erweitern.') : null">
                 @if (array_filter($filters))
-                    <a href="{{ route('diary.index') }}" class="ml-2 text-primary underline">{{ __('Filter zurücksetzen') }}</a>
+                    <x-slot:action>
+                        <x-icon-btn icon="restart_alt" size="sm" :href="route('diary.index')" show-label>{{ __('Filter zurücksetzen') }}</x-icon-btn>
+                    </x-slot:action>
                 @endif
-            </div>
+            </x-empty-state>
         @endforelse
     </div>
 

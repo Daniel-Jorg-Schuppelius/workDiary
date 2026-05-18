@@ -24,10 +24,9 @@
         </x-filter-field>
         <x-slot:extra>
             @can('create', \App\Models\Timesheet::class)
-                <button type="button" class="btn btn-sm btn-primary gap-1" onclick="document.getElementById('quick-timesheet-dialog').showModal()">
-                    <x-icon name="add" />
-                    <span>{{ __('Stundenzettel') }}</span>
-                </button>
+                <x-icon-btn icon="add" tone="primary" size="sm" type="button"
+                            onclick="document.getElementById('quick-timesheet-dialog').showModal()"
+                            show-label>{{ __('Stundenzettel') }}</x-icon-btn>
             @endcan
         </x-slot:extra>
     </x-filter-bar>
@@ -67,7 +66,9 @@
                         <td class="text-right tabular-nums">{{ $h }}:{{ str_pad((string)$m,2,'0',STR_PAD_LEFT) }} h</td>
                         <td><span class="badge badge-sm badge-{{ $ts->statusTone() }}">{{ $ts->statusLabel() }}</span></td>
                         <td class="text-right">
-                            <a href="{{ route('projects.timesheets.show', [$ts->project, $ts]) }}" class="btn btn-xs">{{ __('Öffnen') }}</a>
+                            <x-icon-btn icon="open_in_new"
+                                        :href="route('projects.timesheets.show', [$ts->project, $ts])"
+                                        :label="__('Öffnen')" />
                         </td>
                     </tr>
                 @endforeach

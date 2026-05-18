@@ -43,10 +43,10 @@
             </div>
             <x-slot:actions>
                 @can('create', App\Models\Project::class)
-                    <a href="{{ route('projects.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
-                        <x-icon name="add" />
-                        <span>{{ __('Projekt') }}</span>
-                    </a>
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('projects.create')"
+                                show-label>{{ __('Projekt') }}</x-icon-btn>
                 @endcan
             </x-slot:actions>
         </x-page-toolbar>
@@ -128,7 +128,9 @@
                                     @endif
                                 </td>
                                 <td class="text-right">
-                                    <a href="{{ route('projects.show', $project) }}" class="btn btn-xs btn-ghost">{{ __('Öffnen') }}</a>
+                                    <x-icon-btn icon="open_in_new"
+                                                :href="route('projects.show', $project)"
+                                                :label="__('Öffnen')" />
                                 </td>
                             </tr>
                         @endforeach

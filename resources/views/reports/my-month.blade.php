@@ -28,12 +28,12 @@
 
     <x-filter-bar :action="route('reports.my-month')" :reset="route('reports.my-month')">
         <x-slot:extra>
-            <a href="{{ route('reports.my-month', ['export' => 'csv']) }}" class="btn btn-sm btn-outline gap-1">
-                <x-icon name="download" />CSV
-            </a>
-            <a href="{{ route('reports.my-month', ['export' => 'pdf']) }}" class="btn btn-sm btn-outline gap-1">
-                <x-icon name="picture_as_pdf" />PDF
-            </a>
+            <x-icon-btn icon="download" tone="outline" size="sm"
+                        :href="route('reports.my-month', ['export' => 'csv'])"
+                        show-label>CSV</x-icon-btn>
+            <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
+                        :href="route('reports.my-month', ['export' => 'pdf'])"
+                        show-label>PDF</x-icon-btn>
         </x-slot:extra>
     </x-filter-bar>
 

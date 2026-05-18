@@ -4,21 +4,21 @@
 
 @section('content')
     <x-page-shell gap="6">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex flex-wrap items-center gap-2 text-sm text-base-content/70">
-                @if ($shift->user)
-                    <span>{{ $shift->user->name }}</span>
-                    <span>·</span>
-                @endif
-                <span class="badge badge-sm badge-{{ $shift->statusTone() }}">{{ $shift->statusLabel() }}</span>
-            </div>
-            <div class="flex items-center gap-2">
+        <x-page-toolbar :badge="$shift->statusLabel()" :badge-tone="$shift->statusTone()">
+            @if ($shift->user)
+                <span>{{ $shift->user->name }}</span>
+            @endif
+            <x-slot:actions>
+                <x-icon-btn icon="arrow_back" size="sm"
+                            :href="route('schedule.index')"
+                            show-label>{{ __('Zurück') }}</x-icon-btn>
                 @can('update', $shift)
-                    <a href="{{ route('scheduled-shifts.edit', $shift) }}" class="btn btn-primary btn-sm">{{ __('Bearbeiten') }}</a>
+                    <x-icon-btn icon="edit" tone="primary" size="sm"
+                                :href="route('scheduled-shifts.edit', $shift)"
+                                show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                 @endcan
-                <a href="{{ route('schedule.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurück') }}</a>
-            </div>
-        </div>
+            </x-slot:actions>
+        </x-page-toolbar>
 
         <div class="card border border-base-300 bg-base-100 shadow-xs max-w-2xl">
             <div class="card-body grid gap-3 sm:grid-cols-2">
@@ -35,12 +35,12 @@
         </div>
 
         @can('delete', $shift)
-            <form action="{{ route('scheduled-shifts.destroy', $shift) }}" method="POST"
+            <form action="{{ route('scheduled-shifts.destroy', $shift) }}" method="POST" class="inline"
                   data-confirm-dialog
                   data-confirm-message="{{ __('Wirklich löschen?') }}"
                   data-confirm-label="{{ __('Löschen') }}">
                 @csrf @method('DELETE')
-                <button type="submit" class="btn btn-error btn-sm">{{ __('Löschen') }}</button>
+                <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
             </form>
         @endcan
     </x-page-shell>

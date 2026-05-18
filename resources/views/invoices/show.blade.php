@@ -9,39 +9,33 @@
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
 
-    <div class="flex flex-wrap justify-between items-center gap-2">
-        <div>
-            <h1 class="text-2xl font-bold">{{ __('Rechnung') }} {{ $invoice->number }}</h1>
-            <div class="text-sm opacity-70">
-                {{ $invoice->customer->name }} ·
-                <span class="badge badge-outline">{{ __($invoice->status) }}</span>
-            </div>
-        </div>
-        <div class="flex gap-2">
-            <a href="{{ route('invoices.pdf', $invoice) }}" class="btn btn-sm">{{ __('PDF') }}</a>
+    <x-page-toolbar :title="__('Rechnung') . ' ' . $invoice->number" :badge="__($invoice->status)" badge-tone="outline">
+        <div class="text-sm text-base-content/70">{{ $invoice->customer->name }}</div>
+        <x-slot:actions>
+            <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('invoices.pdf', $invoice)" show-label>{{ __('PDF') }}</x-icon-btn>
             @can('issue', $invoice)
-                <form method="POST" action="{{ route('invoices.issue', $invoice) }}">@csrf
-                    <button class="btn btn-sm btn-primary">{{ __('Stellen') }}</button>
+                <form method="POST" action="{{ route('invoices.issue', $invoice) }}" class="inline">@csrf
+                    <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Stellen') }}</x-icon-btn>
                 </form>
             @endcan
             @can('pay', $invoice)
-                <form method="POST" action="{{ route('invoices.pay', $invoice) }}">@csrf
-                    <button class="btn btn-sm btn-success">{{ __('Bezahlt markieren') }}</button>
+                <form method="POST" action="{{ route('invoices.pay', $invoice) }}" class="inline">@csrf
+                    <x-icon-btn icon="check_circle" tone="success" size="sm" type="submit" show-label>{{ __('Bezahlt markieren') }}</x-icon-btn>
                 </form>
             @endcan
             @can('delete', $invoice)
-                <form method="POST" action="{{ route('invoices.destroy', $invoice) }}"
+                <form method="POST" action="{{ route('invoices.destroy', $invoice) }}" class="inline"
                       data-confirm-dialog
                       data-confirm-message="{{ __('Wirklich löschen?') }}"
                       data-confirm-icon="delete"
                       data-confirm-tone="error"
                       data-confirm-label="{{ __('Löschen') }}">
                     @csrf @method('DELETE')
-                    <button class="btn btn-sm btn-error btn-outline">{{ __('Löschen') }}</button>
+                    <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
                 </form>
             @endcan
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-toolbar>
 
     <x-table table-sort="client">
         <x-slot:head>

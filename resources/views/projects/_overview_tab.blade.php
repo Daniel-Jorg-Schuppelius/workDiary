@@ -41,8 +41,10 @@
         <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Milestones') }}</span>
             @can('create', \App\Models\Milestone::class)
-                <a href="{{ route('projects.milestones.create', $project) }}" data-entry-modal-trigger
-                   class="btn btn-xs btn-ghost">+ {{ __('Milestone') }}</a>
+                <x-icon-btn icon="add"
+                            data-entry-modal-trigger
+                            :href="route('projects.milestones.create', $project)"
+                            show-label>{{ __('Milestone') }}</x-icon-btn>
             @endcan
         </header>
         <ul class="divide-y divide-base-300">
@@ -98,8 +100,10 @@
         <div class="flex items-center justify-between">
             <span class="text-sm text-base-content/60">{{ __('Noch keine Milestones angelegt.') }}</span>
             @can('create', \App\Models\Milestone::class)
-                <a href="{{ route('projects.milestones.create', $project) }}" data-entry-modal-trigger
-                   class="btn btn-xs btn-ghost">+ {{ __('Milestone') }}</a>
+                <x-icon-btn icon="add"
+                            data-entry-modal-trigger
+                            :href="route('projects.milestones.create', $project)"
+                            show-label>{{ __('Milestone') }}</x-icon-btn>
             @endcan
         </div>
     </div>

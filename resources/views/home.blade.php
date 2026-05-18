@@ -56,10 +56,13 @@
                         <span data-theme-label class="text-base leading-none">◐</span>
                     </button>
                     @auth
-                        <a href="{{ route($indexRoute) }}" class="btn btn-sm btn-ghost">▤ Arbeitsliste</a>
-                        <a href="{{ route($createRoute) }}" data-entry-modal-trigger class="btn btn-sm btn-primary">{{ __('+ Neuer Eintrag') }}</a>
+                        <x-icon-btn icon="list_alt" size="sm" :href="route($indexRoute)" show-label>{{ __('Arbeitsliste') }}</x-icon-btn>
+                        <x-icon-btn icon="add" tone="primary" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route($createRoute)"
+                                    show-label>{{ __('Neuer Eintrag') }}</x-icon-btn>
                     @else
-                        <a href="{{ route('login') }}" class="btn btn-sm btn-primary">⇢ Anmelden</a>
+                        <x-icon-btn icon="login" tone="primary" size="sm" :href="route('login')" show-label>{{ __('Anmelden') }}</x-icon-btn>
                     @endauth
                 </div>
             </div>
@@ -80,11 +83,18 @@
                         @endauth
                         <div class="mt-5 flex flex-wrap gap-3">
                             @auth
-                                <a href="{{ route($createRoute) }}" data-entry-modal-trigger class=" btn btn-sm btn-primary"><x-icon name="add" /> Neuer Eintrag</a>
-                                <a href="{{ route($indexRoute) }}" class=" btn btn-sm btn-outline"><x-icon name="list" /> Arbeitsliste öffnen</a>
-                                <a href="{{ route($indexRoute, ['status' => 3]) }}" class=" btn btn-sm btn-error btn-outline"><x-icon name="warning" /> Probleme priorisieren</a>
+                                <x-icon-btn icon="add" tone="primary" size="sm"
+                                            data-entry-modal-trigger
+                                            :href="route($createRoute)"
+                                            show-label>{{ __('Neuer Eintrag') }}</x-icon-btn>
+                                <x-icon-btn icon="list" tone="outline" size="sm"
+                                            :href="route($indexRoute)"
+                                            show-label>{{ __('Arbeitsliste öffnen') }}</x-icon-btn>
+                                <x-icon-btn icon="warning" tone="error" size="sm"
+                                            :href="route($indexRoute, ['status' => 3])"
+                                            show-label>{{ __('Probleme priorisieren') }}</x-icon-btn>
                             @else
-                                <a href="{{ route('login') }}" class=" btn btn-sm btn-primary"><x-icon name="login" /> Anmelden</a>
+                                <x-icon-btn icon="login" tone="primary" size="sm" :href="route('login')" show-label>{{ __('Anmelden') }}</x-icon-btn>
                             @endauth
                         </div>
                     </div>
@@ -145,7 +155,9 @@
                                     <p class="mt-2 font-['Space_Grotesk'] text-2xl font-bold text-base-content">{{ __('Jetzt wichtig') }}</p>
                                     <p class="mt-1 text-sm text-base-content/75">{{ __('Problem- und offene Einträge als direkte Arbeitsliste.') }}</p>
                                 </div>
-                                <a href="{{ route($indexRoute, ['status' => 3]) }}" class="btn btn-error btn-outline btn-sm">⚠ Nur Probleme anzeigen</a>
+                                <x-icon-btn icon="warning" tone="error" size="sm"
+                                            :href="route($indexRoute, ['status' => 3])"
+                                            show-label>{{ __('Nur Probleme anzeigen') }}</x-icon-btn>
                             </div>
 
                             <div class="mt-5 space-y-3">

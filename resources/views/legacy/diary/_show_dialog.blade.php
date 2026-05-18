@@ -22,19 +22,16 @@
                 data-confirm-label="{{ __('Löschen') }}">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn btn-sm btn-error btn-outline gap-2">
-                    <x-icon name="delete" /> {{ __('Löschen') }}
-                </button>
+                <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
             </form>
         </x-slot:footerExtra>
 
         <x-slot:actions>
-            <a href="{{ route('legacy.diary.edit', $entry) }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-2">
-                <x-icon name="edit" /> {{ __('Bearbeiten') }}
-            </a>
-            <button type="button" class="btn btn-sm btn-ghost gap-2" data-entry-modal-close>
-                <x-icon name="close" /> {{ __('Schließen') }}
-            </button>
+            <x-icon-btn icon="close" size="sm" type="button" data-entry-modal-close show-label>{{ __('Schließen') }}</x-icon-btn>
+            <x-icon-btn icon="edit" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('legacy.diary.edit', $entry)"
+                        show-label>{{ __('Bearbeiten') }}</x-icon-btn>
         </x-slot:actions>
     @endif
 </x-modal>

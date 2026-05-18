@@ -8,7 +8,7 @@
             <div class="h-full overflow-auto p-6 md:p-8 space-y-6">
                 @include('diary._show_body', ['isDialog' => false])
                 <div class="text-center">
-                    <a href="{{ route('diary.index') }}" class="text-sm text-primary hover:opacity-80 transition">← {{ __('Zurück zur Liste') }}</a>
+                    <x-icon-btn icon="arrow_back" size="sm" :href="route('diary.index')" show-label>{{ __('Zurück zur Liste') }}</x-icon-btn>
                 </div>
             </div>
         </div>

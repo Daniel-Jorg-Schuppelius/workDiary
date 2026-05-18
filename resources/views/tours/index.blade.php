@@ -26,9 +26,10 @@
                 </x-filter-field>
             @endif
             <x-slot:extra>
-                <a href="{{ route('tours.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
-                    <x-icon name="add" /> {{ __('Neue Tour') }}
-                </a>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('tours.create')"
+                            show-label>{{ __('Neue Tour') }}</x-icon-btn>
             </x-slot:extra>
         </x-filter-bar>
 
@@ -70,13 +71,15 @@
                         <td class="text-right">{{ $tour->planned_duration_minutes }}</td>
                         <td><span class="badge badge-ghost badge-sm">{{ __($tour->status) }}</span></td>
                         <td class="text-right">
-                            <a href="{{ route('tours.edit', $tour) }}" class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a>
+                            <x-icon-btn icon="edit"
+                                        :href="route('tours.edit', $tour)"
+                                        :label="__('Bearbeiten')" />
                             <form method="POST" action="{{ route('tours.destroy', $tour) }}" class="inline"
                                   data-confirm-dialog
                                   data-confirm-message="{{ __('Tour wirklich löschen?') }}"
                                   data-confirm-label="{{ __('Löschen') }}">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Löschen') }}</button>
+                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                             </form>
                         </td>
                     </tr>

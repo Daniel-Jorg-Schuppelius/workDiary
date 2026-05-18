@@ -15,16 +15,13 @@
     <x-slot:toolbar>
         <x-page-toolbar>
             <x-slot:actions>
-                <a href="{{ route('customers.export', array_filter(['status' => $status, 'q' => $search])) }}"
-                   class="btn btn-sm btn-ghost gap-1">
-                    <x-icon name="download" />
-                    <span>{{ __('CSV-Export') }}</span>
-                </a>
+                <x-icon-btn icon="download" size="sm"
+                            :href="route('customers.export', array_filter(['status' => $status, 'q' => $search]))"
+                            show-label>{{ __('CSV-Export') }}</x-icon-btn>
                 @if (auth()->user()?->canManageBilling())
-                    <a href="{{ route('customers.import.form') }}" class="btn btn-sm btn-ghost gap-1">
-                    <x-icon name="upload" />
-                    <span>{{ __('CSV-Import') }}</span>
-                </a>
+                    <x-icon-btn icon="upload" size="sm"
+                                :href="route('customers.import.form')"
+                                show-label>{{ __('CSV-Import') }}</x-icon-btn>
                 <form method="POST" action="{{ route('customers.lexoffice.push-all') }}"
                       data-confirm-dialog
                       data-confirm-message="{{ __('Alle nicht synchronisierten Kunden zu Lexoffice übertragen?') }}"
@@ -32,17 +29,15 @@
                       data-confirm-tone="info"
                       data-confirm-label="{{ __('Synchronisieren') }}">
                     @csrf
-                    <button type="submit" class="btn btn-sm btn-ghost gap-1">
-                        <x-icon name="sync" />
-                        <span>{{ __('Lexoffice: alle pushen') }}</span>
-                    </button>
+                    <x-icon-btn icon="sync" type="submit" size="sm"
+                                show-label>{{ __('Lexoffice: alle pushen') }}</x-icon-btn>
                 </form>
             @endif
             @can('create', App\Models\Customer::class)
-                <a href="{{ route('customers.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary gap-1">
-                    <x-icon name="add" />
-                    <span>{{ __('Kunde') }}</span>
-                </a>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('customers.create')"
+                            show-label>{{ __('Kunde') }}</x-icon-btn>
             @endcan
             </x-slot:actions>
         </x-page-toolbar>
@@ -122,8 +117,10 @@
                         <td class="text-right tabular-nums">{{ $customer->projects_count }}</td>
                         <td class="text-right">
                             @can('update', $customer)
-                                <a href="{{ route('customers.edit', $customer) }}" data-entry-modal-trigger
-                                   class="btn btn-ghost btn-xs">{{ __('Bearbeiten') }}</a>
+                                <x-icon-btn icon="edit"
+                                            data-entry-modal-trigger
+                                            :href="route('customers.edit', $customer)"
+                                            :label="__('Bearbeiten')" />
                             @endcan
                         </td>
                     </tr>

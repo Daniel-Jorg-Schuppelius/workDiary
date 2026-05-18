@@ -30,29 +30,18 @@
                 <input type="hidden" name="{{ $k }}" value="{{ $v }}">
             @endforeach
             <x-slot:extra>
-                <a href="{{ route('energy-logs.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
-                    <x-icon name="add" /> {{ __('Neuer Eintrag') }}
-                </a>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('energy-logs.create')"
+                            show-label>{{ __('Neuer Eintrag') }}</x-icon-btn>
             </x-slot:extra>
         </x-filter-bar>
 
         <div class="grid gap-3 sm:grid-cols-4">
-            <div class="rounded-box border border-base-300 bg-base-100 p-3">
-                <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Liter gesamt') }}</div>
-                <div class="text-2xl font-semibold">{{ number_format($totals['liters'], 2, ',', '.') }} l</div>
-            </div>
-            <div class="rounded-box border border-base-300 bg-base-100 p-3">
-                <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('kWh gesamt') }}</div>
-                <div class="text-2xl font-semibold">{{ number_format($totals['kwh'], 2, ',', '.') }} kWh</div>
-            </div>
-            <div class="rounded-box border border-base-300 bg-base-100 p-3">
-                <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Kosten') }}</div>
-                <div class="text-2xl font-semibold">{{ number_format($totals['cost'], 2, ',', '.') }} €</div>
-            </div>
-            <div class="rounded-box border border-base-300 bg-base-100 p-3">
-                <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Strecke (Δ)') }}</div>
-                <div class="text-2xl font-semibold">{{ number_format($totals['distance'], 0, ',', '.') }} km</div>
-            </div>
+            <x-kpi-tile :label="__('Liter gesamt')" :value="number_format($totals['liters'], 2, ',', '.') . ' l'" />
+            <x-kpi-tile :label="__('kWh gesamt')" :value="number_format($totals['kwh'], 2, ',', '.') . ' kWh'" />
+            <x-kpi-tile :label="__('Kosten')" :value="number_format($totals['cost'], 2, ',', '.') . ' €'" />
+            <x-kpi-tile :label="__('Strecke (Δ)')" :value="number_format($totals['distance'], 0, ',', '.') . ' km'" />
         </div>
 
         <x-card padding="p-0">
@@ -99,13 +88,16 @@
                         <td class="text-right">{{ $log->odometer_km !== null ? number_format($log->odometer_km, 0, ',', '.') : '—' }}</td>
                         <td class="text-right">{{ $log->distance_since_last !== null ? number_format($log->distance_since_last, 0, ',', '.') : '—' }}</td>
                         <td class="text-right">
-                            <a href="{{ route('energy-logs.edit', $log) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a>
+                            <x-icon-btn icon="edit"
+                                        data-entry-modal-trigger
+                                        :href="route('energy-logs.edit', $log)"
+                                        :label="__('Bearbeiten')" />
                             <form method="POST" action="{{ route('energy-logs.destroy', $log) }}" class="inline"
                                   data-confirm-dialog
                                   data-confirm-message="{{ __('Eintrag wirklich löschen?') }}"
                                   data-confirm-label="{{ __('Löschen') }}">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Löschen') }}</button>
+                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                             </form>
                         </td>
                     </tr>

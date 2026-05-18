@@ -25,12 +25,15 @@
                 </div>
             @endif
             <x-date-range :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''" />
-            <button type="submit" class="btn btn-sm btn-primary">{{ __('Filtern') }}</button>
+            <x-icon-btn icon="filter_alt" tone="primary" size="sm" type="submit" show-label>{{ __('Filtern') }}</x-icon-btn>
             @if (array_filter($filters))
-                <a href="{{ route('legacy.oncall.index') }}" class="btn btn-sm btn-ghost">{{ __('Zurücksetzen') }}</a>
+                <x-icon-btn icon="restart_alt" size="sm" :href="route('legacy.oncall.index')" show-label>{{ __('Zurücksetzen') }}</x-icon-btn>
             @endif
             @if ($isAdmin)
-                <a href="{{ route('legacy.oncall.create') }}" data-entry-modal-trigger class="btn btn-sm btn-outline">{{ __('Neue Bereitschaft') }}</a>
+                <x-icon-btn icon="add" tone="outline" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('legacy.oncall.create')"
+                            show-label>{{ __('Neue Bereitschaft') }}</x-icon-btn>
             @endif
     </x-filter-bar>
 
@@ -43,11 +46,11 @@
         ];
     @endphp
     <div class="flex-none grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        @php
+            $toneMap = ['border-base-300' => 'neutral', 'border-primary/40' => 'primary', 'border-info/40' => 'info', 'border-neutral/40' => 'neutral'];
+        @endphp
         @foreach ($kpiTiles as [$key, $label, $borderClass])
-            <div class="rounded-box border bg-base-100 px-4 py-3 shadow-xs {{ $borderClass }}">
-                <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $label }}</p>
-                <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ number_format($counts[$key] ?? 0, 0, ',', '.') }}</p>
-            </div>
+            <x-kpi-tile :label="$label" :value="$counts[$key] ?? 0" :tone="$toneMap[$borderClass] ?? 'neutral'" />
         @endforeach
     </div>
 
@@ -71,18 +74,17 @@
                         <td class="text-right whitespace-nowrap">
                             @if ($isAdmin)
                                 <div class="inline-flex items-center justify-end gap-1 whitespace-nowrap">
-                                    <a href="{{ route('legacy.oncall.edit', $item) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}" aria-label="{{ __('Bearbeiten') }}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                    </a>
+                                    <x-icon-btn icon="edit"
+                                                data-entry-modal-trigger
+                                                :href="route('legacy.oncall.edit', $item)"
+                                                :label="__('Bearbeiten')" />
                                     <form method="POST" action="{{ route('legacy.oncall.destroy', $item) }}" class="inline"
                                           data-confirm-dialog
                                           data-confirm-message="{{ __('Eintrag wirklich löschen?') }}"
                                           data-confirm-label="{{ __('Löschen') }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="btn btn-xs btn-ghost text-error" title="{{ __('Löschen') }}" aria-label="{{ __('Löschen') }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3"/></svg>
-                                        </button>
+                                        <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                                     </form>
                                 </div>
                             @endif

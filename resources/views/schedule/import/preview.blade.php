@@ -122,8 +122,8 @@
             </div>
 
             <div class="card-actions mt-6 justify-between">
-                <a href="{{ route('schedule.import') }}" class="btn btn-sm btn-ghost">{{ __('Abbrechen') }}</a>
-                <button type="submit" class="btn btn-primary">{{ __('Import durchführen') }}</button>
+                <x-icon-btn icon="close" size="sm" :href="route('schedule.import')" show-label>{{ __('Abbrechen') }}</x-icon-btn>
+                <x-icon-btn icon="upload" tone="primary" size="sm" type="submit" show-label>{{ __('Import durchführen') }}</x-icon-btn>
             </div>
         </div>
     </form>

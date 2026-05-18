@@ -34,10 +34,8 @@
                     </div>
                     <div class="flex gap-1">
                         @can('update', $comment)
-                            <button type="button" class="btn btn-ghost btn-xs"
-                                onclick="document.getElementById('comment-edit-{{ $comment->id }}').classList.toggle('hidden')">
-                                {{ __('Bearbeiten') }}
-                            </button>
+                            <x-icon-btn icon="edit" type="button" :label="__('Bearbeiten')"
+                                onclick="document.getElementById('comment-edit-{{ $comment->id }}').classList.toggle('hidden')" />
                         @endcan
                         @can('delete', $comment)
                             <form method="POST" action="{{ route('comments.destroy', $comment) }}" class="inline"
@@ -46,7 +44,7 @@
                                 data-confirm-message="{{ __('Kommentar wird dauerhaft gelöscht.') }}"
                                 data-confirm-label="{{ __('Löschen') }}">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-ghost btn-xs text-error">{{ __('Löschen') }}</button>
+                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                             </form>
                         @endcan
                     </div>
@@ -58,7 +56,7 @@
                         action="{{ route('comments.update', $comment) }}" class="hidden mt-3 space-y-2">
                         @csrf @method('PUT')
                         <textarea name="body" rows="3" class="textarea textarea-bordered textarea-sm w-full">{{ $comment->body }}</textarea>
-                        <button type="submit" class="btn btn-primary btn-xs">{{ __('Speichern') }}</button>
+                        <x-icon-btn icon="save" tone="primary" type="submit" show-label>{{ __('Speichern') }}</x-icon-btn>
                     </form>
                 @endcan
             </article>
@@ -74,7 +72,7 @@
                 class="textarea textarea-bordered textarea-sm w-full @error('body') ring-2 ring-error/30 @enderror"
                 placeholder="{{ __('Kommentar schreiben...') }}">{{ old('body') }}</textarea>
             @error('body')<p class="text-sm text-error">{{ $message }}</p>@enderror
-            <button type="submit" class="btn btn-primary btn-sm">{{ __('Kommentieren') }}</button>
+            <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Kommentieren') }}</x-icon-btn>
         </form>
     @endcan
 </div>

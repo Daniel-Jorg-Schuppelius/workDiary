@@ -9,72 +9,58 @@
 
 <x-page-shell>
 
-    {{-- Header --}}
-    <div class="flex flex-wrap items-start justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <div>
-            <div class="flex flex-wrap items-center gap-2">
-                <h1 class="font-['Space_Grotesk'] text-lg font-semibold">
-                    {{ __('Stundenzettel') }} – {{ optional($timesheet->work_date)->format('d.m.Y') }}
-                </h1>
-                <span class="badge badge-{{ $timesheet->statusTone() }}">{{ $timesheet->statusLabel() }}</span>
-            </div>
-            <div class="mt-1 text-sm text-base-content/70">
-                <a href="{{ route('projects.show', $project) }}#timesheets" class="link">{{ $project->name }}</a>
-                · {{ $timesheet->user?->name }}
-            </div>
+    <x-page-toolbar :title="__('Stundenzettel') . ' – ' . optional($timesheet->work_date)->format('d.m.Y')"
+                    :badge="$timesheet->statusLabel()"
+                    :badge-tone="$timesheet->statusTone()">
+        <div class="text-sm text-base-content/70">
+            <a href="{{ route('projects.show', $project) }}#timesheets" class="link">{{ $project->name }}</a>
+            · {{ $timesheet->user?->name }}
         </div>
-
-        <div class="flex flex-wrap gap-2">
+        <x-slot:actions>
+            <x-icon-btn icon="picture_as_pdf" size="sm"
+                        :href="route('projects.timesheets.pdf', [$project, $timesheet])"
+                        target="_blank"
+                        show-label>{{ __('PDF') }}</x-icon-btn>
             @if($editable)
-                <a href="{{ route('projects.timesheets.edit', [$project, $timesheet]) }}" data-entry-modal-trigger class="btn btn-sm btn-ghost">{{ __('Kopfdaten') }}</a>
-                <form method="POST" action="{{ route('projects.timesheets.submit', [$project, $timesheet]) }}">@csrf
-                    <button class="btn btn-sm btn-primary">{{ __('Einreichen') }}</button>
+                <x-icon-btn icon="edit" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('projects.timesheets.edit', [$project, $timesheet])"
+                            show-label>{{ __('Kopfdaten') }}</x-icon-btn>
+                <form method="POST" action="{{ route('projects.timesheets.magic-link', [$project, $timesheet]) }}" class="inline">@csrf
+                    <x-icon-btn icon="link" tone="secondary" size="sm" type="submit" show-label>{{ __('Sign-Link an Kunden') }}</x-icon-btn>
                 </form>
-                <form method="POST" action="{{ route('projects.timesheets.magic-link', [$project, $timesheet]) }}">@csrf
-                    <button class="btn btn-sm btn-secondary">{{ __('Sign-Link an Kunden') }}</button>
+                <form method="POST" action="{{ route('projects.timesheets.submit', [$project, $timesheet]) }}" class="inline">@csrf
+                    <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Einreichen') }}</x-icon-btn>
                 </form>
             @endif
-            <a href="{{ route('projects.timesheets.pdf', [$project, $timesheet]) }}" target="_blank" class="btn btn-sm">PDF</a>
-
             @can('lock', $timesheet)
                 @if(! $timesheet->isLocked())
-                    <form method="POST" action="{{ route('projects.timesheets.lock', [$project, $timesheet]) }}">@csrf
-                        <button class="btn btn-sm btn-warning">{{ __('Sperren') }}</button>
+                    <form method="POST" action="{{ route('projects.timesheets.lock', [$project, $timesheet]) }}" class="inline">@csrf
+                        <x-icon-btn icon="lock" tone="warning" size="sm" type="submit" show-label>{{ __('Sperren') }}</x-icon-btn>
                     </form>
                 @else
-                    <form method="POST" action="{{ route('projects.timesheets.unlock', [$project, $timesheet]) }}">@csrf
-                        <button class="btn btn-sm">{{ __('Entsperren') }}</button>
+                    <form method="POST" action="{{ route('projects.timesheets.unlock', [$project, $timesheet]) }}" class="inline">@csrf
+                        <x-icon-btn icon="lock_open" size="sm" type="submit" show-label>{{ __('Entsperren') }}</x-icon-btn>
                     </form>
                 @endif
             @endcan
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-toolbar>
 
-    {{-- Summary --}}
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs">
-            <div class="text-2xl font-bold">{{ $fmtMin((int)$timesheet->total_work_minutes) }} h</div>
-            <div class="text-xs text-base-content/60">{{ __('Arbeit') }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs">
-            <div class="text-2xl font-bold">{{ $fmtMin((int)$timesheet->total_break_minutes) }} h</div>
-            <div class="text-xs text-base-content/60">{{ __('Pause') }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs">
-            <div class="text-2xl font-bold">{{ number_format((float)$timesheet->total_material_net, 2, ',', '.') }} €</div>
-            <div class="text-xs text-base-content/60">{{ __('Material netto') }}</div>
-        </div>
+        <x-kpi-tile :label="__('Arbeit')"         :value="$fmtMin((int)$timesheet->total_work_minutes) . ' h'" />
+        <x-kpi-tile :label="__('Pause')"          :value="$fmtMin((int)$timesheet->total_break_minutes) . ' h'" />
+        <x-kpi-tile :label="__('Material netto')" :value="number_format((float)$timesheet->total_material_net, 2, ',', '.') . ' €'" />
     </div>
 
-    {{-- Zeilen --}}
     <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
         <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Zeiteinträge') }}</span>
             @if($editable)
-                <a href="{{ route('projects.timesheets.entries.create', [$project, $timesheet]) }}"
-                   data-entry-modal-trigger class="btn btn-sm btn-primary">
-                    <x-icon name="add" size="sm" /> {{ __('Zeile hinzufügen') }}
-                </a>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('projects.timesheets.entries.create', [$project, $timesheet])"
+                            show-label>{{ __('Zeile hinzufügen') }}</x-icon-btn>
             @endif
         </header>
 
@@ -102,14 +88,14 @@
                     <td>{{ $e->description }}</td>
                     <td class="text-right">
                         @if($editable)
-                            <form method="POST" action="{{ route('projects.timesheets.entries.destroy', [$project, $timesheet, $e]) }}"
+                            <form method="POST" action="{{ route('projects.timesheets.entries.destroy', [$project, $timesheet, $e]) }}" class="inline"
                                   data-confirm-dialog
                                   data-confirm-message="{{ __('Löschen?') }}"
                                   data-confirm-icon="delete"
                                   data-confirm-tone="error"
                                   data-confirm-label="{{ __('Löschen') }}">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-xs btn-ghost text-error">×</button>
+                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                             </form>
                         @endif
                     </td>
@@ -120,15 +106,14 @@
         </x-table>
     </div>
 
-    {{-- Materialien --}}
     <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
         <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Verbrauchsmaterial') }}</span>
             @if($editable)
-                <a href="{{ route('projects.timesheets.materials.create', [$project, $timesheet]) }}"
-                   data-entry-modal-trigger class="btn btn-sm btn-primary">
-                    <x-icon name="add" size="sm" /> {{ __('Material erfassen') }}
-                </a>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('projects.timesheets.materials.create', [$project, $timesheet])"
+                            show-label>{{ __('Material erfassen') }}</x-icon-btn>
             @endif
         </header>
 
@@ -152,14 +137,14 @@
                     <td class="text-right tabular-nums" data-sort-value="{{ (float) $u->line_total_net }}">{{ number_format((float)$u->line_total_net, 2, ',', '.') }} €</td>
                     <td class="text-right">
                         @if($editable)
-                            <form method="POST" action="{{ route('projects.timesheets.materials.destroy', [$project, $timesheet, $u]) }}"
+                            <form method="POST" action="{{ route('projects.timesheets.materials.destroy', [$project, $timesheet, $u]) }}" class="inline"
                                   data-confirm-dialog
                                   data-confirm-message="{{ __('Löschen?') }}"
                                   data-confirm-icon="delete"
                                   data-confirm-tone="error"
                                   data-confirm-label="{{ __('Löschen') }}">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-xs btn-ghost text-error">×</button>
+                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                             </form>
                         @endif
                     </td>

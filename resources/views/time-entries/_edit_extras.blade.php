@@ -21,13 +21,16 @@
 
 @if ($hasEntry)
     @if ($blockReason)
-        <x-alert :tone="$isAdmin ? 'warning' : 'error'" icon="lock" class="mb-2">
-            @if ($isAdmin)
-                {{ __('Eintrag ist gesperrt (:reason). Du bearbeitest als Admin.', ['reason' => $reasonLabel]) }}
-            @else
-                {{ __('Eintrag ist gesperrt (:reason). Eine Bearbeitung durch dich ist nicht mehr möglich; Kommentare sind weiterhin erlaubt.', ['reason' => $reasonLabel]) }}
-            @endif
-        </x-alert>
+        <div class="alert alert-{{ $isAdmin ? 'warning' : 'error' }} mb-2">
+            <x-icon name="lock" />
+            <span>
+                @if ($isAdmin)
+                    {{ __('Eintrag ist gesperrt (:reason). Du bearbeitest als Admin.', ['reason' => $reasonLabel]) }}
+                @else
+                    {{ __('Eintrag ist gesperrt (:reason). Eine Bearbeitung durch dich ist nicht mehr möglich; Kommentare sind weiterhin erlaubt.', ['reason' => $reasonLabel]) }}
+                @endif
+            </span>
+        </div>
     @endif
 
     <x-form-group :legend="__('Kommentare')" icon="forum" tone="ghost">

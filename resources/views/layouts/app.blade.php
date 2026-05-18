@@ -492,7 +492,10 @@
                                 </div>
                             @endif
 
-                            <a href="{{ route($createRoute) }}" data-entry-modal-trigger class="btn btn-sm btn-primary">+ {{ __('Neuer Eintrag') }}</a>
+                            <x-icon-btn icon="add" tone="primary" size="sm"
+                                        data-entry-modal-trigger
+                                        :href="route($createRoute)"
+                                        show-label>{{ __('Neuer Eintrag') }}</x-icon-btn>
                         @else
                             {{-- Sidebar-Toggle (nur < lg) --}}
                             <button type="button"

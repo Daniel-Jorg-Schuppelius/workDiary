@@ -4,22 +4,20 @@
 
 @section('content')
     <x-page-shell>
-        <x-slot:toolbar>
-            <x-page-toolbar>
-                <x-slot:actions>
-                    <a href="{{ route('vehicles.create') }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
-                        <x-icon name="add" /> {{ __('Neues Fahrzeug') }}
-                    </a>
-                    <a href="{{ route('vehicles.index', ['archived' => $showArchived ? null : 1]) }}" class="btn btn-sm btn-ghost">
-                        @if ($showArchived)
-                            {{ __('Aktive zeigen') }}
-                        @else
-                            {{ __('Archiv zeigen') }}
-                        @endif
-                    </a>
-                </x-slot:actions>
-            </x-page-toolbar>
-        </x-slot:toolbar>
+        <x-filter-bar :action="route('vehicles.index')" submit-label="{{ __('Anwenden') }}">
+            <x-filter-field :label="__('Ansicht')" for="veh-archived">
+                <select id="veh-archived" name="archived" class="select select-sm select-bordered" onchange="this.form.submit()">
+                    <option value="" @selected(! $showArchived)>{{ __('Aktive') }}</option>
+                    <option value="1" @selected($showArchived)>{{ __('Archiv') }}</option>
+                </select>
+            </x-filter-field>
+            <x-slot:extra>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('vehicles.create')"
+                            show-label>{{ __('Neues Fahrzeug') }}</x-icon-btn>
+            </x-slot:extra>
+        </x-filter-bar>
 
         <x-card padding="p-0">
             <x-table table-sort="server"
@@ -56,11 +54,14 @@
                         </td>
                         <td class="text-right">{{ $vehicle->odometer_km !== null ? number_format($vehicle->odometer_km, 0, ',', '.') . ' km' : '—' }}</td>
                         <td class="text-right">
-                            <a href="{{ route('vehicles.edit', $vehicle) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a>
+                            <x-icon-btn icon="edit"
+                                        data-entry-modal-trigger
+                                        :href="route('vehicles.edit', $vehicle)"
+                                        :label="__('Bearbeiten')" />
                             @if ($vehicle->archived_at)
                                 <form method="POST" action="{{ route('vehicles.restore', $vehicle) }}" class="inline">
                                     @csrf
-                                    <button type="submit" class="btn btn-xs btn-ghost">{{ __('Reaktivieren') }}</button>
+                                    <x-icon-btn icon="restore" type="submit" :label="__('Reaktivieren')" />
                                 </form>
                             @else
                                 <form method="POST" action="{{ route('vehicles.destroy', $vehicle) }}" class="inline"
@@ -68,7 +69,7 @@
                                       data-confirm-message="{{ __('Fahrzeug wirklich archivieren?') }}"
                                       data-confirm-label="{{ __('Archivieren') }}">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Archivieren') }}</button>
+                                    <x-icon-btn icon="archive" tone="error" type="submit" :label="__('Archivieren')" />
                                 </form>
                             @endif
                         </td>

@@ -23,8 +23,12 @@
         </div>
 
         <div class="flex-none flex flex-wrap items-center justify-center gap-3">
-            <a href="{{ route('legacy.diary.index', $listParams) }}" class=" btn btn-sm btn-ghost">{{ __('Zurück zur Legacy-Liste') }}</a>
-            <a href="{{ route('legacy.diary.week', array_filter(['week_date' => $weekDate])) }}" class=" btn btn-sm btn-primary">{{ __('Zur Wochenansicht') }}</a>
+            <x-icon-btn icon="arrow_back" size="sm"
+                        :href="route('legacy.diary.index', $listParams)"
+                        show-label>{{ __('Zurück zur Legacy-Liste') }}</x-icon-btn>
+            <x-icon-btn icon="calendar_view_week" tone="primary" size="sm"
+                        :href="route('legacy.diary.week', array_filter(['week_date' => $weekDate]))"
+                        show-label>{{ __('Zur Wochenansicht') }}</x-icon-btn>
         </div>
     </div>
 @endsection

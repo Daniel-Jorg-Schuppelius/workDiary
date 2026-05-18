@@ -24,12 +24,12 @@
 
     @if ($isEdit)
         <x-slot:footerExtra>
-            <form method="POST" action="{{ route('admin-time-entries.destroy', $entry) }}"
+            <form method="POST" action="{{ route('admin-time-entries.destroy', $entry) }}" class="inline"
                   data-confirm-dialog
                   data-confirm-message="{{ __('Wirklich löschen?') }}"
                   data-confirm-label="{{ __('Löschen') }}">
                 @csrf @method('DELETE')
-                <button type="submit" class="btn btn-ghost btn-sm text-error">{{ __('Löschen') }}</button>
+                <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
             </form>
         </x-slot:footerExtra>
     @endif

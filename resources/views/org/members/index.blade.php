@@ -6,9 +6,10 @@
     <x-slot:toolbar>
         <x-page-toolbar>
             <x-slot:actions>
-                <a href="{{ route('org.members.create') }}" data-entry-modal-trigger class="btn btn-primary btn-sm">
-                    + {{ __('Mitarbeiter anlegen') }}
-                </a>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('org.members.create')"
+                            show-label>{{ __('Mitarbeiter anlegen') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -44,14 +45,17 @@
                             @endforeach
                         </td>
                         <td class="text-right">
-                            <div class="flex justify-end gap-2">
-                                <a href="{{ route('org.members.edit', $member) }}" data-entry-modal-trigger class="btn btn-ghost btn-xs">{{ __('Bearbeiten') }}</a>
-                                <form method="POST" action="{{ route('org.members.destroy', $member) }}"
+                            <div class="flex justify-end gap-1">
+                                <x-icon-btn icon="edit"
+                                            data-entry-modal-trigger
+                                            :href="route('org.members.edit', $member)"
+                                            :label="__('Bearbeiten')" />
+                                <form method="POST" action="{{ route('org.members.destroy', $member) }}" class="inline"
                                       data-confirm-dialog
                                       data-confirm-message="{{ __('Mitarbeiter wirklich entfernen?') }}"
                                       data-confirm-label="{{ __('Entfernen') }}">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('Entfernen') }}</button>
+                                    <x-icon-btn icon="person_remove" tone="error" type="submit" :label="__('Entfernen')" />
                                 </form>
                             </div>
                         </td>
