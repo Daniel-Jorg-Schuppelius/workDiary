@@ -88,51 +88,47 @@
             </div>
         @endif
 
-        <div class="overflow-x-auto rounded-box border border-base-300 bg-base-100">
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th>{{ __('Datum') }}</th>
-                        <th class="text-right">{{ __('Soll') }}</th>
-                        <th class="text-right">{{ __('Anwesenheit') }}</th>
-                        <th class="text-right">{{ __('Pause') }}</th>
-                        <th class="text-right">{{ __('Erfasst') }}</th>
-                        <th class="text-right">{{ __('Unverteilt') }}</th>
-                        <th class="text-right">{{ __('Saldo') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($period->days as $day)
-                        @if ($day->targetMinutes === 0 && $day->attendanceMinutes === 0 && $day->trackedMinutes === 0)
-                            @continue
-                        @endif
-                        <tr>
-                            <td class="font-mono">{{ \Carbon\Carbon::parse($day->date)->format('D, d.m.Y') }}</td>
-                            <td class="text-right">{{ $fmt($day->targetMinutes) }}</td>
-                            <td class="text-right">{{ $fmt($day->attendanceMinutes) }}</td>
-                            <td class="text-right text-base-content/60">{{ $fmt($day->breakMinutes) }}</td>
-                            <td class="text-right">{{ $fmt($day->trackedMinutes) }}</td>
-                            <td class="text-right text-warning">{{ $fmt($day->untrackedMinutes) }}</td>
-                            <td class="text-right {{ $day->balanceMinutes >= 0 ? 'text-success' : 'text-error' }}">
-                                {{ $fmt($day->balanceMinutes) }}
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-                <tfoot>
-                    <tr class="font-semibold">
-                        <td>{{ __('Summe') }}</td>
-                        <td class="text-right">{{ $fmt($period->targetMinutes) }}</td>
-                        <td class="text-right">{{ $fmt($period->attendanceMinutes) }}</td>
-                        <td class="text-right">{{ $fmt($period->breakMinutes) }}</td>
-                        <td class="text-right">{{ $fmt($period->trackedMinutes) }}</td>
-                        <td class="text-right">{{ $fmt($period->untrackedMinutes) }}</td>
-                        <td class="text-right {{ $period->balanceMinutes >= 0 ? 'text-success' : 'text-error' }}">
-                            {{ $fmt($period->balanceMinutes) }}
-                        </td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
+        <x-table table-sort="client" :zebra="false">
+            <x-slot:head>
+                <tr>
+                    <x-table.th sort type="date">{{ __('Datum') }}</x-table.th>
+                    <x-table.th sort type="duration" align="right">{{ __('Soll') }}</x-table.th>
+                    <x-table.th sort type="duration" align="right">{{ __('Anwesenheit') }}</x-table.th>
+                    <x-table.th sort type="duration" align="right">{{ __('Pause') }}</x-table.th>
+                    <x-table.th sort type="duration" align="right">{{ __('Erfasst') }}</x-table.th>
+                    <x-table.th sort type="duration" align="right">{{ __('Unverteilt') }}</x-table.th>
+                    <x-table.th sort type="duration" align="right">{{ __('Saldo') }}</x-table.th>
+                </tr>
+            </x-slot:head>
+            <x-slot:foot>
+                <tr class="font-semibold">
+                    <td>{{ __('Summe') }}</td>
+                    <td class="text-right">{{ $fmt($period->targetMinutes) }}</td>
+                    <td class="text-right">{{ $fmt($period->attendanceMinutes) }}</td>
+                    <td class="text-right">{{ $fmt($period->breakMinutes) }}</td>
+                    <td class="text-right">{{ $fmt($period->trackedMinutes) }}</td>
+                    <td class="text-right">{{ $fmt($period->untrackedMinutes) }}</td>
+                    <td class="text-right {{ $period->balanceMinutes >= 0 ? 'text-success' : 'text-error' }}">
+                        {{ $fmt($period->balanceMinutes) }}
+                    </td>
+                </tr>
+            </x-slot:foot>
+            @foreach ($period->days as $day)
+                @if ($day->targetMinutes === 0 && $day->attendanceMinutes === 0 && $day->trackedMinutes === 0)
+                    @continue
+                @endif
+                <tr>
+                    <td class="font-mono" data-sort-value="{{ \Carbon\Carbon::parse($day->date)->format('Y-m-d') }}">{{ \Carbon\Carbon::parse($day->date)->format('D, d.m.Y') }}</td>
+                    <td class="text-right" data-sort-value="{{ (int) $day->targetMinutes }}">{{ $fmt($day->targetMinutes) }}</td>
+                    <td class="text-right" data-sort-value="{{ (int) $day->attendanceMinutes }}">{{ $fmt($day->attendanceMinutes) }}</td>
+                    <td class="text-right text-base-content/60" data-sort-value="{{ (int) $day->breakMinutes }}">{{ $fmt($day->breakMinutes) }}</td>
+                    <td class="text-right" data-sort-value="{{ (int) $day->trackedMinutes }}">{{ $fmt($day->trackedMinutes) }}</td>
+                    <td class="text-right text-warning" data-sort-value="{{ (int) $day->untrackedMinutes }}">{{ $fmt($day->untrackedMinutes) }}</td>
+                    <td class="text-right {{ $day->balanceMinutes >= 0 ? 'text-success' : 'text-error' }}" data-sort-value="{{ (int) $day->balanceMinutes }}">
+                        {{ $fmt($day->balanceMinutes) }}
+                    </td>
+                </tr>
+            @endforeach
+        </x-table>
     </x-page-shell>
 @endsection

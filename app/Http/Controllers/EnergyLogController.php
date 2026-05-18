@@ -17,6 +17,7 @@ use App\Models\EnergyLog;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\Fleet\EnergyLogService;
+use App\Support\SortableQuery;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
@@ -26,14 +27,13 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-class EnergyLogController extends Controller
-{
+class EnergyLogController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function __construct(private readonly EnergyLogService $service) {}
+    public function __construct(private readonly EnergyLogService $service) {
+    }
 
-    public function index(Request $request): View
-    {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', EnergyLog::class);
 
         /** @var User $auth */
@@ -43,9 +43,7 @@ class EnergyLogController extends Controller
 
         $query = EnergyLog::query()
             ->with(['vehicle:id,license_plate,label', 'user:id,name'])
-            ->whereBetween('started_at', [$from, $to])
-            ->orderByDesc('started_at')
-            ->orderByDesc('id');
+            ->whereBetween('started_at', [$from, $to]);
 
         if ($target !== null) {
             $query->where('user_id', $target->id);
@@ -54,6 +52,15 @@ class EnergyLogController extends Controller
         if ($request->filled('vehicle')) {
             $query->where('vehicle_id', (int) $request->integer('vehicle'));
         }
+
+        [$sort, $dir] = SortableQuery::apply($query, $request, [
+            'started_at' => 'started_at',
+            'type' => 'energy_type',
+            'quantity' => 'quantity',
+            'cost' => 'cost_total',
+            'odometer' => 'odometer_km',
+            'distance' => 'distance_since_last',
+        ], 'started_at', 'desc');
 
         $logs = $query->paginate(25)->withQueryString();
 
@@ -82,11 +89,12 @@ class EnergyLogController extends Controller
             'selectedVehicleId' => $request->filled('vehicle') ? (int) $request->integer('vehicle') : null,
             'targetUser' => $target,
             'selectableUsers' => $auth->isAdmin() ? $this->loadSelectableUsers() : null,
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 
-    public function create(Request $request): View
-    {
+    public function create(Request $request): View {
         Gate::authorize('create', EnergyLog::class);
 
         /** @var User $auth */
@@ -102,8 +110,7 @@ class EnergyLogController extends Controller
         ]);
     }
 
-    public function store(SaveEnergyLogRequest $request): RedirectResponse
-    {
+    public function store(SaveEnergyLogRequest $request): RedirectResponse {
         Gate::authorize('create', EnergyLog::class);
 
         $data = $request->validated();
@@ -118,8 +125,7 @@ class EnergyLogController extends Controller
             ->with('success', __('Tankung/Ladung erfasst.'));
     }
 
-    public function edit(EnergyLog $energyLog): View
-    {
+    public function edit(EnergyLog $energyLog): View {
         Gate::authorize('update', $energyLog);
 
         /** @var User $auth */
@@ -135,8 +141,7 @@ class EnergyLogController extends Controller
         ]);
     }
 
-    public function update(SaveEnergyLogRequest $request, EnergyLog $energyLog): RedirectResponse
-    {
+    public function update(SaveEnergyLogRequest $request, EnergyLog $energyLog): RedirectResponse {
         Gate::authorize('update', $energyLog);
 
         $this->service->update($energyLog, $request->validated());
@@ -145,8 +150,7 @@ class EnergyLogController extends Controller
             ->with('success', __('Eintrag aktualisiert.'));
     }
 
-    public function destroy(EnergyLog $energyLog): RedirectResponse
-    {
+    public function destroy(EnergyLog $energyLog): RedirectResponse {
         Gate::authorize('delete', $energyLog);
 
         $this->service->delete($energyLog);
@@ -158,8 +162,7 @@ class EnergyLogController extends Controller
     /**
      * @return array{0: CarbonImmutable, 1: CarbonImmutable}
      */
-    private function resolveRange(Request $request): array
-    {
+    private function resolveRange(Request $request): array {
         if ($request->filled('from') && $request->filled('to')) {
             $from = CarbonImmutable::parse((string) $request->query('from'))->startOfDay();
             $to = CarbonImmutable::parse((string) $request->query('to'))->endOfDay();
@@ -177,8 +180,7 @@ class EnergyLogController extends Controller
      * non-admins are locked to themselves; ?user=all (admins only) returns null
      * so all users are shown.
      */
-    private function resolveTargetUser(Request $request, User $authUser): ?User
-    {
+    private function resolveTargetUser(Request $request, User $authUser): ?User {
         if (! $request->filled('user')) {
             return $authUser;
         }
@@ -210,8 +212,7 @@ class EnergyLogController extends Controller
     }
 
     /** @return Collection<int, Vehicle> */
-    private function vehiclesForUser(User $user): Collection
-    {
+    private function vehiclesForUser(User $user): Collection {
         $query = Vehicle::query()->active()->orderBy('label')->orderBy('license_plate');
         if (! $user->isAdmin()) {
             $query->forUser((int) $user->id);
@@ -224,8 +225,7 @@ class EnergyLogController extends Controller
     }
 
     /** @return Collection<int, User> */
-    private function loadSelectableUsers(): Collection
-    {
+    private function loadSelectableUsers(): Collection {
         /** @var Collection<int, User> $users */
         $users = User::query()->orderBy('name')->get();
 

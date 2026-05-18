@@ -44,44 +44,40 @@
 
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         @if (empty($rows))
-            <x-empty-state :title="__('Keine Daten im Zeitraum.')" />
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">schedule</span>' :title="__('Keine Daten im Zeitraum.')" />
         @else
-            <div class="overflow-x-auto">
-                <table class="table table-zebra table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Mitarbeiter') }}</th>
-                            <th class="text-right">{{ __('Arbeitstage') }}</th>
-                            <th class="text-right">{{ __('Soll') }}</th>
-                            <th class="text-right">{{ __('Anwesend') }}</th>
-                            <th class="text-right">{{ __('Gebucht') }}</th>
-                            <th class="text-right">{{ __('Saldo') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($rows as $r)
-                            <tr>
-                                <td class="font-semibold">{{ $r['user']->name }}</td>
-                                <td class="text-right tabular-nums">{{ $r['workdays'] }}</td>
-                                <td class="text-right tabular-nums">{{ $fmtMin($r['target_minutes']) }}</td>
-                                <td class="text-right tabular-nums">{{ $fmtMin($r['attendance_minutes']) }}</td>
-                                <td class="text-right tabular-nums">{{ $fmtMin($r['time_entry_minutes']) }}</td>
-                                <td class="text-right tabular-nums {{ $r['variance'] < 0 ? 'text-error font-semibold' : ($r['variance'] > 0 ? 'text-success' : '') }}">{{ $fmtMin($r['variance']) }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr class="font-bold">
-                            <td>{{ __('Gesamt') }}</td>
-                            <td></td>
-                            <td class="text-right tabular-nums">{{ $fmtMin($totals['target']) }}</td>
-                            <td class="text-right tabular-nums">{{ $fmtMin($totals['attendance']) }}</td>
-                            <td class="text-right tabular-nums">{{ $fmtMin($totals['time_entry']) }}</td>
-                            <td class="text-right tabular-nums {{ $totals['variance'] < 0 ? 'text-error' : ($totals['variance'] > 0 ? 'text-success' : '') }}">{{ $fmtMin($totals['variance']) }}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('Mitarbeiter') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Arbeitstage') }}</x-table.th>
+                        <x-table.th sort type="duration" align="right">{{ __('Soll') }}</x-table.th>
+                        <x-table.th sort type="duration" align="right">{{ __('Anwesend') }}</x-table.th>
+                        <x-table.th sort type="duration" align="right">{{ __('Gebucht') }}</x-table.th>
+                        <x-table.th sort type="duration" align="right">{{ __('Saldo') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                <x-slot:foot>
+                    <tr class="font-bold">
+                        <td>{{ __('Gesamt') }}</td>
+                        <td></td>
+                        <td class="text-right tabular-nums">{{ $fmtMin($totals['target']) }}</td>
+                        <td class="text-right tabular-nums">{{ $fmtMin($totals['attendance']) }}</td>
+                        <td class="text-right tabular-nums">{{ $fmtMin($totals['time_entry']) }}</td>
+                        <td class="text-right tabular-nums {{ $totals['variance'] < 0 ? 'text-error' : ($totals['variance'] > 0 ? 'text-success' : '') }}">{{ $fmtMin($totals['variance']) }}</td>
+                    </tr>
+                </x-slot:foot>
+                @foreach ($rows as $r)
+                    <tr>
+                        <td class="font-semibold">{{ $r['user']->name }}</td>
+                        <td class="text-right tabular-nums">{{ $r['workdays'] }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (int) $r['target_minutes'] }}">{{ $fmtMin($r['target_minutes']) }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (int) $r['attendance_minutes'] }}">{{ $fmtMin($r['attendance_minutes']) }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (int) $r['time_entry_minutes'] }}">{{ $fmtMin($r['time_entry_minutes']) }}</td>
+                        <td class="text-right tabular-nums {{ $r['variance'] < 0 ? 'text-error font-semibold' : ($r['variance'] > 0 ? 'text-success' : '') }}" data-sort-value="{{ (int) $r['variance'] }}">{{ $fmtMin($r['variance']) }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
         @endif
     </div>
 </x-page-shell>

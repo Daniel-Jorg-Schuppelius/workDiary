@@ -48,7 +48,7 @@
         </article>
     @empty
         <x-card>
-            <x-empty-state :title="__('Keine Einträge gefunden')">
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">menu_book</span>' :title="__('Keine Einträge gefunden')">
                 @if (! empty($tabFilters))
                     <x-slot:action>
                         <a href="{{ route('duties.index', ['tab' => 'diary']) }}" class="btn btn-sm btn-ghost">{{ __('Filter zurücksetzen') }}</a>

@@ -32,47 +32,43 @@
         @if ($timeEntries->isEmpty())
             <div class="px-4 py-8 text-center text-sm text-base-content/60">{{ __('Noch keine Zeiteinträge erfasst.') }}</div>
         @else
-            <div class="overflow-x-auto">
-                <table class="table table-sm" data-sortable>
-                    <thead>
-                        <tr class="text-xs text-base-content/50">
-                            <th data-sort data-sort-type="date" data-sort-default="desc">{{ __('Datum') }}</th>
-                            <th data-sort>{{ __('Mitarbeitende') }}</th>
-                            <th class="text-right" data-sort data-sort-type="number">{{ __('Zeit') }}</th>
-                            <th data-sort>{{ __('Aufgabe') }}</th>
-                            <th data-sort>{{ __('Beschreibung') }}</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($timeEntries as $entry)
-                            <tr class="hover:bg-base-200/50">
-                                <td class="whitespace-nowrap text-xs" data-sort-value="{{ $entry->date->format('Y-m-d') }}">{{ $entry->date->format('d.m.Y') }}</td>
-                                <td class="text-xs">{{ $entry->user->name ?? '—' }}</td>
-                                <td class="whitespace-nowrap text-right text-xs font-medium">{{ $entry->hoursFormatted() }}</td>
-                                <td class="text-xs text-base-content/70">{{ $entry->task->title ?? '—' }}</td>
-                                <td class="max-w-xs truncate text-xs text-base-content/70">{{ $entry->description }}</td>
-                                <td class="whitespace-nowrap">
-                                    @can('update', $entry)
-                                        <a href="{{ route('projects.time-entries.edit', [$project, $entry]) }}"
-                                           data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Edit') }}</a>
-                                    @endcan
-                                    @can('delete', $entry)
-                                        <form method="POST" action="{{ route('projects.time-entries.destroy', [$project, $entry]) }}"
-                                              data-confirm-dialog
-                                              data-confirm-title="{{ __('Zeiteintrag löschen') }}"
-                                              data-confirm-label="{{ __('Löschen') }}"
-                                              class="inline">
-                                            @csrf @method('DELETE')
-                                            <button class="btn btn-xs btn-ghost text-error">{{ __('Del') }}</button>
-                                        </form>
-                                    @endcan
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr class="text-xs text-base-content/50">
+                        <x-table.th sort type="date" default="desc">{{ __('Datum') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Mitarbeitende') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Zeit') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Aufgabe') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Beschreibung') }}</x-table.th>
+                        <th></th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($timeEntries as $entry)
+                    <tr class="hover:bg-base-200/50">
+                        <td class="whitespace-nowrap text-xs" data-sort-value="{{ $entry->date->format('Y-m-d') }}">{{ $entry->date->format('d.m.Y') }}</td>
+                        <td class="text-xs">{{ $entry->user->name ?? '—' }}</td>
+                        <td class="whitespace-nowrap text-right text-xs font-medium">{{ $entry->hoursFormatted() }}</td>
+                        <td class="text-xs text-base-content/70">{{ $entry->task->title ?? '—' }}</td>
+                        <td class="max-w-xs truncate text-xs text-base-content/70">{{ $entry->description }}</td>
+                        <td class="whitespace-nowrap">
+                            @can('update', $entry)
+                                <a href="{{ route('projects.time-entries.edit', [$project, $entry]) }}"
+                                   data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Edit') }}</a>
+                            @endcan
+                            @can('delete', $entry)
+                                <form method="POST" action="{{ route('projects.time-entries.destroy', [$project, $entry]) }}"
+                                      data-confirm-dialog
+                                      data-confirm-title="{{ __('Zeiteintrag löschen') }}"
+                                      data-confirm-label="{{ __('Löschen') }}"
+                                      class="inline">
+                                    @csrf @method('DELETE')
+                                    <button class="btn btn-xs btn-ghost text-error">{{ __('Del') }}</button>
+                                </form>
+                            @endcan
+                        </td>
+                    </tr>
+                @endforeach
+            </x-table>
         @endif
     </div>
 </div>

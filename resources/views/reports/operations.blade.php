@@ -79,82 +79,90 @@
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Service-Aufträge – Status') }}</h3>
-            <table class="table table-zebra table-sm">
-                <thead><tr><th>{{ __('Status') }}</th><th class="text-right">{{ __('Anzahl') }}</th></tr></thead>
-                <tbody>
-                    @foreach ($orders['by_status'] as $st => $c)
-                        <tr><td>{{ $label($statusLabels, $st) }}</td><td class="text-right tabular-nums">{{ $c }}</td></tr>
-                    @endforeach
-                </tbody>
-            </table>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Anzahl') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($orders['by_status'] as $st => $c)
+                    <tr><td>{{ $label($statusLabels, $st) }}</td><td class="text-right tabular-nums">{{ $c }}</td></tr>
+                @endforeach
+            </x-table>
             <h3 class="mt-4 mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Service-Aufträge – Priorität') }}</h3>
-            <table class="table table-zebra table-sm">
-                <thead><tr><th>{{ __('Priorität') }}</th><th class="text-right">{{ __('Anzahl') }}</th></tr></thead>
-                <tbody>
-                    @foreach ($orders['by_priority'] as $p => $c)
-                        <tr><td>{{ $label($prioLabels, $p) }}</td><td class="text-right tabular-nums">{{ $c }}</td></tr>
-                    @endforeach
-                </tbody>
-            </table>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('Priorität') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Anzahl') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($orders['by_priority'] as $p => $c)
+                    <tr><td>{{ $label($prioLabels, $p) }}</td><td class="text-right tabular-nums">{{ $c }}</td></tr>
+                @endforeach
+            </x-table>
         </div>
 
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Tasks – Status') }}</h3>
-            <table class="table table-zebra table-sm">
-                <thead><tr><th>{{ __('Status') }}</th><th class="text-right">{{ __('Anzahl') }}</th></tr></thead>
-                <tbody>
-                    @foreach ($tasks['by_status'] as $st => $c)
-                        <tr><td>{{ $label($statusLabels, $st) }}</td><td class="text-right tabular-nums">{{ $c }}</td></tr>
-                    @endforeach
-                </tbody>
-            </table>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Anzahl') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($tasks['by_status'] as $st => $c)
+                    <tr><td>{{ $label($statusLabels, $st) }}</td><td class="text-right tabular-nums">{{ $c }}</td></tr>
+                @endforeach
+            </x-table>
             <h3 class="mt-4 mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Tasks – Priorität') }}</h3>
-            <table class="table table-zebra table-sm">
-                <thead><tr><th>{{ __('Priorität') }}</th><th class="text-right">{{ __('Anzahl') }}</th></tr></thead>
-                <tbody>
-                    @foreach ($tasks['by_priority'] as $p => $c)
-                        <tr><td>{{ $label($prioLabels, $p) }}</td><td class="text-right tabular-nums">{{ $c }}</td></tr>
-                    @endforeach
-                </tbody>
-            </table>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('Priorität') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Anzahl') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($tasks['by_priority'] as $p => $c)
+                    <tr><td>{{ $label($prioLabels, $p) }}</td><td class="text-right tabular-nums">{{ $c }}</td></tr>
+                @endforeach
+            </x-table>
         </div>
     </div>
 
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Touren – pro Mitarbeiter') }}</h3>
         @if (empty($tours['per_user']))
-            <x-empty-state :title="__('Keine Touren im Zeitraum.')" />
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">engineering</span>' :title="__('Keine Touren im Zeitraum.')" />
         @else
-            <div class="overflow-x-auto">
-                <table class="table table-zebra table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Mitarbeiter') }}</th>
-                            <th class="text-right">{{ __('Touren') }}</th>
-                            <th class="text-right">{{ __('Plan-km') }}</th>
-                            <th class="text-right">{{ __('Plan-Dauer') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($tours['per_user'] as $u)
-                            <tr>
-                                <td class="font-semibold">{{ $u['user']->name }}</td>
-                                <td class="text-right tabular-nums">{{ $u['count'] }}</td>
-                                <td class="text-right tabular-nums">{{ $num($u['distance_km'], 1) }} km</td>
-                                <td class="text-right tabular-nums">{{ $fmtMin($u['minutes']) }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr class="font-bold">
-                            <td>{{ __('Gesamt') }}</td>
-                            <td class="text-right tabular-nums">{{ $tours['total'] }}</td>
-                            <td class="text-right tabular-nums">{{ $num($tours['planned_distance_km'], 1) }} km</td>
-                            <td class="text-right tabular-nums">{{ $fmtMin($tours['planned_minutes']) }}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('Mitarbeiter') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Touren') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Plan-km') }}</x-table.th>
+                        <x-table.th sort type="duration" align="right">{{ __('Plan-Dauer') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                <x-slot:foot>
+                    <tr class="font-bold">
+                        <td>{{ __('Gesamt') }}</td>
+                        <td class="text-right tabular-nums">{{ $tours['total'] }}</td>
+                        <td class="text-right tabular-nums">{{ $num($tours['planned_distance_km'], 1) }} km</td>
+                        <td class="text-right tabular-nums">{{ $fmtMin($tours['planned_minutes']) }}</td>
+                    </tr>
+                </x-slot:foot>
+                @foreach ($tours['per_user'] as $u)
+                    <tr>
+                        <td class="font-semibold">{{ $u['user']->name }}</td>
+                        <td class="text-right tabular-nums">{{ $u['count'] }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (float) $u['distance_km'] }}">{{ $num($u['distance_km'], 1) }} km</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (int) $u['minutes'] }}">{{ $fmtMin($u['minutes']) }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
         @endif
     </div>
 </x-page-shell>

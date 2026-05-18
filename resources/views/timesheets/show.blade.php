@@ -78,50 +78,46 @@
             @endif
         </header>
 
-        <div class="overflow-x-auto">
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th>{{ __('Start') }}</th>
-                        <th>{{ __('Ende') }}</th>
-                        <th class="text-right">{{ __('Pause') }}</th>
-                        <th class="text-right">{{ __('Dauer') }}</th>
-                        <th>{{ __('Art') }}</th>
-                        <th>{{ __('Aufgabe') }}</th>
-                        <th>{{ __('Beschreibung') }}</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($timesheet->entries as $e)
-                        <tr>
-                            <td class="tabular-nums">{{ optional($e->started_at)->format('H:i') }}</td>
-                            <td class="tabular-nums">{{ optional($e->ended_at)->format('H:i') }}</td>
-                            <td class="text-right tabular-nums">{{ (int)$e->break_minutes }}</td>
-                            <td class="text-right tabular-nums">{{ $fmtMin((int)$e->minutes) }}</td>
-                            <td>{{ $e->kind }}</td>
-                            <td>{{ $e->task?->title }}</td>
-                            <td>{{ $e->description }}</td>
-                            <td class="text-right">
-                                @if($editable)
-                                    <form method="POST" action="{{ route('projects.timesheets.entries.destroy', [$project, $timesheet, $e]) }}"
-                                          data-confirm-dialog
-                                          data-confirm-message="{{ __('Löschen?') }}"
-                                          data-confirm-icon="delete"
-                                          data-confirm-tone="error"
-                                          data-confirm-label="{{ __('Löschen') }}">
-                                        @csrf @method('DELETE')
-                                        <button class="btn btn-xs btn-ghost text-error">×</button>
-                                    </form>
-                                @endif
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="8" class="px-4 py-3 text-sm text-base-content/60">—</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+        <x-table table-sort="client" bare>
+            <x-slot:head>
+                <tr>
+                    <x-table.th sort>{{ __('Start') }}</x-table.th>
+                    <x-table.th sort>{{ __('Ende') }}</x-table.th>
+                    <x-table.th sort type="number" align="right">{{ __('Pause') }}</x-table.th>
+                    <x-table.th sort type="duration" align="right">{{ __('Dauer') }}</x-table.th>
+                    <x-table.th sort>{{ __('Art') }}</x-table.th>
+                    <x-table.th sort>{{ __('Aufgabe') }}</x-table.th>
+                    <x-table.th sort>{{ __('Beschreibung') }}</x-table.th>
+                    <th></th>
+                </tr>
+            </x-slot:head>
+            @forelse($timesheet->entries as $e)
+                <tr>
+                    <td class="tabular-nums">{{ optional($e->started_at)->format('H:i') }}</td>
+                    <td class="tabular-nums">{{ optional($e->ended_at)->format('H:i') }}</td>
+                    <td class="text-right tabular-nums">{{ (int)$e->break_minutes }}</td>
+                    <td class="text-right tabular-nums" data-sort-value="{{ (int) $e->minutes }}">{{ $fmtMin((int)$e->minutes) }}</td>
+                    <td>{{ $e->kind }}</td>
+                    <td>{{ $e->task?->title }}</td>
+                    <td>{{ $e->description }}</td>
+                    <td class="text-right">
+                        @if($editable)
+                            <form method="POST" action="{{ route('projects.timesheets.entries.destroy', [$project, $timesheet, $e]) }}"
+                                  data-confirm-dialog
+                                  data-confirm-message="{{ __('Löschen?') }}"
+                                  data-confirm-icon="delete"
+                                  data-confirm-tone="error"
+                                  data-confirm-label="{{ __('Löschen') }}">
+                                @csrf @method('DELETE')
+                                <button class="btn btn-xs btn-ghost text-error">×</button>
+                            </form>
+                        @endif
+                    </td>
+                </tr>
+            @empty
+                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">description</span>' :colspan="8" compact />
+            @endforelse
+        </x-table>
     </div>
 
     {{-- Materialien --}}
@@ -136,46 +132,42 @@
             @endif
         </header>
 
-        <div class="overflow-x-auto">
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th>{{ __('Bezeichnung') }}</th>
-                        <th class="text-right">{{ __('Menge') }}</th>
-                        <th>{{ __('Einheit') }}</th>
-                        <th class="text-right">{{ __('EP netto') }}</th>
-                        <th class="text-right">{{ __('Summe netto') }}</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($timesheet->materialUsages as $u)
-                        <tr>
-                            <td>{{ $u->description }}</td>
-                            <td class="text-right tabular-nums">{{ rtrim(rtrim(number_format((float)$u->quantity, 3, ',', '.'), '0'), ',') }}</td>
-                            <td>{{ $u->unit }}</td>
-                            <td class="text-right tabular-nums">{{ $u->unit_price !== null ? number_format((float)$u->unit_price, 4, ',', '.').' €' : '—' }}</td>
-                            <td class="text-right tabular-nums">{{ number_format((float)$u->line_total_net, 2, ',', '.') }} €</td>
-                            <td class="text-right">
-                                @if($editable)
-                                    <form method="POST" action="{{ route('projects.timesheets.materials.destroy', [$project, $timesheet, $u]) }}"
-                                          data-confirm-dialog
-                                          data-confirm-message="{{ __('Löschen?') }}"
-                                          data-confirm-icon="delete"
-                                          data-confirm-tone="error"
-                                          data-confirm-label="{{ __('Löschen') }}">
-                                        @csrf @method('DELETE')
-                                        <button class="btn btn-xs btn-ghost text-error">×</button>
-                                    </form>
-                                @endif
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="6" class="px-4 py-3 text-sm text-base-content/60">—</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+        <x-table table-sort="client" bare>
+            <x-slot:head>
+                <tr>
+                    <x-table.th sort>{{ __('Bezeichnung') }}</x-table.th>
+                    <x-table.th sort type="number" align="right">{{ __('Menge') }}</x-table.th>
+                    <x-table.th sort>{{ __('Einheit') }}</x-table.th>
+                    <x-table.th sort type="number" align="right">{{ __('EP netto') }}</x-table.th>
+                    <x-table.th sort type="number" align="right">{{ __('Summe netto') }}</x-table.th>
+                    <th></th>
+                </tr>
+            </x-slot:head>
+            @forelse($timesheet->materialUsages as $u)
+                <tr>
+                    <td>{{ $u->description }}</td>
+                    <td class="text-right tabular-nums" data-sort-value="{{ (float) $u->quantity }}">{{ rtrim(rtrim(number_format((float)$u->quantity, 3, ',', '.'), '0'), ',') }}</td>
+                    <td>{{ $u->unit }}</td>
+                    <td class="text-right tabular-nums" data-sort-value="{{ (float) ($u->unit_price ?? 0) }}">{{ $u->unit_price !== null ? number_format((float)$u->unit_price, 4, ',', '.').' €' : '—' }}</td>
+                    <td class="text-right tabular-nums" data-sort-value="{{ (float) $u->line_total_net }}">{{ number_format((float)$u->line_total_net, 2, ',', '.') }} €</td>
+                    <td class="text-right">
+                        @if($editable)
+                            <form method="POST" action="{{ route('projects.timesheets.materials.destroy', [$project, $timesheet, $u]) }}"
+                                  data-confirm-dialog
+                                  data-confirm-message="{{ __('Löschen?') }}"
+                                  data-confirm-icon="delete"
+                                  data-confirm-tone="error"
+                                  data-confirm-label="{{ __('Löschen') }}">
+                                @csrf @method('DELETE')
+                                <button class="btn btn-xs btn-ghost text-error">×</button>
+                            </form>
+                        @endif
+                    </td>
+                </tr>
+            @empty
+                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">description</span>' :colspan="6" compact />
+            @endforelse
+        </x-table>
     </div>
 
     {{-- Signatur — kompakte Karte unterhalb des Stundenzettels --}}
@@ -204,7 +196,7 @@
                 'timesheet'     => $timesheet,
             ])
         @else
-            <x-empty-state :message="__('Stundenzettel ist noch nicht zur Signatur freigegeben.')" />
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">description</span>' :message="__('Stundenzettel ist noch nicht zur Signatur freigegeben.')" />
         @endif
     </x-card>
 </x-page-shell>

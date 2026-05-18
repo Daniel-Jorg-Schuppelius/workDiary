@@ -1,20 +1,24 @@
 {{-- Urlaub: Tabelle --}}
 <?php $p = array_merge($filters ?? [], ['tab' => 'urlaub']); ?>
-<x-table scroll="flex" :pinRows="true" :zebra="true" size="sm">
-        <thead class="bg-base-200">
-            <tr>
+<x-table scroll="flex" :pinRows="true" :zebra="true" size="sm"
+         table-sort="server"
+         :route="route('duties.index')"
+         :current-sort="$sort ?? null"
+         :current-dir="$dir ?? 'desc'"
+         :sort-params="$p">
+        <x-slot:head>
+            <tr class="bg-base-200">
                 @if ($isAdmin)
-                    <th><x-sort-th column="mitarbeiter" :route="route('duties.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Mitarbeiter') }}</x-sort-th></th>
+                    <x-table.th sort="mitarbeiter">{{ __('Mitarbeiter') }}</x-table.th>
                 @endif
-                <th><x-sort-th column="von" :route="route('duties.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'" default="von">{{ __('Zeitraum') }}</x-sort-th></th>
+                <x-table.th sort="von" default>{{ __('Zeitraum') }}</x-table.th>
                 <th>{{ __('Tage') }}</th>
-                <th><x-sort-th column="typ" :route="route('duties.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Typ') }}</x-sort-th></th>
-                <th><x-sort-th column="status" :route="route('duties.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Status') }}</x-sort-th></th>
+                <x-table.th sort="typ">{{ __('Typ') }}</x-table.th>
+                <x-table.th sort="status">{{ __('Status') }}</x-table.th>
                 <th class="max-w-xs">{{ __('Notiz') }}</th>
                 <th class="w-px"></th>
             </tr>
-        </thead>
-        <tbody>
+        </x-slot:head>
             @forelse ($vacations as $v)
                 @php $days = $v->workingDays($holidayService); @endphp
                 <tr class="hover">
@@ -105,13 +109,8 @@
                     </td>
                 </tr>
             @empty
-                <tr>
-                    <td colspan="{{ $isAdmin ? 7 : 6 }}" class="p-0">
-                        <x-empty-state :compact="true" :title="__('Keine Einträge gefunden')" />
-                    </td>
-                </tr>
+                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">beach_access</span>' :colspan="$isAdmin ? 7 : 6" :title="__('Keine Einträge gefunden')" compact />
             @endforelse
-        </tbody>
 </x-table>
 @if ($vacations->hasPages())
     @include('duties._pagination', ['paginator' => $vacations])

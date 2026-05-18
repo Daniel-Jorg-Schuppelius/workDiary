@@ -35,24 +35,27 @@
     @if($timesheets->isEmpty())
         <x-card>
             <x-empty-state
+                icon='<span class="material-symbols-outlined" aria-hidden="true">description</span>'
                 :title="__('Keine Stundenzettel gefunden')"
                 :message="__('Lege den ersten Stundenzettel über den Button oben rechts an.')"
             />
         </x-card>
     @else
-        <x-table>
-            <thead>
+        <x-table table-sort="server"
+                 :route="route('timesheets.index')"
+                 :current-sort="$sort ?? null"
+                 :current-dir="$dir ?? 'desc'"
+                 :sort-params="request()->only('scope', 'project', 'status')">
+            <x-slot:head>
                 <tr>
-                    <?php $p = request()->only('scope', 'project', 'status'); ?>
-                    <th><x-sort-th column="work_date" :route="route('timesheets.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'" default="work_date">{{ __('Datum') }}</x-sort-th></th>
-                    <th><x-sort-th column="project_id" :route="route('timesheets.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Projekt') }}</x-sort-th></th>
-                    <th><x-sort-th column="user_id" :route="route('timesheets.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Mitarbeiter') }}</x-sort-th></th>
+                    <x-table.th sort="work_date" default>{{ __('Datum') }}</x-table.th>
+                    <x-table.th sort="project_id">{{ __('Projekt') }}</x-table.th>
+                    <x-table.th sort="user_id">{{ __('Mitarbeiter') }}</x-table.th>
                     <th class="text-right">{{ __('Arbeit') }}</th>
-                    <th><x-sort-th column="status" :route="route('timesheets.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Status') }}</x-sort-th></th>
+                    <x-table.th sort="status">{{ __('Status') }}</x-table.th>
                     <th></th>
                 </tr>
-            </thead>
-            <tbody>
+            </x-slot:head>
                 @foreach($timesheets as $ts)
                     <?php $h = intdiv((int)$ts->total_work_minutes, 60); ?>
                     <?php $m = (int)$ts->total_work_minutes % 60; ?>
@@ -68,9 +71,10 @@
                         </td>
                     </tr>
                 @endforeach
-            </tbody>
         </x-table>
-        <div>{{ $timesheets->links() }}</div>
+        @if ($timesheets->hasPages())
+            <div>{{ $timesheets->links() }}</div>
+        @endif
     @endif
 </x-page-shell>
 

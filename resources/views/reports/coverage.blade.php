@@ -54,56 +54,52 @@
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Pro Schichttyp') }}</h3>
         @if (empty($rows))
-            <x-empty-state :title="__('Keine Soll-Vorgaben oder Plan-Einträge im gewählten Zeitraum.')" />
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">shield_person</span>' :title="__('Keine Soll-Vorgaben oder Plan-Einträge im gewählten Zeitraum.')" />
         @else
-            <div class="overflow-x-auto">
-                <table class="table table-zebra table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Schichttyp') }}</th>
-                            <th class="text-right">{{ __('Soll') }}</th>
-                            <th class="text-right">{{ __('Ist') }}</th>
-                            <th class="text-right">{{ __('Differenz') }}</th>
-                            <th class="text-right">{{ __('Erfüllung') }}</th>
-                            <th class="text-right">{{ __('Tage unter') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($rows as $r)
-                            <tr>
-                                <td class="font-semibold">
-                                    @if ($r['shiftType']->color)
-                                        <span class="mr-2 inline-block size-2 rounded-full align-middle" style="background-color: {{ $r['shiftType']->color }};"></span>
-                                    @endif
-                                    {{ $r['shiftType']->name }}
-                                    @if ($r['shiftType']->abbreviation)
-                                        <span class="ml-1 text-xs text-base-content/50">{{ $r['shiftType']->abbreviation }}</span>
-                                    @endif
-                                </td>
-                                <td class="text-right tabular-nums">{{ $r['required'] }}</td>
-                                <td class="text-right tabular-nums">{{ $r['scheduled'] }}</td>
-                                <td class="text-right tabular-nums {{ $r['gap'] < 0 ? 'text-error font-semibold' : ($r['gap'] > 0 ? 'text-success' : '') }}">
-                                    {{ $r['gap'] > 0 ? '+' : '' }}{{ $r['gap'] }}
-                                </td>
-                                <td class="text-right tabular-nums">{{ $r['fill_rate'] !== null ? $pct($r['fill_rate']) : '–' }}</td>
-                                <td class="text-right tabular-nums {{ $r['days_under'] > 0 ? 'text-error' : '' }}">{{ $r['days_under'] }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr class="font-bold">
-                            <td>{{ __('Gesamt') }}</td>
-                            <td class="text-right tabular-nums">{{ $totals['required'] }}</td>
-                            <td class="text-right tabular-nums">{{ $totals['scheduled'] }}</td>
-                            <td class="text-right tabular-nums {{ $totals['gap'] < 0 ? 'text-error' : '' }}">
-                                {{ $totals['gap'] > 0 ? '+' : '' }}{{ $totals['gap'] }}
-                            </td>
-                            <td class="text-right tabular-nums">{{ $totals['fill_rate'] !== null ? $pct($totals['fill_rate']) : '–' }}</td>
-                            <td class="text-right tabular-nums">{{ $totals['days_under'] }}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('Schichttyp') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Soll') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Ist') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Differenz') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Erfüllung') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Tage unter') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                <x-slot:foot>
+                    <tr class="font-bold">
+                        <td>{{ __('Gesamt') }}</td>
+                        <td class="text-right tabular-nums">{{ $totals['required'] }}</td>
+                        <td class="text-right tabular-nums">{{ $totals['scheduled'] }}</td>
+                        <td class="text-right tabular-nums {{ $totals['gap'] < 0 ? 'text-error' : '' }}">
+                            {{ $totals['gap'] > 0 ? '+' : '' }}{{ $totals['gap'] }}
+                        </td>
+                        <td class="text-right tabular-nums">{{ $totals['fill_rate'] !== null ? $pct($totals['fill_rate']) : '–' }}</td>
+                        <td class="text-right tabular-nums">{{ $totals['days_under'] }}</td>
+                    </tr>
+                </x-slot:foot>
+                @foreach ($rows as $r)
+                    <tr>
+                        <td class="font-semibold">
+                            @if ($r['shiftType']->color)
+                                <span class="mr-2 inline-block size-2 rounded-full align-middle" style="background-color: {{ $r['shiftType']->color }};"></span>
+                            @endif
+                            {{ $r['shiftType']->name }}
+                            @if ($r['shiftType']->abbreviation)
+                                <span class="ml-1 text-xs text-base-content/50">{{ $r['shiftType']->abbreviation }}</span>
+                            @endif
+                        </td>
+                        <td class="text-right tabular-nums">{{ $r['required'] }}</td>
+                        <td class="text-right tabular-nums">{{ $r['scheduled'] }}</td>
+                        <td class="text-right tabular-nums {{ $r['gap'] < 0 ? 'text-error font-semibold' : ($r['gap'] > 0 ? 'text-success' : '') }}" data-sort-value="{{ (int) $r['gap'] }}">
+                            {{ $r['gap'] > 0 ? '+' : '' }}{{ $r['gap'] }}
+                        </td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ $r['fill_rate'] ?? -1 }}">{{ $r['fill_rate'] !== null ? $pct($r['fill_rate']) : '–' }}</td>
+                        <td class="text-right tabular-nums {{ $r['days_under'] > 0 ? 'text-error' : '' }}">{{ $r['days_under'] }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
         @endif
     </div>
 
@@ -113,30 +109,26 @@
                 {{ __('Tage mit Unterdeckung') }}
                 <span class="text-base-content/50">({{ count($underfilled) }})</span>
             </h3>
-            <div class="overflow-x-auto">
-                <table class="table table-zebra table-xs">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Datum') }}</th>
-                            <th>{{ __('Schichttyp') }}</th>
-                            <th class="text-right">{{ __('Soll') }}</th>
-                            <th class="text-right">{{ __('Ist') }}</th>
-                            <th class="text-right">{{ __('Lücke') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($underfilled as $u)
-                            <tr>
-                                <td class="tabular-nums">{{ \Carbon\Carbon::parse($u['date'])->translatedFormat('D, d.m.Y') }}</td>
-                                <td>{{ $u['shiftType']->name }}</td>
-                                <td class="text-right tabular-nums">{{ $u['required'] }}</td>
-                                <td class="text-right tabular-nums">{{ $u['scheduled'] }}</td>
-                                <td class="text-right tabular-nums text-error font-semibold">{{ $u['gap'] }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+            <x-table size="xs" table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="date">{{ __('Datum') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Schichttyp') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Soll') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Ist') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Lücke') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($underfilled as $u)
+                    <tr>
+                        <td class="tabular-nums" data-sort-value="{{ \Carbon\Carbon::parse($u['date'])->format('Y-m-d') }}">{{ \Carbon\Carbon::parse($u['date'])->translatedFormat('D, d.m.Y') }}</td>
+                        <td>{{ $u['shiftType']->name }}</td>
+                        <td class="text-right tabular-nums">{{ $u['required'] }}</td>
+                        <td class="text-right tabular-nums">{{ $u['scheduled'] }}</td>
+                        <td class="text-right tabular-nums text-error font-semibold">{{ $u['gap'] }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
         </div>
     @endif
 </x-page-shell>

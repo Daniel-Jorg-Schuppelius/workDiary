@@ -54,28 +54,26 @@
 
     @if ($projects->isEmpty())
         <x-card>
-            <x-empty-state :title="__('Noch keine Projekte angelegt')" />
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">folder_open</span>' :title="__('Noch keine Projekte angelegt')" />
         </x-card>
     @else
         <x-card padding="p-0">
-            <div class="overflow-x-auto">
-                <table class="table table-sm table-zebra">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Projekt') }}</th>
-                            <th>{{ __('Kunde') }}</th>
-                            <th>{{ __('Status') }}</th>
-                            <th class="text-right">{{ __('Offen') }}</th>
-                            <th class="text-right">{{ __('Problem') }}</th>
-                            <th class="text-right">{{ __('Bestätigt') }}</th>
-                            <th class="text-right">{{ __('Erledigt') }}</th>
-                            <th class="text-right">{{ __('Mitarb.') }}</th>
-                            <th>{{ __('Letzte Aktivität') }}</th>
-                            <th class="text-right"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($rows as $row)
+            <x-table bare>
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('Projekt') }}</th>
+                        <th>{{ __('Kunde') }}</th>
+                        <th>{{ __('Status') }}</th>
+                        <th class="text-right">{{ __('Offen') }}</th>
+                        <th class="text-right">{{ __('Problem') }}</th>
+                        <th class="text-right">{{ __('Bestätigt') }}</th>
+                        <th class="text-right">{{ __('Erledigt') }}</th>
+                        <th class="text-right">{{ __('Mitarb.') }}</th>
+                        <th>{{ __('Letzte Aktivität') }}</th>
+                        <th class="text-right"></th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($rows as $row)
                             @php
                                 $project = $row['project'];
                                 $depth = $row['depth'];
@@ -134,9 +132,7 @@
                                 </td>
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+            </x-table>
         </x-card>
     @endif
 </x-page-shell>

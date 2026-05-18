@@ -64,63 +64,59 @@
 
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         @if (empty($rows))
-            <x-empty-state :title="__('Keine Fahrzeug-Daten im gewählten Zeitraum.')" />
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">directions_car</span>' :title="__('Keine Fahrzeug-Daten im gewählten Zeitraum.')" />
         @else
-            <div class="overflow-x-auto">
-                <table class="table table-zebra table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Fahrzeug') }}</th>
-                            <th>{{ __('Antrieb') }}</th>
-                            <th class="text-right">{{ __('Fahrten') }}</th>
-                            <th class="text-right">{{ __('km') }}</th>
-                            <th class="text-right">{{ __('Erstattung') }}</th>
-                            <th class="text-right">{{ __('Tankungen') }}</th>
-                            <th class="text-right">{{ __('Liter') }}</th>
-                            <th class="text-right">{{ __('kWh') }}</th>
-                            <th class="text-right">{{ __('Energiekosten') }}</th>
-                            <th class="text-right">{{ __('€/km') }}</th>
-                            <th class="text-right">{{ __('Tachostand') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($rows as $r)
-                            <tr>
-                                <td>
-                                    <span class="font-semibold">{{ $r['vehicle']->license_plate }}</span>
-                                    @if ($r['vehicle']->label)
-                                        <span class="ml-1 text-xs text-base-content/60">{{ $r['vehicle']->label }}</span>
-                                    @endif
-                                </td>
-                                <td class="text-xs text-base-content/70">{{ __($r['vehicle']->propulsion) }}</td>
-                                <td class="text-right tabular-nums">{{ $r['trip_count'] }}</td>
-                                <td class="text-right tabular-nums">{{ $num($r['km'], 1) }}</td>
-                                <td class="text-right tabular-nums">{{ $money($r['reimbursement']) }}</td>
-                                <td class="text-right tabular-nums">{{ $r['fuel_count'] }}</td>
-                                <td class="text-right tabular-nums">{{ $r['liters'] > 0 ? $num($r['liters'], 2) : '–' }}</td>
-                                <td class="text-right tabular-nums">{{ $r['kwh'] > 0 ? $num($r['kwh'], 2) : '–' }}</td>
-                                <td class="text-right tabular-nums">{{ $money($r['energy_cost']) }}</td>
-                                <td class="text-right tabular-nums">{{ $r['cost_per_km'] !== null ? $num($r['cost_per_km'], 3) . ' €' : '–' }}</td>
-                                <td class="text-right tabular-nums">{{ $r['last_odometer'] !== null ? number_format($r['last_odometer'], 0, ',', '.') : '–' }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr class="font-bold">
-                            <td colspan="2">{{ __('Gesamt') }}</td>
-                            <td class="text-right tabular-nums">{{ $totals['trip_count'] }}</td>
-                            <td class="text-right tabular-nums">{{ $num($totals['km'], 1) }}</td>
-                            <td class="text-right tabular-nums">{{ $money($totals['reimbursement']) }}</td>
-                            <td class="text-right tabular-nums">{{ $totals['fuel_count'] }}</td>
-                            <td class="text-right tabular-nums">{{ $num($totals['liters'], 2) }}</td>
-                            <td class="text-right tabular-nums">{{ $num($totals['kwh'], 2) }}</td>
-                            <td class="text-right tabular-nums">{{ $money($totals['energy_cost']) }}</td>
-                            <td class="text-right tabular-nums">{{ $totals['avg_cost_per_km'] !== null ? $num($totals['avg_cost_per_km'], 3) . ' €' : '–' }}</td>
-                            <td></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('Fahrzeug') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Antrieb') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Fahrten') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('km') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Erstattung') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Tankungen') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Liter') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('kWh') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Energiekosten') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('€/km') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Tachostand') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                <x-slot:foot>
+                    <tr class="font-bold">
+                        <td colspan="2">{{ __('Gesamt') }}</td>
+                        <td class="text-right tabular-nums">{{ $totals['trip_count'] }}</td>
+                        <td class="text-right tabular-nums">{{ $num($totals['km'], 1) }}</td>
+                        <td class="text-right tabular-nums">{{ $money($totals['reimbursement']) }}</td>
+                        <td class="text-right tabular-nums">{{ $totals['fuel_count'] }}</td>
+                        <td class="text-right tabular-nums">{{ $num($totals['liters'], 2) }}</td>
+                        <td class="text-right tabular-nums">{{ $num($totals['kwh'], 2) }}</td>
+                        <td class="text-right tabular-nums">{{ $money($totals['energy_cost']) }}</td>
+                        <td class="text-right tabular-nums">{{ $totals['avg_cost_per_km'] !== null ? $num($totals['avg_cost_per_km'], 3) . ' €' : '–' }}</td>
+                        <td></td>
+                    </tr>
+                </x-slot:foot>
+                @foreach ($rows as $r)
+                    <tr>
+                        <td>
+                            <span class="font-semibold">{{ $r['vehicle']->license_plate }}</span>
+                            @if ($r['vehicle']->label)
+                                <span class="ml-1 text-xs text-base-content/60">{{ $r['vehicle']->label }}</span>
+                            @endif
+                        </td>
+                        <td class="text-xs text-base-content/70">{{ __($r['vehicle']->propulsion) }}</td>
+                        <td class="text-right tabular-nums">{{ $r['trip_count'] }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (float) $r['km'] }}">{{ $num($r['km'], 1) }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (float) $r['reimbursement'] }}">{{ $money($r['reimbursement']) }}</td>
+                        <td class="text-right tabular-nums">{{ $r['fuel_count'] }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (float) $r['liters'] }}">{{ $r['liters'] > 0 ? $num($r['liters'], 2) : '–' }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (float) $r['kwh'] }}">{{ $r['kwh'] > 0 ? $num($r['kwh'], 2) : '–' }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (float) $r['energy_cost'] }}">{{ $money($r['energy_cost']) }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ $r['cost_per_km'] ?? -1 }}">{{ $r['cost_per_km'] !== null ? $num($r['cost_per_km'], 3) . ' €' : '–' }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ $r['last_odometer'] ?? -1 }}">{{ $r['last_odometer'] !== null ? number_format($r['last_odometer'], 0, ',', '.') : '–' }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
         @endif
     </div>
 </x-page-shell>

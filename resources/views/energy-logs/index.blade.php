@@ -56,59 +56,67 @@
         </div>
 
         <x-card padding="p-0">
-            <div class="overflow-x-auto">
-            <table class="table table-sm">
-                <thead>
+            <x-table table-sort="server"
+                     :route="route('energy-logs.index')"
+                     :current-sort="$sort ?? null"
+                     :current-dir="$dir ?? 'desc'"
+                     :sort-params="array_filter([
+                         'from' => $from->toDateString(),
+                         'to' => $to->toDateString(),
+                         'user' => request('user'),
+                         'vehicle' => $selectedVehicleId,
+                     ], fn ($v) => $v !== null && $v !== '')"
+                     bare>
+                <x-slot:head>
                     <tr>
-                        <th>{{ __('Zeitpunkt') }}</th>
+                        <x-table.th sort="started_at" default>{{ __('Zeitpunkt') }}</x-table.th>
                         <th>{{ __('Fahrzeug') }}</th>
                         <th>{{ __('Nutzer') }}</th>
-                        <th>{{ __('Typ') }}</th>
-                        <th class="text-right">{{ __('Menge') }}</th>
-                        <th class="text-right">{{ __('Kosten') }}</th>
-                        <th class="text-right">{{ __('Tacho') }}</th>
-                        <th class="text-right">{{ __('Δ km') }}</th>
+                        <x-table.th sort="type">{{ __('Typ') }}</x-table.th>
+                        <x-table.th sort="quantity" align="right">{{ __('Menge') }}</x-table.th>
+                        <x-table.th sort="cost" align="right">{{ __('Kosten') }}</x-table.th>
+                        <x-table.th sort="odometer" align="right">{{ __('Tacho') }}</x-table.th>
+                        <x-table.th sort="distance" align="right">{{ __('Δ km') }}</x-table.th>
                         <th></th>
                     </tr>
-                </thead>
-                <tbody>
-                    @forelse ($logs as $log)
-                        <tr>
-                            <td>{{ $log->started_at?->format('d.m.Y H:i') }}</td>
-                            <td>{{ $log->vehicle?->displayName() }}</td>
-                            <td>{{ $log->user?->name }}</td>
-                            <td>
-                                <span class="badge badge-sm">{{ __($log->energy_type) }}</span>
-                                @if ($log->fuel_kind)
-                                    <span class="badge badge-ghost badge-sm">{{ __($log->fuel_kind) }}</span>
-                                @endif
-                                @if ($log->charger_type)
-                                    <span class="badge badge-ghost badge-sm">{{ __($log->charger_type) }}</span>
-                                @endif
-                            </td>
-                            <td class="text-right">{{ number_format((float) $log->quantity, 2, ',', '.') }} {{ $log->unit === 'kwh' ? 'kWh' : 'l' }}</td>
-                            <td class="text-right">{{ $log->cost_total !== null ? number_format((float) $log->cost_total, 2, ',', '.') . ' €' : '—' }}</td>
-                            <td class="text-right">{{ $log->odometer_km !== null ? number_format($log->odometer_km, 0, ',', '.') : '—' }}</td>
-                            <td class="text-right">{{ $log->distance_since_last !== null ? number_format($log->distance_since_last, 0, ',', '.') : '—' }}</td>
-                            <td class="text-right">
-                                <a href="{{ route('energy-logs.edit', $log) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a>
-                                <form method="POST" action="{{ route('energy-logs.destroy', $log) }}" class="inline"
-                                      data-confirm-dialog
-                                      data-confirm-message="{{ __('Eintrag wirklich löschen?') }}"
-                                      data-confirm-label="{{ __('Löschen') }}">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Löschen') }}</button>
-                                </form>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="9" class="p-0"><x-empty-state :compact="true" :title="__('Keine Einträge im gewählten Zeitraum')" /></td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                </x-slot:head>
+                @forelse ($logs as $log)
+                    <tr>
+                        <td>{{ $log->started_at?->format('d.m.Y H:i') }}</td>
+                        <td>{{ $log->vehicle?->displayName() }}</td>
+                        <td>{{ $log->user?->name }}</td>
+                        <td>
+                            <span class="badge badge-sm">{{ __($log->energy_type) }}</span>
+                            @if ($log->fuel_kind)
+                                <span class="badge badge-ghost badge-sm">{{ __($log->fuel_kind) }}</span>
+                            @endif
+                            @if ($log->charger_type)
+                                <span class="badge badge-ghost badge-sm">{{ __($log->charger_type) }}</span>
+                            @endif
+                        </td>
+                        <td class="text-right">{{ number_format((float) $log->quantity, 2, ',', '.') }} {{ $log->unit === 'kwh' ? 'kWh' : 'l' }}</td>
+                        <td class="text-right">{{ $log->cost_total !== null ? number_format((float) $log->cost_total, 2, ',', '.') . ' €' : '—' }}</td>
+                        <td class="text-right">{{ $log->odometer_km !== null ? number_format($log->odometer_km, 0, ',', '.') : '—' }}</td>
+                        <td class="text-right">{{ $log->distance_since_last !== null ? number_format($log->distance_since_last, 0, ',', '.') : '—' }}</td>
+                        <td class="text-right">
+                            <a href="{{ route('energy-logs.edit', $log) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Bearbeiten') }}</a>
+                            <form method="POST" action="{{ route('energy-logs.destroy', $log) }}" class="inline"
+                                  data-confirm-dialog
+                                  data-confirm-message="{{ __('Eintrag wirklich löschen?') }}"
+                                  data-confirm-label="{{ __('Löschen') }}">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Löschen') }}</button>
+                            </form>
+                        </td>
+                    </tr>
+                @empty
+                    <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">bolt</span>' :colspan="9" :title="__('Keine Einträge im gewählten Zeitraum')" compact />
+                @endforelse
+            </x-table>
         </x-card>
 
-        {{ $logs->links() }}
+        @if ($logs->hasPages())
+            {{ $logs->links() }}
+        @endif
     </x-page-shell>
 @endsection

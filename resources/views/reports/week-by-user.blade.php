@@ -54,44 +54,40 @@
         </div>
 
         @if (count($byUser) === 0)
-            <x-empty-state :title="__('Keine Einträge in dieser Woche.')" />
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">view_week</span>' :title="__('Keine Einträge in dieser Woche.')" />
         @else
-            <div class="overflow-x-auto">
-                <table class="table table-zebra table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Mitarbeiter') }}</th>
-                            @foreach ($dayLabels as $label)
-                                <th class="text-right">{{ $label }}</th>
-                            @endforeach
-                            <th class="text-right">Σ {{ __('Stunden') }}</th>
-                            <th class="text-right">Σ €</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($byUser as $uid => $row)
-                            <tr>
-                                <td class="font-medium">{{ $users->get($uid)?->name ?? '#' . $uid }}</td>
-                                @foreach ($row['days'] as $minutes)
-                                    <td class="text-right text-sm @if ($minutes === 0) opacity-30 @endif">{{ $fmt($minutes) }}</td>
-                                @endforeach
-                                <td class="text-right font-semibold">{{ $fmt($row['total']) }}</td>
-                                <td class="text-right">{{ $money($row['rate']) }}</td>
-                            </tr>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('Mitarbeiter') }}</x-table.th>
+                        @foreach ($dayLabels as $label)
+                            <x-table.th sort type="duration" align="right">{{ $label }}</x-table.th>
                         @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr class="font-bold">
-                            <td>Σ {{ __('Tag') }}</td>
-                            @foreach ($dayTotals as $m)
-                                <td class="text-right">{{ $fmt($m) }}</td>
-                            @endforeach
-                            <td class="text-right">{{ $fmt($weekTotal) }}</td>
-                            <td class="text-right">{{ $money($weekRate) }}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+                        <x-table.th sort type="duration" align="right">Σ {{ __('Stunden') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">Σ €</x-table.th>
+                    </tr>
+                </x-slot:head>
+                <x-slot:foot>
+                    <tr class="font-bold">
+                        <td>Σ {{ __('Tag') }}</td>
+                        @foreach ($dayTotals as $m)
+                            <td class="text-right">{{ $fmt($m) }}</td>
+                        @endforeach
+                        <td class="text-right">{{ $fmt($weekTotal) }}</td>
+                        <td class="text-right">{{ $money($weekRate) }}</td>
+                    </tr>
+                </x-slot:foot>
+                @foreach ($byUser as $uid => $row)
+                    <tr>
+                        <td class="font-medium">{{ $users->get($uid)?->name ?? '#' . $uid }}</td>
+                        @foreach ($row['days'] as $minutes)
+                            <td class="text-right text-sm @if ($minutes === 0) opacity-30 @endif" data-sort-value="{{ (int) $minutes }}">{{ $fmt($minutes) }}</td>
+                        @endforeach
+                        <td class="text-right font-semibold" data-sort-value="{{ (int) $row['total'] }}">{{ $fmt($row['total']) }}</td>
+                        <td class="text-right" data-sort-value="{{ (float) $row['rate'] }}">{{ $money($row['rate']) }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
         @endif
     </div>
 </x-page-shell>

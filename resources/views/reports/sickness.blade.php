@@ -44,67 +44,63 @@
 
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         @if (empty($rows))
-            <x-empty-state :title="__('Keine Krankheitsdaten im gewählten Zeitraum.')" />
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">sick</span>' :title="__('Keine Krankheitsdaten im gewählten Zeitraum.')" />
         @else
-            <div class="overflow-x-auto">
-                <table class="table table-zebra table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Mitarbeiter') }}</th>
-                            <th class="text-right">{{ __('Werktage') }}</th>
-                            <th class="text-right">{{ __('Kal.-Tage') }}</th>
-                            <th class="text-right">{{ __('Fälle') }}</th>
-                            <th class="text-right">{{ __('Folge') }}</th>
-                            <th class="text-right">{{ __('Mit AU') }}</th>
-                            <th class="text-right">{{ __('Lohnfortzahlung') }}</th>
-                            <th>{{ __('Status') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($rows as $r)
-                            @php
-                                $pct = $r['entitlement_days'] > 0 ? (int) min(100, round($r['used_days'] / $r['entitlement_days'] * 100)) : 0;
-                                $tone = $r['exhausted'] ? 'error' : ($pct >= 75 ? 'warning' : 'success');
-                            @endphp
-                            <tr>
-                                <td class="font-semibold">
-                                    {{ $r['user']->name }}
-                                    @if ($r['chain_start'])
-                                        <div class="text-xs text-base-content/60">
-                                            {{ __('Kette seit') }} {{ \Carbon\Carbon::parse($r['chain_start'])->format('d.m.Y') }}
-                                        </div>
-                                    @endif
-                                </td>
-                                <td class="text-right tabular-nums">{{ $r['sick_workdays'] }}</td>
-                                <td class="text-right tabular-nums">{{ $r['sick_calendar_days'] }}</td>
-                                <td class="text-right tabular-nums">{{ $r['episodes'] }}</td>
-                                <td class="text-right tabular-nums">{{ $r['follow_ups'] }}</td>
-                                <td class="text-right tabular-nums">{{ $r['with_au'] }} / {{ $r['episodes'] }}</td>
-                                <td class="text-right tabular-nums">
-                                    <div class="flex items-center gap-2 justify-end">
-                                        <progress class="progress progress-{{ $tone }} w-20" value="{{ $r['used_days'] }}" max="{{ $r['entitlement_days'] }}"></progress>
-                                        <span class="text-xs">{{ $r['used_days'] }} / {{ $r['entitlement_days'] }}</span>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('Mitarbeiter') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Werktage') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Kal.-Tage') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Fälle') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Folge') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Mit AU') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Lohnfortzahlung') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($rows as $r)
+                    @php
+                        $pct = $r['entitlement_days'] > 0 ? (int) min(100, round($r['used_days'] / $r['entitlement_days'] * 100)) : 0;
+                        $tone = $r['exhausted'] ? 'error' : ($pct >= 75 ? 'warning' : 'success');
+                    @endphp
+                    <tr>
+                        <td class="font-semibold">
+                            {{ $r['user']->name }}
+                            @if ($r['chain_start'])
+                                <div class="text-xs text-base-content/60">
+                                    {{ __('Kette seit') }} {{ \Carbon\Carbon::parse($r['chain_start'])->format('d.m.Y') }}
+                                </div>
+                            @endif
+                        </td>
+                        <td class="text-right tabular-nums">{{ $r['sick_workdays'] }}</td>
+                        <td class="text-right tabular-nums">{{ $r['sick_calendar_days'] }}</td>
+                        <td class="text-right tabular-nums">{{ $r['episodes'] }}</td>
+                        <td class="text-right tabular-nums">{{ $r['follow_ups'] }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (int) $r['with_au'] }}">{{ $r['with_au'] }} / {{ $r['episodes'] }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ $pct }}">
+                            <div class="flex items-center gap-2 justify-end">
+                                <progress class="progress progress-{{ $tone }} w-20" value="{{ $r['used_days'] }}" max="{{ $r['entitlement_days'] }}"></progress>
+                                <span class="text-xs">{{ $r['used_days'] }} / {{ $r['entitlement_days'] }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            @if ($r['exhausted'])
+                                <span class="badge badge-sm badge-error">{{ __('Ausgeschöpft') }}</span>
+                                @if ($r['exhaustion_date'])
+                                    <div class="text-xs text-base-content/60">
+                                        {{ \Carbon\Carbon::parse($r['exhaustion_date'])->format('d.m.Y') }}
                                     </div>
-                                </td>
-                                <td>
-                                    @if ($r['exhausted'])
-                                        <span class="badge badge-sm badge-error">{{ __('Ausgeschöpft') }}</span>
-                                        @if ($r['exhaustion_date'])
-                                            <div class="text-xs text-base-content/60">
-                                                {{ \Carbon\Carbon::parse($r['exhaustion_date'])->format('d.m.Y') }}
-                                            </div>
-                                        @endif
-                                    @elseif ($r['used_days'] > 0)
-                                        <span class="badge badge-sm badge-{{ $tone }}">{{ __(':n Tage frei', ['n' => $r['remaining_days']]) }}</span>
-                                    @else
-                                        <span class="badge badge-sm badge-ghost">{{ __('OK') }}</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                                @endif
+                            @elseif ($r['used_days'] > 0)
+                                <span class="badge badge-sm badge-{{ $tone }}">{{ __(':n Tage frei', ['n' => $r['remaining_days']]) }}</span>
+                            @else
+                                <span class="badge badge-sm badge-ghost">{{ __('OK') }}</span>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            </x-table>
         @endif
     </div>
 

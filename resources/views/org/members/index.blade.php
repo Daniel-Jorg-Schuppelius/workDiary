@@ -16,21 +16,24 @@
     @if ($members->isEmpty())
         <x-card>
             <x-empty-state
+                icon='<span class="material-symbols-outlined" aria-hidden="true">group</span>'
                 :title="__('Noch keine Mitarbeiter')"
                 :message="__('Lege das erste Teammitglied an.')"
             />
         </x-card>
     @else
-        <x-table>
-            <thead>
+        <x-table table-sort="server"
+                 :route="route('org.members.index')"
+                 :current-sort="$sort ?? null"
+                 :current-dir="$dir ?? 'asc'">
+            <x-slot:head>
                 <tr>
-                    <th><x-sort-th column="name" :route="route('org.members.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'" default="name">{{ __('Name') }}</x-sort-th></th>
-                    <th><x-sort-th column="email" :route="route('org.members.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('E-Mail') }}</x-sort-th></th>
+                    <x-table.th sort="name" default>{{ __('Name') }}</x-table.th>
+                    <x-table.th sort="email">{{ __('E-Mail') }}</x-table.th>
                     <th>{{ __('Rolle') }}</th>
                     <th></th>
                 </tr>
-            </thead>
-            <tbody>
+            </x-slot:head>
                 @foreach ($members as $member)
                     <tr>
                         <td class="font-medium">{{ $member->name }}</td>
@@ -54,9 +57,10 @@
                         </td>
                     </tr>
                 @endforeach
-            </tbody>
         </x-table>
-        <div>{{ $members->links() }}</div>
+        @if ($members->hasPages())
+            <div>{{ $members->links() }}</div>
+        @endif
     @endif
 </x-page-shell>
 @endsection

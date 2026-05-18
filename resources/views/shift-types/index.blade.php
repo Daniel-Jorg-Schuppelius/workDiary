@@ -56,7 +56,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="p-0"><x-empty-state :compact="true" :title="__('Keine Einträge')" /></td></tr>
+                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">work_history</span>' :colspan="6" :title="__('Keine Einträge')" compact />
                     @endforelse
                 </tbody>
         </x-table>

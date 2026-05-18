@@ -57,52 +57,48 @@
         </div>
 
         @if (empty($bucket))
-            <x-empty-state :title="__('Keine Zeiteinträge im gewählten Zeitraum.')" />
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">business_center</span>' :title="__('Keine Zeiteinträge im gewählten Zeitraum.')" />
         @else
-            <div class="overflow-x-auto">
-                <table class="table table-zebra table-sm">
-                    <thead>
+            <x-table bare>
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('Kunde / Projekt') }}</th>
+                        <th class="text-right">{{ __('Stunden') }}</th>
+                        <th class="text-right">{{ __('Erlös') }}</th>
+                    </tr>
+                </x-slot:head>
+                <x-slot:foot>
+                    <tr class="font-bold">
+                        <td>{{ __('Gesamt') }}</td>
+                        <td class="text-right">{{ $fmt($totalMinutes) }}</td>
+                        <td class="text-right">{{ $money($totalRate) }}</td>
+                    </tr>
+                </x-slot:foot>
+                @foreach ($bucket as $row)
+                    <tr class="bg-base-200/60">
+                        <th class="font-semibold text-base-content">
+                            {{ $row['customer']?->name ?? __('Ohne Kunde') }}
+                        </th>
+                        <th class="text-right font-semibold tabular-nums text-base-content">{{ $fmt($row['minutes']) }}</th>
+                        <th class="text-right font-semibold tabular-nums text-base-content">{{ $money($row['rate']) }}</th>
+                    </tr>
+                    @foreach ($row['projects'] as $entry)
                         <tr>
-                            <th>{{ __('Kunde / Projekt') }}</th>
-                            <th class="text-right">{{ __('Stunden') }}</th>
-                            <th class="text-right">{{ __('Erlös') }}</th>
+                            <td class="pl-8 text-sm text-base-content/80">
+                                @if ($entry['project']->color)
+                                    <span class="mr-2 inline-block size-2 rounded-full align-middle" style="background-color: {{ $entry['project']->color }};"></span>
+                                @endif
+                                {{ $entry['project']->name }}
+                                @if ($entry['project']->number)
+                                    <span class="ml-1 text-xs text-base-content/50">#{{ $entry['project']->number }}</span>
+                                @endif
+                            </td>
+                            <td class="text-right tabular-nums">{{ $fmt($entry['minutes']) }}</td>
+                            <td class="text-right tabular-nums">{{ $money($entry['rate']) }}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($bucket as $row)
-                            <tr class="bg-base-200/60">
-                                <th class="font-semibold text-base-content">
-                                    {{ $row['customer']?->name ?? __('Ohne Kunde') }}
-                                </th>
-                                <th class="text-right font-semibold tabular-nums text-base-content">{{ $fmt($row['minutes']) }}</th>
-                                <th class="text-right font-semibold tabular-nums text-base-content">{{ $money($row['rate']) }}</th>
-                            </tr>
-                            @foreach ($row['projects'] as $entry)
-                                <tr>
-                                    <td class="pl-8 text-sm text-base-content/80">
-                                        @if ($entry['project']->color)
-                                            <span class="mr-2 inline-block size-2 rounded-full align-middle" style="background-color: {{ $entry['project']->color }};"></span>
-                                        @endif
-                                        {{ $entry['project']->name }}
-                                        @if ($entry['project']->number)
-                                            <span class="ml-1 text-xs text-base-content/50">#{{ $entry['project']->number }}</span>
-                                        @endif
-                                    </td>
-                                    <td class="text-right tabular-nums">{{ $fmt($entry['minutes']) }}</td>
-                                    <td class="text-right tabular-nums">{{ $money($entry['rate']) }}</td>
-                                </tr>
-                            @endforeach
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr class="font-bold">
-                            <td>{{ __('Gesamt') }}</td>
-                            <td class="text-right">{{ $fmt($totalMinutes) }}</td>
-                            <td class="text-right">{{ $money($totalRate) }}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+                    @endforeach
+                @endforeach
+            </x-table>
         @endif
     </div>
 </x-page-shell>

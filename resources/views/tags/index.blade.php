@@ -17,17 +17,20 @@
     </x-slot:toolbar>
 
     {{-- Tag-Liste --}}
-    <x-table :pin-rows="true" scroll="flex">
-            <thead class="bg-base-200">
-                <tr>
-                    <th><x-sort-th column="name" :route="route('tags.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'" default="name">{{ __('Tag') }}</x-sort-th></th>
-                    <th class="text-right"><x-sort-th column="diary" :route="route('tags.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Tagebuch') }}</x-sort-th></th>
-                    <th class="text-right"><x-sort-th column="shifts" :route="route('tags.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Bereitschaft') }}</x-sort-th></th>
-                    <th class="text-right"><x-sort-th column="assignments" :route="route('tags.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Notdienst') }}</x-sort-th></th>
+    <x-table :pin-rows="true" scroll="flex"
+             table-sort="server"
+             :route="route('tags.index')"
+             :current-sort="$sort ?? null"
+             :current-dir="$dir ?? 'asc'">
+            <x-slot:head>
+                <tr class="bg-base-200">
+                    <x-table.th sort="name" default>{{ __('Tag') }}</x-table.th>
+                    <x-table.th sort="diary" align="right">{{ __('Tagebuch') }}</x-table.th>
+                    <x-table.th sort="shifts" align="right">{{ __('Bereitschaft') }}</x-table.th>
+                    <x-table.th sort="assignments" align="right">{{ __('Notdienst') }}</x-table.th>
                     <th class="text-right">{{ __('Aktionen') }}</th>
                 </tr>
-            </thead>
-            <tbody>
+            </x-slot:head>
                 @forelse ($tags as $tag)
                     <tr class="hover">
                         <td>
@@ -59,9 +62,8 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="p-0"><x-empty-state :compact="true" :title="__('Noch keine Tags angelegt')" /></td></tr>
+                    <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">label</span>' :colspan="5" :title="__('Noch keine Tags angelegt')" compact />
                 @endforelse
-            </tbody>
     </x-table>
 
     @if ($tags->hasPages())

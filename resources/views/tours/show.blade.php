@@ -60,30 +60,28 @@
 
         <div class="grid gap-4 lg:grid-cols-2">
             <div class="rounded-box border border-base-300 bg-base-100">
-                <table class="table table-sm">
-                    <thead>
+                <x-table table-sort="client" bare>
+                    <x-slot:head>
                         <tr>
                             <th>#</th>
-                            <th>{{ __('Auftrag') }}</th>
-                            <th>{{ __('Kunde') }}</th>
-                            <th>{{ __('Ort') }}</th>
-                            <th>{{ __('Status') }}</th>
+                            <x-table.th sort>{{ __('Auftrag') }}</x-table.th>
+                            <x-table.th sort>{{ __('Kunde') }}</x-table.th>
+                            <x-table.th sort>{{ __('Ort') }}</x-table.th>
+                            <x-table.th sort>{{ __('Status') }}</x-table.th>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($stops as $s)
-                            <tr>
-                                <td>{{ $s->tour_position }}</td>
-                                <td><a href="{{ route('diary.show', $s) }}" class="link">{{ $s->title }}</a></td>
-                                <td>{{ $s->customer?->name }}</td>
-                                <td>{{ $s->address_city }}</td>
-                                <td><span class="badge badge-ghost badge-xs">{{ $s->statusLabel() }}</span></td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="5" class="py-4 text-center text-base-content/60">{{ __('Keine Stopps zugewiesen.') }}</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                    </x-slot:head>
+                    @forelse ($stops as $s)
+                        <tr>
+                            <td>{{ $s->tour_position }}</td>
+                            <td><a href="{{ route('diary.show', $s) }}" class="link">{{ $s->title }}</a></td>
+                            <td>{{ $s->customer?->name }}</td>
+                            <td>{{ $s->address_city }}</td>
+                            <td><span class="badge badge-ghost badge-xs">{{ $s->statusLabel() }}</span></td>
+                        </tr>
+                    @empty
+                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">route</span>' :colspan="5" :title="__('Keine Stopps zugewiesen.')" compact />
+                    @endforelse
+                </x-table>
             </div>
 
             @if ($markers !== [])

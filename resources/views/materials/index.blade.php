@@ -18,53 +18,55 @@
     </x-filter-bar>
 
     <x-card padding="p-0">
-        <div class="overflow-x-auto">
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <?php $p = ['q' => $q]; ?>
-                        <th><x-sort-th column="sku" :route="route('materials.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'asc'">SKU</x-sort-th></th>
-                        <th><x-sort-th column="name" :route="route('materials.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'asc'" default="name">{{ __('Name') }}</x-sort-th></th>
-                        <th><x-sort-th column="unit" :route="route('materials.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Einheit') }}</x-sort-th></th>
-                        <th class="text-right"><x-sort-th column="price" :route="route('materials.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('EP netto') }}</x-sort-th></th>
-                        <th class="text-right"><x-sort-th column="tax" :route="route('materials.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'asc'">USt %</x-sort-th></th>
-                        <th><x-sort-th column="provider" :route="route('materials.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Quelle') }}</x-sort-th></th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($materials as $m)
-                        <tr>
-                            <td>{{ $m->sku }}</td>
-                            <td>{{ $m->name }}</td>
-                            <td>{{ $m->unit }}</td>
-                            <td class="text-right">{{ $m->default_unit_price !== null ? number_format((float)$m->default_unit_price, 4, ',', '.') : '—' }}</td>
-                            <td class="text-right">{{ $m->tax_rate !== null ? rtrim(rtrim(number_format((float)$m->tax_rate, 2, ',', '.'), '0'), ',') : '—' }}</td>
-                            <td>{{ $m->external_provider ?: 'local' }}</td>
-                            <td class="text-right">
-                                @can('update', $m)
-                                    <a href="{{ route('materials.edit', $m) }}" data-entry-modal-trigger class="btn btn-xs">{{ __('Bearbeiten') }}</a>
-                                @endcan
-                                @can('delete', $m)
-                                    <form method="POST" action="{{ route('materials.destroy', $m) }}" class="inline"
-                                          data-confirm-dialog
-                                          data-confirm-message="{{ __('Löschen?') }}"
-                                          data-confirm-icon="delete"
-                                          data-confirm-tone="error"
-                                          data-confirm-label="{{ __('Löschen') }}">
-                                        @csrf @method('DELETE')
-                                        <button class="btn btn-xs btn-ghost text-error">×</button>
-                                    </form>
-                                @endcan
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="7" class="p-0"><x-empty-state :compact="true" :title="__('Noch keine Materialien')" /></td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        <div class="border-t border-base-300 px-4 py-3">{{ $materials->links() }}</div>
+        <x-table table-sort="server"
+                 :route="route('materials.index')"
+                 :current-sort="$sort ?? null"
+                 :current-dir="$dir ?? 'asc'"
+                 :sort-params="['q' => $q]"
+                 bare>
+            <x-slot:head>
+                <tr>
+                    <x-table.th sort="sku">SKU</x-table.th>
+                    <x-table.th sort="name" default>{{ __('Name') }}</x-table.th>
+                    <x-table.th sort="unit">{{ __('Einheit') }}</x-table.th>
+                    <x-table.th sort="price" align="right">{{ __('EP netto') }}</x-table.th>
+                    <x-table.th sort="tax" align="right">USt %</x-table.th>
+                    <x-table.th sort="provider">{{ __('Quelle') }}</x-table.th>
+                    <th></th>
+                </tr>
+            </x-slot:head>
+            @forelse($materials as $m)
+                <tr>
+                    <td>{{ $m->sku }}</td>
+                    <td>{{ $m->name }}</td>
+                    <td>{{ $m->unit }}</td>
+                    <td class="text-right">{{ $m->default_unit_price !== null ? number_format((float)$m->default_unit_price, 4, ',', '.') : '—' }}</td>
+                    <td class="text-right">{{ $m->tax_rate !== null ? rtrim(rtrim(number_format((float)$m->tax_rate, 2, ',', '.'), '0'), ',') : '—' }}</td>
+                    <td>{{ $m->external_provider ?: 'local' }}</td>
+                    <td class="text-right">
+                        @can('update', $m)
+                            <a href="{{ route('materials.edit', $m) }}" data-entry-modal-trigger class="btn btn-xs">{{ __('Bearbeiten') }}</a>
+                        @endcan
+                        @can('delete', $m)
+                            <form method="POST" action="{{ route('materials.destroy', $m) }}" class="inline"
+                                  data-confirm-dialog
+                                  data-confirm-message="{{ __('Löschen?') }}"
+                                  data-confirm-icon="delete"
+                                  data-confirm-tone="error"
+                                  data-confirm-label="{{ __('Löschen') }}">
+                                @csrf @method('DELETE')
+                                <button class="btn btn-xs btn-ghost text-error">×</button>
+                            </form>
+                        @endcan
+                    </td>
+                </tr>
+            @empty
+                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>' :colspan="7" :title="__('Noch keine Materialien')" compact />
+            @endforelse
+        </x-table>
+        @if ($materials->hasPages())
+            <div class="border-t border-base-300 px-4 py-3">{{ $materials->links() }}</div>
+        @endif
     </x-card>
 </x-page-shell>
 @endsection

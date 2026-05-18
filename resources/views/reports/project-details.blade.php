@@ -60,63 +60,55 @@
                 </div>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="table table-zebra table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Monat') }}</th>
-                            <th class="text-right">{{ __('Stunden') }}</th>
-                            <th class="text-right">{{ __('Erlös') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($monthMatrix as $idx => $row)
-                            <tr>
-                                <td>{{ $monthLabels[$idx] ?? $idx }}</td>
-                                <td class="text-right @if ($row['minutes'] === 0) opacity-30 @endif">{{ $fmt($row['minutes']) }}</td>
-                                <td class="text-right">{{ $money($row['rate']) }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr class="font-bold">
-                            <td>Σ {{ __('Jahr') }}</td>
-                            <td class="text-right">{{ $fmt($yearMinutes) }}</td>
-                            <td class="text-right">{{ $money($yearRate) }}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('Monat') }}</x-table.th>
+                        <x-table.th sort type="duration" align="right">{{ __('Stunden') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Erlös') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                <x-slot:foot>
+                    <tr class="font-bold">
+                        <td>Σ {{ __('Jahr') }}</td>
+                        <td class="text-right">{{ $fmt($yearMinutes) }}</td>
+                        <td class="text-right">{{ $money($yearRate) }}</td>
+                    </tr>
+                </x-slot:foot>
+                @foreach ($monthMatrix as $idx => $row)
+                    <tr>
+                        <td>{{ $monthLabels[$idx] ?? $idx }}</td>
+                        <td class="text-right @if ($row['minutes'] === 0) opacity-30 @endif" data-sort-value="{{ (int) $row['minutes'] }}">{{ $fmt($row['minutes']) }}</td>
+                        <td class="text-right" data-sort-value="{{ (float) $row['rate'] }}">{{ $money($row['rate']) }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
 
             @if (count($byUser) > 0)
                 <h3 class="mt-6 mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('Aufteilung pro Mitarbeiter') }}</h3>
-                <div class="overflow-x-auto">
-                    <table class="table table-zebra table-sm">
-                        <thead>
-                            <tr>
-                                <th>{{ __('Mitarbeiter') }}</th>
-                                <th class="text-right">{{ __('Stunden') }}</th>
-                                <th class="text-right">{{ __('Erlös') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($byUser as $uid => $row)
-                                <tr>
-                                    <td>{{ $users->get($uid)?->name ?? '#' . $uid }}</td>
-                                    <td class="text-right">{{ $fmt($row['minutes']) }}</td>
-                                    <td class="text-right">{{ $money($row['rate']) }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                        <tfoot>
-                            <tr class="font-bold">
-                                <td>Σ {{ __('Gesamt') }}</td>
-                                <td class="text-right">{{ $fmt($yearMinutes) }}</td>
-                                <td class="text-right">{{ $money($yearRate) }}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
+                <x-table table-sort="client" bare>
+                    <x-slot:head>
+                        <tr>
+                            <x-table.th sort type="string">{{ __('Mitarbeiter') }}</x-table.th>
+                            <x-table.th sort type="duration" align="right">{{ __('Stunden') }}</x-table.th>
+                            <x-table.th sort type="number" align="right">{{ __('Erlös') }}</x-table.th>
+                        </tr>
+                    </x-slot:head>
+                    <x-slot:foot>
+                        <tr class="font-bold">
+                            <td>Σ {{ __('Gesamt') }}</td>
+                            <td class="text-right">{{ $fmt($yearMinutes) }}</td>
+                            <td class="text-right">{{ $money($yearRate) }}</td>
+                        </tr>
+                    </x-slot:foot>
+                    @foreach ($byUser as $uid => $row)
+                        <tr>
+                            <td>{{ $users->get($uid)?->name ?? '#' . $uid }}</td>
+                            <td class="text-right" data-sort-value="{{ (int) $row['minutes'] }}">{{ $fmt($row['minutes']) }}</td>
+                            <td class="text-right" data-sort-value="{{ (float) $row['rate'] }}">{{ $money($row['rate']) }}</td>
+                        </tr>
+                    @endforeach
+                </x-table>
             @endif
         </div>
     @endif

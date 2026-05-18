@@ -1,16 +1,20 @@
 {{-- Bereitschaft: Tabelle --}}
 <?php $p = array_merge($filters ?? [], ['tab' => 'bereitschaft']); ?>
-<x-table scroll="flex" :pinRows="true" :zebra="true">
-        <thead class="bg-base-200">
-            <tr>
-                <th><x-sort-th column="mitarbeiter" :route="route('duties.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Mitarbeiter') }}</x-sort-th></th>
-                <th><x-sort-th column="von" :route="route('duties.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'" default="von">{{ __('Beginn') }}</x-sort-th></th>
-                <th><x-sort-th column="bis" :route="route('duties.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Ende') }}</x-sort-th></th>
+<x-table scroll="flex" :pinRows="true" :zebra="true"
+         table-sort="server"
+         :route="route('duties.index')"
+         :current-sort="$sort ?? null"
+         :current-dir="$dir ?? 'desc'"
+         :sort-params="$p">
+        <x-slot:head>
+            <tr class="bg-base-200">
+                <x-table.th sort="mitarbeiter">{{ __('Mitarbeiter') }}</x-table.th>
+                <x-table.th sort="von" default>{{ __('Beginn') }}</x-table.th>
+                <x-table.th sort="bis">{{ __('Ende') }}</x-table.th>
                 <th>{{ __('Notiz') }}</th>
                 <th class="w-24 text-right">{{ __('Aktion') }}</th>
             </tr>
-        </thead>
-        <tbody>
+        </x-slot:head>
             @forelse ($shifts as $shift)
                 @php $isSunday = $shift->start_at && $shift->start_at->isSunday(); @endphp
                 <tr class="hover {{ $isSunday ? 'text-error' : '' }}">
@@ -26,9 +30,8 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="5" class="p-0"><x-empty-state :compact="true" :title="__('Keine Einträge')" /></td></tr>
+                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">notifications_active</span>' :colspan="5" :title="__('Keine Einträge')" compact />
             @endforelse
-        </tbody>
 </x-table>
 @if ($shifts->total() > 0)
     @include('duties._pagination', ['paginator' => $shifts])

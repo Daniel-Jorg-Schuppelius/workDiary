@@ -47,41 +47,37 @@
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Verbrauch pro Material') }}</h3>
         @if (empty($rows))
-            <x-empty-state :title="__('Im Zeitraum wurden keine Materialien verbucht.')" />
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>' :title="__('Im Zeitraum wurden keine Materialien verbucht.')" />
         @else
-            <div class="overflow-x-auto">
-                <table class="table table-zebra table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ __('SKU') }}</th>
-                            <th>{{ __('Material') }}</th>
-                            <th>{{ __('Einheit') }}</th>
-                            <th class="text-right">{{ __('Menge') }}</th>
-                            <th class="text-right">{{ __('Verwendungen') }}</th>
-                            <th class="text-right">{{ __('Netto') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($rows as $r)
-                            <tr>
-                                <td class="font-mono text-xs">{{ $r['sku'] ?? '—' }}</td>
-                                <td class="font-semibold">{{ $r['name'] }}</td>
-                                <td>{{ $r['unit'] }}</td>
-                                <td class="text-right tabular-nums">{{ $num($r['quantity'], 3) }}</td>
-                                <td class="text-right tabular-nums">{{ $r['usage_count'] }}</td>
-                                <td class="text-right tabular-nums">{{ $eur($r['line_total_net']) }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr class="font-bold">
-                            <td colspan="4">{{ __('Gesamt') }}</td>
-                            <td class="text-right tabular-nums">{{ $totals['usage_count'] }}</td>
-                            <td class="text-right tabular-nums">{{ $eur($totals['line_total_net']) }}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('SKU') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Material') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Einheit') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Menge') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Verwendungen') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Netto') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                <x-slot:foot>
+                    <tr class="font-bold">
+                        <td colspan="4">{{ __('Gesamt') }}</td>
+                        <td class="text-right tabular-nums">{{ $totals['usage_count'] }}</td>
+                        <td class="text-right tabular-nums">{{ $eur($totals['line_total_net']) }}</td>
+                    </tr>
+                </x-slot:foot>
+                @foreach ($rows as $r)
+                    <tr>
+                        <td class="font-mono text-xs">{{ $r['sku'] ?? '—' }}</td>
+                        <td class="font-semibold">{{ $r['name'] }}</td>
+                        <td>{{ $r['unit'] }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (float) $r['quantity'] }}">{{ $num($r['quantity'], 3) }}</td>
+                        <td class="text-right tabular-nums">{{ $r['usage_count'] }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (float) $r['line_total_net'] }}">{{ $eur($r['line_total_net']) }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
         @endif
     </div>
 </x-page-shell>

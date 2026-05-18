@@ -50,33 +50,29 @@
 
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         @if ($users->isEmpty() || $qualifications->isEmpty())
-            <x-empty-state :title="__('Keine Qualifikations-Zuweisungen vorhanden.')" />
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>' :title="__('Keine Qualifikations-Zuweisungen vorhanden.')" />
         @else
-            <div class="overflow-x-auto">
-                <table class="table table-zebra table-sm">
-                    <thead>
-                        <tr>
-                            <th class="sticky left-0 bg-base-100">{{ __('Mitarbeiter') }}</th>
-                            @foreach ($qualifications as $q)
-                                <th class="text-center align-bottom" title="{{ $q->name }}">
-                                    <span class="block text-xs font-semibold">{{ $q->abbreviation ?? $q->name }}</span>
-                                </th>
-                            @endforeach
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($users as $u)
-                            <tr>
-                                <td class="sticky left-0 bg-base-100 font-semibold">{{ $u->name }}</td>
-                                @foreach ($qualifications as $q)
-                                    @php $cell = $matrix[(int) $u->id][(int) $q->id] ?? null; @endphp
-                                    <td class="text-center text-xs tabular-nums {{ $cellClass($cell) }}">{{ $cellText($cell) }}</td>
-                                @endforeach
-                            </tr>
+            <x-table bare>
+                <x-slot:head>
+                    <tr>
+                        <th class="sticky left-0 bg-base-100">{{ __('Mitarbeiter') }}</th>
+                        @foreach ($qualifications as $q)
+                            <th class="text-center align-bottom" title="{{ $q->name }}">
+                                <span class="block text-xs font-semibold">{{ $q->abbreviation ?? $q->name }}</span>
+                            </th>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+                    </tr>
+                </x-slot:head>
+                @foreach ($users as $u)
+                    <tr>
+                        <td class="sticky left-0 bg-base-100 font-semibold">{{ $u->name }}</td>
+                        @foreach ($qualifications as $q)
+                            @php $cell = $matrix[(int) $u->id][(int) $q->id] ?? null; @endphp
+                            <td class="text-center text-xs tabular-nums {{ $cellClass($cell) }}">{{ $cellText($cell) }}</td>
+                        @endforeach
+                    </tr>
+                @endforeach
+            </x-table>
             <div class="mt-3 flex flex-wrap gap-3 text-xs text-base-content/70">
                 <span class="badge bg-success/15">{{ __('gültig') }}</span>
                 <span class="badge bg-warning/20">{{ __('läuft in 30 Tagen ab') }}</span>

@@ -49,22 +49,26 @@
     </x-card>
 @endif
 
-<x-table scroll="flex" :pinRows="true" :zebra="true" size="sm">
-    <thead class="bg-base-200">
-        <tr>
+<x-table scroll="flex" :pinRows="true" :zebra="true" size="sm"
+         table-sort="server"
+         :route="route('duties.index')"
+         :current-sort="$sort ?? null"
+         :current-dir="$dir ?? 'desc'"
+         :sort-params="$p">
+    <x-slot:head>
+        <tr class="bg-base-200">
             @if ($isAdmin)
-                <th><x-sort-th column="mitarbeiter" :route="route('duties.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Mitarbeiter') }}</x-sort-th></th>
+                <x-table.th sort="mitarbeiter">{{ __('Mitarbeiter') }}</x-table.th>
             @endif
-            <th><x-sort-th column="von" :route="route('duties.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'" default="von">{{ __('Zeitraum') }}</x-sort-th></th>
+            <x-table.th sort="von" default>{{ __('Zeitraum') }}</x-table.th>
             <th>{{ __('Tage') }}</th>
-            <th><x-sort-th column="art" :route="route('duties.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Art') }}</x-sort-th></th>
+            <x-table.th sort="art">{{ __('Art') }}</x-table.th>
             <th>{{ __('AU') }}</th>
             <th>{{ __('Status') }}</th>
             <th class="max-w-xs">{{ __('Notiz') }}</th>
             <th class="w-px"></th>
         </tr>
-    </thead>
-    <tbody>
+    </x-slot:head>
         @forelse ($sickLeaves as $s)
             @php $days = $s->workingDays($holidayService); @endphp
             <tr class="hover">
@@ -153,13 +157,8 @@
                 </td>
             </tr>
         @empty
-            <tr>
-                <td colspan="{{ $isAdmin ? 8 : 7 }}" class="p-0">
-                    <x-empty-state :compact="true" :title="__('Keine Krankmeldungen im Zeitraum')" />
-                </td>
-            </tr>
+            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">sick</span>' :colspan="$isAdmin ? 8 : 7" :title="__('Keine Krankmeldungen im Zeitraum')" compact />
         @endforelse
-    </tbody>
 </x-table>
 @if ($sickLeaves->hasPages())
     @include('duties._pagination', ['paginator' => $sickLeaves])

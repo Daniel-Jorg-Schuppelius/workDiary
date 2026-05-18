@@ -25,15 +25,6 @@
 
         $currentSort = $sort ?? '';
         $currentDir = $dir ?? 'desc';
-        $sortLink = function (string $column) use ($tabFilters, $activeTab, $currentSort, $currentDir): string {
-            $nextDir = ($currentSort === $column && $currentDir === 'asc') ? 'desc' : 'asc';
-            return route('legacy.archive.index', array_merge($tabFilters, [
-                'tab' => $activeTab,
-                'sort' => $column,
-                'dir' => $nextDir,
-            ]));
-        };
-        $sortIcon = fn (string $col): string => $currentSort !== $col ? '↕' : ($currentDir === 'asc' ? '↑' : '↓');
 
         $kpiTiles = $activeTab === 'auftraege'
             ? [
@@ -222,158 +213,154 @@
         {{-- Tabellenbereich (scrollbar, sticky header) --}}
         <div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
             @if ($activeTab === 'urlaub')
-                <table class="table table-sm table-zebra table-pin-rows">
-                    <thead class="bg-base-200">
-                        <tr>
+                @php $p = array_merge($tabFilters, ['tab' => 'urlaub']); @endphp
+                <x-table table-sort="server" :route="route('legacy.archive.index')" :current-sort="$currentSort" :current-dir="$currentDir" :sort-params="$p" pin-rows bare scroll="none">
+                    <x-slot:head>
+                        <tr class="bg-base-200">
                             @if ($vacationIsAdmin)
-                                <th class="w-32"><a href="{{ $sortLink('mitarbeiter') }}" class="link link-hover">{{ __('Mitarbeiter') }} {!! $sortIcon('mitarbeiter') !!}</a></th>
+                                <x-table.th sort="mitarbeiter" class="w-32">{{ __('Mitarbeiter') }}</x-table.th>
                             @endif
-                            <th><a href="{{ $sortLink('typ') }}" class="link link-hover">{{ __('Typ') }} {!! $sortIcon('typ') !!}</a></th>
-                            <th class="w-28 whitespace-nowrap"><a href="{{ $sortLink('von') }}" class="link link-hover">{{ __('Von') }} {!! $sortIcon('von') !!}</a></th>
-                            <th class="w-28 whitespace-nowrap"><a href="{{ $sortLink('bis') }}" class="link link-hover">{{ __('Bis') }} {!! $sortIcon('bis') !!}</a></th>
-                            <th><a href="{{ $sortLink('status') }}" class="link link-hover">{{ __('Status') }} {!! $sortIcon('status') !!}</a></th>
+                            <x-table.th sort="typ">{{ __('Typ') }}</x-table.th>
+                            <x-table.th sort="von" class="w-28 whitespace-nowrap">{{ __('Von') }}</x-table.th>
+                            <x-table.th sort="bis" class="w-28 whitespace-nowrap">{{ __('Bis') }}</x-table.th>
+                            <x-table.th sort="status">{{ __('Status') }}</x-table.th>
                             <th class="max-w-xs">{{ __('Notiz') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($vacationEntries as $v)
-                            @php
-                                $statusBadge = match ($v->status) {
-                                    \App\Models\Vacation::STATUS_APPROVED  => 'badge-success',
-                                    \App\Models\Vacation::STATUS_REJECTED  => 'badge-error',
-                                    \App\Models\Vacation::STATUS_CANCELLED => 'badge-ghost',
-                                    default                                => 'badge-neutral',
-                                };
-                                $statusLabel = match ($v->status) {
-                                    \App\Models\Vacation::STATUS_APPROVED  => __('Abgelaufen'),
-                                    \App\Models\Vacation::STATUS_REJECTED  => __('Abgelehnt'),
-                                    \App\Models\Vacation::STATUS_CANCELLED => __('Storniert'),
-                                    default                                => $v->status,
-                                };
-                                $typeLabel = match ($v->type) {
-                                    \App\Models\Vacation::TYPE_VACATION => __('Urlaub'),
-                                    \App\Models\Vacation::TYPE_SICK     => __('Krank'),
-                                    \App\Models\Vacation::TYPE_SPECIAL  => __('Sonderurlaub'),
-                                    \App\Models\Vacation::TYPE_UNPAID   => __('Unbezahlt'),
-                                    default                             => $v->type,
-                                };
-                            @endphp
-                            <tr class="hover">
-                                @if ($vacationIsAdmin)
-                                    <td class="whitespace-nowrap">{{ $v->user?->name ?? '—' }}</td>
-                                @endif
-                                <td class="whitespace-nowrap">{{ $typeLabel }}</td>
-                                <td class="whitespace-nowrap text-xs text-base-content/70">{{ $v->start_date->format('d.m.Y') }}</td>
-                                <td class="whitespace-nowrap text-xs text-base-content/70">{{ $v->end_date->format('d.m.Y') }}</td>
-                                <td><span class="badge badge-sm {{ $statusBadge }}">{{ $statusLabel }}</span></td>
-                                <td class="max-w-xs truncate text-sm text-base-content/70">{{ $v->note ?? '—' }}</td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="{{ $vacationIsAdmin ? 6 : 5 }}" class="py-6 text-center text-base-content/60">{{ __('Keine Einträge.') }}</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                    </x-slot:head>
+                    @forelse ($vacationEntries as $v)
+                        @php
+                            $statusBadge = match ($v->status) {
+                                \App\Models\Vacation::STATUS_APPROVED  => 'badge-success',
+                                \App\Models\Vacation::STATUS_REJECTED  => 'badge-error',
+                                \App\Models\Vacation::STATUS_CANCELLED => 'badge-ghost',
+                                default                                => 'badge-neutral',
+                            };
+                            $statusLabel = match ($v->status) {
+                                \App\Models\Vacation::STATUS_APPROVED  => __('Abgelaufen'),
+                                \App\Models\Vacation::STATUS_REJECTED  => __('Abgelehnt'),
+                                \App\Models\Vacation::STATUS_CANCELLED => __('Storniert'),
+                                default                                => $v->status,
+                            };
+                            $typeLabel = match ($v->type) {
+                                \App\Models\Vacation::TYPE_VACATION => __('Urlaub'),
+                                \App\Models\Vacation::TYPE_SICK     => __('Krank'),
+                                \App\Models\Vacation::TYPE_SPECIAL  => __('Sonderurlaub'),
+                                \App\Models\Vacation::TYPE_UNPAID   => __('Unbezahlt'),
+                                default                             => $v->type,
+                            };
+                        @endphp
+                        <tr class="hover">
+                            @if ($vacationIsAdmin)
+                                <td class="whitespace-nowrap">{{ $v->user?->name ?? '—' }}</td>
+                            @endif
+                            <td class="whitespace-nowrap">{{ $typeLabel }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $v->start_date->format('d.m.Y') }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $v->end_date->format('d.m.Y') }}</td>
+                            <td><span class="badge badge-sm {{ $statusBadge }}">{{ $statusLabel }}</span></td>
+                            <td class="max-w-xs truncate text-sm text-base-content/70">{{ $v->note ?? '—' }}</td>
+                        </tr>
+                    @empty
+                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">beach_access</span>' :colspan="$vacationIsAdmin ? 6 : 5" :title="__('Keine Einträge.')" compact />
+                    @endforelse
+                </x-table>
             @elseif ($activeTab === 'auftraege')
-                <table class="table table-sm table-zebra table-pin-rows">
-                    <thead class="bg-base-200">
-                        <tr>
-                            <th class="w-32"><a href="{{ $sortLink('mitarbeiter') }}" class="link link-hover">{{ __('Mitarbeiter') }} {!! $sortIcon('mitarbeiter') !!}</a></th>
-                            <th class="w-24 text-center"><a href="{{ $sortLink('status') }}" class="link link-hover">{{ __('Status') }} {!! $sortIcon('status') !!}</a></th>
-                            <th class="w-28 whitespace-nowrap"><a href="{{ $sortLink('von') }}" class="link link-hover">{{ __('Von') }} {!! $sortIcon('von') !!}</a></th>
-                            <th class="w-28 whitespace-nowrap"><a href="{{ $sortLink('bis') }}" class="link link-hover">{{ __('Bis') }} {!! $sortIcon('bis') !!}</a></th>
+                @php $p = array_merge($tabFilters, ['tab' => 'auftraege']); @endphp
+                <x-table table-sort="server" :route="route('legacy.archive.index')" :current-sort="$currentSort" :current-dir="$currentDir" :sort-params="$p" pin-rows bare scroll="none">
+                    <x-slot:head>
+                        <tr class="bg-base-200">
+                            <x-table.th sort="mitarbeiter" class="w-32">{{ __('Mitarbeiter') }}</x-table.th>
+                            <x-table.th sort="status" class="w-24 text-center">{{ __('Status') }}</x-table.th>
+                            <x-table.th sort="von" class="w-28 whitespace-nowrap">{{ __('Von') }}</x-table.th>
+                            <x-table.th sort="bis" class="w-28 whitespace-nowrap">{{ __('Bis') }}</x-table.th>
                             <th>{{ __('Inhalt') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($diaryEntries as $entry)
-                            @php
-                                $g = (int) $entry->gelesen;
-                                $badgeClass = match ($g) {
-                                    -1 => 'badge-neutral',
-                                    1  => 'badge-success',
-                                    2  => 'badge-warning',
-                                    3  => 'badge-error',
-                                    default => 'badge-ghost',
-                                };
-                            @endphp
-                            <tr class="hover">
-                                <td class="whitespace-nowrap">
-                                    <a href="{{ route('legacy.archive.show', $entry) }}" data-entry-modal-trigger class="link link-hover">
-                                        {{ optional($entry->mitarbeiter)->uname ?? '—' }}
-                                    </a>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge badge-sm {{ $badgeClass }}">{{ $entry->statusLabel() }}</span>
-                                </td>
-                                <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->von?->format('d.m.Y H:i') ?? '—' }}</td>
-                                <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->bis?->format('d.m.Y H:i') ?? '—' }}</td>
-                                <td class="text-sm">
-                                    <a href="{{ route('legacy.archive.show', $entry) }}" data-entry-modal-trigger class="link link-hover">
-                                        {{ truncate($entry->inhalt ?? '', 160) }}
-                                    </a>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="5" class="py-6 text-center text-base-content/60">{{ __('Keine Einträge.') }}</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                    </x-slot:head>
+                    @forelse ($diaryEntries as $entry)
+                        @php
+                            $g = (int) $entry->gelesen;
+                            $badgeClass = match ($g) {
+                                -1 => 'badge-neutral',
+                                1  => 'badge-success',
+                                2  => 'badge-warning',
+                                3  => 'badge-error',
+                                default => 'badge-ghost',
+                            };
+                        @endphp
+                        <tr class="hover">
+                            <td class="whitespace-nowrap">
+                                <a href="{{ route('legacy.archive.show', $entry) }}" data-entry-modal-trigger class="link link-hover">
+                                    {{ optional($entry->mitarbeiter)->uname ?? '—' }}
+                                </a>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge badge-sm {{ $badgeClass }}">{{ $entry->statusLabel() }}</span>
+                            </td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->von?->format('d.m.Y H:i') ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->bis?->format('d.m.Y H:i') ?? '—' }}</td>
+                            <td class="text-sm">
+                                <a href="{{ route('legacy.archive.show', $entry) }}" data-entry-modal-trigger class="link link-hover">
+                                    {{ truncate($entry->inhalt ?? '', 160) }}
+                                </a>
+                            </td>
+                        </tr>
+                    @empty
+                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">menu_book</span>' :colspan="5" :title="__('Keine Einträge.')" compact />
+                    @endforelse
+                </x-table>
             @elseif ($activeTab === 'bereitschaft')
-                <table class="table table-sm table-zebra table-pin-rows">
-                    <thead class="bg-base-200">
-                        <tr>
-                            <th class="w-32"><a href="{{ $sortLink('mitarbeiter') }}" class="link link-hover">{{ __('Mitarbeiter') }} {!! $sortIcon('mitarbeiter') !!}</a></th>
-                            <th class="w-28 whitespace-nowrap"><a href="{{ $sortLink('von') }}" class="link link-hover">{{ __('Von') }} {!! $sortIcon('von') !!}</a></th>
-                            <th class="w-28 whitespace-nowrap"><a href="{{ $sortLink('bis') }}" class="link link-hover">{{ __('Bis') }} {!! $sortIcon('bis') !!}</a></th>
+                @php $p = array_merge($tabFilters, ['tab' => 'bereitschaft']); @endphp
+                <x-table table-sort="server" :route="route('legacy.archive.index')" :current-sort="$currentSort" :current-dir="$currentDir" :sort-params="$p" pin-rows bare scroll="none">
+                    <x-slot:head>
+                        <tr class="bg-base-200">
+                            <x-table.th sort="mitarbeiter" class="w-32">{{ __('Mitarbeiter') }}</x-table.th>
+                            <x-table.th sort="von" class="w-28 whitespace-nowrap">{{ __('Von') }}</x-table.th>
+                            <x-table.th sort="bis" class="w-28 whitespace-nowrap">{{ __('Bis') }}</x-table.th>
                             <th>{{ __('Dauer') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($onCallEntries as $entry)
-                            @php
-                                $duration = ($entry->von && $entry->bis)
-                                    ? ((int) $entry->von->copy()->startOfDay()->diffInDays($entry->bis->copy()->startOfDay()) + 1)
-                                    : null;
-                            @endphp
-                            <tr class="hover">
-                                <td class="whitespace-nowrap">{{ optional($entry->mitarbeiter)->uname ?? '—' }}</td>
-                                <td class="whitespace-nowrap text-xs">{{ $entry->von?->format('d.m.Y') ?? '—' }}</td>
-                                <td class="whitespace-nowrap text-xs">{{ $entry->bis?->format('d.m.Y') ?? '—' }}</td>
-                                <td class="text-xs text-base-content/70">{{ $duration !== null ? trans_choice('{1} :n Tag|[2,*] :n Tage', $duration, ['n' => $duration]) : '—' }}</td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="4" class="py-6 text-center text-base-content/60">{{ __('Keine Einträge.') }}</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                    </x-slot:head>
+                    @forelse ($onCallEntries as $entry)
+                        @php
+                            $duration = ($entry->von && $entry->bis)
+                                ? ((int) $entry->von->copy()->startOfDay()->diffInDays($entry->bis->copy()->startOfDay()) + 1)
+                                : null;
+                        @endphp
+                        <tr class="hover">
+                            <td class="whitespace-nowrap">{{ optional($entry->mitarbeiter)->uname ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs">{{ $entry->von?->format('d.m.Y') ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs">{{ $entry->bis?->format('d.m.Y') ?? '—' }}</td>
+                            <td class="text-xs text-base-content/70">{{ $duration !== null ? trans_choice('{1} :n Tag|[2,*] :n Tage', $duration, ['n' => $duration]) : '—' }}</td>
+                        </tr>
+                    @empty
+                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">notifications_active</span>' :colspan="4" :title="__('Keine Einträge.')" compact />
+                    @endforelse
+                </x-table>
             @elseif ($activeTab === 'notdienst')
-                <table class="table table-sm table-zebra table-pin-rows">
-                    <thead class="bg-base-200">
-                        <tr>
-                            <th class="w-32"><a href="{{ $sortLink('mitarbeiter') }}" class="link link-hover">{{ __('Mitarbeiter') }} {!! $sortIcon('mitarbeiter') !!}</a></th>
-                            <th class="w-28 whitespace-nowrap"><a href="{{ $sortLink('von') }}" class="link link-hover">{{ __('Von') }} {!! $sortIcon('von') !!}</a></th>
-                            <th class="w-28 whitespace-nowrap"><a href="{{ $sortLink('bis') }}" class="link link-hover">{{ __('Bis') }} {!! $sortIcon('bis') !!}</a></th>
+                @php $p = array_merge($tabFilters, ['tab' => 'notdienst']); @endphp
+                <x-table table-sort="server" :route="route('legacy.archive.index')" :current-sort="$currentSort" :current-dir="$currentDir" :sort-params="$p" pin-rows bare scroll="none">
+                    <x-slot:head>
+                        <tr class="bg-base-200">
+                            <x-table.th sort="mitarbeiter" class="w-32">{{ __('Mitarbeiter') }}</x-table.th>
+                            <x-table.th sort="von" class="w-28 whitespace-nowrap">{{ __('Von') }}</x-table.th>
+                            <x-table.th sort="bis" class="w-28 whitespace-nowrap">{{ __('Bis') }}</x-table.th>
                             <th>{{ __('Dauer') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($notdienstEntries as $entry)
-                            @php
-                                $duration = ($entry->von && $entry->bis)
-                                    ? ((int) $entry->von->copy()->startOfDay()->diffInDays($entry->bis->copy()->startOfDay()) + 1)
-                                    : null;
-                            @endphp
-                            <tr class="hover">
-                                <td class="whitespace-nowrap">{{ optional($entry->mitarbeiter)->uname ?? '—' }}</td>
-                                <td class="whitespace-nowrap text-xs">{{ $entry->von?->format('d.m.Y') ?? '—' }}</td>
-                                <td class="whitespace-nowrap text-xs">{{ $entry->bis?->format('d.m.Y') ?? '—' }}</td>
-                                <td class="text-xs text-base-content/70">{{ $duration !== null ? trans_choice('{1} :n Tag|[2,*] :n Tage', $duration, ['n' => $duration]) : '—' }}</td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="4" class="py-6 text-center text-base-content/60">{{ __('Keine Einträge.') }}</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                    </x-slot:head>
+                    @forelse ($notdienstEntries as $entry)
+                        @php
+                            $duration = ($entry->von && $entry->bis)
+                                ? ((int) $entry->von->copy()->startOfDay()->diffInDays($entry->bis->copy()->startOfDay()) + 1)
+                                : null;
+                        @endphp
+                        <tr class="hover">
+                            <td class="whitespace-nowrap">{{ optional($entry->mitarbeiter)->uname ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs">{{ $entry->von?->format('d.m.Y') ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs">{{ $entry->bis?->format('d.m.Y') ?? '—' }}</td>
+                            <td class="text-xs text-base-content/70">{{ $duration !== null ? trans_choice('{1} :n Tag|[2,*] :n Tage', $duration, ['n' => $duration]) : '—' }}</td>
+                        </tr>
+                    @empty
+                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">medical_services</span>' :colspan="4" :title="__('Keine Einträge.')" compact />
+                    @endforelse
+                </x-table>
             @endif
         </div>
 

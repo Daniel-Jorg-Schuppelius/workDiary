@@ -15,19 +15,21 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    <x-table>
-        <thead>
+    <x-table table-sort="server"
+             :route="route('admin.organizations.index')"
+             :current-sort="$sort ?? null"
+             :current-dir="$dir ?? 'asc'">
+        <x-slot:head>
             <tr>
-                <th><x-sort-th column="name" :route="route('admin.organizations.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'" default="name">{{ __('Name') }}</x-sort-th></th>
+                <x-table.th sort="name" default>{{ __('Name') }}</x-table.th>
                 <th>{{ __('Slug') }}</th>
-                <th><x-sort-th column="plan" :route="route('admin.organizations.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Plan') }}</x-sort-th></th>
-                <th class="text-center"><x-sort-th column="users" :route="route('admin.organizations.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Benutzer') }}</x-sort-th></th>
-                <th class="text-center"><x-sort-th column="is_active" :route="route('admin.organizations.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Aktiv') }}</x-sort-th></th>
+                <x-table.th sort="plan">{{ __('Plan') }}</x-table.th>
+                <x-table.th sort="users" align="center">{{ __('Benutzer') }}</x-table.th>
+                <x-table.th sort="is_active" align="center">{{ __('Aktiv') }}</x-table.th>
                 <th>{{ __('Erstellt') }}</th>
                 <th></th>
             </tr>
-        </thead>
-        <tbody>
+        </x-slot:head>
             @forelse ($organizations as $org)
                 <tr>
                     <td class="font-medium">{{ $org->name }}</td>
@@ -60,13 +62,12 @@
                     </td>
                 </tr>
             @empty
-                <tr>
-                    <td colspan="7" class="p-0"><x-empty-state :compact="true" :title="__('Keine Organisationen vorhanden')" /></td>
-                </tr>
+                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">apartment</span>' :colspan="7" :title="__('Keine Organisationen vorhanden')" compact />
             @endforelse
-        </tbody>
     </x-table>
 
-    <div>{{ $organizations->links() }}</div>
+    @if ($organizations->hasPages())
+        <div>{{ $organizations->links() }}</div>
+    @endif
 </x-page-shell>
 @endsection

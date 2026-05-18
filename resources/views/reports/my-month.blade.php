@@ -55,83 +55,79 @@
         </div>
 
         @if (empty($byDay))
-            <x-empty-state :title="__('Keine Zeiteinträge in diesem Monat.')" />
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>' :title="__('Keine Zeiteinträge in diesem Monat.')" />
         @else
-            <div class="overflow-x-auto">
-                <table class="table table-zebra table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Datum') }}</th>
-                            <th>{{ __('Zeit') }}</th>
-                            <th>{{ __('Art') }}</th>
-                            <th>{{ __('Kunde / Projekt') }}</th>
-                            <th>{{ __('Tätigkeit / Beschreibung') }}</th>
-                            <th class="text-right">{{ __('Dauer') }}</th>
-                            <th class="text-right">{{ __('Erlös') }}</th>
+            <x-table bare>
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('Datum') }}</th>
+                        <th>{{ __('Zeit') }}</th>
+                        <th>{{ __('Art') }}</th>
+                        <th>{{ __('Kunde / Projekt') }}</th>
+                        <th>{{ __('Tätigkeit / Beschreibung') }}</th>
+                        <th class="text-right">{{ __('Dauer') }}</th>
+                        <th class="text-right">{{ __('Erlös') }}</th>
+                    </tr>
+                </x-slot:head>
+                <x-slot:foot>
+                    <tr class="font-bold">
+                        <td colspan="5">{{ __('Gesamt') }}</td>
+                        <td class="text-right">{{ $fmt($monthMinutes) }}</td>
+                        <td class="text-right">{{ $money($monthRate) }}</td>
+                    </tr>
+                </x-slot:foot>
+                @foreach ($byDay as $day => $info)
+                    @php
+                        $d = \Carbon\Carbon::parse($day)->locale(app()->getLocale());
+                        $dayLabel = $d->isoFormat('dd, DD.MM.');
+                        $isSunday = $d->isSunday();
+                        $sundayCls = $isSunday ? ' text-error' : '';
+                    @endphp
+                    <tr class="bg-base-200/60{{ $sundayCls }}">
+                        <th class="font-semibold text-base-content{{ $sundayCls }}">{{ $dayLabel }}</th>
+                        <th colspan="4"></th>
+                        <th class="text-right font-semibold tabular-nums text-base-content{{ $sundayCls }}">{{ $fmt($info['minutes']) }}</th>
+                        <th class="text-right font-semibold tabular-nums text-base-content{{ $sundayCls }}">{{ $money($info['rate']) }}</th>
+                    </tr>
+                    @foreach ($info['entries'] as $e)
+                        <tr class="{{ $sundayCls }}">
+                            <td></td>
+                            <td class="tabular-nums text-sm">
+                                @if ($e->started_at && $e->ended_at)
+                                    {{ $e->started_at->format('H:i') }}–{{ $e->ended_at->format('H:i') }}
+                                @else
+                                    <span class="text-base-content/40">—</span>
+                                @endif
+                            </td>
+                            <td>
+                                <span class="badge badge-sm {{ $kindBadge[$e->kind] ?? 'badge-ghost' }}">{{ $kindLabel[$e->kind] ?? $e->kind }}</span>
+                            </td>
+                            <td class="text-sm">
+                                @if ($e->project)
+                                    @if ($e->project->customer)
+                                        <span class="text-base-content/60">{{ $e->project->customer->name }} ·</span>
+                                    @endif
+                                    @if ($e->project->color)
+                                        <span class="mr-1 inline-block size-2 rounded-full align-middle" style="background-color: {{ $e->project->color }};"></span>
+                                    @endif
+                                    {{ $e->project->name }}
+                                @endif
+                            </td>
+                            <td class="text-sm text-base-content/80">
+                                @if ($e->task)
+                                    <span class="font-medium">{{ $e->task->title }}</span>
+                                    @if ($e->description)<br>@endif
+                                @endif
+                                @if ($e->description)
+                                    <span class="text-base-content/70">{{ $e->description }}</span>
+                                @endif
+                            </td>
+                            <td class="text-right tabular-nums">{{ $fmt((int) $e->minutes) }}</td>
+                            <td class="text-right tabular-nums">{{ $money((float) $e->rate) }}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($byDay as $day => $info)
-                            @php
-                                $d = \Carbon\Carbon::parse($day)->locale(app()->getLocale());
-                                $dayLabel = $d->isoFormat('dd, DD.MM.');
-                                $isSunday = $d->isSunday();
-                                $sundayCls = $isSunday ? ' text-error' : '';
-                            @endphp
-                            <tr class="bg-base-200/60{{ $sundayCls }}">
-                                <th class="font-semibold text-base-content{{ $sundayCls }}">{{ $dayLabel }}</th>
-                                <th colspan="4"></th>
-                                <th class="text-right font-semibold tabular-nums text-base-content{{ $sundayCls }}">{{ $fmt($info['minutes']) }}</th>
-                                <th class="text-right font-semibold tabular-nums text-base-content{{ $sundayCls }}">{{ $money($info['rate']) }}</th>
-                            </tr>
-                            @foreach ($info['entries'] as $e)
-                                <tr class="{{ $sundayCls }}">
-                                    <td></td>
-                                    <td class="tabular-nums text-sm">
-                                        @if ($e->started_at && $e->ended_at)
-                                            {{ $e->started_at->format('H:i') }}–{{ $e->ended_at->format('H:i') }}
-                                        @else
-                                            <span class="text-base-content/40">—</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-sm {{ $kindBadge[$e->kind] ?? 'badge-ghost' }}">{{ $kindLabel[$e->kind] ?? $e->kind }}</span>
-                                    </td>
-                                    <td class="text-sm">
-                                        @if ($e->project)
-                                            @if ($e->project->customer)
-                                                <span class="text-base-content/60">{{ $e->project->customer->name }} ·</span>
-                                            @endif
-                                            @if ($e->project->color)
-                                                <span class="mr-1 inline-block size-2 rounded-full align-middle" style="background-color: {{ $e->project->color }};"></span>
-                                            @endif
-                                            {{ $e->project->name }}
-                                        @endif
-                                    </td>
-                                    <td class="text-sm text-base-content/80">
-                                        @if ($e->task)
-                                            <span class="font-medium">{{ $e->task->title }}</span>
-                                            @if ($e->description)<br>@endif
-                                        @endif
-                                        @if ($e->description)
-                                            <span class="text-base-content/70">{{ $e->description }}</span>
-                                        @endif
-                                    </td>
-                                    <td class="text-right tabular-nums">{{ $fmt((int) $e->minutes) }}</td>
-                                    <td class="text-right tabular-nums">{{ $money((float) $e->rate) }}</td>
-                                </tr>
-                            @endforeach
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr class="font-bold">
-                            <td colspan="5">{{ __('Gesamt') }}</td>
-                            <td class="text-right">{{ $fmt($monthMinutes) }}</td>
-                            <td class="text-right">{{ $money($monthRate) }}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+                    @endforeach
+                @endforeach
+            </x-table>
         @endif
     </div>
 </x-page-shell>

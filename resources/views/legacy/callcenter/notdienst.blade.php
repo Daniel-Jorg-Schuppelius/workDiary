@@ -319,56 +319,54 @@
                 <div class="min-h-0 flex-1 overflow-auto">
                     @if ($openIssues->isNotEmpty())
                         <x-table size="xs" :pin-rows="true">
-                            <thead class="bg-base-200">
-                                <tr>
+                            <x-slot:head>
+                                <tr class="bg-base-200">
                                     <th class="w-20 text-center">{{ __('Status') }}</th>
                                     <th>{{ __('Inhalt') }}</th>
                                     <th class="w-24 whitespace-nowrap">{{ __('Bis') }}</th>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($openIssues as $issue)
-                                    @php
-                                        $g = (int) $issue->gelesen;
-                                        $badgeClass = match ($g) {
-                                            -1 => 'badge-neutral',
-                                            1  => 'badge-success',
-                                            2  => 'badge-warning',
-                                            3  => 'badge-error',
-                                            default => 'badge-ghost',
-                                        };
-                                        $rowClass = match ($g) {
-                                            3 => 'bg-error/5',
-                                            2 => 'bg-warning/5',
-                                            default => '',
-                                        };
-                                        $bisDate = $issue->bis;
-                                        $isDueToday = $bisDate && $bisDate->isSameDay($today);
-                                        $daysLeft = $bisDate ? (int) $today->diffInDays($bisDate, false) : null;
-                                    @endphp
-                                    <tr class="hover {{ $rowClass }}">
-                                        <td class="text-center"><span class="badge badge-sm {{ $badgeClass }}">{{ $issue->statusLabel() }}</span></td>
-                                        <td class="max-w-md" title="{{ $issue->inhalt ?? '' }}">
-                                            <a href="{{ route('legacy.diary.show', $issue) }}" data-entry-modal-trigger class="block link link-hover">
-                                                <span class="block text-[0.7rem] text-base-content/50">{{ optional($issue->author)->uname ?? '–' }}</span>
-                                                <span class="line-clamp-2">{{ truncate($issue->inhalt ?? '', 100) }}</span>
-                                            </a>
-                                        </td>
-                                        <td class="whitespace-nowrap">
-                                            @if ($bisDate)
-                                                <div>{{ $bisDate->format('d.m.Y') }}</div>
-                                                @if ($isDueToday)
-                                                    <span class="text-[0.65rem] font-semibold text-warning">{{ __('heute') }}</span>
-                                                @elseif ($daysLeft !== null && $daysLeft > 0 && $daysLeft <= 7)
-                                                    <span class="text-[0.65rem] text-base-content/60">{{ __('in :n d', ['n' => $daysLeft]) }}</span>
-                                                @endif
-                                            @else
-                                                <span class="text-base-content/40">–</span>
+                            </x-slot:head>
+                            @foreach ($openIssues as $issue)
+                                @php
+                                    $g = (int) $issue->gelesen;
+                                    $badgeClass = match ($g) {
+                                        -1 => 'badge-neutral',
+                                        1  => 'badge-success',
+                                        2  => 'badge-warning',
+                                        3  => 'badge-error',
+                                        default => 'badge-ghost',
+                                    };
+                                    $rowClass = match ($g) {
+                                        3 => 'bg-error/5',
+                                        2 => 'bg-warning/5',
+                                        default => '',
+                                    };
+                                    $bisDate = $issue->bis;
+                                    $isDueToday = $bisDate && $bisDate->isSameDay($today);
+                                    $daysLeft = $bisDate ? (int) $today->diffInDays($bisDate, false) : null;
+                                @endphp
+                                <tr class="hover {{ $rowClass }}">
+                                    <td class="text-center"><span class="badge badge-sm {{ $badgeClass }}">{{ $issue->statusLabel() }}</span></td>
+                                    <td class="max-w-md" title="{{ $issue->inhalt ?? '' }}">
+                                        <a href="{{ route('legacy.diary.show', $issue) }}" data-entry-modal-trigger class="block link link-hover">
+                                            <span class="block text-[0.7rem] text-base-content/50">{{ optional($issue->author)->uname ?? '–' }}</span>
+                                            <span class="line-clamp-2">{{ truncate($issue->inhalt ?? '', 100) }}</span>
+                                        </a>
+                                    </td>
+                                    <td class="whitespace-nowrap">
+                                        @if ($bisDate)
+                                            <div>{{ $bisDate->format('d.m.Y') }}</div>
+                                            @if ($isDueToday)
+                                                <span class="text-[0.65rem] font-semibold text-warning">{{ __('heute') }}</span>
+                                            @elseif ($daysLeft !== null && $daysLeft > 0 && $daysLeft <= 7)
+                                                <span class="text-[0.65rem] text-base-content/60">{{ __('in :n d', ['n' => $daysLeft]) }}</span>
                                             @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
+                                        @else
+                                            <span class="text-base-content/40">–</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
                         </x-table>
                     @else
                         <p class="p-4 text-sm text-base-content/50">{{ __('Keine offenen Meldungen.') }}</p>

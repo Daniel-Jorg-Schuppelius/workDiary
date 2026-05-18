@@ -15,19 +15,21 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    <x-table>
-        <thead>
+    <x-table table-sort="server"
+             :route="route('admin.entry-types.index')"
+             :current-sort="$sort ?? null"
+             :current-dir="$dir ?? 'asc'">
+        <x-slot:head>
             <tr>
-                <th class="w-12"><x-sort-th column="sort" :route="route('admin.entry-types.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'" default="sort">#</x-sort-th></th>
-                <th><x-sort-th column="label" :route="route('admin.entry-types.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Bezeichnung') }}</x-sort-th></th>
-                <th><x-sort-th column="slug" :route="route('admin.entry-types.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Slug') }}</x-sort-th></th>
+                <x-table.th sort="sort" default class="w-12">#</x-table.th>
+                <x-table.th sort="label">{{ __('Bezeichnung') }}</x-table.th>
+                <x-table.th sort="slug">{{ __('Slug') }}</x-table.th>
                 <th>{{ __('Flags') }}</th>
-                <th class="text-center"><x-sort-th column="entries" :route="route('admin.entry-types.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Einträge') }}</x-sort-th></th>
-                <th class="text-center"><x-sort-th column="is_active" :route="route('admin.entry-types.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Aktiv') }}</x-sort-th></th>
+                <x-table.th sort="entries" align="center">{{ __('Einträge') }}</x-table.th>
+                <x-table.th sort="is_active" align="center">{{ __('Aktiv') }}</x-table.th>
                 <th></th>
             </tr>
-        </thead>
-        <tbody>
+        </x-slot:head>
             @forelse ($entryTypes as $type)
                 <tr>
                     <td class="text-base-content/60">{{ $type->sort }}</td>
@@ -73,13 +75,12 @@
                     </td>
                 </tr>
             @empty
-                <tr>
-                    <td colspan="7" class="p-0"><x-empty-state :compact="true" :title="__('Keine Eintragstypen vorhanden')" /></td>
-                </tr>
+                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">list_alt</span>' :colspan="7" :title="__('Keine Eintragstypen vorhanden')" compact />
             @endforelse
-        </tbody>
     </x-table>
 
-    <div>{{ $entryTypes->links() }}</div>
+    @if ($entryTypes->hasPages())
+        <div>{{ $entryTypes->links() }}</div>
+    @endif
 </x-page-shell>
 @endsection

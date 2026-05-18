@@ -60,87 +60,75 @@
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Rechnungen nach Status') }}</h3>
-            <div class="overflow-x-auto">
-                <table class="table table-zebra table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Status') }}</th>
-                            <th class="text-right">{{ __('Anzahl') }}</th>
-                            <th class="text-right">{{ __('Netto') }}</th>
-                            <th class="text-right">{{ __('Brutto') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($status as $st => $s)
-                            <tr>
-                                <td>{{ $statusLabels[$st] ?? $st }}</td>
-                                <td class="text-right tabular-nums">{{ $s['count'] }}</td>
-                                <td class="text-right tabular-nums">{{ $eur($s['subtotal']) }}</td>
-                                <td class="text-right tabular-nums">{{ $eur($s['total']) }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Anzahl') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Netto') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Brutto') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($status as $st => $s)
+                    <tr>
+                        <td>{{ $statusLabels[$st] ?? $st }}</td>
+                        <td class="text-right tabular-nums">{{ $s['count'] }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (float) $s['subtotal'] }}">{{ $eur($s['subtotal']) }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (float) $s['total'] }}">{{ $eur($s['total']) }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
         </div>
 
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Aging – offene Posten') }}</h3>
-            <div class="overflow-x-auto">
-                <table class="table table-zebra table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Bucket') }}</th>
-                            <th class="text-right">{{ __('Anzahl') }}</th>
-                            <th class="text-right">{{ __('Summe') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($aging['buckets'] as $k => $b)
-                            <tr class="{{ $k === '30_plus' && $b['count'] > 0 ? 'text-error font-semibold' : '' }}">
-                                <td>{{ $agingLabels[$k] ?? $k }}</td>
-                                <td class="text-right tabular-nums">{{ $b['count'] }}</td>
-                                <td class="text-right tabular-nums">{{ $eur($b['total']) }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr class="font-bold">
-                            <td>{{ __('Offen gesamt') }}</td>
-                            <td></td>
-                            <td class="text-right tabular-nums">{{ $eur($aging['open_total']) }}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('Bucket') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Anzahl') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Summe') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                <x-slot:foot>
+                    <tr class="font-bold">
+                        <td>{{ __('Offen gesamt') }}</td>
+                        <td></td>
+                        <td class="text-right tabular-nums">{{ $eur($aging['open_total']) }}</td>
+                    </tr>
+                </x-slot:foot>
+                @foreach ($aging['buckets'] as $k => $b)
+                    <tr class="{{ $k === '30_plus' && $b['count'] > 0 ? 'text-error font-semibold' : '' }}">
+                        <td>{{ $agingLabels[$k] ?? $k }}</td>
+                        <td class="text-right tabular-nums">{{ $b['count'] }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (float) $b['total'] }}">{{ $eur($b['total']) }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
         </div>
     </div>
 
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Top-Kunden (ausgestellt + bezahlt im Zeitraum)') }}</h3>
         @if (empty($perCustomer))
-            <x-empty-state :title="__('Keine Rechnungen im Zeitraum.')" />
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">payments</span>' :title="__('Keine Rechnungen im Zeitraum.')" />
         @else
-            <div class="overflow-x-auto">
-                <table class="table table-zebra table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Kunde') }}</th>
-                            <th class="text-right">{{ __('Rechnungen') }}</th>
-                            <th class="text-right">{{ __('Brutto') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($perCustomer as $r)
-                            <tr>
-                                <td class="font-semibold">{{ $r['customer']->name }}</td>
-                                <td class="text-right tabular-nums">{{ $r['count'] }}</td>
-                                <td class="text-right tabular-nums">{{ $eur($r['total']) }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('Kunde') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Rechnungen') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Brutto') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($perCustomer as $r)
+                    <tr>
+                        <td class="font-semibold">{{ $r['customer']->name }}</td>
+                        <td class="text-right tabular-nums">{{ $r['count'] }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (float) $r['total'] }}">{{ $eur($r['total']) }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
         @endif
     </div>
 </x-page-shell>

@@ -40,20 +40,23 @@
             </x-filter-bar>
         </x-slot:toolbar>
 
-        <x-table scroll="flex" :pinRows="true" :zebra="true" size="xs">
-                <thead class="bg-base-200">
-                    <tr>
-                        <?php $p = $filters ?? []; ?>
-                        <th class="whitespace-nowrap"><x-sort-th column="created_at" :route="route('audit.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'" default="created_at">{{ __('Zeit') }}</x-sort-th></th>
-                        <th><x-sort-th column="user_id" :route="route('audit.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Benutzer') }}</x-sort-th></th>
-                        <th><x-sort-th column="event" :route="route('audit.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Aktion') }}</x-sort-th></th>
-                        <th><x-sort-th column="auditable_type" :route="route('audit.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Typ') }}</x-sort-th></th>
+        <x-table scroll="flex" :pinRows="true" :zebra="true" size="xs"
+                 table-sort="server"
+                 :route="route('audit.index')"
+                 :current-sort="$sort ?? null"
+                 :current-dir="$dir ?? 'desc'"
+                 :sort-params="$filters ?? []">
+                <x-slot:head>
+                    <tr class="bg-base-200">
+                        <x-table.th sort="created_at" default class="whitespace-nowrap">{{ __('Zeit') }}</x-table.th>
+                        <x-table.th sort="user_id">{{ __('Benutzer') }}</x-table.th>
+                        <x-table.th sort="event">{{ __('Aktion') }}</x-table.th>
+                        <x-table.th sort="auditable_type">{{ __('Typ') }}</x-table.th>
                         <th>{{ __('Objekt') }}</th>
                         <th>{{ __('Änderungen') }}</th>
-                        <th><x-sort-th column="ip" :route="route('audit.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">IP</x-sort-th></th>
+                        <x-table.th sort="ip">IP</x-table.th>
                     </tr>
-                </thead>
-                <tbody>
+                </x-slot:head>
                     @forelse ($logs as $log)
                         <tr class="hover">
                             <td class="whitespace-nowrap text-xs">{{ $log->created_at->format('d.m.Y H:i:s') }}</td>
@@ -72,11 +75,12 @@
                             <td class="text-xs text-base-content/60">{{ $log->ip }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="p-0"><x-empty-state :compact="true" :title="__('Keine Einträge')" /></td></tr>
+                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">history</span>' :colspan="7" :title="__('Keine Einträge')" compact />
                     @endforelse
-                </tbody>
         </x-table>
 
-        <div class="flex-none">{{ $logs->links() }}</div>
+        @if ($logs->hasPages())
+            <div class="flex-none">{{ $logs->links() }}</div>
+        @endif
     </x-page-shell>
 @endsection

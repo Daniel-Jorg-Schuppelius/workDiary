@@ -18,6 +18,7 @@ use App\Models\Project;
 use App\Models\TravelLog;
 use App\Models\User;
 use App\Services\Travel\TravelLogService;
+use App\Support\SortableQuery;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -39,13 +40,21 @@ class TravelLogController extends Controller {
 
         [$from, $to] = $this->resolveRange($request);
 
-        $logs = TravelLog::query()
+        $query = TravelLog::query()
             ->where('user_id', Auth::id())
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
-            ->orderByDesc('date')
-            ->orderByDesc('id')
-            ->paginate(25)
-            ->withQueryString();
+            ->whereBetween('date', [$from->toDateString(), $to->toDateString()]);
+
+        [$sort, $dir] = SortableQuery::apply($query, $request, [
+            'date' => 'date',
+            'from' => 'from_address',
+            'to' => 'to_address',
+            'distance' => 'distance_km',
+            'vehicle' => 'vehicle',
+            'reimbursement' => 'reimbursement_total',
+            'purpose' => 'purpose',
+        ], 'date', 'desc');
+
+        $logs = $query->paginate(25)->withQueryString();
 
         $totals = [
             'distance_km' => (float) TravelLog::query()
@@ -63,6 +72,8 @@ class TravelLogController extends Controller {
             'from' => $from,
             'to' => $to,
             'totals' => $totals,
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 

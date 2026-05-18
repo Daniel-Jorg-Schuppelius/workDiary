@@ -161,11 +161,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="{{ $isAdmin ? 7 : 6 }}" class="p-0">
-                                <x-empty-state :compact="true" :title="__('Keine Einträge gefunden')" />
-                            </td>
-                        </tr>
+                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">beach_access</span>' :colspan="$isAdmin ? 7 : 6" :title="__('Keine Einträge gefunden')" compact />
                     @endforelse
                 </tbody>
     </x-table>

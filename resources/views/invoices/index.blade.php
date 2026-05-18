@@ -20,36 +20,39 @@
     @endif
 
     <x-card padding="p-0">
-        <div class="overflow-x-auto">
-        <table class="table table-zebra table-sm">
-            <thead>
+        <x-table table-sort="server"
+                 :route="route('invoices.index')"
+                 :current-sort="$sort ?? null"
+                 :current-dir="$dir ?? 'desc'"
+                 :sort-params="[]"
+                 bare>
+            <x-slot:head>
                 <tr>
-                    <th>{{ __('Nummer') }}</th>
+                    <x-table.th sort="number">{{ __('Nummer') }}</x-table.th>
                     <th>{{ __('Kunde') }}</th>
-                    <th>{{ __('Datum') }}</th>
-                    <th>{{ __('Status') }}</th>
-                    <th class="text-right">{{ __('Summe') }}</th>
+                    <x-table.th sort="issued_on" default>{{ __('Datum') }}</x-table.th>
+                    <x-table.th sort="status">{{ __('Status') }}</x-table.th>
+                    <x-table.th sort="total" align="right">{{ __('Summe') }}</x-table.th>
                     <th></th>
                 </tr>
-            </thead>
-            <tbody>
-                @forelse ($invoices as $invoice)
-                    <tr>
-                        <td><a href="{{ route('invoices.show', $invoice) }}" class="link">{{ $invoice->number }}</a></td>
-                        <td>{{ $invoice->customer->name ?? '-' }}</td>
-                        <td>{{ optional($invoice->issued_on)->format('d.m.Y') ?? '-' }}</td>
-                        <td><span class="badge badge-outline">{{ __($invoice->status) }}</span></td>
-                        <td class="text-right">{{ number_format((float) $invoice->total, 2, ',', '.') }} {{ $invoice->currency }}</td>
-                        <td><a href="{{ route('invoices.show', $invoice) }}" class="btn btn-xs">{{ __('Anzeigen') }}</a></td>
-                    </tr>
-                @empty
-                    <tr><td colspan="6" class="p-0"><x-empty-state :compact="true" :title="__('Keine Rechnungen vorhanden')" /></td></tr>
-                @endforelse
-            </tbody>
-        </table>
-        </div>
+            </x-slot:head>
+            @forelse ($invoices as $invoice)
+                <tr>
+                    <td><a href="{{ route('invoices.show', $invoice) }}" class="link">{{ $invoice->number }}</a></td>
+                    <td>{{ $invoice->customer->name ?? '-' }}</td>
+                    <td>{{ optional($invoice->issued_on)->format('d.m.Y') ?? '-' }}</td>
+                    <td><span class="badge badge-outline">{{ __($invoice->status) }}</span></td>
+                    <td class="text-right">{{ number_format((float) $invoice->total, 2, ',', '.') }} {{ $invoice->currency }}</td>
+                    <td><a href="{{ route('invoices.show', $invoice) }}" class="btn btn-xs">{{ __('Anzeigen') }}</a></td>
+                </tr>
+            @empty
+                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>' :colspan="6" :title="__('Keine Rechnungen vorhanden')" compact />
+            @endforelse
+        </x-table>
     </x-card>
 
-    {{ $invoices->links() }}
+    @if ($invoices->hasPages())
+        {{ $invoices->links() }}
+    @endif
 </x-page-shell>
 @endsection

@@ -21,19 +21,21 @@
         </x-slot:extra>
     </x-filter-bar>
 
-    <x-table>
-        <thead>
+    <x-table table-sort="server"
+             :route="route('duty-plans.index')"
+             :current-sort="$sort ?? null"
+             :current-dir="$dir ?? 'desc'"
+             :sort-params="['status' => $status]">
+        <x-slot:head>
             <tr>
-                <?php $p = ['status' => $status]; ?>
-                <th><x-sort-th column="name" :route="route('duty-plans.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Titel') }}</x-sort-th></th>
-                <th><x-sort-th column="from_date" :route="route('duty-plans.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'" default="from_date">{{ __('Zeitraum') }}</x-sort-th></th>
-                <th><x-sort-th column="period_type" :route="route('duty-plans.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Typ') }}</x-sort-th></th>
-                <th class="text-center"><x-sort-th column="shifts" :route="route('duty-plans.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Schichten') }}</x-sort-th></th>
-                <th><x-sort-th column="status" :route="route('duty-plans.index')" :params="$p" :sort="$sort ?? null" :dir="$dir ?? 'desc'">{{ __('Status') }}</x-sort-th></th>
+                <x-table.th sort="name">{{ __('Titel') }}</x-table.th>
+                <x-table.th sort="from_date" default>{{ __('Zeitraum') }}</x-table.th>
+                <x-table.th sort="period_type">{{ __('Typ') }}</x-table.th>
+                <x-table.th sort="shifts" align="center">{{ __('Schichten') }}</x-table.th>
+                <x-table.th sort="status">{{ __('Status') }}</x-table.th>
                 <th></th>
             </tr>
-        </thead>
-        <tbody>
+        </x-slot:head>
             @forelse ($plans as $plan)
                 <tr>
                     <td class="font-medium">
@@ -72,12 +74,11 @@
                     </td>
                 </tr>
             @empty
-                <tr>
-                    <td colspan="6" class="p-0"><x-empty-state :compact="true" :title="__('Noch keine Dienstpläne vorhanden')" /></td>
-                </tr>
+                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>' :colspan="6" :title="__('Noch keine Dienstpläne vorhanden')" compact />
             @endforelse
-        </tbody>
     </x-table>
-    <div>{{ $plans->links() }}</div>
+    @if ($plans->hasPages())
+        <div>{{ $plans->links() }}</div>
+    @endif
 </x-page-shell>
 @endsection

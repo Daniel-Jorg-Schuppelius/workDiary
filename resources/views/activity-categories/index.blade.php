@@ -46,33 +46,37 @@
         </x-card>
 
         <x-card padding="p-0">
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
-                        <tr><th>{{ __('Schlüssel') }}</th><th>{{ __('Bezeichnung') }}</th><th>{{ __('Typ') }}</th><th class="text-center">{{ __('Arbeit') }}</th><th class="text-center">{{ __('Abrechenbar') }}</th><th class="text-center">{{ __('Aktiv') }}</th><th></th></tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($categories as $c)
-                            <tr>
-                                <td><code class="text-xs">{{ $c->key }}</code></td>
-                                <td>{{ $c->label }}</td>
-                                <td><span class="badge badge-sm badge-ghost">{{ $c->activity_type }}</span></td>
-                                <td class="text-center">{!! $c->counts_as_work ? '✓' : '—' !!}</td>
-                                <td class="text-center">{!! $c->billable_default ? '✓' : '—' !!}</td>
-                                <td class="text-center">{!! $c->active ? '✓' : '—' !!}</td>
-                                <td class="text-right">
-                                    <form method="POST" action="{{ route('activity-categories.destroy', $c) }}" class="inline">
-                                        @csrf @method('DELETE')
-                                        <button class="btn btn-ghost btn-xs text-error" onclick="return confirm('{{ __('Wirklich löschen?') }}')">{{ __('Löschen') }}</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="7" class="p-0"><x-empty-state :compact="true" :title="__('Noch keine Tätigkeiten')" /></td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('Schlüssel') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Bezeichnung') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Typ') }}</x-table.th>
+                        <x-table.th sort type="string" align="center">{{ __('Arbeit') }}</x-table.th>
+                        <x-table.th sort type="string" align="center">{{ __('Abrechenbar') }}</x-table.th>
+                        <x-table.th sort type="string" align="center">{{ __('Aktiv') }}</x-table.th>
+                        <th></th>
+                    </tr>
+                </x-slot:head>
+                @forelse ($categories as $c)
+                    <tr>
+                        <td><code class="text-xs">{{ $c->key }}</code></td>
+                        <td>{{ $c->label }}</td>
+                        <td><span class="badge badge-sm badge-ghost">{{ $c->activity_type }}</span></td>
+                        <td class="text-center">{!! $c->counts_as_work ? '✓' : '—' !!}</td>
+                        <td class="text-center">{!! $c->billable_default ? '✓' : '—' !!}</td>
+                        <td class="text-center">{!! $c->active ? '✓' : '—' !!}</td>
+                        <td class="text-right">
+                            <form method="POST" action="{{ route('activity-categories.destroy', $c) }}" class="inline">
+                                @csrf @method('DELETE')
+                                <button class="btn btn-ghost btn-xs text-error" onclick="return confirm('{{ __('Wirklich löschen?') }}')">{{ __('Löschen') }}</button>
+                            </form>
+                        </td>
+                    </tr>
+                @empty
+                    <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">category</span>' :colspan="7" :title="__('Noch keine Tätigkeiten')" compact />
+                @endforelse
+            </x-table>
         </x-card>
     </x-page-shell>
 @endsection

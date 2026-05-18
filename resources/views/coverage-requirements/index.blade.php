@@ -19,30 +19,30 @@
     @if ($requirements->isEmpty())
         <x-card>
             <x-empty-state
+                icon='<span class="material-symbols-outlined" aria-hidden="true">shield_person</span>'
                 :title="__('Noch keine Soll-Besetzungen für diesen Dienstplan definiert.')"
                 :message="__('Hinweis: Ohne Anforderungen gilt die Mindestbesetzung des Dienstplans:') . ' ' . $dutyPlan->min_staff" />
         </x-card>
     @else
-        <x-table>
-            <thead>
+        <x-table table-sort="client">
+            <x-slot:head>
                 <tr>
-                    <th>{{ __('Schichttyp') }}</th>
-                    <th>{{ __('Geltungsbereich') }}</th>
-                    <th class="text-center">{{ __('Min') }}</th>
-                    <th class="text-center">{{ __('Max') }}</th>
-                    <th>{{ __('Qualifikationen') }}</th>
-                    <th>{{ __('Notizen') }}</th>
+                    <x-table.th sort type="string">{{ __('Schichttyp') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Geltungsbereich') }}</x-table.th>
+                    <x-table.th sort type="number" align="center">{{ __('Min') }}</x-table.th>
+                    <x-table.th sort type="number" align="center">{{ __('Max') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Qualifikationen') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Notizen') }}</x-table.th>
                     <th></th>
                 </tr>
-            </thead>
-            <tbody>
-                @php
-                    $weekdayLabels = [
-                        0 => __('So'), 1 => __('Mo'), 2 => __('Di'), 3 => __('Mi'),
-                        4 => __('Do'), 5 => __('Fr'), 6 => __('Sa'),
-                    ];
-                @endphp
-                @foreach ($requirements as $req)
+            </x-slot:head>
+            @php
+                $weekdayLabels = [
+                    0 => __('So'), 1 => __('Mo'), 2 => __('Di'), 3 => __('Mi'),
+                    4 => __('Do'), 5 => __('Fr'), 6 => __('Sa'),
+                ];
+            @endphp
+            @foreach ($requirements as $req)
                     <tr>
                         <td>
                             @if ($req->shiftType)
@@ -93,7 +93,6 @@
                         </td>
                     </tr>
                 @endforeach
-            </tbody>
         </x-table>
     @endif
 </x-page-shell>

@@ -52,7 +52,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="4" class="text-center opacity-60">{{ __('Keine Einträge.') }}</td></tr>
+                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">key</span>' :colspan="4" :title="__('Keine API-Token vorhanden')" compact />
                     @endforelse
                 </tbody>
     </x-table>

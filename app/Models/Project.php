@@ -160,6 +160,35 @@ class Project extends Model
 
         // Sicherstellen, dass pro Kunde höchstens ein Standardprojekt existiert.
         static::saved(function (Project $project): void {
+            if ($project->wasChanged('customer_id')) {
+                $newCustomerId = $project->customer_id;
+
+                // Sub-Projekte erben den neuen Kunden mit (rekursiv via Events).
+                static::query()
+                    ->where('parent_id', $project->id)
+                    ->where(function (Builder $q) use ($newCustomerId): void {
+                        $q->where('customer_id', '!=', $newCustomerId)
+                            ->orWhereNull('customer_id');
+                    })
+                    ->get()
+                    ->each(function (Project $child) use ($newCustomerId): void {
+                        $child->customer_id = $newCustomerId;
+                        $child->save();
+                    });
+
+                // DiaryEntries mitziehen, außer abgeschlossene (STATUS_DONE).
+                DiaryEntry::query()
+                    ->where('project_id', $project->id)
+                    ->where('status', '!=', DiaryEntry::STATUS_DONE)
+                    ->update(['customer_id' => $newCustomerId]);
+
+                // Rechnungen mitziehen, außer freigegebene/bezahlte/stornierte (nur DRAFT).
+                Invoice::query()
+                    ->where('project_id', $project->id)
+                    ->where('status', Invoice::STATUS_DRAFT)
+                    ->update(['customer_id' => $newCustomerId]);
+            }
+
             if (! $project->is_default || $project->customer_id === null) {
                 return;
             }

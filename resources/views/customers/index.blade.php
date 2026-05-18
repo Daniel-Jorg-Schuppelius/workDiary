@@ -8,13 +8,6 @@
     $dir = $dir ?? 'asc';
     $status = $status ?? 'active';
     $search = $search ?? '';
-    $sortLink = function (string $col) use ($sort, $dir, $status, $search) {
-        $newDir = ($sort === $col && $dir === 'asc') ? 'desc' : 'asc';
-        return route('customers.index', array_filter([
-            'status' => $status, 'q' => $search, 'sort' => $col, 'dir' => $newDir,
-        ]));
-    };
-    $arrow = fn(string $c) => $sort === $c ? ($dir === 'asc' ? ' ↑' : ' ↓') : '';
 @endphp
 
 @section('content')
@@ -75,26 +68,29 @@
 
     @if ($customers->total() === 0)
         <x-card>
-            <x-empty-state :title="$search !== '' ? __('Keine Kunden für „:q“ gefunden.', ['q' => $search]) : __('Noch keine Kunden in dieser Ansicht')" />
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">business</span>' :title="$search !== '' ? __('Keine Kunden für „:q“ gefunden.', ['q' => $search]) : __('Noch keine Kunden in dieser Ansicht')" />
         </x-card>
     @else
         <x-card padding="p-0">
-            <div class="overflow-x-auto">
-            <table class="table table-zebra table-sm">
-                <thead>
+            <x-table table-sort="server"
+                     :route="route('customers.index')"
+                     :current-sort="$sort"
+                     :current-dir="$dir"
+                     :sort-params="['status' => $status, 'q' => $search]"
+                     bare>
+                <x-slot:head>
                     <tr>
                         <th></th>
-                        <th><a class="link link-hover" href="{{ $sortLink('name') }}">{{ __('Name') }}{{ $arrow('name') }}</a></th>
-                        <th><a class="link link-hover" href="{{ $sortLink('number') }}">{{ __('Nr.') }}{{ $arrow('number') }}</a></th>
-                        <th><a class="link link-hover" href="{{ $sortLink('company') }}">{{ __('Firma') }}{{ $arrow('company') }}</a></th>
+                        <x-table.th sort="name" default>{{ __('Name') }}</x-table.th>
+                        <x-table.th sort="number">{{ __('Nr.') }}</x-table.th>
+                        <x-table.th sort="company">{{ __('Firma') }}</x-table.th>
                         <th>{{ __('E-Mail') }}</th>
                         <th>{{ __('Ort') }}</th>
                         <th class="text-right">{{ __('Stundensatz') }}</th>
                         <th class="text-right">{{ __('Projekte') }}</th>
                         <th></th>
                     </tr>
-                </thead>
-                <tbody>
+                </x-slot:head>
                 @foreach ($customers as $customer)
                     <tr class="hover">
                         <td>
@@ -132,14 +128,14 @@
                         </td>
                     </tr>
                 @endforeach
-                </tbody>
-            </table>
-            </div>
+            </x-table>
         </x-card>
 
-        <div class="px-1">
-            {{ $customers->links() }}
-        </div>
+        @if ($customers->hasPages())
+            <div class="px-1">
+                {{ $customers->links() }}
+            </div>
+        @endif
     @endif
 </x-page-shell>
 @endsection

@@ -7,11 +7,6 @@
         $currentSort = $sort ?? 'bis';
         $currentDir  = $dir  ?? 'desc';
         $tabFilters  = array_filter($filters ?? [], fn($v) => $v !== null && $v !== '' && $v !== '0' && $v !== false);
-        $sortLink = function (string $column) use ($currentSort, $currentDir, $filters, $tab): string {
-            $nextDir = ($currentSort === $column && $currentDir === 'asc') ? 'desc' : 'asc';
-            return route('legacy.diary.index', array_merge($filters, ['tab' => $tab, 'sort' => $column, 'dir' => $nextDir]));
-        };
-        $sortIcon = fn(string $col): string => $currentSort !== $col ? '↕' : ($currentDir === 'asc' ? '↑' : '↓');
         $tabs = [
             'auftraege'    => ['label' => __('Aufträge'),   'count' => $tabCounts['auftraege']],
             'bereitschaft' => ['label' => __('Bereitschaft'), 'count' => $tabCounts['bereitschaft']],
@@ -150,60 +145,59 @@
                         <button type="submit" id="bulk-apply" class="btn btn-sm btn-primary" disabled>{{ __('Anwenden') }}</button>
                     </div>
                     <div class="min-h-0 flex-1 overflow-auto">
-                        <table class="table table-sm table-zebra table-pin-rows">
-                            <thead class="bg-base-200">
-                                <tr class="text-base-content/80">
+                        @php $p = array_merge($filters, ['tab' => 'auftraege']); @endphp
+                        <x-table table-sort="server" :route="route('legacy.diary.index')" :current-sort="$currentSort" :current-dir="$currentDir" :sort-params="$p" pin-rows bare scroll="none">
+                            <x-slot:head>
+                                <tr class="bg-base-200 text-base-content/80">
                                     <th class="w-8"><input type="checkbox" id="bulk-toggle-all" class="checkbox checkbox-sm" aria-label="{{ __('Alle auswählen') }}"></th>
-                                    <th class="w-24 text-center"><a href="{{ $sortLink('status') }}" class="link link-hover">{{ __('Status') }} {!! $sortIcon('status') !!}</a></th>
-                                    <th class="w-32"><a href="{{ $sortLink('mitarbeiter') }}" class="link link-hover">{{ __('Mitarbeiter') }} {!! $sortIcon('mitarbeiter') !!}</a></th>
+                                    <x-table.th sort="status" class="w-24 text-center">{{ __('Status') }}</x-table.th>
+                                    <x-table.th sort="mitarbeiter" class="w-32">{{ __('Mitarbeiter') }}</x-table.th>
                                     <th>{{ __('Inhalt') }}</th>
                                     <th class="w-56">{{ __('Antwort') }}</th>
-                                    <th class="w-28"><a href="{{ $sortLink('von') }}" class="link link-hover">{{ __('Von') }} {!! $sortIcon('von') !!}</a></th>
-                                    <th class="w-28"><a href="{{ $sortLink('bis') }}" class="link link-hover">{{ __('Bis') }} {!! $sortIcon('bis') !!}</a></th>
+                                    <x-table.th sort="von" class="w-28">{{ __('Von') }}</x-table.th>
+                                    <x-table.th sort="bis" class="w-28">{{ __('Bis') }}</x-table.th>
                                     <th class="w-24 whitespace-nowrap text-right">{{ __('Aktion') }}</th>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($entries as $entry)
-                                    @php
-                                        $badgeClass = match ((int) $entry->gelesen) {
-                                            -1 => 'badge-neutral',
-                                            1  => 'badge-success',
-                                            2  => 'badge-warning',
-                                            3  => 'badge-error',
-                                            default => 'badge-ghost',
-                                        };
-                                        $canModify = (int) $entry->user === (int) (Auth::user()->legacy_user_id ?? 0)
-                                            || \App\Legacy\Support\LegacyRoleResolver::isAdmin(Auth::user());
-                                    @endphp
-                                    <tr class="hover">
-                                        <td>
-                                            @if ($canModify)
-                                                <input type="checkbox" name="ids[]" value="{{ $entry->id }}" class="checkbox checkbox-sm bulk-row" aria-label="{{ __('Auswählen') }}">
-                                            @endif
-                                        </td>
-                                        <td class="text-center"><span class="badge badge-sm {{ $badgeClass }}">{{ $entry->statusLabel() }}</span></td>
-                                        <td>{{ optional($entry->author)->uname ?? __('Unbekannt') }}</td>
-                                        <td class="max-w-md truncate" title="{{ $entry->inhalt ?? '' }}">{{ truncate($entry->inhalt ?? '', 120) }}</td>
-                                        <td class="max-w-xs truncate" title="{{ $entry->antwort ?? '' }}">{{ truncate($entry->antwort ?? '', 80) }}</td>
-                                        <td>{{ $entry->von?->format('d.m.Y H:i') ?? '-' }}</td>
-                                        <td>{{ $entry->bis?->format('d.m.Y H:i') ?? '-' }}</td>
-                                        <td class="whitespace-nowrap text-right">
-                                            <a href="{{ route('legacy.diary.show', $entry) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Details') }}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            </x-slot:head>
+                            @forelse ($entries as $entry)
+                                @php
+                                    $badgeClass = match ((int) $entry->gelesen) {
+                                        -1 => 'badge-neutral',
+                                        1  => 'badge-success',
+                                        2  => 'badge-warning',
+                                        3  => 'badge-error',
+                                        default => 'badge-ghost',
+                                    };
+                                    $canModify = (int) $entry->user === (int) (Auth::user()->legacy_user_id ?? 0)
+                                        || \App\Legacy\Support\LegacyRoleResolver::isAdmin(Auth::user());
+                                @endphp
+                                <tr class="hover">
+                                    <td>
+                                        @if ($canModify)
+                                            <input type="checkbox" name="ids[]" value="{{ $entry->id }}" class="checkbox checkbox-sm bulk-row" aria-label="{{ __('Auswählen') }}">
+                                        @endif
+                                    </td>
+                                    <td class="text-center"><span class="badge badge-sm {{ $badgeClass }}">{{ $entry->statusLabel() }}</span></td>
+                                    <td>{{ optional($entry->author)->uname ?? __('Unbekannt') }}</td>
+                                    <td class="max-w-md truncate" title="{{ $entry->inhalt ?? '' }}">{{ truncate($entry->inhalt ?? '', 120) }}</td>
+                                    <td class="max-w-xs truncate" title="{{ $entry->antwort ?? '' }}">{{ truncate($entry->antwort ?? '', 80) }}</td>
+                                    <td>{{ $entry->von?->format('d.m.Y H:i') ?? '-' }}</td>
+                                    <td>{{ $entry->bis?->format('d.m.Y H:i') ?? '-' }}</td>
+                                    <td class="whitespace-nowrap text-right">
+                                        <a href="{{ route('legacy.diary.show', $entry) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Details') }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                        </a>
+                                        @if ($canModify)
+                                            <a href="{{ route('legacy.diary.edit', $entry) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                             </a>
-                                            @if ($canModify)
-                                                <a href="{{ route('legacy.diary.edit', $entry) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                                </a>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr><td colspan="9" class="py-10 text-center text-base-content/70">{{ __('Keine Legacy-Einträge gefunden.') }}</td></tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">menu_book</span>' :colspan="8" :title="__('Keine Legacy-Einträge gefunden.')" compact />
+                            @endforelse
+                        </x-table>
                     </div>
                 </form>
             </div>
@@ -292,43 +286,42 @@
                 @endforeach
             </div>
             <div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-                <table class="table table-sm table-zebra table-pin-rows">
-                    <thead class="bg-base-200">
-                        <tr>
-                            <th><a href="{{ $sortLink('mitarbeiter') }}" class="link link-hover">{{ __('Mitarbeiter') }} {!! $sortIcon('mitarbeiter') !!}</a></th>
-                            <th class="w-32 text-center"><a href="{{ $sortLink('von') }}" class="link link-hover">{{ __('Von') }} {!! $sortIcon('von') !!}</a></th>
-                            <th class="w-32 text-center"><a href="{{ $sortLink('bis') }}" class="link link-hover">{{ __('Bis') }} {!! $sortIcon('bis') !!}</a></th>
+                @php $p = array_merge($filters, ['tab' => 'bereitschaft']); @endphp
+                <x-table table-sort="server" :route="route('legacy.diary.index')" :current-sort="$currentSort" :current-dir="$currentDir" :sort-params="$p" pin-rows bare scroll="none">
+                    <x-slot:head>
+                        <tr class="bg-base-200">
+                            <x-table.th sort="mitarbeiter">{{ __('Mitarbeiter') }}</x-table.th>
+                            <x-table.th sort="von" class="w-32 text-center">{{ __('Von') }}</x-table.th>
+                            <x-table.th sort="bis" class="w-32 text-center">{{ __('Bis') }}</x-table.th>
                             <th class="w-32 text-right">{{ __('Aktion') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($oncallItems as $item)
-                            <tr class="hover">
-                                <td>{{ optional($item->mitarbeiter)->uname ?? __('Unbekannt') }}</td>
-                                <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->von?->format('d.m.Y') ?? '-' }}</td>
-                                <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->bis?->format('d.m.Y') ?? '-' }}</td>
-                                <td class="text-right whitespace-nowrap">
-                                    @if ($isAdmin)
-                                        <a href="{{ route('legacy.oncall.edit', $item) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                        </a>
-                                        <form method="POST" action="{{ route('legacy.oncall.destroy', $item) }}" class="inline"
-                                              data-confirm-dialog
-                                              data-confirm-message="{{ __('Eintrag wirklich löschen?') }}"
-                                              data-confirm-label="{{ __('Löschen') }}">
-                                            @csrf @method('DELETE')
-                                            <button class="btn btn-xs btn-ghost text-error" title="{{ __('Löschen') }}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3"/></svg>
-                                            </button>
-                                        </form>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="4" class="py-6 text-center text-base-content/70">{{ __('Keine Bereitschaftseinträge gefunden.') }}</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                    </x-slot:head>
+                    @forelse ($oncallItems as $item)
+                        <tr class="hover">
+                            <td>{{ optional($item->mitarbeiter)->uname ?? __('Unbekannt') }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->von?->format('d.m.Y') ?? '-' }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->bis?->format('d.m.Y') ?? '-' }}</td>
+                            <td class="text-right whitespace-nowrap">
+                                @if ($isAdmin)
+                                    <a href="{{ route('legacy.oncall.edit', $item) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                    </a>
+                                    <form method="POST" action="{{ route('legacy.oncall.destroy', $item) }}" class="inline"
+                                          data-confirm-dialog
+                                          data-confirm-message="{{ __('Eintrag wirklich löschen?') }}"
+                                          data-confirm-label="{{ __('Löschen') }}">
+                                        @csrf @method('DELETE')
+                                        <button class="btn btn-xs btn-ghost text-error" title="{{ __('Löschen') }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3"/></svg>
+                                        </button>
+                                    </form>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">notifications_active</span>' :colspan="4" :title="__('Keine Bereitschaftseinträge gefunden.')" compact />
+                    @endforelse
+                </x-table>
             </div>
             @if ($oncallItems->total() > 0)
                 <div class="flex-none">
@@ -377,43 +370,42 @@
                 @endforeach
             </div>
             <div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-                <table class="table table-sm table-zebra table-pin-rows">
-                    <thead class="bg-base-200">
-                        <tr>
-                            <th><a href="{{ $sortLink('mitarbeiter') }}" class="link link-hover">{{ __('Mitarbeiter') }} {!! $sortIcon('mitarbeiter') !!}</a></th>
-                            <th class="w-32 text-center"><a href="{{ $sortLink('von') }}" class="link link-hover">{{ __('Von') }} {!! $sortIcon('von') !!}</a></th>
-                            <th class="w-32 text-center"><a href="{{ $sortLink('bis') }}" class="link link-hover">{{ __('Bis') }} {!! $sortIcon('bis') !!}</a></th>
+                @php $p = array_merge($filters, ['tab' => 'notdienst']); @endphp
+                <x-table table-sort="server" :route="route('legacy.diary.index')" :current-sort="$currentSort" :current-dir="$currentDir" :sort-params="$p" pin-rows bare scroll="none">
+                    <x-slot:head>
+                        <tr class="bg-base-200">
+                            <x-table.th sort="mitarbeiter">{{ __('Mitarbeiter') }}</x-table.th>
+                            <x-table.th sort="von" class="w-32 text-center">{{ __('Von') }}</x-table.th>
+                            <x-table.th sort="bis" class="w-32 text-center">{{ __('Bis') }}</x-table.th>
                             <th class="w-32 text-right">{{ __('Aktion') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($notdienstItems as $item)
-                            <tr class="hover">
-                                <td>{{ optional($item->mitarbeiter)->uname ?? __('Unbekannt') }}</td>
-                                <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->von?->format('d.m.Y') ?? '-' }}</td>
-                                <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->bis?->format('d.m.Y') ?? '-' }}</td>
-                                <td class="text-right whitespace-nowrap">
-                                    @if ($isAdmin)
-                                        <a href="{{ route('legacy.notdienst.edit', $item) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                        </a>
-                                        <form method="POST" action="{{ route('legacy.notdienst.destroy', $item) }}" class="inline"
-                                              data-confirm-dialog
-                                              data-confirm-message="{{ __('Eintrag wirklich löschen?') }}"
-                                              data-confirm-label="{{ __('Löschen') }}">
-                                            @csrf @method('DELETE')
-                                            <button class="btn btn-xs btn-ghost text-error" title="{{ __('Löschen') }}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3"/></svg>
-                                            </button>
-                                        </form>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="4" class="py-6 text-center text-base-content/70">{{ __('Keine Notdienst-Einträge gefunden.') }}</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                    </x-slot:head>
+                    @forelse ($notdienstItems as $item)
+                        <tr class="hover">
+                            <td>{{ optional($item->mitarbeiter)->uname ?? __('Unbekannt') }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->von?->format('d.m.Y') ?? '-' }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->bis?->format('d.m.Y') ?? '-' }}</td>
+                            <td class="text-right whitespace-nowrap">
+                                @if ($isAdmin)
+                                    <a href="{{ route('legacy.notdienst.edit', $item) }}" data-entry-modal-trigger class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                    </a>
+                                    <form method="POST" action="{{ route('legacy.notdienst.destroy', $item) }}" class="inline"
+                                          data-confirm-dialog
+                                          data-confirm-message="{{ __('Eintrag wirklich löschen?') }}"
+                                          data-confirm-label="{{ __('Löschen') }}">
+                                        @csrf @method('DELETE')
+                                        <button class="btn btn-xs btn-ghost text-error" title="{{ __('Löschen') }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a2 2 0 012-2h2a2 2 0 012 2v3"/></svg>
+                                        </button>
+                                    </form>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">medical_services</span>' :colspan="4" :title="__('Keine Notdienst-Einträge gefunden.')" compact />
+                    @endforelse
+                </x-table>
             </div>
             @if ($notdienstItems->total() > 0)
                 <div class="flex-none">
@@ -491,68 +483,67 @@
                 @endforeach
             </div>
             <div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-                <table class="table table-sm table-zebra table-pin-rows">
-                    <thead class="bg-base-200">
-                        <tr>
+                @php $p = array_merge($filters, ['tab' => 'urlaub']); @endphp
+                <x-table table-sort="server" :route="route('legacy.diary.index')" :current-sort="$currentSort" :current-dir="$currentDir" :sort-params="$p" pin-rows bare scroll="none">
+                    <x-slot:head>
+                        <tr class="bg-base-200">
                             @if ($vacationIsAdmin)
-                                <th><a href="{{ $sortLink('mitarbeiter') }}" class="link link-hover">{{ __('Mitarbeiter') }} {!! $sortIcon('mitarbeiter') !!}</a></th>
+                                <x-table.th sort="mitarbeiter">{{ __('Mitarbeiter') }}</x-table.th>
                             @endif
-                            <th><a href="{{ $sortLink('typ') }}" class="link link-hover">{{ __('Typ') }} {!! $sortIcon('typ') !!}</a></th>
-                            <th><a href="{{ $sortLink('von') }}" class="link link-hover">{{ __('Von') }} {!! $sortIcon('von') !!}</a></th>
-                            <th><a href="{{ $sortLink('bis') }}" class="link link-hover">{{ __('Bis') }} {!! $sortIcon('bis') !!}</a></th>
-                            <th><a href="{{ $sortLink('status') }}" class="link link-hover">{{ __('Status') }} {!! $sortIcon('status') !!}</a></th>
+                            <x-table.th sort="typ">{{ __('Typ') }}</x-table.th>
+                            <x-table.th sort="von">{{ __('Von') }}</x-table.th>
+                            <x-table.th sort="bis">{{ __('Bis') }}</x-table.th>
+                            <x-table.th sort="status">{{ __('Status') }}</x-table.th>
                             <th class="max-w-xs">{{ __('Notiz') }}</th>
                             <th class="w-24 text-right">{{ __('Aktion') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($vacations as $v)
-                            @php
-                                $statusBadge = match ($v->status) {
-                                    \App\Models\Vacation::STATUS_PENDING   => 'badge-warning',
-                                    \App\Models\Vacation::STATUS_APPROVED  => 'badge-success',
-                                    \App\Models\Vacation::STATUS_REJECTED  => 'badge-error',
-                                    \App\Models\Vacation::STATUS_CANCELLED => 'badge-ghost',
-                                    default                                => 'badge-neutral',
-                                };
-                                $statusLabel = match ($v->status) {
-                                    \App\Models\Vacation::STATUS_PENDING   => __('Ausstehend'),
-                                    \App\Models\Vacation::STATUS_APPROVED  => __('Genehmigt'),
-                                    \App\Models\Vacation::STATUS_REJECTED  => __('Abgelehnt'),
-                                    \App\Models\Vacation::STATUS_CANCELLED => __('Storniert'),
-                                    default                                => $v->status,
-                                };
-                                $typeLabel = match ($v->type) {
-                                    \App\Models\Vacation::TYPE_VACATION => __('Urlaub'),
-                                    \App\Models\Vacation::TYPE_SICK     => __('Krank'),
-                                    \App\Models\Vacation::TYPE_SPECIAL  => __('Sonderurlaub'),
-                                    \App\Models\Vacation::TYPE_UNPAID   => __('Unbezahlt'),
-                                    default                             => $v->type,
-                                };
-                            @endphp
-                            <tr class="hover">
-                                @if ($vacationIsAdmin)
-                                    <td>{{ $v->user?->name ?? '—' }}</td>
-                                @endif
-                                <td class="whitespace-nowrap">{{ $typeLabel }}</td>
-                                <td class="whitespace-nowrap">{{ $v->start_date->format('d.m.Y') }}</td>
-                                <td class="whitespace-nowrap">{{ $v->end_date->format('d.m.Y') }}</td>
-                                <td><span class="badge badge-sm {{ $statusBadge }}">{{ $statusLabel }}</span></td>
-                                <td class="max-w-xs truncate text-base-content/70">{{ $v->note ?? '—' }}</td>
-                                <td class="whitespace-nowrap text-right">
-                                    @can('update', $v)
-                                        <a href="{{ route('vacations.edit', $v) }}" data-entry-modal-trigger
-                                           class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                        </a>
-                                    @endcan
-                                </td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="{{ $vacationIsAdmin ? 7 : 6 }}" class="py-6 text-center text-base-content/70">{{ __('Keine Einträge.') }}</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                    </x-slot:head>
+                    @forelse ($vacations as $v)
+                        @php
+                            $statusBadge = match ($v->status) {
+                                \App\Models\Vacation::STATUS_PENDING   => 'badge-warning',
+                                \App\Models\Vacation::STATUS_APPROVED  => 'badge-success',
+                                \App\Models\Vacation::STATUS_REJECTED  => 'badge-error',
+                                \App\Models\Vacation::STATUS_CANCELLED => 'badge-ghost',
+                                default                                => 'badge-neutral',
+                            };
+                            $statusLabel = match ($v->status) {
+                                \App\Models\Vacation::STATUS_PENDING   => __('Ausstehend'),
+                                \App\Models\Vacation::STATUS_APPROVED  => __('Genehmigt'),
+                                \App\Models\Vacation::STATUS_REJECTED  => __('Abgelehnt'),
+                                \App\Models\Vacation::STATUS_CANCELLED => __('Storniert'),
+                                default                                => $v->status,
+                            };
+                            $typeLabel = match ($v->type) {
+                                \App\Models\Vacation::TYPE_VACATION => __('Urlaub'),
+                                \App\Models\Vacation::TYPE_SICK     => __('Krank'),
+                                \App\Models\Vacation::TYPE_SPECIAL  => __('Sonderurlaub'),
+                                \App\Models\Vacation::TYPE_UNPAID   => __('Unbezahlt'),
+                                default                             => $v->type,
+                            };
+                        @endphp
+                        <tr class="hover">
+                            @if ($vacationIsAdmin)
+                                <td>{{ $v->user?->name ?? '—' }}</td>
+                            @endif
+                            <td class="whitespace-nowrap">{{ $typeLabel }}</td>
+                            <td class="whitespace-nowrap">{{ $v->start_date->format('d.m.Y') }}</td>
+                            <td class="whitespace-nowrap">{{ $v->end_date->format('d.m.Y') }}</td>
+                            <td><span class="badge badge-sm {{ $statusBadge }}">{{ $statusLabel }}</span></td>
+                            <td class="max-w-xs truncate text-base-content/70">{{ $v->note ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-right">
+                                @can('update', $v)
+                                    <a href="{{ route('vacations.edit', $v) }}" data-entry-modal-trigger
+                                       class="btn btn-xs btn-ghost" title="{{ __('Bearbeiten') }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                    </a>
+                                @endcan
+                            </td>
+                        </tr>
+                    @empty
+                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">beach_access</span>' :colspan="$vacationIsAdmin ? 7 : 6" :title="__('Keine Einträge.')" compact />
+                    @endforelse
+                </x-table>
             </div>
             @if ($vacations->total() > 0)
                 <div class="flex-none">

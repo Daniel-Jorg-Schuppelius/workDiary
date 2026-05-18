@@ -15,18 +15,20 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    <x-table>
-        <thead>
+    <x-table table-sort="server"
+             :route="route('qualifications.index')"
+             :current-sort="$sort ?? null"
+             :current-dir="$dir ?? 'asc'">
+        <x-slot:head>
             <tr>
-                <th><x-sort-th column="name" :route="route('qualifications.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'" default="name">{{ __('Name') }}</x-sort-th></th>
-                <th><x-sort-th column="abbreviation" :route="route('qualifications.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Kürzel') }}</x-sort-th></th>
+                <x-table.th sort="name" default>{{ __('Name') }}</x-table.th>
+                <x-table.th sort="abbreviation">{{ __('Kürzel') }}</x-table.th>
                 <th>{{ __('Beschreibung') }}</th>
-                <th class="text-center"><x-sort-th column="users" :route="route('qualifications.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Mitarbeiter') }}</x-sort-th></th>
-                <th class="text-center"><x-sort-th column="is_active" :route="route('qualifications.index')" :sort="$sort ?? null" :dir="$dir ?? 'asc'">{{ __('Aktiv') }}</x-sort-th></th>
+                <x-table.th sort="users" align="center">{{ __('Mitarbeiter') }}</x-table.th>
+                <x-table.th sort="is_active" align="center">{{ __('Aktiv') }}</x-table.th>
                 <th></th>
             </tr>
-        </thead>
-        <tbody>
+        </x-slot:head>
             @forelse ($qualifications as $qual)
                 <tr class="{{ $qual->is_active ? '' : 'opacity-50' }}">
                     <td class="font-medium">{{ $qual->name }}</td>
@@ -58,12 +60,11 @@
                     </td>
                 </tr>
             @empty
-                <tr>
-                    <td colspan="6" class="p-0"><x-empty-state :compact="true" :title="__('Noch keine Qualifikationen vorhanden')" /></td>
-                </tr>
+                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>' :colspan="6" :title="__('Noch keine Qualifikationen vorhanden')" compact />
             @endforelse
-        </tbody>
     </x-table>
-    <div>{{ $qualifications->links() }}</div>
+    @if ($qualifications->hasPages())
+        <div>{{ $qualifications->links() }}</div>
+    @endif
 </x-page-shell>
 @endsection

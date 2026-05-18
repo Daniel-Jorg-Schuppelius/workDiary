@@ -22,6 +22,10 @@
 --}}
 
 @php
+    $icon = $icon ?? '<span class="material-symbols-outlined" aria-hidden="true">inbox</span>';
+    $title = $title ?? __('Keine Einträge vorhanden');
+    $message = $message ?? __('Für die aktuelle Auswahl wurden keine Daten gefunden.');
+
     $toneClass = [
         'primary' => 'bg-primary/5 text-primary',
         'success' => 'bg-success/5 text-success',

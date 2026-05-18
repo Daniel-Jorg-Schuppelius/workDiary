@@ -87,25 +87,29 @@
     </div>
 
     <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <div class="overflow-x-auto">
-            <table class="table table-xs table-zebra">
-                <thead><tr><th>{{ __('Tag') }}</th><th class="text-right">{{ __('Soll') }}</th><th class="text-right">{{ __('Ist') }}</th><th class="text-right">{{ __('Saldo') }}</th></tr></thead>
-                <tbody>
-                    @foreach($summary['days'] as $date => $b)
-                        @php
-                            $isEmpty = $b['target'] === 0 && $b['actual'] === 0;
-                            $isSunday = \Carbon\Carbon::parse($date)->isSunday();
-                        @endphp
-                        <tr class="{{ $isEmpty ? 'opacity-40' : '' }} {{ $isSunday ? 'text-error' : '' }}">
-                            <td>{{ \Carbon\Carbon::parse($date)->translatedFormat('D, d.m.') }}</td>
-                            <td class="text-right tabular-nums @if ($b['target'] === 0) opacity-50 @endif">{{ $fmtCell($b['target']) }}</td>
-                            <td class="text-right tabular-nums @if ($b['actual'] === 0) opacity-50 @endif">{{ $fmtCell($b['actual']) }}</td>
-                            <td class="text-right tabular-nums @if ($b['balance'] === 0) opacity-50 @endif {{ $b['balance'] < 0 ? 'text-error' : '' }}">{{ $fmtCell($b['balance']) }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+        <x-table table-sort="client" bare size="xs">
+            <x-slot:head>
+                <tr>
+                    <x-table.th sort type="date">{{ __('Tag') }}</x-table.th>
+                    <x-table.th sort type="duration" align="right">{{ __('Soll') }}</x-table.th>
+                    <x-table.th sort type="duration" align="right">{{ __('Ist') }}</x-table.th>
+                    <x-table.th sort type="duration" align="right">{{ __('Saldo') }}</x-table.th>
+                </tr>
+            </x-slot:head>
+            @foreach($summary['days'] as $date => $b)
+                @php
+                    $isEmpty = $b['target'] === 0 && $b['actual'] === 0;
+                    $carbonDate = \Carbon\Carbon::parse($date);
+                    $isSunday = $carbonDate->isSunday();
+                @endphp
+                <tr class="{{ $isEmpty ? 'opacity-40' : '' }} {{ $isSunday ? 'text-error' : '' }}">
+                    <td data-sort-value="{{ $carbonDate->format('Y-m-d') }}">{{ $carbonDate->translatedFormat('D, d.m.') }}</td>
+                    <td class="text-right tabular-nums @if ($b['target'] === 0) opacity-50 @endif" data-sort-value="{{ (int) $b['target'] }}">{{ $fmtCell($b['target']) }}</td>
+                    <td class="text-right tabular-nums @if ($b['actual'] === 0) opacity-50 @endif" data-sort-value="{{ (int) $b['actual'] }}">{{ $fmtCell($b['actual']) }}</td>
+                    <td class="text-right tabular-nums @if ($b['balance'] === 0) opacity-50 @endif {{ $b['balance'] < 0 ? 'text-error' : '' }}" data-sort-value="{{ (int) $b['balance'] }}">{{ $fmtCell($b['balance']) }}</td>
+                </tr>
+            @endforeach
+        </x-table>
     </div>
 </x-page-shell>
 @endsection

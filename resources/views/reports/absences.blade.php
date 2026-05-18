@@ -60,54 +60,50 @@
 
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         @if (empty($rows))
-            <x-empty-state :title="__('Keine Abwesenheits- oder Flex-Daten im gewählten Zeitraum.')" />
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">event_busy</span>' :title="__('Keine Abwesenheits- oder Flex-Daten im gewählten Zeitraum.')" />
         @else
-            <div class="overflow-x-auto">
-                <table class="table table-zebra table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Mitarbeiter') }}</th>
-                            <th class="text-right">{{ __('Urlaub') }}</th>
-                            <th class="text-right">{{ __('Krank') }}</th>
-                            <th class="text-right">{{ __('Sonder') }}</th>
-                            <th class="text-right">{{ __('Unbezahlt') }}</th>
-                            <th class="text-right">{{ __('Ausstehend') }}</th>
-                            <th class="text-right">{{ __('Flex Δ') }}</th>
-                            <th class="text-right">{{ __('Flex-Saldo') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($rows as $r)
-                            <tr>
-                                <td class="font-semibold">{{ $r['user']->name }}</td>
-                                <td class="text-right tabular-nums">{{ $r['vacation_days'] }}</td>
-                                <td class="text-right tabular-nums">{{ $r['sick_days'] }}</td>
-                                <td class="text-right tabular-nums">{{ $r['special_days'] }}</td>
-                                <td class="text-right tabular-nums">{{ $r['unpaid_days'] }}</td>
-                                <td class="text-right tabular-nums {{ $r['pending_days'] > 0 ? 'text-warning' : '' }}">{{ $r['pending_days'] }}</td>
-                                <td class="text-right tabular-nums {{ $r['flex_change_minutes'] < 0 ? 'text-error' : ($r['flex_change_minutes'] > 0 ? 'text-success' : '') }}">
-                                    {{ $fmtMin($r['flex_change_minutes']) }}
-                                </td>
-                                <td class="text-right tabular-nums">
-                                    {{ $r['flex_balance_minutes'] !== null ? $fmtMin($r['flex_balance_minutes']) : '–' }}
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr class="font-bold">
-                            <td>{{ __('Gesamt') }}</td>
-                            <td class="text-right tabular-nums">{{ $totals['vacation_days'] }}</td>
-                            <td class="text-right tabular-nums">{{ $totals['sick_days'] }}</td>
-                            <td class="text-right tabular-nums">{{ $totals['special_days'] }}</td>
-                            <td class="text-right tabular-nums">{{ $totals['unpaid_days'] }}</td>
-                            <td class="text-right tabular-nums">{{ $totals['pending_days'] }}</td>
-                            <td class="text-right tabular-nums">{{ $fmtMin($totals['flex_change_minutes']) }}</td>
-                            <td class="text-right tabular-nums">{{ $fmtMin($totals['flex_balance_minutes']) }}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('Mitarbeiter') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Urlaub') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Krank') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Sonder') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Unbezahlt') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Ausstehend') }}</x-table.th>
+                        <x-table.th sort type="duration" align="right">{{ __('Flex Δ') }}</x-table.th>
+                        <x-table.th sort type="duration" align="right">{{ __('Flex-Saldo') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                <x-slot:foot>
+                    <tr class="font-bold">
+                        <td>{{ __('Gesamt') }}</td>
+                        <td class="text-right tabular-nums">{{ $totals['vacation_days'] }}</td>
+                        <td class="text-right tabular-nums">{{ $totals['sick_days'] }}</td>
+                        <td class="text-right tabular-nums">{{ $totals['special_days'] }}</td>
+                        <td class="text-right tabular-nums">{{ $totals['unpaid_days'] }}</td>
+                        <td class="text-right tabular-nums">{{ $totals['pending_days'] }}</td>
+                        <td class="text-right tabular-nums">{{ $fmtMin($totals['flex_change_minutes']) }}</td>
+                        <td class="text-right tabular-nums">{{ $fmtMin($totals['flex_balance_minutes']) }}</td>
+                    </tr>
+                </x-slot:foot>
+                @foreach ($rows as $r)
+                    <tr>
+                        <td class="font-semibold">{{ $r['user']->name }}</td>
+                        <td class="text-right tabular-nums">{{ $r['vacation_days'] }}</td>
+                        <td class="text-right tabular-nums">{{ $r['sick_days'] }}</td>
+                        <td class="text-right tabular-nums">{{ $r['special_days'] }}</td>
+                        <td class="text-right tabular-nums">{{ $r['unpaid_days'] }}</td>
+                        <td class="text-right tabular-nums {{ $r['pending_days'] > 0 ? 'text-warning' : '' }}">{{ $r['pending_days'] }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (int) $r['flex_change_minutes'] }}">
+                            <span class="{{ $r['flex_change_minutes'] < 0 ? 'text-error' : ($r['flex_change_minutes'] > 0 ? 'text-success' : '') }}">{{ $fmtMin($r['flex_change_minutes']) }}</span>
+                        </td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (int) ($r['flex_balance_minutes'] ?? 0) }}">
+                            {{ $r['flex_balance_minutes'] !== null ? $fmtMin($r['flex_balance_minutes']) : '–' }}
+                        </td>
+                    </tr>
+                @endforeach
+            </x-table>
         @endif
     </div>
 </x-page-shell>

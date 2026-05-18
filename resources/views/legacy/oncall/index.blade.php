@@ -89,9 +89,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="5" class="py-6 text-center text-base-content/70">{{ __('Keine Bereitschaftseinträge gefunden.') }}</td>
-                    </tr>
+                    <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">medical_services</span>' :colspan="5" :title="__('Keine Bereitschaftseinträge gefunden')" compact />
                 @endforelse
             </tbody>
     </x-table>

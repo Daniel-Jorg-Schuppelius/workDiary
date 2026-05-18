@@ -62,7 +62,7 @@
         </div>
 
         @if ($yearTotal === 0)
-            <x-empty-state :title="__('Keine Zeiteinträge für dieses Jahr.')" />
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>' :title="__('Keine Zeiteinträge für dieses Jahr.')" />
         @else
             <div class="overflow-x-auto">
                 <table class="table table-xs w-full text-center tabular-nums">

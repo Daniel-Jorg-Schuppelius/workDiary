@@ -58,44 +58,40 @@
 
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         @if (empty($rows))
-            <x-empty-state :title="__('Keine Bereitschaftszeiten im gewählten Zeitraum.')" />
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">medical_services</span>' :title="__('Keine Bereitschaftszeiten im gewählten Zeitraum.')" />
         @else
-            <div class="overflow-x-auto">
-                <table class="table table-zebra table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Mitarbeiter') }}</th>
-                            <th class="text-right">{{ __('Schichten') }}</th>
-                            <th class="text-right">{{ __('Bereitschaft') }}</th>
-                            <th class="text-right">{{ __('Einsätze') }}</th>
-                            <th class="text-right">{{ __('Einsatzzeit') }}</th>
-                            <th class="text-right">{{ __('Aktiv-Anteil') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($rows as $r)
-                            <tr>
-                                <td class="font-semibold">{{ $r['user']->name }}</td>
-                                <td class="text-right tabular-nums">{{ $r['shift_count'] }}</td>
-                                <td class="text-right tabular-nums">{{ $fmt($r['shift_minutes']) }}</td>
-                                <td class="text-right tabular-nums">{{ $r['assignment_count'] }}</td>
-                                <td class="text-right tabular-nums">{{ $fmt($r['assignment_minutes']) }}</td>
-                                <td class="text-right tabular-nums">{{ $r['ratio'] !== null ? $pct($r['ratio']) : '–' }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr class="font-bold">
-                            <td>{{ __('Gesamt') }}</td>
-                            <td class="text-right tabular-nums">{{ $totals['shift_count'] }}</td>
-                            <td class="text-right tabular-nums">{{ $fmt($totals['shift_minutes']) }}</td>
-                            <td class="text-right tabular-nums">{{ $totals['assignment_count'] }}</td>
-                            <td class="text-right tabular-nums">{{ $fmt($totals['assignment_minutes']) }}</td>
-                            <td class="text-right tabular-nums">{{ $totals['ratio'] !== null ? $pct($totals['ratio']) : '–' }}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+            <x-table table-sort="client" bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('Mitarbeiter') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Schichten') }}</x-table.th>
+                        <x-table.th sort type="duration" align="right">{{ __('Bereitschaft') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Einsätze') }}</x-table.th>
+                        <x-table.th sort type="duration" align="right">{{ __('Einsatzzeit') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Aktiv-Anteil') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                <x-slot:foot>
+                    <tr class="font-bold">
+                        <td>{{ __('Gesamt') }}</td>
+                        <td class="text-right tabular-nums">{{ $totals['shift_count'] }}</td>
+                        <td class="text-right tabular-nums">{{ $fmt($totals['shift_minutes']) }}</td>
+                        <td class="text-right tabular-nums">{{ $totals['assignment_count'] }}</td>
+                        <td class="text-right tabular-nums">{{ $fmt($totals['assignment_minutes']) }}</td>
+                        <td class="text-right tabular-nums">{{ $totals['ratio'] !== null ? $pct($totals['ratio']) : '–' }}</td>
+                    </tr>
+                </x-slot:foot>
+                @foreach ($rows as $r)
+                    <tr>
+                        <td class="font-semibold">{{ $r['user']->name }}</td>
+                        <td class="text-right tabular-nums">{{ $r['shift_count'] }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (int) $r['shift_minutes'] }}">{{ $fmt($r['shift_minutes']) }}</td>
+                        <td class="text-right tabular-nums">{{ $r['assignment_count'] }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (int) $r['assignment_minutes'] }}">{{ $fmt($r['assignment_minutes']) }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ $r['ratio'] ?? -1 }}">{{ $r['ratio'] !== null ? $pct($r['ratio']) : '–' }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
         @endif
     </div>
 </x-page-shell>

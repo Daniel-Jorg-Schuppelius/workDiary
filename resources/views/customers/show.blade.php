@@ -195,29 +195,27 @@
                         </div>
                     </div>
                     @if (count($set['by_project']) > 0)
-                        <table class="table table-sm">
-                            <thead>
+                        <x-table table-sort="client" bare>
+                            <x-slot:head>
                                 <tr>
-                                    <th>{{ __('Projekt') }}</th>
-                                    <th class="text-right">{{ __('Stunden') }}</th>
-                                    <th class="text-right">{{ __('abrechenbar') }}</th>
+                                    <x-table.th sort>{{ __('Projekt') }}</x-table.th>
+                                    <x-table.th sort type="number" align="right">{{ __('Stunden') }}</x-table.th>
+                                    <x-table.th sort type="number" align="right">{{ __('abrechenbar') }}</x-table.th>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($set['by_project'] as $row)
-                                    <tr>
-                                        <td>
-                                            @if ($row['is_default'])
-                                                <span class="material-symbols-outlined text-primary text-sm align-middle">star</span>
-                                            @endif
-                                            {{ $row['name'] }}
-                                        </td>
-                                        <td class="text-right">{{ number_format($row['minutes'] / 60, 2, ',', '.') }}</td>
-                                        <td class="text-right">{{ number_format($row['billable_minutes'] / 60, 2, ',', '.') }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                            </x-slot:head>
+                            @foreach ($set['by_project'] as $row)
+                                <tr>
+                                    <td>
+                                        @if ($row['is_default'])
+                                            <span class="material-symbols-outlined text-primary text-sm align-middle">star</span>
+                                        @endif
+                                        {{ $row['name'] }}
+                                    </td>
+                                    <td class="text-right" data-sort-value="{{ (float) $row['minutes'] }}">{{ number_format($row['minutes'] / 60, 2, ',', '.') }}</td>
+                                    <td class="text-right" data-sort-value="{{ (float) $row['billable_minutes'] }}">{{ number_format($row['billable_minutes'] / 60, 2, ',', '.') }}</td>
+                                </tr>
+                            @endforeach
+                        </x-table>
                     @endif
                 </div>
             @endforeach
