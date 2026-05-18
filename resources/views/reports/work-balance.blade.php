@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', __('Arbeitsbilanz'))
+@section('nav-title', __('Arbeitsbilanz') . ' — ' . $label)
 
 @php
     $fmt = function (int $minutes): string {
@@ -12,41 +13,29 @@
 
 @section('content')
     <x-page-shell>
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h1 class="text-xl font-semibold">{{ __('Arbeitsbilanz') }}</h1>
-                <p class="text-sm text-base-content/60">
-                    {{ $label }} — {{ $user->name }}
-                </p>
-                <p class="text-xs text-base-content/50">
-                    {{ __('Zeitraum übernommen aus dem Header. Mit der Auswahl oben links wechseln.') }}
-                </p>
-            </div>
-            <div class="flex flex-wrap items-end gap-2">
-                @if (! empty($selectableUsers))
-                    <form method="GET" action="{{ route('reports.work-balance') }}"
-                          class="flex items-end gap-2">
-                        @foreach (request()->except(['user', 'export']) as $k => $v)
-                            <input type="hidden" name="{{ $k }}" value="{{ $v }}">
-                        @endforeach
-                        <label class="form-control">
-                            <span class="label-text text-xs">{{ __('Mitarbeiter') }}</span>
-                            <select name="user" class="select select-bordered select-sm"
-                                    onchange="this.form.submit()">
+        <x-slot:toolbar>
+            <x-page-toolbar :subtitle="$user->name">
+                <x-slot:actions>
+                    @if (! empty($selectableUsers))
+                        <form method="GET" action="{{ route('reports.work-balance') }}" class="flex items-end gap-2">
+                            @foreach (request()->except(['user', 'export']) as $k => $v)
+                                <input type="hidden" name="{{ $k }}" value="{{ $v }}">
+                            @endforeach
+                            <select name="user" class="select select-bordered select-sm" onchange="this.form.submit()">
                                 @foreach ($selectableUsers as $u)
                                     <option value="{{ $u->id }}" @selected((int) $u->id === (int) $user->id)>
                                         {{ $u->name }}
                                     </option>
                                 @endforeach
                             </select>
-                        </label>
-                    </form>
-                @endif
-                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.work-balance', array_merge(request()->query(), ['export' => 'pdf']))"
-                            show-label>PDF</x-icon-btn>
-            </div>
-        </div>
+                        </form>
+                    @endif
+                    <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
+                                :href="route('reports.work-balance', array_merge(request()->query(), ['export' => 'pdf']))"
+                                show-label>PDF</x-icon-btn>
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
 
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <div class="rounded-box border border-base-300 bg-base-100 p-3">

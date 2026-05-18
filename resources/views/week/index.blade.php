@@ -42,9 +42,6 @@
                     {{ trans_choice('{1} :count Woche|[2,*] :count Wochen', $weekCount, ['count' => $weekCount]) }}
                 </span>
             @endif
-            <span class="text-xs text-base-content/50 hidden md:inline">
-                {{ __('Zeitraum-Auswahl im Header oben rechts.') }}
-            </span>
         </div>
 
         <div class="flex items-center gap-3">

@@ -1,7 +1,7 @@
 @props([
-    'action' => null,
-    'method' => 'GET',
-    'reset' => null,
+    'action'      => null,
+    'method'      => 'GET',
+    'reset'       => null,
     'submitLabel' => null,
 ])
 
@@ -21,22 +21,19 @@
             @method($methodUpper)
         @endif
     @endif
-    <div class="flex flex-wrap items-end gap-3">
+    <div class="flex flex-wrap items-end gap-2">
         {{ $slot }}
 
         <div class="ml-auto flex items-end gap-2">
             @isset($extra)
                 {{ $extra }}
             @endisset
-            <button type="submit" class="btn btn-primary btn-sm gap-1">
-                <x-icon name="filter_alt" />
-                <span>{{ $submitLabel ?? __('Filtern') }}</span>
-            </button>
+            <x-icon-btn icon="filter_alt" tone="primary" size="sm" type="submit"
+                        show-label>{{ $submitLabel ?? __('Filtern') }}</x-icon-btn>
             @if ($reset)
-                <a href="{{ $reset }}" class="btn btn-ghost btn-sm gap-1">
-                    <x-icon name="restart_alt" />
-                    <span>{{ __('Zurücksetzen') }}</span>
-                </a>
+                <x-icon-btn icon="restart_alt" size="sm"
+                            :href="$reset"
+                            show-label>{{ __('Zurücksetzen') }}</x-icon-btn>
             @endif
         </div>
     </div>

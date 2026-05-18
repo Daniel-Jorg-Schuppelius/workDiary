@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', __('Woche pro Mitarbeiter'))
-@section('nav-title', __('Woche pro Mitarbeiter'))
+@section('title', __('Woche pro Mitarbeiter') . ' — ' . $weekLabel)
+@section('nav-title', __('Woche pro Mitarbeiter') . ' — ' . $weekLabel)
 
 @section('content')
 @php

@@ -7,13 +7,13 @@
 @endphp
 
 <x-form-group :legend="__('Identifikation')" icon="badge" tone="primary" cols="2">
-    <x-filter-field :label="__('Bezeichnung')" for="entrytype-label">
+    <x-filter-field show-label :label="__('Bezeichnung')" for="entrytype-label">
         <input type="text" id="entrytype-label" name="label" required maxlength="120"
                value="{{ old('label', $entryType->label) }}"
                class="input input-bordered input-sm w-full">
     </x-filter-field>
 
-    <x-filter-field :label="__('Slug')" for="entrytype-slug">
+    <x-filter-field show-label :label="__('Slug')" for="entrytype-slug">
         <input type="text" id="entrytype-slug" name="slug" required maxlength="64"
                pattern="[a-z0-9_]+"
                value="{{ old('slug', $entryType->slug) }}"
@@ -21,13 +21,13 @@
                @if ($isEdit) readonly @endif>
     </x-filter-field>
 
-    <x-filter-field :label="__('Icon (Material Symbol)')" for="entrytype-icon">
+    <x-filter-field show-label :label="__('Icon (Material Symbol)')" for="entrytype-icon">
         <input type="text" id="entrytype-icon" name="icon" required maxlength="64"
                value="{{ old('icon', $entryType->icon ?: 'task_alt') }}"
                class="input input-bordered input-sm w-full font-mono">
     </x-filter-field>
 
-    <x-filter-field :label="__('Farbe (Token)')" for="entrytype-color">
+    <x-filter-field show-label :label="__('Farbe (Token)')" for="entrytype-color">
         <select id="entrytype-color" name="color" class="select select-bordered select-sm w-full">
             @foreach (['primary','secondary','accent','info','success','warning','error','ghost'] as $tone)
                 <option value="{{ $tone }}" @selected(old('color', $entryType->color ?: 'primary') === $tone)>{{ $tone }}</option>
@@ -36,20 +36,20 @@
     </x-filter-field>
 
     <div class="md:col-span-2">
-        <x-filter-field :label="__('Beschreibung')" for="entrytype-description">
+        <x-filter-field show-label :label="__('Beschreibung')" for="entrytype-description">
             <input type="text" id="entrytype-description" name="description" maxlength="255"
                    value="{{ old('description', $entryType->description) }}"
                    class="input input-bordered input-sm w-full">
         </x-filter-field>
     </div>
 
-    <x-filter-field :label="__('Sortierung')" for="entrytype-sort">
+    <x-filter-field show-label :label="__('Sortierung')" for="entrytype-sort">
         <input type="number" id="entrytype-sort" name="sort" min="0" max="9999"
                value="{{ old('sort', $entryType->sort ?? 100) }}"
                class="input input-bordered input-sm w-full">
     </x-filter-field>
 
-    <x-filter-field :label="__('Aktiv')" for="entrytype-is-active">
+    <x-filter-field show-label :label="__('Aktiv')" for="entrytype-is-active">
         <label class="label cursor-pointer justify-start gap-3">
             <input type="hidden" name="is_active" value="0">
             <input type="checkbox" id="entrytype-is-active" name="is_active" value="1"
@@ -80,7 +80,7 @@
 </x-form-group>
 
 <x-form-group :legend="__('Standardwerte')" icon="tune" tone="success" cols="3">
-    <x-filter-field :label="__('Status (Default)')" for="entrytype-default-status">
+    <x-filter-field show-label :label="__('Status (Default)')" for="entrytype-default-status">
         <select id="entrytype-default-status" name="default_status" class="select select-bordered select-sm w-full">
             @foreach ($statusOptions as $value => $label)
                 <option value="{{ $value }}" @selected((int) old('default_status', $entryType->default_status ?? \App\Models\DiaryEntry::STATUS_OPEN) === (int) $value)>{{ $label }}</option>
@@ -88,7 +88,7 @@
         </select>
     </x-filter-field>
 
-    <x-filter-field :label="__('Priorität (Default)')" for="entrytype-default-priority">
+    <x-filter-field show-label :label="__('Priorität (Default)')" for="entrytype-default-priority">
         <select id="entrytype-default-priority" name="default_priority" class="select select-bordered select-sm w-full">
             <option value="">— {{ __('keine Vorgabe') }} —</option>
             @foreach ($priorityOptions as $prio)
@@ -97,7 +97,7 @@
         </select>
     </x-filter-field>
 
-    <x-filter-field :label="__('Servicedauer (Min., Default)')" for="entrytype-default-minutes">
+    <x-filter-field show-label :label="__('Servicedauer (Min., Default)')" for="entrytype-default-minutes">
         <input type="number" id="entrytype-default-minutes" name="default_service_minutes" min="0" max="10080"
                value="{{ old('default_service_minutes', $entryType->default_service_minutes) }}"
                class="input input-bordered input-sm w-full">
