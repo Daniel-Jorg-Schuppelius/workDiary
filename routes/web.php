@@ -37,6 +37,7 @@ use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\KanbanController;
+use App\Http\Controllers\LicenseController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\MilestoneController;
@@ -92,6 +93,10 @@ use App\Http\Controllers\WeekController;
 use App\Http\Controllers\WorkScheduleController;
 use Illuminate\Support\Facades\Route;
 
+// Lizenz-Aktivierung (umgeht EnsureValidLicense via bypass_paths)
+Route::get('/license', [LicenseController::class, 'show'])->name('license.show');
+Route::post('/license', [LicenseController::class, 'store'])->middleware('throttle:6,1')->name('license.store');
+
 // Startseite (öffentlich)
 Route::get('/', HomeController::class)->name('home');
 
@@ -121,6 +126,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('account/profile', [ProfileController::class, 'edit'])->name('account.profile.edit');
     Route::put('account/profile', [ProfileController::class, 'update'])->name('account.profile.update');
+    Route::get('account/settings', [ProfileController::class, 'settings'])->name('account.settings');
+    Route::put('account/preferences', [ProfileController::class, 'updatePreferences'])->name('account.preferences.update');
 
     Route::get('diary/export.csv', [DiaryExportController::class, 'csv'])->name('diary.export.csv');
     Route::get('diary/export.pdf', [DiaryExportController::class, 'pdf'])->name('diary.export.pdf');
@@ -136,11 +143,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
     Route::post('attachments/{type}/{id}', [AttachmentController::class, 'store'])
-        ->whereIn('type', ['diary', 'comment', 'shift', 'assignment'])
+        ->whereIn('type', ['diary', 'comment', 'shift', 'assignment', 'task', 'customer', 'organization', 'user'])
         ->whereNumber('id')
         ->name('attachments.store');
     Route::get('attachments/{attachment}/download', [AttachmentController::class, 'download'])->name('attachments.download');
     Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy'])->name('attachments.destroy');
+    Route::delete('attachments/{type}/{id}/meta/{meta}', [AttachmentController::class, 'destroyMeta'])
+        ->whereIn('type', ['organization', 'user'])
+        ->whereNumber('id')
+        ->whereIn('meta', ['logo', 'logo_dark', 'avatar'])
+        ->name('attachments.destroyMeta');
 
     Route::get('week', WeekController::class)->name('week.index');
 
@@ -364,6 +376,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('admin/organizations', OrganizationController::class)
         ->names('admin.organizations')
         ->parameters(['organizations' => 'organization']);
+
+    // Branding-Self-Service der eigenen Organisation (Logos, Farben,
+    // Kontakt, PDF-Konfig). Logo-Uploads laufen über AttachmentController.
+    Route::get('admin/branding', [\App\Http\Controllers\BrandingController::class, 'edit'])->name('admin.branding.edit');
+    Route::put('admin/branding', [\App\Http\Controllers\BrandingController::class, 'update'])->name('admin.branding.update');
 
     Route::resource('admin/entry-types', EntryTypeController::class)
         ->names('admin.entry-types')

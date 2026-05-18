@@ -30,6 +30,9 @@
     </x-form-group>
 
     <x-slot:footerExtra>
+        <x-icon-btn icon="tune" size="sm"
+                    :href="route('account.settings')"
+                    show-label>{{ __('Erweiterte Einstellungen') }}</x-icon-btn>
         <x-icon-btn icon="lock" size="sm"
                     data-entry-modal-trigger
                     :href="route('account.password.edit')"

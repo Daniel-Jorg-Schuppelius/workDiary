@@ -27,4 +27,19 @@ trait HasAttachments
 
         return $relation;
     }
+
+    /**
+     * Liefert den jüngsten Anhang zu einer Spezialrolle (meta_type),
+     * z. B. 'logo', 'logo_dark', 'avatar'. Bei mehreren vorhandenen
+     * Einträgen wird der zuletzt erstellte zurückgegeben.
+     */
+    public function attachmentByMeta(string $metaType): ?Attachment
+    {
+        /** @var Attachment|null $found */
+        $found = $this->attachments()
+            ->where('meta_type', $metaType)
+            ->first();
+
+        return $found;
+    }
 }

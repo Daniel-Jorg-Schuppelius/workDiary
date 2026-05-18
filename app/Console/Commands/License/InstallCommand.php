@@ -1,0 +1,62 @@
+<?php
+
+/*
+ * Created on   : Mon May 18 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : InstallCommand.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Console\Commands\License;
+
+use App\Services\Licensing\LicenseService;
+use Illuminate\Console\Command;
+
+class InstallCommand extends Command
+{
+    protected $signature = 'license:install
+        {key? : Lizenzschlüssel oder Pfad zu einer Datei mit dem Schlüssel}
+        {--stdin : Lizenzschlüssel von STDIN lesen}';
+
+    protected $description = 'Installiert einen Lizenzschlüssel in storage/app/.';
+
+    public function handle(LicenseService $service): int
+    {
+        $key = $this->resolveKey();
+        if ($key === null || $key === '') {
+            $this->error('Kein Lizenzschlüssel übergeben.');
+
+            return self::FAILURE;
+        }
+
+        $result = $service->install($key);
+        $this->line('Status: '.$result->status->value);
+        if ($result->message !== null) {
+            $this->line($result->message);
+        }
+
+        return $result->isUsable() ? self::SUCCESS : self::FAILURE;
+    }
+
+    private function resolveKey(): ?string
+    {
+        if ($this->option('stdin')) {
+            $stdin = trim((string) stream_get_contents(STDIN));
+
+            return $stdin !== '' ? $stdin : null;
+        }
+
+        $arg = $this->argument('key');
+        if (! is_string($arg) || $arg === '') {
+            return null;
+        }
+
+        if (is_file($arg) && is_readable($arg)) {
+            return trim((string) file_get_contents($arg));
+        }
+
+        return trim($arg);
+    }
+}

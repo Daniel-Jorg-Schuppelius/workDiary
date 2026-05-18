@@ -64,4 +64,14 @@ class OrganizationPolicy
     {
         return $user->isAdmin() && $user->organization_id !== null;
     }
+
+    /**
+     * Branding (Logos, Farben, Kontakt, PDF-Header) darf ausschließlich
+     * ein Admin DER betreffenden Organisation bearbeiten. Cross-Org
+     * Admins werden über den `before()`-Hook bewusst durchgelassen.
+     */
+    public function manageBranding(User $user, Organization $organization): bool
+    {
+        return $user->isAdmin() && $user->organization_id === $organization->id;
+    }
 }

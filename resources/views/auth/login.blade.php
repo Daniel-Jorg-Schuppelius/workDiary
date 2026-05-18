@@ -13,7 +13,7 @@
                 root.style.colorScheme = theme === 'corporate' ? 'light' : 'dark';
             })();
         </script>
-        <title>{{ __('Anmelden') }} — {{ config('app.name', 'WorkDiary') }}</title>
+        <title>{{ __('Anmelden') }} — {{ isset($branding) && $branding ? $branding->appName() : config('app.name', 'WorkDiary') }}</title>
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=space-grotesk:400,500,700|ibm-plex-sans:400,500,600" rel="stylesheet" />
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
@@ -29,7 +29,17 @@
     <body class="min-h-screen bg-primary-content text-base-content">
         <header class="fixed inset-x-0 top-0 z-50 border-b border-base-300 bg-base-100 shadow-xs">
             <div class="mx-auto flex w-full max-w-screen-2xl items-center justify-between gap-4 px-4 py-3 xl:px-8 2xl:px-12">
-                <a href="{{ route('home') }}" class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary">WorkDiary</a>
+                @php
+                    $_loginBrandLogo = isset($branding) && $branding ? $branding->logoUrl() : null;
+                    $_loginBrandName = isset($branding) && $branding ? $branding->appName() : 'WorkDiary';
+                @endphp
+                <a href="{{ route('home') }}" class="flex items-center gap-2">
+                    @if ($_loginBrandLogo)
+                        <img src="{{ $_loginBrandLogo }}" alt="{{ $_loginBrandName }}" class="h-6 w-auto max-w-[8rem] object-contain">
+                    @else
+                        <span class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary">{{ $_loginBrandName }}</span>
+                    @endif
+                </a>
                 <div class="ml-auto flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
                     <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
                         <span data-theme-label class="text-base leading-none">◐</span>
@@ -43,7 +53,7 @@
             <div class="w-full max-w-md">
             <div class="mb-8 text-center">
                 <a href="{{ route('home') }}" class="inline-block">
-                    <p class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary">WorkDiary Next</p>
+                    <p class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary">{{ isset($branding) && $branding ? ($branding->slogan() ?: $branding->appName()) : 'WorkDiary Next' }}</p>
                     <h1 class="mt-2 font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content">{{ __('Anmelden') }}</h1>
                 </a>
                 <p class="mt-3 text-sm text-base-content/70">{{ __('Benutzerdaten aus dem bestehenden Tagebuch-System.') }}</p>
@@ -115,7 +125,7 @@
 
         <footer class="fixed inset-x-0 bottom-0 z-50 border-t border-base-300 bg-base-100 shadow-xs">
             <div class="mx-auto flex w-full max-w-screen-2xl items-center justify-center px-4 py-3 text-xs text-base-content/70 xl:px-8 2xl:px-12">
-                &copy; {{ date('Y') }} WorkDiary. Alle Rechte vorbehalten.
+                &copy; {{ date('Y') }} {{ isset($branding) && $branding ? $branding->appName() : 'WorkDiary' }}. Alle Rechte vorbehalten.
             </div>
         </footer>
         <script>

@@ -30,6 +30,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Unavailability-Cache TTL
+    |--------------------------------------------------------------------------
+    |
+    | Sekunden, für die eine ausgefallene DB-Verbindung als "down" gemerkt wird
+    | (Datei-Marker, von App\Support\DatabaseHealth verwaltet). Folge-Requests
+    | warten dann nicht erneut in den Connect-Timeout, sondern liefern sofort
+    | eine 503-Antwort bzw. fallen sauber auf null zurück.
+    |
+    */
+
+    'unavailable_cache_ttl' => (int) env('DB_UNAVAILABLE_CACHE_TTL', 60),
+
+    /*
+    |--------------------------------------------------------------------------
     | Database Connections
     |--------------------------------------------------------------------------
     |

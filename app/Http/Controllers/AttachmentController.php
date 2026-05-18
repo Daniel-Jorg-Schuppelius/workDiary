@@ -17,7 +17,9 @@ use App\Models\Customer;
 use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
 use App\Models\OnCallShift;
+use App\Models\Organization;
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -49,6 +51,19 @@ class AttachmentController extends Controller
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     ];
 
+    /**
+     * Bild-Whitelist für Branding/Avatar-Uploads. SVG ist bewusst NICHT
+     * enthalten, da inline SVG XSS-Vektoren mitbringt (sowohl im Browser
+     * als auch in dompdf).
+     */
+    private const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
+
+    private const IMAGE_MIMES = [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+    ];
+
     private const TYPE_MAP = [
         'diary' => DiaryEntry::class,
         'comment' => Comment::class,
@@ -56,13 +71,39 @@ class AttachmentController extends Controller
         'assignment' => EmergencyAssignment::class,
         'task' => Task::class,
         'customer' => Customer::class,
+        'organization' => Organization::class,
+        'user' => User::class,
     ];
+
+    /**
+     * Spezialrollen (meta_type), die als Bild-Uploads mit stricter
+     * Validierung und automatischer Ersetzung des Vorgängers behandelt
+     * werden. Wert = maximal erlaubte Größe in KB (aus
+     * config/branding.php).
+     */
+    private function imageMetaLimitKb(string $meta): ?int
+    {
+        return match ($meta) {
+            Attachment::META_LOGO, Attachment::META_LOGO_DARK => (int) config('branding.limits.logo_kb', 2048),
+            Attachment::META_AVATAR => (int) config('branding.limits.avatar_kb', 1024),
+            default => null,
+        };
+    }
 
     public function store(Request $request, string $type, int $id): RedirectResponse
     {
         Gate::authorize('create', Attachment::class);
 
         $parent = $this->resolveParent($type, $id);
+        $meta = $request->input('meta_type');
+        $meta = is_string($meta) && $meta !== '' ? $meta : null;
+
+        // Branding-/Avatar-Uploads laufen über einen separaten,
+        // strengeren Pfad (Bildtypen, eigene Größenlimits, Ersetzen des
+        // Vorgängers, eigene Autorisierung).
+        if ($meta !== null && $this->imageMetaLimitKb($meta) !== null) {
+            return $this->storeImageMeta($request, $parent, $meta);
+        }
 
         $request->validate([
             'file' => ['required', 'file', 'max:'.(self::MAX_BYTES / 1024)],
@@ -84,7 +125,7 @@ class AttachmentController extends Controller
         $filename = Str::uuid()->toString().'.'.$ext;
         $path = $file->storeAs($folder, $filename, 'local');
 
-        /** @var DiaryEntry|Comment|OnCallShift|EmergencyAssignment|Task|Customer $parent */
+        /** @var DiaryEntry|Comment|OnCallShift|EmergencyAssignment|Task|Customer|Organization|User $parent */
         $parent->attachments()->create([
             'user_id' => Auth::id(),
             'disk' => 'local',
@@ -95,6 +136,124 @@ class AttachmentController extends Controller
         ]);
 
         return back()->with('success', __('Anhang hochgeladen.'));
+    }
+
+    /**
+     * Spezialisierter Upload-Pfad für Branding-Logos und Avatare.
+     * - Erzwingt Bildformate (jpg/png/webp; KEIN SVG)
+     * - Verwendet meta-spezifische Größenlimits (config/branding.php)
+     * - Ersetzt einen ggf. vorhandenen vorherigen Anhang gleichen
+     *   `meta_type` am selben Elternobjekt (inkl. Storage-Cleanup)
+     * - Eigene Autorisierung statt der generischen Attachment-Policy
+     */
+    private function storeImageMeta(Request $request, Model $parent, string $meta): RedirectResponse
+    {
+        /** @var Organization|User $parent */
+        $this->authorizeImageMeta($parent, $meta);
+
+        $maxKb = $this->imageMetaLimitKb($meta);
+        if ($maxKb === null) {
+            abort(422);
+        }
+
+        $request->validate([
+            'file' => ['required', 'file', 'max:'.$maxKb],
+        ]);
+
+        $file = $request->file('file');
+        $ext = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+        if (! in_array($ext, self::IMAGE_EXTENSIONS, true)) {
+            return back()->withErrors(['file' => __('Nur JPG, PNG oder WEBP erlaubt.')]);
+        }
+
+        $serverMime = $file->getMimeType() ?? '';
+        if (! in_array($serverMime, self::IMAGE_MIMES, true)) {
+            return back()->withErrors(['file' => __('Nur JPG, PNG oder WEBP erlaubt.')]);
+        }
+
+        // Zusätzlicher Sanity-Check: Datei muss als Bild lesbar sein.
+        $imgInfo = @getimagesize($file->getRealPath());
+        if ($imgInfo === false) {
+            return back()->withErrors(['file' => __('Datei ist kein gültiges Bild.')]);
+        }
+
+        // Vorherigen Anhang gleicher Rolle entfernen (inkl. Datei).
+        /** @var Attachment|null $previous */
+        $previous = $parent->attachments()->where('meta_type', $meta)->first();
+        if ($previous !== null) {
+            Storage::disk($previous->disk)->delete($previous->path);
+            $previous->delete();
+        }
+
+        $folder = 'attachments/'.now()->format('Y/m');
+        $filename = Str::uuid()->toString().'.'.$ext;
+        $path = $file->storeAs($folder, $filename, 'local');
+
+        $parent->attachments()->create([
+            'user_id' => Auth::id(),
+            'disk' => 'local',
+            'path' => $path,
+            'original_name' => $this->sanitizeFilename($file->getClientOriginalName()),
+            'mime' => $serverMime,
+            'size' => $file->getSize(),
+            'meta_type' => $meta,
+        ]);
+
+        return back()->with('success', __('Bild hochgeladen.'));
+    }
+
+    /**
+     * Löscht einen Branding-/Avatar-Anhang gezielt über `meta_type`.
+     * Wird vom <x-file-upload> "Entfernen"-Toggle genutzt, damit das
+     * UI nicht die generische Attachment-ID-Route aufrufen muss.
+     */
+    public function destroyMeta(string $type, int $id, string $meta): RedirectResponse
+    {
+        if ($this->imageMetaLimitKb($meta) === null) {
+            abort(404);
+        }
+
+        $parent = $this->resolveParent($type, $id);
+        /** @var Organization|User $parent */
+        $this->authorizeImageMeta($parent, $meta);
+
+        /** @var Attachment|null $existing */
+        $existing = $parent->attachments()->where('meta_type', $meta)->first();
+        if ($existing !== null) {
+            Storage::disk($existing->disk)->delete($existing->path);
+            $existing->delete();
+        }
+
+        return back()->with('success', __('Bild entfernt.'));
+    }
+
+    /**
+     * Autorisiert Branding-/Avatar-Operationen. Logos einer Organisation
+     * dürfen nur deren Admins ändern; Avatare nur der eigene User
+     * (bzw. ein Admin).
+     */
+    private function authorizeImageMeta(Model $parent, string $meta): void
+    {
+        if ($parent instanceof Organization && in_array($meta, [Attachment::META_LOGO, Attachment::META_LOGO_DARK], true)) {
+            Gate::authorize('manageBranding', $parent);
+
+            return;
+        }
+
+        if ($parent instanceof User && $meta === Attachment::META_AVATAR) {
+            /** @var User|null $current */
+            $current = Auth::user();
+            if ($current === null) {
+                abort(403);
+            }
+            if ($current->id !== $parent->id && ! $current->isAdmin()) {
+                abort(403);
+            }
+
+            return;
+        }
+
+        abort(422);
     }
 
     public function download(Request $request, Attachment $attachment): BinaryFileResponse

@@ -15,7 +15,7 @@
                 root.style.colorScheme = theme === 'corporate' ? 'light' : 'dark';
             })();
         </script>
-        <title>@yield('title', config('app.name', 'WorkDiary'))</title>
+        <title>@yield('title', isset($branding) && $branding ? $branding->appName() : config('app.name', 'WorkDiary'))</title>
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=space-grotesk:400,500,700|ibm-plex-sans:400,500,600" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200&display=swap" rel="stylesheet">
@@ -232,6 +232,23 @@
                 body { margin: 0; min-height: 100vh; background: linear-gradient(135deg, #082f49 0%, #0f172a 45%, #111827 100%); color: #e2e8f0; }
             </style>
         @endif
+        {{-- Branding-Overrides für Primär-/Akzentfarbe. Schreiben die
+             DaisyUI-Theme-Tokens dynamisch um – wirkt damit überall,
+             wo `text-primary`, `btn-primary` etc. verwendet werden. --}}
+        @if (isset($branding) && $branding)
+            @php
+                $_brandPrimary = $branding->primaryColor();
+                $_brandAccent = $branding->accentColor();
+            @endphp
+            @if ($_brandPrimary || $_brandAccent)
+                <style>
+                    :root {
+                        @if ($_brandPrimary) --color-primary: {{ $_brandPrimary }}; @endif
+                        @if ($_brandAccent) --color-accent: {{ $_brandAccent }}; @endif
+                    }
+                </style>
+            @endif
+        @endif
     </head>
     @php
         $_bodyMode = (session('work_mode', 'legacy') === 'legacy' && filled(config('database.connections.legacy.database'))) ? 'legacy' : 'new';
@@ -263,7 +280,15 @@
             <div class="header-row w-full px-4 xl:px-8 2xl:px-12 min-h-14 py-2">
                 <div class="header-left flex items-center">
                     <a href="{{ route('home') }}" class="flex items-center gap-2 group min-w-0">
-                        <span class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary transition group-hover:opacity-80 shrink-0">WorkDiary</span>
+                        @php
+                            $_brandLogo = isset($branding) && $branding ? $branding->logoUrl() : null;
+                            $_brandName = isset($branding) && $branding ? $branding->appName() : 'WorkDiary';
+                        @endphp
+                        @if ($_brandLogo)
+                            <img src="{{ $_brandLogo }}" alt="{{ $_brandName }}" class="h-6 w-auto max-w-[8rem] object-contain shrink-0">
+                        @else
+                            <span class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary transition group-hover:opacity-80 shrink-0">{{ $_brandName }}</span>
+                        @endif
                         <span class="text-base-content/40">/</span>
                         <span class="font-['Space_Grotesk'] font-semibold text-base-content truncate">@yield('nav-title', __('Tagebuch'))</span>
                     </a>
@@ -314,6 +339,7 @@
                                     $manageNavItems[] = ['route' => 'tags.index',                    'label' => __('Tags'),             'icon' => 'label',            'modal' => false];
                                     $manageNavItems[] = ['route' => 'flex.admin',                    'label' => __('Gleitzeit Team'),   'icon' => 'groups',           'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.organizations.index',     'label' => __('Organisationen'),   'icon' => 'corporate_fare',   'modal' => false];
+                                    $adminNavItems[]  = ['route' => 'admin.branding.edit',           'label' => __('Branding'),         'icon' => 'palette',          'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.entry-types.index',        'label' => __('Eintragstypen'),    'icon' => 'category',         'modal' => false];
                                 }
                                 $adminNavItems[] = ['route' => 'audit.index',                       'label' => __('Audit-Log'),        'icon' => 'fact_check',       'modal' => false];
@@ -330,6 +356,7 @@
                             $userNavItems = [];
                             if (! $isLegacyMode) {
                                 $userNavItems[] = ['route' => 'account.profile.edit',  'label' => __('Profil bearbeiten'), 'modal' => true];
+                                $userNavItems[] = ['route' => 'account.settings',      'label' => __('Erweiterte Einstellungen'), 'modal' => false];
                                 $userNavItems[] = ['route' => 'account.password.edit', 'label' => __('Passwort ändern'),  'modal' => true];
                                 $userNavItems[] = ['route' => 'account.work-schedule', 'label' => __('Arbeitszeit-Modell'), 'modal' => false];
                             } else {
@@ -940,7 +967,7 @@
 
         <footer class="fixed inset-x-0 bottom-0 z-50 h-12 bg-base-100 border-t border-base-300 shadow-xs">
             <div class="mx-auto flex w-full {{ $_wrapperMaxW }} items-center justify-center px-4 py-3 text-xs text-base-content/70 xl:px-8 2xl:px-12">
-                &copy; {{ date('Y') }} WorkDiary. {{ __('Alle Rechte vorbehalten.') }}
+                &copy; {{ date('Y') }} {{ isset($branding) && $branding ? $branding->appName() : 'WorkDiary' }}. {{ __('Alle Rechte vorbehalten.') }}
             </div>
         </footer>
 

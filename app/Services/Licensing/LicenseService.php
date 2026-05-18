@@ -1,0 +1,251 @@
+<?php
+
+/*
+ * Created on   : Mon May 18 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : LicenseService.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Services\Licensing;
+
+use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Cache\Repository as CacheRepository;
+use Illuminate\Filesystem\Filesystem;
+
+class LicenseService
+{
+    private const CACHE_KEY = 'license:current';
+
+    public function __construct(
+        private readonly Filesystem $files,
+        private readonly CacheRepository $cache,
+    ) {}
+
+    public function isEnforced(): bool
+    {
+        return (bool) config('license.enforce', true);
+    }
+
+    public function current(?string $host = null): LicenseResult
+    {
+        $integrity = $this->checkIntegrity();
+        if ($integrity !== null) {
+            return $integrity;
+        }
+
+        $ttl = (int) config('license.cache_ttl', 300);
+        if ($ttl > 0) {
+            $cached = $this->cache->get(self::CACHE_KEY.':'.($host ?? '_'));
+            if ($cached instanceof LicenseResult) {
+                return $cached;
+            }
+        }
+
+        $result = $this->evaluate($host);
+
+        if ($ttl > 0) {
+            $this->cache->put(self::CACHE_KEY.':'.($host ?? '_'), $result, $ttl);
+        }
+
+        return $result;
+    }
+
+    public function flush(): void
+    {
+        // Cache hat eine kleine Key-Variation pro Host; einfacher: per Tag oder
+        // generischer Flush. Wir nutzen direkte Forgets für die häufigsten Fälle.
+        $this->cache->forget(self::CACHE_KEY.':_');
+    }
+
+    public function install(string $licenseKey): LicenseResult
+    {
+        $licenseKey = trim($licenseKey);
+        $result = $this->verify($licenseKey);
+        if (! $result->isUsable() && $result->status !== LicenseStatus::Expired) {
+            return $result;
+        }
+
+        $path = storage_path('app/'.config('license.key_path', 'license.key'));
+        $this->files->ensureDirectoryExists(dirname($path));
+        $this->files->put($path, $licenseKey);
+        @chmod($path, 0600);
+
+        $this->cache->flush();
+
+        return $result;
+    }
+
+    public function rawKey(): ?string
+    {
+        $env = config('license.key');
+        if (is_string($env) && $env !== '') {
+            return trim($env);
+        }
+
+        $path = storage_path('app/'.config('license.key_path', 'license.key'));
+        if ($this->files->exists($path)) {
+            $content = trim((string) $this->files->get($path));
+
+            return $content !== '' ? $content : null;
+        }
+
+        return null;
+    }
+
+    public function verify(string $licenseKey, ?string $host = null): LicenseResult
+    {
+        $publicKey = $this->loadPublicKey();
+        if ($publicKey === null) {
+            return LicenseResult::fail(LicenseStatus::PublicKeyMissing, 'Public Key fehlt in der Konfiguration.');
+        }
+
+        $parts = explode('.', $licenseKey);
+        if (count($parts) !== 2) {
+            return LicenseResult::fail(LicenseStatus::Malformed, 'Lizenzschlüssel hat ein unbekanntes Format.');
+        }
+
+        $payloadJson = self::b64Decode($parts[0]);
+        $signature = self::b64Decode($parts[1]);
+
+        if ($payloadJson === null || $signature === null) {
+            return LicenseResult::fail(LicenseStatus::Malformed, 'Lizenzschlüssel ist nicht korrekt kodiert.');
+        }
+
+        if (! sodium_crypto_sign_verify_detached($signature, $payloadJson, $publicKey)) {
+            return LicenseResult::fail(LicenseStatus::BadSignature, 'Signatur ungültig.');
+        }
+
+        $decoded = json_decode($payloadJson, true);
+        if (! is_array($decoded)) {
+            return LicenseResult::fail(LicenseStatus::Malformed, 'Lizenz-Payload ist kein gültiges JSON.');
+        }
+
+        $payload = LicensePayload::fromArray($decoded);
+
+        if ($payload->domain !== null && $payload->domain !== '') {
+            $effectiveHost = $host ?? request()?->getHost() ?? '';
+            if (! self::matchesDomain($effectiveHost, $payload->domain)) {
+                return new LicenseResult(
+                    LicenseStatus::DomainMismatch,
+                    $payload,
+                    'Lizenz ist auf "'.$payload->domain.'" gebunden, App läuft auf "'.$effectiveHost.'".'
+                );
+            }
+        }
+
+        if ($payload->expiresAt !== null) {
+            $now = CarbonImmutable::now();
+            $graceDays = (int) config('license.grace_days', 14);
+            $hardLimit = $payload->expiresAt->addDays($graceDays);
+
+            if ($now->greaterThan($hardLimit)) {
+                return new LicenseResult(LicenseStatus::Expired, $payload, 'Lizenz endgültig abgelaufen.');
+            }
+            if ($now->greaterThan($payload->expiresAt)) {
+                return new LicenseResult(LicenseStatus::GracePeriod, $payload, 'Lizenz abgelaufen, Schonfrist läuft bis '.$hardLimit->toDateString().'.');
+            }
+        }
+
+        return LicenseResult::ok(LicenseStatus::Valid, $payload);
+    }
+
+    private function evaluate(?string $host): LicenseResult
+    {
+        $key = $this->rawKey();
+        if ($key === null) {
+            return LicenseResult::fail(LicenseStatus::Missing, 'Keine Lizenz installiert.');
+        }
+
+        return $this->verify($key, $host);
+    }
+
+    private function loadPublicKey(): ?string
+    {
+        // Versiegelter Public Key hat Vorrang – ein Patch der .env reicht damit
+        // nicht aus, um die Signaturprüfung gegen einen eigenen Key zu wenden.
+        $b64 = LicenseSeal::isSealed()
+            ? LicenseSeal::PUBLIC_KEY
+            : (string) config('license.public_key', '');
+
+        if ($b64 === '') {
+            return null;
+        }
+        $raw = self::b64Decode($b64);
+        if ($raw === null || strlen($raw) !== SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES) {
+            return null;
+        }
+
+        return $raw;
+    }
+
+    /**
+     * Prüft, ob die lizenzrelevanten Dateien gegenüber dem Sealing-Zeitpunkt
+     * unverändert sind. Gibt null zurück, wenn alles in Ordnung ist (oder die
+     * App noch nicht versiegelt wurde), sonst ein Fehlerergebnis.
+     */
+    private function checkIntegrity(): ?LicenseResult
+    {
+        if (! LicenseSeal::isSealed()) {
+            return null;
+        }
+
+        $files = LicenseSeal::FILES;
+        if ($files === []) {
+            return null;
+        }
+
+        foreach ($files as $relativePath => $expectedHash) {
+            $path = base_path((string) $relativePath);
+            if (! $this->files->exists($path)) {
+                return LicenseResult::fail(
+                    LicenseStatus::Tampered,
+                    'Lizenz-Integrität verletzt: Datei fehlt ('.$relativePath.').'
+                );
+            }
+            $actual = hash_file('sha256', $path);
+            if (! is_string($actual) || ! hash_equals((string) $expectedHash, $actual)) {
+                return LicenseResult::fail(
+                    LicenseStatus::Tampered,
+                    'Lizenz-Integrität verletzt: '.$relativePath.' wurde verändert.'
+                );
+            }
+        }
+
+        return null;
+    }
+
+    private static function matchesDomain(string $host, string $pattern): bool
+    {
+        $host = strtolower($host);
+        $pattern = strtolower($pattern);
+
+        if ($pattern === $host) {
+            return true;
+        }
+        // Wildcard-Pattern wie "*.example.com"
+        if (str_starts_with($pattern, '*.')) {
+            $suffix = substr($pattern, 1); // ".example.com"
+
+            return str_ends_with($host, $suffix) || $host === substr($suffix, 1);
+        }
+
+        return false;
+    }
+
+    public static function b64Encode(string $bytes): string
+    {
+        return rtrim(strtr(base64_encode($bytes), '+/', '-_'), '=');
+    }
+
+    public static function b64Decode(string $value): ?string
+    {
+        $value = strtr($value, '-_', '+/');
+        $padded = $value.str_repeat('=', (4 - strlen($value) % 4) % 4);
+        $decoded = base64_decode($padded, true);
+
+        return $decoded === false ? null : $decoded;
+    }
+}

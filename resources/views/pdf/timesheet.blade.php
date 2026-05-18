@@ -1,156 +1,139 @@
-<!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-<meta charset="utf-8">
-<title>{{ __('pdf.timesheet.title_with_id', ['id' => $timesheet->id]) }}</title>
-<style>
-    @page { margin: 18mm 16mm; }
-    body  { font-family: DejaVu Sans, sans-serif; font-size: 10pt; color: #111; }
-    h1    { font-size: 16pt; margin: 0 0 4pt 0; }
-    h2    { font-size: 12pt; margin: 14pt 0 4pt 0; border-bottom: 1px solid #999; padding-bottom: 2pt; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { border-bottom: 1px solid #ccc; padding: 4pt 6pt; vertical-align: top; }
-    th    { background: #f3f3f3; text-align: left; }
-    .right { text-align: right; }
-    .meta  { font-size: 9pt; color: #555; margin-top: 2pt; }
-    .totals td { border: 0; padding: 2pt 6pt; }
-    .sig    { margin-top: 18pt; }
-    .sig .sig-box {
-        display: inline-block;
-        max-width: 94%;
-        border: 1px solid #ddd;
-        padding: 4pt;
-        background: #fff;
-        box-sizing: border-box;
-    }
-    .sig img {
-        display: block;
-        max-width: 100%;
-        width: auto;
-        height: auto;
-        max-height: 80pt;
-        border: 0;
-    }
-    .small  { font-size: 8pt; color: #666; }
-    .grid2  { width: 100%; table-layout: fixed; }
-    .grid2 td {
-        width: 50%;
-        border: 0;
-        padding: 0 4pt 0 0;
-        vertical-align: top;
-        overflow: hidden;
-    }
-    .sig .small { word-break: break-word; overflow-wrap: anywhere; }
-</style>
-</head>
-<body>
+<x-pdf-layout pdf-type="timesheet" :pdf-title="__('pdf.timesheet.title_with_id', ['id' => $timesheet->id])">
+    @push('pdf-styles')
+        <style>
+            .sig    { margin-top: 18pt; }
+            .sig .sig-box {
+                display: inline-block;
+                max-width: 94%;
+                border: 1px solid #ddd;
+                padding: 4pt;
+                background: #fff;
+                box-sizing: border-box;
+            }
+            .sig img {
+                display: block;
+                max-width: 100%;
+                width: auto;
+                height: auto;
+                max-height: 80pt;
+                border: 0;
+            }
+            .grid2  { width: 100%; table-layout: fixed; }
+            .grid2 td {
+                width: 50%;
+                border: 0;
+                padding: 0 4pt 0 0;
+                vertical-align: top;
+                overflow: hidden;
+            }
+            .sig .small { word-break: break-word; overflow-wrap: anywhere; }
+        </style>
+    @endpush
 
-<h1>{{ __('pdf.timesheet.title') }}</h1>
-<div class="meta">
-    {{ __('timesheet.fields.date') }}: <strong>{{ optional($timesheet->work_date)->format('d.m.Y') }}</strong> ·
-    {{ __('timesheet.fields.project') }}: <strong>{{ $timesheet->project?->name }}</strong> ·
-    {{ __('timesheet.fields.user') }}: <strong>{{ $timesheet->user?->name }}</strong> ·
-    {{ __('timesheet.fields.status') }}: {{ $timesheet->statusLabel() }}
-</div>
+    <h1>{{ __('pdf.timesheet.title') }}</h1>
+    <div class="meta">
+        {{ __('timesheet.fields.date') }}: <strong>{{ optional($timesheet->work_date)->format('d.m.Y') }}</strong> ·
+        {{ __('timesheet.fields.project') }}: <strong>{{ $timesheet->project?->name }}</strong> ·
+        {{ __('timesheet.fields.user') }}: <strong>{{ $timesheet->user?->name }}</strong> ·
+        {{ __('timesheet.fields.status') }}: {{ $timesheet->statusLabel() }}
+    </div>
 
-<h2>{{ __('timesheet.sections.entries') }}</h2>
-<table>
-    <thead>
-        <tr>
-            <th>{{ __('timesheet.fields.started_at') }}</th><th>{{ __('timesheet.fields.ended_at') }}</th><th class="right">{{ __('timesheet.fields.break_minutes') }}</th>
-            <th class="right">{{ __('timesheet.fields.duration') }}</th><th>{{ __('timesheet.fields.kind') }}</th><th>{{ __('timesheet.fields.description') }}</th>
-        </tr>
-    </thead>
-    <tbody>
-        @forelse($timesheet->entries as $e)
-            @php $h = intdiv((int)$e->minutes, 60); $m = (int)$e->minutes % 60; @endphp
+    <h2>{{ __('timesheet.sections.entries') }}</h2>
+    <table>
+        <thead>
             <tr>
-                <td>{{ optional($e->started_at)->format('H:i') }}</td>
-                <td>{{ optional($e->ended_at)->format('H:i') }}</td>
-                <td class="right">{{ (int) $e->break_minutes }}</td>
-                <td class="right">{{ $h }}:{{ str_pad((string)$m,2,'0',STR_PAD_LEFT) }}</td>
-                <td>
-                    {{ match ($e->kind) {
-                        \App\Models\TimeEntry::KIND_WORK => __('Arbeit'),
-                        \App\Models\TimeEntry::KIND_TRAVEL => __('Anfahrt'),
-                        \App\Models\TimeEntry::KIND_STANDBY => __('Bereitschaft'),
-                        default => (string) $e->kind,
-                    } }}
-                </td>
-                <td>{{ $e->description }}</td>
+                <th>{{ __('timesheet.fields.started_at') }}</th><th>{{ __('timesheet.fields.ended_at') }}</th><th class="right">{{ __('timesheet.fields.break_minutes') }}</th>
+                <th class="right">{{ __('timesheet.fields.duration') }}</th><th>{{ __('timesheet.fields.kind') }}</th><th>{{ __('timesheet.fields.description') }}</th>
             </tr>
-        @empty
-            <tr><td colspan="6">—</td></tr>
-        @endforelse
-    </tbody>
-</table>
-
-@php
-    $hT = intdiv((int)$timesheet->total_work_minutes, 60);
-    $mT = (int)$timesheet->total_work_minutes % 60;
-@endphp
-<table class="totals">
-    <tr><td class="right">{{ __('timesheet.totals.work') }}:</td><td class="right" style="width:80pt;"><strong>{{ $hT }}:{{ str_pad((string)$mT,2,'0',STR_PAD_LEFT) }} h</strong></td></tr>
-    <tr><td class="right">{{ __('timesheet.totals.break') }}:</td><td class="right">{{ (int) $timesheet->total_break_minutes }} min</td></tr>
-</table>
-
-<h2>{{ __('timesheet.sections.materials') }}</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Bezeichnung</th><th class="right">Menge</th><th>Einheit</th>
-            <th class="right">EP netto</th><th class="right">Summe netto</th>
-        </tr>
-    </thead>
-    <tbody>
-        @forelse($timesheet->materialUsages as $u)
-            <tr>
-                <td>{{ $u->description }}</td>
-                <td class="right">{{ rtrim(rtrim(number_format((float)$u->quantity, 3, ',', '.'), '0'), ',') }}</td>
-                <td>{{ $u->unit }}</td>
-                <td class="right">{{ $u->unit_price !== null ? number_format((float)$u->unit_price, 4, ',', '.').' €' : '—' }}</td>
-                <td class="right">{{ number_format((float)$u->line_total_net, 2, ',', '.') }} €</td>
-            </tr>
-        @empty
-            <tr><td colspan="5">—</td></tr>
-        @endforelse
-    </tbody>
-</table>
-<table class="totals">
-    <tr><td class="right">{{ __('timesheet.totals.material_net') }}:</td><td class="right" style="width:80pt;"><strong>{{ number_format((float)$timesheet->total_material_net, 2, ',', '.') }} €</strong></td></tr>
-</table>
-
-<div class="sig">
-    <h2>{{ __('timesheet.sections.customer_release') }}</h2>
-    <table class="grid2">
-        <tr>
-            <td>
-                <div><strong>{{ $timesheet->customer_name ?: '—' }}</strong>
-                    @if($timesheet->customer_role) ({{ $timesheet->customer_role }}) @endif
-                </div>
-                @if($timesheet->customer_email)<div>{{ $timesheet->customer_email }}</div>@endif
-                @if($timesheet->signed_at)
-                    <div class="small">{{ __('timesheet.signature.signed_at', ['datetime' => $timesheet->signed_at->format('d.m.Y H:i')]) }}
-                        @if($timesheet->signed_ip) · {{ __('timesheet.signature.ip', ['ip' => $timesheet->signed_ip]) }} @endif
-                    </div>
-                    <div class="small">{{ __('timesheet.signature.hash', ['hash' => $timesheet->signature_hash]) }}</div>
-                @endif
-            </td>
-            <td>
-                @if(! empty($signaturePng))
-                    <span class="sig-box"><img src="{{ $signaturePng }}" alt="signature"></span>
-                @else
-                    <div class="small">{{ __('timesheet.signature.none') }}</div>
-                @endif
-            </td>
-        </tr>
+        </thead>
+        <tbody>
+            @forelse($timesheet->entries as $e)
+                @php $h = intdiv((int)$e->minutes, 60); $m = (int)$e->minutes % 60; @endphp
+                <tr>
+                    <td>{{ optional($e->started_at)->format('H:i') }}</td>
+                    <td>{{ optional($e->ended_at)->format('H:i') }}</td>
+                    <td class="right">{{ (int) $e->break_minutes }}</td>
+                    <td class="right">{{ $h }}:{{ str_pad((string)$m,2,'0',STR_PAD_LEFT) }}</td>
+                    <td>
+                        {{ match ($e->kind) {
+                            \App\Models\TimeEntry::KIND_WORK => __('Arbeit'),
+                            \App\Models\TimeEntry::KIND_TRAVEL => __('Anfahrt'),
+                            \App\Models\TimeEntry::KIND_STANDBY => __('Bereitschaft'),
+                            default => (string) $e->kind,
+                        } }}
+                    </td>
+                    <td>{{ $e->description }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="6">—</td></tr>
+            @endforelse
+        </tbody>
     </table>
-</div>
 
-@if($timesheet->notes)
-    <h2>{{ __('timesheet.sections.notes') }}</h2>
-    <p>{!! nl2br(e($timesheet->notes)) !!}</p>
-@endif
+    @php
+        $hT = intdiv((int)$timesheet->total_work_minutes, 60);
+        $mT = (int)$timesheet->total_work_minutes % 60;
+    @endphp
+    <table class="totals">
+        <tr><td class="right">{{ __('timesheet.totals.work') }}:</td><td class="right" style="width:80pt;"><strong>{{ $hT }}:{{ str_pad((string)$mT,2,'0',STR_PAD_LEFT) }} h</strong></td></tr>
+        <tr><td class="right">{{ __('timesheet.totals.break') }}:</td><td class="right">{{ (int) $timesheet->total_break_minutes }} min</td></tr>
+    </table>
 
-</body>
-</html>
+    <h2>{{ __('timesheet.sections.materials') }}</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Bezeichnung</th><th class="right">Menge</th><th>Einheit</th>
+                <th class="right">EP netto</th><th class="right">Summe netto</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($timesheet->materialUsages as $u)
+                <tr>
+                    <td>{{ $u->description }}</td>
+                    <td class="right">{{ rtrim(rtrim(number_format((float)$u->quantity, 3, ',', '.'), '0'), ',') }}</td>
+                    <td>{{ $u->unit }}</td>
+                    <td class="right">{{ $u->unit_price !== null ? number_format((float)$u->unit_price, 4, ',', '.').' €' : '—' }}</td>
+                    <td class="right">{{ number_format((float)$u->line_total_net, 2, ',', '.') }} €</td>
+                </tr>
+            @empty
+                <tr><td colspan="5">—</td></tr>
+            @endforelse
+        </tbody>
+    </table>
+    <table class="totals">
+        <tr><td class="right">{{ __('timesheet.totals.material_net') }}:</td><td class="right" style="width:80pt;"><strong>{{ number_format((float)$timesheet->total_material_net, 2, ',', '.') }} €</strong></td></tr>
+    </table>
+
+    <div class="sig">
+        <h2>{{ __('timesheet.sections.customer_release') }}</h2>
+        <table class="grid2">
+            <tr>
+                <td>
+                    <div><strong>{{ $timesheet->customer_name ?: '—' }}</strong>
+                        @if($timesheet->customer_role) ({{ $timesheet->customer_role }}) @endif
+                    </div>
+                    @if($timesheet->customer_email)<div>{{ $timesheet->customer_email }}</div>@endif
+                    @if($timesheet->signed_at)
+                        <div class="small">{{ __('timesheet.signature.signed_at', ['datetime' => $timesheet->signed_at->format('d.m.Y H:i')]) }}
+                            @if($timesheet->signed_ip) · {{ __('timesheet.signature.ip', ['ip' => $timesheet->signed_ip]) }} @endif
+                        </div>
+                        <div class="small">{{ __('timesheet.signature.hash', ['hash' => $timesheet->signature_hash]) }}</div>
+                    @endif
+                </td>
+                <td>
+                    @if(! empty($signaturePng))
+                        <span class="sig-box"><img src="{{ $signaturePng }}" alt="signature"></span>
+                    @else
+                        <div class="small">{{ __('timesheet.signature.none') }}</div>
+                    @endif
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    @if($timesheet->notes)
+        <h2>{{ __('timesheet.sections.notes') }}</h2>
+        <p>{!! nl2br(e($timesheet->notes)) !!}</p>
+    @endif
+</x-pdf-layout>

@@ -53,7 +53,8 @@ const normalizeCompactTimeValue = (rawValue) => {
 
 const applyNormalizedTimeInput = (el) => {
     if (!(el instanceof HTMLInputElement)) return;
-    const isTimeField = el.type === "time" || el.dataset.wdOriginalType === "time";
+    const isTimeField =
+        el.type === "time" || el.dataset.wdOriginalType === "time";
     if (!isTimeField) return;
 
     const preferredRaw = el.dataset.wdRawTimeValue || "";
@@ -82,7 +83,8 @@ const applyNormalizedTimeInput = (el) => {
 
 const bindCompactTimeSupport = (el) => {
     if (!(el instanceof HTMLInputElement)) return;
-    const isTimeField = el.type === "time" || el.dataset.wdOriginalType === "time";
+    const isTimeField =
+        el.type === "time" || el.dataset.wdOriginalType === "time";
     if (!isTimeField) return;
     if (el.dataset.wdCompactTimeBound === "1") return;
 
@@ -158,10 +160,10 @@ window.__initFlatpickr = (el) => {
 
     const common = dialogEl
         ? {
-                            // In Dialogen Picker direkt am Feld rendern, damit keine
-                            // fehlerhaften Offsets zur Modal-Box entstehen.
-                            static: true,
-                    }
+              // In Dialogen Picker direkt am Feld rendern, damit keine
+              // fehlerhaften Offsets zur Modal-Box entstehen.
+              static: true,
+          }
         : {};
     if (t === "date") {
         flatpickr(el, {

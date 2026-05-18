@@ -12,6 +12,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Models\Concerns\HasAttachments;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,6 +23,7 @@ use Illuminate\Support\Str;
 class Organization extends Model
 {
     use Auditable;
+    use HasAttachments;
 
     /** @use HasFactory<OrganizationFactory> */
     use HasFactory;
@@ -189,5 +191,21 @@ class Organization extends Model
     public function uiSettings(): array
     {
         return $this->groupSettings('ui');
+    }
+
+    /** @return array<string, mixed> */
+    public function brandingSettings(): array
+    {
+        return $this->groupSettings('branding');
+    }
+
+    public function logo(): ?Attachment
+    {
+        return $this->attachmentByMeta(Attachment::META_LOGO);
+    }
+
+    public function logoDark(): ?Attachment
+    {
+        return $this->attachmentByMeta(Attachment::META_LOGO_DARK);
     }
 }

@@ -13,6 +13,7 @@ namespace App\Models;
 
 use App\Legacy\Models\LegacyUser;
 use App\Legacy\Support\LegacyRoleResolver;
+use App\Models\Concerns\HasAttachments;
 use App\Services\Sickness\ContinuedPaymentService;
 use App\Support\Sickness\ContinuedPaymentStatus;
 use Carbon\CarbonInterface;
@@ -38,6 +39,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $remember_token
  * @property int|null $legacy_user_id
  * @property bool $must_change_password
+ * @property array<string, mixed>|null $preferences
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -45,7 +47,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, HasRoles, Notifiable;
+    use HasApiTokens, HasAttachments, HasFactory, HasRoles, Notifiable;
 
     public const ROLE_ADMIN = 'admin';
 
@@ -92,6 +94,7 @@ class User extends Authenticatable
         'home_address',
         'home_lat',
         'home_lng',
+        'preferences',
     ];
 
     protected function casts(): array
@@ -104,6 +107,7 @@ class User extends Authenticatable
             'internal_rate' => 'decimal:2',
             'home_lat' => 'decimal:7',
             'home_lng' => 'decimal:7',
+            'preferences' => 'array',
         ];
     }
 
@@ -198,5 +202,32 @@ class User extends Authenticatable
         }
 
         return LegacyUser::find($this->legacy_user_id);
+    }
+
+    /**
+     * Avatar des Nutzers als polymorpher Attachment-Eintrag
+     * (meta_type='avatar'). Liefert null, wenn kein Bild gesetzt ist;
+     * Views müssen dann auf einen Initialen-Fallback ausweichen.
+     */
+    public function avatar(): ?Attachment
+    {
+        return $this->attachmentByMeta(Attachment::META_AVATAR);
+    }
+
+    /**
+     * Persönliche Präferenzen gemerged mit den Defaults aus
+     * config/personalization.php. Liefert immer ein vollständig
+     * gefülltes Array; leere Felder bedeuten "Default verwenden".
+     *
+     * @return array<string, mixed>
+     */
+    public function preferences(): array
+    {
+        /** @var array<string, mixed> $defaults */
+        $defaults = (array) config('personalization.defaults', []);
+        /** @var array<string, mixed> $stored */
+        $stored = (array) ($this->preferences ?? []);
+
+        return array_replace($defaults, $stored);
     }
 }

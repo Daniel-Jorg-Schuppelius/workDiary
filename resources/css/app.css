@@ -1142,4 +1142,49 @@
     .wd-fieldset__grid > .fieldset {
         margin: 0;
     }
+
+    /* === File-Upload-Komponente (Branding-Logos, Avatare) ============== */
+    .wd-file-upload {
+        @apply flex flex-col gap-2;
+    }
+    .wd-file-upload__label {
+        @apply text-sm font-medium opacity-80;
+    }
+    .wd-file-upload__row {
+        @apply flex items-start gap-4 p-3 rounded-lg bg-base-200/40 border border-base-300;
+    }
+    .wd-file-upload__preview {
+        @apply shrink-0 w-24 h-24 rounded-md overflow-hidden bg-base-100 border border-base-300
+               flex items-center justify-center;
+    }
+    .wd-file-upload__img {
+        @apply max-w-full max-h-full object-contain;
+    }
+    .wd-file-upload__placeholder {
+        @apply text-base-content/40;
+    }
+    .wd-file-upload__placeholder .material-symbols-outlined {
+        font-size: 2.5rem;
+    }
+    .wd-file-upload__controls {
+        @apply flex-1 min-w-0 flex flex-col gap-2;
+    }
+    .wd-file-upload__form {
+        @apply flex flex-wrap items-center gap-2;
+    }
+    .wd-file-upload__actions {
+        @apply flex items-center gap-2;
+    }
+    .wd-file-upload__delete {
+        @apply mt-1;
+    }
+    .wd-file-upload__meta {
+        @apply text-xs opacity-70;
+    }
+    .wd-file-upload__helper {
+        @apply text-xs opacity-60;
+    }
+    .wd-file-upload__error {
+        @apply text-xs text-error;
+    }
 }

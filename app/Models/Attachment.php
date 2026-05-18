@@ -29,6 +29,7 @@ use Illuminate\Support\Carbon;
  * @property string $original_name
  * @property string|null $mime
  * @property int $size
+ * @property string|null $meta_type
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -39,6 +40,13 @@ class Attachment extends Model
     /** @use HasFactory<AttachmentFactory> */
     use HasFactory;
 
+    /** Spezialrollen-Diskriminator (siehe meta_type-Spalte). */
+    public const META_LOGO = 'logo';
+
+    public const META_LOGO_DARK = 'logo_dark';
+
+    public const META_AVATAR = 'avatar';
+
     protected $fillable = [
         'attachable_type',
         'attachable_id',
@@ -48,6 +56,7 @@ class Attachment extends Model
         'original_name',
         'mime',
         'size',
+        'meta_type',
     ];
 
     protected function casts(): array

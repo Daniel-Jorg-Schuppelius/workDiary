@@ -9,6 +9,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
+use App\Http\Middleware\EnsureValidLicense;
 use App\Http\Middleware\ForcePasswordChange;
 use App\Http\Middleware\HandleDatabaseUnavailable;
 use App\Http\Middleware\SecurityHeaders;
@@ -16,6 +17,8 @@ use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\SetOrganizationContext;
 use App\Legacy\Http\Middleware\EnsureLegacyCallcenterAuthenticated;
 use App\Legacy\Http\Middleware\EnsureLegacyWriteAllowed;
+use App\Support\DatabaseHealth;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -40,6 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleDatabaseUnavailable::class,
         ]);
         $middleware->web(append: [
+            EnsureValidLicense::class,
             SecurityHeaders::class,
             SetLocale::class,
             SetOrganizationContext::class,
@@ -60,6 +64,14 @@ return Application::configure(basePath: dirname(__DIR__))
             if (! ($e instanceof PDOException || $e->getPrevious() instanceof PDOException)) {
                 return null;
             }
+
+            // Connection-Name aus der QueryException übernehmen, sonst Default.
+            // Wir markieren die betroffene Verbindung kurzzeitig als unavailable,
+            // damit Folge-Requests nicht erneut in den Connect-Timeout laufen.
+            $failedConnection = $e instanceof QueryException && $e->connectionName !== ''
+                ? $e->connectionName
+                : DatabaseHealth::defaultConnection();
+            DatabaseHealth::safeMarkUnavailable($failedConnection);
 
             if ($request->expectsJson()) {
                 return response()->json([

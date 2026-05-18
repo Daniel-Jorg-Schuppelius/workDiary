@@ -60,6 +60,7 @@ use App\Policies\TimesheetPolicy;
 use App\Policies\TravelLogPolicy;
 use App\Policies\WorkSchedulePolicy;
 use App\Services\Attendance\AttendanceClockService;
+use App\Services\BrandingService;
 use App\Services\Routing\NominatimGeocoder;
 use App\Services\Routing\OsrmRouter;
 use App\Services\Timesheet\Stopwatch;
@@ -92,6 +93,10 @@ class AppServiceProvider extends ServiceProvider
 
             return new OsrmRouter($cfg);
         });
+
+        // BrandingService cached die Organisation pro Request → einmalig
+        // pro Container-Lifecycle resolven.
+        $this->app->singleton(BrandingService::class);
     }
 
     public function boot(): void
@@ -136,6 +141,7 @@ class AppServiceProvider extends ServiceProvider
         $this->registerStopwatchViewComposer();
         $this->registerAttendanceViewComposer();
         $this->registerDateRangeViewComposer();
+        $this->registerBrandingViewComposer();
 
         Password::defaults(function () {
             $rule = Password::min(12)
@@ -248,6 +254,25 @@ class AppServiceProvider extends ServiceProvider
                 ];
             }
             $view->with('globalDateRange', $range);
+        });
+    }
+
+    /**
+     * Stellt allen Layout- und PDF-Views den BrandingService als
+     * `$branding` bereit – die Views müssen den Service nicht selbst
+     * resolven und können ohne Type-Hint auf `appName()`, `logoUrl()`
+     * etc. zugreifen.
+     */
+    private function registerBrandingViewComposer(): void
+    {
+        View::composer(['layouts.*', 'auth.*', 'pdf.*'], function ($view): void {
+            try {
+                $branding = app(BrandingService::class);
+            } catch (\Throwable $e) {
+                report($e);
+                $branding = null;
+            }
+            $view->with('branding', $branding);
         });
     }
 }

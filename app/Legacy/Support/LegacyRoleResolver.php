@@ -12,6 +12,7 @@
 namespace App\Legacy\Support;
 
 use App\Legacy\Models\LegacyUser;
+use App\Legacy\Support\LegacyConnectivity;
 use App\Models\User;
 
 class LegacyRoleResolver
@@ -41,7 +42,7 @@ class LegacyRoleResolver
             return self::$idCache[$authUser->id] = $legacyUserId;
         }
 
-        if (! filled(config('database.connections.legacy.database'))) {
+        if (! LegacyConnectivity::isAvailable()) {
             return self::$idCache[$authUser->id] = 0;
         }
 
@@ -51,10 +52,13 @@ class LegacyRoleResolver
             return self::$idCache[$authUser->id] = 0;
         }
 
-        $legacy = LegacyUser::query()
-            ->whereIn('uname', $candidates)
-            ->orderBy('id')
-            ->first(['id']);
+        $legacy = LegacyConnectivity::attempt(
+            static fn () => LegacyUser::query()
+                ->whereIn('uname', $candidates)
+                ->orderBy('id')
+                ->first(['id']),
+            null
+        );
 
         if (! $legacy) {
             return self::$idCache[$authUser->id] = 0;

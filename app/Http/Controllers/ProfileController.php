@@ -28,6 +28,22 @@ class ProfileController extends Controller
         ]);
     }
 
+    /**
+     * Vollansicht der Profileinstellungen mit Avatar-Upload und
+     * persönlichen Präferenzen. Der Modal-Endpoint (edit) bleibt für
+     * den Schnellzugriff aus dem Header erhalten.
+     */
+    public function settings(Request $request): View
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $user->loadMissing('attachments');
+
+        return view('account.settings', [
+            'user' => $user,
+        ]);
+    }
+
     public function update(Request $request): RedirectResponse
     {
         /** @var User $user */
@@ -41,5 +57,37 @@ class ProfileController extends Controller
         $user->fill($data)->save();
 
         return back()->with('success', __('Profil aktualisiert.'));
+    }
+
+    /**
+     * Speichert persönliche Präferenzen (Theme, Locale, Format,
+     * Startseite). Werte aus der Whitelist in `config/personalization.php`
+     * werden validiert; alles andere wird verworfen.
+     */
+    public function updatePreferences(Request $request): RedirectResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $themes = (array) config('personalization.themes', []);
+        $startpages = (array) config('personalization.startpages', []);
+
+        $data = $request->validate([
+            'preferences.theme' => ['nullable', 'string', Rule::in($themes)],
+            'preferences.locale' => ['nullable', 'string', 'max:10'],
+            'preferences.date_format' => ['nullable', 'string', 'max:32'],
+            'preferences.time_format' => ['nullable', 'string', 'max:32'],
+            'preferences.startpage' => ['nullable', 'string', Rule::in($startpages)],
+        ]);
+
+        $clean = array_filter(
+            (array) ($data['preferences'] ?? []),
+            static fn ($v) => $v !== null && $v !== ''
+        );
+
+        $user->preferences = $clean === [] ? null : $clean;
+        $user->save();
+
+        return back()->with('success', __('Präferenzen gespeichert.'));
     }
 }
