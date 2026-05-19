@@ -21,27 +21,23 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-class BrandingTest extends TestCase
-{
+class BrandingTest extends TestCase {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         Storage::fake('local');
     }
 
-    private function makeOrg(): Organization
-    {
+    private function makeOrg(): Organization {
         $org = Organization::factory()->create();
         $this->app->instance('currentOrganization', $org);
 
         return $org;
     }
 
-    public function test_branding_service_returns_defaults_for_unconfigured_org(): void
-    {
+    public function test_branding_service_returns_defaults_for_unconfigured_org(): void {
         $org = $this->makeOrg();
         $user = User::factory()->user()->create(['organization_id' => $org->id]);
         $this->actingAs($user);
@@ -55,8 +51,7 @@ class BrandingTest extends TestCase
         $this->assertSame(config('branding.colors.primary'), $service->primaryColor());
     }
 
-    public function test_branding_service_uses_org_overrides_when_present(): void
-    {
+    public function test_branding_service_uses_org_overrides_when_present(): void {
         $org = Organization::factory()->create([
             'settings' => [
                 'branding' => [
@@ -75,8 +70,7 @@ class BrandingTest extends TestCase
         $this->assertSame('#ff00ff', $service->primaryColor());
     }
 
-    public function test_admin_can_update_branding_settings(): void
-    {
+    public function test_admin_can_update_branding_settings(): void {
         $org = $this->makeOrg();
         $admin = User::factory()->admin()->create(['organization_id' => $org->id]);
 
@@ -103,8 +97,7 @@ class BrandingTest extends TestCase
         $this->assertFalse((bool) data_get($org->settings, 'branding.pdf.diary.show_footer'));
     }
 
-    public function test_non_admin_cannot_update_branding(): void
-    {
+    public function test_non_admin_cannot_update_branding(): void {
         $org = $this->makeOrg();
         $regular = User::factory()->user()->create(['organization_id' => $org->id]);
 
@@ -113,8 +106,7 @@ class BrandingTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_admin_can_upload_logo_for_organization(): void
-    {
+    public function test_admin_can_upload_logo_for_organization(): void {
         $org = $this->makeOrg();
         $admin = User::factory()->admin()->create(['organization_id' => $org->id]);
 
@@ -134,8 +126,7 @@ class BrandingTest extends TestCase
         ]);
     }
 
-    public function test_uploading_logo_replaces_previous(): void
-    {
+    public function test_uploading_logo_replaces_previous(): void {
         $org = $this->makeOrg();
         $admin = User::factory()->admin()->create(['organization_id' => $org->id]);
 
@@ -167,8 +158,7 @@ class BrandingTest extends TestCase
         );
     }
 
-    public function test_non_admin_cannot_upload_organization_logo(): void
-    {
+    public function test_non_admin_cannot_upload_organization_logo(): void {
         $org = $this->makeOrg();
         $regular = User::factory()->user()->create(['organization_id' => $org->id]);
 
@@ -182,8 +172,7 @@ class BrandingTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_user_can_upload_own_avatar(): void
-    {
+    public function test_user_can_upload_own_avatar(): void {
         $this->makeOrg();
         $user = User::factory()->user()->create();
         $file = UploadedFile::fake()->image('avatar.png', 120, 120);
@@ -202,8 +191,7 @@ class BrandingTest extends TestCase
         ]);
     }
 
-    public function test_user_cannot_upload_avatar_of_other_user(): void
-    {
+    public function test_user_cannot_upload_avatar_of_other_user(): void {
         $this->makeOrg();
         $a = User::factory()->user()->create();
         $b = User::factory()->user()->create();
@@ -218,8 +206,7 @@ class BrandingTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_svg_logo_is_rejected(): void
-    {
+    public function test_svg_logo_is_rejected(): void {
         $org = $this->makeOrg();
         $admin = User::factory()->admin()->create(['organization_id' => $org->id]);
 
@@ -233,8 +220,7 @@ class BrandingTest extends TestCase
             ->assertSessionHasErrors();
     }
 
-    public function test_user_preferences_can_be_updated(): void
-    {
+    public function test_user_preferences_can_be_updated(): void {
         $this->makeOrg();
         $user = User::factory()->user()->create();
 

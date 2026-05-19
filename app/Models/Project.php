@@ -49,8 +49,7 @@ use Illuminate\Support\Str;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class Project extends Model
-{
+class Project extends Model {
     use BelongsToOrganization;
 
     /** @use HasFactory<Factory<static>> */
@@ -108,8 +107,7 @@ class Project extends Model
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
-    public function scopeDefault(Builder $query): Builder
-    {
+    public function scopeDefault(Builder $query): Builder {
         return $query->where('is_default', true);
     }
 
@@ -117,8 +115,7 @@ class Project extends Model
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
-    public function scopeRegular(Builder $query): Builder
-    {
+    public function scopeRegular(Builder $query): Builder {
         return $query->where('is_default', false);
     }
 
@@ -126,8 +123,7 @@ class Project extends Model
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
-    public function scopeRoots(Builder $query): Builder
-    {
+    public function scopeRoots(Builder $query): Builder {
         return $query->whereNull('parent_id');
     }
 
@@ -136,16 +132,14 @@ class Project extends Model
      * eigenen Kunden (über den Parent geerbt) und interne Projekte ohne
      * Kunden landen unter dem Sentinel "intern".
      */
-    public function getRouteKeyName(): string
-    {
+    public function getRouteKeyName(): string {
         return 'slug';
     }
 
-    public function getRouteKey(): string
-    {
+    public function getRouteKey(): string {
         $customerSlug = $this->customer?->slug ?: 'intern';
 
-        return $customerSlug.'/'.((string) $this->slug);
+        return $customerSlug . '/' . ((string) $this->slug);
     }
 
     /**
@@ -154,8 +148,7 @@ class Project extends Model
      *  - zusammengesetzte URL "<kunde-slug>/<projekt-slug>" inkl. Sentinel "intern"
      *  - reinen Projekt-Slug (Fallback, sucht beim ersten Treffer)
      */
-    public function resolveRouteBinding($value, $field = null): ?Model
-    {
+    public function resolveRouteBinding($value, $field = null): ?Model {
         $value = (string) $value;
 
         if (ctype_digit($value)) {
@@ -168,7 +161,7 @@ class Project extends Model
             if ($customerPart === 'intern') {
                 $query->whereNull('customer_id');
             } else {
-                $query->whereHas('customer', fn ($q) => $q->where('slug', $customerPart));
+                $query->whereHas('customer', fn($q) => $q->where('slug', $customerPart));
             }
 
             return $query->first();
@@ -177,8 +170,7 @@ class Project extends Model
         return $this->newQuery()->where($field ?? 'slug', $value)->first();
     }
 
-    protected static function booted(): void
-    {
+    protected static function booted(): void {
         static::saving(function (Project $project): void {
             if ($project->parent_id !== null) {
                 $parent = static::query()->find($project->parent_id);
@@ -258,44 +250,39 @@ class Project extends Model
         });
     }
 
-    public static function uniqueSlug(string $name, ?int $customerId = null, ?int $ignoreId = null): string
-    {
+    public static function uniqueSlug(string $name, ?int $customerId = null, ?int $ignoreId = null): string {
         $base = Str::slug($name) ?: 'project';
         $slug = $base;
         $i = 2;
         while (static::query()
             ->where('customer_id', $customerId)
             ->where('slug', $slug)
-            ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+            ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
             ->exists()
         ) {
-            $slug = $base.'-'.$i++;
+            $slug = $base . '-' . $i++;
         }
 
         return $slug;
     }
 
     /** @return BelongsTo<User, $this> */
-    public function creator(): BelongsTo
-    {
+    public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by');
     }
 
     /** @return BelongsTo<Customer, $this> */
-    public function customer(): BelongsTo
-    {
+    public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
     }
 
     /** @return BelongsTo<Project, $this> */
-    public function parent(): BelongsTo
-    {
+    public function parent(): BelongsTo {
         return $this->belongsTo(Project::class, 'parent_id');
     }
 
     /** @return HasMany<Project, $this> */
-    public function children(): HasMany
-    {
+    public function children(): HasMany {
         return $this->hasMany(Project::class, 'parent_id')->orderBy('name');
     }
 
@@ -304,8 +291,7 @@ class Project extends Model
      *
      * @return Collection<int, Project>
      */
-    public function descendants(): Collection
-    {
+    public function descendants(): Collection {
         $out = collect();
         foreach ($this->children()->get() as $child) {
             $out->push($child);
@@ -315,8 +301,7 @@ class Project extends Model
         return $out;
     }
 
-    public function isAncestorOf(Project $other): bool
-    {
+    public function isAncestorOf(Project $other): bool {
         $cursor = $other->parent;
         while ($cursor !== null) {
             if ((int) $cursor->id === (int) $this->id) {
@@ -331,8 +316,7 @@ class Project extends Model
     /**
      * Stundensatz mit Vererbung: eigener Wert > Parent (rekursiv) > Customer.
      */
-    public function effectiveHourlyRate(): ?float
-    {
+    public function effectiveHourlyRate(): ?float {
         if ($this->hourly_rate !== null) {
             return (float) $this->hourly_rate;
         }
@@ -343,8 +327,7 @@ class Project extends Model
         return $this->customer?->hourly_rate !== null ? (float) $this->customer->hourly_rate : null;
     }
 
-    public function effectiveInternalRate(): ?float
-    {
+    public function effectiveInternalRate(): ?float {
         if ($this->internal_rate !== null) {
             return (float) $this->internal_rate;
         }
@@ -355,8 +338,7 @@ class Project extends Model
         return $this->customer?->internal_rate !== null ? (float) $this->customer->internal_rate : null;
     }
 
-    public function effectiveBillable(): bool
-    {
+    public function effectiveBillable(): bool {
         if ($this->billable !== null) {
             return (bool) $this->billable;
         }
@@ -368,8 +350,7 @@ class Project extends Model
     }
 
     /** @return HasMany<ProjectBillingRule, $this> */
-    public function billingRules(): HasMany
-    {
+    public function billingRules(): HasMany {
         return $this->hasMany(ProjectBillingRule::class);
     }
 
@@ -377,8 +358,7 @@ class Project extends Model
      * Liefert die passendste Billing-Regel für ein Kind (kind-Match vor Fallback,
      * höchste priority). Fällt rekursiv auf Parent-Projekt zurück.
      */
-    public function resolveBillingRule(?string $kind, string $plugin = 'lexoffice'): ?ProjectBillingRule
-    {
+    public function resolveBillingRule(?string $kind, string $plugin = 'lexoffice'): ?ProjectBillingRule {
         $rule = $this->billingRules()
             ->where('plugin_id', $plugin)
             ->forKind($kind)
@@ -391,37 +371,31 @@ class Project extends Model
     }
 
     /** @return HasMany<DiaryEntry, $this> */
-    public function diaryEntries(): HasMany
-    {
+    public function diaryEntries(): HasMany {
         return $this->hasMany(DiaryEntry::class);
     }
 
     /** @return HasMany<Milestone, $this> */
-    public function milestones(): HasMany
-    {
+    public function milestones(): HasMany {
         return $this->hasMany(Milestone::class)->orderBy('position')->orderBy('due_date');
     }
 
     /** @return HasMany<Task, $this> */
-    public function tasks(): HasMany
-    {
+    public function tasks(): HasMany {
         return $this->hasMany(Task::class);
     }
 
     /** @return HasMany<TimeEntry, $this> */
-    public function timeEntries(): HasMany
-    {
+    public function timeEntries(): HasMany {
         return $this->hasMany(TimeEntry::class);
     }
 
     /** @return HasMany<Timesheet, $this> */
-    public function timesheets(): HasMany
-    {
+    public function timesheets(): HasMany {
         return $this->hasMany(Timesheet::class);
     }
 
-    public function statusLabel(): string
-    {
+    public function statusLabel(): string {
         return match ($this->status) {
             self::STATUS_ACTIVE => __('Aktiv'),
             self::STATUS_PAUSED => __('Pausiert'),
@@ -430,8 +404,7 @@ class Project extends Model
         };
     }
 
-    public function statusTone(): string
-    {
+    public function statusTone(): string {
         return match ($this->status) {
             self::STATUS_ACTIVE => 'success',
             self::STATUS_PAUSED => 'warning',

@@ -26,10 +26,8 @@ use Illuminate\View\View;
  * pro-PDF-Typ Toggles. Die eigentlichen Logo-Uploads laufen über den
  * AttachmentController (Polymorphic Attachment + meta_type).
  */
-class BrandingController extends Controller
-{
-    public function edit(): View|RedirectResponse
-    {
+class BrandingController extends Controller {
+    public function edit(): View|RedirectResponse {
         $organization = $this->currentOrganization();
         if (! $organization instanceof Organization) {
             return redirect()->route('admin.organizations.index')
@@ -43,8 +41,7 @@ class BrandingController extends Controller
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
-    {
+    public function update(Request $request): RedirectResponse {
         $organization = $this->currentOrganization();
         if (! $organization instanceof Organization) {
             return redirect()->route('admin.organizations.index')
@@ -111,8 +108,7 @@ class BrandingController extends Controller
      * Ermittelt die Organisation des eingeloggten Admins. Ohne
      * Organisation-Kontext gibt es nichts zu branden → 404.
      */
-    private function currentOrganization(): ?Organization
-    {
+    private function currentOrganization(): ?Organization {
         // Bevorzugt das vom SetOrganizationContext-Middleware gebundene
         // Modell verwenden – das ist die Single-Source-of-Truth des Requests.
         if (app()->bound('currentOrganization')) {
@@ -135,8 +131,7 @@ class BrandingController extends Controller
      * @param  array<string, mixed>  $values
      * @return array<string, mixed>
      */
-    private function stripEmpty(array $values): array
-    {
+    private function stripEmpty(array $values): array {
         $out = [];
         foreach ($values as $k => $v) {
             if (is_array($v)) {

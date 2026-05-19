@@ -184,19 +184,19 @@ Route::middleware('auth')->group(function () {
         Route::get('vacations', [PrintController::class, 'vacationYear'])->name('vacations');
     });
 
-    Route::get('shifts', fn () => redirect()->route('duties.index'))->name('shifts.index');
-    Route::get('assignments', fn () => redirect()->route('duties.index', ['tab' => 'notdienst']))->name('assignments.index');
+    Route::get('shifts', fn() => redirect()->route('duties.index'))->name('shifts.index');
+    Route::get('assignments', fn() => redirect()->route('duties.index', ['tab' => 'notdienst']))->name('assignments.index');
     Route::resource('shifts', OnCallShiftController::class)->except(['show', 'index'])->parameters(['shifts' => 'shift']);
     Route::resource('assignments', EmergencyAssignmentController::class)->except(['show', 'index'])->parameters(['assignments' => 'assignment']);
 
-    Route::get('vacations', fn () => redirect()->route('duties.index', ['tab' => 'urlaub']))->name('vacations.index');
+    Route::get('vacations', fn() => redirect()->route('duties.index', ['tab' => 'urlaub']))->name('vacations.index');
     Route::resource('vacations', VacationController::class)->except(['show', 'index']);
     Route::patch('vacations/{vacation}/approve', [VacationController::class, 'approve'])->name('vacations.approve');
     Route::patch('vacations/{vacation}/reject', [VacationController::class, 'reject'])->name('vacations.reject');
     Route::get('vacations/{vacation}/reject-form', [VacationController::class, 'rejectForm'])->name('vacations.reject-form');
     Route::patch('vacations/{vacation}/cancel', [VacationController::class, 'cancel'])->name('vacations.cancel');
 
-    Route::get('sick-leaves', fn () => redirect()->route('duties.index', ['tab' => 'krank']))->name('sick-leaves.index');
+    Route::get('sick-leaves', fn() => redirect()->route('duties.index', ['tab' => 'krank']))->name('sick-leaves.index');
     Route::resource('sick-leaves', SickLeaveController::class)->except(['show', 'index'])
         ->parameters(['sick-leaves' => 'sick_leave']);
     Route::patch('sick-leaves/{sick_leave}/cancel', [SickLeaveController::class, 'cancel'])->name('sick-leaves.cancel');

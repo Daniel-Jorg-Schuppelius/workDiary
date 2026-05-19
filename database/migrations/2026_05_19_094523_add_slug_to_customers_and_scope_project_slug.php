@@ -21,10 +21,8 @@ use Illuminate\Support\Str;
  * Projekte für unterschiedliche Kunden möglich sind. Die zusammen-
  * gesetzte URL "<kunde>/<projekt>" bleibt damit eindeutig.
  */
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::table('customers', function (Blueprint $table): void {
             if (! Schema::hasColumn('customers', 'slug')) {
                 $table->string('slug')->nullable()->after('name');
@@ -48,8 +46,7 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::table('projects', function (Blueprint $table): void {
             $table->dropUnique('projects_customer_slug_unique');
         });
@@ -67,8 +64,7 @@ return new class extends Migration
         });
     }
 
-    private function backfillCustomerSlugs(): void
-    {
+    private function backfillCustomerSlugs(): void {
         $customers = DB::table('customers')->select(['id', 'organization_id', 'name', 'slug'])->get();
 
         foreach ($customers as $customer) {
@@ -76,17 +72,17 @@ return new class extends Migration
                 continue;
             }
 
-            $base = Str::slug((string) $customer->name) ?: 'kunde-'.$customer->id;
+            $base = Str::slug((string) $customer->name) ?: 'kunde-' . $customer->id;
             $slug = $base;
             $i = 2;
             while (
                 DB::table('customers')
-                    ->where('organization_id', $customer->organization_id)
-                    ->where('slug', $slug)
-                    ->where('id', '!=', $customer->id)
-                    ->exists()
+                ->where('organization_id', $customer->organization_id)
+                ->where('slug', $slug)
+                ->where('id', '!=', $customer->id)
+                ->exists()
             ) {
-                $slug = $base.'-'.$i++;
+                $slug = $base . '-' . $i++;
             }
 
             DB::table('customers')->where('id', $customer->id)->update(['slug' => $slug]);
