@@ -55,12 +55,10 @@ class Material extends Model
         'is_active',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'default_unit_price' => 'decimal:4',
-            'tax_rate' => 'decimal:2',
-            'is_active' => 'boolean',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'default_unit_price' => 'decimal:4',
+        'tax_rate' => 'decimal:2',
+        'is_active' => 'boolean',
+    ];
 }

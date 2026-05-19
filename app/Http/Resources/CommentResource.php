@@ -18,6 +18,11 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /** @mixin Comment */
 class CommentResource extends JsonResource
 {
+    public function __construct(Comment $resource)
+    {
+        parent::__construct($resource);
+    }
+
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {

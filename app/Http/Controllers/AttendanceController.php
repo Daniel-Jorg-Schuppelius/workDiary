@@ -23,14 +23,15 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use RuntimeException;
 
-class AttendanceController extends Controller {
-    public function __construct(protected AttendanceClockService $clock) {
-    }
+class AttendanceController extends Controller
+{
+    public function __construct(protected AttendanceClockService $clock) {}
 
     /**
      * Lists attendances for the authenticated user (current month by default).
      */
-    public function index(Request $request): View {
+    public function index(Request $request): View
+    {
         Gate::authorize('viewAny', Attendance::class);
 
         $from = $request->date('from')?->startOfDay()
@@ -69,7 +70,8 @@ class AttendanceController extends Controller {
     /**
      * Tiny widget endpoint returning the current open attendance (for header).
      */
-    public function current(): View {
+    public function current(): View
+    {
         $user = Auth::user();
 
         return view('attendances._panel', [
@@ -77,14 +79,15 @@ class AttendanceController extends Controller {
         ]);
     }
 
-    public function clockIn(Request $request): RedirectResponse {
+    public function clockIn(Request $request): RedirectResponse
+    {
         Gate::authorize('create', Attendance::class);
 
         $data = $request->validate([
             'lat' => ['nullable', 'numeric', 'between:-90,90'],
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
-            'device' => ['nullable', 'string', 'max:' . (int) setting('validation.attendance.device_max', 64)],
-            'note' => ['nullable', 'string', 'max:' . (int) setting('validation.attendance.note_max', 1000)],
+            'device' => ['nullable', 'string', 'max:'.(int) setting('validation.attendance.device_max', 64)],
+            'note' => ['nullable', 'string', 'max:'.(int) setting('validation.attendance.note_max', 1000)],
         ]);
 
         /** @var User $user */
@@ -99,15 +102,16 @@ class AttendanceController extends Controller {
         return back()->with('success', __('Eingestempelt.'));
     }
 
-    public function clockOut(Request $request): RedirectResponse {
+    public function clockOut(Request $request): RedirectResponse
+    {
         Gate::authorize('create', Attendance::class);
 
         $data = $request->validate([
             'lat' => ['nullable', 'numeric', 'between:-90,90'],
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
-            'device' => ['nullable', 'string', 'max:' . (int) setting('validation.attendance.device_max', 64)],
-            'note' => ['nullable', 'string', 'max:' . (int) setting('validation.attendance.note_max', 1000)],
-            'break_minutes' => ['nullable', 'integer', 'min:0', 'max:' . (int) setting('validation.attendance.break_minutes_max', 600)],
+            'device' => ['nullable', 'string', 'max:'.(int) setting('validation.attendance.device_max', 64)],
+            'note' => ['nullable', 'string', 'max:'.(int) setting('validation.attendance.note_max', 1000)],
+            'break_minutes' => ['nullable', 'integer', 'min:0', 'max:'.(int) setting('validation.attendance.break_minutes_max', 600)],
         ]);
 
         /** @var User $user */
@@ -121,11 +125,12 @@ class AttendanceController extends Controller {
         return back()->with('success', __('Ausgestempelt.'));
     }
 
-    public function break(Request $request): RedirectResponse {
+    public function break(Request $request): RedirectResponse
+    {
         Gate::authorize('create', Attendance::class);
 
         $data = $request->validate([
-            'minutes' => ['required', 'integer', 'min:1', 'max:' . (int) setting('validation.attendance.break_minutes_max', 600)],
+            'minutes' => ['required', 'integer', 'min:1', 'max:'.(int) setting('validation.attendance.break_minutes_max', 600)],
         ]);
 
         /** @var User $user */
@@ -136,7 +141,8 @@ class AttendanceController extends Controller {
         return back()->with('success', __('Pause hinzugefügt.'));
     }
 
-    public function cancel(): RedirectResponse {
+    public function cancel(): RedirectResponse
+    {
         Gate::authorize('create', Attendance::class);
         /** @var User $user */
         $user = Auth::user();
@@ -145,15 +151,16 @@ class AttendanceController extends Controller {
         return back()->with('success', __('Stempelung verworfen.'));
     }
 
-    public function update(Request $request, Attendance $attendance): RedirectResponse {
+    public function update(Request $request, Attendance $attendance): RedirectResponse
+    {
         Gate::authorize('update', $attendance);
 
         $data = $request->validate([
             'started_at' => ['required', 'date'],
             'ended_at' => ['nullable', 'date', 'after:started_at'],
-            'break_minutes_manual' => ['nullable', 'integer', 'min:0', 'max:' . (int) setting('validation.attendance.break_minutes_max', 600)],
-            'note' => ['nullable', 'string', 'max:' . (int) setting('validation.attendance.note_max', 1000)],
-            'status' => ['nullable', 'string', 'in:' . implode(',', Attendance::STATUSES)],
+            'break_minutes_manual' => ['nullable', 'integer', 'min:0', 'max:'.(int) setting('validation.attendance.break_minutes_max', 600)],
+            'note' => ['nullable', 'string', 'max:'.(int) setting('validation.attendance.note_max', 1000)],
+            'status' => ['nullable', 'string', 'in:'.implode(',', Attendance::STATUSES)],
         ]);
 
         $attendance->fill($data);
@@ -163,7 +170,8 @@ class AttendanceController extends Controller {
         return back()->with('success', __('Stempelung aktualisiert.'));
     }
 
-    public function destroy(Attendance $attendance): RedirectResponse {
+    public function destroy(Attendance $attendance): RedirectResponse
+    {
         Gate::authorize('delete', $attendance);
         $attendance->delete();
 

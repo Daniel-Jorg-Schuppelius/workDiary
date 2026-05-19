@@ -67,7 +67,7 @@ class DiaryController extends Controller
             $entry->syncTagsFromInput((array) $request->input('tag_ids'), []);
         }
 
-        return (new DiaryEntryResource($entry->fresh(['user', 'tags'])))->response()->setStatusCode(201);
+        return (new DiaryEntryResource($entry->fresh(['user', 'tags']) ?? $entry))->response()->setStatusCode(201);
     }
 
     public function update(Request $request, DiaryEntry $diary): DiaryEntryResource
@@ -79,7 +79,7 @@ class DiaryController extends Controller
             $diary->syncTagsFromInput((array) $request->input('tag_ids'), []);
         }
 
-        return new DiaryEntryResource($diary->fresh(['user', 'tags']));
+        return new DiaryEntryResource($diary->fresh(['user', 'tags']) ?? $diary);
     }
 
     public function destroy(DiaryEntry $diary): JsonResponse
@@ -95,7 +95,7 @@ class DiaryController extends Controller
         Gate::authorize('archive', $diary);
         $service->archiveEntry($diary);
 
-        return new DiaryEntryResource($diary->fresh(['user', 'tags']));
+        return new DiaryEntryResource($diary->fresh(['user', 'tags']) ?? $diary);
     }
 
     public function restore(DiaryEntry $diary, ArchiveService $service): DiaryEntryResource
@@ -103,7 +103,7 @@ class DiaryController extends Controller
         Gate::authorize('archive', $diary);
         $service->restoreEntry($diary);
 
-        return new DiaryEntryResource($diary->fresh(['user', 'tags']));
+        return new DiaryEntryResource($diary->fresh(['user', 'tags']) ?? $diary);
     }
 
     /** @return array<string, mixed> */

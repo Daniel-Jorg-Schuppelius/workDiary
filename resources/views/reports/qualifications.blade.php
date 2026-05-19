@@ -34,17 +34,17 @@
         </x-slot:extra>
     </x-filter-bar>
 
-    <div class="stats stats-vertical sm:stats-horizontal w-full rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <div class="stat"><div class="stat-title">{{ __('Mitarbeiter') }}</div><div class="stat-value text-2xl">{{ $totals['users'] }}</div></div>
-        <div class="stat"><div class="stat-title">{{ __('Qualifikationen') }}</div><div class="stat-value text-2xl">{{ $totals['qualifications'] }}</div></div>
-        <div class="stat"><div class="stat-title">{{ __('Zuweisungen') }}</div><div class="stat-value text-2xl">{{ $totals['assignments'] }}</div></div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Laufen ab (≤30 T.)') }}</div>
-            <div class="stat-value text-2xl {{ $totals['expiring'] > 0 ? 'text-warning' : '' }}">{{ $totals['expiring'] }}</div>
+    <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['users'] }}</div></div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Qualifikationen') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['qualifications'] }}</div></div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Zuweisungen') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['assignments'] }}</div></div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Laufen ab (≤30 T.)') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold {{ $totals['expiring'] > 0 ? 'text-warning' : '' }}">{{ $totals['expiring'] }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Abgelaufen') }}</div>
-            <div class="stat-value text-2xl {{ $totals['expired'] > 0 ? 'text-error' : '' }}">{{ $totals['expired'] }}</div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Abgelaufen') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold {{ $totals['expired'] > 0 ? 'text-error' : '' }}">{{ $totals['expired'] }}</div>
         </div>
     </div>
 

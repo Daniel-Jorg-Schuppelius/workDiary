@@ -85,14 +85,12 @@ class Vacation extends Model
         'decided_at',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'start_date' => 'date',
-            'end_date' => 'date',
-            'decided_at' => 'datetime',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'decided_at' => 'datetime',
+    ];
 
     // ── Relations ──────────────────────────────────────────────────────────
 

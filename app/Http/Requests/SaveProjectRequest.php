@@ -29,8 +29,18 @@ class SaveProjectRequest extends FormRequest
         /** @var Project|null $project */
         $project = $this->route('project');
 
+        $customerId = $this->input('customer_id', $project?->customer_id);
+        $customerId = $customerId === '' ? null : $customerId;
+
         return [
-            'name' => ['required', 'string', 'max:120', Rule::unique('projects', 'name')->ignore($project?->id)],
+            'name' => [
+                'required',
+                'string',
+                'max:120',
+                Rule::unique('projects', 'name')
+                    ->ignore($project?->id)
+                    ->where(fn ($query) => $query->where('customer_id', $customerId)),
+            ],
             'description' => ['nullable', 'string', 'max:2000'],
             'color' => ['nullable', 'string', 'max:16'],
             'status' => ['required', Rule::in(Project::STATUSES)],

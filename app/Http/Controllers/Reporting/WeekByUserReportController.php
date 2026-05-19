@@ -17,6 +17,7 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -35,6 +36,9 @@ class WeekByUserReportController extends Controller
 {
     use ResolvesGlobalDateRange;
 
+    /** Maximalanzahl gleichzeitig gerenderter Wochen-Tabs. */
+    private const MAX_WEEKS = 12;
+
     public function index(Request $request): View|SymfonyResponse
     {
         $userId = (int) Auth::id();
@@ -45,14 +49,37 @@ class WeekByUserReportController extends Controller
             $scope = 'mine';
         }
 
-        $globalFrom = $this->globalDateRange()['from'];
-        $year = (int) $globalFrom->isoWeekYear;
-        $week = (int) $globalFrom->isoWeek;
-        $year = max(2000, min(2100, $year));
-        $week = max(1, min(53, $week));
+        // Aus dem globalen Header-Zeitraum alle überlappenden ISO-Wochen sammeln
+        // und als Tab-Liste an die View liefern – Pattern analog zu WeekController.
+        $range = $this->globalDateRange();
+        $weekMeta = $this->collectWeekMeta($range['from'], $range['to']);
+        $totalWeeks = count($weekMeta);
+        $weeksTruncated = $totalWeeks > self::MAX_WEEKS;
+        if ($weeksTruncated) {
+            $weekMeta = array_slice($weekMeta, 0, self::MAX_WEEKS, true);
+        }
 
-        $start = Carbon::now()->setISODate($year, $week)->startOfWeek();
-        $end = $start->copy()->endOfWeek();
+        $requestedKey = $request->string('week')->toString();
+        $activeKey = isset($weekMeta[$requestedKey]) ? $requestedKey : (string) array_key_first($weekMeta);
+        $active = $weekMeta[$activeKey] ?? null;
+        if ($active === null) {
+            // Leerer Range → Default auf aktuelle Woche.
+            $now = Carbon::now();
+            $active = [
+                'key' => sprintf('%04d-W%02d', $now->isoWeekYear, $now->isoWeek),
+                'year' => (int) $now->isoWeekYear,
+                'week' => (int) $now->isoWeek,
+                'start' => $now->copy()->startOfWeek(),
+                'end' => $now->copy()->endOfWeek(),
+                'shortLabel' => $now->copy()->startOfWeek()->format('d.m.').'–'.$now->copy()->endOfWeek()->format('d.m.'),
+            ];
+            $activeKey = $active['key'];
+        }
+
+        $year = $active['year'];
+        $week = $active['week'];
+        $start = $active['start']->copy();
+        $end = $active['end']->copy();
 
         $query = TimeEntry::query()
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
@@ -131,6 +158,10 @@ class WeekByUserReportController extends Controller
             'dayTotals' => $dayTotals,
             'weekTotal' => $weekTotal,
             'weekRate' => $weekRate,
+            'weekTabs' => array_values($weekMeta),
+            'activeKey' => $activeKey,
+            'totalWeeks' => $totalWeeks,
+            'weeksTruncated' => $weeksTruncated,
         ]);
     }
 
@@ -202,5 +233,38 @@ class WeekByUserReportController extends Controller
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download($filename);
+    }
+
+    /**
+     * Liefert pro überlappender ISO-Woche im Range Metadaten für den Tab-Strip.
+     *
+     * @return array<string, array{key: string, year: int, week: int, start: Carbon, end: Carbon, shortLabel: string}>
+     */
+    private function collectWeekMeta(CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        $cursor = $from->startOfWeek()->startOfDay();
+        $end = $to->endOfDay();
+        if ($end->lt($cursor)) {
+            $cursor = CarbonImmutable::today()->startOfWeek()->startOfDay();
+            $end = $cursor->endOfWeek();
+        }
+
+        $meta = [];
+        for ($i = 0; $i < 260 && $cursor->lte($end); $i++) {
+            $weekStart = Carbon::parse($cursor->toDateString())->startOfWeek();
+            $weekEnd = $weekStart->copy()->endOfWeek();
+            $key = sprintf('%04d-W%02d', $cursor->isoWeekYear, $cursor->isoWeek);
+            $meta[$key] = [
+                'key' => $key,
+                'year' => (int) $cursor->isoWeekYear,
+                'week' => (int) $cursor->isoWeek,
+                'start' => $weekStart,
+                'end' => $weekEnd,
+                'shortLabel' => $weekStart->format('d.m.').'–'.$weekEnd->format('d.m.'),
+            ];
+            $cursor = $cursor->addWeek();
+        }
+
+        return $meta;
     }
 }

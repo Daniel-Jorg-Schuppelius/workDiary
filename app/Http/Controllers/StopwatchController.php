@@ -27,10 +27,8 @@ class StopwatchController extends Controller
 
     public function current(): View
     {
-        $user = Auth::user();
-
         return view('stopwatch._panel', [
-            'current' => $user ? $this->stopwatch->current($user) : null,
+            'current' => $this->stopwatch->current($this->authUser()),
         ]);
     }
 
@@ -43,13 +41,12 @@ class StopwatchController extends Controller
             'timesheet_id' => ['nullable', 'integer', 'exists:timesheets,id'],
         ]);
 
-        /** @var Project $project */
-        $project = Project::findOrFail($data['project_id']);
+        $project = Project::findOrFail((int) $data['project_id']);
 
         // Existierenden Heute-Stundenzettel verwenden oder neu anlegen
         $today = CarbonImmutable::today();
         $timesheet = isset($data['timesheet_id'])
-            ? Timesheet::findOrFail($data['timesheet_id'])
+            ? Timesheet::findOrFail((int) $data['timesheet_id'])
             : Timesheet::firstOrCreate([
                 'project_id' => $project->id,
                 'user_id' => Auth::id(),
@@ -61,14 +58,14 @@ class StopwatchController extends Controller
 
         Gate::authorize('update', $timesheet);
 
-        $this->stopwatch->start(Auth::user(), $timesheet, $data['task_id'] ?? null, $data['description'] ?? null);
+        $this->stopwatch->start($this->authUser(), $timesheet, $data['task_id'] ?? null, $data['description'] ?? null);
 
         return back()->with('success', __('Stoppuhr gestartet.'));
     }
 
     public function stop(): RedirectResponse
     {
-        $this->stopwatch->stop(Auth::user());
+        $this->stopwatch->stop($this->authUser());
 
         return back()->with('success', __('Stoppuhr gestoppt.'));
     }

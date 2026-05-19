@@ -283,7 +283,7 @@ class LegacyArchiveController extends Controller
      * @param  Builder<LegacyArchiveDiaryEntry>  $diaryQuery
      * @param  Builder<LegacyArchiveOnCall>  $onCallQuery
      * @param  Builder<LegacyArchiveNotdienst>  $notdienstQuery
-     * @return array<string, int|string>
+     * @return array<string, float|int>
      */
     private function buildTabKpis(string $tab, $diaryQuery, $onCallQuery, $notdienstQuery): array
     {
@@ -312,7 +312,7 @@ class LegacyArchiveController extends Controller
         return [
             'total' => (clone $base)->toBase()->getCountForPagination(),
             'longest' => (int) ($durations->max() ?? 0),
-            'avg' => $durations->count() > 0 ? round($durations->avg(), 1) : 0,
+            'avg' => $durations->count() > 0 ? round((float) ($durations->avg() ?? 0), 1) : 0,
             'users' => (clone $base)->distinct()->count('user'),
         ];
     }

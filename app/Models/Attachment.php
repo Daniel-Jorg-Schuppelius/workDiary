@@ -59,12 +59,10 @@ class Attachment extends Model
         'meta_type',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'size' => 'integer',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'size' => 'integer',
+    ];
 
     /** @return MorphTo<Model, $this> */
     public function attachable(): MorphTo

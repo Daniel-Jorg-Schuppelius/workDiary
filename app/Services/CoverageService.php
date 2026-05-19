@@ -114,8 +114,10 @@ class CoverageService
      */
     public function actualStaffing(DutyPlan $dutyPlan, ?CarbonPeriod $period = null): array
     {
-        $from = $period ? CarbonImmutable::instance($period->getStartDate()) : CarbonImmutable::instance($dutyPlan->from_date);
-        $to = $period ? CarbonImmutable::instance($period->getEndDate()) : CarbonImmutable::instance($dutyPlan->to_date);
+        $start = $period?->getStartDate();
+        $end = $period?->getEndDate();
+        $from = $start !== null ? CarbonImmutable::instance($start) : CarbonImmutable::instance($dutyPlan->from_date);
+        $to = $end !== null ? CarbonImmutable::instance($end) : CarbonImmutable::instance($dutyPlan->to_date);
 
         $rows = ScheduledShift::query()
             ->where('duty_plan_id', $dutyPlan->id)

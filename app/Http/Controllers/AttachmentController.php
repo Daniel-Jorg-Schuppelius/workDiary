@@ -20,6 +20,7 @@ use App\Models\OnCallShift;
 use App\Models\Organization;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\Attachments\ImageMetaUploader;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,10 +29,13 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AttachmentController extends Controller
 {
+    public function __construct(private readonly ImageMetaUploader $imageUploader) {}
+
     private const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 
     private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'log', 'zip', 'docx', 'xlsx'];
@@ -49,19 +53,6 @@ class AttachmentController extends Controller
         'application/x-zip-compressed',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    ];
-
-    /**
-     * Bild-Whitelist für Branding/Avatar-Uploads. SVG ist bewusst NICHT
-     * enthalten, da inline SVG XSS-Vektoren mitbringt (sowohl im Browser
-     * als auch in dompdf).
-     */
-    private const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
-
-    private const IMAGE_MIMES = [
-        'image/jpeg',
-        'image/png',
-        'image/webp',
     ];
 
     private const TYPE_MAP = [
@@ -157,47 +148,19 @@ class AttachmentController extends Controller
         }
 
         $request->validate([
-            'file' => ['required', 'file', 'max:'.$maxKb],
+            'file' => ['required', 'file'],
         ]);
 
         $file = $request->file('file');
-        $ext = strtolower($file->getClientOriginalExtension() ?: $file->extension());
-        if (! in_array($ext, self::IMAGE_EXTENSIONS, true)) {
-            return back()->withErrors(['file' => __('Nur JPG, PNG oder WEBP erlaubt.')]);
+        if (! $file instanceof \Illuminate\Http\UploadedFile) {
+            abort(422);
         }
 
-        $serverMime = $file->getMimeType() ?? '';
-        if (! in_array($serverMime, self::IMAGE_MIMES, true)) {
-            return back()->withErrors(['file' => __('Nur JPG, PNG oder WEBP erlaubt.')]);
+        try {
+            $this->imageUploader->replace($parent, $meta, $file, $maxKb);
+        } catch (ValidationException $e) {
+            throw $e;
         }
-
-        // Zusätzlicher Sanity-Check: Datei muss als Bild lesbar sein.
-        $imgInfo = @getimagesize($file->getRealPath());
-        if ($imgInfo === false) {
-            return back()->withErrors(['file' => __('Datei ist kein gültiges Bild.')]);
-        }
-
-        // Vorherigen Anhang gleicher Rolle entfernen (inkl. Datei).
-        /** @var Attachment|null $previous */
-        $previous = $parent->attachments()->where('meta_type', $meta)->first();
-        if ($previous !== null) {
-            Storage::disk($previous->disk)->delete($previous->path);
-            $previous->delete();
-        }
-
-        $folder = 'attachments/'.now()->format('Y/m');
-        $filename = Str::uuid()->toString().'.'.$ext;
-        $path = $file->storeAs($folder, $filename, 'local');
-
-        $parent->attachments()->create([
-            'user_id' => Auth::id(),
-            'disk' => 'local',
-            'path' => $path,
-            'original_name' => $this->sanitizeFilename($file->getClientOriginalName()),
-            'mime' => $serverMime,
-            'size' => $file->getSize(),
-            'meta_type' => $meta,
-        ]);
 
         return back()->with('success', __('Bild hochgeladen.'));
     }
@@ -217,12 +180,7 @@ class AttachmentController extends Controller
         /** @var Organization|User $parent */
         $this->authorizeImageMeta($parent, $meta);
 
-        /** @var Attachment|null $existing */
-        $existing = $parent->attachments()->where('meta_type', $meta)->first();
-        if ($existing !== null) {
-            Storage::disk($existing->disk)->delete($existing->path);
-            $existing->delete();
-        }
+        $this->imageUploader->delete($parent, $meta);
 
         return back()->with('success', __('Bild entfernt.'));
     }

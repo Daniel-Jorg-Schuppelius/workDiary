@@ -1,8 +1,15 @@
 {{-- Tab: Aufgaben — erwartet: $project, $topTasks, $milestones --}}
 @php
     use App\Models\Task;
-    $statusFilter    = request()->get('task_status', '');
-    $milestoneFilter = request()->get('task_milestone', '');
+    // Aktuelle Filter (rückwärtskompatibel zu alten Parametern task_status / task_milestone).
+    $statusFilter    = (string) request()->get('status', request()->get('task_status', ''));
+    $milestoneFilter = (string) request()->get('milestone', request()->get('task_milestone', ''));
+
+    // Basis-Query (Tab bleibt aktiv, alte Parameter werden entfernt).
+    $baseQuery = static fn (array $overrides) => request()->fullUrlWithQuery(array_merge(
+        ['tab' => 'tasks', 'task_status' => null, 'task_milestone' => null],
+        $overrides,
+    ));
 
     $filtered = $topTasks->when(
         $statusFilter !== '' && in_array($statusFilter, Task::STATUSES),
@@ -28,19 +35,19 @@
                     $statusOpts = ['' => __('Alle'), Task::STATUS_OPEN => __('Offen'), Task::STATUS_IN_PROGRESS => __('In Arbeit'), Task::STATUS_DONE => __('Erledigt')];
                 @endphp
                 @foreach ($statusOpts as $val => $lbl)
-                    <a href="{{ request()->fullUrlWithQuery(['task_status' => $val, 'task_milestone' => $milestoneFilter]) }}#tasks"
+                    <a href="{{ $baseQuery(['status' => $val ?: null, 'milestone' => $milestoneFilter ?: null]) }}"
                        class="join-item btn btn-xs {{ $statusFilter === $val ? 'btn-primary' : 'btn-ghost' }}">{{ $lbl }}</a>
                 @endforeach
             </div>
             {{-- Milestone-Filter --}}
             @if ($milestones->isNotEmpty())
                 <select onchange="window.location.href=this.value" class="select select-xs select-bordered">
-                    <option value="{{ request()->fullUrlWithQuery(['task_milestone' => '', 'task_status' => $statusFilter]) }}#tasks"
+                    <option value="{{ $baseQuery(['milestone' => null, 'status' => $statusFilter ?: null]) }}"
                             {{ $milestoneFilter === '' ? 'selected' : '' }}>{{ __('Alle Milestones') }}</option>
-                    <option value="{{ request()->fullUrlWithQuery(['task_milestone' => 'none', 'task_status' => $statusFilter]) }}#tasks"
+                    <option value="{{ $baseQuery(['milestone' => 'none', 'status' => $statusFilter ?: null]) }}"
                             {{ $milestoneFilter === 'none' ? 'selected' : '' }}>{{ __('Ohne Milestone') }}</option>
                     @foreach ($milestones as $ms)
-                        <option value="{{ request()->fullUrlWithQuery(['task_milestone' => $ms->id, 'task_status' => $statusFilter]) }}#tasks"
+                        <option value="{{ $baseQuery(['milestone' => $ms->id, 'status' => $statusFilter ?: null]) }}"
                                 {{ (string) $milestoneFilter === (string) $ms->id ? 'selected' : '' }}>{{ $ms->title }}</option>
                     @endforeach
                 </select>

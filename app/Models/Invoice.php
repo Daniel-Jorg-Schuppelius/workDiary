@@ -79,18 +79,16 @@ class Invoice extends Model
         'created_by',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'issued_on' => 'date',
-            'due_on' => 'date',
-            'paid_on' => 'date',
-            'subtotal' => 'decimal:2',
-            'tax_rate' => 'decimal:2',
-            'tax_amount' => 'decimal:2',
-            'total' => 'decimal:2',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'issued_on' => 'date',
+        'due_on' => 'date',
+        'paid_on' => 'date',
+        'subtotal' => 'decimal:2',
+        'tax_rate' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
+        'total' => 'decimal:2',
+    ];
 
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo

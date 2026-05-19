@@ -12,6 +12,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Models\Contracts\HasTimeWindow;
 use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
 use App\Models\EntryType;
@@ -281,7 +282,7 @@ class DutyController extends Controller
     /**
      * Berechnet Dauer-KPIs (total/longest/avg/users) für Shift- oder Assignment-Queries.
      *
-     * @template TModel of \Illuminate\Database\Eloquent\Model
+     * @template TModel of \Illuminate\Database\Eloquent\Model&HasTimeWindow
      *
      * @param  EloquentBuilder<TModel>  $query
      * @return array{total:int, longest:int, avg:float|int, users:int}
@@ -289,15 +290,19 @@ class DutyController extends Controller
     private function computeDurationKpis(EloquentBuilder $query, int $total): array
     {
         $durations = (clone $query)->get(['start_at', 'end_at'])
-            /** @phpstan-ignore property.notFound, property.notFound */
-            ->map(fn ($r) => $r->start_at && $r->end_at
-                ? (int) $r->start_at->startOfDay()->diffInDays($r->end_at->startOfDay()) + 1
-                : 0);
+            ->map(static function (HasTimeWindow $r): int {
+                $start = $r->getStartAt();
+                $end = $r->getEndAt();
+
+                return $start !== null && $end !== null
+                    ? (int) $start->startOfDay()->diffInDays($end->startOfDay()) + 1
+                    : 0;
+            });
 
         return [
             'total' => $total,
             'longest' => (int) ($durations->max() ?? 0),
-            'avg' => $durations->count() > 0 ? round($durations->avg(), 1) : 0,
+            'avg' => $durations->count() > 0 ? round((float) ($durations->avg() ?? 0), 1) : 0,
             'users' => (clone $query)->distinct()->count('user_id'),
         ];
     }

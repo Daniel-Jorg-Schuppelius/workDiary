@@ -69,14 +69,12 @@ class DutyPlan extends Model
         'updated_by',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'from_date' => 'date',
-            'to_date' => 'date',
-            'min_staff' => 'integer',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'from_date' => 'date',
+        'to_date' => 'date',
+        'min_staff' => 'integer',
+    ];
 
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo

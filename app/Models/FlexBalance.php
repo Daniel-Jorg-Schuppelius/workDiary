@@ -46,19 +46,17 @@ class FlexBalance extends Model
         'locked',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'year' => 'integer',
-            'month' => 'integer',
-            'target_minutes' => 'integer',
-            'actual_minutes' => 'integer',
-            'balance_minutes' => 'integer',
-            'carry_over_minutes' => 'integer',
-            'computed_at' => 'datetime',
-            'locked' => 'boolean',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'year' => 'integer',
+        'month' => 'integer',
+        'target_minutes' => 'integer',
+        'actual_minutes' => 'integer',
+        'balance_minutes' => 'integer',
+        'carry_over_minutes' => 'integer',
+        'computed_at' => 'datetime',
+        'locked' => 'boolean',
+    ];
 
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo

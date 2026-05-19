@@ -18,8 +18,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /** @mixin ScheduledShift */
 class ScheduledShiftResource extends JsonResource
 {
-    /** @param ScheduledShift $resource */
-    public function __construct($resource)
+    public function __construct(ScheduledShift $resource)
     {
         parent::__construct($resource);
     }
@@ -30,13 +29,17 @@ class ScheduledShiftResource extends JsonResource
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
-            'user_name' => $this->whenLoaded('user', fn () => $this->user->name),
-            'shift_type' => $this->whenLoaded('shiftType', fn () => [
-                'id' => $this->shiftType->id,
-                'name' => $this->shiftType->name,
-                'abbreviation' => $this->shiftType->abbreviation,
-                'color' => $this->shiftType->color,
-            ]),
+            'user_name' => $this->whenLoaded('user', fn () => $this->user?->name),
+            'shift_type' => $this->whenLoaded('shiftType', function () {
+                $type = $this->shiftType;
+
+                return $type !== null ? [
+                    'id' => $type->id,
+                    'name' => $type->name,
+                    'abbreviation' => $type->abbreviation,
+                    'color' => $type->color,
+                ] : null;
+            }),
             'date' => $this->date->toDateString(),
             'start_time' => $this->resolvedStartTime(),
             'end_time' => $this->resolvedEndTime(),

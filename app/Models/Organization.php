@@ -85,14 +85,12 @@ class Organization extends Model
         'trial_ends_at',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'settings' => 'array',
-            'is_active' => 'boolean',
-            'trial_ends_at' => 'datetime',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'settings' => 'array',
+        'is_active' => 'boolean',
+        'trial_ends_at' => 'datetime',
+    ];
 
     protected static function booted(): void
     {
@@ -128,7 +126,8 @@ class Organization extends Model
      */
     public function complianceSettings(): array
     {
-        $stored = (array) ($this->settings['compliance'] ?? []);
+        $settings = $this->settings ?? [];
+        $stored = is_array($settings['compliance'] ?? null) ? $settings['compliance'] : [];
         $merged = array_replace_recursive(self::COMPLIANCE_DEFAULTS, $stored);
 
         /** @var array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, rules:array<string,bool>} $merged */

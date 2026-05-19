@@ -22,11 +22,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class VehicleController extends Controller {
-    public function __construct(private readonly VehicleService $service) {
-    }
+class VehicleController extends Controller
+{
+    public function __construct(private readonly VehicleService $service) {}
 
-    public function index(Request $request): View {
+    public function index(Request $request): View
+    {
         Gate::authorize('viewAny', Vehicle::class);
 
         $showArchived = $request->boolean('archived');
@@ -53,7 +54,8 @@ class VehicleController extends Controller {
         ]);
     }
 
-    public function create(): View {
+    public function create(): View
+    {
         Gate::authorize('create', Vehicle::class);
 
         return view('vehicles._form_dialog', [
@@ -65,7 +67,8 @@ class VehicleController extends Controller {
         ]);
     }
 
-    public function store(SaveVehicleRequest $request): RedirectResponse {
+    public function store(SaveVehicleRequest $request): RedirectResponse
+    {
         Gate::authorize('create', Vehicle::class);
 
         $data = $request->validated();
@@ -79,7 +82,8 @@ class VehicleController extends Controller {
             ->with('success', __('Fahrzeug erfasst: :label.', ['label' => $vehicle->displayName()]));
     }
 
-    public function edit(Vehicle $vehicle): View {
+    public function edit(Vehicle $vehicle): View
+    {
         Gate::authorize('update', $vehicle);
 
         return view('vehicles._form_dialog', [
@@ -91,7 +95,8 @@ class VehicleController extends Controller {
         ]);
     }
 
-    public function update(SaveVehicleRequest $request, Vehicle $vehicle): RedirectResponse {
+    public function update(SaveVehicleRequest $request, Vehicle $vehicle): RedirectResponse
+    {
         Gate::authorize('update', $vehicle);
 
         $this->service->update($vehicle, $request->validated());
@@ -100,7 +105,8 @@ class VehicleController extends Controller {
             ->with('success', __('Fahrzeug aktualisiert.'));
     }
 
-    public function destroy(Vehicle $vehicle): RedirectResponse {
+    public function destroy(Vehicle $vehicle): RedirectResponse
+    {
         Gate::authorize('delete', $vehicle);
 
         $this->service->archive($vehicle);
@@ -109,7 +115,8 @@ class VehicleController extends Controller {
             ->with('success', __('Fahrzeug archiviert.'));
     }
 
-    public function restore(Vehicle $vehicle): RedirectResponse {
+    public function restore(Vehicle $vehicle): RedirectResponse
+    {
         Gate::authorize('update', $vehicle);
 
         $this->service->restore($vehicle);

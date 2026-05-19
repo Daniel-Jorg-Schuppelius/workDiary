@@ -15,6 +15,7 @@ use App\Http\Controllers\AttachmentController;
 use App\Models\Attachment;
 use App\Models\Organization;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Zentrale Quelle für Branding-Informationen einer Organisation
@@ -225,7 +226,7 @@ class BrandingService
     private function attachmentToDataUri(Attachment $att): ?string
     {
         try {
-            $disk = \Illuminate\Support\Facades\Storage::disk($att->disk);
+            $disk = Storage::disk($att->disk);
             if (! $disk->exists($att->path)) {
                 return null;
             }

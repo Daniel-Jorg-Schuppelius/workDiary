@@ -6,48 +6,40 @@
     $totalTasks    = $openTasks + $inProgTasks + $doneTasks;
     $totalH        = intdiv($totalMinutes, 60);
     $totalM        = $totalMinutes % 60;
+    $totalHours    = $totalH . ':' . str_pad((string) $totalM, 2, '0', STR_PAD_LEFT) . ' h';
 @endphp
 
-{{-- Stat-Kacheln --}}
-<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs">
-        <div class="font-['Space_Grotesk'] text-2xl font-bold text-primary">{{ $openTasks + $inProgTasks }}</div>
-        <div class="mt-1 text-xs text-base-content/60">{{ __('Offene Aufgaben') }}</div>
+<div class="flex flex-col gap-4">
+    {{-- KPI-Kacheln --}}
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <x-kpi-tile :label="__('Offene Aufgaben')"
+                    :value="$openTasks + $inProgTasks"
+                    tone="primary" />
+        <x-kpi-tile :label="__('Gesamtstunden')"
+                    :value="$totalHours"
+                    format="text" />
+        <x-kpi-tile :label="__('Erledigte Aufgaben')"
+                    :value="$doneTasks"
+                    tone="success" />
+        <x-kpi-tile :label="__('Nächster Milestone')"
+                    :value="$nextMilestone ? truncate($nextMilestone->title, 28) : __('—')"
+                    :hint="$nextMilestone?->due_date?->format('d.m.Y') ?: ($nextMilestone ? __('kein Datum') : null)"
+                    format="text" />
     </div>
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs">
-        <div class="font-['Space_Grotesk'] text-2xl font-bold">{{ $totalH }}:{{ str_pad($totalM, 2, '0', STR_PAD_LEFT) }}&thinsp;h</div>
-        <div class="mt-1 text-xs text-base-content/60">{{ __('Gesamtstunden') }}</div>
-    </div>
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs">
-        <div class="font-['Space_Grotesk'] text-2xl font-bold">{{ $doneTasks }}</div>
-        <div class="mt-1 text-xs text-base-content/60">{{ __('Erledigte Aufgaben') }}</div>
-    </div>
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs">
-        @if ($nextMilestone)
-            <div class="font-['Space_Grotesk'] text-base font-bold">{{ truncate($nextMilestone->title, 30) }}</div>
-            <div class="mt-1 text-xs text-base-content/60">
-                {{ $nextMilestone->due_date ? $nextMilestone->due_date->format('d.m.Y') : __('kein Datum') }}
-            </div>
-        @else
-            <div class="font-['Space_Grotesk'] text-sm text-base-content/40">{{ __('Kein Milestone') }}</div>
-        @endif
-        <div class="mt-1 text-xs text-base-content/60">{{ __('Nächster Milestone') }}</div>
-    </div>
-</div>
 
-{{-- Milestones --}}
-@if ($milestones->isNotEmpty())
-    <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
-            <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Milestones') }}</span>
-            @can('create', \App\Models\Milestone::class)
-                <x-icon-btn icon="add"
-                            data-entry-modal-trigger
-                            :href="route('projects.milestones.create', $project)"
-                            show-label>{{ __('Milestone') }}</x-icon-btn>
-            @endcan
-        </header>
-        <ul class="divide-y divide-base-300">
+    {{-- Milestones --}}
+    @if ($milestones->isNotEmpty())
+        <x-card padding="p-0">
+            <header class="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3">
+                <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Milestones') }}</span>
+                @can('create', \App\Models\Milestone::class)
+                    <x-icon-btn icon="add"
+                                data-entry-modal-trigger
+                                :href="route('projects.milestones.create', $project)"
+                                show-label>{{ __('Milestone') }}</x-icon-btn>
+                @endcan
+            </header>
+            <ul class="divide-y divide-base-300">
             @foreach ($milestones as $milestone)
                 @php
                     $mTotal = $milestone->tasks->count();
@@ -94,41 +86,48 @@
                 </li>
             @endforeach
         </ul>
-    </div>
-@else
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <div class="flex items-center justify-between">
-            <span class="text-sm text-base-content/60">{{ __('Noch keine Milestones angelegt.') }}</span>
-            @can('create', \App\Models\Milestone::class)
-                <x-icon-btn icon="add"
-                            data-entry-modal-trigger
-                            :href="route('projects.milestones.create', $project)"
-                            show-label>{{ __('Milestone') }}</x-icon-btn>
-            @endcan
-        </div>
-    </div>
-@endif
+        </x-card>
+    @else
+        <x-card>
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <span class="text-sm text-base-content/60">{{ __('Noch keine Milestones angelegt.') }}</span>
+                @can('create', \App\Models\Milestone::class)
+                    <x-icon-btn icon="add"
+                                data-entry-modal-trigger
+                                :href="route('projects.milestones.create', $project)"
+                                show-label>{{ __('Milestone') }}</x-icon-btn>
+                @endcan
+            </div>
+        </x-card>
+    @endif
 
-{{-- Letzte Einträge --}}
-<div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
-    <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
-        <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Letzte Einträge') }}</span>
-        <a href="{{ route('diary.index', ['project' => $project->id]) }}"
-           class="text-xs text-primary hover:underline">{{ __('Alle im Tagebuch') }}</a>
-    </header>
-    <ul class="divide-y divide-base-300">
-        @forelse ($entries->take(5) as $entry)
-            <li class="px-4 py-3">
-                <a href="{{ route('diary.show', $entry) }}" data-entry-modal-trigger class="block">
-                    <div class="flex flex-wrap items-center gap-2 text-xs text-base-content/60">
-                        <span>{{ optional($entry->start_at)->format('d.m.Y H:i') }}</span>
-                        <span>· {{ $entry->user->name ?? '—' }}</span>
-                    </div>
-                    <div class="line-clamp-2 text-sm">{{ truncate($entry->content, 150) }}</div>
-                </a>
-            </li>
-        @empty
-            <li class="px-4 py-6 text-center text-sm text-base-content/60">{{ __('Keine Einträge zugeordnet.') }}</li>
-        @endforelse
-    </ul>
+    {{-- Letzte Einträge --}}
+    <x-card padding="p-0">
+        <header class="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3">
+            <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Letzte Einträge') }}</span>
+            <a href="{{ route('diary.index', ['project' => $project->id]) }}"
+               class="text-xs text-primary hover:underline">{{ __('Alle im Tagebuch') }}</a>
+        </header>
+        @if ($entries->isEmpty())
+            <div class="p-4">
+                <x-empty-state compact
+                               :title="__('Keine Einträge zugeordnet')"
+                               :message="__('Sobald Tagebucheinträge mit diesem Projekt verknüpft werden, erscheinen sie hier.')" />
+            </div>
+        @else
+            <ul class="divide-y divide-base-300">
+                @foreach ($entries->take(5) as $entry)
+                    <li class="px-4 py-3">
+                        <a href="{{ route('diary.show', $entry) }}" data-entry-modal-trigger class="block">
+                            <div class="flex flex-wrap items-center gap-2 text-xs text-base-content/60">
+                                <span>{{ optional($entry->start_at)->format('d.m.Y H:i') }}</span>
+                                <span>· {{ $entry->user->name ?? '—' }}</span>
+                            </div>
+                            <div class="line-clamp-2 text-sm">{{ truncate($entry->content, 150) }}</div>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </x-card>
 </div>

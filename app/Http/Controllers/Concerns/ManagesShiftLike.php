@@ -31,8 +31,10 @@ trait ManagesShiftLike
     /**
      * Gibt alle zuweisbaren Benutzer zurück.
      * Wenn der eingeloggte Nutzer keine Rechte hat, wird nur er selbst zurückgegeben.
+     *
+     * @return Collection<int, User>
      */
-    private function assignableUsers(): Collection // @phpstan-ignore missingType.generics
+    private function assignableUsers(): Collection
     {
         /** @var User $auth */
         $auth = Auth::user();
@@ -41,7 +43,7 @@ trait ManagesShiftLike
             return LookupCache::userDropdown();
         }
 
-        return collect([$auth->only(['id', 'name'])]);
+        return collect([$auth]);
     }
 
     private function parseDateTime(?string $value): ?string

@@ -30,6 +30,9 @@ use App\Http\Controllers\Api\TimesheetEntryController;
 use App\Http\Controllers\Api\TimesheetMaterialController;
 use Illuminate\Support\Facades\Route;
 
+// Siehe routes/web.php: Projekt-Bindung akzeptiert ID oder "<kunde>/<projekt>".
+Route::pattern('project', '[0-9]+|[a-z0-9-]+/[a-z0-9-]+');
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('me', MeController::class)->name('api.me');
 

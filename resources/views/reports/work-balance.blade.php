@@ -68,7 +68,7 @@
                 <div class="flex flex-wrap gap-2">
                     @foreach ($period->byActivity as $type => $minutes)
                         <span class="badge badge-outline gap-2 px-3 py-3">
-                            <strong>{{ __($type) }}</strong>
+                            <strong>{{ \App\Models\TimeEntry::activityLabel($type) }}</strong>
                             <span>{{ $fmt((int) $minutes) }} h</span>
                         </span>
                     @endforeach

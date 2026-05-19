@@ -36,13 +36,11 @@ class Milestone extends Model
         'position',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'due_date' => 'date',
-            'is_completed' => 'boolean',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'due_date' => 'date',
+        'is_completed' => 'boolean',
+    ];
 
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo

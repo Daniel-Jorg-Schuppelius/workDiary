@@ -80,21 +80,19 @@ class EntryType extends Model
         'default_priority',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'is_active' => 'boolean',
-            'requires_customer' => 'boolean',
-            'requires_address' => 'boolean',
-            'requires_schedule' => 'boolean',
-            'requires_tour' => 'boolean',
-            'allow_priority' => 'boolean',
-            'allow_tour' => 'boolean',
-            'sort' => 'integer',
-            'default_status' => 'integer',
-            'default_service_minutes' => 'integer',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'is_active' => 'boolean',
+        'requires_customer' => 'boolean',
+        'requires_address' => 'boolean',
+        'requires_schedule' => 'boolean',
+        'requires_tour' => 'boolean',
+        'allow_priority' => 'boolean',
+        'allow_tour' => 'boolean',
+        'sort' => 'integer',
+        'default_status' => 'integer',
+        'default_service_minutes' => 'integer',
+    ];
 
     /** @return HasMany<DiaryEntry, $this> */
     public function diaryEntries(): HasMany

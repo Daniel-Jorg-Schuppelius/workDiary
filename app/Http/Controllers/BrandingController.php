@@ -12,6 +12,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Organization;
+use App\Models\User;
 use App\Services\BrandingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,6 +31,10 @@ class BrandingController extends Controller
     public function edit(): View|RedirectResponse
     {
         $organization = $this->currentOrganization();
+        if (! $organization instanceof Organization) {
+            return redirect()->route('admin.organizations.index')
+                ->with('warning', __('Bitte zuerst eine Organisation anlegen bzw. dem aktuellen Benutzer zuweisen.'));
+        }
         Gate::authorize('manageBranding', $organization);
 
         return view('admin.branding.edit', [
@@ -41,6 +46,10 @@ class BrandingController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $organization = $this->currentOrganization();
+        if (! $organization instanceof Organization) {
+            return redirect()->route('admin.organizations.index')
+                ->with('warning', __('Bitte zuerst eine Organisation anlegen bzw. dem aktuellen Benutzer zuweisen.'));
+        }
         Gate::authorize('manageBranding', $organization);
 
         $data = $request->validate([
@@ -102,23 +111,28 @@ class BrandingController extends Controller
      * Ermittelt die Organisation des eingeloggten Admins. Ohne
      * Organisation-Kontext gibt es nichts zu branden → 404.
      */
-    private function currentOrganization(): Organization
+    private function currentOrganization(): ?Organization
     {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-        $org = $user?->organization;
-        if ($org === null) {
-            abort(404);
+        // Bevorzugt das vom SetOrganizationContext-Middleware gebundene
+        // Modell verwenden – das ist die Single-Source-of-Truth des Requests.
+        if (app()->bound('currentOrganization')) {
+            $bound = app('currentOrganization');
+            if ($bound instanceof Organization) {
+                return $bound;
+            }
         }
 
-        return $org;
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        return $user?->organization;
     }
 
     /**
      * Entfernt leere Strings/Null-Werte rekursiv, damit unten die
      * config-Defaults greifen, sobald ein Feld geleert wird.
      *
-     * @param array<string, mixed> $values
+     * @param  array<string, mixed>  $values
      * @return array<string, mixed>
      */
     private function stripEmpty(array $values): array
@@ -130,6 +144,7 @@ class BrandingController extends Controller
                 if ($nested !== []) {
                     $out[$k] = $nested;
                 }
+
                 continue;
             }
             if ($v === null || $v === '') {

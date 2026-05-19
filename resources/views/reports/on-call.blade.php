@@ -33,24 +33,24 @@
         </x-slot:extra>
     </x-filter-bar>
 
-    <div class="stats stats-vertical sm:stats-horizontal w-full rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <div class="stat">
-            <div class="stat-title">{{ __('Mitarbeiter') }}</div>
-            <div class="stat-value text-2xl">{{ $totals['users'] }}</div>
+    <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['users'] }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Bereitschaft') }}</div>
-            <div class="stat-value text-2xl">{{ $fmt($totals['shift_minutes']) }}</div>
-            <div class="stat-desc">{{ $totals['shift_count'] }} {{ __('Schichten') }}</div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Bereitschaft') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $fmt($totals['shift_minutes']) }}</div>
+            <div class="mt-1 text-xs text-base-content/60">{{ $totals['shift_count'] }} {{ __('Schichten') }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Aktiv-Einsätze') }}</div>
-            <div class="stat-value text-2xl">{{ $fmt($totals['assignment_minutes']) }}</div>
-            <div class="stat-desc">{{ $totals['assignment_count'] }} {{ __('Einsätze') }}</div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Aktiv-Einsätze') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $fmt($totals['assignment_minutes']) }}</div>
+            <div class="mt-1 text-xs text-base-content/60">{{ $totals['assignment_count'] }} {{ __('Einsätze') }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Aktiv-Anteil') }}</div>
-            <div class="stat-value text-2xl">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Aktiv-Anteil') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">
                 {{ $totals['ratio'] !== null ? $pct($totals['ratio']) : '–' }}
             </div>
         </div>

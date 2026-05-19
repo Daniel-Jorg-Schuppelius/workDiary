@@ -112,12 +112,13 @@ class PushNotifier
         $timesheet->loadMissing(['user.pushSubscriptions', 'project']);
         /** @var User|null $owner */
         $owner = $timesheet->user;
-        if (! $owner) {
+        $project = $timesheet->project;
+        if (! $owner || ! $project) {
             return;
         }
         $this->webPush->sendToUser($owner, [
             'title' => __('Stundenzettel signiert'),
-            'body' => ($timesheet->project?->name ?? '').' · '.$timesheet->work_date->format('d.m.Y'),
+            'body' => $project->name.' · '.$timesheet->work_date->format('d.m.Y'),
             'url' => route('projects.timesheets.show', [$timesheet->project_id, $timesheet->id]),
             'tag' => 'timesheet-'.$timesheet->id,
         ]);

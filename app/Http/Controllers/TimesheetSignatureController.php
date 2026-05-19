@@ -45,7 +45,7 @@ class TimesheetSignatureController extends Controller
     public function lock(Request $request, Project $project, Timesheet $timesheet): RedirectResponse
     {
         Gate::authorize('lock', $timesheet);
-        $this->signatures->lock($timesheet, $request->user());
+        $this->signatures->lock($timesheet, $this->authUser());
 
         return back()->with('success', __('Gesperrt.'));
     }

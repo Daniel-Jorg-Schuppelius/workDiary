@@ -71,19 +71,17 @@ class Task extends Model
         'archived_at',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'due_date' => 'date',
-            'archived_at' => 'datetime',
-            'hourly_rate' => 'decimal:2',
-            'internal_rate' => 'decimal:2',
-            'budget' => 'decimal:2',
-            'time_budget' => 'integer',
-            'billable' => 'boolean',
-            'is_global' => 'boolean',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'due_date' => 'date',
+        'archived_at' => 'datetime',
+        'hourly_rate' => 'decimal:2',
+        'internal_rate' => 'decimal:2',
+        'budget' => 'decimal:2',
+        'time_budget' => 'integer',
+        'billable' => 'boolean',
+        'is_global' => 'boolean',
+    ];
 
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo

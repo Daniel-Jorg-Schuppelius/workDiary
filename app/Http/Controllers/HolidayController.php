@@ -159,7 +159,7 @@ class HolidayController extends Controller
         // Duplikat-Prüfung nur für feste Feiertage
         if (! $isRelative) {
             $duplicate = Holiday::query()
-                ->when($holiday, fn ($q) => $q->whereKeyNot($holiday->id))
+                ->when($holiday?->id, fn ($q, int $id) => $q->whereKeyNot($id))
                 ->where('recurrence_type', 'fixed')
                 ->where('is_recurring', $isRecurring)
                 ->where('date', $result['date'])

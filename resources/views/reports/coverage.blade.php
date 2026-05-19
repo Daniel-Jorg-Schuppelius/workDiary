@@ -20,32 +20,32 @@
         </x-slot:extra>
     </x-filter-bar>
 
-    <div class="stats stats-vertical sm:stats-horizontal w-full rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <div class="stat">
-            <div class="stat-title">{{ __('Schichttypen') }}</div>
-            <div class="stat-value text-2xl">{{ $totals['shift_types'] }}</div>
-            <div class="stat-desc">{{ $daySpan }} {{ __('Tage') }}</div>
+    <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Schichttypen') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['shift_types'] }}</div>
+            <div class="mt-1 text-xs text-base-content/60">{{ $daySpan }} {{ __('Tage') }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Soll (Personentage)') }}</div>
-            <div class="stat-value text-2xl">{{ $totals['required'] }}</div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Soll (Personentage)') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['required'] }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Ist (Personentage)') }}</div>
-            <div class="stat-value text-2xl">{{ $totals['scheduled'] }}</div>
-            <div class="stat-desc {{ $totals['gap'] < 0 ? 'text-error' : ($totals['gap'] > 0 ? 'text-success' : '') }}">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Ist (Personentage)') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['scheduled'] }}</div>
+            <div class="mt-1 text-xs text-base-content/60 {{ $totals['gap'] < 0 ? 'text-error' : ($totals['gap'] > 0 ? 'text-success' : '') }}">
                 {{ $totals['gap'] > 0 ? '+' : '' }}{{ $totals['gap'] }}
             </div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Erfüllung') }}</div>
-            <div class="stat-value text-2xl">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Erfüllung') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">
                 {{ $totals['fill_rate'] !== null ? $pct($totals['fill_rate']) : '–' }}
             </div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Tage mit Unterdeckung') }}</div>
-            <div class="stat-value text-2xl {{ $totals['days_under'] > 0 ? 'text-error' : '' }}">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Tage mit Unterdeckung') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold {{ $totals['days_under'] > 0 ? 'text-error' : '' }}">
                 {{ $totals['days_under'] }}
             </div>
         </div>

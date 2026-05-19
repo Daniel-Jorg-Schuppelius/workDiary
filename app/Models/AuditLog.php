@@ -31,12 +31,10 @@ class AuditLog extends Model
         'user_agent',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'changes' => 'array',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'changes' => 'array',
+    ];
 
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo

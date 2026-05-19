@@ -38,14 +38,12 @@ class ProjectBillingRule extends Model
         'priority',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'vat_rate' => 'decimal:2',
-            'net_unit_price' => 'decimal:4',
-            'priority' => 'integer',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'vat_rate' => 'decimal:2',
+        'net_unit_price' => 'decimal:4',
+        'priority' => 'integer',
+    ];
 
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo

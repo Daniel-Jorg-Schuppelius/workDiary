@@ -72,7 +72,7 @@
                         <ul class="mt-2 space-y-1 text-sm">
                             @foreach ($byActivity as $key => $info)
                                 <li class="flex items-center justify-between gap-2">
-                                    <span class="capitalize">{{ $key ?: __('unbekannt') }}</span>
+                                    <span>{{ \App\Models\TimeEntry::activityLabel($key) }}</span>
                                     <span class="tabular-nums text-base-content/70">{{ $fmt($info['minutes']) }} <span class="text-xs text-base-content/50">({{ $info['count'] }})</span></span>
                                 </li>
                             @endforeach

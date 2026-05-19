@@ -80,16 +80,14 @@ class CoverageRequirement extends Model
         'updated_by',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'specific_date' => 'date',
-            'min_staff' => 'integer',
-            'max_staff' => 'integer',
-            'weekday' => 'integer',
-            'required_qualification_ids' => 'array',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'specific_date' => 'date',
+        'min_staff' => 'integer',
+        'max_staff' => 'integer',
+        'weekday' => 'integer',
+        'required_qualification_ids' => 'array',
+    ];
 
     // ── Relations ──────────────────────────────────────────────────────────
 

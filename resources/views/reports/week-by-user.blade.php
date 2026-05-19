@@ -26,13 +26,32 @@
         @endif
         <x-slot:extra>
             <x-icon-btn icon="download" tone="outline" size="sm"
-                        :href="route('reports.week-by-user', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'csv']))"
+                        :href="route('reports.week-by-user', array_filter(['scope' => $isAdmin ? $scope : null, 'week' => $activeKey, 'export' => 'csv']))"
                         show-label>CSV</x-icon-btn>
             <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                        :href="route('reports.week-by-user', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'pdf']))"
+                        :href="route('reports.week-by-user', array_filter(['scope' => $isAdmin ? $scope : null, 'week' => $activeKey, 'export' => 'pdf']))"
                         show-label>PDF</x-icon-btn>
         </x-slot:extra>
     </x-filter-bar>
+
+    @if ($weeksTruncated ?? false)
+        <div class="alert alert-warning text-sm">
+            <span>{{ __('Der gewählte Zeitraum umfasst :total Wochen — es werden nur die ersten :shown Tabs angezeigt. Bitte engere die Auswahl im Header ein.', ['total' => $totalWeeks, 'shown' => count($weekTabs)]) }}</span>
+        </div>
+    @endif
+
+    @if (count($weekTabs ?? []) > 1)
+        <div role="tablist" class="tabs tabs-box flex-nowrap overflow-x-auto">
+            @foreach ($weekTabs as $tab)
+                <a role="tab"
+                   href="{{ route('reports.week-by-user', array_filter(['scope' => $isAdmin ? $scope : null, 'week' => $tab['key']])) }}"
+                   class="tab whitespace-nowrap gap-1.5 {{ $tab['key'] === $activeKey ? 'tab-active' : '' }}">
+                    <span class="font-semibold">{{ __('KW') }} {{ $tab['week'] }}</span>
+                    <span class="text-[0.65rem] text-base-content/50 tabular-nums">{{ $tab['shortLabel'] }}</span>
+                </a>
+            @endforeach
+        </div>
+    @endif
 
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">

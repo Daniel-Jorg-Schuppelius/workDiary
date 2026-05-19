@@ -38,7 +38,7 @@ class IssueCommand extends Command
             return self::FAILURE;
         }
 
-        $privateB64 = (string) ($this->option('private-key') ?? env('LICENSE_PRIVATE_KEY', ''));
+        $privateB64 = (string) ($this->option('private-key') ?? config('license.private_key', ''));
         if ($privateB64 === '') {
             $this->error('Kein Private Key übergeben. Nutze --private-key=... oder setze LICENSE_PRIVATE_KEY.');
 

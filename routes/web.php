@@ -21,6 +21,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\TenantRegistrationController;
+use App\Http\Controllers\BrandingController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\CoverageRequirementController;
 use App\Http\Controllers\CustomerController;
@@ -93,6 +94,11 @@ use App\Http\Controllers\WeekController;
 use App\Http\Controllers\WorkScheduleController;
 use Illuminate\Support\Facades\Route;
 
+// Projekt-Bindung: erlaubt numerische ID (Backward-Compat) ODER die
+// zusammengesetzte URL "<kunde-slug>/<projekt-slug>" (Sentinel "intern"
+// für Projekte ohne Kunden). Siehe Project::getRouteKey().
+Route::pattern('project', '[0-9]+|[a-z0-9-]+/[a-z0-9-]+');
+
 // Lizenz-Aktivierung (umgeht EnsureValidLicense via bypass_paths)
 Route::get('/license', [LicenseController::class, 'show'])->name('license.show');
 Route::post('/license', [LicenseController::class, 'store'])->middleware('throttle:6,1')->name('license.store');
@@ -126,8 +132,6 @@ Route::middleware('auth')->group(function () {
 
     Route::get('account/profile', [ProfileController::class, 'edit'])->name('account.profile.edit');
     Route::put('account/profile', [ProfileController::class, 'update'])->name('account.profile.update');
-    Route::get('account/settings', [ProfileController::class, 'settings'])->name('account.settings');
-    Route::put('account/preferences', [ProfileController::class, 'updatePreferences'])->name('account.preferences.update');
 
     Route::get('diary/export.csv', [DiaryExportController::class, 'csv'])->name('diary.export.csv');
     Route::get('diary/export.pdf', [DiaryExportController::class, 'pdf'])->name('diary.export.pdf');
@@ -379,8 +383,8 @@ Route::middleware('auth')->group(function () {
 
     // Branding-Self-Service der eigenen Organisation (Logos, Farben,
     // Kontakt, PDF-Konfig). Logo-Uploads laufen über AttachmentController.
-    Route::get('admin/branding', [\App\Http\Controllers\BrandingController::class, 'edit'])->name('admin.branding.edit');
-    Route::put('admin/branding', [\App\Http\Controllers\BrandingController::class, 'update'])->name('admin.branding.update');
+    Route::get('admin/branding', [BrandingController::class, 'edit'])->name('admin.branding.edit');
+    Route::put('admin/branding', [BrandingController::class, 'update'])->name('admin.branding.update');
 
     Route::resource('admin/entry-types', EntryTypeController::class)
         ->names('admin.entry-types')

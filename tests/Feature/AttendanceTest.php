@@ -25,20 +25,23 @@ use RuntimeException;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class AttendanceTest extends TestCase {
+class AttendanceTest extends TestCase
+{
     use RefreshDatabase;
     use WithOrganization;
 
     private User $user;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
-    public function test_clock_in_creates_open_attendance(): void {
+    public function test_clock_in_creates_open_attendance(): void
+    {
         $svc = app(AttendanceClockService::class);
         $a = $svc->clockIn($this->user);
 
@@ -47,7 +50,8 @@ class AttendanceTest extends TestCase {
         $this->assertSame($a->id, $svc->current($this->user)?->id);
     }
 
-    public function test_double_clock_in_is_rejected(): void {
+    public function test_double_clock_in_is_rejected(): void
+    {
         $svc = app(AttendanceClockService::class);
         $svc->clockIn($this->user);
 
@@ -55,7 +59,8 @@ class AttendanceTest extends TestCase {
         $svc->clockIn($this->user);
     }
 
-    public function test_clock_out_closes_attendance_and_computes_duration(): void {
+    public function test_clock_out_closes_attendance_and_computes_duration(): void
+    {
         $svc = app(AttendanceClockService::class);
         $a = $svc->clockIn($this->user);
         $a->forceFill(['started_at' => now()->subMinutes(120)])->saveQuietly();
@@ -68,12 +73,14 @@ class AttendanceTest extends TestCase {
         $this->assertLessThanOrEqual(95, $closed->duration_minutes);
     }
 
-    public function test_clock_out_without_open_returns_null(): void {
+    public function test_clock_out_without_open_returns_null(): void
+    {
         $svc = app(AttendanceClockService::class);
         $this->assertNull($svc->clockOut($this->user));
     }
 
-    public function test_cancel_marks_attendance_cancelled(): void {
+    public function test_cancel_marks_attendance_cancelled(): void
+    {
         $svc = app(AttendanceClockService::class);
         $svc->clockIn($this->user);
         $cancelled = $svc->cancel($this->user, 'wrong button');
@@ -82,7 +89,8 @@ class AttendanceTest extends TestCase {
         $this->assertNull($svc->current($this->user));
     }
 
-    public function test_auto_close_handles_stale_open_sessions(): void {
+    public function test_auto_close_handles_stale_open_sessions(): void
+    {
         $svc = new AttendanceClockService(maxOpenMinutes: 60);
         $a = $svc->clockIn($this->user);
         $a->forceFill(['started_at' => now()->subHours(20)])->saveQuietly();
@@ -95,7 +103,8 @@ class AttendanceTest extends TestCase {
         $this->assertNotNull($a->ended_at);
     }
 
-    public function test_partial_unique_index_blocks_two_open_attendances(): void {
+    public function test_partial_unique_index_blocks_two_open_attendances(): void
+    {
         Attendance::create([
             'organization_id' => $this->organization->id,
             'user_id' => $this->user->id,
@@ -112,7 +121,8 @@ class AttendanceTest extends TestCase {
         ]);
     }
 
-    public function test_web_clock_in_clock_out_endpoints(): void {
+    public function test_web_clock_in_clock_out_endpoints(): void
+    {
         $this->actingAs($this->user);
 
         $this->post(route('attendance.clock-in'), [])
@@ -130,7 +140,8 @@ class AttendanceTest extends TestCase {
         ]);
     }
 
-    public function test_api_clock_in_returns_attendance_payload(): void {
+    public function test_api_clock_in_returns_attendance_payload(): void
+    {
         $this->actingAs($this->user, 'sanctum');
 
         $res = $this->postJson(route('api.attendance.clock-in'), []);
@@ -142,7 +153,8 @@ class AttendanceTest extends TestCase {
         $this->postJson(route('api.attendance.clock-out'), [])->assertStatus(404);
     }
 
-    public function test_time_entry_with_activity_admin_does_not_require_project(): void {
+    public function test_time_entry_with_activity_admin_does_not_require_project(): void
+    {
         $entry = TimeEntry::create([
             'organization_id' => $this->organization->id,
             'user_id' => $this->user->id,
@@ -157,7 +169,8 @@ class AttendanceTest extends TestCase {
         $this->assertSame(TimeEntry::ACTIVITY_ADMIN, $entry->activity_type);
     }
 
-    public function test_time_entry_with_project_activity_requires_project_id(): void {
+    public function test_time_entry_with_project_activity_requires_project_id(): void
+    {
         $this->expectException(\InvalidArgumentException::class);
         TimeEntry::create([
             'organization_id' => $this->organization->id,
@@ -168,7 +181,8 @@ class AttendanceTest extends TestCase {
         ]);
     }
 
-    public function test_attendance_index_view_renders(): void {
+    public function test_attendance_index_view_renders(): void
+    {
         $this->actingAs($this->user);
 
         Attendance::create([
@@ -186,7 +200,8 @@ class AttendanceTest extends TestCase {
             ->assertSee(__('Abgeschlossen'));
     }
 
-    public function test_today_dashboard_renders_with_soll_ist_unverteilt(): void {
+    public function test_today_dashboard_renders_with_soll_ist_unverteilt(): void
+    {
         $this->actingAs($this->user);
 
         Attendance::create([
@@ -205,7 +220,8 @@ class AttendanceTest extends TestCase {
             ->assertSee(__('Unverteilt'));
     }
 
-    public function test_backfill_command_creates_attendance_from_entries(): void {
+    public function test_backfill_command_creates_attendance_from_entries(): void
+    {
         $project = Project::create([
             'organization_id' => $this->organization->id,
             'name' => 'P',
@@ -229,7 +245,7 @@ class AttendanceTest extends TestCase {
 
         $this->assertDatabaseHas('attendances', [
             'user_id' => $this->user->id,
-            'date' => $today->toDateString() . ' 00:00:00',
+            'date' => $today->toDateString().' 00:00:00',
             'source' => Attendance::SOURCE_IMPORT,
         ]);
     }

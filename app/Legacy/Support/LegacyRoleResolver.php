@@ -12,7 +12,6 @@
 namespace App\Legacy\Support;
 
 use App\Legacy\Models\LegacyUser;
-use App\Legacy\Support\LegacyConnectivity;
 use App\Models\User;
 
 class LegacyRoleResolver

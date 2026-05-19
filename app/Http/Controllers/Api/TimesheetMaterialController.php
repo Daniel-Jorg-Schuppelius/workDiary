@@ -35,7 +35,7 @@ class TimesheetMaterialController extends Controller
         Gate::authorize('update', $timesheet);
         $data = $request->validated();
         if (! empty($data['material_id'])) {
-            $m = Material::find($data['material_id']);
+            $m = Material::find((int) $data['material_id']);
             if ($m) {
                 $data['unit_price'] = $data['unit_price'] ?? $m->default_unit_price;
                 $data['tax_rate'] = $data['tax_rate'] ?? $m->tax_rate;

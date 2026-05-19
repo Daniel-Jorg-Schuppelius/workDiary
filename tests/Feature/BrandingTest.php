@@ -144,14 +144,16 @@ class BrandingTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('attachments.store', ['type' => 'organization', 'id' => $org->id]), [
-                'file' => $first, 'meta_type' => Attachment::META_LOGO,
+                'file' => $first,
+                'meta_type' => Attachment::META_LOGO,
             ])->assertRedirect();
 
         $firstAttachment = Attachment::query()->where('meta_type', Attachment::META_LOGO)->firstOrFail();
 
         $this->actingAs($admin)
             ->post(route('attachments.store', ['type' => 'organization', 'id' => $org->id]), [
-                'file' => $second, 'meta_type' => Attachment::META_LOGO,
+                'file' => $second,
+                'meta_type' => Attachment::META_LOGO,
             ])->assertRedirect();
 
         $this->assertDatabaseMissing('attachments', ['id' => $firstAttachment->id]);
@@ -174,7 +176,8 @@ class BrandingTest extends TestCase
 
         $this->actingAs($regular)
             ->post(route('attachments.store', ['type' => 'organization', 'id' => $org->id]), [
-                'file' => $file, 'meta_type' => Attachment::META_LOGO,
+                'file' => $file,
+                'meta_type' => Attachment::META_LOGO,
             ])
             ->assertForbidden();
     }
@@ -187,7 +190,8 @@ class BrandingTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('attachments.store', ['type' => 'user', 'id' => $user->id]), [
-                'file' => $file, 'meta_type' => Attachment::META_AVATAR,
+                'file' => $file,
+                'meta_type' => Attachment::META_AVATAR,
             ])
             ->assertRedirect();
 
@@ -208,7 +212,8 @@ class BrandingTest extends TestCase
 
         $this->actingAs($a)
             ->post(route('attachments.store', ['type' => 'user', 'id' => $b->id]), [
-                'file' => $file, 'meta_type' => Attachment::META_AVATAR,
+                'file' => $file,
+                'meta_type' => Attachment::META_AVATAR,
             ])
             ->assertForbidden();
     }
@@ -222,7 +227,8 @@ class BrandingTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('attachments.store', ['type' => 'organization', 'id' => $org->id]), [
-                'file' => $svg, 'meta_type' => Attachment::META_LOGO,
+                'file' => $svg,
+                'meta_type' => Attachment::META_LOGO,
             ])
             ->assertSessionHasErrors();
     }
@@ -233,7 +239,9 @@ class BrandingTest extends TestCase
         $user = User::factory()->user()->create();
 
         $this->actingAs($user)
-            ->put(route('account.preferences.update'), [
+            ->put(route('account.profile.update'), [
+                'name' => $user->name,
+                'email' => $user->email,
                 'preferences' => [
                     'theme' => 'dark',
                     'locale' => 'de',

@@ -37,7 +37,7 @@ class TimesheetMaterialController extends Controller
         $data = $request->validated();
         // Falls Stamm-Material gewählt: Defaults übernehmen, falls leer
         if (! empty($data['material_id'])) {
-            $material = Material::find($data['material_id']);
+            $material = Material::find((int) $data['material_id']);
             if ($material) {
                 $data['unit_price'] = $data['unit_price'] ?? $material->default_unit_price;
                 $data['tax_rate'] = $data['tax_rate'] ?? $material->tax_rate;

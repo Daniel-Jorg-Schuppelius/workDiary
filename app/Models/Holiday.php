@@ -42,16 +42,14 @@ class Holiday extends Model
         'updated_by',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'date' => 'date',
-            'is_recurring' => 'boolean',
-            'recurrence_weekday' => 'integer',
-            'recurrence_week' => 'integer',
-            'recurrence_month' => 'integer',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'date' => 'date',
+        'is_recurring' => 'boolean',
+        'recurrence_weekday' => 'integer',
+        'recurrence_week' => 'integer',
+        'recurrence_month' => 'integer',
+    ];
 
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo
@@ -77,11 +75,13 @@ class Holiday extends Model
             $dates = [];
             foreach ($months as $month) {
                 try {
-                    $base = Carbon::create($year, (int) $month, 1);
+                    $base = Carbon::createFromDate($year, (int) $month, 1);
                     $date = ($this->recurrence_week === -1)
                         ? $base->lastOfMonth($this->recurrence_weekday ?? 0)
                         : $base->nthOfMonth($this->recurrence_week ?? 1, $this->recurrence_weekday ?? 0);
-                    $dates[] = $date->format('Y-m-d');
+                    if ($date !== false) {
+                        $dates[] = $date->format('Y-m-d');
+                    }
                 } catch (\Throwable) {
                     // Ungültige Vorkommen (z. B. 5. Montag in einem Monat mit nur 4)
                 }

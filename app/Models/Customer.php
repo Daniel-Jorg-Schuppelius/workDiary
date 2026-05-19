@@ -66,6 +66,7 @@ class Customer extends Model
     protected $fillable = [
         'organization_id',
         'name',
+        'slug',
         'number',
         'company',
         'vat_id',
@@ -95,18 +96,16 @@ class Customer extends Model
         'created_by',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'billable' => 'boolean',
-            'archived_at' => 'datetime',
-            'hourly_rate' => 'decimal:2',
-            'internal_rate' => 'decimal:2',
-            'address_lat' => 'decimal:7',
-            'address_lng' => 'decimal:7',
-            'contact_persons' => 'array',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'billable' => 'boolean',
+        'archived_at' => 'datetime',
+        'hourly_rate' => 'decimal:2',
+        'internal_rate' => 'decimal:2',
+        'address_lat' => 'decimal:7',
+        'address_lng' => 'decimal:7',
+        'contact_persons' => 'array',
+    ];
 
     protected static function booted(): void
     {
@@ -115,6 +114,39 @@ class Customer extends Model
                 $customer->number = self::nextNumberFor($customer->organization_id);
             }
         });
+
+        static::saving(function (self $customer): void {
+            if ($customer->slug === null || $customer->slug === '') {
+                $customer->slug = self::uniqueSlug(
+                    (string) $customer->name,
+                    $customer->organization_id,
+                    $customer->exists ? $customer->id : null,
+                );
+            }
+        });
+    }
+
+    /**
+     * Liefert einen Slug, der innerhalb der angegebenen Organisation
+     * eindeutig ist (Sentinel "kunde" falls Name keinen Slug ergibt).
+     */
+    public static function uniqueSlug(string $name, ?int $organizationId, ?int $ignoreId = null): string
+    {
+        $base = \Illuminate\Support\Str::slug($name) ?: 'kunde';
+        $slug = $base;
+        $i = 2;
+        while (
+            static::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $organizationId)
+                ->where('slug', $slug)
+                ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+                ->exists()
+        ) {
+            $slug = $base.'-'.$i++;
+        }
+
+        return $slug;
     }
 
     /**
@@ -176,7 +208,7 @@ class Customer extends Model
         return $project;
     }
 
-    /** @phpstan-ignore-next-line missingType.generics */
+    /** @return MorphMany<ExternalReference, $this> */
     public function externalReferences(): MorphMany
     {
         return $this->morphMany(ExternalReference::class, 'referenceable');

@@ -251,8 +251,8 @@ class PrintController extends Controller
         abort_unless($actor?->isAdmin() === true, 403);
 
         $year = (int) ($request->query('year') ?: CarbonImmutable::now()->year);
-        $from = CarbonImmutable::create($year, 1, 1);
-        $to = CarbonImmutable::create($year, 12, 31);
+        $from = CarbonImmutable::createFromDate($year, 1, 1)->startOfDay();
+        $to = CarbonImmutable::createFromDate($year, 12, 31)->endOfDay();
 
         $vacations = Vacation::query()
             ->with('user:id,name')

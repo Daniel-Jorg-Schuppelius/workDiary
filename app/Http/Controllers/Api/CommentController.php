@@ -40,7 +40,7 @@ class CommentController extends Controller
         $data = $request->validate(['body' => ['required', 'string', 'max:65535']]);
         $comment->update($data);
 
-        return new CommentResource($comment->fresh('user:id,name'));
+        return new CommentResource($comment->fresh('user:id,name') ?? $comment);
     }
 
     public function destroy(Comment $comment): JsonResponse

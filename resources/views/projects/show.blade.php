@@ -38,7 +38,7 @@
     </x-page-toolbar>
 
     {{-- Tabs --}}
-    <div x-data="projectTabs()" class="flex min-h-0 flex-col gap-4">
+    <div x-data="projectTabs({{ Js::from(request('tab', 'overview')) }})" class="flex min-h-0 flex-col gap-4">
         <div role="tablist" class="tabs tabs-box w-full sm:w-auto">
             <button role="tab" @click="setTab('overview')" :class="{ 'tab-active': tab === 'overview' }" class="tab">
                 {{ __('Übersicht') }}
@@ -90,14 +90,22 @@
 </x-page-shell>
 
 <script>
-    function projectTabs() {
+    function projectTabs(initial) {
         const allowed = ['overview', 'tasks', 'time', 'timesheets', 'diary', 'billing'];
-        const hash = window.location.hash.replace('#', '');
+        const fromQuery = new URLSearchParams(window.location.search).get('tab');
+        const fromHash = window.location.hash.replace('#', '');
+        const start = allowed.includes(fromQuery) ? fromQuery
+                    : allowed.includes(initial) ? initial
+                    : allowed.includes(fromHash) ? fromHash
+                    : 'overview';
         return {
-            tab: allowed.includes(hash) ? hash : 'overview',
+            tab: start,
             setTab(name) {
                 this.tab = name;
-                history.replaceState(null, '', '#' + name);
+                const url = new URL(window.location.href);
+                url.searchParams.set('tab', name);
+                url.hash = '';
+                history.replaceState(null, '', url.toString());
             }
         };
     }

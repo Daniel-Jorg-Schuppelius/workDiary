@@ -118,24 +118,22 @@ class TravelLog extends Model
         'updated_by',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'date' => 'date',
-            'started_at' => 'datetime',
-            'ended_at' => 'datetime',
-            'duration_minutes' => 'integer',
-            'from_lat' => 'float',
-            'from_lng' => 'float',
-            'to_lat' => 'float',
-            'to_lng' => 'float',
-            'distance_km' => 'decimal:2',
-            'rate_per_km' => 'decimal:4',
-            'reimbursement_total' => 'decimal:2',
-            'round_trip' => 'boolean',
-            'reimbursable' => 'boolean',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'date' => 'date',
+        'started_at' => 'datetime',
+        'ended_at' => 'datetime',
+        'duration_minutes' => 'integer',
+        'from_lat' => 'float',
+        'from_lng' => 'float',
+        'to_lat' => 'float',
+        'to_lng' => 'float',
+        'distance_km' => 'decimal:2',
+        'rate_per_km' => 'decimal:4',
+        'reimbursement_total' => 'decimal:2',
+        'round_trip' => 'boolean',
+        'reimbursable' => 'boolean',
+    ];
 
     protected static function booted(): void
     {

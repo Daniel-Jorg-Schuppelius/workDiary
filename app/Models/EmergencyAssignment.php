@@ -15,6 +15,7 @@ use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Concerns\HasAttachments;
 use App\Models\Concerns\HasTags;
+use App\Models\Contracts\HasTimeWindow;
 use Carbon\Carbon;
 use Database\Factories\EmergencyAssignmentFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Carbon $start_at
  * @property Carbon $end_at
  */
-class EmergencyAssignment extends Model
+class EmergencyAssignment extends Model implements HasTimeWindow
 {
     use Auditable;
     use BelongsToOrganization;
@@ -49,14 +50,12 @@ class EmergencyAssignment extends Model
         'is_archived',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'start_at' => 'datetime',
-            'end_at' => 'datetime',
-            'is_archived' => 'boolean',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'start_at' => 'datetime',
+        'end_at' => 'datetime',
+        'is_archived' => 'boolean',
+    ];
 
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
@@ -83,5 +82,15 @@ class EmergencyAssignment extends Model
     public function scopeOverlapping(Builder $query, \DateTimeInterface $start, \DateTimeInterface $end): Builder
     {
         return $query->where('start_at', '<', $end)->where('end_at', '>', $start);
+    }
+
+    public function getStartAt(): ?Carbon
+    {
+        return $this->start_at;
+    }
+
+    public function getEndAt(): ?Carbon
+    {
+        return $this->end_at;
     }
 }

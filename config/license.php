@@ -15,12 +15,22 @@ return [
     // Herausgeber (Schuppelius).
     'public_key' => env('LICENSE_PUBLIC_KEY', ''),
 
+    // Ed25519 Private Key (base64, 64 Byte raw). Wird ausschließlich vom
+    // Herausgeber zum Signieren neuer Lizenzen benötigt (license:issue) und
+    // darf in produktiven Kundeninstallationen niemals gesetzt sein.
+    'private_key' => env('LICENSE_PRIVATE_KEY', ''),
+
     // Optional: Lizenzschlüssel direkt aus der .env (z. B. für SaaS-Instanzen
     // unter eigener Kontrolle). Hat Vorrang vor der Datei im Storage.
     'key' => env('LICENSE_KEY'),
 
     // Pfad zur On-Premise-Lizenzdatei (relativ zu storage/app).
     'key_path' => env('LICENSE_KEY_PATH', 'license.key'),
+
+    // Pfad zur Seal-Datendatei (relativ zu storage/app). Wird durch
+    // `php artisan license:seal` geschrieben und enthält den versiegelten
+    // Public Key sowie die sha256-Hashes der lizenzrelevanten Dateien.
+    'seal_path' => env('LICENSE_SEAL_PATH', 'private/license-seal.php'),
 
     // Grace-Period in Tagen nach Ablauf, in der die App noch read-only weiter
     // läuft (Warnbanner). 0 = harte Sperre ab Ablaufdatum.

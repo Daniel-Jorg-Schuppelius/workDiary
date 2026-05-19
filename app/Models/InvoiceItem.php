@@ -43,14 +43,12 @@ class InvoiceItem extends Model
         'position',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'quantity' => 'decimal:2',
-            'unit_price' => 'decimal:2',
-            'amount' => 'decimal:2',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'quantity' => 'decimal:2',
+        'unit_price' => 'decimal:2',
+        'amount' => 'decimal:2',
+    ];
 
     protected static function booted(): void
     {

@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', __('Billing'))
-@section('nav-title', __('Billing-Auswertung'))
+@section('title', __('Abrechnung'))
+@section('nav-title', __('Abrechnungs-Auswertung'))
 
 @section('content')
 @php
@@ -38,22 +38,22 @@
         </x-slot:extra>
     </x-filter-bar>
 
-    <div class="stats stats-vertical sm:stats-horizontal w-full rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <div class="stat">
-            <div class="stat-title">{{ __('Ausgestellt + Bezahlt (Σ Brutto)') }}</div>
-            <div class="stat-value text-2xl">{{ $eur($totalIssuedPaid) }}</div>
+    <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Ausgestellt + Bezahlt (Σ Brutto)') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $eur($totalIssuedPaid) }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Offene Forderungen') }}</div>
-            <div class="stat-value text-2xl">{{ $eur($aging['open_total']) }}</div>
-            <div class="stat-desc {{ $aging['buckets']['30_plus']['count'] > 0 ? 'text-error' : '' }}">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Offene Forderungen') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $eur($aging['open_total']) }}</div>
+            <div class="mt-1 text-xs text-base-content/60 {{ $aging['buckets']['30_plus']['count'] > 0 ? 'text-error' : '' }}">
                 {{ $aging['buckets']['30_plus']['count'] }} {{ __('> 30 Tage') }}
             </div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Unbillte Zeit') }}</div>
-            <div class="stat-value text-2xl">{{ $fmtMin($unbilled['minutes']) }}</div>
-            <div class="stat-desc">{{ $unbilled['count'] }} {{ __('Einträge') }} · {{ $eur($unbilled['projected_revenue']) }}</div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Unbillte Zeit') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $fmtMin($unbilled['minutes']) }}</div>
+            <div class="mt-1 text-xs text-base-content/60">{{ $unbilled['count'] }} {{ __('Einträge') }} · {{ $eur($unbilled['projected_revenue']) }}</div>
         </div>
     </div>
 

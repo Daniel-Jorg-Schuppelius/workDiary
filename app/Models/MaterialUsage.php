@@ -46,15 +46,13 @@ class MaterialUsage extends Model
         'line_total_net',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'quantity' => 'decimal:3',
-            'unit_price' => 'decimal:4',
-            'tax_rate' => 'decimal:2',
-            'line_total_net' => 'decimal:2',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'quantity' => 'decimal:3',
+        'unit_price' => 'decimal:4',
+        'tax_rate' => 'decimal:2',
+        'line_total_net' => 'decimal:2',
+    ];
 
     protected static function booted(): void
     {

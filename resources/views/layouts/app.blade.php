@@ -164,9 +164,11 @@
                werden zwangsweise geöffnet, damit alle Item-Icons als flache Liste sichtbar
                bleiben. Nur die Icons der Items zählen dann. */
             body.sidebar-collapsed #app-sidebar .sidebar-section-summary { display: none; }
-            body.sidebar-collapsed #app-sidebar details.sidebar-section-collapsible > ul { display: block !important; }
+            body.sidebar-collapsed #app-sidebar details.sidebar-section-collapsible > ul,
+            body.sidebar-collapsed #app-sidebar details.sidebar-section-collapsible > div { display: block !important; }
             body.sidebar-collapsed #app-sidebar .sidebar-section-chevron,
             body.sidebar-collapsed #app-sidebar .sidebar-section-icon { display: none; }
+            body.sidebar-collapsed #app-sidebar .sidebar-subgroup-label { display: none; }
 
             /* Sidebar-Layout: Items scrollen, Footer (Collapse-Button) bleibt sticky
                am unteren Rand der Sidebar sichtbar. */
@@ -285,7 +287,7 @@
                             $_brandName = isset($branding) && $branding ? $branding->appName() : 'WorkDiary';
                         @endphp
                         @if ($_brandLogo)
-                            <img src="{{ $_brandLogo }}" alt="{{ $_brandName }}" class="h-6 w-auto max-w-[8rem] object-contain shrink-0">
+                            <img src="{{ $_brandLogo }}" alt="{{ $_brandName }}" class="h-6 w-auto max-w-32 object-contain shrink-0">
                         @else
                             <span class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary transition group-hover:opacity-80 shrink-0">{{ $_brandName }}</span>
                         @endif
@@ -356,8 +358,6 @@
                             $userNavItems = [];
                             if (! $isLegacyMode) {
                                 $userNavItems[] = ['route' => 'account.profile.edit',  'label' => __('Profil bearbeiten'), 'modal' => true];
-                                $userNavItems[] = ['route' => 'account.settings',      'label' => __('Erweiterte Einstellungen'), 'modal' => false];
-                                $userNavItems[] = ['route' => 'account.password.edit', 'label' => __('Passwort ändern'),  'modal' => true];
                                 $userNavItems[] = ['route' => 'account.work-schedule', 'label' => __('Arbeitszeit-Modell'), 'modal' => false];
                             } else {
                                 $userNavItems[] = ['route' => 'legacy.account.password.edit', 'label' => __('Passwort ändern'), 'modal' => true];
@@ -423,24 +423,59 @@
                                     'key'         => 'reports',
                                     'label'       => __('Auswertungen'),
                                     'collapsible' => true,
-                                    'items'       => [
-                                        ['route' => 'reports.my-month',         'label' => __('Mein Monat'),         'icon' => 'calendar_view_week',  'modal' => false, 'matches' => ['reports.my-month']],
-                                        ['route' => 'reports.my-year',          'label' => __('Mein Jahr'),          'icon' => 'calendar_view_month', 'modal' => false, 'matches' => ['reports.my-year']],
-                                        ['route' => 'reports.work-balance',     'label' => __('Arbeitsbilanz'),      'icon' => 'balance',             'modal' => false, 'matches' => ['reports.work-balance']],
-                                        ['route' => 'reports.week-by-user',     'label' => __('Woche pro Mitarbeiter'), 'icon' => 'date_range',       'modal' => false, 'matches' => ['reports.week-by-user']],
-                                        ['route' => 'reports.customer-project', 'label' => __('Kunden & Projekte'), 'icon' => 'pie_chart',           'modal' => false, 'matches' => ['reports.customer-project']],
-                                        ['route' => 'reports.project-details',  'label' => __('Projekt-Details'),    'icon' => 'analytics',           'modal' => false, 'matches' => ['reports.project-details']],
-                                        ['route' => 'reports.fleet',            'label' => __('Fuhrpark'),           'icon' => 'directions_car',      'modal' => false, 'matches' => ['reports.fleet']],
-                                        ['route' => 'reports.on-call',          'label' => __('Notdienst'),          'icon' => 'notifications_active','modal' => false, 'matches' => ['reports.on-call']],
-                                        ['route' => 'reports.coverage',         'label' => __('Coverage'),           'icon' => 'group_work',          'modal' => false, 'matches' => ['reports.coverage']],
-                                        ['route' => 'reports.absences',         'label' => __('Urlaub & Flex'),      'icon' => 'event_busy',          'modal' => false, 'matches' => ['reports.absences']],
-                                        ['route' => 'reports.sickness',         'label' => __('Krankheiten'),        'icon' => 'sick',                'modal' => false, 'matches' => ['reports.sickness']],
-                                        ['route' => 'reports.operations',       'label' => __('Operations'),         'icon' => 'assignment',          'modal' => false, 'matches' => ['reports.operations']],
-                                        ['route' => 'reports.materials',        'label' => __('Materialien'),        'icon' => 'inventory',           'modal' => false, 'matches' => ['reports.materials']],
-                                        ['route' => 'reports.billing',          'label' => __('Billing'),            'icon' => 'request_quote',       'modal' => false, 'matches' => ['reports.billing']],
-                                        ['route' => 'reports.qualifications',   'label' => __('Qualifikationen'),    'icon' => 'verified',            'modal' => false, 'matches' => ['reports.qualifications']],
-                                        ['route' => 'reports.attendance',       'label' => __('Anwesenheit'),        'icon' => 'co_present',          'modal' => false, 'matches' => ['reports.attendance']],
-                                        ['route' => 'reports.audit-activity',   'label' => __('Audit-Aktivität'),    'icon' => 'security',            'modal' => false, 'matches' => ['reports.audit-activity']],
+                                    'groups'      => [
+                                        [
+                                            'key'   => 'reports-personal',
+                                            'label' => __('Persönlich'),
+                                            'icon'  => 'person',
+                                            'items' => [
+                                                ['route' => 'reports.my-month',     'label' => __('Mein Monat'),    'icon' => 'calendar_view_week',  'modal' => false, 'matches' => ['reports.my-month']],
+                                                ['route' => 'reports.my-year',      'label' => __('Mein Jahr'),     'icon' => 'calendar_view_month', 'modal' => false, 'matches' => ['reports.my-year']],
+                                                ['route' => 'reports.work-balance', 'label' => __('Arbeitsbilanz'), 'icon' => 'balance',             'modal' => false, 'matches' => ['reports.work-balance']],
+                                                ['route' => 'reports.attendance',   'label' => __('Anwesenheit'),   'icon' => 'co_present',          'modal' => false, 'matches' => ['reports.attendance']],
+                                            ],
+                                        ],
+                                        [
+                                            'key'   => 'reports-team',
+                                            'label' => __('Team'),
+                                            'icon'  => 'groups',
+                                            'items' => [
+                                                ['route' => 'reports.week-by-user',   'label' => __('Woche pro Mitarbeiter'), 'icon' => 'date_range',  'modal' => false, 'matches' => ['reports.week-by-user']],
+                                                ['route' => 'reports.coverage',       'label' => __('Coverage'),              'icon' => 'group_work',  'modal' => false, 'matches' => ['reports.coverage']],
+                                                ['route' => 'reports.absences',       'label' => __('Urlaub & Flex'),         'icon' => 'event_busy',  'modal' => false, 'matches' => ['reports.absences']],
+                                                ['route' => 'reports.sickness',       'label' => __('Krankheiten'),           'icon' => 'sick',        'modal' => false, 'matches' => ['reports.sickness']],
+                                                ['route' => 'reports.qualifications', 'label' => __('Qualifikationen'),       'icon' => 'verified',    'modal' => false, 'matches' => ['reports.qualifications']],
+                                            ],
+                                        ],
+                                        [
+                                            'key'   => 'reports-projects',
+                                            'label' => __('Projekte & Kunden'),
+                                            'icon'  => 'folder_special',
+                                            'items' => [
+                                                ['route' => 'reports.customer-project', 'label' => __('Kunden & Projekte'), 'icon' => 'pie_chart',  'modal' => false, 'matches' => ['reports.customer-project']],
+                                                ['route' => 'reports.project-details',  'label' => __('Projekt-Details'),   'icon' => 'analytics',  'modal' => false, 'matches' => ['reports.project-details']],
+                                                ['route' => 'reports.operations',       'label' => __('Operations'),        'icon' => 'assignment', 'modal' => false, 'matches' => ['reports.operations']],
+                                            ],
+                                        ],
+                                        [
+                                            'key'   => 'reports-resources',
+                                            'label' => __('Ressourcen'),
+                                            'icon'  => 'inventory_2',
+                                            'items' => [
+                                                ['route' => 'reports.fleet',     'label' => __('Fuhrpark'),    'icon' => 'directions_car',       'modal' => false, 'matches' => ['reports.fleet']],
+                                                ['route' => 'reports.materials', 'label' => __('Materialien'), 'icon' => 'inventory',            'modal' => false, 'matches' => ['reports.materials']],
+                                                ['route' => 'reports.on-call',   'label' => __('Notdienst'),   'icon' => 'notifications_active', 'modal' => false, 'matches' => ['reports.on-call']],
+                                            ],
+                                        ],
+                                        [
+                                            'key'   => 'reports-finance',
+                                            'label' => __('Finanzen & Audit'),
+                                            'icon'  => 'request_quote',
+                                            'items' => [
+                                                ['route' => 'reports.billing',        'label' => __('Abrechnung'),      'icon' => 'request_quote', 'modal' => false, 'matches' => ['reports.billing']],
+                                                ['route' => 'reports.audit-activity', 'label' => __('Audit-Aktivität'), 'icon' => 'security',      'modal' => false, 'matches' => ['reports.audit-activity']],
+                                            ],
+                                        ],
                                     ],
                                 ];
                                 $sidebarSections[] = [
@@ -849,7 +884,11 @@
                     <div class="flex flex-col gap-4">
                         @foreach ($sidebarSections as $section)
                             @php
-                                $sectionActive = collect($section['items'])->contains(
+                                $sectionGroups = $section['groups'] ?? null;
+                                $sectionItems  = $sectionGroups
+                                    ? collect($sectionGroups)->flatMap(fn ($g) => $g['items'] ?? [])->all()
+                                    : ($section['items'] ?? []);
+                                $sectionActive = collect($sectionItems)->contains(
                                     fn ($i) => collect($i['matches'] ?? [$i['route']])->contains(fn ($m) => request()->routeIs($m))
                                 );
                             @endphp
@@ -861,20 +900,53 @@
                                     <span data-sidebar-label class="flex-1 truncate">{{ $section['label'] }}</span>
                                     <x-icon name="expand_more" class="sidebar-section-chevron" />
                                 </summary>
-                                <ul class="menu menu-sm w-full gap-0.5 p-0 pt-1">
-                                    @foreach ($section['items'] as $item)
-                                        @php $active = collect($item['matches'] ?? [$item['route']])->contains(fn ($m) => request()->routeIs($m)); @endphp
-                                        <li>
-                                            <a href="{{ route($item['route']) }}"
-                                               @if (! empty($item['modal'])) data-entry-modal-trigger @endif
-                                               class="menu-link flex items-center gap-3 {{ $active ? 'menu-active' : '' }}"
-                                               title="{{ $item['label'] }}">
-                                                <x-icon :name="$item['icon'] ?? 'circle'" />
-                                                <span data-sidebar-label class="truncate transition-opacity duration-150">{{ $item['label'] }}</span>
-                                            </a>
-                                        </li>
-                                    @endforeach
-                                </ul>
+                                @if ($sectionGroups)
+                                    <div class="flex flex-col gap-1 pt-1">
+                                        @foreach ($sectionGroups as $group)
+                                            @php
+                                                $groupActive = collect($group['items'] ?? [])->contains(
+                                                    fn ($i) => collect($i['matches'] ?? [$i['route']])->contains(fn ($m) => request()->routeIs($m))
+                                                );
+                                            @endphp
+                                            <div class="sidebar-subgroup"
+                                                 data-sidebar-subgroup-key="{{ $group['key'] ?? '' }}">
+                                                <div class="sidebar-subgroup-label flex items-center gap-2 px-2 pt-2 pb-1 text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                                                    <x-icon :name="$group['icon'] ?? 'label'" class="text-[0.95rem] opacity-70" />
+                                                    <span data-sidebar-label class="truncate">{{ $group['label'] }}</span>
+                                                </div>
+                                                <ul class="menu menu-sm w-full gap-0.5 p-0">
+                                                    @foreach (($group['items'] ?? []) as $item)
+                                                        @php $active = collect($item['matches'] ?? [$item['route']])->contains(fn ($m) => request()->routeIs($m)); @endphp
+                                                        <li>
+                                                            <a href="{{ route($item['route']) }}"
+                                                               @if (! empty($item['modal'])) data-entry-modal-trigger @endif
+                                                               class="menu-link flex items-center gap-3 {{ $active ? 'menu-active' : '' }}"
+                                                               title="{{ $item['label'] }}">
+                                                                <x-icon :name="$item['icon'] ?? 'circle'" />
+                                                                <span data-sidebar-label class="truncate transition-opacity duration-150">{{ $item['label'] }}</span>
+                                                            </a>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <ul class="menu menu-sm w-full gap-0.5 p-0 pt-1">
+                                        @foreach ($section['items'] as $item)
+                                            @php $active = collect($item['matches'] ?? [$item['route']])->contains(fn ($m) => request()->routeIs($m)); @endphp
+                                            <li>
+                                                <a href="{{ route($item['route']) }}"
+                                                   @if (! empty($item['modal'])) data-entry-modal-trigger @endif
+                                                   class="menu-link flex items-center gap-3 {{ $active ? 'menu-active' : '' }}"
+                                                   title="{{ $item['label'] }}">
+                                                    <x-icon :name="$item['icon'] ?? 'circle'" />
+                                                    <span data-sidebar-label class="truncate transition-opacity duration-150">{{ $item['label'] }}</span>
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @endif
                             </details>
                         @endforeach
                     </div>

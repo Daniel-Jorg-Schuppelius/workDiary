@@ -32,13 +32,13 @@
         </x-slot:extra>
     </x-filter-bar>
 
-    <div class="stats stats-vertical sm:stats-horizontal w-full rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <div class="stat"><div class="stat-title">{{ __('Soll') }}</div><div class="stat-value text-2xl">{{ $fmtMin($totals['target']) }}</div></div>
-        <div class="stat"><div class="stat-title">{{ __('Anwesend') }}</div><div class="stat-value text-2xl">{{ $fmtMin($totals['attendance']) }}</div></div>
-        <div class="stat"><div class="stat-title">{{ __('Gebucht') }}</div><div class="stat-value text-2xl">{{ $fmtMin($totals['time_entry']) }}</div></div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Saldo') }}</div>
-            <div class="stat-value text-2xl {{ $totals['variance'] < 0 ? 'text-error' : ($totals['variance'] > 0 ? 'text-success' : '') }}">{{ $fmtMin($totals['variance']) }}</div>
+    <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Soll') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $fmtMin($totals['target']) }}</div></div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Anwesend') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $fmtMin($totals['attendance']) }}</div></div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Gebucht') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $fmtMin($totals['time_entry']) }}</div></div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Saldo') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold {{ $totals['variance'] < 0 ? 'text-error' : ($totals['variance'] > 0 ? 'text-success' : '') }}">{{ $fmtMin($totals['variance']) }}</div>
         </div>
     </div>
 

@@ -36,7 +36,7 @@ class ProjectController extends Controller
         $projects = $query->orderByRaw("CASE status WHEN 'active' THEN 0 WHEN 'paused' THEN 1 ELSE 2 END")
             ->orderBy('name')
             ->select(['id', 'name', 'slug', 'color', 'status', 'description', 'starts_on', 'ends_on', 'parent_id', 'customer_id'])
-            ->with(['parent:id,name', 'customer:id,name'])
+            ->with(['parent:id,name', 'customer:id,name,slug'])
             ->get();
 
         $projectIds = $projects->pluck('id')->all();

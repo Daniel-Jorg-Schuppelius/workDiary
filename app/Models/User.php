@@ -97,19 +97,17 @@ class User extends Authenticatable
         'preferences',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'must_change_password' => 'boolean',
-            'hourly_rate' => 'decimal:2',
-            'internal_rate' => 'decimal:2',
-            'home_lat' => 'decimal:7',
-            'home_lng' => 'decimal:7',
-            'preferences' => 'array',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'must_change_password' => 'boolean',
+        'hourly_rate' => 'decimal:2',
+        'internal_rate' => 'decimal:2',
+        'home_lat' => 'decimal:7',
+        'home_lng' => 'decimal:7',
+        'preferences' => 'array',
+    ];
 
     /** @return BelongsTo<Organization, $this> */
     public function organization(): BelongsTo

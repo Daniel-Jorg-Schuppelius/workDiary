@@ -49,7 +49,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $magic_token
  * @property Carbon|null $magic_expires_at
  */
-class Timesheet extends Model {
+class Timesheet extends Model
+{
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
@@ -58,7 +59,8 @@ class Timesheet extends Model {
     use HasFactory;
 
     /** @param array<string, mixed> $attributes */
-    public function __construct(array $attributes = []) {
+    public function __construct(array $attributes = [])
+    {
         parent::__construct($attributes);
     }
 
@@ -111,47 +113,52 @@ class Timesheet extends Model {
         'magic_expires_at',
     ];
 
-    protected function casts(): array {
-        return [
-            'work_date' => 'date',
-            'signed_at' => 'datetime',
-            'locked_at' => 'datetime',
-            'magic_expires_at' => 'datetime',
-            'totals_minutes' => 'integer',
-            'attendance_total_minutes' => 'integer',
-            'entries_total_minutes' => 'integer',
-            'untracked_minutes' => 'integer',
-            'totals_material_net' => 'decimal:2',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'work_date' => 'date',
+        'signed_at' => 'datetime',
+        'locked_at' => 'datetime',
+        'magic_expires_at' => 'datetime',
+        'totals_minutes' => 'integer',
+        'attendance_total_minutes' => 'integer',
+        'entries_total_minutes' => 'integer',
+        'untracked_minutes' => 'integer',
+        'totals_material_net' => 'decimal:2',
+    ];
 
     /** @return BelongsTo<Project, $this> */
-    public function project(): BelongsTo {
+    public function project(): BelongsTo
+    {
         return $this->belongsTo(Project::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo {
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function locker(): BelongsTo {
+    public function locker(): BelongsTo
+    {
         return $this->belongsTo(User::class, 'locked_by');
     }
 
     /** @return BelongsTo<Attachment, $this> */
-    public function signatureAttachment(): BelongsTo {
+    public function signatureAttachment(): BelongsTo
+    {
         return $this->belongsTo(Attachment::class, 'signature_attachment_id');
     }
 
     /** @return HasMany<TimeEntry, $this> */
-    public function entries(): HasMany {
+    public function entries(): HasMany
+    {
         return $this->hasMany(TimeEntry::class)->orderBy('started_at')->orderBy('id');
     }
 
     /** @return HasMany<MaterialUsage, $this> */
-    public function materialUsages(): HasMany {
+    public function materialUsages(): HasMany
+    {
         return $this->hasMany(MaterialUsage::class)->orderBy('id');
     }
 
@@ -159,7 +166,8 @@ class Timesheet extends Model {
      * @param  Builder<Timesheet>  $q
      * @return Builder<Timesheet>
      */
-    public function scopeForUser(Builder $q, int $userId): Builder {
+    public function scopeForUser(Builder $q, int $userId): Builder
+    {
         return $q->where('user_id', $userId);
     }
 
@@ -167,7 +175,8 @@ class Timesheet extends Model {
      * @param  Builder<Timesheet>  $q
      * @return Builder<Timesheet>
      */
-    public function scopeInRange(Builder $q, CarbonInterface $from, CarbonInterface $to): Builder {
+    public function scopeInRange(Builder $q, CarbonInterface $from, CarbonInterface $to): Builder
+    {
         return $q->whereBetween('work_date', [$from->toDateString(), $to->toDateString()]);
     }
 
@@ -175,23 +184,28 @@ class Timesheet extends Model {
      * @param  Builder<Timesheet>  $q
      * @return Builder<Timesheet>
      */
-    public function scopeUnsigned(Builder $q): Builder {
+    public function scopeUnsigned(Builder $q): Builder
+    {
         return $q->whereIn('status', [self::STATUS_DRAFT, self::STATUS_SUBMITTED]);
     }
 
-    public function isSigned(): bool {
+    public function isSigned(): bool
+    {
         return in_array($this->status, [self::STATUS_SIGNED, self::STATUS_LOCKED], true);
     }
 
-    public function isLocked(): bool {
+    public function isLocked(): bool
+    {
         return $this->status === self::STATUS_LOCKED;
     }
 
-    public function canEdit(): bool {
+    public function canEdit(): bool
+    {
         return ! $this->isSigned();
     }
 
-    public function recalcTotals(): void {
+    public function recalcTotals(): void
+    {
         $this->loadMissing(['entries', 'materialUsages']);
         $minutes = (int) $this->entries->sum('minutes');
         $material = (float) $this->materialUsages->sum('line_total_net');
@@ -208,7 +222,8 @@ class Timesheet extends Model {
      * Historisch wurde in Blade/PDF `total_work_minutes` verwendet, im Modell
      * wird jedoch `totals_minutes`/`entries_total_minutes` persistiert.
      */
-    public function getTotalWorkMinutesAttribute(): int {
+    public function getTotalWorkMinutesAttribute(): int
+    {
         if ($this->relationLoaded('entries')) {
             return (int) $this->entries->sum('minutes');
         }
@@ -219,7 +234,8 @@ class Timesheet extends Model {
     /**
      * Dynamische Pausen-Summe über die Zeiteinträge.
      */
-    public function getTotalBreakMinutesAttribute(): int {
+    public function getTotalBreakMinutesAttribute(): int
+    {
         if ($this->relationLoaded('entries')) {
             return (int) $this->entries->sum('break_minutes');
         }
@@ -230,7 +246,8 @@ class Timesheet extends Model {
     /**
      * Backward-compatible Alias für `totals_material_net`.
      */
-    public function getTotalMaterialNetAttribute(): float {
+    public function getTotalMaterialNetAttribute(): float
+    {
         if ($this->relationLoaded('materialUsages')) {
             return (float) $this->materialUsages->sum('line_total_net');
         }
@@ -238,11 +255,13 @@ class Timesheet extends Model {
         return (float) $this->totals_material_net;
     }
 
-    public function isPersonalDay(): bool {
+    public function isPersonalDay(): bool
+    {
         return $this->kind === self::KIND_PERSONAL_DAY;
     }
 
-    public function statusLabel(): string {
+    public function statusLabel(): string
+    {
         return match ($this->status) {
             self::STATUS_DRAFT => __('Entwurf'),
             self::STATUS_SUBMITTED => __('Eingereicht'),
@@ -252,7 +271,8 @@ class Timesheet extends Model {
         };
     }
 
-    public function statusTone(): string {
+    public function statusTone(): string
+    {
         return match ($this->status) {
             self::STATUS_DRAFT => 'neutral',
             self::STATUS_SUBMITTED => 'info',
@@ -266,7 +286,8 @@ class Timesheet extends Model {
      * Für die Anzeige gilt ein Stundenzettel nur dann als signiert,
      * wenn nachvollziehbare Signaturdaten vorhanden sind.
      */
-    public function hasSignatureEvidence(): bool {
+    public function hasSignatureEvidence(): bool
+    {
         return $this->signed_at !== null
             && ($this->signature_attachment_id !== null || ! empty($this->signature_hash));
     }

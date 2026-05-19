@@ -31,10 +31,10 @@
         </x-slot:extra>
     </x-filter-bar>
 
-    <div class="stats stats-vertical sm:stats-horizontal w-full rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <div class="stat"><div class="stat-title">{{ __('Events Σ') }}</div><div class="stat-value text-2xl">{{ $totals['total'] }}</div></div>
-        <div class="stat"><div class="stat-title">{{ __('Aktive User') }}</div><div class="stat-value text-2xl">{{ $totals['users'] }}</div></div>
-        <div class="stat"><div class="stat-title">{{ __('Entity-Typen') }}</div><div class="stat-value text-2xl">{{ $totals['types'] }}</div></div>
+    <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Events Σ') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['total'] }}</div></div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Aktive User') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['users'] }}</div></div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Entity-Typen') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['types'] }}</div></div>
     </div>
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">

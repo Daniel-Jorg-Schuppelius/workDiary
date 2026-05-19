@@ -52,15 +52,13 @@ class LexofficeArticle extends Model
         'archived_at',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'net_unit_price' => 'decimal:4',
-            'vat_rate' => 'decimal:2',
-            'synced_at' => 'datetime',
-            'archived_at' => 'datetime',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'net_unit_price' => 'decimal:4',
+        'vat_rate' => 'decimal:2',
+        'synced_at' => 'datetime',
+        'archived_at' => 'datetime',
+    ];
 
     /**
      * @param  Builder<self>  $query

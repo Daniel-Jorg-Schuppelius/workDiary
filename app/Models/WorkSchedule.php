@@ -66,18 +66,16 @@ class WorkSchedule extends Model
         'valid_to',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'working_days' => 'array',
-            'weekly_minutes' => 'integer',
-            'daily_target_minutes' => 'integer',
-            'break_after_minutes' => 'integer',
-            'break_minutes' => 'integer',
-            'valid_from' => 'date',
-            'valid_to' => 'date',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'working_days' => 'array',
+        'weekly_minutes' => 'integer',
+        'daily_target_minutes' => 'integer',
+        'break_after_minutes' => 'integer',
+        'break_minutes' => 'integer',
+        'valid_from' => 'date',
+        'valid_to' => 'date',
+    ];
 
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo

@@ -32,27 +32,27 @@
         </x-slot:extra>
     </x-filter-bar>
 
-    <div class="stats stats-vertical sm:stats-horizontal w-full rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <div class="stat">
-            <div class="stat-title">{{ __('Mitarbeiter') }}</div>
-            <div class="stat-value text-2xl">{{ $totals['users'] }}</div>
+    <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['users'] }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Urlaub (Werktage)') }}</div>
-            <div class="stat-value text-2xl">{{ $totals['vacation_days'] }}</div>
-            <div class="stat-desc">{{ $totals['pending_days'] }} {{ __('ausstehend') }}</div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Urlaub (Werktage)') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['vacation_days'] }}</div>
+            <div class="mt-1 text-xs text-base-content/60">{{ $totals['pending_days'] }} {{ __('ausstehend') }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Krank') }}</div>
-            <div class="stat-value text-2xl">{{ $totals['sick_days'] }}</div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Krank') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['sick_days'] }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Sonder / Unbezahlt') }}</div>
-            <div class="stat-value text-2xl">{{ $totals['special_days'] }} / {{ $totals['unpaid_days'] }}</div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Sonder / Unbezahlt') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['special_days'] }} / {{ $totals['unpaid_days'] }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Flex-Änderung Σ') }}</div>
-            <div class="stat-value text-2xl {{ $totals['flex_change_minutes'] < 0 ? 'text-error' : ($totals['flex_change_minutes'] > 0 ? 'text-success' : '') }}">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Flex-Änderung Σ') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold {{ $totals['flex_change_minutes'] < 0 ? 'text-error' : ($totals['flex_change_minutes'] > 0 ? 'text-success' : '') }}">
                 {{ $fmtMin($totals['flex_change_minutes']) }}
             </div>
         </div>

@@ -28,6 +28,8 @@ class SignatureService
 
     /**
      * Verarbeitet ein Base64-codiertes PNG aus dem Canvas und persistiert es als Attachment.
+     *
+     * @param  array{customer_name?: string, customer_role?: string|null, customer_email?: string|null}  $customer
      */
     public function sign(Timesheet $timesheet, string $base64Png, array $customer, ?Request $request = null, ?User $signer = null): Timesheet
     {
@@ -47,7 +49,7 @@ class SignatureService
 
         /** @var Attachment $attachment */
         $attachment = $timesheet->attachments()->create([
-            'user_id' => $signer?->id ?? Auth::id(),
+            'user_id' => $signer !== null ? $signer->id : Auth::id(),
             'disk' => 'local',
             'path' => $path,
             'original_name' => 'signature.png',

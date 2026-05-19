@@ -74,12 +74,10 @@ class ScheduledShift extends Model
         'updated_by',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'date' => 'date:Y-m-d',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'date' => 'date:Y-m-d',
+    ];
 
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo

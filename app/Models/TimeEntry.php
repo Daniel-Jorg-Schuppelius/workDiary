@@ -97,6 +97,31 @@ class TimeEntry extends Model
         self::ACTIVITY_OTHER,
     ];
 
+    /**
+     * Liefert ein lokalisiertes Label für einen activity_type-Wert.
+     * Unbekannte Werte werden capitalized zurückgegeben, damit die UI nicht
+     * mehr den rohen Slug wie "project" anzeigt.
+     */
+    public static function activityLabel(?string $type): string
+    {
+        $type = (string) $type;
+        $label = match ($type) {
+            self::ACTIVITY_PROJECT => __('Projekt'),
+            self::ACTIVITY_ADMIN => __('Verwaltung'),
+            self::ACTIVITY_TRAINING => __('Schulung'),
+            self::ACTIVITY_MEETING => __('Besprechung'),
+            self::ACTIVITY_INTERNAL => __('Intern'),
+            self::ACTIVITY_TRAVEL => __('Reise'),
+            self::ACTIVITY_BREAK => __('Pause'),
+            self::ACTIVITY_ABSENCE => __('Abwesenheit'),
+            self::ACTIVITY_STANDBY => __('Bereitschaft'),
+            self::ACTIVITY_OTHER => __('Sonstiges'),
+            default => $type === '' ? __('Unbekannt') : ucfirst($type),
+        };
+
+        return $label;
+    }
+
     protected $fillable = [
         'organization_id',
         'project_id',
@@ -122,22 +147,20 @@ class TimeEntry extends Model
         'exported',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'date' => 'date',
-            'started_at' => 'datetime',
-            'ended_at' => 'datetime',
-            'minutes' => 'integer',
-            'break_minutes' => 'integer',
-            'billable' => 'boolean',
-            'exported' => 'boolean',
-            'hourly_rate' => 'decimal:2',
-            'fixed_rate' => 'decimal:2',
-            'rate' => 'decimal:2',
-            'internal_rate' => 'decimal:2',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'date' => 'date',
+        'started_at' => 'datetime',
+        'ended_at' => 'datetime',
+        'minutes' => 'integer',
+        'break_minutes' => 'integer',
+        'billable' => 'boolean',
+        'exported' => 'boolean',
+        'hourly_rate' => 'decimal:2',
+        'fixed_rate' => 'decimal:2',
+        'rate' => 'decimal:2',
+        'internal_rate' => 'decimal:2',
+    ];
 
     protected static function booted(): void
     {

@@ -89,7 +89,7 @@ class FlexCalculator
      */
     public function monthlyBalance(User $user, int $year, int $month): array
     {
-        $start = CarbonImmutable::create($year, $month, 1)->startOfMonth();
+        $start = CarbonImmutable::createFromDate($year, $month, 1)->startOfMonth();
         $end = $start->endOfMonth();
 
         $target = 0;

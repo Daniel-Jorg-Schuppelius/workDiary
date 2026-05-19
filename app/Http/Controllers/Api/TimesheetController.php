@@ -64,7 +64,7 @@ class TimesheetController extends Controller
         Gate::authorize('update', $timesheet);
         $timesheet->update($request->validated());
 
-        return new TimesheetResource($timesheet->fresh(['entries', 'materialUsages']));
+        return new TimesheetResource($timesheet->fresh(['entries', 'materialUsages']) ?? $timesheet);
     }
 
     public function destroy(Timesheet $timesheet): Response
@@ -94,7 +94,7 @@ class TimesheetController extends Controller
         ]);
         $svc->sign($timesheet, $data['signature'], $data, $request);
 
-        return new TimesheetResource($timesheet->fresh());
+        return new TimesheetResource($timesheet->fresh() ?? $timesheet);
     }
 
     public function pdf(Timesheet $timesheet, PdfRenderer $r): Response

@@ -80,16 +80,14 @@ class SickLeave extends Model
         'cancel_reason',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'start_date' => 'date',
-            'end_date' => 'date',
-            'kasse_notified_at' => 'datetime',
-            'reported_at' => 'datetime',
-            'cancelled_at' => 'datetime',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'kasse_notified_at' => 'datetime',
+        'reported_at' => 'datetime',
+        'cancelled_at' => 'datetime',
+    ];
 
     // ── Relations ──────────────────────────────────────────────────────────
 

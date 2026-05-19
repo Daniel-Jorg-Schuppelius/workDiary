@@ -90,21 +90,19 @@ class Project extends Model
         'global_activities',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'starts_on' => 'date',
-            'ends_on' => 'date',
-            'archived_at' => 'datetime',
-            'hourly_rate' => 'decimal:2',
-            'internal_rate' => 'decimal:2',
-            'budget' => 'decimal:2',
-            'time_budget' => 'integer',
-            'billable' => 'boolean',
-            'global_activities' => 'boolean',
-            'is_default' => 'boolean',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'starts_on' => 'date',
+        'ends_on' => 'date',
+        'archived_at' => 'datetime',
+        'hourly_rate' => 'decimal:2',
+        'internal_rate' => 'decimal:2',
+        'budget' => 'decimal:2',
+        'time_budget' => 'integer',
+        'billable' => 'boolean',
+        'global_activities' => 'boolean',
+        'is_default' => 'boolean',
+    ];
 
     /**
      * @param  Builder<self>  $query
@@ -133,6 +131,52 @@ class Project extends Model
         return $query->whereNull('parent_id');
     }
 
+    /**
+     * Sprechende URLs: "<kunde-slug>/<projekt-slug>". Sub-Projekte ohne
+     * eigenen Kunden (über den Parent geerbt) und interne Projekte ohne
+     * Kunden landen unter dem Sentinel "intern".
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
+    public function getRouteKey(): string
+    {
+        $customerSlug = $this->customer?->slug ?: 'intern';
+
+        return $customerSlug.'/'.((string) $this->slug);
+    }
+
+    /**
+     * Akzeptiert:
+     *  - numerische ID (Backward-Compat für API/Bookmarks)
+     *  - zusammengesetzte URL "<kunde-slug>/<projekt-slug>" inkl. Sentinel "intern"
+     *  - reinen Projekt-Slug (Fallback, sucht beim ersten Treffer)
+     */
+    public function resolveRouteBinding($value, $field = null): ?Model
+    {
+        $value = (string) $value;
+
+        if (ctype_digit($value)) {
+            return $this->newQuery()->whereKey((int) $value)->first();
+        }
+
+        if (str_contains($value, '/')) {
+            [$customerPart, $projectPart] = explode('/', $value, 2);
+            $query = $this->newQuery()->where('slug', $projectPart);
+            if ($customerPart === 'intern') {
+                $query->whereNull('customer_id');
+            } else {
+                $query->whereHas('customer', fn ($q) => $q->where('slug', $customerPart));
+            }
+
+            return $query->first();
+        }
+
+        return $this->newQuery()->where($field ?? 'slug', $value)->first();
+    }
+
     protected static function booted(): void
     {
         static::saving(function (Project $project): void {
@@ -154,7 +198,7 @@ class Project extends Model
             }
 
             if (! $project->slug) {
-                $project->slug = static::uniqueSlug($project->name);
+                $project->slug = static::uniqueSlug($project->name, $project->customer_id);
             }
         });
 
@@ -214,12 +258,13 @@ class Project extends Model
         });
     }
 
-    public static function uniqueSlug(string $name, ?int $ignoreId = null): string
+    public static function uniqueSlug(string $name, ?int $customerId = null, ?int $ignoreId = null): string
     {
         $base = Str::slug($name) ?: 'project';
         $slug = $base;
         $i = 2;
         while (static::query()
+            ->where('customer_id', $customerId)
             ->where('slug', $slug)
             ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
             ->exists()

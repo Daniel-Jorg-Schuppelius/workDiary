@@ -11,83 +11,72 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attachment;
 use App\Models\User;
+use App\Services\Attachments\ImageMetaUploader;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
-    public function edit(Request $request): View
-    {
-        return view('account._profile_dialog', [
-            'user' => Auth::user(),
-            'isDialog' => true,
-        ]);
-    }
+    public function __construct(private readonly ImageMetaUploader $avatarUploader) {}
 
-    /**
-     * Vollansicht der Profileinstellungen mit Avatar-Upload und
-     * persönlichen Präferenzen. Der Modal-Endpoint (edit) bleibt für
-     * den Schnellzugriff aus dem Header erhalten.
-     */
-    public function settings(Request $request): View
+    public function edit(): View
     {
         /** @var User $user */
-        $user = Auth::user();
+        $user = $this->authUser();
         $user->loadMissing('attachments');
 
-        return view('account.settings', [
+        return view('account._profile_dialog', [
             'user' => $user,
+            'isDialog' => true,
         ]);
     }
 
     public function update(Request $request): RedirectResponse
     {
         /** @var User $user */
-        $user = Auth::user();
+        $user = $this->authUser();
+
+        $themes = (array) config('personalization.themes', []);
+        $startpages = (array) config('personalization.startpages', []);
+        $avatarMaxKb = (int) config('branding.limits.avatar_kb', 1024);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-        ]);
-
-        $user->fill($data)->save();
-
-        return back()->with('success', __('Profil aktualisiert.'));
-    }
-
-    /**
-     * Speichert persönliche Präferenzen (Theme, Locale, Format,
-     * Startseite). Werte aus der Whitelist in `config/personalization.php`
-     * werden validiert; alles andere wird verworfen.
-     */
-    public function updatePreferences(Request $request): RedirectResponse
-    {
-        /** @var User $user */
-        $user = Auth::user();
-
-        $themes = (array) config('personalization.themes', []);
-        $startpages = (array) config('personalization.startpages', []);
-
-        $data = $request->validate([
+            'preferences' => ['sometimes', 'array'],
             'preferences.theme' => ['nullable', 'string', Rule::in($themes)],
             'preferences.locale' => ['nullable', 'string', 'max:10'],
             'preferences.date_format' => ['nullable', 'string', 'max:32'],
             'preferences.time_format' => ['nullable', 'string', 'max:32'],
             'preferences.startpage' => ['nullable', 'string', Rule::in($startpages)],
+            'avatar' => ['nullable', 'file'],
+            'remove_avatar' => ['nullable', 'boolean'],
         ]);
 
-        $clean = array_filter(
-            (array) ($data['preferences'] ?? []),
-            static fn ($v) => $v !== null && $v !== ''
-        );
+        $user->fill(['name' => $data['name'], 'email' => $data['email']]);
 
-        $user->preferences = $clean === [] ? null : $clean;
+        if ($request->has('preferences')) {
+            $clean = array_filter(
+                (array) ($data['preferences'] ?? []),
+                static fn ($v) => $v !== null && $v !== ''
+            );
+            $user->preferences = $clean === [] ? null : $clean;
+        }
+
         $user->save();
 
-        return back()->with('success', __('Präferenzen gespeichert.'));
+        $avatar = $request->file('avatar');
+        if ($avatar instanceof UploadedFile) {
+            $this->avatarUploader->replace($user, Attachment::META_AVATAR, $avatar, $avatarMaxKb, 'avatar');
+        } elseif ($request->boolean('remove_avatar')) {
+            $this->avatarUploader->delete($user, Attachment::META_AVATAR);
+        }
+
+        return back()->with('success', __('Profil aktualisiert.'));
     }
 }

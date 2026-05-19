@@ -49,12 +49,10 @@ class Qualification extends Model
         'created_by',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'is_active' => 'boolean',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
 
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo

@@ -8,35 +8,90 @@
  * License      : AGPL-3.0-or-later
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  *
- * Diese Datei wird durch `php artisan license:seal` regeneriert.
- * Manuelle Änderungen gehen beim nächsten Sealing verloren.
+ * Schmaler Reader für die durch `php artisan license:seal` erzeugte
+ * Seal-Datendatei. Da die Klasse selbst keine sealing-spezifischen
+ * Konstanten mehr trägt, verändert sich ihr Hash beim Sealing nicht
+ * und sie darf Teil der versiegelten Dateien sein.
  *
- * - PUBLIC_KEY: hartkodierter Ed25519 Public Key (base64url). Hat Vorrang vor
- *   der env-Konfiguration, damit ein Patch der .env nicht reicht, um eigene
- *   Lizenzen einzuschleusen.
- * - FILES: sha256-Hashes der lizenzrelevanten Dateien. Beim Boot wird verifi-
- *   ziert, dass keine davon manipuliert wurde.
- * - SEALED_AT: Zeitstempel der Versiegelung (nur informativ).
- *
- * Im unversiegelten Zustand (alle Werte leer) verhält sich die App wie zuvor
- * und fällt auf die env-Konfiguration zurück.
+ * Im unversiegelten Zustand existiert die Datendatei nicht oder ist
+ * leer; die App fällt dann auf die env-Konfiguration zurück.
  */
 
 namespace App\Services\Licensing;
 
 final class LicenseSeal
 {
-    public const PUBLIC_KEY = '';
+    /** @var array{public_key: string, files: array<string, string>, sealed_at: string}|null */
+    private static ?array $cache = null;
+
+    public static function path(): string
+    {
+        return storage_path('app/'.(string) config('license.seal_path', 'private/license-seal.php'));
+    }
+
+    public static function publicKey(): string
+    {
+        return self::data()['public_key'];
+    }
 
     /**
-     * @var array<string, string> relativer Pfad => sha256-hex
+     * @return array<string, string> relativer Pfad => sha256-hex
      */
-    public const FILES = [];
+    public static function files(): array
+    {
+        return self::data()['files'];
+    }
 
-    public const SEALED_AT = '';
+    public static function sealedAt(): string
+    {
+        return self::data()['sealed_at'];
+    }
 
     public static function isSealed(): bool
     {
-        return self::PUBLIC_KEY !== '';
+        return self::publicKey() !== '';
+    }
+
+    public static function flushCache(): void
+    {
+        self::$cache = null;
+    }
+
+    /**
+     * @return array{public_key: string, files: array<string, string>, sealed_at: string}
+     */
+    private static function data(): array
+    {
+        if (self::$cache !== null) {
+            return self::$cache;
+        }
+
+        $path = self::path();
+        if (is_file($path)) {
+            /** @var mixed $loaded */
+            $loaded = require $path;
+            if (
+                is_array($loaded)
+                && isset($loaded['public_key'], $loaded['files'], $loaded['sealed_at'])
+                && is_string($loaded['public_key'])
+                && is_array($loaded['files'])
+                && is_string($loaded['sealed_at'])
+            ) {
+                /** @var array<string, string> $files */
+                $files = array_filter(
+                    $loaded['files'],
+                    static fn ($value, $key): bool => is_string($key) && is_string($value),
+                    ARRAY_FILTER_USE_BOTH,
+                );
+
+                return self::$cache = [
+                    'public_key' => $loaded['public_key'],
+                    'files' => $files,
+                    'sealed_at' => $loaded['sealed_at'],
+                ];
+            }
+        }
+
+        return self::$cache = ['public_key' => '', 'files' => [], 'sealed_at' => ''];
     }
 }

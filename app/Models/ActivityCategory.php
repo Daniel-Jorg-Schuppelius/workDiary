@@ -87,15 +87,13 @@ class ActivityCategory extends Model
         'description',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'billable_default' => 'boolean',
-            'counts_as_work' => 'boolean',
-            'active' => 'boolean',
-            'sort_order' => 'integer',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'billable_default' => 'boolean',
+        'counts_as_work' => 'boolean',
+        'active' => 'boolean',
+        'sort_order' => 'integer',
+    ];
 
     /** @return HasMany<TimeEntry, $this> */
     public function timeEntries(): HasMany

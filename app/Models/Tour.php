@@ -92,18 +92,16 @@ class Tour extends Model
         'updated_by',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'tour_date' => 'date',
-            'start_lat' => 'decimal:7',
-            'start_lng' => 'decimal:7',
-            'end_lat' => 'decimal:7',
-            'end_lng' => 'decimal:7',
-            'planned_distance_km' => 'decimal:2',
-            'planned_duration_minutes' => 'integer',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'tour_date' => 'date',
+        'start_lat' => 'decimal:7',
+        'start_lng' => 'decimal:7',
+        'end_lat' => 'decimal:7',
+        'end_lng' => 'decimal:7',
+        'planned_distance_km' => 'decimal:2',
+        'planned_duration_minutes' => 'integer',
+    ];
 
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo

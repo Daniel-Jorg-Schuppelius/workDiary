@@ -11,23 +11,28 @@
 
 namespace App\Console\Commands\License;
 
+use App\Services\Licensing\LicenseSeal;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
 class SealCommand extends Command
 {
     protected $signature = 'license:seal
-        {--public-key= : Ed25519 Public Key (base64url). Fallback: env(LICENSE_PUBLIC_KEY)}
-        {--unseal : Setzt die Seal-Datei zurück (Public Key + Hashes leeren).}';
+        {--public-key= : Ed25519 Public Key (base64url). Fallback: LICENSE_PUBLIC_KEY}
+        {--unseal : Entfernt die Seal-Datendatei (App fällt auf env-Konfig zurück).}';
 
-    protected $description = 'Versiegelt Public Key und Datei-Hashes der lizenzrelevanten Dateien in LicenseSeal.';
+    protected $description = 'Versiegelt Public Key und Datei-Hashes der lizenzrelevanten Dateien in der Seal-Datendatei.';
 
     /**
-     * Relativ zum Projekt-Root. Die LicenseSeal.php selbst darf hier NICHT
-     * stehen — sonst ändert sich der Hash mit jedem Sealing.
+     * Relativ zum Projekt-Root. LicenseSeal.php ist hier enthalten — der
+     * Klassen-Code ist stabil (keine generierten Konstanten mehr) und kann
+     * deshalb mit-versiegelt werden.
+     *
+     * @var list<string>
      */
     private const SEALED_FILES = [
         'app/Services/Licensing/LicenseService.php',
+        'app/Services/Licensing/LicenseSeal.php',
         'app/Services/Licensing/LicensePayload.php',
         'app/Services/Licensing/LicenseResult.php',
         'app/Services/Licensing/LicenseStatus.php',
@@ -36,18 +41,23 @@ class SealCommand extends Command
         'config/license.php',
     ];
 
-    private const SEAL_PATH = 'app/Services/Licensing/LicenseSeal.php';
-
     public function handle(): int
     {
+        $sealPath = LicenseSeal::path();
+
         if ($this->option('unseal')) {
-            $this->writeSeal('', [], '');
-            $this->info('Seal zurückgesetzt: '.self::SEAL_PATH);
+            if (is_file($sealPath) && ! @unlink($sealPath)) {
+                $this->error('Seal-Datei konnte nicht entfernt werden: '.$sealPath);
+
+                return self::FAILURE;
+            }
+            LicenseSeal::flushCache();
+            $this->info('Seal entfernt: '.$sealPath);
 
             return self::SUCCESS;
         }
 
-        $publicKey = (string) ($this->option('public-key') ?? env('LICENSE_PUBLIC_KEY', ''));
+        $publicKey = (string) ($this->option('public-key') ?? config('license.public_key', ''));
         if ($publicKey === '') {
             $this->error('Kein Public Key übergeben. Nutze --public-key=... oder setze LICENSE_PUBLIC_KEY.');
 
@@ -72,9 +82,10 @@ class SealCommand extends Command
         }
 
         $sealedAt = CarbonImmutable::now()->toIso8601String();
-        $this->writeSeal($publicKey, $hashes, $sealedAt);
+        $this->writeSeal($sealPath, $publicKey, $hashes, $sealedAt);
+        LicenseSeal::flushCache();
 
-        $this->info('Seal geschrieben: '.self::SEAL_PATH);
+        $this->info('Seal geschrieben: '.$sealPath);
         $this->line('  Public Key: '.substr($publicKey, 0, 16).'…');
         $this->line('  Hashes: '.count($hashes).' Datei(en)');
         $this->line('  Sealed at: '.$sealedAt);
@@ -85,65 +96,24 @@ class SealCommand extends Command
     /**
      * @param  array<string, string>  $hashes
      */
-    private function writeSeal(string $publicKey, array $hashes, string $sealedAt): void
+    private function writeSeal(string $path, string $publicKey, array $hashes, string $sealedAt): void
     {
-        $filesBlock = $this->renderFilesBlock($hashes);
-        $publicKeyEscaped = addslashes($publicKey);
-        $sealedAtEscaped = addslashes($sealedAt);
+        $directory = dirname($path);
+        if (! is_dir($directory) && ! @mkdir($directory, 0700, true) && ! is_dir($directory)) {
+            throw new \RuntimeException('Seal-Verzeichnis konnte nicht angelegt werden: '.$directory);
+        }
 
-        $lines = [
-            '<?php',
-            '',
-            '/*',
-            ' * Created on   : Mon May 18 2026',
-            ' * Author       : Daniel Jörg Schuppelius',
-            ' * Author Uri   : https://schuppelius.org',
-            ' * Filename     : LicenseSeal.php',
-            ' * License      : AGPL-3.0-or-later',
-            ' * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html',
-            ' *',
-            ' * Generiert durch `php artisan license:seal`. Nicht manuell bearbeiten.',
-            ' */',
-            '',
-            'namespace App\\Services\\Licensing;',
-            '',
-            'final class LicenseSeal',
-            '{',
-            "    public const PUBLIC_KEY = '".$publicKeyEscaped."';",
-            '',
-            '    /**',
-            '     * @var array<string, string> relativer Pfad => sha256-hex',
-            '     */',
-            $filesBlock,
-            '',
-            "    public const SEALED_AT = '".$sealedAtEscaped."';",
-            '',
-            '    public static function isSealed(): bool',
-            '    {',
-            "        return self::PUBLIC_KEY !== '';",
-            '    }',
-            '}',
-            '',
+        $payload = [
+            'public_key' => $publicKey,
+            'files' => $hashes,
+            'sealed_at' => $sealedAt,
         ];
 
-        file_put_contents(base_path(self::SEAL_PATH), implode("\n", $lines));
-    }
+        $content = "<?php\n\n"
+            ."// Generiert durch `php artisan license:seal`. Nicht manuell bearbeiten.\n\n"
+            .'return '.var_export($payload, true).";\n";
 
-    /**
-     * @param  array<string, string>  $hashes
-     */
-    private function renderFilesBlock(array $hashes): string
-    {
-        if ($hashes === []) {
-            return '    public const FILES = [];';
-        }
-
-        $lines = ['    public const FILES = ['];
-        foreach ($hashes as $path => $hash) {
-            $lines[] = "        '".addslashes($path)."' => '".$hash."',";
-        }
-        $lines[] = '    ];';
-
-        return implode("\n", $lines);
+        file_put_contents($path, $content);
+        @chmod($path, 0600);
     }
 }

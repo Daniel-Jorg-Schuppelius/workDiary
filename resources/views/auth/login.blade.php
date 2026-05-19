@@ -16,6 +16,9 @@
         <title>{{ __('Anmelden') }} — {{ isset($branding) && $branding ? $branding->appName() : config('app.name', 'WorkDiary') }}</title>
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=space-grotesk:400,500,700|ibm-plex-sans:400,500,600" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200&display=swap" rel="stylesheet">
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @else
@@ -44,7 +47,10 @@
                     <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
                         <span data-theme-label class="text-base leading-none">◐</span>
                     </button>
-                    <a href="{{ route('home') }}" class="btn btn-sm btn-ghost">⌂ Startseite</a>
+                    <a href="{{ route('home') }}" class="btn btn-sm btn-ghost gap-1">
+                        <x-icon name="home" />
+                        <span>{{ __('Startseite') }}</span>
+                    </a>
                 </div>
             </div>
         </header>

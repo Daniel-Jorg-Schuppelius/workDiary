@@ -11,6 +11,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Material;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -24,7 +25,8 @@ class SaveMaterialRequest extends FormRequest
     /** @return array<string, mixed> */
     public function rules(): array
     {
-        $materialId = $this->route('material')?->id;
+        $material = $this->route('material');
+        $materialId = $material instanceof Material ? $material->id : null;
 
         return [
             'sku' => ['nullable', 'string', 'max:64', Rule::unique('materials', 'sku')->ignore($materialId)->where(fn ($q) => $q->where('organization_id', $this->user()?->organization_id))],

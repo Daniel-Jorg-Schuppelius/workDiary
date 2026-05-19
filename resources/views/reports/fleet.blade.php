@@ -31,32 +31,32 @@
     </x-filter-bar>
 
     {{-- KPI-Kacheln --}}
-    <div class="stats stats-vertical sm:stats-horizontal w-full rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <div class="stat">
-            <div class="stat-title">{{ __('Fahrzeuge') }}</div>
-            <div class="stat-value text-2xl">{{ $totals['vehicles'] }}</div>
+    <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Fahrzeuge') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['vehicles'] }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Σ km') }}</div>
-            <div class="stat-value text-2xl">{{ $km($totals['km']) }}</div>
-            <div class="stat-desc">{{ $totals['trip_count'] }} {{ __('Fahrten') }}</div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Σ km') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $km($totals['km']) }}</div>
+            <div class="mt-1 text-xs text-base-content/60">{{ $totals['trip_count'] }} {{ __('Fahrten') }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Tankungen / Ladungen') }}</div>
-            <div class="stat-value text-2xl">{{ $totals['fuel_count'] }}</div>
-            <div class="stat-desc">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Tankungen / Ladungen') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['fuel_count'] }}</div>
+            <div class="mt-1 text-xs text-base-content/60">
                 @if ($totals['liters'] > 0){{ $num($totals['liters'], 1) }} L @endif
                 @if ($totals['kwh'] > 0)· {{ $num($totals['kwh'], 1) }} kWh @endif
             </div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Energiekosten') }}</div>
-            <div class="stat-value text-2xl">{{ $money($totals['energy_cost']) }}</div>
-            <div class="stat-desc">{{ __('Erstattung') }} {{ $money($totals['reimbursement']) }}</div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Energiekosten') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $money($totals['energy_cost']) }}</div>
+            <div class="mt-1 text-xs text-base-content/60">{{ __('Erstattung') }} {{ $money($totals['reimbursement']) }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Ø €/km') }}</div>
-            <div class="stat-value text-2xl">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Ø €/km') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">
                 {{ $totals['avg_cost_per_km'] !== null ? $num($totals['avg_cost_per_km'], 3) . ' €' : '–' }}
             </div>
         </div>

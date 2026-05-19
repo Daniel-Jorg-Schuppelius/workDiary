@@ -28,7 +28,7 @@ class StopwatchController extends Controller
 
     public function current(): JsonResponse|TimeEntryResource
     {
-        $entry = $this->stopwatch->current(Auth::user());
+        $entry = $this->stopwatch->current($this->authUser());
 
         return $entry ? new TimeEntryResource($entry) : response()->json(null);
     }
@@ -42,10 +42,10 @@ class StopwatchController extends Controller
             'timesheet_id' => ['nullable', 'integer', 'exists:timesheets,id'],
         ]);
 
-        $project = Project::findOrFail($data['project_id']);
+        $project = Project::findOrFail((int) $data['project_id']);
         $today = CarbonImmutable::today();
         $timesheet = isset($data['timesheet_id'])
-            ? Timesheet::findOrFail($data['timesheet_id'])
+            ? Timesheet::findOrFail((int) $data['timesheet_id'])
             : Timesheet::firstOrCreate([
                 'project_id' => $project->id,
                 'user_id' => Auth::id(),
@@ -56,12 +56,12 @@ class StopwatchController extends Controller
             ]);
         Gate::authorize('update', $timesheet);
 
-        return new TimeEntryResource($this->stopwatch->start(Auth::user(), $timesheet, $data['task_id'] ?? null, $data['description'] ?? null));
+        return new TimeEntryResource($this->stopwatch->start($this->authUser(), $timesheet, $data['task_id'] ?? null, $data['description'] ?? null));
     }
 
     public function stop(): JsonResponse|TimeEntryResource
     {
-        $entry = $this->stopwatch->stop(Auth::user());
+        $entry = $this->stopwatch->stop($this->authUser());
 
         return $entry ? new TimeEntryResource($entry) : response()->json(null);
     }

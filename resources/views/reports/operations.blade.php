@@ -52,27 +52,27 @@
         </x-slot:extra>
     </x-filter-bar>
 
-    <div class="stats stats-vertical sm:stats-horizontal w-full rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <div class="stat">
-            <div class="stat-title">{{ __('Service-Aufträge') }}</div>
-            <div class="stat-value text-2xl">{{ $orders['total'] }}</div>
-            <div class="stat-desc">{{ __('Abschluss') }}: {{ $pct($orders['completion_rate']) }}</div>
+    <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Service-Aufträge') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $orders['total'] }}</div>
+            <div class="mt-1 text-xs text-base-content/60">{{ __('Abschluss') }}: {{ $pct($orders['completion_rate']) }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Servicezeit Σ') }}</div>
-            <div class="stat-value text-2xl">{{ $fmtMin($orders['service_minutes']) }}</div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Servicezeit Σ') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $fmtMin($orders['service_minutes']) }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Tasks') }}</div>
-            <div class="stat-value text-2xl">{{ $tasks['total'] }}</div>
-            <div class="stat-desc {{ $tasks['overdue'] > 0 ? 'text-error' : '' }}">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Tasks') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $tasks['total'] }}</div>
+            <div class="mt-1 text-xs text-base-content/60 {{ $tasks['overdue'] > 0 ? 'text-error' : '' }}">
                 {{ $tasks['overdue'] }} {{ __('überfällig') }} · {{ $pct($tasks['completion_rate']) }}
             </div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Touren') }}</div>
-            <div class="stat-value text-2xl">{{ $tours['total'] }}</div>
-            <div class="stat-desc">{{ $num($tours['planned_distance_km'], 1) }} km · {{ $fmtMin($tours['planned_minutes']) }}</div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Touren') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $tours['total'] }}</div>
+            <div class="mt-1 text-xs text-base-content/60">{{ $num($tours['planned_distance_km'], 1) }} km · {{ $fmtMin($tours['planned_minutes']) }}</div>
         </div>
     </div>
 

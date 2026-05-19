@@ -16,29 +16,29 @@
         @endif
     </x-filter-bar>
 
-    <div class="stats stats-vertical sm:stats-horizontal w-full rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <div class="stat">
-            <div class="stat-title">{{ __('Mitarbeiter') }}</div>
-            <div class="stat-value text-2xl">{{ $totals['users'] }}</div>
+    <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['users'] }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Werktage krank') }}</div>
-            <div class="stat-value text-2xl">{{ $totals['sick_workdays'] }}</div>
-            <div class="stat-desc">{{ $totals['sick_calendar_days'] }} {{ __('Kalendertage') }}</div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Werktage krank') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['sick_workdays'] }}</div>
+            <div class="mt-1 text-xs text-base-content/60">{{ $totals['sick_calendar_days'] }} {{ __('Kalendertage') }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Krankheitsfälle') }}</div>
-            <div class="stat-value text-2xl">{{ $totals['episodes'] }}</div>
-            <div class="stat-desc">{{ $totals['follow_ups'] }} {{ __('Folge') }}</div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Krankheitsfälle') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['episodes'] }}</div>
+            <div class="mt-1 text-xs text-base-content/60">{{ $totals['follow_ups'] }} {{ __('Folge') }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Mit AU') }}</div>
-            <div class="stat-value text-2xl">{{ $totals['with_au'] }}</div>
-            <div class="stat-desc">/ {{ $totals['episodes'] }} {{ __('Fälle') }}</div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Mit AU') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['with_au'] }}</div>
+            <div class="mt-1 text-xs text-base-content/60">/ {{ $totals['episodes'] }} {{ __('Fälle') }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">{{ __('Anspruch ausgeschöpft') }}</div>
-            <div class="stat-value text-2xl {{ $totals['exhausted'] > 0 ? 'text-error' : '' }}">{{ $totals['exhausted'] }}</div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Anspruch ausgeschöpft') }}</div>
+            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold {{ $totals['exhausted'] > 0 ? 'text-error' : '' }}">{{ $totals['exhausted'] }}</div>
         </div>
     </div>
 

@@ -47,13 +47,11 @@ class ExternalReference extends Model
         'synced_at',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'payload' => 'array',
-            'synced_at' => 'datetime',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'payload' => 'array',
+        'synced_at' => 'datetime',
+    ];
 
     /** @return MorphTo<Model, $this> */
     public function referenceable(): MorphTo

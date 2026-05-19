@@ -116,21 +116,19 @@ class Attendance extends Model
         'updated_by',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'started_at' => 'datetime',
-            'ended_at' => 'datetime',
-            'date' => 'date',
-            'break_minutes_auto' => 'integer',
-            'break_minutes_manual' => 'integer',
-            'duration_minutes' => 'integer',
-            'started_lat' => 'float',
-            'started_lng' => 'float',
-            'ended_lat' => 'float',
-            'ended_lng' => 'float',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'started_at' => 'datetime',
+        'ended_at' => 'datetime',
+        'date' => 'date',
+        'break_minutes_auto' => 'integer',
+        'break_minutes_manual' => 'integer',
+        'duration_minutes' => 'integer',
+        'started_lat' => 'float',
+        'started_lng' => 'float',
+        'ended_lat' => 'float',
+        'ended_lng' => 'float',
+    ];
 
     protected static function booted(): void
     {

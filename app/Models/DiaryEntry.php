@@ -99,21 +99,19 @@ class DiaryEntry extends Model
         'archived_at',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'start_at' => 'datetime',
-            'end_at' => 'datetime',
-            'archived_at' => 'datetime',
-            'scheduled_for' => 'date',
-            'status' => 'integer',
-            'is_archived' => 'boolean',
-            'service_minutes' => 'integer',
-            'tour_position' => 'integer',
-            'address_lat' => 'decimal:7',
-            'address_lng' => 'decimal:7',
-        ];
-    }
+    /** @var array<string, string> */
+    protected $casts = [
+        'start_at' => 'datetime',
+        'end_at' => 'datetime',
+        'archived_at' => 'datetime',
+        'scheduled_for' => 'date',
+        'status' => 'integer',
+        'is_archived' => 'boolean',
+        'service_minutes' => 'integer',
+        'tour_position' => 'integer',
+        'address_lat' => 'decimal:7',
+        'address_lng' => 'decimal:7',
+    ];
 
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo

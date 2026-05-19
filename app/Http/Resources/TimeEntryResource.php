@@ -18,6 +18,11 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /** @mixin TimeEntry */
 class TimeEntryResource extends JsonResource
 {
+    public function __construct(TimeEntry $resource)
+    {
+        parent::__construct($resource);
+    }
+
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {

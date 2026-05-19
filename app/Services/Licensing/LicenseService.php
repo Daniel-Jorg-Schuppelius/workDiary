@@ -14,6 +14,7 @@ namespace App\Services\Licensing;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Http\Request;
 
 class LicenseService
 {
@@ -73,7 +74,7 @@ class LicenseService
         $this->files->put($path, $licenseKey);
         @chmod($path, 0600);
 
-        $this->cache->flush();
+        $this->flush();
 
         return $result;
     }
@@ -110,7 +111,7 @@ class LicenseService
         $payloadJson = self::b64Decode($parts[0]);
         $signature = self::b64Decode($parts[1]);
 
-        if ($payloadJson === null || $signature === null) {
+        if ($payloadJson === null || $payloadJson === '' || $signature === null || $signature === '') {
             return LicenseResult::fail(LicenseStatus::Malformed, 'Lizenzschlüssel ist nicht korrekt kodiert.');
         }
 
@@ -126,7 +127,7 @@ class LicenseService
         $payload = LicensePayload::fromArray($decoded);
 
         if ($payload->domain !== null && $payload->domain !== '') {
-            $effectiveHost = $host ?? request()?->getHost() ?? '';
+            $effectiveHost = $host ?? (app()->runningInConsole() ? '' : (string) app(Request::class)->getHost());
             if (! self::matchesDomain($effectiveHost, $payload->domain)) {
                 return new LicenseResult(
                     LicenseStatus::DomainMismatch,
@@ -162,12 +163,15 @@ class LicenseService
         return $this->verify($key, $host);
     }
 
+    /**
+     * @return non-empty-string|null
+     */
     private function loadPublicKey(): ?string
     {
         // Versiegelter Public Key hat Vorrang – ein Patch der .env reicht damit
         // nicht aus, um die Signaturprüfung gegen einen eigenen Key zu wenden.
         $b64 = LicenseSeal::isSealed()
-            ? LicenseSeal::PUBLIC_KEY
+            ? LicenseSeal::publicKey()
             : (string) config('license.public_key', '');
 
         if ($b64 === '') {
@@ -192,7 +196,7 @@ class LicenseService
             return null;
         }
 
-        $files = LicenseSeal::FILES;
+        $files = LicenseSeal::files();
         if ($files === []) {
             return null;
         }
