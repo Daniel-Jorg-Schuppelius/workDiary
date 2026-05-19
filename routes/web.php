@@ -49,6 +49,7 @@ use App\Http\Controllers\Plugins\LexofficeCustomerController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectBillingRuleController;
+use App\Http\Controllers\ProjectRecurrenceRuleController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PublicSignatureController;
 use App\Http\Controllers\PushSubscriptionController;
@@ -240,6 +241,11 @@ Route::middleware('auth')->group(function () {
     Route::patch('projects/{project}/tasks/{task}/complete', [TaskController::class, 'complete'])->name('projects.tasks.complete');
     Route::resource('projects.time-entries', TimeEntryController::class)->except(['index', 'show']);
     Route::resource('projects.billing-rules', ProjectBillingRuleController::class)->except(['index', 'show', 'edit']);
+
+    Route::resource('projects.recurrence-rules', ProjectRecurrenceRuleController::class)
+        ->except(['index', 'show']);
+    Route::post('projects/{project}/recurrence-rules/{recurrence_rule}/run', [ProjectRecurrenceRuleController::class, 'run'])
+        ->name('projects.recurrence-rules.run');
 
     // ── Stundenzettel (an Projekt gekoppelt) ────────────────────────────────
     Route::get('timesheets', [TimesheetController::class, 'index'])->name('timesheets.index');

@@ -64,11 +64,23 @@ class ProjectController extends Controller {
     public function show(Project $project): View {
         Gate::authorize('view', $project);
 
-        // Diary-Einträge (Tab 4)
-        $entries = $project->diaryEntries()
+        // Aufträge (Tab 4): alle DiaryEntries, die das Projekt entweder als
+        // Initialprojekt haben ODER über mind. einen TimeEntry mit diesem
+        // Projekt verknüpft sind. Sortierung nach letzter Aktivität —
+        // Backlog/Deadline/Window haben kein start_at.
+        $entries = DiaryEntry::query()
             ->with(['user:id,name', 'tags:id,name,color'])
-            ->orderByDesc('start_at')
-            ->limit(20)
+            ->where(function ($q) use ($project): void {
+                $q->where('project_id', $project->id)
+                    ->orWhereIn('id', function ($sub) use ($project): void {
+                        $sub->select('diary_entry_id')
+                            ->from('time_entries')
+                            ->where('project_id', $project->id)
+                            ->whereNotNull('diary_entry_id');
+                    });
+            })
+            ->orderByDesc('updated_at')
+            ->limit(50)
             ->get();
 
         // Milestones mit Tasks (Tab 1 + 2)
@@ -115,6 +127,11 @@ class ProjectController extends Controller {
             ->orderBy('due_date')
             ->first();
 
+        $recurrenceRules = \App\Models\RecurrenceRule::query()
+            ->where('project_id', $project->id)
+            ->orderBy('name')
+            ->get();
+
         return view('projects.show', [
             'project' => $project,
             'entries' => $entries,
@@ -127,6 +144,7 @@ class ProjectController extends Controller {
             'myMinutes' => (int) $myMinutes,
             'nextMilestone' => $nextMilestone,
             'timesheets' => $project->timesheets()->with('user:id,name')->latest('work_date')->limit(50)->get(),
+            'recurrenceRules' => $recurrenceRules,
         ]);
     }
 

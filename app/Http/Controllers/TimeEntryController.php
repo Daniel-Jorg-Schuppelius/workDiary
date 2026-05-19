@@ -12,10 +12,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SaveTimeEntryRequest;
+use App\Models\DiaryEntry;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -35,6 +37,7 @@ class TimeEntryController extends Controller
             'project' => $project,
             'entry' => null,
             'tasks' => $tasks,
+            'diaryOptions' => $this->diaryOptions($project),
             'isDialog' => true,
         ]);
     }
@@ -66,8 +69,40 @@ class TimeEntryController extends Controller
             'project' => $project,
             'entry' => $timeEntry,
             'tasks' => $tasks,
+            'diaryOptions' => $this->diaryOptions($project, $timeEntry->diary_entry_id),
             'isDialog' => true,
         ]);
+    }
+
+    /**
+     * Aufträge, die für die Verbuchung von Stunden auf dieses Projekt sinnvoll
+     * angeboten werden: alle nicht-archivierten offenen Aufträge auf dem Projekt
+     * selbst plus jeder Auftrag, der bereits Stunden auf dieses Projekt gebucht
+     * hat. Der aktuell verknüpfte Auftrag wird immer mit aufgenommen, damit der
+     * Edit-Dialog beim Bearbeiten nichts verliert.
+     *
+     * @return Collection<int, DiaryEntry>
+     */
+    private function diaryOptions(Project $project, ?int $currentId = null): Collection
+    {
+        return DiaryEntry::query()
+            ->select(['id', 'title', 'content', 'mode', 'status', 'project_id'])
+            ->where('is_archived', false)
+            ->where(function ($q) use ($project, $currentId): void {
+                $q->where('project_id', $project->id)
+                    ->orWhereIn('id', function ($sub) use ($project): void {
+                        $sub->select('diary_entry_id')
+                            ->from('time_entries')
+                            ->where('project_id', $project->id)
+                            ->whereNotNull('diary_entry_id');
+                    });
+                if ($currentId !== null) {
+                    $q->orWhere('id', $currentId);
+                }
+            })
+            ->orderByDesc('updated_at')
+            ->limit(50)
+            ->get();
     }
 
     public function update(Project $project, TimeEntry $timeEntry, SaveTimeEntryRequest $request): RedirectResponse

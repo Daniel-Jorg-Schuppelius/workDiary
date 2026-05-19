@@ -57,7 +57,16 @@
                 {{ __('Stundenzettel') }}
             </button>
             <button role="tab" @click="setTab('diary')" :class="{ 'tab-active': tab === 'diary' }" class="tab">
-                {{ __('Tagebuch') }}
+                {{ __('Aufträge') }}
+                @if ($entries->isNotEmpty())
+                    <span class="badge badge-xs badge-ghost ml-1">{{ $entries->count() }}</span>
+                @endif
+            </button>
+            <button role="tab" @click="setTab('recurrence')" :class="{ 'tab-active': tab === 'recurrence' }" class="tab">
+                {{ __('Wiederkehr') }}
+                @if ($recurrenceRules->isNotEmpty())
+                    <span class="badge badge-xs badge-ghost ml-1">{{ $recurrenceRules->count() }}</span>
+                @endif
             </button>
             @if (auth()->user()?->canManageBilling())
                 <button role="tab" @click="setTab('billing')" :class="{ 'tab-active': tab === 'billing' }" class="tab">
@@ -81,6 +90,9 @@
         <div x-show="tab === 'diary'" x-cloak>
             @include('projects._diary_tab')
         </div>
+        <div x-show="tab === 'recurrence'" x-cloak>
+            @include('projects._recurrence_tab')
+        </div>
         @if (auth()->user()?->canManageBilling())
             <div x-show="tab === 'billing'" x-cloak>
                 @include('projects._billing_tab')
@@ -91,7 +103,7 @@
 
 <script>
     function projectTabs(initial) {
-        const allowed = ['overview', 'tasks', 'time', 'timesheets', 'diary', 'billing'];
+        const allowed = ['overview', 'tasks', 'time', 'timesheets', 'diary', 'recurrence', 'billing'];
         const fromQuery = new URLSearchParams(window.location.search).get('tab');
         const fromHash = window.location.hash.replace('#', '');
         const start = allowed.includes(fromQuery) ? fromQuery

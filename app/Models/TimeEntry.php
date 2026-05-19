@@ -26,6 +26,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $project_id
  * @property int|null $timesheet_id
  * @property int|null $task_id
+ * @property int|null $diary_entry_id
  * @property int|null $user_id
  * @property int|null $activity_category_id
  * @property int|null $attendance_id
@@ -127,6 +128,7 @@ class TimeEntry extends Model
         'project_id',
         'timesheet_id',
         'task_id',
+        'diary_entry_id',
         'user_id',
         'activity_category_id',
         'attendance_id',
@@ -235,6 +237,12 @@ class TimeEntry extends Model
     public function task(): BelongsTo
     {
         return $this->belongsTo(Task::class);
+    }
+
+    /** @return BelongsTo<DiaryEntry, $this> */
+    public function diaryEntry(): BelongsTo
+    {
+        return $this->belongsTo(DiaryEntry::class);
     }
 
     /** @return BelongsTo<User, $this> */

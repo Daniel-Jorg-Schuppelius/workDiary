@@ -26,3 +26,8 @@ Schedule::command('attendance:close-open')
     ->everyFifteenMinutes()
     ->withoutOverlapping()
     ->onOneServer();
+
+Schedule::command('recurrence:generate')
+    ->dailyAt('04:30')
+    ->withoutOverlapping()
+    ->onOneServer();

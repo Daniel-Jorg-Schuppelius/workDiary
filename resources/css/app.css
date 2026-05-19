@@ -1143,6 +1143,36 @@
         margin: 0;
     }
 
+    /* === Flatpickr-Wrapper transparent machen ============================
+       Flatpickr (static:true) wickelt jeden initialisierten <input> in einen
+       <div class="flatpickr-wrapper">. Dieser Wrapper wird damit zum Flex-/
+       Grid-Kind und schluckt die `flex-1`/`w-full`-Klassen am eigentlichen
+       Input. Damit <x-date-range> (Join-Layout) und alle anderen Felder mit
+       Flatpickr in Dialogen die volle Breite ausfüllen, reichen wir Layout
+       und Breite durch den Wrapper hindurch. */
+    .flatpickr-wrapper {
+        display: block;
+        width: 100%;
+        min-width: 0;
+    }
+    .join > .flatpickr-wrapper {
+        display: flex;
+        flex: 1 1 0;
+        min-width: 0;
+    }
+    /* DaisyUI 5 setzt auf `.input` ein `width: clamp(3rem, 20rem, 100%)`
+       im `utilities`-Layer. Da unsere Komponenten im `components`-Layer
+       leben (und Layer-Reihenfolge: theme, base, components, utilities),
+       reicht hier weder höhere Spezifität noch ein Selektor-Trick – wir
+       müssen den Override über `!important` erzwingen, damit der Input
+       innerhalb des Flatpickr-Wrappers die Wrapperbreite (= volle Breite
+       im Dialog/Join) tatsächlich übernimmt. */
+    .flatpickr-wrapper > .flatpickr-input,
+    .flatpickr-wrapper > input {
+        width: 100% !important;
+        min-width: 0;
+    }
+
     /* === File-Upload-Komponente (Branding-Logos, Avatare) ============== */
     .wd-file-upload {
         @apply flex flex-col gap-2;

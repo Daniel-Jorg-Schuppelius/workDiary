@@ -24,6 +24,14 @@
         'default_priority' => null,
         'default_status' => 2,
     ];
+
+    $defaultMode = old('mode', $entry?->mode ?? \App\Models\DiaryEntry::MODE_FIXED);
+    if ($defaultMode === \App\Models\DiaryEntry::MODE_RECURRING) {
+        // 'recurring' wird vom Generator gesetzt — Auswahl bietet stattdessen
+        // den passenden Bearbeitungs-Modus an, ohne den Datensatz zu zerstören.
+        $defaultMode = \App\Models\DiaryEntry::MODE_FIXED;
+    }
+    $defaultLocation = old('location_mode', $entry?->location_mode ?? \App\Models\DiaryEntry::LOCATION_ONSITE);
 @endphp
 
 <div
@@ -31,6 +39,7 @@
         entryTypeId: @js((int) $defaultEntryTypeId),
         flagsMap: @js($entryTypeFlags),
         flags: @js($initialFlags),
+        mode: @js($defaultMode),
         onTypeChange() {
             const id = parseInt(this.entryTypeId || 0, 10);
             const next = this.flagsMap[id] ?? {
@@ -161,7 +170,38 @@
         @enderror
     </div>
 
-    <div class="fieldset md:col-span-2">
+    <div class="fieldset">
+        <label class="fieldset-label" for="mode">{{ __('Termin-Modus') }} *</label>
+        <select
+            id="mode"
+            name="mode"
+            x-model="mode"
+            class="select select-bordered w-full @error('mode') select-error @enderror"
+        >
+            <option value="{{ \App\Models\DiaryEntry::MODE_FIXED }}">{{ __('Terminiert (fester Zeitraum)') }}</option>
+            <option value="{{ \App\Models\DiaryEntry::MODE_DEADLINE }}">{{ __('Deadline (bis Datum X)') }}</option>
+            <option value="{{ \App\Models\DiaryEntry::MODE_WINDOW }}">{{ __('Zeitfenster (Korridor)') }}</option>
+            <option value="{{ \App\Models\DiaryEntry::MODE_BACKLOG }}">{{ __('Backlog (irgendwann)') }}</option>
+        </select>
+        @error('mode')<p class="text-error text-sm">{{ $message }}</p>@enderror
+    </div>
+
+    <div class="fieldset">
+        <label class="fieldset-label" for="location_mode">{{ __('Standort') }} *</label>
+        <select
+            id="location_mode"
+            name="location_mode"
+            class="select select-bordered w-full @error('location_mode') select-error @enderror"
+        >
+            <option value="{{ \App\Models\DiaryEntry::LOCATION_ONSITE }}" @selected($defaultLocation === \App\Models\DiaryEntry::LOCATION_ONSITE)>{{ __('Vor Ort') }}</option>
+            <option value="{{ \App\Models\DiaryEntry::LOCATION_REMOTE }}" @selected($defaultLocation === \App\Models\DiaryEntry::LOCATION_REMOTE)>{{ __('Remote') }}</option>
+            <option value="{{ \App\Models\DiaryEntry::LOCATION_HYBRID }}" @selected($defaultLocation === \App\Models\DiaryEntry::LOCATION_HYBRID)>{{ __('Hybrid') }}</option>
+        </select>
+        @error('location_mode')<p class="text-error text-sm">{{ $message }}</p>@enderror
+    </div>
+
+    {{-- Fester Zeitraum --}}
+    <div class="fieldset md:col-span-2" x-show="mode === '{{ \App\Models\DiaryEntry::MODE_FIXED }}'" x-cloak>
         <label class="fieldset-label">{{ __('Zeitraum') }}</label>
         <x-date-range
             type="datetime-local"
@@ -176,6 +216,42 @@
         />
         @error('start_at')<p class="text-error text-sm">{{ $message }}</p>@enderror
         @error('end_at')<p class="text-error text-sm">{{ $message }}</p>@enderror
+    </div>
+
+    {{-- Deadline --}}
+    <div class="fieldset md:col-span-2" x-show="mode === '{{ \App\Models\DiaryEntry::MODE_DEADLINE }}'" x-cloak>
+        <label class="fieldset-label" for="due_date">{{ __('Fällig bis') }}</label>
+        <input
+            type="date"
+            id="due_date"
+            name="due_date"
+            value="{{ old('due_date', $entry?->due_date?->format('Y-m-d')) }}"
+            class="input input-bordered w-full @error('due_date') input-error @enderror"
+        >
+        @error('due_date')<p class="text-error text-sm">{{ $message }}</p>@enderror
+    </div>
+
+    {{-- Zeitfenster --}}
+    <div class="fieldset md:col-span-2" x-show="mode === '{{ \App\Models\DiaryEntry::MODE_WINDOW }}'" x-cloak>
+        <label class="fieldset-label">{{ __('Zeitfenster (Datum von/bis)') }}</label>
+        <x-date-range
+            type="date"
+            fromName="window_start_date"
+            toName="window_end_date"
+            fromId="window_start_date"
+            toId="window_end_date"
+            :from="old('window_start_date', $entry?->window_start_date?->format('Y-m-d'))"
+            :to="old('window_end_date', $entry?->window_end_date?->format('Y-m-d'))"
+            :label="false"
+            class="w-full"
+        />
+        @error('window_start_date')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        @error('window_end_date')<p class="text-error text-sm">{{ $message }}</p>@enderror
+    </div>
+
+    {{-- Backlog: keine Datumsfelder --}}
+    <div class="fieldset md:col-span-2" x-show="mode === '{{ \App\Models\DiaryEntry::MODE_BACKLOG }}'" x-cloak>
+        <p class="text-sm text-base-content/60">{{ __('Kein Datum erfasst — erscheint im Backlog und kann später terminiert werden.') }}</p>
     </div>
 </x-form-group>
 

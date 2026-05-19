@@ -101,27 +101,41 @@
         </x-card>
     @endif
 
-    {{-- Letzte Einträge --}}
+    {{-- Letzte Aufträge --}}
     <x-card padding="p-0">
         <header class="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3">
-            <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Letzte Einträge') }}</span>
+            <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Letzte Aufträge') }}</span>
             <a href="{{ route('diary.index', ['project' => $project->id]) }}"
-               class="text-xs text-primary hover:underline">{{ __('Alle im Tagebuch') }}</a>
+               class="text-xs text-primary hover:underline">{{ __('Alle in der Arbeitsliste') }}</a>
         </header>
         @if ($entries->isEmpty())
             <div class="p-4">
                 <x-empty-state compact
-                               :title="__('Keine Einträge zugeordnet')"
-                               :message="__('Sobald Tagebucheinträge mit diesem Projekt verknüpft werden, erscheinen sie hier.')" />
+                               :title="__('Keine Aufträge auf dieses Projekt gebucht')"
+                               :message="__('Sobald Aufträge das Projekt als Initialprojekt setzen oder Stunden hier gebucht werden, erscheinen sie hier.')" />
             </div>
         @else
             <ul class="divide-y divide-base-300">
                 @foreach ($entries->take(5) as $entry)
+                    @php
+                        $dateLabel = match ($entry->mode) {
+                            \App\Models\DiaryEntry::MODE_DEADLINE => $entry->due_date?->format('d.m.Y'),
+                            \App\Models\DiaryEntry::MODE_WINDOW => $entry->window_start_date?->format('d.m.Y'),
+                            \App\Models\DiaryEntry::MODE_BACKLOG => __('Backlog'),
+                            default => $entry->start_at?->format('d.m.Y H:i'),
+                        };
+                    @endphp
                     <li class="px-4 py-3">
                         <a href="{{ route('diary.show', $entry) }}" data-entry-modal-trigger class="block">
                             <div class="flex flex-wrap items-center gap-2 text-xs text-base-content/60">
-                                <span>{{ optional($entry->start_at)->format('d.m.Y H:i') }}</span>
-                                <span>· {{ $entry->user->name ?? '—' }}</span>
+                                @if ($dateLabel)
+                                    <span>{{ $dateLabel }}</span>
+                                    <span>·</span>
+                                @endif
+                                <span>{{ $entry->user->name ?? '—' }}</span>
+                                @if ($entry->mode && $entry->mode !== \App\Models\DiaryEntry::MODE_FIXED)
+                                    <span class="badge badge-xs badge-outline">{{ $entry->modeLabel() }}</span>
+                                @endif
                             </div>
                             <div class="line-clamp-2 text-sm">{{ truncate($entry->content, 150) }}</div>
                         </a>

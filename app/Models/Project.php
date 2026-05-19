@@ -35,6 +35,8 @@ use Illuminate\Support\Str;
  * @property string|null $color
  * @property string $status
  * @property bool $is_default
+ * @property bool $is_maintenance
+ * @property string|null $default_location_mode
  * @property Carbon|null $starts_on
  * @property Carbon|null $ends_on
  * @property Carbon|null $archived_at
@@ -76,6 +78,8 @@ class Project extends Model {
         'color',
         'status',
         'is_default',
+        'is_maintenance',
+        'default_location_mode',
         'starts_on',
         'ends_on',
         'archived_at',
@@ -101,6 +105,7 @@ class Project extends Model {
         'billable' => 'boolean',
         'global_activities' => 'boolean',
         'is_default' => 'boolean',
+        'is_maintenance' => 'boolean',
     ];
 
     /**

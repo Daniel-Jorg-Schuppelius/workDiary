@@ -45,6 +45,19 @@ class SaveDiaryEntryRequest extends FormRequest
         if (is_string($this->input('address_country'))) {
             $this->merge(['address_country' => strtoupper((string) $this->input('address_country'))]);
         }
+
+        // Fallback-Modi: leere Werte werden zu Defaults bzw. null normalisiert.
+        if ($this->input('mode') === '' || $this->input('mode') === null) {
+            $this->merge(['mode' => DiaryEntry::MODE_FIXED]);
+        }
+        if ($this->input('location_mode') === '' || $this->input('location_mode') === null) {
+            $this->merge(['location_mode' => DiaryEntry::LOCATION_ONSITE]);
+        }
+        foreach (['due_date', 'window_start_date', 'window_end_date'] as $key) {
+            if ($this->input($key) === '') {
+                $this->merge([$key => null]);
+            }
+        }
     }
 
     /** @return array<string, mixed> */
@@ -56,12 +69,33 @@ class SaveDiaryEntryRequest extends FormRequest
         $requiresSchedule = (bool) ($type?->requires_schedule);
         $requiresTour = (bool) ($type?->requires_tour);
 
+        $mode = (string) $this->input('mode', DiaryEntry::MODE_FIXED);
+        // 'recurring' wird nur vom Generator vergeben; manuell wählbar sind
+        // fixed/deadline/window/backlog.
+        $selectableModes = [
+            DiaryEntry::MODE_FIXED,
+            DiaryEntry::MODE_DEADLINE,
+            DiaryEntry::MODE_WINDOW,
+            DiaryEntry::MODE_BACKLOG,
+            DiaryEntry::MODE_RECURRING,
+        ];
+
+        $startRequired = $mode === DiaryEntry::MODE_FIXED;
+        $dueRequired = $mode === DiaryEntry::MODE_DEADLINE;
+        $windowRequired = $mode === DiaryEntry::MODE_WINDOW;
+
         return [
             'content' => ['required', 'string', 'max:65535'],
             'response' => ['nullable', 'string', 'max:65535'],
             'status' => ['required', 'integer', 'in:-1,1,2,3'],
-            'start_at' => ['nullable', 'date'],
-            'end_at' => ['nullable', 'date', 'after_or_equal:start_at'],
+            'start_at' => [$startRequired ? 'required' : 'nullable', 'date'],
+            'end_at' => [$startRequired ? 'required' : 'nullable', 'date', 'after_or_equal:start_at'],
+
+            'mode' => ['required', Rule::in($selectableModes)],
+            'due_date' => [$dueRequired ? 'required' : 'nullable', 'date'],
+            'window_start_date' => [$windowRequired ? 'required' : 'nullable', 'date'],
+            'window_end_date' => [$windowRequired ? 'required' : 'nullable', 'date', 'after_or_equal:window_start_date'],
+            'location_mode' => ['required', Rule::in(DiaryEntry::LOCATION_MODES)],
             'user_id' => ['nullable', 'integer', 'exists:users,id'],
             'project_id' => ['nullable', 'integer', 'exists:projects,id'],
 

@@ -28,7 +28,17 @@ class SaveTimeEntryRequest extends FormRequest
             'date' => ['required', 'date'],
             'minutes' => ['required', 'integer', 'min:1', 'max:1440'],
             'task_id' => ['nullable', 'integer', Rule::exists('tasks', 'id')],
+            'diary_entry_id' => ['nullable', 'integer', Rule::exists('diary_entries', 'id')],
             'description' => ['nullable', 'string', 'max:500'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        foreach (['task_id', 'diary_entry_id'] as $key) {
+            if ($this->input($key) === '' || $this->input($key) === '0') {
+                $this->merge([$key => null]);
+            }
+        }
     }
 }

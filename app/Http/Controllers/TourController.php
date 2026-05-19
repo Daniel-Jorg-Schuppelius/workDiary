@@ -149,17 +149,52 @@ class TourController extends Controller
             'diaryEntries.customer:id,name',
         ]);
 
+        $tourDate = $tour->tour_date?->toDateString() ?? CarbonImmutable::today()->toDateString();
+
+        // Fix terminierte Aufträge für diesen Tag (heutiges Verhalten).
         $available = DiaryEntry::query()
             ->whereNull('tour_id')
             ->whereHas('entryType', fn ($q) => $q->where('allow_tour', true))
-            ->whereDate('scheduled_for', $tour->tour_date?->toDateString() ?? CarbonImmutable::today()->toDateString())
+            ->whereDate('scheduled_for', $tourDate)
             ->orderBy('time_window_start')
             ->orderBy('id')
+            ->get();
+
+        // Flex-Backlog: Aufträge ohne festen Termin, deren Modus den Tour-Tag
+        // sinnvoll trifft (Deadline noch nicht überschritten / Tag im Fenster
+        // / Backlog jederzeit / Wiederkehr fällig). Tour-Planer kann sie als
+        // Lückenfüller einplanen — `service_minutes` hilft beim Auswählen.
+        $flexBacklog = DiaryEntry::query()
+            ->whereNull('tour_id')
+            ->whereIn('status', [DiaryEntry::STATUS_OPEN, DiaryEntry::STATUS_PROBLEM])
+            ->where('is_archived', false)
+            ->whereHas('entryType', fn ($q) => $q->where('allow_tour', true))
+            ->where(function ($q) use ($tourDate): void {
+                $q->where(function ($sub) use ($tourDate): void {
+                    $sub->where('mode', DiaryEntry::MODE_DEADLINE)
+                        ->whereDate('due_date', '>=', $tourDate);
+                });
+                $q->orWhere(function ($sub) use ($tourDate): void {
+                    $sub->where('mode', DiaryEntry::MODE_WINDOW)
+                        ->whereDate('window_start_date', '<=', $tourDate)
+                        ->whereDate('window_end_date', '>=', $tourDate);
+                });
+                $q->orWhere('mode', DiaryEntry::MODE_BACKLOG);
+                $q->orWhere(function ($sub) use ($tourDate): void {
+                    $sub->where('mode', DiaryEntry::MODE_RECURRING)
+                        ->whereDate('due_date', '<=', $tourDate);
+                });
+            })
+            ->orderByRaw('service_minutes IS NULL')
+            ->orderBy('service_minutes')
+            ->orderBy('id')
+            ->limit(50)
             ->get();
 
         return view('tours.edit', [
             'tour' => $tour,
             'available' => $available,
+            'flexBacklog' => $flexBacklog,
             'users' => $this->loadSelectableUsers(),
             'vehicles' => $this->loadVehicles(),
             'statuses' => Tour::STATUSES,

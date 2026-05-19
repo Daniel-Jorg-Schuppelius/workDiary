@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class DiaryEntry extends Model
@@ -65,6 +66,38 @@ class DiaryEntry extends Model
         self::PRIORITY_URGENT,
     ];
 
+    public const MODE_FIXED = 'fixed';
+
+    public const MODE_DEADLINE = 'deadline';
+
+    public const MODE_WINDOW = 'window';
+
+    public const MODE_RECURRING = 'recurring';
+
+    public const MODE_BACKLOG = 'backlog';
+
+    /** @var list<string> */
+    public const MODES = [
+        self::MODE_FIXED,
+        self::MODE_DEADLINE,
+        self::MODE_WINDOW,
+        self::MODE_RECURRING,
+        self::MODE_BACKLOG,
+    ];
+
+    public const LOCATION_ONSITE = 'onsite';
+
+    public const LOCATION_REMOTE = 'remote';
+
+    public const LOCATION_HYBRID = 'hybrid';
+
+    /** @var list<string> */
+    public const LOCATION_MODES = [
+        self::LOCATION_ONSITE,
+        self::LOCATION_REMOTE,
+        self::LOCATION_HYBRID,
+    ];
+
     protected $fillable = [
         'organization_id',
         'entry_type_id',
@@ -95,6 +128,12 @@ class DiaryEntry extends Model
         'tour_id',
         'tour_position',
         'notes',
+        'mode',
+        'due_date',
+        'window_start_date',
+        'window_end_date',
+        'location_mode',
+        'recurrence_rule_id',
         'is_archived',
         'archived_at',
     ];
@@ -105,6 +144,9 @@ class DiaryEntry extends Model
         'end_at' => 'datetime',
         'archived_at' => 'datetime',
         'scheduled_for' => 'date',
+        'due_date' => 'date',
+        'window_start_date' => 'date',
+        'window_end_date' => 'date',
         'status' => 'integer',
         'is_archived' => 'boolean',
         'service_minutes' => 'integer',
@@ -147,6 +189,18 @@ class DiaryEntry extends Model
     public function tour(): BelongsTo
     {
         return $this->belongsTo(Tour::class);
+    }
+
+    /** @return HasMany<TimeEntry, $this> */
+    public function timeEntries(): HasMany
+    {
+        return $this->hasMany(TimeEntry::class);
+    }
+
+    /** @return BelongsTo<RecurrenceRule, $this> */
+    public function recurrenceRule(): BelongsTo
+    {
+        return $this->belongsTo(RecurrenceRule::class);
     }
 
     public function hasCoordinates(): bool
@@ -194,6 +248,28 @@ class DiaryEntry extends Model
             2 => 'open',
             3 => 'alert',
             default => 'neutral',
+        };
+    }
+
+    public function modeLabel(): string
+    {
+        return match ($this->mode) {
+            self::MODE_FIXED => __('Terminiert'),
+            self::MODE_DEADLINE => __('Deadline'),
+            self::MODE_WINDOW => __('Zeitfenster'),
+            self::MODE_RECURRING => __('Wiederkehrend'),
+            self::MODE_BACKLOG => __('Backlog'),
+            default => (string) $this->mode,
+        };
+    }
+
+    public function locationLabel(): string
+    {
+        return match ($this->location_mode) {
+            self::LOCATION_ONSITE => __('Vor Ort'),
+            self::LOCATION_REMOTE => __('Remote'),
+            self::LOCATION_HYBRID => __('Hybrid'),
+            default => (string) $this->location_mode,
         };
     }
 

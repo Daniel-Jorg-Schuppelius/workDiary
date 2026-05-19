@@ -38,6 +38,24 @@
                 </select>
             </x-filter-field>
         @endif
+        <x-filter-field :label="__('Modus')" for="diary-mode" class="min-w-40">
+            <select id="diary-mode" name="mode" class="select select-bordered select-sm w-full">
+                <option value="">{{ __('Alle Modi') }}</option>
+                <option value="{{ \App\Models\DiaryEntry::MODE_FIXED }}" @selected(($filters['mode'] ?? '') === \App\Models\DiaryEntry::MODE_FIXED)>{{ __('Terminiert') }}</option>
+                <option value="{{ \App\Models\DiaryEntry::MODE_DEADLINE }}" @selected(($filters['mode'] ?? '') === \App\Models\DiaryEntry::MODE_DEADLINE)>{{ __('Deadline') }}</option>
+                <option value="{{ \App\Models\DiaryEntry::MODE_WINDOW }}" @selected(($filters['mode'] ?? '') === \App\Models\DiaryEntry::MODE_WINDOW)>{{ __('Zeitfenster') }}</option>
+                <option value="{{ \App\Models\DiaryEntry::MODE_RECURRING }}" @selected(($filters['mode'] ?? '') === \App\Models\DiaryEntry::MODE_RECURRING)>{{ __('Wiederkehrend') }}</option>
+                <option value="{{ \App\Models\DiaryEntry::MODE_BACKLOG }}" @selected(($filters['mode'] ?? '') === \App\Models\DiaryEntry::MODE_BACKLOG)>{{ __('Backlog') }}</option>
+            </select>
+        </x-filter-field>
+        <x-filter-field :label="__('Standort')" for="diary-location" class="min-w-36">
+            <select id="diary-location" name="location" class="select select-bordered select-sm w-full">
+                <option value="">{{ __('Alle Standorte') }}</option>
+                <option value="{{ \App\Models\DiaryEntry::LOCATION_ONSITE }}" @selected(($filters['location'] ?? '') === \App\Models\DiaryEntry::LOCATION_ONSITE)>{{ __('Vor Ort') }}</option>
+                <option value="{{ \App\Models\DiaryEntry::LOCATION_REMOTE }}" @selected(($filters['location'] ?? '') === \App\Models\DiaryEntry::LOCATION_REMOTE)>{{ __('Remote') }}</option>
+                <option value="{{ \App\Models\DiaryEntry::LOCATION_HYBRID }}" @selected(($filters['location'] ?? '') === \App\Models\DiaryEntry::LOCATION_HYBRID)>{{ __('Hybrid') }}</option>
+            </select>
+        </x-filter-field>
         <label class="flex items-center gap-2 pb-2">
             <input type="checkbox" id="mine" name="mine" value="1" @checked(!empty($filters['mine'])) class="checkbox checkbox-primary checkbox-sm">
             <span class="text-sm text-base-content/75">{{ __('Nur meine') }}</span>
@@ -88,6 +106,14 @@
                             'badge-error' => $entry->statusTone() === 'alert',
                             'badge-ghost' => $entry->statusTone() === 'neutral',
                         ])>{{ $entry->statusLabel() }}</span>
+                        @if ($entry->mode && $entry->mode !== \App\Models\DiaryEntry::MODE_FIXED)
+                            <span class="badge badge-sm badge-outline">{{ $entry->modeLabel() }}</span>
+                        @endif
+                        @if ($entry->location_mode === \App\Models\DiaryEntry::LOCATION_REMOTE)
+                            <span class="badge badge-sm badge-outline">{{ __('Remote') }}</span>
+                        @elseif ($entry->location_mode === \App\Models\DiaryEntry::LOCATION_HYBRID)
+                            <span class="badge badge-sm badge-outline">{{ __('Hybrid') }}</span>
+                        @endif
                         @if ($entry->is_archived)
                             <span class="badge badge-sm badge-neutral">{{ __('Archiviert') }}</span>
                         @endif
@@ -112,12 +138,28 @@
                         </div>
                     @endif
                     <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-base-content/65">
-                        @if ($entry->start_at)
-                            <span>{{ __('Von') }} {{ $entry->start_at->format('d.m.Y H:i') }}</span>
-                        @endif
-                        @if ($entry->end_at)
-                            <span>{{ __('Bis') }} {{ $entry->end_at->format('d.m.Y H:i') }}</span>
-                        @endif
+                        @switch($entry->mode)
+                            @case(\App\Models\DiaryEntry::MODE_DEADLINE)
+                                @if ($entry->due_date)
+                                    <span>{{ __('Fällig bis') }} {{ $entry->due_date->format('d.m.Y') }}</span>
+                                @endif
+                                @break
+                            @case(\App\Models\DiaryEntry::MODE_WINDOW)
+                                @if ($entry->window_start_date)
+                                    <span>{{ __('Fenster') }} {{ $entry->window_start_date->format('d.m.Y') }}@if ($entry->window_end_date) – {{ $entry->window_end_date->format('d.m.Y') }}@endif</span>
+                                @endif
+                                @break
+                            @case(\App\Models\DiaryEntry::MODE_BACKLOG)
+                                <span>{{ __('Backlog — kein Datum') }}</span>
+                                @break
+                            @default
+                                @if ($entry->start_at)
+                                    <span>{{ __('Von') }} {{ $entry->start_at->format('d.m.Y H:i') }}</span>
+                                @endif
+                                @if ($entry->end_at)
+                                    <span>{{ __('Bis') }} {{ $entry->end_at->format('d.m.Y H:i') }}</span>
+                                @endif
+                        @endswitch
                         <span>Erstellt {{ $entry->created_at->diffForHumans() }}</span>
                     </div>
                 </div>
@@ -136,7 +178,7 @@
                 </div>
             </article>
         @empty
-            <x-empty-state
+            <x-empty-state framed
                 icon='<span class="material-symbols-outlined" aria-hidden="true">menu_book</span>'
                 :title="__('Keine Einträge gefunden')"
                 :message="array_filter($filters) ? __('Versuche, die Filter zu erweitern.') : null">

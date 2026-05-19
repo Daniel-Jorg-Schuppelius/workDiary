@@ -187,4 +187,57 @@ class TourTest extends TestCase
             ->assertOk()
             ->assertSee('Wochentour');
     }
+
+    public function test_assigning_flex_order_promotes_it_to_fixed_with_tour_date(): void
+    {
+        $driver = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        /** @var TourService $service */
+        $service = app(TourService::class);
+        $tour = $service->createDraft($driver, CarbonImmutable::parse('2026-06-01'));
+
+        $order = DiaryEntry::factory()->service()->create([
+            'organization_id' => $this->organization->id,
+            'mode' => DiaryEntry::MODE_BACKLOG,
+            'start_at' => null,
+            'end_at' => null,
+            'scheduled_for' => null,
+            'time_window_start' => null,
+            'time_window_end' => null,
+            'service_minutes' => 45,
+        ]);
+
+        $service->assignOrders($tour, [$order->id]);
+
+        $order->refresh();
+        $this->assertSame(DiaryEntry::MODE_FIXED, $order->mode);
+        $this->assertSame('2026-06-01', $order->scheduled_for?->toDateString());
+        $this->assertSame('2026-06-01 08:00:00', $order->start_at?->toDateTimeString());
+        $this->assertSame('2026-06-01 08:45:00', $order->end_at?->toDateTimeString());
+    }
+
+    public function test_assigning_flex_order_respects_existing_time_window(): void
+    {
+        $driver = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        /** @var TourService $service */
+        $service = app(TourService::class);
+        $tour = $service->createDraft($driver, CarbonImmutable::parse('2026-06-02'));
+
+        $order = DiaryEntry::factory()->service()->create([
+            'organization_id' => $this->organization->id,
+            'mode' => DiaryEntry::MODE_DEADLINE,
+            'due_date' => '2026-06-30',
+            'start_at' => null,
+            'end_at' => null,
+            'time_window_start' => '14:30',
+            'time_window_end' => '15:30',
+            'service_minutes' => null,
+        ]);
+
+        $service->assignOrders($tour, [$order->id]);
+
+        $order->refresh();
+        $this->assertSame(DiaryEntry::MODE_FIXED, $order->mode);
+        $this->assertSame('2026-06-02 14:30:00', $order->start_at?->toDateTimeString());
+        $this->assertSame('2026-06-02 15:30:00', $order->end_at?->toDateTimeString());
+    }
 }

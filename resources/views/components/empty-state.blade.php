@@ -4,6 +4,7 @@
     'message' => null,
     'tone'    => 'ghost',
     'compact' => false,
+    'framed'  => false,
 ])
 
 {{--
@@ -13,12 +14,19 @@
     umgebenden weißen Karten-Container. Andere `tone`-Werte (primary, success,
     warning, error, info) behalten die akzentuierten Varianten.
 
+    Wird kein umgebender weißer Container verwendet, kann `framed` gesetzt
+    werden – dann rendert die Komponente sich selbst als weiße `<x-card>`-artige
+    Box (border + bg-base-100 + shadow-xs) und zeichnet das Empty-State-Feld
+    als grauen Akzent darin. So muss man nicht zusätzlich `<x-card>` außen
+    herum schreiben.
+
     Props:
       - icon    : optional, HTML/SVG-Icon-Markup
       - title   : optionale Überschrift
       - message : optionaler Beschreibungstext
       - tone    : ghost (Default, grau) | primary | success | warning | error | info
       - compact : kleinere Variante (geringeres Padding), z. B. innerhalb Tabellenzellen
+      - framed  : true = umgibt sich selbst mit der weißen Karten-Optik
 --}}
 
 @php
@@ -37,6 +45,10 @@
 
     $padding = $compact ? 'px-4 py-6' : 'px-6 py-10';
 @endphp
+
+@if ($framed)
+<div class="wd-card rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+@endif
 
 <div {{ $attributes->class([
     "wd-empty-state flex flex-col items-center justify-center gap-2 rounded-box text-center",
@@ -65,3 +77,7 @@
 
     {{ $slot }}
 </div>
+
+@if ($framed)
+</div>
+@endif

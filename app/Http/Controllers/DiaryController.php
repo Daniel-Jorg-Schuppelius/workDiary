@@ -86,7 +86,11 @@ class DiaryController extends Controller
     private function buildIndexQuery(Request $request): array
     {
         $query = DiaryEntry::query()
-            ->select(['id', 'user_id', 'content', 'status', 'is_archived', 'start_at', 'end_at', 'created_at'])
+            ->select([
+                'id', 'user_id', 'content', 'status', 'is_archived',
+                'start_at', 'end_at', 'created_at',
+                'mode', 'due_date', 'window_start_date', 'window_end_date', 'location_mode',
+            ])
             ->with(['user:id,name', 'tags:id,name,color,slug'])
             ->orderByDesc('start_at');
 
@@ -95,8 +99,30 @@ class DiaryController extends Controller
         }
 
         $range = $this->globalDateRange();
-        $query->whereDate('start_at', '>=', $range['from']->toDateString());
-        $query->whereDate('start_at', '<=', $range['to']->toDateString());
+        $from = $range['from']->toDateString();
+        $to = $range['to']->toDateString();
+
+        // Datumsbereich gilt modus-abhängig: fixed → start_at, deadline → due_date,
+        // window → Overlap mit window_*_date. Backlog/recurring haben kein Datum
+        // und werden immer mitgenommen, damit sie nicht im Range verschwinden.
+        $query->where(function ($q) use ($from, $to): void {
+            $q->where(function ($sub) use ($from, $to): void {
+                $sub->where('mode', DiaryEntry::MODE_FIXED)
+                    ->whereDate('start_at', '>=', $from)
+                    ->whereDate('start_at', '<=', $to);
+            });
+            $q->orWhere(function ($sub) use ($from, $to): void {
+                $sub->where('mode', DiaryEntry::MODE_DEADLINE)
+                    ->whereDate('due_date', '>=', $from)
+                    ->whereDate('due_date', '<=', $to);
+            });
+            $q->orWhere(function ($sub) use ($from, $to): void {
+                $sub->where('mode', DiaryEntry::MODE_WINDOW)
+                    ->whereDate('window_end_date', '>=', $from)
+                    ->whereDate('window_start_date', '<=', $to);
+            });
+            $q->orWhereIn('mode', [DiaryEntry::MODE_BACKLOG, DiaryEntry::MODE_RECURRING]);
+        });
 
         if ($request->boolean('mine')) {
             $query->where('user_id', Auth::id());
@@ -122,6 +148,16 @@ class DiaryController extends Controller
             $query->where('project_id', $projectId);
         }
 
+        $modeFilter = (string) $request->query('mode', '');
+        if ($modeFilter !== '' && in_array($modeFilter, DiaryEntry::MODES, true)) {
+            $query->where('mode', $modeFilter);
+        }
+
+        $locationFilter = (string) $request->query('location', '');
+        if ($locationFilter !== '' && in_array($locationFilter, DiaryEntry::LOCATION_MODES, true)) {
+            $query->where('location_mode', $locationFilter);
+        }
+
         $q = trim((string) $request->query('q', ''));
         if ($q !== '') {
             $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $q).'%';
@@ -130,9 +166,9 @@ class DiaryController extends Controller
             });
         }
 
-        $filters = $request->only('status', 'mine', 'archived', 'tag', 'project', 'q', 'entry_type');
-        $filters['from'] = $range['from']->toDateString();
-        $filters['to'] = $range['to']->toDateString();
+        $filters = $request->only('status', 'mine', 'archived', 'tag', 'project', 'q', 'entry_type', 'mode', 'location');
+        $filters['from'] = $from;
+        $filters['to'] = $to;
 
         return [$query, $filters];
     }

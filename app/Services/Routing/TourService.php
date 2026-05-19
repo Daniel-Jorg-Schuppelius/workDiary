@@ -16,6 +16,7 @@ use App\Models\Tour;
 use App\Models\TravelLog;
 use App\Models\User;
 use App\Services\Travel\TravelLogService;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -93,11 +94,49 @@ class TourService
                 if ($entry->status === DiaryEntry::STATUS_OPEN) {
                     $attrs['status'] = DiaryEntry::STATUS_IN_PROGRESS;
                 }
+
+                // Flex-Auftrag (deadline/window/backlog/recurring) wird beim
+                // Einplanen in eine Tour fixiert: Tour-Datum gibt den Termin,
+                // time_window_* oder service_minutes liefern die Uhrzeit.
+                if ($entry->mode !== DiaryEntry::MODE_FIXED) {
+                    $attrs += $this->fixateForTour($entry, $tour);
+                }
+
                 $entry->fill($attrs)->save();
             }
 
             return $tour->refresh();
         });
+    }
+
+    /**
+     * Leitet aus dem Tour-Datum, time_window_* und service_minutes ein konkretes
+     * start_at/end_at + scheduled_for ab. Wird nur für nicht-fixed Aufträge
+     * aufgerufen — der ursprüngliche Modus (Deadline/Window/Backlog) wird auf
+     * fixed promoviert, weil der Auftrag jetzt einen festen Slot hat.
+     *
+     * @return array<string, mixed>
+     */
+    private function fixateForTour(DiaryEntry $entry, Tour $tour): array
+    {
+        $date = $tour->tour_date ?? CarbonImmutable::today();
+        $base = CarbonImmutable::parse($date->toDateString());
+
+        $start = $entry->time_window_start
+            ? $base->setTimeFromTimeString((string) $entry->time_window_start)
+            : $base->setTime(8, 0);
+
+        $duration = $entry->service_minutes ?? 60;
+        $end = $entry->time_window_end
+            ? $base->setTimeFromTimeString((string) $entry->time_window_end)
+            : $start->addMinutes($duration);
+
+        return [
+            'mode' => DiaryEntry::MODE_FIXED,
+            'scheduled_for' => $date,
+            'start_at' => $start->toDateTimeString(),
+            'end_at' => $end->toDateTimeString(),
+        ];
     }
 
     /**

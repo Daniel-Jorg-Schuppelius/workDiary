@@ -1,6 +1,7 @@
-{{-- Erwartet: $project, $entry (null = neu), $tasks, $isDialog --}}
+{{-- Erwartet: $project, $entry (null = neu), $tasks, $diaryOptions, $isDialog --}}
 @php
     $isDialog  = $isDialog ?? false;
+    $diaryOptions = $diaryOptions ?? collect();
     $action    = $entry
         ? route('projects.time-entries.update', [$project, $entry])
         : route('projects.time-entries.store', $project);
@@ -61,6 +62,24 @@
                         <option value="">{{ __('Keine Aufgabe') }}</option>
                         @foreach ($tasks as $t)
                             <option value="{{ $t->id }}" @selected(old('task_id', $entry?->task_id) == $t->id)>{{ $t->title }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
+
+            @if ($diaryOptions->isNotEmpty())
+                <div class="fieldset">
+                    <label class="fieldset-label">{{ __('Auftrag (optional)') }}</label>
+                    <select name="diary_entry_id" class="select select-bordered w-full">
+                        <option value="">{{ __('Kein Auftrag') }}</option>
+                        @foreach ($diaryOptions as $d)
+                            @php
+                                $label = $d->title ?: \Illuminate\Support\Str::limit((string) $d->content, 60);
+                                if ($d->mode && $d->mode !== \App\Models\DiaryEntry::MODE_FIXED) {
+                                    $label .= ' · ' . $d->modeLabel();
+                                }
+                            @endphp
+                            <option value="{{ $d->id }}" @selected(old('diary_entry_id', $entry?->diary_entry_id) == $d->id)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
