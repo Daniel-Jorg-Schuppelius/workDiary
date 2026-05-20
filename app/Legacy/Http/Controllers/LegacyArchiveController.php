@@ -115,7 +115,9 @@ class LegacyArchiveController extends Controller
 
         /** @var User $currentUser */
         $currentUser = Auth::user();
-        $vacationIsAdmin = $currentUser->isAdmin();
+        // Admin ODER Buchhaltung dürfen alle Einträge / Urlaube sehen.
+        $canViewAll = $currentUser->canViewAllLegacyData();
+        $vacationIsAdmin = $canViewAll;
 
         $statusFilter = (string) $request->query('status', 'all');
         $allowedStatus = ['all', '-1', '1', '2', '3'];
@@ -197,11 +199,11 @@ class LegacyArchiveController extends Controller
             $vacationQuery->where('status', $request->vstatus);
         }
 
-        if (! $isAdmin && $legacyUserId > 3) {
+        if (! $canViewAll && $legacyUserId > 0) {
             $diaryQuery->where('user', $legacyUserId);
             $onCallQuery->where('user', $legacyUserId);
             $notdienstQuery->where('user', $legacyUserId);
-        } elseif ($request->filled('user')) {
+        } elseif ($canViewAll && $request->filled('user')) {
             $targetUser = (int) $request->user;
             $diaryQuery->where('user', $targetUser);
             $onCallQuery->where('user', $targetUser);
@@ -251,6 +253,7 @@ class LegacyArchiveController extends Controller
 
         return view('legacy.archive.index', [
             'isAdmin' => $isAdmin,
+            'canViewAll' => $canViewAll,
             'vacationIsAdmin' => $vacationIsAdmin,
             'legacyUserId' => $legacyUserId,
             'users' => $this->legacyUsersForSelect(),

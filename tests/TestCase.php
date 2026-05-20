@@ -11,9 +11,26 @@
 
 namespace Tests;
 
+use App\Support\DatabaseHealth;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
-    //
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Verhindert, dass DatabaseHealth-Marker zwischen Tests (oder zwischen
+        // Tests und der Dev-Umgebung) durchsickern. Tests, die absichtlich
+        // PDOExceptions ausl\u00f6sen (z. B. DatabaseUnavailableTest), w\u00fcrden
+        // sonst nachfolgende Tests pauschal in 503 laufen lassen.
+        DatabaseHealth::reset();
+    }
+
+    protected function tearDown(): void
+    {
+        DatabaseHealth::reset();
+
+        parent::tearDown();
+    }
 }

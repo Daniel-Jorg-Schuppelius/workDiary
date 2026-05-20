@@ -24,10 +24,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static void addGlobalScope(\Illuminate\Database\Eloquent\Scope<\Illuminate\Database\Eloquent\Model>|\Closure $scope)
  * @method static void creating(\Closure $callback)
  */
-trait BelongsToOrganization
-{
-    public static function bootBelongsToOrganization(): void
-    {
+trait BelongsToOrganization {
+    public static function bootBelongsToOrganization(): void {
         static::addGlobalScope(new OrganizationScope);
 
         static::creating(function (self $model): void {
@@ -38,12 +36,53 @@ trait BelongsToOrganization
                     $model->organization_id = $org->id;
                 }
             }
+
+            // Fallback: organization_id vom zugehörigen Benutzer ableiten.
+            // Hilfreich in Konsolen-/Queue-/Test-Kontexten, in denen kein
+            // HTTP-Request die currentOrganization-Bindung gesetzt hat.
+            if (
+                empty($model->organization_id)
+                && array_key_exists('user_id', $model->getAttributes())
+                && ! empty($model->getAttribute('user_id'))
+            ) {
+                $owner = \App\Models\User::query()
+                    ->whereKey($model->getAttribute('user_id'))
+                    ->first();
+                if ($owner !== null && ! empty($owner->organization_id)) {
+                    $model->organization_id = $owner->organization_id;
+                }
+            }
+
+            // Verhindert „Waisen"-Records: wenn ein eingeloggter Benutzer
+            // ohne Organisations-Zuordnung versucht, einen tenant-scoped
+            // Datensatz anzulegen, brechen wir mit klarer Fehlermeldung ab.
+            // Konsolen-/Queue-/Seeder-Kontexte ohne Auth bleiben unberührt;
+            // sie müssen organization_id ohnehin explizit setzen oder per
+            // Model::withoutEvents() bewusst globale Vorlagen erzeugen.
+            if (
+                empty($model->organization_id)
+                && \Illuminate\Support\Facades\Auth::check()
+            ) {
+                /** @var \App\Models\User|null $authUser */
+                $authUser = \Illuminate\Support\Facades\Auth::user();
+                if (
+                    $authUser instanceof \App\Models\User
+                    && empty($authUser->organization_id)
+                ) {
+                    throw new \RuntimeException(sprintf(
+                        'Kann %s nicht anlegen: Ihr Benutzerkonto ist keiner '
+                            . 'Organisation zugeordnet. Bitte legen Sie zunächst '
+                            . 'unter /admin/organizations eine Organisation an und '
+                            . 'weisen Sie Ihren Account dieser zu.',
+                        static::class
+                    ));
+                }
+            }
         });
     }
 
     /** @return BelongsTo<Organization, $this> */
-    public function organization(): BelongsTo
-    {
+    public function organization(): BelongsTo {
         return $this->belongsTo(Organization::class);
     }
 }

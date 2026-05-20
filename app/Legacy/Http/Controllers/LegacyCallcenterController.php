@@ -16,11 +16,14 @@ use App\Legacy\Http\Requests\LegacyCallcenterLoginRequest;
 use App\Legacy\Models\LegacyDiaryEntry;
 use App\Legacy\Models\LegacyNotdienst;
 use App\Legacy\Models\LegacyOnCall;
+use App\Legacy\Support\LegacyRoleResolver;
+use App\Models\User;
 use App\Services\HolidayService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\View\View;
@@ -136,40 +139,64 @@ class LegacyCallcenterController extends Controller
             ->where('bis', '>=', $today)
             ->orderByDesc('gelesen')
             ->orderBy('bis')
-            ->limit(15)
-            ->get();
+            ->limit(15);
+
+        // Sichtbarkeits-Scope: angemeldete Laravel-Nutzer ohne Admin-/Buchhaltungs-Recht
+        // dürfen nur ihre eigenen Diary-Daten sehen. Dienstpläne (Notdienst/Bereitschaft,
+        // Wochenende, Kontakte, Feiertage) bleiben für alle global sichtbar.
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+        $scopedLegacyUserId = null;
+        if ($authUser instanceof User && ! $authUser->canViewAllLegacyData()) {
+            $resolved = LegacyRoleResolver::resolveLegacyUserId($authUser);
+            $scopedLegacyUserId = $resolved > 0 ? $resolved : -1; // -1 ⇒ nichts sichtbar
+        }
+
+        $applyDiaryScope = function ($q) use ($scopedLegacyUserId) {
+            if ($scopedLegacyUserId !== null) {
+                $q->where('user', $scopedLegacyUserId);
+            }
+
+            return $q;
+        };
+
+        $openIssues = $applyDiaryScope($openIssues)->get();
 
         // Status-KPIs aktiver Tagebuch-Einträge (bis >= heute) plus erledigt der letzten 7 Tage
         $statusCounts = [
-            'open' => LegacyDiaryEntry::query()->where('gelesen', 2)->where('bis', '>=', $today)->count(),
-            'alert' => LegacyDiaryEntry::query()->where('gelesen', 3)->where('bis', '>=', $today)->count(),
-            'progress' => LegacyDiaryEntry::query()->where('gelesen', 1)->where('bis', '>=', $today)->count(),
-            'doneRecent' => LegacyDiaryEntry::query()->where('gelesen', -1)->where('bis', '>=', $today->copy()->subDays(7))->count(),
+            'open' => $applyDiaryScope(LegacyDiaryEntry::query()->where('gelesen', 2)->where('bis', '>=', $today))->count(),
+            'alert' => $applyDiaryScope(LegacyDiaryEntry::query()->where('gelesen', 3)->where('bis', '>=', $today))->count(),
+            'progress' => $applyDiaryScope(LegacyDiaryEntry::query()->where('gelesen', 1)->where('bis', '>=', $today))->count(),
+            'doneRecent' => $applyDiaryScope(LegacyDiaryEntry::query()->where('gelesen', -1)->where('bis', '>=', $today->copy()->subDays(7)))->count(),
         ];
 
         // Erweiterte Lage-Indikatoren
-        $overdueCount = LegacyDiaryEntry::query()
-            ->whereIn('gelesen', [2, 3])
-            ->where('bis', '<', $today)
-            ->count();
+        $overdueCount = $applyDiaryScope(
+            LegacyDiaryEntry::query()
+                ->whereIn('gelesen', [2, 3])
+                ->where('bis', '<', $today)
+        )->count();
 
-        $dueTodayCount = LegacyDiaryEntry::query()
-            ->whereIn('gelesen', [2, 3])
-            ->whereDate('bis', $today->toDateString())
-            ->count();
+        $dueTodayCount = $applyDiaryScope(
+            LegacyDiaryEntry::query()
+                ->whereIn('gelesen', [2, 3])
+                ->whereDate('bis', $today->toDateString())
+        )->count();
 
-        $dueNext7Count = LegacyDiaryEntry::query()
-            ->whereIn('gelesen', [2, 3])
-            ->whereBetween('bis', [$today->copy()->addDay()->startOfDay(), $today->copy()->addDays(7)->endOfDay()])
-            ->count();
+        $dueNext7Count = $applyDiaryScope(
+            LegacyDiaryEntry::query()
+                ->whereIn('gelesen', [2, 3])
+                ->whereBetween('bis', [$today->copy()->addDay()->startOfDay(), $today->copy()->addDays(7)->endOfDay()])
+        )->count();
 
         // 14-Tage-Trend: neue Einträge je Tag (Sparkline-Daten)
         $trendStart = $today->copy()->subDays(13);
-        $trendRaw = LegacyDiaryEntry::query()
-            ->selectRaw('DATE(von) as d, COUNT(*) as c')
-            ->where('von', '>=', $trendStart)
-            ->groupBy('d')
-            ->pluck('c', 'd');
+        $trendRaw = $applyDiaryScope(
+            LegacyDiaryEntry::query()
+                ->selectRaw('DATE(von) as d, COUNT(*) as c')
+                ->where('von', '>=', $trendStart)
+                ->groupBy('d')
+        )->pluck('c', 'd');
 
         $trend = collect();
         for ($i = 0; $i < 14; $i++) {
@@ -183,16 +210,17 @@ class LegacyCallcenterController extends Controller
         $trendMax = max(1, (int) $trend->max('count'));
 
         // Top-Autoren mit offenen/Eskalations-Meldungen
-        $topAuthors = LegacyDiaryEntry::query()
-            ->select(['user', DB::raw('COUNT(*) as cnt')])
-            ->with('author:id,uname')
-            ->whereIn('gelesen', [2, 3])
-            ->where('bis', '>=', $today)
-            ->whereNotNull('user')
-            ->groupBy('user')
-            ->orderByDesc('cnt')
-            ->limit(5)
-            ->get();
+        $topAuthors = $applyDiaryScope(
+            LegacyDiaryEntry::query()
+                ->select(['user', DB::raw('COUNT(*) as cnt')])
+                ->with('author:id,uname')
+                ->whereIn('gelesen', [2, 3])
+                ->where('bis', '>=', $today)
+                ->whereNotNull('user')
+                ->groupBy('user')
+                ->orderByDesc('cnt')
+                ->limit(5)
+        )->get();
 
         // Status-Mix (für kompakte Verteilungs-Anzeige)
         $statusTotal = (int) array_sum([

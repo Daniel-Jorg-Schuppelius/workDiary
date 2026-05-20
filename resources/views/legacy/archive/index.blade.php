@@ -129,7 +129,7 @@
         <form method="GET" action="{{ route('legacy.archive.index') }}" class="flex-none rounded-box border border-base-300 bg-base-100 p-4 shadow-xs md:p-5">
             <input type="hidden" name="tab" value="{{ $activeTab }}">
             <div class="flex flex-wrap items-end gap-3">
-                @if ($isAdmin)
+                @if ($canViewAll)
                     <div class="flex flex-1 flex-col min-w-44">
                         <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</span></label>
                         <select name="user" class="select select-bordered select-sm w-full">

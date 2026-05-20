@@ -124,9 +124,11 @@ Route::get('sign/timesheet/thanks', [PublicSignatureController::class, 'thanks']
 
 // Tagebuch (nur für eingeloggte Benutzer)
 Route::middleware('auth')->group(function () {
+    // Diese Routen sind für jeden eingeloggten User erreichbar – auch für
+    // Legacy-only-Accounts, die sonst keinen Zugriff auf das neue System
+    // haben. Ohne sie könnten sie weder den Modus zurückwechseln noch ihr
+    // Passwort/Profil verwalten.
     Route::post('/mode/{mode}', [HomeController::class, 'switchMode'])->name('mode.switch');
-
-    Route::get('dashboard', [DashboardController::class, '__invoke'])->name('dashboard');
 
     Route::get('account/password', [AccountPasswordController::class, 'edit'])->name('account.password.edit');
     Route::post('account/password', [AccountPasswordController::class, 'update'])->middleware('throttle:password')->name('account.password.update');
@@ -134,8 +136,13 @@ Route::middleware('auth')->group(function () {
     Route::get('account/profile', [ProfileController::class, 'edit'])->name('account.profile.edit');
     Route::put('account/profile', [ProfileController::class, 'update'])->name('account.profile.update');
 
-    Route::get('diary/export.csv', [DiaryExportController::class, 'csv'])->name('diary.export.csv');
-    Route::get('diary/export.pdf', [DiaryExportController::class, 'pdf'])->name('diary.export.pdf');
+    // Alle folgenden Routen gehören zum neuen System und sind nur für
+    // dort freigeschaltete User (is_new_system=true) bzw. Admins erreichbar.
+    Route::middleware('access.new')->group(function () {
+        Route::get('dashboard', [DashboardController::class, '__invoke'])->name('dashboard');
+
+        Route::get('diary/export.csv', [DiaryExportController::class, 'csv'])->name('diary.export.csv');
+        Route::get('diary/export.pdf', [DiaryExportController::class, 'pdf'])->name('diary.export.pdf');
 
     Route::resource('holidays', HolidayController::class)->except('show');
 
@@ -449,4 +456,5 @@ Route::middleware('auth')->group(function () {
     Route::delete('profile/api-tokens/{id}', [ApiTokenController::class, 'destroy'])
         ->whereNumber('id')
         ->name('profile.api-tokens.destroy');
+    });
 });

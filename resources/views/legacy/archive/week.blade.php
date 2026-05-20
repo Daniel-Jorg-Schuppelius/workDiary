@@ -173,7 +173,9 @@
     var btn     = document.getElementById('week-fit-toggle');
     var minW    = table ? table.dataset.minWidth : '';
     var KEY     = 'workDiaryWeekFit';
-    var fitMode = localStorage.getItem(KEY) === '1';
+    // Default: Fit-to-Screen aktiv. Nutzerwahl per localStorage hat Vorrang.
+    var stored  = localStorage.getItem(KEY);
+    var fitMode = stored === null ? true : stored === '1';
 
     function apply(fit) {
         if (!scroll || !table) return;

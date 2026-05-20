@@ -38,6 +38,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $password
  * @property string|null $remember_token
  * @property int|null $legacy_user_id
+ * @property bool $is_new_system
  * @property bool $must_change_password
  * @property array<string, mixed>|null $preferences
  * @property Carbon|null $created_at
@@ -82,12 +83,60 @@ class User extends Authenticatable
         return $this->isAdmin() || $this->hasRole(self::ROLE_BUCHHALTUNG);
     }
 
+    /**
+     * Darf alle Legacy-Daten (Diary, Bereitschaft, Notdienst, Urlaub, Archiv,
+     * Callcenter, Wochenkalender) lesend einsehen — unabhängig vom eigenen User.
+     * Schreibrechte sind davon NICHT betroffen (siehe `isAdmin()` / Policies).
+     */
+    public function canViewAllLegacyData(): bool
+    {
+        return LegacyRoleResolver::isAdmin($this) || $this->hasRole(self::ROLE_BUCHHALTUNG);
+    }
+
+    /**
+     * Existiert dieser User im Legacy-System? Kein Live-DB-Check; reines
+     * Flag auf Basis der bereits aufgelösten legacy_user_id.
+     */
+    public function existsInLegacy(): bool
+    {
+        return $this->legacy_user_id !== null;
+    }
+
+    /**
+     * Ist dieser User aktiv im neuen System freigeschaltet?
+     * Schatten-Accounts aus reinem Legacy-Login bleiben false und können
+     * daher nicht über kompromittierte Legacy-Passwörter ins neue System.
+     */
+    public function existsInNewSystem(): bool
+    {
+        return (bool) $this->is_new_system;
+    }
+
+    /**
+     * Darf der User den Legacy-Bereich der Anwendung nutzen?
+     * Admins haben immer Zugriff.
+     */
+    public function canAccessLegacy(): bool
+    {
+        return $this->isAdmin() || $this->existsInLegacy();
+    }
+
+    /**
+     * Darf der User den neuen Bereich der Anwendung nutzen?
+     * Admins haben immer Zugriff.
+     */
+    public function canAccessNew(): bool
+    {
+        return $this->isAdmin() || $this->existsInNewSystem();
+    }
+
     protected $fillable = [
         'organization_id',
         'name',
         'email',
         'password',
         'legacy_user_id',
+        'is_new_system',
         'must_change_password',
         'hourly_rate',
         'internal_rate',
@@ -102,6 +151,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'must_change_password' => 'boolean',
+        'is_new_system' => 'boolean',
         'hourly_rate' => 'decimal:2',
         'internal_rate' => 'decimal:2',
         'home_lat' => 'decimal:7',

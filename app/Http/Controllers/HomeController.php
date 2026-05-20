@@ -11,6 +11,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,17 +21,31 @@ use Illuminate\View\View;
 
 class HomeController extends Controller
 {
-    public function __invoke(): View|RedirectResponse
+    public function __invoke(Request $request): View|RedirectResponse
     {
-        $currentMode = session('work_mode', 'legacy');
+        $currentMode = $request->session()->get('work_mode', 'legacy');
         $canViewSensitive = Auth::check();
         $legacyConfigured = filled(config('database.connections.legacy.database'));
 
-        if ($canViewSensitive && $currentMode === 'legacy' && $legacyConfigured) {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if ($user instanceof User) {
+            // Modus auf einen tatsächlich erlaubten Wert korrigieren.
+            if ($currentMode === 'legacy' && ! $user->canAccessLegacy()) {
+                $currentMode = 'new';
+                $request->session()->put('work_mode', 'new');
+            } elseif ($currentMode === 'new' && ! $user->canAccessNew()) {
+                $currentMode = 'legacy';
+                $request->session()->put('work_mode', 'legacy');
+            }
+        }
+
+        if ($canViewSensitive && $currentMode === 'legacy' && $legacyConfigured
+            && (! $user instanceof User || $user->canAccessLegacy())) {
             return redirect()->route('legacy.diary.week');
         }
 
-        if ($canViewSensitive) {
+        if ($canViewSensitive && (! $user instanceof User || $user->canAccessNew())) {
             return redirect()->route('dashboard');
         }
 
@@ -85,6 +100,17 @@ class HomeController extends Controller
             $request->session()->put('work_mode', 'new');
 
             return back()->with('success', __('Legacy-Modus ist nicht verfügbar (Legacy-DB nicht konfiguriert).'));
+        }
+
+        /** @var User|null $user */
+        $user = $request->user();
+        if ($user instanceof User) {
+            if ($mode === 'legacy' && ! $user->canAccessLegacy()) {
+                return back()->with('error', __('Kein Zugriff auf das Legacy-System.'));
+            }
+            if ($mode === 'new' && ! $user->canAccessNew()) {
+                return back()->with('error', __('Kein Zugriff auf das neue System.'));
+            }
         }
 
         $request->session()->put('work_mode', $mode);

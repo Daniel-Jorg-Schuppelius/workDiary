@@ -70,7 +70,10 @@ final class DatabaseHealth
     {
         if ($connection === null) {
             self::$requestUnavailable = [];
-            foreach ((array) glob(self::markerPath('*')) as $file) {
+            // Hinweis: markerPath('*') w\u00fcrde das Wildcard via preg_replace zu '_'
+            // sanitisieren. Daher das Glob-Pattern hier direkt bauen.
+            $pattern = storage_path('framework/cache/db-down-*.flag');
+            foreach ((array) glob($pattern) as $file) {
                 @unlink((string) $file);
             }
 

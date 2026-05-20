@@ -50,12 +50,15 @@ class LegacyDiaryController extends Controller
     {
         $weekOffset = (int) $request->query('week', 0);
         $weekDate = trim((string) $request->query('week_date', ''));
-        $legacyUserId = (int) (Auth::user()->legacy_user_id ?? 0);
+        /** @var User $authUser */
+        $authUser = Auth::user();
+        $legacyUserId = (int) ($authUser->legacy_user_id ?? 0);
         $isAdmin = $legacyUserId > 0 && $legacyUserId <= 3;
+        $canViewAll = $authUser->canViewAllLegacyData();
 
         ['monday' => $monday, 'sunday' => $sunday, 'weekOffset' => $weekOffset, 'selectedWeek' => $selectedWeek] = $calendar->resolveWindow($weekOffset, $weekDate);
 
-        $users = ($legacyUserId === 0 || $isAdmin)
+        $users = $canViewAll
             ? LegacyUser::query()->where('id', '>', 3)->orderBy('uname')->get(['id', 'uname'])
             : LegacyUser::query()->where('id', $legacyUserId)->get(['id', 'uname']);
 
@@ -90,6 +93,7 @@ class LegacyDiaryController extends Controller
             'weekOffset' => $weekOffset,
             'selectedWeek' => $selectedWeek,
             'isAdmin' => $isAdmin,
+            'canViewAll' => $canViewAll,
             'legacyUserId' => $legacyUserId,
             'entriesByUserDay' => $entriesByUserDay,
             'oncallByUserDay' => $oncallByUserDay,

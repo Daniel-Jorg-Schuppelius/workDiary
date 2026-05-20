@@ -77,7 +77,7 @@
                 <input type="hidden" name="dir"  value="{{ $currentDir }}">
                 <div class="flex flex-wrap items-end gap-3">
                     @php /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Legacy\Models\LegacyUser> $users */ @endphp
-                    @if ($isAdmin && $users->isNotEmpty())
+                    @if ($canViewAll && $users->isNotEmpty())
                         <div class="flex flex-1 flex-col min-w-44">
                             <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</span></label>
                             <select name="user" class="select select-bordered select-sm w-full">
@@ -99,10 +99,12 @@
                         </select>
                     </div>
                     <x-date-range :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''" />
-                    <label class="label cursor-pointer gap-2 py-1">
-                        <input type="checkbox" name="mine" value="1" @checked(!empty($filters['mine'])) class="toggle toggle-sm toggle-primary">
-                        <span class="label-text text-sm">{{ __('Nur meine') }}</span>
-                    </label>
+                    @if ($canViewAll && ($canFilterMine ?? false))
+                        <label class="label cursor-pointer gap-2 py-1">
+                            <input type="checkbox" name="mine" value="1" @checked(!empty($filters['mine'])) class="toggle toggle-sm toggle-primary">
+                            <span class="label-text text-sm">{{ __('Nur meine') }}</span>
+                        </label>
+                    @endif
                     <div class="ml-auto flex items-end gap-2">
                         <x-icon-btn icon="filter_alt" tone="primary" size="sm" type="submit" show-label>{{ __('Filtern') }}</x-icon-btn>
                         @if (array_filter($tabFilters))
@@ -269,7 +271,7 @@
             <form method="GET" action="{{ route('legacy.diary.index') }}" class="flex-none rounded-box border border-base-300 bg-base-100 p-4 shadow-xs md:p-5">
                 <input type="hidden" name="tab" value="bereitschaft">
                 <div class="flex flex-wrap items-end gap-3">
-                    @if ($isAdmin)
+                    @if ($canViewAll)
                         <div class="flex flex-col min-w-48">
                             <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</span></label>
                             <select name="user" class="select select-bordered select-sm w-full">
@@ -352,7 +354,7 @@
             <form method="GET" action="{{ route('legacy.diary.index') }}" class="flex-none rounded-box border border-base-300 bg-base-100 p-4 shadow-xs md:p-5">
                 <input type="hidden" name="tab" value="notdienst">
                 <div class="flex flex-wrap items-end gap-3">
-                    @if ($isAdmin)
+                    @if ($canViewAll)
                         <div class="flex flex-col min-w-48">
                             <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</span></label>
                             <select name="user" class="select select-bordered select-sm w-full">

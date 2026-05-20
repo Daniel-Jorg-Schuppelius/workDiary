@@ -21,12 +21,10 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class TagsTest extends TestCase
-{
+class TagsTest extends TestCase {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         // Tagebuch-Listing nutzt den globalen Range; auf das ganze Jahr
@@ -34,10 +32,9 @@ class TagsTest extends TestCase
         app(DateRangeContext::class)->set(DateRangeContext::PRESET_THIS_YEAR);
     }
 
-    public function test_tag_can_be_attached_to_diary_shift_assignment(): void
-    {
+    public function test_tag_can_be_attached_to_diary_shift_assignment(): void {
         $user = User::factory()->user()->create();
-        $tag = Tag::create(['name' => 'Wartung']);
+        $tag = Tag::create(['name' => 'Wartung', 'organization_id' => $user->organization_id]);
 
         $entry = DiaryEntry::factory()->for($user)->create();
         $shift = OnCallShift::factory()->for($user)->create();
@@ -52,8 +49,7 @@ class TagsTest extends TestCase
         $this->assertSame(1, $tag->assignments()->count());
     }
 
-    public function test_find_or_create_by_name_is_case_insensitive(): void
-    {
+    public function test_find_or_create_by_name_is_case_insensitive(): void {
         $a = Tag::findOrCreateByName('Backup');
         $b = Tag::findOrCreateByName('backup');
 
@@ -61,18 +57,16 @@ class TagsTest extends TestCase
         $this->assertSame(1, Tag::count());
     }
 
-    public function test_unique_slug_avoids_collisions(): void
-    {
+    public function test_unique_slug_avoids_collisions(): void {
         Tag::create(['name' => 'Alpha', 'slug' => 'alpha']);
         $slug = Tag::uniqueSlug('Alpha');
 
         $this->assertSame('alpha-2', $slug);
     }
 
-    public function test_diary_store_persists_existing_and_new_tags(): void
-    {
+    public function test_diary_store_persists_existing_and_new_tags(): void {
         $user = User::factory()->user()->create();
-        $existing = Tag::create(['name' => 'Telefon']);
+        $existing = Tag::create(['name' => 'Telefon', 'organization_id' => $user->organization_id]);
 
         $this->actingAs($user)
             ->post(route('diary.store'), [
@@ -90,10 +84,9 @@ class TagsTest extends TestCase
         $this->assertSame(3, Tag::count());
     }
 
-    public function test_diary_index_filters_by_tag(): void
-    {
+    public function test_diary_index_filters_by_tag(): void {
         $user = User::factory()->user()->create();
-        $tag = Tag::create(['name' => 'Filterbar']);
+        $tag = Tag::create(['name' => 'Filterbar', 'organization_id' => $user->organization_id]);
 
         $matching = DiaryEntry::factory()->for($user)->create(['content' => 'Treffer Tag']);
         $other = DiaryEntry::factory()->for($user)->create(['content' => 'Ohne Tag']);
@@ -106,8 +99,7 @@ class TagsTest extends TestCase
             ->assertDontSee('Ohne Tag');
     }
 
-    public function test_admin_can_create_and_delete_tag_via_routes(): void
-    {
+    public function test_admin_can_create_and_delete_tag_via_routes(): void {
         $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)
@@ -124,10 +116,9 @@ class TagsTest extends TestCase
         $this->assertNull(Tag::find($tag->id));
     }
 
-    public function test_non_admin_cannot_update_or_delete_tag(): void
-    {
+    public function test_non_admin_cannot_update_or_delete_tag(): void {
         $user = User::factory()->user()->create();
-        $tag = Tag::create(['name' => 'Schutz']);
+        $tag = Tag::create(['name' => 'Schutz', 'organization_id' => $user->organization_id]);
 
         $this->actingAs($user)
             ->put(route('tags.update', $tag), ['name' => 'Neu'])
@@ -138,10 +129,9 @@ class TagsTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_tags_index_renders_for_authenticated_user(): void
-    {
+    public function test_tags_index_renders_for_authenticated_user(): void {
         $user = User::factory()->user()->create();
-        Tag::create(['name' => 'Sichtbar']);
+        Tag::create(['name' => 'Sichtbar', 'organization_id' => $user->organization_id]);
 
         $this->actingAs($user)
             ->get(route('tags.index'))

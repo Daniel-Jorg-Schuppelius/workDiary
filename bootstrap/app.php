@@ -9,12 +9,14 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
+use App\Http\Middleware\EnsureNewSystemAccess;
 use App\Http\Middleware\EnsureValidLicense;
 use App\Http\Middleware\ForcePasswordChange;
 use App\Http\Middleware\HandleDatabaseUnavailable;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\SetOrganizationContext;
+use App\Legacy\Http\Middleware\EnsureLegacyAccess;
 use App\Legacy\Http\Middleware\EnsureLegacyCallcenterAuthenticated;
 use App\Legacy\Http\Middleware\EnsureLegacyWriteAllowed;
 use App\Support\DatabaseHealth;
@@ -52,6 +54,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'legacy.callcenter.auth' => EnsureLegacyCallcenterAuthenticated::class,
             'legacy.write' => EnsureLegacyWriteAllowed::class,
+            'access.legacy' => EnsureLegacyAccess::class,
+            'access.new' => EnsureNewSystemAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

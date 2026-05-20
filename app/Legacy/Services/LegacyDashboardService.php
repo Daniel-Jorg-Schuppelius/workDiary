@@ -63,10 +63,13 @@ class LegacyDashboardService
         $tab = $this->resolveTab((string) $request->query('tab', 'auftraege'));
         $legacyUserId = LegacyRoleResolver::resolveLegacyUserId($currentUser);
         $isAdmin = LegacyRoleResolver::isAdmin($currentUser);
-        $vacationIsAdmin = $currentUser->isAdmin();
+        // Sichtbarkeit aller Legacy-Daten: Legacy-Admin ODER Spatie-Rolle "buchhaltung".
+        // Schreibrechte (Anlegen/Bearbeiten/Bulk) bleiben weiterhin Admin-only via $isAdmin.
+        $canViewAll = $currentUser->canViewAllLegacyData();
+        $vacationCanViewAll = $canViewAll;
 
-        [$diaryQuery, $sort, $dir] = $this->buildDiaryQuery($request, $isAdmin, $legacyUserId, $tab);
-        $diaryCounts = $this->diaryCounts();
+        [$diaryQuery, $sort, $dir] = $this->buildDiaryQuery($request, $canViewAll, $legacyUserId, $tab);
+        $diaryCounts = $this->diaryCounts($request, $canViewAll, $legacyUserId);
 
         // Sort/Dir-Anzeige in der View tab-spezifisch berechnen, damit das Icon
         // jeweils die echte Sortierreihenfolge der aktiven Tab-Tabelle widerspiegelt.
@@ -74,9 +77,9 @@ class LegacyDashboardService
         $rawDir = strtolower((string) $request->query('dir', '')) === 'asc' ? 'asc' : 'desc';
         [$tabSort, $tabDir] = $this->resolveTabSort($tab, $rawSort, $rawDir);
 
-        $oncallQuery = $this->buildLegacyDutyQuery(LegacyOnCall::query(), $request, $isAdmin, $legacyUserId, $tab === 'bereitschaft' ? $sort : null, $dir);
-        $notdienstQuery = $this->buildLegacyDutyQuery(LegacyNotdienst::query(), $request, $isAdmin, $legacyUserId, $tab === 'notdienst' ? $sort : null, $dir);
-        $vacationQuery = $this->buildVacationQuery($request, $currentUser, $vacationIsAdmin, $tab === 'urlaub' ? $sort : null, $dir);
+        $oncallQuery = $this->buildLegacyDutyQuery(LegacyOnCall::query(), $request, $canViewAll, $legacyUserId, $tab === 'bereitschaft' ? $sort : null, $dir);
+        $notdienstQuery = $this->buildLegacyDutyQuery(LegacyNotdienst::query(), $request, $canViewAll, $legacyUserId, $tab === 'notdienst' ? $sort : null, $dir);
+        $vacationQuery = $this->buildVacationQuery($request, $currentUser, $vacationCanViewAll, $tab === 'urlaub' ? $sort : null, $dir);
 
         $today = now()->toDateString();
         $oncallCounts = $this->dutyCounts($oncallQuery, $today);
@@ -92,6 +95,8 @@ class LegacyDashboardService
         return [
             'tab' => $tab,
             'isAdmin' => $isAdmin,
+            'canViewAll' => $canViewAll,
+            'canFilterMine' => $legacyUserId > 0,
             'legacyUserId' => $legacyUserId,
             'tabCounts' => $tabCounts,
             'entries' => $diaryQuery->paginate(20, ['*'], 'dpage')->withQueryString(),
@@ -111,8 +116,8 @@ class LegacyDashboardService
             ),
             'vacations' => $vacationQuery->paginate(15, ['*'], 'vpage')->withQueryString(),
             'vacationKpis' => $this->vacationKpis($vacationQuery, $tabCounts['urlaub']),
-            'vacationIsAdmin' => $vacationIsAdmin,
-            'vacationUsers' => $vacationIsAdmin
+            'vacationIsAdmin' => $vacationCanViewAll,
+            'vacationUsers' => $vacationCanViewAll
                 ? User::query()->orderBy('name')->get(['id', 'name'])
                 : collect(),
             'sort' => $tabSort,
@@ -157,7 +162,7 @@ class LegacyDashboardService
     /**
      * @return array{0:Builder<LegacyDiaryEntry>,1:string,2:string}
      */
-    private function buildDiaryQuery(Request $request, bool $isAdmin, int $legacyUserId, string $tab = 'auftraege'): array
+    private function buildDiaryQuery(Request $request, bool $canViewAll, int $legacyUserId, string $tab = 'auftraege'): array
     {
         // Default-Sortierung wie im Archiv: nach Enddatum (bis) absteigend.
         // sort/dir gelten nur für den aktiven Tab; sonst Default verwenden.
@@ -184,15 +189,19 @@ class LegacyDashboardService
         }
         $authUser = $request->user();
         $authLegacyUserId = $authUser !== null ? (int) ($authUser->legacy_user_id ?? 0) : 0;
-        if ($request->boolean('mine') && $authLegacyUserId > 0) {
-            $query->where('user', $authLegacyUserId);
+        // "Nur meine" filtert immer auf die eigene Legacy-User-ID. Für Nicht-Admin/
+        // Nicht-Buchhaltung greift ohnehin der untenstehende Scope; für Admin/Buchhaltung
+        // ist dies der wesentliche Schalter.
+        $mineUserId = $authLegacyUserId > 0 ? $authLegacyUserId : $legacyUserId;
+        if ($request->boolean('mine') && $mineUserId > 0) {
+            $query->where('user', $mineUserId);
         }
 
-        // Mitarbeiter-Filter: Admins dürfen nach beliebigem Legacy-User filtern,
-        // Nicht-Admins sehen nur ihre eigenen Einträge.
-        if (! $isAdmin && $legacyUserId > 3) {
+        // Mitarbeiter-Filter: Wer alle Daten sehen darf (Admin oder Buchhaltung),
+        // darf nach beliebigem Legacy-User filtern. Normale User sehen nur eigene Einträge.
+        if (! $canViewAll && $legacyUserId > 0) {
             $query->where('user', $legacyUserId);
-        } elseif ($isAdmin && $request->filled('user')) {
+        } elseif ($canViewAll && $request->filled('user')) {
             $query->where('user', (int) $request->user);
         }
 
@@ -202,10 +211,23 @@ class LegacyDashboardService
     /**
      * @return array{all:int,open:int,alert:int,done:int}
      */
-    private function diaryCounts(): array
+    private function diaryCounts(Request $request, bool $canViewAll, int $legacyUserId): array
     {
+        $query = LegacyDiaryEntry::query();
+        if (! $canViewAll && $legacyUserId > 0) {
+            $query->where('user', $legacyUserId);
+        } elseif ($canViewAll && $request->filled('user')) {
+            $query->where('user', (int) $request->user);
+        }
+
+        $authUser = $request->user();
+        $authLegacyUserId = $authUser !== null ? (int) ($authUser->legacy_user_id ?? 0) : 0;
+        $mineUserId = $authLegacyUserId > 0 ? $authLegacyUserId : $legacyUserId;
+        if ($request->boolean('mine') && $mineUserId > 0) {
+            $query->where('user', $mineUserId);
+        }
         /** @var LegacyDiaryEntry|null $row */
-        $row = LegacyDiaryEntry::query()->selectRaw(
+        $row = $query->selectRaw(
             'COUNT(*) as cnt_all,'.
                 'SUM(gelesen = 2) as cnt_open,'.
                 'SUM(gelesen = 3) as cnt_alert,'.
@@ -227,7 +249,7 @@ class LegacyDashboardService
      * @param  Builder<TModel>  $query
      * @return Builder<TModel>
      */
-    private function buildLegacyDutyQuery(Builder $query, Request $request, bool $isAdmin, int $legacyUserId, ?string $sort = null, string $dir = 'desc'): Builder
+    private function buildLegacyDutyQuery(Builder $query, Request $request, bool $canViewAll, int $legacyUserId, ?string $sort = null, string $dir = 'desc'): Builder
     {
         $query->with('mitarbeiter:id,uname');
 
@@ -240,9 +262,9 @@ class LegacyDashboardService
             $query->orderBy('von')->orderBy('user');
         }
 
-        if (! $isAdmin && $legacyUserId > 3) {
+        if (! $canViewAll && $legacyUserId > 0) {
             $query->where('user', $legacyUserId);
-        } elseif ($request->filled('user')) {
+        } elseif ($canViewAll && $request->filled('user')) {
             $query->where('user', (int) $request->user);
         }
         if ($request->filled('from')) {
@@ -258,7 +280,7 @@ class LegacyDashboardService
     /**
      * @return Builder<Vacation>
      */
-    private function buildVacationQuery(Request $request, User $currentUser, bool $isAdmin, ?string $sort = null, string $dir = 'desc'): Builder
+    private function buildVacationQuery(Request $request, User $currentUser, bool $canViewAll, ?string $sort = null, string $dir = 'desc'): Builder
     {
         $query = Vacation::query()->with('user:id,name');
 
@@ -268,7 +290,7 @@ class LegacyDashboardService
             $query->orderByDesc('start_date');
         }
 
-        if (! $isAdmin) {
+        if (! $canViewAll) {
             $query->where('user_id', $currentUser->id);
         } elseif ($request->filled('user_id')) {
             $query->where('user_id', (int) $request->user_id);

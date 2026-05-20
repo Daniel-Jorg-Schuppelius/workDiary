@@ -266,6 +266,10 @@
             $isLegacyMode = $effectiveMode === 'legacy';
             $legacyUserId = \App\Legacy\Support\LegacyRoleResolver::resolveLegacyUserId(Auth::user());
             $isLegacyAdmin = \App\Legacy\Support\LegacyRoleResolver::isAdmin(Auth::user());
+            $_authUser = Auth::user();
+            $canAccessLegacy = $_authUser instanceof \App\Models\User ? $_authUser->canAccessLegacy() : false;
+            $canAccessNew = $_authUser instanceof \App\Models\User ? $_authUser->canAccessNew() : false;
+            $showModeSwitch = $legacyConfigured && $canAccessLegacy && $canAccessNew;
             $currentLocale = app()->getLocale();
             $supportedLocales = [
                 'de' => ['label' => __('Deutsch'),  'code' => 'DE'],
@@ -332,7 +336,9 @@
                             $manageNavItems = [];
                             $adminNavItems  = [];
                             if ($isLegacyAdmin) {
-                                $manageNavItems[] = ['route' => 'legacy.users.index', 'label' => __('Mitarbeiter'), 'icon' => 'group',           'modal' => false];
+                                if ($isLegacyMode) {
+                                    $manageNavItems[] = ['route' => 'legacy.users.index', 'label' => __('Mitarbeiter'), 'icon' => 'group', 'modal' => false];
+                                }
                                 $manageNavItems[] = ['route' => 'holidays.index',     'label' => __('Feiertage'),   'icon' => 'celebration',     'modal' => false];
                                 if (! $isLegacyMode) {
                                     $manageNavItems[] = ['route' => 'qualifications.index',         'label' => __('Qualifikationen'),  'icon' => 'workspace_premium','modal' => false];
@@ -349,7 +355,12 @@
                                 $adminNavItems[] = ['route' => 'admin.legacy-migration.index',      'label' => __('Legacy-Migration'), 'icon' => 'sync_alt',         'modal' => false];
                             }
                             if (! $isLegacyMode && \Illuminate\Support\Facades\Gate::allows('manage-members')) {
-                                $manageNavItems[] = ['route' => 'org.members.index', 'label' => __('Mitglieder'), 'icon' => 'badge', 'modal' => false];
+                                $manageNavItems[] = ['route' => 'org.members.index', 'label' => __('Mitarbeiter'), 'icon' => 'group', 'modal' => false];
+                            } elseif (! $isLegacyMode && $_authUser instanceof \App\Models\User && $_authUser->isAdmin()) {
+                                // Globaler Admin ohne Org-Kontext: Eintrag verlinkt auf die
+                                // Organisations-Verwaltung, damit der Admin sich (oder eine
+                                // Organisation) zuordnen kann, bevor Mitglieder gepflegt werden.
+                                $manageNavItems[] = ['route' => 'admin.organizations.index', 'label' => __('Mitarbeiter'), 'icon' => 'group', 'modal' => false];
                             }
                             if (! $isLegacyMode) {
                                 $manageNavItems[] = ['route' => 'activity-categories.index', 'label' => __('Tätigkeitskategorien'), 'icon' => 'category', 'modal' => false];
@@ -692,8 +703,8 @@
                                     @endforeach
                                 </ul>
                             </div>
-                            @if ($legacyConfigured)
-                                {{-- Legacy-Toggle-Switch --}}
+                            @if ($showModeSwitch)
+                                {{-- Legacy-Toggle-Switch (nur sichtbar wenn der User Zugriff auf BEIDE Bereiche hat) --}}
                                 <form method="POST"
                                       action="{{ route('mode.switch', $isLegacyMode ? 'new' : 'legacy') }}"
                                       id="mode-switch-form"
