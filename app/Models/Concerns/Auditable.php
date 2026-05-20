@@ -68,6 +68,7 @@ trait Auditable
     {
         return AuditLog::create([
             'user_id' => Auth::id(),
+            'organization_id' => $this->resolveAuditOrganizationId($event),
             'event' => $event,
             'auditable_type' => static::class,
             'auditable_id' => $this->getKey(),
@@ -75,6 +76,46 @@ trait Auditable
             'ip' => Request::ip(),
             'user_agent' => substr((string) Request::userAgent(), 0, 255),
         ]);
+    }
+
+    /**
+     * Ermittelt die organization_id für den AuditLog-Eintrag.
+     * Reihenfolge: eigenes Modell ist Organization → eigene ID (außer bei
+     * `deleted`, dann null, da die FK-Referenz sonst ins Leere zeigt);
+     * sonst organization_id des Modells; sonst aktive Org aus dem Container;
+     * sonst Org des eingeloggten Users.
+     */
+    protected function resolveAuditOrganizationId(string $event = ''): ?int
+    {
+        if ($this instanceof \App\Models\Organization) {
+            // Bei `deleted` ist die Org-Zeile bereits weg; ein FK-Insert
+            // mit dieser ID würde eine PDOException (FK-Constraint) werfen
+            // und den globalen Exception-Handler die DB als "unavailable"
+            // markieren lassen. Wir loggen das Delete daher org-übergreifend.
+            if ($event === 'deleted') {
+                return null;
+            }
+            return (int) $this->getKey();
+        }
+
+        $own = $this->getAttribute('organization_id');
+        if (! empty($own)) {
+            return (int) $own;
+        }
+
+        if (app()->bound('currentOrganization')) {
+            $org = app('currentOrganization');
+            if ($org instanceof \App\Models\Organization) {
+                return (int) $org->id;
+            }
+        }
+
+        $authUser = Auth::user();
+        if ($authUser instanceof \App\Models\User && ! empty($authUser->organization_id)) {
+            return (int) $authUser->organization_id;
+        }
+
+        return null;
     }
 
     /**

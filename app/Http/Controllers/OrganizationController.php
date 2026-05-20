@@ -24,6 +24,20 @@ class OrganizationController extends Controller
     {
         Gate::authorize('viewAny', Organization::class);
 
+        // Recovery: ist der Admin (noch) keiner Org zugeordnet, aber es
+        // existiert mindestens eine Organisation (etwa nach Löschen der
+        // eigenen Org oder Bootstrap), weisen wir ihn der ersten zu.
+        // Damit greifen org-gebundene Policies (manage-members, Branding,
+        // …) wieder, ohne dass der Admin die Zuordnung manuell pflegen
+        // muss. Cross-Org-Wechsel bleibt über den Org-Switcher möglich.
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if ($user instanceof \App\Models\User && $user->isAdmin() && empty($user->organization_id)) {
+            $first = Organization::query()->orderBy('id')->first();
+            if ($first instanceof Organization) {
+                $user->forceFill(['organization_id' => $first->id])->save();
+            }
+        }
+
         $query = Organization::query()->withoutGlobalScopes()->withCount('users');
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [
@@ -61,7 +75,16 @@ class OrganizationController extends Controller
 
         $data['is_active'] = $request->boolean('is_active', true);
 
-        Organization::create($data);
+        $organization = Organization::create($data);
+
+        // Wenn der ausführende Admin (noch) keiner Organisation zugeordnet
+        // ist – typischerweise nach Lösch-/Bootstrap-Szenarien – weisen wir
+        // ihn der frisch angelegten Org zu, damit Org-bezogene Policies
+        // (z. B. manage-members) sofort greifen.
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if ($user instanceof \App\Models\User && empty($user->organization_id)) {
+            $user->forceFill(['organization_id' => $organization->id])->save();
+        }
 
         return redirect()->route('admin.organizations.index')
             ->with('success', __('Organisation wurde erstellt.'));
@@ -174,7 +197,39 @@ class OrganizationController extends Controller
     {
         Gate::authorize('delete', $organization);
 
+        // Verhindere, dass der Admin sich selbst aussperrt, indem er die
+        // letzte vorhandene Organisation löscht: ohne Org gibt es keinen
+        // Tenant-Kontext mehr (und der Guardrail in BelongsToOrganization
+        // würde jede weitere Schreibaktion blockieren).
+        $remaining = Organization::query()->where('id', '!=', $organization->id)->count();
+        if ($remaining === 0) {
+            return redirect()->route('admin.organizations.index')
+                ->with('error', __('Die letzte Organisation kann nicht gelöscht werden. Legen Sie zuerst eine neue Organisation an.'));
+        }
+
+        $deletedId = (int) $organization->id;
         $organization->delete();
+
+        // Session-Override (Org-Switcher) bereinigen, falls der Admin
+        // gerade die gelöschte Org aktiv hatte.
+        $session = request()->session();
+        if ((int) $session->get(\App\Http\Controllers\OrganizationSwitchController::SESSION_KEY) === $deletedId) {
+            $session->forget(\App\Http\Controllers\OrganizationSwitchController::SESSION_KEY);
+        }
+
+        // Falls der ausführende Admin selbst dieser Org zugeordnet war
+        // (FK nullOnDelete hat seine organization_id geleert), weisen wir
+        // ihn der ersten verfügbaren Org zu, damit er weiterarbeiten kann.
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if ($user instanceof \App\Models\User) {
+            $user->refresh();
+            if (empty($user->organization_id)) {
+                $fallback = Organization::query()->orderBy('id')->first();
+                if ($fallback instanceof Organization) {
+                    $user->forceFill(['organization_id' => $fallback->id])->save();
+                }
+            }
+        }
 
         return redirect()->route('admin.organizations.index')
             ->with('success', __('Organisation wurde gelöscht.'));

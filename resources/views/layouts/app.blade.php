@@ -270,6 +270,18 @@
             $canAccessLegacy = $_authUser instanceof \App\Models\User ? $_authUser->canAccessLegacy() : false;
             $canAccessNew = $_authUser instanceof \App\Models\User ? $_authUser->canAccessNew() : false;
             $showModeSwitch = $legacyConfigured && $canAccessLegacy && $canAccessNew;
+
+            // Org-Switcher: nur für Admins, und nur wenn überhaupt
+            // mehrere Organisationen existieren. Aktive Org kommt aus dem
+            // (via SetOrganizationContext-Middleware bereits aufgelösten)
+            // Container-Binding currentOrganization.
+            $_isGlobalAdmin = $_authUser instanceof \App\Models\User && $_authUser->isAdmin();
+            $_orgList = $_isGlobalAdmin
+                ? \App\Models\Organization::query()->orderBy('name')->get(['id', 'name'])
+                : collect();
+            $_activeOrg = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+            $_activeOrgId = $_activeOrg ? (int) $_activeOrg->id : null;
+            $showOrgSwitch = $_isGlobalAdmin && $_orgList->count() > 1;
             $currentLocale = app()->getLocale();
             $supportedLocales = [
                 'de' => ['label' => __('Deutsch'),  'code' => 'DE'],
@@ -729,6 +741,37 @@
                                                      transform transition-transform duration-200
                                                      {{ $isLegacyMode ? 'translate-x-4' : 'translate-x-0' }}"></span>
                                     </button>
+                                </form>
+                            @endif
+                            @if ($showModeSwitch && $showOrgSwitch && ! $isLegacyMode)
+                                {{-- Visueller Trenner zwischen Mode- und Org-Switch --}}
+                                <span class="hidden sm:block h-5 w-px bg-base-300" aria-hidden="true"></span>
+                            @endif
+                            @if ($showOrgSwitch && ! $isLegacyMode)
+                                {{-- Org-Switcher: nur fuer globale Admins, nur im neuen Modus sinnvoll. --}}
+                                <form method="POST"
+                                      action="{{ route('admin.organizations.switch') }}"
+                                      id="org-switch-form"
+                                      class="flex items-center gap-1.5">
+                                    @csrf
+                                    <label for="org-switch-select"
+                                           class="text-[0.65rem] font-semibold uppercase tracking-widest text-base-content/60 select-none"
+                                           title="{{ __('Aktive Organisation') }}">
+                                        {{ __('Org') }}
+                                    </label>
+                                    <select name="organization_id"
+                                            id="org-switch-select"
+                                            class="select select-bordered select-xs max-w-40"
+                                            onchange="this.form.submit()"
+                                            aria-label="{{ __('Aktive Organisation waehlen') }}"
+                                            title="{{ __('Aktive Organisation waehlen') }}">
+                                        @foreach ($_orgList as $_orgItem)
+                                            <option value="{{ $_orgItem->id }}"
+                                                    {{ $_activeOrgId === (int) $_orgItem->id ? 'selected' : '' }}>
+                                                {{ $_orgItem->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </form>
                             @endif
                             <div class="dropdown dropdown-end">

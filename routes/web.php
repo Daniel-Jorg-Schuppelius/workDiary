@@ -396,6 +396,11 @@ Route::middleware('auth')->group(function () {
         ->names('admin.organizations')
         ->parameters(['organizations' => 'organization']);
 
+    // Org-Switcher: globalen Admins erlauben, den aktiven
+    // Organisations-Kontext per Session umzuschalten.
+    Route::post('admin/organizations/switch', [\App\Http\Controllers\OrganizationSwitchController::class, 'update'])
+        ->name('admin.organizations.switch');
+
     // Branding-Self-Service der eigenen Organisation (Logos, Farben,
     // Kontakt, PDF-Konfig). Logo-Uploads laufen über AttachmentController.
     Route::get('admin/branding', [BrandingController::class, 'edit'])->name('admin.branding.edit');

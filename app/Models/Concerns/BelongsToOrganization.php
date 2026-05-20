@@ -69,13 +69,7 @@ trait BelongsToOrganization {
                     $authUser instanceof \App\Models\User
                     && empty($authUser->organization_id)
                 ) {
-                    throw new \RuntimeException(sprintf(
-                        'Kann %s nicht anlegen: Ihr Benutzerkonto ist keiner '
-                            . 'Organisation zugeordnet. Bitte legen Sie zunächst '
-                            . 'unter /admin/organizations eine Organisation an und '
-                            . 'weisen Sie Ihren Account dieser zu.',
-                        static::class
-                    ));
+                    throw new \App\Exceptions\MissingOrganizationException(static::class);
                 }
             }
         });

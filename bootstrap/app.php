@@ -69,6 +69,27 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null;
             }
 
+            // Nur echte Verbindungsprobleme als "DB unavailable" behandeln.
+            // SQLSTATE-Codes wie 23000 (Integrity constraint), 22xxx
+            // (Data exception) oder 42xxx (Syntax/Access) zeigen, dass die
+            // DB erreichbar ist, aber die Query selbst fehlerhaft war.
+            // Würden wir auch diese als "down" markieren, sperrte ein
+            // einzelner FK-Verstoß die gesamte Anwendung für 60 s aus.
+            // Rohes PDOException ohne errorInfo (typisch für Connect-
+            // Fehler bevor eine Query lief) gilt weiterhin als "down".
+            $pdo = $e instanceof PDOException ? $e : $e->getPrevious();
+            $sqlState = '';
+            if ($pdo instanceof PDOException && is_array($pdo->errorInfo ?? null) && isset($pdo->errorInfo[0])) {
+                $sqlState = (string) $pdo->errorInfo[0];
+            }
+            $isConnectionIssue = $sqlState === ''
+                || str_starts_with($sqlState, '08')    // Connection exception
+                || str_starts_with($sqlState, 'HY000') // General/server gone away
+                || in_array($sqlState, ['57P01', '57P02', '57P03'], true); // PG admin shutdown
+            if (! $isConnectionIssue) {
+                return null;
+            }
+
             // Connection-Name aus der QueryException übernehmen, sonst Default.
             // Wir markieren die betroffene Verbindung kurzzeitig als unavailable,
             // damit Folge-Requests nicht erneut in den Connect-Timeout laufen.

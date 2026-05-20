@@ -11,6 +11,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Controllers\OrganizationSwitchController;
 use App\Models\Organization;
 use App\Models\User;
 use Closure;
@@ -24,6 +25,11 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * This enables OrganizationScope to automatically filter all tenant-scoped
  * Eloquent queries to the correct organization.
+ *
+ * Globale Admins (Spatie-Rolle "admin") dürfen über einen Session-Override
+ * (siehe OrganizationSwitchController) eine andere Organisation als die in
+ * users.organization_id eingetragene aktivieren. Dies ist die einzige Stelle,
+ * an der ein Wechsel des Org-Kontexts zur Laufzeit zulässig ist.
  */
 class SetOrganizationContext
 {
@@ -33,18 +39,57 @@ class SetOrganizationContext
             /** @var User $user */
             $user = Auth::user();
 
-            if ($user->organization_id) {
-                // Eager-load only once; load() is a no-op if already loaded.
-                $org = $user->relationLoaded('organization')
-                    ? $user->organization
-                    : $user->load('organization')->organization;
+            $org = $this->resolveOrganization($request, $user);
 
-                if ($org instanceof Organization) {
-                    app()->instance('currentOrganization', $org);
-                }
+            if ($org instanceof Organization) {
+                app()->instance('currentOrganization', $org);
             }
         }
 
         return $next($request);
+    }
+
+    private function resolveOrganization(Request $request, User $user): ?Organization
+    {
+        // 1) Session-Override (nur für Admins)
+        if ($user->isAdmin() && $request->hasSession()) {
+            $overrideId = $request->session()->get(OrganizationSwitchController::SESSION_KEY);
+            if (is_int($overrideId) || (is_string($overrideId) && ctype_digit($overrideId))) {
+                $override = Organization::query()->find((int) $overrideId);
+                if ($override instanceof Organization) {
+                    return $override;
+                }
+                // ungültige/gelöschte Org: Override verwerfen
+                $request->session()->forget(OrganizationSwitchController::SESSION_KEY);
+            }
+        }
+
+        // 2) Standard: Org des Benutzers
+        if ($user->organization_id) {
+            $own = $user->relationLoaded('organization')
+                ? $user->organization
+                : $user->load('organization')->organization;
+            if ($own instanceof Organization) {
+                return $own;
+            }
+        }
+
+        // 3) Fallback nur für globale Admins: falls weder Override noch
+        //    eigene Org auflösbar sind (z. B. nach Löschen der eigenen Org),
+        //    erste verfügbare Organisation aktivieren, damit der Admin nicht
+        //    ausgesperrt wird und die Verwaltung weiterhin nutzbar bleibt.
+        //    Diese Bindung ist bewusst nur in-memory: die persistente
+        //    Zuordnung (users.organization_id) wird ausschließlich beim
+        //    expliziten Anlegen einer Org in OrganizationController::store
+        //    gesetzt, damit Org-gebundene Policies (manage-members etc.)
+        //    weiterhin sauber prüfen können.
+        if ($user->isAdmin()) {
+            $first = Organization::query()->orderBy('id')->first();
+            if ($first instanceof Organization) {
+                return $first;
+            }
+        }
+
+        return null;
     }
 }
