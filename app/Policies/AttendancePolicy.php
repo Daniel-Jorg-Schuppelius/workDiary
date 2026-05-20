@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,33 +15,27 @@ use App\Models\User;
 use App\Policies\Concerns\ChecksOwnership;
 use App\Policies\Concerns\HasAdminBypass;
 
-class AttendancePolicy
-{
+class AttendancePolicy {
     use ChecksOwnership;
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool
-    {
+    public function viewAny(User $user): bool {
         return true;
     }
 
-    public function view(User $user, Attendance $attendance): bool
-    {
+    public function view(User $user, Attendance $attendance): bool {
         return $this->owns($user, $attendance, 'user_id');
     }
 
-    public function create(User $user): bool
-    {
+    public function create(User $user): bool {
         return true;
     }
 
-    public function update(User $user, Attendance $attendance): bool
-    {
+    public function update(User $user, Attendance $attendance): bool {
         return $this->owns($user, $attendance, 'user_id');
     }
 
-    public function delete(User $user, Attendance $attendance): bool
-    {
+    public function delete(User $user, Attendance $attendance): bool {
         return $this->owns($user, $attendance, 'user_id');
     }
 }

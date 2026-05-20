@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,10 +15,8 @@ use App\Services\Dashboard\DashboardService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-class DashboardController extends Controller
-{
-    public function __invoke(Request $request, DashboardService $service): View
-    {
+class DashboardController extends Controller {
+    public function __invoke(Request $request, DashboardService $service): View {
         /** @var User $user */
         $user = $request->user();
         $data = $service->summarize($user);

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,12 +17,10 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<Tour>
  */
-class TourFactory extends Factory
-{
+class TourFactory extends Factory {
     protected $model = Tour::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'organization_id' => null,
             'user_id' => null,
@@ -44,8 +41,7 @@ class TourFactory extends Factory
         ];
     }
 
-    public function planned(): self
-    {
-        return $this->state(fn () => ['status' => TourStatus::Planned]);
+    public function planned(): self {
+        return $this->state(fn() => ['status' => TourStatus::Planned]);
     }
 }

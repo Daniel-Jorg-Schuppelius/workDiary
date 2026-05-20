@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 19 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,10 +12,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::table('projects', function (Blueprint $table): void {
             // Sammel-/Wartungsprojekt: dauerhaft offen, nimmt regelmäßig Aufträge
             // auf (z.B. DATEV-Updates, Auto-Wartung, "Vorbeischauen bei …").
@@ -30,8 +27,7 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::table('projects', function (Blueprint $table): void {
             $table->dropIndex('projects_is_maintenance_idx');
             $table->dropColumn(['is_maintenance', 'default_location_mode']);

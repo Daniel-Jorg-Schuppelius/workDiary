@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 19 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,8 +17,7 @@ use Carbon\Carbon;
  * Getter statt `@property`, weil PHPStan Property-Annotationen auf Interfaces
  * nicht in der Generic-Auflösung berücksichtigt.
  */
-interface HasTimeWindow
-{
+interface HasTimeWindow {
     public function getStartAt(): ?Carbon;
 
     public function getEndAt(): ?Carbon;

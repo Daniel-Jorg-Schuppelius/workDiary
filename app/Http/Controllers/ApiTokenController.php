@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,10 +15,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-class ApiTokenController extends Controller
-{
-    public function index(Request $request): View
-    {
+class ApiTokenController extends Controller {
+    public function index(Request $request): View {
         /** @var User $user */
         $user = $request->user();
         $tokens = $user->tokens()->orderByDesc('created_at')->get();
@@ -31,8 +28,7 @@ class ApiTokenController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
-    {
+    public function store(Request $request): RedirectResponse {
         /** @var User $user */
         $user = $request->user();
         $data = $request->validate([
@@ -46,8 +42,7 @@ class ApiTokenController extends Controller
             ->with('newTokenName', $data['name']);
     }
 
-    public function destroy(Request $request, int $id): RedirectResponse
-    {
+    public function destroy(Request $request, int $id): RedirectResponse {
         /** @var User $user */
         $user = $request->user();
         $user->tokens()->where('id', $id)->delete();

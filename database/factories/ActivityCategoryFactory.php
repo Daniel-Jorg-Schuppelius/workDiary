@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,18 +17,16 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<ActivityCategory>
  */
-class ActivityCategoryFactory extends Factory
-{
+class ActivityCategoryFactory extends Factory {
     protected $model = ActivityCategory::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         $type = fake()->randomElement(ActivityCategoryType::cases());
 
         return [
             'organization_id' => null,
             'key' => fake()->unique()->slug(2),
-            'label' => ucfirst($type->value).' '.fake()->word(),
+            'label' => ucfirst($type->value) . ' ' . fake()->word(),
             'activity_type' => $type,
             'billable_default' => false,
             'counts_as_work' => $type !== ActivityCategoryType::Absence

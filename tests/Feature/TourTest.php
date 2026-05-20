@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,15 +13,16 @@ namespace Tests\Feature;
 use App\Enums\Diary\Mode;
 use App\Enums\Diary\Status as DiaryStatus;
 use App\Enums\Tour\TourStatus;
+use App\Enums\Travel\TravelLogVehicle;
 use App\Models\DiaryEntry;
 use App\Models\Tour;
-use App\Models\TravelLog;
 use App\Models\User;
 use App\Services\Routing\TourService;
 use Carbon\CarbonImmutable;
 use Database\Seeders\EntryTypeSeeder;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -35,7 +35,7 @@ class TourTest extends TestCase {
         $this->seed(RolesSeeder::class);
         $this->seed(EntryTypeSeeder::class);
         $this->setUpOrganization();
-        config()->set('timesheet.travel.auto_create_time_entry', false);
+        Config::set('timesheet.travel.auto_create_time_entry', false);
     }
 
     public function test_create_draft_persists_with_home_anchors(): void {
@@ -69,7 +69,7 @@ class TourTest extends TestCase {
         $ids = $orders->pluck('id')->all();
         $service->assignOrders($tour, $ids);
 
-        $orders->each(fn($o) => $o->refresh());
+        $orders->each(fn(DiaryEntry $o) => $o->refresh());
         $this->assertSame(1, $orders[0]->tour_position);
         $this->assertSame(2, $orders[1]->tour_position);
         $this->assertSame(3, $orders[2]->tour_position);
@@ -78,7 +78,7 @@ class TourTest extends TestCase {
     }
 
     public function test_recalculate_optimizes_order_with_haversine_fallback(): void {
-        config()->set('routing.osrm.base_url', 'http://does-not-exist.invalid');
+        Config::set('routing.osrm.base_url', 'http://does-not-exist.invalid');
 
         $driver = User::factory()->user()->create([
             'organization_id' => $this->organization->id,
@@ -159,7 +159,7 @@ class TourTest extends TestCase {
         $this->assertCount(3, $logs);
         $this->assertSame((int) $driver->id, (int) $logs[0]->user_id);
         $this->assertGreaterThan(0.0, (float) $logs[0]->distance_km);
-        $this->assertSame(\App\Enums\Travel\TravelLogVehicle::Private_, $logs[0]->vehicle);
+        $this->assertSame(TravelLogVehicle::Private_, $logs[0]->vehicle);
     }
 
     public function test_index_requires_auth(): void {

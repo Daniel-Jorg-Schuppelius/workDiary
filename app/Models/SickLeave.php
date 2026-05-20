@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -45,8 +44,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class SickLeave extends Model
-{
+class SickLeave extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
@@ -84,52 +82,44 @@ class SickLeave extends Model
     // ── Relations ──────────────────────────────────────────────────────────
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo
-    {
+    public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function recordedBy(): BelongsTo
-    {
+    public function recordedBy(): BelongsTo {
         return $this->belongsTo(User::class, 'recorded_by');
     }
 
     /** @return BelongsTo<SickLeave, $this> */
-    public function followUpFor(): BelongsTo
-    {
+    public function followUpFor(): BelongsTo {
         return $this->belongsTo(SickLeave::class, 'follow_up_for_id');
     }
 
     /** @return HasMany<SickLeave, $this> */
-    public function followUps(): HasMany
-    {
+    public function followUps(): HasMany {
         return $this->hasMany(SickLeave::class, 'follow_up_for_id');
     }
 
     // ── Scopes ─────────────────────────────────────────────────────────────
 
     /** @param Builder<SickLeave> $query */
-    public function scopeActive(Builder $query): void
-    {
+    public function scopeActive(Builder $query): void {
         $query->whereNull('cancelled_at');
     }
 
     /** @param Builder<SickLeave> $query */
-    public function scopeForUser(Builder $query, int $userId): void
-    {
+    public function scopeForUser(Builder $query, int $userId): void {
         $query->where('user_id', $userId);
     }
 
     /** @param Builder<SickLeave> $query */
-    public function scopeOverlapping(Builder $query, CarbonInterface $start, CarbonInterface $end): void
-    {
+    public function scopeOverlapping(Builder $query, CarbonInterface $start, CarbonInterface $end): void {
         $query->where('start_date', '<=', $end)->where('end_date', '>=', $start);
     }
 
     /** @param Builder<SickLeave> $query */
-    public function scopeActiveOn(Builder $query, CarbonInterface $date): void
-    {
+    public function scopeActiveOn(Builder $query, CarbonInterface $date): void {
         $query->whereNull('cancelled_at')
             ->where('start_date', '<=', $date)
             ->where('end_date', '>=', $date);
@@ -138,8 +128,7 @@ class SickLeave extends Model
     // ── Helpers ────────────────────────────────────────────────────────────
 
     /** Werktage (Mo–Fr, ohne Feiertage). */
-    public function workingDays(HolidayService $holidayService): int
-    {
+    public function workingDays(HolidayService $holidayService): int {
         $count = 0;
         $cursor = $this->start_date->copy();
         while ($cursor->lte($this->end_date)) {
@@ -153,14 +142,12 @@ class SickLeave extends Model
     }
 
     /** Kalendertage (inklusive Start- und Endtag). */
-    public function calendarDays(): int
-    {
+    public function calendarDays(): int {
         return (int) $this->start_date->startOfDay()->diffInDays($this->end_date->startOfDay()) + 1;
     }
 
     /** Lückenlose Krankheitskette: klettert über follow_up_for_id bis zur Wurzel. */
-    public function chainStart(): SickLeave
-    {
+    public function chainStart(): SickLeave {
         $node = $this;
         $visited = [];
         while ($node->follow_up_for_id !== null) {
@@ -183,8 +170,7 @@ class SickLeave extends Model
      *
      * @return Collection<int, SickLeave>
      */
-    public function chain(): Collection
-    {
+    public function chain(): Collection {
         $root = $this->chainStart();
 
         /** @var Collection<int, SickLeave> $all */
@@ -201,16 +187,14 @@ class SickLeave extends Model
             }
         }
 
-        return $all->sortBy(fn (SickLeave $s) => $s->start_date->getTimestamp())->values();
+        return $all->sortBy(fn(SickLeave $s) => $s->start_date->getTimestamp())->values();
     }
 
-    public function kindLabel(): string
-    {
+    public function kindLabel(): string {
         return $this->kind->label();
     }
 
-    public function isCancelled(): bool
-    {
+    public function isCancelled(): bool {
         return $this->cancelled_at !== null;
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,10 +21,8 @@ use Illuminate\Support\Facades\Schema;
  * entry of the same vehicle (odometer_km diff). Cost-per-unit is computed
  * on the fly in the model accessor.
  */
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::create('energy_logs', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('organization_id')->nullable()
@@ -75,8 +72,7 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('energy_logs');
     }
 };

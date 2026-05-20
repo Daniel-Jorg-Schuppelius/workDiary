@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,16 +12,13 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class SaveWorkScheduleRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class SaveWorkScheduleRequest extends FormRequest {
+    public function authorize(): bool {
         return true;
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         return [
             'weekly_minutes' => ['required', 'integer', 'min:60', 'max:6000'],
             'daily_target_minutes' => ['required', 'integer', 'min:30', 'max:720'],

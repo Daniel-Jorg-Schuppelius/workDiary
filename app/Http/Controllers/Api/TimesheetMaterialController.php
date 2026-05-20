@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,17 +20,14 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
 
-class TimesheetMaterialController extends Controller
-{
-    public function index(Timesheet $timesheet): AnonymousResourceCollection
-    {
+class TimesheetMaterialController extends Controller {
+    public function index(Timesheet $timesheet): AnonymousResourceCollection {
         Gate::authorize('view', $timesheet);
 
         return MaterialUsageResource::collection($timesheet->materialUsages()->get());
     }
 
-    public function store(Timesheet $timesheet, SaveMaterialUsageRequest $request): MaterialUsageResource
-    {
+    public function store(Timesheet $timesheet, SaveMaterialUsageRequest $request): MaterialUsageResource {
         Gate::authorize('update', $timesheet);
         $data = $request->validated();
         if (! empty($data['material_id'])) {
@@ -47,8 +43,7 @@ class TimesheetMaterialController extends Controller
         return new MaterialUsageResource($timesheet->materialUsages()->create($data));
     }
 
-    public function update(Timesheet $timesheet, MaterialUsage $usage, SaveMaterialUsageRequest $request): MaterialUsageResource
-    {
+    public function update(Timesheet $timesheet, MaterialUsage $usage, SaveMaterialUsageRequest $request): MaterialUsageResource {
         Gate::authorize('update', $timesheet);
         abort_unless((int) $usage->timesheet_id === (int) $timesheet->id, 404);
         $usage->update($request->validated());
@@ -56,8 +51,7 @@ class TimesheetMaterialController extends Controller
         return new MaterialUsageResource($usage);
     }
 
-    public function destroy(Timesheet $timesheet, MaterialUsage $usage): Response
-    {
+    public function destroy(Timesheet $timesheet, MaterialUsage $usage): Response {
         Gate::authorize('update', $timesheet);
         abort_unless((int) $usage->timesheet_id === (int) $timesheet->id, 404);
         $usage->delete();

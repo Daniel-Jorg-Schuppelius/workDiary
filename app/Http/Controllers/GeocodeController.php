@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,12 +20,11 @@ use Illuminate\Http\Request;
  * resolve a free-form address to lat/lng without leaking the geocoder
  * to anonymous callers.
  */
-class GeocodeController extends Controller
-{
-    public function __construct(private readonly NominatimGeocoder $geocoder) {}
+class GeocodeController extends Controller {
+    public function __construct(private readonly NominatimGeocoder $geocoder) {
+    }
 
-    public function __invoke(Request $request): JsonResponse
-    {
+    public function __invoke(Request $request): JsonResponse {
         $data = $request->validate([
             'query' => ['required', 'string', 'min:3', 'max:500'],
         ]);

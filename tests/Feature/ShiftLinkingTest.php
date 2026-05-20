@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,18 +18,15 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class ShiftLinkingTest extends TestCase
-{
+class ShiftLinkingTest extends TestCase {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
     }
 
-    public function test_user_owns_shifts_assignments_and_entries(): void
-    {
+    public function test_user_owns_shifts_assignments_and_entries(): void {
         $user = User::factory()->user()->create();
 
         $shift = OnCallShift::factory()->for($user)->create();
@@ -56,8 +52,7 @@ class ShiftLinkingTest extends TestCase
         $this->assertTrue($assignment->diaryEntries()->whereKey($entry->id)->exists());
     }
 
-    public function test_overlapping_scope_finds_shifts_in_period(): void
-    {
+    public function test_overlapping_scope_finds_shifts_in_period(): void {
         $user = User::factory()->user()->create();
 
         $inside = OnCallShift::factory()->for($user)->create([
@@ -80,8 +75,7 @@ class ShiftLinkingTest extends TestCase
         $this->assertSame([$inside->id], $found);
     }
 
-    public function test_owner_policy_for_shift_and_assignment(): void
-    {
+    public function test_owner_policy_for_shift_and_assignment(): void {
         $owner = User::factory()->user()->create();
         $other = User::factory()->user()->create();
         $admin = User::factory()->admin()->create();
@@ -98,8 +92,7 @@ class ShiftLinkingTest extends TestCase
         $this->assertTrue($admin->can('update', $assignment));
     }
 
-    public function test_deleting_shift_nulls_links_on_entries_and_assignments(): void
-    {
+    public function test_deleting_shift_nulls_links_on_entries_and_assignments(): void {
         $user = User::factory()->user()->create();
         $shift = OnCallShift::factory()->for($user)->create();
         $assignment = EmergencyAssignment::factory()

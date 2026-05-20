@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -32,15 +31,13 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Pattern angelehnt an Kimai's WeekByUserController (AGPL-3.0) — eigene
  * Implementierung, kein Code-Reuse.
  */
-class WeekByUserReportController extends Controller
-{
+class WeekByUserReportController extends Controller {
     use ResolvesGlobalDateRange;
 
     /** Maximalanzahl gleichzeitig gerenderter Wochen-Tabs. */
     private const MAX_WEEKS = 12;
 
-    public function index(Request $request): View|SymfonyResponse
-    {
+    public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         $authUser = Auth::user();
         $isAdmin = $authUser instanceof User && $authUser->isAdmin();
@@ -71,7 +68,7 @@ class WeekByUserReportController extends Controller
                 'week' => (int) $now->isoWeek,
                 'start' => $now->copy()->startOfWeek(),
                 'end' => $now->copy()->endOfWeek(),
-                'shortLabel' => $now->copy()->startOfWeek()->format('d.m.').'–'.$now->copy()->endOfWeek()->format('d.m.'),
+                'shortLabel' => $now->copy()->startOfWeek()->format('d.m.') . '–' . $now->copy()->endOfWeek()->format('d.m.'),
             ];
             $activeKey = $active['key'];
         }
@@ -171,13 +168,12 @@ class WeekByUserReportController extends Controller
      * @param  array<int, string>  $dayLabels
      * @param  array<int, int>  $dayTotals
      */
-    private function exportCsv(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, int $year, int $week): Response
-    {
+    private function exportCsv(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, int $year, int $week): Response {
         $filename = sprintf('woche_%04d-W%02d.csv', $year, $week);
         $rows = [array_merge(['Mitarbeiter'], $dayLabels, ['Wochensumme', 'Erloes'])];
         foreach ($byUser as $uid => $row) {
             $userModel = $users->get($uid);
-            $name = $userModel instanceof User ? $userModel->name : '#'.$uid;
+            $name = $userModel instanceof User ? $userModel->name : '#' . $uid;
             $cols = [(string) $name];
             foreach ($row['days'] as $m) {
                 $cols[] = (int) $m;
@@ -199,16 +195,16 @@ class WeekByUserReportController extends Controller
             $csv .= implode(';', array_map(static function ($v): string {
                 $s = (string) $v;
                 if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"'.str_replace('"', '""', $s).'"';
+                    $s = '"' . str_replace('"', '""', $s) . '"';
                 }
 
                 return $s;
-            }, $row))."\r\n";
+            }, $row)) . "\r\n";
         }
 
-        return response("\xEF\xBB\xBF".$csv, 200, [
+        return response("\xEF\xBB\xBF" . $csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 
@@ -218,8 +214,7 @@ class WeekByUserReportController extends Controller
      * @param  array<int, string>  $dayLabels
      * @param  array<int, int>  $dayTotals
      */
-    private function exportPdf(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, string $weekLabel, int $year, int $week): SymfonyResponse
-    {
+    private function exportPdf(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, string $weekLabel, int $year, int $week): SymfonyResponse {
         $filename = sprintf('woche_%04d-W%02d.pdf', $year, $week);
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = Pdf::loadView('reports.pdf.week-by-user', [
@@ -240,8 +235,7 @@ class WeekByUserReportController extends Controller
      *
      * @return array<string, array{key: string, year: int, week: int, start: Carbon, end: Carbon, shortLabel: string}>
      */
-    private function collectWeekMeta(CarbonImmutable $from, CarbonImmutable $to): array
-    {
+    private function collectWeekMeta(CarbonImmutable $from, CarbonImmutable $to): array {
         $cursor = $from->startOfWeek()->startOfDay();
         $end = $to->endOfDay();
         if ($end->lt($cursor)) {
@@ -260,7 +254,7 @@ class WeekByUserReportController extends Controller
                 'week' => (int) $cursor->isoWeek,
                 'start' => $weekStart,
                 'end' => $weekEnd,
-                'shortLabel' => $weekStart->format('d.m.').'–'.$weekEnd->format('d.m.'),
+                'shortLabel' => $weekStart->format('d.m.') . '–' . $weekEnd->format('d.m.'),
             ];
             $cursor = $cursor->addWeek();
         }

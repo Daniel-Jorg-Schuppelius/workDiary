@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,21 +18,19 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
-class TimeEntryCommentController extends Controller
-{
+class TimeEntryCommentController extends Controller {
     /**
      * Comments are intentionally allowed even when the entry is locked
      * (signed/locked/exported) or its correction window has elapsed:
      * commenting is the audit-friendly way to communicate after-the-fact
      * corrections without mutating the entry itself.
      */
-    public function store(Request $request, TimeEntry $timeEntry): RedirectResponse
-    {
+    public function store(Request $request, TimeEntry $timeEntry): RedirectResponse {
         Gate::authorize('view', $timeEntry);
         Gate::authorize('create', Comment::class);
 
         $body = $request->validate([
-            'body' => ['required', 'string', 'max:'.(int) setting('validation.comment.body_max', 5000)],
+            'body' => ['required', 'string', 'max:' . (int) setting('validation.comment.body_max', 5000)],
         ])['body'];
 
         $timeEntry->comments()->create([
@@ -47,7 +44,7 @@ class TimeEntryCommentController extends Controller
 
         return redirect()
             ->route('today.show', ['date' => $date])
-            ->withFragment('time-entry-'.$timeEntry->getKey())
+            ->withFragment('time-entry-' . $timeEntry->getKey())
             ->with('success', __('Kommentar gespeichert.'));
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +10,7 @@
 
 namespace Tests\Feature\Reporting;
 
+use App\Enums\Sickness\SickLeaveKind;
 use App\Models\SickLeave;
 use App\Models\User;
 use Database\Seeders\RolesSeeder;
@@ -18,26 +18,22 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithGlobalDateRange;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
-use App\Enums\Sickness\SickLeaveKind;
 
-class AbsencesReportSickLeaveTest extends TestCase
-{
+class AbsencesReportSickLeaveTest extends TestCase {
     use RefreshDatabase;
     use WithGlobalDateRange;
     use WithOrganization;
 
     private User $user;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
-    public function test_absences_report_sources_sick_days_from_sick_leaves(): void
-    {
+    public function test_absences_report_sources_sick_days_from_sick_leaves(): void {
         // Krankmeldung 2026-05-04 (Mo) – 2026-05-08 (Fr) = 5 Werktage
         SickLeave::factory()->create([
             'user_id' => $this->user->id,
@@ -69,8 +65,7 @@ class AbsencesReportSickLeaveTest extends TestCase
         });
     }
 
-    public function test_sickness_report_route_renders(): void
-    {
+    public function test_sickness_report_route_renders(): void {
         SickLeave::factory()->create([
             'user_id' => $this->user->id,
             'start_date' => '2026-05-04',

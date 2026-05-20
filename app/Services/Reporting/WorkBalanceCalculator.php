@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,15 +10,15 @@
 
 namespace App\Services\Reporting;
 
+use App\Enums\Attendance\AttendanceStatus;
 use App\Enums\TimeEntry\TimeEntryActivityType;
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Attendance;
 use App\Models\TimeEntry;
 use App\Models\User;
 use App\Services\Flextime\FlexCalculator;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
-use App\Enums\TimeEntry\TimeEntryKind;
-use App\Enums\Attendance\AttendanceStatus;
 
 /**
  * Aggregates the unified work-time picture for reporting: combines the

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,14 +13,12 @@ namespace App\Console\Commands;
 use App\Services\Attendance\AttendanceClockService;
 use Illuminate\Console\Command;
 
-class AttendanceCloseOpenCommand extends Command
-{
+class AttendanceCloseOpenCommand extends Command {
     protected $signature = 'attendance:close-open';
 
     protected $description = 'Schließt automatisch vergessene offene Stempelungen (älter als max. Sitzungsdauer).';
 
-    public function handle(AttendanceClockService $service): int
-    {
+    public function handle(AttendanceClockService $service): int {
         $count = $service->autoCloseStaleSessions();
         $this->info("Auto-closed {$count} stale attendance(s).");
 

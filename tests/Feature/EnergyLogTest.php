@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,8 +20,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class EnergyLogTest extends TestCase
-{
+class EnergyLogTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
@@ -32,8 +30,7 @@ class EnergyLogTest extends TestCase
 
     private Vehicle $vehicle;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -42,14 +39,12 @@ class EnergyLogTest extends TestCase
         $this->vehicle = Vehicle::factory()->create(['organization_id' => $this->organization->id]);
     }
 
-    public function test_index_renders(): void
-    {
+    public function test_index_renders(): void {
         $this->actingAs($this->user);
         $this->get(route('energy-logs.index'))->assertOk()->assertSee(__('Tank- & Ladelog'));
     }
 
-    public function test_store_creates_fuel_entry(): void
-    {
+    public function test_store_creates_fuel_entry(): void {
         $this->actingAs($this->user);
         $start = CarbonImmutable::today()->setTime(10, 0);
 
@@ -69,8 +64,7 @@ class EnergyLogTest extends TestCase
         $this->assertEqualsWithDelta(70.0, (float) $log->cost_total, 0.01);
     }
 
-    public function test_electric_entry_forces_kwh_unit_and_clears_fuel_kind(): void
-    {
+    public function test_electric_entry_forces_kwh_unit_and_clears_fuel_kind(): void {
         $this->actingAs($this->user);
         $start = CarbonImmutable::today()->setTime(11, 0);
 
@@ -92,8 +86,7 @@ class EnergyLogTest extends TestCase
         $this->assertSame(EnergyLog::CHARGER_DC_FAST, $log->charger_type);
     }
 
-    public function test_distance_since_last_computed_from_previous_odometer(): void
-    {
+    public function test_distance_since_last_computed_from_previous_odometer(): void {
         $service = app(EnergyLogService::class);
         $start = CarbonImmutable::today()->setTime(9, 0);
 
@@ -122,8 +115,7 @@ class EnergyLogTest extends TestCase
         $this->assertSame(512, $second->fresh()->distance_since_last);
     }
 
-    public function test_user_cannot_edit_others_entry(): void
-    {
+    public function test_user_cannot_edit_others_entry(): void {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $log = EnergyLog::factory()->create([
             'organization_id' => $this->organization->id,
@@ -135,15 +127,13 @@ class EnergyLogTest extends TestCase
         $this->get(route('energy-logs.edit', $log))->assertForbidden();
     }
 
-    public function test_non_admin_cannot_view_other_users_logs(): void
-    {
+    public function test_non_admin_cannot_view_other_users_logs(): void {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($this->user);
         $this->get(route('energy-logs.index', ['user' => $other->id]))->assertForbidden();
     }
 
-    public function test_admin_can_view_all_users_logs(): void
-    {
+    public function test_admin_can_view_all_users_logs(): void {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         EnergyLog::factory()->create([
             'organization_id' => $this->organization->id,

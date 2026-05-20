@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -45,8 +44,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class Tour extends Model
-{
+class Tour extends Model {
     use Auditable;
     use BelongsToOrganization;
 
@@ -87,26 +85,22 @@ class Tour extends Model
     ];
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo
-    {
+    public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
     /** @return BelongsTo<Vehicle, $this> */
-    public function vehicle(): BelongsTo
-    {
+    public function vehicle(): BelongsTo {
         return $this->belongsTo(Vehicle::class);
     }
 
     /** @return HasMany<DiaryEntry, $this> */
-    public function diaryEntries(): HasMany
-    {
+    public function diaryEntries(): HasMany {
         return $this->hasMany(DiaryEntry::class);
     }
 
     /** @return HasMany<DiaryEntry, $this> */
-    public function orderedStops(): HasMany
-    {
+    public function orderedStops(): HasMany {
         return $this->diaryEntries()
             ->orderByRaw('tour_position IS NULL')
             ->orderBy('tour_position')
@@ -117,8 +111,7 @@ class Tour extends Model
      * @param  Builder<Tour>  $query
      * @return Builder<Tour>
      */
-    public function scopeForUser(Builder $query, int $userId): Builder
-    {
+    public function scopeForUser(Builder $query, int $userId): Builder {
         return $query->where('user_id', $userId);
     }
 
@@ -126,16 +119,14 @@ class Tour extends Model
      * @param  Builder<Tour>  $query
      * @return Builder<Tour>
      */
-    public function scopeOnDate(Builder $query, string $date): Builder
-    {
+    public function scopeOnDate(Builder $query, string $date): Builder {
         return $query->whereDate('tour_date', $date);
     }
 
     /**
      * @return array<string, mixed>|null
      */
-    public function geometryArray(): ?array
-    {
+    public function geometryArray(): ?array {
         if ($this->route_geometry === null || $this->route_geometry === '') {
             return null;
         }

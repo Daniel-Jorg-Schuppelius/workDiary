@@ -1,4 +1,7 @@
 {{-- Shift create/edit dialog — native <dialog>, no Alpine.js --}}
+@php
+    /** @var \Illuminate\Support\Collection<int, \App\Models\User> $users */
+@endphp
 <x-modal id="shift-dialog"
          :embedded="false"
          size="lg"

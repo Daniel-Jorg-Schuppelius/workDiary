@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -20,10 +19,8 @@ use Illuminate\Support\Facades\Schema;
  *    so identical lookups hit the cache regardless of caller.
  *  - `expires_at` lets us age out stale entries via a future GC command.
  */
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::create('geocode_cache', function (Blueprint $table): void {
             $table->id();
             $table->string('query_hash', 64)->unique();
@@ -40,8 +37,7 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('geocode_cache');
     }
 };

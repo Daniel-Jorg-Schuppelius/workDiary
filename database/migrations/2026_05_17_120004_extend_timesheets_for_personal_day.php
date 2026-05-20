@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,10 +21,8 @@ use Illuminate\Support\Facades\Schema;
  *
  * Adds snapshot columns for reconciliation against attendance.
  */
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::table('timesheets', function (Blueprint $table): void {
             $table->dropForeign(['project_id']);
         });
@@ -46,8 +43,7 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::table('timesheets', function (Blueprint $table): void {
             $table->dropIndex(['kind']);
             $table->dropColumn([

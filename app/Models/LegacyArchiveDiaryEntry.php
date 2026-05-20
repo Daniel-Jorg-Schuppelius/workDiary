@@ -4,16 +4,17 @@ namespace App\Models\Legacy;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int $user
- * @property-read \App\Models\Legacy\LegacyUser|null $mitarbeiter
+ * @property-read LegacyUser|null $mitarbeiter
  * @property string|null $inhalt
  * @property string|null $antwort
- * @property \Illuminate\Support\Carbon|null $von
- * @property \Illuminate\Support\Carbon|null $bis
- * @property \Illuminate\Support\Carbon|null $aktuell
+ * @property Carbon|null $von
+ * @property Carbon|null $bis
+ * @property Carbon|null $aktuell
  * @property int|null $gelesen
  */
 class LegacyArchiveDiaryEntry extends Model {
@@ -39,6 +40,7 @@ class LegacyArchiveDiaryEntry extends Model {
         ];
     }
 
+    /** @return BelongsTo<LegacyUser, $this> */
     public function mitarbeiter(): BelongsTo {
         return $this->belongsTo(LegacyUser::class, 'user', 'id');
     }

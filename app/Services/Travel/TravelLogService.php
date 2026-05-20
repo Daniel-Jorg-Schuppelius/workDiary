@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,28 +10,27 @@
 
 namespace App\Services\Travel;
 
+use App\Enums\TimeEntry\TimeEntryActivityType;
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Enums\Travel\TravelLogVehicle;
 use App\Models\TimeEntry;
 use App\Models\TravelLog;
 use App\Models\Vehicle;
 use Illuminate\Support\Facades\DB;
-use App\Enums\TimeEntry\TimeEntryKind;
-use App\Enums\TimeEntry\TimeEntryActivityType;
 
 /**
  * Encapsulates persistence of {@see TravelLog} entries and, when configured,
  * synchronises a paired {@see TimeEntry} with `kind=travel` so the travel time
  * is visible on the daily dashboard and in reports.
  */
-class TravelLogService
-{
-    public function __construct(private readonly MileageRateResolver $rates) {}
+class TravelLogService {
+    public function __construct(private readonly MileageRateResolver $rates) {
+    }
 
     /**
      * @param  array<string, mixed>  $attributes
      */
-    public function create(array $attributes): TravelLog
-    {
+    public function create(array $attributes): TravelLog {
         return DB::transaction(function () use ($attributes): TravelLog {
             $attributes = $this->applyDefaults($attributes);
             $log = TravelLog::create($attributes);
@@ -45,8 +43,7 @@ class TravelLogService
     /**
      * @param  array<string, mixed>  $attributes
      */
-    public function update(TravelLog $log, array $attributes): TravelLog
-    {
+    public function update(TravelLog $log, array $attributes): TravelLog {
         return DB::transaction(function () use ($log, $attributes): TravelLog {
             $attributes = $this->applyDefaults($attributes, $log);
             $log->fill($attributes);
@@ -57,8 +54,7 @@ class TravelLogService
         });
     }
 
-    public function delete(TravelLog $log): void
-    {
+    public function delete(TravelLog $log): void {
         DB::transaction(function () use ($log): void {
             TimeEntry::query()->where('travel_log_id', $log->id)->delete();
             $log->delete();
@@ -69,8 +65,7 @@ class TravelLogService
      * @param  array<string, mixed>  $attributes
      * @return array<string, mixed>
      */
-    private function applyDefaults(array $attributes, ?TravelLog $existing = null): array
-    {
+    private function applyDefaults(array $attributes, ?TravelLog $existing = null): array {
         $vehicle = (string) ($attributes['vehicle'] ?? ($existing !== null ? $existing->vehicle->value : TravelLogVehicle::Private_->value));
 
         if (! array_key_exists('rate_per_km', $attributes) || $attributes['rate_per_km'] === null || $attributes['rate_per_km'] === '') {
@@ -86,8 +81,7 @@ class TravelLogService
         return $attributes;
     }
 
-    private function syncTimeEntry(TravelLog $log): void
-    {
+    private function syncTimeEntry(TravelLog $log): void {
         if (! config('timesheet.travel.auto_create_time_entry', true)) {
             return;
         }

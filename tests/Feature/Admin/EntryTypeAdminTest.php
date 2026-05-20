@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +10,8 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Enums\Diary\Priority;
+use App\Enums\Diary\Status;
 use App\Models\DiaryEntry;
 use App\Models\EntryType;
 use App\Models\User;
@@ -20,21 +21,18 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class EntryTypeAdminTest extends TestCase
-{
+class EntryTypeAdminTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         $this->seed(EntryTypeSeeder::class);
     }
 
-    public function test_non_admin_cannot_access_index(): void
-    {
+    public function test_non_admin_cannot_access_index(): void {
         $user = User::factory()->create(['organization_id' => $this->organization->id]);
 
         $this->actingAs($user)
@@ -42,8 +40,7 @@ class EntryTypeAdminTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_admin_can_list_entry_types(): void
-    {
+    public function test_admin_can_list_entry_types(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 
         $this->actingAs($admin)
@@ -52,8 +49,7 @@ class EntryTypeAdminTest extends TestCase
             ->assertSee('Eintragstypen');
     }
 
-    public function test_admin_can_create_entry_type(): void
-    {
+    public function test_admin_can_create_entry_type(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 
         $this->actingAs($admin)
@@ -70,7 +66,7 @@ class EntryTypeAdminTest extends TestCase
                 'requires_schedule' => '1',
                 'allow_priority' => '1',
                 'allow_tour' => '1',
-                'default_status' => \App\Enums\Diary\Status::Open->value,
+                'default_status' => Status::Open->value,
                 'default_service_minutes' => 90,
                 'default_priority' => 'high',
             ])
@@ -83,11 +79,10 @@ class EntryTypeAdminTest extends TestCase
         $this->assertTrue($type->requires_schedule);
         $this->assertTrue($type->allow_priority);
         $this->assertSame(90, $type->default_service_minutes);
-        $this->assertSame(\App\Enums\Diary\Priority::High, $type->default_priority);
+        $this->assertSame(Priority::High, $type->default_priority);
     }
 
-    public function test_slug_must_be_unique_per_organization(): void
-    {
+    public function test_slug_must_be_unique_per_organization(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 
         $this->actingAs($admin)
@@ -97,14 +92,13 @@ class EntryTypeAdminTest extends TestCase
                 'label' => 'Duplicate',
                 'icon' => 'build',
                 'color' => 'primary',
-                'default_status' => \App\Enums\Diary\Status::Open->value,
+                'default_status' => Status::Open->value,
             ])
             ->assertRedirect(route('admin.entry-types.create'))
             ->assertSessionHasErrors('slug');
     }
 
-    public function test_admin_can_update_entry_type(): void
-    {
+    public function test_admin_can_update_entry_type(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $type = EntryType::query()->where('slug', EntryType::SLUG_GENERAL)->firstOrFail();
 
@@ -117,7 +111,7 @@ class EntryTypeAdminTest extends TestCase
                 'sort' => 5,
                 'is_active' => '1',
                 'allow_priority' => '1',
-                'default_status' => \App\Enums\Diary\Status::Open->value,
+                'default_status' => Status::Open->value,
             ])
             ->assertRedirect(route('admin.entry-types.index'));
 
@@ -128,8 +122,7 @@ class EntryTypeAdminTest extends TestCase
         $this->assertTrue($type->allow_priority);
     }
 
-    public function test_admin_can_delete_unused_entry_type(): void
-    {
+    public function test_admin_can_delete_unused_entry_type(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 
         $type = EntryType::create([
@@ -140,7 +133,7 @@ class EntryTypeAdminTest extends TestCase
             'color' => 'ghost',
             'sort' => 999,
             'is_active' => true,
-            'default_status' => \App\Enums\Diary\Status::Open->value,
+            'default_status' => Status::Open->value,
         ]);
 
         $this->actingAs($admin)
@@ -150,8 +143,7 @@ class EntryTypeAdminTest extends TestCase
         $this->assertDatabaseMissing('entry_types', ['id' => $type->id]);
     }
 
-    public function test_cannot_delete_entry_type_with_diary_entries(): void
-    {
+    public function test_cannot_delete_entry_type_with_diary_entries(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $type = EntryType::query()->where('slug', EntryType::SLUG_GENERAL)->firstOrFail();
 

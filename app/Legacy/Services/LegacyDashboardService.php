@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,12 +12,12 @@ declare(strict_types=1);
 
 namespace App\Legacy\Services;
 
+use App\Enums\Vacation\VacationStatus;
 use App\Legacy\Models\LegacyDiaryEntry;
 use App\Legacy\Models\LegacyNotdienst;
 use App\Legacy\Models\LegacyOnCall;
 use App\Legacy\Support\LegacyRoleResolver;
 use App\Models\User;
-use App\Enums\Vacation\VacationStatus;
 use App\Models\Vacation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -27,8 +26,7 @@ use Illuminate\Http\Request;
  * Aggregiert die Daten für das Legacy-Dashboard
  * (Aufträge / Bereitschaft / Notdienst / Urlaub).
  */
-class LegacyDashboardService
-{
+class LegacyDashboardService {
     private const ALLOWED_TABS = ['auftraege', 'bereitschaft', 'notdienst', 'urlaub'];
 
     private const SORTABLE = [
@@ -59,8 +57,7 @@ class LegacyDashboardService
     /**
      * @return array<string,mixed>
      */
-    public function buildIndexData(Request $request, User $currentUser): array
-    {
+    public function buildIndexData(Request $request, User $currentUser): array {
         $tab = $this->resolveTab((string) $request->query('tab', 'auftraege'));
         $legacyUserId = LegacyRoleResolver::resolveLegacyUserId($currentUser);
         $isAdmin = LegacyRoleResolver::isAdmin($currentUser);
@@ -130,8 +127,7 @@ class LegacyDashboardService
         ];
     }
 
-    private function resolveTab(string $tab): string
-    {
+    private function resolveTab(string $tab): string {
         return in_array($tab, self::ALLOWED_TABS, true) ? $tab : 'auftraege';
     }
 
@@ -140,8 +136,7 @@ class LegacyDashboardService
      *
      * @return array{0:string,1:string}
      */
-    private function resolveTabSort(string $tab, string $rawSort, string $rawDir): array
-    {
+    private function resolveTabSort(string $tab, string $rawSort, string $rawDir): array {
         $map = match ($tab) {
             'bereitschaft', 'notdienst' => self::SORTABLE_DUTY,
             'urlaub' => self::SORTABLE_VACATION,
@@ -163,8 +158,7 @@ class LegacyDashboardService
     /**
      * @return array{0:Builder<LegacyDiaryEntry>,1:string,2:string}
      */
-    private function buildDiaryQuery(Request $request, bool $canViewAll, int $legacyUserId, string $tab = 'auftraege'): array
-    {
+    private function buildDiaryQuery(Request $request, bool $canViewAll, int $legacyUserId, string $tab = 'auftraege'): array {
         // Default-Sortierung wie im Archiv: nach Enddatum (bis) absteigend.
         // sort/dir gelten nur für den aktiven Tab; sonst Default verwenden.
         $rawSort = (string) $request->query('sort', '');
@@ -212,8 +206,7 @@ class LegacyDashboardService
     /**
      * @return array{all:int,open:int,alert:int,done:int}
      */
-    private function diaryCounts(Request $request, bool $canViewAll, int $legacyUserId): array
-    {
+    private function diaryCounts(Request $request, bool $canViewAll, int $legacyUserId): array {
         $query = LegacyDiaryEntry::query();
         if (! $canViewAll && $legacyUserId > 0) {
             $query->where('user', $legacyUserId);
@@ -229,9 +222,9 @@ class LegacyDashboardService
         }
         /** @var LegacyDiaryEntry|null $row */
         $row = $query->selectRaw(
-            'COUNT(*) as cnt_all,'.
-                'SUM(gelesen = 2) as cnt_open,'.
-                'SUM(gelesen = 3) as cnt_alert,'.
+            'COUNT(*) as cnt_all,' .
+                'SUM(gelesen = 2) as cnt_open,' .
+                'SUM(gelesen = 3) as cnt_alert,' .
                 'SUM(gelesen = -1) as cnt_done'
         )->first();
         $attrs = $row?->getAttributes() ?? [];
@@ -250,8 +243,7 @@ class LegacyDashboardService
      * @param  Builder<TModel>  $query
      * @return Builder<TModel>
      */
-    private function buildLegacyDutyQuery(Builder $query, Request $request, bool $canViewAll, int $legacyUserId, ?string $sort = null, string $dir = 'desc'): Builder
-    {
+    private function buildLegacyDutyQuery(Builder $query, Request $request, bool $canViewAll, int $legacyUserId, ?string $sort = null, string $dir = 'desc'): Builder {
         $query->with('mitarbeiter:id,uname');
 
         if ($sort !== null && isset(self::SORTABLE_DUTY[$sort])) {
@@ -281,8 +273,7 @@ class LegacyDashboardService
     /**
      * @return Builder<Vacation>
      */
-    private function buildVacationQuery(Request $request, User $currentUser, bool $canViewAll, ?string $sort = null, string $dir = 'desc'): Builder
-    {
+    private function buildVacationQuery(Request $request, User $currentUser, bool $canViewAll, ?string $sort = null, string $dir = 'desc'): Builder {
         $query = Vacation::query()->with('user:id,name');
 
         if ($sort !== null && isset(self::SORTABLE_VACATION[$sort])) {
@@ -320,8 +311,7 @@ class LegacyDashboardService
      * @param  Builder<TModel>  $query
      * @return array{all:int,today:int,upcoming:int,past:int}
      */
-    private function dutyCounts(Builder $query, string $today): array
-    {
+    private function dutyCounts(Builder $query, string $today): array {
         return [
             'all' => (clone $query)->count(),
             'today' => (clone $query)->whereDate('von', '<=', $today)->whereDate('bis', '>=', $today)->count(),
@@ -334,8 +324,7 @@ class LegacyDashboardService
      * @param  Builder<Vacation>  $query
      * @return array{total:int,pending:int,approved:int,rejected:int}
      */
-    private function vacationKpis(Builder $query, int $total): array
-    {
+    private function vacationKpis(Builder $query, int $total): array {
         return [
             'total' => $total,
             'pending' => (clone $query)->where('status', VacationStatus::Pending)->count(),

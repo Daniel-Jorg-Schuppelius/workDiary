@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -30,12 +29,10 @@ use Illuminate\Validation\Validator;
  *
  * @mixin FormRequest
  */
-trait ChecksShiftCompliance
-{
+trait ChecksShiftCompliance {
     private ?ComplianceReport $complianceReport = null;
 
-    protected function attachComplianceCheck(Validator $validator, ?ScheduledShift $existing = null): void
-    {
+    protected function attachComplianceCheck(Validator $validator, ?ScheduledShift $existing = null): void {
         $validator->after(function (Validator $v) use ($existing): void {
             if ($v->errors()->isNotEmpty()) {
                 return;
@@ -87,8 +84,7 @@ trait ChecksShiftCompliance
         });
     }
 
-    public function complianceReport(): ?ComplianceReport
-    {
+    public function complianceReport(): ?ComplianceReport {
         return $this->complianceReport;
     }
 }

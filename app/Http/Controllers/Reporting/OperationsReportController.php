@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,14 +10,15 @@
 
 namespace App\Http\Controllers\Reporting;
 
+use App\Enums\Diary\Priority;
 use App\Enums\Diary\Status as DiaryStatus;
+use App\Enums\Task\TaskPriority;
+use App\Enums\Task\TaskStatus;
 use App\Enums\Tour\TourStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\DiaryEntry;
 use App\Models\EntryType;
-use App\Enums\Task\TaskPriority;
-use App\Enums\Task\TaskStatus;
 use App\Models\Task;
 use App\Models\Tour;
 use App\Models\User;
@@ -108,7 +108,7 @@ class OperationsReportController extends Controller {
         ];
         $byStatus = array_fill_keys(array_values($statusMap), 0);
         $byPriority = [];
-        foreach (\App\Enums\Diary\Priority::cases() as $prioCase) {
+        foreach (Priority::cases() as $prioCase) {
             $byPriority[$prioCase->value] = 0;
         }
         $minutes = 0;

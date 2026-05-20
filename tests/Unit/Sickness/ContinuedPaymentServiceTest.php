@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +10,7 @@
 
 namespace Tests\Unit\Sickness;
 
+use App\Enums\Sickness\SickLeaveKind;
 use App\Models\SickLeave;
 use App\Models\User;
 use App\Services\Sickness\ContinuedPaymentService;
@@ -19,10 +19,8 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
-use App\Enums\Sickness\SickLeaveKind;
 
-class ContinuedPaymentServiceTest extends TestCase
-{
+class ContinuedPaymentServiceTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
@@ -30,8 +28,7 @@ class ContinuedPaymentServiceTest extends TestCase
 
     private ContinuedPaymentService $service;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -41,8 +38,7 @@ class ContinuedPaymentServiceTest extends TestCase
         $this->service = app(ContinuedPaymentService::class);
     }
 
-    public function test_no_sick_leaves_returns_full_entitlement(): void
-    {
+    public function test_no_sick_leaves_returns_full_entitlement(): void {
         $status = $this->service->statusFor($this->user, CarbonImmutable::parse('2026-05-18'));
 
         $this->assertSame(42, $status->entitlementDays);
@@ -51,8 +47,7 @@ class ContinuedPaymentServiceTest extends TestCase
         $this->assertFalse($status->exhausted);
     }
 
-    public function test_initial_episode_counts_calendar_days(): void
-    {
+    public function test_initial_episode_counts_calendar_days(): void {
         SickLeave::factory()->create([
             'user_id' => $this->user->id,
             'start_date' => '2026-05-04',
@@ -67,8 +62,7 @@ class ContinuedPaymentServiceTest extends TestCase
         $this->assertFalse($status->exhausted);
     }
 
-    public function test_follow_up_extends_chain(): void
-    {
+    public function test_follow_up_extends_chain(): void {
         $initial = SickLeave::factory()->create([
             'user_id' => $this->user->id,
             'start_date' => '2026-05-04',
@@ -89,8 +83,7 @@ class ContinuedPaymentServiceTest extends TestCase
         $this->assertSame(28, $status->remainingDays);
     }
 
-    public function test_chain_exhausted_after_42_days(): void
-    {
+    public function test_chain_exhausted_after_42_days(): void {
         SickLeave::factory()->create([
             'user_id' => $this->user->id,
             'start_date' => '2026-04-01',
@@ -105,8 +98,7 @@ class ContinuedPaymentServiceTest extends TestCase
         $this->assertTrue($status->exhausted);
     }
 
-    public function test_new_episode_after_reset_window_starts_fresh(): void
-    {
+    public function test_new_episode_after_reset_window_starts_fresh(): void {
         SickLeave::factory()->create([
             'user_id' => $this->user->id,
             'start_date' => '2025-01-05',
@@ -126,8 +118,7 @@ class ContinuedPaymentServiceTest extends TestCase
         $this->assertSame(39, $status->remainingDays);
     }
 
-    public function test_cancelled_sick_leaves_are_ignored(): void
-    {
+    public function test_cancelled_sick_leaves_are_ignored(): void {
         SickLeave::factory()->cancelled()->create([
             'user_id' => $this->user->id,
             'start_date' => '2026-05-04',

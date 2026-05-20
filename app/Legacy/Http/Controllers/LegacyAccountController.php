@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -20,17 +19,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
-class LegacyAccountController extends Controller
-{
-    public function editPassword(Request $request): View
-    {
+class LegacyAccountController extends Controller {
+    public function editPassword(Request $request): View {
         return view('legacy.account._password_dialog', [
             'isDialog' => true,
         ]);
     }
 
-    public function updatePassword(Request $request): RedirectResponse
-    {
+    public function updatePassword(Request $request): RedirectResponse {
         $data = $request->validate([
             'current_password' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:6', 'max:255', 'confirmed'],

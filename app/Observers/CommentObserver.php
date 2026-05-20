@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,10 +15,8 @@ use App\Models\DiaryEntry;
 use App\Services\MailNotifier;
 use App\Services\PushNotifier;
 
-class CommentObserver
-{
-    public function created(Comment $comment): void
-    {
+class CommentObserver {
+    public function created(Comment $comment): void {
         $comment->loadMissing('commentable', 'user');
 
         // Diary-comment notifications keep their existing behavior; comments

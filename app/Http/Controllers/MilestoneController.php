@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,10 +18,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class MilestoneController extends Controller
-{
-    public function create(Project $project): View
-    {
+class MilestoneController extends Controller {
+    public function create(Project $project): View {
         Gate::authorize('create', Milestone::class);
 
         return view('projects._milestone_dialog', [
@@ -32,8 +29,7 @@ class MilestoneController extends Controller
         ]);
     }
 
-    public function store(Project $project, SaveMilestoneRequest $request): RedirectResponse
-    {
+    public function store(Project $project, SaveMilestoneRequest $request): RedirectResponse {
         Gate::authorize('create', Milestone::class);
 
         $data = $request->validated();
@@ -47,8 +43,7 @@ class MilestoneController extends Controller
             ->with('success', __('Milestone angelegt.'));
     }
 
-    public function edit(Project $project, Milestone $milestone): View
-    {
+    public function edit(Project $project, Milestone $milestone): View {
         Gate::authorize('update', $milestone);
 
         return view('projects._milestone_dialog', [
@@ -58,8 +53,7 @@ class MilestoneController extends Controller
         ]);
     }
 
-    public function update(Project $project, Milestone $milestone, SaveMilestoneRequest $request): RedirectResponse
-    {
+    public function update(Project $project, Milestone $milestone, SaveMilestoneRequest $request): RedirectResponse {
         Gate::authorize('update', $milestone);
 
         $milestone->update($request->validated());
@@ -68,8 +62,7 @@ class MilestoneController extends Controller
             ->with('success', __('Milestone aktualisiert.'));
     }
 
-    public function destroy(Project $project, Milestone $milestone): RedirectResponse
-    {
+    public function destroy(Project $project, Milestone $milestone): RedirectResponse {
         Gate::authorize('delete', $milestone);
 
         $milestone->delete();

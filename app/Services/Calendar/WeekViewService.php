@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,8 +20,7 @@ use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
-class WeekViewService
-{
+class WeekViewService {
     /**
      * Build week-view payload for the given anchor date.
      *
@@ -35,8 +33,7 @@ class WeekViewService
      *   entries: Collection<int, DiaryEntry>,
      * }
      */
-    public function build(CarbonInterface $anchor, User $user, bool $teamScope, ?int $filterUserId = null): array
-    {
+    public function build(CarbonInterface $anchor, User $user, bool $teamScope, ?int $filterUserId = null): array {
         $start = CarbonImmutable::instance($anchor)->startOfWeek(WeekDay::MONDAY)->startOfDay();
         $end = $start->addDays(7); // exclusive
 
@@ -49,8 +46,8 @@ class WeekViewService
             ->with('user:id,name')
             ->overlapping($start, $end)
             ->where('is_archived', false)
-            ->when(! $teamScope, fn ($q) => $q->where('user_id', $user->id))
-            ->when($teamScope && $filterUserId, fn ($q) => $q->where('user_id', $filterUserId))
+            ->when(! $teamScope, fn($q) => $q->where('user_id', $user->id))
+            ->when($teamScope && $filterUserId, fn($q) => $q->where('user_id', $filterUserId))
             ->orderBy('start_at')
             ->get();
 
@@ -58,8 +55,8 @@ class WeekViewService
             ->with('user:id,name')
             ->overlapping($start, $end)
             ->where('is_archived', false)
-            ->when(! $teamScope, fn ($q) => $q->where('user_id', $user->id))
-            ->when($teamScope && $filterUserId, fn ($q) => $q->where('user_id', $filterUserId))
+            ->when(! $teamScope, fn($q) => $q->where('user_id', $user->id))
+            ->when($teamScope && $filterUserId, fn($q) => $q->where('user_id', $filterUserId))
             ->orderBy('start_at')
             ->get();
 
@@ -74,8 +71,8 @@ class WeekViewService
                             ->where('end_at', '>', $start);
                     });
             })
-            ->when(! $teamScope, fn ($q) => $q->where('user_id', $user->id))
-            ->when($teamScope && $filterUserId, fn ($q) => $q->where('user_id', $filterUserId))
+            ->when(! $teamScope, fn($q) => $q->where('user_id', $user->id))
+            ->when($teamScope && $filterUserId, fn($q) => $q->where('user_id', $filterUserId))
             ->orderBy('start_at')
             ->get();
 
@@ -95,8 +92,7 @@ class WeekViewService
      *
      * @return Collection<int, User>
      */
-    public function usersInWeek(CarbonInterface $anchor): Collection
-    {
+    public function usersInWeek(CarbonInterface $anchor): Collection {
         $start = CarbonImmutable::instance($anchor)->startOfWeek(WeekDay::MONDAY)->startOfDay();
         $end = $start->addDays(7);
 
@@ -125,8 +121,7 @@ class WeekViewService
      * Stabile Farbtonzuordnung pro Benutzer (HSL Hue 0–359). Spiegelt das Schema
      * wider, das auch die Wochenansicht für die Eintragsränder nutzt.
      */
-    public function userHue(int $userId): int
-    {
+    public function userHue(int $userId): int {
         return abs(crc32((string) $userId)) % 360;
     }
 
@@ -139,8 +134,7 @@ class WeekViewService
      * @param  Collection<int, TItem>  $items
      * @return array<int, Collection<int, TItem>>
      */
-    public function groupByDay(Collection $items, CarbonImmutable $weekStart): array
-    {
+    public function groupByDay(Collection $items, CarbonImmutable $weekStart): array {
         $groups = [];
         for ($d = 0; $d < 7; $d++) {
             $groups[$d] = collect();
@@ -175,8 +169,7 @@ class WeekViewService
      *
      * @return array{top: float, height: float}
      */
-    public function placement(CarbonInterface $start, ?CarbonInterface $end, CarbonImmutable $day): array
-    {
+    public function placement(CarbonInterface $start, ?CarbonInterface $end, CarbonImmutable $day): array {
         $dayStart = $day->startOfDay();
         $dayEnd = $day->addDay()->startOfDay();
 
@@ -208,8 +201,7 @@ class WeekViewService
      * @param  Collection<int, DiaryEntry>  $entries
      * @return array<int, array{entry: DiaryEntry, top: float, height: float, left: float, width: float}>
      */
-    public function layoutEntries(Collection $entries, CarbonImmutable $day): array
-    {
+    public function layoutEntries(Collection $entries, CarbonImmutable $day): array {
         $items = [];
         foreach ($entries as $entry) {
             /** @var CarbonInterface $start */
@@ -227,7 +219,7 @@ class WeekViewService
             ];
         }
 
-        usort($items, fn ($a, $b) => $a['startMin'] <=> $b['startMin'] ?: $b['endMin'] <=> $a['endMin']);
+        usort($items, fn($a, $b) => $a['startMin'] <=> $b['startMin'] ?: $b['endMin'] <=> $a['endMin']);
 
         // Cluster zusammenhängender Überlappungen, dann Lane innerhalb des Clusters
         $clusters = [];

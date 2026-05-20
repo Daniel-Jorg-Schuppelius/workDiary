@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,10 +12,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::table('users', function (Blueprint $table): void {
             $table->json('preferences')->nullable()->after('home_lng');
         });
@@ -29,8 +26,7 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::table('attachments', function (Blueprint $table): void {
             $table->dropIndex('attachments_attachable_meta_idx');
             $table->dropColumn('meta_type');

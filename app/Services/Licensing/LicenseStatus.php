@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,8 +10,7 @@
 
 namespace App\Services\Licensing;
 
-enum LicenseStatus: string
-{
+enum LicenseStatus: string {
     case Valid = 'valid';
     case Missing = 'missing';
     case Malformed = 'malformed';
@@ -23,8 +21,7 @@ enum LicenseStatus: string
     case PublicKeyMissing = 'public_key_missing';
     case Tampered = 'tampered';
 
-    public function isUsable(): bool
-    {
+    public function isUsable(): bool {
         return $this === self::Valid || $this === self::GracePeriod;
     }
 }

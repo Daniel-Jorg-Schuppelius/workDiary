@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 11 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,18 +14,15 @@ use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
-class UpdateShiftTypeRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class UpdateShiftTypeRequest extends FormRequest {
+    public function authorize(): bool {
         $user = Auth::user();
 
         return $user instanceof User && $user->isAdmin();
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         return [
             'name' => ['sometimes', 'string', 'max:100'],
             'abbreviation' => ['sometimes', 'string', 'max:5'],

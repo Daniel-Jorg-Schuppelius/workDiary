@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,19 +10,17 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Project\ProjectStatus;
+use App\Enums\Timesheet\TimesheetStatus;
 use App\Models\Project;
-use App\Models\Timesheet;
 use App\Models\User;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
-use App\Enums\Timesheet\TimesheetStatus;
-use App\Enums\Project\ProjectStatus;
 
-class TimesheetApiTest extends TestCase
-{
+class TimesheetApiTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
@@ -31,8 +28,7 @@ class TimesheetApiTest extends TestCase
 
     private Project $project;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -45,8 +41,7 @@ class TimesheetApiTest extends TestCase
         ]);
     }
 
-    public function test_create_and_list_timesheet_via_api(): void
-    {
+    public function test_create_and_list_timesheet_via_api(): void {
         Sanctum::actingAs($this->user);
 
         $this->postJson(route('api.timesheets.store', $this->project), [
@@ -61,8 +56,7 @@ class TimesheetApiTest extends TestCase
             ->assertJsonCount(1, 'data');
     }
 
-    public function test_unauthenticated_request_is_rejected(): void
-    {
+    public function test_unauthenticated_request_is_rejected(): void {
         $this->getJson(route('api.timesheets.index'))->assertUnauthorized();
     }
 }

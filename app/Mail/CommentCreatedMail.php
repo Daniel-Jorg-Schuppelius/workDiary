@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,21 +17,19 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class CommentCreatedMail extends Mailable
-{
+class CommentCreatedMail extends Mailable {
     use Queueable, SerializesModels;
 
-    public function __construct(public Comment $comment) {}
+    public function __construct(public Comment $comment) {
+    }
 
-    public function envelope(): Envelope
-    {
+    public function envelope(): Envelope {
         $entryId = $this->comment->commentable_id;
 
         return new Envelope(subject: __('Neuer Kommentar zum Tagebuch-Eintrag #:id', ['id' => $entryId]));
     }
 
-    public function content(): Content
-    {
+    public function content(): Content {
         return new Content(view: 'mail.comment-created', with: [
             'comment' => $this->comment,
         ]);

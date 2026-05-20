@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,10 +15,8 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 
-class MeController extends Controller
-{
-    public function __invoke(Request $request): UserResource
-    {
+class MeController extends Controller {
+    public function __invoke(Request $request): UserResource {
         /** @var User $user */
         $user = $request->user();
         $resource = new UserResource($user);

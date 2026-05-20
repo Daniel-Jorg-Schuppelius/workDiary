@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -20,17 +19,14 @@ use App\Policies\Concerns\HasAdminBypass;
  * the default driver (or any admin) can update/archive. Admin bypass is
  * handled by {@see HasAdminBypass::before()}.
  */
-class VehiclePolicy
-{
+class VehiclePolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool
-    {
+    public function viewAny(User $user): bool {
         return true;
     }
 
-    public function view(User $user, Vehicle $vehicle): bool
-    {
+    public function view(User $user, Vehicle $vehicle): bool {
         if ($vehicle->default_user_id === null) {
             return true;
         }
@@ -38,19 +34,16 @@ class VehiclePolicy
         return (int) $vehicle->default_user_id === (int) $user->id;
     }
 
-    public function create(User $user): bool
-    {
+    public function create(User $user): bool {
         return true;
     }
 
-    public function update(User $user, Vehicle $vehicle): bool
-    {
+    public function update(User $user, Vehicle $vehicle): bool {
         return $vehicle->default_user_id === null
             || (int) $vehicle->default_user_id === (int) $user->id;
     }
 
-    public function delete(User $user, Vehicle $vehicle): bool
-    {
+    public function delete(User $user, Vehicle $vehicle): bool {
         return $this->update($user, $vehicle);
     }
 }

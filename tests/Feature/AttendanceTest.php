@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,7 +10,11 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Attendance\AttendanceSource;
 use App\Enums\Attendance\AttendanceStatus;
+use App\Enums\Project\ProjectStatus;
+use App\Enums\TimeEntry\TimeEntryActivityType;
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Attendance;
 use App\Models\Project;
 use App\Models\TimeEntry;
@@ -25,10 +28,6 @@ use Illuminate\Support\Carbon;
 use RuntimeException;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
-use App\Enums\TimeEntry\TimeEntryActivityType;
-use App\Enums\Attendance\AttendanceSource;
-use App\Enums\TimeEntry\TimeEntryKind;
-use App\Enums\Project\ProjectStatus;
 
 class AttendanceTest extends TestCase {
     use RefreshDatabase;
@@ -159,7 +158,7 @@ class AttendanceTest extends TestCase {
         ]);
 
         $this->assertNull($entry->project_id);
-        $this->assertSame(\App\Enums\TimeEntry\TimeEntryActivityType::Admin, $entry->activity_type);
+        $this->assertSame(TimeEntryActivityType::Admin, $entry->activity_type);
     }
 
     public function test_time_entry_with_project_activity_requires_project_id(): void {

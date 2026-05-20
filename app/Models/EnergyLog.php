@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -44,8 +43,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class EnergyLog extends Model
-{
+class EnergyLog extends Model {
     use Auditable;
     use BelongsToOrganization;
 
@@ -137,8 +135,7 @@ class EnergyLog extends Model
         'soc_after' => 'integer',
     ];
 
-    public static function booted(): void
-    {
+    public static function booted(): void {
         static::saving(function (EnergyLog $log): void {
             // Force unit↔type consistency.
             if ($log->energy_type === self::TYPE_ELECTRIC) {
@@ -160,8 +157,7 @@ class EnergyLog extends Model
         });
     }
 
-    public function costPerUnit(): ?float
-    {
+    public function costPerUnit(): ?float {
         if ($this->cost_total === null || (float) $this->quantity <= 0.0) {
             return null;
         }
@@ -170,14 +166,12 @@ class EnergyLog extends Model
     }
 
     /** @return BelongsTo<Vehicle, $this> */
-    public function vehicle(): BelongsTo
-    {
+    public function vehicle(): BelongsTo {
         return $this->belongsTo(Vehicle::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo
-    {
+    public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 }

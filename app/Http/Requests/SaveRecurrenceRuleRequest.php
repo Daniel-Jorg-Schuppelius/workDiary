@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 19 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,8 +13,6 @@ namespace App\Http\Requests;
 use App\Enums\Diary\LocationMode;
 use App\Enums\Diary\Priority;
 use App\Enums\Recurrence\RecurrenceFrequency;
-use App\Models\DiaryEntry;
-use App\Models\RecurrenceRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

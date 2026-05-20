@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -20,10 +19,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class QualificationController extends Controller
-{
-    public function index(Request $request): View
-    {
+class QualificationController extends Controller {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', Qualification::class);
 
         $query = Qualification::query()->withCount('users');
@@ -40,8 +37,7 @@ class QualificationController extends Controller
         return view('qualifications.index', compact('qualifications', 'sort', 'dir'));
     }
 
-    public function create(): View
-    {
+    public function create(): View {
         Gate::authorize('create', Qualification::class);
 
         return view('qualifications._form_dialog', [
@@ -50,8 +46,7 @@ class QualificationController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
-    {
+    public function store(Request $request): RedirectResponse {
         Gate::authorize('create', Qualification::class);
 
         /** @var User $auth */
@@ -66,8 +61,7 @@ class QualificationController extends Controller
             ->with('success', __('Qualifikation wurde angelegt.'));
     }
 
-    public function edit(Qualification $qualification): View
-    {
+    public function edit(Qualification $qualification): View {
         Gate::authorize('update', $qualification);
 
         return view('qualifications._form_dialog', [
@@ -76,8 +70,7 @@ class QualificationController extends Controller
         ]);
     }
 
-    public function update(Request $request, Qualification $qualification): RedirectResponse
-    {
+    public function update(Request $request, Qualification $qualification): RedirectResponse {
         Gate::authorize('update', $qualification);
 
         $qualification->update($this->validated($request, $qualification));
@@ -86,8 +79,7 @@ class QualificationController extends Controller
             ->with('success', __('Qualifikation wurde gespeichert.'));
     }
 
-    public function destroy(Qualification $qualification): RedirectResponse
-    {
+    public function destroy(Qualification $qualification): RedirectResponse {
         Gate::authorize('delete', $qualification);
 
         $qualification->delete();
@@ -97,11 +89,10 @@ class QualificationController extends Controller
     }
 
     /** @return array<string, mixed> */
-    private function validated(Request $request, ?Qualification $qualification = null): array
-    {
+    private function validated(Request $request, ?Qualification $qualification = null): array {
         $uniqueRule = 'unique:qualifications,name';
         if ($qualification) {
-            $uniqueRule .= ','.$qualification->id;
+            $uniqueRule .= ',' . $qualification->id;
         }
 
         return $request->validate([

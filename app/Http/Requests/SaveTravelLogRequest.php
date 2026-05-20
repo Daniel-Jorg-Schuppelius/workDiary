@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -12,16 +11,13 @@
 namespace App\Http\Requests;
 
 use App\Enums\Travel\TravelLogVehicle;
-use App\Models\TravelLog;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
-class SaveTravelLogRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class SaveTravelLogRequest extends FormRequest {
+    public function authorize(): bool {
         return true;
     }
 
@@ -30,8 +26,7 @@ class SaveTravelLogRequest extends FormRequest
      * `date` + `start_time` / `end_time` time-only inputs. Day rolls over
      * automatically when `end_time` <= `start_time`.
      */
-    protected function prepareForValidation(): void
-    {
+    protected function prepareForValidation(): void {
         $date = is_string($this->input('date')) ? trim($this->input('date')) : null;
         $startTime = is_string($this->input('start_time')) ? trim($this->input('start_time')) : null;
         $endTime = is_string($this->input('end_time')) ? trim($this->input('end_time')) : null;
@@ -72,8 +67,7 @@ class SaveTravelLogRequest extends FormRequest
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         return [
             'date' => ['required', 'date'],
             'start_time' => ['nullable', 'date_format:H:i'],
@@ -98,8 +92,7 @@ class SaveTravelLogRequest extends FormRequest
         ];
     }
 
-    public function withValidator(Validator $validator): void
-    {
+    public function withValidator(Validator $validator): void {
         $validator->after(function ($v): void {
             if ($this->filled('end_time') && ! $this->filled('start_time')) {
                 $v->errors()->add('start_time', __('Startzeit erforderlich, wenn eine Endzeit angegeben ist.'));
@@ -108,8 +101,7 @@ class SaveTravelLogRequest extends FormRequest
     }
 
     /** @return array<string, mixed> */
-    public function validated($key = null, $default = null): array
-    {
+    public function validated($key = null, $default = null): array {
         $data = parent::validated();
         $data['round_trip'] = (bool) ($data['round_trip'] ?? false);
         $data['reimbursable'] = (bool) ($data['reimbursable'] ?? true);

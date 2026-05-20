@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -29,12 +28,10 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Notdienst-Auswertung: Bereitschaftsstunden und tatsächliche
  * Einsatzzeiten je Mitarbeiter im gewählten Zeitraum.
  */
-class OnCallReportController extends Controller
-{
+class OnCallReportController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request): View|SymfonyResponse
-    {
+    public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         $authUser = Auth::user();
         $isAdmin = $authUser instanceof User && $authUser->isAdmin();
@@ -66,8 +63,7 @@ class OnCallReportController extends Controller
         ]);
     }
 
-    private function resolveScope(Request $request, bool $isAdmin): string
-    {
+    private function resolveScope(Request $request, bool $isAdmin): string {
         $scope = $request->string('scope', 'mine')->toString();
         if ($scope !== 'team' || ! $isAdmin) {
             $scope = 'mine';
@@ -86,8 +82,7 @@ class OnCallReportController extends Controller
      *   ratio: float|null
      * }>
      */
-    private function aggregate(Carbon $from, Carbon $to, string $scope, int $userId): array
-    {
+    private function aggregate(Carbon $from, Carbon $to, string $scope, int $userId): array {
         $shiftsQ = OnCallShift::query()
             ->where('is_archived', false)
             ->where('start_at', '<', $to)
@@ -164,8 +159,7 @@ class OnCallReportController extends Controller
      * @param  array<int, array{user: User, shift_count:int, shift_minutes:int, assignment_count:int, assignment_minutes:int, ratio:float|null}>  $rows
      * @return array{users:int, shift_count:int, shift_minutes:int, assignment_count:int, assignment_minutes:int, ratio:float|null}
      */
-    private function totals(array $rows): array
-    {
+    private function totals(array $rows): array {
         $shiftCount = 0;
         $shiftMin = 0;
         $assignCount = 0;
@@ -191,8 +185,7 @@ class OnCallReportController extends Controller
      * @param  array<int, array{user: User, shift_count:int, shift_minutes:int, assignment_count:int, assignment_minutes:int, ratio:float|null}>  $rows
      * @param  array{users:int, shift_count:int, shift_minutes:int, assignment_count:int, assignment_minutes:int, ratio:float|null}  $totals
      */
-    private function exportCsv(array $rows, array $totals, string $from, string $to): Response
-    {
+    private function exportCsv(array $rows, array $totals, string $from, string $to): Response {
         $filename = sprintf('notdienst_%s_%s.csv', $from, $to);
         $fmt = static function (int $minutes): string {
             $h = intdiv($minutes, 60);
@@ -226,16 +219,16 @@ class OnCallReportController extends Controller
             $csv .= implode(';', array_map(static function ($v): string {
                 $s = (string) $v;
                 if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"'.str_replace('"', '""', $s).'"';
+                    $s = '"' . str_replace('"', '""', $s) . '"';
                 }
 
                 return $s;
-            }, $row))."\r\n";
+            }, $row)) . "\r\n";
         }
 
-        return response("\xEF\xBB\xBF".$csv, 200, [
+        return response("\xEF\xBB\xBF" . $csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 
@@ -243,8 +236,7 @@ class OnCallReportController extends Controller
      * @param  array<int, array{user: User, shift_count:int, shift_minutes:int, assignment_count:int, assignment_minutes:int, ratio:float|null}>  $rows
      * @param  array{users:int, shift_count:int, shift_minutes:int, assignment_count:int, assignment_minutes:int, ratio:float|null}  $totals
      */
-    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope): SymfonyResponse
-    {
+    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope): SymfonyResponse {
         $filename = sprintf('notdienst_%s_%s.pdf', $from, $to);
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = Pdf::loadView('reports.pdf.on-call', [

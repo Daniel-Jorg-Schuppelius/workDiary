@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,22 +10,20 @@
 
 namespace Database\Factories;
 
+use App\Enums\Attendance\AttendanceSource;
+use App\Enums\Attendance\AttendanceStatus;
 use App\Models\Attendance;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
-use App\Enums\Attendance\AttendanceStatus;
-use App\Enums\Attendance\AttendanceSource;
 
 /**
  * @extends Factory<Attendance>
  */
-class AttendanceFactory extends Factory
-{
+class AttendanceFactory extends Factory {
     protected $model = Attendance::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         $start = Carbon::instance(fake()->dateTimeBetween('-7 days', 'now'));
         $end = (clone $start)->addMinutes(fake()->numberBetween(60, 480));
 
@@ -45,9 +42,8 @@ class AttendanceFactory extends Factory
         ];
     }
 
-    public function open(): self
-    {
-        return $this->state(fn () => [
+    public function open(): self {
+        return $this->state(fn() => [
             'ended_at' => null,
             'status' => AttendanceStatus::Open->value,
         ]);

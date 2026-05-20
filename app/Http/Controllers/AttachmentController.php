@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -24,6 +23,7 @@ use App\Services\Attachments\ImageMetaUploader;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -32,9 +32,9 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-class AttachmentController extends Controller
-{
-    public function __construct(private readonly ImageMetaUploader $imageUploader) {}
+class AttachmentController extends Controller {
+    public function __construct(private readonly ImageMetaUploader $imageUploader) {
+    }
 
     private const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 
@@ -72,8 +72,7 @@ class AttachmentController extends Controller
      * werden. Wert = maximal erlaubte Größe in KB (aus
      * config/branding.php).
      */
-    private function imageMetaLimitKb(string $meta): ?int
-    {
+    private function imageMetaLimitKb(string $meta): ?int {
         return match ($meta) {
             Attachment::META_LOGO, Attachment::META_LOGO_DARK => (int) config('branding.limits.logo_kb', 2048),
             Attachment::META_AVATAR => (int) config('branding.limits.avatar_kb', 1024),
@@ -81,8 +80,7 @@ class AttachmentController extends Controller
         };
     }
 
-    public function store(Request $request, string $type, int $id): RedirectResponse
-    {
+    public function store(Request $request, string $type, int $id): RedirectResponse {
         Gate::authorize('create', Attachment::class);
 
         $parent = $this->resolveParent($type, $id);
@@ -97,7 +95,7 @@ class AttachmentController extends Controller
         }
 
         $request->validate([
-            'file' => ['required', 'file', 'max:'.(self::MAX_BYTES / 1024)],
+            'file' => ['required', 'file', 'max:' . (self::MAX_BYTES / 1024)],
         ]);
 
         $file = $request->file('file');
@@ -112,8 +110,8 @@ class AttachmentController extends Controller
             return back()->withErrors(['file' => __('Dateityp nicht erlaubt.')]);
         }
 
-        $folder = 'attachments/'.now()->format('Y/m');
-        $filename = Str::uuid()->toString().'.'.$ext;
+        $folder = 'attachments/' . now()->format('Y/m');
+        $filename = Str::uuid()->toString() . '.' . $ext;
         $path = $file->storeAs($folder, $filename, 'local');
 
         /** @var DiaryEntry|Comment|OnCallShift|EmergencyAssignment|Task|Customer|Organization|User $parent */
@@ -137,8 +135,7 @@ class AttachmentController extends Controller
      *   `meta_type` am selben Elternobjekt (inkl. Storage-Cleanup)
      * - Eigene Autorisierung statt der generischen Attachment-Policy
      */
-    private function storeImageMeta(Request $request, Model $parent, string $meta): RedirectResponse
-    {
+    private function storeImageMeta(Request $request, Model $parent, string $meta): RedirectResponse {
         /** @var Organization|User $parent */
         $this->authorizeImageMeta($parent, $meta);
 
@@ -152,7 +149,7 @@ class AttachmentController extends Controller
         ]);
 
         $file = $request->file('file');
-        if (! $file instanceof \Illuminate\Http\UploadedFile) {
+        if (! $file instanceof UploadedFile) {
             abort(422);
         }
 
@@ -170,8 +167,7 @@ class AttachmentController extends Controller
      * Wird vom <x-file-upload> "Entfernen"-Toggle genutzt, damit das
      * UI nicht die generische Attachment-ID-Route aufrufen muss.
      */
-    public function destroyMeta(string $type, int $id, string $meta): RedirectResponse
-    {
+    public function destroyMeta(string $type, int $id, string $meta): RedirectResponse {
         if ($this->imageMetaLimitKb($meta) === null) {
             abort(404);
         }
@@ -190,8 +186,7 @@ class AttachmentController extends Controller
      * dürfen nur deren Admins ändern; Avatare nur der eigene User
      * (bzw. ein Admin).
      */
-    private function authorizeImageMeta(Model $parent, string $meta): void
-    {
+    private function authorizeImageMeta(Model $parent, string $meta): void {
         if ($parent instanceof Organization && in_array($meta, [Attachment::META_LOGO, Attachment::META_LOGO_DARK], true)) {
             Gate::authorize('manageBranding', $parent);
 
@@ -214,8 +209,7 @@ class AttachmentController extends Controller
         abort(422);
     }
 
-    public function download(Request $request, Attachment $attachment): BinaryFileResponse
-    {
+    public function download(Request $request, Attachment $attachment): BinaryFileResponse {
         if (! $request->hasValidSignature()) {
             abort(403);
         }
@@ -230,8 +224,7 @@ class AttachmentController extends Controller
         return response()->download($disk->path($attachment->path), $attachment->original_name);
     }
 
-    public function destroy(Attachment $attachment): RedirectResponse
-    {
+    public function destroy(Attachment $attachment): RedirectResponse {
         Gate::authorize('delete', $attachment);
 
         Storage::disk($attachment->disk)->delete($attachment->path);
@@ -243,13 +236,11 @@ class AttachmentController extends Controller
     /**
      * Generate a temporary signed download URL (15 min).
      */
-    public static function downloadUrl(Attachment $attachment): string
-    {
+    public static function downloadUrl(Attachment $attachment): string {
         return URL::temporarySignedRoute('attachments.download', now()->addMinutes(15), ['attachment' => $attachment->id]);
     }
 
-    private function resolveParent(string $type, int $id): Model
-    {
+    private function resolveParent(string $type, int $id): Model {
         $class = self::TYPE_MAP[$type] ?? null;
         if ($class === null) {
             abort(404);
@@ -262,8 +253,7 @@ class AttachmentController extends Controller
      * Bereinigt einen vom Client gelieferten Dateinamen:
      * entfernt Pfad-Traversal-Sequenzen und behält nur druckbare Zeichen.
      */
-    private function sanitizeFilename(string $name): string
-    {
+    private function sanitizeFilename(string $name): string {
         // Nur den Dateinamen ohne Verzeichnis-Anteile verwenden
         $name = basename($name);
         // Null-Bytes, Steuerzeichen und bekannte Traversal-Muster entfernen

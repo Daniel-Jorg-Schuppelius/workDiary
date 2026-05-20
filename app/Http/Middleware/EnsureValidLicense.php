@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,12 +16,11 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class EnsureValidLicense
-{
-    public function __construct(private readonly LicenseService $service) {}
+class EnsureValidLicense {
+    public function __construct(private readonly LicenseService $service) {
+    }
 
-    public function handle(Request $request, Closure $next): Response
-    {
+    public function handle(Request $request, Closure $next): Response {
         if (! $this->service->isEnforced()) {
             return $next($request);
         }
@@ -65,8 +63,7 @@ class EnsureValidLicense
         ], 402);
     }
 
-    private function isDevHost(string $host): bool
-    {
+    private function isDevHost(string $host): bool {
         $allowedEnvs = (array) config('license.dev_host_envs', []);
         if ($allowedEnvs !== [] && ! in_array((string) app()->environment(), $allowedEnvs, true)) {
             return false;
@@ -83,7 +80,7 @@ class EnsureValidLicense
                 return true;
             }
             if (str_contains($pattern, '*')) {
-                $regex = '/^'.str_replace('\*', '.*', preg_quote($pattern, '/')).'$/';
+                $regex = '/^' . str_replace('\*', '.*', preg_quote($pattern, '/')) . '$/';
                 if (preg_match($regex, $host) === 1) {
                     return true;
                 }

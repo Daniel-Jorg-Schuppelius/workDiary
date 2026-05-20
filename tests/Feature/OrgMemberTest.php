@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,52 +10,45 @@
 
 namespace Tests\Feature;
 
+use App\Enums\User\UserRole;
 use App\Models\Organization;
 use App\Models\User;
-use App\Enums\User\UserRole;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class OrgMemberTest extends TestCase
-{
+class OrgMemberTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
     }
 
-    private function admin(): User
-    {
+    private function admin(): User {
         return User::factory()->admin()->create(['organization_id' => $this->organization->id]);
     }
 
-    private function regularUser(): User
-    {
+    private function regularUser(): User {
         return User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
     // ── Zugriffskontrolle ────────────────────────────────────────────────────
 
-    public function test_guest_cannot_access_members(): void
-    {
+    public function test_guest_cannot_access_members(): void {
         $this->get(route('org.members.index'))->assertRedirect(route('login'));
     }
 
-    public function test_non_admin_cannot_view_members(): void
-    {
+    public function test_non_admin_cannot_view_members(): void {
         $this->actingAs($this->regularUser())
             ->get(route('org.members.index'))
             ->assertForbidden();
     }
 
-    public function test_admin_without_org_cannot_view_members(): void
-    {
+    public function test_admin_without_org_cannot_view_members(): void {
         $adminNoOrg = User::factory()->admin()->create(['organization_id' => null]);
 
         $this->actingAs($adminNoOrg)
@@ -64,8 +56,7 @@ class OrgMemberTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_org_admin_can_view_member_list(): void
-    {
+    public function test_org_admin_can_view_member_list(): void {
         $admin = $this->admin();
         $this->regularUser(); // Mitglied anlegen
 
@@ -77,8 +68,7 @@ class OrgMemberTest extends TestCase
 
     // ── Mitglied anlegen ─────────────────────────────────────────────────────
 
-    public function test_admin_can_create_member(): void
-    {
+    public function test_admin_can_create_member(): void {
         $this->actingAs($this->admin())
             ->post(route('org.members.store'), [
                 'name' => 'Neue Person',
@@ -96,8 +86,7 @@ class OrgMemberTest extends TestCase
         $this->assertTrue($new->must_change_password);
     }
 
-    public function test_store_validates_unique_email(): void
-    {
+    public function test_store_validates_unique_email(): void {
         User::factory()->create(['email' => 'used@test.de']);
 
         $this->actingAs($this->admin())
@@ -113,8 +102,7 @@ class OrgMemberTest extends TestCase
 
     // ── Mitglied bearbeiten ───────────────────────────────────────────────────
 
-    public function test_admin_can_update_member(): void
-    {
+    public function test_admin_can_update_member(): void {
         $admin = $this->admin();
         $member = $this->regularUser();
 
@@ -132,8 +120,7 @@ class OrgMemberTest extends TestCase
 
     // ── Mitglied entfernen ────────────────────────────────────────────────────
 
-    public function test_admin_can_delete_member(): void
-    {
+    public function test_admin_can_delete_member(): void {
         $admin = $this->admin();
         $member = $this->regularUser();
 
@@ -144,8 +131,7 @@ class OrgMemberTest extends TestCase
         $this->assertDatabaseMissing('users', ['id' => $member->id]);
     }
 
-    public function test_admin_cannot_delete_themselves(): void
-    {
+    public function test_admin_cannot_delete_themselves(): void {
         $admin = $this->admin();
 
         $this->actingAs($admin)
@@ -158,8 +144,7 @@ class OrgMemberTest extends TestCase
 
     // ── Cross-Org-Schutz ─────────────────────────────────────────────────────
 
-    public function test_admin_cannot_edit_member_from_other_org(): void
-    {
+    public function test_admin_cannot_edit_member_from_other_org(): void {
         $otherOrg = Organization::factory()->create();
         $otherMember = User::factory()->user()->create(['organization_id' => $otherOrg->id]);
 
@@ -168,8 +153,7 @@ class OrgMemberTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_admin_cannot_delete_member_from_other_org(): void
-    {
+    public function test_admin_cannot_delete_member_from_other_org(): void {
         $otherOrg = Organization::factory()->create();
         $otherMember = User::factory()->user()->create(['organization_id' => $otherOrg->id]);
 

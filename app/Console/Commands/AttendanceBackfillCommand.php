@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,13 +10,13 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\Attendance\AttendanceSource;
+use App\Enums\Attendance\AttendanceStatus;
 use App\Models\Attendance;
 use App\Models\TimeEntry;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use App\Enums\Attendance\AttendanceStatus;
-use App\Enums\Attendance\AttendanceSource;
 
 /**
  * Backfills attendance sessions from existing TimeEntries so that the new
@@ -29,14 +28,12 @@ use App\Enums\Attendance\AttendanceSource;
  *
  * Idempotent: skips users/dates that already have an attendance record.
  */
-class AttendanceBackfillCommand extends Command
-{
+class AttendanceBackfillCommand extends Command {
     protected $signature = 'attendance:backfill {--dry-run : Nur anzeigen, nichts schreiben}';
 
     protected $description = 'Erzeugt Anwesenheits-Sessions aus vorhandenen Zeiteinträgen.';
 
-    public function handle(): int
-    {
+    public function handle(): int {
         $dryRun = (bool) $this->option('dry-run');
         $created = 0;
         $linked = 0;
@@ -100,7 +97,7 @@ class AttendanceBackfillCommand extends Command
 
         $bar->finish();
         $this->newLine();
-        $this->info(($dryRun ? '[dry-run] ' : '')."Created {$created} attendance(s), linked {$linked} entries.");
+        $this->info(($dryRun ? '[dry-run] ' : '') . "Created {$created} attendance(s), linked {$linked} entries.");
 
         return self::SUCCESS;
     }

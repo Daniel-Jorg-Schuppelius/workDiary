@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,7 +20,7 @@ return [
     */
     'nominatim' => [
         'base_url' => env('ROUTING_NOMINATIM_URL', 'http://localhost/nominatim'),
-        'user_agent' => env('ROUTING_NOMINATIM_UA', 'workDiary/'.env('APP_URL', 'http://localhost')),
+        'user_agent' => env('ROUTING_NOMINATIM_UA', 'workDiary/' . env('APP_URL', 'http://localhost')),
         'email' => env('ROUTING_NOMINATIM_EMAIL', 'admin@example.com'),
         'rate_limit_per_sec' => (int) env('ROUTING_NOMINATIM_RATE', 1),
         'timeout' => (int) env('ROUTING_NOMINATIM_TIMEOUT', 8),

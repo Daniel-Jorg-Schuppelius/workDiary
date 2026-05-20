@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -20,10 +19,8 @@ use Illuminate\Support\Facades\Schema;
  * - Items can reference time entries (snapshot of duration & rate).
  * - Status flow: draft → issued → paid (or cancelled).
  */
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::create('invoices', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('organization_id')->nullable()->constrained('organizations')->nullOnDelete();
@@ -64,8 +61,7 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('invoice_items');
         Schema::dropIfExists('invoices');
     }

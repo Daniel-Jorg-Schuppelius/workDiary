@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -28,14 +27,12 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Audit-Aktivitätsbericht: Aggregation der AuditLogs nach Event, User und Auditable-Typ.
  * Nur für Administratoren.
  */
-class AuditActivityReportController extends Controller
-{
+class AuditActivityReportController extends Controller {
     use ResolvesGlobalDateRange;
 
     private const RECENT_LIMIT = 100;
 
-    public function index(Request $request): View|SymfonyResponse
-    {
+    public function index(Request $request): View|SymfonyResponse {
         $authUser = Auth::user();
         $isAdmin = $authUser instanceof User && $authUser->isAdmin();
         abort_unless($isAdmin, 403);
@@ -52,7 +49,7 @@ class AuditActivityReportController extends Controller
             ->groupBy('event')
             ->orderByDesc('c')
             ->pluck('c', 'event')
-            ->map(static fn ($v): int => (int) $v)
+            ->map(static fn($v): int => (int) $v)
             ->all();
 
         /** @var array<string, int> $byType */
@@ -62,7 +59,7 @@ class AuditActivityReportController extends Controller
             ->orderByDesc('c')
             ->limit(20)
             ->pluck('c', 'auditable_type')
-            ->map(static fn ($v): int => (int) $v)
+            ->map(static fn($v): int => (int) $v)
             ->all();
 
         $byUserRaw = (clone $base)
@@ -139,8 +136,7 @@ class AuditActivityReportController extends Controller
      * @param  array<int, array{user: ?User, count:int}>  $byUser
      * @param  Collection<int, AuditLog>  $recent
      */
-    private function exportCsv(array $byEvent, array $byType, array $byUser, $recent, string $from, string $to): Response
-    {
+    private function exportCsv(array $byEvent, array $byType, array $byUser, $recent, string $from, string $to): Response {
         $filename = sprintf('audit_%s_%s.csv', $from, $to);
         $rows = [];
         $rows[] = ['Bereich', 'Schlüssel', 'Anzahl'];
@@ -171,16 +167,16 @@ class AuditActivityReportController extends Controller
             $csv .= implode(';', array_map(static function ($v): string {
                 $s = (string) $v;
                 if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"'.str_replace('"', '""', $s).'"';
+                    $s = '"' . str_replace('"', '""', $s) . '"';
                 }
 
                 return $s;
-            }, $row))."\r\n";
+            }, $row)) . "\r\n";
         }
 
-        return response("\xEF\xBB\xBF".$csv, 200, [
+        return response("\xEF\xBB\xBF" . $csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 
@@ -191,8 +187,7 @@ class AuditActivityReportController extends Controller
      * @param  Collection<int, AuditLog>  $recent
      * @param  array{total:int, users:int, types:int}  $totals
      */
-    private function exportPdf(array $byEvent, array $byType, array $byUser, $recent, array $totals, string $from, string $to): SymfonyResponse
-    {
+    private function exportPdf(array $byEvent, array $byType, array $byUser, $recent, array $totals, string $from, string $to): SymfonyResponse {
         $filename = sprintf('audit_%s_%s.pdf', $from, $to);
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = Pdf::loadView('reports.pdf.audit-activity', [
@@ -208,8 +203,7 @@ class AuditActivityReportController extends Controller
         return $pdf->download($filename);
     }
 
-    private function shortType(string $fqcn): string
-    {
+    private function shortType(string $fqcn): string {
         $parts = explode('\\', $fqcn);
 
         return (string) end($parts);

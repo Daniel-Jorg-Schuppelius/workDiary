@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -12,17 +11,14 @@
 namespace App\Http\Requests;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\TimeEntry;
 use App\Models\Timesheet;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
-class SaveTimesheetEntryRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class SaveTimesheetEntryRequest extends FormRequest {
+    public function authorize(): bool {
         return true;
     }
 
@@ -31,8 +27,7 @@ class SaveTimesheetEntryRequest extends FormRequest
      * `work_date`) + `start_time` / `end_time`. Day rolls over when
      * `end_time` <= `start_time`.
      */
-    protected function prepareForValidation(): void
-    {
+    protected function prepareForValidation(): void {
         $date = is_string($this->input('date')) ? trim($this->input('date')) : null;
         if (! $date || ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
             $timesheet = $this->route('timesheet');
@@ -81,8 +76,7 @@ class SaveTimesheetEntryRequest extends FormRequest
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         return [
             'start_time' => ['nullable', 'date_format:H:i'],
             'end_time' => ['nullable', 'date_format:H:i'],
@@ -97,8 +91,7 @@ class SaveTimesheetEntryRequest extends FormRequest
         ];
     }
 
-    public function withValidator(Validator $validator): void
-    {
+    public function withValidator(Validator $validator): void {
         $validator->after(function ($v): void {
             $start = $this->input('started_at');
             $end = $this->input('ended_at');

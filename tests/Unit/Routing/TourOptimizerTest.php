@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,18 +14,15 @@ use App\Services\Routing\Coordinate;
 use App\Services\Routing\TourOptimizer;
 use Tests\TestCase;
 
-class TourOptimizerTest extends TestCase
-{
-    public function test_returns_empty_for_no_stops(): void
-    {
+class TourOptimizerTest extends TestCase {
+    public function test_returns_empty_for_no_stops(): void {
         $opt = new TourOptimizer;
         $result = $opt->optimize([], []);
         $this->assertSame([], $result['order']);
         $this->assertSame(0, $result['distance']);
     }
 
-    public function test_orders_stops_along_a_line_via_nearest_neighbor(): void
-    {
+    public function test_orders_stops_along_a_line_via_nearest_neighbor(): void {
         $opt = new TourOptimizer;
         // Five stops along an east-west line; haversine distance grows monotonically.
         $stops = [
@@ -43,8 +39,7 @@ class TourOptimizerTest extends TestCase
         $this->assertGreaterThan(0, $result['distance']);
     }
 
-    public function test_two_opt_finds_a_better_route_than_naive_order(): void
-    {
+    public function test_two_opt_finds_a_better_route_than_naive_order(): void {
         $opt = new TourOptimizer;
         // Square layout — a poor starting order should be improved by 2-opt.
         $stops = [
@@ -61,8 +56,7 @@ class TourOptimizerTest extends TestCase
         $this->assertSame([0, 1, 2, 3], $result['order']);
     }
 
-    public function test_respects_start_anchor(): void
-    {
+    public function test_respects_start_anchor(): void {
         $opt = new TourOptimizer;
         $stops = [
             new Coordinate(0.0, 5.0),

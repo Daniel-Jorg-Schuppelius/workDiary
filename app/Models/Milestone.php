@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,9 +16,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
-class Milestone extends Model
-{
+/**
+ * @property int $id
+ * @property int $organization_id
+ * @property int|null $project_id
+ * @property int|null $created_by
+ * @property string $title
+ * @property string|null $description
+ * @property Carbon|null $due_date
+ * @property bool $is_completed
+ * @property int|null $position
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
+class Milestone extends Model {
     use BelongsToOrganization;
 
     /** @use HasFactory<MilestoneFactory> */
@@ -43,30 +55,25 @@ class Milestone extends Model
     ];
 
     /** @return BelongsTo<Project, $this> */
-    public function project(): BelongsTo
-    {
+    public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function creator(): BelongsTo
-    {
+    public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by');
     }
 
     /** @return HasMany<Task, $this> */
-    public function tasks(): HasMany
-    {
+    public function tasks(): HasMany {
         return $this->hasMany(Task::class);
     }
 
-    public function statusLabel(): string
-    {
+    public function statusLabel(): string {
         return $this->is_completed ? __('Erledigt') : __('Offen');
     }
 
-    public function statusTone(): string
-    {
+    public function statusTone(): string {
         return $this->is_completed ? 'success' : 'neutral';
     }
 }

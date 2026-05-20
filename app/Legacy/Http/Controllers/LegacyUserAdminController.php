@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,12 +21,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-class LegacyUserAdminController extends Controller
-{
+class LegacyUserAdminController extends Controller {
     use RequiresLegacyAdmin;
 
-    public function index(): View
-    {
+    public function index(): View {
         $this->ensureAdmin();
 
         return view('legacy.users.index', [
@@ -35,8 +32,7 @@ class LegacyUserAdminController extends Controller
         ]);
     }
 
-    public function create(Request $request): View
-    {
+    public function create(Request $request): View {
         $this->ensureAdmin();
 
         return view('legacy.users._form_dialog', [
@@ -46,8 +42,7 @@ class LegacyUserAdminController extends Controller
         ]);
     }
 
-    public function store(SaveLegacyUserRequest $request): RedirectResponse
-    {
+    public function store(SaveLegacyUserRequest $request): RedirectResponse {
         $this->ensureAdmin();
 
         LegacyUser::query()->create($request->validated());
@@ -55,8 +50,7 @@ class LegacyUserAdminController extends Controller
         return redirect()->route('legacy.users.index')->with('success', 'Mitarbeiter angelegt.');
     }
 
-    public function edit(LegacyUser $user): View
-    {
+    public function edit(LegacyUser $user): View {
         $this->ensureAdmin();
 
         $this->ensureMutableLegacyUser($user);
@@ -68,20 +62,18 @@ class LegacyUserAdminController extends Controller
         ]);
     }
 
-    public function update(SaveLegacyUserRequest $request, LegacyUser $user): RedirectResponse
-    {
+    public function update(SaveLegacyUserRequest $request, LegacyUser $user): RedirectResponse {
         $this->ensureAdmin();
 
         $this->ensureMutableLegacyUser($user);
 
-        $data = array_filter($request->validated(), static fn ($v) => $v !== null);
+        $data = array_filter($request->validated(), static fn($v) => $v !== null);
         $user->update($data);
 
         return redirect()->route('legacy.users.index')->with('success', 'Mitarbeiter aktualisiert.');
     }
 
-    public function destroy(LegacyUser $user): RedirectResponse
-    {
+    public function destroy(LegacyUser $user): RedirectResponse {
         $this->ensureAdmin();
 
         $this->ensureMutableLegacyUser($user);
@@ -95,13 +87,11 @@ class LegacyUserAdminController extends Controller
         return redirect()->route('legacy.users.index')->with('success', 'Mitarbeiter geloescht.');
     }
 
-    private function ensureMutableLegacyUser(LegacyUser $user): void
-    {
+    private function ensureMutableLegacyUser(LegacyUser $user): void {
         abort_if((int) $user->id <= 3, 403);
     }
 
-    private function hasLegacyDependencies(LegacyUser $user): bool
-    {
+    private function hasLegacyDependencies(LegacyUser $user): bool {
         return LegacyDiaryEntry::query()->where('user', $user->id)->exists()
             || LegacyOnCall::query()->where('user', $user->id)->exists()
             || LegacyNotdienst::query()->where('user', $user->id)->exists();

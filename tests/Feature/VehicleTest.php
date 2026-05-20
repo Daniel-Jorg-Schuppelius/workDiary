@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,17 +10,16 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Vehicle\VehiclePropulsion;
+use App\Enums\Vehicle\VehicleType;
 use App\Models\User;
 use App\Models\Vehicle;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
-use App\Enums\Vehicle\VehicleType;
-use App\Enums\Vehicle\VehiclePropulsion;
 
-class VehicleTest extends TestCase
-{
+class VehicleTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
@@ -29,8 +27,7 @@ class VehicleTest extends TestCase
 
     private User $admin;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -38,15 +35,13 @@ class VehicleTest extends TestCase
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
     }
 
-    public function test_index_renders(): void
-    {
+    public function test_index_renders(): void {
         $this->actingAs($this->user);
         Vehicle::factory()->create(['organization_id' => $this->organization->id]);
         $this->get(route('vehicles.index'))->assertOk()->assertSee(__('Fuhrpark'));
     }
 
-    public function test_store_creates_vehicle(): void
-    {
+    public function test_store_creates_vehicle(): void {
         $this->actingAs($this->user);
 
         $this->post(route('vehicles.store'), [
@@ -65,8 +60,7 @@ class VehicleTest extends TestCase
         $this->assertSame('0.3500', $vehicle->default_rate_per_km);
     }
 
-    public function test_destroy_archives_vehicle(): void
-    {
+    public function test_destroy_archives_vehicle(): void {
         $this->actingAs($this->user);
         $vehicle = Vehicle::factory()->create(['organization_id' => $this->organization->id]);
 
@@ -74,8 +68,7 @@ class VehicleTest extends TestCase
         $this->assertNotNull($vehicle->fresh()->archived_at);
     }
 
-    public function test_non_owner_cannot_update_assigned_vehicle(): void
-    {
+    public function test_non_owner_cannot_update_assigned_vehicle(): void {
         $owner = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $vehicle = Vehicle::factory()->create([
             'organization_id' => $this->organization->id,
@@ -92,8 +85,7 @@ class VehicleTest extends TestCase
         ])->assertForbidden();
     }
 
-    public function test_admin_can_update_any_vehicle(): void
-    {
+    public function test_admin_can_update_any_vehicle(): void {
         $owner = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $vehicle = Vehicle::factory()->create([
             'organization_id' => $this->organization->id,

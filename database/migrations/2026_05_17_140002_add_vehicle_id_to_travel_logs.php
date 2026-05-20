@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,10 +20,8 @@ use Illuminate\Support\Facades\Schema;
  * The pre-existing string `vehicle` column stays as a fallback / type
  * label so old rows keep working without migration of historical data.
  */
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::table('travel_logs', function (Blueprint $table): void {
             $table->foreignId('vehicle_id')->nullable()->after('attendance_id')
                 ->constrained('vehicles')->nullOnDelete();
@@ -32,8 +29,7 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::table('travel_logs', function (Blueprint $table): void {
             $table->dropForeign(['vehicle_id']);
             $table->dropIndex(['vehicle_id']);

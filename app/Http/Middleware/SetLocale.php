@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,12 +16,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpFoundation\Response;
 
-class SetLocale
-{
+class SetLocale {
     public const SUPPORTED = ['de', 'en'];
 
-    public function handle(Request $request, Closure $next): Response
-    {
+    public function handle(Request $request, Closure $next): Response {
         $locale = (string) $request->session()->get('locale', config('app.locale', 'de'));
         if (! in_array($locale, self::SUPPORTED, true)) {
             $locale = 'de';

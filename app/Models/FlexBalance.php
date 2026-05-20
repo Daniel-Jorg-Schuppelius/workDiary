@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -29,8 +28,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $computed_at
  * @property bool $locked
  */
-class FlexBalance extends Model
-{
+class FlexBalance extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
@@ -59,8 +57,7 @@ class FlexBalance extends Model
     ];
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo
-    {
+    public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 }

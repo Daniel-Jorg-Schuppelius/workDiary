@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -31,10 +30,8 @@ use Symfony\Component\HttpFoundation\Response;
  * users.organization_id eingetragene aktivieren. Dies ist die einzige Stelle,
  * an der ein Wechsel des Org-Kontexts zur Laufzeit zulässig ist.
  */
-class SetOrganizationContext
-{
-    public function handle(Request $request, Closure $next): Response
-    {
+class SetOrganizationContext {
+    public function handle(Request $request, Closure $next): Response {
         if (Auth::check()) {
             /** @var User $user */
             $user = Auth::user();
@@ -49,8 +46,7 @@ class SetOrganizationContext
         return $next($request);
     }
 
-    private function resolveOrganization(Request $request, User $user): ?Organization
-    {
+    private function resolveOrganization(Request $request, User $user): ?Organization {
         // 1) Session-Override (nur für Admins)
         if ($user->isAdmin() && $request->hasSession()) {
             $overrideId = $request->session()->get(OrganizationSwitchController::SESSION_KEY);

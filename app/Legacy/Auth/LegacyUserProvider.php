@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -29,16 +28,13 @@ use Illuminate\Support\Str;
  * damit ein kompromittiertes Legacy-Passwort keinen Zugriff auf das neue
  * System verschaffen kann.
  */
-class LegacyUserProvider extends EloquentUserProvider
-{
-    public function __construct(Hasher $hasher)
-    {
+class LegacyUserProvider extends EloquentUserProvider {
+    public function __construct(Hasher $hasher) {
         parent::__construct($hasher, User::class);
     }
 
     /** @param array<string, mixed> $credentials */
-    public function retrieveByCredentials(array $credentials): ?Authenticatable
-    {
+    public function retrieveByCredentials(array $credentials): ?Authenticatable {
         $username = $credentials['username'] ?? $credentials['email'] ?? null;
         $password = $credentials['password'] ?? null;
 
@@ -58,7 +54,7 @@ class LegacyUserProvider extends EloquentUserProvider
                 // password und is_new_system bleiben unangetastet.
                 $existing->fill([
                     'name' => $legacyUser->uname,
-                    'email' => $existing->email ?: ($legacyUser->email ?: $legacyUser->uname.'@workdiary.local'),
+                    'email' => $existing->email ?: ($legacyUser->email ?: $legacyUser->uname . '@workdiary.local'),
                 ])->save();
 
                 return $existing;
@@ -68,7 +64,7 @@ class LegacyUserProvider extends EloquentUserProvider
             return User::create([
                 'legacy_user_id' => $legacyUser->id,
                 'name' => $legacyUser->uname,
-                'email' => $legacyUser->email ?: $legacyUser->uname.'@workdiary.local',
+                'email' => $legacyUser->email ?: $legacyUser->uname . '@workdiary.local',
                 'password' => $this->hasher->make(Str::random(64)),
                 'is_new_system' => false,
             ]);
@@ -80,8 +76,7 @@ class LegacyUserProvider extends EloquentUserProvider
     }
 
     /** @param array<string, mixed> $credentials */
-    public function validateCredentials(Authenticatable $user, array $credentials): bool
-    {
+    public function validateCredentials(Authenticatable $user, array $credentials): bool {
         /** @var User $user */
         $password = $credentials['password'] ?? null;
 
@@ -99,8 +94,7 @@ class LegacyUserProvider extends EloquentUserProvider
         return $this->hasher->check($password, $user->getAuthPassword());
     }
 
-    private function findLegacyUser(string $username, string $password): ?object
-    {
+    private function findLegacyUser(string $username, string $password): ?object {
         if (! filled(config('database.connections.legacy.database'))) {
             return null;
         }

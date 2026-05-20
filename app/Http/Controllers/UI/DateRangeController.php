@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,10 +16,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
-class DateRangeController extends Controller
-{
-    public function update(Request $request, DateRangeContext $context): RedirectResponse
-    {
+class DateRangeController extends Controller {
+    public function update(Request $request, DateRangeContext $context): RedirectResponse {
         $data = $request->validate([
             'preset' => ['required', 'string', Rule::in(DateRangeContext::PRESETS)],
             'from' => ['nullable', 'date'],
@@ -36,8 +33,7 @@ class DateRangeController extends Controller
         return redirect()->back();
     }
 
-    public function shift(Request $request, DateRangeContext $context): RedirectResponse
-    {
+    public function shift(Request $request, DateRangeContext $context): RedirectResponse {
         $data = $request->validate([
             'direction' => ['required', Rule::in(['prev', 'next'])],
         ]);

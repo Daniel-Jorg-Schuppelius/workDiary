@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,21 +10,19 @@
 
 namespace Database\Factories;
 
+use App\Enums\Travel\TravelLogVehicle;
 use App\Models\TravelLog;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
-use App\Enums\Travel\TravelLogVehicle;
 
 /**
  * @extends Factory<TravelLog>
  */
-class TravelLogFactory extends Factory
-{
+class TravelLogFactory extends Factory {
     protected $model = TravelLog::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         $start = Carbon::instance(fake()->dateTimeBetween('-30 days', 'now'));
         $end = (clone $start)->addMinutes(fake()->numberBetween(10, 180));
 

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,11 +13,9 @@ namespace App\Legacy\Services;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
-class LegacyArchiveService
-{
+class LegacyArchiveService {
     /** @return array<string, mixed> */
-    public function archiveOlderThanMonths(int $months, ?int $legacyUserId = null): array
-    {
+    public function archiveOlderThanMonths(int $months, ?int $legacyUserId = null): array {
         $cutoff = now()->subMonths($months)->startOfDay();
 
         $movedDiary = $this->moveRows(
@@ -55,8 +52,7 @@ class LegacyArchiveService
         ];
     }
 
-    private function moveRows(string $sourceTable, string $archiveTable, string $dateColumn, Carbon $cutoff, ?int $legacyUserId): int
-    {
+    private function moveRows(string $sourceTable, string $archiveTable, string $dateColumn, Carbon $cutoff, ?int $legacyUserId): int {
         $connection = DB::connection('legacy');
 
         $query = $connection

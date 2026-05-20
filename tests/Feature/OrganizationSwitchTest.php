@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed May 20 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,18 +17,15 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class OrganizationSwitchTest extends TestCase
-{
+class OrganizationSwitchTest extends TestCase {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
     }
 
-    public function test_admin_can_switch_active_organization(): void
-    {
+    public function test_admin_can_switch_active_organization(): void {
         $orgA = Organization::factory()->create(['name' => 'Org A']);
         $orgB = Organization::factory()->create(['name' => 'Org B']);
         $admin = User::factory()->admin()->create(['organization_id' => $orgA->id]);
@@ -41,8 +37,7 @@ class OrganizationSwitchTest extends TestCase
         $this->assertSame($orgB->id, session(OrganizationSwitchController::SESSION_KEY));
     }
 
-    public function test_non_admin_cannot_switch_organization(): void
-    {
+    public function test_non_admin_cannot_switch_organization(): void {
         $org = Organization::factory()->create();
         $user = User::factory()->user()->create(['organization_id' => $org->id]);
         $other = Organization::factory()->create();
@@ -54,8 +49,7 @@ class OrganizationSwitchTest extends TestCase
         $this->assertNull(session(OrganizationSwitchController::SESSION_KEY));
     }
 
-    public function test_session_override_is_applied_for_admin(): void
-    {
+    public function test_session_override_is_applied_for_admin(): void {
         $orgA = Organization::factory()->create();
         $orgB = Organization::factory()->create();
         $admin = User::factory()->admin()->create(['organization_id' => $orgA->id]);
@@ -73,8 +67,7 @@ class OrganizationSwitchTest extends TestCase
         $this->assertSame($orgB->id, app('currentOrganization')->id);
     }
 
-    public function test_invalid_session_override_falls_back_to_user_org(): void
-    {
+    public function test_invalid_session_override_falls_back_to_user_org(): void {
         $orgA = Organization::factory()->create();
         $admin = User::factory()->admin()->create(['organization_id' => $orgA->id]);
 
@@ -86,8 +79,7 @@ class OrganizationSwitchTest extends TestCase
         $this->assertSame($orgA->id, app('currentOrganization')->id);
     }
 
-    public function test_clear_override_removes_session_value(): void
-    {
+    public function test_clear_override_removes_session_value(): void {
         $orgA = Organization::factory()->create();
         $orgB = Organization::factory()->create();
         $admin = User::factory()->admin()->create(['organization_id' => $orgA->id]);

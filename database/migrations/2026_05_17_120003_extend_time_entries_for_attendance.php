@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,10 +21,8 @@ use Illuminate\Support\Facades\Schema;
  *  - When activity_type=project, project_id is required (enforced in model).
  *  - activity_category_id references the catalog entry for non-project work.
  */
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         // Drop the project_id FK so we can make it nullable.
         Schema::table('time_entries', function (Blueprint $table): void {
             $table->dropForeign(['project_id']);
@@ -50,8 +47,7 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::table('time_entries', function (Blueprint $table): void {
             $table->dropForeign(['travel_log_id']);
             $table->dropForeign(['attendance_id']);

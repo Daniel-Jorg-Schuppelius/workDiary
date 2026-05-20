@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +10,7 @@
 
 namespace App\Observers;
 
+use App\Enums\Diary\Status;
 use App\Models\DiaryEntry;
 use App\Services\MailNotifier;
 use App\Services\PushNotifier;
@@ -27,7 +27,7 @@ class DiaryEntryObserver {
 
         app(PushNotifier::class)->diaryProblem($entry);
         $original = $entry->getOriginal('status');
-        $oldValue = $original instanceof \App\Enums\Diary\Status
+        $oldValue = $original instanceof Status
             ? $original->value
             : ($original !== null ? (int) $original : null);
         app(MailNotifier::class)->diaryStatusChanged(

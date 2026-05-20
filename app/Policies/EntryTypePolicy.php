@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,32 +14,26 @@ use App\Models\EntryType;
 use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
 
-class EntryTypePolicy
-{
+class EntryTypePolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool
-    {
+    public function viewAny(User $user): bool {
         return $user->isAdmin();
     }
 
-    public function view(User $user, EntryType $type): bool
-    {
+    public function view(User $user, EntryType $type): bool {
         return $user->isAdmin();
     }
 
-    public function create(User $user): bool
-    {
+    public function create(User $user): bool {
         return $user->isAdmin();
     }
 
-    public function update(User $user, EntryType $type): bool
-    {
+    public function update(User $user, EntryType $type): bool {
         return $user->isAdmin();
     }
 
-    public function delete(User $user, EntryType $type): bool
-    {
+    public function delete(User $user, EntryType $type): bool {
         return $user->isAdmin();
     }
 }

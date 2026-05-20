@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\CoverageRequirement;
 use App\Models\DutyPlan;
 use App\Models\ScheduledShift;
@@ -20,7 +20,6 @@ use App\Models\ShiftType;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Collection;
-use App\Enums\Shift\ScheduledShiftStatus;
 
 /**
  * Berechnet Soll-/Ist-Besetzung pro Tag und Schichttyp für einen DutyPlan.
@@ -33,8 +32,7 @@ use App\Enums\Shift\ScheduledShiftStatus;
  * Ist-Werte zählen nur Schichten mit Status `published` oder `confirmed`
  * (Entwürfe / abgesagte Schichten werden ignoriert).
  */
-class CoverageService
-{
+class CoverageService {
     /** Status, die als "tatsächlich besetzt" zählen. */
     private const ACTUAL_STATUSES = [
         ScheduledShiftStatus::Published->value,
@@ -45,8 +43,7 @@ class CoverageService
      * @return array<string, array<int, array{min:int, max:?int, qualification_ids:array<int,int>}>>
      *                                                                                               keyed by date (Y-m-d) → shift_type_id → ['min','max','qualification_ids']
      */
-    public function requirementsFor(DutyPlan $dutyPlan, ?CarbonPeriod $period = null): array
-    {
+    public function requirementsFor(DutyPlan $dutyPlan, ?CarbonPeriod $period = null): array {
         $period ??= CarbonPeriod::create($dutyPlan->from_date, $dutyPlan->to_date);
 
         // Eine Query reicht: alle Anforderungen für Plan oder org-weit.
@@ -113,8 +110,7 @@ class CoverageService
     /**
      * @return array<string, array<int, int>> date → shift_type_id → count
      */
-    public function actualStaffing(DutyPlan $dutyPlan, ?CarbonPeriod $period = null): array
-    {
+    public function actualStaffing(DutyPlan $dutyPlan, ?CarbonPeriod $period = null): array {
         $start = $period?->getStartDate();
         $end = $period?->getEndDate();
         $from = $start !== null ? CarbonImmutable::instance($start) : CarbonImmutable::instance($dutyPlan->from_date);
@@ -145,8 +141,7 @@ class CoverageService
      *
      * @return list<array{date:string, shift_type_id:int, min:int, max:?int, actual:int, severity:'under'|'over'}>
      */
-    public function gaps(DutyPlan $dutyPlan, ?CarbonPeriod $period = null): array
-    {
+    public function gaps(DutyPlan $dutyPlan, ?CarbonPeriod $period = null): array {
         $period ??= CarbonPeriod::create($dutyPlan->from_date, $dutyPlan->to_date);
         $req = $this->requirementsFor($dutyPlan, $period);
         $actual = $this->actualStaffing($dutyPlan, $period);
@@ -185,8 +180,7 @@ class CoverageService
      *
      * @return 'ok'|'under'|'over'|'idle'
      */
-    public function cellStatus(int $actual, ?int $min, ?int $max): string
-    {
+    public function cellStatus(int $actual, ?int $min, ?int $max): string {
         if ($min === null || $min === 0) {
             return $actual > 0 ? 'ok' : 'idle';
         }
@@ -206,8 +200,7 @@ class CoverageService
      *
      * @return Collection<int, ShiftType>
      */
-    public function relevantShiftTypes(DutyPlan $dutyPlan): Collection
-    {
+    public function relevantShiftTypes(DutyPlan $dutyPlan): Collection {
         $fromShifts = $dutyPlan->shifts()->whereNotNull('shift_type_id')->pluck('shift_type_id');
         $fromReqs = CoverageRequirement::query()
             ->forPlan($dutyPlan->id)

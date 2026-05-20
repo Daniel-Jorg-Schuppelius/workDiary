@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -401,28 +400,41 @@ class Project extends Model {
      * aufbereiten. Liefert eine Collection von Roots, eine Map childrenByParent
      * und eine Kunden-Liste mit Sentinel "0" für interne Projekte.
      *
-     * @return array{roots: \Illuminate\Support\Collection<int, Project>, childrenByParent: \Illuminate\Support\Collection<int, \Illuminate\Support\Collection<int, Project>>, customers: \Illuminate\Support\Collection<int, array{id: int, name: string}>}
+     * @return array{roots: Collection<int, Project>, childrenByParent: Collection<int, Collection<int, Project>>, customers: Collection<int, array{id: int, name: string}>}
      */
     public static function pickerData(): array {
-        $projects = static::query()
+        $projects = self::query()
             ->where('status', ProjectStatus::Active)
             ->with('customer:id,name,slug')
             ->orderBy('name')
             ->get(['id', 'name', 'slug', 'customer_id', 'parent_id', 'color']);
 
         $byId = $projects->keyBy('id');
-        $childrenByParent = $projects->groupBy(fn($p) => (int) ($p->parent_id ?? 0));
-        $roots = $projects
-            ->filter(fn($p) => $p->parent_id === null || ! $byId->has($p->parent_id))
-            ->values();
+
+        /** @var array<int, Collection<int, Project>> $grouped */
+        $grouped = [];
+        foreach ($projects as $p) {
+            $key = $p->parent_id ?? 0;
+            $grouped[$key] ??= new Collection;
+            $grouped[$key]->push($p);
+        }
+        $childrenByParent = new Collection($grouped);
+
+        $roots = new Collection;
+        foreach ($projects as $p) {
+            if ($p->parent_id === null || ! $byId->has($p->parent_id)) {
+                $roots->push($p);
+            }
+        }
 
         $customers = $projects
-            ->map(fn($p) => $p->customer
-                ? ['id' => (int) $p->customer->id, 'name' => $p->customer->name]
-                : ['id' => 0, 'name' => __('Intern (ohne Kunde)')])
+            ->map(fn(Project $p): array => $p->customer
+                ? ['id' => (int) $p->customer->id, 'name' => (string) $p->customer->name]
+                : ['id' => 0, 'name' => (string) __('Intern (ohne Kunde)')])
             ->unique('id')
             ->sortBy('name')
-            ->values();
+            ->values()
+            ->toBase();
 
         return [
             'roots' => $roots,

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,22 +10,20 @@
 
 namespace Database\Factories;
 
+use App\Enums\Sickness\SickLeaveKind;
 use App\Models\SickLeave;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Enums\Sickness\SickLeaveKind;
 
 /**
  * @extends Factory<SickLeave>
  */
-class SickLeaveFactory extends Factory
-{
+class SickLeaveFactory extends Factory {
     protected $model = SickLeave::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         $start = fake()->dateTimeBetween('-3 months', 'now');
-        $end = (clone $start)->modify('+'.fake()->numberBetween(0, 6).' days');
+        $end = (clone $start)->modify('+' . fake()->numberBetween(0, 6) . ' days');
 
         return [
             'user_id' => User::factory(),
@@ -45,8 +42,7 @@ class SickLeaveFactory extends Factory
         ];
     }
 
-    public function followUp(SickLeave $previous): self
-    {
+    public function followUp(SickLeave $previous): self {
         return $this->state(function () use ($previous): array {
             $start = $previous->end_date->copy()->addDay();
             $end = $start->copy()->addDays(fake()->numberBetween(2, 10));
@@ -61,9 +57,8 @@ class SickLeaveFactory extends Factory
         });
     }
 
-    public function cancelled(): self
-    {
-        return $this->state(fn () => [
+    public function cancelled(): self {
+        return $this->state(fn() => [
             'cancelled_at' => now(),
             'cancel_reason' => 'Stornierung im Test',
         ]);

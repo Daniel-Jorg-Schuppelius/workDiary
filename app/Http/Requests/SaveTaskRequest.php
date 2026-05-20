@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,16 +15,13 @@ use App\Enums\Task\TaskStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveTaskRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class SaveTaskRequest extends FormRequest {
+    public function authorize(): bool {
         return true;
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         return [
             'title' => ['required', 'string', 'max:200'],
             'description' => ['nullable', 'string'],

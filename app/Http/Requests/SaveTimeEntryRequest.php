@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,16 +13,13 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveTimeEntryRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class SaveTimeEntryRequest extends FormRequest {
+    public function authorize(): bool {
         return true;
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         // Range-Modus: Von/Bis sind vorhanden → date/minutes optional, weil
         // der Model-Hook sie aus started_at/ended_at − break_minutes ableitet.
         $isRange = $this->filled('started_at') && $this->filled('ended_at');
@@ -40,8 +36,7 @@ class SaveTimeEntryRequest extends FormRequest
         ];
     }
 
-    protected function prepareForValidation(): void
-    {
+    protected function prepareForValidation(): void {
         foreach (['task_id', 'diary_entry_id', 'started_at', 'ended_at'] as $key) {
             if ($this->input($key) === '' || $this->input($key) === '0') {
                 $this->merge([$key => null]);
@@ -53,8 +48,7 @@ class SaveTimeEntryRequest extends FormRequest
     }
 
     /** @return array<string, string> */
-    public function attributes(): array
-    {
+    public function attributes(): array {
         return [
             'date' => __('Datum'),
             'minutes' => __('Dauer'),
@@ -66,8 +60,7 @@ class SaveTimeEntryRequest extends FormRequest
     }
 
     /** @return array<string, string> */
-    public function messages(): array
-    {
+    public function messages(): array {
         return [
             'ended_at.after' => __('„Bis" muss nach „Von" liegen.'),
         ];

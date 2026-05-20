@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -32,12 +31,10 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Pattern angelehnt an Kimai's CustomerMonthlyProjectsController (AGPL-3.0)
  * — eigene Implementierung, kein Code-Reuse.
  */
-class CustomerProjectReportController extends Controller
-{
+class CustomerProjectReportController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request): View|SymfonyResponse
-    {
+    public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         $authUser = Auth::user();
         $isAdmin = $authUser instanceof User && $authUser->isAdmin();
@@ -74,8 +71,7 @@ class CustomerProjectReportController extends Controller
         ]);
     }
 
-    private function resolveScope(Request $request, bool $isAdmin): string
-    {
+    private function resolveScope(Request $request, bool $isAdmin): string {
         $scope = $request->string('scope', 'mine')->toString();
         if ($scope !== 'team' || ! $isAdmin) {
             $scope = 'mine';
@@ -87,8 +83,7 @@ class CustomerProjectReportController extends Controller
     /**
      * @return array<int, array{minutes: int, rate: float}>
      */
-    private function aggregateByProject(string $from, string $to, string $scope, int $userId): array
-    {
+    private function aggregateByProject(string $from, string $to, string $scope, int $userId): array {
         $query = TimeEntry::query()
             ->whereBetween('date', [$from, $to])
             ->select('project_id', 'minutes', 'rate', 'user_id');
@@ -113,8 +108,7 @@ class CustomerProjectReportController extends Controller
      * @param  array<int, array{minutes: int, rate: float}>  $byProject
      * @return array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}>
      */
-    private function bucketByCustomer(array $byProject): array
-    {
+    private function bucketByCustomer(array $byProject): array {
         $projects = Project::with('customer')
             ->whereIn('id', array_keys($byProject))
             ->get()
@@ -150,8 +144,7 @@ class CustomerProjectReportController extends Controller
     /**
      * @param  array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}>  $bucket
      */
-    private function sortBuckets(array &$bucket): void
-    {
+    private function sortBuckets(array &$bucket): void {
         uasort($bucket, function ($a, $b): int {
             $na = $a['customer'] instanceof Customer ? $a['customer']->name : '~~~';
             $nb = $b['customer'] instanceof Customer ? $b['customer']->name : '~~~';
@@ -159,7 +152,7 @@ class CustomerProjectReportController extends Controller
             return strnatcasecmp($na, $nb);
         });
         foreach ($bucket as &$row) {
-            uasort($row['projects'], fn ($a, $b) => $b['minutes'] <=> $a['minutes']);
+            uasort($row['projects'], fn($a, $b) => $b['minutes'] <=> $a['minutes']);
         }
         unset($row);
     }
@@ -167,8 +160,7 @@ class CustomerProjectReportController extends Controller
     /**
      * @param  array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}>  $bucket
      */
-    private function exportCsv(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to): Response
-    {
+    private function exportCsv(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to): Response {
         $filename = sprintf('kunden-projekte_%s_%s.csv', $from, $to);
         $rows = [['Kunde', 'Projekt', 'Projektnummer', 'Minuten', 'Erloes']];
         foreach ($bucket as $row) {
@@ -190,24 +182,23 @@ class CustomerProjectReportController extends Controller
             $csv .= implode(';', array_map(static function ($v): string {
                 $s = (string) $v;
                 if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"'.str_replace('"', '""', $s).'"';
+                    $s = '"' . str_replace('"', '""', $s) . '"';
                 }
 
                 return $s;
-            }, $row))."\r\n";
+            }, $row)) . "\r\n";
         }
 
-        return response("\xEF\xBB\xBF".$csv, 200, [
+        return response("\xEF\xBB\xBF" . $csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 
     /**
      * @param  array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}>  $bucket
      */
-    private function exportPdf(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to, string $scope): SymfonyResponse
-    {
+    private function exportPdf(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to, string $scope): SymfonyResponse {
         $filename = sprintf('kunden-projekte_%s_%s.pdf', $from, $to);
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = Pdf::loadView('reports.pdf.customer-project', [

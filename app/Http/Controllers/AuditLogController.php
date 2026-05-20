@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -26,8 +25,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class AuditLogController extends Controller
-{
+class AuditLogController extends Controller {
     use ResolvesGlobalDateRange;
 
     private const TYPE_MAP = [
@@ -38,8 +36,7 @@ class AuditLogController extends Controller
         'attachment' => Attachment::class,
     ];
 
-    public function index(Request $request): View|RedirectResponse
-    {
+    public function index(Request $request): View|RedirectResponse {
         Gate::authorize('viewAny', AuditLog::class);
 
         // Backward-Compat: ?from=&to= einmalig in den globalen Context.

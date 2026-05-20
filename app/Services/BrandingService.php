@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -25,14 +24,12 @@ use Illuminate\Support\Facades\Storage;
  * damit `config('app.name')` und vergleichbare Konstanten nicht mehr
  * hart kodiert in den Views stehen.
  */
-class BrandingService
-{
+class BrandingService {
     private ?Organization $cached = null;
 
     private bool $resolved = false;
 
-    public function currentOrganization(): ?Organization
-    {
+    public function currentOrganization(): ?Organization {
         if ($this->resolved) {
             return $this->cached;
         }
@@ -58,8 +55,7 @@ class BrandingService
      *
      * @return array<string, mixed>
      */
-    public function settings(): array
-    {
+    public function settings(): array {
         $org = $this->currentOrganization();
         if ($org === null) {
             /** @var array<string, mixed> $defaults */
@@ -75,8 +71,7 @@ class BrandingService
      * Anzeigename für UI-Header und PDFs. Fällt auf config('app.name')
      * zurück, wenn die Organisation keinen abweichenden Namen gesetzt hat.
      */
-    public function appName(): string
-    {
+    public function appName(): string {
         $stored = $this->settings()['app_name'] ?? null;
         if (is_string($stored) && trim($stored) !== '') {
             return $stored;
@@ -90,8 +85,7 @@ class BrandingService
         return (string) config('app.name', 'WorkDiary');
     }
 
-    public function slogan(): ?string
-    {
+    public function slogan(): ?string {
         $val = $this->settings()['slogan'] ?? null;
 
         return is_string($val) && trim($val) !== '' ? $val : null;
@@ -101,15 +95,13 @@ class BrandingService
      * Signed-URL für das passende Logo. Liefert null, wenn kein Logo
      * gesetzt ist – das Layout zeigt dann den App-Namen als Text.
      */
-    public function logoUrl(string $variant = 'light'): ?string
-    {
+    public function logoUrl(string $variant = 'light'): ?string {
         $att = $this->logoAttachment($variant);
 
         return $att !== null ? AttachmentController::downloadUrl($att) : null;
     }
 
-    public function logoAttachment(string $variant = 'light'): ?Attachment
-    {
+    public function logoAttachment(string $variant = 'light'): ?Attachment {
         $org = $this->currentOrganization();
         if ($org === null) {
             return null;
@@ -126,13 +118,12 @@ class BrandingService
      *
      * @return array{logo:?string, show_contact:bool, show_footer:bool, logo_url:?string, logo_data_uri:?string}
      */
-    public function pdfConfig(string $type): array
-    {
+    public function pdfConfig(string $type): array {
         $settings = $this->settings();
         /** @var array<string, mixed> $pdfDefaults */
-        $pdfDefaults = (array) config('branding.pdf.'.$type, []);
+        $pdfDefaults = (array) config('branding.pdf.' . $type, []);
         /** @var array<string, mixed> $pdfStored */
-        $pdfStored = (array) data_get($settings, 'pdf.'.$type, []);
+        $pdfStored = (array) data_get($settings, 'pdf.' . $type, []);
         $merged = array_replace([
             'logo' => 'light',
             'show_contact' => true,
@@ -164,8 +155,7 @@ class BrandingService
      *
      * @return array<string, ?string>
      */
-    public function contact(): array
-    {
+    public function contact(): array {
         /** @var array<string, ?string> $contact */
         $contact = (array) ($this->settings()['contact'] ?? []);
 
@@ -177,8 +167,7 @@ class BrandingService
      *
      * @return array<string, ?string>
      */
-    public function legal(): array
-    {
+    public function legal(): array {
         /** @var array<string, ?string> $legal */
         $legal = (array) ($this->settings()['legal'] ?? []);
 
@@ -188,22 +177,19 @@ class BrandingService
     /**
      * HEX-Wert der Primärfarbe, oder null wenn kein Override gesetzt ist.
      */
-    public function primaryColor(): ?string
-    {
+    public function primaryColor(): ?string {
         $val = data_get($this->settings(), 'colors.primary');
 
         return $this->normalizeHex(is_string($val) ? $val : null);
     }
 
-    public function accentColor(): ?string
-    {
+    public function accentColor(): ?string {
         $val = data_get($this->settings(), 'colors.accent');
 
         return $this->normalizeHex(is_string($val) ? $val : null);
     }
 
-    private function normalizeHex(?string $value): ?string
-    {
+    private function normalizeHex(?string $value): ?string {
         if ($value === null) {
             return null;
         }
@@ -215,7 +201,7 @@ class BrandingService
             return null;
         }
 
-        return str_starts_with($value, '#') ? strtolower($value) : '#'.strtolower($value);
+        return str_starts_with($value, '#') ? strtolower($value) : '#' . strtolower($value);
     }
 
     /**
@@ -223,8 +209,7 @@ class BrandingService
      * in eine data:-URI um. Wird in PDFs verwendet, weil dompdf signierte
      * URLs nicht zuverlässig auflöst.
      */
-    private function attachmentToDataUri(Attachment $att): ?string
-    {
+    private function attachmentToDataUri(Attachment $att): ?string {
         try {
             $disk = Storage::disk($att->disk);
             if (! $disk->exists($att->path)) {
@@ -236,7 +221,7 @@ class BrandingService
             }
             $mime = $att->mime ?: 'image/png';
 
-            return 'data:'.$mime.';base64,'.base64_encode($contents);
+            return 'data:' . $mime . ';base64,' . base64_encode($contents);
         } catch (\Throwable $e) {
             report($e);
 

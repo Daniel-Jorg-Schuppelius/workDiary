@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 11 2026
  * Author       : Daniel Jörg Schuppelius
@@ -23,11 +22,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\View\View;
 
-class ScheduleImportController extends Controller
-{
+class ScheduleImportController extends Controller {
     /** Step 1 – show upload form */
-    public function show(): View
-    {
+    public function show(): View {
         /** @var User $auth */
         $auth = Auth::user();
         if (! $auth->isAdmin()) {
@@ -38,8 +35,7 @@ class ScheduleImportController extends Controller
     }
 
     /** Step 2 – parse file, show column-mapping form */
-    public function preview(Request $request): View|RedirectResponse
-    {
+    public function preview(Request $request): View|RedirectResponse {
         /** @var User $auth */
         $auth = Auth::user();
         if (! $auth->isAdmin()) {
@@ -47,7 +43,7 @@ class ScheduleImportController extends Controller
         }
 
         $request->validate([
-            'file' => ['required', 'file', 'mimes:csv,txt,xlsx,xls', 'max:'.(int) setting('uploads.csv_import_kb', 10240)],
+            'file' => ['required', 'file', 'mimes:csv,txt,xlsx,xls', 'max:' . (int) setting('uploads.csv_import_kb', 10240)],
         ]);
 
         $file = $request->file('file');
@@ -83,8 +79,7 @@ class ScheduleImportController extends Controller
     }
 
     /** Step 3 – confirm import with column mapping */
-    public function confirm(Request $request): RedirectResponse
-    {
+    public function confirm(Request $request): RedirectResponse {
         /** @var User $auth */
         $auth = Auth::user();
         if (! $auth->isAdmin()) {
@@ -176,8 +171,7 @@ class ScheduleImportController extends Controller
     /**
      * @return array<int, array<int, string>>
      */
-    private function parseFile(string $path, string $extension): array
-    {
+    private function parseFile(string $path, string $extension): array {
         if (in_array($extension, ['xlsx', 'xls'])) {
             return $this->parseSpreadsheet($path);
         }
@@ -188,8 +182,7 @@ class ScheduleImportController extends Controller
     /**
      * @return array<int, array<int, string>>
      */
-    private function parseCsv(string $path): array
-    {
+    private function parseCsv(string $path): array {
         $rows = [];
         if (($handle = fopen($path, 'r')) !== false) {
             while (($line = fgetcsv($handle, 0, ';')) !== false) {
@@ -207,8 +200,7 @@ class ScheduleImportController extends Controller
     /**
      * @return array<int, array<int, string>>
      */
-    private function parseSpreadsheet(string $path): array
-    {
+    private function parseSpreadsheet(string $path): array {
         $factory = 'PhpOffice\\PhpSpreadsheet\\IOFactory';
         if (! class_exists($factory)) {
             abort(500, 'phpoffice/phpspreadsheet ist nicht installiert.');
@@ -234,8 +226,7 @@ class ScheduleImportController extends Controller
      * @param  array<string, string>  $mapping  column-index → field-name
      * @return array<string, string|null>
      */
-    private function mapRow(array $row, array $mapping): array
-    {
+    private function mapRow(array $row, array $mapping): array {
         $result = [];
         foreach ($mapping as $colIndex => $fieldName) {
             if ($fieldName === 'skip') {
@@ -251,8 +242,7 @@ class ScheduleImportController extends Controller
      * @param  Collection<string, int>  $byName
      * @param  Collection<string, int>  $byEmail
      */
-    private function resolveUser(?string $value, $byName, $byEmail): ?int
-    {
+    private function resolveUser(?string $value, $byName, $byEmail): ?int {
         if (empty($value)) {
             return null;
         }
@@ -261,8 +251,7 @@ class ScheduleImportController extends Controller
         return $byName[$value] ?? $byEmail[$value] ?? null;
     }
 
-    private function normalizeTime(?string $value): ?string
-    {
+    private function normalizeTime(?string $value): ?string {
         if (empty($value)) {
             return null;
         }

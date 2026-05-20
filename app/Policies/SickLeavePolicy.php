@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,46 +16,38 @@ use App\Models\User;
 use App\Policies\Concerns\ChecksOwnership;
 use App\Policies\Concerns\HasAdminBypass;
 
-class SickLeavePolicy
-{
+class SickLeavePolicy {
     use ChecksOwnership;
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool
-    {
+    public function viewAny(User $user): bool {
         return true;
     }
 
-    public function view(User $user, SickLeave $sickLeave): bool
-    {
+    public function view(User $user, SickLeave $sickLeave): bool {
         return $this->owns($user, $sickLeave);
     }
 
-    public function create(User $user): bool
-    {
+    public function create(User $user): bool {
         return true;
     }
 
     /** Eigene, noch nicht stornierte Krankmeldungen darf der Mitarbeiter korrigieren. */
-    public function update(User $user, SickLeave $sickLeave): bool
-    {
+    public function update(User $user, SickLeave $sickLeave): bool {
         return $this->owns($user, $sickLeave) && ! $sickLeave->isCancelled();
     }
 
-    public function delete(User $user, SickLeave $sickLeave): bool
-    {
+    public function delete(User $user, SickLeave $sickLeave): bool {
         // Echtes Löschen nur für Admin (über HasAdminBypass::before()).
         return false;
     }
 
-    public function cancel(User $user, SickLeave $sickLeave): bool
-    {
+    public function cancel(User $user, SickLeave $sickLeave): bool {
         return $this->owns($user, $sickLeave) && ! $sickLeave->isCancelled();
     }
 
     /** Download der AU-Bescheinigung: Eigentümer der Krankmeldung oder Admin. */
-    public function downloadAttachment(User $user, SickLeave $sickLeave, Attachment $attachment): bool
-    {
+    public function downloadAttachment(User $user, SickLeave $sickLeave, Attachment $attachment): bool {
         if (! $this->owns($user, $sickLeave)) {
             return false;
         }

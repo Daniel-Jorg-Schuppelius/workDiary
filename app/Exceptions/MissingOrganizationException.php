@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed May 20 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,10 +10,12 @@
 
 namespace App\Exceptions;
 
+use App\Models\Organization;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
@@ -35,7 +36,7 @@ class MissingOrganizationException extends RuntimeException {
         ), 0, $previous);
     }
 
-    public function render(Request $request): \Symfony\Component\HttpFoundation\Response {
+    public function render(Request $request): Response {
         $shortName = class_basename($this->modelClass);
         $userMessage = __(
             'Ihr Benutzerkonto ist keiner Organisation zugeordnet. Bitte legen Sie '
@@ -53,7 +54,7 @@ class MissingOrganizationException extends RuntimeException {
 
         $user = Auth::user();
         $canManage = $user !== null
-            && Gate::forUser($user)->allows('viewAny', \App\Models\Organization::class);
+            && Gate::forUser($user)->allows('viewAny', Organization::class);
 
         // Admin: direkt zum Anlegen weiterleiten, mit Flash-Hinweis.
         if ($canManage) {

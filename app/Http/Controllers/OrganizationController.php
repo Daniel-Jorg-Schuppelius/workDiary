@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -12,16 +11,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Organization;
+use App\Models\User;
 use App\Support\SortableQuery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class OrganizationController extends Controller
-{
-    public function index(Request $request): View
-    {
+class OrganizationController extends Controller {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', Organization::class);
 
         // Recovery: ist der Admin (noch) keiner Org zugeordnet, aber es
@@ -30,8 +29,8 @@ class OrganizationController extends Controller
         // Damit greifen org-gebundene Policies (manage-members, Branding,
         // …) wieder, ohne dass der Admin die Zuordnung manuell pflegen
         // muss. Cross-Org-Wechsel bleibt über den Org-Switcher möglich.
-        $user = \Illuminate\Support\Facades\Auth::user();
-        if ($user instanceof \App\Models\User && $user->isAdmin() && empty($user->organization_id)) {
+        $user = Auth::user();
+        if ($user instanceof User && $user->isAdmin() && empty($user->organization_id)) {
             $first = Organization::query()->orderBy('id')->first();
             if ($first instanceof Organization) {
                 $user->forceFill(['organization_id' => $first->id])->save();
@@ -54,20 +53,18 @@ class OrganizationController extends Controller
         return view('admin.organizations.index', compact('organizations', 'sort', 'dir'));
     }
 
-    public function create(): View
-    {
+    public function create(): View {
         Gate::authorize('create', Organization::class);
 
         return view('admin.organizations._form_dialog', ['organization' => new Organization]);
     }
 
-    public function store(Request $request): RedirectResponse
-    {
+    public function store(Request $request): RedirectResponse {
         Gate::authorize('create', Organization::class);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'plan' => ['required', 'in:'.implode(',', Organization::$plans)],
+            'plan' => ['required', 'in:' . implode(',', Organization::$plans)],
             'locale' => ['required', 'string', 'max:10'],
             'timezone' => ['required', 'string', 'max:64'],
             'is_active' => ['boolean'],
@@ -81,8 +78,8 @@ class OrganizationController extends Controller
         // ist – typischerweise nach Lösch-/Bootstrap-Szenarien – weisen wir
         // ihn der frisch angelegten Org zu, damit Org-bezogene Policies
         // (z. B. manage-members) sofort greifen.
-        $user = \Illuminate\Support\Facades\Auth::user();
-        if ($user instanceof \App\Models\User && empty($user->organization_id)) {
+        $user = Auth::user();
+        if ($user instanceof User && empty($user->organization_id)) {
             $user->forceFill(['organization_id' => $organization->id])->save();
         }
 
@@ -90,25 +87,23 @@ class OrganizationController extends Controller
             ->with('success', __('Organisation wurde erstellt.'));
     }
 
-    public function edit(Organization $organization): View
-    {
+    public function edit(Organization $organization): View {
         Gate::authorize('update', $organization);
 
         return view('admin.organizations._form_dialog', compact('organization'));
     }
 
-    public function update(Request $request, Organization $organization): RedirectResponse
-    {
+    public function update(Request $request, Organization $organization): RedirectResponse {
         Gate::authorize('update', $organization);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'plan' => ['required', 'in:'.implode(',', Organization::$plans)],
+            'plan' => ['required', 'in:' . implode(',', Organization::$plans)],
             'locale' => ['required', 'string', 'max:10'],
             'timezone' => ['required', 'string', 'max:64'],
             'is_active' => ['boolean'],
             'compliance' => ['sometimes', 'array'],
-            'compliance.mode' => ['sometimes', 'in:'.implode(',', Organization::$complianceModes)],
+            'compliance.mode' => ['sometimes', 'in:' . implode(',', Organization::$complianceModes)],
             'compliance.max_hours_day' => ['sometimes', 'integer', 'min:1', 'max:24'],
             'compliance.min_rest_hours' => ['sometimes', 'integer', 'min:1', 'max:24'],
             'compliance.max_hours_week' => ['sometimes', 'integer', 'min:1', 'max:168'],
@@ -178,7 +173,7 @@ class OrganizationController extends Controller
             // Boolean-Konvertierung für rules
             if (isset($mergedSettings['compliance']['rules']) && is_array($mergedSettings['compliance']['rules'])) {
                 $mergedSettings['compliance']['rules'] = array_map(
-                    static fn ($v) => filter_var($v, FILTER_VALIDATE_BOOL),
+                    static fn($v) => filter_var($v, FILTER_VALIDATE_BOOL),
                     $mergedSettings['compliance']['rules'],
                 );
             }
@@ -193,8 +188,7 @@ class OrganizationController extends Controller
             ->with('success', __('Organisation wurde aktualisiert.'));
     }
 
-    public function destroy(Organization $organization): RedirectResponse
-    {
+    public function destroy(Organization $organization): RedirectResponse {
         Gate::authorize('delete', $organization);
 
         // Verhindere, dass der Admin sich selbst aussperrt, indem er die
@@ -213,15 +207,15 @@ class OrganizationController extends Controller
         // Session-Override (Org-Switcher) bereinigen, falls der Admin
         // gerade die gelöschte Org aktiv hatte.
         $session = request()->session();
-        if ((int) $session->get(\App\Http\Controllers\OrganizationSwitchController::SESSION_KEY) === $deletedId) {
-            $session->forget(\App\Http\Controllers\OrganizationSwitchController::SESSION_KEY);
+        if ((int) $session->get(OrganizationSwitchController::SESSION_KEY) === $deletedId) {
+            $session->forget(OrganizationSwitchController::SESSION_KEY);
         }
 
         // Falls der ausführende Admin selbst dieser Org zugeordnet war
         // (FK nullOnDelete hat seine organization_id geleert), weisen wir
         // ihn der ersten verfügbaren Org zu, damit er weiterarbeiten kann.
-        $user = \Illuminate\Support\Facades\Auth::user();
-        if ($user instanceof \App\Models\User) {
+        $user = Auth::user();
+        if ($user instanceof User) {
             $user->refresh();
             if (empty($user->organization_id)) {
                 $fallback = Organization::query()->orderBy('id')->first();
@@ -243,8 +237,7 @@ class OrganizationController extends Controller
      * @param  array<string,mixed>  $values
      * @return array<string,mixed>
      */
-    private function stripEmpty(array $values): array
-    {
+    private function stripEmpty(array $values): array {
         $out = [];
         foreach ($values as $k => $v) {
             if (is_array($v)) {

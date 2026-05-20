@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sat May 16 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,14 +14,12 @@ use App\Models\Organization;
 use App\Plugins\Lexoffice\LexofficeArticleSync;
 use Illuminate\Console\Command;
 
-class LexofficeSyncArticlesCommand extends Command
-{
+class LexofficeSyncArticlesCommand extends Command {
     protected $signature = 'lexoffice:sync-articles {--organization= : ID einer einzelnen Organisation, sonst alle}';
 
     protected $description = 'Synchronisiert Lexoffice-Artikel (Services/Produkte) in die lokale Tabelle `lexoffice_articles`.';
 
-    public function handle(): int
-    {
+    public function handle(): int {
         $apiKey = config('plugins.lexoffice.api_key');
         if (! is_string($apiKey) || $apiKey === '') {
             $this->error('LEXOFFICE_API_KEY ist nicht konfiguriert.');

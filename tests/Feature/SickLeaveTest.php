@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +10,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Sickness\SickLeaveKind;
 use App\Http\Controllers\SickLeaveController;
 use App\Models\SickLeave;
 use App\Models\User;
@@ -20,10 +20,8 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
-use App\Enums\Sickness\SickLeaveKind;
 
-class SickLeaveTest extends TestCase
-{
+class SickLeaveTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
@@ -31,8 +29,7 @@ class SickLeaveTest extends TestCase
 
     private User $admin;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -42,8 +39,7 @@ class SickLeaveTest extends TestCase
         Storage::fake('local');
     }
 
-    public function test_user_can_create_two_day_sick_leave_without_attachment(): void
-    {
+    public function test_user_can_create_two_day_sick_leave_without_attachment(): void {
         $this->actingAs($this->user);
 
         $this->post(route('sick-leaves.store'), [
@@ -62,8 +58,7 @@ class SickLeaveTest extends TestCase
         $this->assertSame('2026-05-05', $sickLeave->end_date->toDateString());
     }
 
-    public function test_long_sick_leave_requires_au_file(): void
-    {
+    public function test_long_sick_leave_requires_au_file(): void {
         $this->actingAs($this->user);
 
         $this->from(route('sick-leaves.create'))
@@ -77,8 +72,7 @@ class SickLeaveTest extends TestCase
         $this->assertDatabaseCount('sick_leaves', 0);
     }
 
-    public function test_long_sick_leave_succeeds_with_au_file(): void
-    {
+    public function test_long_sick_leave_succeeds_with_au_file(): void {
         $this->actingAs($this->user);
 
         $file = UploadedFile::fake()->create('au.pdf', 50, 'application/pdf');
@@ -94,8 +88,7 @@ class SickLeaveTest extends TestCase
         $this->assertSame(1, $sickLeave->attachments()->count());
     }
 
-    public function test_follow_up_chain_links_to_previous(): void
-    {
+    public function test_follow_up_chain_links_to_previous(): void {
         $this->actingAs($this->user);
 
         $initial = SickLeave::factory()->create([
@@ -119,8 +112,7 @@ class SickLeaveTest extends TestCase
         ]);
     }
 
-    public function test_follow_up_requires_previous_id(): void
-    {
+    public function test_follow_up_requires_previous_id(): void {
         $this->actingAs($this->user);
 
         $this->from(route('sick-leaves.create'))
@@ -132,8 +124,7 @@ class SickLeaveTest extends TestCase
             ->assertSessionHasErrors('follow_up_for_id');
     }
 
-    public function test_user_can_cancel_own_sick_leave(): void
-    {
+    public function test_user_can_cancel_own_sick_leave(): void {
         $this->actingAs($this->user);
 
         $sickLeave = SickLeave::factory()->create([
@@ -149,8 +140,7 @@ class SickLeaveTest extends TestCase
         $this->assertSame('Falsch erfasst', $sickLeave->cancel_reason);
     }
 
-    public function test_user_cannot_update_other_users_sick_leave(): void
-    {
+    public function test_user_cannot_update_other_users_sick_leave(): void {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $sickLeave = SickLeave::factory()->create(['user_id' => $other->id]);
 
@@ -162,8 +152,7 @@ class SickLeaveTest extends TestCase
         ])->assertForbidden();
     }
 
-    public function test_attachment_download_requires_signed_url(): void
-    {
+    public function test_attachment_download_requires_signed_url(): void {
         $this->actingAs($this->user);
 
         $file = UploadedFile::fake()->create('au.pdf', 50, 'application/pdf');
@@ -189,8 +178,7 @@ class SickLeaveTest extends TestCase
         $this->get($signed)->assertOk();
     }
 
-    public function test_admin_can_create_sick_leave_for_other_user(): void
-    {
+    public function test_admin_can_create_sick_leave_for_other_user(): void {
         $this->actingAs($this->admin);
 
         $this->post(route('sick-leaves.store'), [

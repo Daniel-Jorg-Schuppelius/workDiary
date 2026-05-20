@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,15 +15,13 @@ use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
-class LookupCache
-{
+class LookupCache {
     private const TAG_OPTIONS_KEY = 'lookup.tags.options';
 
     private const USER_DROPDOWN_KEY = 'lookup.users.dropdown';
 
     /** @return Collection<int, Tag> */
-    public static function tagOptions(): Collection
-    {
+    public static function tagOptions(): Collection {
         $tags = Cache::get(self::TAG_OPTIONS_KEY);
 
         if (! $tags instanceof Collection) {
@@ -38,8 +35,7 @@ class LookupCache
     }
 
     /** @return Collection<int, User> */
-    public static function userDropdown(): Collection
-    {
+    public static function userDropdown(): Collection {
         $users = Cache::get(self::USER_DROPDOWN_KEY);
 
         if (! $users instanceof Collection) {
@@ -52,13 +48,11 @@ class LookupCache
         return $users;
     }
 
-    public static function forgetTagOptions(): void
-    {
+    public static function forgetTagOptions(): void {
         Cache::forget(self::TAG_OPTIONS_KEY);
     }
 
-    public static function forgetUserDropdown(): void
-    {
+    public static function forgetUserDropdown(): void {
         Cache::forget(self::USER_DROPDOWN_KEY);
     }
 }

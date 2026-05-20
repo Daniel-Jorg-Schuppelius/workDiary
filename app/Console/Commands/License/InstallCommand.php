@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,16 +13,14 @@ namespace App\Console\Commands\License;
 use App\Services\Licensing\LicenseService;
 use Illuminate\Console\Command;
 
-class InstallCommand extends Command
-{
+class InstallCommand extends Command {
     protected $signature = 'license:install
         {key? : Lizenzschlüssel oder Pfad zu einer Datei mit dem Schlüssel}
         {--stdin : Lizenzschlüssel von STDIN lesen}';
 
     protected $description = 'Installiert einen Lizenzschlüssel in storage/app/.';
 
-    public function handle(LicenseService $service): int
-    {
+    public function handle(LicenseService $service): int {
         $key = $this->resolveKey();
         if ($key === null || $key === '') {
             $this->error('Kein Lizenzschlüssel übergeben.');
@@ -32,7 +29,7 @@ class InstallCommand extends Command
         }
 
         $result = $service->install($key);
-        $this->line('Status: '.$result->status->value);
+        $this->line('Status: ' . $result->status->value);
         if ($result->message !== null) {
             $this->line($result->message);
         }
@@ -40,8 +37,7 @@ class InstallCommand extends Command
         return $result->isUsable() ? self::SUCCESS : self::FAILURE;
     }
 
-    private function resolveKey(): ?string
-    {
+    private function resolveKey(): ?string {
         if ($this->option('stdin')) {
             $stdin = trim((string) stream_get_contents(STDIN));
 

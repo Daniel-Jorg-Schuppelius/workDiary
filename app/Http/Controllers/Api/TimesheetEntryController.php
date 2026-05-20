@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +10,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveTimesheetEntryRequest;
 use App\Http\Resources\TimeEntryResource;
@@ -20,19 +20,15 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use App\Enums\TimeEntry\TimeEntryKind;
 
-class TimesheetEntryController extends Controller
-{
-    public function index(Timesheet $timesheet): AnonymousResourceCollection
-    {
+class TimesheetEntryController extends Controller {
+    public function index(Timesheet $timesheet): AnonymousResourceCollection {
         Gate::authorize('view', $timesheet);
 
         return TimeEntryResource::collection($timesheet->entries()->get());
     }
 
-    public function store(Timesheet $timesheet, SaveTimesheetEntryRequest $request): TimeEntryResource
-    {
+    public function store(Timesheet $timesheet, SaveTimesheetEntryRequest $request): TimeEntryResource {
         Gate::authorize('update', $timesheet);
         $data = $request->validated();
         $entry = $timesheet->entries()->create($data + [
@@ -46,8 +42,7 @@ class TimesheetEntryController extends Controller
         return new TimeEntryResource($entry);
     }
 
-    public function update(Timesheet $timesheet, TimeEntry $entry, SaveTimesheetEntryRequest $request): TimeEntryResource
-    {
+    public function update(Timesheet $timesheet, TimeEntry $entry, SaveTimesheetEntryRequest $request): TimeEntryResource {
         Gate::authorize('update', $timesheet);
         abort_unless((int) $entry->timesheet_id === (int) $timesheet->id, 404);
         $entry->update($request->validated());
@@ -55,8 +50,7 @@ class TimesheetEntryController extends Controller
         return new TimeEntryResource($entry);
     }
 
-    public function destroy(Timesheet $timesheet, TimeEntry $entry): Response
-    {
+    public function destroy(Timesheet $timesheet, TimeEntry $entry): Response {
         Gate::authorize('update', $timesheet);
         abort_unless((int) $entry->timesheet_id === (int) $timesheet->id, 404);
         $entry->delete();

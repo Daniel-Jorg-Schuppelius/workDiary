@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 11 2026
  * Author       : Daniel Jörg Schuppelius
@@ -20,12 +19,10 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<ScheduledShift>
  */
-class ScheduledShiftFactory extends Factory
-{
+class ScheduledShiftFactory extends Factory {
     protected $model = ScheduledShift::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'user_id' => User::factory(),
             'shift_type_id' => null,
@@ -37,23 +34,19 @@ class ScheduledShiftFactory extends Factory
         ];
     }
 
-    public function published(): static
-    {
+    public function published(): static {
         return $this->state(['status' => ScheduledShiftStatus::Published]);
     }
 
-    public function confirmed(): static
-    {
+    public function confirmed(): static {
         return $this->state(['status' => ScheduledShiftStatus::Confirmed]);
     }
 
-    public function cancelled(): static
-    {
+    public function cancelled(): static {
         return $this->state(['status' => ScheduledShiftStatus::Cancelled]);
     }
 
-    public function withType(): static
-    {
+    public function withType(): static {
         return $this->state(['shift_type_id' => ShiftType::factory()]);
     }
 }

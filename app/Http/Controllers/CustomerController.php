@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -31,12 +30,10 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class CustomerController extends Controller
-{
+class CustomerController extends Controller {
     private const ALLOWED_SORTS = ['name', 'number', 'company', 'created_at'];
 
-    public function index(Request $request): View
-    {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', Customer::class);
 
         $status = $request->string('status')->toString() ?: 'active';
@@ -48,8 +45,8 @@ class CustomerController extends Controller
 
         $customers = Customer::query()
             ->search($search)
-            ->when($status === 'active', fn ($q) => $q->whereNull('archived_at'))
-            ->when($status === 'archived', fn ($q) => $q->whereNotNull('archived_at'))
+            ->when($status === 'active', fn($q) => $q->whereNull('archived_at'))
+            ->when($status === 'archived', fn($q) => $q->whereNotNull('archived_at'))
             ->when($status === 'billable_pending', function ($q): void {
                 $q->whereNull('archived_at')->withUnexportedBillable();
             })
@@ -67,8 +64,7 @@ class CustomerController extends Controller
         ]);
     }
 
-    public function show(Customer $customer, PluginManager $plugins, CustomerStatsService $stats): View
-    {
+    public function show(Customer $customer, PluginManager $plugins, CustomerStatsService $stats): View {
         Gate::authorize('view', $customer);
 
         $defaultProject = $customer->defaultProjectOrCreate();
@@ -91,21 +87,21 @@ class CustomerController extends Controller
         $lexoffice = $plugins->withCapability(PluginCapability::TIME_EXPORT)->get(LexofficePlugin::ID);
         $lexofficeContactRef = $lexoffice
             ? ExternalReference::query()
-                ->where('plugin_id', LexofficePlugin::ID)
-                ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
-                ->where('referenceable_type', $customer->getMorphClass())
-                ->where('referenceable_id', $customer->getKey())
-                ->first()
+            ->where('plugin_id', LexofficePlugin::ID)
+            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
+            ->where('referenceable_type', $customer->getMorphClass())
+            ->where('referenceable_id', $customer->getKey())
+            ->first()
             : null;
         $lexofficeVouchers = $lexoffice
             ? ExternalReference::query()
-                ->where('plugin_id', LexofficePlugin::ID)
-                ->where('external_type', LexofficePlugin::EXT_TYPE_VOUCHER)
-                ->where('referenceable_type', $customer->getMorphClass())
-                ->where('referenceable_id', $customer->getKey())
-                ->orderByDesc('synced_at')
-                ->limit(10)
-                ->get()
+            ->where('plugin_id', LexofficePlugin::ID)
+            ->where('external_type', LexofficePlugin::EXT_TYPE_VOUCHER)
+            ->where('referenceable_type', $customer->getMorphClass())
+            ->where('referenceable_id', $customer->getKey())
+            ->orderByDesc('synced_at')
+            ->limit(10)
+            ->get()
             : collect();
 
         return view('customers.show', [
@@ -131,8 +127,7 @@ class CustomerController extends Controller
         ]);
     }
 
-    public function create(): View
-    {
+    public function create(): View {
         Gate::authorize('create', Customer::class);
 
         return view('customers._form_dialog', [
@@ -142,8 +137,7 @@ class CustomerController extends Controller
         ]);
     }
 
-    public function store(SaveCustomerRequest $request): RedirectResponse
-    {
+    public function store(SaveCustomerRequest $request): RedirectResponse {
         Gate::authorize('create', Customer::class);
 
         $data = $request->validated();
@@ -158,8 +152,7 @@ class CustomerController extends Controller
             ->with('success', __('Kunde angelegt.'));
     }
 
-    public function edit(Customer $customer): View
-    {
+    public function edit(Customer $customer): View {
         Gate::authorize('update', $customer);
 
         return view('customers._form_dialog', [
@@ -169,8 +162,7 @@ class CustomerController extends Controller
         ]);
     }
 
-    public function update(SaveCustomerRequest $request, Customer $customer): RedirectResponse
-    {
+    public function update(SaveCustomerRequest $request, Customer $customer): RedirectResponse {
         Gate::authorize('update', $customer);
 
         $data = $request->validated();
@@ -185,8 +177,7 @@ class CustomerController extends Controller
             ->with('success', __('Kunde aktualisiert.'));
     }
 
-    public function destroy(Customer $customer): RedirectResponse
-    {
+    public function destroy(Customer $customer): RedirectResponse {
         Gate::authorize('delete', $customer);
 
         if ($customer->hasNonDefaultProjects()) {
@@ -207,8 +198,7 @@ class CustomerController extends Controller
             ->with('success', __('Kunde gelöscht.'));
     }
 
-    public function archive(Customer $customer): RedirectResponse
-    {
+    public function archive(Customer $customer): RedirectResponse {
         Gate::authorize('archive', $customer);
 
         $customer->forceFill(['archived_at' => now()])->save();
@@ -216,8 +206,7 @@ class CustomerController extends Controller
         return back()->with('success', __('Kunde archiviert.'));
     }
 
-    public function restore(Customer $customer): RedirectResponse
-    {
+    public function restore(Customer $customer): RedirectResponse {
         Gate::authorize('restore', $customer);
 
         $customer->forceFill(['archived_at' => null])->save();
@@ -228,8 +217,7 @@ class CustomerController extends Controller
     /**
      * CSV-Export der aktuell sichtbaren Kunden (Filter & Suche aus Request).
      */
-    public function export(Request $request): StreamedResponse
-    {
+    public function export(Request $request): StreamedResponse {
         Gate::authorize('viewAny', Customer::class);
 
         $status = $request->string('status')->toString() ?: 'active';
@@ -237,14 +225,14 @@ class CustomerController extends Controller
 
         $query = Customer::query()
             ->search($search)
-            ->when($status === 'active', fn ($q) => $q->whereNull('archived_at'))
-            ->when($status === 'archived', fn ($q) => $q->whereNotNull('archived_at'))
+            ->when($status === 'active', fn($q) => $q->whereNull('archived_at'))
+            ->when($status === 'archived', fn($q) => $q->whereNotNull('archived_at'))
             ->when($status === 'billable_pending', function ($q): void {
                 $q->whereNull('archived_at')->withUnexportedBillable();
             })
             ->orderBy('name');
 
-        $filename = 'kunden-'.now()->format('Y-m-d-His').'.csv';
+        $filename = 'kunden-' . now()->format('Y-m-d-His') . '.csv';
 
         return new StreamedResponse(function () use ($query): void {
             $out = fopen('php://output', 'w');
@@ -297,15 +285,14 @@ class CustomerController extends Controller
             fclose($out);
         }, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 
     /**
      * Push aller noch nicht synchronisierten Kunden zu Lexoffice.
      */
-    public function bulkPushLexoffice(PluginManager $plugins): RedirectResponse
-    {
+    public function bulkPushLexoffice(PluginManager $plugins): RedirectResponse {
         Gate::authorize('viewAny', Customer::class);
         /** @var User|null $authUser */
         $authUser = Auth::user();
@@ -352,8 +339,7 @@ class CustomerController extends Controller
     /**
      * Zeigt das CSV-Import-Formular.
      */
-    public function importForm(): View
-    {
+    public function importForm(): View {
         Gate::authorize('viewAny', Customer::class);
         /** @var User|null $authUser */
         $authUser = Auth::user();
@@ -367,8 +353,7 @@ class CustomerController extends Controller
     /**
      * Verarbeitet einen CSV-Upload und legt/aktualisiert Kunden.
      */
-    public function import(Request $request, CustomerCsvImporter $importer): RedirectResponse
-    {
+    public function import(Request $request, CustomerCsvImporter $importer): RedirectResponse {
         Gate::authorize('viewAny', Customer::class);
         /** @var User|null $authUser */
         $authUser = Auth::user();
@@ -377,7 +362,7 @@ class CustomerController extends Controller
         }
 
         $request->validate([
-            'file' => ['required', 'file', 'mimetypes:text/csv,text/plain,application/csv,application/vnd.ms-excel', 'max:'.(int) setting('uploads.csv_import_kb', 10240)],
+            'file' => ['required', 'file', 'mimetypes:text/csv,text/plain,application/csv,application/vnd.ms-excel', 'max:' . (int) setting('uploads.csv_import_kb', 10240)],
         ]);
 
         $file = $request->file('file');
@@ -399,7 +384,7 @@ class CustomerController extends Controller
 
         if ($result['errors'] !== []) {
             return redirect()->route('customers.index')
-                ->with('error', $message.' Fehler: '.implode(' | ', array_slice($result['errors'], 0, 5)));
+                ->with('error', $message . ' Fehler: ' . implode(' | ', array_slice($result['errors'], 0, 5)));
         }
 
         return redirect()->route('customers.index')->with('success', $message);

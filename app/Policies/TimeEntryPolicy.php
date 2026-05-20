@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,28 +16,23 @@ use App\Policies\Concerns\ChecksOwnership;
 use App\Policies\Concerns\HasAdminBypass;
 use App\Services\Timekeeping\TimeEntryEditPolicy;
 
-class TimeEntryPolicy
-{
+class TimeEntryPolicy {
     use ChecksOwnership;
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool
-    {
+    public function viewAny(User $user): bool {
         return true;
     }
 
-    public function view(User $user, TimeEntry $entry): bool
-    {
+    public function view(User $user, TimeEntry $entry): bool {
         return true;
     }
 
-    public function create(User $user): bool
-    {
+    public function create(User $user): bool {
         return true;
     }
 
-    public function update(User $user, TimeEntry $entry): bool
-    {
+    public function update(User $user, TimeEntry $entry): bool {
         if (! $this->owns($user, $entry, 'user_id')) {
             return false;
         }
@@ -46,8 +40,7 @@ class TimeEntryPolicy
         return app(TimeEntryEditPolicy::class)->canSelfEdit($entry);
     }
 
-    public function delete(User $user, TimeEntry $entry): bool
-    {
+    public function delete(User $user, TimeEntry $entry): bool {
         if (! $this->owns($user, $entry, 'user_id')) {
             return false;
         }

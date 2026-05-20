@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -43,8 +42,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class EntryType extends Model
-{
+class EntryType extends Model {
     use Auditable;
     use BelongsToOrganization;
 
@@ -97,8 +95,7 @@ class EntryType extends Model
     ];
 
     /** @return HasMany<DiaryEntry, $this> */
-    public function diaryEntries(): HasMany
-    {
+    public function diaryEntries(): HasMany {
         return $this->hasMany(DiaryEntry::class);
     }
 
@@ -106,8 +103,7 @@ class EntryType extends Model
      * @param  Builder<EntryType>  $query
      * @return Builder<EntryType>
      */
-    public function scopeActive(Builder $query): Builder
-    {
+    public function scopeActive(Builder $query): Builder {
         return $query->where('is_active', true);
     }
 
@@ -115,15 +111,13 @@ class EntryType extends Model
      * @param  Builder<EntryType>  $query
      * @return Builder<EntryType>
      */
-    public function scopeOrdered(Builder $query): Builder
-    {
+    public function scopeOrdered(Builder $query): Builder {
         return $query->orderBy('sort')->orderBy('label');
     }
 
     /** Flag-Sammlung als Array fürs Frontend (Alpine x-data). */
     /** @return array<string, bool|int|string|null> */
-    public function flagsArray(): array
-    {
+    public function flagsArray(): array {
         return [
             'requires_customer' => $this->requires_customer,
             'requires_address' => $this->requires_address,

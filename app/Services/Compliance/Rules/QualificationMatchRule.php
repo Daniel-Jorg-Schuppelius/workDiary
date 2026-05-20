@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -23,15 +22,12 @@ use App\Services\Compliance\ComplianceViolation;
  * Prüft, ob der Mitarbeiter die für diese Schicht/Datum nötigen Qualifikationen besitzt.
  * Quelle: CoverageRequirement.required_qualification_ids für (duty_plan_id, shift_type_id, Datum/weekday).
  */
-final class QualificationMatchRule implements ComplianceRule
-{
-    public function key(): string
-    {
+final class QualificationMatchRule implements ComplianceRule {
+    public function key(): string {
         return 'qualification_match';
     }
 
-    public function check(ScheduledShift $shift, array $settings): array
-    {
+    public function check(ScheduledShift $shift, array $settings): array {
         if ($shift->shift_type_id === null) {
             return [];
         }
@@ -40,8 +36,8 @@ final class QualificationMatchRule implements ComplianceRule
             ->forPlan($shift->duty_plan_id)
             ->where('shift_type_id', $shift->shift_type_id)
             ->get()
-            ->filter(fn (CoverageRequirement $r) => $r->appliesToDate($shift->date))
-            ->sortByDesc(fn (CoverageRequirement $r) => $r->priority());
+            ->filter(fn(CoverageRequirement $r) => $r->appliesToDate($shift->date))
+            ->sortByDesc(fn(CoverageRequirement $r) => $r->priority());
 
         $top = $reqs->first();
         if (! $top || empty($top->required_qualification_ids)) {

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,13 +12,11 @@ namespace Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
-class ExampleTest extends TestCase
-{
+class ExampleTest extends TestCase {
     /**
      * A basic test example.
      */
-    public function test_that_true_is_true(): void
-    {
+    public function test_that_true_is_true(): void {
         $this->assertTrue(true);
     }
 }

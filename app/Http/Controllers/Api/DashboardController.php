@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,10 +16,8 @@ use App\Services\Dashboard\DashboardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class DashboardController extends Controller
-{
-    public function __invoke(Request $request, DashboardService $service): JsonResponse
-    {
+class DashboardController extends Controller {
+    public function __invoke(Request $request, DashboardService $service): JsonResponse {
         /** @var User $user */
         $user = $request->user();
 

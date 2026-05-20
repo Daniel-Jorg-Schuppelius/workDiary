@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,26 +10,23 @@
 
 namespace App\Services\Licensing;
 
-final class LicenseResult
-{
+final class LicenseResult {
     public function __construct(
         public readonly LicenseStatus $status,
         public readonly ?LicensePayload $payload = null,
         public readonly ?string $message = null,
-    ) {}
+    ) {
+    }
 
-    public static function ok(LicenseStatus $status, LicensePayload $payload, ?string $message = null): self
-    {
+    public static function ok(LicenseStatus $status, LicensePayload $payload, ?string $message = null): self {
         return new self($status, $payload, $message);
     }
 
-    public static function fail(LicenseStatus $status, ?string $message = null): self
-    {
+    public static function fail(LicenseStatus $status, ?string $message = null): self {
         return new self($status, null, $message);
     }
 
-    public function isUsable(): bool
-    {
+    public function isUsable(): bool {
         return $this->status->isUsable();
     }
 }

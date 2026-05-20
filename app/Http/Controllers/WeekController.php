@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -25,15 +24,13 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-class WeekController extends Controller
-{
+class WeekController extends Controller {
     use ResolvesGlobalDateRange;
 
     /** Maximalanzahl gleichzeitig gerenderter Wochen-Tabs. */
     private const MAX_WEEKS = 12;
 
-    public function __invoke(Request $request, WeekViewService $service, HolidayService $holidays): View|RedirectResponse
-    {
+    public function __invoke(Request $request, WeekViewService $service, HolidayService $holidays): View|RedirectResponse {
         // Backward-Compat: alte Bookmarks/Links mit ?date=YYYY-MM-DD setzen einmalig
         // den globalen Range auf die entsprechende Woche und leiten dann auf die
         // saubere Wochen-URL um. Der globale Header-Selektor übernimmt danach.
@@ -97,8 +94,7 @@ class WeekController extends Controller
      * @param  array<int, CarbonImmutable>  $weeks
      * @return array{0: array<int, array<string, mixed>>, 1: ?string}
      */
-    private function buildWeekViews(array $weeks, WeekViewService $service, User $authUser, bool $teamScope, ?int $filterUserId, CarbonImmutable $today): array
-    {
+    private function buildWeekViews(array $weeks, WeekViewService $service, User $authUser, bool $teamScope, ?int $filterUserId, CarbonImmutable $today): array {
         $weekViews = [];
         $activeKey = null;
 
@@ -117,8 +113,8 @@ class WeekController extends Controller
                 'shiftsByDay' => $service->groupByDay($data['shifts'], $data['start']),
                 'assignmentsByDay' => $service->groupByDay($data['assignments'], $data['start']),
                 'entriesByDay' => $service->groupByDay($data['entries'], $data['start']),
-                'rangeLabel' => $data['start']->isoFormat('DD.MM.').' – '.$weekEndDay->isoFormat('DD.MM.YYYY'),
-                'shortLabel' => $data['start']->isoFormat('DD.MM.').'–'.$weekEndDay->isoFormat('DD.MM.'),
+                'rangeLabel' => $data['start']->isoFormat('DD.MM.') . ' – ' . $weekEndDay->isoFormat('DD.MM.YYYY'),
+                'shortLabel' => $data['start']->isoFormat('DD.MM.') . '–' . $weekEndDay->isoFormat('DD.MM.'),
             ];
 
             if ($activeKey === null && $today->betweenIncluded($data['start'], $weekEndDay)) {
@@ -137,8 +133,7 @@ class WeekController extends Controller
      * @param  array<int, array<string, mixed>>  $weekViews
      * @return Collection<int, mixed>
      */
-    private function collectWeekUsers(array $weekViews, WeekViewService $service, bool $teamScope): Collection
-    {
+    private function collectWeekUsers(array $weekViews, WeekViewService $service, bool $teamScope): Collection {
         if (! $teamScope) {
             return collect();
         }
@@ -156,8 +151,7 @@ class WeekController extends Controller
      *
      * @return array<int, CarbonImmutable>
      */
-    private function collectWeekStarts(CarbonInterface $from, CarbonInterface $to): array
-    {
+    private function collectWeekStarts(CarbonInterface $from, CarbonInterface $to): array {
         $cursor = CarbonImmutable::instance($from)->startOfWeek(WeekDay::MONDAY)->startOfDay();
         $end = CarbonImmutable::instance($to)->endOfDay();
 
@@ -177,8 +171,7 @@ class WeekController extends Controller
             : [CarbonImmutable::today()->startOfWeek(WeekDay::MONDAY)->startOfDay()];
     }
 
-    private function parseDate(string $value): CarbonImmutable
-    {
+    private function parseDate(string $value): CarbonImmutable {
         try {
             return CarbonImmutable::parse($value);
         } catch (\Exception) {

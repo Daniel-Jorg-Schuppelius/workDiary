@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -27,14 +26,12 @@ use App\Services\Compliance\Rules\VacationConflictRule;
 /**
  * Aggregiert die Compliance-Regeln und prüft eine geplante Schicht.
  */
-final class ShiftComplianceService
-{
+final class ShiftComplianceService {
     /** @var list<ComplianceRule> */
     private array $rules;
 
     /** @param list<ComplianceRule>|null $rules */
-    public function __construct(?array $rules = null)
-    {
+    public function __construct(?array $rules = null) {
         $this->rules = $rules ?? [
             new OverlapRule,
             new RestPeriodRule,
@@ -50,8 +47,7 @@ final class ShiftComplianceService
     /**
      * Prüfe die Schicht gegen alle aktivierten Regeln der Organisation.
      */
-    public function check(ScheduledShift $shift, ?Organization $organization = null): ComplianceReport
-    {
+    public function check(ScheduledShift $shift, ?Organization $organization = null): ComplianceReport {
         $organization ??= $shift->organization;
         $settings = $organization
             ? $organization->complianceSettings()
@@ -80,8 +76,7 @@ final class ShiftComplianceService
      *
      * @return list<string>
      */
-    public function ruleKeys(): array
-    {
-        return array_map(fn (ComplianceRule $r) => $r->key(), $this->rules);
+    public function ruleKeys(): array {
+        return array_map(fn(ComplianceRule $r) => $r->key(), $this->rules);
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,19 +10,17 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Activity\ActivityCategoryType;
+use App\Enums\TimeEntry\TimeEntryActivityType;
 use App\Models\ActivityCategory;
-use App\Models\TimeEntry;
 use App\Models\User;
 use Database\Seeders\ActivityCategorySeeder;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
-use App\Enums\Activity\ActivityCategoryType;
-use App\Enums\TimeEntry\TimeEntryActivityType;
 
-class AdminTimeEntryTest extends TestCase
-{
+class AdminTimeEntryTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
@@ -31,8 +28,7 @@ class AdminTimeEntryTest extends TestCase
 
     private User $admin;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -41,16 +37,14 @@ class AdminTimeEntryTest extends TestCase
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
     }
 
-    public function test_create_form_renders(): void
-    {
+    public function test_create_form_renders(): void {
         $this->actingAs($this->user);
         $this->get(route('admin-time-entries.create'))
             ->assertOk()
             ->assertSee(__('Verwaltungszeit erfassen'));
     }
 
-    public function test_store_creates_admin_entry_without_project(): void
-    {
+    public function test_store_creates_admin_entry_without_project(): void {
         $this->actingAs($this->user);
 
         $cat = ActivityCategory::query()->where('key', 'administration')->first();
@@ -71,8 +65,7 @@ class AdminTimeEntryTest extends TestCase
         ]);
     }
 
-    public function test_store_rejects_invalid_activity_type(): void
-    {
+    public function test_store_rejects_invalid_activity_type(): void {
         $this->actingAs($this->user);
 
         $this->from(route('admin-time-entries.create'))
@@ -85,8 +78,7 @@ class AdminTimeEntryTest extends TestCase
             ->assertSessionHasErrors('activity_type');
     }
 
-    public function test_activity_categories_index_requires_admin_for_writes(): void
-    {
+    public function test_activity_categories_index_requires_admin_for_writes(): void {
         $this->actingAs($this->user);
 
         $this->get(route('activity-categories.index'))->assertOk();

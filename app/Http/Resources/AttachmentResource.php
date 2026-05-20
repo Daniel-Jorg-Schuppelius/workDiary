@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,16 +15,13 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /** @mixin Attachment */
-class AttachmentResource extends JsonResource
-{
-    public function __construct(Attachment $resource)
-    {
+class AttachmentResource extends JsonResource {
+    public function __construct(Attachment $resource) {
         parent::__construct($resource);
     }
 
     /** @return array<string, mixed> */
-    public function toArray(Request $request): array
-    {
+    public function toArray(Request $request): array {
         return [
             'id' => $this->id,
             'attachable_type' => class_basename($this->attachable_type),

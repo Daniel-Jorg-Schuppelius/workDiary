@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 19 2026
  * Author       : Daniel Jörg Schuppelius
@@ -25,8 +24,7 @@ use Illuminate\Validation\ValidationException;
  * Modell und meta_type existiert höchstens ein aktiver Anhang. Beim Ersetzen
  * wird der Vorgänger inkl. Datei vom Storage entfernt.
  */
-class ImageMetaUploader
-{
+class ImageMetaUploader {
     private const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
 
     private const IMAGE_MIMES = [
@@ -42,8 +40,7 @@ class ImageMetaUploader
      *                             — Aufrufer kann das ValidationException-Bag
      *                             direkt an Laravel zurückwerfen.
      */
-    public function replace(Organization|User $parent, string $meta, UploadedFile $file, int $maxKb, string $fieldName = 'file'): Attachment
-    {
+    public function replace(Organization|User $parent, string $meta, UploadedFile $file, int $maxKb, string $fieldName = 'file'): Attachment {
         if ($file->getSize() > $maxKb * 1024) {
             throw ValidationException::withMessages([
                 $fieldName => __('Datei ist größer als das Limit.'),
@@ -72,8 +69,8 @@ class ImageMetaUploader
 
         $this->delete($parent, $meta);
 
-        $folder = 'attachments/'.now()->format('Y/m');
-        $filename = Str::uuid()->toString().'.'.$ext;
+        $folder = 'attachments/' . now()->format('Y/m');
+        $filename = Str::uuid()->toString() . '.' . $ext;
         $path = $file->storeAs($folder, $filename, 'local');
 
         /** @var Attachment $attachment */
@@ -94,8 +91,7 @@ class ImageMetaUploader
      * Entfernt den aktuellen Anhang dieses meta_type (inkl. Datei). No-op,
      * wenn keiner existiert.
      */
-    public function delete(Organization|User $parent, string $meta): void
-    {
+    public function delete(Organization|User $parent, string $meta): void {
         /** @var Attachment|null $existing */
         $existing = $parent->attachments()->where('meta_type', $meta)->first();
         if ($existing === null) {
@@ -105,8 +101,7 @@ class ImageMetaUploader
         $existing->delete();
     }
 
-    private static function sanitizeFilename(string $name): string
-    {
+    private static function sanitizeFilename(string $name): string {
         $name = preg_replace('/[\x00-\x1F\x7F]/u', '', $name) ?? '';
         $name = str_replace(['/', '\\'], '_', $name);
 

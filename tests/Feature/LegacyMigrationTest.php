@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,18 +16,15 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
-class LegacyMigrationTest extends TestCase
-{
+class LegacyMigrationTest extends TestCase {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
     }
 
-    public function test_legacy_write_blocked_by_default(): void
-    {
+    public function test_legacy_write_blocked_by_default(): void {
         Config::set('app.legacy_write_enabled', false);
         $user = User::factory()->admin()->create();
 
@@ -42,8 +38,7 @@ class LegacyMigrationTest extends TestCase
         $response->assertSessionHas('error');
     }
 
-    public function test_legacy_read_routes_still_accessible_when_blocked(): void
-    {
+    public function test_legacy_read_routes_still_accessible_when_blocked(): void {
         Config::set('app.legacy_write_enabled', false);
         $user = User::factory()->admin()->create();
 
@@ -56,16 +51,14 @@ class LegacyMigrationTest extends TestCase
         }
     }
 
-    public function test_migration_dashboard_requires_admin(): void
-    {
+    public function test_migration_dashboard_requires_admin(): void {
         $user = User::factory()->user()->create();
         $this->actingAs($user)
             ->get(route('admin.legacy-migration.index'))
             ->assertForbidden();
     }
 
-    public function test_admin_can_view_migration_dashboard(): void
-    {
+    public function test_admin_can_view_migration_dashboard(): void {
         $admin = User::factory()->admin()->create();
         $this->actingAs($admin)
             ->get(route('admin.legacy-migration.index'))

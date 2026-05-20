@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -44,8 +43,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  */
-class CoverageRequirement extends Model
-{
+class CoverageRequirement extends Model {
     use Auditable;
     use BelongsToOrganization;
 
@@ -92,22 +90,19 @@ class CoverageRequirement extends Model
     // ── Relations ──────────────────────────────────────────────────────────
 
     /** @return BelongsTo<DutyPlan, $this> */
-    public function dutyPlan(): BelongsTo
-    {
+    public function dutyPlan(): BelongsTo {
         return $this->belongsTo(DutyPlan::class);
     }
 
     /** @return BelongsTo<ShiftType, $this> */
-    public function shiftType(): BelongsTo
-    {
+    public function shiftType(): BelongsTo {
         return $this->belongsTo(ShiftType::class);
     }
 
     // ── Scopes ─────────────────────────────────────────────────────────────
 
     /** @param Builder<CoverageRequirement> $query */
-    public function scopeForPlan(Builder $query, ?int $dutyPlanId): void
-    {
+    public function scopeForPlan(Builder $query, ?int $dutyPlanId): void {
         if ($dutyPlanId === null) {
             $query->whereNull('duty_plan_id');
 
@@ -119,8 +114,7 @@ class CoverageRequirement extends Model
     }
 
     /** @param Builder<CoverageRequirement> $query */
-    public function scopeForDate(Builder $query, \DateTimeInterface $date): void
-    {
+    public function scopeForDate(Builder $query, \DateTimeInterface $date): void {
         $weekday = (int) $date->format('w');
         $query->where(function (Builder $q) use ($date, $weekday): void {
             $q->where('specific_date', $date->format('Y-m-d'))
@@ -132,8 +126,7 @@ class CoverageRequirement extends Model
 
     // ── Helpers ────────────────────────────────────────────────────────────
 
-    public function appliesToDate(\DateTimeInterface $date): bool
-    {
+    public function appliesToDate(\DateTimeInterface $date): bool {
         if ($this->specific_date !== null) {
             return $this->specific_date->isSameDay($date);
         }
@@ -148,8 +141,7 @@ class CoverageRequirement extends Model
      * Prio: specific_date (3) > weekday (2) > generisch (1).
      * Höhere Werte überschreiben niedrigere.
      */
-    public function priority(): int
-    {
+    public function priority(): int {
         if ($this->specific_date !== null) {
             return 3;
         }

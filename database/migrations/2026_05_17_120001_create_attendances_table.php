@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,10 +20,8 @@ use Illuminate\Support\Facades\Schema;
  *  - TimeEntries reference an attendance to distribute the attended time
  *    across projects / administration / travel / breaks.
  */
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::create('attendances', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('organization_id')->nullable()
@@ -72,13 +69,12 @@ return new class extends Migration
         if (in_array($driver, ['sqlite', 'pgsql'], true)) {
             Schema::getConnection()->statement(
                 'CREATE UNIQUE INDEX attendances_user_open_unique '
-                    .'ON attendances (user_id) WHERE ended_at IS NULL'
+                    . 'ON attendances (user_id) WHERE ended_at IS NULL'
             );
         }
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         $driver = Schema::getConnection()->getDriverName();
         if (in_array($driver, ['sqlite', 'pgsql'], true)) {
             Schema::getConnection()->statement(

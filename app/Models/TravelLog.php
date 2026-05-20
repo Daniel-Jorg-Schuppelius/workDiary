@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -55,8 +54,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class TravelLog extends Model
-{
+class TravelLog extends Model {
     use Auditable;
     use BelongsToOrganization;
 
@@ -112,8 +110,7 @@ class TravelLog extends Model
         'vehicle' => TravelLogVehicle::class,
     ];
 
-    protected static function booted(): void
-    {
+    protected static function booted(): void {
         static::saving(function (TravelLog $t): void {
             if (! $t->date && $t->started_at) {
                 $t->date = $t->started_at->copy()->startOfDay();
@@ -132,44 +129,37 @@ class TravelLog extends Model
     }
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo
-    {
+    public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
     /** @return BelongsTo<Project, $this> */
-    public function project(): BelongsTo
-    {
+    public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
     }
 
     /** @return BelongsTo<Task, $this> */
-    public function task(): BelongsTo
-    {
+    public function task(): BelongsTo {
         return $this->belongsTo(Task::class);
     }
 
     /** @return BelongsTo<Customer, $this> */
-    public function customer(): BelongsTo
-    {
+    public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
     }
 
     /** @return BelongsTo<Attendance, $this> */
-    public function attendance(): BelongsTo
-    {
+    public function attendance(): BelongsTo {
         return $this->belongsTo(Attendance::class);
     }
 
     /** @return BelongsTo<Vehicle, $this> */
-    public function vehicleEntity(): BelongsTo
-    {
+    public function vehicleEntity(): BelongsTo {
         return $this->belongsTo(Vehicle::class, 'vehicle_id');
     }
 
     /** @return HasMany<TimeEntry, $this> */
-    public function timeEntries(): HasMany
-    {
+    public function timeEntries(): HasMany {
         return $this->hasMany(TimeEntry::class);
     }
 
@@ -177,8 +167,7 @@ class TravelLog extends Model
      * @param  Builder<TravelLog>  $q
      * @return Builder<TravelLog>
      */
-    public function scopeForUser(Builder $q, int $userId): Builder
-    {
+    public function scopeForUser(Builder $q, int $userId): Builder {
         return $q->where('user_id', $userId);
     }
 
@@ -186,8 +175,7 @@ class TravelLog extends Model
      * @param  Builder<TravelLog>  $q
      * @return Builder<TravelLog>
      */
-    public function scopeReimbursable(Builder $q): Builder
-    {
+    public function scopeReimbursable(Builder $q): Builder {
         return $q->where('reimbursable', true);
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,9 +10,12 @@
 
 namespace App\Models\Concerns;
 
+use App\Exceptions\MissingOrganizationException;
 use App\Models\Organization;
 use App\Models\Scopes\OrganizationScope;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Automatically scopes a model to the current organization and populates
@@ -45,7 +47,7 @@ trait BelongsToOrganization {
                 && array_key_exists('user_id', $model->getAttributes())
                 && ! empty($model->getAttribute('user_id'))
             ) {
-                $owner = \App\Models\User::query()
+                $owner = User::query()
                     ->whereKey($model->getAttribute('user_id'))
                     ->first();
                 if ($owner !== null && ! empty($owner->organization_id)) {
@@ -61,15 +63,15 @@ trait BelongsToOrganization {
             // Model::withoutEvents() bewusst globale Vorlagen erzeugen.
             if (
                 empty($model->organization_id)
-                && \Illuminate\Support\Facades\Auth::check()
+                && Auth::check()
             ) {
-                /** @var \App\Models\User|null $authUser */
-                $authUser = \Illuminate\Support\Facades\Auth::user();
+                /** @var User|null $authUser */
+                $authUser = Auth::user();
                 if (
-                    $authUser instanceof \App\Models\User
+                    $authUser instanceof User
                     && empty($authUser->organization_id)
                 ) {
-                    throw new \App\Exceptions\MissingOrganizationException(static::class);
+                    throw new MissingOrganizationException(static::class);
                 }
             }
         });

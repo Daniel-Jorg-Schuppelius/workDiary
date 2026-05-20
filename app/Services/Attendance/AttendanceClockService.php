@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -29,18 +28,17 @@ use RuntimeException;
  *    or at end of day boundaries) and creates a closed attendance with
  *    source=auto_close.
  */
-class AttendanceClockService
-{
+class AttendanceClockService {
     public function __construct(
         /** Maximum allowed open session length in minutes before auto-close. */
         protected int $maxOpenMinutes = 16 * 60,
-    ) {}
+    ) {
+    }
 
     /**
      * Returns the currently open attendance for a user, if any.
      */
-    public function current(User $user): ?Attendance
-    {
+    public function current(User $user): ?Attendance {
         return Attendance::query()
             ->where('user_id', $user->id)
             ->whereNull('ended_at')
@@ -53,8 +51,7 @@ class AttendanceClockService
      *
      * @param  array<string, mixed>  $context  optional: lat, lng, device, note, source, started_at
      */
-    public function clockIn(User $user, array $context = []): Attendance
-    {
+    public function clockIn(User $user, array $context = []): Attendance {
         return DB::transaction(function () use ($user, $context) {
             if ($this->current($user)) {
                 throw new RuntimeException('User already has an open attendance.');
@@ -88,8 +85,7 @@ class AttendanceClockService
      *
      * @param  array<string, mixed>  $context  optional: lat, lng, device, note, ended_at, break_minutes
      */
-    public function clockOut(User $user, array $context = []): ?Attendance
-    {
+    public function clockOut(User $user, array $context = []): ?Attendance {
         return DB::transaction(function () use ($user, $context) {
             $attendance = $this->current($user);
             if (! $attendance) {
@@ -109,7 +105,7 @@ class AttendanceClockService
             $attendance->ended_lng = $context['lng'] ?? null;
             $attendance->ended_device = $context['device'] ?? null;
             if (isset($context['note']) && $context['note'] !== '') {
-                $attendance->note = trim(($attendance->note ?? '')."\n".$context['note']);
+                $attendance->note = trim(($attendance->note ?? '') . "\n" . $context['note']);
             }
             if (isset($context['break_minutes'])) {
                 $attendance->break_minutes_manual = (int) $context['break_minutes'];
@@ -126,15 +122,14 @@ class AttendanceClockService
     /**
      * Cancels (soft-discards) the current open attendance — used for accidental clock-ins.
      */
-    public function cancel(User $user, ?string $reason = null): ?Attendance
-    {
+    public function cancel(User $user, ?string $reason = null): ?Attendance {
         $attendance = $this->current($user);
         if (! $attendance) {
             return null;
         }
         $attendance->ended_at = $attendance->started_at; // zero-length
         $attendance->status = AttendanceStatus::Cancelled;
-        $attendance->note = trim(($attendance->note ?? '')."\nCancelled: ".($reason ?? ''));
+        $attendance->note = trim(($attendance->note ?? '') . "\nCancelled: " . ($reason ?? ''));
         $attendance->closed_by = $user->id;
         $attendance->updated_by = $user->id;
         $attendance->save();
@@ -145,8 +140,7 @@ class AttendanceClockService
     /**
      * Adds a manual break to the currently open attendance.
      */
-    public function addBreak(User $user, int $minutes): ?Attendance
-    {
+    public function addBreak(User $user, int $minutes): ?Attendance {
         $attendance = $this->current($user);
         if (! $attendance) {
             return null;
@@ -163,8 +157,7 @@ class AttendanceClockService
      *
      * @return int Number of attendances that were auto-closed.
      */
-    public function autoCloseStaleSessions(?Carbon $now = null): int
-    {
+    public function autoCloseStaleSessions(?Carbon $now = null): int {
         $now ??= Carbon::now();
         $threshold = $now->copy()->subMinutes($this->maxOpenMinutes);
 
@@ -182,7 +175,7 @@ class AttendanceClockService
                         ->addMinutes($this->maxOpenMinutes);
                     $attendance->status = AttendanceStatus::AutoClosed;
                     $attendance->source = AttendanceSource::AutoClose;
-                    $attendance->note = trim(($attendance->note ?? '')."\nAuto-closed by system.");
+                    $attendance->note = trim(($attendance->note ?? '') . "\nAuto-closed by system.");
                     $attendance->save();
                     $count++;
                 }

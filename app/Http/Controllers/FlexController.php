@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,14 +21,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-class FlexController extends Controller
-{
+class FlexController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function __construct(protected FlexCalculator $calc, protected WeekViewService $weekService) {}
+    public function __construct(protected FlexCalculator $calc, protected WeekViewService $weekService) {
+    }
 
-    public function index(Request $request): View|RedirectResponse
-    {
+    public function index(Request $request): View|RedirectResponse {
         if ($redirect = $this->migrateLegacyYearMonth($request, 'flex.index')) {
             return $redirect;
         }
@@ -96,8 +94,7 @@ class FlexController extends Controller
         ]);
     }
 
-    public function admin(Request $request): RedirectResponse
-    {
+    public function admin(Request $request): RedirectResponse {
         /** @var User|null $authUser */
         $authUser = Auth::user();
         abort_unless((bool) $authUser?->isAdmin(), 403);
@@ -110,8 +107,7 @@ class FlexController extends Controller
      * Backward-Compat: bestehende ?year=&month= Links in den globalen
      * Zeitraum (custom, voller Monat) übersetzen.
      */
-    private function migrateLegacyYearMonth(Request $request, string $routeName): ?RedirectResponse
-    {
+    private function migrateLegacyYearMonth(Request $request, string $routeName): ?RedirectResponse {
         if (! $request->filled('year') && ! $request->filled('month')) {
             return null;
         }

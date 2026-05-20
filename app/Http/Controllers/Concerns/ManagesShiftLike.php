@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,10 +18,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
-trait ManagesShiftLike
-{
-    private function authorizeManage(): void
-    {
+trait ManagesShiftLike {
+    private function authorizeManage(): void {
         /** @var User $auth */
         $auth = Auth::user();
         abort_unless($auth->canCreateEntriesForOthers(), 403);
@@ -34,8 +31,7 @@ trait ManagesShiftLike
      *
      * @return Collection<int, User>
      */
-    private function assignableUsers(): Collection
-    {
+    private function assignableUsers(): Collection {
         /** @var User $auth */
         $auth = Auth::user();
 
@@ -46,8 +42,7 @@ trait ManagesShiftLike
         return collect([$auth]);
     }
 
-    private function parseDateTime(?string $value): ?string
-    {
+    private function parseDateTime(?string $value): ?string {
         if (! $value) {
             return null;
         }
@@ -58,8 +53,7 @@ trait ManagesShiftLike
         }
     }
 
-    private function redirectAfter(Request $request, string $message, string $fallbackRoute): RedirectResponse
-    {
+    private function redirectAfter(Request $request, string $message, string $fallbackRoute): RedirectResponse {
         $back = $this->safeBackUrl($request->input('_back'), $fallbackRoute);
 
         return redirect($back)->with('success', $message);
@@ -70,8 +64,7 @@ trait ManagesShiftLike
      * Externe URLs (anderer Host) werden auf $fallback zurückgesetzt,
      * um Open-Redirect-Angriffe zu verhindern.
      */
-    private function safeBackUrl(mixed $candidate, string $fallback): string
-    {
+    private function safeBackUrl(mixed $candidate, string $fallback): string {
         if (! is_string($candidate) || $candidate === '') {
             return $fallback;
         }

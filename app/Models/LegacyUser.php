@@ -16,6 +16,7 @@ class LegacyUser extends Model {
 
     protected $primaryKey = 'id';
 
+    /** @return HasMany<LegacyDiaryEntry, $this> */
     public function entries(): HasMany {
         return $this->hasMany(LegacyDiaryEntry::class, 'user', 'id');
     }

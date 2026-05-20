@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,8 +14,7 @@ use App\Services\Licensing\LicenseService;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
-class IssueCommand extends Command
-{
+class IssueCommand extends Command {
     protected $signature = 'license:issue
         {--licensee= : Name des Lizenznehmers (Pflicht)}
         {--email= : Kontakt-E-Mail}
@@ -29,8 +27,7 @@ class IssueCommand extends Command
 
     protected $description = 'Stellt einen signierten Lizenzschlüssel aus (nur beim Herausgeber auszuführen).';
 
-    public function handle(): int
-    {
+    public function handle(): int {
         $licensee = (string) ($this->option('licensee') ?? '');
         if ($licensee === '') {
             $this->error('--licensee ist erforderlich.');
@@ -73,7 +70,7 @@ class IssueCommand extends Command
         }
 
         $signature = sodium_crypto_sign_detached($json, $privateKey);
-        $licenseKey = LicenseService::b64Encode($json).'.'.LicenseService::b64Encode($signature);
+        $licenseKey = LicenseService::b64Encode($json) . '.' . LicenseService::b64Encode($signature);
 
         $this->info('Lizenzschlüssel:');
         $this->line($licenseKey);
@@ -82,7 +79,7 @@ class IssueCommand extends Command
         if (is_string($out) && $out !== '') {
             file_put_contents($out, $licenseKey);
             @chmod($out, 0600);
-            $this->info('Geschrieben nach: '.$out);
+            $this->info('Geschrieben nach: ' . $out);
         }
 
         return self::SUCCESS;

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,6 +14,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Http\Requests\SaveProjectRequest;
 use App\Models\DiaryEntry;
 use App\Models\Project;
+use App\Models\RecurrenceRule;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -128,7 +128,7 @@ class ProjectController extends Controller {
             ->orderBy('due_date')
             ->first();
 
-        $recurrenceRules = \App\Models\RecurrenceRule::query()
+        $recurrenceRules = RecurrenceRule::query()
             ->where('project_id', $project->id)
             ->orderBy('name')
             ->get();

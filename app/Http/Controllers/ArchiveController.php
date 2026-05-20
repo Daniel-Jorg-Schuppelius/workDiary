@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,12 +20,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-class ArchiveController extends Controller
-{
+class ArchiveController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request, ArchiveSummaryService $summary): View|RedirectResponse
-    {
+    public function index(Request $request, ArchiveSummaryService $summary): View|RedirectResponse {
         // Backward-Compat: ?from=&to= einmalig in den globalen Context.
         if ($request->filled('from') || $request->filled('to')) {
             app(DateRangeContext::class)->set(
@@ -53,8 +50,7 @@ class ArchiveController extends Controller
         return view('archive.index', $data);
     }
 
-    public function run(ArchiveService $service): RedirectResponse
-    {
+    public function run(ArchiveService $service): RedirectResponse {
         /** @var User|null $user */
         $user = Auth::user();
         abort_unless($user !== null && $user->isAdmin(), 403);

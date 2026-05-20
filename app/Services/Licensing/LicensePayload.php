@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,8 +12,7 @@ namespace App\Services\Licensing;
 
 use Carbon\CarbonImmutable;
 
-final class LicensePayload
-{
+final class LicensePayload {
     public function __construct(
         public readonly string $licensee,
         public readonly ?string $email,
@@ -25,11 +23,11 @@ final class LicensePayload
         /** @var array<int,string> */
         public readonly array $features,
         public readonly string $licenseId,
-    ) {}
+    ) {
+    }
 
     /** @param array<string,mixed> $data */
-    public static function fromArray(array $data): self
-    {
+    public static function fromArray(array $data): self {
         return new self(
             licensee: (string) ($data['licensee'] ?? ''),
             email: isset($data['email']) ? (string) $data['email'] : null,
@@ -43,8 +41,7 @@ final class LicensePayload
     }
 
     /** @return array<string,mixed> */
-    public function toArray(): array
-    {
+    public function toArray(): array {
         return [
             'license_id' => $this->licenseId,
             'licensee' => $this->licensee,

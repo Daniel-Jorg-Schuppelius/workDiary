@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -20,21 +19,18 @@ use Illuminate\Support\Facades\Http;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class LexofficeMaterialProviderTest extends TestCase
-{
+class LexofficeMaterialProviderTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         Config::set('timesheet.providers.lexoffice.api_key', 'test-key');
     }
 
-    public function test_search_calls_lexoffice_and_upserts_local_materials(): void
-    {
+    public function test_search_calls_lexoffice_and_upserts_local_materials(): void {
         Http::fake([
             'https://api.lexoffice.io/v1/articles*' => Http::response([
                 'content' => [

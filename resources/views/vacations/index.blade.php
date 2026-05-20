@@ -1,5 +1,14 @@
 @extends('layouts.app')
 
+@php
+/**
+ * @var \Illuminate\Support\Collection<int, \App\Models\User>|\Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @var bool $isAdmin
+ * @var array<string, mixed> $counts
+ * @var array<string, mixed> $filters
+ */
+@endphp
+
 @section('nav-title', __('Urlaub'))
 
 @section('content')

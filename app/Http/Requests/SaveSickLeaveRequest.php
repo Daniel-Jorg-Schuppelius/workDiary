@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,16 +16,13 @@ use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveSickLeaveRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class SaveSickLeaveRequest extends FormRequest {
+    public function authorize(): bool {
         return true;
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         $threshold = (int) config('sickness.attachment_required_from_day', 4);
         $maxKb = (int) config('sickness.attachments.max_kilobytes', 10240);
         /** @var list<string> $mimes */
@@ -45,25 +41,24 @@ class SaveSickLeaveRequest extends FormRequest
                 'nullable',
                 'integer',
                 Rule::exists('sick_leaves', 'id'),
-                Rule::requiredIf(fn () => $this->input('kind') === SickLeaveKind::FollowUp->value),
+                Rule::requiredIf(fn() => $this->input('kind') === SickLeaveKind::FollowUp->value),
             ],
             'au_number' => ['nullable', 'string', 'max:100'],
             'doctor_name' => ['nullable', 'string', 'max:255'],
             'note' => ['nullable', 'string', 'max:1000'],
             'kasse_notified' => ['nullable', 'boolean'],
             'au_file' => [
-                Rule::requiredIf(fn () => ! $hasExisting && $this->calendarDays() >= $threshold),
+                Rule::requiredIf(fn() => ! $hasExisting && $this->calendarDays() >= $threshold),
                 'nullable',
                 'file',
-                'max:'.$maxKb,
-                'mimes:'.implode(',', $mimes),
+                'max:' . $maxKb,
+                'mimes:' . implode(',', $mimes),
             ],
         ];
     }
 
     /** @return array<string, string> */
-    public function messages(): array
-    {
+    public function messages(): array {
         $threshold = (int) config('sickness.attachment_required_from_day', 4);
 
         return [
@@ -73,8 +68,7 @@ class SaveSickLeaveRequest extends FormRequest
         ];
     }
 
-    public function calendarDays(): int
-    {
+    public function calendarDays(): int {
         try {
             $start = CarbonImmutable::parse((string) $this->input('start_date'));
             $end = CarbonImmutable::parse((string) $this->input('end_date'));

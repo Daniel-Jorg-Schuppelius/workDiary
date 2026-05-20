@@ -1,9 +1,15 @@
 {{-- Tab: Aufgaben — erwartet: $project, $topTasks, $milestones --}}
 @php
     use App\Enums\Task\TaskStatus;
+    use App\Models\Task;
+    /**
+     * @var \App\Models\Project $project
+     * @var \Illuminate\Support\Collection<int, \App\Models\Task> $topTasks
+     * @var \Illuminate\Support\Collection<int, \App\Models\Milestone> $milestones
+     */
     // Aktuelle Filter (rückwärtskompatibel zu alten Parametern task_status / task_milestone).
-    $statusFilter    = (string) request()->get('status', request()->get('task_status', ''));
-    $milestoneFilter = (string) request()->get('milestone', request()->get('task_milestone', ''));
+    $statusFilter    = (string) request()->input('status', request()->input('task_status', ''));
+    $milestoneFilter = (string) request()->input('milestone', request()->input('task_milestone', ''));
 
     // Basis-Query (Tab bleibt aktiv, alte Parameter werden entfernt).
     $baseQuery = static fn (array $overrides) => request()->fullUrlWithQuery(array_merge(

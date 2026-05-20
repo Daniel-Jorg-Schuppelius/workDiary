@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -27,14 +26,13 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-class EnergyLogController extends Controller
-{
+class EnergyLogController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function __construct(private readonly EnergyLogService $service) {}
+    public function __construct(private readonly EnergyLogService $service) {
+    }
 
-    public function index(Request $request): View
-    {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', EnergyLog::class);
 
         /** @var User $auth */
@@ -95,8 +93,7 @@ class EnergyLogController extends Controller
         ]);
     }
 
-    public function create(Request $request): View
-    {
+    public function create(Request $request): View {
         Gate::authorize('create', EnergyLog::class);
 
         /** @var User $auth */
@@ -112,8 +109,7 @@ class EnergyLogController extends Controller
         ]);
     }
 
-    public function store(SaveEnergyLogRequest $request): RedirectResponse
-    {
+    public function store(SaveEnergyLogRequest $request): RedirectResponse {
         Gate::authorize('create', EnergyLog::class);
 
         $data = $request->validated();
@@ -128,8 +124,7 @@ class EnergyLogController extends Controller
             ->with('success', __('Tankung/Ladung erfasst.'));
     }
 
-    public function edit(EnergyLog $energyLog): View
-    {
+    public function edit(EnergyLog $energyLog): View {
         Gate::authorize('update', $energyLog);
 
         /** @var User $auth */
@@ -145,8 +140,7 @@ class EnergyLogController extends Controller
         ]);
     }
 
-    public function update(SaveEnergyLogRequest $request, EnergyLog $energyLog): RedirectResponse
-    {
+    public function update(SaveEnergyLogRequest $request, EnergyLog $energyLog): RedirectResponse {
         Gate::authorize('update', $energyLog);
 
         $this->service->update($energyLog, $request->validated());
@@ -155,8 +149,7 @@ class EnergyLogController extends Controller
             ->with('success', __('Eintrag aktualisiert.'));
     }
 
-    public function destroy(EnergyLog $energyLog): RedirectResponse
-    {
+    public function destroy(EnergyLog $energyLog): RedirectResponse {
         Gate::authorize('delete', $energyLog);
 
         $this->service->delete($energyLog);
@@ -168,8 +161,7 @@ class EnergyLogController extends Controller
     /**
      * @return array{0: CarbonImmutable, 1: CarbonImmutable}
      */
-    private function resolveRange(Request $request): array
-    {
+    private function resolveRange(Request $request): array {
         if ($request->filled('from') && $request->filled('to')) {
             $from = CarbonImmutable::parse((string) $request->query('from'))->startOfDay();
             $to = CarbonImmutable::parse((string) $request->query('to'))->endOfDay();
@@ -187,8 +179,7 @@ class EnergyLogController extends Controller
      * non-admins are locked to themselves; ?user=all (admins only) returns null
      * so all users are shown.
      */
-    private function resolveTargetUser(Request $request, User $authUser): ?User
-    {
+    private function resolveTargetUser(Request $request, User $authUser): ?User {
         if (! $request->filled('user')) {
             return $authUser;
         }
@@ -220,8 +211,7 @@ class EnergyLogController extends Controller
     }
 
     /** @return Collection<int, Vehicle> */
-    private function vehiclesForUser(User $user): Collection
-    {
+    private function vehiclesForUser(User $user): Collection {
         $query = Vehicle::query()->active()->orderBy('label')->orderBy('license_plate');
         if (! $user->isAdmin()) {
             $query->forUser((int) $user->id);
@@ -234,8 +224,7 @@ class EnergyLogController extends Controller
     }
 
     /** @return Collection<int, User> */
-    private function loadSelectableUsers(): Collection
-    {
+    private function loadSelectableUsers(): Collection {
         /** @var Collection<int, User> $users */
         $users = User::query()->orderBy('name')->get();
 

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,10 +18,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;
 
-class MaterialController extends Controller
-{
-    public function index(Request $request, MaterialProviderRegistry $registry): AnonymousResourceCollection
-    {
+class MaterialController extends Controller {
+    public function index(Request $request, MaterialProviderRegistry $registry): AnonymousResourceCollection {
         Gate::authorize('viewAny', Material::class);
         $q = $request->string('q')->toString();
         $provider = $request->string('provider', 'local')->toString();

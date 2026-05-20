@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -31,12 +30,10 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Billing-/Rechnungs-Auswertung: Status, Aging, Top-Kunden, unbillte Zeiten.
  * Nur für Administratoren (Org-weite Finanzdaten).
  */
-class BillingReportController extends Controller
-{
+class BillingReportController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request): View|SymfonyResponse
-    {
+    public function index(Request $request): View|SymfonyResponse {
         $authUser = Auth::user();
         $isAdmin = $authUser instanceof User && $authUser->isAdmin();
         abort_unless($isAdmin, 403);
@@ -71,8 +68,7 @@ class BillingReportController extends Controller
     /**
      * @return array<string, array{count:int, subtotal:float, tax:float, total:float}>
      */
-    private function aggregateByStatus(string $from, string $to): array
-    {
+    private function aggregateByStatus(string $from, string $to): array {
         $statuses = Invoice::STATUSES;
         $result = [];
         foreach ($statuses as $st) {
@@ -112,8 +108,7 @@ class BillingReportController extends Controller
      *   open_total: float
      * }
      */
-    private function aggregateAging(Carbon $today): array
-    {
+    private function aggregateAging(Carbon $today): array {
         $buckets = [
             'current' => ['count' => 0, 'total' => 0.0],
             '1_7' => ['count' => 0, 'total' => 0.0],
@@ -160,8 +155,7 @@ class BillingReportController extends Controller
     /**
      * @return array<int, array{customer: Customer, count:int, total:float}>
      */
-    private function aggregatePerCustomer(string $from, string $to): array
-    {
+    private function aggregatePerCustomer(string $from, string $to): array {
         /** @var Collection<int, Invoice> $invoices */
         $invoices = Invoice::query()
             ->whereBetween('issued_on', [$from, $to])
@@ -194,7 +188,7 @@ class BillingReportController extends Controller
                 'total' => $agg[$cid]['total'],
             ];
         }
-        usort($rows, static fn ($a, $b): int => $b['total'] <=> $a['total']);
+        usort($rows, static fn($a, $b): int => $b['total'] <=> $a['total']);
 
         return $rows;
     }
@@ -204,8 +198,7 @@ class BillingReportController extends Controller
      *
      * @return array{count:int, minutes:int, projected_revenue:float}
      */
-    private function aggregateUnbilled(string $from, string $to): array
-    {
+    private function aggregateUnbilled(string $from, string $to): array {
         $billedIds = InvoiceItem::query()
             ->whereNotNull('time_entry_id')
             ->select('time_entry_id');
@@ -240,8 +233,7 @@ class BillingReportController extends Controller
      * @param  array<int, array{customer: Customer, count:int, total:float}>  $perCustomer
      * @param  array{count:int, minutes:int, projected_revenue:float}  $unbilled
      */
-    private function exportCsv(array $status, array $aging, array $perCustomer, array $unbilled, string $from, string $to): Response
-    {
+    private function exportCsv(array $status, array $aging, array $perCustomer, array $unbilled, string $from, string $to): Response {
         $filename = sprintf('billing_%s_%s.csv', $from, $to);
         $rows = [];
         $rows[] = ['Bereich', 'Schlüssel', 'Anzahl', 'Wert €'];
@@ -264,16 +256,16 @@ class BillingReportController extends Controller
             $csv .= implode(';', array_map(static function ($v): string {
                 $s = (string) $v;
                 if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"'.str_replace('"', '""', $s).'"';
+                    $s = '"' . str_replace('"', '""', $s) . '"';
                 }
 
                 return $s;
-            }, $row))."\r\n";
+            }, $row)) . "\r\n";
         }
 
-        return response("\xEF\xBB\xBF".$csv, 200, [
+        return response("\xEF\xBB\xBF" . $csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 
@@ -283,8 +275,7 @@ class BillingReportController extends Controller
      * @param  array<int, array{customer: Customer, count:int, total:float}>  $perCustomer
      * @param  array{count:int, minutes:int, projected_revenue:float}  $unbilled
      */
-    private function exportPdf(array $status, array $aging, array $perCustomer, array $unbilled, string $from, string $to): SymfonyResponse
-    {
+    private function exportPdf(array $status, array $aging, array $perCustomer, array $unbilled, string $from, string $to): SymfonyResponse {
         $filename = sprintf('billing_%s_%s.pdf', $from, $to);
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = Pdf::loadView('reports.pdf.billing', [

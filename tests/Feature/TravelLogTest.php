@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,7 +10,9 @@
 
 namespace Tests\Feature;
 
+use App\Enums\TimeEntry\TimeEntryActivityType;
 use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\Travel\TravelLogVehicle;
 use App\Models\TimeEntry;
 use App\Models\TravelLog;
 use App\Models\User;
@@ -20,9 +21,10 @@ use App\Services\Travel\TravelLogService;
 use Carbon\CarbonImmutable;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Session;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
-use App\Enums\Travel\TravelLogVehicle;
 
 class TravelLogTest extends TestCase {
     use RefreshDatabase;
@@ -70,7 +72,7 @@ class TravelLogTest extends TestCase {
 
         $entry = TimeEntry::query()->where('travel_log_id', $log->id)->firstOrFail();
         $this->assertSame(TimeEntryKind::Travel, $entry->kind);
-        $this->assertSame(\App\Enums\TimeEntry\TimeEntryActivityType::Travel, $entry->activity_type);
+        $this->assertSame(TimeEntryActivityType::Travel, $entry->activity_type);
         $this->assertSame(60, $entry->minutes);
     }
 
@@ -124,7 +126,7 @@ class TravelLogTest extends TestCase {
     }
 
     public function test_mileage_rate_resolver_uses_config(): void {
-        config()->set('timesheet.travel.rates.private', 0.42);
+        Config::set('timesheet.travel.rates.private', 0.42);
         $resolver = app(MileageRateResolver::class);
 
         $this->assertSame(0.42, $resolver->rateFor(TravelLogVehicle::Private_->value));
@@ -154,9 +156,9 @@ class TravelLogTest extends TestCase {
         $this->actingAs($this->user);
 
         // Header selects April 2026 — May entries must NOT be included.
-        session()->put('ui.daterange.preset', 'custom');
-        session()->put('ui.daterange.from', '2026-04-01');
-        session()->put('ui.daterange.to', '2026-04-30');
+        Session::put('ui.daterange.preset', 'custom');
+        Session::put('ui.daterange.from', '2026-04-01');
+        Session::put('ui.daterange.to', '2026-04-30');
 
         TravelLog::factory()->create([
             'organization_id' => $this->organization->id,

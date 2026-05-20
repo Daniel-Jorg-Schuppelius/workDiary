@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -20,12 +19,10 @@ use Illuminate\Support\Carbon;
 /**
  * @extends Factory<EnergyLog>
  */
-class EnergyLogFactory extends Factory
-{
+class EnergyLogFactory extends Factory {
     protected $model = EnergyLog::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         $start = Carbon::instance(fake()->dateTimeBetween('-30 days', 'now'));
 
         return [
@@ -52,18 +49,16 @@ class EnergyLogFactory extends Factory
         ];
     }
 
-    public function fuel(): self
-    {
-        return $this->state(fn () => [
+    public function fuel(): self {
+        return $this->state(fn() => [
             'energy_type' => EnergyLog::TYPE_FUEL,
             'fuel_kind' => EnergyLog::FUEL_DIESEL,
             'unit' => EnergyLog::UNIT_LITER,
         ]);
     }
 
-    public function electric(): self
-    {
-        return $this->state(fn () => [
+    public function electric(): self {
+        return $this->state(fn() => [
             'energy_type' => EnergyLog::TYPE_ELECTRIC,
             'fuel_kind' => null,
             'unit' => EnergyLog::UNIT_KWH,

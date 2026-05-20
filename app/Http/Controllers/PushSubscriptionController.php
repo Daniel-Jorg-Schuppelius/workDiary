@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,17 +15,14 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class PushSubscriptionController extends Controller
-{
-    public function vapid(): JsonResponse
-    {
+class PushSubscriptionController extends Controller {
+    public function vapid(): JsonResponse {
         return response()->json([
             'publicKey' => config('webpush.public_key'),
         ]);
     }
 
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request): JsonResponse {
         $data = $request->validate([
             'endpoint' => ['required', 'string', 'max:500'],
             'keys.p256dh' => ['required', 'string', 'max:255'],
@@ -51,8 +47,7 @@ class PushSubscriptionController extends Controller
         return response()->json(['id' => $sub->id, 'status' => 'subscribed']);
     }
 
-    public function destroy(Request $request): JsonResponse
-    {
+    public function destroy(Request $request): JsonResponse {
         /** @var User $user */
         $user = $request->user();
         $endpoint = (string) $request->input('endpoint');

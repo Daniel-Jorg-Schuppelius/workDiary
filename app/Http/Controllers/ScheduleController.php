@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 11 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,12 +10,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Shift\ScheduledShiftStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\StoreScheduledShiftRequest;
 use App\Http\Requests\UpdateScheduledShiftRequest;
 use App\Http\Resources\ScheduledShiftResource;
 use App\Models\Organization;
-use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\ScheduledShift;
 use App\Models\ShiftType;
 use App\Models\User;
@@ -30,12 +29,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-class ScheduleController extends Controller
-{
+class ScheduleController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request, HolidayService $holidays, ShiftComplianceService $compliance, OpenSlotService $openSlots): View
-    {
+    public function index(Request $request, HolidayService $holidays, ShiftComplianceService $compliance, OpenSlotService $openSlots): View {
         /** @var User $auth */
         $auth = Auth::user();
 
@@ -51,7 +48,7 @@ class ScheduleController extends Controller
         $anchor = $from;
 
         $shifts = $this->loadShifts($from, $to, $userFilter);
-        $shiftsByDate = $shifts->groupBy(fn (ScheduledShift $s) => $s->date->toDateString());
+        $shiftsByDate = $shifts->groupBy(fn(ScheduledShift $s) => $s->date->toDateString());
 
         $org = $auth->organization_id
             ? Organization::query()->find($auth->organization_id)
@@ -79,8 +76,7 @@ class ScheduleController extends Controller
     /**
      * @return Collection<int, ScheduledShift>
      */
-    private function loadShifts(CarbonImmutable $from, CarbonImmutable $to, int $userFilter): Collection
-    {
+    private function loadShifts(CarbonImmutable $from, CarbonImmutable $to, int $userFilter): Collection {
         $query = ScheduledShift::query()
             ->with(['user:id,name', 'shiftType'])
             ->forDateRange($from, $to)
@@ -98,8 +94,7 @@ class ScheduleController extends Controller
      * @param  Collection<int, ScheduledShift>  $shifts
      * @return array<int, array{severity: string, messages: list<string>}>
      */
-    private function computeComplianceByShift(Collection $shifts, ShiftComplianceService $compliance, ?Organization $org): array
-    {
+    private function computeComplianceByShift(Collection $shifts, ShiftComplianceService $compliance, ?Organization $org): array {
         $complianceByShift = [];
         foreach ($shifts as $s) {
             $report = $compliance->check($s, $org);
@@ -108,7 +103,7 @@ class ScheduleController extends Controller
             }
             $complianceByShift[(int) $s->id] = [
                 'severity' => $report->hasErrors() ? 'error' : 'warning',
-                'messages' => array_map(fn ($v) => $v->message, $report->violations),
+                'messages' => array_map(fn($v) => $v->message, $report->violations),
             ];
         }
 
@@ -117,8 +112,7 @@ class ScheduleController extends Controller
 
     // ── JSON-API for Alpine.js ───────────────────────────────────────────────
 
-    public function apiIndex(Request $request): JsonResponse
-    {
+    public function apiIndex(Request $request): JsonResponse {
         $userFilter = (int) $request->query('user', 0);
 
         $range = $this->globalDateRange();
@@ -139,8 +133,7 @@ class ScheduleController extends Controller
         );
     }
 
-    public function store(StoreScheduledShiftRequest $request): JsonResponse
-    {
+    public function store(StoreScheduledShiftRequest $request): JsonResponse {
         /** @var User $auth */
         $auth = Auth::user();
 
@@ -161,8 +154,7 @@ class ScheduleController extends Controller
         return response()->json($payload, 201);
     }
 
-    public function update(UpdateScheduledShiftRequest $request, ScheduledShift $shift): JsonResponse
-    {
+    public function update(UpdateScheduledShiftRequest $request, ScheduledShift $shift): JsonResponse {
         /** @var User $auth */
         $auth = Auth::user();
 
@@ -182,8 +174,7 @@ class ScheduleController extends Controller
         return response()->json($payload);
     }
 
-    public function destroy(ScheduledShift $shift): JsonResponse
-    {
+    public function destroy(ScheduledShift $shift): JsonResponse {
         /** @var User $auth */
         $auth = Auth::user();
         if (! $auth->isAdmin()) {
@@ -195,8 +186,7 @@ class ScheduleController extends Controller
         return response()->json(['message' => __('Schicht gelöscht.')]);
     }
 
-    public function confirm(ScheduledShift $shift): JsonResponse
-    {
+    public function confirm(ScheduledShift $shift): JsonResponse {
         /** @var User $auth */
         $auth = Auth::user();
 
@@ -214,8 +204,7 @@ class ScheduleController extends Controller
         return response()->json(new ScheduledShiftResource($shift));
     }
 
-    public function publish(ScheduledShift $shift): JsonResponse
-    {
+    public function publish(ScheduledShift $shift): JsonResponse {
         /** @var User $auth */
         $auth = Auth::user();
         if (! $auth->isAdmin()) {

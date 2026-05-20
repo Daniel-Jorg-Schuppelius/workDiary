@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,10 +20,8 @@ use Illuminate\Support\Facades\Schema;
  *  - Soft archive via `archived_at` (no soft delete column, matches the
  *    pattern already used by Holiday / OnCallShift).
  */
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::create('vehicles', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('organization_id')->nullable()
@@ -62,8 +59,7 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('vehicles');
     }
 };

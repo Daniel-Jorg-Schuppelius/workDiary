@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,10 +14,8 @@ use App\Models\EntryType;
 use App\Models\Organization;
 use Illuminate\Database\Seeder;
 
-class EntryTypeSeeder extends Seeder
-{
-    public function run(): void
-    {
+class EntryTypeSeeder extends Seeder {
+    public function run(): void {
         $orgIds = Organization::query()->pluck('id')->all();
         if ($orgIds === []) {
             $orgIds = [null];
@@ -38,8 +35,7 @@ class EntryTypeSeeder extends Seeder
     /**
      * @return list<array<string, mixed>>
      */
-    public static function profiles(): array
-    {
+    public static function profiles(): array {
         return [
             [
                 'slug' => EntryType::SLUG_GENERAL,

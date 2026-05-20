@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,7 +14,6 @@ use App\Enums\Diary\Priority;
 use App\Enums\Diary\Status as DiaryStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveEntryTypeRequest;
-use App\Models\DiaryEntry;
 use App\Models\EntryType;
 use App\Support\SortableQuery;
 use Illuminate\Http\RedirectResponse;

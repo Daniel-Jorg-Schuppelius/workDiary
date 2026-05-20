@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,12 +20,10 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-class EmergencyAssignmentController extends Controller
-{
+class EmergencyAssignmentController extends Controller {
     use ManagesShiftLike;
 
-    public function create(Request $request): View
-    {
+    public function create(Request $request): View {
         /** @var User $auth */
         $auth = Auth::user();
         $canAssignOthers = $auth->canCreateEntriesForOthers();
@@ -44,8 +41,7 @@ class EmergencyAssignmentController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
-    {
+    public function store(Request $request): RedirectResponse {
         $data = $this->validateAssignment($request);
         /** @var User $auth */
         $auth = Auth::user();
@@ -54,11 +50,10 @@ class EmergencyAssignmentController extends Controller
         }
         EmergencyAssignment::create($data);
 
-        return $this->redirectAfter($request, __('Notdienst gespeichert.'), route('duties.index').'?tab=notdienst');
+        return $this->redirectAfter($request, __('Notdienst gespeichert.'), route('duties.index') . '?tab=notdienst');
     }
 
-    public function edit(Request $request, EmergencyAssignment $assignment): View
-    {
+    public function edit(Request $request, EmergencyAssignment $assignment): View {
         $this->authorizeManage();
         /** @var User $auth */
         $auth = Auth::user();
@@ -77,8 +72,7 @@ class EmergencyAssignmentController extends Controller
         ]);
     }
 
-    public function update(Request $request, EmergencyAssignment $assignment): RedirectResponse
-    {
+    public function update(Request $request, EmergencyAssignment $assignment): RedirectResponse {
         $this->authorizeManage();
         $data = $this->validateAssignment($request);
         /** @var User $auth */
@@ -88,20 +82,18 @@ class EmergencyAssignmentController extends Controller
         }
         $assignment->update($data);
 
-        return $this->redirectAfter($request, __('Notdienst aktualisiert.'), route('duties.index').'?tab=notdienst');
+        return $this->redirectAfter($request, __('Notdienst aktualisiert.'), route('duties.index') . '?tab=notdienst');
     }
 
-    public function destroy(Request $request, EmergencyAssignment $assignment): RedirectResponse
-    {
+    public function destroy(Request $request, EmergencyAssignment $assignment): RedirectResponse {
         $this->authorizeManage();
         $assignment->delete();
 
-        return $this->redirectAfter($request, __('Notdienst gelöscht.'), route('duties.index').'?tab=notdienst');
+        return $this->redirectAfter($request, __('Notdienst gelöscht.'), route('duties.index') . '?tab=notdienst');
     }
 
     /** @return array<string, mixed> */
-    private function validateAssignment(Request $request): array
-    {
+    private function validateAssignment(Request $request): array {
         return $request->validate([
             'user_id' => ['nullable', 'integer', 'exists:users,id'],
             'on_call_shift_id' => ['nullable', 'integer', 'exists:on_call_shifts,id'],
@@ -112,8 +104,7 @@ class EmergencyAssignmentController extends Controller
     }
 
     /** @return Collection<int, OnCallShift> */
-    private function shiftOptions(): Collection
-    {
+    private function shiftOptions(): Collection {
         return OnCallShift::query()->with('user:id,name')->orderByDesc('start_at')->limit(50)->get();
     }
 }

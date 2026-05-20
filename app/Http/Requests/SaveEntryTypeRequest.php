@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -12,21 +11,17 @@
 namespace App\Http\Requests;
 
 use App\Enums\Diary\Priority;
-use App\Models\DiaryEntry;
 use App\Models\EntryType;
 use App\Models\Organization;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveEntryTypeRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class SaveEntryTypeRequest extends FormRequest {
+    public function authorize(): bool {
         return true; // Policy greift im Controller
     }
 
-    protected function prepareForValidation(): void
-    {
+    protected function prepareForValidation(): void {
         $this->merge([
             'is_active' => $this->boolean('is_active'),
             'requires_customer' => $this->boolean('requires_customer'),
@@ -46,8 +41,7 @@ class SaveEntryTypeRequest extends FormRequest
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         /** @var EntryType|null $entryType */
         $entryType = $this->route('entryType');
         $orgId = $entryType?->organization_id;
@@ -64,7 +58,7 @@ class SaveEntryTypeRequest extends FormRequest
                 'max:64',
                 'regex:/^[a-z0-9_]+$/',
                 Rule::unique('entry_types', 'slug')
-                    ->where(fn ($q) => $q->where('organization_id', $orgId))
+                    ->where(fn($q) => $q->where('organization_id', $orgId))
                     ->ignore($entryType?->id),
             ],
             'label' => ['required', 'string', 'max:120'],

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,13 +17,11 @@ use Illuminate\Support\Facades\Http;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class GeocodeControllerTest extends TestCase
-{
+class GeocodeControllerTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -32,14 +29,12 @@ class GeocodeControllerTest extends TestCase
         config()->set('routing.nominatim.rate_limit_per_sec', 1000);
     }
 
-    public function test_requires_authentication(): void
-    {
+    public function test_requires_authentication(): void {
         $this->postJson(route('api.internal.geocode'), ['query' => 'Berlin'])
             ->assertStatus(401);
     }
 
-    public function test_returns_coordinates(): void
-    {
+    public function test_returns_coordinates(): void {
         Http::fake([
             'nominatim.test/*' => Http::response([
                 ['lat' => '52.52', 'lon' => '13.405', 'display_name' => 'Berlin'],
@@ -59,8 +54,7 @@ class GeocodeControllerTest extends TestCase
             ]);
     }
 
-    public function test_returns_404_on_no_match(): void
-    {
+    public function test_returns_404_on_no_match(): void {
         Http::fake([
             'nominatim.test/*' => Http::response([], 200),
         ]);
@@ -72,8 +66,7 @@ class GeocodeControllerTest extends TestCase
             ->assertStatus(404);
     }
 
-    public function test_validates_query(): void
-    {
+    public function test_validates_query(): void {
         $user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
 
         $this->actingAs($user)

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 19 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,10 +10,12 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Diary\LocationMode;
 use App\Enums\Diary\Mode;
 use App\Enums\Diary\Status as DiaryStatus;
+use App\Enums\Project\ProjectStatus;
+use App\Enums\Recurrence\RecurrenceFrequency;
 use App\Models\DiaryEntry;
-use App\Enums\Diary\LocationMode;
 use App\Models\Project;
 use App\Models\RecurrenceRule;
 use App\Models\User;
@@ -24,8 +25,6 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
-use App\Enums\Project\ProjectStatus;
-use App\Enums\Recurrence\RecurrenceFrequency;
 
 class RecurrenceGeneratorTest extends TestCase {
     use RefreshDatabase;

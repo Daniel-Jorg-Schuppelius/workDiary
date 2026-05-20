@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 19 2026
  * Author       : Daniel Jörg Schuppelius
@@ -25,23 +24,20 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-class ProjectRecurrenceRuleController extends Controller
-{
-    public function create(Project $project): View
-    {
+class ProjectRecurrenceRuleController extends Controller {
+    public function create(Project $project): View {
         Gate::authorize('update', $project);
 
         return view('projects._recurrence_rule_form_dialog', [
             'project' => $project,
-            'rule' => new RecurrenceRule(),
+            'rule' => new RecurrenceRule,
             'entryTypes' => EntryType::query()->active()->ordered()->get(['id', 'label']),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'users' => User::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
-    public function store(Project $project, SaveRecurrenceRuleRequest $request): RedirectResponse
-    {
+    public function store(Project $project, SaveRecurrenceRuleRequest $request): RedirectResponse {
         Gate::authorize('update', $project);
 
         $data = $request->validated();
@@ -56,8 +52,7 @@ class ProjectRecurrenceRuleController extends Controller
             ->with('success', __('Wiederkehr-Regel angelegt.'));
     }
 
-    public function edit(Project $project, RecurrenceRule $recurrenceRule): View
-    {
+    public function edit(Project $project, RecurrenceRule $recurrenceRule): View {
         Gate::authorize('update', $project);
         $this->ensureSameProject($project, $recurrenceRule);
 
@@ -85,8 +80,7 @@ class ProjectRecurrenceRuleController extends Controller
             ->with('success', __('Wiederkehr-Regel aktualisiert.'));
     }
 
-    public function destroy(Project $project, RecurrenceRule $recurrenceRule): RedirectResponse
-    {
+    public function destroy(Project $project, RecurrenceRule $recurrenceRule): RedirectResponse {
         Gate::authorize('update', $project);
         $this->ensureSameProject($project, $recurrenceRule);
 
@@ -109,15 +103,15 @@ class ProjectRecurrenceRuleController extends Controller
         Gate::authorize('update', $project);
         $this->ensureSameProject($project, $recurrenceRule);
 
-        $created = $generator->generateForRule($recurrenceRule->fresh(), CarbonImmutable::now(), 28);
+        $recurrenceRule->refresh();
+        $created = $generator->generateForRule($recurrenceRule, CarbonImmutable::now(), 28);
 
         return redirect()
             ->route('projects.show', ['project' => $project, 'tab' => 'recurrence'])
             ->with('success', __(':count Aufträge erzeugt.', ['count' => $created]));
     }
 
-    private function ensureSameProject(Project $project, RecurrenceRule $rule): void
-    {
+    private function ensureSameProject(Project $project, RecurrenceRule $rule): void {
         if ((int) $rule->project_id !== (int) $project->id) {
             throw new AccessDeniedHttpException;
         }

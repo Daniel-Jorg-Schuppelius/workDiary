@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,14 +13,12 @@ namespace App\Console\Commands\License;
 use App\Services\Licensing\LicenseService;
 use Illuminate\Console\Command;
 
-class KeygenCommand extends Command
-{
+class KeygenCommand extends Command {
     protected $signature = 'license:keygen {--out= : Optionaler Pfad, in den die Keys geschrieben werden}';
 
     protected $description = 'Erzeugt ein Ed25519-Schlüsselpaar für die Lizenzsignierung.';
 
-    public function handle(): int
-    {
+    public function handle(): int {
         $keypair = sodium_crypto_sign_keypair();
         $secret = sodium_crypto_sign_secretkey($keypair);
         $public = sodium_crypto_sign_publickey($keypair);
@@ -31,15 +28,15 @@ class KeygenCommand extends Command
 
         $this->warn('WICHTIG: Den Private Key NIEMALS in die App-Installation einspielen.');
         $this->line('');
-        $this->line('LICENSE_PUBLIC_KEY='.$publicB64);
-        $this->line('LICENSE_PRIVATE_KEY='.$secretB64);
+        $this->line('LICENSE_PUBLIC_KEY=' . $publicB64);
+        $this->line('LICENSE_PRIVATE_KEY=' . $secretB64);
 
         $out = $this->option('out');
         if (is_string($out) && $out !== '') {
             $payload = "LICENSE_PUBLIC_KEY={$publicB64}\nLICENSE_PRIVATE_KEY={$secretB64}\n";
             file_put_contents($out, $payload);
             @chmod($out, 0600);
-            $this->info('Keys geschrieben nach: '.$out);
+            $this->info('Keys geschrieben nach: ' . $out);
         }
 
         return self::SUCCESS;

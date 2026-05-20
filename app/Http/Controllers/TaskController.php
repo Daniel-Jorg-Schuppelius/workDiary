@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,9 +10,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Task\TaskStatus;
 use App\Http\Requests\SaveTaskRequest;
 use App\Models\Project;
-use App\Enums\Task\TaskStatus;
 use App\Models\Task;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,10 +20,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class TaskController extends Controller
-{
-    public function create(Project $project, Request $request): View
-    {
+class TaskController extends Controller {
+    public function create(Project $project, Request $request): View {
         Gate::authorize('create', Task::class);
 
         $milestones = $project->milestones()->orderBy('position')->orderBy('due_date')->get(['id', 'title']);
@@ -46,8 +43,7 @@ class TaskController extends Controller
         ]);
     }
 
-    public function store(Project $project, SaveTaskRequest $request): RedirectResponse
-    {
+    public function store(Project $project, SaveTaskRequest $request): RedirectResponse {
         Gate::authorize('create', Task::class);
 
         $data = $request->validated();
@@ -61,8 +57,7 @@ class TaskController extends Controller
             ->with('success', __('Aufgabe angelegt.'));
     }
 
-    public function edit(Project $project, Task $task): View
-    {
+    public function edit(Project $project, Task $task): View {
         Gate::authorize('update', $task);
 
         $milestones = $project->milestones()->orderBy('position')->orderBy('due_date')->get(['id', 'title']);
@@ -86,8 +81,7 @@ class TaskController extends Controller
         ]);
     }
 
-    public function update(Project $project, Task $task, SaveTaskRequest $request): RedirectResponse
-    {
+    public function update(Project $project, Task $task, SaveTaskRequest $request): RedirectResponse {
         Gate::authorize('update', $task);
 
         $task->update($request->validated());
@@ -96,8 +90,7 @@ class TaskController extends Controller
             ->with('success', __('Aufgabe aktualisiert.'));
     }
 
-    public function destroy(Project $project, Task $task): RedirectResponse
-    {
+    public function destroy(Project $project, Task $task): RedirectResponse {
         Gate::authorize('delete', $task);
 
         $task->delete();
@@ -106,8 +99,7 @@ class TaskController extends Controller
             ->with('success', __('Aufgabe gelöscht.'));
     }
 
-    public function complete(Project $project, Task $task): RedirectResponse
-    {
+    public function complete(Project $project, Task $task): RedirectResponse {
         Gate::authorize('update', $task);
 
         $task->update([

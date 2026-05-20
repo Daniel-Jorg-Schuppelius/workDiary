@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,21 +10,19 @@
 
 namespace Database\Factories;
 
-use App\Models\Vehicle;
-use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Enums\Vehicle\VehicleType;
 use App\Enums\Vehicle\VehicleOwnership;
 use App\Enums\Vehicle\VehiclePropulsion;
+use App\Enums\Vehicle\VehicleType;
+use App\Models\Vehicle;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends Factory<Vehicle>
  */
-class VehicleFactory extends Factory
-{
+class VehicleFactory extends Factory {
     protected $model = Vehicle::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'organization_id' => null,
             'license_plate' => strtoupper(fake()->bothify('B-?? ###')),
@@ -50,9 +47,8 @@ class VehicleFactory extends Factory
         ];
     }
 
-    public function electric(): self
-    {
-        return $this->state(fn () => [
+    public function electric(): self {
+        return $this->state(fn() => [
             'propulsion' => VehiclePropulsion::Electric->value,
             'tank_capacity_liters' => null,
             'battery_capacity_kwh' => 75,
@@ -60,14 +56,12 @@ class VehicleFactory extends Factory
         ]);
     }
 
-    public function archived(): self
-    {
-        return $this->state(fn () => ['archived_at' => now()]);
+    public function archived(): self {
+        return $this->state(fn() => ['archived_at' => now()]);
     }
 
-    public function rental(): self
-    {
-        return $this->state(fn () => [
+    public function rental(): self {
+        return $this->state(fn() => [
             'ownership' => VehicleOwnership::Rental->value,
             'rental_provider' => 'Sixt',
             'rental_start' => now()->subDays(7)->toDateString(),

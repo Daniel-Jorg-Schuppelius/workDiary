@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,18 +14,15 @@ use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
-class StoreCoverageRequirementRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class StoreCoverageRequirementRequest extends FormRequest {
+    public function authorize(): bool {
         $user = Auth::user();
 
         return $user instanceof User && $user->isAdmin();
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         return [
             'shift_type_id' => ['required', 'integer', 'exists:shift_types,id'],
             'weekday' => ['nullable', 'integer', 'between:0,6'],

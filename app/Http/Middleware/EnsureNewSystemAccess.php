@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed May 20 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,7 +15,6 @@ namespace App\Http\Middleware;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpExceptionInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
@@ -44,6 +42,7 @@ class EnsureNewSystemAccess {
             $legacyConfigured = filled(config('database.connections.legacy.database'));
             if ($user instanceof User && $user->canAccessLegacy() && $legacyConfigured) {
                 $request->session()->put('work_mode', 'legacy');
+
                 return redirect()->route('legacy.diary.index')
                     ->with('info', __('Sie wurden in das Legacy-System geleitet.'));
             }

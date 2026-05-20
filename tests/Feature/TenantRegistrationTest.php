@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,27 +10,24 @@
 
 namespace Tests\Feature;
 
+use App\Enums\User\UserRole;
 use App\Models\Organization;
 use App\Models\User;
-use App\Enums\User\UserRole;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class TenantRegistrationTest extends TestCase
-{
+class TenantRegistrationTest extends TestCase {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
     }
 
     // ── Feature-Flag deaktiviert (Standard) ─────────────────────────────────
 
-    public function test_register_returns_404_when_disabled(): void
-    {
+    public function test_register_returns_404_when_disabled(): void {
         config(['app.registration_enabled' => false]);
 
         $this->get(route('register'))->assertNotFound();
@@ -40,8 +36,7 @@ class TenantRegistrationTest extends TestCase
 
     // ── Formular abrufbar ────────────────────────────────────────────────────
 
-    public function test_register_form_shown_when_enabled(): void
-    {
+    public function test_register_form_shown_when_enabled(): void {
         config(['app.registration_enabled' => true]);
 
         $this->get(route('register'))
@@ -49,8 +44,7 @@ class TenantRegistrationTest extends TestCase
             ->assertViewIs('auth.register');
     }
 
-    public function test_authenticated_user_is_redirected_from_register(): void
-    {
+    public function test_authenticated_user_is_redirected_from_register(): void {
         config(['app.registration_enabled' => true]);
         $user = User::factory()->user()->create();
 
@@ -61,8 +55,7 @@ class TenantRegistrationTest extends TestCase
 
     // ── Erfolgreiche Registrierung ───────────────────────────────────────────
 
-    public function test_registration_creates_org_and_admin_user(): void
-    {
+    public function test_registration_creates_org_and_admin_user(): void {
         config(['app.registration_enabled' => true]);
 
         $response = $this->post(route('register'), [
@@ -94,16 +87,14 @@ class TenantRegistrationTest extends TestCase
 
     // ── Validierungsfehler ───────────────────────────────────────────────────
 
-    public function test_registration_requires_all_fields(): void
-    {
+    public function test_registration_requires_all_fields(): void {
         config(['app.registration_enabled' => true]);
 
         $this->post(route('register'), [])
             ->assertSessionHasErrors(['org_name', 'name', 'email', 'password']);
     }
 
-    public function test_registration_requires_unique_email(): void
-    {
+    public function test_registration_requires_unique_email(): void {
         config(['app.registration_enabled' => true]);
         User::factory()->create(['email' => 'taken@test.de']);
 
@@ -116,8 +107,7 @@ class TenantRegistrationTest extends TestCase
         ])->assertSessionHasErrors('email');
     }
 
-    public function test_registration_requires_password_confirmation(): void
-    {
+    public function test_registration_requires_password_confirmation(): void {
         config(['app.registration_enabled' => true]);
 
         $this->post(route('register'), [
@@ -129,8 +119,7 @@ class TenantRegistrationTest extends TestCase
         ])->assertSessionHasErrors('password');
     }
 
-    public function test_login_page_shows_register_link_when_enabled(): void
-    {
+    public function test_login_page_shows_register_link_when_enabled(): void {
         config(['app.registration_enabled' => true]);
 
         $this->get(route('login'))
@@ -138,8 +127,7 @@ class TenantRegistrationTest extends TestCase
             ->assertSee(route('register'));
     }
 
-    public function test_login_page_hides_register_link_when_disabled(): void
-    {
+    public function test_login_page_hides_register_link_when_disabled(): void {
         config(['app.registration_enabled' => false]);
 
         $this->get(route('login'))

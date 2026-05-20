@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,16 +13,13 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveMaterialUsageRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class SaveMaterialUsageRequest extends FormRequest {
+    public function authorize(): bool {
         return true;
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         return [
             'material_id' => ['nullable', 'integer', Rule::exists('materials', 'id')],
             'description' => ['required', 'string', 'max:255'],

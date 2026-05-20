@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -20,10 +19,8 @@ use Illuminate\Support\Facades\Schema;
  *  - Optionally linked to a project/customer/task and to a TimeEntry that
  *    represents the time portion (kind=travel, activity_type=travel).
  */
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::create('travel_logs', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('organization_id')->nullable()
@@ -77,8 +74,7 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('travel_logs');
     }
 };

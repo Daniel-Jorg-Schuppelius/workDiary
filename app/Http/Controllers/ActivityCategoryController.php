@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,10 +16,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class ActivityCategoryController extends Controller
-{
-    public function index(): View
-    {
+class ActivityCategoryController extends Controller {
+    public function index(): View {
         Gate::authorize('viewAny', ActivityCategory::class);
 
         $categories = ActivityCategory::query()
@@ -31,8 +28,7 @@ class ActivityCategoryController extends Controller
         return view('activity-categories.index', compact('categories'));
     }
 
-    public function store(SaveActivityCategoryRequest $request): RedirectResponse
-    {
+    public function store(SaveActivityCategoryRequest $request): RedirectResponse {
         Gate::authorize('create', ActivityCategory::class);
 
         ActivityCategory::create($request->validated());
@@ -41,8 +37,7 @@ class ActivityCategoryController extends Controller
             ->with('success', __('Tätigkeit angelegt.'));
     }
 
-    public function update(SaveActivityCategoryRequest $request, ActivityCategory $activityCategory): RedirectResponse
-    {
+    public function update(SaveActivityCategoryRequest $request, ActivityCategory $activityCategory): RedirectResponse {
         Gate::authorize('update', $activityCategory);
 
         $activityCategory->update($request->validated());
@@ -51,8 +46,7 @@ class ActivityCategoryController extends Controller
             ->with('success', __('Tätigkeit aktualisiert.'));
     }
 
-    public function destroy(ActivityCategory $activityCategory): RedirectResponse
-    {
+    public function destroy(ActivityCategory $activityCategory): RedirectResponse {
         Gate::authorize('delete', $activityCategory);
 
         $activityCategory->delete();

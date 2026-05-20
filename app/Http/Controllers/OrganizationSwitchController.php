@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed May 20 2026
  * Author       : Daniel Jörg Schuppelius
@@ -24,12 +23,10 @@ use Illuminate\Support\Facades\Auth;
  * Reguläre Benutzer haben keinen Zugriff: Ihr Org-Kontext ergibt sich
  * ausschließlich aus users.organization_id.
  */
-class OrganizationSwitchController extends Controller
-{
+class OrganizationSwitchController extends Controller {
     public const SESSION_KEY = 'active_organization_id';
 
-    public function update(Request $request): RedirectResponse
-    {
+    public function update(Request $request): RedirectResponse {
         /** @var User|null $user */
         $user = Auth::user();
 

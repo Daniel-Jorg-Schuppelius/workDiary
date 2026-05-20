@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,6 +13,7 @@ namespace App\Services\Routing;
 use App\Enums\Diary\Mode;
 use App\Enums\Diary\Status as DiaryStatus;
 use App\Enums\Tour\TourStatus;
+use App\Enums\Travel\TravelLogVehicle;
 use App\Models\DiaryEntry;
 use App\Models\Tour;
 use App\Models\TravelLog;
@@ -24,7 +24,6 @@ use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
-use App\Enums\Travel\TravelLogVehicle;
 
 /**
  * High-level orchestration around the {@see Tour} aggregate: creation,

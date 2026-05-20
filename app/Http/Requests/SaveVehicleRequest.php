@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,23 +16,19 @@ use App\Enums\Vehicle\VehicleType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveVehicleRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class SaveVehicleRequest extends FormRequest {
+    public function authorize(): bool {
         return true;
     }
 
-    protected function prepareForValidation(): void
-    {
+    protected function prepareForValidation(): void {
         if (! $this->filled('ownership')) {
             $this->merge(['ownership' => VehicleOwnership::Owned->value]);
         }
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         return [
             'license_plate' => ['required', 'string', 'max:32'],
             'label' => ['nullable', 'string', 'max:120'],

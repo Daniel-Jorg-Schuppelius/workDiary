@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 19 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,10 +13,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::table('diary_entries', function (Blueprint $table): void {
             // Termin-Modus: fixed (Termin steht), deadline (bis X erledigen),
             // window (Korridor von Tag A bis Tag B), recurring (vom Generator
@@ -47,8 +44,7 @@ return new class extends Migration
         ]);
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::table('diary_entries', function (Blueprint $table): void {
             $table->dropIndex('de_org_mode_idx');
             $table->dropIndex('de_due_date_idx');

@@ -1,5 +1,12 @@
 {{-- Erwartet: $project, $rule, $entryTypes, $customers, $users --}}
 @php
+    /**
+     * @var \App\Models\Project $project
+     * @var \App\Models\RecurrenceRule $rule
+     * @var \Illuminate\Support\Collection<int, \App\Models\EntryType> $entryTypes
+     * @var \Illuminate\Support\Collection<int, \App\Models\Customer> $customers
+     * @var \Illuminate\Support\Collection<int, \App\Models\User> $users
+     */
     $isEdit = $rule->exists;
     $action = $isEdit
         ? route('projects.recurrence-rules.update', [$project, $rule])

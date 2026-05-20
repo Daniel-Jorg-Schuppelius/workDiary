@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,8 +10,11 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Travel\TravelLogVehicle;
+use App\Enums\Vehicle\VehicleOwnership;
+use App\Enums\Vehicle\VehiclePropulsion;
+use App\Enums\Vehicle\VehicleType;
 use App\Models\DiaryEntry;
-use App\Models\TravelLog;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\Routing\TourService;
@@ -20,11 +22,9 @@ use Carbon\CarbonImmutable;
 use Database\Seeders\EntryTypeSeeder;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
-use App\Enums\Vehicle\VehicleType;
-use App\Enums\Vehicle\VehicleOwnership;
-use App\Enums\Vehicle\VehiclePropulsion;
 
 class RentalVehicleTest extends TestCase {
     use RefreshDatabase;
@@ -35,7 +35,7 @@ class RentalVehicleTest extends TestCase {
         $this->seed(RolesSeeder::class);
         $this->seed(EntryTypeSeeder::class);
         $this->setUpOrganization();
-        config()->set('timesheet.travel.auto_create_time_entry', false);
+        Config::set('timesheet.travel.auto_create_time_entry', false);
     }
 
     public function test_vehicle_form_accepts_rental_fields(): void {
@@ -149,7 +149,7 @@ class RentalVehicleTest extends TestCase {
 
         $this->assertNotEmpty($logs);
         foreach ($logs as $log) {
-            $this->assertSame(\App\Enums\Travel\TravelLogVehicle::Rental, $log->vehicle);
+            $this->assertSame(TravelLogVehicle::Rental, $log->vehicle);
         }
     }
 

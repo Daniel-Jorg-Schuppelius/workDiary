@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -43,8 +42,7 @@ use Illuminate\Support\Carbon;
  * @method static Builder<static>|LegacyDiaryEntry whereUser($value)
  * @method static Builder<static>|LegacyDiaryEntry whereVon($value)
  */
-class LegacyDiaryEntry extends Model
-{
+class LegacyDiaryEntry extends Model {
     protected $connection = 'legacy';
 
     protected $table = 'tagebuch';
@@ -55,8 +53,7 @@ class LegacyDiaryEntry extends Model
 
     protected $primaryKey = 'id';
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'aktuell' => 'datetime',
             'von' => 'datetime',
@@ -65,24 +62,20 @@ class LegacyDiaryEntry extends Model
         ];
     }
 
-    public function author(): BelongsTo
-    {
+    public function author(): BelongsTo {
         return $this->belongsTo(LegacyUser::class, 'user', 'id');
     }
 
-    public function user(): BelongsTo
-    {
+    public function user(): BelongsTo {
         return $this->author();
     }
 
     #[Scope]
-    protected function active(Builder $query): void
-    {
+    protected function active(Builder $query): void {
         $query->where('bis', '>=', now()->subDays(30));
     }
 
-    public function statusLabel(): string
-    {
+    public function statusLabel(): string {
         return match ($this->gelesen) {
             -1 => __('Erledigt'),
             1 => __('Bestätigt'),
@@ -92,8 +85,7 @@ class LegacyDiaryEntry extends Model
         };
     }
 
-    public function statusTone(): string
-    {
+    public function statusTone(): string {
         return match ($this->gelesen) {
             -1 => 'done',
             1 => 'progress',

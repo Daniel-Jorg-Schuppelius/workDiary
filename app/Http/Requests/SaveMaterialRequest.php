@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,21 +14,18 @@ use App\Models\Material;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveMaterialRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class SaveMaterialRequest extends FormRequest {
+    public function authorize(): bool {
         return true;
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         $material = $this->route('material');
         $materialId = $material instanceof Material ? $material->id : null;
 
         return [
-            'sku' => ['nullable', 'string', 'max:64', Rule::unique('materials', 'sku')->ignore($materialId)->where(fn ($q) => $q->where('organization_id', $this->user()?->organization_id))],
+            'sku' => ['nullable', 'string', 'max:64', Rule::unique('materials', 'sku')->ignore($materialId)->where(fn($q) => $q->where('organization_id', $this->user()?->organization_id))],
             'name' => ['required', 'string', 'max:255'],
             'unit' => ['required', 'string', 'max:20'],
             'default_unit_price' => ['nullable', 'numeric', 'min:0'],

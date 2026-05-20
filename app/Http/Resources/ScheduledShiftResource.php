@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 11 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,20 +15,17 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /** @mixin ScheduledShift */
-class ScheduledShiftResource extends JsonResource
-{
-    public function __construct(ScheduledShift $resource)
-    {
+class ScheduledShiftResource extends JsonResource {
+    public function __construct(ScheduledShift $resource) {
         parent::__construct($resource);
     }
 
     /** @return array<string, mixed> */
-    public function toArray(Request $request): array
-    {
+    public function toArray(Request $request): array {
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
-            'user_name' => $this->whenLoaded('user', fn () => $this->user?->name),
+            'user_name' => $this->whenLoaded('user', fn() => $this->user?->name),
             'shift_type' => $this->whenLoaded('shiftType', function () {
                 $type = $this->shiftType;
 

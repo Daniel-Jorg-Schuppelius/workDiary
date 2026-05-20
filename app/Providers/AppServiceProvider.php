@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -76,10 +75,8 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
-class AppServiceProvider extends ServiceProvider
-{
-    public function register(): void
-    {
+class AppServiceProvider extends ServiceProvider {
+    public function register(): void {
         $this->app->singleton(NominatimGeocoder::class, function ($app): NominatimGeocoder {
             /** @var array<string, mixed> $cfg */
             $cfg = (array) $app['config']->get('routing.nominatim', []);
@@ -99,8 +96,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(BrandingService::class);
     }
 
-    public function boot(): void
-    {
+    public function boot(): void {
         Auth::provider('legacy', function ($app) {
             return new LegacyUserProvider($app['hash']);
         });
@@ -156,25 +152,24 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 
-    private function configureRateLimiters(): void
-    {
+    private function configureRateLimiters(): void {
         RateLimiter::for('login', function (Request $request) {
             $email = (string) $request->input('email', $request->input('username', ''));
 
             return [
-                Limit::perMinute(5)->by(strtolower($email).'|'.$request->ip()),
+                Limit::perMinute(5)->by(strtolower($email) . '|' . $request->ip()),
                 Limit::perMinute(20)->by($request->ip()),
             ];
         });
 
-        RateLimiter::for('register', fn (Request $request) => Limit::perMinute(3)->by($request->ip()));
+        RateLimiter::for('register', fn(Request $request) => Limit::perMinute(3)->by($request->ip()));
 
         RateLimiter::for('password', function (Request $request) {
             $userId = (string) ($request->user()?->getAuthIdentifier() ?? 'guest');
 
             return [
-                Limit::perMinute(5)->by('pwd:'.$userId.'|'.$request->ip()),
-                Limit::perHour(20)->by('pwd:'.$userId),
+                Limit::perMinute(5)->by('pwd:' . $userId . '|' . $request->ip()),
+                Limit::perHour(20)->by('pwd:' . $userId),
             ];
         });
     }
@@ -188,8 +183,7 @@ class AppServiceProvider extends ServiceProvider
      * Login-Screen auch bei nicht erreichbarer Datenbank gerendert werden
      * können.
      */
-    private function registerStopwatchViewComposer(): void
-    {
+    private function registerStopwatchViewComposer(): void {
         View::composer('layouts.app', function ($view): void {
             $entry = null;
             try {
@@ -219,8 +213,7 @@ class AppServiceProvider extends ServiceProvider
      * Stempeluhr-Widget im Header den Live-Timer und die Clock-in/out-
      * Buttons rendern kann.
      */
-    private function registerAttendanceViewComposer(): void
-    {
+    private function registerAttendanceViewComposer(): void {
         View::composer('layouts.app', function ($view): void {
             $current = null;
             try {
@@ -236,8 +229,7 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 
-    private function registerDateRangeViewComposer(): void
-    {
+    private function registerDateRangeViewComposer(): void {
         View::composer(['layouts.app', 'components.header-date-range'], function ($view): void {
             try {
                 $range = app(DateRangeContext::class)->current();
@@ -263,8 +255,7 @@ class AppServiceProvider extends ServiceProvider
      * resolven und können ohne Type-Hint auf `appName()`, `logoUrl()`
      * etc. zugreifen.
      */
-    private function registerBrandingViewComposer(): void
-    {
+    private function registerBrandingViewComposer(): void {
         View::composer(['layouts.*', 'auth.*', 'pdf.*'], function ($view): void {
             try {
                 $branding = app(BrandingService::class);

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,32 +14,26 @@ use App\Models\Material;
 use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
 
-class MaterialPolicy
-{
+class MaterialPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool
-    {
+    public function viewAny(User $user): bool {
         return true;
     }
 
-    public function view(User $user, Material $material): bool
-    {
+    public function view(User $user, Material $material): bool {
         return true;
     }
 
-    public function create(User $user): bool
-    {
+    public function create(User $user): bool {
         return false;
     }
 
-    public function update(User $user, Material $material): bool
-    {
+    public function update(User $user, Material $material): bool {
         return false;
     }
 
-    public function delete(User $user, Material $material): bool
-    {
+    public function delete(User $user, Material $material): bool {
         return false;
     }
 }

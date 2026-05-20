@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,16 +20,14 @@ use Illuminate\Console\Command;
  * missing coordinates. Rate-limiting is enforced by the geocoder
  * itself, so this command can be re-run safely after failures.
  */
-class GeocodeCustomersCommand extends Command
-{
+class GeocodeCustomersCommand extends Command {
     protected $signature = 'geocode:customers
         {--force : also re-geocode customers that already have coordinates}
         {--limit=0 : process at most N customers (0 = unlimited)}';
 
     protected $description = 'Backfill latitude/longitude for customer addresses via Nominatim.';
 
-    public function handle(NominatimGeocoder $geocoder): int
-    {
+    public function handle(NominatimGeocoder $geocoder): int {
         $force = (bool) $this->option('force');
         $limit = (int) $this->option('limit');
 
@@ -93,13 +90,12 @@ class GeocodeCustomersCommand extends Command
         return self::SUCCESS;
     }
 
-    private function buildAddress(Customer $customer): string
-    {
+    private function buildAddress(Customer $customer): string {
         $parts = array_filter([
             $customer->address_street,
-            trim(($customer->address_zip ?? '').' '.($customer->address_city ?? '')),
+            trim(($customer->address_zip ?? '') . ' ' . ($customer->address_city ?? '')),
             $customer->country,
-        ], static fn (?string $value): bool => $value !== null && trim($value) !== '');
+        ], static fn(?string $value): bool => $value !== null && trim($value) !== '');
 
         return trim(implode(', ', $parts));
     }

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -33,12 +32,10 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Pattern angelehnt an Kimai's UserMonthController (AGPL-3.0) — eigene
  * Implementierung.
  */
-class MyMonthReportController extends Controller
-{
+class MyMonthReportController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request): View|SymfonyResponse
-    {
+    public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         $globalRange = $this->globalDateRange();
         $year = (int) $globalRange['from']->year;
@@ -101,8 +98,7 @@ class MyMonthReportController extends Controller
     /**
      * @param  \Illuminate\Database\Eloquent\Collection<int, TimeEntry>  $entries
      */
-    private function exportCsv(\Illuminate\Database\Eloquent\Collection $entries, int $year, int $month): Response
-    {
+    private function exportCsv(\Illuminate\Database\Eloquent\Collection $entries, int $year, int $month): Response {
         $filename = sprintf('mein-monat-%04d-%02d.csv', $year, $month);
         $rows = [
             ['Datum', 'Start', 'Ende', 'Art', 'Kunde', 'Projekt', 'Aufgabe', 'Beschreibung', 'Minuten', 'Erloes'],
@@ -134,24 +130,23 @@ class MyMonthReportController extends Controller
             $csv .= implode(';', array_map(static function ($v): string {
                 $s = (string) $v;
                 if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"'.str_replace('"', '""', $s).'"';
+                    $s = '"' . str_replace('"', '""', $s) . '"';
                 }
 
                 return $s;
-            }, $row))."\r\n";
+            }, $row)) . "\r\n";
         }
 
-        return response("\xEF\xBB\xBF".$csv, 200, [
+        return response("\xEF\xBB\xBF" . $csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 
     /**
      * @param  array<string, array{entries: Collection<int, TimeEntry>, minutes: int, rate: float}>  $byDay
      */
-    private function exportPdf(array $byDay, string $monthLabel, int $monthMinutes, float $monthRate, int $year, int $month): SymfonyResponse
-    {
+    private function exportPdf(array $byDay, string $monthLabel, int $monthMinutes, float $monthRate, int $year, int $month): SymfonyResponse {
         $filename = sprintf('mein-monat-%04d-%02d.pdf', $year, $month);
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = Pdf::loadView('reports.pdf.my-month', [

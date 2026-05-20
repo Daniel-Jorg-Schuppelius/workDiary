@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,16 +16,13 @@ use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveProjectRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class SaveProjectRequest extends FormRequest {
+    public function authorize(): bool {
         return true;
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         /** @var Project|null $project */
         $project = $this->route('project');
 
@@ -40,7 +36,7 @@ class SaveProjectRequest extends FormRequest
                 'max:120',
                 Rule::unique('projects', 'name')
                     ->ignore($project?->id)
-                    ->where(fn ($query) => $query->where('customer_id', $customerId)),
+                    ->where(fn($query) => $query->where('customer_id', $customerId)),
             ],
             'description' => ['nullable', 'string', 'max:2000'],
             'color' => ['nullable', 'string', 'max:16'],

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,20 +14,17 @@ use App\Models\Organization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class OrganizationSettingsTest extends TestCase
-{
+class OrganizationSettingsTest extends TestCase {
     use RefreshDatabase;
 
-    public function test_setting_helper_falls_back_to_config_when_no_org_bound(): void
-    {
+    public function test_setting_helper_falls_back_to_config_when_no_org_bound(): void {
         $this->assertSame(
             (int) config('pagination.timesheets'),
             (int) setting('pagination.timesheets', 0),
         );
     }
 
-    public function test_setting_helper_prefers_org_override_when_bound(): void
-    {
+    public function test_setting_helper_prefers_org_override_when_bound(): void {
         $org = Organization::factory()->create([
             'settings' => [
                 'pagination' => ['timesheets' => 7],
@@ -47,8 +43,7 @@ class OrganizationSettingsTest extends TestCase
         );
     }
 
-    public function test_group_settings_merges_overrides_on_config_defaults(): void
-    {
+    public function test_group_settings_merges_overrides_on_config_defaults(): void {
         $org = Organization::factory()->create([
             'settings' => [
                 'pagination' => ['tags' => 99],
@@ -65,8 +60,7 @@ class OrganizationSettingsTest extends TestCase
         );
     }
 
-    public function test_setting_returns_default_for_unknown_key(): void
-    {
+    public function test_setting_returns_default_for_unknown_key(): void {
         $this->assertSame('fallback', setting('non_existent.key', 'fallback'));
     }
 }

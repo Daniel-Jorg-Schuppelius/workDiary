@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -28,12 +27,10 @@ use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-class SickLeaveController extends Controller
-{
+class SickLeaveController extends Controller {
     // ── Create / Store ──────────────────────────────────────────────────────
 
-    public function create(Request $request): View
-    {
+    public function create(Request $request): View {
         /** @var User $auth */
         $auth = Auth::user();
         Gate::authorize('create', SickLeave::class);
@@ -50,8 +47,7 @@ class SickLeaveController extends Controller
         ]);
     }
 
-    public function store(SaveSickLeaveRequest $request): RedirectResponse
-    {
+    public function store(SaveSickLeaveRequest $request): RedirectResponse {
         /** @var User $auth */
         $auth = Auth::user();
         Gate::authorize('create', SickLeave::class);
@@ -78,8 +74,7 @@ class SickLeaveController extends Controller
 
     // ── Edit / Update ───────────────────────────────────────────────────────
 
-    public function edit(SickLeave $sickLeave): View
-    {
+    public function edit(SickLeave $sickLeave): View {
         /** @var User $auth */
         $auth = Auth::user();
         Gate::authorize('update', $sickLeave);
@@ -96,8 +91,7 @@ class SickLeaveController extends Controller
         ]);
     }
 
-    public function update(SaveSickLeaveRequest $request, SickLeave $sickLeave): RedirectResponse
-    {
+    public function update(SaveSickLeaveRequest $request, SickLeave $sickLeave): RedirectResponse {
         Gate::authorize('update', $sickLeave);
 
         $data = $request->validated();
@@ -127,8 +121,7 @@ class SickLeaveController extends Controller
 
     // ── Delete ──────────────────────────────────────────────────────────────
 
-    public function destroy(SickLeave $sickLeave): RedirectResponse
-    {
+    public function destroy(SickLeave $sickLeave): RedirectResponse {
         Gate::authorize('delete', $sickLeave);
 
         foreach ($sickLeave->attachments as $att) {
@@ -143,8 +136,7 @@ class SickLeaveController extends Controller
 
     // ── Cancel ──────────────────────────────────────────────────────────────
 
-    public function cancel(Request $request, SickLeave $sickLeave): RedirectResponse
-    {
+    public function cancel(Request $request, SickLeave $sickLeave): RedirectResponse {
         Gate::authorize('cancel', $sickLeave);
 
         $data = $request->validate([
@@ -162,8 +154,7 @@ class SickLeaveController extends Controller
 
     // ── Attachment Download (signiert) ──────────────────────────────────────
 
-    public function downloadAttachment(Request $request, SickLeave $sickLeave, Attachment $attachment): BinaryFileResponse
-    {
+    public function downloadAttachment(Request $request, SickLeave $sickLeave, Attachment $attachment): BinaryFileResponse {
         if (! $request->hasValidSignature()) {
             abort(403);
         }
@@ -178,8 +169,7 @@ class SickLeaveController extends Controller
         return response()->download($disk->path($attachment->path), $attachment->original_name);
     }
 
-    public static function attachmentDownloadUrl(SickLeave $sickLeave, Attachment $attachment): string
-    {
+    public static function attachmentDownloadUrl(SickLeave $sickLeave, Attachment $attachment): string {
         return URL::temporarySignedRoute(
             'sick-leaves.attachments.download',
             now()->addMinutes(15),
@@ -189,8 +179,7 @@ class SickLeaveController extends Controller
 
     // ── Helpers ─────────────────────────────────────────────────────────────
 
-    private function handleUpload(SaveSickLeaveRequest $request, SickLeave $sickLeave): void
-    {
+    private function handleUpload(SaveSickLeaveRequest $request, SickLeave $sickLeave): void {
         $file = $request->file('au_file');
         if (! $file instanceof UploadedFile) {
             return;
@@ -198,9 +187,9 @@ class SickLeaveController extends Controller
 
         $disk = (string) config('sickness.attachments.disk', 'local');
         $base = trim((string) config('sickness.attachments.path', 'sick-notes'), '/');
-        $folder = $base.'/'.$sickLeave->user_id.'/'.$sickLeave->id;
+        $folder = $base . '/' . $sickLeave->user_id . '/' . $sickLeave->id;
         $ext = strtolower($file->getClientOriginalExtension() ?: $file->extension());
-        $filename = Str::uuid()->toString().'.'.$ext;
+        $filename = Str::uuid()->toString() . '.' . $ext;
         $path = $file->storeAs($folder, $filename, $disk);
 
         $sickLeave->attachments()->create([
@@ -213,8 +202,7 @@ class SickLeaveController extends Controller
         ]);
     }
 
-    private function sanitizeFilename(string $name): string
-    {
+    private function sanitizeFilename(string $name): string {
         $name = basename($name);
         $name = preg_replace('/[\x00-\x1F\x7F\/\\\\]/', '_', $name) ?? 'datei';
 
@@ -228,8 +216,7 @@ class SickLeaveController extends Controller
      *
      * @return Collection<int, SickLeave>
      */
-    private function previousLeavesFor(User $auth, ?int $userId, ?SickLeave $exclude = null)
-    {
+    private function previousLeavesFor(User $auth, ?int $userId, ?SickLeave $exclude = null) {
         $query = SickLeave::query()
             ->whereNull('cancelled_at')
             ->orderByDesc('end_date')

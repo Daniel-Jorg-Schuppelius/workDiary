@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,10 +12,8 @@ namespace App\Policies\Concerns;
 
 use App\Models\User;
 
-trait ChecksOwnership
-{
-    protected function owns(User $user, mixed $resource, string $column = 'user_id'): bool
-    {
+trait ChecksOwnership {
+    protected function owns(User $user, mixed $resource, string $column = 'user_id'): bool {
         return (int) $user->id === (int) data_get($resource, $column);
     }
 }

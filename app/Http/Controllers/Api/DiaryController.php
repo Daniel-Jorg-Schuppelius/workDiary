@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,10 +21,8 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
-class DiaryController extends Controller
-{
-    public function index(Request $request): AnonymousResourceCollection
-    {
+class DiaryController extends Controller {
+    public function index(Request $request): AnonymousResourceCollection {
         $q = DiaryEntry::query()->with(['user:id,name', 'tags']);
 
         if ($request->filled('status') && $request->status !== 'all') {
@@ -49,15 +46,13 @@ class DiaryController extends Controller
         return DiaryEntryResource::collection($q->orderByDesc('start_at')->paginate($perPage));
     }
 
-    public function show(DiaryEntry $diary): DiaryEntryResource
-    {
+    public function show(DiaryEntry $diary): DiaryEntryResource {
         $diary->load(['user:id,name', 'tags', 'comments.user:id,name', 'attachments.uploader:id,name']);
 
         return new DiaryEntryResource($diary);
     }
 
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request): JsonResponse {
         $data = $this->validateData($request);
         /** @var User $user */
         $user = Auth::user();
@@ -70,8 +65,7 @@ class DiaryController extends Controller
         return (new DiaryEntryResource($entry->fresh(['user', 'tags']) ?? $entry))->response()->setStatusCode(201);
     }
 
-    public function update(Request $request, DiaryEntry $diary): DiaryEntryResource
-    {
+    public function update(Request $request, DiaryEntry $diary): DiaryEntryResource {
         Gate::authorize('update', $diary);
         $data = $this->validateData($request);
         $diary->update($data);
@@ -82,24 +76,21 @@ class DiaryController extends Controller
         return new DiaryEntryResource($diary->fresh(['user', 'tags']) ?? $diary);
     }
 
-    public function destroy(DiaryEntry $diary): JsonResponse
-    {
+    public function destroy(DiaryEntry $diary): JsonResponse {
         Gate::authorize('delete', $diary);
         $diary->delete();
 
         return response()->json(['status' => 'deleted']);
     }
 
-    public function archive(DiaryEntry $diary, ArchiveService $service): DiaryEntryResource
-    {
+    public function archive(DiaryEntry $diary, ArchiveService $service): DiaryEntryResource {
         Gate::authorize('archive', $diary);
         $service->archiveEntry($diary);
 
         return new DiaryEntryResource($diary->fresh(['user', 'tags']) ?? $diary);
     }
 
-    public function restore(DiaryEntry $diary, ArchiveService $service): DiaryEntryResource
-    {
+    public function restore(DiaryEntry $diary, ArchiveService $service): DiaryEntryResource {
         Gate::authorize('archive', $diary);
         $service->restoreEntry($diary);
 
@@ -107,8 +98,7 @@ class DiaryController extends Controller
     }
 
     /** @return array<string, mixed> */
-    private function validateData(Request $request): array
-    {
+    private function validateData(Request $request): array {
         return $request->validate([
             'content' => ['required', 'string', 'max:65535'],
             'response' => ['nullable', 'string', 'max:65535'],

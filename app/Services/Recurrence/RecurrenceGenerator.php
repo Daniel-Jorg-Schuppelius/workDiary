@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 19 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,6 +16,9 @@ use App\Enums\Recurrence\RecurrenceFrequency;
 use App\Models\DiaryEntry;
 use App\Models\RecurrenceRule;
 use Carbon\CarbonImmutable;
+use Carbon\Constants\UnitValue;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -42,7 +44,8 @@ class RecurrenceGenerator {
         RecurrenceRule::query()
             ->where('is_active', true)
             ->orderBy('id')
-            ->chunkById(100, function ($rules) use ($now, $lookahead, &$created): void {
+            ->chunkById(100, function (Collection $rules) use ($now, $lookahead, &$created): void {
+                /** @var RecurrenceRule $rule */
                 foreach ($rules as $rule) {
                     $created += $this->generateForRule($rule, $now, $lookahead);
                 }
@@ -127,7 +130,7 @@ class RecurrenceGenerator {
 
             case RecurrenceFrequency::Weekly:
                 $weekdays = $this->weekdayBitmap($rule);
-                $cursor = CarbonImmutable::parse($rule->starts_on)->startOfWeek(CarbonImmutable::MONDAY);
+                $cursor = CarbonImmutable::parse($rule->starts_on)->startOfWeek(UnitValue::MONDAY);
                 while ($cursor->lessThanOrEqualTo($end)) {
                     for ($d = 0; $d < 7; $d++) {
                         $day = $cursor->addDays($d);
@@ -227,7 +230,7 @@ class RecurrenceGenerator {
             ));
         }
 
-        $entry = new DiaryEntry();
+        $entry = new DiaryEntry;
         $entry->organization_id = $rule->organization_id;
         $entry->entry_type_id = $rule->entry_type_id;
         $entry->user_id = $userId;
@@ -240,7 +243,7 @@ class RecurrenceGenerator {
         $entry->priority = $rule->default_priority;
         $entry->service_minutes = $rule->default_service_minutes;
         $entry->mode = Mode::Recurring;
-        $entry->due_date = $date->toDateString();
+        $entry->due_date = Carbon::instance($date->toDateTime());
         $entry->location_mode = $rule->default_location_mode;
         $entry->recurrence_rule_id = $rule->id;
         $entry->is_archived = false;

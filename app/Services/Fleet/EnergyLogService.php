@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,11 +18,9 @@ use Illuminate\Support\Facades\DB;
  * `distance_since_last` from the previous odometer reading of the same
  * vehicle. All callers must pre-resolve `vehicle_id` and `user_id`.
  */
-class EnergyLogService
-{
+class EnergyLogService {
     /** @param array<string, mixed> $attributes */
-    public function create(array $attributes): EnergyLog
-    {
+    public function create(array $attributes): EnergyLog {
         return DB::transaction(function () use ($attributes): EnergyLog {
             $log = EnergyLog::create($attributes);
             $this->recomputeDistance($log);
@@ -33,8 +30,7 @@ class EnergyLogService
     }
 
     /** @param array<string, mixed> $attributes */
-    public function update(EnergyLog $log, array $attributes): EnergyLog
-    {
+    public function update(EnergyLog $log, array $attributes): EnergyLog {
         return DB::transaction(function () use ($log, $attributes): EnergyLog {
             $log->fill($attributes);
             $log->save();
@@ -44,15 +40,13 @@ class EnergyLogService
         });
     }
 
-    public function delete(EnergyLog $log): void
-    {
+    public function delete(EnergyLog $log): void {
         DB::transaction(function () use ($log): void {
             $log->delete();
         });
     }
 
-    private function recomputeDistance(EnergyLog $log): void
-    {
+    private function recomputeDistance(EnergyLog $log): void {
         if ($log->odometer_km === null) {
             if ($log->distance_since_last !== null) {
                 $log->forceFill(['distance_since_last' => null])->saveQuietly();

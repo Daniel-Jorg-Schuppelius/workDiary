@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 19 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,41 +10,38 @@
 
 namespace Tests\Feature;
 
-use App\Models\DiaryEntry;
 use App\Enums\Diary\LocationMode;
+use App\Enums\Project\ProjectStatus;
+use App\Enums\Recurrence\RecurrenceFrequency;
+use App\Models\DiaryEntry;
 use App\Models\Project;
 use App\Models\RecurrenceRule;
 use App\Models\User;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use App\Enums\Project\ProjectStatus;
-use App\Enums\Recurrence\RecurrenceFrequency;
 
-class ProjectRecurrenceRuleTest extends TestCase
-{
+class ProjectRecurrenceRuleTest extends TestCase {
     use RefreshDatabase;
 
     private User $owner;
 
     private Project $project;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
 
         $this->owner = User::factory()->user()->create();
         $this->project = Project::create([
-            'name' => 'Wartung '.uniqid('', true),
+            'name' => 'Wartung ' . uniqid('', true),
             'status' => ProjectStatus::Active->value,
             'is_maintenance' => true,
             'created_by' => $this->owner->id,
         ]);
     }
 
-    public function test_owner_can_store_recurrence_rule(): void
-    {
+    public function test_owner_can_store_recurrence_rule(): void {
         $this->actingAs($this->owner)
             ->post(route('projects.recurrence-rules.store', $this->project), [
                 'name' => 'DATEV monatlich',
@@ -68,8 +64,7 @@ class ProjectRecurrenceRuleTest extends TestCase
         ]);
     }
 
-    public function test_owner_can_update_recurrence_rule(): void
-    {
+    public function test_owner_can_update_recurrence_rule(): void {
         $rule = $this->makeRule();
 
         $this->actingAs($this->owner)
@@ -90,8 +85,7 @@ class ProjectRecurrenceRuleTest extends TestCase
         $this->assertSame('TU', $rule->byweekday);
     }
 
-    public function test_owner_can_delete_recurrence_rule(): void
-    {
+    public function test_owner_can_delete_recurrence_rule(): void {
         $rule = $this->makeRule();
 
         $this->actingAs($this->owner)
@@ -101,8 +95,7 @@ class ProjectRecurrenceRuleTest extends TestCase
         $this->assertDatabaseMissing('recurrence_rules', ['id' => $rule->id]);
     }
 
-    public function test_run_generates_diary_entries(): void
-    {
+    public function test_run_generates_diary_entries(): void {
         $rule = $this->makeRule([
             'frequency' => RecurrenceFrequency::Weekly->value,
             'byweekday' => 'MO',
@@ -117,8 +110,7 @@ class ProjectRecurrenceRuleTest extends TestCase
         $this->assertGreaterThan(0, $count);
     }
 
-    public function test_foreign_user_cannot_modify_rule(): void
-    {
+    public function test_foreign_user_cannot_modify_rule(): void {
         $rule = $this->makeRule();
         $stranger = User::factory()->user()->create();
 
@@ -137,8 +129,7 @@ class ProjectRecurrenceRuleTest extends TestCase
     /**
      * @param  array<string, mixed>  $overrides
      */
-    private function makeRule(array $overrides = []): RecurrenceRule
-    {
+    private function makeRule(array $overrides = []): RecurrenceRule {
         return RecurrenceRule::create(array_merge([
             'project_id' => $this->project->id,
             'name' => 'Wöchentliche Routine',

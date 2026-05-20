@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,8 +10,8 @@
 
 namespace App\Models;
 
-use App\Legacy\Models\LegacyUser;
 use App\Enums\User\UserRole;
+use App\Legacy\Models\LegacyUser;
 use App\Legacy\Support\LegacyRoleResolver;
 use App\Models\Concerns\HasAttachments;
 use App\Services\Sickness\ContinuedPaymentService;
@@ -41,6 +40,11 @@ use Spatie\Permission\Traits\HasRoles;
  * @property int|null $legacy_user_id
  * @property bool $is_new_system
  * @property bool $must_change_password
+ * @property string|null $hourly_rate
+ * @property string|null $internal_rate
+ * @property string|null $home_address
+ * @property string|null $home_lat
+ * @property string|null $home_lng
  * @property array<string, mixed>|null $preferences
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at

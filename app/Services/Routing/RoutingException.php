@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,4 +12,5 @@ namespace App\Services\Routing;
 
 use RuntimeException;
 
-class RoutingException extends RuntimeException {}
+class RoutingException extends RuntimeException {
+}

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +10,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Project\ProjectStatus;
+use App\Enums\Timesheet\TimesheetStatus;
 use App\Models\Project;
 use App\Models\TimeEntry;
 use App\Models\Timesheet;
@@ -20,11 +21,8 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
-use App\Enums\Timesheet\TimesheetStatus;
-use App\Enums\Project\ProjectStatus;
 
-class TimeEntryEditWindowTest extends TestCase
-{
+class TimeEntryEditWindowTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
@@ -32,8 +30,7 @@ class TimeEntryEditWindowTest extends TestCase
 
     private Project $project;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -50,8 +47,7 @@ class TimeEntryEditWindowTest extends TestCase
         ]);
     }
 
-    private function makeEntry(string $date, array $overrides = []): TimeEntry
-    {
+    private function makeEntry(string $date, array $overrides = []): TimeEntry {
         return TimeEntry::create(array_merge([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
@@ -61,8 +57,7 @@ class TimeEntryEditWindowTest extends TestCase
         ], $overrides));
     }
 
-    public function test_owner_can_edit_within_default_window(): void
-    {
+    public function test_owner_can_edit_within_default_window(): void {
         $entry = $this->makeEntry(now()->subDays(3)->toDateString());
 
         $this->actingAs($this->user)
@@ -75,8 +70,7 @@ class TimeEntryEditWindowTest extends TestCase
         $this->assertSame(90, (int) $entry->fresh()->minutes);
     }
 
-    public function test_owner_cannot_edit_after_window(): void
-    {
+    public function test_owner_cannot_edit_after_window(): void {
         $entry = $this->makeEntry(now()->subDays(30)->toDateString());
 
         $this->actingAs($this->user)
@@ -89,8 +83,7 @@ class TimeEntryEditWindowTest extends TestCase
         $this->assertSame(60, (int) $entry->fresh()->minutes);
     }
 
-    public function test_admin_can_edit_outside_window(): void
-    {
+    public function test_admin_can_edit_outside_window(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $entry = $this->makeEntry(now()->subDays(60)->toDateString());
 
@@ -104,8 +97,7 @@ class TimeEntryEditWindowTest extends TestCase
         $this->assertSame(120, (int) $entry->fresh()->minutes);
     }
 
-    public function test_exported_entry_is_hard_locked_for_owner(): void
-    {
+    public function test_exported_entry_is_hard_locked_for_owner(): void {
         $entry = $this->makeEntry(now()->subDay()->toDateString(), ['exported' => true]);
 
         $policy = app(TimeEntryEditPolicy::class);
@@ -120,8 +112,7 @@ class TimeEntryEditWindowTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_signed_timesheet_locks_owner_edits(): void
-    {
+    public function test_signed_timesheet_locks_owner_edits(): void {
         $timesheet = Timesheet::create([
             'organization_id' => $this->organization->id,
             'user_id' => $this->user->id,
@@ -142,8 +133,7 @@ class TimeEntryEditWindowTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_comments_allowed_even_when_entry_is_locked(): void
-    {
+    public function test_comments_allowed_even_when_entry_is_locked(): void {
         $entry = $this->makeEntry(now()->subDays(60)->toDateString(), ['exported' => true]);
 
         $this->actingAs($this->user)
@@ -158,8 +148,7 @@ class TimeEntryEditWindowTest extends TestCase
         ]);
     }
 
-    public function test_setting_overrides_window_days(): void
-    {
+    public function test_setting_overrides_window_days(): void {
         config()->set('timesheet.edit_window.days', 0);
 
         $entry = $this->makeEntry(now()->subDay()->toDateString());

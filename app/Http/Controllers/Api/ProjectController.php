@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,10 +20,8 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
-class ProjectController extends Controller
-{
-    public function index(Request $request): AnonymousResourceCollection
-    {
+class ProjectController extends Controller {
+    public function index(Request $request): AnonymousResourceCollection {
         Gate::authorize('viewAny', Project::class);
         $query = Project::query();
         if ($customerId = $request->integer('customer')) {
@@ -37,14 +34,13 @@ class ProjectController extends Controller
             $query->whereNull('archived_at');
         }
         if ($search = $request->string('search')->toString()) {
-            $query->where('name', 'like', '%'.$search.'%');
+            $query->where('name', 'like', '%' . $search . '%');
         }
 
         return ProjectResource::collection($query->orderBy('name')->paginate((int) $request->input('per_page', 25)));
     }
 
-    public function store(SaveProjectRequest $request): ProjectResource
-    {
+    public function store(SaveProjectRequest $request): ProjectResource {
         Gate::authorize('create', Project::class);
         $project = Project::create($request->validated() + [
             'created_by' => Auth::id(),
@@ -54,23 +50,20 @@ class ProjectController extends Controller
         return new ProjectResource($project);
     }
 
-    public function show(Project $project): ProjectResource
-    {
+    public function show(Project $project): ProjectResource {
         Gate::authorize('view', $project);
 
         return new ProjectResource($project);
     }
 
-    public function update(Project $project, SaveProjectRequest $request): ProjectResource
-    {
+    public function update(Project $project, SaveProjectRequest $request): ProjectResource {
         Gate::authorize('update', $project);
         $project->update($request->validated());
 
         return new ProjectResource($project->fresh() ?? $project);
     }
 
-    public function destroy(Project $project): Response
-    {
+    public function destroy(Project $project): Response {
         Gate::authorize('delete', $project);
         $project->delete();
 

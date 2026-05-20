@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,20 +21,17 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
-class MailNotificationsTest extends TestCase
-{
+class MailNotificationsTest extends TestCase {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         Config::set('app.mail_notifications_enabled', true);
         Mail::fake();
     }
 
-    public function test_comment_sends_mail_to_entry_owner(): void
-    {
+    public function test_comment_sends_mail_to_entry_owner(): void {
         $owner = User::factory()->user()->create(['email' => 'owner@example.test']);
         $other = User::factory()->user()->create(['email' => 'other@example.test']);
         $entry = DiaryEntry::factory()->for($owner)->create();
@@ -48,8 +44,7 @@ class MailNotificationsTest extends TestCase
         });
     }
 
-    public function test_status_change_to_problem_sends_mail_to_owner(): void
-    {
+    public function test_status_change_to_problem_sends_mail_to_owner(): void {
         $owner = User::factory()->user()->create(['email' => 'owner@example.test']);
         $changer = User::factory()->admin()->create();
         $entry = DiaryEntry::factory()->for($owner)->create(['status' => 2]);
@@ -62,8 +57,7 @@ class MailNotificationsTest extends TestCase
         });
     }
 
-    public function test_status_change_to_open_does_not_send_mail(): void
-    {
+    public function test_status_change_to_open_does_not_send_mail(): void {
         $owner = User::factory()->user()->create(['email' => 'owner@example.test']);
         $changer = User::factory()->admin()->create();
         $entry = DiaryEntry::factory()->for($owner)->create(['status' => 3]);
@@ -74,8 +68,7 @@ class MailNotificationsTest extends TestCase
         Mail::assertNotQueued(DiaryStatusChangedMail::class);
     }
 
-    public function test_disabled_flag_skips_mails(): void
-    {
+    public function test_disabled_flag_skips_mails(): void {
         Config::set('app.mail_notifications_enabled', false);
         $owner = User::factory()->user()->create();
         $other = User::factory()->user()->create();

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,16 +13,15 @@ namespace App\Services\Routing;
 /**
  * Lightweight (lat, lng) tuple used by the tour optimizer.
  */
-final class Coordinate
-{
+final class Coordinate {
     public function __construct(
         public readonly float $lat,
         public readonly float $lng,
-    ) {}
+    ) {
+    }
 
     /** @return array{0: float, 1: float} OSRM-style [lng, lat] tuple. */
-    public function toLngLat(): array
-    {
+    public function toLngLat(): array {
         return [$this->lng, $this->lat];
     }
 }

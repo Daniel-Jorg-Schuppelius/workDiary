@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,12 +18,10 @@ use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
-class NominatimGeocoderTest extends TestCase
-{
+class NominatimGeocoderTest extends TestCase {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         config()->set('routing.nominatim.base_url', 'http://nominatim.test');
         config()->set('routing.nominatim.user_agent', 'workDiary-tests');
@@ -33,13 +30,11 @@ class NominatimGeocoderTest extends TestCase
         config()->set('routing.cache.ttl_days', 30);
     }
 
-    private function geocoder(): NominatimGeocoder
-    {
+    private function geocoder(): NominatimGeocoder {
         return $this->app->make(NominatimGeocoder::class);
     }
 
-    public function test_resolves_and_caches_result(): void
-    {
+    public function test_resolves_and_caches_result(): void {
         Http::fake([
             'nominatim.test/*' => Http::response([
                 [
@@ -65,8 +60,7 @@ class NominatimGeocoderTest extends TestCase
         });
     }
 
-    public function test_second_lookup_is_served_from_cache(): void
-    {
+    public function test_second_lookup_is_served_from_cache(): void {
         GeocodeCache::query()->create([
             'query_hash' => GeocodeCache::hashFor('Hamburg'),
             'query' => 'Hamburg',
@@ -85,8 +79,7 @@ class NominatimGeocoderTest extends TestCase
         Http::assertNothingSent();
     }
 
-    public function test_returns_null_when_no_match(): void
-    {
+    public function test_returns_null_when_no_match(): void {
         Http::fake([
             'nominatim.test/*' => Http::response([], 200),
         ]);
@@ -95,8 +88,7 @@ class NominatimGeocoderTest extends TestCase
         $this->assertDatabaseCount('geocode_cache', 0);
     }
 
-    public function test_throws_when_provider_unavailable(): void
-    {
+    public function test_throws_when_provider_unavailable(): void {
         Http::fake([
             'nominatim.test/*' => Http::response('boom', 500),
         ]);

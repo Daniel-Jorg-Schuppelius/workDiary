@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Timesheet\TimesheetStatus;
 use App\Models\Project;
 use App\Models\Timesheet;
 use App\Services\Timesheet\Stopwatch;
@@ -20,21 +20,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Enums\Timesheet\TimesheetStatus;
 
-class StopwatchController extends Controller
-{
-    public function __construct(protected Stopwatch $stopwatch) {}
+class StopwatchController extends Controller {
+    public function __construct(protected Stopwatch $stopwatch) {
+    }
 
-    public function current(): View
-    {
+    public function current(): View {
         return view('stopwatch._panel', [
             'current' => $this->stopwatch->current($this->authUser()),
         ]);
     }
 
-    public function start(Request $request): RedirectResponse
-    {
+    public function start(Request $request): RedirectResponse {
         $data = $request->validate([
             'project_id' => ['required', 'integer', 'exists:projects,id'],
             'task_id' => ['nullable', 'integer', 'exists:tasks,id'],
@@ -64,8 +61,7 @@ class StopwatchController extends Controller
         return back()->with('success', __('Stoppuhr gestartet.'));
     }
 
-    public function stop(): RedirectResponse
-    {
+    public function stop(): RedirectResponse {
         $this->stopwatch->stop($this->authUser());
 
         return back()->with('success', __('Stoppuhr gestoppt.'));

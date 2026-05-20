@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -35,10 +34,8 @@ use Throwable;
  * damit StartSession innerhalb von $next ausgeführt wird und Exceptions hier
  * abgefangen werden, bevor sie an die globale Pipeline weitergegeben werden.
  */
-class HandleDatabaseUnavailable
-{
-    public function handle(Request $request, Closure $next): Response
-    {
+class HandleDatabaseUnavailable {
+    public function handle(Request $request, Closure $next): Response {
         $defaultConnection = DatabaseHealth::defaultConnection();
 
         // Fast-Path: Wenn die Default-Verbindung erst kürzlich versagt hat,
@@ -60,8 +57,7 @@ class HandleDatabaseUnavailable
         }
     }
 
-    private function isDatabaseUnavailable(Throwable $e): bool
-    {
+    private function isDatabaseUnavailable(Throwable $e): bool {
         $current = $e;
         while ($current !== null) {
             // QueryException erbt von PDOException, daher genügt diese Prüfung.
@@ -74,8 +70,7 @@ class HandleDatabaseUnavailable
         return false;
     }
 
-    private function markFromException(Throwable $e, string $defaultConnection): void
-    {
+    private function markFromException(Throwable $e, string $defaultConnection): void {
         // Bei QueryException kennt Laravel den exakten Verbindungsnamen,
         // sonst nehmen wir die Default-Connection an.
         $connection = $e instanceof QueryException && $e->connectionName !== ''
@@ -85,8 +80,7 @@ class HandleDatabaseUnavailable
         DatabaseHealth::safeMarkUnavailable($connection);
     }
 
-    private function renderUnavailable(Request $request, ?Throwable $e): Response
-    {
+    private function renderUnavailable(Request $request, ?Throwable $e): Response {
         $message = $e?->getMessage() ?? 'Database temporarily unavailable.';
 
         if ($request->expectsJson()) {

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -12,6 +11,8 @@
 namespace App\Models\Concerns;
 
 use App\Models\AuditLog;
+use App\Models\Organization;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Auth;
@@ -23,13 +24,11 @@ use Illuminate\Support\Facades\Request;
  * @method static void deleted(\Closure $callback)
  * @method mixed getKey()
  */
-trait Auditable
-{
+trait Auditable {
     /** @var array<int, string> Felder, die nie geloggt werden. */
     protected array $auditExclude = ['password', 'remember_token', 'updated_at'];
 
-    public static function bootAuditable(): void
-    {
+    public static function bootAuditable(): void {
         static::created(function (Model $model): void {
             assert($model instanceof self);
             $model->audit('created', $model->getAuditAttributes($model->getAttributes()));
@@ -41,7 +40,7 @@ trait Auditable
             if (empty($changes)) {
                 return;
             }
-            $original = collect($changes)->mapWithKeys(fn ($v, $k) => [$k => $model->getOriginal($k)])->all();
+            $original = collect($changes)->mapWithKeys(fn($v, $k) => [$k => $model->getOriginal($k)])->all();
             $model->audit('updated', [
                 'before' => $model->getAuditAttributes($original),
                 'after' => $model->getAuditAttributes($changes),
@@ -55,8 +54,7 @@ trait Auditable
     }
 
     /** @return MorphMany<AuditLog, Model> */
-    public function auditLogs(): MorphMany
-    {
+    public function auditLogs(): MorphMany {
         /** @var MorphMany<AuditLog, Model> $relation */
         $relation = $this->morphMany(AuditLog::class, 'auditable');
 
@@ -64,8 +62,7 @@ trait Auditable
     }
 
     /** @param array<string, mixed> $changes */
-    public function audit(string $event, array $changes = []): AuditLog
-    {
+    public function audit(string $event, array $changes = []): AuditLog {
         return AuditLog::create([
             'user_id' => Auth::id(),
             'organization_id' => $this->resolveAuditOrganizationId($event),
@@ -85,9 +82,8 @@ trait Auditable
      * sonst organization_id des Modells; sonst aktive Org aus dem Container;
      * sonst Org des eingeloggten Users.
      */
-    protected function resolveAuditOrganizationId(string $event = ''): ?int
-    {
-        if ($this instanceof \App\Models\Organization) {
+    protected function resolveAuditOrganizationId(string $event = ''): ?int {
+        if ($this instanceof Organization) {
             // Bei `deleted` ist die Org-Zeile bereits weg; ein FK-Insert
             // mit dieser ID würde eine PDOException (FK-Constraint) werfen
             // und den globalen Exception-Handler die DB als "unavailable"
@@ -95,6 +91,7 @@ trait Auditable
             if ($event === 'deleted') {
                 return null;
             }
+
             return (int) $this->getKey();
         }
 
@@ -105,13 +102,13 @@ trait Auditable
 
         if (app()->bound('currentOrganization')) {
             $org = app('currentOrganization');
-            if ($org instanceof \App\Models\Organization) {
+            if ($org instanceof Organization) {
                 return (int) $org->id;
             }
         }
 
         $authUser = Auth::user();
-        if ($authUser instanceof \App\Models\User && ! empty($authUser->organization_id)) {
+        if ($authUser instanceof User && ! empty($authUser->organization_id)) {
             return (int) $authUser->organization_id;
         }
 
@@ -122,8 +119,7 @@ trait Auditable
      * @param  array<string, mixed>  $attributes
      * @return array<string, mixed>
      */
-    public function getAuditAttributes(array $attributes): array
-    {
+    public function getAuditAttributes(array $attributes): array {
         $excluded = array_merge($this->auditExclude, $this->getHidden());
 
         return collect($attributes)

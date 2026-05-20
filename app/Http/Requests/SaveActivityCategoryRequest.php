@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,16 +14,13 @@ use App\Enums\Activity\ActivityCategoryType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveActivityCategoryRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class SaveActivityCategoryRequest extends FormRequest {
+    public function authorize(): bool {
         return true;
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         return [
             'key' => ['required', 'string', 'max:64', 'regex:/^[a-z0-9_\-]+$/'],
             'label' => ['required', 'string', 'max:120'],
@@ -40,8 +36,7 @@ class SaveActivityCategoryRequest extends FormRequest
     }
 
     /** @return array<string, mixed> */
-    public function validated($key = null, $default = null): array
-    {
+    public function validated($key = null, $default = null): array {
         $data = parent::validated($key, $default);
         $data['billable_default'] = (bool) ($data['billable_default'] ?? false);
         $data['counts_as_work'] = (bool) ($data['counts_as_work'] ?? true);

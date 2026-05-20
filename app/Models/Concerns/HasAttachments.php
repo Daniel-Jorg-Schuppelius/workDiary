@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,11 +13,9 @@ namespace App\Models\Concerns;
 use App\Models\Attachment;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-trait HasAttachments
-{
+trait HasAttachments {
     /** @return MorphMany<Attachment, static> */
-    public function attachments(): MorphMany
-    {
+    public function attachments(): MorphMany {
         /** @var MorphMany<Attachment, static> $relation */
         $relation = $this->morphMany(Attachment::class, 'attachable')->latest();
 
@@ -30,8 +27,7 @@ trait HasAttachments
      * z. B. 'logo', 'logo_dark', 'avatar'. Bei mehreren vorhandenen
      * Einträgen wird der zuletzt erstellte zurückgegeben.
      */
-    public function attachmentByMeta(string $metaType): ?Attachment
-    {
+    public function attachmentByMeta(string $metaType): ?Attachment {
         /** @var Attachment|null $found */
         $found = $this->attachments()
             ->where('meta_type', $metaType)

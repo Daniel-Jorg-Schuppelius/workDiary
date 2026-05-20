@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,13 +14,11 @@ use App\Support\WeekDay;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 
-class LegacyWeekCalendarService
-{
+class LegacyWeekCalendarService {
     /**
      * @return array{monday: Carbon, sunday: Carbon, weekOffset: int, selectedWeek: string}
      */
-    public function resolveWindow(int $weekOffset, string $weekDate): array
-    {
+    public function resolveWindow(int $weekOffset, string $weekDate): array {
         $baseMonday = Carbon::now()->startOfWeek(WeekDay::MONDAY);
         $monday = $baseMonday->copy()->addWeeks($weekOffset);
 
@@ -46,8 +43,7 @@ class LegacyWeekCalendarService
      * @param  iterable<object>  $notdiensts
      * @return array{entriesByUserDay: array<int, array<string, array<int, object>>>, oncallByUserDay: array<int, array<string, bool>>, notdienstByUserDay: array<int, array<string, bool>>}
      */
-    public function buildWeekMaps(iterable $entries, iterable $oncalls, iterable $notdiensts): array
-    {
+    public function buildWeekMaps(iterable $entries, iterable $oncalls, iterable $notdiensts): array {
         $entriesByUserDay = [];
         foreach ($entries as $entry) {
             $this->fillEntriesByDay($entriesByUserDay, $entry);
@@ -73,8 +69,7 @@ class LegacyWeekCalendarService
     /**
      * @param  array<int, array<string, array<int, object>>>  $bucket
      */
-    private function fillEntriesByDay(array &$bucket, object $entry): void
-    {
+    private function fillEntriesByDay(array &$bucket, object $entry): void {
         $start = $this->normalizeDate(data_get($entry, 'von'));
         $end = $this->normalizeDate(data_get($entry, 'bis'));
         if (! $start || ! $end) {
@@ -94,8 +89,7 @@ class LegacyWeekCalendarService
     /**
      * @param  array<int, array<string, bool>>  $bucket
      */
-    private function fillFlagsByDay(array &$bucket, object $item): void
-    {
+    private function fillFlagsByDay(array &$bucket, object $item): void {
         $start = $this->normalizeDate(data_get($item, 'von'));
         $end = $this->normalizeDate(data_get($item, 'bis'));
         if (! $start || ! $end) {
@@ -112,8 +106,7 @@ class LegacyWeekCalendarService
         }
     }
 
-    private function normalizeDate(mixed $value): ?Carbon
-    {
+    private function normalizeDate(mixed $value): ?Carbon {
         if ($value instanceof Carbon) {
             return $value;
         }

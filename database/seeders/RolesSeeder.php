@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,16 +10,13 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Enums\User\UserRole;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
-class RolesSeeder extends Seeder
-{
-    public function run(): void
-    {
+class RolesSeeder extends Seeder {
+    public function run(): void {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         foreach ([UserRole::Admin->value, UserRole::User->value, UserRole::Callcenter->value, UserRole::Buchhaltung->value] as $role) {

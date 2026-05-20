@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,24 +20,21 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
-class CustomerController extends Controller
-{
-    public function index(Request $request): AnonymousResourceCollection
-    {
+class CustomerController extends Controller {
+    public function index(Request $request): AnonymousResourceCollection {
         Gate::authorize('viewAny', Customer::class);
         $query = Customer::query();
         if ($request->boolean('archived') === false) {
             $query->whereNull('archived_at');
         }
         if ($search = $request->string('search')->toString()) {
-            $query->where('name', 'like', '%'.$search.'%');
+            $query->where('name', 'like', '%' . $search . '%');
         }
 
         return CustomerResource::collection($query->orderBy('name')->paginate((int) $request->input('per_page', 25)));
     }
 
-    public function store(SaveCustomerRequest $request): CustomerResource
-    {
+    public function store(SaveCustomerRequest $request): CustomerResource {
         Gate::authorize('create', Customer::class);
         $data = $request->validated();
         $customer = Customer::create($data + [
@@ -49,23 +45,20 @@ class CustomerController extends Controller
         return new CustomerResource($customer);
     }
 
-    public function show(Customer $customer): CustomerResource
-    {
+    public function show(Customer $customer): CustomerResource {
         Gate::authorize('view', $customer);
 
         return new CustomerResource($customer);
     }
 
-    public function update(Customer $customer, SaveCustomerRequest $request): CustomerResource
-    {
+    public function update(Customer $customer, SaveCustomerRequest $request): CustomerResource {
         Gate::authorize('update', $customer);
         $customer->update($request->validated());
 
         return new CustomerResource($customer->fresh() ?? $customer);
     }
 
-    public function destroy(Customer $customer): Response
-    {
+    public function destroy(Customer $customer): Response {
         Gate::authorize('delete', $customer);
         $customer->delete();
 

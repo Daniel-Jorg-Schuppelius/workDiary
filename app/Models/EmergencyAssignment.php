@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -25,11 +24,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
+ * @property int $id
+ * @property int $organization_id
+ * @property int|null $legacy_id
+ * @property int $user_id
+ * @property int|null $on_call_shift_id
  * @property Carbon $start_at
  * @property Carbon $end_at
+ * @property string|null $reason
+ * @property bool $is_archived
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
-class EmergencyAssignment extends Model implements HasTimeWindow
-{
+class EmergencyAssignment extends Model implements HasTimeWindow {
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
@@ -58,20 +65,17 @@ class EmergencyAssignment extends Model implements HasTimeWindow
     ];
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo
-    {
+    public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
     /** @return BelongsTo<OnCallShift, $this> */
-    public function shift(): BelongsTo
-    {
+    public function shift(): BelongsTo {
         return $this->belongsTo(OnCallShift::class, 'on_call_shift_id');
     }
 
     /** @return HasMany<DiaryEntry, $this> */
-    public function diaryEntries(): HasMany
-    {
+    public function diaryEntries(): HasMany {
         return $this->hasMany(DiaryEntry::class);
     }
 
@@ -79,18 +83,15 @@ class EmergencyAssignment extends Model implements HasTimeWindow
      * @param  Builder<EmergencyAssignment>  $query
      * @return Builder<EmergencyAssignment>
      */
-    public function scopeOverlapping(Builder $query, \DateTimeInterface $start, \DateTimeInterface $end): Builder
-    {
+    public function scopeOverlapping(Builder $query, \DateTimeInterface $start, \DateTimeInterface $end): Builder {
         return $query->where('start_at', '<', $end)->where('end_at', '>', $start);
     }
 
-    public function getStartAt(): ?Carbon
-    {
+    public function getStartAt(): ?Carbon {
         return $this->start_at;
     }
 
-    public function getEndAt(): ?Carbon
-    {
+    public function getEndAt(): ?Carbon {
         return $this->end_at;
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -27,8 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $amount
  * @property int $position
  */
-class InvoiceItem extends Model
-{
+class InvoiceItem extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
@@ -50,22 +48,19 @@ class InvoiceItem extends Model
         'amount' => 'decimal:2',
     ];
 
-    protected static function booted(): void
-    {
+    protected static function booted(): void {
         static::saving(function (InvoiceItem $i): void {
             $i->amount = (string) round(((float) $i->quantity) * ((float) $i->unit_price), 2);
         });
     }
 
     /** @return BelongsTo<Invoice, $this> */
-    public function invoice(): BelongsTo
-    {
+    public function invoice(): BelongsTo {
         return $this->belongsTo(Invoice::class);
     }
 
     /** @return BelongsTo<TimeEntry, $this> */
-    public function timeEntry(): BelongsTo
-    {
+    public function timeEntry(): BelongsTo {
         return $this->belongsTo(TimeEntry::class);
     }
 }

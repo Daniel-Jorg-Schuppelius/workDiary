@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 19 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,12 +17,10 @@ use App\Support\DatabaseHealth;
  * Existiert aus Lesbarkeitsgründen — Aufrufer können `LegacyConnectivity::isAvailable()`
  * lesen, ohne sich den Connection-Namen merken zu müssen.
  */
-final class LegacyConnectivity
-{
+final class LegacyConnectivity {
     private const CONNECTION = 'legacy';
 
-    public static function isAvailable(): bool
-    {
+    public static function isAvailable(): bool {
         if (! filled(config('database.connections.legacy.database'))) {
             return false;
         }
@@ -31,8 +28,7 @@ final class LegacyConnectivity
         return DatabaseHealth::isAvailable(self::CONNECTION);
     }
 
-    public static function markUnavailable(): void
-    {
+    public static function markUnavailable(): void {
         DatabaseHealth::markUnavailable(self::CONNECTION);
     }
 
@@ -43,8 +39,7 @@ final class LegacyConnectivity
      * @param  T  $default
      * @return T
      */
-    public static function attempt(callable $work, mixed $default): mixed
-    {
+    public static function attempt(callable $work, mixed $default): mixed {
         if (! filled(config('database.connections.legacy.database'))) {
             return $default;
         }
@@ -52,8 +47,7 @@ final class LegacyConnectivity
         return DatabaseHealth::attempt(self::CONNECTION, $work, $default);
     }
 
-    public static function reset(): void
-    {
+    public static function reset(): void {
         DatabaseHealth::reset(self::CONNECTION);
     }
 }

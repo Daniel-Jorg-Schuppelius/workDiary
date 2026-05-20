@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +10,7 @@
 
 namespace App\Services\Timesheet;
 
+use App\Enums\Timesheet\TimesheetStatus;
 use App\Mail\TimesheetSignedMail;
 use App\Models\Attachment;
 use App\Models\Timesheet;
@@ -21,10 +21,8 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
-use App\Enums\Timesheet\TimesheetStatus;
 
-class SignatureService
-{
+class SignatureService {
     public const MAX_BYTES = 1_000_000; // 1 MB für Canvas-PNG
 
     /**
@@ -32,8 +30,7 @@ class SignatureService
      *
      * @param  array{customer_name?: string, customer_role?: string|null, customer_email?: string|null}  $customer
      */
-    public function sign(Timesheet $timesheet, string $base64Png, array $customer, ?Request $request = null, ?User $signer = null): Timesheet
-    {
+    public function sign(Timesheet $timesheet, string $base64Png, array $customer, ?Request $request = null, ?User $signer = null): Timesheet {
         if ($timesheet->isLocked()) {
             throw new RuntimeException('Timesheet is locked.');
         }
@@ -43,9 +40,9 @@ class SignatureService
             throw new RuntimeException('Signature too large.');
         }
 
-        $folder = 'timesheets/signatures/'.now()->format('Y/m');
-        $filename = Str::uuid()->toString().'.png';
-        $path = $folder.'/'.$filename;
+        $folder = 'timesheets/signatures/' . now()->format('Y/m');
+        $filename = Str::uuid()->toString() . '.png';
+        $path = $folder . '/' . $filename;
         Storage::disk('local')->put($path, $binary);
 
         /** @var Attachment $attachment */
@@ -83,8 +80,7 @@ class SignatureService
         return $timesheet;
     }
 
-    public function lock(Timesheet $timesheet, User $admin): Timesheet
-    {
+    public function lock(Timesheet $timesheet, User $admin): Timesheet {
         $timesheet->forceFill([
             'status' => TimesheetStatus::Locked->value,
             'locked_at' => now(),
@@ -94,8 +90,7 @@ class SignatureService
         return $timesheet;
     }
 
-    public function unlock(Timesheet $timesheet): Timesheet
-    {
+    public function unlock(Timesheet $timesheet): Timesheet {
         $timesheet->forceFill([
             'status' => TimesheetStatus::Signed->value,
             'locked_at' => null,
@@ -105,8 +100,7 @@ class SignatureService
         return $timesheet;
     }
 
-    public function generateMagicToken(Timesheet $timesheet, int $minutes = 1440): Timesheet
-    {
+    public function generateMagicToken(Timesheet $timesheet, int $minutes = 1440): Timesheet {
         $timesheet->forceFill([
             'magic_token' => Str::random(64),
             'magic_expires_at' => now()->addMinutes($minutes),
@@ -115,8 +109,7 @@ class SignatureService
         return $timesheet;
     }
 
-    private function decodePng(string $payload): string
-    {
+    private function decodePng(string $payload): string {
         $payload = trim($payload);
         if (str_starts_with($payload, 'data:image/png;base64,')) {
             $payload = substr($payload, strlen('data:image/png;base64,'));

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,10 +12,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::table('diary_entries', function (Blueprint $table): void {
             $table->foreignId('entry_type_id')->nullable()->after('organization_id')
                 ->constrained('entry_types')->nullOnDelete();
@@ -56,8 +53,7 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::table('diary_entries', function (Blueprint $table): void {
             $table->dropIndex('de_org_sched_idx');
             $table->dropIndex('de_assigned_sched_idx');

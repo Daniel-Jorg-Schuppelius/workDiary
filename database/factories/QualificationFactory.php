@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,12 +16,10 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<Qualification>
  */
-class QualificationFactory extends Factory
-{
+class QualificationFactory extends Factory {
     protected $model = Qualification::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'name' => $this->faker->unique()->words(2, true),
             'abbreviation' => strtoupper($this->faker->lexify('???')),
@@ -31,8 +28,7 @@ class QualificationFactory extends Factory
         ];
     }
 
-    public function inactive(): static
-    {
+    public function inactive(): static {
         return $this->state(['is_active' => false]);
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -23,28 +22,24 @@ use Illuminate\Support\Facades\Config;
 use Mockery;
 use Tests\TestCase;
 
-class WebPushTest extends TestCase
-{
+class WebPushTest extends TestCase {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         Config::set('webpush.public_key', 'BO-uHxBTpw50e_ZPfZDwBYFhNhEP38RiyWF7ppyCrrSoC6sYSO8ILUZ6_MX1c-iSgOJrTbcuhvMoA_fFnsZSnx0');
         Config::set('webpush.private_key', 'GCpBG_ivebc2Sm61xQtqkwBOWhzQrvJmBnaSoXE7PMs');
     }
 
-    public function test_vapid_endpoint_returns_public_key(): void
-    {
+    public function test_vapid_endpoint_returns_public_key(): void {
         $user = User::factory()->user()->create();
         $this->actingAs($user)->getJson(route('push.vapid'))
             ->assertOk()
             ->assertJsonStructure(['publicKey']);
     }
 
-    public function test_subscribe_persists_subscription(): void
-    {
+    public function test_subscribe_persists_subscription(): void {
         $user = User::factory()->user()->create();
         $this->actingAs($user)->postJson(route('push.subscribe'), [
             'endpoint' => 'https://push.example.com/abc',
@@ -58,8 +53,7 @@ class WebPushTest extends TestCase
         ]);
     }
 
-    public function test_unsubscribe_removes_only_own_subscription(): void
-    {
+    public function test_unsubscribe_removes_only_own_subscription(): void {
         $user = User::factory()->user()->create();
         $other = User::factory()->user()->create();
         PushSubscription::create([
@@ -83,8 +77,7 @@ class WebPushTest extends TestCase
         $this->assertDatabaseHas('push_subscriptions', ['endpoint' => 'https://push.example.com/y']);
     }
 
-    public function test_new_comment_triggers_push_to_entry_owner(): void
-    {
+    public function test_new_comment_triggers_push_to_entry_owner(): void {
         $owner = User::factory()->user()->create();
         $commenter = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($owner)->create();
@@ -92,15 +85,14 @@ class WebPushTest extends TestCase
         $mock = Mockery::mock(WebPushService::class);
         $mock->shouldReceive('sendToUser')
             ->once()
-            ->withArgs(fn ($u, $payload) => $u->id === $owner->id && isset($payload['title']));
+            ->withArgs(fn($u, $payload) => $u->id === $owner->id && isset($payload['title']));
         $this->app->instance(WebPushService::class, $mock);
 
         $this->actingAs($commenter);
         Comment::factory()->for($commenter)->create(['commentable_type' => DiaryEntry::class, 'commentable_id' => $entry->id, 'body' => 'Hi']);
     }
 
-    public function test_own_comment_does_not_push(): void
-    {
+    public function test_own_comment_does_not_push(): void {
         $owner = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($owner)->create();
 
@@ -112,28 +104,26 @@ class WebPushTest extends TestCase
         Comment::factory()->for($owner)->create(['commentable_type' => DiaryEntry::class, 'commentable_id' => $entry->id, 'body' => 'self']);
     }
 
-    public function test_emergency_assignment_pushes_to_assignee(): void
-    {
+    public function test_emergency_assignment_pushes_to_assignee(): void {
         $user = User::factory()->user()->create();
 
         $mock = Mockery::mock(WebPushService::class);
         $mock->shouldReceive('sendToUser')
             ->once()
-            ->withArgs(fn ($u, $payload) => $u->id === $user->id);
+            ->withArgs(fn($u, $payload) => $u->id === $user->id);
         $this->app->instance(WebPushService::class, $mock);
 
         EmergencyAssignment::factory()->for($user)->create();
     }
 
-    public function test_problem_diary_entry_pushes_to_admins(): void
-    {
+    public function test_problem_diary_entry_pushes_to_admins(): void {
         $admin = User::factory()->admin()->create();
         $author = User::factory()->user()->create();
 
         $mock = Mockery::mock(WebPushService::class);
         $mock->shouldReceive('sendToUser')
             ->atLeast()->once()
-            ->withArgs(fn ($u, $payload) => $u->id === $admin->id);
+            ->withArgs(fn($u, $payload) => $u->id === $admin->id);
         $this->app->instance(WebPushService::class, $mock);
 
         $this->actingAs($author);

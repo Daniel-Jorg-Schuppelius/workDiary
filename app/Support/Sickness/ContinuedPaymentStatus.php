@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,8 +16,7 @@ use Carbon\CarbonImmutable;
  * DTO für den Lohnfortzahlungs-Status (§ 3 EntgFG) eines Mitarbeiters
  * zu einem Stichtag. Alle Tag-Werte sind Kalendertage.
  */
-final readonly class ContinuedPaymentStatus
-{
+final readonly class ContinuedPaymentStatus {
     public function __construct(
         public int $entitlementDays,
         public int $usedDays,
@@ -26,10 +24,10 @@ final readonly class ContinuedPaymentStatus
         public ?CarbonImmutable $chainStart,
         public ?CarbonImmutable $exhaustionDate,
         public bool $exhausted,
-    ) {}
+    ) {
+    }
 
-    public function usedPercent(): int
-    {
+    public function usedPercent(): int {
         if ($this->entitlementDays <= 0) {
             return 0;
         }

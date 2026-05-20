@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -12,6 +11,7 @@
 namespace App\Services\Flextime;
 
 use App\Enums\TimeEntry\TimeEntryActivityType;
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Enums\Vacation\VacationStatus;
 use App\Models\FlexBalance;
 use App\Models\Holiday;
@@ -20,7 +20,6 @@ use App\Models\User;
 use App\Models\Vacation;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
-use App\Enums\TimeEntry\TimeEntryKind;
 
 class FlexCalculator {
     public function __construct(protected WorkScheduleResolver $resolver) {

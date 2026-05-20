@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -27,8 +26,7 @@ use Carbon\CarbonInterface;
  *   2. The owning Timesheet (if any) must not be signed or locked.
  *   3. The entry must not be `exported` (e.g. transmitted to lexoffice).
  */
-class TimeEntryEditPolicy
-{
+class TimeEntryEditPolicy {
     public const REASON_WINDOW = 'window';
 
     public const REASON_TIMESHEET_LOCKED = 'timesheet_locked';
@@ -37,8 +35,7 @@ class TimeEntryEditPolicy
 
     public const REASON_EXPORTED = 'exported';
 
-    public function windowDays(): int
-    {
+    public function windowDays(): int {
         $setting = setting('timesheet.edit_window_days');
         if ($setting !== null && $setting !== '') {
             return max(0, (int) $setting);
@@ -47,8 +44,7 @@ class TimeEntryEditPolicy
         return max(0, (int) config('timesheet.edit_window.days', 7));
     }
 
-    public function isWithinWindow(TimeEntry $entry, ?CarbonInterface $now = null): bool
-    {
+    public function isWithinWindow(TimeEntry $entry, ?CarbonInterface $now = null): bool {
         $date = $entry->date;
         if ($date === null) {
             return true;
@@ -63,8 +59,7 @@ class TimeEntryEditPolicy
     /**
      * @return array{locked: bool, reason: ?string}
      */
-    public function isHardLocked(TimeEntry $entry): array
-    {
+    public function isHardLocked(TimeEntry $entry): array {
         if ($entry->exported) {
             return ['locked' => true, 'reason' => self::REASON_EXPORTED];
         }
@@ -84,8 +79,7 @@ class TimeEntryEditPolicy
         return ['locked' => false, 'reason' => null];
     }
 
-    public function canSelfEdit(TimeEntry $entry, ?CarbonInterface $now = null): bool
-    {
+    public function canSelfEdit(TimeEntry $entry, ?CarbonInterface $now = null): bool {
         if ($this->isHardLocked($entry)['locked']) {
             return false;
         }
@@ -97,8 +91,7 @@ class TimeEntryEditPolicy
      * Combined diagnostic for UI rendering. Returns the first reason that
      * blocks self-editing, or null if the entry is editable.
      */
-    public function blockReason(TimeEntry $entry, ?CarbonInterface $now = null): ?string
-    {
+    public function blockReason(TimeEntry $entry, ?CarbonInterface $now = null): ?string {
         $hard = $this->isHardLocked($entry);
         if ($hard['locked']) {
             return $hard['reason'];
@@ -111,8 +104,7 @@ class TimeEntryEditPolicy
         return null;
     }
 
-    public function reasonLabel(?string $reason): ?string
-    {
+    public function reasonLabel(?string $reason): ?string {
         $label = match ($reason) {
             self::REASON_WINDOW => __('Korrekturfenster abgelaufen'),
             self::REASON_TIMESHEET_LOCKED => __('Stundenzettel gesperrt'),

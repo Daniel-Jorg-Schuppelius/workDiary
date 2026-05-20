@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Vacation\VacationStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\Contracts\HasTimeWindow;
 use App\Models\DiaryEntry;
@@ -20,7 +20,6 @@ use App\Models\OnCallShift;
 use App\Models\SickLeave;
 use App\Models\Tag;
 use App\Models\User;
-use App\Enums\Vacation\VacationStatus;
 use App\Models\Vacation;
 use App\Services\HolidayService;
 use App\Services\UI\DateRangeContext;
@@ -31,12 +30,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-class DutyController extends Controller
-{
+class DutyController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request, HolidayService $holidayService): View|RedirectResponse
-    {
+    public function index(Request $request, HolidayService $holidayService): View|RedirectResponse {
         // Backward-Compat: ?from=&to= einmalig in den globalen Context.
         if ($request->filled('from') || $request->filled('to')) {
             app(DateRangeContext::class)->set(
@@ -131,8 +128,7 @@ class DutyController extends Controller
     /**
      * @return EloquentBuilder<DiaryEntry>
      */
-    private function buildDiaryQuery(Request $request, string $rangeFrom, string $rangeTo): EloquentBuilder
-    {
+    private function buildDiaryQuery(Request $request, string $rangeFrom, string $rangeTo): EloquentBuilder {
         /** @var EloquentBuilder<DiaryEntry> $diaryQuery */
         $diaryQuery = DiaryEntry::query()
             ->select(['id', 'user_id', 'content', 'status', 'is_archived', 'start_at', 'end_at', 'created_at'])
@@ -150,12 +146,12 @@ class DutyController extends Controller
         }
         $q = trim((string) $request->query('q', ''));
         if ($q !== '') {
-            $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $q).'%';
-            $diaryQuery->where(fn ($w) => $w->where('content', 'like', $like)->orWhere('response', 'like', $like));
+            $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $q) . '%';
+            $diaryQuery->where(fn($w) => $w->where('content', 'like', $like)->orWhere('response', 'like', $like));
         }
         $tagId = $request->integer('tag');
         if ($tagId > 0) {
-            $diaryQuery->whereHas('tags', fn ($tq) => $tq->where('tags.id', $tagId));
+            $diaryQuery->whereHas('tags', fn($tq) => $tq->where('tags.id', $tagId));
         }
 
         $entryTypeId = $request->integer('entry_type');
@@ -169,8 +165,7 @@ class DutyController extends Controller
     /**
      * @return EloquentBuilder<OnCallShift>
      */
-    private function buildShiftQuery(string $rangeFrom, string $rangeTo): EloquentBuilder
-    {
+    private function buildShiftQuery(string $rangeFrom, string $rangeTo): EloquentBuilder {
         /** @var EloquentBuilder<OnCallShift> $q */
         $q = OnCallShift::query()
             ->with('user:id,name')
@@ -185,8 +180,7 @@ class DutyController extends Controller
     /**
      * @return EloquentBuilder<Vacation>
      */
-    private function buildVacationQuery(Request $request, User $authUser, bool $isAdmin, string $rangeFrom, string $rangeTo): EloquentBuilder
-    {
+    private function buildVacationQuery(Request $request, User $authUser, bool $isAdmin, string $rangeFrom, string $rangeTo): EloquentBuilder {
         /** @var EloquentBuilder<Vacation> $vacationQuery */
         $vacationQuery = Vacation::query()
             ->with('user:id,name')
@@ -212,8 +206,7 @@ class DutyController extends Controller
     /**
      * @return EloquentBuilder<EmergencyAssignment>
      */
-    private function buildAssignmentQuery(string $rangeFrom, string $rangeTo): EloquentBuilder
-    {
+    private function buildAssignmentQuery(string $rangeFrom, string $rangeTo): EloquentBuilder {
         /** @var EloquentBuilder<EmergencyAssignment> $q */
         $q = EmergencyAssignment::query()
             ->with(['user:id,name', 'shift:id,start_at,end_at,user_id'])
@@ -228,8 +221,7 @@ class DutyController extends Controller
     /**
      * @return EloquentBuilder<SickLeave>
      */
-    private function buildSickQuery(Request $request, User $authUser, bool $isAdmin, string $rangeFrom, string $rangeTo): EloquentBuilder
-    {
+    private function buildSickQuery(Request $request, User $authUser, bool $isAdmin, string $rangeFrom, string $rangeTo): EloquentBuilder {
         /** @var EloquentBuilder<SickLeave> $q */
         $q = SickLeave::query()
             ->with(['user:id,name', 'attachments'])
@@ -259,15 +251,14 @@ class DutyController extends Controller
     /**
      * @return array{all:int, open:int, alert:int, done:int}
      */
-    private function computeDiaryCounts(): array
-    {
+    private function computeDiaryCounts(): array {
         $row = DiaryEntry::query()
             ->where('is_archived', false)
             ->toBase()
             ->selectRaw(
-                'COUNT(*) as cnt_all,'.
-                    'COUNT(CASE WHEN status = 2 THEN 1 END) as cnt_open,'.
-                    'COUNT(CASE WHEN status = 3 THEN 1 END) as cnt_alert,'.
+                'COUNT(*) as cnt_all,' .
+                    'COUNT(CASE WHEN status = 2 THEN 1 END) as cnt_open,' .
+                    'COUNT(CASE WHEN status = 3 THEN 1 END) as cnt_alert,' .
                     'COUNT(CASE WHEN status = -1 THEN 1 END) as cnt_done'
             )
             ->first();
@@ -288,8 +279,7 @@ class DutyController extends Controller
      * @param  EloquentBuilder<TModel>  $query
      * @return array{total:int, longest:int, avg:float|int, users:int}
      */
-    private function computeDurationKpis(EloquentBuilder $query, int $total): array
-    {
+    private function computeDurationKpis(EloquentBuilder $query, int $total): array {
         $durations = (clone $query)->get(['start_at', 'end_at'])
             ->map(static function (HasTimeWindow $r): int {
                 $start = $r->getStartAt();
@@ -312,8 +302,7 @@ class DutyController extends Controller
      * @param  EloquentBuilder<Vacation>  $query
      * @return array{total:int, pending:int, approved:int, rejected:int}
      */
-    private function computeVacationKpis(EloquentBuilder $query): array
-    {
+    private function computeVacationKpis(EloquentBuilder $query): array {
         return [
             'total' => (clone $query)->count(),
             'pending' => (clone $query)->where('status', VacationStatus::Pending)->count(),
@@ -327,8 +316,7 @@ class DutyController extends Controller
      * @param  EloquentBuilder<SickLeave>  $query
      * @return array{total:int, active:int, cancelled:int, users:int}
      */
-    private function computeSickKpis(EloquentBuilder $query): array
-    {
+    private function computeSickKpis(EloquentBuilder $query): array {
         $today = now()->toDateString();
 
         return [

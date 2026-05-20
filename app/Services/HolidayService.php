@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,8 +18,7 @@ use Illuminate\Support\Facades\Schema;
 use Yasumi\Holiday;
 use Yasumi\Yasumi;
 
-class HolidayService
-{
+class HolidayService {
     /**
      * @var array<int, array<string, string>>
      */
@@ -31,8 +29,7 @@ class HolidayService
      *
      * @return array<string, string>
      */
-    public function forYear(int $year): array
-    {
+    public function forYear(int $year): array {
         if (isset($this->cache[$year])) {
             return $this->cache[$year];
         }
@@ -79,15 +76,13 @@ class HolidayService
         return $this->cache[$year] = $map;
     }
 
-    public function nameFor(CarbonInterface $date): ?string
-    {
+    public function nameFor(CarbonInterface $date): ?string {
         $map = $this->forYear((int) $date->year);
 
         return $map[$date->format('Y-m-d')] ?? null;
     }
 
-    public function isHoliday(CarbonInterface $date): bool
-    {
+    public function isHoliday(CarbonInterface $date): bool {
         return $this->nameFor($date) !== null;
     }
 }

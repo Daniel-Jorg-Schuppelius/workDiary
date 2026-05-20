@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 11 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,26 +12,23 @@ namespace App\Http\Requests;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Http\Requests\Concerns\ChecksShiftCompliance;
-use App\Models\ScheduledShift;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
-class StoreScheduledShiftRequest extends FormRequest
-{
+class StoreScheduledShiftRequest extends FormRequest {
     use ChecksShiftCompliance;
 
-    public function authorize(): bool
-    {
+    public function authorize(): bool {
         $user = Auth::user();
 
         return $user instanceof User && $user->isAdmin();
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         return [
             'user_id' => ['required', 'integer', 'exists:users,id'],
             'shift_type_id' => ['nullable', 'integer', 'exists:shift_types,id'],
@@ -41,13 +37,12 @@ class StoreScheduledShiftRequest extends FormRequest
             'start_time' => ['nullable', 'date_format:H:i'],
             'end_time' => ['nullable', 'date_format:H:i'],
             'note' => ['nullable', 'string', 'max:1000'],
-            'status' => ['sometimes', \Illuminate\Validation\Rule::enum(ScheduledShiftStatus::class)],
+            'status' => ['sometimes', Rule::enum(ScheduledShiftStatus::class)],
             'override_compliance' => ['sometimes', 'boolean'],
         ];
     }
 
-    public function withValidator(Validator $validator): void
-    {
+    public function withValidator(Validator $validator): void {
         $this->attachComplianceCheck($validator);
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,10 +14,8 @@ use App\Enums\Timesheet\TimesheetStatus;
 use App\Models\Timesheet;
 use App\Services\PushNotifier;
 
-class TimesheetObserver
-{
-    public function updated(Timesheet $timesheet): void
-    {
+class TimesheetObserver {
+    public function updated(Timesheet $timesheet): void {
         if (! $timesheet->wasChanged('status')) {
             return;
         }

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,10 +15,8 @@ use App\Legacy\Support\LegacyRoleResolver;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 
-trait RequiresLegacyAdmin
-{
-    private function ensureAdmin(): void
-    {
+trait RequiresLegacyAdmin {
+    private function ensureAdmin(): void {
         abort_if(! LegacyRoleResolver::isAdmin(Auth::user()), 403);
     }
 
@@ -27,8 +24,7 @@ trait RequiresLegacyAdmin
      *
      * @return Collection<int, LegacyUser>
      */
-    private function legacyUsersForSelect(): Collection
-    {
+    private function legacyUsersForSelect(): Collection {
         return LegacyUser::query()->where('id', '>', 3)->orderBy('uname')->get(['id', 'uname']);
     }
 }

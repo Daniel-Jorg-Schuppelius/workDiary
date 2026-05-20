@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 19 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,6 +14,7 @@ use App\Enums\Diary\LocationMode;
 use App\Enums\Diary\Priority;
 use App\Enums\Recurrence\RecurrenceFrequency;
 use App\Models\Concerns\BelongsToOrganization;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,7 +23,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
- * @property int|null $organization_id
+ * @property int $organization_id
  * @property int|null $project_id
  * @property int|null $customer_id
  * @property int|null $entry_type_id
@@ -48,7 +48,7 @@ use Illuminate\Support\Carbon;
 class RecurrenceRule extends Model {
     use BelongsToOrganization;
 
-    /** @use HasFactory<\Illuminate\Database\Eloquent\Factories\Factory<static>> */
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     /** @var list<string> */

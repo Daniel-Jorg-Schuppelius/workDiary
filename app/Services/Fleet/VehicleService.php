@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,17 +14,14 @@ use App\Models\Vehicle;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
-class VehicleService
-{
+class VehicleService {
     /** @param array<string, mixed> $attributes */
-    public function create(array $attributes): Vehicle
-    {
-        return DB::transaction(fn (): Vehicle => Vehicle::create($attributes));
+    public function create(array $attributes): Vehicle {
+        return DB::transaction(fn(): Vehicle => Vehicle::create($attributes));
     }
 
     /** @param array<string, mixed> $attributes */
-    public function update(Vehicle $vehicle, array $attributes): Vehicle
-    {
+    public function update(Vehicle $vehicle, array $attributes): Vehicle {
         return DB::transaction(function () use ($vehicle, $attributes): Vehicle {
             $vehicle->fill($attributes);
             $vehicle->save();
@@ -34,8 +30,7 @@ class VehicleService
         });
     }
 
-    public function archive(Vehicle $vehicle): Vehicle
-    {
+    public function archive(Vehicle $vehicle): Vehicle {
         return DB::transaction(function () use ($vehicle): Vehicle {
             $vehicle->archived_at = Carbon::now();
             $vehicle->save();
@@ -44,8 +39,7 @@ class VehicleService
         });
     }
 
-    public function restore(Vehicle $vehicle): Vehicle
-    {
+    public function restore(Vehicle $vehicle): Vehicle {
         return DB::transaction(function () use ($vehicle): Vehicle {
             $vehicle->archived_at = null;
             $vehicle->save();

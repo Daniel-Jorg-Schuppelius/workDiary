@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -28,19 +27,17 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\View\View;
 
-class LegacyCallcenterController extends Controller
-{
+class LegacyCallcenterController extends Controller {
     private const MAX_LOGIN_ATTEMPTS = 5;
 
-    public function __construct(private readonly HolidayService $holidayService) {}
+    public function __construct(private readonly HolidayService $holidayService) {
+    }
 
-    public function showLoginForm(): View
-    {
+    public function showLoginForm(): View {
         return view('legacy.callcenter.login');
     }
 
-    public function login(LegacyCallcenterLoginRequest $request): RedirectResponse
-    {
+    public function login(LegacyCallcenterLoginRequest $request): RedirectResponse {
         $credentials = $request->validated();
         $throttleKey = $this->throttleKey($request);
 
@@ -84,26 +81,24 @@ class LegacyCallcenterController extends Controller
         return redirect()->route('legacy.callcenter.notdienst');
     }
 
-    public function logout(Request $request): RedirectResponse
-    {
+    public function logout(Request $request): RedirectResponse {
         $request->session()->forget('legacy_callcenter_user');
         $request->session()->regenerateToken();
 
         return redirect()->route('legacy.callcenter.login');
     }
 
-    public function notdienstPlan(Request $request): View
-    {
+    public function notdienstPlan(Request $request): View {
         $weekOffset = (int) $request->query('week', 0);
         $today = Carbon::today();
         $start = $today->copy()->subDay()->addWeeks($weekOffset);
-        $days = collect(range(0, 6))->map(fn (int $offset) => $start->copy()->addDays($offset));
+        $days = collect(range(0, 6))->map(fn(int $offset) => $start->copy()->addDays($offset));
 
         $rangeStart = $start->copy()->startOfDay();
         $rangeEnd = $start->copy()->addDays(6)->endOfDay();
 
         $holidayService = $this->holidayService;
-        $holidayMap = $days->mapWithKeys(fn (Carbon $day) => [$day->format('Y-m-d') => $holidayService->nameFor($day)])->all();
+        $holidayMap = $days->mapWithKeys(fn(Carbon $day) => [$day->format('Y-m-d') => $holidayService->nameFor($day)])->all();
 
         $notdienstItems = LegacyNotdienst::query()
             ->select(['id', 'user', 'von', 'bis'])
@@ -126,11 +121,11 @@ class LegacyCallcenterController extends Controller
 
         $todayNotdienst = collect($notdienstByDay)->firstWhere('isToday', true);
         $todayBereitschaft = collect($bereitschaftByDay)->firstWhere('isToday', true);
-        $tomorrowNotdienst = collect($notdienstByDay)->firstWhere(fn (array $d) => $d['date']->isSameDay($today->copy()->addDay()));
-        $tomorrowBereitschaft = collect($bereitschaftByDay)->firstWhere(fn (array $d) => $d['date']->isSameDay($today->copy()->addDay()));
+        $tomorrowNotdienst = collect($notdienstByDay)->firstWhere(fn(array $d) => $d['date']->isSameDay($today->copy()->addDay()));
+        $tomorrowBereitschaft = collect($bereitschaftByDay)->firstWhere(fn(array $d) => $d['date']->isSameDay($today->copy()->addDay()));
 
-        $weekendNotdienst = collect($notdienstByDay)->filter(fn (array $d) => $d['isWeekend'] || $d['isHoliday'])->values();
-        $weekendBereitschaft = collect($bereitschaftByDay)->filter(fn (array $d) => $d['isWeekend'] || $d['isHoliday'])->values();
+        $weekendNotdienst = collect($notdienstByDay)->filter(fn(array $d) => $d['isWeekend'] || $d['isHoliday'])->values();
+        $weekendBereitschaft = collect($bereitschaftByDay)->filter(fn(array $d) => $d['isWeekend'] || $d['isHoliday'])->values();
 
         $openIssues = LegacyDiaryEntry::query()
             ->select(['id', 'user', 'inhalt', 'von', 'bis', 'gelesen', 'aktuell'])
@@ -263,8 +258,7 @@ class LegacyCallcenterController extends Controller
     /**
      * @return array<int, array{date: Carbon, name: string, daysAway: int}>
      */
-    private function collectUpcomingHolidays(Carbon $today, int $windowDays, int $limit): array
-    {
+    private function collectUpcomingHolidays(Carbon $today, int $windowDays, int $limit): array {
         $result = [];
         $years = [(int) $today->year];
         if ((int) $today->copy()->addDays($windowDays)->year !== $years[0]) {
@@ -281,14 +275,13 @@ class LegacyCallcenterController extends Controller
             }
         }
 
-        usort($result, fn (array $a, array $b) => $a['date']->timestamp <=> $b['date']->timestamp);
+        usort($result, fn(array $a, array $b) => $a['date']->timestamp <=> $b['date']->timestamp);
 
         return array_slice($result, 0, $limit);
     }
 
-    private function throttleKey(Request $request): string
-    {
-        return 'legacy-callcenter:'.mb_strtolower((string) $request->input('username', '')).'|'.$request->ip();
+    private function throttleKey(Request $request): string {
+        return 'legacy-callcenter:' . mb_strtolower((string) $request->input('username', '')) . '|' . $request->ip();
     }
 
     /**
@@ -299,8 +292,7 @@ class LegacyCallcenterController extends Controller
      * @param  array<string, string|null>  $holidayMap
      * @return array<int, array<string, mixed>>
      */
-    private function mapDutyByDay(Collection $days, \Illuminate\Database\Eloquent\Collection $items, Carbon $today, array $holidayMap = []): array
-    {
+    private function mapDutyByDay(Collection $days, \Illuminate\Database\Eloquent\Collection $items, Carbon $today, array $holidayMap = []): array {
         return $days->map(function (Carbon $day) use ($items, $today, $holidayMap): array {
             $match = $items->first(function (LegacyNotdienst|LegacyOnCall $item) use ($day): bool {
                 return (bool) ($item->von && $item->bis && $item->von->copy()->startOfDay()->lte($day) && $item->bis->copy()->endOfDay()->gte($day));

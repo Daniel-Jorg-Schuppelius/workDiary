@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -36,8 +35,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class ActivityCategory extends Model
-{
+class ActivityCategory extends Model {
     use BelongsToOrganization;
 
     /** @use HasFactory<ActivityCategoryFactory> */
@@ -67,8 +65,7 @@ class ActivityCategory extends Model
     ];
 
     /** @return HasMany<TimeEntry, $this> */
-    public function timeEntries(): HasMany
-    {
+    public function timeEntries(): HasMany {
         return $this->hasMany(TimeEntry::class);
     }
 
@@ -76,8 +73,7 @@ class ActivityCategory extends Model
      * @param  Builder<ActivityCategory>  $q
      * @return Builder<ActivityCategory>
      */
-    public function scopeActive(Builder $q): Builder
-    {
+    public function scopeActive(Builder $q): Builder {
         return $q->where('active', true);
     }
 }

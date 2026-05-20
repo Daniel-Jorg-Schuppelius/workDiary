@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,15 +20,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-class TodayController extends Controller
-{
+class TodayController extends Controller {
     public function __construct(
         protected AttendanceClockService $clock,
         protected FlexCalculator $flex,
-    ) {}
+    ) {
+    }
 
-    public function show(Request $request): View
-    {
+    public function show(Request $request): View {
         /** @var User $user */
         $user = Auth::user();
         $day = $request->date('date')?->startOfDay() ?? CarbonImmutable::today();

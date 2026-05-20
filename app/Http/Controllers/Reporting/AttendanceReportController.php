@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +10,7 @@
 
 namespace App\Http\Controllers\Reporting;
 
+use App\Enums\Attendance\AttendanceStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
@@ -26,19 +26,16 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use App\Enums\Attendance\AttendanceStatus;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * Anwesenheits-Auswertung: tatsächliche Attendance-Minuten vs. WorkSchedule-Soll
  * und gebuchte TimeEntry-Minuten je Mitarbeiter.
  */
-class AttendanceReportController extends Controller
-{
+class AttendanceReportController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request): View|SymfonyResponse
-    {
+    public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         $authUser = Auth::user();
         $isAdmin = $authUser instanceof User && $authUser->isAdmin();
@@ -82,8 +79,7 @@ class AttendanceReportController extends Controller
      *   variance: int
      * }>
      */
-    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId): array
-    {
+    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId): array {
         $usersQuery = User::query()->orderBy('name');
         if ($scope === 'mine') {
             $usersQuery->where('id', $userId);
@@ -94,7 +90,7 @@ class AttendanceReportController extends Controller
         if ($users->isEmpty()) {
             return [];
         }
-        $userIds = $users->pluck('id')->map(static fn ($v): int => (int) $v)->all();
+        $userIds = $users->pluck('id')->map(static fn($v): int => (int) $v)->all();
 
         /** @var array<int, int> $attMinByUser */
         $attMinByUser = Attendance::query()
@@ -104,7 +100,7 @@ class AttendanceReportController extends Controller
             ->selectRaw('user_id, COALESCE(SUM(duration_minutes), 0) as m')
             ->groupBy('user_id')
             ->pluck('m', 'user_id')
-            ->map(static fn ($v): int => (int) $v)
+            ->map(static fn($v): int => (int) $v)
             ->all();
 
         /** @var array<int, int> $teMinByUser */
@@ -114,7 +110,7 @@ class AttendanceReportController extends Controller
             ->selectRaw('user_id, COALESCE(SUM(minutes), 0) as m')
             ->groupBy('user_id')
             ->pluck('m', 'user_id')
-            ->map(static fn ($v): int => (int) $v)
+            ->map(static fn($v): int => (int) $v)
             ->all();
 
         /** @var Collection<int, WorkSchedule> $schedules */
@@ -158,8 +154,7 @@ class AttendanceReportController extends Controller
      * @param  list<WorkSchedule>  $schedules
      * @return array{0:int,1:int} [workdays, targetMinutes]
      */
-    private function computeTarget(CarbonImmutable $from, CarbonImmutable $to, array $schedules): array
-    {
+    private function computeTarget(CarbonImmutable $from, CarbonImmutable $to, array $schedules): array {
         if ($schedules === []) {
             return [0, 0];
         }
@@ -186,8 +181,7 @@ class AttendanceReportController extends Controller
     /**
      * @param  list<WorkSchedule>  $schedules
      */
-    private function scheduleFor(CarbonInterface $day, array $schedules): ?WorkSchedule
-    {
+    private function scheduleFor(CarbonInterface $day, array $schedules): ?WorkSchedule {
         $match = null;
         foreach ($schedules as $s) {
             if ($s->valid_from->lte($day) && ($s->valid_to === null || $s->valid_to->gte($day))) {
@@ -204,8 +198,7 @@ class AttendanceReportController extends Controller
      * @param  array<int, array{user: User, attendance_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
      * @return array{attendance:int, time_entry:int, target:int, variance:int}
      */
-    private function totals(array $rows): array
-    {
+    private function totals(array $rows): array {
         $att = 0;
         $te = 0;
         $tg = 0;
@@ -226,8 +219,7 @@ class AttendanceReportController extends Controller
     /**
      * @param  array<int, array{user: User, attendance_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
      */
-    private function exportCsv(array $rows, string $from, string $to): Response
-    {
+    private function exportCsv(array $rows, string $from, string $to): Response {
         $filename = sprintf('anwesenheit_%s_%s.csv', $from, $to);
         $out = [];
         $out[] = ['Mitarbeiter', 'Arbeitstage', 'Soll (min)', 'Anwesend (min)', 'Gebucht (min)', 'Saldo (min)'];
@@ -242,24 +234,23 @@ class AttendanceReportController extends Controller
             $csv .= implode(';', array_map(static function ($v): string {
                 $s = (string) $v;
                 if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"'.str_replace('"', '""', $s).'"';
+                    $s = '"' . str_replace('"', '""', $s) . '"';
                 }
 
                 return $s;
-            }, $row))."\r\n";
+            }, $row)) . "\r\n";
         }
 
-        return response("\xEF\xBB\xBF".$csv, 200, [
+        return response("\xEF\xBB\xBF" . $csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 
     /**
      * @param  array<int, array{user: User, attendance_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
      */
-    private function exportPdf(array $rows, string $from, string $to, string $scope): SymfonyResponse
-    {
+    private function exportPdf(array $rows, string $from, string $to, string $scope): SymfonyResponse {
         $filename = sprintf('anwesenheit_%s_%s.pdf', $from, $to);
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = Pdf::loadView('reports.pdf.attendance', [

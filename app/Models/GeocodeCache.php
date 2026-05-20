@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -27,8 +26,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class GeocodeCache extends Model
-{
+class GeocodeCache extends Model {
     protected $table = 'geocode_cache';
 
     protected $fillable = [
@@ -49,13 +47,11 @@ class GeocodeCache extends Model
         'lng' => 'decimal:7',
     ];
 
-    public static function hashFor(string $query): string
-    {
+    public static function hashFor(string $query): string {
         return hash('sha256', mb_strtolower(trim($query)));
     }
 
-    public function isExpired(?Carbon $now = null): bool
-    {
+    public function isExpired(?Carbon $now = null): bool {
         if ($this->expires_at === null) {
             return false;
         }

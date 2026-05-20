@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,32 +14,26 @@ use App\Models\ActivityCategory;
 use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
 
-class ActivityCategoryPolicy
-{
+class ActivityCategoryPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool
-    {
+    public function viewAny(User $user): bool {
         return true;
     }
 
-    public function view(User $user, ActivityCategory $c): bool
-    {
+    public function view(User $user, ActivityCategory $c): bool {
         return true;
     }
 
-    public function create(User $user): bool
-    {
+    public function create(User $user): bool {
         return false; // only admin via before-hook
     }
 
-    public function update(User $user, ActivityCategory $c): bool
-    {
+    public function update(User $user, ActivityCategory $c): bool {
         return false;
     }
 
-    public function delete(User $user, ActivityCategory $c): bool
-    {
+    public function delete(User $user, ActivityCategory $c): bool {
         return false;
     }
 }

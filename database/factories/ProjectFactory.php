@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,19 +10,17 @@
 
 namespace Database\Factories;
 
+use App\Enums\Project\ProjectStatus;
 use App\Models\Project;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Enums\Project\ProjectStatus;
 
 /**
  * @extends Factory<Project>
  */
-class ProjectFactory extends Factory
-{
+class ProjectFactory extends Factory {
     protected $model = Project::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'organization_id' => null,
             'customer_id' => null,

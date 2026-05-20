@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,22 +10,20 @@
 
 namespace Database\Factories;
 
+use App\Enums\TimeEntry\TimeEntryActivityType;
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Project;
 use App\Models\TimeEntry;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Enums\TimeEntry\TimeEntryKind;
-use App\Enums\TimeEntry\TimeEntryActivityType;
 
 /**
  * @extends Factory<TimeEntry>
  */
-class TimeEntryFactory extends Factory
-{
+class TimeEntryFactory extends Factory {
     protected $model = TimeEntry::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'project_id' => Project::factory(),
             'user_id' => User::factory(),
@@ -42,9 +39,8 @@ class TimeEntryFactory extends Factory
     /**
      * State: non-project administrative work (no project_id).
      */
-    public function administration(): self
-    {
-        return $this->state(fn () => [
+    public function administration(): self {
+        return $this->state(fn() => [
             'project_id' => null,
             'activity_type' => TimeEntryActivityType::Admin->value,
         ]);
@@ -53,9 +49,8 @@ class TimeEntryFactory extends Factory
     /**
      * State: travel time.
      */
-    public function travel(): self
-    {
-        return $this->state(fn () => [
+    public function travel(): self {
+        return $this->state(fn() => [
             'project_id' => null,
             'kind' => TimeEntryKind::Travel->value,
             'activity_type' => TimeEntryActivityType::Travel->value,

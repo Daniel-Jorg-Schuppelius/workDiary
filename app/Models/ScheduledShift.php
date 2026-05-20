@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 11 2026
  * Author       : Daniel Jörg Schuppelius
@@ -37,8 +36,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class ScheduledShift extends Model
-{
+class ScheduledShift extends Model {
     use Auditable;
     use BelongsToOrganization;
 
@@ -66,58 +64,49 @@ class ScheduledShift extends Model
     ];
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo
-    {
+    public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
     /** @return BelongsTo<DutyPlan, $this> */
-    public function dutyPlan(): BelongsTo
-    {
+    public function dutyPlan(): BelongsTo {
         return $this->belongsTo(DutyPlan::class);
     }
 
     /** @return BelongsTo<ShiftType, $this> */
-    public function shiftType(): BelongsTo
-    {
+    public function shiftType(): BelongsTo {
         return $this->belongsTo(ShiftType::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function creator(): BelongsTo
-    {
+    public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by');
     }
 
     /** @return BelongsTo<User, $this> */
-    public function editor(): BelongsTo
-    {
+    public function editor(): BelongsTo {
         return $this->belongsTo(User::class, 'updated_by');
     }
 
     /**
      * Resolved start_time: own value or ShiftType default.
      */
-    public function resolvedStartTime(): ?string
-    {
+    public function resolvedStartTime(): ?string {
         return $this->start_time ?? $this->shiftType?->default_start_time;
     }
 
     /**
      * Resolved end_time: own value or ShiftType default.
      */
-    public function resolvedEndTime(): ?string
-    {
+    public function resolvedEndTime(): ?string {
         return $this->end_time ?? $this->shiftType?->default_end_time;
     }
 
-    public function statusLabel(): string
-    {
+    public function statusLabel(): string {
         return $this->status->label();
     }
 
-    public function statusTone(): string
-    {
+    public function statusTone(): string {
         return $this->status->tone();
     }
 
@@ -127,8 +116,7 @@ class ScheduledShift extends Model
      * @param  Builder<ScheduledShift>  $query
      * @return Builder<ScheduledShift>
      */
-    public function scopeForDate(Builder $query, \DateTimeInterface|string $date): Builder
-    {
+    public function scopeForDate(Builder $query, \DateTimeInterface|string $date): Builder {
         return $query->whereDate('date', $date instanceof \DateTimeInterface ? $date->format('Y-m-d') : $date);
     }
 
@@ -136,8 +124,7 @@ class ScheduledShift extends Model
      * @param  Builder<ScheduledShift>  $query
      * @return Builder<ScheduledShift>
      */
-    public function scopeForDateRange(Builder $query, \DateTimeInterface|string $from, \DateTimeInterface|string $to): Builder
-    {
+    public function scopeForDateRange(Builder $query, \DateTimeInterface|string $from, \DateTimeInterface|string $to): Builder {
         $fromStr = $from instanceof \DateTimeInterface ? $from->format('Y-m-d') : $from;
         $toStr = $to instanceof \DateTimeInterface ? $to->format('Y-m-d') : $to;
 
@@ -148,8 +135,7 @@ class ScheduledShift extends Model
      * @param  Builder<ScheduledShift>  $query
      * @return Builder<ScheduledShift>
      */
-    public function scopeForUser(Builder $query, int $userId): Builder
-    {
+    public function scopeForUser(Builder $query, int $userId): Builder {
         return $query->where('user_id', $userId);
     }
 
@@ -157,8 +143,7 @@ class ScheduledShift extends Model
      * @param  Builder<ScheduledShift>  $query
      * @return Builder<ScheduledShift>
      */
-    public function scopePublished(Builder $query): Builder
-    {
+    public function scopePublished(Builder $query): Builder {
         return $query->where('status', ScheduledShiftStatus::Published->value);
     }
 
@@ -166,8 +151,7 @@ class ScheduledShift extends Model
      * @param  Builder<ScheduledShift>  $query
      * @return Builder<ScheduledShift>
      */
-    public function scopeDraft(Builder $query): Builder
-    {
+    public function scopeDraft(Builder $query): Builder {
         return $query->where('status', ScheduledShiftStatus::Draft->value);
     }
 
@@ -175,8 +159,7 @@ class ScheduledShift extends Model
      * @param  Builder<ScheduledShift>  $query
      * @return Builder<ScheduledShift>
      */
-    public function scopeVisible(Builder $query): Builder
-    {
+    public function scopeVisible(Builder $query): Builder {
         return $query->whereIn('status', [
             ScheduledShiftStatus::Published->value,
             ScheduledShiftStatus::Confirmed->value,

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,13 +15,11 @@ use App\Services\Material\Provider\LexofficeMaterialProvider;
 use App\Services\Material\Provider\LocalMaterialProvider;
 use Illuminate\Support\Collection;
 
-class MaterialProviderRegistry
-{
+class MaterialProviderRegistry {
     /** @var array<string, MaterialProviderInterface> */
     protected array $providers = [];
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->register(new LocalMaterialProvider);
 
         $key = (string) config('timesheet.providers.lexoffice.api_key', '');
@@ -31,19 +28,16 @@ class MaterialProviderRegistry
         }
     }
 
-    public function register(MaterialProviderInterface $provider): void
-    {
+    public function register(MaterialProviderInterface $provider): void {
         $this->providers[$provider->name()] = $provider;
     }
 
-    public function get(string $name): ?MaterialProviderInterface
-    {
+    public function get(string $name): ?MaterialProviderInterface {
         return $this->providers[$name] ?? null;
     }
 
     /** @return array<int, string> */
-    public function names(): array
-    {
+    public function names(): array {
         return array_keys($this->providers);
     }
 
@@ -52,12 +46,11 @@ class MaterialProviderRegistry
      *
      * @return Collection<int, Material>
      */
-    public function searchAll(string $query, int $limit = 20): Collection
-    {
+    public function searchAll(string $query, int $limit = 20): Collection {
         $results = collect();
         foreach ($this->providers as $provider) {
             foreach ($provider->search($query, $limit) as $material) {
-                $key = $material->external_provider.':'.($material->external_id ?? $material->id);
+                $key = $material->external_provider . ':' . ($material->external_id ?? $material->id);
                 if (! $results->has($key)) {
                     $results->put($key, $material);
                 }

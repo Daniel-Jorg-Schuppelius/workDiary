@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,10 +14,8 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class SecurityHeaders
-{
-    public function handle(Request $request, Closure $next): Response
-    {
+class SecurityHeaders {
+    public function handle(Request $request, Closure $next): Response {
         $response = $next($request);
 
         $response->headers->set('X-Content-Type-Options', 'nosniff');
@@ -40,8 +37,7 @@ class SecurityHeaders
         return $response;
     }
 
-    private function buildCsp(Request $request): string
-    {
+    private function buildCsp(Request $request): string {
         // Vite Dev-Server (HMR) im non-prod Modus zulassen.
         $viteDev = app()->environment('production')
             ? ''
@@ -51,13 +47,13 @@ class SecurityHeaders
             "default-src 'self'",
             // Tailwind/daisyUI sind kompiliert; inline Styles für Alpine x-bind/Color-Tokens noch erlaubt.
             // Externe Font-Stylesheets (Bunny + Google Material Icons) explizit erlauben.
-            "style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com".$viteDev,
+            "style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com" . $viteDev,
             // Inline-Scripts in Auth-/Legacy-Views vorhanden; bis Refactor kompatibel halten.
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'".$viteDev,
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'" . $viteDev,
             "img-src 'self' data: blob:",
             // Webfonts: Bunny liefert WOFF2 von fonts.bunny.net, Google Material Icons von fonts.gstatic.com.
             "font-src 'self' data: https://fonts.bunny.net https://fonts.gstatic.com",
-            "connect-src 'self'".$viteDev,
+            "connect-src 'self'" . $viteDev,
             "media-src 'self' blob:",
             "object-src 'none'",
             "base-uri 'self'",

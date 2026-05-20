@@ -2,6 +2,15 @@
 @php
     use App\Enums\Task\TaskPriority;
     use App\Enums\Task\TaskStatus;
+    /**
+     * @var \App\Models\Project $project
+     * @var \App\Models\Task|null $task
+     * @var \Illuminate\Support\Collection<int, \App\Models\Milestone> $milestones
+     * @var \Illuminate\Support\Collection<int, \App\Models\Task> $parentTasks
+     * @var \Illuminate\Support\Collection<int, \App\Models\User> $users
+     * @var int|null $preselectedParentId
+     * @var bool $isDialog
+     */
     $isDialog  = $isDialog ?? false;
     $action    = $task
         ? route('projects.tasks.update', [$project, $task])

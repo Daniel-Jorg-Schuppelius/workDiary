@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\Vacation\VacationStatus;
 use App\Models\DutyPlan;
 use App\Models\EmergencyAssignment;
 use App\Models\OnCallShift;
@@ -28,7 +28,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Enums\Vacation\VacationStatus;
 
 /**
  * Generates printable HTML views (A4/A3) for duty plans, on-call schedules
@@ -37,15 +36,14 @@ use App\Enums\Vacation\VacationStatus;
  *
  * Anonymisation: append `?anonymous=1` to any route to display only initials.
  */
-class PrintController extends Controller
-{
-    public function __construct(private readonly HolidayService $holidays) {}
+class PrintController extends Controller {
+    public function __construct(private readonly HolidayService $holidays) {
+    }
 
     /**
      * A3 querformat — Monats-Aushang: alle Mitarbeiter × alle Tage des Plans.
      */
-    public function dutyPlanRoster(Request $request, DutyPlan $dutyPlan): View
-    {
+    public function dutyPlanRoster(Request $request, DutyPlan $dutyPlan): View {
         Gate::authorize('view', $dutyPlan);
 
         $dutyPlan->load(['shifts.user:id,name,organization_id', 'shifts.shiftType']);
@@ -68,7 +66,7 @@ class PrintController extends Controller
         return view('print.duty_plan_a3_roster', [
             'pageSize' => 'A3 landscape',
             'pageMargin' => '7mm',
-            'title' => __('Dienstplan-Aushang').' — '.$dutyPlan->title,
+            'title' => __('Dienstplan-Aushang') . ' — ' . $dutyPlan->title,
             'dutyPlan' => $dutyPlan,
             'dates' => $dates,
             'users' => $users,
@@ -84,8 +82,7 @@ class PrintController extends Controller
     /**
      * A4 querformat — Wochenplan: alle Mitarbeiter × 7 Tage einer Kalenderwoche.
      */
-    public function dutyPlanWeek(Request $request, DutyPlan $dutyPlan): View
-    {
+    public function dutyPlanWeek(Request $request, DutyPlan $dutyPlan): View {
         Gate::authorize('view', $dutyPlan);
 
         $anchor = $this->parseDate($request->query('date'), $dutyPlan->from_date);
@@ -95,7 +92,7 @@ class PrintController extends Controller
         $dutyPlan->load(['shifts.user:id,name,organization_id', 'shifts.shiftType']);
 
         $shifts = $dutyPlan->shifts->filter(
-            fn (ScheduledShift $s): bool => $s->date->between($from, $to)
+            fn(ScheduledShift $s): bool => $s->date->between($from, $to)
         )->values();
 
         $dates = $this->datesBetween($from, $to);
@@ -112,7 +109,7 @@ class PrintController extends Controller
         return view('print.duty_plan_a4_week', [
             'pageSize' => 'A4 landscape',
             'pageMargin' => '8mm',
-            'title' => __('Wochenplan').' KW '.$from->weekOfYear.' / '.$from->year,
+            'title' => __('Wochenplan') . ' KW ' . $from->weekOfYear . ' / ' . $from->year,
             'dutyPlan' => $dutyPlan,
             'from' => $from,
             'to' => $to,
@@ -130,8 +127,7 @@ class PrintController extends Controller
     /**
      * A4 hoch — Tagesbriefing: ein Tag, alle Schichten + 24h-Zeitstrahl.
      */
-    public function dutyPlanDayBriefing(Request $request, DutyPlan $dutyPlan): View
-    {
+    public function dutyPlanDayBriefing(Request $request, DutyPlan $dutyPlan): View {
         Gate::authorize('view', $dutyPlan);
 
         $date = $this->parseDate($request->query('date'), $dutyPlan->from_date);
@@ -139,8 +135,8 @@ class PrintController extends Controller
         $dutyPlan->load(['shifts.user:id,name,organization_id', 'shifts.shiftType']);
 
         $shifts = $dutyPlan->shifts
-            ->filter(fn (ScheduledShift $s): bool => $s->date->isSameDay($date))
-            ->sortBy([fn (ScheduledShift $a, ScheduledShift $b) => strcmp(
+            ->filter(fn(ScheduledShift $s): bool => $s->date->isSameDay($date))
+            ->sortBy([fn(ScheduledShift $a, ScheduledShift $b) => strcmp(
                 (string) $a->resolvedStartTime(),
                 (string) $b->resolvedStartTime(),
             )])
@@ -149,7 +145,7 @@ class PrintController extends Controller
         return view('print.duty_plan_a4_day_briefing', [
             'pageSize' => 'A4 portrait',
             'pageMargin' => '10mm',
-            'title' => __('Tagesbriefing').' '.$date->translatedFormat('l, d.m.Y'),
+            'title' => __('Tagesbriefing') . ' ' . $date->translatedFormat('l, d.m.Y'),
             'dutyPlan' => $dutyPlan,
             'date' => $date,
             'shifts' => $shifts,
@@ -163,8 +159,7 @@ class PrintController extends Controller
     /**
      * A4 hoch — Mitarbeiter-Monatszettel: ein Mitarbeiter, ganzer Monat als Liste.
      */
-    public function userMonth(Request $request, User $user): View
-    {
+    public function userMonth(Request $request, User $user): View {
         /** @var ?User $actor */
         $actor = Auth::user();
         abort_unless($actor !== null && ($actor->id === $user->id || $actor->isAdmin()), 403);
@@ -189,12 +184,12 @@ class PrintController extends Controller
         return view('print.duty_plan_a4_user_month', [
             'pageSize' => 'A4 portrait',
             'pageMargin' => '10mm',
-            'title' => __('Monatsplan').' — '.($request->boolean('anonymous') ? printable_initials($user->name) : $user->name),
+            'title' => __('Monatsplan') . ' — ' . ($request->boolean('anonymous') ? printable_initials($user->name) : $user->name),
             'user' => $user,
             'month' => $month,
             'end' => $end,
             'dates' => $this->datesBetween($month, $end),
-            'shifts' => $shifts->groupBy(fn (ScheduledShift $s) => $s->date->toDateString()),
+            'shifts' => $shifts->groupBy(fn(ScheduledShift $s) => $s->date->toDateString()),
             'vacations' => $vacations,
             'holidays' => $this->holidays,
             'anonymous' => $request->boolean('anonymous'),
@@ -206,8 +201,7 @@ class PrintController extends Controller
     /**
      * A4 querformat — Bereitschafts- & Notdienstplan über einen Zeitraum.
      */
-    public function onCall(Request $request): View
-    {
+    public function onCall(Request $request): View {
         /** @var ?User $actor */
         $actor = Auth::user();
         abort_unless($actor?->isAdmin() === true, 403);
@@ -231,7 +225,7 @@ class PrintController extends Controller
             'pageSize' => 'A4 landscape',
             'pageMargin' => '8mm',
             'title' => __('Bereitschafts- und Notdienstplan'),
-            'subtitle' => $from->format('d.m.Y').' – '.$to->format('d.m.Y'),
+            'subtitle' => $from->format('d.m.Y') . ' – ' . $to->format('d.m.Y'),
             'from' => $from,
             'to' => $to,
             'shifts' => $shifts,
@@ -245,8 +239,7 @@ class PrintController extends Controller
     /**
      * A4 hoch — Urlaubsübersicht für ein Jahr (alle Mitarbeiter × Monate, Kalender-Streifen).
      */
-    public function vacationYear(Request $request): View
-    {
+    public function vacationYear(Request $request): View {
         /** @var ?User $actor */
         $actor = Auth::user();
         abort_unless($actor?->isAdmin() === true, 403);
@@ -268,7 +261,7 @@ class PrintController extends Controller
         return view('print.vacation_year_a4', [
             'pageSize' => 'A4 portrait',
             'pageMargin' => '8mm',
-            'title' => __('Urlaubsübersicht').' '.$year,
+            'title' => __('Urlaubsübersicht') . ' ' . $year,
             'year' => $year,
             'from' => $from,
             'to' => $to,
@@ -283,8 +276,7 @@ class PrintController extends Controller
     // ── helpers ─────────────────────────────────────────────────────────────
 
     /** @return list<string> */
-    private function datesBetween(\DateTimeInterface $from, \DateTimeInterface $to): array
-    {
+    private function datesBetween(\DateTimeInterface $from, \DateTimeInterface $to): array {
         $out = [];
         foreach (CarbonPeriod::create($from, $to) as $d) {
             $out[] = $d->toDateString();
@@ -297,8 +289,7 @@ class PrintController extends Controller
      * @param  Collection<int, ScheduledShift>  $shifts
      * @return Collection<int, User>
      */
-    private function usersForShifts(Collection $shifts): Collection
-    {
+    private function usersForShifts(Collection $shifts): Collection {
         return $shifts
             ->pluck('user')
             ->filter()
@@ -311,8 +302,7 @@ class PrintController extends Controller
      * @param  Collection<int, ScheduledShift>  $shifts
      * @return Collection<int, ShiftType>
      */
-    private function shiftTypesFromShifts(Collection $shifts): Collection
-    {
+    private function shiftTypesFromShifts(Collection $shifts): Collection {
         return $shifts
             ->pluck('shiftType')
             ->filter()
@@ -321,8 +311,7 @@ class PrintController extends Controller
             ->values();
     }
 
-    private function parseDate(?string $input, CarbonImmutable|\DateTimeInterface $fallback): CarbonImmutable
-    {
+    private function parseDate(?string $input, CarbonImmutable|\DateTimeInterface $fallback): CarbonImmutable {
         if (! $input) {
             return $fallback instanceof CarbonImmutable
                 ? $fallback

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -40,8 +39,7 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyArchiveDiaryEntry whereUser($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyArchiveDiaryEntry whereVon($value)
  */
-class LegacyArchiveDiaryEntry extends Model
-{
+class LegacyArchiveDiaryEntry extends Model {
     protected $connection = 'legacy';
 
     protected $table = 'a_tagebuch';
@@ -54,8 +52,7 @@ class LegacyArchiveDiaryEntry extends Model
 
     public $incrementing = false;
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'id' => 'integer',
             'aktuell' => 'datetime',
@@ -65,13 +62,11 @@ class LegacyArchiveDiaryEntry extends Model
         ];
     }
 
-    public function mitarbeiter(): BelongsTo
-    {
+    public function mitarbeiter(): BelongsTo {
         return $this->belongsTo(LegacyUser::class, 'user', 'id');
     }
 
-    public function statusLabel(): string
-    {
+    public function statusLabel(): string {
         return match ($this->gelesen) {
             -1 => __('Erledigt'),
             1 => __('Bestätigt'),

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Strings exposed to JavaScript via window.__translations.
  * Keys here are also accessible from JS via window.__('js.key') after

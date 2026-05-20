@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,13 +18,11 @@ use Carbon\CarbonImmutable;
  * precedence (so bookmarked URLs still work), otherwise the globally
  * selected DateRangeContext (from the header widget) is used.
  */
-trait ResolvesGlobalDateRange
-{
+trait ResolvesGlobalDateRange {
     /**
      * @return array{from: CarbonImmutable, to: CarbonImmutable, preset: string, label: string}
      */
-    protected function globalDateRange(): array
-    {
+    protected function globalDateRange(): array {
         return app(DateRangeContext::class)->current();
     }
 }

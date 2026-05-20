@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,11 +10,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Task\TaskStatus;
 use App\Http\Requests\SaveTimeEntryRequest;
 use App\Models\DiaryEntry;
 use App\Models\Project;
-use App\Enums\Task\TaskStatus;
-use App\Models\Task;
 use App\Models\TimeEntry;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
@@ -23,15 +21,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class TimeEntryController extends Controller
-{
+class TimeEntryController extends Controller {
     /**
      * Projekt-Picker für die Sidebar-Aktion „Zeiteintrag". Stunden brauchen
      * immer ein Projekt — der User wählt hier zuerst eines aus und landet
      * dann im normalen Erfassungs-Dialog.
      */
-    public function pick(): View
-    {
+    public function pick(): View {
         Gate::authorize('create', TimeEntry::class);
 
         return view('projects._picker_dialog', Project::pickerData() + [
@@ -44,8 +40,7 @@ class TimeEntryController extends Controller
         ]);
     }
 
-    public function create(Project $project): View
-    {
+    public function create(Project $project): View {
         Gate::authorize('create', TimeEntry::class);
 
         $tasks = $project->tasks()
@@ -62,8 +57,7 @@ class TimeEntryController extends Controller
         ]);
     }
 
-    public function store(Project $project, SaveTimeEntryRequest $request): RedirectResponse
-    {
+    public function store(Project $project, SaveTimeEntryRequest $request): RedirectResponse {
         Gate::authorize('create', TimeEntry::class);
 
         $data = $request->validated();
@@ -77,8 +71,7 @@ class TimeEntryController extends Controller
             ->with('success', __('Zeiteintrag erfasst.'));
     }
 
-    public function edit(Project $project, TimeEntry $timeEntry): View
-    {
+    public function edit(Project $project, TimeEntry $timeEntry): View {
         Gate::authorize('update', $timeEntry);
 
         $tasks = $project->tasks()
@@ -103,8 +96,7 @@ class TimeEntryController extends Controller
      *
      * @return Collection<int, DiaryEntry>
      */
-    private function diaryOptions(Project $project, ?int $currentId = null): Collection
-    {
+    private function diaryOptions(Project $project, ?int $currentId = null): Collection {
         return DiaryEntry::query()
             ->select(['id', 'title', 'content', 'mode', 'status', 'project_id'])
             ->where('is_archived', false)
@@ -125,8 +117,7 @@ class TimeEntryController extends Controller
             ->get();
     }
 
-    public function update(Project $project, TimeEntry $timeEntry, SaveTimeEntryRequest $request): RedirectResponse
-    {
+    public function update(Project $project, TimeEntry $timeEntry, SaveTimeEntryRequest $request): RedirectResponse {
         Gate::authorize('update', $timeEntry);
 
         $timeEntry->update($request->validated());
@@ -135,8 +126,7 @@ class TimeEntryController extends Controller
             ->with('success', __('Zeiteintrag aktualisiert.'));
     }
 
-    public function destroy(Project $project, TimeEntry $timeEntry): RedirectResponse
-    {
+    public function destroy(Project $project, TimeEntry $timeEntry): RedirectResponse {
         Gate::authorize('delete', $timeEntry);
 
         $timeEntry->delete();

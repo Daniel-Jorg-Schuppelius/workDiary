@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -29,10 +28,8 @@ use Illuminate\Database\Eloquent\Collection;
  *    Beginn mindestens `sickness.chain_reset_after_months` Monate, beginnt
  *    der Anspruch neu (vereinfachte Heuristik ohne Diagnose-Vergleich).
  */
-class ContinuedPaymentService
-{
-    public function statusFor(User $user, ?CarbonInterface $reference = null): ContinuedPaymentStatus
-    {
+class ContinuedPaymentService {
+    public function statusFor(User $user, ?CarbonInterface $reference = null): ContinuedPaymentStatus {
         $ref = CarbonImmutable::parse(($reference ?? CarbonImmutable::now())->toDateString());
         $entitlement = (int) config('sickness.continued_pay_weeks', 6) * 7;
         $resetMonths = (int) config('sickness.chain_reset_after_months', 6);
@@ -95,8 +92,7 @@ class ContinuedPaymentService
      * @param  Collection<int, SickLeave>  $leaves
      * @return list<array{start: CarbonImmutable, end: CarbonImmutable}>
      */
-    private function groupEpisodes(Collection $leaves, int $resetMonths): array
-    {
+    private function groupEpisodes(Collection $leaves, int $resetMonths): array {
         /** @var list<array{start: CarbonImmutable, end: CarbonImmutable}> $episodes */
         $episodes = [];
         $current = null;
@@ -148,8 +144,7 @@ class ContinuedPaymentService
      * @param  list<array{start: CarbonImmutable, end: CarbonImmutable}>  $episodes
      * @return array{start: CarbonImmutable, end: CarbonImmutable}|null
      */
-    private function episodeContaining(array $episodes, CarbonImmutable $ref): ?array
-    {
+    private function episodeContaining(array $episodes, CarbonImmutable $ref): ?array {
         foreach ($episodes as $ep) {
             if ($ref->betweenIncluded($ep['start'], $ep['end'])) {
                 return $ep;
@@ -163,8 +158,7 @@ class ContinuedPaymentService
      * @param  list<array{start: CarbonImmutable, end: CarbonImmutable}>  $episodes
      * @return array{start: CarbonImmutable, end: CarbonImmutable}|null
      */
-    private function lastEpisodeBefore(array $episodes, CarbonImmutable $ref): ?array
-    {
+    private function lastEpisodeBefore(array $episodes, CarbonImmutable $ref): ?array {
         $found = null;
         foreach ($episodes as $ep) {
             if ($ep['end']->lessThanOrEqualTo($ref)) {

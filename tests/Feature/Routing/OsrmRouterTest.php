@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,22 +16,18 @@ use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
-class OsrmRouterTest extends TestCase
-{
-    protected function setUp(): void
-    {
+class OsrmRouterTest extends TestCase {
+    protected function setUp(): void {
         parent::setUp();
         config()->set('routing.osrm.base_url', 'http://osrm.test');
         config()->set('routing.osrm.profile', 'driving');
     }
 
-    private function router(): OsrmRouter
-    {
+    private function router(): OsrmRouter {
         return $this->app->make(OsrmRouter::class);
     }
 
-    public function test_returns_route_result(): void
-    {
+    public function test_returns_route_result(): void {
         Http::fake([
             'osrm.test/*' => Http::response([
                 'code' => 'Ok',
@@ -58,14 +53,12 @@ class OsrmRouterTest extends TestCase
         });
     }
 
-    public function test_requires_two_coordinates(): void
-    {
+    public function test_requires_two_coordinates(): void {
         $this->expectException(RoutingException::class);
         $this->router()->route([[13.0, 52.0]]);
     }
 
-    public function test_throws_on_non_ok(): void
-    {
+    public function test_throws_on_non_ok(): void {
         Http::fake([
             'osrm.test/*' => Http::response(['code' => 'NoRoute', 'routes' => []], 200),
         ]);

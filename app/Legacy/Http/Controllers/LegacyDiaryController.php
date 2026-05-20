@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -31,12 +30,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
-class LegacyDiaryController extends Controller
-{
+class LegacyDiaryController extends Controller {
     use RequiresLegacyAdmin;
 
-    public function index(Request $request, LegacyDashboardService $dashboard): View
-    {
+    public function index(Request $request, LegacyDashboardService $dashboard): View {
         /** @var User $currentUser */
         $currentUser = Auth::user();
 
@@ -46,8 +43,7 @@ class LegacyDiaryController extends Controller
         return view('legacy.diary.index', $data);
     }
 
-    public function week(Request $request, LegacyWeekCalendarService $calendar, HolidayService $holidays): View
-    {
+    public function week(Request $request, LegacyWeekCalendarService $calendar, HolidayService $holidays): View {
         $weekOffset = (int) $request->query('week', 0);
         $weekDate = trim((string) $request->query('week_date', ''));
         /** @var User $authUser */
@@ -102,15 +98,13 @@ class LegacyDiaryController extends Controller
         ]);
     }
 
-    public function create(): View|Response
-    {
+    public function create(): View|Response {
         $data = $this->formData(null, false);
 
         return response(view('legacy.diary._form_dialog', $data));
     }
 
-    public function store(SaveLegacyDiaryEntryRequest $request): RedirectResponse|JsonResponse
-    {
+    public function store(SaveLegacyDiaryEntryRequest $request): RedirectResponse|JsonResponse {
         $authUser = Auth::user();
         $isAdmin = LegacyRoleResolver::isAdmin($authUser);
 
@@ -143,8 +137,7 @@ class LegacyDiaryController extends Controller
         return redirect()->route('legacy.diary.show', $entry)->with('success', 'Legacy-Eintrag gespeichert.');
     }
 
-    public function show(LegacyDiaryEntry $entry): View|Response
-    {
+    public function show(LegacyDiaryEntry $entry): View|Response {
         $entry->load('author:id,uname');
 
         if (request()->boolean('dialog')) {
@@ -156,8 +149,7 @@ class LegacyDiaryController extends Controller
         ]);
     }
 
-    public function edit(LegacyDiaryEntry $entry): View|Response
-    {
+    public function edit(LegacyDiaryEntry $entry): View|Response {
         $this->ensureCanModify($entry);
 
         $data = $this->formData($entry, true);
@@ -165,8 +157,7 @@ class LegacyDiaryController extends Controller
         return response(view('legacy.diary._form_dialog', $data));
     }
 
-    public function update(SaveLegacyDiaryEntryRequest $request, LegacyDiaryEntry $entry): RedirectResponse|JsonResponse
-    {
+    public function update(SaveLegacyDiaryEntryRequest $request, LegacyDiaryEntry $entry): RedirectResponse|JsonResponse {
         $this->ensureCanModify($entry);
 
         $authUser = Auth::user();
@@ -190,8 +181,7 @@ class LegacyDiaryController extends Controller
         return redirect()->route('legacy.diary.show', $entry)->with('success', 'Legacy-Eintrag aktualisiert.');
     }
 
-    public function destroy(LegacyDiaryEntry $entry): RedirectResponse
-    {
+    public function destroy(LegacyDiaryEntry $entry): RedirectResponse {
         $this->ensureCanModify($entry);
 
         $entry->delete();
@@ -199,8 +189,7 @@ class LegacyDiaryController extends Controller
         return redirect()->route('legacy.diary.index')->with('success', 'Legacy-Eintrag geloescht.');
     }
 
-    private function ensureCanModify(LegacyDiaryEntry $entry): void
-    {
+    private function ensureCanModify(LegacyDiaryEntry $entry): void {
         $authUser = Auth::user();
 
         if (LegacyRoleResolver::isAdmin($authUser)) {
@@ -215,8 +204,7 @@ class LegacyDiaryController extends Controller
     /** @param array<string, mixed> $data
      * @return array<string, mixed>
      */
-    private function entryPayload(array $data, int $entryUserId, Request $request): array
-    {
+    private function entryPayload(array $data, int $entryUserId, Request $request): array {
         return [
             'aktuell' => now(),
             'user' => $entryUserId,
@@ -230,8 +218,7 @@ class LegacyDiaryController extends Controller
     }
 
     /** @return array<string, mixed> */
-    private function formData(?LegacyDiaryEntry $entry, bool $isEdit): array
-    {
+    private function formData(?LegacyDiaryEntry $entry, bool $isEdit): array {
         $isAdmin = LegacyRoleResolver::isAdmin(Auth::user());
 
         return [
@@ -242,8 +229,7 @@ class LegacyDiaryController extends Controller
         ];
     }
 
-    private function sendLegacySmsMail(?LegacyDiaryEntry $entry): void
-    {
+    private function sendLegacySmsMail(?LegacyDiaryEntry $entry): void {
         if (! $entry || (string) $entry->sms !== 'j') {
             return;
         }
@@ -256,15 +242,15 @@ class LegacyDiaryController extends Controller
             return;
         }
 
-        $subject = 'WorkDiary Legacy Hinweis #'.$entry->id;
+        $subject = 'WorkDiary Legacy Hinweis #' . $entry->id;
         $body = "Ein neuer Legacy-Eintrag wurde gespeichert.\n\n"
-            .'ID: '.$entry->id."\n"
-            .'Mitarbeiter: '.(optional($entry->author)->uname ?? 'Unbekannt')."\n"
-            .'Status: '.$entry->statusLabel()."\n"
-            .'Von: '.($entry->von?->format('d.m.Y H:i') ?? '-')."\n"
-            .'Bis: '.($entry->bis?->format('d.m.Y H:i') ?? '-')."\n\n"
-            .'Inhalt:'."\n"
-            .(string) $entry->inhalt;
+            . 'ID: ' . $entry->id . "\n"
+            . 'Mitarbeiter: ' . (optional($entry->author)->uname ?? 'Unbekannt') . "\n"
+            . 'Status: ' . $entry->statusLabel() . "\n"
+            . 'Von: ' . ($entry->von?->format('d.m.Y H:i') ?? '-') . "\n"
+            . 'Bis: ' . ($entry->bis?->format('d.m.Y H:i') ?? '-') . "\n\n"
+            . 'Inhalt:' . "\n"
+            . (string) $entry->inhalt;
 
         Mail::raw($body, function ($message) use ($mail, $subject): void {
             $message->to($mail)->subject($subject);

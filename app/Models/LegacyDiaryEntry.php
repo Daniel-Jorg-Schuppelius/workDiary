@@ -6,15 +6,16 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int|null $user
  * @property string|null $inhalt
  * @property string|null $sms
- * @property \Illuminate\Support\Carbon|null $von
- * @property \Illuminate\Support\Carbon|null $bis
- * @property \Illuminate\Support\Carbon|null $aktuell
+ * @property Carbon|null $von
+ * @property Carbon|null $bis
+ * @property Carbon|null $aktuell
  * @property int|null $gelesen
  */
 class LegacyDiaryEntry extends Model {
@@ -37,14 +38,17 @@ class LegacyDiaryEntry extends Model {
         ];
     }
 
+    /** @return BelongsTo<LegacyUser, $this> */
     public function author(): BelongsTo {
         return $this->belongsTo(LegacyUser::class, 'user', 'id');
     }
 
+    /** @return BelongsTo<LegacyUser, $this> */
     public function user(): BelongsTo {
         return $this->author();
     }
 
+    /** @param Builder<self> $query */
     #[Scope]
     protected function active(Builder $query): void {
         $query->where('bis', '>=', now()->subDays(30));

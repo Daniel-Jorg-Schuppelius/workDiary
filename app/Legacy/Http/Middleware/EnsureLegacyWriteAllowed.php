@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,10 +14,8 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class EnsureLegacyWriteAllowed
-{
-    public function handle(Request $request, Closure $next): Response
-    {
+class EnsureLegacyWriteAllowed {
+    public function handle(Request $request, Closure $next): Response {
         // Lese-Anfragen passieren immer durch.
         if ($request->isMethodSafe()) {
             return $next($request);

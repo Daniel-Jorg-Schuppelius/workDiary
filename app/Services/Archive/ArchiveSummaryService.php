@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Archive;
 
+use App\Enums\Vacation\VacationStatus;
 use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
 use App\Models\OnCallShift;
@@ -21,14 +21,12 @@ use App\Models\Vacation;
 use App\Support\SortableQuery;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use App\Enums\Vacation\VacationStatus;
 
 /**
  * Aggregiert Daten für die Archiv-Übersicht
  * (Tagebuch / Bereitschaft / Notdienst / Urlaub).
  */
-class ArchiveSummaryService
-{
+class ArchiveSummaryService {
     private const ALLOWED_TABS = ['diary', 'bereitschaft', 'notdienst', 'urlaub'];
 
     private const ALLOWED_STATUS = ['all', '-1', '1', '2', '3'];
@@ -36,8 +34,7 @@ class ArchiveSummaryService
     /**
      * @return array<string,mixed>
      */
-    public function buildIndexData(Request $request, User $currentUser, string $rangeFrom, string $rangeTo): array
-    {
+    public function buildIndexData(Request $request, User $currentUser, string $rangeFrom, string $rangeTo): array {
         $isAdmin = $currentUser->isAdmin();
         $tab = $this->resolveTab((string) $request->query('tab', 'diary'));
         $statusFilter = $this->resolveStatus((string) $request->query('status', 'all'));
@@ -139,21 +136,18 @@ class ArchiveSummaryService
         ];
     }
 
-    private function resolveTab(string $tab): string
-    {
+    private function resolveTab(string $tab): string {
         return in_array($tab, self::ALLOWED_TABS, true) ? $tab : 'diary';
     }
 
-    private function resolveStatus(string $status): string
-    {
+    private function resolveStatus(string $status): string {
         return in_array($status, self::ALLOWED_STATUS, true) ? $status : 'all';
     }
 
     /**
      * @return Builder<DiaryEntry>
      */
-    private function buildDiaryQuery(): Builder
-    {
+    private function buildDiaryQuery(): Builder {
         /** @var Builder<DiaryEntry> $q */
         $q = DiaryEntry::query()
             ->select(['id', 'user_id', 'content', 'status', 'start_at', 'end_at', 'archived_at'])
@@ -167,8 +161,7 @@ class ArchiveSummaryService
     /**
      * @return Builder<OnCallShift>
      */
-    private function buildShiftQuery(): Builder
-    {
+    private function buildShiftQuery(): Builder {
         /** @var Builder<OnCallShift> $q */
         $q = OnCallShift::query()
             ->select(['id', 'user_id', 'start_at', 'end_at', 'note'])
@@ -182,8 +175,7 @@ class ArchiveSummaryService
     /**
      * @return Builder<EmergencyAssignment>
      */
-    private function buildAssignmentQuery(): Builder
-    {
+    private function buildAssignmentQuery(): Builder {
         /** @var Builder<EmergencyAssignment> $q */
         $q = EmergencyAssignment::query()
             ->select(['id', 'user_id', 'on_call_shift_id', 'start_at', 'end_at', 'reason'])
@@ -197,8 +189,7 @@ class ArchiveSummaryService
     /**
      * @return Builder<Vacation>
      */
-    private function buildVacationQuery(): Builder
-    {
+    private function buildVacationQuery(): Builder {
         /** @var Builder<Vacation> $q */
         $q = Vacation::query()
             ->with('user:id,name')
@@ -255,8 +246,7 @@ class ArchiveSummaryService
      * @param  Builder<TModel>  $query
      * @return array<string,int|float>
      */
-    private function durationKpis(Builder $query, int $total): array
-    {
+    private function durationKpis(Builder $query, int $total): array {
         $base = clone $query;
         $durations = (clone $base)->get(['start_at', 'end_at'])
             ->map(function ($row) {

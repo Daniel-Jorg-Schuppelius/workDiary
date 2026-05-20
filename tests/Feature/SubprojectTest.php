@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +10,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Project\ProjectStatus;
 use App\Models\Customer;
 use App\Models\Project;
 use App\Models\User;
@@ -18,10 +18,8 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
-use App\Enums\Project\ProjectStatus;
 
-class SubprojectTest extends TestCase
-{
+class SubprojectTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
@@ -29,8 +27,7 @@ class SubprojectTest extends TestCase
 
     private Customer $customer;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
@@ -45,33 +42,30 @@ class SubprojectTest extends TestCase
         ]);
     }
 
-    private function makeProject(array $attrs = []): Project
-    {
+    private function makeProject(array $attrs = []): Project {
         return Project::create(array_merge([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
-            'name' => 'Projekt '.uniqid('', true),
+            'name' => 'Projekt ' . uniqid('', true),
             'status' => ProjectStatus::Active->value,
         ], $attrs));
     }
 
-    public function test_sub_project_inherits_customer_from_parent(): void
-    {
+    public function test_sub_project_inherits_customer_from_parent(): void {
         $parent = $this->makeProject();
 
         $child = Project::create([
             'organization_id' => $this->organization->id,
             'customer_id' => null,
             'parent_id' => $parent->id,
-            'name' => 'Sub '.uniqid('', true),
+            'name' => 'Sub ' . uniqid('', true),
             'status' => ProjectStatus::Active->value,
         ]);
 
         $this->assertSame((int) $parent->customer_id, (int) $child->customer_id);
     }
 
-    public function test_sub_project_with_mismatched_customer_is_overridden_by_parent(): void
-    {
+    public function test_sub_project_with_mismatched_customer_is_overridden_by_parent(): void {
         $parent = $this->makeProject();
         $other = Customer::factory()->create([
             'organization_id' => $this->organization->id,
@@ -81,15 +75,14 @@ class SubprojectTest extends TestCase
             'organization_id' => $this->organization->id,
             'customer_id' => $other->id,
             'parent_id' => $parent->id,
-            'name' => 'Sub '.uniqid('', true),
+            'name' => 'Sub ' . uniqid('', true),
             'status' => ProjectStatus::Active->value,
         ]);
 
         $this->assertSame((int) $parent->customer_id, (int) $child->customer_id);
     }
 
-    public function test_self_parent_is_rejected_via_request(): void
-    {
+    public function test_self_parent_is_rejected_via_request(): void {
         $project = $this->makeProject();
 
         $this->actingAs($this->user)
@@ -101,8 +94,7 @@ class SubprojectTest extends TestCase
             ->assertSessionHasErrors('parent_id');
     }
 
-    public function test_descendant_as_parent_is_rejected_via_request(): void
-    {
+    public function test_descendant_as_parent_is_rejected_via_request(): void {
         $parent = $this->makeProject(['name' => 'Root A']);
         $child = Project::create([
             'organization_id' => $this->organization->id,
@@ -120,8 +112,7 @@ class SubprojectTest extends TestCase
             ->assertSessionHasErrors('parent_id');
     }
 
-    public function test_is_default_on_sub_project_is_forced_to_false(): void
-    {
+    public function test_is_default_on_sub_project_is_forced_to_false(): void {
         $parent = $this->makeProject();
 
         $child = Project::create([
@@ -135,8 +126,7 @@ class SubprojectTest extends TestCase
         $this->assertFalse((bool) $child->fresh()->is_default);
     }
 
-    public function test_effective_hourly_rate_walks_up_to_parent_then_customer(): void
-    {
+    public function test_effective_hourly_rate_walks_up_to_parent_then_customer(): void {
         $parent = $this->makeProject(['hourly_rate' => 120]);
         $child = Project::create([
             'organization_id' => $this->organization->id,
@@ -157,8 +147,7 @@ class SubprojectTest extends TestCase
         $this->assertSame(80.0, $standalone->effectiveHourlyRate());
     }
 
-    public function test_delete_with_children_is_blocked_by_policy(): void
-    {
+    public function test_delete_with_children_is_blocked_by_policy(): void {
         $parent = $this->makeProject();
         Project::create([
             'organization_id' => $this->organization->id,

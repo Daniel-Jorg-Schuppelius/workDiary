@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,10 +20,8 @@ use Illuminate\Validation\Validator;
 /**
  * Validates a non-project (administrative / travel / training) TimeEntry.
  */
-class SaveAdminTimeEntryRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class SaveAdminTimeEntryRequest extends FormRequest {
+    public function authorize(): bool {
         return true;
     }
 
@@ -34,8 +31,7 @@ class SaveAdminTimeEntryRequest extends FormRequest
      * is less than or equal to the start time, the day rolls over (the
      * entry crosses midnight).
      */
-    protected function prepareForValidation(): void
-    {
+    protected function prepareForValidation(): void {
         $date = is_string($this->input('date')) ? trim($this->input('date')) : null;
         $startTime = is_string($this->input('start_time')) ? trim($this->input('start_time')) : null;
         $endTime = is_string($this->input('end_time')) ? trim($this->input('end_time')) : null;
@@ -77,8 +73,7 @@ class SaveAdminTimeEntryRequest extends FormRequest
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         return [
             'date' => ['required', 'date'],
             'minutes' => ['required', 'integer', 'min:1', 'max:1440'],
@@ -101,8 +96,7 @@ class SaveAdminTimeEntryRequest extends FormRequest
         ];
     }
 
-    public function withValidator(Validator $validator): void
-    {
+    public function withValidator(Validator $validator): void {
         $validator->after(function ($v): void {
             if ($this->filled('end_time') && ! $this->filled('start_time')) {
                 $v->errors()->add('start_time', __('Startzeit erforderlich, wenn eine Endzeit angegeben ist.'));

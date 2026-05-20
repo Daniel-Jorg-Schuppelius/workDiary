@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,13 +20,11 @@ use App\Models\Attendance;
  * and means: as soon as the gross working time exceeds `after_minutes`, at
  * least `required_minutes` of cumulative breaks must be taken.
  */
-class BreakRuleEvaluator
-{
+class BreakRuleEvaluator {
     /**
      * @return array<int, array{after_minutes: int, required_minutes: int}>
      */
-    public function rules(): array
-    {
+    public function rules(): array {
         $raw = (array) config('timesheet.breaks.rules', []);
         $rules = [];
         foreach ($raw as $r) {
@@ -39,7 +36,7 @@ class BreakRuleEvaluator
                 'required_minutes' => (int) $r['required_minutes'],
             ];
         }
-        usort($rules, static fn ($a, $b) => $a['after_minutes'] <=> $b['after_minutes']);
+        usort($rules, static fn($a, $b) => $a['after_minutes'] <=> $b['after_minutes']);
 
         return $rules;
     }
@@ -47,8 +44,7 @@ class BreakRuleEvaluator
     /**
      * Minimum break minutes required for a given gross working time.
      */
-    public function requiredMinutes(int $grossMinutes): int
-    {
+    public function requiredMinutes(int $grossMinutes): int {
         $required = 0;
         foreach ($this->rules() as $rule) {
             if ($grossMinutes > $rule['after_minutes']) {
@@ -62,8 +58,7 @@ class BreakRuleEvaluator
     /**
      * Difference between required and already recorded breaks (>= 0).
      */
-    public function missingMinutes(Attendance $attendance): int
-    {
+    public function missingMinutes(Attendance $attendance): int {
         if (! $attendance->started_at || ! $attendance->ended_at) {
             return 0;
         }
@@ -81,8 +76,7 @@ class BreakRuleEvaluator
      * Mutates the given Attendance so the statutory minimum is met by
      * topping up `break_minutes_auto`. Returns the number of minutes added.
      */
-    public function applyMissingBreak(Attendance $attendance): int
-    {
+    public function applyMissingBreak(Attendance $attendance): int {
         $missing = $this->missingMinutes($attendance);
         if ($missing <= 0) {
             return 0;
@@ -92,8 +86,7 @@ class BreakRuleEvaluator
         return $missing;
     }
 
-    public function autoApplyEnabled(): bool
-    {
+    public function autoApplyEnabled(): bool {
         return (bool) config('timesheet.breaks.auto_apply', true);
     }
 }

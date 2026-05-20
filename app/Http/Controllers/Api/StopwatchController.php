@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +10,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Timesheet\TimesheetStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TimeEntryResource;
 use App\Models\Project;
@@ -21,21 +21,18 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use App\Enums\Timesheet\TimesheetStatus;
 
-class StopwatchController extends Controller
-{
-    public function __construct(protected Stopwatch $stopwatch) {}
+class StopwatchController extends Controller {
+    public function __construct(protected Stopwatch $stopwatch) {
+    }
 
-    public function current(): JsonResponse|TimeEntryResource
-    {
+    public function current(): JsonResponse|TimeEntryResource {
         $entry = $this->stopwatch->current($this->authUser());
 
         return $entry ? new TimeEntryResource($entry) : response()->json(null);
     }
 
-    public function start(Request $request): TimeEntryResource
-    {
+    public function start(Request $request): TimeEntryResource {
         $data = $request->validate([
             'project_id' => ['required', 'integer', 'exists:projects,id'],
             'task_id' => ['nullable', 'integer', 'exists:tasks,id'],
@@ -60,8 +57,7 @@ class StopwatchController extends Controller
         return new TimeEntryResource($this->stopwatch->start($this->authUser(), $timesheet, $data['task_id'] ?? null, $data['description'] ?? null));
     }
 
-    public function stop(): JsonResponse|TimeEntryResource
-    {
+    public function stop(): JsonResponse|TimeEntryResource {
         $entry = $this->stopwatch->stop($this->authUser());
 
         return $entry ? new TimeEntryResource($entry) : response()->json(null);

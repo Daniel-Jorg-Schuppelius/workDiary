@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 11 2026
  * Author       : Daniel Jörg Schuppelius
@@ -35,8 +34,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class ShiftType extends Model
-{
+class ShiftType extends Model {
     use Auditable;
     use BelongsToOrganization;
 
@@ -60,14 +58,12 @@ class ShiftType extends Model
     ];
 
     /** @return BelongsTo<User, $this> */
-    public function creator(): BelongsTo
-    {
+    public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by');
     }
 
     /** @return HasMany<ScheduledShift, $this> */
-    public function scheduledShifts(): HasMany
-    {
+    public function scheduledShifts(): HasMany {
         return $this->hasMany(ScheduledShift::class);
     }
 
@@ -76,16 +72,14 @@ class ShiftType extends Model
      *
      * @return BelongsToMany<Qualification, $this>
      */
-    public function qualifications(): BelongsToMany
-    {
+    public function qualifications(): BelongsToMany {
         return $this->belongsToMany(Qualification::class, 'shift_type_qualifications');
     }
 
     /**
      * Returns a DaisyUI-compatible inline style fragment for the badge background.
      */
-    public function badgeStyle(): string
-    {
+    public function badgeStyle(): string {
         return "background-color:{$this->color};color:#fff;";
     }
 
@@ -95,8 +89,7 @@ class ShiftType extends Model
      * @param  Builder<ShiftType>  $query
      * @return Builder<ShiftType>
      */
-    public function scopeActive(Builder $query): Builder
-    {
+    public function scopeActive(Builder $query): Builder {
         return $query->where('is_active', true);
     }
 }

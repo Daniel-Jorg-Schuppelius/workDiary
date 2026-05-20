@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Timesheet\TimesheetStatus;
 use App\Http\Requests\SaveTimesheetRequest;
 use App\Models\Customer;
 use App\Models\Project;
@@ -25,12 +25,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use App\Enums\Timesheet\TimesheetStatus;
 
-class TimesheetController extends Controller
-{
-    public function index(Request $request): View
-    {
+class TimesheetController extends Controller {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', Timesheet::class);
 
         $userId = (int) Auth::id();
@@ -77,8 +74,7 @@ class TimesheetController extends Controller
      * Projekt-Picker für die Sidebar-Aktion „Stundenzettel". Analog zum
      * Zeiteintrag-Picker — Stundenzettel sind immer projektgebunden.
      */
-    public function pick(): View
-    {
+    public function pick(): View {
         Gate::authorize('create', Timesheet::class);
 
         return view('projects._picker_dialog', Project::pickerData() + [
@@ -91,8 +87,7 @@ class TimesheetController extends Controller
         ]);
     }
 
-    public function create(Project $project): View
-    {
+    public function create(Project $project): View {
         Gate::authorize('create', Timesheet::class);
 
         return view('timesheets._form_dialog', [
@@ -101,8 +96,7 @@ class TimesheetController extends Controller
         ]);
     }
 
-    public function store(Project $project, SaveTimesheetRequest $request): RedirectResponse
-    {
+    public function store(Project $project, SaveTimesheetRequest $request): RedirectResponse {
         Gate::authorize('create', Timesheet::class);
 
         $timesheet = $project->timesheets()->create($request->validated() + [
@@ -120,8 +114,7 @@ class TimesheetController extends Controller
      * fällt automatisch auf das Standardprojekt des Kunden zurück, wenn
      * kein Projekt angegeben ist (z. B. ad-hoc / Notfall-Einsätze).
      */
-    public function storeQuick(Request $request): RedirectResponse
-    {
+    public function storeQuick(Request $request): RedirectResponse {
         Gate::authorize('create', Timesheet::class);
 
         $data = $request->validate([
@@ -156,8 +149,7 @@ class TimesheetController extends Controller
             ->with('success', __('Stundenzettel angelegt.'));
     }
 
-    public function show(Project $project, Timesheet $timesheet, MaterialProviderRegistry $registry): View
-    {
+    public function show(Project $project, Timesheet $timesheet, MaterialProviderRegistry $registry): View {
         Gate::authorize('view', $timesheet);
         $timesheet->load(['entries.task', 'materialUsages.material', 'signatureAttachment']);
 
@@ -172,8 +164,7 @@ class TimesheetController extends Controller
         ]);
     }
 
-    public function edit(Project $project, Timesheet $timesheet): View
-    {
+    public function edit(Project $project, Timesheet $timesheet): View {
         Gate::authorize('update', $timesheet);
 
         return view('timesheets._form_dialog', [
@@ -182,8 +173,7 @@ class TimesheetController extends Controller
         ]);
     }
 
-    public function update(Project $project, Timesheet $timesheet, SaveTimesheetRequest $request): RedirectResponse
-    {
+    public function update(Project $project, Timesheet $timesheet, SaveTimesheetRequest $request): RedirectResponse {
         Gate::authorize('update', $timesheet);
         $timesheet->update($request->validated());
 
@@ -191,8 +181,7 @@ class TimesheetController extends Controller
             ->with('success', __('Stundenzettel aktualisiert.'));
     }
 
-    public function destroy(Project $project, Timesheet $timesheet): RedirectResponse
-    {
+    public function destroy(Project $project, Timesheet $timesheet): RedirectResponse {
         Gate::authorize('delete', $timesheet);
         $timesheet->delete();
 
@@ -200,8 +189,7 @@ class TimesheetController extends Controller
             ->with('success', __('Stundenzettel gelöscht.'));
     }
 
-    public function submit(Project $project, Timesheet $timesheet): RedirectResponse
-    {
+    public function submit(Project $project, Timesheet $timesheet): RedirectResponse {
         Gate::authorize('submit', $timesheet);
         $timesheet->update(['status' => TimesheetStatus::Submitted->value]);
 

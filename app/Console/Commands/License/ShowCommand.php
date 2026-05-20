@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,20 +13,18 @@ namespace App\Console\Commands\License;
 use App\Services\Licensing\LicenseService;
 use Illuminate\Console\Command;
 
-class ShowCommand extends Command
-{
+class ShowCommand extends Command {
     protected $signature = 'license:show {--host= : Domain für die Prüfung simulieren}';
 
     protected $description = 'Zeigt Status und Inhalt der aktuell installierten Lizenz.';
 
-    public function handle(LicenseService $service): int
-    {
+    public function handle(LicenseService $service): int {
         $service->flush();
         $result = $service->current($this->option('host') ?: null);
 
-        $this->line('Status   : '.$result->status->value);
+        $this->line('Status   : ' . $result->status->value);
         if ($result->message !== null) {
-            $this->line('Hinweis  : '.$result->message);
+            $this->line('Hinweis  : ' . $result->message);
         }
 
         if ($result->payload !== null) {

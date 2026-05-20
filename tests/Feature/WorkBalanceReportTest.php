@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +10,9 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Project\ProjectStatus;
+use App\Enums\TimeEntry\TimeEntryActivityType;
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Attendance;
 use App\Models\Project;
 use App\Models\TimeEntry;
@@ -21,27 +23,21 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
-use App\Enums\TimeEntry\TimeEntryKind;
-use App\Enums\TimeEntry\TimeEntryActivityType;
-use App\Enums\Project\ProjectStatus;
 
-class WorkBalanceReportTest extends TestCase
-{
+class WorkBalanceReportTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
     private User $user;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
-    public function test_daily_balance_aggregates_attendance_breaks_and_entries(): void
-    {
+    public function test_daily_balance_aggregates_attendance_breaks_and_entries(): void {
         $day = CarbonImmutable::create(2026, 5, 4); // Mon
         $start = $day->setTime(8, 0);
         $end = $day->setTime(17, 0); // 9h gross, 30m break => 8h30 net
@@ -91,8 +87,7 @@ class WorkBalanceReportTest extends TestCase
         $this->assertSame(360, $balance->byKind[TimeEntryKind::Work->value]);
     }
 
-    public function test_open_attendance_uses_current_time_for_duration(): void
-    {
+    public function test_open_attendance_uses_current_time_for_duration(): void {
         $day = CarbonImmutable::today();
         Attendance::factory()->open()->create([
             'user_id' => $this->user->id,
@@ -111,8 +106,7 @@ class WorkBalanceReportTest extends TestCase
         $this->assertLessThanOrEqual(125, $balance->attendanceMinutes);
     }
 
-    public function test_month_aggregates_days(): void
-    {
+    public function test_month_aggregates_days(): void {
         $first = CarbonImmutable::create(2026, 5, 1);
         $project = Project::create([
             'organization_id' => $this->organization->id,
@@ -139,8 +133,7 @@ class WorkBalanceReportTest extends TestCase
         $this->assertCount(31, $period->days);
     }
 
-    public function test_index_renders_and_pdf_export_returns_download(): void
-    {
+    public function test_index_renders_and_pdf_export_returns_download(): void {
         $this->actingAs($this->user);
 
         $this->get(route('reports.work-balance', ['from' => '2026-05-01', 'to' => '2026-05-31']))
@@ -153,8 +146,7 @@ class WorkBalanceReportTest extends TestCase
         $this->assertStringContainsString('arbeitsbilanz-', (string) $response->headers->get('content-disposition'));
     }
 
-    public function test_index_uses_global_header_date_range_by_default(): void
-    {
+    public function test_index_uses_global_header_date_range_by_default(): void {
         $this->actingAs($this->user);
 
         // Header selects May 2026
@@ -170,8 +162,7 @@ class WorkBalanceReportTest extends TestCase
         $this->assertSame('2026-05-31', $period->to);
     }
 
-    public function test_tracked_minutes_exclude_break_and_absence_activity_types(): void
-    {
+    public function test_tracked_minutes_exclude_break_and_absence_activity_types(): void {
         $day = CarbonImmutable::create(2026, 5, 4);
         $project = Project::create([
             'organization_id' => $this->organization->id,
@@ -212,8 +203,7 @@ class WorkBalanceReportTest extends TestCase
         $this->assertSame(285, $balance->trackedMinutes); // 240 + 45
     }
 
-    public function test_admin_can_view_other_users_work_balance(): void
-    {
+    public function test_admin_can_view_other_users_work_balance(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $other = $this->user; // regular user
 
@@ -243,8 +233,7 @@ class WorkBalanceReportTest extends TestCase
         $this->assertSame(200, $response->viewData('period')->trackedMinutes);
     }
 
-    public function test_non_admin_cannot_view_other_users_work_balance(): void
-    {
+    public function test_non_admin_cannot_view_other_users_work_balance(): void {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
 
         $this->actingAs($this->user); // regular user
@@ -253,8 +242,7 @@ class WorkBalanceReportTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function test_non_admin_passing_own_user_id_is_allowed(): void
-    {
+    public function test_non_admin_passing_own_user_id_is_allowed(): void {
         $this->actingAs($this->user);
         $response = $this->get(route('reports.work-balance', ['user' => $this->user->id]));
 

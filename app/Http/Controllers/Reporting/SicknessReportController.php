@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,9 +10,9 @@
 
 namespace App\Http\Controllers\Reporting;
 
+use App\Enums\Sickness\SickLeaveKind;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Enums\Sickness\SickLeaveKind;
 use App\Models\SickLeave;
 use App\Models\User;
 use App\Services\HolidayService;
@@ -31,17 +30,16 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * - Anzahl Krankheitsfälle / Folgebescheinigungen
  * - aktueller Lohnfortzahlungs-Status (§ 3 EntgFG)
  */
-class SicknessReportController extends Controller
-{
+class SicknessReportController extends Controller {
     use ResolvesGlobalDateRange;
 
     public function __construct(
         private readonly HolidayService $holidayService,
         private readonly ContinuedPaymentService $continuedPayment,
-    ) {}
+    ) {
+    }
 
-    public function index(Request $request): View|SymfonyResponse
-    {
+    public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         $authUser = Auth::user();
         $isAdmin = $authUser instanceof User && $authUser->isAdmin();
@@ -64,8 +62,7 @@ class SicknessReportController extends Controller
         ]);
     }
 
-    private function resolveScope(Request $request, bool $isAdmin): string
-    {
+    private function resolveScope(Request $request, bool $isAdmin): string {
         $scope = $request->string('scope', 'mine')->toString();
         if ($scope !== 'team' || ! $isAdmin) {
             $scope = 'mine';
@@ -90,8 +87,7 @@ class SicknessReportController extends Controller
      *   exhaustion_date:?string
      * }>
      */
-    private function aggregate(Carbon $from, Carbon $to, string $scope, int $userId): array
-    {
+    private function aggregate(Carbon $from, Carbon $to, string $scope, int $userId): array {
         $q = SickLeave::query()
             ->whereNull('cancelled_at')
             ->where('end_date', '>=', $from->toDateString())
@@ -160,8 +156,7 @@ class SicknessReportController extends Controller
      * @param  array<int, array{user:User, sick_workdays:int, sick_calendar_days:int, episodes:int, follow_ups:int, with_au:int, entitlement_days:int, used_days:int, remaining_days:int, exhausted:bool, chain_start:?string, exhaustion_date:?string}>  $rows
      * @return array{users:int, sick_workdays:int, sick_calendar_days:int, episodes:int, follow_ups:int, with_au:int, exhausted:int}
      */
-    private function totals(array $rows): array
-    {
+    private function totals(array $rows): array {
         $t = [
             'users' => count($rows),
             'sick_workdays' => 0,
@@ -185,8 +180,7 @@ class SicknessReportController extends Controller
         return $t;
     }
 
-    private function countWorkdays(Carbon $start, Carbon $end): int
-    {
+    private function countWorkdays(Carbon $start, Carbon $end): int {
         if ($start->greaterThan($end)) {
             return 0;
         }

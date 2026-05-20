@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,10 +21,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class CoverageRequirementController extends Controller
-{
-    public function index(Request $request, DutyPlan $dutyPlan): View
-    {
+class CoverageRequirementController extends Controller {
+    public function index(Request $request, DutyPlan $dutyPlan): View {
         Gate::authorize('view', $dutyPlan);
         Gate::authorize('viewAny', CoverageRequirement::class);
 
@@ -40,8 +37,7 @@ class CoverageRequirementController extends Controller
         return view('coverage-requirements.index', compact('dutyPlan', 'requirements'));
     }
 
-    public function create(DutyPlan $dutyPlan): View
-    {
+    public function create(DutyPlan $dutyPlan): View {
         Gate::authorize('update', $dutyPlan);
         Gate::authorize('create', CoverageRequirement::class);
 
@@ -52,8 +48,7 @@ class CoverageRequirementController extends Controller
         ]);
     }
 
-    public function store(StoreCoverageRequirementRequest $request, DutyPlan $dutyPlan): RedirectResponse
-    {
+    public function store(StoreCoverageRequirementRequest $request, DutyPlan $dutyPlan): RedirectResponse {
         Gate::authorize('update', $dutyPlan);
         Gate::authorize('create', CoverageRequirement::class);
 
@@ -73,8 +68,7 @@ class CoverageRequirementController extends Controller
             ->with('success', __('Soll-Besetzung gespeichert.'));
     }
 
-    public function edit(DutyPlan $dutyPlan, CoverageRequirement $requirement): View
-    {
+    public function edit(DutyPlan $dutyPlan, CoverageRequirement $requirement): View {
         Gate::authorize('update', $dutyPlan);
         Gate::authorize('update', $requirement);
 
@@ -105,8 +99,7 @@ class CoverageRequirementController extends Controller
             ->with('success', __('Soll-Besetzung aktualisiert.'));
     }
 
-    public function destroy(DutyPlan $dutyPlan, CoverageRequirement $requirement): RedirectResponse
-    {
+    public function destroy(DutyPlan $dutyPlan, CoverageRequirement $requirement): RedirectResponse {
         Gate::authorize('delete', $requirement);
 
         $requirement->delete();

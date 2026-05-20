@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,8 +14,7 @@ use App\Services\Licensing\LicenseSeal;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
-class SealCommand extends Command
-{
+class SealCommand extends Command {
     protected $signature = 'license:seal
         {--public-key= : Ed25519 Public Key (base64url). Fallback: LICENSE_PUBLIC_KEY}
         {--unseal : Entfernt die Seal-Datendatei (App fällt auf env-Konfig zurück).}';
@@ -41,18 +39,17 @@ class SealCommand extends Command
         'config/license.php',
     ];
 
-    public function handle(): int
-    {
+    public function handle(): int {
         $sealPath = LicenseSeal::path();
 
         if ($this->option('unseal')) {
             if (is_file($sealPath) && ! @unlink($sealPath)) {
-                $this->error('Seal-Datei konnte nicht entfernt werden: '.$sealPath);
+                $this->error('Seal-Datei konnte nicht entfernt werden: ' . $sealPath);
 
                 return self::FAILURE;
             }
             LicenseSeal::flushCache();
-            $this->info('Seal entfernt: '.$sealPath);
+            $this->info('Seal entfernt: ' . $sealPath);
 
             return self::SUCCESS;
         }
@@ -68,13 +65,13 @@ class SealCommand extends Command
         foreach (self::SEALED_FILES as $relative) {
             $absolute = base_path($relative);
             if (! is_file($absolute)) {
-                $this->error('Datei nicht gefunden: '.$relative);
+                $this->error('Datei nicht gefunden: ' . $relative);
 
                 return self::FAILURE;
             }
             $hash = hash_file('sha256', $absolute);
             if (! is_string($hash)) {
-                $this->error('Hash-Berechnung fehlgeschlagen für: '.$relative);
+                $this->error('Hash-Berechnung fehlgeschlagen für: ' . $relative);
 
                 return self::FAILURE;
             }
@@ -85,10 +82,10 @@ class SealCommand extends Command
         $this->writeSeal($sealPath, $publicKey, $hashes, $sealedAt);
         LicenseSeal::flushCache();
 
-        $this->info('Seal geschrieben: '.$sealPath);
-        $this->line('  Public Key: '.substr($publicKey, 0, 16).'…');
-        $this->line('  Hashes: '.count($hashes).' Datei(en)');
-        $this->line('  Sealed at: '.$sealedAt);
+        $this->info('Seal geschrieben: ' . $sealPath);
+        $this->line('  Public Key: ' . substr($publicKey, 0, 16) . '…');
+        $this->line('  Hashes: ' . count($hashes) . ' Datei(en)');
+        $this->line('  Sealed at: ' . $sealedAt);
 
         return self::SUCCESS;
     }
@@ -96,11 +93,10 @@ class SealCommand extends Command
     /**
      * @param  array<string, string>  $hashes
      */
-    private function writeSeal(string $path, string $publicKey, array $hashes, string $sealedAt): void
-    {
+    private function writeSeal(string $path, string $publicKey, array $hashes, string $sealedAt): void {
         $directory = dirname($path);
         if (! is_dir($directory) && ! @mkdir($directory, 0700, true) && ! is_dir($directory)) {
-            throw new \RuntimeException('Seal-Verzeichnis konnte nicht angelegt werden: '.$directory);
+            throw new \RuntimeException('Seal-Verzeichnis konnte nicht angelegt werden: ' . $directory);
         }
 
         $payload = [
@@ -110,8 +106,8 @@ class SealCommand extends Command
         ];
 
         $content = "<?php\n\n"
-            ."// Generiert durch `php artisan license:seal`. Nicht manuell bearbeiten.\n\n"
-            .'return '.var_export($payload, true).";\n";
+            . "// Generiert durch `php artisan license:seal`. Nicht manuell bearbeiten.\n\n"
+            . 'return ' . var_export($payload, true) . ";\n";
 
         file_put_contents($path, $content);
         @chmod($path, 0600);

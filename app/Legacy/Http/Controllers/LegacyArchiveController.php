@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +10,7 @@
 
 namespace App\Legacy\Http\Controllers;
 
+use App\Enums\Vacation\VacationStatus;
 use App\Http\Controllers\Controller;
 use App\Legacy\Http\Concerns\RequiresLegacyAdmin;
 use App\Legacy\Models\LegacyArchiveDiaryEntry;
@@ -28,10 +28,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use App\Enums\Vacation\VacationStatus;
 
-class LegacyArchiveController extends Controller
-{
+class LegacyArchiveController extends Controller {
     use RequiresLegacyAdmin;
 
     private const SORTABLE_DIARY = [
@@ -55,8 +53,7 @@ class LegacyArchiveController extends Controller
         'bis' => 'end_date',
     ];
 
-    public function week(Request $request, LegacyWeekCalendarService $calendar, HolidayService $holidays): View
-    {
+    public function week(Request $request, LegacyWeekCalendarService $calendar, HolidayService $holidays): View {
         $this->ensureAdmin();
 
         $weekOffset = (int) $request->query('week', 0);
@@ -95,7 +92,7 @@ class LegacyArchiveController extends Controller
             'sunday' => $sunday,
             'weekOffset' => $weekOffset,
             'selectedWeek' => $selectedWeek,
-            'days' => collect(range(0, 6))->map(fn ($i) => $monday->copy()->addDays($i)),
+            'days' => collect(range(0, 6))->map(fn($i) => $monday->copy()->addDays($i)),
             'hours' => range(7, 20),
             'entriesByUserDay' => $entriesByUserDay,
             'oncallByUserDay' => $oncallByUserDay,
@@ -104,8 +101,7 @@ class LegacyArchiveController extends Controller
         ]);
     }
 
-    public function index(Request $request): View
-    {
+    public function index(Request $request): View {
         $legacyUserId = LegacyRoleResolver::resolveLegacyUserId(Auth::user());
         $isAdmin = LegacyRoleResolver::isAdmin(Auth::user());
 
@@ -272,8 +268,7 @@ class LegacyArchiveController extends Controller
         ]);
     }
 
-    public function show(LegacyArchiveDiaryEntry $entry): View|Response
-    {
+    public function show(LegacyArchiveDiaryEntry $entry): View|Response {
         $entry->load('mitarbeiter:id,uname');
 
         if (request()->boolean('dialog')) {
@@ -289,8 +284,7 @@ class LegacyArchiveController extends Controller
      * @param  Builder<LegacyArchiveNotdienst>  $notdienstQuery
      * @return array<string, float|int>
      */
-    private function buildTabKpis(string $tab, $diaryQuery, $onCallQuery, $notdienstQuery): array
-    {
+    private function buildTabKpis(string $tab, $diaryQuery, $onCallQuery, $notdienstQuery): array {
         if ($tab === 'auftraege') {
             $base = (clone $diaryQuery);
 
@@ -321,8 +315,7 @@ class LegacyArchiveController extends Controller
         ];
     }
 
-    public function run(Request $request, LegacyArchiveService $service): RedirectResponse
-    {
+    public function run(Request $request, LegacyArchiveService $service): RedirectResponse {
         $this->ensureAdmin();
 
         $data = $request->validate([
@@ -334,7 +327,7 @@ class LegacyArchiveController extends Controller
 
         return redirect()->route('legacy.archive.index')->with(
             'success',
-            'Archivierung abgeschlossen: '.$result['total'].' Datensaetze verschoben (Auftraege '.$result['diary'].', Bereitschaft '.$result['oncall'].', Notdienst '.$result['notdienst'].').'
+            'Archivierung abgeschlossen: ' . $result['total'] . ' Datensaetze verschoben (Auftraege ' . $result['diary'] . ', Bereitschaft ' . $result['oncall'] . ', Notdienst ' . $result['notdienst'] . ').'
         );
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,22 +10,18 @@
 
 namespace App\Http\Requests;
 
-use App\Models\LexofficeArticle;
-use App\Models\TimeEntry;
 use App\Enums\TimeEntry\TimeEntryKind;
+use App\Models\LexofficeArticle;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveProjectBillingRuleRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class SaveProjectBillingRuleRequest extends FormRequest {
+    public function authorize(): bool {
         return $this->user()?->canManageBilling() === true;
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         $kinds = TimeEntryKind::values();
 
         return [

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,8 +18,7 @@ use Carbon\CarbonImmutable;
  * customer within a date range to the external system (e.g. as a Lexoffice
  * voucher representing a service transaction).
  */
-interface TimeExporter
-{
+interface TimeExporter {
     /**
      * Export all (matching) time entries of $customer in [$from, $to].
      *

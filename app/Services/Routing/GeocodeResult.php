@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,8 +13,7 @@ namespace App\Services\Routing;
 /**
  * Immutable value object returned by {@see NominatimGeocoder}.
  */
-final class GeocodeResult
-{
+final class GeocodeResult {
     /**
      * @param  array<string, mixed>  $raw
      */
@@ -26,11 +24,11 @@ final class GeocodeResult
         public readonly array $raw = [],
         public readonly string $provider = 'nominatim',
         public readonly bool $fromCache = false,
-    ) {}
+    ) {
+    }
 
     /** @return array<string, mixed> */
-    public function toArray(): array
-    {
+    public function toArray(): array {
         return [
             'lat' => $this->lat,
             'lng' => $this->lng,

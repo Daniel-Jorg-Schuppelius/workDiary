@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -12,10 +11,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         $rows = DB::table('vacations')->where('type', 'sick')->get();
         $now = now();
         foreach ($rows as $row) {
@@ -42,8 +39,7 @@ return new class extends Migration
         DB::table('vacations')->where('type', 'sick')->delete();
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         $rows = DB::table('sick_leaves')->get();
         $now = now();
         foreach ($rows as $row) {

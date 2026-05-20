@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 19 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,14 +13,12 @@ namespace App\Console\Commands;
 use App\Services\Recurrence\RecurrenceGenerator;
 use Illuminate\Console\Command;
 
-class RecurrenceGenerateCommand extends Command
-{
+class RecurrenceGenerateCommand extends Command {
     protected $signature = 'recurrence:generate {--lookahead=28 : Tage in die Zukunft, für die Aufträge erzeugt werden}';
 
     protected $description = 'Erzeugt aus aktiven Wiederkehr-Regeln fehlende Aufträge im definierten Vorausschau-Fenster.';
 
-    public function handle(RecurrenceGenerator $generator): int
-    {
+    public function handle(RecurrenceGenerator $generator): int {
         $lookahead = max(1, (int) $this->option('lookahead'));
         $created = $generator->generateAll($lookahead);
 

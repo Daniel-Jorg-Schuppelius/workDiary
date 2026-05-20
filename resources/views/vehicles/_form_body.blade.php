@@ -1,4 +1,10 @@
 {{-- Shared form fields for Vehicle (used by _form_dialog) --}}
+@php
+    /**
+     * @var \App\Models\Vehicle|null $vehicle
+     * @var \Illuminate\Support\Collection<int, \App\Models\User> $users
+     */
+@endphp
 
 <x-form-group :legend="__('Stammdaten')" icon="directions_car" tone="primary" cols="2">
     <div class="fieldset">

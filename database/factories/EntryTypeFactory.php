@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -18,12 +17,10 @@ use Illuminate\Support\Str;
 /**
  * @extends Factory<EntryType>
  */
-class EntryTypeFactory extends Factory
-{
+class EntryTypeFactory extends Factory {
     protected $model = EntryType::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         $label = fake()->unique()->words(2, true);
 
         return [
@@ -47,9 +44,8 @@ class EntryTypeFactory extends Factory
         ];
     }
 
-    public function service(): self
-    {
-        return $this->state(fn () => [
+    public function service(): self {
+        return $this->state(fn() => [
             'slug' => EntryType::SLUG_SERVICE,
             'label' => 'Service-Auftrag',
             'icon' => 'home_repair_service',

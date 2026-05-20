@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,16 +12,13 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class PublicSignatureRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class PublicSignatureRequest extends FormRequest {
+    public function authorize(): bool {
         return true;
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         return [
             'customer_name' => ['required', 'string', 'max:255'],
             'customer_role' => ['nullable', 'string', 'max:255'],

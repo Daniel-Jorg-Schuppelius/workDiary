@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,8 +13,7 @@ namespace App\Services\Reporting;
 /**
  * Read-only DTO returned by {@see WorkBalanceCalculator::daily()}.
  */
-final class DailyBalance
-{
+final class DailyBalance {
     /**
      * @param  array<string, int>  $byActivity  minutes grouped by TimeEntry::activity_type
      * @param  array<string, int>  $byKind  minutes grouped by TimeEntry::kind
@@ -30,5 +28,6 @@ final class DailyBalance
         public readonly int $balanceMinutes,
         public readonly array $byActivity,
         public readonly array $byKind,
-    ) {}
+    ) {
+    }
 }

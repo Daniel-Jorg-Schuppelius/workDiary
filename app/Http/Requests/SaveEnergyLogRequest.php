@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,16 +14,13 @@ use App\Models\EnergyLog;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveEnergyLogRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class SaveEnergyLogRequest extends FormRequest {
+    public function authorize(): bool {
         return true;
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         return [
             'vehicle_id' => ['required', 'integer', Rule::exists('vehicles', 'id')],
             'energy_type' => ['required', 'string', Rule::in(EnergyLog::TYPES)],

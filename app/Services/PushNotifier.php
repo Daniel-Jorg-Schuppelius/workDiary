@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,13 +10,14 @@
 
 namespace App\Services;
 
+use App\Enums\Diary\Status;
+use App\Enums\User\UserRole;
 use App\Models\Attachment;
 use App\Models\Comment;
 use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
 use App\Models\Timesheet;
 use App\Models\User;
-use App\Enums\User\UserRole;
 
 class PushNotifier {
     public function __construct(protected WebPushService $webPush) {
@@ -86,7 +86,7 @@ class PushNotifier {
     }
 
     public function diaryProblem(DiaryEntry $entry): void {
-        if ($entry->status !== \App\Enums\Diary\Status::Problem) {
+        if ($entry->status !== Status::Problem) {
             return;
         }
         $recipients = User::role([UserRole::Admin->value, UserRole::Callcenter->value])

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Enums\Project\ProjectStatus;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Concerns\HasAttachments;
 use App\Models\Concerns\HasTags;
@@ -22,12 +22,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
-use App\Enums\Project\ProjectStatus;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
  * @property int|null $organization_id
  * @property string $name
+ * @property string|null $slug
  * @property string|null $number
  * @property string|null $company
  * @property string|null $vat_id
@@ -130,7 +131,7 @@ class Customer extends Model {
      * eindeutig ist (Sentinel "kunde" falls Name keinen Slug ergibt).
      */
     public static function uniqueSlug(string $name, ?int $organizationId, ?int $ignoreId = null): string {
-        $base = \Illuminate\Support\Str::slug($name) ?: 'kunde';
+        $base = Str::slug($name) ?: 'kunde';
         $slug = $base;
         $i = 2;
         while (

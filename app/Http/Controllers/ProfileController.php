@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -20,12 +19,11 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
 
-class ProfileController extends Controller
-{
-    public function __construct(private readonly ImageMetaUploader $avatarUploader) {}
+class ProfileController extends Controller {
+    public function __construct(private readonly ImageMetaUploader $avatarUploader) {
+    }
 
-    public function edit(): View
-    {
+    public function edit(): View {
         /** @var User $user */
         $user = $this->authUser();
         $user->loadMissing('attachments');
@@ -36,8 +34,7 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
-    {
+    public function update(Request $request): RedirectResponse {
         /** @var User $user */
         $user = $this->authUser();
 
@@ -63,7 +60,7 @@ class ProfileController extends Controller
         if ($request->has('preferences')) {
             $clean = array_filter(
                 (array) ($data['preferences'] ?? []),
-                static fn ($v) => $v !== null && $v !== ''
+                static fn($v) => $v !== null && $v !== ''
             );
             $user->preferences = $clean === [] ? null : $clean;
         }

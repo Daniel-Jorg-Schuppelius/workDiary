@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,12 +16,11 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class FlexController extends Controller
-{
-    public function __construct(protected FlexCalculator $calc) {}
+class FlexController extends Controller {
+    public function __construct(protected FlexCalculator $calc) {
+    }
 
-    public function summary(Request $request): JsonResponse
-    {
+    public function summary(Request $request): JsonResponse {
         $year = (int) $request->input('year', CarbonImmutable::now()->year);
         $month = (int) $request->input('month', CarbonImmutable::now()->month);
 

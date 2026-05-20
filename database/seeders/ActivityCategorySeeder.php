@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -20,10 +19,8 @@ use Illuminate\Database\Seeder;
  * Seeds the default catalog of non-project activity categories for every
  * organization (and globally, organization_id=NULL).
  */
-class ActivityCategorySeeder extends Seeder
-{
-    public function run(): void
-    {
+class ActivityCategorySeeder extends Seeder {
+    public function run(): void {
         $orgs = Organization::query()->pluck('id')->all();
         $orgs[] = null; // global defaults
 
@@ -43,8 +40,7 @@ class ActivityCategorySeeder extends Seeder
     /**
      * @return list<array{key:string,label:string,activity_type:ActivityCategoryType,billable_default:bool,counts_as_work:bool,color:string|null,icon:string|null,description:string|null}>
      */
-    private function defaults(): array
-    {
+    private function defaults(): array {
         return [
             [
                 'key' => 'administration',

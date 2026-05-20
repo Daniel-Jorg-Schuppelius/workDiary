@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -20,18 +19,15 @@ use RuntimeException;
  * container by PluginServiceProvider. Plugins themselves are pulled from the
  * container so they can declare their own dependencies.
  */
-class PluginManager
-{
+class PluginManager {
     /** @var Collection<string, Plugin> */
     private Collection $plugins;
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->plugins = collect();
     }
 
-    public function register(Plugin $plugin): void
-    {
+    public function register(Plugin $plugin): void {
         if ($this->plugins->has($plugin->id())) {
             $existing = $this->plugins->get($plugin->id());
             throw new RuntimeException(sprintf(
@@ -44,19 +40,16 @@ class PluginManager
     }
 
     /** @return Collection<string, Plugin> */
-    public function all(): Collection
-    {
+    public function all(): Collection {
         return $this->plugins;
     }
 
     /** @return Collection<string, Plugin> */
-    public function enabled(): Collection
-    {
-        return $this->plugins->filter(fn (Plugin $p): bool => $p->isEnabled());
+    public function enabled(): Collection {
+        return $this->plugins->filter(fn(Plugin $p): bool => $p->isEnabled());
     }
 
-    public function find(string $id): ?Plugin
-    {
+    public function find(string $id): ?Plugin {
         return $this->plugins->get($id);
     }
 
@@ -65,10 +58,9 @@ class PluginManager
      *
      * @return Collection<string, Plugin>
      */
-    public function withCapability(string $capability): Collection
-    {
+    public function withCapability(string $capability): Collection {
         return $this->enabled()->filter(
-            fn (Plugin $p): bool => in_array($capability, $p->capabilities(), true),
+            fn(Plugin $p): bool => in_array($capability, $p->capabilities(), true),
         );
     }
 }

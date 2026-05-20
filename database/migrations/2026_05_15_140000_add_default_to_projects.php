@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,10 +20,8 @@ use Illuminate\Support\Str;
  * höchstens ein `is_default = true`-Projekt (Konsistenz wird im Model
  * erzwungen, weil partial unique indexes nicht überall verfügbar sind).
  */
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::table('projects', function (Blueprint $table): void {
             $table->boolean('is_default')->default(false)->after('status');
             $table->index(['customer_id', 'is_default']);
@@ -33,16 +30,14 @@ return new class extends Migration
         $this->backfillDefaults();
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::table('projects', function (Blueprint $table): void {
             $table->dropIndex(['customer_id', 'is_default']);
             $table->dropColumn('is_default');
         });
     }
 
-    private function backfillDefaults(): void
-    {
+    private function backfillDefaults(): void {
         $name = (string) config('project.default_project.name', 'Wartung');
         $color = (string) config('project.default_project.color', '#64748b');
         $billable = (bool) config('project.default_project.billable', true);
@@ -59,7 +54,7 @@ return new class extends Migration
                 continue;
             }
 
-            $slug = $this->uniqueSlug($name.'-'.$customer->id);
+            $slug = $this->uniqueSlug($name . '-' . $customer->id);
 
             DB::table('projects')->insert([
                 'organization_id' => $customer->organization_id,
@@ -79,13 +74,12 @@ return new class extends Migration
         }
     }
 
-    private function uniqueSlug(string $base): string
-    {
+    private function uniqueSlug(string $base): string {
         $slug = Str::slug($base) ?: 'wartung';
         $candidate = $slug;
         $i = 2;
         while (DB::table('projects')->where('slug', $candidate)->exists()) {
-            $candidate = $slug.'-'.$i++;
+            $candidate = $slug . '-' . $i++;
         }
 
         return $candidate;

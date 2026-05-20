@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,15 +12,12 @@ namespace App\Observers;
 
 use App\Models\TimeEntry;
 
-class TimeEntryObserver
-{
-    public function saved(TimeEntry $entry): void
-    {
+class TimeEntryObserver {
+    public function saved(TimeEntry $entry): void {
         $entry->timesheet?->recalcTotals();
     }
 
-    public function deleted(TimeEntry $entry): void
-    {
+    public function deleted(TimeEntry $entry): void {
         $entry->timesheet?->recalcTotals();
     }
 }

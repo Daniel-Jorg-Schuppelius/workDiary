@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,25 +12,22 @@ declare(strict_types=1);
 
 namespace App\Services\Compliance\Rules;
 
+use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\ScheduledShift;
 use App\Services\Compliance\ComplianceRule;
 use App\Services\Compliance\ComplianceViolation;
 use App\Services\Compliance\ResolvesShiftTiming;
 use Carbon\CarbonImmutable;
-use App\Enums\Shift\ScheduledShiftStatus;
 
 /** Wochenarbeitszeit (default 48h, ISO-Woche). */
-final class MaxWeeklyHoursRule implements ComplianceRule
-{
+final class MaxWeeklyHoursRule implements ComplianceRule {
     use ResolvesShiftTiming;
 
-    public function key(): string
-    {
+    public function key(): string {
         return 'max_weekly_hours';
     }
 
-    public function check(ScheduledShift $shift, array $settings): array
-    {
+    public function check(ScheduledShift $shift, array $settings): array {
         $maxH = (float) $settings['max_hours_week'];
         $iv = $this->resolveInterval($shift);
         if ($iv === null) {
@@ -46,7 +42,7 @@ final class MaxWeeklyHoursRule implements ComplianceRule
             ->where('user_id', $shift->user_id)
             ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
             ->whereBetween('date', [$weekStart->toDateString(), $weekEnd->toDateString()])
-            ->when($shift->id, fn ($q) => $q->where('id', '!=', $shift->id))
+            ->when($shift->id, fn($q) => $q->where('id', '!=', $shift->id))
             ->with('shiftType')
             ->get();
 
@@ -66,7 +62,7 @@ final class MaxWeeklyHoursRule implements ComplianceRule
                         'w' => $weekStart->isoFormat('W'),
                         'max' => $maxH,
                     ]),
-                    relatedShiftIds: $weekShifts->pluck('id')->map(fn ($id) => (int) $id)->all(),
+                    relatedShiftIds: $weekShifts->pluck('id')->map(fn($id) => (int) $id)->all(),
                     context: ['hours' => $hours, 'max' => $maxH],
                 ),
             ];

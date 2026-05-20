@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,15 +12,13 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Kopiert alle service_orders in diary_entries und verlinkt sie auf die
      * EntryType-Profile vom Slug "service" (pro Organisation). Anschließend
      * können die alten Tabellen/Klassen ohne Datenverlust entfernt werden.
      */
-    public function up(): void
-    {
+    public function up(): void {
         if (! Schema::hasTable('service_orders')) {
             return;
         }
@@ -47,7 +44,7 @@ return new class extends Migration
             };
 
             // Inhalt zusammenführen aus title + description
-            $content = trim(($so->title ?? '').(($so->description ?? '') !== '' ? "\n\n".$so->description : ''));
+            $content = trim(($so->title ?? '') . (($so->description ?? '') !== '' ? "\n\n" . $so->description : ''));
             if ($content === '') {
                 $content = $so->title ?? '(ohne Titel)';
             }
@@ -83,8 +80,7 @@ return new class extends Migration
         }
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         // No-op: irreversible Datenmigration. Wiederherstellung erfolgt durch DB-Backup.
     }
 };

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,15 +13,13 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
-abstract class Controller
-{
+abstract class Controller {
     /**
      * Liefert den eingeloggten User. Setzt voraus, dass die Route hinter
      * der `auth`-Middleware liegt — wird hier per Exception abgesichert,
      * damit PHPStan ohne `?` arbeiten kann.
      */
-    protected function authUser(): User
-    {
+    protected function authUser(): User {
         $user = Auth::user();
         if (! $user instanceof User) {
             throw new \RuntimeException('authUser() ohne authentifizierten User aufgerufen.');

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,8 +21,7 @@ use Illuminate\Support\Facades\DB;
  * Quelle der Wahrheit: `time_entries.minutes`. Stundenzettel sind Bündel,
  * aber jede Minute landet immer auch in `time_entries`.
  */
-class CustomerStatsService
-{
+class CustomerStatsService {
     /**
      * @return array{
      *     total_minutes: int,
@@ -31,8 +29,7 @@ class CustomerStatsService
      *     by_project: array<int, array{project_id: int, name: string, is_default: bool, minutes: int, billable_minutes: int}>
      * }
      */
-    public function forCustomer(Customer $customer, ?CarbonInterface $from = null, ?CarbonInterface $to = null): array
-    {
+    public function forCustomer(Customer $customer, ?CarbonInterface $from = null, ?CarbonInterface $to = null): array {
         $projectIds = $customer->projects()->pluck('id')->all();
         if ($projectIds === []) {
             return ['total_minutes' => 0, 'billable_minutes' => 0, 'by_project' => []];
@@ -84,8 +81,7 @@ class CustomerStatsService
         ];
     }
 
-    public function currentMonthRange(): CarbonImmutable
-    {
+    public function currentMonthRange(): CarbonImmutable {
         return CarbonImmutable::now()->startOfMonth();
     }
 }

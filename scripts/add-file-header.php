@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Adds (or skips if present) a standard file header to all project PHP files.
  * - License: AGPL-3.0-or-later
@@ -17,8 +16,7 @@ $marker = 'Author       : Daniel Jörg Schuppelius';
 
 $todayDate = date('D M d Y');
 
-function gitCreatedDate(string $relPath, string $fallback): string
-{
+function gitCreatedDate(string $relPath, string $fallback): string {
     $cmd = sprintf(
         "git log --diff-filter=A --follow --format='%%ad' --date=format:'%%a %%b %%d %%Y' -- %s 2>/dev/null | tail -1",
         escapeshellarg($relPath)
@@ -28,16 +26,15 @@ function gitCreatedDate(string $relPath, string $fallback): string
     return $out !== '' ? $out : $fallback;
 }
 
-function buildHeader(string $filename, string $date): string
-{
+function buildHeader(string $filename, string $date): string {
     return "/*\n"
-        ." * Created on   : {$date}\n"
-        ." * Author       : Daniel Jörg Schuppelius\n"
-        ." * Author Uri   : https://schuppelius.org\n"
-        ." * Filename     : {$filename}\n"
-        ." * License      : AGPL-3.0-or-later\n"
-        ." * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html\n"
-        ." */\n";
+        . " * Created on   : {$date}\n"
+        . " * Author       : Daniel Jörg Schuppelius\n"
+        . " * Author Uri   : https://schuppelius.org\n"
+        . " * Filename     : {$filename}\n"
+        . " * License      : AGPL-3.0-or-later\n"
+        . " * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html\n"
+        . " */\n";
 }
 
 $processed = 0;
@@ -46,7 +43,7 @@ $skipped = 0;
 $updated = 0;
 
 foreach ($dirs as $dir) {
-    $absDir = $root.'/'.$dir;
+    $absDir = $root . '/' . $dir;
     if (! is_dir($absDir)) {
         continue;
     }
@@ -98,7 +95,7 @@ foreach ($dirs as $dir) {
         $rest = substr($content, strlen($opener));
         // Ensure exactly one blank line between header and following code.
         $rest = ltrim($rest, "\r\n");
-        $new = $opener.$header."\n".$rest;
+        $new = $opener . $header . "\n" . $rest;
         file_put_contents($path, $new);
         $inserted++;
     }

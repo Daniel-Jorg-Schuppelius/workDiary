@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -26,15 +25,14 @@ use Illuminate\Support\Facades\Log;
  *  - max 1 req/s when using the public instance — keep the throttle for
  *    self-hosted too so backfill commands cannot floods the local service.
  */
-class NominatimGeocoder
-{
+class NominatimGeocoder {
     public function __construct(
         /** @var array<string, mixed> */
         private array $config,
-    ) {}
+    ) {
+    }
 
-    public function geocode(string $query): ?GeocodeResult
-    {
+    public function geocode(string $query): ?GeocodeResult {
         $query = trim($query);
         if ($query === '') {
             return null;
@@ -79,8 +77,7 @@ class NominatimGeocoder
         return $result;
     }
 
-    private function fetch(string $query): ?GeocodeResult
-    {
+    private function fetch(string $query): ?GeocodeResult {
         $base = (string) ($this->config['base_url'] ?? '');
         $userAgent = (string) ($this->config['user_agent'] ?? 'workDiary');
         $email = (string) ($this->config['email'] ?? '');
@@ -90,7 +87,7 @@ class NominatimGeocoder
             $response = Http::withHeaders(['User-Agent' => $userAgent])
                 ->timeout($timeout)
                 ->acceptJson()
-                ->get(rtrim($base, '/').'/search', [
+                ->get(rtrim($base, '/') . '/search', [
                     'q' => $query,
                     'format' => 'jsonv2',
                     'limit' => 1,
@@ -98,11 +95,11 @@ class NominatimGeocoder
                     'email' => $email !== '' ? $email : null,
                 ]);
         } catch (ConnectionException $e) {
-            throw new GeocodingException('Nominatim unreachable: '.$e->getMessage(), 0, $e);
+            throw new GeocodingException('Nominatim unreachable: ' . $e->getMessage(), 0, $e);
         }
 
         if (! $response->successful()) {
-            throw new GeocodingException('Nominatim returned HTTP '.$response->status());
+            throw new GeocodingException('Nominatim returned HTTP ' . $response->status());
         }
 
         /** @var list<array<string, mixed>> $body */
@@ -126,8 +123,7 @@ class NominatimGeocoder
         );
     }
 
-    private function throttle(): void
-    {
+    private function throttle(): void {
         $rate = max(1, (int) ($this->config['rate_limit_per_sec'] ?? 1));
         $key = 'routing:nominatim:last_call';
         $lastCall = (float) (Cache::get($key) ?? 0.0);

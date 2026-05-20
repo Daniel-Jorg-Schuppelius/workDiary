@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 11 2026
  * Author       : Daniel Jörg Schuppelius
@@ -23,12 +22,10 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
-class VacationController extends Controller
-{
+class VacationController extends Controller {
     // ── Create / Store ──────────────────────────────────────────────────────
 
-    public function create(Request $request): View
-    {
+    public function create(Request $request): View {
         /** @var User $auth */
         $auth = Auth::user();
         Gate::authorize('create', Vacation::class);
@@ -44,8 +41,7 @@ class VacationController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
-    {
+    public function store(Request $request): RedirectResponse {
         /** @var User $auth */
         $auth = Auth::user();
         Gate::authorize('create', Vacation::class);
@@ -64,8 +60,7 @@ class VacationController extends Controller
 
     // ── Edit / Update ───────────────────────────────────────────────────────
 
-    public function edit(Vacation $vacation): View
-    {
+    public function edit(Vacation $vacation): View {
         /** @var User $auth */
         $auth = Auth::user();
         Gate::authorize('update', $vacation);
@@ -81,8 +76,7 @@ class VacationController extends Controller
         ]);
     }
 
-    public function update(Request $request, Vacation $vacation): RedirectResponse
-    {
+    public function update(Request $request, Vacation $vacation): RedirectResponse {
         Gate::authorize('update', $vacation);
 
         $data = $this->validateVacation($request);
@@ -93,8 +87,7 @@ class VacationController extends Controller
 
     // ── Delete ──────────────────────────────────────────────────────────────
 
-    public function destroy(Vacation $vacation): RedirectResponse
-    {
+    public function destroy(Vacation $vacation): RedirectResponse {
         Gate::authorize('delete', $vacation);
 
         $vacation->delete();
@@ -104,8 +97,7 @@ class VacationController extends Controller
 
     // ── Admin actions ────────────────────────────────────────────────────────
 
-    public function rejectForm(Vacation $vacation): View
-    {
+    public function rejectForm(Vacation $vacation): View {
         Gate::authorize('decide', $vacation);
 
         return view('vacations._reject_dialog', [
@@ -113,8 +105,7 @@ class VacationController extends Controller
         ]);
     }
 
-    public function approve(Request $request, Vacation $vacation): RedirectResponse
-    {
+    public function approve(Request $request, Vacation $vacation): RedirectResponse {
         Gate::authorize('decide', $vacation);
 
         /** @var User $auth */
@@ -130,8 +121,7 @@ class VacationController extends Controller
         return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('Urlaubsantrag genehmigt.'));
     }
 
-    public function reject(Request $request, Vacation $vacation): RedirectResponse
-    {
+    public function reject(Request $request, Vacation $vacation): RedirectResponse {
         Gate::authorize('decide', $vacation);
 
         $data = $request->validate([
@@ -151,8 +141,7 @@ class VacationController extends Controller
         return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('Urlaubsantrag abgelehnt.'));
     }
 
-    public function cancel(Request $request, Vacation $vacation): RedirectResponse
-    {
+    public function cancel(Request $request, Vacation $vacation): RedirectResponse {
         Gate::authorize('cancel', $vacation);
 
         $vacation->update([
@@ -167,8 +156,7 @@ class VacationController extends Controller
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     /** @return array<string, mixed> */
-    private function validateVacation(Request $request): array
-    {
+    private function validateVacation(Request $request): array {
         return $request->validate([
             'user_id' => ['nullable', 'exists:users,id'],
             'start_date' => ['required', 'date'],

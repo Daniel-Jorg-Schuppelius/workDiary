@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,10 +20,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
-class CommentController extends Controller
-{
-    public function store(Request $request, DiaryEntry $diary): RedirectResponse
-    {
+class CommentController extends Controller {
+    public function store(Request $request, DiaryEntry $diary): RedirectResponse {
         Gate::authorize('create', Comment::class);
 
         $diary->comments()->create([
@@ -36,8 +33,7 @@ class CommentController extends Controller
             ->with('success', __('Kommentar gespeichert.'));
     }
 
-    public function update(Request $request, Comment $comment): RedirectResponse
-    {
+    public function update(Request $request, Comment $comment): RedirectResponse {
         Gate::authorize('update', $comment);
 
         $comment->update(['body' => $this->validateBody($request)]);
@@ -46,8 +42,7 @@ class CommentController extends Controller
             ->with('success', __('Kommentar aktualisiert.'));
     }
 
-    public function destroy(Comment $comment): RedirectResponse
-    {
+    public function destroy(Comment $comment): RedirectResponse {
         Gate::authorize('delete', $comment);
 
         $parent = $comment->commentable;
@@ -57,15 +52,13 @@ class CommentController extends Controller
             ->with('success', __('Kommentar gelöscht.'));
     }
 
-    private function validateBody(Request $request): string
-    {
+    private function validateBody(Request $request): string {
         return $request->validate([
-            'body' => ['required', 'string', 'max:'.(int) setting('validation.comment.body_max', 5000)],
+            'body' => ['required', 'string', 'max:' . (int) setting('validation.comment.body_max', 5000)],
         ])['body'];
     }
 
-    private function redirectToParent(?Model $parent): RedirectResponse
-    {
+    private function redirectToParent(?Model $parent): RedirectResponse {
         if ($parent instanceof DiaryEntry) {
             return redirect()
                 ->route('diary.show', $parent)
@@ -79,7 +72,7 @@ class CommentController extends Controller
 
             return redirect()
                 ->route('today.show', ['date' => $date])
-                ->withFragment('time-entry-'.$parent->getKey());
+                ->withFragment('time-entry-' . $parent->getKey());
         }
 
         return redirect()->back()->withFragment('comments');

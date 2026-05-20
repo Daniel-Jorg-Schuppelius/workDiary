@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,12 +21,11 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 
-class TimesheetSignatureController extends Controller
-{
-    public function __construct(protected SignatureService $signatures) {}
+class TimesheetSignatureController extends Controller {
+    public function __construct(protected SignatureService $signatures) {
+    }
 
-    public function store(Request $request, Project $project, Timesheet $timesheet): RedirectResponse
-    {
+    public function store(Request $request, Project $project, Timesheet $timesheet): RedirectResponse {
         Gate::authorize('sign', $timesheet);
 
         $data = $request->validate([
@@ -42,24 +40,21 @@ class TimesheetSignatureController extends Controller
         return back()->with('success', __('Stundenzettel signiert.'));
     }
 
-    public function lock(Request $request, Project $project, Timesheet $timesheet): RedirectResponse
-    {
+    public function lock(Request $request, Project $project, Timesheet $timesheet): RedirectResponse {
         Gate::authorize('lock', $timesheet);
         $this->signatures->lock($timesheet, $this->authUser());
 
         return back()->with('success', __('Gesperrt.'));
     }
 
-    public function unlock(Project $project, Timesheet $timesheet): RedirectResponse
-    {
+    public function unlock(Project $project, Timesheet $timesheet): RedirectResponse {
         Gate::authorize('unlock', $timesheet);
         $this->signatures->unlock($timesheet);
 
         return back()->with('success', __('Entsperrt.'));
     }
 
-    public function pdf(Project $project, Timesheet $timesheet, PdfRenderer $renderer): Response
-    {
+    public function pdf(Project $project, Timesheet $timesheet, PdfRenderer $renderer): Response {
         Gate::authorize('view', $timesheet);
         $bytes = $renderer->render($timesheet);
 
@@ -69,8 +64,7 @@ class TimesheetSignatureController extends Controller
         ]);
     }
 
-    public function magicLink(Project $project, Timesheet $timesheet): RedirectResponse
-    {
+    public function magicLink(Project $project, Timesheet $timesheet): RedirectResponse {
         Gate::authorize('update', $timesheet);
 
         $minutes = (int) config('timesheet.signature.magic_minutes', 1440);

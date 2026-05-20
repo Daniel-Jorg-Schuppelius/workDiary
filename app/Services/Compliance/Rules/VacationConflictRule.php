@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -20,15 +19,12 @@ use App\Services\Compliance\ComplianceRule;
 use App\Services\Compliance\ComplianceViolation;
 
 /** Schicht fällt in genehmigten Urlaub des Mitarbeiters. */
-final class VacationConflictRule implements ComplianceRule
-{
-    public function key(): string
-    {
+final class VacationConflictRule implements ComplianceRule {
+    public function key(): string {
         return 'vacation_conflict';
     }
 
-    public function check(ScheduledShift $shift, array $settings): array
-    {
+    public function check(ScheduledShift $shift, array $settings): array {
         $dateStr = $shift->date->format('Y-m-d');
 
         $vacation = Vacation::query()

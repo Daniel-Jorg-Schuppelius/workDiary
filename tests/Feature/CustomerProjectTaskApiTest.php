@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,36 +10,32 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Project\ProjectStatus;
+use App\Enums\Task\TaskPriority;
+use App\Enums\Task\TaskStatus;
 use App\Models\Customer;
 use App\Models\Project;
-use App\Models\Task;
 use App\Models\User;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
-use App\Enums\Task\TaskPriority;
-use App\Enums\Task\TaskStatus;
-use App\Enums\Project\ProjectStatus;
 
-class CustomerProjectTaskApiTest extends TestCase
-{
+class CustomerProjectTaskApiTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
     private User $user;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
     }
 
-    public function test_customer_crud(): void
-    {
+    public function test_customer_crud(): void {
         Sanctum::actingAs($this->user);
 
         $this->postJson(route('api.customers.store'), [
@@ -59,8 +54,7 @@ class CustomerProjectTaskApiTest extends TestCase
         ])->assertOk()->assertJsonPath('data.name', 'ACME AG');
     }
 
-    public function test_project_index_and_create(): void
-    {
+    public function test_project_index_and_create(): void {
         Sanctum::actingAs($this->user);
 
         $this->postJson(route('api.projects.store'), [
@@ -71,8 +65,7 @@ class CustomerProjectTaskApiTest extends TestCase
         $this->getJson(route('api.projects.index'))->assertOk()->assertJsonCount(1, 'data');
     }
 
-    public function test_task_crud_under_project(): void
-    {
+    public function test_task_crud_under_project(): void {
         Sanctum::actingAs($this->user);
 
         $project = Project::create([
@@ -92,8 +85,7 @@ class CustomerProjectTaskApiTest extends TestCase
             ->assertOk()->assertJsonCount(1, 'data');
     }
 
-    public function test_unauthenticated_rejected(): void
-    {
+    public function test_unauthenticated_rejected(): void {
         $this->getJson(route('api.customers.index'))->assertUnauthorized();
         $this->getJson(route('api.projects.index'))->assertUnauthorized();
         $this->getJson(route('api.tasks.index'))->assertUnauthorized();

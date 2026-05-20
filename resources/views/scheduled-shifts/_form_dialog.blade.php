@@ -1,5 +1,10 @@
 {{-- Variablen: $shift (ScheduledShift), $users, $types --}}
 @php
+    /**
+     * @var \App\Models\ScheduledShift $shift
+     * @var \Illuminate\Support\Collection<int, \App\Models\User> $users
+     * @var \Illuminate\Support\Collection<int, mixed> $types
+     */
     $action = route('scheduled-shifts.update', $shift);
 @endphp
 

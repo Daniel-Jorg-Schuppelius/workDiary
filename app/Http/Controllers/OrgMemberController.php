@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 12 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,8 +10,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Enums\User\UserRole;
+use App\Models\User;
 use App\Support\SortableQuery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,10 +26,8 @@ use Spatie\Permission\Models\Role;
  * Verwaltet Mitglieder der eigenen Organisation.
  * Nur Org-Admins dürfen zugreifen (Gate 'manage-members' via OrganizationPolicy).
  */
-class OrgMemberController extends Controller
-{
-    public function index(Request $request): View
-    {
+class OrgMemberController extends Controller {
+    public function index(Request $request): View {
         Gate::authorize('manage-members');
 
         /** @var User $auth */
@@ -53,8 +50,7 @@ class OrgMemberController extends Controller
         return view('org.members.index', compact('members', 'roles', 'sort', 'dir'));
     }
 
-    public function create(): View
-    {
+    public function create(): View {
         Gate::authorize('manage-members');
 
         $roles = [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value];
@@ -62,8 +58,7 @@ class OrgMemberController extends Controller
         return view('org.members._form_dialog', compact('roles') + ['member' => null, 'isEdit' => false]);
     }
 
-    public function store(Request $request): RedirectResponse
-    {
+    public function store(Request $request): RedirectResponse {
         Gate::authorize('manage-members');
 
         /** @var User $auth */
@@ -72,7 +67,7 @@ class OrgMemberController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'role' => ['required', 'in:'.implode(',', [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value])],
+            'role' => ['required', 'in:' . implode(',', [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value])],
             'password' => ['required', 'string', 'confirmed', Password::defaults()],
         ]);
 
@@ -91,8 +86,7 @@ class OrgMemberController extends Controller
             ->with('success', __('Mitglied wurde angelegt.'));
     }
 
-    public function edit(User $member): View
-    {
+    public function edit(User $member): View {
         Gate::authorize('manage-members');
         $this->ensureSameOrg($member);
 
@@ -101,15 +95,14 @@ class OrgMemberController extends Controller
         return view('org.members._form_dialog', compact('member', 'roles') + ['isEdit' => true]);
     }
 
-    public function update(Request $request, User $member): RedirectResponse
-    {
+    public function update(Request $request, User $member): RedirectResponse {
         Gate::authorize('manage-members');
         $this->ensureSameOrg($member);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$member->id],
-            'role' => ['required', 'in:'.implode(',', [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value])],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $member->id],
+            'role' => ['required', 'in:' . implode(',', [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value])],
         ]);
 
         $member->update(['name' => $data['name'], 'email' => $data['email']]);
@@ -121,8 +114,7 @@ class OrgMemberController extends Controller
             ->with('success', __('Mitglied wurde aktualisiert.'));
     }
 
-    public function destroy(User $member): RedirectResponse
-    {
+    public function destroy(User $member): RedirectResponse {
         Gate::authorize('manage-members');
         $this->ensureSameOrg($member);
 
@@ -139,8 +131,7 @@ class OrgMemberController extends Controller
             ->with('success', __('Mitglied wurde entfernt.'));
     }
 
-    private function ensureSameOrg(User $member): void
-    {
+    private function ensureSameOrg(User $member): void {
         /** @var User $auth */
         $auth = Auth::user();
 

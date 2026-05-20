@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -30,14 +29,13 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
  * the resulting balance for the currently selected global date range
  * (Header-Widget) or an explicit `?from=&to=` / `?year=&month=` override.
  */
-class WorkBalanceReportController extends Controller
-{
+class WorkBalanceReportController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function __construct(protected WorkBalanceCalculator $calc) {}
+    public function __construct(protected WorkBalanceCalculator $calc) {
+    }
 
-    public function index(Request $request): View|SymfonyResponse
-    {
+    public function index(Request $request): View|SymfonyResponse {
         /** @var User $authUser */
         $authUser = Auth::user();
         $user = $this->resolveTargetUser($request, $authUser);
@@ -81,8 +79,7 @@ class WorkBalanceReportController extends Controller
      * Wer wird angezeigt? Standard: eingeloggter Nutzer.
      * Admin darf per ?user=ID jeden anderen Nutzer sehen, sonst 403.
      */
-    private function resolveTargetUser(Request $request, User $authUser): User
-    {
+    private function resolveTargetUser(Request $request, User $authUser): User {
         if (! $request->filled('user')) {
             return $authUser;
         }
@@ -107,8 +104,7 @@ class WorkBalanceReportController extends Controller
     /**
      * @return Collection<int, User>
      */
-    private function loadSelectableUsers(): Collection
-    {
+    private function loadSelectableUsers(): Collection {
         /** @var Collection<int, User> $users */
         $users = User::query()->orderBy('name')->get();
 
@@ -120,8 +116,7 @@ class WorkBalanceReportController extends Controller
      *
      * @return array{0: CarbonImmutable, 1: CarbonImmutable, 2: string}
      */
-    private function resolveRange(Request $request): array
-    {
+    private function resolveRange(Request $request): array {
         if ($request->filled('from') && $request->filled('to')) {
             $from = CarbonImmutable::parse((string) $request->query('from'))->startOfDay();
             $to = CarbonImmutable::parse((string) $request->query('to'))->endOfDay();
@@ -159,8 +154,7 @@ class WorkBalanceReportController extends Controller
         return [$from, $to, $label];
     }
 
-    private function formatLabel(CarbonImmutable $from, CarbonImmutable $to): string
-    {
+    private function formatLabel(CarbonImmutable $from, CarbonImmutable $to): string {
         return sprintf('%s – %s', $from->format('d.m.Y'), $to->format('d.m.Y'));
     }
 }

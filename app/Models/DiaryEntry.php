@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -26,7 +25,50 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $organization_id
+ * @property int|null $entry_type_id
+ * @property int|null $legacy_id
+ * @property int $user_id
+ * @property int|null $assigned_user_id
+ * @property int|null $project_id
+ * @property int|null $customer_id
+ * @property int|null $on_call_shift_id
+ * @property int|null $emergency_assignment_id
+ * @property string|null $title
+ * @property string|null $content
+ * @property string|null $response
+ * @property Status $status
+ * @property Priority|null $priority
+ * @property Carbon|null $start_at
+ * @property Carbon|null $end_at
+ * @property Carbon|null $scheduled_for
+ * @property string|null $time_window_start
+ * @property string|null $time_window_end
+ * @property int|null $service_minutes
+ * @property string|null $address_line
+ * @property string|null $address_zip
+ * @property string|null $address_city
+ * @property string|null $address_country
+ * @property string|null $address_lat
+ * @property string|null $address_lng
+ * @property int|null $tour_id
+ * @property int|null $tour_position
+ * @property string|null $notes
+ * @property Mode $mode
+ * @property Carbon|null $due_date
+ * @property Carbon|null $window_start_date
+ * @property Carbon|null $window_end_date
+ * @property LocationMode $location_mode
+ * @property int|null $recurrence_rule_id
+ * @property bool $is_archived
+ * @property Carbon|null $archived_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 class DiaryEntry extends Model {
     use Auditable;
     use BelongsToOrganization;

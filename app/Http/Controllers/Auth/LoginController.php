@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -49,7 +48,7 @@ class LoginController extends Controller {
 
             $this->syncLegacyUserIdIfMissing((string) $credentials['username']);
 
-            /** @var \App\Models\User|null $user */
+            /** @var User|null $user */
             $user = Auth::user();
             $legacyConfigured = filled(config('database.connections.legacy.database'));
             $sessionMode = (string) session('work_mode', 'legacy');

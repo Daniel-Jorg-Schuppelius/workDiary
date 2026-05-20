@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 18 2026
  * Author       : Daniel Jörg Schuppelius
@@ -19,49 +18,41 @@
 
 namespace App\Services\Licensing;
 
-final class LicenseSeal
-{
+final class LicenseSeal {
     /** @var array{public_key: string, files: array<string, string>, sealed_at: string}|null */
     private static ?array $cache = null;
 
-    public static function path(): string
-    {
-        return storage_path('app/'.(string) config('license.seal_path', 'private/license-seal.php'));
+    public static function path(): string {
+        return storage_path('app/' . (string) config('license.seal_path', 'private/license-seal.php'));
     }
 
-    public static function publicKey(): string
-    {
+    public static function publicKey(): string {
         return self::data()['public_key'];
     }
 
     /**
      * @return array<string, string> relativer Pfad => sha256-hex
      */
-    public static function files(): array
-    {
+    public static function files(): array {
         return self::data()['files'];
     }
 
-    public static function sealedAt(): string
-    {
+    public static function sealedAt(): string {
         return self::data()['sealed_at'];
     }
 
-    public static function isSealed(): bool
-    {
+    public static function isSealed(): bool {
         return self::publicKey() !== '';
     }
 
-    public static function flushCache(): void
-    {
+    public static function flushCache(): void {
         self::$cache = null;
     }
 
     /**
      * @return array{public_key: string, files: array<string, string>, sealed_at: string}
      */
-    private static function data(): array
-    {
+    private static function data(): array {
         if (self::$cache !== null) {
             return self::$cache;
         }
@@ -80,7 +71,7 @@ final class LicenseSeal
                 /** @var array<string, string> $files */
                 $files = array_filter(
                     $loaded['files'],
-                    static fn ($value, $key): bool => is_string($key) && is_string($value),
+                    static fn($value, $key): bool => is_string($key) && is_string($value),
                     ARRAY_FILTER_USE_BOTH,
                 );
 

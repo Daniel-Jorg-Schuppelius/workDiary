@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 15 2026
  * Author       : Daniel Jörg Schuppelius
@@ -32,12 +31,10 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Pattern angelehnt an Kimai's ProjectDetailsController (AGPL-3.0) — eigene
  * Implementierung, kein Code-Reuse.
  */
-class ProjectDetailsReportController extends Controller
-{
+class ProjectDetailsReportController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request): View|SymfonyResponse
-    {
+    public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         /** @var User|null $authUser */
         $authUser = Auth::user();
@@ -90,8 +87,7 @@ class ProjectDetailsReportController extends Controller
     /**
      * @return Collection<int, Project>
      */
-    private function loadAccessibleProjects(bool $isAdmin, int $userId): Collection
-    {
+    private function loadAccessibleProjects(bool $isAdmin, int $userId): Collection {
         $projectsQuery = Project::with('customer')->orderBy('name');
         if (! $isAdmin) {
             $accessibleIds = TimeEntry::query()
@@ -111,8 +107,7 @@ class ProjectDetailsReportController extends Controller
     /**
      * @return array{monthMatrix: array<int, array{minutes: int, rate: float}>, byUser: array<int, array{minutes: int, rate: float}>, yearMinutes: int, yearRate: float}
      */
-    private function aggregateYear(?Project $project, int $year, bool $isAdmin, int $userId): array
-    {
+    private function aggregateYear(?Project $project, int $year, bool $isAdmin, int $userId): array {
         /** @var array<int, array{minutes: int, rate: float}> $monthMatrix */
         $monthMatrix = array_fill(1, 12, ['minutes' => 0, 'rate' => 0.0]);
         /** @var array<int, array{minutes: int, rate: float}> $byUser */
@@ -159,8 +154,7 @@ class ProjectDetailsReportController extends Controller
      * @param  Collection<int, User>  $users
      * @return array<int, array{minutes: int, rate: float}>
      */
-    private function sortByUserByName(array $byUser, Collection $users): array
-    {
+    private function sortByUserByName(array $byUser, Collection $users): array {
         uksort($byUser, function ($a, $b) use ($users): int {
             $ua = $users->get($a);
             $ub = $users->get($b);
@@ -176,8 +170,7 @@ class ProjectDetailsReportController extends Controller
     /**
      * @return array<int, string>
      */
-    private function buildMonthLabels(int $year): array
-    {
+    private function buildMonthLabels(int $year): array {
         $monthLabels = [];
         $locale = app()->getLocale();
         for ($i = 1; $i <= 12; $i++) {
@@ -195,8 +188,7 @@ class ProjectDetailsReportController extends Controller
      * @param  array<int, array{minutes: int, rate: float}>  $byUser
      * @param  Collection<int, User>  $users
      */
-    private function exportCsv(Project $project, int $year, array $monthMatrix, array $monthLabels, array $byUser, $users, int $yearMinutes, float $yearRate): Response
-    {
+    private function exportCsv(Project $project, int $year, array $monthMatrix, array $monthLabels, array $byUser, $users, int $yearMinutes, float $yearRate): Response {
         $filename = sprintf('projekt-%d-%d.csv', $project->id, $year);
         $rows = [['Monat', 'Minuten', 'Erloes']];
         foreach ($monthMatrix as $idx => $row) {
@@ -207,7 +199,7 @@ class ProjectDetailsReportController extends Controller
         $rows[] = ['Mitarbeiter', 'Minuten', 'Erloes'];
         foreach ($byUser as $uid => $row) {
             $userModel = $users->get($uid);
-            $name = $userModel instanceof User ? $userModel->name : '#'.$uid;
+            $name = $userModel instanceof User ? $userModel->name : '#' . $uid;
             $rows[] = [(string) $name, (int) $row['minutes'], number_format((float) $row['rate'], 2, '.', '')];
         }
 
@@ -216,16 +208,16 @@ class ProjectDetailsReportController extends Controller
             $csv .= implode(';', array_map(static function ($v): string {
                 $s = (string) $v;
                 if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"'.str_replace('"', '""', $s).'"';
+                    $s = '"' . str_replace('"', '""', $s) . '"';
                 }
 
                 return $s;
-            }, $row))."\r\n";
+            }, $row)) . "\r\n";
         }
 
-        return response("\xEF\xBB\xBF".$csv, 200, [
+        return response("\xEF\xBB\xBF" . $csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 
@@ -235,8 +227,7 @@ class ProjectDetailsReportController extends Controller
      * @param  array<int, array{minutes: int, rate: float}>  $byUser
      * @param  Collection<int, User>  $users
      */
-    private function exportPdf(Project $project, int $year, array $monthMatrix, array $monthLabels, array $byUser, $users, int $yearMinutes, float $yearRate): SymfonyResponse
-    {
+    private function exportPdf(Project $project, int $year, array $monthMatrix, array $monthLabels, array $byUser, $users, int $yearMinutes, float $yearRate): SymfonyResponse {
         $filename = sprintf('projekt-%d-%d.pdf', $project->id, $year);
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = Pdf::loadView('reports.pdf.project-details', [

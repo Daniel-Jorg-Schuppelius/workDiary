@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -17,10 +16,8 @@ use App\Models\EmergencyAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
-class EmergencyAssignmentController extends Controller
-{
-    public function index(Request $request): AnonymousResourceCollection
-    {
+class EmergencyAssignmentController extends Controller {
+    public function index(Request $request): AnonymousResourceCollection {
         $q = EmergencyAssignment::query()->with('user:id,name');
         if ($request->filled('from')) {
             $q->whereDate('start_at', '>=', $request->from);
@@ -35,8 +32,7 @@ class EmergencyAssignmentController extends Controller
         return EmergencyAssignmentResource::collection($q->orderBy('start_at')->paginate(min(100, (int) $request->input('per_page', 20))));
     }
 
-    public function show(EmergencyAssignment $assignment): EmergencyAssignmentResource
-    {
+    public function show(EmergencyAssignment $assignment): EmergencyAssignmentResource {
         return new EmergencyAssignmentResource($assignment->load('user:id,name'));
     }
 }

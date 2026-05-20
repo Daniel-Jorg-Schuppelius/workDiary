@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Mon May 11 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,12 +21,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class ShiftTypeController extends Controller
-{
+class ShiftTypeController extends Controller {
     // ── HTML CRUD (Verwaltungsoberfläche, Admin-only) ────────────────────────
 
-    public function index(Request $request): View
-    {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', ShiftType::class);
 
         $types = ShiftType::query()
@@ -38,8 +35,7 @@ class ShiftTypeController extends Controller
         return view('shift-types.index', compact('types'));
     }
 
-    public function create(): View
-    {
+    public function create(): View {
         Gate::authorize('create', ShiftType::class);
 
         return view('shift-types._form_dialog', [
@@ -48,8 +44,7 @@ class ShiftTypeController extends Controller
         ]);
     }
 
-    public function htmlStore(StoreShiftTypeRequest $request): RedirectResponse
-    {
+    public function htmlStore(StoreShiftTypeRequest $request): RedirectResponse {
         /** @var User $auth */
         $auth = Auth::user();
 
@@ -64,8 +59,7 @@ class ShiftTypeController extends Controller
             ->with('success', __('Schichttyp gespeichert.'));
     }
 
-    public function edit(ShiftType $shiftType): View
-    {
+    public function edit(ShiftType $shiftType): View {
         Gate::authorize('update', $shiftType);
 
         return view('shift-types._form_dialog', [
@@ -74,8 +68,7 @@ class ShiftTypeController extends Controller
         ]);
     }
 
-    public function htmlUpdate(UpdateShiftTypeRequest $request, ShiftType $shiftType): RedirectResponse
-    {
+    public function htmlUpdate(UpdateShiftTypeRequest $request, ShiftType $shiftType): RedirectResponse {
         $data = $request->validated();
         $data['is_active'] = (bool) ($data['is_active'] ?? false);
 
@@ -85,8 +78,7 @@ class ShiftTypeController extends Controller
             ->with('success', __('Schichttyp aktualisiert.'));
     }
 
-    public function htmlDestroy(ShiftType $shiftType): RedirectResponse
-    {
+    public function htmlDestroy(ShiftType $shiftType): RedirectResponse {
         Gate::authorize('delete', $shiftType);
 
         if ($shiftType->scheduledShifts()->exists()) {
@@ -102,8 +94,7 @@ class ShiftTypeController extends Controller
 
     // ── JSON API (eingebettet in den Schedule-Dialog) ────────────────────────
 
-    public function store(StoreShiftTypeRequest $request): JsonResponse
-    {
+    public function store(StoreShiftTypeRequest $request): JsonResponse {
         /** @var User $auth */
         $auth = Auth::user();
 
@@ -115,15 +106,13 @@ class ShiftTypeController extends Controller
         return response()->json($shiftType, 201);
     }
 
-    public function update(UpdateShiftTypeRequest $request, ShiftType $shiftType): JsonResponse
-    {
+    public function update(UpdateShiftTypeRequest $request, ShiftType $shiftType): JsonResponse {
         $shiftType->update($request->validated());
 
         return response()->json($shiftType);
     }
 
-    public function destroy(ShiftType $shiftType): JsonResponse
-    {
+    public function destroy(ShiftType $shiftType): JsonResponse {
         /** @var User $auth */
         $auth = Auth::user();
         if (! $auth->isAdmin()) {

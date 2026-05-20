@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,10 +13,8 @@ namespace Tests;
 use App\Support\DatabaseHealth;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
-abstract class TestCase extends BaseTestCase
-{
-    protected function setUp(): void
-    {
+abstract class TestCase extends BaseTestCase {
+    protected function setUp(): void {
         parent::setUp();
 
         // Verhindert, dass DatabaseHealth-Marker zwischen Tests (oder zwischen
@@ -27,8 +24,7 @@ abstract class TestCase extends BaseTestCase
         DatabaseHealth::reset();
     }
 
-    protected function tearDown(): void
-    {
+    protected function tearDown(): void {
         DatabaseHealth::reset();
 
         parent::tearDown();

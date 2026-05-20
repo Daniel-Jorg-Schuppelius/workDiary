@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue May 19 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,13 +21,11 @@ use Throwable;
  * Laravel-Cache kann selbst auf die ausgefallene DB angewiesen sein
  * (CACHE_STORE=database). Eine Datei ist immer unabhängig erreichbar.
  */
-final class DatabaseHealth
-{
+final class DatabaseHealth {
     /** @var array<string, bool> Per-Request-Cache pro Connection. */
     private static array $requestUnavailable = [];
 
-    public static function isAvailable(string $connection): bool
-    {
+    public static function isAvailable(string $connection): bool {
         if (self::$requestUnavailable[$connection] ?? false) {
             return false;
         }
@@ -53,8 +50,7 @@ final class DatabaseHealth
         return true;
     }
 
-    public static function markUnavailable(string $connection): void
-    {
+    public static function markUnavailable(string $connection): void {
         self::$requestUnavailable[$connection] = true;
 
         $path = self::markerPath($connection);
@@ -66,8 +62,7 @@ final class DatabaseHealth
         @file_put_contents($path, (string) time());
     }
 
-    public static function reset(?string $connection = null): void
-    {
+    public static function reset(?string $connection = null): void {
         if ($connection === null) {
             self::$requestUnavailable = [];
             // Hinweis: markerPath('*') w\u00fcrde das Wildcard via preg_replace zu '_'
@@ -95,8 +90,7 @@ final class DatabaseHealth
      * @param  T  $default
      * @return T
      */
-    public static function attempt(string $connection, callable $work, mixed $default): mixed
-    {
+    public static function attempt(string $connection, callable $work, mixed $default): mixed {
         if (! self::isAvailable($connection)) {
             return $default;
         }
@@ -110,15 +104,13 @@ final class DatabaseHealth
         }
     }
 
-    private static function markerPath(string $connection): string
-    {
+    private static function markerPath(string $connection): string {
         $safe = preg_replace('/[^a-zA-Z0-9_-]/', '_', $connection) ?? 'default';
 
-        return storage_path('framework/cache/db-down-'.$safe.'.flag');
+        return storage_path('framework/cache/db-down-' . $safe . '.flag');
     }
 
-    public static function defaultConnection(): string
-    {
+    public static function defaultConnection(): string {
         return (string) config('database.default', 'mysql');
     }
 
@@ -126,8 +118,7 @@ final class DatabaseHealth
      * Best-effort-Aufräumen, das sich auch im fail-safe-Pfad benutzen lässt
      * — vermeidet Exceptions im Render-Handler.
      */
-    public static function safeMarkUnavailable(string $connection): void
-    {
+    public static function safeMarkUnavailable(string $connection): void {
         try {
             self::markUnavailable($connection);
         } catch (Throwable) {

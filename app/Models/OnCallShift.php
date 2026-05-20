@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -28,8 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Carbon $start_at
  * @property Carbon $end_at
  */
-class OnCallShift extends Model implements HasTimeWindow
-{
+class OnCallShift extends Model implements HasTimeWindow {
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
@@ -57,20 +55,17 @@ class OnCallShift extends Model implements HasTimeWindow
     ];
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo
-    {
+    public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
     /** @return HasMany<EmergencyAssignment, $this> */
-    public function emergencyAssignments(): HasMany
-    {
+    public function emergencyAssignments(): HasMany {
         return $this->hasMany(EmergencyAssignment::class);
     }
 
     /** @return HasMany<DiaryEntry, $this> */
-    public function diaryEntries(): HasMany
-    {
+    public function diaryEntries(): HasMany {
         return $this->hasMany(DiaryEntry::class);
     }
 
@@ -80,18 +75,15 @@ class OnCallShift extends Model implements HasTimeWindow
      * @param  Builder<OnCallShift>  $query
      * @return Builder<OnCallShift>
      */
-    public function scopeOverlapping(Builder $query, \DateTimeInterface $start, \DateTimeInterface $end): Builder
-    {
+    public function scopeOverlapping(Builder $query, \DateTimeInterface $start, \DateTimeInterface $end): Builder {
         return $query->where('start_at', '<', $end)->where('end_at', '>', $start);
     }
 
-    public function getStartAt(): ?Carbon
-    {
+    public function getStartAt(): ?Carbon {
         return $this->start_at;
     }
 
-    public function getEndAt(): ?Carbon
-    {
+    public function getEndAt(): ?Carbon {
         return $this->end_at;
     }
 }

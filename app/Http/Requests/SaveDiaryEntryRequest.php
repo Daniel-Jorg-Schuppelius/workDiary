@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,7 +13,6 @@ namespace App\Http\Requests;
 use App\Enums\Diary\LocationMode;
 use App\Enums\Diary\Mode;
 use App\Enums\Diary\Priority;
-use App\Models\DiaryEntry;
 use App\Models\EntryType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

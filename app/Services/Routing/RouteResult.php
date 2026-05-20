@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -14,8 +13,7 @@ namespace App\Services\Routing;
 /**
  * Immutable value object returned by {@see OsrmRouter}.
  */
-final class RouteResult
-{
+final class RouteResult {
     /**
      * @param  array<string, mixed>|null  $geometry  GeoJSON LineString
      * @param  array<int, array<string, mixed>>  $legs
@@ -25,15 +23,14 @@ final class RouteResult
         public readonly int $durationSeconds,
         public readonly ?array $geometry,
         public readonly array $legs = [],
-    ) {}
+    ) {
+    }
 
-    public function distanceKm(): float
-    {
+    public function distanceKm(): float {
         return round($this->distanceMeters / 1000, 2);
     }
 
-    public function durationMinutes(): int
-    {
+    public function durationMinutes(): int {
         return (int) ceil($this->durationSeconds / 60);
     }
 }

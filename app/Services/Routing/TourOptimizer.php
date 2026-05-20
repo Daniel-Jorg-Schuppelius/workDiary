@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 17 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,8 +21,7 @@ namespace App\Services\Routing;
  * `$start`/`$end` are NOT part of the index space; they are only used as
  * fixed anchors when building the route geometry afterwards.
  */
-class TourOptimizer
-{
+class TourOptimizer {
     public const MAX_TWO_OPT_ITERATIONS = 50;
 
     /**
@@ -35,8 +33,7 @@ class TourOptimizer
      * @param  bool  $hasEnd  whether the last row (N or N+1) is the end anchor
      * @return array{order: list<int>, distance: int, duration_estimate: int}
      */
-    public function optimize(array $stops, array $distanceMatrix, bool $hasStart = false, bool $hasEnd = false): array
-    {
+    public function optimize(array $stops, array $distanceMatrix, bool $hasStart = false, bool $hasEnd = false): array {
         $n = count($stops);
         if ($n === 0) {
             return ['order' => [], 'distance' => 0, 'duration_estimate' => 0];
@@ -68,8 +65,7 @@ class TourOptimizer
      * @param  array<int, Coordinate>  $stops
      * @return array<int, array<int, float>>
      */
-    public function haversineMatrix(array $stops, ?Coordinate $start = null, ?Coordinate $end = null): array
-    {
+    public function haversineMatrix(array $stops, ?Coordinate $start = null, ?Coordinate $end = null): array {
         $points = $stops;
         if ($start !== null) {
             $points[] = $start;
@@ -95,8 +91,7 @@ class TourOptimizer
      * @param  array<int, array<int, float>>  $matrix
      * @return list<int>
      */
-    private function nearestNeighbor(int $n, array $matrix, bool $hasStart): array
-    {
+    private function nearestNeighbor(int $n, array $matrix, bool $hasStart): array {
         $visited = array_fill(0, $n, false);
         $order = [];
 
@@ -143,8 +138,7 @@ class TourOptimizer
      * @param  array<int, array<int, float>>  $matrix
      * @return list<int>
      */
-    private function twoOpt(array $order, array $matrix, bool $hasStart, bool $hasEnd, int $n): array
-    {
+    private function twoOpt(array $order, array $matrix, bool $hasStart, bool $hasEnd, int $n): array {
         $best = $order;
         $bestDist = $this->totalDistance($best, $matrix, $hasStart, $hasEnd, $n);
         $size = count($best);
@@ -180,8 +174,7 @@ class TourOptimizer
      * @param  list<int>  $order
      * @param  array<int, array<int, float>>  $matrix
      */
-    private function totalDistance(array $order, array $matrix, bool $hasStart, bool $hasEnd, int $n): float
-    {
+    private function totalDistance(array $order, array $matrix, bool $hasStart, bool $hasEnd, int $n): float {
         if ($order === []) {
             return 0.0;
         }
@@ -204,13 +197,11 @@ class TourOptimizer
      * Crude duration heuristic (40 km/h average) when no OSRM duration is
      * available — actual durations come from the `/route` call.
      */
-    private function estimateDurationSeconds(float $distanceMeters): int
-    {
+    private function estimateDurationSeconds(float $distanceMeters): int {
         return (int) round($distanceMeters / (40_000 / 3600));
     }
 
-    private function haversine(Coordinate $a, Coordinate $b): float
-    {
+    private function haversine(Coordinate $a, Coordinate $b): float {
         $earth = 6_371_000.0; // meters
         $lat1 = deg2rad($a->lat);
         $lat2 = deg2rad($b->lat);
