@@ -52,11 +52,32 @@ class LoginController extends Controller
 
             $this->syncLegacyUserIdIfMissing((string) $credentials['username']);
 
-            $mode = session('work_mode', 'legacy');
+            /** @var \App\Models\User|null $user */
+            $user = Auth::user();
             $legacyConfigured = filled(config('database.connections.legacy.database'));
-            $defaultRoute = ($mode === 'legacy' && $legacyConfigured)
+            $sessionMode = (string) session('work_mode', 'legacy');
+
+            // Modus an die tatsächlichen Zugriffsrechte des Benutzers
+            // anpassen. Sonst landet ein Legacy-only-User u. U. auf einer
+            // Route hinter `access.new` (oder umgekehrt) und sieht eine
+            // 403-Meldung statt seiner Startseite.
+            $canLegacy = $legacyConfigured && ($user?->canAccessLegacy() ?? true);
+            $canNew = $user?->canAccessNew() ?? true;
+
+            if ($sessionMode === 'legacy' && ! $canLegacy && $canNew) {
+                $sessionMode = 'new';
+            } elseif ($sessionMode === 'new' && ! $canNew && $canLegacy) {
+                $sessionMode = 'legacy';
+            } elseif (! $canLegacy && ! $canNew) {
+                // Konsistenter Fallback: HomeController zeigt dann eine
+                // erklärende Seite ohne 403-Modal.
+                $sessionMode = 'legacy';
+            }
+            $request->session()->put('work_mode', $sessionMode);
+
+            $defaultRoute = ($sessionMode === 'legacy' && $canLegacy)
                 ? route('legacy.diary.index')
-                : route('diary.index');
+                : ($canNew ? route('diary.index') : route('home'));
 
             return redirect()->intended($defaultRoute);
         }

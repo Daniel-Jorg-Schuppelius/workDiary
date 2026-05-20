@@ -87,14 +87,27 @@ class AuthEventSubscriber
             return;
         }
 
-        AuditLog::query()->create([
-            'user_id' => $user->id,
-            'event' => $event,
-            'auditable_type' => User::class,
-            'auditable_id' => $user->id,
-            'changes' => null,
-            'ip' => Request::ip(),
-            'user_agent' => substr((string) Request::userAgent(), 0, 255),
-        ]);
+        try {
+            AuditLog::query()->create([
+                'user_id' => $user->id,
+                'organization_id' => $user->organization_id,
+                'event' => $event,
+                'auditable_type' => User::class,
+                'auditable_id' => $user->id,
+                'changes' => null,
+                'ip' => Request::ip(),
+                'user_agent' => substr((string) Request::userAgent(), 0, 255),
+            ]);
+        } catch (\Throwable $e) {
+            // Auth-Events dürfen niemals Login/Logout blockieren – z. B. wenn
+            // der Benutzer (noch) keiner Organisation zugeordnet ist oder die
+            // DB-Verbindung kurzzeitig instabil ist. Wir loggen dann nur in
+            // den Application-Log und schlucken die Exception.
+            Log::warning('auth.audit_failed', [
+                'event' => $event,
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

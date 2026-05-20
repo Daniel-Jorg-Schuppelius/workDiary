@@ -36,6 +36,18 @@ class EnsureNewSystemAccess {
                 ], 403);
             }
 
+            // Legacy-only-User landen hier u. a. nach einem Klick auf einen
+            // Deep-Link ins neue System. Statt sie mit einer 403-Seite zu
+            // begrüßen, schalten wir den Modus zurück auf Legacy und leiten
+            // sie zur Legacy-Startseite. Das entspricht ihrem zulässigen
+            // Funktionsumfang ohne erklärungsbedürftigen Fehlerdialog.
+            $legacyConfigured = filled(config('database.connections.legacy.database'));
+            if ($user instanceof User && $user->canAccessLegacy() && $legacyConfigured) {
+                $request->session()->put('work_mode', 'legacy');
+                return redirect()->route('legacy.diary.index')
+                    ->with('info', __('Sie wurden in das Legacy-System geleitet.'));
+            }
+
             throw new AccessDeniedHttpException(__('Kein Zugriff auf das neue System.'));
         }
 
