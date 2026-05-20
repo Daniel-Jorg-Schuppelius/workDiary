@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed May 20 2026
  * Author       : Daniel Jörg Schuppelius
@@ -27,14 +26,14 @@ trait HasOptions {
      * @return list<string|int>
      */
     public static function values(): array {
-        return array_map(static fn (BackedEnum $case) => $case->value, self::cases());
+        return array_map(static fn(BackedEnum $case) => $case->value, self::cases());
     }
 
     /**
      * @return list<string>
      */
     public static function names(): array {
-        return array_map(static fn (BackedEnum $case) => $case->name, self::cases());
+        return array_map(static fn(BackedEnum $case) => $case->name, self::cases());
     }
 
     /**
