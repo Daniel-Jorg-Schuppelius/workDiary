@@ -18,6 +18,9 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Task\TaskPriority;
+use App\Enums\Task\TaskStatus;
+use App\Enums\Project\ProjectStatus;
 
 class TaskTest extends TestCase
 {
@@ -40,7 +43,7 @@ class TaskTest extends TestCase
         $this->project = Project::create([
             'organization_id' => $this->organization->id,
             'name' => 'Test-Projekt',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'created_by' => $this->user->id,
         ]);
     }
@@ -50,8 +53,8 @@ class TaskTest extends TestCase
         $this->actingAs($this->user)
             ->post(route('projects.tasks.store', $this->project), [
                 'title' => 'Neue Aufgabe',
-                'status' => Task::STATUS_OPEN,
-                'priority' => Task::PRIORITY_MEDIUM,
+                'status' => TaskStatus::Open->value,
+                'priority' => TaskPriority::Medium->value,
             ])
             ->assertRedirect();
 
@@ -69,16 +72,16 @@ class TaskTest extends TestCase
             'project_id' => $this->project->id,
             'created_by' => $this->user->id,
             'title' => 'Eltern-Aufgabe',
-            'status' => Task::STATUS_OPEN,
-            'priority' => Task::PRIORITY_MEDIUM,
+            'status' => TaskStatus::Open->value,
+            'priority' => TaskPriority::Medium->value,
             'position' => 0,
         ]);
 
         $this->actingAs($this->user)
             ->post(route('projects.tasks.store', $this->project), [
                 'title' => 'Sub-Task',
-                'status' => Task::STATUS_OPEN,
-                'priority' => Task::PRIORITY_LOW,
+                'status' => TaskStatus::Open->value,
+                'priority' => TaskPriority::Low->value,
                 'parent_task_id' => $parent->id,
             ])
             ->assertRedirect();
@@ -96,8 +99,8 @@ class TaskTest extends TestCase
             'project_id' => $this->project->id,
             'created_by' => $this->user->id,
             'title' => 'Zu erledigen',
-            'status' => Task::STATUS_OPEN,
-            'priority' => Task::PRIORITY_MEDIUM,
+            'status' => TaskStatus::Open->value,
+            'priority' => TaskPriority::Medium->value,
             'position' => 0,
         ]);
 
@@ -106,14 +109,14 @@ class TaskTest extends TestCase
             ->patch(route('projects.tasks.complete', [$this->project, $task]))
             ->assertRedirect();
 
-        $this->assertDatabaseHas('tasks', ['id' => $task->id, 'status' => Task::STATUS_DONE]);
+        $this->assertDatabaseHas('tasks', ['id' => $task->id, 'status' => TaskStatus::Done->value]);
 
         // Toggle zurück → open
         $this->actingAs($this->user)
             ->patch(route('projects.tasks.complete', [$this->project, $task]))
             ->assertRedirect();
 
-        $this->assertDatabaseHas('tasks', ['id' => $task->id, 'status' => Task::STATUS_OPEN]);
+        $this->assertDatabaseHas('tasks', ['id' => $task->id, 'status' => TaskStatus::Open->value]);
     }
 
     public function test_owner_can_update_task(): void
@@ -123,23 +126,23 @@ class TaskTest extends TestCase
             'project_id' => $this->project->id,
             'created_by' => $this->user->id,
             'title' => 'Alt',
-            'status' => Task::STATUS_OPEN,
-            'priority' => Task::PRIORITY_MEDIUM,
+            'status' => TaskStatus::Open->value,
+            'priority' => TaskPriority::Medium->value,
             'position' => 0,
         ]);
 
         $this->actingAs($this->user)
             ->put(route('projects.tasks.update', [$this->project, $task]), [
                 'title' => 'Neu',
-                'status' => Task::STATUS_IN_PROGRESS,
-                'priority' => Task::PRIORITY_HIGH,
+                'status' => TaskStatus::InProgress->value,
+                'priority' => TaskPriority::High->value,
             ])
             ->assertRedirect();
 
         $this->assertDatabaseHas('tasks', [
             'id' => $task->id,
             'title' => 'Neu',
-            'status' => Task::STATUS_IN_PROGRESS,
+            'status' => TaskStatus::InProgress->value,
         ]);
     }
 
@@ -151,16 +154,16 @@ class TaskTest extends TestCase
             'project_id' => $this->project->id,
             'created_by' => $this->user->id,
             'title' => 'Fremde',
-            'status' => Task::STATUS_OPEN,
-            'priority' => Task::PRIORITY_MEDIUM,
+            'status' => TaskStatus::Open->value,
+            'priority' => TaskPriority::Medium->value,
             'position' => 0,
         ]);
 
         $this->actingAs($other)
             ->put(route('projects.tasks.update', [$this->project, $task]), [
                 'title' => 'Hack',
-                'status' => Task::STATUS_OPEN,
-                'priority' => Task::PRIORITY_MEDIUM,
+                'status' => TaskStatus::Open->value,
+                'priority' => TaskPriority::Medium->value,
             ])
             ->assertForbidden();
     }
@@ -173,8 +176,8 @@ class TaskTest extends TestCase
             'project_id' => $this->project->id,
             'created_by' => $this->user->id,
             'title' => 'Zu löschen',
-            'status' => Task::STATUS_OPEN,
-            'priority' => Task::PRIORITY_MEDIUM,
+            'status' => TaskStatus::Open->value,
+            'priority' => TaskPriority::Medium->value,
             'position' => 0,
         ]);
 
@@ -190,8 +193,8 @@ class TaskTest extends TestCase
             'project_id' => $this->project->id,
             'created_by' => $this->user->id,
             'title' => 'Weg',
-            'status' => Task::STATUS_OPEN,
-            'priority' => Task::PRIORITY_MEDIUM,
+            'status' => TaskStatus::Open->value,
+            'priority' => TaskPriority::Medium->value,
             'position' => 0,
         ]);
 

@@ -11,6 +11,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Sickness\SickLeaveKind;
 use App\Models\SickLeave;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
@@ -39,12 +40,12 @@ class SaveSickLeaveRequest extends FormRequest
             'user_id' => ['nullable', 'integer', 'exists:users,id'],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'gte:start_date'],
-            'kind' => ['required', Rule::in(SickLeave::$kinds)],
+            'kind' => ['required', Rule::enum(SickLeaveKind::class)],
             'follow_up_for_id' => [
                 'nullable',
                 'integer',
                 Rule::exists('sick_leaves', 'id'),
-                Rule::requiredIf(fn () => $this->input('kind') === SickLeave::KIND_FOLLOW_UP),
+                Rule::requiredIf(fn () => $this->input('kind') === SickLeaveKind::FollowUp->value),
             ],
             'au_number' => ['nullable', 'string', 'max:100'],
             'doctor_name' => ['nullable', 'string', 'max:255'],

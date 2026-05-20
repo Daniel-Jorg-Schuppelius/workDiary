@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Services\Compliance\Rules;
 
+use App\Enums\Vacation\VacationStatus;
 use App\Models\ScheduledShift;
 use App\Models\Vacation;
 use App\Services\Compliance\ComplianceRule;
@@ -32,7 +33,7 @@ final class VacationConflictRule implements ComplianceRule
 
         $vacation = Vacation::query()
             ->where('user_id', $shift->user_id)
-            ->whereIn('status', [Vacation::STATUS_APPROVED, Vacation::STATUS_PENDING])
+            ->whereIn('status', [VacationStatus::Approved, VacationStatus::Pending])
             ->where('start_date', '<=', $dateStr)
             ->where('end_date', '>=', $dateStr)
             ->first();
@@ -44,17 +45,17 @@ final class VacationConflictRule implements ComplianceRule
         return [
             new ComplianceViolation(
                 code: 'vacation_conflict',
-                severity: $vacation->status === Vacation::STATUS_APPROVED
+                severity: $vacation->status === VacationStatus::Approved
                     ? ComplianceViolation::SEVERITY_ERROR
                     : ComplianceViolation::SEVERITY_WARNING,
                 message: __('Mitarbeiter hat am :date :status Urlaub (:from – :to).', [
                     'date' => $shift->date->format('d.m.Y'),
-                    'status' => $vacation->status === Vacation::STATUS_APPROVED ? __('genehmigten') : __('beantragten'),
+                    'status' => $vacation->status === VacationStatus::Approved ? __('genehmigten') : __('beantragten'),
                     'from' => $vacation->start_date->format('d.m.Y'),
                     'to' => $vacation->end_date->format('d.m.Y'),
                 ]),
                 relatedShiftIds: [],
-                context: ['vacation_id' => $vacation->id, 'status' => $vacation->status],
+                context: ['vacation_id' => $vacation->id, 'status' => $vacation->status->value],
             ),
         ];
     }

@@ -11,7 +11,7 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Tour;
+use App\Enums\Tour\TourStatus;
 use App\Models\Vehicle;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Validation\Validator;
@@ -39,7 +39,7 @@ class SaveTourRequest extends FormRequest
             'end_address' => ['nullable', 'string', 'max:255'],
             'end_lat' => ['nullable', 'numeric', 'between:-90,90'],
             'end_lng' => ['nullable', 'numeric', 'between:-180,180'],
-            'status' => ['sometimes', 'string', Rule::in(Tour::STATUSES)],
+            'status' => ['sometimes', Rule::enum(TourStatus::class)],
             'notes' => ['nullable', 'string', 'max:5000'],
         ];
     }

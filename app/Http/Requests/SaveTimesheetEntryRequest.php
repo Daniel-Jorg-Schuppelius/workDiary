@@ -11,6 +11,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\TimeEntry;
 use App\Models\Timesheet;
 use Carbon\CarbonImmutable;
@@ -90,7 +91,7 @@ class SaveTimesheetEntryRequest extends FormRequest
             'date' => ['nullable', 'date'],
             'minutes' => ['nullable', 'integer', 'min:0', 'max:1440'],
             'break_minutes' => ['nullable', 'integer', 'min:0', 'max:480'],
-            'kind' => ['nullable', Rule::in(TimeEntry::KINDS)],
+            'kind' => ['nullable', Rule::enum(TimeEntryKind::class)],
             'task_id' => ['nullable', 'integer', Rule::exists('tasks', 'id')],
             'description' => ['nullable', 'string', 'max:500'],
         ];

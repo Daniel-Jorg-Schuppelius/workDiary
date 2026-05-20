@@ -3,7 +3,7 @@
     /** @var \App\Models\EntryType $entryType */
     $isEdit = $entryType?->exists ?? false;
     $statusOptions = $statusOptions ?? [];
-    $priorityOptions = $priorityOptions ?? \App\Models\DiaryEntry::PRIORITIES;
+    $priorityOptions = $priorityOptions ?? \App\Enums\Diary\Priority::cases();
 @endphp
 
 <x-form-group :legend="__('Identifikation')" icon="badge" tone="primary" cols="2">
@@ -83,7 +83,7 @@
     <x-filter-field show-label :label="__('Status (Default)')" for="entrytype-default-status">
         <select id="entrytype-default-status" name="default_status" class="select select-bordered select-sm w-full">
             @foreach ($statusOptions as $value => $label)
-                <option value="{{ $value }}" @selected((int) old('default_status', $entryType->default_status ?? \App\Models\DiaryEntry::STATUS_OPEN) === (int) $value)>{{ $label }}</option>
+                <option value="{{ $value }}" @selected((int) old('default_status', $entryType->default_status ?? \App\Enums\Diary\Status::Open->value) === (int) $value)>{{ $label }}</option>
             @endforeach
         </select>
     </x-filter-field>
@@ -92,7 +92,9 @@
         <select id="entrytype-default-priority" name="default_priority" class="select select-bordered select-sm w-full">
             <option value="">— {{ __('keine Vorgabe') }} —</option>
             @foreach ($priorityOptions as $prio)
-                <option value="{{ $prio }}" @selected(old('default_priority', $entryType->default_priority) === $prio)>{{ __(ucfirst($prio)) }}</option>
+                @php($prioValue = $prio instanceof \App\Enums\Diary\Priority ? $prio->value : $prio)
+                @php($prioLabel = $prio instanceof \App\Enums\Diary\Priority ? $prio->label() : __(ucfirst((string) $prio)))
+                <option value="{{ $prioValue }}" @selected(old('default_priority', $entryType->default_priority?->value) === $prioValue)>{{ $prioLabel }}</option>
             @endforeach
         </select>
     </x-filter-field>

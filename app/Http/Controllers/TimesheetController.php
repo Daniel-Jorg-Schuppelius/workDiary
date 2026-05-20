@@ -25,6 +25,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use App\Enums\Timesheet\TimesheetStatus;
 
 class TimesheetController extends Controller
 {
@@ -107,7 +108,7 @@ class TimesheetController extends Controller
         $timesheet = $project->timesheets()->create($request->validated() + [
             'user_id' => Auth::id(),
             'organization_id' => $project->organization_id,
-            'status' => Timesheet::STATUS_DRAFT,
+            'status' => TimesheetStatus::Draft->value,
         ]);
 
         return redirect()->route('projects.timesheets.show', [$project, $timesheet])
@@ -148,7 +149,7 @@ class TimesheetController extends Controller
             'work_date' => $workDate,
             'user_id' => Auth::id(),
             'organization_id' => $project->organization_id,
-            'status' => Timesheet::STATUS_DRAFT,
+            'status' => TimesheetStatus::Draft->value,
         ]);
 
         return redirect()->route('projects.timesheets.show', [$project, $timesheet])
@@ -202,7 +203,7 @@ class TimesheetController extends Controller
     public function submit(Project $project, Timesheet $timesheet): RedirectResponse
     {
         Gate::authorize('submit', $timesheet);
-        $timesheet->update(['status' => Timesheet::STATUS_SUBMITTED]);
+        $timesheet->update(['status' => TimesheetStatus::Submitted->value]);
 
         return back()->with('success', __('Eingereicht.'));
     }

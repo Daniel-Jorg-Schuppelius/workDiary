@@ -17,6 +17,7 @@ use App\Models\ScheduledShift;
 use App\Services\Compliance\ComplianceRule;
 use App\Services\Compliance\ComplianceViolation;
 use App\Services\Compliance\ResolvesShiftTiming;
+use App\Enums\Shift\ScheduledShiftStatus;
 
 /** ArbZG §3: max. Tagesarbeitszeit (Standard 10h, ggf. erweitert auf 8h Durchschnitt). */
 final class MaxDailyHoursRule implements ComplianceRule
@@ -41,7 +42,7 @@ final class MaxDailyHoursRule implements ComplianceRule
         // Gesamtstunden des Mitarbeiters an diesem Kalendertag (ohne abgesagte).
         $sameDay = ScheduledShift::query()
             ->where('user_id', $shift->user_id)
-            ->where('status', '!=', ScheduledShift::STATUS_CANCELLED)
+            ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
             ->whereDate('date', $dateStr)
             ->when($shift->id, fn ($q) => $q->where('id', '!=', $shift->id))
             ->with('shiftType')

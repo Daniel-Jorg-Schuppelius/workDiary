@@ -11,6 +11,7 @@
 
 namespace App\Policies;
 
+use App\Enums\Vacation\VacationStatus;
 use App\Models\User;
 use App\Models\Vacation;
 use App\Policies\Concerns\ChecksOwnership;
@@ -39,12 +40,12 @@ class VacationPolicy
     public function update(User $user, Vacation $vacation): bool
     {
         // Nur Antragssteller darf ändern, solange noch ausstehend
-        return $this->owns($user, $vacation) && $vacation->status === Vacation::STATUS_PENDING;
+        return $this->owns($user, $vacation) && $vacation->status === VacationStatus::Pending;
     }
 
     public function delete(User $user, Vacation $vacation): bool
     {
-        return $this->owns($user, $vacation) && $vacation->status === Vacation::STATUS_PENDING;
+        return $this->owns($user, $vacation) && $vacation->status === VacationStatus::Pending;
     }
 
     /** Genehmigen / Ablehnen darf nur der Admin (via HasAdminBypass). */
@@ -57,6 +58,6 @@ class VacationPolicy
     public function cancel(User $user, Vacation $vacation): bool
     {
         return $this->owns($user, $vacation)
-            && in_array($vacation->status, [Vacation::STATUS_PENDING, Vacation::STATUS_APPROVED], true);
+            && in_array($vacation->status, [VacationStatus::Pending, VacationStatus::Approved], true);
     }
 }

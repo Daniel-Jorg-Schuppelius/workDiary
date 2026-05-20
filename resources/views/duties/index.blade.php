@@ -125,19 +125,19 @@
                 <x-filter-field :label="__('Typ')" for="duties-vtype" class="flex-1 min-w-40">
                     <select id="duties-vtype" name="vtype" class="select select-bordered select-sm w-full">
                         <option value="">{{ __('Alle Typen') }}</option>
-                        <option value="{{ \App\Models\Vacation::TYPE_VACATION }}" @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_VACATION)>{{ __('Urlaub') }}</option>
-                        <option value="{{ \App\Models\Vacation::TYPE_SICK }}"     @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_SICK)>{{ __('Krank') }}</option>
-                        <option value="{{ \App\Models\Vacation::TYPE_SPECIAL }}"  @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_SPECIAL)>{{ __('Sonderurlaub') }}</option>
-                        <option value="{{ \App\Models\Vacation::TYPE_UNPAID }}"   @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_UNPAID)>{{ __('Unbezahlt') }}</option>
+                        <option value="{{ \App\Enums\Vacation\VacationType::Vacation->value }}" @selected(($filters['vtype'] ?? '') === \App\Enums\Vacation\VacationType::Vacation->value)>{{ __('Urlaub') }}</option>
+                        <option value="{{ \App\Enums\Vacation\VacationType::Sick->value }}"     @selected(($filters['vtype'] ?? '') === \App\Enums\Vacation\VacationType::Sick->value)>{{ __('Krank') }}</option>
+                        <option value="{{ \App\Enums\Vacation\VacationType::Special->value }}"  @selected(($filters['vtype'] ?? '') === \App\Enums\Vacation\VacationType::Special->value)>{{ __('Sonderurlaub') }}</option>
+                        <option value="{{ \App\Enums\Vacation\VacationType::Unpaid->value }}"   @selected(($filters['vtype'] ?? '') === \App\Enums\Vacation\VacationType::Unpaid->value)>{{ __('Unbezahlt') }}</option>
                     </select>
                 </x-filter-field>
                 <x-filter-field :label="__('Status')" for="duties-vstatus" class="flex-1 min-w-40">
                     <select id="duties-vstatus" name="vstatus" class="select select-bordered select-sm w-full">
                         <option value="">{{ __('Alle Status') }}</option>
-                        <option value="{{ \App\Models\Vacation::STATUS_PENDING }}"   @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_PENDING)>{{ __('Ausstehend') }}</option>
-                        <option value="{{ \App\Models\Vacation::STATUS_APPROVED }}"  @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_APPROVED)>{{ __('Genehmigt') }}</option>
-                        <option value="{{ \App\Models\Vacation::STATUS_REJECTED }}"  @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_REJECTED)>{{ __('Abgelehnt') }}</option>
-                        <option value="{{ \App\Models\Vacation::STATUS_CANCELLED }}" @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_CANCELLED)>{{ __('Storniert') }}</option>
+                        <option value="{{ \App\Enums\Vacation\VacationStatus::Pending->value }}"   @selected(($filters['vstatus'] ?? '') === \App\Enums\Vacation\VacationStatus::Pending->value)>{{ __('Ausstehend') }}</option>
+                        <option value="{{ \App\Enums\Vacation\VacationStatus::Approved->value }}"  @selected(($filters['vstatus'] ?? '') === \App\Enums\Vacation\VacationStatus::Approved->value)>{{ __('Genehmigt') }}</option>
+                        <option value="{{ \App\Enums\Vacation\VacationStatus::Rejected->value }}"  @selected(($filters['vstatus'] ?? '') === \App\Enums\Vacation\VacationStatus::Rejected->value)>{{ __('Abgelehnt') }}</option>
+                        <option value="{{ \App\Enums\Vacation\VacationStatus::Cancelled->value }}" @selected(($filters['vstatus'] ?? '') === \App\Enums\Vacation\VacationStatus::Cancelled->value)>{{ __('Storniert') }}</option>
                     </select>
                 </x-filter-field>
             @elseif ($tab === 'krank')
@@ -154,8 +154,9 @@
                 <x-filter-field :label="__('Art')" for="duties-kkind" class="flex-1 min-w-40">
                     <select id="duties-kkind" name="kkind" class="select select-bordered select-sm w-full">
                         <option value="">{{ __('Alle') }}</option>
-                        <option value="{{ \App\Models\SickLeave::KIND_INITIAL }}"   @selected(($filters['kkind'] ?? '') === \App\Models\SickLeave::KIND_INITIAL)>{{ __('Erstbescheinigung') }}</option>
-                        <option value="{{ \App\Models\SickLeave::KIND_FOLLOW_UP }}" @selected(($filters['kkind'] ?? '') === \App\Models\SickLeave::KIND_FOLLOW_UP)>{{ __('Folgebescheinigung') }}</option>
+                        @foreach (\App\Enums\Sickness\SickLeaveKind::cases() as $kindCase)
+                            <option value="{{ $kindCase->value }}" @selected(($filters['kkind'] ?? '') === $kindCase->value)>{{ $kindCase->label() }}</option>
+                        @endforeach
                     </select>
                 </x-filter-field>
                 <x-filter-field :label="__('Status')" for="duties-kstatus" class="flex-1 min-w-40">

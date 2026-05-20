@@ -20,6 +20,7 @@ use App\Models\ShiftType;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Collection;
+use App\Enums\Shift\ScheduledShiftStatus;
 
 /**
  * Berechnet Soll-/Ist-Besetzung pro Tag und Schichttyp für einen DutyPlan.
@@ -36,8 +37,8 @@ class CoverageService
 {
     /** Status, die als "tatsächlich besetzt" zählen. */
     private const ACTUAL_STATUSES = [
-        ScheduledShift::STATUS_PUBLISHED,
-        ScheduledShift::STATUS_CONFIRMED,
+        ScheduledShiftStatus::Published->value,
+        ScheduledShiftStatus::Confirmed->value,
     ];
 
     /**

@@ -13,6 +13,7 @@ namespace App\Http\Requests;
 
 use App\Models\LexofficeArticle;
 use App\Models\TimeEntry;
+use App\Enums\TimeEntry\TimeEntryKind;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -26,7 +27,7 @@ class SaveProjectBillingRuleRequest extends FormRequest
     /** @return array<string, mixed> */
     public function rules(): array
     {
-        $kinds = TimeEntry::KINDS;
+        $kinds = TimeEntryKind::values();
 
         return [
             'plugin_id' => ['nullable', 'string', 'max:50'],

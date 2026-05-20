@@ -3,13 +3,13 @@
 @php
     /** @var \App\Models\TimeEntry|null $entry */
     $activityTypes = [
-        \App\Models\TimeEntry::ACTIVITY_ADMIN     => __('Verwaltung'),
-        \App\Models\TimeEntry::ACTIVITY_MEETING   => __('Besprechung'),
-        \App\Models\TimeEntry::ACTIVITY_TRAINING  => __('Schulung'),
-        \App\Models\TimeEntry::ACTIVITY_INTERNAL  => __('Intern'),
-        \App\Models\TimeEntry::ACTIVITY_TRAVEL    => __('Anfahrt / Reise'),
-        \App\Models\TimeEntry::ACTIVITY_BREAK     => __('Pause'),
-        \App\Models\TimeEntry::ACTIVITY_OTHER     => __('Sonstiges'),
+        \App\Enums\TimeEntry\TimeEntryActivityType::Admin->value     => \App\Enums\TimeEntry\TimeEntryActivityType::Admin->label(),
+        \App\Enums\TimeEntry\TimeEntryActivityType::Meeting->value   => \App\Enums\TimeEntry\TimeEntryActivityType::Meeting->label(),
+        \App\Enums\TimeEntry\TimeEntryActivityType::Training->value  => \App\Enums\TimeEntry\TimeEntryActivityType::Training->label(),
+        \App\Enums\TimeEntry\TimeEntryActivityType::Internal->value  => \App\Enums\TimeEntry\TimeEntryActivityType::Internal->label(),
+        \App\Enums\TimeEntry\TimeEntryActivityType::Travel->value    => \App\Enums\TimeEntry\TimeEntryActivityType::Travel->label(),
+        \App\Enums\TimeEntry\TimeEntryActivityType::Break_->value    => \App\Enums\TimeEntry\TimeEntryActivityType::Break_->label(),
+        \App\Enums\TimeEntry\TimeEntryActivityType::Other->value     => \App\Enums\TimeEntry\TimeEntryActivityType::Other->label(),
     ];
 @endphp
 
@@ -26,7 +26,7 @@
         <label class="fieldset-label">{{ __('Tätigkeitstyp') }} *</label>
         <select name="activity_type" required class="select select-bordered w-full">
             @foreach ($activityTypes as $key => $label)
-                <option value="{{ $key }}" @selected(old('activity_type', $entry?->activity_type ?? 'admin') === $key)>{{ $label }}</option>
+                <option value="{{ $key }}" @selected(old('activity_type', $entry?->activity_type?->value ?? 'admin') === $key)>{{ $label }}</option>
             @endforeach
         </select>
     </div>
@@ -36,7 +36,7 @@
             <option value="">— {{ __('keine Kategorie') }} —</option>
             @foreach ($categories as $c)
                 <option value="{{ $c->id }}" @selected(old('activity_category_id', $entry?->activity_category_id) == $c->id)>
-                    {{ $c->label }} ({{ $c->activity_type }})
+                    {{ $c->label }} ({{ $c->activity_type->label() }})
                 </option>
             @endforeach
         </select>

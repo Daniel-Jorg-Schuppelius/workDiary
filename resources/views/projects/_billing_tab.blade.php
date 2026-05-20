@@ -3,7 +3,7 @@
     $project = $project ?? null;
     $rules = $project?->billingRules()->orderByDesc('priority')->orderBy('id')->get() ?? collect();
     $articles = \App\Models\LexofficeArticle::active()->orderBy('name')->get(['external_id', 'name', 'unit_name', 'net_unit_price', 'vat_rate']);
-    $kinds = \App\Models\TimeEntry::KINDS;
+    $kinds = \App\Enums\TimeEntry\TimeEntryKind::values();
     $itemTypes = ['service' => __('Dienstleistung'), 'material' => __('Material'), 'custom' => __('Sonstige')];
 
     $parentRules = collect();

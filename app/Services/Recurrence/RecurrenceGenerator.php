@@ -11,6 +11,9 @@
 
 namespace App\Services\Recurrence;
 
+use App\Enums\Diary\Mode;
+use App\Enums\Diary\Status as DiaryStatus;
+use App\Enums\Recurrence\RecurrenceFrequency;
 use App\Models\DiaryEntry;
 use App\Models\RecurrenceRule;
 use Carbon\CarbonImmutable;
@@ -116,7 +119,7 @@ class RecurrenceGenerator
         $interval = max(1, (int) $rule->interval);
 
         switch ($rule->frequency) {
-            case RecurrenceRule::FREQ_DAILY:
+            case RecurrenceFrequency::Daily:
                 $cursor = CarbonImmutable::parse($rule->starts_on)->startOfDay();
                 while ($cursor->lessThanOrEqualTo($end)) {
                     if ($cursor->greaterThanOrEqualTo($start)) {
@@ -126,7 +129,7 @@ class RecurrenceGenerator
                 }
                 break;
 
-            case RecurrenceRule::FREQ_WEEKLY:
+            case RecurrenceFrequency::Weekly:
                 $weekdays = $this->weekdayBitmap($rule);
                 $cursor = CarbonImmutable::parse($rule->starts_on)->startOfWeek(CarbonImmutable::MONDAY);
                 while ($cursor->lessThanOrEqualTo($end)) {
@@ -145,7 +148,7 @@ class RecurrenceGenerator
                 }
                 break;
 
-            case RecurrenceRule::FREQ_MONTHLY:
+            case RecurrenceFrequency::Monthly:
                 $cursor = CarbonImmutable::parse($rule->starts_on)->startOfMonth();
                 $day = $rule->bymonthday ?? (int) CarbonImmutable::parse($rule->starts_on)->day;
                 while ($cursor->lessThanOrEqualTo($end)) {
@@ -157,7 +160,7 @@ class RecurrenceGenerator
                 }
                 break;
 
-            case RecurrenceRule::FREQ_YEARLY:
+            case RecurrenceFrequency::Yearly:
                 $cursor = CarbonImmutable::parse($rule->starts_on)->startOfYear();
                 $month = $rule->bymonth ?? (int) CarbonImmutable::parse($rule->starts_on)->month;
                 $day = $rule->bymonthday ?? (int) CarbonImmutable::parse($rule->starts_on)->day;
@@ -240,12 +243,12 @@ class RecurrenceGenerator
         $entry->customer_id = $rule->customer_id;
         $entry->title = $title !== '' ? $title : null;
         $entry->content = $content;
-        $entry->status = DiaryEntry::STATUS_OPEN;
+        $entry->status = DiaryStatus::Open;
         $entry->priority = $rule->default_priority;
         $entry->service_minutes = $rule->default_service_minutes;
-        $entry->mode = DiaryEntry::MODE_RECURRING;
+        $entry->mode = Mode::Recurring;
         $entry->due_date = $date->toDateString();
-        $entry->location_mode = $rule->default_location_mode ?: DiaryEntry::LOCATION_ONSITE;
+        $entry->location_mode = $rule->default_location_mode;
         $entry->recurrence_rule_id = $rule->id;
         $entry->is_archived = false;
         $entry->save();

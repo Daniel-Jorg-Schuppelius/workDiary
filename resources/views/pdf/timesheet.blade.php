@@ -54,14 +54,7 @@
                     <td>{{ optional($e->ended_at)->format('H:i') }}</td>
                     <td class="right">{{ (int) $e->break_minutes }}</td>
                     <td class="right">{{ $h }}:{{ str_pad((string)$m,2,'0',STR_PAD_LEFT) }}</td>
-                    <td>
-                        {{ match ($e->kind) {
-                            \App\Models\TimeEntry::KIND_WORK => __('Arbeit'),
-                            \App\Models\TimeEntry::KIND_TRAVEL => __('Anfahrt'),
-                            \App\Models\TimeEntry::KIND_STANDBY => __('Bereitschaft'),
-                            default => (string) $e->kind,
-                        } }}
-                    </td>
+                    <td>{{ $e->kind?->label() ?? '' }}</td>
                     <td>{{ $e->description }}</td>
                 </tr>
             @empty

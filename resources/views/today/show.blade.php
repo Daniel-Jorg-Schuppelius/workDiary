@@ -138,7 +138,7 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <span class="badge badge-sm badge-ghost capitalize">{{ $e->activity_type ?? '—' }}</span>
+                                    <span class="badge badge-sm badge-ghost">{{ $e->activity_type?->label() ?? '—' }}</span>
                                 </td>
                                 <td class="text-sm">
                                     @if ($e->project)

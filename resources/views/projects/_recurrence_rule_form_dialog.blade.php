@@ -61,17 +61,18 @@
             <label class="fieldset-label">{{ __('Priorität') }}</label>
             <select name="default_priority" class="select select-bordered w-full">
                 <option value="">—</option>
-                @foreach (\App\Models\DiaryEntry::PRIORITIES as $p)
-                    <option value="{{ $p }}" @selected(old('default_priority', $rule->default_priority) === $p)>{{ __(ucfirst($p)) }}</option>
+                @foreach (\App\Enums\Diary\Priority::cases() as $p)
+                    <option value="{{ $p->value }}" @selected(old('default_priority', $rule->default_priority?->value) === $p->value)>{{ $p->label() }}</option>
                 @endforeach
             </select>
         </div>
         <div class="fieldset">
             <label class="fieldset-label">{{ __('Standort') }} *</label>
             <select name="default_location_mode" required class="select select-bordered w-full">
-                <option value="{{ \App\Models\DiaryEntry::LOCATION_ONSITE }}" @selected(old('default_location_mode', $rule->default_location_mode ?: 'onsite') === \App\Models\DiaryEntry::LOCATION_ONSITE)>{{ __('Vor Ort') }}</option>
-                <option value="{{ \App\Models\DiaryEntry::LOCATION_REMOTE }}" @selected(old('default_location_mode', $rule->default_location_mode) === \App\Models\DiaryEntry::LOCATION_REMOTE)>{{ __('Remote') }}</option>
-                <option value="{{ \App\Models\DiaryEntry::LOCATION_HYBRID }}" @selected(old('default_location_mode', $rule->default_location_mode) === \App\Models\DiaryEntry::LOCATION_HYBRID)>{{ __('Hybrid') }}</option>
+                @php($currentLocation = old('default_location_mode', $rule->default_location_mode?->value ?? 'onsite'))
+                @foreach (\App\Enums\Diary\LocationMode::cases() as $lm)
+                    <option value="{{ $lm->value }}" @selected($currentLocation === $lm->value)>{{ $lm->label() }}</option>
+                @endforeach
             </select>
         </div>
         <div class="fieldset">
@@ -98,10 +99,10 @@
         <div class="fieldset">
             <label class="fieldset-label">{{ __('Häufigkeit') }} *</label>
             <select name="frequency" required class="select select-bordered w-full" x-data x-init="$watch('$el.value', () => {})">
-                <option value="{{ \App\Models\RecurrenceRule::FREQ_DAILY }}" @selected(old('frequency', $rule->frequency) === \App\Models\RecurrenceRule::FREQ_DAILY)>{{ __('Täglich') }}</option>
-                <option value="{{ \App\Models\RecurrenceRule::FREQ_WEEKLY }}" @selected(old('frequency', $rule->frequency ?: 'weekly') === \App\Models\RecurrenceRule::FREQ_WEEKLY)>{{ __('Wöchentlich') }}</option>
-                <option value="{{ \App\Models\RecurrenceRule::FREQ_MONTHLY }}" @selected(old('frequency', $rule->frequency) === \App\Models\RecurrenceRule::FREQ_MONTHLY)>{{ __('Monatlich') }}</option>
-                <option value="{{ \App\Models\RecurrenceRule::FREQ_YEARLY }}" @selected(old('frequency', $rule->frequency) === \App\Models\RecurrenceRule::FREQ_YEARLY)>{{ __('Jährlich') }}</option>
+                @php($currentFrequency = old('frequency', $rule->frequency?->value ?? 'weekly'))
+                @foreach (\App\Enums\Recurrence\RecurrenceFrequency::cases() as $freq)
+                    <option value="{{ $freq->value }}" @selected($currentFrequency === $freq->value)>{{ $freq->label() }}</option>
+                @endforeach
             </select>
         </div>
         <div class="fieldset">

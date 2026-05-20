@@ -16,6 +16,7 @@ use App\Models\LexofficeArticle;
 use App\Models\Project;
 use App\Models\ProjectBillingRule;
 use App\Models\TimeEntry;
+use App\Enums\TimeEntry\TimeEntryKind;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -31,7 +32,7 @@ class ProjectBillingRuleController extends Controller
             'project' => $project,
             'rule' => new ProjectBillingRule,
             'articles' => LexofficeArticle::active()->orderBy('name')->get(['external_id', 'name', 'unit_name', 'net_unit_price', 'vat_rate']),
-            'kinds' => TimeEntry::KINDS,
+            'kinds' => TimeEntryKind::values(),
             'itemTypes' => ['service' => __('Dienstleistung'), 'material' => __('Material'), 'custom' => __('Sonstige')],
         ]);
     }

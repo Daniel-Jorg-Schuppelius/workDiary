@@ -11,6 +11,8 @@
 
 namespace App\Models;
 
+use App\Enums\Vacation\VacationStatus;
+use App\Enums\Vacation\VacationType;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Services\HolidayService;
@@ -26,8 +28,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $user_id
  * @property Carbon $start_date
  * @property Carbon $end_date
- * @property string $type
- * @property string $status
+ * @property VacationType $type
+ * @property VacationStatus $status
  * @property string|null $note
  * @property string|null $reject_reason
  * @property int|null $decided_by
@@ -39,38 +41,6 @@ class Vacation extends Model
 {
     use Auditable;
     use BelongsToOrganization;
-
-    public const TYPE_VACATION = 'vacation';
-
-    /** @deprecated Krankheit wird ab Mai 2026 über App\Models\SickLeave geführt; Konstante bleibt für historische Daten/Down-Migration. */
-    public const TYPE_SICK = 'sick';
-
-    public const TYPE_SPECIAL = 'special';
-
-    public const TYPE_UNPAID = 'unpaid';
-
-    public const STATUS_PENDING = 'pending';
-
-    public const STATUS_APPROVED = 'approved';
-
-    public const STATUS_REJECTED = 'rejected';
-
-    public const STATUS_CANCELLED = 'cancelled';
-
-    /** @var list<string> */
-    public static array $types = [
-        self::TYPE_VACATION,
-        self::TYPE_SPECIAL,
-        self::TYPE_UNPAID,
-    ];
-
-    /** @var list<string> */
-    public static array $statuses = [
-        self::STATUS_PENDING,
-        self::STATUS_APPROVED,
-        self::STATUS_REJECTED,
-        self::STATUS_CANCELLED,
-    ];
 
     protected $fillable = [
         'organization_id',
@@ -90,6 +60,8 @@ class Vacation extends Model
         'start_date' => 'date',
         'end_date' => 'date',
         'decided_at' => 'datetime',
+        'type' => VacationType::class,
+        'status' => VacationStatus::class,
     ];
 
     // ── Relations ──────────────────────────────────────────────────────────
@@ -111,13 +83,13 @@ class Vacation extends Model
     /** @param Builder<Vacation> $query */
     public function scopePending(Builder $query): void
     {
-        $query->where('status', self::STATUS_PENDING);
+        $query->where('status', VacationStatus::Pending);
     }
 
     /** @param Builder<Vacation> $query */
     public function scopeApproved(Builder $query): void
     {
-        $query->where('status', self::STATUS_APPROVED);
+        $query->where('status', VacationStatus::Approved);
     }
 
     /**
@@ -149,34 +121,17 @@ class Vacation extends Model
 
     public function typeLabel(): string
     {
-        return match ($this->type) {
-            self::TYPE_VACATION => __('Urlaub'),
-            self::TYPE_SICK => __('Krank'),
-            self::TYPE_SPECIAL => __('Sonderurlaub'),
-            self::TYPE_UNPAID => __('Unbezahlt'),
-            default => $this->type,
-        };
+        return $this->type->label();
     }
 
     public function statusLabel(): string
     {
-        return match ($this->status) {
-            self::STATUS_PENDING => __('Ausstehend'),
-            self::STATUS_APPROVED => __('Genehmigt'),
-            self::STATUS_REJECTED => __('Abgelehnt'),
-            self::STATUS_CANCELLED => __('Storniert'),
-            default => $this->status,
-        };
+        return $this->status->label();
     }
 
     /** DaisyUI badge tone */
     public function statusTone(): string
     {
-        return match ($this->status) {
-            self::STATUS_APPROVED => 'success',
-            self::STATUS_REJECTED => 'error',
-            self::STATUS_CANCELLED => 'ghost',
-            default => 'warning',
-        };
+        return $this->status->tone();
     }
 }

@@ -22,6 +22,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use App\Enums\TimeEntry\TimeEntryKind;
 
 /**
  * Handles non-project (administrative) time entries that are not tied to a
@@ -59,7 +60,7 @@ class AdminTimeEntryController extends Controller
 
         $data = $request->validated();
         $data['user_id'] = $user->id;
-        $data['kind'] = TimeEntry::KIND_WORK;
+        $data['kind'] = TimeEntryKind::Work->value;
 
         if (! empty($data['activity_category_id'])) {
             $cat = ActivityCategory::find($data['activity_category_id']);

@@ -11,6 +11,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Project\ProjectStatus;
 use App\Models\Project;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
@@ -43,7 +44,7 @@ class SaveProjectRequest extends FormRequest
             ],
             'description' => ['nullable', 'string', 'max:2000'],
             'color' => ['nullable', 'string', 'max:16'],
-            'status' => ['required', Rule::in(Project::STATUSES)],
+            'status' => ['required', Rule::enum(ProjectStatus::class)],
             'starts_on' => ['nullable', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
             'is_default' => ['sometimes', 'boolean'],

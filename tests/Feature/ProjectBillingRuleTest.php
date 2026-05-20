@@ -22,6 +22,8 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\Project\ProjectStatus;
 
 class ProjectBillingRuleTest extends TestCase
 {
@@ -53,7 +55,7 @@ class ProjectBillingRuleTest extends TestCase
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'name' => 'P '.uniqid('', true),
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
         ], $attrs));
     }
 
@@ -68,7 +70,7 @@ class ProjectBillingRuleTest extends TestCase
             'unit_name' => 'Stunde',
         ]);
 
-        $resolved = $project->resolveBillingRule(TimeEntry::KIND_WORK);
+        $resolved = $project->resolveBillingRule(TimeEntryKind::Work->value);
         $this->assertNotNull($resolved);
         $this->assertSame((int) $rule->id, (int) $resolved->id);
     }
@@ -85,12 +87,12 @@ class ProjectBillingRuleTest extends TestCase
         $travel = $project->billingRules()->create([
             'organization_id' => $this->organization->id,
             'plugin_id' => 'lexoffice',
-            'applies_to_kind' => TimeEntry::KIND_TRAVEL,
+            'applies_to_kind' => TimeEntryKind::Travel->value,
             'item_type' => 'service',
             'unit_name' => 'Kilometer',
         ]);
 
-        $resolved = $project->resolveBillingRule(TimeEntry::KIND_TRAVEL);
+        $resolved = $project->resolveBillingRule(TimeEntryKind::Travel->value);
         $this->assertSame((int) $travel->id, (int) $resolved?->id);
     }
 
@@ -109,22 +111,22 @@ class ProjectBillingRuleTest extends TestCase
             'organization_id' => $this->organization->id,
             'parent_id' => $parent->id,
             'name' => 'Sub',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
         ]);
 
-        $resolved = $child->resolveBillingRule(TimeEntry::KIND_WORK);
+        $resolved = $child->resolveBillingRule(TimeEntryKind::Work->value);
         $this->assertSame('Stunde-Parent', $resolved?->unit_name);
 
         $childRule = $child->billingRules()->create([
             'organization_id' => $this->organization->id,
             'plugin_id' => 'lexoffice',
-            'applies_to_kind' => TimeEntry::KIND_WORK,
+            'applies_to_kind' => TimeEntryKind::Work->value,
             'item_type' => 'service',
             'unit_name' => 'Stunde-Child',
         ]);
 
         $child->refresh();
-        $resolved = $child->resolveBillingRule(TimeEntry::KIND_WORK);
+        $resolved = $child->resolveBillingRule(TimeEntryKind::Work->value);
         $this->assertSame((int) $childRule->id, (int) $resolved?->id);
         $this->assertSame('Stunde-Child', $resolved?->unit_name);
     }
@@ -135,19 +137,19 @@ class ProjectBillingRuleTest extends TestCase
         $low = $project->billingRules()->create([
             'organization_id' => $this->organization->id,
             'plugin_id' => 'lexoffice',
-            'applies_to_kind' => TimeEntry::KIND_WORK,
+            'applies_to_kind' => TimeEntryKind::Work->value,
             'item_type' => 'service',
             'priority' => 1,
         ]);
         $high = $project->billingRules()->create([
             'organization_id' => $this->organization->id,
             'plugin_id' => 'lexoffice',
-            'applies_to_kind' => TimeEntry::KIND_WORK,
+            'applies_to_kind' => TimeEntryKind::Work->value,
             'item_type' => 'service',
             'priority' => 10,
         ]);
 
-        $resolved = $project->resolveBillingRule(TimeEntry::KIND_WORK);
+        $resolved = $project->resolveBillingRule(TimeEntryKind::Work->value);
         $this->assertSame((int) $high->id, (int) $resolved?->id);
     }
 
@@ -176,7 +178,7 @@ class ProjectBillingRuleTest extends TestCase
             'organization_id' => $this->organization->id,
             'project_id' => $project->id,
             'user_id' => $this->user->id,
-            'kind' => TimeEntry::KIND_WORK,
+            'kind' => TimeEntryKind::Work->value,
             'started_at' => CarbonImmutable::parse('2026-05-01 09:00'),
             'ended_at' => CarbonImmutable::parse('2026-05-01 11:00'),
             'minutes' => 120,

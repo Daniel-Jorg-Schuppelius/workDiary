@@ -123,7 +123,7 @@
                         @foreach ($diaryOptions as $d)
                             @php
                                 $label = $d->title ?: \Illuminate\Support\Str::limit((string) $d->content, 60);
-                                if ($d->mode && $d->mode !== \App\Models\DiaryEntry::MODE_FIXED) {
+                                if ($d->mode && $d->mode !== \App\Enums\Diary\Mode::Fixed) {
                                     $label .= ' · ' . $d->modeLabel();
                                 }
                             @endphp

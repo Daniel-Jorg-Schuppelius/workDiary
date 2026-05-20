@@ -17,6 +17,8 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Vehicle\VehicleType;
+use App\Enums\Vehicle\VehiclePropulsion;
 
 class VehicleTest extends TestCase
 {
@@ -50,8 +52,8 @@ class VehicleTest extends TestCase
         $this->post(route('vehicles.store'), [
             'license_plate' => 'B-AB 123',
             'label' => 'Sprinter Werkstatt',
-            'vehicle_type' => Vehicle::TYPE_VAN,
-            'propulsion' => Vehicle::PROPULSION_DIESEL,
+            'vehicle_type' => VehicleType::Van->value,
+            'propulsion' => VehiclePropulsion::Diesel->value,
             'default_rate_per_km' => '0.3500',
             'tank_capacity_liters' => 75,
             'odometer_km' => 12000,
@@ -84,8 +86,8 @@ class VehicleTest extends TestCase
         $this->put(route('vehicles.update', $vehicle), [
             'license_plate' => $vehicle->license_plate,
             'label' => 'hacked',
-            'vehicle_type' => $vehicle->vehicle_type,
-            'propulsion' => $vehicle->propulsion,
+            'vehicle_type' => $vehicle->vehicle_type->value,
+            'propulsion' => $vehicle->propulsion->value,
             'default_user_id' => $owner->id,
         ])->assertForbidden();
     }
@@ -103,8 +105,8 @@ class VehicleTest extends TestCase
         $this->put(route('vehicles.update', $vehicle), [
             'license_plate' => $vehicle->license_plate,
             'label' => 'admin-changed',
-            'vehicle_type' => $vehicle->vehicle_type,
-            'propulsion' => $vehicle->propulsion,
+            'vehicle_type' => $vehicle->vehicle_type->value,
+            'propulsion' => $vehicle->propulsion->value,
             'default_user_id' => $owner->id,
         ])->assertRedirect();
 

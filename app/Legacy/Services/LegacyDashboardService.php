@@ -18,6 +18,7 @@ use App\Legacy\Models\LegacyNotdienst;
 use App\Legacy\Models\LegacyOnCall;
 use App\Legacy\Support\LegacyRoleResolver;
 use App\Models\User;
+use App\Enums\Vacation\VacationStatus;
 use App\Models\Vacation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -337,12 +338,12 @@ class LegacyDashboardService
     {
         return [
             'total' => $total,
-            'pending' => (clone $query)->where('status', Vacation::STATUS_PENDING)->count(),
+            'pending' => (clone $query)->where('status', VacationStatus::Pending)->count(),
             'approved' => (clone $query)
-                ->where('status', Vacation::STATUS_APPROVED)
+                ->where('status', VacationStatus::Approved)
                 ->where('end_date', '>=', now()->startOfYear())
                 ->count(),
-            'rejected' => (clone $query)->where('status', Vacation::STATUS_REJECTED)->count(),
+            'rejected' => (clone $query)->where('status', VacationStatus::Rejected)->count(),
         ];
     }
 }

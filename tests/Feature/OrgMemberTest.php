@@ -13,6 +13,7 @@ namespace Tests\Feature;
 
 use App\Models\Organization;
 use App\Models\User;
+use App\Enums\User\UserRole;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -82,7 +83,7 @@ class OrgMemberTest extends TestCase
             ->post(route('org.members.store'), [
                 'name' => 'Neue Person',
                 'email' => 'neu@test.de',
-                'role' => User::ROLE_USER,
+                'role' => UserRole::User->value,
                 'password' => 'Password123!Strong',
                 'password_confirmation' => 'Password123!Strong',
             ])
@@ -91,7 +92,7 @@ class OrgMemberTest extends TestCase
         $new = User::where('email', 'neu@test.de')->first();
         $this->assertNotNull($new);
         $this->assertSame($this->organization->id, $new->organization_id);
-        $this->assertTrue($new->hasRole(User::ROLE_USER));
+        $this->assertTrue($new->hasRole(UserRole::User->value));
         $this->assertTrue($new->must_change_password);
     }
 
@@ -103,7 +104,7 @@ class OrgMemberTest extends TestCase
             ->post(route('org.members.store'), [
                 'name' => 'Jemand',
                 'email' => 'used@test.de',
-                'role' => User::ROLE_USER,
+                'role' => UserRole::User->value,
                 'password' => 'Password123!Strong',
                 'password_confirmation' => 'Password123!Strong',
             ])
@@ -121,12 +122,12 @@ class OrgMemberTest extends TestCase
             ->put(route('org.members.update', $member), [
                 'name' => 'Geändert',
                 'email' => $member->email,
-                'role' => User::ROLE_BUCHHALTUNG,
+                'role' => UserRole::Buchhaltung->value,
             ])
             ->assertRedirect(route('org.members.index'));
 
         $this->assertSame('Geändert', $member->fresh()->name);
-        $this->assertTrue($member->fresh()->hasRole(User::ROLE_BUCHHALTUNG));
+        $this->assertTrue($member->fresh()->hasRole(UserRole::Buchhaltung->value));
     }
 
     // ── Mitglied entfernen ────────────────────────────────────────────────────

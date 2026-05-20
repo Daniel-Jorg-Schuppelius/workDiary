@@ -21,6 +21,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use App\Enums\Timesheet\TimesheetStatus;
 
 class StopwatchController extends Controller
 {
@@ -52,7 +53,7 @@ class StopwatchController extends Controller
                 'work_date' => $today,
             ], [
                 'organization_id' => $project->organization_id,
-                'status' => Timesheet::STATUS_DRAFT,
+                'status' => TimesheetStatus::Draft->value,
             ]);
         Gate::authorize('update', $timesheet);
 

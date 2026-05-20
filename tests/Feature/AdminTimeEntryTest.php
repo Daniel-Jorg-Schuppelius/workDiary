@@ -19,6 +19,8 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Activity\ActivityCategoryType;
+use App\Enums\TimeEntry\TimeEntryActivityType;
 
 class AdminTimeEntryTest extends TestCase
 {
@@ -56,7 +58,7 @@ class AdminTimeEntryTest extends TestCase
         $this->post(route('admin-time-entries.store'), [
             'date' => now()->toDateString(),
             'minutes' => 45,
-            'activity_type' => TimeEntry::ACTIVITY_ADMIN,
+            'activity_type' => TimeEntryActivityType::Admin->value,
             'activity_category_id' => $cat?->id,
             'description' => 'E-Mails sortiert',
         ])->assertRedirect();
@@ -64,7 +66,7 @@ class AdminTimeEntryTest extends TestCase
         $this->assertDatabaseHas('time_entries', [
             'user_id' => $this->user->id,
             'project_id' => null,
-            'activity_type' => TimeEntry::ACTIVITY_ADMIN,
+            'activity_type' => TimeEntryActivityType::Admin->value,
             'minutes' => 45,
         ]);
     }
@@ -77,7 +79,7 @@ class AdminTimeEntryTest extends TestCase
             ->post(route('admin-time-entries.store'), [
                 'date' => now()->toDateString(),
                 'minutes' => 10,
-                'activity_type' => TimeEntry::ACTIVITY_PROJECT,
+                'activity_type' => TimeEntryActivityType::Project->value,
             ])
             ->assertRedirect(route('admin-time-entries.create'))
             ->assertSessionHasErrors('activity_type');
@@ -94,7 +96,7 @@ class AdminTimeEntryTest extends TestCase
             ->post(route('activity-categories.store'), [
                 'key' => 'custom_one',
                 'label' => 'Custom',
-                'activity_type' => ActivityCategory::TYPE_OTHER,
+                'activity_type' => ActivityCategoryType::Other->value,
             ])
             ->assertForbidden();
 
@@ -103,7 +105,7 @@ class AdminTimeEntryTest extends TestCase
         $this->post(route('activity-categories.store'), [
             'key' => 'custom_two',
             'label' => 'Custom Two',
-            'activity_type' => ActivityCategory::TYPE_OTHER,
+            'activity_type' => ActivityCategoryType::Other->value,
         ])->assertRedirect();
 
         $this->assertDatabaseHas('activity_categories', ['key' => 'custom_two']);

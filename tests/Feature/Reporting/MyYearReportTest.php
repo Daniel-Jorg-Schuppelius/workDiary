@@ -19,6 +19,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithGlobalDateRange;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\Project\ProjectStatus;
 
 class MyYearReportTest extends TestCase
 {
@@ -39,7 +41,7 @@ class MyYearReportTest extends TestCase
         $this->project = Project::create([
             'organization_id' => $this->organization->id,
             'name' => 'Report-Project',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'created_by' => $this->user->id,
         ]);
     }
@@ -62,7 +64,7 @@ class MyYearReportTest extends TestCase
             'date' => '2030-03-15',
             'started_at' => '2030-03-15 09:00:00',
             'ended_at' => '2030-03-15 12:00:00',
-            'kind' => TimeEntry::KIND_WORK,
+            'kind' => TimeEntryKind::Work->value,
             'billable' => true,
         ]);
         TimeEntry::create([
@@ -72,7 +74,7 @@ class MyYearReportTest extends TestCase
             'date' => '2030-03-15',
             'started_at' => '2030-03-15 13:00:00',
             'ended_at' => '2030-03-15 14:30:00',
-            'kind' => TimeEntry::KIND_WORK,
+            'kind' => TimeEntryKind::Work->value,
             'billable' => true,
         ]);
         // anderes Jahr — darf nicht einfließen
@@ -83,7 +85,7 @@ class MyYearReportTest extends TestCase
             'date' => '2029-12-31',
             'started_at' => '2029-12-31 09:00:00',
             'ended_at' => '2029-12-31 17:00:00',
-            'kind' => TimeEntry::KIND_WORK,
+            'kind' => TimeEntryKind::Work->value,
             'billable' => true,
         ]);
 
@@ -104,7 +106,7 @@ class MyYearReportTest extends TestCase
             'date' => '2030-04-01',
             'started_at' => '2030-04-01 09:00:00',
             'ended_at' => '2030-04-01 11:00:00',
-            'kind' => TimeEntry::KIND_WORK,
+            'kind' => TimeEntryKind::Work->value,
         ]);
         TimeEntry::create([
             'organization_id' => $this->organization->id,
@@ -113,7 +115,7 @@ class MyYearReportTest extends TestCase
             'date' => '2030-04-02',
             'started_at' => '2030-04-02 09:00:00',
             'ended_at' => '2030-04-02 14:00:00',
-            'kind' => TimeEntry::KIND_TRAVEL,
+            'kind' => TimeEntryKind::Travel->value,
         ]);
 
         $response = $this->actingAs($this->user)

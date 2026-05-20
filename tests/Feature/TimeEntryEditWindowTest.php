@@ -20,6 +20,8 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Timesheet\TimesheetStatus;
+use App\Enums\Project\ProjectStatus;
 
 class TimeEntryEditWindowTest extends TestCase
 {
@@ -43,7 +45,7 @@ class TimeEntryEditWindowTest extends TestCase
         $this->project = Project::create([
             'organization_id' => $this->organization->id,
             'name' => 'Edit-Window-Projekt',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'created_by' => $this->user->id,
         ]);
     }
@@ -124,7 +126,7 @@ class TimeEntryEditWindowTest extends TestCase
             'organization_id' => $this->organization->id,
             'user_id' => $this->user->id,
             'work_date' => now()->subDay()->toDateString(),
-            'status' => Timesheet::STATUS_SIGNED,
+            'status' => TimesheetStatus::Signed->value,
         ]);
 
         $entry = $this->makeEntry(now()->subDay()->toDateString(), ['timesheet_id' => $timesheet->id]);

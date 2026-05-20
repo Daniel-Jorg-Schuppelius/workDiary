@@ -11,6 +11,7 @@
 
 namespace App\Models;
 
+use App\Enums\Activity\ActivityCategoryType;
 use App\Models\Concerns\BelongsToOrganization;
 use Database\Factories\ActivityCategoryFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,7 +25,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $organization_id
  * @property string $key
  * @property string $label
- * @property string $activity_type
+ * @property ActivityCategoryType $activity_type
  * @property bool $billable_default
  * @property bool $counts_as_work
  * @property string|null $color
@@ -41,37 +42,6 @@ class ActivityCategory extends Model
 
     /** @use HasFactory<ActivityCategoryFactory> */
     use HasFactory;
-
-    public const TYPE_ADMIN = 'admin';
-
-    public const TYPE_TRAINING = 'training';
-
-    public const TYPE_MEETING = 'meeting';
-
-    public const TYPE_INTERNAL = 'internal';
-
-    public const TYPE_TRAVEL = 'travel';
-
-    public const TYPE_BREAK = 'break';
-
-    public const TYPE_ABSENCE = 'absence';
-
-    public const TYPE_STANDBY = 'standby';
-
-    public const TYPE_OTHER = 'other';
-
-    /** @var list<string> */
-    public const TYPES = [
-        self::TYPE_ADMIN,
-        self::TYPE_TRAINING,
-        self::TYPE_MEETING,
-        self::TYPE_INTERNAL,
-        self::TYPE_TRAVEL,
-        self::TYPE_BREAK,
-        self::TYPE_ABSENCE,
-        self::TYPE_STANDBY,
-        self::TYPE_OTHER,
-    ];
 
     protected $fillable = [
         'organization_id',
@@ -93,6 +63,7 @@ class ActivityCategory extends Model
         'counts_as_work' => 'boolean',
         'active' => 'boolean',
         'sort_order' => 'integer',
+        'activity_type' => ActivityCategoryType::class,
     ];
 
     /** @return HasMany<TimeEntry, $this> */

@@ -20,6 +20,7 @@ use App\Models\OnCallShift;
 use App\Models\SickLeave;
 use App\Models\Tag;
 use App\Models\User;
+use App\Enums\Vacation\VacationStatus;
 use App\Models\Vacation;
 use App\Services\HolidayService;
 use App\Services\UI\DateRangeContext;
@@ -315,10 +316,10 @@ class DutyController extends Controller
     {
         return [
             'total' => (clone $query)->count(),
-            'pending' => (clone $query)->where('status', Vacation::STATUS_PENDING)->count(),
-            'approved' => (clone $query)->where('status', Vacation::STATUS_APPROVED)
+            'pending' => (clone $query)->where('status', VacationStatus::Pending)->count(),
+            'approved' => (clone $query)->where('status', VacationStatus::Approved)
                 ->where('end_date', '>=', now()->startOfYear())->count(),
-            'rejected' => (clone $query)->where('status', Vacation::STATUS_REJECTED)->count(),
+            'rejected' => (clone $query)->where('status', VacationStatus::Rejected)->count(),
         ];
     }
 

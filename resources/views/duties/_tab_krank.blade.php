@@ -83,7 +83,7 @@
                 </td>
                 <td class="tabular-nums">{{ $days }}</td>
                 <td>
-                    <span class="badge badge-sm @if ($s->kind === \App\Models\SickLeave::KIND_FOLLOW_UP) badge-info @else badge-ghost @endif">
+                    <span class="badge badge-sm @if ($s->kind === \App\Enums\Sickness\SickLeaveKind::FollowUp) badge-info @else badge-ghost @endif">
                         {{ $s->kindLabel() }}
                     </span>
                 </td>

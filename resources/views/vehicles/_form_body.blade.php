@@ -19,7 +19,7 @@
         <label class="fieldset-label">{{ __('Typ') }} *</label>
         <select name="vehicle_type" required class="select select-bordered w-full">
             @foreach ($types as $type)
-                <option value="{{ $type }}" @selected(old('vehicle_type', $vehicle?->vehicle_type) === $type)>{{ __($type) }}</option>
+                <option value="{{ $type->value }}" @selected(old('vehicle_type', $vehicle?->vehicle_type?->value) === $type->value)>{{ $type->label() }}</option>
             @endforeach
         </select>
     </div>
@@ -27,7 +27,7 @@
         <label class="fieldset-label">{{ __('Antrieb') }} *</label>
         <select name="propulsion" required class="select select-bordered w-full">
             @foreach ($propulsions as $p)
-                <option value="{{ $p }}" @selected(old('propulsion', $vehicle?->propulsion) === $p)>{{ __($p) }}</option>
+                <option value="{{ $p->value }}" @selected(old('propulsion', $vehicle?->propulsion?->value) === $p->value)>{{ $p->label() }}</option>
             @endforeach
         </select>
     </div>
@@ -35,7 +35,7 @@
         <label class="fieldset-label">{{ __('Eigentum') }} *</label>
         <select name="ownership" required class="select select-bordered w-full" x-model="ownership">
             @foreach ($ownerships as $o)
-                <option value="{{ $o }}" @selected(old('ownership', $vehicle?->ownership ?? 'owned') === $o)>{{ __($o) }}</option>
+                <option value="{{ $o->value }}" @selected(old('ownership', $vehicle?->ownership?->value ?? 'owned') === $o->value)>{{ $o->label() }}</option>
             @endforeach
         </select>
     </div>

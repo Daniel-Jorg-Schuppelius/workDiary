@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Enums\Sickness\SickLeaveKind;
 use App\Models\SickLeave;
 use App\Models\User;
 use App\Services\HolidayService;
@@ -116,7 +117,7 @@ class SicknessReportController extends Controller
             $byUser[$uid]['workdays'] += $this->countWorkdays($start, $end);
             $byUser[$uid]['cal'] += (int) $start->copy()->startOfDay()->diffInDays($end->copy()->startOfDay()) + 1;
             $byUser[$uid]['episodes']++;
-            if ($s->kind === SickLeave::KIND_FOLLOW_UP) {
+            if ($s->kind === SickLeaveKind::FollowUp) {
                 $byUser[$uid]['follow']++;
             }
             if ($s->attachments->isNotEmpty()) {

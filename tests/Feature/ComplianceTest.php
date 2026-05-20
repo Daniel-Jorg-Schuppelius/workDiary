@@ -23,6 +23,8 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Vacation\VacationStatus;
+use App\Enums\Shift\ScheduledShiftStatus;
 
 class ComplianceTest extends TestCase
 {
@@ -62,7 +64,7 @@ class ComplianceTest extends TestCase
             'date' => '2026-06-01',
             'start_time' => '08:00',
             'end_time' => '12:00',
-            'status' => ScheduledShift::STATUS_DRAFT,
+            'status' => ScheduledShiftStatus::Draft->value,
         ], $overrides);
     }
 
@@ -282,7 +284,7 @@ class ComplianceTest extends TestCase
             'user_id' => $u->id,
             'start_date' => '2026-05-30',
             'end_date' => '2026-06-05',
-            'status' => Vacation::STATUS_APPROVED,
+            'status' => VacationStatus::Approved->value,
         ]);
 
         $this->actingAs($admin)

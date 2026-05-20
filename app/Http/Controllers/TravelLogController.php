@@ -11,6 +11,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Travel\TravelLogVehicle;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveTravelLogRequest;
 use App\Models\Customer;
@@ -85,7 +86,7 @@ class TravelLogController extends Controller {
             'date' => $request->date('date')?->toDateString() ?? CarbonImmutable::today()->toDateString(),
             'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'vehicles' => TravelLog::VEHICLES,
+            'vehicles' => TravelLogVehicle::cases(),
             'rates' => (array) config('timesheet.travel.rates', []),
         ]);
     }
@@ -113,7 +114,7 @@ class TravelLogController extends Controller {
             'date' => $travelLog->date?->toDateString(),
             'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'vehicles' => TravelLog::VEHICLES,
+            'vehicles' => TravelLogVehicle::cases(),
             'rates' => (array) config('timesheet.travel.rates', []),
         ]);
     }
@@ -176,7 +177,7 @@ class TravelLogController extends Controller {
                     (string) $log->to_address,
                     number_format((float) $log->distance_km, 2, ',', ''),
                     $log->round_trip ? 'ja' : 'nein',
-                    (string) $log->vehicle,
+                    $log->vehicle->value,
                     number_format((float) ($log->rate_per_km ?? 0), 4, ',', ''),
                     number_format((float) $log->reimbursement_total, 2, ',', ''),
                     $log->project->name ?? '',

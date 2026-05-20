@@ -11,6 +11,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Diary\Mode;
+use App\Enums\Diary\Status as DiaryStatus;
+use App\Enums\Tour\TourStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveTourRequest;
 use App\Models\DiaryEntry;
@@ -71,7 +74,7 @@ class TourController extends Controller
             'to' => $to,
             'targetUser' => $target,
             'selectableUsers' => $auth->isAdmin() ? $this->loadSelectableUsers() : null,
-            'statuses' => Tour::STATUSES,
+            'statuses' => TourStatus::options(),
             'selectedStatus' => $request->query('status'),
             'sort' => $sort,
             'dir' => $dir,
@@ -87,7 +90,7 @@ class TourController extends Controller
             'date' => $request->date('date')?->toDateString() ?? CarbonImmutable::today()->toDateString(),
             'users' => $this->loadSelectableUsers(),
             'vehicles' => $this->loadVehicles(),
-            'statuses' => Tour::STATUSES,
+            'statuses' => TourStatus::options(),
         ]);
     }
 
@@ -166,22 +169,22 @@ class TourController extends Controller
         // Lückenfüller einplanen — `service_minutes` hilft beim Auswählen.
         $flexBacklog = DiaryEntry::query()
             ->whereNull('tour_id')
-            ->whereIn('status', [DiaryEntry::STATUS_OPEN, DiaryEntry::STATUS_PROBLEM])
+            ->whereIn('status', [DiaryStatus::Open->value, DiaryStatus::Problem->value])
             ->where('is_archived', false)
             ->whereHas('entryType', fn ($q) => $q->where('allow_tour', true))
             ->where(function ($q) use ($tourDate): void {
                 $q->where(function ($sub) use ($tourDate): void {
-                    $sub->where('mode', DiaryEntry::MODE_DEADLINE)
+                    $sub->where('mode', Mode::Deadline->value)
                         ->whereDate('due_date', '>=', $tourDate);
                 });
                 $q->orWhere(function ($sub) use ($tourDate): void {
-                    $sub->where('mode', DiaryEntry::MODE_WINDOW)
+                    $sub->where('mode', Mode::Window->value)
                         ->whereDate('window_start_date', '<=', $tourDate)
                         ->whereDate('window_end_date', '>=', $tourDate);
                 });
-                $q->orWhere('mode', DiaryEntry::MODE_BACKLOG);
+                $q->orWhere('mode', Mode::Backlog->value);
                 $q->orWhere(function ($sub) use ($tourDate): void {
-                    $sub->where('mode', DiaryEntry::MODE_RECURRING)
+                    $sub->where('mode', Mode::Recurring->value)
                         ->whereDate('due_date', '<=', $tourDate);
                 });
             })
@@ -197,7 +200,7 @@ class TourController extends Controller
             'flexBacklog' => $flexBacklog,
             'users' => $this->loadSelectableUsers(),
             'vehicles' => $this->loadVehicles(),
-            'statuses' => Tour::STATUSES,
+            'statuses' => TourStatus::options(),
         ]);
     }
 
@@ -224,7 +227,7 @@ class TourController extends Controller
 
         DiaryEntry::query()
             ->where('tour_id', $tour->id)
-            ->update(['tour_id' => null, 'tour_position' => null, 'status' => DiaryEntry::STATUS_OPEN]);
+            ->update(['tour_id' => null, 'tour_position' => null, 'status' => DiaryStatus::Open->value]);
         $tour->delete();
 
         return redirect()->route('tours.index')

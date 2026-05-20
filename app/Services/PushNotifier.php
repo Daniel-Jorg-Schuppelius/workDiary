@@ -17,6 +17,7 @@ use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
 use App\Models\Timesheet;
 use App\Models\User;
+use App\Enums\User\UserRole;
 
 class PushNotifier
 {
@@ -89,10 +90,10 @@ class PushNotifier
 
     public function diaryProblem(DiaryEntry $entry): void
     {
-        if ((int) $entry->status !== 3) {
+        if ($entry->status !== \App\Enums\Diary\Status::Problem) {
             return;
         }
-        $recipients = User::role([User::ROLE_ADMIN, User::ROLE_CALLCENTER])
+        $recipients = User::role([UserRole::Admin->value, UserRole::Callcenter->value])
             ->where('id', '!=', $entry->user_id)
             ->with('pushSubscriptions')
             ->get();

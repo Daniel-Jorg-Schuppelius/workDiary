@@ -49,8 +49,8 @@
         <div class="fieldset">
             <label class="fieldset-label">{{ __('Status') }}</label>
             <select name="status" class="select select-bordered w-full">
-                @foreach (\App\Models\ScheduledShift::$statuses as $s)
-                    <option value="{{ $s }}" @selected(old('status', $shift->status) === $s)>{{ $s }}</option>
+                @foreach (\App\Enums\Shift\ScheduledShiftStatus::cases() as $s)
+                    <option value="{{ $s->value }}" @selected(old('status', $shift->status?->value) === $s->value)>{{ $s->label() }}</option>
                 @endforeach
             </select>
         </div>

@@ -11,6 +11,9 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Diary\Mode;
+use App\Enums\Diary\Status as DiaryStatus;
+use App\Enums\Tour\TourStatus;
 use App\Models\DiaryEntry;
 use App\Models\Tour;
 use App\Models\TravelLog;
@@ -53,7 +56,7 @@ class TourTest extends TestCase
         $this->assertSame('2026-06-01', $tour->tour_date?->toDateString());
         $this->assertSame('Hauptstr. 1, Berlin', $tour->start_address);
         $this->assertSame('52.5000000', (string) $tour->start_lat);
-        $this->assertSame('draft', $tour->status);
+        $this->assertSame(TourStatus::Draft, $tour->status);
     }
 
     public function test_assign_orders_sets_positions_and_status(): void
@@ -74,7 +77,7 @@ class TourTest extends TestCase
         $this->assertSame(1, $orders[0]->tour_position);
         $this->assertSame(2, $orders[1]->tour_position);
         $this->assertSame(3, $orders[2]->tour_position);
-        $this->assertSame(DiaryEntry::STATUS_IN_PROGRESS, $orders[0]->status);
+        $this->assertSame(DiaryStatus::InProgress, $orders[0]->status);
         $this->assertSame((int) $driver->id, (int) $orders[0]->assigned_user_id);
     }
 
@@ -163,7 +166,7 @@ class TourTest extends TestCase
         $this->assertCount(3, $logs);
         $this->assertSame((int) $driver->id, (int) $logs[0]->user_id);
         $this->assertGreaterThan(0.0, (float) $logs[0]->distance_km);
-        $this->assertSame(TravelLog::VEHICLE_PRIVATE, $logs[0]->vehicle);
+        $this->assertSame(\App\Enums\Travel\TravelLogVehicle::Private_, $logs[0]->vehicle);
     }
 
     public function test_index_requires_auth(): void
@@ -197,7 +200,7 @@ class TourTest extends TestCase
 
         $order = DiaryEntry::factory()->service()->create([
             'organization_id' => $this->organization->id,
-            'mode' => DiaryEntry::MODE_BACKLOG,
+            'mode' => Mode::Backlog,
             'start_at' => null,
             'end_at' => null,
             'scheduled_for' => null,
@@ -209,7 +212,7 @@ class TourTest extends TestCase
         $service->assignOrders($tour, [$order->id]);
 
         $order->refresh();
-        $this->assertSame(DiaryEntry::MODE_FIXED, $order->mode);
+        $this->assertSame(Mode::Fixed, $order->mode);
         $this->assertSame('2026-06-01', $order->scheduled_for?->toDateString());
         $this->assertSame('2026-06-01 08:00:00', $order->start_at?->toDateTimeString());
         $this->assertSame('2026-06-01 08:45:00', $order->end_at?->toDateTimeString());
@@ -224,7 +227,7 @@ class TourTest extends TestCase
 
         $order = DiaryEntry::factory()->service()->create([
             'organization_id' => $this->organization->id,
-            'mode' => DiaryEntry::MODE_DEADLINE,
+            'mode' => Mode::Deadline,
             'due_date' => '2026-06-30',
             'start_at' => null,
             'end_at' => null,
@@ -236,7 +239,7 @@ class TourTest extends TestCase
         $service->assignOrders($tour, [$order->id]);
 
         $order->refresh();
-        $this->assertSame(DiaryEntry::MODE_FIXED, $order->mode);
+        $this->assertSame(Mode::Fixed, $order->mode);
         $this->assertSame('2026-06-02 14:30:00', $order->start_at?->toDateTimeString());
         $this->assertSame('2026-06-02 15:30:00', $order->end_at?->toDateTimeString());
     }

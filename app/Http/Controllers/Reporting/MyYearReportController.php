@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\TimeEntry;
+use App\Enums\TimeEntry\TimeEntryKind;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -37,7 +38,7 @@ class MyYearReportController extends Controller
         $year = max(2000, min(2100, $year));
 
         $kind = (string) $request->input('kind', 'all');
-        $allowedKinds = array_merge(['all'], TimeEntry::KINDS);
+        $allowedKinds = array_merge(['all'], TimeEntryKind::values());
         if (! in_array($kind, $allowedKinds, true)) {
             $kind = 'all';
         }

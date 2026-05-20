@@ -9,19 +9,19 @@
         <form method="POST" action="{{ route('projects.tasks.complete', [$project, $task]) }}" class="flex items-center">
             @csrf @method('PATCH')
             <button type="submit"
-                    class="checkbox checkbox-sm {{ $task->status === \App\Models\Task::STATUS_DONE ? 'checkbox-success' : '' }}"
+                    class="checkbox checkbox-sm {{ $task->status === \App\Enums\Task\TaskStatus::Done ? 'checkbox-success' : '' }}"
                     title="{{ $task->statusLabel() }}"
                     style="appearance:none;width:1rem;height:1rem;border:2px solid currentColor;border-radius:3px;cursor:pointer;
-                           {{ $task->status === \App\Models\Task::STATUS_DONE ? 'background:#4ade80' : '' }}">
+                           {{ $task->status === \App\Enums\Task\TaskStatus::Done ? 'background:#4ade80' : '' }}">
             </button>
         </form>
     @else
-        <span class="inline-block h-4 w-4 shrink-0 rounded border-2 {{ $task->status === \App\Models\Task::STATUS_DONE ? 'bg-success border-success' : 'border-base-300' }}"></span>
+        <span class="inline-block h-4 w-4 shrink-0 rounded border-2 {{ $task->status === \App\Enums\Task\TaskStatus::Done ? 'bg-success border-success' : 'border-base-300' }}"></span>
     @endcan
 
     {{-- Titel + Meta --}}
     <div class="min-w-0 flex-1">
-        <span class="text-sm {{ $task->status === \App\Models\Task::STATUS_DONE ? 'line-through text-base-content/40' : '' }}">
+        <span class="text-sm {{ $task->status === \App\Enums\Task\TaskStatus::Done ? 'line-through text-base-content/40' : '' }}">
             {{ $task->title }}
         </span>
         <div class="mt-0.5 flex flex-wrap gap-2 text-xs text-base-content/50">
@@ -32,12 +32,12 @@
                 <span>{{ $task->assignee->name }}</span>
             @endif
             @if ($task->due_date)
-                <span class="{{ $task->due_date->isPast() && $task->status !== \App\Models\Task::STATUS_DONE ? 'text-error' : '' }}">
+                <span class="{{ $task->due_date->isPast() && $task->status !== \App\Enums\Task\TaskStatus::Done ? 'text-error' : '' }}">
                     {{ $task->due_date->format('d.m.Y') }}
                 </span>
             @endif
             @if (! $indent && $task->subTasks->isNotEmpty())
-                <span>{{ $task->subTasks->where('status', \App\Models\Task::STATUS_DONE)->count() }}/{{ $task->subTasks->count() }} {{ __('Sub') }}</span>
+                <span>{{ $task->subTasks->where('status', \App\Enums\Task\TaskStatus::Done)->count() }}/{{ $task->subTasks->count() }} {{ __('Sub') }}</span>
             @endif
             <span class="badge badge-xs badge-{{ $task->statusTone() }}">{{ $task->statusLabel() }}</span>
         </div>

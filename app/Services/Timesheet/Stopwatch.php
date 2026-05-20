@@ -17,6 +17,7 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use RuntimeException;
+use App\Enums\TimeEntry\TimeEntryKind;
 
 class Stopwatch
 {
@@ -54,7 +55,7 @@ class Stopwatch
             'started_at' => $now,
             'ended_at' => null,
             'break_minutes' => 0,
-            'kind' => TimeEntry::KIND_WORK,
+            'kind' => TimeEntryKind::Work->value,
             'minutes' => 0,
             'description' => $description,
         ]);

@@ -11,7 +11,9 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Vehicle;
+use App\Enums\Vehicle\VehicleOwnership;
+use App\Enums\Vehicle\VehiclePropulsion;
+use App\Enums\Vehicle\VehicleType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -25,7 +27,7 @@ class SaveVehicleRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         if (! $this->filled('ownership')) {
-            $this->merge(['ownership' => Vehicle::OWNERSHIP_OWNED]);
+            $this->merge(['ownership' => VehicleOwnership::Owned->value]);
         }
     }
 
@@ -35,9 +37,9 @@ class SaveVehicleRequest extends FormRequest
         return [
             'license_plate' => ['required', 'string', 'max:32'],
             'label' => ['nullable', 'string', 'max:120'],
-            'vehicle_type' => ['required', 'string', Rule::in(Vehicle::TYPES)],
-            'propulsion' => ['required', 'string', Rule::in(Vehicle::PROPULSIONS)],
-            'ownership' => ['required', 'string', Rule::in(Vehicle::OWNERSHIPS)],
+            'vehicle_type' => ['required', Rule::enum(VehicleType::class)],
+            'propulsion' => ['required', Rule::enum(VehiclePropulsion::class)],
+            'ownership' => ['required', Rule::enum(VehicleOwnership::class)],
             'rental_provider' => ['nullable', 'string', 'max:120', 'required_if:ownership,rental'],
             'rental_start' => ['nullable', 'date', 'required_if:ownership,rental'],
             'rental_end' => ['nullable', 'date', 'after_or_equal:rental_start', 'required_if:ownership,rental'],

@@ -4,12 +4,7 @@
 
 @section('content')
 @php
-    $statusOptions = [
-        '' => __('Alle'),
-        \App\Models\Project::STATUS_ACTIVE => __('Aktiv'),
-        \App\Models\Project::STATUS_PAUSED => __('Pausiert'),
-        \App\Models\Project::STATUS_ARCHIVED => __('Archiviert'),
-    ];
+    $statusOptions = ['' => __('Alle')] + \App\Enums\Project\ProjectStatus::options();
 
     // Hierarchische, flache Liste: Parents (oder Waisen) in bestehender Reihenfolge,
     // direkt darauffolgend ihre Kinder (max. 2 sichtbare Einrückungs-Ebenen).

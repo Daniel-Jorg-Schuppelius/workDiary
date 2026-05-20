@@ -24,6 +24,7 @@ use Illuminate\Http\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Project\ProjectStatus;
 
 class CustomerControllerTest extends TestCase
 {
@@ -144,7 +145,7 @@ class CustomerControllerTest extends TestCase
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
             'name' => 'Projekt',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'created_by' => $this->admin->id,
         ]);
 

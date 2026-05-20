@@ -25,7 +25,7 @@
                     <td>{{ optional($e->started_at)->format('H:i') }}</td>
                     <td>{{ optional($e->ended_at)->format('H:i') }}</td>
                     <td class="text-right">{{ (int)$e->minutes }}</td>
-                    <td>{{ $e->kind }}</td>
+                    <td>{{ $e->kind?->label() ?? '' }}</td>
                     <td>{{ $e->description }}</td>
                 </tr>
             @endforeach

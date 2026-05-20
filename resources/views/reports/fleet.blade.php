@@ -104,7 +104,7 @@
                                 <span class="ml-1 text-xs text-base-content/60">{{ $r['vehicle']->label }}</span>
                             @endif
                         </td>
-                        <td class="text-xs text-base-content/70">{{ __($r['vehicle']->propulsion) }}</td>
+                        <td class="text-xs text-base-content/70">{{ $r['vehicle']->propulsion->label() }}</td>
                         <td class="text-right tabular-nums">{{ $r['trip_count'] }}</td>
                         <td class="text-right tabular-nums" data-sort-value="{{ (float) $r['km'] }}">{{ $num($r['km'], 1) }}</td>
                         <td class="text-right tabular-nums" data-sort-value="{{ (float) $r['reimbursement'] }}">{{ $money($r['reimbursement']) }}</td>

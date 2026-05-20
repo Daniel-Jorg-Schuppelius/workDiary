@@ -452,20 +452,20 @@
                         <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Typ') }}</span></label>
                         <select name="vtype" class="select select-bordered select-sm w-full">
                             <option value="">{{ __('Alle Typen') }}</option>
-                            <option value="{{ \App\Models\Vacation::TYPE_VACATION }}" @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_VACATION)>{{ __('Urlaub') }}</option>
-                            <option value="{{ \App\Models\Vacation::TYPE_SICK }}"     @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_SICK)>{{ __('Krank') }}</option>
-                            <option value="{{ \App\Models\Vacation::TYPE_SPECIAL }}"  @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_SPECIAL)>{{ __('Sonderurlaub') }}</option>
-                            <option value="{{ \App\Models\Vacation::TYPE_UNPAID }}"   @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_UNPAID)>{{ __('Unbezahlt') }}</option>
+                            <option value="{{ \App\Enums\Vacation\VacationType::Vacation->value }}" @selected(($filters['vtype'] ?? '') === \App\Enums\Vacation\VacationType::Vacation->value)>{{ __('Urlaub') }}</option>
+                            <option value="{{ \App\Enums\Vacation\VacationType::Sick->value }}"     @selected(($filters['vtype'] ?? '') === \App\Enums\Vacation\VacationType::Sick->value)>{{ __('Krank') }}</option>
+                            <option value="{{ \App\Enums\Vacation\VacationType::Special->value }}"  @selected(($filters['vtype'] ?? '') === \App\Enums\Vacation\VacationType::Special->value)>{{ __('Sonderurlaub') }}</option>
+                            <option value="{{ \App\Enums\Vacation\VacationType::Unpaid->value }}"   @selected(($filters['vtype'] ?? '') === \App\Enums\Vacation\VacationType::Unpaid->value)>{{ __('Unbezahlt') }}</option>
                         </select>
                     </div>
                     <div class="flex flex-1 flex-col min-w-40">
                         <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Status') }}</span></label>
                         <select name="vstatus" class="select select-bordered select-sm w-full">
                             <option value="">{{ __('Alle Status') }}</option>
-                            <option value="{{ \App\Models\Vacation::STATUS_PENDING }}"   @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_PENDING)>{{ __('Ausstehend') }}</option>
-                            <option value="{{ \App\Models\Vacation::STATUS_APPROVED }}"  @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_APPROVED)>{{ __('Genehmigt') }}</option>
-                            <option value="{{ \App\Models\Vacation::STATUS_REJECTED }}"  @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_REJECTED)>{{ __('Abgelehnt') }}</option>
-                            <option value="{{ \App\Models\Vacation::STATUS_CANCELLED }}" @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_CANCELLED)>{{ __('Storniert') }}</option>
+                            <option value="{{ \App\Enums\Vacation\VacationStatus::Pending->value }}"   @selected(($filters['vstatus'] ?? '') === \App\Enums\Vacation\VacationStatus::Pending->value)>{{ __('Ausstehend') }}</option>
+                            <option value="{{ \App\Enums\Vacation\VacationStatus::Approved->value }}"  @selected(($filters['vstatus'] ?? '') === \App\Enums\Vacation\VacationStatus::Approved->value)>{{ __('Genehmigt') }}</option>
+                            <option value="{{ \App\Enums\Vacation\VacationStatus::Rejected->value }}"  @selected(($filters['vstatus'] ?? '') === \App\Enums\Vacation\VacationStatus::Rejected->value)>{{ __('Abgelehnt') }}</option>
+                            <option value="{{ \App\Enums\Vacation\VacationStatus::Cancelled->value }}" @selected(($filters['vstatus'] ?? '') === \App\Enums\Vacation\VacationStatus::Cancelled->value)>{{ __('Storniert') }}</option>
                         </select>
                     </div>
                     @if ($vacationIsAdmin)
@@ -515,24 +515,24 @@
                     @forelse ($vacations as $v)
                         @php
                             $statusBadge = match ($v->status) {
-                                \App\Models\Vacation::STATUS_PENDING   => 'badge-warning',
-                                \App\Models\Vacation::STATUS_APPROVED  => 'badge-success',
-                                \App\Models\Vacation::STATUS_REJECTED  => 'badge-error',
-                                \App\Models\Vacation::STATUS_CANCELLED => 'badge-ghost',
+                                \App\Enums\Vacation\VacationStatus::Pending->value   => 'badge-warning',
+                                \App\Enums\Vacation\VacationStatus::Approved->value  => 'badge-success',
+                                \App\Enums\Vacation\VacationStatus::Rejected->value  => 'badge-error',
+                                \App\Enums\Vacation\VacationStatus::Cancelled->value => 'badge-ghost',
                                 default                                => 'badge-neutral',
                             };
                             $statusLabel = match ($v->status) {
-                                \App\Models\Vacation::STATUS_PENDING   => __('Ausstehend'),
-                                \App\Models\Vacation::STATUS_APPROVED  => __('Genehmigt'),
-                                \App\Models\Vacation::STATUS_REJECTED  => __('Abgelehnt'),
-                                \App\Models\Vacation::STATUS_CANCELLED => __('Storniert'),
+                                \App\Enums\Vacation\VacationStatus::Pending->value   => __('Ausstehend'),
+                                \App\Enums\Vacation\VacationStatus::Approved->value  => __('Genehmigt'),
+                                \App\Enums\Vacation\VacationStatus::Rejected->value  => __('Abgelehnt'),
+                                \App\Enums\Vacation\VacationStatus::Cancelled->value => __('Storniert'),
                                 default                                => $v->status,
                             };
                             $typeLabel = match ($v->type) {
-                                \App\Models\Vacation::TYPE_VACATION => __('Urlaub'),
-                                \App\Models\Vacation::TYPE_SICK     => __('Krank'),
-                                \App\Models\Vacation::TYPE_SPECIAL  => __('Sonderurlaub'),
-                                \App\Models\Vacation::TYPE_UNPAID   => __('Unbezahlt'),
+                                \App\Enums\Vacation\VacationType::Vacation->value => __('Urlaub'),
+                                \App\Enums\Vacation\VacationType::Sick->value     => __('Krank'),
+                                \App\Enums\Vacation\VacationType::Special->value  => __('Sonderurlaub'),
+                                \App\Enums\Vacation\VacationType::Unpaid->value   => __('Unbezahlt'),
                                 default                             => $v->type,
                             };
                         @endphp

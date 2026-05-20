@@ -28,6 +28,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use App\Enums\Vacation\VacationStatus;
 
 /**
  * Generates printable HTML views (A4/A3) for duty plans, on-call schedules
@@ -258,7 +259,7 @@ class PrintController extends Controller
             ->with('user:id,name')
             ->where('end_date', '>=', $from->toDateString())
             ->where('start_date', '<=', $to->toDateString())
-            ->whereIn('status', [Vacation::STATUS_APPROVED, Vacation::STATUS_PENDING])
+            ->whereIn('status', [VacationStatus::Approved->value, VacationStatus::Pending->value])
             ->orderBy('start_date')
             ->get();
 

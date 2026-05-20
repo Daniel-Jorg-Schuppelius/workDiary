@@ -19,6 +19,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Timesheet\TimesheetStatus;
+use App\Enums\Project\ProjectStatus;
 
 class TimesheetApiTest extends TestCase
 {
@@ -38,7 +40,7 @@ class TimesheetApiTest extends TestCase
         $this->project = Project::create([
             'organization_id' => $this->organization->id,
             'name' => 'API',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'created_by' => $this->user->id,
         ]);
     }
@@ -52,7 +54,7 @@ class TimesheetApiTest extends TestCase
             'customer_name' => 'API Kunde',
         ])->assertCreated()
             ->assertJsonPath('data.work_date', '2030-04-01')
-            ->assertJsonPath('data.status', Timesheet::STATUS_DRAFT);
+            ->assertJsonPath('data.status', TimesheetStatus::Draft->value);
 
         $this->getJson(route('api.timesheets.index'))
             ->assertOk()

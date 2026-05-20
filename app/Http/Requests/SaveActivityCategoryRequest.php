@@ -11,7 +11,7 @@
 
 namespace App\Http\Requests;
 
-use App\Models\ActivityCategory;
+use App\Enums\Activity\ActivityCategoryType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -28,7 +28,7 @@ class SaveActivityCategoryRequest extends FormRequest
         return [
             'key' => ['required', 'string', 'max:64', 'regex:/^[a-z0-9_\-]+$/'],
             'label' => ['required', 'string', 'max:120'],
-            'activity_type' => ['required', 'string', Rule::in(ActivityCategory::TYPES)],
+            'activity_type' => ['required', Rule::enum(ActivityCategoryType::class)],
             'billable_default' => ['nullable', 'boolean'],
             'counts_as_work' => ['nullable', 'boolean'],
             'color' => ['nullable', 'string', 'max:16'],

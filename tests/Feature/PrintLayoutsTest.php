@@ -23,6 +23,8 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Vacation\VacationStatus;
+use App\Enums\Vacation\VacationType;
 
 class PrintLayoutsTest extends TestCase
 {
@@ -211,8 +213,8 @@ class PrintLayoutsTest extends TestCase
             'user_id' => $u->id,
             'start_date' => '2026-07-01',
             'end_date' => '2026-07-14',
-            'type' => Vacation::TYPE_VACATION,
-            'status' => Vacation::STATUS_APPROVED,
+            'type' => VacationType::Vacation->value,
+            'status' => VacationStatus::Approved->value,
         ]);
 
         $this->actingAs($this->admin())

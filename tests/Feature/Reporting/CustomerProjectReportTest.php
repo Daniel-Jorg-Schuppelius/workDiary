@@ -20,6 +20,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithGlobalDateRange;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\Project\ProjectStatus;
 
 class CustomerProjectReportTest extends TestCase
 {
@@ -47,7 +49,7 @@ class CustomerProjectReportTest extends TestCase
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'name' => 'Website-Relaunch',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'created_by' => $this->user->id,
             'hourly_rate' => 100.0,
             'billable' => true,
@@ -70,7 +72,7 @@ class CustomerProjectReportTest extends TestCase
             'date' => now()->startOfYear()->addMonth()->toDateString(),
             'started_at' => now()->startOfYear()->addMonth()->setTime(9, 0)->toDateTimeString(),
             'ended_at' => now()->startOfYear()->addMonth()->setTime(11, 0)->toDateTimeString(),
-            'kind' => TimeEntry::KIND_WORK,
+            'kind' => TimeEntryKind::Work->value,
             'billable' => true,
         ]);
 
@@ -97,7 +99,7 @@ class CustomerProjectReportTest extends TestCase
             'date' => now()->startOfYear()->addMonth()->toDateString(),
             'started_at' => now()->startOfYear()->addMonth()->setTime(9, 0)->toDateTimeString(),
             'ended_at' => now()->startOfYear()->addMonth()->setTime(11, 0)->toDateTimeString(),
-            'kind' => TimeEntry::KIND_WORK,
+            'kind' => TimeEntryKind::Work->value,
             'billable' => true,
         ]);
 
@@ -121,7 +123,7 @@ class CustomerProjectReportTest extends TestCase
             'date' => now()->startOfYear()->addMonth()->toDateString(),
             'started_at' => now()->startOfYear()->addMonth()->setTime(9, 0)->toDateTimeString(),
             'ended_at' => now()->startOfYear()->addMonth()->setTime(11, 0)->toDateTimeString(),
-            'kind' => TimeEntry::KIND_WORK,
+            'kind' => TimeEntryKind::Work->value,
             'billable' => true,
         ]);
 

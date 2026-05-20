@@ -18,6 +18,7 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Project\ProjectStatus;
 
 class SubprojectTest extends TestCase
 {
@@ -50,7 +51,7 @@ class SubprojectTest extends TestCase
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'name' => 'Projekt '.uniqid('', true),
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
         ], $attrs));
     }
 
@@ -63,7 +64,7 @@ class SubprojectTest extends TestCase
             'customer_id' => null,
             'parent_id' => $parent->id,
             'name' => 'Sub '.uniqid('', true),
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
         ]);
 
         $this->assertSame((int) $parent->customer_id, (int) $child->customer_id);
@@ -81,7 +82,7 @@ class SubprojectTest extends TestCase
             'customer_id' => $other->id,
             'parent_id' => $parent->id,
             'name' => 'Sub '.uniqid('', true),
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
         ]);
 
         $this->assertSame((int) $parent->customer_id, (int) $child->customer_id);
@@ -94,7 +95,7 @@ class SubprojectTest extends TestCase
         $this->actingAs($this->user)
             ->put(route('projects.update', $project), [
                 'name' => $project->name,
-                'status' => Project::STATUS_ACTIVE,
+                'status' => ProjectStatus::Active->value,
                 'parent_id' => $project->id,
             ])
             ->assertSessionHasErrors('parent_id');
@@ -107,13 +108,13 @@ class SubprojectTest extends TestCase
             'organization_id' => $this->organization->id,
             'parent_id' => $parent->id,
             'name' => 'Child A',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
         ]);
 
         $this->actingAs($this->user)
             ->put(route('projects.update', $parent), [
                 'name' => $parent->name,
-                'status' => Project::STATUS_ACTIVE,
+                'status' => ProjectStatus::Active->value,
                 'parent_id' => $child->id,
             ])
             ->assertSessionHasErrors('parent_id');
@@ -127,7 +128,7 @@ class SubprojectTest extends TestCase
             'organization_id' => $this->organization->id,
             'parent_id' => $parent->id,
             'name' => 'Child default attempt',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'is_default' => true,
         ]);
 
@@ -141,13 +142,13 @@ class SubprojectTest extends TestCase
             'organization_id' => $this->organization->id,
             'parent_id' => $parent->id,
             'name' => 'Child no rate',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
         ]);
         $grandchild = Project::create([
             'organization_id' => $this->organization->id,
             'parent_id' => $child->id,
             'name' => 'Grandchild no rate',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
         ]);
 
         $this->assertSame(120.0, $grandchild->effectiveHourlyRate());
@@ -163,7 +164,7 @@ class SubprojectTest extends TestCase
             'organization_id' => $this->organization->id,
             'parent_id' => $parent->id,
             'name' => 'Child blocking delete',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
         ]);
 
         // Non-admin user -> policy returns false (children present)

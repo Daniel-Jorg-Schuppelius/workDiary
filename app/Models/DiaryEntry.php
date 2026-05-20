@@ -11,6 +11,10 @@
 
 namespace App\Models;
 
+use App\Enums\Diary\LocationMode;
+use App\Enums\Diary\Mode;
+use App\Enums\Diary\Priority;
+use App\Enums\Diary\Status;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Concerns\HasAttachments;
@@ -33,70 +37,6 @@ class DiaryEntry extends Model
     use HasFactory;
 
     use HasTags;
-
-    public const STATUS_DONE = -1;
-
-    public const STATUS_IN_PROGRESS = 1;
-
-    public const STATUS_OPEN = 2;
-
-    public const STATUS_PROBLEM = 3;
-
-    /** @var list<int> */
-    public const STATUSES = [
-        self::STATUS_OPEN,
-        self::STATUS_IN_PROGRESS,
-        self::STATUS_DONE,
-        self::STATUS_PROBLEM,
-    ];
-
-    public const PRIORITY_LOW = 'low';
-
-    public const PRIORITY_NORMAL = 'normal';
-
-    public const PRIORITY_HIGH = 'high';
-
-    public const PRIORITY_URGENT = 'urgent';
-
-    /** @var list<string> */
-    public const PRIORITIES = [
-        self::PRIORITY_LOW,
-        self::PRIORITY_NORMAL,
-        self::PRIORITY_HIGH,
-        self::PRIORITY_URGENT,
-    ];
-
-    public const MODE_FIXED = 'fixed';
-
-    public const MODE_DEADLINE = 'deadline';
-
-    public const MODE_WINDOW = 'window';
-
-    public const MODE_RECURRING = 'recurring';
-
-    public const MODE_BACKLOG = 'backlog';
-
-    /** @var list<string> */
-    public const MODES = [
-        self::MODE_FIXED,
-        self::MODE_DEADLINE,
-        self::MODE_WINDOW,
-        self::MODE_RECURRING,
-        self::MODE_BACKLOG,
-    ];
-
-    public const LOCATION_ONSITE = 'onsite';
-
-    public const LOCATION_REMOTE = 'remote';
-
-    public const LOCATION_HYBRID = 'hybrid';
-
-    /** @var list<string> */
-    public const LOCATION_MODES = [
-        self::LOCATION_ONSITE,
-        self::LOCATION_REMOTE,
-        self::LOCATION_HYBRID,
-    ];
 
     protected $fillable = [
         'organization_id',
@@ -147,12 +87,15 @@ class DiaryEntry extends Model
         'due_date' => 'date',
         'window_start_date' => 'date',
         'window_end_date' => 'date',
-        'status' => 'integer',
+        'status' => Status::class,
         'is_archived' => 'boolean',
         'service_minutes' => 'integer',
         'tour_position' => 'integer',
         'address_lat' => 'decimal:7',
         'address_lng' => 'decimal:7',
+        'priority' => Priority::class,
+        'location_mode' => LocationMode::class,
+        'mode' => Mode::class,
     ];
 
     /** @return BelongsTo<User, $this> */
@@ -231,46 +174,22 @@ class DiaryEntry extends Model
 
     public function statusLabel(): string
     {
-        return match ($this->status) {
-            -1 => __('Erledigt'),
-            1 => __('Bestätigt'),
-            2 => __('Offen'),
-            3 => __('Problem'),
-            default => __('Unbekannt'),
-        };
+        return $this->status->label();
     }
 
     public function statusTone(): string
     {
-        return match ($this->status) {
-            -1 => 'done',
-            1 => 'progress',
-            2 => 'open',
-            3 => 'alert',
-            default => 'neutral',
-        };
+        return $this->status->tone();
     }
 
     public function modeLabel(): string
     {
-        return match ($this->mode) {
-            self::MODE_FIXED => __('Terminiert'),
-            self::MODE_DEADLINE => __('Deadline'),
-            self::MODE_WINDOW => __('Zeitfenster'),
-            self::MODE_RECURRING => __('Wiederkehrend'),
-            self::MODE_BACKLOG => __('Backlog'),
-            default => (string) $this->mode,
-        };
+        return $this->mode->label();
     }
 
     public function locationLabel(): string
     {
-        return match ($this->location_mode) {
-            self::LOCATION_ONSITE => __('Vor Ort'),
-            self::LOCATION_REMOTE => __('Remote'),
-            self::LOCATION_HYBRID => __('Hybrid'),
-            default => (string) $this->location_mode,
-        };
+        return $this->location_mode->label();
     }
 
     /** @param Builder<DiaryEntry> $query */
@@ -285,7 +204,7 @@ class DiaryEntry extends Model
      */
     public function scopeOpen(Builder $query): void
     {
-        $query->whereIn('status', [2, 3]);
+        $query->whereIn('status', [Status::Open->value, Status::Problem->value]);
     }
 
     /** Bestätigte Einträge (Status 1 = In Bearbeitung).
@@ -294,6 +213,6 @@ class DiaryEntry extends Model
      */
     public function scopeInProgress(Builder $query): void
     {
-        $query->where('status', 1);
+        $query->where('status', Status::InProgress->value);
     }
 }

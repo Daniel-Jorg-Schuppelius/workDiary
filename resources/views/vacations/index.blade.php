@@ -28,8 +28,8 @@
         <x-filter-field :label="__('Status')" for="vac-status">
             <select id="vac-status" name="status" class="select select-bordered select-sm" onchange="this.form.submit()">
                 <option value="">{{ __('Alle Status') }}</option>
-                @foreach (\App\Models\Vacation::$statuses as $s)
-                    <option value="{{ $s }}" @selected(($filters['status'] ?? '') === $s)>{{ __($s) }}</option>
+                @foreach (\App\Enums\Vacation\VacationStatus::options() as $value => $label)
+                    <option value="{{ $value }}" @selected(($filters['status'] ?? '') === $value)>{{ $label }}</option>
                 @endforeach
             </select>
         </x-filter-field>
@@ -37,10 +37,9 @@
         <x-filter-field :label="__('Typ')" for="vac-type">
             <select id="vac-type" name="type" class="select select-bordered select-sm" onchange="this.form.submit()">
                 <option value="">{{ __('Alle Typen') }}</option>
-                <option value="{{ \App\Models\Vacation::TYPE_VACATION }}" @selected(($filters['type'] ?? '') === \App\Models\Vacation::TYPE_VACATION)>{{ __('Urlaub') }}</option>
-                <option value="{{ \App\Models\Vacation::TYPE_SICK }}"     @selected(($filters['type'] ?? '') === \App\Models\Vacation::TYPE_SICK)>{{ __('Krank') }}</option>
-                <option value="{{ \App\Models\Vacation::TYPE_SPECIAL }}"  @selected(($filters['type'] ?? '') === \App\Models\Vacation::TYPE_SPECIAL)>{{ __('Sonderurlaub') }}</option>
-                <option value="{{ \App\Models\Vacation::TYPE_UNPAID }}"   @selected(($filters['type'] ?? '') === \App\Models\Vacation::TYPE_UNPAID)>{{ __('Unbezahlt') }}</option>
+                @foreach (\App\Enums\Vacation\VacationType::options() as $value => $label)
+                    <option value="{{ $value }}" @selected(($filters['type'] ?? '') === $value)>{{ $label }}</option>
+                @endforeach
             </select>
         </x-filter-field>
         <x-slot:extra>
@@ -98,7 +97,7 @@
                             <td>
                                 <div class="flex items-center gap-1">
                                     @can('decide', $v)
-                                        @if ($v->status === \App\Models\Vacation::STATUS_PENDING)
+                                        @if ($v->status === \App\Enums\Vacation\VacationStatus::Pending)
                                             <form method="POST" action="{{ route('vacations.approve', $v) }}" class="inline">
                                                 @csrf @method('PATCH')
                                                 <x-icon-btn icon="check" tone="success" type="submit" :label="__('Genehmigen')" />

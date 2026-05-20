@@ -11,6 +11,9 @@
 
 namespace App\Models;
 
+use App\Enums\Diary\LocationMode;
+use App\Enums\Diary\Priority;
+use App\Enums\Recurrence\RecurrenceFrequency;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -30,9 +33,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $title_template
  * @property string $content_template
  * @property int|null $default_service_minutes
- * @property string|null $default_priority
- * @property string $default_location_mode
- * @property string $frequency
+ * @property Priority|null $default_priority
+ * @property LocationMode $default_location_mode
+ * @property RecurrenceFrequency $frequency
  * @property int $interval
  * @property string|null $byweekday
  * @property int|null $bymonthday
@@ -48,22 +51,6 @@ class RecurrenceRule extends Model
 
     /** @use HasFactory<\Illuminate\Database\Eloquent\Factories\Factory<static>> */
     use HasFactory;
-
-    public const FREQ_DAILY = 'daily';
-
-    public const FREQ_WEEKLY = 'weekly';
-
-    public const FREQ_MONTHLY = 'monthly';
-
-    public const FREQ_YEARLY = 'yearly';
-
-    /** @var list<string> */
-    public const FREQUENCIES = [
-        self::FREQ_DAILY,
-        self::FREQ_WEEKLY,
-        self::FREQ_MONTHLY,
-        self::FREQ_YEARLY,
-    ];
 
     /** @var list<string> */
     public const WEEKDAY_CODES = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
@@ -102,6 +89,9 @@ class RecurrenceRule extends Model
         'default_service_minutes' => 'integer',
         'bymonthday' => 'integer',
         'bymonth' => 'integer',
+        'default_priority' => Priority::class,
+        'default_location_mode' => LocationMode::class,
+        'frequency' => RecurrenceFrequency::class,
     ];
 
     /** @return BelongsTo<Project, $this> */
@@ -154,12 +144,6 @@ class RecurrenceRule extends Model
 
     public function frequencyLabel(): string
     {
-        return match ($this->frequency) {
-            self::FREQ_DAILY => __('Täglich'),
-            self::FREQ_WEEKLY => __('Wöchentlich'),
-            self::FREQ_MONTHLY => __('Monatlich'),
-            self::FREQ_YEARLY => __('Jährlich'),
-            default => $this->frequency,
-        };
+        return $this->frequency->label();
     }
 }

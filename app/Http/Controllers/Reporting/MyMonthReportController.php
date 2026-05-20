@@ -119,7 +119,7 @@ class MyMonthReportController extends Controller
                 Carbon::parse((string) $e->date)->format('Y-m-d'),
                 $startedAt,
                 $endedAt,
-                (string) $e->kind,
+                $e->kind->value,
                 $customerName,
                 $projectName,
                 $taskTitle,

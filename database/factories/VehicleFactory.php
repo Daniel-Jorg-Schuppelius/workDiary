@@ -13,6 +13,9 @@ namespace Database\Factories;
 
 use App\Models\Vehicle;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Enums\Vehicle\VehicleType;
+use App\Enums\Vehicle\VehicleOwnership;
+use App\Enums\Vehicle\VehiclePropulsion;
 
 /**
  * @extends Factory<Vehicle>
@@ -27,9 +30,9 @@ class VehicleFactory extends Factory
             'organization_id' => null,
             'license_plate' => strtoupper(fake()->bothify('B-?? ###')),
             'label' => fake()->randomElement(['Sprinter', 'Caddy', 'eGolf', 'Corolla']),
-            'vehicle_type' => Vehicle::TYPE_CAR,
-            'propulsion' => Vehicle::PROPULSION_DIESEL,
-            'ownership' => Vehicle::OWNERSHIP_OWNED,
+            'vehicle_type' => VehicleType::Car->value,
+            'propulsion' => VehiclePropulsion::Diesel->value,
+            'ownership' => VehicleOwnership::Owned->value,
             'rental_provider' => null,
             'rental_start' => null,
             'rental_end' => null,
@@ -50,7 +53,7 @@ class VehicleFactory extends Factory
     public function electric(): self
     {
         return $this->state(fn () => [
-            'propulsion' => Vehicle::PROPULSION_ELECTRIC,
+            'propulsion' => VehiclePropulsion::Electric->value,
             'tank_capacity_liters' => null,
             'battery_capacity_kwh' => 75,
             'wltp_consumption' => 17.5,
@@ -65,7 +68,7 @@ class VehicleFactory extends Factory
     public function rental(): self
     {
         return $this->state(fn () => [
-            'ownership' => Vehicle::OWNERSHIP_RENTAL,
+            'ownership' => VehicleOwnership::Rental->value,
             'rental_provider' => 'Sixt',
             'rental_start' => now()->subDays(7)->toDateString(),
             'rental_end' => now()->addDays(7)->toDateString(),

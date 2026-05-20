@@ -11,6 +11,8 @@
 
 namespace App\Models;
 
+use App\Enums\TimeEntry\TimeEntryActivityType;
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Services\RateCalculator;
 use Database\Factories\TimeEntryFactory;
@@ -35,8 +37,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $started_at
  * @property Carbon|null $ended_at
  * @property int $break_minutes
- * @property string $kind
- * @property string $activity_type
+ * @property TimeEntryKind $kind
+ * @property TimeEntryActivityType $activity_type
  * @property int $minutes
  * @property string|null $description
  * @property bool $billable
@@ -53,74 +55,22 @@ class TimeEntry extends Model
     /** @use HasFactory<TimeEntryFactory> */
     use HasFactory;
 
-    public const KIND_WORK = 'work';
-
-    public const KIND_TRAVEL = 'travel';
-
-    public const KIND_STANDBY = 'standby';
-
-    /** @var array<int, string> */
-    public const KINDS = [self::KIND_WORK, self::KIND_TRAVEL, self::KIND_STANDBY];
-
     // High-level distribution category. When ACTIVITY_PROJECT, project_id
     // must be set. Other values use activity_category_id for reporting.
-    public const ACTIVITY_PROJECT = 'project';
-
-    public const ACTIVITY_ADMIN = 'admin';
-
-    public const ACTIVITY_TRAINING = 'training';
-
-    public const ACTIVITY_MEETING = 'meeting';
-
-    public const ACTIVITY_INTERNAL = 'internal';
-
-    public const ACTIVITY_TRAVEL = 'travel';
-
-    public const ACTIVITY_BREAK = 'break';
-
-    public const ACTIVITY_ABSENCE = 'absence';
-
-    public const ACTIVITY_STANDBY = 'standby';
-
-    public const ACTIVITY_OTHER = 'other';
-
-    /** @var array<int, string> */
-    public const ACTIVITY_TYPES = [
-        self::ACTIVITY_PROJECT,
-        self::ACTIVITY_ADMIN,
-        self::ACTIVITY_TRAINING,
-        self::ACTIVITY_MEETING,
-        self::ACTIVITY_INTERNAL,
-        self::ACTIVITY_TRAVEL,
-        self::ACTIVITY_BREAK,
-        self::ACTIVITY_ABSENCE,
-        self::ACTIVITY_STANDBY,
-        self::ACTIVITY_OTHER,
-    ];
-
     /**
+     * @deprecated use TimeEntryActivityType::label() (instance method)
+     *
      * Liefert ein lokalisiertes Label für einen activity_type-Wert.
-     * Unbekannte Werte werden capitalized zurückgegeben, damit die UI nicht
-     * mehr den rohen Slug wie "project" anzeigt.
      */
     public static function activityLabel(?string $type): string
     {
         $type = (string) $type;
-        $label = match ($type) {
-            self::ACTIVITY_PROJECT => __('Projekt'),
-            self::ACTIVITY_ADMIN => __('Verwaltung'),
-            self::ACTIVITY_TRAINING => __('Schulung'),
-            self::ACTIVITY_MEETING => __('Besprechung'),
-            self::ACTIVITY_INTERNAL => __('Intern'),
-            self::ACTIVITY_TRAVEL => __('Reise'),
-            self::ACTIVITY_BREAK => __('Pause'),
-            self::ACTIVITY_ABSENCE => __('Abwesenheit'),
-            self::ACTIVITY_STANDBY => __('Bereitschaft'),
-            self::ACTIVITY_OTHER => __('Sonstiges'),
-            default => $type === '' ? __('Unbekannt') : ucfirst($type),
-        };
+        $enum = TimeEntryActivityType::tryFrom($type);
+        if ($enum !== null) {
+            return $enum->label();
+        }
 
-        return $label;
+        return $type === '' ? (string) __('Unbekannt') : ucfirst($type);
     }
 
     protected $fillable = [
@@ -162,6 +112,8 @@ class TimeEntry extends Model
         'fixed_rate' => 'decimal:2',
         'rate' => 'decimal:2',
         'internal_rate' => 'decimal:2',
+        'kind' => TimeEntryKind::class,
+        'activity_type' => TimeEntryActivityType::class,
     ];
 
     protected static function booted(): void
@@ -170,15 +122,15 @@ class TimeEntry extends Model
             // Default activity_type from kind / project presence.
             if (empty($entry->activity_type)) {
                 $entry->activity_type = match (true) {
-                    $entry->project_id !== null => self::ACTIVITY_PROJECT,
-                    $entry->kind === self::KIND_TRAVEL => self::ACTIVITY_TRAVEL,
-                    $entry->kind === self::KIND_STANDBY => self::ACTIVITY_STANDBY,
-                    default => self::ACTIVITY_ADMIN,
+                    $entry->project_id !== null => TimeEntryActivityType::Project,
+                    $entry->kind === TimeEntryKind::Travel => TimeEntryActivityType::Travel,
+                    $entry->kind === TimeEntryKind::Standby => TimeEntryActivityType::Standby,
+                    default => TimeEntryActivityType::Admin,
                 };
             }
 
             // Enforce: project_id is required when activity_type=project.
-            if ($entry->activity_type === self::ACTIVITY_PROJECT && $entry->project_id === null) {
+            if ($entry->activity_type === TimeEntryActivityType::Project && $entry->project_id === null) {
                 throw new \InvalidArgumentException(
                     'TimeEntry with activity_type=project requires a project_id.'
                 );
@@ -271,7 +223,7 @@ class TimeEntry extends Model
 
     public function isProjectWork(): bool
     {
-        return $this->activity_type === self::ACTIVITY_PROJECT;
+        return $this->activity_type === TimeEntryActivityType::Project;
     }
 
     public function hoursFormatted(): string

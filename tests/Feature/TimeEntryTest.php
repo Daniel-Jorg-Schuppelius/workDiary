@@ -18,6 +18,7 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Project\ProjectStatus;
 
 class TimeEntryTest extends TestCase
 {
@@ -40,7 +41,7 @@ class TimeEntryTest extends TestCase
         $this->project = Project::create([
             'organization_id' => $this->organization->id,
             'name' => 'Test-Projekt',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'created_by' => $this->user->id,
         ]);
     }

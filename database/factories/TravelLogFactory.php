@@ -15,6 +15,7 @@ use App\Models\TravelLog;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
+use App\Enums\Travel\TravelLogVehicle;
 
 /**
  * @extends Factory<TravelLog>
@@ -41,7 +42,7 @@ class TravelLogFactory extends Factory
             'from_address' => fake()->address(),
             'to_address' => fake()->address(),
             'distance_km' => fake()->randomFloat(2, 1, 250),
-            'vehicle' => TravelLog::VEHICLE_PRIVATE,
+            'vehicle' => TravelLogVehicle::Private_->value,
             'purpose' => fake()->sentence(4),
             'round_trip' => false,
             'reimbursable' => true,

@@ -41,19 +41,19 @@
         <x-filter-field :label="__('Modus')" for="diary-mode" class="min-w-40">
             <select id="diary-mode" name="mode" class="select select-bordered select-sm w-full">
                 <option value="">{{ __('Alle Modi') }}</option>
-                <option value="{{ \App\Models\DiaryEntry::MODE_FIXED }}" @selected(($filters['mode'] ?? '') === \App\Models\DiaryEntry::MODE_FIXED)>{{ __('Terminiert') }}</option>
-                <option value="{{ \App\Models\DiaryEntry::MODE_DEADLINE }}" @selected(($filters['mode'] ?? '') === \App\Models\DiaryEntry::MODE_DEADLINE)>{{ __('Deadline') }}</option>
-                <option value="{{ \App\Models\DiaryEntry::MODE_WINDOW }}" @selected(($filters['mode'] ?? '') === \App\Models\DiaryEntry::MODE_WINDOW)>{{ __('Zeitfenster') }}</option>
-                <option value="{{ \App\Models\DiaryEntry::MODE_RECURRING }}" @selected(($filters['mode'] ?? '') === \App\Models\DiaryEntry::MODE_RECURRING)>{{ __('Wiederkehrend') }}</option>
-                <option value="{{ \App\Models\DiaryEntry::MODE_BACKLOG }}" @selected(($filters['mode'] ?? '') === \App\Models\DiaryEntry::MODE_BACKLOG)>{{ __('Backlog') }}</option>
+                <option value="{{ \App\Enums\Diary\Mode::Fixed->value }}" @selected(($filters['mode'] ?? '') === \App\Enums\Diary\Mode::Fixed->value)>{{ __('Terminiert') }}</option>
+                <option value="{{ \App\Enums\Diary\Mode::Deadline->value }}" @selected(($filters['mode'] ?? '') === \App\Enums\Diary\Mode::Deadline->value)>{{ __('Deadline') }}</option>
+                <option value="{{ \App\Enums\Diary\Mode::Window->value }}" @selected(($filters['mode'] ?? '') === \App\Enums\Diary\Mode::Window->value)>{{ __('Zeitfenster') }}</option>
+                <option value="{{ \App\Enums\Diary\Mode::Recurring->value }}" @selected(($filters['mode'] ?? '') === \App\Enums\Diary\Mode::Recurring->value)>{{ __('Wiederkehrend') }}</option>
+                <option value="{{ \App\Enums\Diary\Mode::Backlog->value }}" @selected(($filters['mode'] ?? '') === \App\Enums\Diary\Mode::Backlog->value)>{{ __('Backlog') }}</option>
             </select>
         </x-filter-field>
         <x-filter-field :label="__('Standort')" for="diary-location" class="min-w-36">
             <select id="diary-location" name="location" class="select select-bordered select-sm w-full">
                 <option value="">{{ __('Alle Standorte') }}</option>
-                <option value="{{ \App\Models\DiaryEntry::LOCATION_ONSITE }}" @selected(($filters['location'] ?? '') === \App\Models\DiaryEntry::LOCATION_ONSITE)>{{ __('Vor Ort') }}</option>
-                <option value="{{ \App\Models\DiaryEntry::LOCATION_REMOTE }}" @selected(($filters['location'] ?? '') === \App\Models\DiaryEntry::LOCATION_REMOTE)>{{ __('Remote') }}</option>
-                <option value="{{ \App\Models\DiaryEntry::LOCATION_HYBRID }}" @selected(($filters['location'] ?? '') === \App\Models\DiaryEntry::LOCATION_HYBRID)>{{ __('Hybrid') }}</option>
+                @foreach (\App\Enums\Diary\LocationMode::cases() as $lm)
+                    <option value="{{ $lm->value }}" @selected(($filters['location'] ?? '') === $lm->value)>{{ $lm->label() }}</option>
+                @endforeach
             </select>
         </x-filter-field>
         <label class="flex items-center gap-2 pb-2">
@@ -106,12 +106,12 @@
                             'badge-error' => $entry->statusTone() === 'alert',
                             'badge-ghost' => $entry->statusTone() === 'neutral',
                         ])>{{ $entry->statusLabel() }}</span>
-                        @if ($entry->mode && $entry->mode !== \App\Models\DiaryEntry::MODE_FIXED)
+                        @if ($entry->mode && $entry->mode !== \App\Enums\Diary\Mode::Fixed)
                             <span class="badge badge-sm badge-outline">{{ $entry->modeLabel() }}</span>
                         @endif
-                        @if ($entry->location_mode === \App\Models\DiaryEntry::LOCATION_REMOTE)
+                        @if ($entry->location_mode === \App\Enums\Diary\LocationMode::Remote)
                             <span class="badge badge-sm badge-outline">{{ __('Remote') }}</span>
-                        @elseif ($entry->location_mode === \App\Models\DiaryEntry::LOCATION_HYBRID)
+                        @elseif ($entry->location_mode === \App\Enums\Diary\LocationMode::Hybrid)
                             <span class="badge badge-sm badge-outline">{{ __('Hybrid') }}</span>
                         @endif
                         @if ($entry->is_archived)
@@ -139,17 +139,17 @@
                     @endif
                     <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-base-content/65">
                         @switch($entry->mode)
-                            @case(\App\Models\DiaryEntry::MODE_DEADLINE)
+                            @case(\App\Enums\Diary\Mode::Deadline)
                                 @if ($entry->due_date)
                                     <span>{{ __('Fällig bis') }} {{ $entry->due_date->format('d.m.Y') }}</span>
                                 @endif
                                 @break
-                            @case(\App\Models\DiaryEntry::MODE_WINDOW)
+                            @case(\App\Enums\Diary\Mode::Window)
                                 @if ($entry->window_start_date)
                                     <span>{{ __('Fenster') }} {{ $entry->window_start_date->format('d.m.Y') }}@if ($entry->window_end_date) – {{ $entry->window_end_date->format('d.m.Y') }}@endif</span>
                                 @endif
                                 @break
-                            @case(\App\Models\DiaryEntry::MODE_BACKLOG)
+                            @case(\App\Enums\Diary\Mode::Backlog)
                                 <span>{{ __('Backlog — kein Datum') }}</span>
                                 @break
                             @default

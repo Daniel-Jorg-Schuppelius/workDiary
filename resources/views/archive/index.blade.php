@@ -98,18 +98,18 @@
                 <x-filter-field :label="__('Typ')" for="arc-vtype" class="flex-1 min-w-40">
                     <select id="arc-vtype" name="vtype" class="select select-bordered select-sm w-full">
                         <option value="">{{ __('Alle Typen') }}</option>
-                        <option value="{{ \App\Models\Vacation::TYPE_VACATION }}" @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_VACATION)>{{ __('Urlaub') }}</option>
-                        <option value="{{ \App\Models\Vacation::TYPE_SICK }}"     @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_SICK)>{{ __('Krank') }}</option>
-                        <option value="{{ \App\Models\Vacation::TYPE_SPECIAL }}"  @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_SPECIAL)>{{ __('Sonderurlaub') }}</option>
-                        <option value="{{ \App\Models\Vacation::TYPE_UNPAID }}"   @selected(($filters['vtype'] ?? '') === \App\Models\Vacation::TYPE_UNPAID)>{{ __('Unbezahlt') }}</option>
+                        <option value="{{ \App\Models\VacationType::Vacation->value }}" @selected(($filters['vtype'] ?? '') === \App\Models\VacationType::Vacation->value)>{{ __('Urlaub') }}</option>
+                        <option value="{{ \App\Models\VacationType::Sick->value }}"     @selected(($filters['vtype'] ?? '') === \App\Models\VacationType::Sick->value)>{{ __('Krank') }}</option>
+                        <option value="{{ \App\Models\VacationType::Special->value }}"  @selected(($filters['vtype'] ?? '') === \App\Models\VacationType::Special->value)>{{ __('Sonderurlaub') }}</option>
+                        <option value="{{ \App\Models\VacationType::Unpaid->value }}"   @selected(($filters['vtype'] ?? '') === \App\Models\VacationType::Unpaid->value)>{{ __('Unbezahlt') }}</option>
                     </select>
                 </x-filter-field>
                 <x-filter-field :label="__('Status')" for="arc-vstatus" class="flex-1 min-w-40">
                     <select id="arc-vstatus" name="vstatus" class="select select-bordered select-sm w-full">
                         <option value="">{{ __('Alle Status') }}</option>
-                        <option value="{{ \App\Models\Vacation::STATUS_REJECTED }}"  @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_REJECTED)>{{ __('Abgelehnt') }}</option>
-                        <option value="{{ \App\Models\Vacation::STATUS_CANCELLED }}" @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_CANCELLED)>{{ __('Storniert') }}</option>
-                        <option value="{{ \App\Models\Vacation::STATUS_APPROVED }}"  @selected(($filters['vstatus'] ?? '') === \App\Models\Vacation::STATUS_APPROVED)>{{ __('Abgelaufen') }}</option>
+                        <option value="{{ \App\Models\VacationStatus::Rejected->value }}"  @selected(($filters['vstatus'] ?? '') === \App\Models\VacationStatus::Rejected->value)>{{ __('Abgelehnt') }}</option>
+                        <option value="{{ \App\Models\VacationStatus::Cancelled->value }}" @selected(($filters['vstatus'] ?? '') === \App\Models\VacationStatus::Cancelled->value)>{{ __('Storniert') }}</option>
+                        <option value="{{ \App\Models\VacationStatus::Approved->value }}"  @selected(($filters['vstatus'] ?? '') === \App\Models\VacationStatus::Approved->value)>{{ __('Abgelaufen') }}</option>
                     </select>
                 </x-filter-field>
             @endif
@@ -141,6 +141,8 @@
         <div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
             @if ($tab === 'urlaub')
                 <?php $p = array_merge($filters ?? [], ['tab' => 'urlaub']); ?>
+use App\Enums\Vacation\VacationStatus;
+use App\Enums\Vacation\VacationType;
                 <x-table table-sort="server" :route="route('archive.index')" :current-sort="$sort ?? null" :current-dir="$dir ?? 'desc'" :sort-params="$p" pin-rows bare scroll="none">
                     <x-slot:head>
                         <tr class="bg-base-200">
@@ -157,22 +159,22 @@
                     @forelse ($vacationEntries as $v)
                         @php
                             $statusBadge = match ($v->status) {
-                                \App\Models\Vacation::STATUS_APPROVED  => 'badge-success',
-                                \App\Models\Vacation::STATUS_REJECTED  => 'badge-error',
-                                \App\Models\Vacation::STATUS_CANCELLED => 'badge-ghost',
+                                \App\Models\VacationStatus::Approved->value  => 'badge-success',
+                                \App\Models\VacationStatus::Rejected->value  => 'badge-error',
+                                \App\Models\VacationStatus::Cancelled->value => 'badge-ghost',
                                 default                                => 'badge-neutral',
                             };
                             $statusLabel = match ($v->status) {
-                                \App\Models\Vacation::STATUS_APPROVED  => __('Abgelaufen'),
-                                \App\Models\Vacation::STATUS_REJECTED  => __('Abgelehnt'),
-                                \App\Models\Vacation::STATUS_CANCELLED => __('Storniert'),
+                                \App\Models\VacationStatus::Approved->value  => __('Abgelaufen'),
+                                \App\Models\VacationStatus::Rejected->value  => __('Abgelehnt'),
+                                \App\Models\VacationStatus::Cancelled->value => __('Storniert'),
                                 default                                => $v->status,
                             };
                             $typeLabel = match ($v->type) {
-                                \App\Models\Vacation::TYPE_VACATION => __('Urlaub'),
-                                \App\Models\Vacation::TYPE_SICK     => __('Krank'),
-                                \App\Models\Vacation::TYPE_SPECIAL  => __('Sonderurlaub'),
-                                \App\Models\Vacation::TYPE_UNPAID   => __('Unbezahlt'),
+                                \App\Models\VacationType::Vacation->value => __('Urlaub'),
+                                \App\Models\VacationType::Sick->value     => __('Krank'),
+                                \App\Models\VacationType::Special->value  => __('Sonderurlaub'),
+                                \App\Models\VacationType::Unpaid->value   => __('Unbezahlt'),
                                 default                             => $v->type,
                             };
                         @endphp

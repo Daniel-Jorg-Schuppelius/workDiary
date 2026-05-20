@@ -11,6 +11,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Timesheet\TimesheetStatus;
 use App\Models\Timesheet;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -27,7 +28,7 @@ class SaveTimesheetRequest extends FormRequest
     {
         return [
             'work_date' => ['required', 'date'],
-            'status' => ['nullable', Rule::in(Timesheet::STATUSES)],
+            'status' => ['nullable', Rule::enum(TimesheetStatus::class)],
             'customer_name' => ['nullable', 'string', 'max:255'],
             'customer_role' => ['nullable', 'string', 'max:255'],
             'customer_email' => ['nullable', 'email', 'max:255'],

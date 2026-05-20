@@ -26,6 +26,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use App\Enums\Attendance\AttendanceStatus;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
@@ -99,7 +100,7 @@ class AttendanceReportController extends Controller
         $attMinByUser = Attendance::query()
             ->whereIn('user_id', $userIds)
             ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
-            ->whereNotIn('status', [Attendance::STATUS_CANCELLED, Attendance::STATUS_OPEN])
+            ->whereNotIn('status', [AttendanceStatus::Cancelled->value, AttendanceStatus::Open->value])
             ->selectRaw('user_id, COALESCE(SUM(duration_minutes), 0) as m')
             ->groupBy('user_id')
             ->pluck('m', 'user_id')

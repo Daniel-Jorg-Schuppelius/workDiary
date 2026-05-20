@@ -14,6 +14,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SaveTimeEntryRequest;
 use App\Models\DiaryEntry;
 use App\Models\Project;
+use App\Enums\Task\TaskStatus;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use Illuminate\Http\RedirectResponse;
@@ -48,7 +49,7 @@ class TimeEntryController extends Controller
         Gate::authorize('create', TimeEntry::class);
 
         $tasks = $project->tasks()
-            ->where('status', '!=', Task::STATUS_DONE)
+            ->where('status', '!=', TaskStatus::Done)
             ->orderBy('title')
             ->get(['id', 'title']);
 

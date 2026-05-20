@@ -67,7 +67,7 @@
                     <strong>{{ $r['vehicle']->license_plate }}</strong>
                     @if ($r['vehicle']->label)<br><span style="font-size:8pt;color:#666">{{ $r['vehicle']->label }}</span>@endif
                 </td>
-                <td>{{ $r['vehicle']->propulsion }}</td>
+                <td>{{ $r['vehicle']->propulsion->label() }}</td>
                 <td class="right">{{ $r['trip_count'] }}</td>
                 <td class="right">{{ $num($r['km'], 1) }}</td>
                 <td class="right">{{ $money($r['reimbursement']) }}</td>

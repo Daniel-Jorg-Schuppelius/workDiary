@@ -19,7 +19,7 @@
         if (! $userVacs) return '';
         foreach ($userVacs as $v) {
             if ($date >= $v->start_date->toDateString() && $date <= $v->end_date->toDateString()) {
-                return $v->status === \App\Models\Vacation::STATUS_APPROVED ? 'A' : 'P';
+                return $v->status === \App\Enums\Vacation\VacationStatus::Approved ? 'A' : 'P';
             }
         }
         return '';

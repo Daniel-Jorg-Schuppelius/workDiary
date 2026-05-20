@@ -11,6 +11,8 @@
 
 namespace App\Models;
 
+use App\Enums\Task\TaskPriority;
+use App\Enums\Task\TaskStatus;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Concerns\HasAttachments;
 use Database\Factories\TaskFactory;
@@ -26,26 +28,6 @@ class Task extends Model
 
     /** @use HasFactory<TaskFactory> */
     use HasFactory;
-
-    public const STATUS_OPEN = 'open';
-
-    public const STATUS_IN_PROGRESS = 'in_progress';
-
-    public const STATUS_DONE = 'done';
-
-    /** @var array<int, string> */
-    public const STATUSES = [self::STATUS_OPEN, self::STATUS_IN_PROGRESS, self::STATUS_DONE];
-
-    public const PRIORITY_LOW = 'low';
-
-    public const PRIORITY_MEDIUM = 'medium';
-
-    public const PRIORITY_HIGH = 'high';
-
-    public const PRIORITY_URGENT = 'urgent';
-
-    /** @var array<int, string> */
-    public const PRIORITIES = [self::PRIORITY_LOW, self::PRIORITY_MEDIUM, self::PRIORITY_HIGH, self::PRIORITY_URGENT];
 
     protected $fillable = [
         'organization_id',
@@ -81,6 +63,8 @@ class Task extends Model
         'time_budget' => 'integer',
         'billable' => 'boolean',
         'is_global' => 'boolean',
+        'status' => TaskStatus::class,
+        'priority' => TaskPriority::class,
     ];
 
     /** @return BelongsTo<Project, $this> */
@@ -127,54 +111,26 @@ class Task extends Model
 
     public function statusLabel(): string
     {
-        return match ($this->status) {
-            self::STATUS_OPEN => __('Offen'),
-            self::STATUS_IN_PROGRESS => __('In Arbeit'),
-            self::STATUS_DONE => __('Erledigt'),
-            default => $this->status,
-        };
+        return $this->status->label();
     }
 
     public function statusTone(): string
     {
-        return match ($this->status) {
-            self::STATUS_OPEN => 'neutral',
-            self::STATUS_IN_PROGRESS => 'info',
-            self::STATUS_DONE => 'success',
-            default => 'ghost',
-        };
+        return $this->status->tone();
     }
 
     public function priorityLabel(): string
     {
-        return match ($this->priority) {
-            self::PRIORITY_LOW => __('Niedrig'),
-            self::PRIORITY_MEDIUM => __('Mittel'),
-            self::PRIORITY_HIGH => __('Hoch'),
-            self::PRIORITY_URGENT => __('Dringend'),
-            default => $this->priority,
-        };
+        return $this->priority->label();
     }
 
     public function priorityTone(): string
     {
-        return match ($this->priority) {
-            self::PRIORITY_LOW => 'ghost',
-            self::PRIORITY_MEDIUM => 'info',
-            self::PRIORITY_HIGH => 'warning',
-            self::PRIORITY_URGENT => 'error',
-            default => 'ghost',
-        };
+        return $this->priority->tone();
     }
 
     public function priorityColor(): string
     {
-        return match ($this->priority) {
-            self::PRIORITY_LOW => '#94a3b8',
-            self::PRIORITY_MEDIUM => '#3b82f6',
-            self::PRIORITY_HIGH => '#f59e0b',
-            self::PRIORITY_URGENT => '#ef4444',
-            default => '#94a3b8',
-        };
+        return $this->priority->color();
     }
 }

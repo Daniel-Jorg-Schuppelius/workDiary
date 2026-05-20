@@ -11,6 +11,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Activity\ActivityCategoryType;
 use App\Models\ActivityCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -23,16 +24,16 @@ class ActivityCategoryFactory extends Factory
 
     public function definition(): array
     {
-        $type = fake()->randomElement(ActivityCategory::TYPES);
+        $type = fake()->randomElement(ActivityCategoryType::cases());
 
         return [
             'organization_id' => null,
             'key' => fake()->unique()->slug(2),
-            'label' => ucfirst($type).' '.fake()->word(),
+            'label' => ucfirst($type->value).' '.fake()->word(),
             'activity_type' => $type,
             'billable_default' => false,
-            'counts_as_work' => $type !== ActivityCategory::TYPE_ABSENCE
-                && $type !== ActivityCategory::TYPE_BREAK,
+            'counts_as_work' => $type !== ActivityCategoryType::Absence
+                && $type !== ActivityCategoryType::Break_,
             'color' => fake()->hexColor(),
             'icon' => null,
             'sort_order' => 100,

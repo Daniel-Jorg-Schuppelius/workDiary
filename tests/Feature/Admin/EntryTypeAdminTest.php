@@ -70,7 +70,7 @@ class EntryTypeAdminTest extends TestCase
                 'requires_schedule' => '1',
                 'allow_priority' => '1',
                 'allow_tour' => '1',
-                'default_status' => DiaryEntry::STATUS_OPEN,
+                'default_status' => \App\Enums\Diary\Status::Open->value,
                 'default_service_minutes' => 90,
                 'default_priority' => 'high',
             ])
@@ -83,7 +83,7 @@ class EntryTypeAdminTest extends TestCase
         $this->assertTrue($type->requires_schedule);
         $this->assertTrue($type->allow_priority);
         $this->assertSame(90, $type->default_service_minutes);
-        $this->assertSame('high', $type->default_priority);
+        $this->assertSame(\App\Enums\Diary\Priority::High, $type->default_priority);
     }
 
     public function test_slug_must_be_unique_per_organization(): void
@@ -97,7 +97,7 @@ class EntryTypeAdminTest extends TestCase
                 'label' => 'Duplicate',
                 'icon' => 'build',
                 'color' => 'primary',
-                'default_status' => DiaryEntry::STATUS_OPEN,
+                'default_status' => \App\Enums\Diary\Status::Open->value,
             ])
             ->assertRedirect(route('admin.entry-types.create'))
             ->assertSessionHasErrors('slug');
@@ -117,7 +117,7 @@ class EntryTypeAdminTest extends TestCase
                 'sort' => 5,
                 'is_active' => '1',
                 'allow_priority' => '1',
-                'default_status' => DiaryEntry::STATUS_OPEN,
+                'default_status' => \App\Enums\Diary\Status::Open->value,
             ])
             ->assertRedirect(route('admin.entry-types.index'));
 
@@ -140,7 +140,7 @@ class EntryTypeAdminTest extends TestCase
             'color' => 'ghost',
             'sort' => 999,
             'is_active' => true,
-            'default_status' => DiaryEntry::STATUS_OPEN,
+            'default_status' => \App\Enums\Diary\Status::Open->value,
         ]);
 
         $this->actingAs($admin)

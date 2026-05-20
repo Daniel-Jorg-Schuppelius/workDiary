@@ -11,10 +11,14 @@
 
 namespace App\Http\Controllers\Reporting;
 
+use App\Enums\Diary\Status as DiaryStatus;
+use App\Enums\Tour\TourStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\DiaryEntry;
 use App\Models\EntryType;
+use App\Enums\Task\TaskPriority;
+use App\Enums\Task\TaskStatus;
 use App\Models\Task;
 use App\Models\Tour;
 use App\Models\User;
@@ -101,19 +105,22 @@ class OperationsReportController extends Controller
         $rows = $q->get(['status', 'priority', 'service_minutes']);
 
         $statusMap = [
-            DiaryEntry::STATUS_OPEN => 'open',
-            DiaryEntry::STATUS_IN_PROGRESS => 'in_progress',
-            DiaryEntry::STATUS_DONE => 'done',
-            DiaryEntry::STATUS_PROBLEM => 'problem',
+            DiaryStatus::Open->value => 'open',
+            DiaryStatus::InProgress->value => 'in_progress',
+            DiaryStatus::Done->value => 'done',
+            DiaryStatus::Problem->value => 'problem',
         ];
         $byStatus = array_fill_keys(array_values($statusMap), 0);
-        $byPriority = array_fill_keys(DiaryEntry::PRIORITIES, 0);
+        $byPriority = [];
+        foreach (\App\Enums\Diary\Priority::cases() as $prioCase) {
+            $byPriority[$prioCase->value] = 0;
+        }
         $minutes = 0;
         foreach ($rows as $r) {
-            $label = $statusMap[$r->status] ?? 'open';
+            $label = $statusMap[$r->status->value];
             $byStatus[$label]++;
-            if ($r->priority !== null && isset($byPriority[$r->priority])) {
-                $byPriority[$r->priority]++;
+            if ($r->priority !== null) {
+                $byPriority[$r->priority->value]++;
             }
             $minutes += (int) $r->service_minutes;
         }
@@ -159,15 +166,19 @@ class OperationsReportController extends Controller
         /** @var Collection<int, Task> $rows */
         $rows = $q->get(['status', 'priority', 'due_date']);
 
-        $byStatus = array_fill_keys(Task::STATUSES, 0);
-        $byPriority = array_fill_keys(Task::PRIORITIES, 0);
+        /** @var array<string, int> $byStatus */
+        $byStatus = array_fill_keys(TaskStatus::values(), 0);
+        /** @var array<string, int> $byPriority */
+        $byPriority = array_fill_keys(TaskPriority::values(), 0);
         $overdue = 0;
         $today = Carbon::today();
         foreach ($rows as $r) {
-            $byStatus[$r->status] = ($byStatus[$r->status] ?? 0) + 1;
-            $byPriority[$r->priority] = ($byPriority[$r->priority] ?? 0) + 1;
+            $statusValue = $r->status->value;
+            $priorityValue = $r->priority->value;
+            $byStatus[$statusValue] = ($byStatus[$statusValue] ?? 0) + 1;
+            $byPriority[$priorityValue] = ($byPriority[$priorityValue] ?? 0) + 1;
             $dueRaw = $r->getAttribute('due_date');
-            if ($r->status !== Task::STATUS_DONE && $dueRaw !== null) {
+            if ($r->status !== TaskStatus::Done && $dueRaw !== null) {
                 $due = $dueRaw instanceof \DateTimeInterface ? Carbon::instance($dueRaw) : Carbon::parse((string) $dueRaw);
                 if ($due->lt($today)) {
                     $overdue++;
@@ -175,14 +186,14 @@ class OperationsReportController extends Controller
             }
         }
         $total = $rows->count();
-        $done = $byStatus[Task::STATUS_DONE] ?? 0;
+        $done = $byStatus[TaskStatus::Done->value] ?? 0;
 
         return [
             'total' => $total,
             'by_status' => $byStatus,
             'by_priority' => $byPriority,
             'overdue' => $overdue,
-            'completion_rate' => $total > 0 ? $done / $total : null,
+            'completion_rate' => $total > 0 ? (float) $done / $total : null,
         ];
     }
 
@@ -220,7 +231,7 @@ class OperationsReportController extends Controller
             $byUser[$uid]['minutes'] += (int) $r->planned_duration_minutes;
             $distance += (float) $r->planned_distance_km;
             $minutes += (int) $r->planned_duration_minutes;
-            if ($r->status === Tour::STATUS_COMPLETED) {
+            if ($r->status === TourStatus::Completed) {
                 $completed++;
             }
         }

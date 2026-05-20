@@ -22,26 +22,26 @@
     @endphp
 
     <x-page-shell>
-        <x-page-toolbar :title="__('Tour') . ' ' . ($tour->name ?? ('#' . $tour->id))" :badge="__($tour->status)" badge-tone="ghost">
+        <x-page-toolbar :title="__('Tour') . ' ' . ($tour->name ?? ('#' . $tour->id))" :badge="$tour->status?->label() ?? ''" badge-tone="ghost">
             <div class="text-sm text-base-content/70">
                 {{ $tour->tour_date?->format('d.m.Y') }} · {{ $tour->user?->name }} · {{ $tour->vehicle?->license_plate ?? '—' }}
                 · {{ number_format((float) $tour->planned_distance_km, 2, ',', '.') }} km · {{ $tour->planned_duration_minutes }} min
             </div>
             <x-slot:actions>
                 <x-icon-btn icon="edit" size="sm" :href="route('tours.edit', $tour)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-                @if (in_array($tour->status, ['draft', 'planned'], true))
+                @if (in_array($tour->status, [\App\Enums\Tour\TourStatus::Draft, \App\Enums\Tour\TourStatus::Planned], true))
                     <form method="POST" action="{{ route('tours.start', $tour) }}" class="inline">
                         @csrf
                         <x-icon-btn icon="play_arrow" tone="primary" size="sm" type="submit" show-label>{{ __('Starten') }}</x-icon-btn>
                     </form>
                 @endif
-                @if (in_array($tour->status, ['planned', 'in_progress'], true))
+                @if (in_array($tour->status, [\App\Enums\Tour\TourStatus::Planned, \App\Enums\Tour\TourStatus::InProgress], true))
                     <form method="POST" action="{{ route('tours.complete', $tour) }}" class="inline">
                         @csrf
                         <x-icon-btn icon="check_circle" tone="success" size="sm" type="submit" show-label>{{ __('Abschließen') }}</x-icon-btn>
                     </form>
                 @endif
-                @if (in_array($tour->status, ['in_progress', 'completed'], true))
+                @if (in_array($tour->status, [\App\Enums\Tour\TourStatus::InProgress, \App\Enums\Tour\TourStatus::Completed], true))
                     <form method="POST" action="{{ route('tours.materialize', $tour) }}" class="inline"
                           data-confirm-dialog
                           data-confirm-message="{{ __('Stopps als Fahrten ins Fahrtenbuch übernehmen?') }}"

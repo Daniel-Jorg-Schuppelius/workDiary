@@ -25,6 +25,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use App\Enums\Shift\ScheduledShiftStatus;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
@@ -113,7 +114,7 @@ class CoverageReportController extends Controller
         $scheduledByKey = [];
         ScheduledShift::query()
             ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
-            ->where('status', '!=', ScheduledShift::STATUS_CANCELLED)
+            ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
             ->whereNotNull('shift_type_id')
             ->get(['date', 'shift_type_id'])
             ->each(function ($s) use (&$scheduledByKey): void {

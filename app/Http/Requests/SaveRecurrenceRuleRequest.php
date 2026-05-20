@@ -11,6 +11,9 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Diary\LocationMode;
+use App\Enums\Diary\Priority;
+use App\Enums\Recurrence\RecurrenceFrequency;
 use App\Models\DiaryEntry;
 use App\Models\RecurrenceRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -56,10 +59,10 @@ class SaveRecurrenceRuleRequest extends FormRequest
             'title_template' => ['nullable', 'string', 'max:200'],
             'content_template' => ['required', 'string', 'max:65535'],
             'default_service_minutes' => ['nullable', 'integer', 'min:0', 'max:10080'],
-            'default_priority' => ['nullable', Rule::in(DiaryEntry::PRIORITIES)],
-            'default_location_mode' => ['required', Rule::in(DiaryEntry::LOCATION_MODES)],
+            'default_priority' => ['nullable', Rule::enum(Priority::class)],
+            'default_location_mode' => ['required', Rule::enum(LocationMode::class)],
 
-            'frequency' => ['required', Rule::in(RecurrenceRule::FREQUENCIES)],
+            'frequency' => ['required', Rule::enum(RecurrenceFrequency::class)],
             'interval' => ['required', 'integer', 'min:1', 'max:365'],
             'byweekday' => ['nullable', 'string', 'max:32'],
             'bymonthday' => ['nullable', 'integer', 'between:1,31'],

@@ -13,6 +13,7 @@ namespace Database\Factories;
 
 use App\Models\Project;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Enums\Project\ProjectStatus;
 
 /**
  * @extends Factory<Project>
@@ -27,7 +28,7 @@ class ProjectFactory extends Factory
             'organization_id' => null,
             'customer_id' => null,
             'name' => fake()->unique()->words(2, true),
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'billable' => true,
             'global_activities' => true,
         ];

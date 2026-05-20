@@ -14,6 +14,7 @@ namespace Tests\Feature;
 use App\Models\DiaryEntry;
 use App\Models\Tag;
 use App\Models\User;
+use App\Enums\User\UserRole;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -41,7 +42,7 @@ class ApiTest extends TestCase
         $this->getJson('/api/me')
             ->assertOk()
             ->assertJsonPath('data.id', $user->id)
-            ->assertJsonPath('meta.roles.0', User::ROLE_USER);
+            ->assertJsonPath('meta.roles.0', UserRole::User->value);
     }
 
     public function test_diary_index_paginates(): void

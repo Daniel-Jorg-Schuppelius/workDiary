@@ -6,13 +6,8 @@
     $editable = $timesheet->canEdit();
     $canSign = auth()->user()?->can('sign', $timesheet) ?? false;
     $fmtMin = fn(int $min) => intdiv($min, 60) . ':' . str_pad((string)($min % 60), 2, '0', STR_PAD_LEFT);
-    $entryKindLabel = static function (?string $kind): string {
-        return match ($kind) {
-            \App\Models\TimeEntry::KIND_WORK => __('Arbeit'),
-            \App\Models\TimeEntry::KIND_TRAVEL => __('Anfahrt'),
-            \App\Models\TimeEntry::KIND_STANDBY => __('Bereitschaft'),
-            default => (string) $kind,
-        };
+    $entryKindLabel = static function (?\App\Enums\TimeEntry\TimeEntryKind $kind): string {
+        return $kind?->label() ?? '';
     };
 @endphp
 

@@ -9,9 +9,11 @@
         <label class="fieldset-label">{{ __('Fahrzeug') }} *</label>
         <select name="vehicle" required class="select select-bordered w-full">
             @foreach ($vehicles as $v)
-                <option value="{{ $v }}" @selected(old('vehicle', $log?->vehicle ?? 'private') === $v)>
-                    {{ __($v) }}
-                    @isset ($rates[$v]) ({{ number_format((float) $rates[$v], 2, ',', '.') }} €/km) @endisset
+                @php($value = $v instanceof \App\Enums\Travel\TravelLogVehicle ? $v->value : (string) $v)
+                @php($label = $v instanceof \App\Enums\Travel\TravelLogVehicle ? $v->label() : __($value))
+                <option value="{{ $value }}" @selected(old('vehicle', $log?->vehicle?->value ?? 'private') === $value)>
+                    {{ $label }}
+                    @isset ($rates[$value]) ({{ number_format((float) $rates[$value], 2, ',', '.') }} €/km) @endisset
                 </option>
             @endforeach
         </select>

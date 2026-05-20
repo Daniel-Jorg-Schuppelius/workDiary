@@ -19,6 +19,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use App\Enums\TimeEntry\TimeEntryKind;
 
 class TimesheetEntryController extends Controller
 {
@@ -40,7 +41,7 @@ class TimesheetEntryController extends Controller
             'project_id' => $project->id,
             'organization_id' => $project->organization_id,
             'date' => $data['date'] ?? ($data['started_at'] ?? $timesheet->work_date),
-            'kind' => $data['kind'] ?? TimeEntry::KIND_WORK,
+            'kind' => $data['kind'] ?? TimeEntryKind::Work->value,
         ]);
 
         return back()->with('success', __('Zeile hinzugefügt.'));

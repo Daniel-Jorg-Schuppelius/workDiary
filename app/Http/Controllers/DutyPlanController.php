@@ -11,12 +11,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Shift\DutyPlanPeriodType;
+use App\Enums\Shift\DutyPlanStatus;
 use App\Models\DutyPlan;
 use App\Support\SortableQuery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class DutyPlanController extends Controller
@@ -31,11 +34,11 @@ class DutyPlanController extends Controller
         $query = DutyPlan::query()
             ->withCount('shifts');
 
-        if ($status && in_array($status, DutyPlan::$statuses, true)) {
+        if ($status && in_array($status, DutyPlanStatus::values(), true)) {
             $query->where('status', $status);
         }
 
-        if ($period && in_array($period, DutyPlan::$periodTypes, true)) {
+        if ($period && in_array($period, DutyPlanPeriodType::values(), true)) {
             $query->where('period_type', $period);
         }
 
@@ -135,7 +138,7 @@ class DutyPlanController extends Controller
     {
         Gate::authorize('update', $dutyPlan);
 
-        $dutyPlan->update(['status' => DutyPlan::STATUS_PUBLISHED, 'updated_by' => Auth::id()]);
+        $dutyPlan->update(['status' => DutyPlanStatus::Published, 'updated_by' => Auth::id()]);
 
         return back()->with('success', __('Dienstplan wurde veröffentlicht.'));
     }
@@ -144,7 +147,7 @@ class DutyPlanController extends Controller
     {
         Gate::authorize('update', $dutyPlan);
 
-        $dutyPlan->update(['status' => DutyPlan::STATUS_DRAFT, 'updated_by' => Auth::id()]);
+        $dutyPlan->update(['status' => DutyPlanStatus::Draft, 'updated_by' => Auth::id()]);
 
         return back()->with('success', __('Dienstplan wurde zurück auf Entwurf gesetzt.'));
     }
@@ -154,7 +157,7 @@ class DutyPlanController extends Controller
     {
         return $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'period_type' => ['required', 'in:'.implode(',', DutyPlan::$periodTypes)],
+            'period_type' => ['required', Rule::enum(DutyPlanPeriodType::class)],
             'from_date' => ['required', 'date'],
             'to_date' => ['required', 'date', 'gte:from_date'],
             'min_staff' => ['nullable', 'integer', 'min:0', 'max:255'],

@@ -11,10 +11,13 @@
 
 namespace App\Services\Travel;
 
+use App\Enums\Travel\TravelLogVehicle;
 use App\Models\TimeEntry;
 use App\Models\TravelLog;
 use App\Models\Vehicle;
 use Illuminate\Support\Facades\DB;
+use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\TimeEntry\TimeEntryActivityType;
 
 /**
  * Encapsulates persistence of {@see TravelLog} entries and, when configured,
@@ -68,7 +71,7 @@ class TravelLogService
      */
     private function applyDefaults(array $attributes, ?TravelLog $existing = null): array
     {
-        $vehicle = (string) ($attributes['vehicle'] ?? ($existing !== null ? $existing->vehicle : TravelLog::VEHICLE_PRIVATE));
+        $vehicle = (string) ($attributes['vehicle'] ?? ($existing !== null ? $existing->vehicle->value : TravelLogVehicle::Private_->value));
 
         if (! array_key_exists('rate_per_km', $attributes) || $attributes['rate_per_km'] === null || $attributes['rate_per_km'] === '') {
             $vehicleId = $attributes['vehicle_id'] ?? $existing?->vehicle_id;
@@ -107,8 +110,8 @@ class TravelLogService
             'started_at' => $log->started_at,
             'ended_at' => $log->ended_at,
             'minutes' => $log->duration_minutes,
-            'kind' => TimeEntry::KIND_TRAVEL,
-            'activity_type' => TimeEntry::ACTIVITY_TRAVEL,
+            'kind' => TimeEntryKind::Travel->value,
+            'activity_type' => TimeEntryActivityType::Travel->value,
             'description' => $log->purpose,
             'billable' => false,
         ];

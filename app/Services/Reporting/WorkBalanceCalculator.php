@@ -11,12 +11,15 @@
 
 namespace App\Services\Reporting;
 
+use App\Enums\TimeEntry\TimeEntryActivityType;
 use App\Models\Attendance;
 use App\Models\TimeEntry;
 use App\Models\User;
 use App\Services\Flextime\FlexCalculator;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
+use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\Attendance\AttendanceStatus;
 
 /**
  * Aggregates the unified work-time picture for reporting: combines the
@@ -38,7 +41,7 @@ class WorkBalanceCalculator
         $attendances = Attendance::query()
             ->where('user_id', $user->id)
             ->whereDate('date', $dayStr)
-            ->where('status', '!=', Attendance::STATUS_CANCELLED)
+            ->where('status', '!=', AttendanceStatus::Cancelled->value)
             ->get();
 
         $entries = TimeEntry::query()
@@ -65,13 +68,15 @@ class WorkBalanceCalculator
         $byActivity = [];
         $byKind = [];
         $trackedMinutes = 0;
-        $countedKinds = (array) config('timesheet.flex.count_kinds', [TimeEntry::KIND_WORK, TimeEntry::KIND_TRAVEL]);
-        $excluded = (array) config('timesheet.flex.exclude_activity_types', [TimeEntry::ACTIVITY_BREAK, TimeEntry::ACTIVITY_ABSENCE]);
+        $countedKinds = (array) config('timesheet.flex.count_kinds', [TimeEntryKind::Work->value, TimeEntryKind::Travel->value]);
+        $excluded = (array) config('timesheet.flex.exclude_activity_types', [TimeEntryActivityType::Break_->value, TimeEntryActivityType::Absence->value]);
         foreach ($entries as $e) {
             $minutes = (int) $e->minutes;
-            $byActivity[$e->activity_type] = ($byActivity[$e->activity_type] ?? 0) + $minutes;
-            $byKind[$e->kind] = ($byKind[$e->kind] ?? 0) + $minutes;
-            if (in_array($e->kind, $countedKinds, true) && ! in_array($e->activity_type, $excluded, true)) {
+            $activityValue = $e->activity_type->value;
+            $byActivity[$activityValue] = ($byActivity[$activityValue] ?? 0) + $minutes;
+            $kindValue = $e->kind->value;
+            $byKind[$kindValue] = ($byKind[$kindValue] ?? 0) + $minutes;
+            if (in_array($kindValue, $countedKinds, true) && ! in_array($activityValue, $excluded, true)) {
                 $trackedMinutes += $minutes;
             }
         }

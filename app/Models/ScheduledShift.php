@@ -11,6 +11,7 @@
 
 namespace App\Models;
 
+use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
 use Carbon\Carbon;
@@ -30,7 +31,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $start_time
  * @property string|null $end_time
  * @property string|null $note
- * @property string $status
+ * @property ScheduledShiftStatus $status
  * @property int|null $created_by
  * @property int|null $updated_by
  * @property Carbon|null $created_at
@@ -43,22 +44,6 @@ class ScheduledShift extends Model
 
     /** @use HasFactory<ScheduledShiftFactory> */
     use HasFactory;
-
-    public const STATUS_DRAFT = 'draft';
-
-    public const STATUS_PUBLISHED = 'published';
-
-    public const STATUS_CONFIRMED = 'confirmed';
-
-    public const STATUS_CANCELLED = 'cancelled';
-
-    /** @var list<string> */
-    public static array $statuses = [
-        self::STATUS_DRAFT,
-        self::STATUS_PUBLISHED,
-        self::STATUS_CONFIRMED,
-        self::STATUS_CANCELLED,
-    ];
 
     protected $fillable = [
         'organization_id',
@@ -77,6 +62,7 @@ class ScheduledShift extends Model
     /** @var array<string, string> */
     protected $casts = [
         'date' => 'date:Y-m-d',
+        'status' => ScheduledShiftStatus::class,
     ];
 
     /** @return BelongsTo<User, $this> */
@@ -127,23 +113,12 @@ class ScheduledShift extends Model
 
     public function statusLabel(): string
     {
-        return match ($this->status) {
-            self::STATUS_DRAFT => (string) __('Entwurf'),
-            self::STATUS_PUBLISHED => (string) __('Veröffentlicht'),
-            self::STATUS_CONFIRMED => (string) __('Bestätigt'),
-            self::STATUS_CANCELLED => (string) __('Abgesagt'),
-            default => (string) ($this->status ?? ''),
-        };
+        return $this->status->label();
     }
 
     public function statusTone(): string
     {
-        return match ($this->status) {
-            self::STATUS_PUBLISHED => 'info',
-            self::STATUS_CONFIRMED => 'success',
-            self::STATUS_CANCELLED => 'error',
-            default => 'ghost', // draft
-        };
+        return $this->status->tone();
     }
 
     // ── Scopes ──────────────────────────────────────────────────────────────
@@ -184,7 +159,7 @@ class ScheduledShift extends Model
      */
     public function scopePublished(Builder $query): Builder
     {
-        return $query->where('status', self::STATUS_PUBLISHED);
+        return $query->where('status', ScheduledShiftStatus::Published->value);
     }
 
     /**
@@ -193,7 +168,7 @@ class ScheduledShift extends Model
      */
     public function scopeDraft(Builder $query): Builder
     {
-        return $query->where('status', self::STATUS_DRAFT);
+        return $query->where('status', ScheduledShiftStatus::Draft->value);
     }
 
     /**
@@ -202,6 +177,9 @@ class ScheduledShift extends Model
      */
     public function scopeVisible(Builder $query): Builder
     {
-        return $query->whereIn('status', [self::STATUS_PUBLISHED, self::STATUS_CONFIRMED]);
+        return $query->whereIn('status', [
+            ScheduledShiftStatus::Published->value,
+            ScheduledShiftStatus::Confirmed->value,
+        ]);
     }
 }

@@ -21,6 +21,7 @@ use App\Models\Vacation;
 use App\Support\SortableQuery;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use App\Enums\Vacation\VacationStatus;
 
 /**
  * Aggregiert Daten für die Archiv-Übersicht
@@ -202,9 +203,9 @@ class ArchiveSummaryService
         $q = Vacation::query()
             ->with('user:id,name')
             ->where(function ($q) {
-                $q->whereIn('status', [Vacation::STATUS_REJECTED, Vacation::STATUS_CANCELLED])
+                $q->whereIn('status', [VacationStatus::Rejected->value, VacationStatus::Cancelled->value])
                     ->orWhere(function ($q2) {
-                        $q2->where('status', Vacation::STATUS_APPROVED)
+                        $q2->where('status', VacationStatus::Approved->value)
                             ->where('end_date', '<', now()->toDateString());
                     });
             })
@@ -232,9 +233,9 @@ class ArchiveSummaryService
         return match ($tab) {
             'urlaub' => [
                 'total' => $counts['urlaub'],
-                'rejected' => (clone $vacationQuery)->where('status', Vacation::STATUS_REJECTED)->count(),
-                'cancelled' => (clone $vacationQuery)->where('status', Vacation::STATUS_CANCELLED)->count(),
-                'expired' => (clone $vacationQuery)->where('status', Vacation::STATUS_APPROVED)
+                'rejected' => (clone $vacationQuery)->where('status', VacationStatus::Rejected->value)->count(),
+                'cancelled' => (clone $vacationQuery)->where('status', VacationStatus::Cancelled->value)->count(),
+                'expired' => (clone $vacationQuery)->where('status', VacationStatus::Approved->value)
                     ->where('end_date', '<', now()->toDateString())->count(),
             ],
             'diary' => [

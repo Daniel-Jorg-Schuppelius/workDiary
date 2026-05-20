@@ -15,6 +15,8 @@ use App\Models\Project;
 use App\Models\TimeEntry;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\TimeEntry\TimeEntryActivityType;
 
 /**
  * @extends Factory<TimeEntry>
@@ -32,8 +34,8 @@ class TimeEntryFactory extends Factory
             'date' => fake()->dateTimeBetween('-3 months', 'now')->format('Y-m-d'),
             'minutes' => fake()->numberBetween(15, 480),
             'description' => null,
-            'kind' => TimeEntry::KIND_WORK,
-            'activity_type' => TimeEntry::ACTIVITY_PROJECT,
+            'kind' => TimeEntryKind::Work->value,
+            'activity_type' => TimeEntryActivityType::Project->value,
         ];
     }
 
@@ -44,7 +46,7 @@ class TimeEntryFactory extends Factory
     {
         return $this->state(fn () => [
             'project_id' => null,
-            'activity_type' => TimeEntry::ACTIVITY_ADMIN,
+            'activity_type' => TimeEntryActivityType::Admin->value,
         ]);
     }
 
@@ -55,8 +57,8 @@ class TimeEntryFactory extends Factory
     {
         return $this->state(fn () => [
             'project_id' => null,
-            'kind' => TimeEntry::KIND_TRAVEL,
-            'activity_type' => TimeEntry::ACTIVITY_TRAVEL,
+            'kind' => TimeEntryKind::Travel->value,
+            'activity_type' => TimeEntryActivityType::Travel->value,
         ]);
     }
 }

@@ -22,6 +22,7 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Shift\ScheduledShiftStatus;
 
 class CoverageRequirementTest extends TestCase
 {
@@ -282,7 +283,7 @@ class CoverageRequirementTest extends TestCase
             'user_id' => $u->id,
             'shift_type_id' => $ctx['fruh']->id,
             'date' => '2026-05-18',
-            'status' => ScheduledShift::STATUS_DRAFT,
+            'status' => ScheduledShiftStatus::Draft->value,
         ]);
         ScheduledShift::factory()->create([
             'organization_id' => $this->organization->id,
@@ -290,7 +291,7 @@ class CoverageRequirementTest extends TestCase
             'user_id' => $u->id,
             'shift_type_id' => $ctx['fruh']->id,
             'date' => '2026-05-18',
-            'status' => ScheduledShift::STATUS_CANCELLED,
+            'status' => ScheduledShiftStatus::Cancelled->value,
         ]);
 
         $svc = app(CoverageService::class);

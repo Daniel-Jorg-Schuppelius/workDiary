@@ -19,6 +19,7 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Sickness\SickLeaveKind;
 
 class ContinuedPaymentServiceTest extends TestCase
 {
@@ -56,7 +57,7 @@ class ContinuedPaymentServiceTest extends TestCase
             'user_id' => $this->user->id,
             'start_date' => '2026-05-04',
             'end_date' => '2026-05-10',
-            'kind' => SickLeave::KIND_INITIAL,
+            'kind' => SickLeaveKind::Initial->value,
         ]);
 
         $status = $this->service->statusFor($this->user, CarbonImmutable::parse('2026-05-10'));
@@ -72,13 +73,13 @@ class ContinuedPaymentServiceTest extends TestCase
             'user_id' => $this->user->id,
             'start_date' => '2026-05-04',
             'end_date' => '2026-05-10',
-            'kind' => SickLeave::KIND_INITIAL,
+            'kind' => SickLeaveKind::Initial->value,
         ]);
         SickLeave::factory()->create([
             'user_id' => $this->user->id,
             'start_date' => '2026-05-11',
             'end_date' => '2026-05-17',
-            'kind' => SickLeave::KIND_FOLLOW_UP,
+            'kind' => SickLeaveKind::FollowUp->value,
             'follow_up_for_id' => $initial->id,
         ]);
 
@@ -94,7 +95,7 @@ class ContinuedPaymentServiceTest extends TestCase
             'user_id' => $this->user->id,
             'start_date' => '2026-04-01',
             'end_date' => '2026-05-12',
-            'kind' => SickLeave::KIND_INITIAL,
+            'kind' => SickLeaveKind::Initial->value,
         ]);
 
         $status = $this->service->statusFor($this->user, CarbonImmutable::parse('2026-05-12'));
@@ -110,13 +111,13 @@ class ContinuedPaymentServiceTest extends TestCase
             'user_id' => $this->user->id,
             'start_date' => '2025-01-05',
             'end_date' => '2025-01-12',
-            'kind' => SickLeave::KIND_INITIAL,
+            'kind' => SickLeaveKind::Initial->value,
         ]);
         SickLeave::factory()->create([
             'user_id' => $this->user->id,
             'start_date' => '2026-05-04',
             'end_date' => '2026-05-06',
-            'kind' => SickLeave::KIND_INITIAL,
+            'kind' => SickLeaveKind::Initial->value,
         ]);
 
         $status = $this->service->statusFor($this->user, CarbonImmutable::parse('2026-05-06'));

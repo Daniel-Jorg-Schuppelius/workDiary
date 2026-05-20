@@ -23,6 +23,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use App\Enums\Timesheet\TimesheetStatus;
 
 class TimesheetController extends Controller
 {
@@ -46,7 +47,7 @@ class TimesheetController extends Controller
         $ts = $project->timesheets()->create($request->validated() + [
             'user_id' => Auth::id(),
             'organization_id' => $project->organization_id,
-            'status' => Timesheet::STATUS_DRAFT,
+            'status' => TimesheetStatus::Draft->value,
         ]);
 
         return new TimesheetResource($ts);
@@ -78,7 +79,7 @@ class TimesheetController extends Controller
     public function submit(Timesheet $timesheet): TimesheetResource
     {
         Gate::authorize('submit', $timesheet);
-        $timesheet->update(['status' => Timesheet::STATUS_SUBMITTED]);
+        $timesheet->update(['status' => TimesheetStatus::Submitted->value]);
 
         return new TimesheetResource($timesheet);
     }

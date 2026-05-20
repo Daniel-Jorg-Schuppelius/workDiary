@@ -20,6 +20,8 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\Project\ProjectStatus;
 
 class InvoiceTest extends TestCase
 {
@@ -49,7 +51,7 @@ class InvoiceTest extends TestCase
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'name' => 'Web',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'created_by' => $this->admin->id,
         ]);
     }
@@ -69,7 +71,7 @@ class InvoiceTest extends TestCase
             'user_id' => $this->admin->id,
             'date' => '2030-04-01',
             'minutes' => 120,
-            'kind' => TimeEntry::KIND_WORK,
+            'kind' => TimeEntryKind::Work->value,
             'billable' => true,
             'hourly_rate' => '90.00',
         ]);

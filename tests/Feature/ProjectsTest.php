@@ -16,6 +16,7 @@ use App\Models\User;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Enums\Project\ProjectStatus;
 
 class ProjectsTest extends TestCase
 {
@@ -35,7 +36,7 @@ class ProjectsTest extends TestCase
             ->post(route('projects.store'), [
                 'name' => 'Neues Projekt',
                 'description' => 'Beschreibung',
-                'status' => Project::STATUS_ACTIVE,
+                'status' => ProjectStatus::Active->value,
             ])
             ->assertRedirect();
 
@@ -51,7 +52,7 @@ class ProjectsTest extends TestCase
         $other = User::factory()->user()->create();
         $project = Project::create([
             'name' => 'Fremdes Projekt',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'created_by' => $owner->id,
         ]);
 

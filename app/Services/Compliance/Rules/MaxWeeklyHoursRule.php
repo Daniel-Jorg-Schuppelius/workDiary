@@ -18,6 +18,7 @@ use App\Services\Compliance\ComplianceRule;
 use App\Services\Compliance\ComplianceViolation;
 use App\Services\Compliance\ResolvesShiftTiming;
 use Carbon\CarbonImmutable;
+use App\Enums\Shift\ScheduledShiftStatus;
 
 /** Wochenarbeitszeit (default 48h, ISO-Woche). */
 final class MaxWeeklyHoursRule implements ComplianceRule
@@ -43,7 +44,7 @@ final class MaxWeeklyHoursRule implements ComplianceRule
 
         $weekShifts = ScheduledShift::query()
             ->where('user_id', $shift->user_id)
-            ->where('status', '!=', ScheduledShift::STATUS_CANCELLED)
+            ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
             ->whereBetween('date', [$weekStart->toDateString(), $weekEnd->toDateString()])
             ->when($shift->id, fn ($q) => $q->where('id', '!=', $shift->id))
             ->with('shiftType')

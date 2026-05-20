@@ -100,7 +100,7 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="badge badge-sm {{ $kindBadge[$e->kind] ?? 'badge-ghost' }}">{{ $kindLabel[$e->kind] ?? $e->kind }}</span>
+                                <span class="badge badge-sm {{ $kindBadge[$e->kind->value] ?? 'badge-ghost' }}">{{ $kindLabel[$e->kind->value] ?? $e->kind->value }}</span>
                             </td>
                             <td class="text-sm">
                                 @if ($e->project)

@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Organization;
 use App\Models\User;
+use App\Enums\User\UserRole;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -68,7 +69,7 @@ class TenantRegistrationController extends Controller
             $org->update(['owner_id' => $user->id]);
 
             // Admin-Rolle zuweisen (Rolle muss existieren)
-            $adminRole = Role::findOrCreate(User::ROLE_ADMIN, 'web');
+            $adminRole = Role::findOrCreate(UserRole::Admin->value, 'web');
             $user->assignRole($adminRole);
 
             return $user;

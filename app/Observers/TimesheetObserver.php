@@ -11,6 +11,7 @@
 
 namespace App\Observers;
 
+use App\Enums\Timesheet\TimesheetStatus;
 use App\Models\Timesheet;
 use App\Services\PushNotifier;
 
@@ -22,7 +23,7 @@ class TimesheetObserver
             return;
         }
 
-        if ($timesheet->status === Timesheet::STATUS_SIGNED) {
+        if ($timesheet->status === TimesheetStatus::Signed) {
             app(PushNotifier::class)->timesheetSigned($timesheet);
         }
     }

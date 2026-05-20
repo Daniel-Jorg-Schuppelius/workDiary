@@ -11,6 +11,9 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Diary\LocationMode;
+use App\Enums\Diary\Mode;
+use App\Enums\Diary\Priority;
 use App\Models\DiaryEntry;
 use App\Models\EntryType;
 use Illuminate\Foundation\Http\FormRequest;
@@ -48,10 +51,10 @@ class SaveDiaryEntryRequest extends FormRequest
 
         // Fallback-Modi: leere Werte werden zu Defaults bzw. null normalisiert.
         if ($this->input('mode') === '' || $this->input('mode') === null) {
-            $this->merge(['mode' => DiaryEntry::MODE_FIXED]);
+            $this->merge(['mode' => Mode::Fixed->value]);
         }
         if ($this->input('location_mode') === '' || $this->input('location_mode') === null) {
-            $this->merge(['location_mode' => DiaryEntry::LOCATION_ONSITE]);
+            $this->merge(['location_mode' => LocationMode::Onsite->value]);
         }
         foreach (['due_date', 'window_start_date', 'window_end_date'] as $key) {
             if ($this->input($key) === '') {
@@ -69,20 +72,12 @@ class SaveDiaryEntryRequest extends FormRequest
         $requiresSchedule = (bool) ($type?->requires_schedule);
         $requiresTour = (bool) ($type?->requires_tour);
 
-        $mode = (string) $this->input('mode', DiaryEntry::MODE_FIXED);
+        $mode = (string) $this->input('mode', Mode::Fixed->value);
         // 'recurring' wird nur vom Generator vergeben; manuell wählbar sind
         // fixed/deadline/window/backlog.
-        $selectableModes = [
-            DiaryEntry::MODE_FIXED,
-            DiaryEntry::MODE_DEADLINE,
-            DiaryEntry::MODE_WINDOW,
-            DiaryEntry::MODE_BACKLOG,
-            DiaryEntry::MODE_RECURRING,
-        ];
-
-        $startRequired = $mode === DiaryEntry::MODE_FIXED;
-        $dueRequired = $mode === DiaryEntry::MODE_DEADLINE;
-        $windowRequired = $mode === DiaryEntry::MODE_WINDOW;
+        $startRequired = $mode === Mode::Fixed->value;
+        $dueRequired = $mode === Mode::Deadline->value;
+        $windowRequired = $mode === Mode::Window->value;
 
         return [
             'content' => ['required', 'string', 'max:65535'],
@@ -91,18 +86,18 @@ class SaveDiaryEntryRequest extends FormRequest
             'start_at' => [$startRequired ? 'required' : 'nullable', 'date'],
             'end_at' => [$startRequired ? 'required' : 'nullable', 'date', 'after_or_equal:start_at'],
 
-            'mode' => ['required', Rule::in($selectableModes)],
+            'mode' => ['required', Rule::enum(Mode::class)],
             'due_date' => [$dueRequired ? 'required' : 'nullable', 'date'],
             'window_start_date' => [$windowRequired ? 'required' : 'nullable', 'date'],
             'window_end_date' => [$windowRequired ? 'required' : 'nullable', 'date', 'after_or_equal:window_start_date'],
-            'location_mode' => ['required', Rule::in(DiaryEntry::LOCATION_MODES)],
+            'location_mode' => ['required', Rule::enum(LocationMode::class)],
             'user_id' => ['nullable', 'integer', 'exists:users,id'],
             'project_id' => ['nullable', 'integer', 'exists:projects,id'],
 
             // Phase 6: typgesteuerte Felder
             'entry_type_id' => ['nullable', 'integer', 'exists:entry_types,id'],
             'title' => ['nullable', 'string', 'max:200'],
-            'priority' => ['nullable', Rule::in(DiaryEntry::PRIORITIES)],
+            'priority' => ['nullable', Rule::enum(Priority::class)],
             'customer_id' => [$requiresCustomer ? 'required' : 'nullable', 'integer', 'exists:customers,id'],
             'assigned_user_id' => ['nullable', 'integer', 'exists:users,id'],
 

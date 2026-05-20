@@ -11,6 +11,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Attendance\AttendanceStatus;
 use App\Models\Attendance;
 use App\Models\User;
 use App\Services\Attendance\AttendanceClockService;
@@ -20,6 +21,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -160,7 +162,7 @@ class AttendanceController extends Controller
             'ended_at' => ['nullable', 'date', 'after:started_at'],
             'break_minutes_manual' => ['nullable', 'integer', 'min:0', 'max:'.(int) setting('validation.attendance.break_minutes_max', 600)],
             'note' => ['nullable', 'string', 'max:'.(int) setting('validation.attendance.note_max', 1000)],
-            'status' => ['nullable', 'string', 'in:'.implode(',', Attendance::STATUSES)],
+            'status' => ['nullable', Rule::enum(AttendanceStatus::class)],
         ]);
 
         $attendance->fill($data);

@@ -21,6 +21,8 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\Project\ProjectStatus;
 
 class FlexCalculatorTest extends TestCase
 {
@@ -40,7 +42,7 @@ class FlexCalculatorTest extends TestCase
         $this->project = Project::create([
             'organization_id' => $this->organization->id,
             'name' => 'Flex',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'created_by' => $this->user->id,
         ]);
         WorkSchedule::create([
@@ -68,7 +70,7 @@ class FlexCalculatorTest extends TestCase
             'user_id' => $this->user->id,
             'date' => '2030-01-02',
             'minutes' => 540, // 9h
-            'kind' => TimeEntry::KIND_WORK,
+            'kind' => TimeEntryKind::Work->value,
         ]);
 
         $calc = app(FlexCalculator::class);
@@ -96,7 +98,7 @@ class FlexCalculatorTest extends TestCase
             'user_id' => $this->user->id,
             'date' => '2030-03-04', // Montag
             'minutes' => 480,
-            'kind' => TimeEntry::KIND_WORK,
+            'kind' => TimeEntryKind::Work->value,
         ]);
         $calc = app(FlexCalculator::class);
         $m = $calc->monthlyBalance($this->user, 2030, 3);

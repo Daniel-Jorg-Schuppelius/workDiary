@@ -12,6 +12,7 @@
 namespace Database\Factories;
 
 use App\Models\User;
+use App\Enums\User\UserRole;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -65,7 +66,7 @@ class UserFactory extends Factory {
 
     public function admin(): static {
         return $this->afterCreating(function (User $user): void {
-            $user->syncRoles([User::ROLE_ADMIN]);
+            $user->syncRoles([UserRole::Admin->value]);
         });
     }
 
@@ -74,13 +75,13 @@ class UserFactory extends Factory {
             'name' => 'TestUser ' . Str::random(8),
             'email' => 'user-' . Str::random(10) . '@example.test',
         ])->afterCreating(function (User $user): void {
-            $user->syncRoles([User::ROLE_USER]);
+            $user->syncRoles([UserRole::User->value]);
         });
     }
 
     public function callcenter(): static {
         return $this->afterCreating(function (User $user): void {
-            $user->syncRoles([User::ROLE_CALLCENTER]);
+            $user->syncRoles([UserRole::Callcenter->value]);
         });
     }
 }

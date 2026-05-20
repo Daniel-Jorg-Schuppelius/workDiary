@@ -35,8 +35,8 @@
                         <span class="label-text">{{ __('Standard-Status für importierte Schichten') }}</span>
                     </label>
                     <select name="default_status" class="select select-bordered w-full">
-                        @foreach (\App\Models\ScheduledShift::$statuses as $key => $label)
-                            <option value="{{ $key }}" @selected($key === 'draft')>{{ $label }}</option>
+                        @foreach (\App\Enums\Shift\ScheduledShiftStatus::cases() as $st)
+                            <option value="{{ $st->value }}" @selected($st->value === 'draft')>{{ $st->label() }}</option>
                         @endforeach
                     </select>
                 </div>

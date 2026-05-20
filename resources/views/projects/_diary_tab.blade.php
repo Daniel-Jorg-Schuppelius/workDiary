@@ -12,9 +12,9 @@
             @php
                 $primary = (int) $entry->project_id === (int) $project->id;
                 $dateLabel = match ($entry->mode) {
-                    \App\Models\DiaryEntry::MODE_DEADLINE => $entry->due_date?->format('d.m.Y'),
-                    \App\Models\DiaryEntry::MODE_WINDOW => $entry->window_start_date?->format('d.m.Y'),
-                    \App\Models\DiaryEntry::MODE_BACKLOG => __('Backlog'),
+                    \App\Enums\Diary\Mode::Deadline => $entry->due_date?->format('d.m.Y'),
+                    \App\Enums\Diary\Mode::Window => $entry->window_start_date?->format('d.m.Y'),
+                    \App\Enums\Diary\Mode::Backlog => __('Backlog'),
                     default => $entry->start_at?->format('d.m.Y H:i'),
                 };
             @endphp
@@ -26,7 +26,7 @@
                             <span>·</span>
                         @endif
                         <span>{{ $entry->user->name ?? '—' }}</span>
-                        @if ($entry->mode && $entry->mode !== \App\Models\DiaryEntry::MODE_FIXED)
+                        @if ($entry->mode && $entry->mode !== \App\Enums\Diary\Mode::Fixed)
                             <span class="badge badge-xs badge-outline">{{ $entry->modeLabel() }}</span>
                         @endif
                         @if (! $primary)

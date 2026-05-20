@@ -11,6 +11,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Vacation\VacationStatus;
+use App\Enums\Vacation\VacationType;
 use App\Models\User;
 use App\Models\Vacation;
 use App\Support\LookupCache;
@@ -18,6 +20,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class VacationController extends Controller
@@ -52,7 +55,7 @@ class VacationController extends Controller
         if (! $auth->isAdmin() || empty($data['user_id'])) {
             $data['user_id'] = $auth->id;
         }
-        $data['status'] = Vacation::STATUS_PENDING;
+        $data['status'] = VacationStatus::Pending;
 
         Vacation::create($data);
 
@@ -118,7 +121,7 @@ class VacationController extends Controller
         $auth = Auth::user();
 
         $vacation->update([
-            'status' => Vacation::STATUS_APPROVED,
+            'status' => VacationStatus::Approved,
             'decided_by' => $auth->id,
             'decided_at' => now(),
             'reject_reason' => null,
@@ -139,7 +142,7 @@ class VacationController extends Controller
         $auth = Auth::user();
 
         $vacation->update([
-            'status' => Vacation::STATUS_REJECTED,
+            'status' => VacationStatus::Rejected,
             'decided_by' => $auth->id,
             'decided_at' => now(),
             'reject_reason' => $data['reject_reason'] ?? null,
@@ -153,7 +156,7 @@ class VacationController extends Controller
         Gate::authorize('cancel', $vacation);
 
         $vacation->update([
-            'status' => Vacation::STATUS_CANCELLED,
+            'status' => VacationStatus::Cancelled,
             'decided_by' => null,
             'decided_at' => null,
         ]);
@@ -170,7 +173,11 @@ class VacationController extends Controller
             'user_id' => ['nullable', 'exists:users,id'],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'gte:start_date'],
-            'type' => ['required', 'in:'.implode(',', Vacation::$types)],
+            'type' => ['required', Rule::enum(VacationType::class)->only([
+                VacationType::Vacation,
+                VacationType::Special,
+                VacationType::Unpaid,
+            ])],
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
     }

@@ -11,6 +11,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Activity\ActivityCategoryType;
 use App\Models\ActivityCategory;
 use App\Models\Organization;
 use Illuminate\Database\Seeder;
@@ -40,7 +41,7 @@ class ActivityCategorySeeder extends Seeder
     }
 
     /**
-     * @return list<array{key:string,label:string,activity_type:string,billable_default:bool,counts_as_work:bool,color:string|null,icon:string|null,description:string|null}>
+     * @return list<array{key:string,label:string,activity_type:ActivityCategoryType,billable_default:bool,counts_as_work:bool,color:string|null,icon:string|null,description:string|null}>
      */
     private function defaults(): array
     {
@@ -48,7 +49,7 @@ class ActivityCategorySeeder extends Seeder
             [
                 'key' => 'administration',
                 'label' => 'Verwaltung',
-                'activity_type' => ActivityCategory::TYPE_ADMIN,
+                'activity_type' => ActivityCategoryType::Admin,
                 'billable_default' => false,
                 'counts_as_work' => true,
                 'color' => '#6b7280',
@@ -58,7 +59,7 @@ class ActivityCategorySeeder extends Seeder
             [
                 'key' => 'team_meeting',
                 'label' => 'Teambesprechung',
-                'activity_type' => ActivityCategory::TYPE_MEETING,
+                'activity_type' => ActivityCategoryType::Meeting,
                 'billable_default' => false,
                 'counts_as_work' => true,
                 'color' => '#2563eb',
@@ -68,7 +69,7 @@ class ActivityCategorySeeder extends Seeder
             [
                 'key' => 'training',
                 'label' => 'Schulung / Weiterbildung',
-                'activity_type' => ActivityCategory::TYPE_TRAINING,
+                'activity_type' => ActivityCategoryType::Training,
                 'billable_default' => false,
                 'counts_as_work' => true,
                 'color' => '#0ea5e9',
@@ -78,7 +79,7 @@ class ActivityCategorySeeder extends Seeder
             [
                 'key' => 'internal_work',
                 'label' => 'Interne Arbeiten',
-                'activity_type' => ActivityCategory::TYPE_INTERNAL,
+                'activity_type' => ActivityCategoryType::Internal,
                 'billable_default' => false,
                 'counts_as_work' => true,
                 'color' => '#16a34a',
@@ -88,7 +89,7 @@ class ActivityCategorySeeder extends Seeder
             [
                 'key' => 'travel',
                 'label' => 'Anfahrt / Reisezeit',
-                'activity_type' => ActivityCategory::TYPE_TRAVEL,
+                'activity_type' => ActivityCategoryType::Travel,
                 'billable_default' => false,
                 'counts_as_work' => true,
                 'color' => '#f59e0b',
@@ -98,7 +99,7 @@ class ActivityCategorySeeder extends Seeder
             [
                 'key' => 'standby',
                 'label' => 'Bereitschaftsdienst',
-                'activity_type' => ActivityCategory::TYPE_STANDBY,
+                'activity_type' => ActivityCategoryType::Standby,
                 'billable_default' => false,
                 'counts_as_work' => true,
                 'color' => '#a855f7',
@@ -108,7 +109,7 @@ class ActivityCategorySeeder extends Seeder
             [
                 'key' => 'break',
                 'label' => 'Pause',
-                'activity_type' => ActivityCategory::TYPE_BREAK,
+                'activity_type' => ActivityCategoryType::Break_,
                 'billable_default' => false,
                 'counts_as_work' => false,
                 'color' => '#9ca3af',
@@ -118,7 +119,7 @@ class ActivityCategorySeeder extends Seeder
             [
                 'key' => 'sick_paid',
                 'label' => 'Krank (bezahlt)',
-                'activity_type' => ActivityCategory::TYPE_ABSENCE,
+                'activity_type' => ActivityCategoryType::Absence,
                 'billable_default' => false,
                 'counts_as_work' => false,
                 'color' => '#ef4444',

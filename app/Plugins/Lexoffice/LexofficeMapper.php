@@ -155,7 +155,7 @@ class LexofficeMapper
         $currency = $customer->currency ?: ($defaults['default_currency'] ?? 'EUR');
 
         $items = $entries
-            ->groupBy(fn (TimeEntry $e) => ($e->project_id ?? 0).'|'.((string) ($e->kind ?? '')))
+            ->groupBy(fn (TimeEntry $e) => ($e->project_id ?? 0).'|'.$e->kind->value)
             ->map(function (Collection $group) use ($vatRate, $from, $to) {
                 /** @var TimeEntry $first */
                 $first = $group->first();
@@ -166,14 +166,14 @@ class LexofficeMapper
                 $revenue = round((float) $group->sum('rate'), 2);
                 $unitPrice = $hours > 0 ? round($revenue / $hours, 2) : 0.0;
 
-                $rule = $project?->resolveBillingRule($kind);
+                $rule = $project?->resolveBillingRule($kind->value);
 
                 $type = $rule?->item_type ?: 'service';
                 $unitName = $rule?->unit_name ?: 'Stunde';
                 $taxRate = $rule?->vat_rate !== null ? (float) $rule->vat_rate : $vatRate;
                 $netAmount = $rule?->net_unit_price !== null ? (float) $rule->net_unit_price : $unitPrice;
 
-                $kindSuffix = $kind ? ' ['.$kind.']' : '';
+                $kindSuffix = ' ['.$kind->value.']';
                 $name = sprintf('%s%s (%s – %s)', $projectName, $kindSuffix, $from->format('d.m.Y'), $to->format('d.m.Y'));
 
                 $item = [

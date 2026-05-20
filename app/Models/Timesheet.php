@@ -11,6 +11,8 @@
 
 namespace App\Models;
 
+use App\Enums\Timesheet\TimesheetKind;
+use App\Enums\Timesheet\TimesheetStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Concerns\HasAttachments;
@@ -28,9 +30,9 @@ use Illuminate\Support\Carbon;
  * @property int|null $organization_id
  * @property int|null $project_id
  * @property int $user_id
- * @property string $kind
+ * @property TimesheetKind $kind
  * @property Carbon $work_date
- * @property string $status
+ * @property TimesheetStatus $status
  * @property string|null $customer_name
  * @property string|null $customer_role
  * @property string|null $customer_email
@@ -63,29 +65,6 @@ class Timesheet extends Model
     {
         parent::__construct($attributes);
     }
-
-    public const STATUS_DRAFT = 'draft';
-
-    public const STATUS_SUBMITTED = 'submitted';
-
-    public const STATUS_SIGNED = 'signed';
-
-    public const STATUS_LOCKED = 'locked';
-
-    /** @var array<int, string> */
-    public const STATUSES = [
-        self::STATUS_DRAFT,
-        self::STATUS_SUBMITTED,
-        self::STATUS_SIGNED,
-        self::STATUS_LOCKED,
-    ];
-
-    public const KIND_PROJECT = 'project';
-
-    public const KIND_PERSONAL_DAY = 'personal_day';
-
-    /** @var array<int, string> */
-    public const KINDS = [self::KIND_PROJECT, self::KIND_PERSONAL_DAY];
 
     protected $fillable = [
         'organization_id',
@@ -124,6 +103,8 @@ class Timesheet extends Model
         'entries_total_minutes' => 'integer',
         'untracked_minutes' => 'integer',
         'totals_material_net' => 'decimal:2',
+        'kind' => TimesheetKind::class,
+        'status' => TimesheetStatus::class,
     ];
 
     /** @return BelongsTo<Project, $this> */
@@ -186,17 +167,17 @@ class Timesheet extends Model
      */
     public function scopeUnsigned(Builder $q): Builder
     {
-        return $q->whereIn('status', [self::STATUS_DRAFT, self::STATUS_SUBMITTED]);
+        return $q->whereIn('status', [TimesheetStatus::Draft, TimesheetStatus::Submitted]);
     }
 
     public function isSigned(): bool
     {
-        return in_array($this->status, [self::STATUS_SIGNED, self::STATUS_LOCKED], true);
+        return in_array($this->status, [TimesheetStatus::Signed, TimesheetStatus::Locked], true);
     }
 
     public function isLocked(): bool
     {
-        return $this->status === self::STATUS_LOCKED;
+        return $this->status === TimesheetStatus::Locked;
     }
 
     public function canEdit(): bool
@@ -257,28 +238,22 @@ class Timesheet extends Model
 
     public function isPersonalDay(): bool
     {
-        return $this->kind === self::KIND_PERSONAL_DAY;
+        return $this->kind === TimesheetKind::PersonalDay;
     }
 
     public function statusLabel(): string
     {
         return match ($this->status) {
-            self::STATUS_DRAFT => __('Entwurf'),
-            self::STATUS_SUBMITTED => __('Eingereicht'),
-            self::STATUS_SIGNED => $this->hasSignatureEvidence() ? __('Signiert') : __('Eingereicht'),
-            self::STATUS_LOCKED => __('Gesperrt'),
-            default => $this->status,
+            TimesheetStatus::Signed => $this->hasSignatureEvidence() ? __('Signiert') : __('Eingereicht'),
+            default => $this->status->label(),
         };
     }
 
     public function statusTone(): string
     {
         return match ($this->status) {
-            self::STATUS_DRAFT => 'neutral',
-            self::STATUS_SUBMITTED => 'info',
-            self::STATUS_SIGNED => $this->hasSignatureEvidence() ? 'success' : 'info',
-            self::STATUS_LOCKED => 'warning',
-            default => 'ghost',
+            TimesheetStatus::Signed => $this->hasSignatureEvidence() ? 'success' : 'info',
+            default => $this->status->tone(),
         };
     }
 

@@ -17,8 +17,8 @@
         <x-filter-field :label="__('Status')" for="ts-status">
             <select id="ts-status" name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
                 <option value="">{{ __('Alle Status') }}</option>
-                @foreach(\App\Models\Timesheet::STATUSES as $s)
-                    <option value="{{ $s }}" @selected(request('status')===$s)>{{ __(\Illuminate\Support\Str::ucfirst($s)) }}</option>
+                @foreach(\App\Enums\Timesheet\TimesheetStatus::cases() as $s)
+                    <option value="{{ $s->value }}" @selected(request('status')===$s->value)>{{ $s->label() }}</option>
                 @endforeach
             </select>
         </x-filter-field>

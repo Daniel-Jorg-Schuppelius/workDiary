@@ -11,7 +11,8 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Task;
+use App\Enums\Task\TaskPriority;
+use App\Enums\Task\TaskStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -28,8 +29,8 @@ class SaveTaskRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:200'],
             'description' => ['nullable', 'string'],
-            'status' => ['required', Rule::in(Task::STATUSES)],
-            'priority' => ['required', Rule::in(Task::PRIORITIES)],
+            'status' => ['required', Rule::enum(TaskStatus::class)],
+            'priority' => ['required', Rule::enum(TaskPriority::class)],
             'milestone_id' => ['nullable', 'integer', Rule::exists('milestones', 'id')],
             'parent_task_id' => ['nullable', 'integer', Rule::exists('tasks', 'id')],
             'assigned_to' => ['nullable', 'integer', Rule::exists('users', 'id')],

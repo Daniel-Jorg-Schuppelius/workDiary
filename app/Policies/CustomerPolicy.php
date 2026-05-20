@@ -13,6 +13,7 @@ namespace App\Policies;
 
 use App\Models\Customer;
 use App\Models\User;
+use App\Enums\User\UserRole;
 use App\Policies\Concerns\ChecksOwnership;
 use App\Policies\Concerns\HasAdminBypass;
 
@@ -33,7 +34,7 @@ class CustomerPolicy
 
     public function create(User $user): bool
     {
-        return $user->canManageBilling() || $user->hasRole(User::ROLE_USER);
+        return $user->canManageBilling() || $user->hasRole(UserRole::User->value);
     }
 
     public function update(User $user, Customer $customer): bool

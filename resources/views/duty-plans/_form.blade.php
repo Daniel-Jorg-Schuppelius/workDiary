@@ -11,9 +11,9 @@
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Zeitraum-Typ') }} *</label>
         <select name="period_type" class="select select-bordered w-full @error('period_type') select-error @enderror" required>
-            @foreach (\App\Models\DutyPlan::$periodTypes as $pt)
-                <option value="{{ $pt }}" @selected(old('period_type', $plan?->period_type) === $pt)>
-                    {{ __('duty_plan.period.' . $pt) }}
+            @foreach (\App\Enums\Shift\DutyPlanPeriodType::cases() as $pt)
+                <option value="{{ $pt->value }}" @selected(old('period_type', $plan?->period_type?->value) === $pt->value)>
+                    {{ $pt->label() }}
                 </option>
             @endforeach
         </select>

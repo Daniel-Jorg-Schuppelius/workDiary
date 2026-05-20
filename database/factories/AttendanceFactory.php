@@ -15,6 +15,8 @@ use App\Models\Attendance;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
+use App\Enums\Attendance\AttendanceStatus;
+use App\Enums\Attendance\AttendanceSource;
 
 /**
  * @extends Factory<Attendance>
@@ -37,8 +39,8 @@ class AttendanceFactory extends Factory
             'break_minutes_auto' => 0,
             'break_minutes_manual' => 0,
             'duration_minutes' => 0, // recalculated in saving()
-            'source' => Attendance::SOURCE_CLOCK,
-            'status' => Attendance::STATUS_CLOSED,
+            'source' => AttendanceSource::Clock->value,
+            'status' => AttendanceStatus::Closed->value,
             'note' => null,
         ];
     }
@@ -47,7 +49,7 @@ class AttendanceFactory extends Factory
     {
         return $this->state(fn () => [
             'ended_at' => null,
-            'status' => Attendance::STATUS_OPEN,
+            'status' => AttendanceStatus::Open->value,
         ]);
     }
 }

@@ -1,8 +1,8 @@
 {{-- Tab: Übersicht — erwartet: $project, $milestones, $taskStats, $totalMinutes, $monthMinutes, $myMinutes, $nextMilestone, $entries --}}
 @php
-    $openTasks     = (int) ($taskStats->get(\App\Models\Task::STATUS_OPEN) ?? 0);
-    $inProgTasks   = (int) ($taskStats->get(\App\Models\Task::STATUS_IN_PROGRESS) ?? 0);
-    $doneTasks     = (int) ($taskStats->get(\App\Models\Task::STATUS_DONE) ?? 0);
+    $openTasks     = (int) ($taskStats->get(\App\Enums\Task\TaskStatus::Open->value) ?? 0);
+    $inProgTasks   = (int) ($taskStats->get(\App\Enums\Task\TaskStatus::InProgress->value) ?? 0);
+    $doneTasks     = (int) ($taskStats->get(\App\Enums\Task\TaskStatus::Done->value) ?? 0);
     $totalTasks    = $openTasks + $inProgTasks + $doneTasks;
     $totalH        = intdiv($totalMinutes, 60);
     $totalM        = $totalMinutes % 60;
@@ -43,7 +43,7 @@
             @foreach ($milestones as $milestone)
                 @php
                     $mTotal = $milestone->tasks->count();
-                    $mDone  = $milestone->tasks->where('status', \App\Models\Task::STATUS_DONE)->count();
+                    $mDone  = $milestone->tasks->where('status', \App\Enums\Task\TaskStatus::Done)->count();
                     $pct    = $mTotal > 0 ? round($mDone / $mTotal * 100) : 0;
                 @endphp
                 <li class="flex flex-wrap items-center gap-3 px-4 py-3">
@@ -119,9 +119,9 @@
                 @foreach ($entries->take(5) as $entry)
                     @php
                         $dateLabel = match ($entry->mode) {
-                            \App\Models\DiaryEntry::MODE_DEADLINE => $entry->due_date?->format('d.m.Y'),
-                            \App\Models\DiaryEntry::MODE_WINDOW => $entry->window_start_date?->format('d.m.Y'),
-                            \App\Models\DiaryEntry::MODE_BACKLOG => __('Backlog'),
+                            \App\Enums\Diary\Mode::Deadline => $entry->due_date?->format('d.m.Y'),
+                            \App\Enums\Diary\Mode::Window => $entry->window_start_date?->format('d.m.Y'),
+                            \App\Enums\Diary\Mode::Backlog => __('Backlog'),
                             default => $entry->start_at?->format('d.m.Y H:i'),
                         };
                     @endphp
@@ -133,7 +133,7 @@
                                     <span>·</span>
                                 @endif
                                 <span>{{ $entry->user->name ?? '—' }}</span>
-                                @if ($entry->mode && $entry->mode !== \App\Models\DiaryEntry::MODE_FIXED)
+                                @if ($entry->mode && $entry->mode !== \App\Enums\Diary\Mode::Fixed)
                                     <span class="badge badge-xs badge-outline">{{ $entry->modeLabel() }}</span>
                                 @endif
                             </div>

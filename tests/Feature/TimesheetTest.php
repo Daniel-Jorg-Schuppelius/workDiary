@@ -11,6 +11,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Timesheet\TimesheetStatus;
 use App\Mail\TimesheetSignedMail;
 use App\Models\Material;
 use App\Models\Project;
@@ -23,6 +24,8 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\Project\ProjectStatus;
 
 class TimesheetTest extends TestCase
 {
@@ -46,7 +49,7 @@ class TimesheetTest extends TestCase
         $this->project = Project::create([
             'organization_id' => $this->organization->id,
             'name' => 'TS-Projekt',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'created_by' => $this->admin->id,
         ]);
     }
@@ -66,7 +69,7 @@ class TimesheetTest extends TestCase
             'project_id' => $this->project->id,
             'user_id' => $this->user->id,
             'work_date' => '2030-02-01 00:00:00',
-            'status' => Timesheet::STATUS_DRAFT,
+            'status' => TimesheetStatus::Draft->value,
             'customer_name' => 'Kunde GmbH',
         ]);
     }
@@ -80,7 +83,7 @@ class TimesheetTest extends TestCase
             'user_id' => $this->user->id,
             'date' => $ts->work_date,
             'minutes' => 90,
-            'kind' => TimeEntry::KIND_WORK,
+            'kind' => TimeEntryKind::Work->value,
         ]);
 
         $this->assertSame(90, (int) $ts->fresh()->totals_minutes);
@@ -127,7 +130,7 @@ class TimesheetTest extends TestCase
             ->assertRedirect();
 
         $ts->refresh();
-        $this->assertSame(Timesheet::STATUS_SIGNED, $ts->status);
+        $this->assertSame(TimesheetStatus::Signed, $ts->status);
         $this->assertNotNull($ts->signed_at);
         $this->assertNotNull($ts->signature_attachment_id);
         $this->assertFalse($ts->canEdit());
@@ -137,7 +140,7 @@ class TimesheetTest extends TestCase
 
     public function test_signed_timesheet_blocks_entry_changes(): void
     {
-        $ts = $this->makeTimesheet(['status' => Timesheet::STATUS_SIGNED]);
+        $ts = $this->makeTimesheet(['status' => TimesheetStatus::Signed->value]);
 
         $this->actingAs($this->user)
             ->post(route('projects.timesheets.entries.store', [$this->project, $ts]), [
@@ -149,19 +152,19 @@ class TimesheetTest extends TestCase
 
     public function test_admin_can_lock_and_unlock_timesheet(): void
     {
-        $ts = $this->makeTimesheet(['status' => Timesheet::STATUS_SIGNED]);
+        $ts = $this->makeTimesheet(['status' => TimesheetStatus::Signed->value]);
 
         $this->actingAs($this->admin)
             ->post(route('projects.timesheets.lock', [$this->project, $ts]))
             ->assertRedirect();
 
-        $this->assertSame(Timesheet::STATUS_LOCKED, $ts->fresh()->status);
+        $this->assertSame(TimesheetStatus::Locked, $ts->fresh()->status);
 
         $this->actingAs($this->admin)
             ->post(route('projects.timesheets.unlock', [$this->project, $ts]))
             ->assertRedirect();
 
-        $this->assertSame(Timesheet::STATUS_SIGNED, $ts->fresh()->status);
+        $this->assertSame(TimesheetStatus::Signed, $ts->fresh()->status);
     }
 
     public function test_public_signature_via_magic_token(): void
@@ -178,7 +181,7 @@ class TimesheetTest extends TestCase
         ])->assertRedirect(route('timesheets.public-thanks'));
 
         $ts->refresh();
-        $this->assertSame(Timesheet::STATUS_SIGNED, $ts->status);
+        $this->assertSame(TimesheetStatus::Signed, $ts->status);
         $this->assertNull($ts->magic_token);
     }
 
@@ -197,7 +200,7 @@ class TimesheetTest extends TestCase
             'project_id' => $this->project->id,
             'user_id' => $this->user->id,
             'work_date' => '2030-02-15',
-            'status' => Timesheet::STATUS_DRAFT,
+            'status' => TimesheetStatus::Draft->value,
         ], $attrs));
     }
 

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace App\Services\Schedule;
 
 use App\Models\DutyPlan;
+use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\ScheduledShift;
 use App\Models\ShiftType;
 use App\Services\CoverageService;
@@ -83,7 +84,7 @@ class OpenSlotService
     {
         $actualByDate = [];
         foreach ($shifts as $shift) {
-            if ($shift->status === ScheduledShift::STATUS_CANCELLED) {
+            if ($shift->status === ScheduledShiftStatus::Cancelled) {
                 continue;
             }
             if ($shift->shift_type_id === null) {

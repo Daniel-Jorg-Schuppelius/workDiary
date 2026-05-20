@@ -14,6 +14,7 @@ namespace Database\Factories;
 use App\Models\SickLeave;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Enums\Sickness\SickLeaveKind;
 
 /**
  * @extends Factory<SickLeave>
@@ -31,7 +32,7 @@ class SickLeaveFactory extends Factory
             'user_id' => User::factory(),
             'start_date' => $start->format('Y-m-d'),
             'end_date' => $end->format('Y-m-d'),
-            'kind' => SickLeave::KIND_INITIAL,
+            'kind' => SickLeaveKind::Initial->value,
             'follow_up_for_id' => null,
             'au_number' => null,
             'doctor_name' => null,
@@ -52,7 +53,7 @@ class SickLeaveFactory extends Factory
 
             return [
                 'user_id' => $previous->user_id,
-                'kind' => SickLeave::KIND_FOLLOW_UP,
+                'kind' => SickLeaveKind::FollowUp->value,
                 'follow_up_for_id' => $previous->id,
                 'start_date' => $start->format('Y-m-d'),
                 'end_date' => $end->format('Y-m-d'),

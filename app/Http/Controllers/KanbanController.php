@@ -76,7 +76,7 @@ class KanbanController extends Controller
         $query->whereDate('start_at', '<=', $range['to']->toDateString());
 
         $entries = $query->limit(self::MAX_ENTRIES)->get();
-        $byStatus = $entries->groupBy(fn (DiaryEntry $e) => (int) $e->status);
+        $byStatus = $entries->groupBy(fn (DiaryEntry $e) => $e->status->value);
 
         return view('kanban.index', [
             'columns' => self::columns(),

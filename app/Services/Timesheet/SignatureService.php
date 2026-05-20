@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
+use App\Enums\Timesheet\TimesheetStatus;
 
 class SignatureService
 {
@@ -68,7 +69,7 @@ class SignatureService
             'signed_ip' => $ip,
             'signature_attachment_id' => $attachment->id,
             'signature_hash' => $hash,
-            'status' => Timesheet::STATUS_SIGNED,
+            'status' => TimesheetStatus::Signed->value,
             'magic_token' => null,
             'magic_expires_at' => null,
         ])->save();
@@ -85,7 +86,7 @@ class SignatureService
     public function lock(Timesheet $timesheet, User $admin): Timesheet
     {
         $timesheet->forceFill([
-            'status' => Timesheet::STATUS_LOCKED,
+            'status' => TimesheetStatus::Locked->value,
             'locked_at' => now(),
             'locked_by' => $admin->id,
         ])->save();
@@ -96,7 +97,7 @@ class SignatureService
     public function unlock(Timesheet $timesheet): Timesheet
     {
         $timesheet->forceFill([
-            'status' => Timesheet::STATUS_SIGNED,
+            'status' => TimesheetStatus::Signed->value,
             'locked_at' => null,
             'locked_by' => null,
         ])->save();

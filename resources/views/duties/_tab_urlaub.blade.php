@@ -1,5 +1,6 @@
 {{-- Urlaub: Tabelle --}}
 <?php $p = array_merge($filters ?? [], ['tab' => 'urlaub']); ?>
+use App\Enums\Vacation\VacationStatus;
 <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm"
          table-sort="server"
          :route="route('duties.index')"
@@ -47,7 +48,7 @@
                     <td>
                         <div class="flex items-center gap-1">
                             @can('decide', $v)
-                                @if ($v->status === \App\Models\Vacation::STATUS_PENDING)
+                                @if ($v->status === \App\Models\VacationStatus::Pending->value)
                                     <form method="POST" action="{{ route('vacations.approve', $v) }}" class="inline">
                                         @csrf @method('PATCH')
                                         <x-icon-btn icon="check" tone="success" type="submit" :label="__('Genehmigen')" />

@@ -55,7 +55,7 @@
                             @endif
                         </td>
                         <td>
-                            <span class="badge badge-ghost badge-sm">{{ __($log->vehicle) }}</span>
+                            <span class="badge badge-ghost badge-sm">{{ $log->vehicle->label() }}</span>
                         </td>
                         <td class="text-right">
                             {{ number_format((float) $log->reimbursement_total, 2, ',', '.') }} €

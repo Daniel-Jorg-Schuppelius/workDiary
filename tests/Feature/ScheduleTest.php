@@ -16,6 +16,7 @@ use App\Models\User;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Enums\Shift\ScheduledShiftStatus;
 
 class ScheduleTest extends TestCase
 {
@@ -154,7 +155,7 @@ class ScheduleTest extends TestCase
         $this->actingAs($user)
             ->patchJson(route('schedule.shifts.confirm', $shift))
             ->assertOk()
-            ->assertJsonPath('status', ScheduledShift::STATUS_CONFIRMED);
+            ->assertJsonPath('status', ScheduledShiftStatus::Confirmed->value);
     }
 
     public function test_user_cannot_confirm_other_users_shift(): void

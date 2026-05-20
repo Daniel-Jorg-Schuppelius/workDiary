@@ -13,6 +13,7 @@ namespace Tests\Feature;
 
 use App\Models\DiaryEntry;
 use App\Models\User;
+use App\Enums\User\UserRole;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -32,7 +33,7 @@ class RolesTest extends TestCase
         $admin = User::factory()->admin()->create();
 
         $this->assertTrue($admin->isAdmin());
-        $this->assertTrue($admin->hasRole(User::ROLE_ADMIN));
+        $this->assertTrue($admin->hasRole(UserRole::Admin->value));
     }
 
     public function test_user_factory_user_state_assigns_user_role(): void
@@ -40,7 +41,7 @@ class RolesTest extends TestCase
         $user = User::factory()->user()->create();
 
         $this->assertFalse($user->isAdmin());
-        $this->assertTrue($user->hasRole(User::ROLE_USER));
+        $this->assertTrue($user->hasRole(UserRole::User->value));
     }
 
     public function test_owner_can_update_and_delete_own_entry(): void

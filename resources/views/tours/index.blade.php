@@ -10,8 +10,8 @@
             <x-filter-field :label="__('Status')" for="tours-status">
                 <select id="tours-status" name="status" class="select select-bordered select-sm">
                     <option value="">{{ __('alle') }}</option>
-                    @foreach ($statuses as $st)
-                        <option value="{{ $st }}" @selected($selectedStatus === $st)>{{ __($st) }}</option>
+                    @foreach ($statuses as $value => $label)
+                        <option value="{{ $value }}" @selected($selectedStatus === $value)>{{ $label }}</option>
                     @endforeach
                 </select>
             </x-filter-field>
@@ -69,7 +69,7 @@
                         </td>
                         <td class="text-right">{{ number_format((float) $tour->planned_distance_km, 2, ',', '.') }}</td>
                         <td class="text-right">{{ $tour->planned_duration_minutes }}</td>
-                        <td><span class="badge badge-ghost badge-sm">{{ __($tour->status) }}</span></td>
+                        <td><span class="badge badge-ghost badge-sm">{{ $tour->status?->label() }}</span></td>
                         <td class="text-right">
                             <x-icon-btn icon="edit"
                                         :href="route('tours.edit', $tour)"

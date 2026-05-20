@@ -93,9 +93,9 @@
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('Status') }}</label>
                 <select name="status" class="select select-bordered w-full">
-                    @foreach (\App\Models\Project::STATUSES as $status)
-                        <option value="{{ $status }}" @selected(old('status', $project?->status ?? 'active') === $status)>
-                            {{ ['active' => __('Aktiv'), 'paused' => __('Pausiert'), 'archived' => __('Archiviert')][$status] }}
+                    @foreach (\App\Enums\Project\ProjectStatus::options() as $value => $label)
+                        <option value="{{ $value }}" @selected(old('status', $project?->status?->value ?? \App\Enums\Project\ProjectStatus::Active->value) === $value)>
+                            {{ $label }}
                         </option>
                     @endforeach
                 </select>

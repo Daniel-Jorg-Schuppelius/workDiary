@@ -16,6 +16,7 @@ use App\Http\Requests\StoreScheduledShiftRequest;
 use App\Http\Requests\UpdateScheduledShiftRequest;
 use App\Http\Resources\ScheduledShiftResource;
 use App\Models\Organization;
+use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\ScheduledShift;
 use App\Models\ShiftType;
 use App\Models\User;
@@ -203,11 +204,11 @@ class ScheduleController extends Controller
             abort(403);
         }
 
-        if ($shift->status !== ScheduledShift::STATUS_PUBLISHED) {
+        if ($shift->status !== ScheduledShiftStatus::Published) {
             return response()->json(['message' => __('Nur veröffentlichte Schichten können bestätigt werden.')], 422);
         }
 
-        $shift->update(['status' => ScheduledShift::STATUS_CONFIRMED, 'updated_by' => $auth->id]);
+        $shift->update(['status' => ScheduledShiftStatus::Confirmed, 'updated_by' => $auth->id]);
         $shift->load(['user:id,name', 'shiftType']);
 
         return response()->json(new ScheduledShiftResource($shift));
@@ -221,7 +222,7 @@ class ScheduleController extends Controller
             abort(403);
         }
 
-        $shift->update(['status' => ScheduledShift::STATUS_PUBLISHED, 'updated_by' => $auth->id]);
+        $shift->update(['status' => ScheduledShiftStatus::Published, 'updated_by' => $auth->id]);
         $shift->load(['user:id,name', 'shiftType']);
 
         return response()->json(new ScheduledShiftResource($shift));

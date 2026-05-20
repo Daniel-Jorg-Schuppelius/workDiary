@@ -11,6 +11,7 @@
 
 namespace App\Models;
 
+use App\Enums\Tour\TourStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
 use Database\Factories\TourFactory;
@@ -37,7 +38,7 @@ use Illuminate\Support\Carbon;
  * @property string $planned_distance_km
  * @property int $planned_duration_minutes
  * @property string|null $route_geometry
- * @property string $status
+ * @property TourStatus $status
  * @property string|null $notes
  * @property int|null $created_by
  * @property int|null $updated_by
@@ -51,25 +52,6 @@ class Tour extends Model
 
     /** @use HasFactory<TourFactory> */
     use HasFactory;
-
-    public const STATUS_DRAFT = 'draft';
-
-    public const STATUS_PLANNED = 'planned';
-
-    public const STATUS_IN_PROGRESS = 'in_progress';
-
-    public const STATUS_COMPLETED = 'completed';
-
-    public const STATUS_CANCELLED = 'cancelled';
-
-    /** @var list<string> */
-    public const STATUSES = [
-        self::STATUS_DRAFT,
-        self::STATUS_PLANNED,
-        self::STATUS_IN_PROGRESS,
-        self::STATUS_COMPLETED,
-        self::STATUS_CANCELLED,
-    ];
 
     protected $fillable = [
         'organization_id',
@@ -101,6 +83,7 @@ class Tour extends Model
         'end_lng' => 'decimal:7',
         'planned_distance_km' => 'decimal:2',
         'planned_duration_minutes' => 'integer',
+        'status' => TourStatus::class,
     ];
 
     /** @return BelongsTo<User, $this> */

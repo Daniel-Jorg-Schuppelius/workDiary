@@ -11,6 +11,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\TimeEntry\TimeEntryActivityType;
 use App\Models\TimeEntry;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
@@ -82,13 +83,13 @@ class SaveAdminTimeEntryRequest extends FormRequest
             'date' => ['required', 'date'],
             'minutes' => ['required', 'integer', 'min:1', 'max:1440'],
             'activity_type' => ['required', 'string', Rule::in([
-                TimeEntry::ACTIVITY_ADMIN,
-                TimeEntry::ACTIVITY_TRAVEL,
-                TimeEntry::ACTIVITY_TRAINING,
-                TimeEntry::ACTIVITY_MEETING,
-                TimeEntry::ACTIVITY_INTERNAL,
-                TimeEntry::ACTIVITY_BREAK,
-                TimeEntry::ACTIVITY_OTHER,
+                TimeEntryActivityType::Admin->value,
+                TimeEntryActivityType::Travel->value,
+                TimeEntryActivityType::Training->value,
+                TimeEntryActivityType::Meeting->value,
+                TimeEntryActivityType::Internal->value,
+                TimeEntryActivityType::Break_->value,
+                TimeEntryActivityType::Other->value,
             ])],
             'activity_category_id' => ['nullable', 'integer', Rule::exists('activity_categories', 'id')],
             'attendance_id' => ['nullable', 'integer', Rule::exists('attendances', 'id')],

@@ -6,12 +6,8 @@
     $dialogUrl = ($isEdit ? route('vacations.edit', $vacation) : route('vacations.create')) . '?dialog=1';
 
     $selectedUser = (int) old('user_id', $vacation?->user_id ?? auth()->id());
-    $typeOptions  = [
-        \App\Models\Vacation::TYPE_VACATION => __('Urlaub'),
-        \App\Models\Vacation::TYPE_SICK     => __('Krank'),
-        \App\Models\Vacation::TYPE_SPECIAL  => __('Sonderurlaub'),
-        \App\Models\Vacation::TYPE_UNPAID   => __('Unbezahlt'),
-    ];
+    $typeOptions  = \App\Enums\Vacation\VacationType::options();
+    $defaultType  = \App\Enums\Vacation\VacationType::Vacation->value;
 @endphp
 
 <x-modal
@@ -46,7 +42,7 @@
                 <label class="fieldset-label" for="vac-type">{{ __('Typ') }}</label>
                 <select id="vac-type" name="type" class="select select-bordered w-full">
                     @foreach ($typeOptions as $val => $label)
-                        <option value="{{ $val }}" @selected(old('type', $vacation?->type ?? \App\Models\Vacation::TYPE_VACATION) === $val)>{{ $label }}</option>
+                        <option value="{{ $val }}" @selected(old('type', $vacation?->type?->value ?? $defaultType) === $val)>{{ $label }}</option>
                     @endforeach
                 </select>
             </div>

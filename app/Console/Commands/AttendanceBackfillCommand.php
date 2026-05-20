@@ -16,6 +16,8 @@ use App\Models\TimeEntry;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use App\Enums\Attendance\AttendanceStatus;
+use App\Enums\Attendance\AttendanceSource;
 
 /**
  * Backfills attendance sessions from existing TimeEntries so that the new
@@ -79,8 +81,8 @@ class AttendanceBackfillCommand extends Command
                     'started_at' => $start,
                     'ended_at' => $end,
                     'date' => $start->startOfDay(),
-                    'source' => Attendance::SOURCE_IMPORT,
-                    'status' => Attendance::STATUS_CLOSED,
+                    'source' => AttendanceSource::Import->value,
+                    'status' => AttendanceStatus::Closed->value,
                     'note' => 'Backfilled from existing time entries.',
                 ]);
 

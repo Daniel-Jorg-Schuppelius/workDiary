@@ -11,6 +11,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Diary\Priority;
 use App\Models\DiaryEntry;
 use App\Models\EntryType;
 use App\Models\Organization;
@@ -80,7 +81,7 @@ class SaveEntryTypeRequest extends FormRequest
             'allow_tour' => ['boolean'],
             'default_status' => ['required', 'integer', 'in:-1,1,2,3'],
             'default_service_minutes' => ['nullable', 'integer', 'min:0', 'max:10080'],
-            'default_priority' => ['nullable', Rule::in(DiaryEntry::PRIORITIES)],
+            'default_priority' => ['nullable', Rule::enum(Priority::class)],
         ];
     }
 }

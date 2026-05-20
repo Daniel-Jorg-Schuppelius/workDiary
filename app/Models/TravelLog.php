@@ -11,6 +11,7 @@
 
 namespace App\Models;
 
+use App\Enums\Travel\TravelLogVehicle;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
 use Database\Factories\TravelLogFactory;
@@ -41,7 +42,7 @@ use Illuminate\Support\Carbon;
  * @property float|null $to_lat
  * @property float|null $to_lng
  * @property string $distance_km
- * @property string $vehicle
+ * @property TravelLogVehicle $vehicle
  * @property string|null $vehicle_label
  * @property string|null $purpose
  * @property bool $round_trip
@@ -61,31 +62,6 @@ class TravelLog extends Model
 
     /** @use HasFactory<TravelLogFactory> */
     use HasFactory;
-
-    public const VEHICLE_COMPANY = 'company';
-
-    public const VEHICLE_PRIVATE = 'private';
-
-    public const VEHICLE_RENTAL = 'rental';
-
-    public const VEHICLE_PUBLIC = 'public_transport';
-
-    public const VEHICLE_BICYCLE = 'bicycle';
-
-    public const VEHICLE_FOOT = 'foot';
-
-    public const VEHICLE_OTHER = 'other';
-
-    /** @var list<string> */
-    public const VEHICLES = [
-        self::VEHICLE_COMPANY,
-        self::VEHICLE_PRIVATE,
-        self::VEHICLE_RENTAL,
-        self::VEHICLE_PUBLIC,
-        self::VEHICLE_BICYCLE,
-        self::VEHICLE_FOOT,
-        self::VEHICLE_OTHER,
-    ];
 
     protected $fillable = [
         'organization_id',
@@ -133,6 +109,7 @@ class TravelLog extends Model
         'reimbursement_total' => 'decimal:2',
         'round_trip' => 'boolean',
         'reimbursable' => 'boolean',
+        'vehicle' => TravelLogVehicle::class,
     ];
 
     protected static function booted(): void

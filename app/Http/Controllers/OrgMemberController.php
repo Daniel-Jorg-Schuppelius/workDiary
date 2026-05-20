@@ -12,6 +12,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Enums\User\UserRole;
 use App\Support\SortableQuery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -47,7 +48,7 @@ class OrgMemberController extends Controller
 
         $members = $query->paginate(25)->withQueryString();
 
-        $roles = [User::ROLE_ADMIN, User::ROLE_USER, User::ROLE_BUCHHALTUNG];
+        $roles = [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value];
 
         return view('org.members.index', compact('members', 'roles', 'sort', 'dir'));
     }
@@ -56,7 +57,7 @@ class OrgMemberController extends Controller
     {
         Gate::authorize('manage-members');
 
-        $roles = [User::ROLE_ADMIN, User::ROLE_USER, User::ROLE_BUCHHALTUNG];
+        $roles = [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value];
 
         return view('org.members._form_dialog', compact('roles') + ['member' => null, 'isEdit' => false]);
     }
@@ -71,7 +72,7 @@ class OrgMemberController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'role' => ['required', 'in:'.implode(',', [User::ROLE_ADMIN, User::ROLE_USER, User::ROLE_BUCHHALTUNG])],
+            'role' => ['required', 'in:'.implode(',', [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value])],
             'password' => ['required', 'string', 'confirmed', Password::defaults()],
         ]);
 
@@ -95,7 +96,7 @@ class OrgMemberController extends Controller
         Gate::authorize('manage-members');
         $this->ensureSameOrg($member);
 
-        $roles = [User::ROLE_ADMIN, User::ROLE_USER, User::ROLE_BUCHHALTUNG];
+        $roles = [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value];
 
         return view('org.members._form_dialog', compact('member', 'roles') + ['isEdit' => true]);
     }
@@ -108,7 +109,7 @@ class OrgMemberController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$member->id],
-            'role' => ['required', 'in:'.implode(',', [User::ROLE_ADMIN, User::ROLE_USER, User::ROLE_BUCHHALTUNG])],
+            'role' => ['required', 'in:'.implode(',', [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value])],
         ]);
 
         $member->update(['name' => $data['name'], 'email' => $data['email']]);

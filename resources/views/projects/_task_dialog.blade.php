@@ -1,6 +1,7 @@
 {{-- Erwartet: $project, $task (null = neu), $milestones, $parentTasks, $users, $preselectedParentId, $isDialog --}}
 @php
-    use App\Models\Task;
+    use App\Enums\Task\TaskPriority;
+    use App\Enums\Task\TaskStatus;
     $isDialog  = $isDialog ?? false;
     $action    = $task
         ? route('projects.tasks.update', [$project, $task])
@@ -9,8 +10,8 @@
         ? route('projects.tasks.edit', [$project, $task])
         : route('projects.tasks.create', $project)) . '?dialog=1';
 
-    $statusLabels   = [Task::STATUS_OPEN => __('Offen'), Task::STATUS_IN_PROGRESS => __('In Arbeit'), Task::STATUS_DONE => __('Erledigt')];
-    $priorityLabels = [Task::PRIORITY_LOW => __('Niedrig'), Task::PRIORITY_MEDIUM => __('Mittel'), Task::PRIORITY_HIGH => __('Hoch'), Task::PRIORITY_URGENT => __('Dringend')];
+    $statusLabels   = TaskStatus::options();
+    $priorityLabels = TaskPriority::options();
 @endphp
 
 <x-modal
@@ -48,7 +49,7 @@
                 <label class="fieldset-label">{{ __('Status') }}</label>
                 <select name="status" class="select select-bordered w-full">
                     @foreach ($statusLabels as $val => $lbl)
-                        <option value="{{ $val }}" @selected(old('status', $task?->status ?? Task::STATUS_OPEN) === $val)>{{ $lbl }}</option>
+                        <option value="{{ $val }}" @selected(old('status', $task?->status?->value ?? TaskStatus::Open->value) === $val)>{{ $lbl }}</option>
                     @endforeach
                 </select>
             </div>
@@ -57,7 +58,7 @@
                 <label class="fieldset-label">{{ __('Priorität') }}</label>
                 <select name="priority" class="select select-bordered w-full">
                     @foreach ($priorityLabels as $val => $lbl)
-                        <option value="{{ $val }}" @selected(old('priority', $task?->priority ?? Task::PRIORITY_MEDIUM) === $val)>{{ $lbl }}</option>
+                        <option value="{{ $val }}" @selected(old('priority', $task?->priority?->value ?? TaskPriority::Medium->value) === $val)>{{ $lbl }}</option>
                     @endforeach
                 </select>
             </div>

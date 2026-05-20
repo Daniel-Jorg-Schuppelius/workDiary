@@ -11,6 +11,8 @@
 
 namespace App\Models;
 
+use App\Enums\Attendance\AttendanceSource;
+use App\Enums\Attendance\AttendanceStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Services\Timekeeping\BreakRuleEvaluator;
@@ -34,8 +36,8 @@ use Illuminate\Support\Carbon;
  * @property int $break_minutes_auto
  * @property int $break_minutes_manual
  * @property int $duration_minutes
- * @property string $source
- * @property string $status
+ * @property AttendanceSource|null $source
+ * @property AttendanceStatus|null $status
  * @property float|null $started_lat
  * @property float|null $started_lng
  * @property float|null $ended_lat
@@ -57,41 +59,6 @@ class Attendance extends Model
 
     /** @use HasFactory<AttendanceFactory> */
     use HasFactory;
-
-    public const SOURCE_CLOCK = 'clock';
-
-    public const SOURCE_MANUAL = 'manual';
-
-    public const SOURCE_IMPORT = 'import';
-
-    public const SOURCE_AUTO_CLOSE = 'auto_close';
-
-    public const STATUS_OPEN = 'open';
-
-    public const STATUS_CLOSED = 'closed';
-
-    public const STATUS_AUTO_CLOSED = 'auto_closed';
-
-    public const STATUS_ADJUSTED = 'adjusted';
-
-    public const STATUS_CANCELLED = 'cancelled';
-
-    /** @var list<string> */
-    public const SOURCES = [
-        self::SOURCE_CLOCK,
-        self::SOURCE_MANUAL,
-        self::SOURCE_IMPORT,
-        self::SOURCE_AUTO_CLOSE,
-    ];
-
-    /** @var list<string> */
-    public const STATUSES = [
-        self::STATUS_OPEN,
-        self::STATUS_CLOSED,
-        self::STATUS_AUTO_CLOSED,
-        self::STATUS_ADJUSTED,
-        self::STATUS_CANCELLED,
-    ];
 
     protected $fillable = [
         'organization_id',
@@ -128,6 +95,8 @@ class Attendance extends Model
         'started_lng' => 'float',
         'ended_lat' => 'float',
         'ended_lng' => 'float',
+        'source' => AttendanceSource::class,
+        'status' => AttendanceStatus::class,
     ];
 
     protected static function booted(): void
@@ -149,13 +118,13 @@ class Attendance extends Model
                 $breaks = (int) ($a->break_minutes_auto ?? 0)
                     + (int) ($a->break_minutes_manual ?? 0);
                 $a->duration_minutes = max(0, $gross - $breaks);
-                if (in_array($a->status, [self::STATUS_OPEN], true)) {
-                    $a->status = self::STATUS_CLOSED;
+                if ($a->status === AttendanceStatus::Open) {
+                    $a->status = AttendanceStatus::Closed;
                 }
             } else {
                 $a->duration_minutes = 0;
                 if (! $a->status) {
-                    $a->status = self::STATUS_OPEN;
+                    $a->status = AttendanceStatus::Open;
                 }
             }
         });
@@ -196,12 +165,11 @@ class Attendance extends Model
      */
     public function statusLabel(?string $status = null): string
     {
-        $key = $status ?? (string) $this->status;
-        if ($key === '') {
-            return '';
+        if ($status !== null) {
+            return $status === '' ? '' : (string) __('attendance.status.'.$status);
         }
 
-        return (string) __('attendance.status.'.$key);
+        return $this->status?->label() ?? '';
     }
 
     /**
@@ -210,8 +178,8 @@ class Attendance extends Model
     public static function statusLabels(): array
     {
         $labels = [];
-        foreach (self::STATUSES as $status) {
-            $labels[$status] = (string) __('attendance.status.'.$status);
+        foreach (AttendanceStatus::cases() as $status) {
+            $labels[$status->value] = $status->label();
         }
 
         return $labels;
@@ -223,12 +191,11 @@ class Attendance extends Model
      */
     public function sourceLabel(?string $source = null): string
     {
-        $key = $source ?? (string) $this->source;
-        if ($key === '') {
-            return '';
+        if ($source !== null) {
+            return $source === '' ? '' : (string) __('attendance.source.'.$source);
         }
 
-        return (string) __('attendance.source.'.$key);
+        return $this->source?->label() ?? '';
     }
 
     /**

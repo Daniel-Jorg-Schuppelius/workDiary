@@ -11,6 +11,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\Shift\DutyPlanPeriodType;
+use App\Enums\Shift\DutyPlanStatus;
 use App\Models\DutyPlan;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -29,10 +31,10 @@ class DutyPlanFactory extends Factory
 
         return [
             'title' => fake()->sentence(3),
-            'period_type' => fake()->randomElement(DutyPlan::$periodTypes),
+            'period_type' => fake()->randomElement(DutyPlanPeriodType::cases()),
             'from_date' => $from->format('Y-m-d'),
             'to_date' => $to->format('Y-m-d'),
-            'status' => DutyPlan::STATUS_DRAFT,
+            'status' => DutyPlanStatus::Draft,
             'min_staff' => 0,
             'note' => null,
         ];
@@ -40,17 +42,17 @@ class DutyPlanFactory extends Factory
 
     public function draft(): static
     {
-        return $this->state(['status' => DutyPlan::STATUS_DRAFT]);
+        return $this->state(['status' => DutyPlanStatus::Draft]);
     }
 
     public function published(): static
     {
-        return $this->state(['status' => DutyPlan::STATUS_PUBLISHED]);
+        return $this->state(['status' => DutyPlanStatus::Published]);
     }
 
     public function weekly(): static
     {
-        return $this->state(['period_type' => DutyPlan::PERIOD_WEEKLY]);
+        return $this->state(['period_type' => DutyPlanPeriodType::Weekly]);
     }
 
     public function monthly(): static
@@ -59,7 +61,7 @@ class DutyPlanFactory extends Factory
         $to = Carbon::parse($from)->endOfMonth();
 
         return $this->state([
-            'period_type' => DutyPlan::PERIOD_MONTHLY,
+            'period_type' => DutyPlanPeriodType::Monthly,
             'from_date' => $from->format('Y-m-01'),
             'to_date' => $to->format('Y-m-d'),
         ]);

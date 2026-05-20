@@ -11,6 +11,8 @@
 
 namespace App\Models;
 
+use App\Enums\Shift\DutyPlanPeriodType;
+use App\Enums\Shift\DutyPlanStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
 use Carbon\Carbon;
@@ -24,6 +26,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @property Carbon $from_date
  * @property Carbon $to_date
+ * @property DutyPlanStatus $status
+ * @property DutyPlanPeriodType $period_type
  */
 class DutyPlan extends Model
 {
@@ -32,29 +36,6 @@ class DutyPlan extends Model
 
     /** @use HasFactory<DutyPlanFactory> */
     use HasFactory;
-
-    public const STATUS_DRAFT = 'draft';
-
-    public const STATUS_PUBLISHED = 'published';
-
-    public const PERIOD_DAILY = 'daily';
-
-    public const PERIOD_WEEKLY = 'weekly';
-
-    public const PERIOD_MONTHLY = 'monthly';
-
-    /** @var list<string> */
-    public static array $statuses = [
-        self::STATUS_DRAFT,
-        self::STATUS_PUBLISHED,
-    ];
-
-    /** @var list<string> */
-    public static array $periodTypes = [
-        self::PERIOD_DAILY,
-        self::PERIOD_WEEKLY,
-        self::PERIOD_MONTHLY,
-    ];
 
     protected $fillable = [
         'organization_id',
@@ -74,6 +55,8 @@ class DutyPlan extends Model
         'from_date' => 'date',
         'to_date' => 'date',
         'min_staff' => 'integer',
+        'status' => DutyPlanStatus::class,
+        'period_type' => DutyPlanPeriodType::class,
     ];
 
     /** @return BelongsTo<User, $this> */
@@ -102,12 +85,12 @@ class DutyPlan extends Model
 
     public function isDraft(): bool
     {
-        return $this->status === self::STATUS_DRAFT;
+        return $this->status === DutyPlanStatus::Draft;
     }
 
     public function isPublished(): bool
     {
-        return $this->status === self::STATUS_PUBLISHED;
+        return $this->status === DutyPlanStatus::Published;
     }
 
     /**
@@ -118,7 +101,7 @@ class DutyPlan extends Model
      */
     public function scopeDraft(Builder $query): Builder
     {
-        return $query->where('status', self::STATUS_DRAFT);
+        return $query->where('status', DutyPlanStatus::Draft->value);
     }
 
     /**
@@ -129,7 +112,7 @@ class DutyPlan extends Model
      */
     public function scopePublished(Builder $query): Builder
     {
-        return $query->where('status', self::STATUS_PUBLISHED);
+        return $query->where('status', DutyPlanStatus::Published->value);
     }
 
     /**

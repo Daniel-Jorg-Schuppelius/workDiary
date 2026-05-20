@@ -70,8 +70,8 @@
                 <div class="fieldset">
                     <label class="fieldset-label">{{ __('Status') }}</label>
                     <select id="shift-dialog-status" name="status" class="select select-bordered w-full">
-                        @foreach (\App\Models\ScheduledShift::$statuses as $status)
-                            <option value="{{ $status }}">{{ (new \App\Models\ScheduledShift(['status' => $status]))->statusLabel() }}</option>
+                        @foreach (\App\Enums\Shift\ScheduledShiftStatus::cases() as $status)
+                            <option value="{{ $status->value }}">{{ $status->label() }}</option>
                         @endforeach
                     </select>
                 </div>

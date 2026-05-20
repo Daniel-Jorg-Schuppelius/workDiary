@@ -11,6 +11,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\ScheduledShift;
 use App\Models\ShiftType;
 use App\Models\User;
@@ -148,7 +149,7 @@ class ScheduleImportController extends Controller
                         'start_time' => $this->normalizeTime($mapped['start_time'] ?? null),
                         'end_time' => $this->normalizeTime($mapped['end_time'] ?? null),
                         'note' => $mapped['note'] ?? null,
-                        'status' => ScheduledShift::STATUS_DRAFT,
+                        'status' => ScheduledShiftStatus::Draft,
                         'created_by' => $auth->id,
                         'updated_by' => $auth->id,
                     ]

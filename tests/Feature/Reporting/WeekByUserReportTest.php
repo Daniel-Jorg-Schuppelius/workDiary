@@ -19,6 +19,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithGlobalDateRange;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\Project\ProjectStatus;
 
 class WeekByUserReportTest extends TestCase
 {
@@ -39,7 +41,7 @@ class WeekByUserReportTest extends TestCase
         $this->project = Project::create([
             'organization_id' => $this->organization->id,
             'name' => 'Demo',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'created_by' => $this->user->id,
         ]);
     }
@@ -60,7 +62,7 @@ class WeekByUserReportTest extends TestCase
             'date' => '2030-04-01',
             'started_at' => '2030-04-01 09:00:00',
             'ended_at' => '2030-04-01 11:00:00',
-            'kind' => TimeEntry::KIND_WORK,
+            'kind' => TimeEntryKind::Work->value,
         ]);
 
         $response = $this->actingAs($this->user)
@@ -79,7 +81,7 @@ class WeekByUserReportTest extends TestCase
             'date' => '2030-04-01',
             'started_at' => '2030-04-01 09:00:00',
             'ended_at' => '2030-04-01 11:00:00',
-            'kind' => TimeEntry::KIND_WORK,
+            'kind' => TimeEntryKind::Work->value,
         ]);
 
         $response = $this->actingAs($this->user)
@@ -100,7 +102,7 @@ class WeekByUserReportTest extends TestCase
             'date' => '2030-04-01',
             'started_at' => '2030-04-01 09:00:00',
             'ended_at' => '2030-04-01 11:00:00',
-            'kind' => TimeEntry::KIND_WORK,
+            'kind' => TimeEntryKind::Work->value,
         ]);
 
         $response = $this->actingAs($this->user)

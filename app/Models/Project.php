@@ -11,6 +11,9 @@
 
 namespace App\Models;
 
+use App\Enums\Diary\LocationMode;
+use App\Enums\Diary\Status as DiaryStatus;
+use App\Enums\Project\ProjectStatus;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -33,10 +36,10 @@ use Illuminate\Support\Str;
  * @property string|null $description
  * @property string|null $invoice_text
  * @property string|null $color
- * @property string $status
+ * @property ProjectStatus $status
  * @property bool $is_default
  * @property bool $is_maintenance
- * @property string|null $default_location_mode
+ * @property LocationMode|null $default_location_mode
  * @property Carbon|null $starts_on
  * @property Carbon|null $ends_on
  * @property Carbon|null $archived_at
@@ -56,15 +59,6 @@ class Project extends Model {
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_PAUSED = 'paused';
-
-    public const STATUS_ARCHIVED = 'archived';
-
-    /** @var array<int, string> */
-    public const STATUSES = [self::STATUS_ACTIVE, self::STATUS_PAUSED, self::STATUS_ARCHIVED];
 
     protected $fillable = [
         'organization_id',
@@ -106,6 +100,8 @@ class Project extends Model {
         'global_activities' => 'boolean',
         'is_default' => 'boolean',
         'is_maintenance' => 'boolean',
+        'status' => ProjectStatus::class,
+        'default_location_mode' => LocationMode::class,
     ];
 
     /**
@@ -220,7 +216,7 @@ class Project extends Model {
                 // DiaryEntries mitziehen, außer abgeschlossene (STATUS_DONE).
                 DiaryEntry::query()
                     ->where('project_id', $project->id)
-                    ->where('status', '!=', DiaryEntry::STATUS_DONE)
+                    ->where('status', '!=', DiaryStatus::Done->value)
                     ->update(['customer_id' => $newCustomerId]);
 
                 // Rechnungen mitziehen, außer freigegebene/bezahlte/stornierte (nur DRAFT).
@@ -410,7 +406,7 @@ class Project extends Model {
     public static function pickerData(): array
     {
         $projects = static::query()
-            ->where('status', self::STATUS_ACTIVE)
+            ->where('status', ProjectStatus::Active)
             ->with('customer:id,name,slug')
             ->orderBy('name')
             ->get(['id', 'name', 'slug', 'customer_id', 'parent_id', 'color']);
@@ -437,20 +433,10 @@ class Project extends Model {
     }
 
     public function statusLabel(): string {
-        return match ($this->status) {
-            self::STATUS_ACTIVE => __('Aktiv'),
-            self::STATUS_PAUSED => __('Pausiert'),
-            self::STATUS_ARCHIVED => __('Archiviert'),
-            default => $this->status,
-        };
+        return $this->status->label();
     }
 
     public function statusTone(): string {
-        return match ($this->status) {
-            self::STATUS_ACTIVE => 'success',
-            self::STATUS_PAUSED => 'warning',
-            self::STATUS_ARCHIVED => 'ghost',
-            default => 'ghost',
-        };
+        return $this->status->tone();
     }
 }

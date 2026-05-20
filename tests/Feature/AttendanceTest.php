@@ -11,6 +11,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Attendance\AttendanceStatus;
 use App\Models\Attendance;
 use App\Models\Project;
 use App\Models\TimeEntry;
@@ -24,6 +25,10 @@ use Illuminate\Support\Carbon;
 use RuntimeException;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\TimeEntry\TimeEntryActivityType;
+use App\Enums\Attendance\AttendanceSource;
+use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\Project\ProjectStatus;
 
 class AttendanceTest extends TestCase
 {
@@ -46,7 +51,7 @@ class AttendanceTest extends TestCase
         $a = $svc->clockIn($this->user);
 
         $this->assertNull($a->ended_at);
-        $this->assertSame(Attendance::STATUS_OPEN, $a->status);
+        $this->assertSame(AttendanceStatus::Open, $a->status);
         $this->assertSame($a->id, $svc->current($this->user)?->id);
     }
 
@@ -68,7 +73,7 @@ class AttendanceTest extends TestCase
         $closed = $svc->clockOut($this->user, ['break_minutes' => 30]);
         $this->assertNotNull($closed);
         $this->assertNotNull($closed->ended_at);
-        $this->assertSame(Attendance::STATUS_CLOSED, $closed->status);
+        $this->assertSame(AttendanceStatus::Closed, $closed->status);
         $this->assertGreaterThanOrEqual(85, $closed->duration_minutes);
         $this->assertLessThanOrEqual(95, $closed->duration_minutes);
     }
@@ -85,7 +90,7 @@ class AttendanceTest extends TestCase
         $svc->clockIn($this->user);
         $cancelled = $svc->cancel($this->user, 'wrong button');
         $this->assertNotNull($cancelled);
-        $this->assertSame(Attendance::STATUS_CANCELLED, $cancelled->status);
+        $this->assertSame(AttendanceStatus::Cancelled, $cancelled->status);
         $this->assertNull($svc->current($this->user));
     }
 
@@ -99,7 +104,7 @@ class AttendanceTest extends TestCase
 
         $this->assertSame(1, $count);
         $a->refresh();
-        $this->assertSame(Attendance::STATUS_AUTO_CLOSED, $a->status);
+        $this->assertSame(AttendanceStatus::AutoClosed, $a->status);
         $this->assertNotNull($a->ended_at);
     }
 
@@ -160,13 +165,13 @@ class AttendanceTest extends TestCase
             'user_id' => $this->user->id,
             'date' => now()->toDateString(),
             'minutes' => 30,
-            'kind' => TimeEntry::KIND_WORK,
-            'activity_type' => TimeEntry::ACTIVITY_ADMIN,
+            'kind' => TimeEntryKind::Work->value,
+            'activity_type' => TimeEntryActivityType::Admin->value,
             'description' => 'Verwaltung',
         ]);
 
         $this->assertNull($entry->project_id);
-        $this->assertSame(TimeEntry::ACTIVITY_ADMIN, $entry->activity_type);
+        $this->assertSame(\App\Enums\TimeEntry\TimeEntryActivityType::Admin, $entry->activity_type);
     }
 
     public function test_time_entry_with_project_activity_requires_project_id(): void
@@ -177,7 +182,7 @@ class AttendanceTest extends TestCase
             'user_id' => $this->user->id,
             'date' => now()->toDateString(),
             'minutes' => 30,
-            'activity_type' => TimeEntry::ACTIVITY_PROJECT,
+            'activity_type' => TimeEntryActivityType::Project->value,
         ]);
     }
 
@@ -191,7 +196,7 @@ class AttendanceTest extends TestCase
             'started_at' => now()->subHours(3),
             'ended_at' => now()->subHour(),
             'date' => now()->startOfDay(),
-            'status' => Attendance::STATUS_CLOSED,
+            'status' => AttendanceStatus::Closed->value,
         ]);
 
         $this->get(route('attendance.index'))
@@ -225,7 +230,7 @@ class AttendanceTest extends TestCase
         $project = Project::create([
             'organization_id' => $this->organization->id,
             'name' => 'P',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'created_by' => $this->user->id,
         ]);
         $today = CarbonImmutable::today();
@@ -237,8 +242,8 @@ class AttendanceTest extends TestCase
             'started_at' => $today->setTime(8, 0),
             'ended_at' => $today->setTime(12, 0),
             'minutes' => 240,
-            'kind' => TimeEntry::KIND_WORK,
-            'activity_type' => TimeEntry::ACTIVITY_PROJECT,
+            'kind' => TimeEntryKind::Work->value,
+            'activity_type' => TimeEntryActivityType::Project->value,
         ]);
 
         $this->artisan('attendance:backfill')->assertExitCode(0);
@@ -246,7 +251,7 @@ class AttendanceTest extends TestCase
         $this->assertDatabaseHas('attendances', [
             'user_id' => $this->user->id,
             'date' => $today->toDateString().' 00:00:00',
-            'source' => Attendance::SOURCE_IMPORT,
+            'source' => AttendanceSource::Import->value,
         ]);
     }
 }

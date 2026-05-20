@@ -11,6 +11,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Shift\ScheduledShiftStatus;
 use App\Http\Requests\Concerns\ChecksShiftCompliance;
 use App\Models\ScheduledShift;
 use App\Models\User;
@@ -40,7 +41,7 @@ class UpdateScheduledShiftRequest extends FormRequest
             'start_time' => ['sometimes', 'nullable', 'date_format:H:i'],
             'end_time' => ['sometimes', 'nullable', 'date_format:H:i'],
             'note' => ['sometimes', 'nullable', 'string', 'max:1000'],
-            'status' => ['sometimes', 'string', 'in:'.implode(',', ScheduledShift::$statuses)],
+            'status' => ['sometimes', \Illuminate\Validation\Rule::enum(ScheduledShiftStatus::class)],
             'override_compliance' => ['sometimes', 'boolean'],
         ];
     }

@@ -11,6 +11,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Vehicle\VehicleOwnership;
+use App\Enums\Vehicle\VehiclePropulsion;
+use App\Enums\Vehicle\VehicleType;
 use App\Http\Requests\SaveVehicleRequest;
 use App\Models\User;
 use App\Models\Vehicle;
@@ -61,9 +64,9 @@ class VehicleController extends Controller
         return view('vehicles._form_dialog', [
             'vehicle' => null,
             'users' => User::query()->orderBy('name')->get(['id', 'name']),
-            'types' => Vehicle::TYPES,
-            'propulsions' => Vehicle::PROPULSIONS,
-            'ownerships' => Vehicle::OWNERSHIPS,
+            'types' => VehicleType::cases(),
+            'propulsions' => VehiclePropulsion::cases(),
+            'ownerships' => VehicleOwnership::cases(),
         ]);
     }
 
@@ -89,9 +92,9 @@ class VehicleController extends Controller
         return view('vehicles._form_dialog', [
             'vehicle' => $vehicle,
             'users' => User::query()->orderBy('name')->get(['id', 'name']),
-            'types' => Vehicle::TYPES,
-            'propulsions' => Vehicle::PROPULSIONS,
-            'ownerships' => Vehicle::OWNERSHIPS,
+            'types' => VehicleType::cases(),
+            'propulsions' => VehiclePropulsion::cases(),
+            'ownerships' => VehicleOwnership::cases(),
         ]);
     }
 

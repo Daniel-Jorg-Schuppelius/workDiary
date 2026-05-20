@@ -11,6 +11,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Project\ProjectStatus;
 use App\Http\Requests\SaveProjectRequest;
 use App\Models\DiaryEntry;
 use App\Models\Project;
@@ -27,7 +28,7 @@ class ProjectController extends Controller {
 
         $statusFilter = $request->string('status')->toString();
         $query = Project::query();
-        if (in_array($statusFilter, Project::STATUSES, true)) {
+        if (in_array($statusFilter, ProjectStatus::values(), true)) {
             $query->where('status', $statusFilter);
         }
 

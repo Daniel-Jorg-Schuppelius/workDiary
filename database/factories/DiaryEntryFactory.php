@@ -11,6 +11,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Diary\Status as DiaryStatus;
 use App\Models\DiaryEntry;
 use App\Models\EntryType;
 use App\Models\User;
@@ -65,7 +66,7 @@ class DiaryEntryFactory extends Factory
                 'priority' => 'normal',
                 'scheduled_for' => $attributes['scheduled_for'] ?? fake()->date(),
                 'service_minutes' => 60,
-                'status' => DiaryEntry::STATUS_OPEN,
+                'status' => DiaryStatus::Open->value,
             ];
         });
     }

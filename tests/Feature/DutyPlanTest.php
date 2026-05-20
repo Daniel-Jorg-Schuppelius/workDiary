@@ -11,6 +11,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Shift\DutyPlanPeriodType;
+use App\Enums\Shift\DutyPlanStatus;
 use App\Models\DutyPlan;
 use App\Models\Organization;
 use App\Models\User;
@@ -72,10 +74,10 @@ class DutyPlanTest extends TestCase
         $this->actingAs($this->admin())
             ->post(route('duty-plans.store'), [
                 'title' => 'KW 21',
-                'period_type' => DutyPlan::PERIOD_WEEKLY,
+                'period_type' => DutyPlanPeriodType::Weekly->value,
                 'from_date' => '2026-05-18',
                 'to_date' => '2026-05-24',
-                'status' => DutyPlan::STATUS_DRAFT,
+                'status' => DutyPlanStatus::Draft->value,
                 'min_staff' => 2,
             ])
             ->assertRedirect(route('duty-plans.index'));
@@ -95,10 +97,10 @@ class DutyPlanTest extends TestCase
         $this->actingAs($this->admin())
             ->put(route('duty-plans.update', $plan), [
                 'title' => 'KW 22 updated',
-                'period_type' => DutyPlan::PERIOD_WEEKLY,
+                'period_type' => DutyPlanPeriodType::Weekly->value,
                 'from_date' => $plan->from_date->toDateString(),
                 'to_date' => $plan->to_date->toDateString(),
-                'status' => DutyPlan::STATUS_DRAFT,
+                'status' => DutyPlanStatus::Draft->value,
                 'min_staff' => 1,
             ])
             ->assertRedirect(route('duty-plans.show', $plan));
@@ -142,7 +144,7 @@ class DutyPlanTest extends TestCase
             ->patch(route('duty-plans.publish', $plan))
             ->assertRedirect();
 
-        $this->assertSame(DutyPlan::STATUS_PUBLISHED, $plan->fresh()->status);
+        $this->assertSame(DutyPlanStatus::Published, $plan->fresh()->status);
     }
 
     public function test_admin_can_retract_duty_plan(): void
@@ -155,7 +157,7 @@ class DutyPlanTest extends TestCase
             ->patch(route('duty-plans.retract', $plan))
             ->assertRedirect();
 
-        $this->assertSame(DutyPlan::STATUS_DRAFT, $plan->fresh()->status);
+        $this->assertSame(DutyPlanStatus::Draft, $plan->fresh()->status);
     }
 
     public function test_non_admin_cannot_publish(): void
@@ -188,20 +190,20 @@ class DutyPlanTest extends TestCase
     {
         DutyPlan::factory()->create([
             'organization_id' => $this->organization->id,
-            'period_type' => DutyPlan::PERIOD_WEEKLY,
+            'period_type' => DutyPlanPeriodType::Weekly->value,
             'title' => 'Weekly Plan',
         ]);
         DutyPlan::factory()->create([
             'organization_id' => $this->organization->id,
-            'period_type' => DutyPlan::PERIOD_MONTHLY,
+            'period_type' => DutyPlanPeriodType::Monthly->value,
             'title' => 'Monthly Plan',
         ]);
 
         $response = $this->actingAs($this->user())
-            ->get(route('duty-plans.index', ['period' => DutyPlan::PERIOD_WEEKLY]));
+            ->get(route('duty-plans.index', ['period' => DutyPlanPeriodType::Weekly->value]));
 
         $response->assertOk();
         $plans = $response->viewData('plans');
-        $this->assertTrue($plans->every(fn (DutyPlan $p) => $p->period_type === DutyPlan::PERIOD_WEEKLY));
+        $this->assertTrue($plans->every(fn (DutyPlan $p) => $p->period_type === DutyPlanPeriodType::Weekly));
     }
 }

@@ -16,6 +16,8 @@ use App\Http\Controllers\Controller;
 use App\Models\FlexBalance;
 use App\Models\SickLeave;
 use App\Models\User;
+use App\Enums\Vacation\VacationStatus;
+use App\Enums\Vacation\VacationType;
 use App\Models\Vacation;
 use App\Services\HolidayService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -136,18 +138,18 @@ class AbsencesReportController extends Controller
             if ($days <= 0) {
                 continue;
             }
-            if ($v->status === Vacation::STATUS_PENDING) {
+            if ($v->status === VacationStatus::Pending) {
                 $absByUser[$uid]['pending_days'] += $days;
 
                 continue;
             }
-            if ($v->status !== Vacation::STATUS_APPROVED) {
+            if ($v->status !== VacationStatus::Approved) {
                 continue;
             }
             match ($v->type) {
-                Vacation::TYPE_VACATION => $absByUser[$uid]['vacation_days'] += $days,
-                Vacation::TYPE_SPECIAL => $absByUser[$uid]['special_days'] += $days,
-                Vacation::TYPE_UNPAID => $absByUser[$uid]['unpaid_days'] += $days,
+                VacationType::Vacation => $absByUser[$uid]['vacation_days'] += $days,
+                VacationType::Special => $absByUser[$uid]['special_days'] += $days,
+                VacationType::Unpaid => $absByUser[$uid]['unpaid_days'] += $days,
                 default => null,
             };
         }

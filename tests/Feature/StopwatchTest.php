@@ -19,6 +19,8 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Timesheet\TimesheetStatus;
+use App\Enums\Project\ProjectStatus;
 
 class StopwatchTest extends TestCase
 {
@@ -38,7 +40,7 @@ class StopwatchTest extends TestCase
         $this->project = Project::create([
             'organization_id' => $this->organization->id,
             'name' => 'SW-Projekt',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'created_by' => $this->user->id,
         ]);
     }
@@ -51,7 +53,7 @@ class StopwatchTest extends TestCase
             'project_id' => $this->project->id,
             'user_id' => $this->user->id,
             'work_date' => now()->toDateString(),
-            'status' => Timesheet::STATUS_DRAFT,
+            'status' => TimesheetStatus::Draft->value,
         ]);
 
         $entry = $sw->start($this->user, $ts);
@@ -76,7 +78,7 @@ class StopwatchTest extends TestCase
             'project_id' => $this->project->id,
             'user_id' => $this->user->id,
             'work_date' => now()->toDateString(),
-            'status' => Timesheet::STATUS_SIGNED,
+            'status' => TimesheetStatus::Signed->value,
         ]);
 
         $this->expectException(\RuntimeException::class);

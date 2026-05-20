@@ -11,6 +11,8 @@
 
 namespace App\Services\Flextime;
 
+use App\Enums\TimeEntry\TimeEntryActivityType;
+use App\Enums\Vacation\VacationStatus;
 use App\Models\FlexBalance;
 use App\Models\Holiday;
 use App\Models\TimeEntry;
@@ -18,6 +20,7 @@ use App\Models\User;
 use App\Models\Vacation;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
+use App\Enums\TimeEntry\TimeEntryKind;
 
 class FlexCalculator
 {
@@ -54,7 +57,7 @@ class FlexCalculator
      */
     protected function countedKinds(): array
     {
-        $kinds = (array) config('timesheet.flex.count_kinds', [TimeEntry::KIND_WORK, TimeEntry::KIND_TRAVEL]);
+        $kinds = (array) config('timesheet.flex.count_kinds', [TimeEntryKind::Work->value, TimeEntryKind::Travel->value]);
 
         return array_values(array_map('strval', $kinds));
     }
@@ -64,7 +67,7 @@ class FlexCalculator
      */
     protected function excludedActivityTypes(): array
     {
-        $excl = (array) config('timesheet.flex.exclude_activity_types', [TimeEntry::ACTIVITY_BREAK, TimeEntry::ACTIVITY_ABSENCE]);
+        $excl = (array) config('timesheet.flex.exclude_activity_types', [TimeEntryActivityType::Break_->value, TimeEntryActivityType::Absence->value]);
 
         return array_values(array_map('strval', $excl));
     }
@@ -143,7 +146,7 @@ class FlexCalculator
     {
         return Vacation::query()
             ->where('user_id', $user->id)
-            ->where('status', Vacation::STATUS_APPROVED)
+            ->where('status', VacationStatus::Approved)
             ->whereDate('start_date', '<=', $day->toDateString())
             ->whereDate('end_date', '>=', $day->toDateString())
             ->exists();

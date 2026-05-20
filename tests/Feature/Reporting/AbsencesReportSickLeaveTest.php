@@ -18,6 +18,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithGlobalDateRange;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Sickness\SickLeaveKind;
 
 class AbsencesReportSickLeaveTest extends TestCase
 {
@@ -42,7 +43,7 @@ class AbsencesReportSickLeaveTest extends TestCase
             'user_id' => $this->user->id,
             'start_date' => '2026-05-04',
             'end_date' => '2026-05-08',
-            'kind' => SickLeave::KIND_INITIAL,
+            'kind' => SickLeaveKind::Initial->value,
         ]);
 
         // Stornierte Krankmeldung darf nicht zählen.
@@ -74,7 +75,7 @@ class AbsencesReportSickLeaveTest extends TestCase
             'user_id' => $this->user->id,
             'start_date' => '2026-05-04',
             'end_date' => '2026-05-08',
-            'kind' => SickLeave::KIND_INITIAL,
+            'kind' => SickLeaveKind::Initial->value,
         ]);
 
         $response = $this->actingAs($this->user)

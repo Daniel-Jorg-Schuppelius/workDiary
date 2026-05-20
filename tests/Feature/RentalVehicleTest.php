@@ -22,6 +22,9 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Vehicle\VehicleType;
+use App\Enums\Vehicle\VehicleOwnership;
+use App\Enums\Vehicle\VehiclePropulsion;
 
 class RentalVehicleTest extends TestCase
 {
@@ -45,9 +48,9 @@ class RentalVehicleTest extends TestCase
             ->post(route('vehicles.store'), [
                 'license_plate' => 'M-RT 1',
                 'label' => 'Mietsprinter',
-                'vehicle_type' => Vehicle::TYPE_VAN,
-                'propulsion' => Vehicle::PROPULSION_DIESEL,
-                'ownership' => Vehicle::OWNERSHIP_RENTAL,
+                'vehicle_type' => VehicleType::Van->value,
+                'propulsion' => VehiclePropulsion::Diesel->value,
+                'ownership' => VehicleOwnership::Rental->value,
                 'rental_provider' => 'Sixt',
                 'rental_start' => '2026-05-01',
                 'rental_end' => '2026-05-31',
@@ -58,7 +61,7 @@ class RentalVehicleTest extends TestCase
             ->assertRedirect(route('vehicles.index'));
 
         $vehicle = Vehicle::query()->firstOrFail();
-        $this->assertSame('rental', $vehicle->ownership);
+        $this->assertSame('rental', $vehicle->ownership->value);
         $this->assertSame('Sixt', $vehicle->rental_provider);
         $this->assertSame(1500, $vehicle->rental_included_km);
         $this->assertSame('0.2500', $vehicle->rental_extra_cost_per_km);
@@ -73,9 +76,9 @@ class RentalVehicleTest extends TestCase
             ->from(route('vehicles.create'))
             ->post(route('vehicles.store'), [
                 'license_plate' => 'M-RT 2',
-                'vehicle_type' => Vehicle::TYPE_CAR,
-                'propulsion' => Vehicle::PROPULSION_PETROL,
-                'ownership' => Vehicle::OWNERSHIP_RENTAL,
+                'vehicle_type' => VehicleType::Car->value,
+                'propulsion' => VehiclePropulsion::Petrol->value,
+                'ownership' => VehicleOwnership::Rental->value,
             ])
             ->assertRedirect(route('vehicles.create'))
             ->assertSessionHasErrors(['rental_provider', 'rental_start', 'rental_end']);
@@ -153,7 +156,7 @@ class RentalVehicleTest extends TestCase
 
         $this->assertNotEmpty($logs);
         foreach ($logs as $log) {
-            $this->assertSame(TravelLog::VEHICLE_RENTAL, $log->vehicle);
+            $this->assertSame(\App\Enums\Travel\TravelLogVehicle::Rental, $log->vehicle);
         }
     }
 

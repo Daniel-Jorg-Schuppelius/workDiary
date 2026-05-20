@@ -11,6 +11,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\TimeEntry;
 use App\Models\TravelLog;
 use App\Models\User;
@@ -21,6 +22,7 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Travel\TravelLogVehicle;
 
 class TravelLogTest extends TestCase
 {
@@ -57,7 +59,7 @@ class TravelLogTest extends TestCase
             'from_address' => 'Berlin',
             'to_address' => 'Potsdam',
             'distance_km' => 30,
-            'vehicle' => TravelLog::VEHICLE_PRIVATE,
+            'vehicle' => TravelLogVehicle::Private_->value,
             'purpose' => 'Kundentermin',
             'round_trip' => '1',
             'reimbursable' => '1',
@@ -71,8 +73,8 @@ class TravelLogTest extends TestCase
         $this->assertSame(60, $log->duration_minutes);
 
         $entry = TimeEntry::query()->where('travel_log_id', $log->id)->firstOrFail();
-        $this->assertSame(TimeEntry::KIND_TRAVEL, $entry->kind);
-        $this->assertSame(TimeEntry::ACTIVITY_TRAVEL, $entry->activity_type);
+        $this->assertSame(TimeEntryKind::Travel, $entry->kind);
+        $this->assertSame(\App\Enums\TimeEntry\TimeEntryActivityType::Travel, $entry->activity_type);
         $this->assertSame(60, $entry->minutes);
     }
 
@@ -83,7 +85,7 @@ class TravelLogTest extends TestCase
         $this->post(route('travel-logs.store'), [
             'date' => CarbonImmutable::today()->toDateString(),
             'distance_km' => 10,
-            'vehicle' => TravelLog::VEHICLE_PRIVATE,
+            'vehicle' => TravelLogVehicle::Private_->value,
             'purpose' => 'Botengang',
         ])->assertRedirect();
 
@@ -104,7 +106,7 @@ class TravelLogTest extends TestCase
             'started_at' => $start,
             'ended_at' => $start->addMinutes(30),
             'distance_km' => 5,
-            'vehicle' => TravelLog::VEHICLE_PRIVATE,
+            'vehicle' => TravelLogVehicle::Private_->value,
             'purpose' => 'Test',
         ]);
 
@@ -133,7 +135,7 @@ class TravelLogTest extends TestCase
         config()->set('timesheet.travel.rates.private', 0.42);
         $resolver = app(MileageRateResolver::class);
 
-        $this->assertSame(0.42, $resolver->rateFor(TravelLog::VEHICLE_PRIVATE));
+        $this->assertSame(0.42, $resolver->rateFor(TravelLogVehicle::Private_->value));
     }
 
     public function test_csv_export_returns_download(): void
@@ -145,7 +147,7 @@ class TravelLogTest extends TestCase
             'user_id' => $this->user->id,
             'date' => CarbonImmutable::today(),
             'distance_km' => 12.5,
-            'vehicle' => TravelLog::VEHICLE_PRIVATE,
+            'vehicle' => TravelLogVehicle::Private_->value,
             'rate_per_km' => '0.3000',
             'from_address' => 'A',
             'to_address' => 'B',
@@ -172,7 +174,7 @@ class TravelLogTest extends TestCase
             'date' => CarbonImmutable::create(2026, 4, 15),
             'distance_km' => 50,
             'reimbursement_total' => 21.0,
-            'vehicle' => TravelLog::VEHICLE_PRIVATE,
+            'vehicle' => TravelLogVehicle::Private_->value,
             'from_address' => 'A',
             'to_address' => 'B',
         ]);
@@ -182,7 +184,7 @@ class TravelLogTest extends TestCase
             'date' => CarbonImmutable::create(2026, 5, 4),
             'distance_km' => 999,
             'reimbursement_total' => 400.0,
-            'vehicle' => TravelLog::VEHICLE_PRIVATE,
+            'vehicle' => TravelLogVehicle::Private_->value,
             'from_address' => 'C',
             'to_address' => 'D',
         ]);

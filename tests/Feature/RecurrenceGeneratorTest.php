@@ -11,7 +11,10 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Diary\Mode;
+use App\Enums\Diary\Status as DiaryStatus;
 use App\Models\DiaryEntry;
+use App\Enums\Diary\LocationMode;
 use App\Models\Project;
 use App\Models\RecurrenceRule;
 use App\Models\User;
@@ -21,6 +24,8 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Project\ProjectStatus;
+use App\Enums\Recurrence\RecurrenceFrequency;
 
 class RecurrenceGeneratorTest extends TestCase
 {
@@ -44,7 +49,7 @@ class RecurrenceGeneratorTest extends TestCase
         $this->project = Project::create([
             'organization_id' => $this->organization->id,
             'name' => 'Wartung '.uniqid('', true),
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'is_maintenance' => true,
         ]);
         $this->now = CarbonImmutable::create(2026, 5, 19);
@@ -53,7 +58,7 @@ class RecurrenceGeneratorTest extends TestCase
     public function test_weekly_rule_generates_entries_for_each_matching_day(): void
     {
         $rule = $this->makeRule([
-            'frequency' => RecurrenceRule::FREQ_WEEKLY,
+            'frequency' => RecurrenceFrequency::Weekly->value,
             'interval' => 1,
             'byweekday' => 'MO',
             'starts_on' => '2026-05-04',
@@ -66,15 +71,15 @@ class RecurrenceGeneratorTest extends TestCase
         $this->assertSame('2026-05-04', $entries->first()->due_date->toDateString());
         $this->assertSame('2026-06-15', $entries->last()->due_date->toDateString());
         $entries->each(function (DiaryEntry $entry): void {
-            $this->assertSame(DiaryEntry::MODE_RECURRING, $entry->mode);
-            $this->assertSame(DiaryEntry::STATUS_OPEN, $entry->status);
+            $this->assertSame(Mode::Recurring, $entry->mode);
+            $this->assertSame(DiaryStatus::Open, $entry->status);
         });
     }
 
     public function test_second_run_is_idempotent_and_creates_nothing(): void
     {
         $rule = $this->makeRule([
-            'frequency' => RecurrenceRule::FREQ_WEEKLY,
+            'frequency' => RecurrenceFrequency::Weekly->value,
             'byweekday' => 'WE',
             'starts_on' => '2026-05-06',
         ]);
@@ -89,7 +94,7 @@ class RecurrenceGeneratorTest extends TestCase
     public function test_monthly_rule_with_bymonthday_clamps_at_month_end(): void
     {
         $rule = $this->makeRule([
-            'frequency' => RecurrenceRule::FREQ_MONTHLY,
+            'frequency' => RecurrenceFrequency::Monthly->value,
             'interval' => 1,
             'bymonthday' => 31,
             'starts_on' => '2026-01-31',
@@ -108,7 +113,7 @@ class RecurrenceGeneratorTest extends TestCase
     public function test_rule_respects_ends_on_boundary(): void
     {
         $rule = $this->makeRule([
-            'frequency' => RecurrenceRule::FREQ_WEEKLY,
+            'frequency' => RecurrenceFrequency::Weekly->value,
             'byweekday' => 'MO',
             'starts_on' => '2026-05-04',
             'ends_on' => '2026-05-25',
@@ -124,7 +129,7 @@ class RecurrenceGeneratorTest extends TestCase
     public function test_inactive_rules_are_skipped_by_generate_all(): void
     {
         $this->makeRule([
-            'frequency' => RecurrenceRule::FREQ_DAILY,
+            'frequency' => RecurrenceFrequency::Daily->value,
             'starts_on' => '2026-05-15',
             'is_active' => false,
         ]);
@@ -137,7 +142,7 @@ class RecurrenceGeneratorTest extends TestCase
     public function test_template_placeholders_are_rendered_into_diary_entry(): void
     {
         $rule = $this->makeRule([
-            'frequency' => RecurrenceRule::FREQ_WEEKLY,
+            'frequency' => RecurrenceFrequency::Weekly->value,
             'byweekday' => 'MO',
             'starts_on' => '2026-05-04',
             'title_template' => 'Check KW {week}',
@@ -159,8 +164,8 @@ class RecurrenceGeneratorTest extends TestCase
             'project_id' => $this->project->id,
             'name' => 'Bad rule',
             'content_template' => 'x',
-            'default_location_mode' => DiaryEntry::LOCATION_ONSITE,
-            'frequency' => RecurrenceRule::FREQ_WEEKLY,
+            'default_location_mode' => LocationMode::Onsite->value,
+            'frequency' => RecurrenceFrequency::Weekly->value,
             'interval' => 1,
             'byweekday' => 'MO',
             'starts_on' => '2026-05-04',
@@ -183,8 +188,8 @@ class RecurrenceGeneratorTest extends TestCase
             'project_id' => $this->project->id,
             'name' => 'Test '.uniqid('', true),
             'content_template' => 'Wartungs-Auftrag',
-            'default_location_mode' => DiaryEntry::LOCATION_ONSITE,
-            'frequency' => RecurrenceRule::FREQ_WEEKLY,
+            'default_location_mode' => LocationMode::Onsite->value,
+            'frequency' => RecurrenceFrequency::Weekly->value,
             'interval' => 1,
             'starts_on' => '2026-05-04',
             'is_active' => true,

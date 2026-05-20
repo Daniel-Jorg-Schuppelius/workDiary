@@ -20,6 +20,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Task\TaskPriority;
+use App\Enums\Task\TaskStatus;
+use App\Enums\Project\ProjectStatus;
 
 class CustomerProjectTaskApiTest extends TestCase
 {
@@ -62,7 +65,7 @@ class CustomerProjectTaskApiTest extends TestCase
 
         $this->postJson(route('api.projects.store'), [
             'name' => 'Webshop',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
         ])->assertCreated()->assertJsonPath('data.name', 'Webshop');
 
         $this->getJson(route('api.projects.index'))->assertOk()->assertJsonCount(1, 'data');
@@ -75,14 +78,14 @@ class CustomerProjectTaskApiTest extends TestCase
         $project = Project::create([
             'organization_id' => $this->organization->id,
             'name' => 'P1',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'created_by' => $this->user->id,
         ]);
 
         $this->postJson(route('api.tasks.store', $project), [
             'title' => 'T1',
-            'status' => Task::STATUS_OPEN,
-            'priority' => Task::PRIORITY_MEDIUM,
+            'status' => TaskStatus::Open->value,
+            'priority' => TaskPriority::Medium->value,
         ])->assertCreated()->assertJsonPath('data.title', 'T1');
 
         $this->getJson(route('api.tasks.index', ['project' => $project->id]))

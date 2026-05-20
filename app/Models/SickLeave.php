@@ -11,6 +11,7 @@
 
 namespace App\Models;
 
+use App\Enums\Sickness\SickLeaveKind;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Concerns\HasAttachments;
@@ -31,7 +32,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $user_id
  * @property Carbon $start_date
  * @property Carbon $end_date
- * @property string $kind
+ * @property SickLeaveKind $kind
  * @property int|null $follow_up_for_id
  * @property string|null $au_number
  * @property string|null $doctor_name
@@ -52,16 +53,6 @@ class SickLeave extends Model
 
     /** @use HasFactory<SickLeaveFactory> */
     use HasFactory;
-
-    public const KIND_INITIAL = 'initial';
-
-    public const KIND_FOLLOW_UP = 'follow_up';
-
-    /** @var list<string> */
-    public static array $kinds = [
-        self::KIND_INITIAL,
-        self::KIND_FOLLOW_UP,
-    ];
 
     protected $fillable = [
         'organization_id',
@@ -84,6 +75,7 @@ class SickLeave extends Model
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
+        'kind' => SickLeaveKind::class,
         'kasse_notified_at' => 'datetime',
         'reported_at' => 'datetime',
         'cancelled_at' => 'datetime',
@@ -214,11 +206,7 @@ class SickLeave extends Model
 
     public function kindLabel(): string
     {
-        return match ($this->kind) {
-            self::KIND_INITIAL => __('Erstbescheinigung'),
-            self::KIND_FOLLOW_UP => __('Folgebescheinigung'),
-            default => $this->kind,
-        };
+        return $this->kind->label();
     }
 
     public function isCancelled(): bool

@@ -1,6 +1,6 @@
 {{-- Tab: Aufgaben — erwartet: $project, $topTasks, $milestones --}}
 @php
-    use App\Models\Task;
+    use App\Enums\Task\TaskStatus;
     // Aktuelle Filter (rückwärtskompatibel zu alten Parametern task_status / task_milestone).
     $statusFilter    = (string) request()->get('status', request()->get('task_status', ''));
     $milestoneFilter = (string) request()->get('milestone', request()->get('task_milestone', ''));
@@ -12,7 +12,7 @@
     ));
 
     $filtered = $topTasks->when(
-        $statusFilter !== '' && in_array($statusFilter, Task::STATUSES),
+        $statusFilter !== '' && in_array($statusFilter, TaskStatus::values()),
         fn ($c) => $c->where('status', $statusFilter)
     )->when(
         $milestoneFilter !== '',
@@ -32,7 +32,7 @@
             {{-- Status-Filter --}}
             <div class="join">
                 @php
-                    $statusOpts = ['' => __('Alle'), Task::STATUS_OPEN => __('Offen'), Task::STATUS_IN_PROGRESS => __('In Arbeit'), Task::STATUS_DONE => __('Erledigt')];
+                    $statusOpts = ['' => __('Alle')] + TaskStatus::options();
                 @endphp
                 @foreach ($statusOpts as $val => $lbl)
                     <a href="{{ $baseQuery(['status' => $val ?: null, 'milestone' => $milestoneFilter ?: null]) }}"

@@ -12,6 +12,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Enums\User\UserRole;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -22,7 +23,7 @@ class RolesSeeder extends Seeder
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        foreach ([User::ROLE_ADMIN, User::ROLE_USER, User::ROLE_CALLCENTER, User::ROLE_BUCHHALTUNG] as $role) {
+        foreach ([UserRole::Admin->value, UserRole::User->value, UserRole::Callcenter->value, UserRole::Buchhaltung->value] as $role) {
             Role::findOrCreate($role, 'web');
         }
     }

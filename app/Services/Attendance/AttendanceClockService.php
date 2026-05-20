@@ -11,6 +11,8 @@
 
 namespace App\Services\Attendance;
 
+use App\Enums\Attendance\AttendanceSource;
+use App\Enums\Attendance\AttendanceStatus;
 use App\Models\Attendance;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -68,8 +70,8 @@ class AttendanceClockService
                 'started_at' => $start,
                 'ended_at' => null,
                 'date' => $start->startOfDay(),
-                'source' => $context['source'] ?? Attendance::SOURCE_CLOCK,
-                'status' => Attendance::STATUS_OPEN,
+                'source' => $context['source'] ?? AttendanceSource::Clock->value,
+                'status' => AttendanceStatus::Open->value,
                 'started_lat' => $context['lat'] ?? null,
                 'started_lng' => $context['lng'] ?? null,
                 'started_device' => $context['device'] ?? null,
@@ -112,7 +114,7 @@ class AttendanceClockService
             if (isset($context['break_minutes'])) {
                 $attendance->break_minutes_manual = (int) $context['break_minutes'];
             }
-            $attendance->status = Attendance::STATUS_CLOSED;
+            $attendance->status = AttendanceStatus::Closed;
             $attendance->closed_by = $user->id;
             $attendance->updated_by = $user->id;
             $attendance->save();
@@ -131,7 +133,7 @@ class AttendanceClockService
             return null;
         }
         $attendance->ended_at = $attendance->started_at; // zero-length
-        $attendance->status = Attendance::STATUS_CANCELLED;
+        $attendance->status = AttendanceStatus::Cancelled;
         $attendance->note = trim(($attendance->note ?? '')."\nCancelled: ".($reason ?? ''));
         $attendance->closed_by = $user->id;
         $attendance->updated_by = $user->id;
@@ -178,8 +180,8 @@ class AttendanceClockService
                     $attendance->ended_at = $attendance->started_at
                         ->copy()
                         ->addMinutes($this->maxOpenMinutes);
-                    $attendance->status = Attendance::STATUS_AUTO_CLOSED;
-                    $attendance->source = Attendance::SOURCE_AUTO_CLOSE;
+                    $attendance->status = AttendanceStatus::AutoClosed;
+                    $attendance->source = AttendanceSource::AutoClose;
                     $attendance->note = trim(($attendance->note ?? '')."\nAuto-closed by system.");
                     $attendance->save();
                     $count++;

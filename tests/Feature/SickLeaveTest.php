@@ -20,6 +20,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Sickness\SickLeaveKind;
 
 class SickLeaveTest extends TestCase
 {
@@ -48,12 +49,12 @@ class SickLeaveTest extends TestCase
         $this->post(route('sick-leaves.store'), [
             'start_date' => '2026-05-04',
             'end_date' => '2026-05-05',
-            'kind' => SickLeave::KIND_INITIAL,
+            'kind' => SickLeaveKind::Initial->value,
         ])->assertRedirect(route('duties.index', ['tab' => 'krank']));
 
         $this->assertDatabaseHas('sick_leaves', [
             'user_id' => $this->user->id,
-            'kind' => SickLeave::KIND_INITIAL,
+            'kind' => SickLeaveKind::Initial->value,
         ]);
 
         $sickLeave = SickLeave::query()->where('user_id', $this->user->id)->firstOrFail();
@@ -69,7 +70,7 @@ class SickLeaveTest extends TestCase
             ->post(route('sick-leaves.store'), [
                 'start_date' => '2026-05-04',
                 'end_date' => '2026-05-10',
-                'kind' => SickLeave::KIND_INITIAL,
+                'kind' => SickLeaveKind::Initial->value,
             ])
             ->assertSessionHasErrors('au_file');
 
@@ -85,7 +86,7 @@ class SickLeaveTest extends TestCase
         $this->post(route('sick-leaves.store'), [
             'start_date' => '2026-05-04',
             'end_date' => '2026-05-10',
-            'kind' => SickLeave::KIND_INITIAL,
+            'kind' => SickLeaveKind::Initial->value,
             'au_file' => $file,
         ])->assertRedirect();
 
@@ -101,19 +102,19 @@ class SickLeaveTest extends TestCase
             'user_id' => $this->user->id,
             'start_date' => '2026-05-04',
             'end_date' => '2026-05-06',
-            'kind' => SickLeave::KIND_INITIAL,
+            'kind' => SickLeaveKind::Initial->value,
         ]);
 
         $this->post(route('sick-leaves.store'), [
             'start_date' => '2026-05-07',
             'end_date' => '2026-05-09',
-            'kind' => SickLeave::KIND_FOLLOW_UP,
+            'kind' => SickLeaveKind::FollowUp->value,
             'follow_up_for_id' => $initial->id,
         ])->assertRedirect();
 
         $this->assertDatabaseHas('sick_leaves', [
             'user_id' => $this->user->id,
-            'kind' => SickLeave::KIND_FOLLOW_UP,
+            'kind' => SickLeaveKind::FollowUp->value,
             'follow_up_for_id' => $initial->id,
         ]);
     }
@@ -126,7 +127,7 @@ class SickLeaveTest extends TestCase
             ->post(route('sick-leaves.store'), [
                 'start_date' => '2026-05-07',
                 'end_date' => '2026-05-09',
-                'kind' => SickLeave::KIND_FOLLOW_UP,
+                'kind' => SickLeaveKind::FollowUp->value,
             ])
             ->assertSessionHasErrors('follow_up_for_id');
     }
@@ -157,7 +158,7 @@ class SickLeaveTest extends TestCase
         $this->put(route('sick-leaves.update', $sickLeave), [
             'start_date' => '2026-05-01',
             'end_date' => '2026-05-02',
-            'kind' => SickLeave::KIND_INITIAL,
+            'kind' => SickLeaveKind::Initial->value,
         ])->assertForbidden();
     }
 
@@ -169,7 +170,7 @@ class SickLeaveTest extends TestCase
         $this->post(route('sick-leaves.store'), [
             'start_date' => '2026-05-04',
             'end_date' => '2026-05-10',
-            'kind' => SickLeave::KIND_INITIAL,
+            'kind' => SickLeaveKind::Initial->value,
             'au_file' => $file,
         ])->assertRedirect();
 
@@ -196,7 +197,7 @@ class SickLeaveTest extends TestCase
             'user_id' => $this->user->id,
             'start_date' => '2026-05-04',
             'end_date' => '2026-05-05',
-            'kind' => SickLeave::KIND_INITIAL,
+            'kind' => SickLeaveKind::Initial->value,
         ])->assertRedirect();
 
         $this->assertDatabaseHas('sick_leaves', [

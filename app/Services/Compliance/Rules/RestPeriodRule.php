@@ -17,6 +17,7 @@ use App\Models\ScheduledShift;
 use App\Services\Compliance\ComplianceRule;
 use App\Services\Compliance\ComplianceViolation;
 use App\Services\Compliance\ResolvesShiftTiming;
+use App\Enums\Shift\ScheduledShiftStatus;
 
 /** ArbZG §5: Mindestruhezeit (Standard 11h) zwischen zwei Schichten. */
 final class RestPeriodRule implements ComplianceRule
@@ -39,7 +40,7 @@ final class RestPeriodRule implements ComplianceRule
 
         $candidates = ScheduledShift::query()
             ->where('user_id', $shift->user_id)
-            ->where('status', '!=', ScheduledShift::STATUS_CANCELLED)
+            ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
             ->whereBetween('date', [
                 $start->copy()->subDays(2)->toDateString(),
                 $end->copy()->addDays(2)->toDateString(),

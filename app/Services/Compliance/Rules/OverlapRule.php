@@ -17,6 +17,7 @@ use App\Models\ScheduledShift;
 use App\Services\Compliance\ComplianceRule;
 use App\Services\Compliance\ComplianceViolation;
 use App\Services\Compliance\ResolvesShiftTiming;
+use App\Enums\Shift\ScheduledShiftStatus;
 
 /** Erkennt zeitlich überlappende Schichten desselben Mitarbeiters. */
 final class OverlapRule implements ComplianceRule
@@ -38,7 +39,7 @@ final class OverlapRule implements ComplianceRule
 
         $candidates = ScheduledShift::query()
             ->where('user_id', $shift->user_id)
-            ->where('status', '!=', ScheduledShift::STATUS_CANCELLED)
+            ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
             ->whereBetween('date', [$start->copy()->subDay()->toDateString(), $end->copy()->addDay()->toDateString()])
             ->when($shift->id, fn ($q) => $q->where('id', '!=', $shift->id))
             ->with('shiftType')

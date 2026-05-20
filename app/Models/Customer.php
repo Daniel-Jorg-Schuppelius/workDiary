@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
+use App\Enums\Project\ProjectStatus;
 
 /**
  * @property int $id
@@ -191,7 +192,7 @@ class Customer extends Model {
             'organization_id' => $this->organization_id,
             'name' => (string) config('project.default_project.name', 'Wartung'),
             'color' => (string) config('project.default_project.color', '#64748b'),
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'is_default' => true,
             'billable' => (bool) config('project.default_project.billable', true),
             'global_activities' => true,

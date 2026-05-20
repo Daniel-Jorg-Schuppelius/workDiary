@@ -12,6 +12,7 @@
 namespace App\Models;
 
 use App\Legacy\Models\LegacyUser;
+use App\Enums\User\UserRole;
 use App\Legacy\Support\LegacyRoleResolver;
 use App\Models\Concerns\HasAttachments;
 use App\Services\Sickness\ContinuedPaymentService;
@@ -50,17 +51,9 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasAttachments, HasFactory, HasRoles, Notifiable;
 
-    public const ROLE_ADMIN = 'admin';
-
-    public const ROLE_USER = 'user';
-
-    public const ROLE_CALLCENTER = 'callcenter';
-
-    public const ROLE_BUCHHALTUNG = 'buchhaltung';
-
     public function isAdmin(): bool
     {
-        if ($this->hasRole(self::ROLE_ADMIN)) {
+        if ($this->hasRole(UserRole::Admin->value)) {
             return true;
         }
 
@@ -72,7 +65,7 @@ class User extends Authenticatable
      */
     public function canCreateEntriesForOthers(): bool
     {
-        return $this->isAdmin() || $this->hasRole(self::ROLE_BUCHHALTUNG);
+        return $this->isAdmin() || $this->hasRole(UserRole::Buchhaltung->value);
     }
 
     /**
@@ -80,7 +73,7 @@ class User extends Authenticatable
      */
     public function canManageBilling(): bool
     {
-        return $this->isAdmin() || $this->hasRole(self::ROLE_BUCHHALTUNG);
+        return $this->isAdmin() || $this->hasRole(UserRole::Buchhaltung->value);
     }
 
     /**
@@ -90,7 +83,7 @@ class User extends Authenticatable
      */
     public function canViewAllLegacyData(): bool
     {
-        return LegacyRoleResolver::isAdmin($this) || $this->hasRole(self::ROLE_BUCHHALTUNG);
+        return LegacyRoleResolver::isAdmin($this) || $this->hasRole(UserRole::Buchhaltung->value);
     }
 
     /**

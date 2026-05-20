@@ -11,6 +11,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\ScheduledShift;
 use App\Models\ShiftType;
 use App\Models\User;
@@ -32,23 +33,23 @@ class ScheduledShiftFactory extends Factory
             'start_time' => null,
             'end_time' => null,
             'note' => null,
-            'status' => ScheduledShift::STATUS_DRAFT,
+            'status' => ScheduledShiftStatus::Draft,
         ];
     }
 
     public function published(): static
     {
-        return $this->state(['status' => ScheduledShift::STATUS_PUBLISHED]);
+        return $this->state(['status' => ScheduledShiftStatus::Published]);
     }
 
     public function confirmed(): static
     {
-        return $this->state(['status' => ScheduledShift::STATUS_CONFIRMED]);
+        return $this->state(['status' => ScheduledShiftStatus::Confirmed]);
     }
 
     public function cancelled(): static
     {
-        return $this->state(['status' => ScheduledShift::STATUS_CANCELLED]);
+        return $this->state(['status' => ScheduledShiftStatus::Cancelled]);
     }
 
     public function withType(): static

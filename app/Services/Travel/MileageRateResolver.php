@@ -33,6 +33,6 @@ class MileageRateResolver
             return (float) $log->rate_per_km;
         }
 
-        return $this->rateFor((string) $log->vehicle, $log->organization_id);
+        return $this->rateFor($log->vehicle->value, $log->organization_id);
     }
 }

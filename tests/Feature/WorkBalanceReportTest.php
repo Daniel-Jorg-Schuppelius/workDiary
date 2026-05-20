@@ -21,6 +21,9 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\TimeEntry\TimeEntryActivityType;
+use App\Enums\Project\ProjectStatus;
 
 class WorkBalanceReportTest extends TestCase
 {
@@ -54,7 +57,7 @@ class WorkBalanceReportTest extends TestCase
         $project = Project::create([
             'organization_id' => $this->organization->id,
             'name' => 'Test',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'billable' => true,
         ]);
         TimeEntry::factory()->create([
@@ -81,11 +84,11 @@ class WorkBalanceReportTest extends TestCase
         $this->assertSame(30, $balance->breakMinutes);
         $this->assertSame(405, $balance->trackedMinutes); // 5h + 1h + 45m travel
         $this->assertSame(105, $balance->untrackedMinutes); // 510 - 405
-        $this->assertArrayHasKey(TimeEntry::ACTIVITY_PROJECT, $balance->byActivity);
-        $this->assertArrayHasKey(TimeEntry::ACTIVITY_ADMIN, $balance->byActivity);
-        $this->assertArrayHasKey(TimeEntry::ACTIVITY_TRAVEL, $balance->byActivity);
-        $this->assertSame(45, $balance->byKind[TimeEntry::KIND_TRAVEL]);
-        $this->assertSame(360, $balance->byKind[TimeEntry::KIND_WORK]);
+        $this->assertArrayHasKey(TimeEntryActivityType::Project->value, $balance->byActivity);
+        $this->assertArrayHasKey(TimeEntryActivityType::Admin->value, $balance->byActivity);
+        $this->assertArrayHasKey(TimeEntryActivityType::Travel->value, $balance->byActivity);
+        $this->assertSame(45, $balance->byKind[TimeEntryKind::Travel->value]);
+        $this->assertSame(360, $balance->byKind[TimeEntryKind::Work->value]);
     }
 
     public function test_open_attendance_uses_current_time_for_duration(): void
@@ -114,7 +117,7 @@ class WorkBalanceReportTest extends TestCase
         $project = Project::create([
             'organization_id' => $this->organization->id,
             'name' => 'Test',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'billable' => true,
         ]);
 
@@ -173,7 +176,7 @@ class WorkBalanceReportTest extends TestCase
         $project = Project::create([
             'organization_id' => $this->organization->id,
             'name' => 'Filter-Project',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'billable' => true,
         ]);
 
@@ -186,14 +189,14 @@ class WorkBalanceReportTest extends TestCase
         TimeEntry::factory()->create([
             'user_id' => $this->user->id,
             'project_id' => null,
-            'activity_type' => TimeEntry::ACTIVITY_BREAK,
+            'activity_type' => TimeEntryActivityType::Break_->value,
             'date' => $day->toDateString(),
             'minutes' => 60, // must NOT count
         ]);
         TimeEntry::factory()->create([
             'user_id' => $this->user->id,
             'project_id' => null,
-            'activity_type' => TimeEntry::ACTIVITY_ABSENCE,
+            'activity_type' => TimeEntryActivityType::Absence->value,
             'date' => $day->toDateString(),
             'minutes' => 480, // must NOT count
         ]);
@@ -218,7 +221,7 @@ class WorkBalanceReportTest extends TestCase
         $project = Project::create([
             'organization_id' => $this->organization->id,
             'name' => 'Admin-View',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'billable' => true,
         ]);
         TimeEntry::factory()->create([

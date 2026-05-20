@@ -13,6 +13,7 @@ namespace Tests\Feature;
 
 use App\Models\Organization;
 use App\Models\User;
+use App\Enums\User\UserRole;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -84,7 +85,7 @@ class TenantRegistrationTest extends TestCase
         $user = User::where('email', 'max@test.de')->first();
         $this->assertNotNull($user);
         $this->assertSame($org->id, $user->organization_id);
-        $this->assertTrue($user->hasRole(User::ROLE_ADMIN));
+        $this->assertTrue($user->hasRole(UserRole::Admin->value));
         $this->assertSame($user->id, $org->fresh()->owner_id);
 
         // User ist eingeloggt

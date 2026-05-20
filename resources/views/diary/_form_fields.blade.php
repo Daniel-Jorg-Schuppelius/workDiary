@@ -25,13 +25,13 @@
         'default_status' => 2,
     ];
 
-    $defaultMode = old('mode', $entry?->mode ?? \App\Models\DiaryEntry::MODE_FIXED);
-    if ($defaultMode === \App\Models\DiaryEntry::MODE_RECURRING) {
+    $defaultMode = old('mode', $entry?->mode?->value ?? \App\Enums\Diary\Mode::Fixed->value);
+    if ($defaultMode === \App\Enums\Diary\Mode::Recurring->value) {
         // 'recurring' wird vom Generator gesetzt — Auswahl bietet stattdessen
         // den passenden Bearbeitungs-Modus an, ohne den Datensatz zu zerstören.
-        $defaultMode = \App\Models\DiaryEntry::MODE_FIXED;
+        $defaultMode = \App\Enums\Diary\Mode::Fixed->value;
     }
-    $defaultLocation = old('location_mode', $entry?->location_mode ?? \App\Models\DiaryEntry::LOCATION_ONSITE);
+    $defaultLocation = old('location_mode', $entry?->location_mode?->value ?? \App\Enums\Diary\LocationMode::Onsite->value);
 @endphp
 
 <div
@@ -114,8 +114,8 @@
             <label class="fieldset-label" for="priority">{{ __('Priorität') }}</label>
             <select id="priority" name="priority" class="select select-bordered w-full @error('priority') select-error @enderror">
                 <option value="">—</option>
-                @foreach (\App\Models\DiaryEntry::PRIORITIES as $p)
-                    <option value="{{ $p }}" @selected(old('priority', $entry?->priority) === $p)>{{ __(ucfirst($p)) }}</option>
+                @foreach (\App\Enums\Diary\Priority::cases() as $p)
+                    <option value="{{ $p->value }}" @selected(old('priority', $entry?->priority?->value) === $p->value)>{{ $p->label() }}</option>
                 @endforeach
             </select>
             @error('priority')<p class="text-error text-sm">{{ $message }}</p>@enderror
@@ -160,10 +160,10 @@
             name="status"
             class="select select-bordered w-full @error('status') select-error @enderror"
         >
-            <option value="2" @selected(old('status', $entry?->status ?? 2) == 2)>{{ __('Offen') }}</option>
-            <option value="3" @selected(old('status', $entry?->status) == 3)>{{ __('Problem') }}</option>
-            <option value="1" @selected(old('status', $entry?->status) == 1)>{{ __('Bestätigt') }}</option>
-            <option value="-1" @selected(old('status', $entry?->status) == -1)>{{ __('Erledigt') }}</option>
+            <option value="2" @selected((int) old('status', $entry?->status?->value ?? 2) === 2)>{{ __('Offen') }}</option>
+            <option value="3" @selected((int) old('status', $entry?->status?->value) === 3)>{{ __('Problem') }}</option>
+            <option value="1" @selected((int) old('status', $entry?->status?->value) === 1)>{{ __('Bestätigt') }}</option>
+            <option value="-1" @selected((int) old('status', $entry?->status?->value) === -1)>{{ __('Erledigt') }}</option>
         </select>
         @error('status')
             <p class="text-error text-sm">{{ $message }}</p>
@@ -178,10 +178,10 @@
             x-model="mode"
             class="select select-bordered w-full @error('mode') select-error @enderror"
         >
-            <option value="{{ \App\Models\DiaryEntry::MODE_FIXED }}">{{ __('Terminiert (fester Zeitraum)') }}</option>
-            <option value="{{ \App\Models\DiaryEntry::MODE_DEADLINE }}">{{ __('Deadline (bis Datum X)') }}</option>
-            <option value="{{ \App\Models\DiaryEntry::MODE_WINDOW }}">{{ __('Zeitfenster (Korridor)') }}</option>
-            <option value="{{ \App\Models\DiaryEntry::MODE_BACKLOG }}">{{ __('Backlog (irgendwann)') }}</option>
+            <option value="{{ \App\Enums\Diary\Mode::Fixed->value }}">{{ __('Terminiert (fester Zeitraum)') }}</option>
+            <option value="{{ \App\Enums\Diary\Mode::Deadline->value }}">{{ __('Deadline (bis Datum X)') }}</option>
+            <option value="{{ \App\Enums\Diary\Mode::Window->value }}">{{ __('Zeitfenster (Korridor)') }}</option>
+            <option value="{{ \App\Enums\Diary\Mode::Backlog->value }}">{{ __('Backlog (irgendwann)') }}</option>
         </select>
         @error('mode')<p class="text-error text-sm">{{ $message }}</p>@enderror
     </div>
@@ -193,15 +193,15 @@
             name="location_mode"
             class="select select-bordered w-full @error('location_mode') select-error @enderror"
         >
-            <option value="{{ \App\Models\DiaryEntry::LOCATION_ONSITE }}" @selected($defaultLocation === \App\Models\DiaryEntry::LOCATION_ONSITE)>{{ __('Vor Ort') }}</option>
-            <option value="{{ \App\Models\DiaryEntry::LOCATION_REMOTE }}" @selected($defaultLocation === \App\Models\DiaryEntry::LOCATION_REMOTE)>{{ __('Remote') }}</option>
-            <option value="{{ \App\Models\DiaryEntry::LOCATION_HYBRID }}" @selected($defaultLocation === \App\Models\DiaryEntry::LOCATION_HYBRID)>{{ __('Hybrid') }}</option>
+            @foreach (\App\Enums\Diary\LocationMode::cases() as $lm)
+                <option value="{{ $lm->value }}" @selected($defaultLocation === $lm->value)>{{ $lm->label() }}</option>
+            @endforeach
         </select>
         @error('location_mode')<p class="text-error text-sm">{{ $message }}</p>@enderror
     </div>
 
     {{-- Fester Zeitraum --}}
-    <div class="fieldset md:col-span-2" x-show="mode === '{{ \App\Models\DiaryEntry::MODE_FIXED }}'" x-cloak>
+    <div class="fieldset md:col-span-2" x-show="mode === '{{ \App\Enums\Diary\Mode::Fixed->value }}'" x-cloak>
         <label class="fieldset-label">{{ __('Zeitraum') }}</label>
         <x-date-range
             type="datetime-local"
@@ -219,7 +219,7 @@
     </div>
 
     {{-- Deadline --}}
-    <div class="fieldset md:col-span-2" x-show="mode === '{{ \App\Models\DiaryEntry::MODE_DEADLINE }}'" x-cloak>
+    <div class="fieldset md:col-span-2" x-show="mode === '{{ \App\Enums\Diary\Mode::Deadline->value }}'" x-cloak>
         <label class="fieldset-label" for="due_date">{{ __('Fällig bis') }}</label>
         <input
             type="date"
@@ -232,7 +232,7 @@
     </div>
 
     {{-- Zeitfenster --}}
-    <div class="fieldset md:col-span-2" x-show="mode === '{{ \App\Models\DiaryEntry::MODE_WINDOW }}'" x-cloak>
+    <div class="fieldset md:col-span-2" x-show="mode === '{{ \App\Enums\Diary\Mode::Window->value }}'" x-cloak>
         <label class="fieldset-label">{{ __('Zeitfenster (Datum von/bis)') }}</label>
         <x-date-range
             type="date"
@@ -250,7 +250,7 @@
     </div>
 
     {{-- Backlog: keine Datumsfelder --}}
-    <div class="fieldset md:col-span-2" x-show="mode === '{{ \App\Models\DiaryEntry::MODE_BACKLOG }}'" x-cloak>
+    <div class="fieldset md:col-span-2" x-show="mode === '{{ \App\Enums\Diary\Mode::Backlog->value }}'" x-cloak>
         <p class="text-sm text-base-content/60">{{ __('Kein Datum erfasst — erscheint im Backlog und kann später terminiert werden.') }}</p>
     </div>
 </x-form-group>

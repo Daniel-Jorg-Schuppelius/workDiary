@@ -42,8 +42,8 @@
                     <tr class="{{ $vehicle->archived_at ? 'opacity-60' : '' }}">
                         <td class="font-mono">{{ $vehicle->license_plate }}</td>
                         <td>{{ $vehicle->label }}</td>
-                        <td><span class="badge badge-ghost badge-sm">{{ __($vehicle->vehicle_type) }}</span></td>
-                        <td><span class="badge badge-ghost badge-sm">{{ __($vehicle->propulsion) }}</span></td>
+                        <td><span class="badge badge-ghost badge-sm">{{ $vehicle->vehicle_type->label() }}</span></td>
+                        <td><span class="badge badge-ghost badge-sm">{{ $vehicle->propulsion->label() }}</span></td>
                         <td>{{ $vehicle->defaultUser?->name ?? __('—') }}</td>
                         <td class="text-right">
                             @if ($vehicle->default_rate_per_km !== null)

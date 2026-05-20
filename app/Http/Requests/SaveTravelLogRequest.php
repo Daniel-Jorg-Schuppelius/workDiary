@@ -11,6 +11,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Travel\TravelLogVehicle;
 use App\Models\TravelLog;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
@@ -87,7 +88,7 @@ class SaveTravelLogRequest extends FormRequest
             'from_address' => ['nullable', 'string', 'max:255'],
             'to_address' => ['nullable', 'string', 'max:255'],
             'distance_km' => ['required', 'numeric', 'min:0', 'max:10000'],
-            'vehicle' => ['required', 'string', Rule::in(TravelLog::VEHICLES)],
+            'vehicle' => ['required', Rule::enum(TravelLogVehicle::class)],
             'vehicle_label' => ['nullable', 'string', 'max:64'],
             'purpose' => ['nullable', 'string', 'max:255'],
             'round_trip' => ['sometimes', 'boolean'],

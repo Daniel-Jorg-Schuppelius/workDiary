@@ -7,10 +7,8 @@
     $dialogUrl = ($isEdit ? route('sick-leaves.edit', $sickLeave) : route('sick-leaves.create')) . '?dialog=1';
 
     $selectedUser = (int) old('user_id', $sickLeave?->user_id ?? auth()->id());
-    $kindOptions  = [
-        \App\Models\SickLeave::KIND_INITIAL   => __('Erstbescheinigung'),
-        \App\Models\SickLeave::KIND_FOLLOW_UP => __('Folgebescheinigung'),
-    ];
+    $kindOptions  = \App\Enums\Sickness\SickLeaveKind::options();
+    $currentKind  = old('kind', $sickLeave?->kind?->value ?? \App\Enums\Sickness\SickLeaveKind::Initial->value);
     $auThreshold = (int) config('sickness.attachment_required_from_day', 4);
     $maxKb       = (int) config('sickness.attachments.max_kilobytes', 10240);
     $mimes       = (array) config('sickness.attachments.mimes', ['pdf','jpg','jpeg','png','heic']);
@@ -35,7 +33,7 @@
     <div x-data="{
             start: @js(old('start_date', $sickLeave?->start_date?->format('Y-m-d') ?? $prefillStart)),
             end:   @js(old('end_date',   $sickLeave?->end_date?->format('Y-m-d')   ?? $prefillEnd)),
-            kind:  @js(old('kind',       $sickLeave?->kind ?? \App\Models\SickLeave::KIND_INITIAL)),
+            kind:  @js($currentKind),
             threshold: {{ $auThreshold }},
             hasExisting: {{ $existing->isNotEmpty() ? 'true' : 'false' }},
             get days() {
@@ -65,12 +63,12 @@
             <label class="fieldset-label" for="sick-kind">{{ __('Art') }}</label>
             <select id="sick-kind" name="kind" class="select select-bordered w-full" x-model="kind">
                 @foreach ($kindOptions as $val => $label)
-                    <option value="{{ $val }}" @selected(old('kind', $sickLeave?->kind ?? \App\Models\SickLeave::KIND_INITIAL) === $val)>{{ $label }}</option>
+                    <option value="{{ $val }}" @selected($currentKind === $val)>{{ $label }}</option>
                 @endforeach
             </select>
         </div>
 
-        <div class="fieldset" x-show="kind === '{{ \App\Models\SickLeave::KIND_FOLLOW_UP }}'" x-cloak>
+        <div class="fieldset" x-show="kind === '{{ \App\Enums\Sickness\SickLeaveKind::FollowUp->value }}'" x-cloak>
             <label class="fieldset-label" for="sick-follow">{{ __('Vorausgehende Krankmeldung') }} *</label>
             <select id="sick-follow" name="follow_up_for_id" class="select select-bordered w-full">
                 <option value="">{{ __('Bitte wählen …') }}</option>

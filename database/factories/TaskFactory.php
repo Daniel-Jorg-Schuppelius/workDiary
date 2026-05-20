@@ -15,6 +15,8 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Enums\Task\TaskPriority;
+use App\Enums\Task\TaskStatus;
 
 /**
  * @extends Factory<Task>
@@ -30,8 +32,8 @@ class TaskFactory extends Factory
             'created_by' => User::factory(),
             'title' => fake()->sentence(5),
             'description' => null,
-            'status' => Task::STATUS_OPEN,
-            'priority' => Task::PRIORITY_MEDIUM,
+            'status' => TaskStatus::Open->value,
+            'priority' => TaskPriority::Medium->value,
             'due_date' => null,
             'position' => 0,
         ];
@@ -39,11 +41,11 @@ class TaskFactory extends Factory
 
     public function done(): static
     {
-        return $this->state(['status' => Task::STATUS_DONE]);
+        return $this->state(['status' => TaskStatus::Done->value]);
     }
 
     public function urgent(): static
     {
-        return $this->state(['priority' => Task::PRIORITY_URGENT]);
+        return $this->state(['priority' => TaskPriority::Urgent->value]);
     }
 }

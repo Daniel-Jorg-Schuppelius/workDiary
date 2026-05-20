@@ -20,6 +20,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use App\Enums\TimeEntry\TimeEntryKind;
 
 class TimesheetEntryController extends Controller
 {
@@ -39,7 +40,7 @@ class TimesheetEntryController extends Controller
             'project_id' => $timesheet->project_id,
             'organization_id' => $timesheet->organization_id,
             'date' => $data['date'] ?? ($data['started_at'] ?? $timesheet->work_date),
-            'kind' => $data['kind'] ?? TimeEntry::KIND_WORK,
+            'kind' => $data['kind'] ?? TimeEntryKind::Work->value,
         ]);
 
         return new TimeEntryResource($entry);

@@ -11,6 +11,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Tour\TourStatus;
 use App\Models\Tour;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -38,13 +39,13 @@ class TourFactory extends Factory
             'planned_distance_km' => 0,
             'planned_duration_minutes' => 0,
             'route_geometry' => null,
-            'status' => Tour::STATUS_DRAFT,
+            'status' => TourStatus::Draft,
             'notes' => null,
         ];
     }
 
     public function planned(): self
     {
-        return $this->state(fn () => ['status' => Tour::STATUS_PLANNED]);
+        return $this->state(fn () => ['status' => TourStatus::Planned]);
     }
 }

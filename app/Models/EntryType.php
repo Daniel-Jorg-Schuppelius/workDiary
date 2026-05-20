@@ -11,6 +11,7 @@
 
 namespace App\Models;
 
+use App\Enums\Diary\Priority;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
 use Database\Factories\EntryTypeFactory;
@@ -38,7 +39,7 @@ use Illuminate\Support\Carbon;
  * @property bool $allow_tour
  * @property int $default_status
  * @property int|null $default_service_minutes
- * @property string|null $default_priority
+ * @property Priority|null $default_priority
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -92,6 +93,7 @@ class EntryType extends Model
         'sort' => 'integer',
         'default_status' => 'integer',
         'default_service_minutes' => 'integer',
+        'default_priority' => Priority::class,
     ];
 
     /** @return HasMany<DiaryEntry, $this> */
@@ -130,7 +132,7 @@ class EntryType extends Model
             'allow_priority' => $this->allow_priority,
             'allow_tour' => $this->allow_tour || $this->requires_tour,
             'default_service_minutes' => $this->default_service_minutes,
-            'default_priority' => $this->default_priority,
+            'default_priority' => $this->default_priority?->value,
             'default_status' => $this->default_status,
         ];
     }

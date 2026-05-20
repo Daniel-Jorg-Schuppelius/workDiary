@@ -11,6 +11,9 @@
 
 namespace App\Services\Routing;
 
+use App\Enums\Diary\Mode;
+use App\Enums\Diary\Status as DiaryStatus;
+use App\Enums\Tour\TourStatus;
 use App\Models\DiaryEntry;
 use App\Models\Tour;
 use App\Models\TravelLog;
@@ -21,6 +24,7 @@ use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use App\Enums\Travel\TravelLogVehicle;
 
 /**
  * High-level orchestration around the {@see Tour} aggregate: creation,
@@ -47,7 +51,7 @@ class TourService
             $tour->organization_id = $driver->organization_id;
             $tour->user_id = (int) $driver->id;
             $tour->tour_date = Carbon::instance($date);
-            $tour->status = Tour::STATUS_DRAFT;
+            $tour->status = TourStatus::Draft;
             if ($driver->home_address !== null) {
                 $tour->start_address = $driver->home_address;
                 $tour->start_lat = $driver->home_lat !== null ? (string) $driver->home_lat : null;
@@ -76,7 +80,7 @@ class TourService
             DiaryEntry::query()
                 ->where('tour_id', $tour->id)
                 ->whereNotIn('id', $orderIds)
-                ->update(['tour_id' => null, 'tour_position' => null, 'status' => DiaryEntry::STATUS_OPEN]);
+                ->update(['tour_id' => null, 'tour_position' => null, 'status' => DiaryStatus::Open->value]);
 
             $position = 1;
             foreach ($orderIds as $orderId) {
@@ -91,14 +95,14 @@ class TourService
                 if ($entry->assigned_user_id === null) {
                     $attrs['assigned_user_id'] = $tour->user_id;
                 }
-                if ($entry->status === DiaryEntry::STATUS_OPEN) {
-                    $attrs['status'] = DiaryEntry::STATUS_IN_PROGRESS;
+                if ($entry->status === DiaryStatus::Open) {
+                    $attrs['status'] = DiaryStatus::InProgress;
                 }
 
                 // Flex-Auftrag (deadline/window/backlog/recurring) wird beim
                 // Einplanen in eine Tour fixiert: Tour-Datum gibt den Termin,
                 // time_window_* oder service_minutes liefern die Uhrzeit.
-                if ($entry->mode !== DiaryEntry::MODE_FIXED) {
+                if ($entry->mode !== Mode::Fixed) {
                     $attrs += $this->fixateForTour($entry, $tour);
                 }
 
@@ -132,7 +136,7 @@ class TourService
             : $start->addMinutes($duration);
 
         return [
-            'mode' => DiaryEntry::MODE_FIXED,
+            'mode' => Mode::Fixed,
             'scheduled_for' => $date,
             'start_at' => $start->toDateTimeString(),
             'end_at' => $end->toDateTimeString(),
@@ -237,36 +241,36 @@ class TourService
 
     public function plan(Tour $tour): Tour
     {
-        $this->transitionTo($tour, Tour::STATUS_PLANNED, [Tour::STATUS_DRAFT]);
+        $this->transitionTo($tour, TourStatus::Planned, [TourStatus::Draft]);
 
         return $tour->refresh();
     }
 
     public function start(Tour $tour): Tour
     {
-        $this->transitionTo($tour, Tour::STATUS_IN_PROGRESS, [Tour::STATUS_DRAFT, Tour::STATUS_PLANNED]);
+        $this->transitionTo($tour, TourStatus::InProgress, [TourStatus::Draft, TourStatus::Planned]);
         DiaryEntry::query()
             ->where('tour_id', $tour->id)
-            ->where('status', DiaryEntry::STATUS_OPEN)
-            ->update(['status' => DiaryEntry::STATUS_IN_PROGRESS]);
+            ->where('status', DiaryStatus::Open->value)
+            ->update(['status' => DiaryStatus::InProgress->value]);
 
         return $tour->refresh();
     }
 
     public function complete(Tour $tour): Tour
     {
-        $this->transitionTo($tour, Tour::STATUS_COMPLETED, [Tour::STATUS_IN_PROGRESS, Tour::STATUS_PLANNED]);
+        $this->transitionTo($tour, TourStatus::Completed, [TourStatus::InProgress, TourStatus::Planned]);
         DiaryEntry::query()
             ->where('tour_id', $tour->id)
-            ->whereIn('status', [DiaryEntry::STATUS_OPEN, DiaryEntry::STATUS_IN_PROGRESS])
-            ->update(['status' => DiaryEntry::STATUS_DONE]);
+            ->whereIn('status', [DiaryStatus::Open->value, DiaryStatus::InProgress->value])
+            ->update(['status' => DiaryStatus::Done->value]);
 
         return $tour->refresh();
     }
 
     public function cancel(Tour $tour): Tour
     {
-        $this->transitionTo($tour, Tour::STATUS_CANCELLED, [Tour::STATUS_DRAFT, Tour::STATUS_PLANNED, Tour::STATUS_IN_PROGRESS]);
+        $this->transitionTo($tour, TourStatus::Cancelled, [TourStatus::Draft, TourStatus::Planned, TourStatus::InProgress]);
 
         return $tour->refresh();
     }
@@ -286,12 +290,12 @@ class TourService
             return [];
         }
 
-        $vehicleKind = TravelLog::VEHICLE_PRIVATE;
+        $vehicleKind = TravelLogVehicle::Private_->value;
         if ($tour->vehicle_id !== null) {
             $vehicle = $tour->vehicle()->first();
             $vehicleKind = $vehicle?->isRental() === true
-                ? TravelLog::VEHICLE_RENTAL
-                : TravelLog::VEHICLE_COMPANY;
+                ? TravelLogVehicle::Rental->value
+                : TravelLogVehicle::Company->value;
         }
 
         $legs = [];
@@ -360,15 +364,15 @@ class TourService
     }
 
     /**
-     * @param  list<string>  $allowedFrom
+     * @param  list<TourStatus>  $allowedFrom
      */
-    private function transitionTo(Tour $tour, string $target, array $allowedFrom): void
+    private function transitionTo(Tour $tour, TourStatus $target, array $allowedFrom): void
     {
         if (! in_array($tour->status, $allowedFrom, true)) {
             throw new RuntimeException(sprintf(
                 'Cannot transition tour from "%s" to "%s".',
-                $tour->status,
-                $target
+                $tour->status->value,
+                $target->value
             ));
         }
         $tour->status = $target;

@@ -11,6 +11,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\Diary\Priority;
+use App\Enums\Diary\Status as DiaryStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveEntryTypeRequest;
 use App\Models\DiaryEntry;
@@ -49,7 +51,7 @@ class EntryTypeController extends Controller
         return view('admin.entry-types._form_dialog', [
             'entryType' => new EntryType,
             'statusOptions' => $this->statusOptions(),
-            'priorityOptions' => DiaryEntry::PRIORITIES,
+            'priorityOptions' => Priority::cases(),
         ]);
     }
 
@@ -70,7 +72,7 @@ class EntryTypeController extends Controller
         return view('admin.entry-types._form_dialog', [
             'entryType' => $entryType,
             'statusOptions' => $this->statusOptions(),
-            'priorityOptions' => DiaryEntry::PRIORITIES,
+            'priorityOptions' => Priority::cases(),
         ]);
     }
 
@@ -103,10 +105,10 @@ class EntryTypeController extends Controller
     private function statusOptions(): array
     {
         return [
-            DiaryEntry::STATUS_OPEN => __('Offen'),
-            DiaryEntry::STATUS_IN_PROGRESS => __('In Bearbeitung'),
-            DiaryEntry::STATUS_DONE => __('Erledigt'),
-            DiaryEntry::STATUS_PROBLEM => __('Problem'),
+            DiaryStatus::Open->value => __('Offen'),
+            DiaryStatus::InProgress->value => __('In Bearbeitung'),
+            DiaryStatus::Done->value => __('Erledigt'),
+            DiaryStatus::Problem->value => __('Problem'),
         ];
     }
 }

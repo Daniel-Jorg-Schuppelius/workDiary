@@ -223,7 +223,7 @@ class FleetReportController extends Controller
             $out[] = [
                 (string) $v->license_plate,
                 (string) ($v->label ?? ''),
-                (string) $v->propulsion,
+                $v->propulsion->value,
                 $r['trip_count'],
                 number_format($r['km'], 2, '.', ''),
                 number_format($r['reimbursement'], 2, '.', ''),

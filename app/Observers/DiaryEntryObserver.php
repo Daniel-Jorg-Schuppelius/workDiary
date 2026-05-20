@@ -29,10 +29,14 @@ class DiaryEntryObserver
         }
 
         app(PushNotifier::class)->diaryProblem($entry);
+        $original = $entry->getOriginal('status');
+        $oldValue = $original instanceof \App\Enums\Diary\Status
+            ? $original->value
+            : ($original !== null ? (int) $original : null);
         app(MailNotifier::class)->diaryStatusChanged(
             $entry,
-            $entry->getOriginal('status') !== null ? (int) $entry->getOriginal('status') : null,
-            (int) $entry->status,
+            $oldValue,
+            $entry->status->value,
         );
     }
 

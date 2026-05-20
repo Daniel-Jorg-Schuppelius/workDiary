@@ -11,6 +11,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Diary\LocationMode;
+use App\Enums\Diary\Mode;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveDiaryEntryRequest;
 use App\Legacy\Models\LegacyDiaryEntry;
@@ -107,21 +109,21 @@ class DiaryController extends Controller
         // und werden immer mitgenommen, damit sie nicht im Range verschwinden.
         $query->where(function ($q) use ($from, $to): void {
             $q->where(function ($sub) use ($from, $to): void {
-                $sub->where('mode', DiaryEntry::MODE_FIXED)
+                $sub->where('mode', Mode::Fixed->value)
                     ->whereDate('start_at', '>=', $from)
                     ->whereDate('start_at', '<=', $to);
             });
             $q->orWhere(function ($sub) use ($from, $to): void {
-                $sub->where('mode', DiaryEntry::MODE_DEADLINE)
+                $sub->where('mode', Mode::Deadline->value)
                     ->whereDate('due_date', '>=', $from)
                     ->whereDate('due_date', '<=', $to);
             });
             $q->orWhere(function ($sub) use ($from, $to): void {
-                $sub->where('mode', DiaryEntry::MODE_WINDOW)
+                $sub->where('mode', Mode::Window->value)
                     ->whereDate('window_end_date', '>=', $from)
                     ->whereDate('window_start_date', '<=', $to);
             });
-            $q->orWhereIn('mode', [DiaryEntry::MODE_BACKLOG, DiaryEntry::MODE_RECURRING]);
+            $q->orWhereIn('mode', [Mode::Backlog->value, Mode::Recurring->value]);
         });
 
         if ($request->boolean('mine')) {
@@ -149,12 +151,12 @@ class DiaryController extends Controller
         }
 
         $modeFilter = (string) $request->query('mode', '');
-        if ($modeFilter !== '' && in_array($modeFilter, DiaryEntry::MODES, true)) {
+        if ($modeFilter !== '' && in_array($modeFilter, Mode::values(), true)) {
             $query->where('mode', $modeFilter);
         }
 
         $locationFilter = (string) $request->query('location', '');
-        if ($locationFilter !== '' && in_array($locationFilter, DiaryEntry::LOCATION_MODES, true)) {
+        if ($locationFilter !== '' && in_array($locationFilter, LocationMode::values(), true)) {
             $query->where('location_mode', $locationFilter);
         }
 

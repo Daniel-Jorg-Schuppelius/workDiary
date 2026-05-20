@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SaveTaskRequest;
 use App\Models\Project;
+use App\Enums\Task\TaskStatus;
 use App\Models\Task;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -110,7 +111,7 @@ class TaskController extends Controller
         Gate::authorize('update', $task);
 
         $task->update([
-            'status' => $task->status === Task::STATUS_DONE ? Task::STATUS_OPEN : Task::STATUS_DONE,
+            'status' => $task->status === TaskStatus::Done ? TaskStatus::Open : TaskStatus::Done,
         ]);
 
         return back();

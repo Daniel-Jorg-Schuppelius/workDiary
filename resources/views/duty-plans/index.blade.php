@@ -7,7 +7,7 @@
         <x-filter-field :label="__('Status')" for="dp-status">
             <select id="dp-status" name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
                 <option value="">{{ __('Alle Status') }}</option>
-                @foreach (\App\Models\DutyPlan::$statuses as $st)
+                @foreach (\App\Enums\Shift\DutyPlanStatus::values() as $st)
                     <option value="{{ $st }}" @selected($status === $st)>{{ __('duty_plan.status.' . $st) }}</option>
                 @endforeach
             </select>
@@ -46,7 +46,7 @@
                         {{ $plan->from_date->format('d.m.Y') }} – {{ $plan->to_date->format('d.m.Y') }}
                     </td>
                     <td>
-                        <span class="badge badge-sm badge-outline">{{ __('duty_plan.period.' . $plan->period_type) }}</span>
+                        <span class="badge badge-sm badge-outline">{{ $plan->period_type->label() }}</span>
                     </td>
                     <td class="text-center">{{ $plan->shifts_count }}</td>
                     <td>

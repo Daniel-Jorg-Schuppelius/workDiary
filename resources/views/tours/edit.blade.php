@@ -22,7 +22,7 @@
     @endphp
 
     <x-page-shell>
-        <x-page-toolbar :title="__('Tour') . ' ' . ($tour->name ?? ('#' . $tour->id))" :badge="__($tour->status)" badge-tone="ghost">
+        <x-page-toolbar :title="__('Tour') . ' ' . ($tour->name ?? ('#' . $tour->id))" :badge="$tour->status?->label() ?? ''" badge-tone="ghost">
             <div class="text-sm text-base-content/70">
                 {{ $tour->tour_date?->format('d.m.Y') }} ·
                 {{ number_format((float) $tour->planned_distance_km, 2, ',', '.') }} km ·
@@ -58,8 +58,8 @@
                     <label class="form-control">
                         <span class="label-text">{{ __('Status') }}</span>
                         <select name="status" class="select select-bordered select-sm">
-                            @foreach ($statuses as $s)
-                                <option value="{{ $s }}" @selected($tour->status === $s)>{{ __($s) }}</option>
+                            @foreach ($statuses as $value => $label)
+                                <option value="{{ $value }}" @selected($tour->status?->value === $value)>{{ $label }}</option>
                             @endforeach
                         </select>
                     </label>
@@ -179,15 +179,15 @@
                                                 <div class="flex flex-wrap items-center gap-2 text-sm">
                                                     <span>{{ $a->title ?: \Illuminate\Support\Str::limit((string) $a->content, 50) }}</span>
                                                     <span class="badge badge-xs badge-outline">{{ $a->modeLabel() }}</span>
-                                                    @if ($a->location_mode === \App\Models\DiaryEntry::LOCATION_REMOTE)
+                                                    @if ($a->location_mode === \App\Enums\Diary\LocationMode::Remote)
                                                         <span class="badge badge-xs badge-ghost">{{ __('Remote') }}</span>
                                                     @endif
                                                 </div>
                                                 <div class="text-xs text-base-content/60">
                                                     {{ $svcLabel }}
-                                                    @if ($a->mode === \App\Models\DiaryEntry::MODE_DEADLINE && $a->due_date)
+                                                    @if ($a->mode === \App\Enums\Diary\Mode::Deadline && $a->due_date)
                                                         · {{ __('fällig bis') }} {{ $a->due_date->format('d.m.Y') }}
-                                                    @elseif ($a->mode === \App\Models\DiaryEntry::MODE_WINDOW && $a->window_end_date)
+                                                    @elseif ($a->mode === \App\Enums\Diary\Mode::Window && $a->window_end_date)
                                                         · {{ __('Fenster bis') }} {{ $a->window_end_date->format('d.m.Y') }}
                                                     @endif
                                                 </div>

@@ -12,12 +12,15 @@
 namespace Tests\Feature;
 
 use App\Models\DiaryEntry;
+use App\Enums\Diary\LocationMode;
 use App\Models\Project;
 use App\Models\RecurrenceRule;
 use App\Models\User;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Enums\Project\ProjectStatus;
+use App\Enums\Recurrence\RecurrenceFrequency;
 
 class ProjectRecurrenceRuleTest extends TestCase
 {
@@ -35,7 +38,7 @@ class ProjectRecurrenceRuleTest extends TestCase
         $this->owner = User::factory()->user()->create();
         $this->project = Project::create([
             'name' => 'Wartung '.uniqid('', true),
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'is_maintenance' => true,
             'created_by' => $this->owner->id,
         ]);
@@ -47,8 +50,8 @@ class ProjectRecurrenceRuleTest extends TestCase
             ->post(route('projects.recurrence-rules.store', $this->project), [
                 'name' => 'DATEV monatlich',
                 'content_template' => 'Update am {date}',
-                'default_location_mode' => DiaryEntry::LOCATION_REMOTE,
-                'frequency' => RecurrenceRule::FREQ_MONTHLY,
+                'default_location_mode' => LocationMode::Remote->value,
+                'frequency' => RecurrenceFrequency::Monthly->value,
                 'interval' => 1,
                 'bymonthday' => 15,
                 'starts_on' => '2026-06-15',
@@ -59,7 +62,7 @@ class ProjectRecurrenceRuleTest extends TestCase
         $this->assertDatabaseHas('recurrence_rules', [
             'project_id' => $this->project->id,
             'name' => 'DATEV monatlich',
-            'frequency' => RecurrenceRule::FREQ_MONTHLY,
+            'frequency' => RecurrenceFrequency::Monthly->value,
             'bymonthday' => 15,
             'created_by' => $this->owner->id,
         ]);
@@ -73,8 +76,8 @@ class ProjectRecurrenceRuleTest extends TestCase
             ->put(route('projects.recurrence-rules.update', [$this->project, $rule]), [
                 'name' => 'Umbenannt',
                 'content_template' => $rule->content_template,
-                'default_location_mode' => DiaryEntry::LOCATION_ONSITE,
-                'frequency' => $rule->frequency,
+                'default_location_mode' => LocationMode::Onsite->value,
+                'frequency' => $rule->frequency->value,
                 'interval' => 2,
                 'byweekday' => 'TU',
                 'starts_on' => $rule->starts_on->toDateString(),
@@ -101,7 +104,7 @@ class ProjectRecurrenceRuleTest extends TestCase
     public function test_run_generates_diary_entries(): void
     {
         $rule = $this->makeRule([
-            'frequency' => RecurrenceRule::FREQ_WEEKLY,
+            'frequency' => RecurrenceFrequency::Weekly->value,
             'byweekday' => 'MO',
             'starts_on' => '2026-05-04',
         ]);
@@ -123,8 +126,8 @@ class ProjectRecurrenceRuleTest extends TestCase
             ->put(route('projects.recurrence-rules.update', [$this->project, $rule]), [
                 'name' => 'Hijacked',
                 'content_template' => 'x',
-                'default_location_mode' => DiaryEntry::LOCATION_ONSITE,
-                'frequency' => RecurrenceRule::FREQ_DAILY,
+                'default_location_mode' => LocationMode::Onsite->value,
+                'frequency' => RecurrenceFrequency::Daily->value,
                 'interval' => 1,
                 'starts_on' => '2026-05-01',
             ])
@@ -140,8 +143,8 @@ class ProjectRecurrenceRuleTest extends TestCase
             'project_id' => $this->project->id,
             'name' => 'Wöchentliche Routine',
             'content_template' => 'Routine am {date}',
-            'default_location_mode' => DiaryEntry::LOCATION_ONSITE,
-            'frequency' => RecurrenceRule::FREQ_WEEKLY,
+            'default_location_mode' => LocationMode::Onsite->value,
+            'frequency' => RecurrenceFrequency::Weekly->value,
             'interval' => 1,
             'byweekday' => 'MO',
             'starts_on' => '2026-05-04',

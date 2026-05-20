@@ -19,6 +19,7 @@ use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use App\Enums\Project\ProjectStatus;
 
 class DefaultProjectTest extends TestCase
 {
@@ -76,7 +77,7 @@ class DefaultProjectTest extends TestCase
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
             'name' => 'Wartung Spezial',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
             'is_default' => true,
         ]);
 
@@ -111,7 +112,7 @@ class DefaultProjectTest extends TestCase
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
             'name' => 'Webshop Relaunch',
-            'status' => Project::STATUS_ACTIVE,
+            'status' => ProjectStatus::Active->value,
         ]);
 
         $response = $this->actingAs($this->user)->post(route('timesheets.quick'), [

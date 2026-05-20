@@ -4,7 +4,7 @@
 
 @php
     /** @var \Illuminate\Support\Collection $categories */
-    $types = \App\Models\ActivityCategory::TYPES;
+    $types = \App\Enums\Activity\ActivityCategoryType::options();
 @endphp
 
 @section('content')
@@ -27,8 +27,8 @@
                 <label class="form-control md:col-span-1">
                     <span class="label-text text-xs">{{ __('Typ') }}</span>
                     <select name="activity_type" class="select select-bordered select-sm">
-                        @foreach ($types as $t)
-                            <option value="{{ $t }}">{{ $t }}</option>
+                        @foreach ($types as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
                         @endforeach
                     </select>
                 </label>
@@ -63,7 +63,7 @@
                     <tr>
                         <td><code class="text-xs">{{ $c->key }}</code></td>
                         <td>{{ $c->label }}</td>
-                        <td><span class="badge badge-sm badge-ghost">{{ $c->activity_type }}</span></td>
+                        <td><span class="badge badge-sm badge-ghost">{{ $c->activity_type->label() }}</span></td>
                         <td class="text-center">{!! $c->counts_as_work ? '✓' : '—' !!}</td>
                         <td class="text-center">{!! $c->billable_default ? '✓' : '—' !!}</td>
                         <td class="text-center">{!! $c->active ? '✓' : '—' !!}</td>

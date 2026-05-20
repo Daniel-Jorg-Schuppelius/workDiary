@@ -11,6 +11,9 @@
 
 namespace App\Models;
 
+use App\Enums\Vehicle\VehicleOwnership;
+use App\Enums\Vehicle\VehiclePropulsion;
+use App\Enums\Vehicle\VehicleType;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
 use Database\Factories\VehicleFactory;
@@ -26,9 +29,9 @@ use Illuminate\Support\Carbon;
  * @property int|null $organization_id
  * @property string $license_plate
  * @property string|null $label
- * @property string $vehicle_type
- * @property string $propulsion
- * @property string $ownership
+ * @property VehicleType $vehicle_type
+ * @property VehiclePropulsion $propulsion
+ * @property VehicleOwnership $ownership
  * @property string|null $rental_provider
  * @property Carbon|null $rental_start
  * @property Carbon|null $rental_end
@@ -54,63 +57,6 @@ class Vehicle extends Model
     /** @use HasFactory<VehicleFactory> */
     use HasFactory;
 
-    public const TYPE_CAR = 'car';
-
-    public const TYPE_VAN = 'van';
-
-    public const TYPE_TRUCK = 'truck';
-
-    public const TYPE_BICYCLE = 'bicycle';
-
-    public const TYPE_OTHER = 'other';
-
-    /** @var list<string> */
-    public const TYPES = [
-        self::TYPE_CAR,
-        self::TYPE_VAN,
-        self::TYPE_TRUCK,
-        self::TYPE_BICYCLE,
-        self::TYPE_OTHER,
-    ];
-
-    public const PROPULSION_DIESEL = 'diesel';
-
-    public const PROPULSION_PETROL = 'petrol';
-
-    public const PROPULSION_GAS = 'gas';
-
-    public const PROPULSION_HYBRID = 'hybrid';
-
-    public const PROPULSION_ELECTRIC = 'electric';
-
-    public const PROPULSION_MUSCLE = 'muscle';
-
-    public const PROPULSION_OTHER = 'other';
-
-    /** @var list<string> */
-    public const PROPULSIONS = [
-        self::PROPULSION_DIESEL,
-        self::PROPULSION_PETROL,
-        self::PROPULSION_GAS,
-        self::PROPULSION_HYBRID,
-        self::PROPULSION_ELECTRIC,
-        self::PROPULSION_MUSCLE,
-        self::PROPULSION_OTHER,
-    ];
-
-    public const OWNERSHIP_OWNED = 'owned';
-
-    public const OWNERSHIP_LEASED = 'leased';
-
-    public const OWNERSHIP_RENTAL = 'rental';
-
-    /** @var list<string> */
-    public const OWNERSHIPS = [
-        self::OWNERSHIP_OWNED,
-        self::OWNERSHIP_LEASED,
-        self::OWNERSHIP_RENTAL,
-    ];
-
     protected $fillable = [
         'organization_id',
         'license_plate',
@@ -135,6 +81,9 @@ class Vehicle extends Model
     ];
 
     protected $casts = [
+        'vehicle_type' => VehicleType::class,
+        'propulsion' => VehiclePropulsion::class,
+        'ownership' => VehicleOwnership::class,
         'odometer_km' => 'integer',
         'archived_at' => 'datetime',
         'rental_start' => 'date',
@@ -150,12 +99,12 @@ class Vehicle extends Model
 
     public function isElectric(): bool
     {
-        return in_array($this->propulsion, [self::PROPULSION_ELECTRIC, self::PROPULSION_HYBRID], true);
+        return in_array($this->propulsion, [VehiclePropulsion::Electric, VehiclePropulsion::Hybrid], true);
     }
 
     public function isRental(): bool
     {
-        return $this->ownership === self::OWNERSHIP_RENTAL;
+        return $this->ownership === VehicleOwnership::Rental;
     }
 
     /**
@@ -180,11 +129,7 @@ class Vehicle extends Model
 
     public function expectedEnergyUnit(): ?string
     {
-        return match ($this->propulsion) {
-            self::PROPULSION_ELECTRIC => 'kwh',
-            self::PROPULSION_MUSCLE, self::PROPULSION_OTHER => null,
-            default => 'liter',
-        };
+        return $this->propulsion->expectedEnergyUnit();
     }
 
     public function displayName(): string
