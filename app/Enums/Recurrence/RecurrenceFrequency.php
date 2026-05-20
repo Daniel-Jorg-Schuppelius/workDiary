@@ -14,8 +14,7 @@ namespace App\Enums\Recurrence;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum RecurrenceFrequency: string implements HasLabel
-{
+enum RecurrenceFrequency: string implements HasLabel {
     use HasOptions;
 
     case Daily = 'daily';
@@ -23,8 +22,7 @@ enum RecurrenceFrequency: string implements HasLabel
     case Monthly = 'monthly';
     case Yearly = 'yearly';
 
-    public function label(): string
-    {
-        return (string) __('recurrence.frequency.'.$this->value);
+    public function label(): string {
+        return (string) __('recurrence.frequency.' . $this->value);
     }
 }

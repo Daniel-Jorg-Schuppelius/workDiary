@@ -14,8 +14,7 @@ namespace App\Enums\Attendance;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum AttendanceSource: string implements HasLabel
-{
+enum AttendanceSource: string implements HasLabel {
     use HasOptions;
 
     case Clock = 'clock';
@@ -23,8 +22,7 @@ enum AttendanceSource: string implements HasLabel
     case Import = 'import';
     case AutoClose = 'auto_close';
 
-    public function label(): string
-    {
-        return (string) __('attendance.source.'.$this->value);
+    public function label(): string {
+        return (string) __('attendance.source.' . $this->value);
     }
 }

@@ -14,21 +14,18 @@ namespace App\Enums\Task;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum TaskStatus: string implements HasLabel
-{
+enum TaskStatus: string implements HasLabel {
     use HasOptions;
 
     case Open = 'open';
     case InProgress = 'in_progress';
     case Done = 'done';
 
-    public function label(): string
-    {
-        return (string) __('enums.task.status.'.$this->value);
+    public function label(): string {
+        return (string) __('enums.task.status.' . $this->value);
     }
 
-    public function tone(): string
-    {
+    public function tone(): string {
         return match ($this) {
             self::Open => 'neutral',
             self::InProgress => 'info',

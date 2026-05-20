@@ -14,8 +14,7 @@ namespace App\Enums\Shift;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum ScheduledShiftStatus: string implements HasLabel
-{
+enum ScheduledShiftStatus: string implements HasLabel {
     use HasOptions;
 
     case Draft = 'draft';
@@ -23,13 +22,11 @@ enum ScheduledShiftStatus: string implements HasLabel
     case Confirmed = 'confirmed';
     case Cancelled = 'cancelled';
 
-    public function label(): string
-    {
-        return (string) __('scheduled_shift.status.'.$this->value);
+    public function label(): string {
+        return (string) __('scheduled_shift.status.' . $this->value);
     }
 
-    public function tone(): string
-    {
+    public function tone(): string {
         return match ($this) {
             self::Draft => 'ghost',
             self::Published => 'info',

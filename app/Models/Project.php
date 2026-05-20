@@ -403,8 +403,7 @@ class Project extends Model {
      *
      * @return array{roots: \Illuminate\Support\Collection<int, Project>, childrenByParent: \Illuminate\Support\Collection<int, \Illuminate\Support\Collection<int, Project>>, customers: \Illuminate\Support\Collection<int, array{id: int, name: string}>}
      */
-    public static function pickerData(): array
-    {
+    public static function pickerData(): array {
         $projects = static::query()
             ->where('status', ProjectStatus::Active)
             ->with('customer:id,name,slug')
@@ -412,13 +411,13 @@ class Project extends Model {
             ->get(['id', 'name', 'slug', 'customer_id', 'parent_id', 'color']);
 
         $byId = $projects->keyBy('id');
-        $childrenByParent = $projects->groupBy(fn ($p) => (int) ($p->parent_id ?? 0));
+        $childrenByParent = $projects->groupBy(fn($p) => (int) ($p->parent_id ?? 0));
         $roots = $projects
-            ->filter(fn ($p) => $p->parent_id === null || ! $byId->has($p->parent_id))
+            ->filter(fn($p) => $p->parent_id === null || ! $byId->has($p->parent_id))
             ->values();
 
         $customers = $projects
-            ->map(fn ($p) => $p->customer
+            ->map(fn($p) => $p->customer
                 ? ['id' => (int) $p->customer->id, 'name' => $p->customer->name]
                 : ['id' => 0, 'name' => __('Intern (ohne Kunde)')])
             ->unique('id')

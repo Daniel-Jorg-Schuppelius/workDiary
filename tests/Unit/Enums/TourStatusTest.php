@@ -14,10 +14,8 @@ namespace Tests\Unit\Enums;
 use App\Enums\Tour\TourStatus;
 use Tests\TestCase;
 
-class TourStatusTest extends TestCase
-{
-    public function test_cases(): void
-    {
+class TourStatusTest extends TestCase {
+    public function test_cases(): void {
         $this->assertSame(
             ['draft', 'planned', 'in_progress', 'completed', 'cancelled'],
             TourStatus::values()
@@ -27,15 +25,13 @@ class TourStatusTest extends TestCase
         $this->assertSame(TourStatus::InProgress, TourStatus::tryFromName('InProgress'));
     }
 
-    public function test_labels_non_empty(): void
-    {
+    public function test_labels_non_empty(): void {
         foreach (TourStatus::cases() as $case) {
             $this->assertNotSame('', $case->label());
         }
     }
 
-    public function test_options_keys_match_values(): void
-    {
+    public function test_options_keys_match_values(): void {
         $this->assertSame(TourStatus::values(), array_keys(TourStatus::options()));
     }
 }

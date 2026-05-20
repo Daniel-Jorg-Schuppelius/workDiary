@@ -46,13 +46,11 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $updated_at
  */
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
-{
+class User extends Authenticatable {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasAttachments, HasFactory, HasRoles, Notifiable;
 
-    public function isAdmin(): bool
-    {
+    public function isAdmin(): bool {
         if ($this->hasRole(UserRole::Admin->value)) {
             return true;
         }
@@ -63,16 +61,14 @@ class User extends Authenticatable
     /**
      * Darf Diary-Einträge im Namen anderer Benutzer anlegen.
      */
-    public function canCreateEntriesForOthers(): bool
-    {
+    public function canCreateEntriesForOthers(): bool {
         return $this->isAdmin() || $this->hasRole(UserRole::Buchhaltung->value);
     }
 
     /**
      * Darf Buchhaltungs-/Abrechnungsdaten verwalten (z. B. Kunden, Lexoffice-Sync).
      */
-    public function canManageBilling(): bool
-    {
+    public function canManageBilling(): bool {
         return $this->isAdmin() || $this->hasRole(UserRole::Buchhaltung->value);
     }
 
@@ -81,8 +77,7 @@ class User extends Authenticatable
      * Callcenter, Wochenkalender) lesend einsehen — unabhängig vom eigenen User.
      * Schreibrechte sind davon NICHT betroffen (siehe `isAdmin()` / Policies).
      */
-    public function canViewAllLegacyData(): bool
-    {
+    public function canViewAllLegacyData(): bool {
         return LegacyRoleResolver::isAdmin($this) || $this->hasRole(UserRole::Buchhaltung->value);
     }
 
@@ -90,8 +85,7 @@ class User extends Authenticatable
      * Existiert dieser User im Legacy-System? Kein Live-DB-Check; reines
      * Flag auf Basis der bereits aufgelösten legacy_user_id.
      */
-    public function existsInLegacy(): bool
-    {
+    public function existsInLegacy(): bool {
         return $this->legacy_user_id !== null;
     }
 
@@ -100,8 +94,7 @@ class User extends Authenticatable
      * Schatten-Accounts aus reinem Legacy-Login bleiben false und können
      * daher nicht über kompromittierte Legacy-Passwörter ins neue System.
      */
-    public function existsInNewSystem(): bool
-    {
+    public function existsInNewSystem(): bool {
         return (bool) $this->is_new_system;
     }
 
@@ -109,8 +102,7 @@ class User extends Authenticatable
      * Darf der User den Legacy-Bereich der Anwendung nutzen?
      * Admins haben immer Zugriff.
      */
-    public function canAccessLegacy(): bool
-    {
+    public function canAccessLegacy(): bool {
         return $this->isAdmin() || $this->existsInLegacy();
     }
 
@@ -118,8 +110,7 @@ class User extends Authenticatable
      * Darf der User den neuen Bereich der Anwendung nutzen?
      * Admins haben immer Zugriff.
      */
-    public function canAccessNew(): bool
-    {
+    public function canAccessNew(): bool {
         return $this->isAdmin() || $this->existsInNewSystem();
     }
 
@@ -153,51 +144,43 @@ class User extends Authenticatable
     ];
 
     /** @return BelongsTo<Organization, $this> */
-    public function organization(): BelongsTo
-    {
+    public function organization(): BelongsTo {
         return $this->belongsTo(Organization::class);
     }
 
     /** @return BelongsToMany<Qualification, $this> */
-    public function qualifications(): BelongsToMany
-    {
+    public function qualifications(): BelongsToMany {
         return $this->belongsToMany(Qualification::class, 'user_qualifications')
             ->withPivot(['valid_from', 'valid_until'])
             ->withTimestamps();
     }
 
     /** @return HasMany<DiaryEntry, $this> */
-    public function diaryEntries(): HasMany
-    {
+    public function diaryEntries(): HasMany {
         return $this->hasMany(DiaryEntry::class);
     }
 
     /** @return HasMany<OnCallShift, $this> */
-    public function onCallShifts(): HasMany
-    {
+    public function onCallShifts(): HasMany {
         return $this->hasMany(OnCallShift::class);
     }
 
     /** @return HasMany<EmergencyAssignment, $this> */
-    public function emergencyAssignments(): HasMany
-    {
+    public function emergencyAssignments(): HasMany {
         return $this->hasMany(EmergencyAssignment::class);
     }
 
     /** @return HasMany<Vacation, $this> */
-    public function vacations(): HasMany
-    {
+    public function vacations(): HasMany {
         return $this->hasMany(Vacation::class);
     }
 
     /** @return HasMany<SickLeave, $this> */
-    public function sickLeaves(): HasMany
-    {
+    public function sickLeaves(): HasMany {
         return $this->hasMany(SickLeave::class);
     }
 
-    public function currentSicknessStatus(?CarbonInterface $on = null): ContinuedPaymentStatus
-    {
+    public function currentSicknessStatus(?CarbonInterface $on = null): ContinuedPaymentStatus {
         /** @var ContinuedPaymentService $svc */
         $svc = app(ContinuedPaymentService::class);
 
@@ -205,25 +188,21 @@ class User extends Authenticatable
     }
 
     /** @return HasMany<PushSubscription, $this> */
-    public function pushSubscriptions(): HasMany
-    {
+    public function pushSubscriptions(): HasMany {
         return $this->hasMany(PushSubscription::class);
     }
 
     /** @return HasMany<Timesheet, $this> */
-    public function timesheets(): HasMany
-    {
+    public function timesheets(): HasMany {
         return $this->hasMany(Timesheet::class);
     }
 
     /** @return HasMany<TimeEntry, $this> */
-    public function timeEntries(): HasMany
-    {
+    public function timeEntries(): HasMany {
         return $this->hasMany(TimeEntry::class);
     }
 
-    public function workSchedule(?CarbonInterface $on = null): ?WorkSchedule
-    {
+    public function workSchedule(?CarbonInterface $on = null): ?WorkSchedule {
         $on = $on ? $on->copy()->startOfDay() : now()->startOfDay();
 
         return WorkSchedule::query()
@@ -236,8 +215,7 @@ class User extends Authenticatable
             ->first();
     }
 
-    public function legacyUser(): ?LegacyUser
-    {
+    public function legacyUser(): ?LegacyUser {
         if (! $this->legacy_user_id) {
             return null;
         }
@@ -250,8 +228,7 @@ class User extends Authenticatable
      * (meta_type='avatar'). Liefert null, wenn kein Bild gesetzt ist;
      * Views müssen dann auf einen Initialen-Fallback ausweichen.
      */
-    public function avatar(): ?Attachment
-    {
+    public function avatar(): ?Attachment {
         return $this->attachmentByMeta(Attachment::META_AVATAR);
     }
 
@@ -262,8 +239,7 @@ class User extends Authenticatable
      *
      * @return array<string, mixed>
      */
-    public function preferences(): array
-    {
+    public function preferences(): array {
         /** @var array<string, mixed> $defaults */
         $defaults = (array) config('personalization.defaults', []);
         /** @var array<string, mixed> $stored */

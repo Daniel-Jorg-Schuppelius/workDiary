@@ -24,17 +24,16 @@ use Illuminate\Support\Facades\DB;
  * DiaryEntry-Datensätze. Idempotent: existiert für eine Rule und ein Datum
  * bereits ein Eintrag (über `due_date`), wird nichts erzeugt.
  */
-class RecurrenceGenerator
-{
-    public function __construct(private readonly int $defaultLookaheadDays = 28) {}
+class RecurrenceGenerator {
+    public function __construct(private readonly int $defaultLookaheadDays = 28) {
+    }
 
     /**
      * Iteriert über alle aktiven Regeln und erzeugt fehlende Aufträge.
      *
      * @return int Anzahl erzeugter DiaryEntries
      */
-    public function generateAll(?int $lookaheadDays = null, ?CarbonImmutable $now = null): int
-    {
+    public function generateAll(?int $lookaheadDays = null, ?CarbonImmutable $now = null): int {
         $now = $now ?? CarbonImmutable::now();
         $lookahead = $lookaheadDays ?? $this->defaultLookaheadDays;
 
@@ -55,8 +54,7 @@ class RecurrenceGenerator
     /**
      * Erzeugt für eine einzelne Regel die fehlenden DiaryEntries.
      */
-    public function generateForRule(RecurrenceRule $rule, CarbonImmutable $now, int $lookaheadDays): int
-    {
+    public function generateForRule(RecurrenceRule $rule, CarbonImmutable $now, int $lookaheadDays): int {
         $horizon = $now->copy()->addDays($lookaheadDays)->startOfDay();
         if ($rule->ends_on !== null) {
             $end = CarbonImmutable::parse($rule->ends_on)->startOfDay();
@@ -105,16 +103,14 @@ class RecurrenceGenerator
         return $createdCount;
     }
 
-    private function markGeneratedUntil(RecurrenceRule $rule, CarbonImmutable $horizon): void
-    {
+    private function markGeneratedUntil(RecurrenceRule $rule, CarbonImmutable $horizon): void {
         $rule->forceFill(['last_generated_until' => $horizon->toDateString()])->save();
     }
 
     /**
      * @return list<CarbonImmutable>
      */
-    private function occurrencesBetween(RecurrenceRule $rule, CarbonImmutable $start, CarbonImmutable $end): array
-    {
+    private function occurrencesBetween(RecurrenceRule $rule, CarbonImmutable $start, CarbonImmutable $end): array {
         $out = [];
         $interval = max(1, (int) $rule->interval);
 
@@ -182,8 +178,7 @@ class RecurrenceGenerator
      * wird der Wochentag des Startdatums genommen, damit „wöchentlich" nicht
      * leer bleibt.
      */
-    private function weekdayBitmap(RecurrenceRule $rule): int
-    {
+    private function weekdayBitmap(RecurrenceRule $rule): int {
         $codes = $rule->weekdays();
         if ($codes === []) {
             $iso = ((int) CarbonImmutable::parse($rule->starts_on)->dayOfWeekIso) - 1;
@@ -207,8 +202,7 @@ class RecurrenceGenerator
     /**
      * Setzt den Tag im Monat, klemmt bei Monatsende (z.B. 31. im Februar → 28./29.).
      */
-    private function safeDayOfMonth(CarbonImmutable $monthAnchor, int $day): CarbonImmutable
-    {
+    private function safeDayOfMonth(CarbonImmutable $monthAnchor, int $day): CarbonImmutable {
         $monthAnchor = $monthAnchor->startOfMonth();
         $maxDay = (int) $monthAnchor->daysInMonth;
         $day = min($day, $maxDay);
@@ -221,8 +215,7 @@ class RecurrenceGenerator
      * `recurring` mit `due_date` als Stichdatum; das macht die Aufträge im
      * Backlog/Tour-Vorschlag sichtbar.
      */
-    private function createFromRule(RecurrenceRule $rule, CarbonImmutable $date): DiaryEntry
-    {
+    private function createFromRule(RecurrenceRule $rule, CarbonImmutable $date): DiaryEntry {
         $title = $this->renderTemplate($rule->title_template ?? '', $date);
         $content = $this->renderTemplate($rule->content_template, $date);
 
@@ -256,8 +249,7 @@ class RecurrenceGenerator
         return $entry;
     }
 
-    private function renderTemplate(string $template, CarbonImmutable $date): string
-    {
+    private function renderTemplate(string $template, CarbonImmutable $date): string {
         return strtr($template, [
             '{date}' => $date->format('d.m.Y'),
             '{iso_date}' => $date->toDateString(),

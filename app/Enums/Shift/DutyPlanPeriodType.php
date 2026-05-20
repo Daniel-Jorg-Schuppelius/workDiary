@@ -14,16 +14,14 @@ namespace App\Enums\Shift;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum DutyPlanPeriodType: string implements HasLabel
-{
+enum DutyPlanPeriodType: string implements HasLabel {
     use HasOptions;
 
     case Daily = 'daily';
     case Weekly = 'weekly';
     case Monthly = 'monthly';
 
-    public function label(): string
-    {
-        return (string) __('duty_plan.period.'.$this->value);
+    public function label(): string {
+        return (string) __('duty_plan.period.' . $this->value);
     }
 }

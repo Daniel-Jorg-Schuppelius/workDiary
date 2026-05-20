@@ -32,14 +32,13 @@ use Illuminate\View\View;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-class TourController extends Controller
-{
+class TourController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function __construct(private readonly TourService $tours) {}
+    public function __construct(private readonly TourService $tours) {
+    }
 
-    public function index(Request $request): View
-    {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', Tour::class);
 
         /** @var User $auth */
@@ -81,8 +80,7 @@ class TourController extends Controller
         ]);
     }
 
-    public function create(Request $request): View
-    {
+    public function create(Request $request): View {
         Gate::authorize('create', Tour::class);
 
         return view('tours._form_dialog', [
@@ -94,8 +92,7 @@ class TourController extends Controller
         ]);
     }
 
-    public function store(SaveTourRequest $request): RedirectResponse
-    {
+    public function store(SaveTourRequest $request): RedirectResponse {
         Gate::authorize('create', Tour::class);
 
         /** @var User $auth */
@@ -129,26 +126,24 @@ class TourController extends Controller
             ->with('success', __('Tour angelegt.'));
     }
 
-    public function show(Tour $tour): View
-    {
+    public function show(Tour $tour): View {
         Gate::authorize('view', $tour);
 
         $tour->load([
             'user:id,name',
             'vehicle:id,license_plate,label',
-            'diaryEntries' => fn ($q) => $q->orderByRaw('tour_position IS NULL')->orderBy('tour_position'),
+            'diaryEntries' => fn($q) => $q->orderByRaw('tour_position IS NULL')->orderBy('tour_position'),
             'diaryEntries.customer:id,name',
         ]);
 
         return view('tours.show', ['tour' => $tour]);
     }
 
-    public function edit(Tour $tour): View
-    {
+    public function edit(Tour $tour): View {
         Gate::authorize('update', $tour);
 
         $tour->load([
-            'diaryEntries' => fn ($q) => $q->orderByRaw('tour_position IS NULL')->orderBy('tour_position'),
+            'diaryEntries' => fn($q) => $q->orderByRaw('tour_position IS NULL')->orderBy('tour_position'),
             'diaryEntries.customer:id,name',
         ]);
 
@@ -157,7 +152,7 @@ class TourController extends Controller
         // Fix terminierte Aufträge für diesen Tag (heutiges Verhalten).
         $available = DiaryEntry::query()
             ->whereNull('tour_id')
-            ->whereHas('entryType', fn ($q) => $q->where('allow_tour', true))
+            ->whereHas('entryType', fn($q) => $q->where('allow_tour', true))
             ->whereDate('scheduled_for', $tourDate)
             ->orderBy('time_window_start')
             ->orderBy('id')
@@ -171,7 +166,7 @@ class TourController extends Controller
             ->whereNull('tour_id')
             ->whereIn('status', [DiaryStatus::Open->value, DiaryStatus::Problem->value])
             ->where('is_archived', false)
-            ->whereHas('entryType', fn ($q) => $q->where('allow_tour', true))
+            ->whereHas('entryType', fn($q) => $q->where('allow_tour', true))
             ->where(function ($q) use ($tourDate): void {
                 $q->where(function ($sub) use ($tourDate): void {
                     $sub->where('mode', Mode::Deadline->value)
@@ -204,8 +199,7 @@ class TourController extends Controller
         ]);
     }
 
-    public function update(SaveTourRequest $request, Tour $tour): RedirectResponse
-    {
+    public function update(SaveTourRequest $request, Tour $tour): RedirectResponse {
         Gate::authorize('update', $tour);
 
         $data = $request->validated();
@@ -213,7 +207,7 @@ class TourController extends Controller
 
         $orderIds = $request->input('order_ids', []);
         if (is_array($orderIds)) {
-            $ids = array_values(array_map(static fn ($id) => (int) $id, $orderIds));
+            $ids = array_values(array_map(static fn($id) => (int) $id, $orderIds));
             $this->tours->assignOrders($tour, $ids);
         }
 
@@ -221,8 +215,7 @@ class TourController extends Controller
             ->with('success', __('Tour aktualisiert.'));
     }
 
-    public function destroy(Tour $tour): RedirectResponse
-    {
+    public function destroy(Tour $tour): RedirectResponse {
         Gate::authorize('delete', $tour);
 
         DiaryEntry::query()
@@ -234,8 +227,7 @@ class TourController extends Controller
             ->with('success', __('Tour gelöscht.'));
     }
 
-    public function optimize(Tour $tour): RedirectResponse
-    {
+    public function optimize(Tour $tour): RedirectResponse {
         Gate::authorize('update', $tour);
 
         $result = $this->tours->recalculate($tour);
@@ -247,8 +239,7 @@ class TourController extends Controller
             ]));
     }
 
-    public function start(Tour $tour): RedirectResponse
-    {
+    public function start(Tour $tour): RedirectResponse {
         Gate::authorize('update', $tour);
         try {
             $this->tours->start($tour);
@@ -259,8 +250,7 @@ class TourController extends Controller
         return back()->with('success', __('Tour gestartet.'));
     }
 
-    public function complete(Tour $tour): RedirectResponse
-    {
+    public function complete(Tour $tour): RedirectResponse {
         Gate::authorize('update', $tour);
         try {
             $this->tours->complete($tour);
@@ -271,8 +261,7 @@ class TourController extends Controller
         return back()->with('success', __('Tour abgeschlossen.'));
     }
 
-    public function materialize(Tour $tour): RedirectResponse
-    {
+    public function materialize(Tour $tour): RedirectResponse {
         Gate::authorize('update', $tour);
 
         $logs = $this->tours->materializeToTravelLogs($tour);
@@ -284,8 +273,7 @@ class TourController extends Controller
     /**
      * @return array{0: CarbonImmutable, 1: CarbonImmutable}
      */
-    private function resolveRange(Request $request): array
-    {
+    private function resolveRange(Request $request): array {
         if ($request->filled('from') && $request->filled('to')) {
             $from = CarbonImmutable::parse((string) $request->query('from'))->startOfDay();
             $to = CarbonImmutable::parse((string) $request->query('to'))->endOfDay();
@@ -298,8 +286,7 @@ class TourController extends Controller
         return [$range['from']->startOfDay(), $range['to']->endOfDay()];
     }
 
-    private function resolveTargetUser(Request $request, User $authUser): ?User
-    {
+    private function resolveTargetUser(Request $request, User $authUser): ?User {
         if (! $request->filled('user')) {
             return $authUser;
         }
@@ -330,8 +317,7 @@ class TourController extends Controller
     }
 
     /** @return Collection<int, User> */
-    private function loadSelectableUsers(): Collection
-    {
+    private function loadSelectableUsers(): Collection {
         /** @var Collection<int, User> $users */
         $users = User::query()->orderBy('name')->get(['id', 'name']);
 
@@ -339,8 +325,7 @@ class TourController extends Controller
     }
 
     /** @return Collection<int, Vehicle> */
-    private function loadVehicles(): Collection
-    {
+    private function loadVehicles(): Collection {
         /** @var Collection<int, Vehicle> $vehicles */
         $vehicles = Vehicle::query()->active()->orderBy('label')->get(['id', 'license_plate', 'label']);
 

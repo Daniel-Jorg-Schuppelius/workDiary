@@ -17,10 +17,8 @@ use App\Enums\Diary\Priority;
 use App\Enums\Diary\Status;
 use Tests\TestCase;
 
-final class DiaryEnumsTest extends TestCase
-{
-    public function test_priority_values_and_tones(): void
-    {
+final class DiaryEnumsTest extends TestCase {
+    public function test_priority_values_and_tones(): void {
         $this->assertSame(['low', 'normal', 'high', 'urgent'], Priority::values());
         $this->assertSame('ghost', Priority::Low->tone());
         $this->assertSame('info', Priority::Normal->tone());
@@ -29,16 +27,14 @@ final class DiaryEnumsTest extends TestCase
         $this->assertNotEmpty(Priority::Normal->label());
     }
 
-    public function test_location_mode_values(): void
-    {
+    public function test_location_mode_values(): void {
         $this->assertSame(['onsite', 'remote', 'hybrid'], LocationMode::values());
         $this->assertNotEmpty(LocationMode::Onsite->label());
         $this->assertNotEmpty(LocationMode::Remote->label());
         $this->assertNotEmpty(LocationMode::Hybrid->label());
     }
 
-    public function test_mode_values_and_labels(): void
-    {
+    public function test_mode_values_and_labels(): void {
         $this->assertSame(['fixed', 'deadline', 'window', 'recurring', 'backlog'], Mode::values());
         $this->assertNotEmpty(Mode::Fixed->label());
         $this->assertNotEmpty(Mode::Deadline->label());
@@ -47,8 +43,7 @@ final class DiaryEnumsTest extends TestCase
         $this->assertNotEmpty(Mode::Backlog->label());
     }
 
-    public function test_status_values_and_tones(): void
-    {
+    public function test_status_values_and_tones(): void {
         $this->assertSame([-1, 1, 2, 3], Status::values());
         $this->assertSame('done', Status::Done->tone());
         $this->assertSame('progress', Status::InProgress->tone());

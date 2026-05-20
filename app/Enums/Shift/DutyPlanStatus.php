@@ -14,20 +14,17 @@ namespace App\Enums\Shift;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum DutyPlanStatus: string implements HasLabel
-{
+enum DutyPlanStatus: string implements HasLabel {
     use HasOptions;
 
     case Draft = 'draft';
     case Published = 'published';
 
-    public function label(): string
-    {
-        return (string) __('duty_plan.status.'.$this->value);
+    public function label(): string {
+        return (string) __('duty_plan.status.' . $this->value);
     }
 
-    public function tone(): string
-    {
+    public function tone(): string {
         return match ($this) {
             self::Draft => 'ghost',
             self::Published => 'info',

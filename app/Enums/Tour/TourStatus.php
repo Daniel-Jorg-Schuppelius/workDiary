@@ -14,8 +14,7 @@ namespace App\Enums\Tour;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum TourStatus: string implements HasLabel
-{
+enum TourStatus: string implements HasLabel {
     use HasOptions;
 
     case Draft = 'draft';
@@ -24,8 +23,7 @@ enum TourStatus: string implements HasLabel
     case Completed = 'completed';
     case Cancelled = 'cancelled';
 
-    public function label(): string
-    {
-        return (string) __('enums.tour.status.'.$this->value);
+    public function label(): string {
+        return (string) __('enums.tour.status.' . $this->value);
     }
 }

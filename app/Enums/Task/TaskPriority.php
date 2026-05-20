@@ -14,8 +14,7 @@ namespace App\Enums\Task;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum TaskPriority: string implements HasLabel
-{
+enum TaskPriority: string implements HasLabel {
     use HasOptions;
 
     case Low = 'low';
@@ -23,13 +22,11 @@ enum TaskPriority: string implements HasLabel
     case High = 'high';
     case Urgent = 'urgent';
 
-    public function label(): string
-    {
-        return (string) __('enums.task.priority.'.$this->value);
+    public function label(): string {
+        return (string) __('enums.task.priority.' . $this->value);
     }
 
-    public function tone(): string
-    {
+    public function tone(): string {
         return match ($this) {
             self::Low => 'ghost',
             self::Medium => 'info',
@@ -38,8 +35,7 @@ enum TaskPriority: string implements HasLabel
         };
     }
 
-    public function color(): string
-    {
+    public function color(): string {
         return match ($this) {
             self::Low => '#94a3b8',
             self::Medium => '#3b82f6',

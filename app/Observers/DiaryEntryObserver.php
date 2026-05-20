@@ -15,15 +15,12 @@ use App\Models\DiaryEntry;
 use App\Services\MailNotifier;
 use App\Services\PushNotifier;
 
-class DiaryEntryObserver
-{
-    public function created(DiaryEntry $entry): void
-    {
+class DiaryEntryObserver {
+    public function created(DiaryEntry $entry): void {
         app(PushNotifier::class)->diaryProblem($entry);
     }
 
-    public function updated(DiaryEntry $entry): void
-    {
+    public function updated(DiaryEntry $entry): void {
         if (! $entry->wasChanged('status')) {
             return;
         }
@@ -44,8 +41,7 @@ class DiaryEntryObserver
      * Polymorphic comments have no database-level FK cascade; remove them
      * manually when their owning DiaryEntry is deleted.
      */
-    public function deleting(DiaryEntry $entry): void
-    {
+    public function deleting(DiaryEntry $entry): void {
         $entry->comments()->delete();
     }
 }

@@ -48,8 +48,7 @@ use Illuminate\Support\Carbon;
  * @property float|null $internal_rate
  * @property bool $exported
  */
-class TimeEntry extends Model
-{
+class TimeEntry extends Model {
     use BelongsToOrganization;
 
     /** @use HasFactory<TimeEntryFactory> */
@@ -62,8 +61,7 @@ class TimeEntry extends Model
      *
      * Liefert ein lokalisiertes Label für einen activity_type-Wert.
      */
-    public static function activityLabel(?string $type): string
-    {
+    public static function activityLabel(?string $type): string {
         $type = (string) $type;
         $enum = TimeEntryActivityType::tryFrom($type);
         if ($enum !== null) {
@@ -116,8 +114,7 @@ class TimeEntry extends Model
         'activity_type' => TimeEntryActivityType::class,
     ];
 
-    protected static function booted(): void
-    {
+    protected static function booted(): void {
         static::saving(function (TimeEntry $entry): void {
             // Default activity_type from kind / project presence.
             if (empty($entry->activity_type)) {
@@ -168,66 +165,55 @@ class TimeEntry extends Model
     }
 
     /** @return BelongsTo<Project, $this> */
-    public function project(): BelongsTo
-    {
+    public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
     }
 
     /** @return BelongsTo<Timesheet, $this> */
-    public function timesheet(): BelongsTo
-    {
+    public function timesheet(): BelongsTo {
         return $this->belongsTo(Timesheet::class);
     }
 
     /** @return MorphMany<Comment, $this> */
-    public function comments(): MorphMany
-    {
+    public function comments(): MorphMany {
         return $this->morphMany(Comment::class, 'commentable')->orderBy('created_at');
     }
 
     /** @return BelongsTo<Task, $this> */
-    public function task(): BelongsTo
-    {
+    public function task(): BelongsTo {
         return $this->belongsTo(Task::class);
     }
 
     /** @return BelongsTo<DiaryEntry, $this> */
-    public function diaryEntry(): BelongsTo
-    {
+    public function diaryEntry(): BelongsTo {
         return $this->belongsTo(DiaryEntry::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo
-    {
+    public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
     /** @return BelongsTo<ActivityCategory, $this> */
-    public function activityCategory(): BelongsTo
-    {
+    public function activityCategory(): BelongsTo {
         return $this->belongsTo(ActivityCategory::class);
     }
 
     /** @return BelongsTo<Attendance, $this> */
-    public function attendance(): BelongsTo
-    {
+    public function attendance(): BelongsTo {
         return $this->belongsTo(Attendance::class);
     }
 
     /** @return BelongsTo<TravelLog, $this> */
-    public function travelLog(): BelongsTo
-    {
+    public function travelLog(): BelongsTo {
         return $this->belongsTo(TravelLog::class);
     }
 
-    public function isProjectWork(): bool
-    {
+    public function isProjectWork(): bool {
         return $this->activity_type === TimeEntryActivityType::Project;
     }
 
-    public function hoursFormatted(): string
-    {
+    public function hoursFormatted(): string {
         $h = intdiv($this->minutes, 60);
         $m = $this->minutes % 60;
 

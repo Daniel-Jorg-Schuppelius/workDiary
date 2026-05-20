@@ -19,15 +19,12 @@ use App\Models\EntryType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveDiaryEntryRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class SaveDiaryEntryRequest extends FormRequest {
+    public function authorize(): bool {
         return true;
     }
 
-    protected function prepareForValidation(): void
-    {
+    protected function prepareForValidation(): void {
         // "0" / leerer Wert => null behandeln, damit Folge-Regeln korrekt greifen.
         $typeId = $this->input('entry_type_id');
         if ($typeId === '' || $typeId === '0' || $typeId === 0) {
@@ -64,8 +61,7 @@ class SaveDiaryEntryRequest extends FormRequest
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         $type = $this->resolveEntryType();
         $requiresCustomer = (bool) ($type?->requires_customer);
         $requiresAddress = (bool) ($type?->requires_address);
@@ -119,8 +115,7 @@ class SaveDiaryEntryRequest extends FormRequest
         ];
     }
 
-    private function resolveEntryType(): ?EntryType
-    {
+    private function resolveEntryType(): ?EntryType {
         $id = $this->input('entry_type_id');
         if (! $id) {
             return null;

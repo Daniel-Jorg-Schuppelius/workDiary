@@ -15,17 +15,14 @@ use App\Enums\Vacation\VacationStatus;
 use App\Enums\Vacation\VacationType;
 use Tests\TestCase;
 
-class VacationEnumsTest extends TestCase
-{
-    public function test_vacation_type_cases(): void
-    {
+class VacationEnumsTest extends TestCase {
+    public function test_vacation_type_cases(): void {
         $this->assertSame(['vacation', 'sick', 'special', 'unpaid'], VacationType::values());
         $this->assertNotSame('', VacationType::Vacation->label());
         $this->assertSame(VacationType::Special, VacationType::tryFrom('special'));
     }
 
-    public function test_vacation_status_cases(): void
-    {
+    public function test_vacation_status_cases(): void {
         $this->assertSame(['pending', 'approved', 'rejected', 'cancelled'], VacationStatus::values());
         foreach (VacationStatus::cases() as $case) {
             $this->assertNotSame('', $case->label());
@@ -33,16 +30,14 @@ class VacationEnumsTest extends TestCase
         }
     }
 
-    public function test_vacation_status_tones(): void
-    {
+    public function test_vacation_status_tones(): void {
         $this->assertSame('success', VacationStatus::Approved->tone());
         $this->assertSame('error', VacationStatus::Rejected->tone());
         $this->assertSame('ghost', VacationStatus::Cancelled->tone());
         $this->assertSame('warning', VacationStatus::Pending->tone());
     }
 
-    public function test_options_keys_match_values(): void
-    {
+    public function test_options_keys_match_values(): void {
         $this->assertSame(VacationType::values(), array_keys(VacationType::options()));
         $this->assertSame(VacationStatus::values(), array_keys(VacationStatus::options()));
     }

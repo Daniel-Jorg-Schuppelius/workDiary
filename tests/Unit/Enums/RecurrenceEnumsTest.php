@@ -14,10 +14,8 @@ namespace Tests\Unit\Enums;
 use App\Enums\Recurrence\RecurrenceFrequency;
 use Tests\TestCase;
 
-final class RecurrenceEnumsTest extends TestCase
-{
-    public function test_recurrence_frequency_values(): void
-    {
+final class RecurrenceEnumsTest extends TestCase {
+    public function test_recurrence_frequency_values(): void {
         $this->assertSame(
             ['daily', 'weekly', 'monthly', 'yearly'],
             RecurrenceFrequency::values()

@@ -14,21 +14,18 @@ namespace App\Enums\Project;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum ProjectStatus: string implements HasLabel
-{
+enum ProjectStatus: string implements HasLabel {
     use HasOptions;
 
     case Active = 'active';
     case Paused = 'paused';
     case Archived = 'archived';
 
-    public function label(): string
-    {
-        return (string) __('enums.project.status.'.$this->value);
+    public function label(): string {
+        return (string) __('enums.project.status.' . $this->value);
     }
 
-    public function tone(): string
-    {
+    public function tone(): string {
         return match ($this) {
             self::Active => 'success',
             self::Paused => 'warning',

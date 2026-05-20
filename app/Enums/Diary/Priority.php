@@ -14,8 +14,7 @@ namespace App\Enums\Diary;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum Priority: string implements HasLabel
-{
+enum Priority: string implements HasLabel {
     use HasOptions;
 
     case Low = 'low';
@@ -23,13 +22,11 @@ enum Priority: string implements HasLabel
     case High = 'high';
     case Urgent = 'urgent';
 
-    public function label(): string
-    {
-        return (string) __('diary.priority.'.$this->value);
+    public function label(): string {
+        return (string) __('diary.priority.' . $this->value);
     }
 
-    public function tone(): string
-    {
+    public function tone(): string {
         return match ($this) {
             self::Low => 'ghost',
             self::Normal => 'info',

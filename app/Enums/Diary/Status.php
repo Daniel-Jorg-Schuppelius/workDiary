@@ -14,8 +14,7 @@ namespace App\Enums\Diary;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum Status: int implements HasLabel
-{
+enum Status: int implements HasLabel {
     use HasOptions;
 
     case Done = -1;
@@ -23,13 +22,11 @@ enum Status: int implements HasLabel
     case Open = 2;
     case Problem = 3;
 
-    public function label(): string
-    {
-        return (string) __('diary.status.'.$this->name);
+    public function label(): string {
+        return (string) __('diary.status.' . $this->name);
     }
 
-    public function tone(): string
-    {
+    public function tone(): string {
         return match ($this) {
             self::Done => 'done',
             self::InProgress => 'progress',

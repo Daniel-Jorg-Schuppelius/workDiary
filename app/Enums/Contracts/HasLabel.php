@@ -11,8 +11,7 @@
 
 namespace App\Enums\Contracts;
 
-interface HasLabel
-{
+interface HasLabel {
     /**
      * Human-readable, localized label for the enum case.
      */

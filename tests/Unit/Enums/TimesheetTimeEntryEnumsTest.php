@@ -16,10 +16,8 @@ use App\Enums\Timesheet\TimesheetKind;
 use App\Enums\Timesheet\TimesheetStatus;
 use Tests\TestCase;
 
-final class TimesheetTimeEntryEnumsTest extends TestCase
-{
-    public function test_timesheet_status_values(): void
-    {
+final class TimesheetTimeEntryEnumsTest extends TestCase {
+    public function test_timesheet_status_values(): void {
         $this->assertSame(['draft', 'submitted', 'signed', 'locked'], TimesheetStatus::values());
         $this->assertSame('neutral', TimesheetStatus::Draft->tone());
         $this->assertSame('info', TimesheetStatus::Submitted->tone());
@@ -29,16 +27,14 @@ final class TimesheetTimeEntryEnumsTest extends TestCase
         $this->assertArrayHasKey('draft', TimesheetStatus::options());
     }
 
-    public function test_timesheet_kind_values(): void
-    {
+    public function test_timesheet_kind_values(): void {
         $this->assertSame(['project', 'personal_day'], TimesheetKind::values());
         $this->assertNotEmpty(TimesheetKind::Project->label());
         $this->assertNotEmpty(TimesheetKind::PersonalDay->label());
         $this->assertCount(2, TimesheetKind::options());
     }
 
-    public function test_time_entry_kind_values(): void
-    {
+    public function test_time_entry_kind_values(): void {
         $this->assertSame(['work', 'travel', 'standby'], TimeEntryKind::values());
         $this->assertNotEmpty(TimeEntryKind::Work->label());
         $this->assertNotEmpty(TimeEntryKind::Travel->label());

@@ -14,10 +14,8 @@ namespace Tests\Unit\Enums;
 use App\Enums\TimeEntry\TimeEntryActivityType;
 use Tests\TestCase;
 
-final class TimeEntryActivityTypeTest extends TestCase
-{
-    public function test_values(): void
-    {
+final class TimeEntryActivityTypeTest extends TestCase {
+    public function test_values(): void {
         $this->assertSame(
             ['project', 'admin', 'training', 'meeting', 'internal', 'travel', 'break', 'absence', 'standby', 'other'],
             TimeEntryActivityType::values()

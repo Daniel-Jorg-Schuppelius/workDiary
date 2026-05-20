@@ -19,12 +19,11 @@ use App\Models\Timesheet;
 use App\Models\User;
 use App\Enums\User\UserRole;
 
-class PushNotifier
-{
-    public function __construct(protected WebPushService $webPush) {}
+class PushNotifier {
+    public function __construct(protected WebPushService $webPush) {
+    }
 
-    public function newComment(Comment $comment): void
-    {
+    public function newComment(Comment $comment): void {
         /** @var DiaryEntry|null $entry */
         $entry = $comment->commentable instanceof DiaryEntry ? $comment->commentable : null;
         if (! $entry || ! $entry->user_id || $entry->user_id === $comment->user_id) {
@@ -40,12 +39,11 @@ class PushNotifier
             'title' => __('Neuer Kommentar'),
             'body' => mb_substr((string) $comment->body, 0, (int) setting('notifications.push.body_truncate', 120)),
             'url' => route('diary.show', $entry),
-            'tag' => 'comment-'.$entry->id,
+            'tag' => 'comment-' . $entry->id,
         ]);
     }
 
-    public function newAttachment(Attachment $att): void
-    {
+    public function newAttachment(Attachment $att): void {
         $att->loadMissing('attachable');
         $attachable = $att->attachable;
         if (! $attachable instanceof DiaryEntry) {
@@ -65,12 +63,11 @@ class PushNotifier
             'title' => __('Neuer Anhang'),
             'body' => (string) $att->original_name,
             'url' => route('diary.show', $entry),
-            'tag' => 'attachment-'.$entry->id,
+            'tag' => 'attachment-' . $entry->id,
         ]);
     }
 
-    public function emergencyAssigned(EmergencyAssignment $assignment): void
-    {
+    public function emergencyAssigned(EmergencyAssignment $assignment): void {
         if (! $assignment->user_id) {
             return;
         }
@@ -82,14 +79,13 @@ class PushNotifier
         }
         $this->webPush->sendToUser($user, [
             'title' => __('Notdienst zugewiesen'),
-            'body' => optional($assignment->start_at)->format('d.m.Y H:i').' – '.($assignment->reason ?: ''),
+            'body' => optional($assignment->start_at)->format('d.m.Y H:i') . ' – ' . ($assignment->reason ?: ''),
             'url' => route('week.index'),
-            'tag' => 'assignment-'.$assignment->id,
+            'tag' => 'assignment-' . $assignment->id,
         ]);
     }
 
-    public function diaryProblem(DiaryEntry $entry): void
-    {
+    public function diaryProblem(DiaryEntry $entry): void {
         if ($entry->status !== \App\Enums\Diary\Status::Problem) {
             return;
         }
@@ -101,15 +97,14 @@ class PushNotifier
             'title' => __('Problem-Eintrag'),
             'body' => mb_substr((string) $entry->content, 0, (int) setting('notifications.push.body_truncate', 120)),
             'url' => route('diary.show', $entry),
-            'tag' => 'problem-'.$entry->id,
+            'tag' => 'problem-' . $entry->id,
         ];
         foreach ($recipients as $u) {
             $this->webPush->sendToUser($u, $payload);
         }
     }
 
-    public function timesheetSigned(Timesheet $timesheet): void
-    {
+    public function timesheetSigned(Timesheet $timesheet): void {
         $timesheet->loadMissing(['user.pushSubscriptions', 'project']);
         /** @var User|null $owner */
         $owner = $timesheet->user;
@@ -119,9 +114,9 @@ class PushNotifier
         }
         $this->webPush->sendToUser($owner, [
             'title' => __('Stundenzettel signiert'),
-            'body' => $project->name.' · '.$timesheet->work_date->format('d.m.Y'),
+            'body' => $project->name . ' · ' . $timesheet->work_date->format('d.m.Y'),
             'url' => route('projects.timesheets.show', [$timesheet->project_id, $timesheet->id]),
-            'tag' => 'timesheet-'.$timesheet->id,
+            'tag' => 'timesheet-' . $timesheet->id,
         ]);
     }
 }

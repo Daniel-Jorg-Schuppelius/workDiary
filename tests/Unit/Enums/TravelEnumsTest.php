@@ -14,10 +14,8 @@ namespace Tests\Unit\Enums;
 use App\Enums\Travel\TravelLogVehicle;
 use Tests\TestCase;
 
-final class TravelEnumsTest extends TestCase
-{
-    public function test_travel_log_vehicle_values(): void
-    {
+final class TravelEnumsTest extends TestCase {
+    public function test_travel_log_vehicle_values(): void {
         $this->assertSame(
             ['company', 'private', 'rental', 'public_transport', 'bicycle', 'foot', 'other'],
             TravelLogVehicle::values()

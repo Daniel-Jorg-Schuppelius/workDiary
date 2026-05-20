@@ -20,12 +20,10 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<DiaryEntry>
  */
-class DiaryEntryFactory extends Factory
-{
+class DiaryEntryFactory extends Factory {
     protected $model = DiaryEntry::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         $start = fake()->dateTimeBetween('-1 month', '+1 month');
         $end = (clone $start)->modify('+1 hour');
 
@@ -45,20 +43,19 @@ class DiaryEntryFactory extends Factory
      * Variante f\u00fcr Service-Auftr\u00e4ge (Pflege/IT/HLK): setzt EntryType=service
      * und f\u00fcllt Auftragsfelder mit Defaults.
      */
-    public function service(): self
-    {
+    public function service(): self {
         return $this->state(function (array $attributes): array {
             $orgId = $attributes['organization_id'] ?? null;
             $type = EntryType::query()
                 ->withoutGlobalScopes()
                 ->where('slug', EntryType::SLUG_SERVICE)
-                ->when($orgId, fn ($q) => $q->where('organization_id', $orgId))
+                ->when($orgId, fn($q) => $q->where('organization_id', $orgId))
                 ->first()
                 ?? EntryType::query()
-                    ->withoutGlobalScopes()
-                    ->where('slug', EntryType::SLUG_SERVICE)
-                    ->whereNull('organization_id')
-                    ->first();
+                ->withoutGlobalScopes()
+                ->where('slug', EntryType::SLUG_SERVICE)
+                ->whereNull('organization_id')
+                ->first();
 
             return [
                 'entry_type_id' => $type?->id,

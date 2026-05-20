@@ -14,8 +14,7 @@ namespace App\Enums\Vacation;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum VacationStatus: string implements HasLabel
-{
+enum VacationStatus: string implements HasLabel {
     use HasOptions;
 
     case Pending = 'pending';
@@ -23,14 +22,12 @@ enum VacationStatus: string implements HasLabel
     case Rejected = 'rejected';
     case Cancelled = 'cancelled';
 
-    public function label(): string
-    {
-        return (string) __('enums.vacation.status.'.$this->value);
+    public function label(): string {
+        return (string) __('enums.vacation.status.' . $this->value);
     }
 
     /** DaisyUI badge tone */
-    public function tone(): string
-    {
+    public function tone(): string {
         return match ($this) {
             self::Approved => 'success',
             self::Rejected => 'error',

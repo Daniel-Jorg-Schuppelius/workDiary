@@ -20,22 +20,19 @@ use BackedEnum;
  * Requires the using enum to be a BackedEnum. If the enum implements
  * App\Enums\Contracts\HasLabel, options() returns value => label() pairs.
  */
-trait HasOptions
-{
+trait HasOptions {
     /**
      * @return list<string|int>
      */
-    public static function values(): array
-    {
-        return array_map(static fn (BackedEnum $case) => $case->value, self::cases());
+    public static function values(): array {
+        return array_map(static fn(BackedEnum $case) => $case->value, self::cases());
     }
 
     /**
      * @return list<string>
      */
-    public static function names(): array
-    {
-        return array_map(static fn (BackedEnum $case) => $case->name, self::cases());
+    public static function names(): array {
+        return array_map(static fn(BackedEnum $case) => $case->name, self::cases());
     }
 
     /**
@@ -43,8 +40,7 @@ trait HasOptions
      *
      * @return array<string|int, string>
      */
-    public static function options(): array
-    {
+    public static function options(): array {
         $out = [];
         foreach (self::cases() as $case) {
             // Trait is intentionally usable on enums without HasLabel.
@@ -56,8 +52,7 @@ trait HasOptions
         return $out;
     }
 
-    public static function tryFromName(string $name): ?self
-    {
+    public static function tryFromName(string $name): ?self {
         foreach (self::cases() as $case) {
             if ($case->name === $name) {
                 return $case;

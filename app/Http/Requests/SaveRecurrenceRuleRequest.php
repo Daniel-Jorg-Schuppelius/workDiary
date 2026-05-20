@@ -19,15 +19,12 @@ use App\Models\RecurrenceRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveRecurrenceRuleRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
+class SaveRecurrenceRuleRequest extends FormRequest {
+    public function authorize(): bool {
         return true;
     }
 
-    protected function prepareForValidation(): void
-    {
+    protected function prepareForValidation(): void {
         foreach (['customer_id', 'entry_type_id', 'assigned_user_id', 'bymonthday', 'bymonth', 'default_service_minutes'] as $key) {
             if ($this->input($key) === '' || $this->input($key) === '0') {
                 $this->merge([$key => null]);
@@ -48,8 +45,7 @@ class SaveRecurrenceRuleRequest extends FormRequest
     }
 
     /** @return array<string, mixed> */
-    public function rules(): array
-    {
+    public function rules(): array {
         return [
             'name' => ['required', 'string', 'max:160'],
             'customer_id' => ['nullable', 'integer', 'exists:customers,id'],

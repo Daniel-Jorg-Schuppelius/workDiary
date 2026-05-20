@@ -14,10 +14,8 @@ namespace Tests\Unit\Enums;
 use App\Enums\Activity\ActivityCategoryType;
 use Tests\TestCase;
 
-class ActivityCategoryTypeTest extends TestCase
-{
-    public function test_cases(): void
-    {
+class ActivityCategoryTypeTest extends TestCase {
+    public function test_cases(): void {
         $this->assertSame(
             ['admin', 'training', 'meeting', 'internal', 'travel', 'break', 'absence', 'standby', 'other'],
             ActivityCategoryType::values()
@@ -28,15 +26,13 @@ class ActivityCategoryTypeTest extends TestCase
         $this->assertSame(ActivityCategoryType::Break_, ActivityCategoryType::tryFromName('Break_'));
     }
 
-    public function test_labels_non_empty(): void
-    {
+    public function test_labels_non_empty(): void {
         foreach (ActivityCategoryType::cases() as $case) {
             $this->assertNotSame('', $case->label());
         }
     }
 
-    public function test_options_keys_match_values(): void
-    {
+    public function test_options_keys_match_values(): void {
         $this->assertSame(ActivityCategoryType::values(), array_keys(ActivityCategoryType::options()));
     }
 }

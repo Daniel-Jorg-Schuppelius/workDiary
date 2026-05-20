@@ -45,8 +45,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $last_generated_until
  * @property bool $is_active
  */
-class RecurrenceRule extends Model
-{
+class RecurrenceRule extends Model {
     use BelongsToOrganization;
 
     /** @use HasFactory<\Illuminate\Database\Eloquent\Factories\Factory<static>> */
@@ -95,46 +94,39 @@ class RecurrenceRule extends Model
     ];
 
     /** @return BelongsTo<Project, $this> */
-    public function project(): BelongsTo
-    {
+    public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
     }
 
     /** @return BelongsTo<Customer, $this> */
-    public function customer(): BelongsTo
-    {
+    public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
     }
 
     /** @return BelongsTo<EntryType, $this> */
-    public function entryType(): BelongsTo
-    {
+    public function entryType(): BelongsTo {
         return $this->belongsTo(EntryType::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function assignedUser(): BelongsTo
-    {
+    public function assignedUser(): BelongsTo {
         return $this->belongsTo(User::class, 'assigned_user_id');
     }
 
     /** @return BelongsTo<User, $this> */
-    public function creator(): BelongsTo
-    {
+    public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by');
     }
 
     /** @return HasMany<DiaryEntry, $this> */
-    public function diaryEntries(): HasMany
-    {
+    public function diaryEntries(): HasMany {
         return $this->hasMany(DiaryEntry::class);
     }
 
     /**
      * @return list<string> Liste der Wochentags-Codes (z.B. ['MO', 'WE']).
      */
-    public function weekdays(): array
-    {
+    public function weekdays(): array {
         if (! $this->byweekday) {
             return [];
         }
@@ -142,8 +134,7 @@ class RecurrenceRule extends Model
         return array_values(array_filter(array_map('trim', explode(',', $this->byweekday))));
     }
 
-    public function frequencyLabel(): string
-    {
+    public function frequencyLabel(): string {
         return $this->frequency->label();
     }
 }

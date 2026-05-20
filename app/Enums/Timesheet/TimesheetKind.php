@@ -14,15 +14,13 @@ namespace App\Enums\Timesheet;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum TimesheetKind: string implements HasLabel
-{
+enum TimesheetKind: string implements HasLabel {
     use HasOptions;
 
     case Project = 'project';
     case PersonalDay = 'personal_day';
 
-    public function label(): string
-    {
-        return (string) __('enums.timesheet.kind.'.$this->value);
+    public function label(): string {
+        return (string) __('enums.timesheet.kind.' . $this->value);
     }
 }

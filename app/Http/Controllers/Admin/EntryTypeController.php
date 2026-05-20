@@ -23,10 +23,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-class EntryTypeController extends Controller
-{
-    public function index(Request $request): View
-    {
+class EntryTypeController extends Controller {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', EntryType::class);
 
         $query = EntryType::query()->withCount('diaryEntries');
@@ -44,8 +42,7 @@ class EntryTypeController extends Controller
         return view('admin.entry-types.index', compact('entryTypes', 'sort', 'dir'));
     }
 
-    public function create(): View
-    {
+    public function create(): View {
         Gate::authorize('create', EntryType::class);
 
         return view('admin.entry-types._form_dialog', [
@@ -55,8 +52,7 @@ class EntryTypeController extends Controller
         ]);
     }
 
-    public function store(SaveEntryTypeRequest $request): RedirectResponse
-    {
+    public function store(SaveEntryTypeRequest $request): RedirectResponse {
         Gate::authorize('create', EntryType::class);
 
         EntryType::create($request->validated());
@@ -65,8 +61,7 @@ class EntryTypeController extends Controller
             ->with('success', __('Eintragstyp wurde angelegt.'));
     }
 
-    public function edit(EntryType $entryType): View
-    {
+    public function edit(EntryType $entryType): View {
         Gate::authorize('update', $entryType);
 
         return view('admin.entry-types._form_dialog', [
@@ -76,8 +71,7 @@ class EntryTypeController extends Controller
         ]);
     }
 
-    public function update(SaveEntryTypeRequest $request, EntryType $entryType): RedirectResponse
-    {
+    public function update(SaveEntryTypeRequest $request, EntryType $entryType): RedirectResponse {
         Gate::authorize('update', $entryType);
 
         $entryType->update($request->validated());
@@ -86,8 +80,7 @@ class EntryTypeController extends Controller
             ->with('success', __('Eintragstyp wurde aktualisiert.'));
     }
 
-    public function destroy(EntryType $entryType): RedirectResponse
-    {
+    public function destroy(EntryType $entryType): RedirectResponse {
         Gate::authorize('delete', $entryType);
 
         if ($entryType->diaryEntries()->exists()) {
@@ -102,8 +95,7 @@ class EntryTypeController extends Controller
     }
 
     /** @return array<int, string> */
-    private function statusOptions(): array
-    {
+    private function statusOptions(): array {
         return [
             DiaryStatus::Open->value => __('Offen'),
             DiaryStatus::InProgress->value => __('In Bearbeitung'),

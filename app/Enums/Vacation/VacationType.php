@@ -14,8 +14,7 @@ namespace App\Enums\Vacation;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum VacationType: string implements HasLabel
-{
+enum VacationType: string implements HasLabel {
     use HasOptions;
 
     case Vacation = 'vacation';
@@ -26,8 +25,7 @@ enum VacationType: string implements HasLabel
     case Special = 'special';
     case Unpaid = 'unpaid';
 
-    public function label(): string
-    {
-        return (string) __('enums.vacation.type.'.$this->value);
+    public function label(): string {
+        return (string) __('enums.vacation.type.' . $this->value);
     }
 }

@@ -14,16 +14,14 @@ namespace App\Enums\Vehicle;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum VehicleOwnership: string implements HasLabel
-{
+enum VehicleOwnership: string implements HasLabel {
     use HasOptions;
 
     case Owned = 'owned';
     case Leased = 'leased';
     case Rental = 'rental';
 
-    public function label(): string
-    {
-        return (string) __('enums.vehicle.ownership.'.$this->value);
+    public function label(): string {
+        return (string) __('enums.vehicle.ownership.' . $this->value);
     }
 }

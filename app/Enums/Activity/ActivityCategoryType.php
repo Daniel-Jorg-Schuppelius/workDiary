@@ -14,8 +14,7 @@ namespace App\Enums\Activity;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum ActivityCategoryType: string implements HasLabel
-{
+enum ActivityCategoryType: string implements HasLabel {
     use HasOptions;
 
     case Admin = 'admin';
@@ -28,8 +27,7 @@ enum ActivityCategoryType: string implements HasLabel
     case Standby = 'standby';
     case Other = 'other';
 
-    public function label(): string
-    {
-        return (string) __('enums.activity.category_type.'.$this->value);
+    public function label(): string {
+        return (string) __('enums.activity.category_type.' . $this->value);
     }
 }

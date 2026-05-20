@@ -14,8 +14,7 @@ namespace App\Enums\Vehicle;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum VehiclePropulsion: string implements HasLabel
-{
+enum VehiclePropulsion: string implements HasLabel {
     use HasOptions;
 
     case Diesel = 'diesel';
@@ -26,16 +25,14 @@ enum VehiclePropulsion: string implements HasLabel
     case Muscle = 'muscle';
     case Other = 'other';
 
-    public function label(): string
-    {
-        return (string) __('enums.vehicle.propulsion.'.$this->value);
+    public function label(): string {
+        return (string) __('enums.vehicle.propulsion.' . $this->value);
     }
 
     /**
      * Expected energy unit when refilling/charging this propulsion type.
      */
-    public function expectedEnergyUnit(): ?string
-    {
+    public function expectedEnergyUnit(): ?string {
         return match ($this) {
             self::Electric => 'kwh',
             self::Muscle, self::Other => null,

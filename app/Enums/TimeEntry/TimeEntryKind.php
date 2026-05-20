@@ -14,16 +14,14 @@ namespace App\Enums\TimeEntry;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum TimeEntryKind: string implements HasLabel
-{
+enum TimeEntryKind: string implements HasLabel {
     use HasOptions;
 
     case Work = 'work';
     case Travel = 'travel';
     case Standby = 'standby';
 
-    public function label(): string
-    {
-        return (string) __('enums.time_entry.kind.'.$this->value);
+    public function label(): string {
+        return (string) __('enums.time_entry.kind.' . $this->value);
     }
 }

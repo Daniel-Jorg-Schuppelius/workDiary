@@ -14,22 +14,18 @@ namespace Tests\Unit\Enums;
 use App\Enums\User\UserRole;
 use Tests\TestCase;
 
-final class UserRoleTest extends TestCase
-{
-    public function test_values_match_legacy_constants(): void
-    {
+final class UserRoleTest extends TestCase {
+    public function test_values_match_legacy_constants(): void {
         $this->assertSame(['admin', 'user', 'callcenter', 'buchhaltung'], UserRole::values());
     }
 
-    public function test_labels_are_non_empty(): void
-    {
+    public function test_labels_are_non_empty(): void {
         foreach (UserRole::cases() as $case) {
             $this->assertNotEmpty($case->label());
         }
     }
 
-    public function test_try_from_unknown_returns_null(): void
-    {
+    public function test_try_from_unknown_returns_null(): void {
         $this->assertNull(UserRole::tryFrom('xxx'));
     }
 }

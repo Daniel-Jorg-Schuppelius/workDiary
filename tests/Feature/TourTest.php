@@ -26,13 +26,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
-class TourTest extends TestCase
-{
+class TourTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->seed(EntryTypeSeeder::class);
@@ -40,8 +38,7 @@ class TourTest extends TestCase
         config()->set('timesheet.travel.auto_create_time_entry', false);
     }
 
-    public function test_create_draft_persists_with_home_anchors(): void
-    {
+    public function test_create_draft_persists_with_home_anchors(): void {
         $driver = User::factory()->user()->create([
             'organization_id' => $this->organization->id,
             'home_address' => 'Hauptstr. 1, Berlin',
@@ -59,8 +56,7 @@ class TourTest extends TestCase
         $this->assertSame(TourStatus::Draft, $tour->status);
     }
 
-    public function test_assign_orders_sets_positions_and_status(): void
-    {
+    public function test_assign_orders_sets_positions_and_status(): void {
         $driver = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         /** @var TourService $service */
         $service = app(TourService::class);
@@ -73,7 +69,7 @@ class TourTest extends TestCase
         $ids = $orders->pluck('id')->all();
         $service->assignOrders($tour, $ids);
 
-        $orders->each(fn ($o) => $o->refresh());
+        $orders->each(fn($o) => $o->refresh());
         $this->assertSame(1, $orders[0]->tour_position);
         $this->assertSame(2, $orders[1]->tour_position);
         $this->assertSame(3, $orders[2]->tour_position);
@@ -81,8 +77,7 @@ class TourTest extends TestCase
         $this->assertSame((int) $driver->id, (int) $orders[0]->assigned_user_id);
     }
 
-    public function test_recalculate_optimizes_order_with_haversine_fallback(): void
-    {
+    public function test_recalculate_optimizes_order_with_haversine_fallback(): void {
         config()->set('routing.osrm.base_url', 'http://does-not-exist.invalid');
 
         $driver = User::factory()->user()->create([
@@ -122,8 +117,7 @@ class TourTest extends TestCase
         $this->assertGreaterThan(0.0, $result['distance_km']);
     }
 
-    public function test_state_machine_blocks_invalid_transitions(): void
-    {
+    public function test_state_machine_blocks_invalid_transitions(): void {
         $driver = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         /** @var TourService $service */
         $service = app(TourService::class);
@@ -134,8 +128,7 @@ class TourTest extends TestCase
         $service->start($tour->fresh());
     }
 
-    public function test_materialize_creates_travel_log_per_leg(): void
-    {
+    public function test_materialize_creates_travel_log_per_leg(): void {
         $driver = User::factory()->user()->create([
             'organization_id' => $this->organization->id,
             'home_lat' => 52.5,
@@ -169,13 +162,11 @@ class TourTest extends TestCase
         $this->assertSame(\App\Enums\Travel\TravelLogVehicle::Private_, $logs[0]->vehicle);
     }
 
-    public function test_index_requires_auth(): void
-    {
+    public function test_index_requires_auth(): void {
         $this->get(route('tours.index'))->assertRedirect(route('login'));
     }
 
-    public function test_admin_can_list_other_users_tours(): void
-    {
+    public function test_admin_can_list_other_users_tours(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $worker = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         Tour::factory()->create([
@@ -191,8 +182,7 @@ class TourTest extends TestCase
             ->assertSee('Wochentour');
     }
 
-    public function test_assigning_flex_order_promotes_it_to_fixed_with_tour_date(): void
-    {
+    public function test_assigning_flex_order_promotes_it_to_fixed_with_tour_date(): void {
         $driver = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         /** @var TourService $service */
         $service = app(TourService::class);
@@ -218,8 +208,7 @@ class TourTest extends TestCase
         $this->assertSame('2026-06-01 08:45:00', $order->end_at?->toDateTimeString());
     }
 
-    public function test_assigning_flex_order_respects_existing_time_window(): void
-    {
+    public function test_assigning_flex_order_respects_existing_time_window(): void {
         $driver = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         /** @var TourService $service */
         $service = app(TourService::class);

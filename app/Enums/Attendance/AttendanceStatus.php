@@ -14,8 +14,7 @@ namespace App\Enums\Attendance;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum AttendanceStatus: string implements HasLabel
-{
+enum AttendanceStatus: string implements HasLabel {
     use HasOptions;
 
     case Open = 'open';
@@ -24,13 +23,11 @@ enum AttendanceStatus: string implements HasLabel
     case Adjusted = 'adjusted';
     case Cancelled = 'cancelled';
 
-    public function label(): string
-    {
-        return (string) __('attendance.status.'.$this->value);
+    public function label(): string {
+        return (string) __('attendance.status.' . $this->value);
     }
 
-    public function tone(): string
-    {
+    public function tone(): string {
         return match ($this) {
             self::Open => 'info',
             self::Closed => 'success',

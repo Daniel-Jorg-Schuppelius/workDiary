@@ -35,12 +35,10 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Operations-Auswertung: Service-Aufträge (DiaryEntries vom EntryType
  * "service"), Tasks und Touren im Zeitraum.
  */
-class OperationsReportController extends Controller
-{
+class OperationsReportController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request): View|SymfonyResponse
-    {
+    public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         $authUser = Auth::user();
         $isAdmin = $authUser instanceof User && $authUser->isAdmin();
@@ -74,8 +72,7 @@ class OperationsReportController extends Controller
         ]);
     }
 
-    private function resolveScope(Request $request, bool $isAdmin): string
-    {
+    private function resolveScope(Request $request, bool $isAdmin): string {
         $scope = $request->string('scope', 'mine')->toString();
         if ($scope !== 'team' || ! $isAdmin) {
             $scope = 'mine';
@@ -93,10 +90,9 @@ class OperationsReportController extends Controller
      *   completion_rate: float|null
      * }
      */
-    private function aggregateOrders(Carbon $from, Carbon $to, string $scope, int $userId): array
-    {
+    private function aggregateOrders(Carbon $from, Carbon $to, string $scope, int $userId): array {
         $q = DiaryEntry::query()
-            ->whereHas('entryType', fn ($t) => $t->where('slug', EntryType::SLUG_SERVICE))
+            ->whereHas('entryType', fn($t) => $t->where('slug', EntryType::SLUG_SERVICE))
             ->whereBetween('scheduled_for', [$from, $to]);
         if ($scope === 'mine') {
             $q->where('assigned_user_id', $userId);
@@ -147,8 +143,7 @@ class OperationsReportController extends Controller
      *   completion_rate: float|null
      * }
      */
-    private function aggregateTasks(Carbon $from, Carbon $to, string $scope, int $userId): array
-    {
+    private function aggregateTasks(Carbon $from, Carbon $to, string $scope, int $userId): array {
         // Tasks: aufgenommen werden Tasks, die im Zeitraum erstellt
         // oder fällig sind oder zuletzt aktualisiert wurden.
         $q = Task::query()
@@ -206,8 +201,7 @@ class OperationsReportController extends Controller
      *   per_user: array<int, array{user: User, count:int, distance_km:float, minutes:int}>
      * }
      */
-    private function aggregateTours(Carbon $from, Carbon $to, string $scope, int $userId): array
-    {
+    private function aggregateTours(Carbon $from, Carbon $to, string $scope, int $userId): array {
         $q = Tour::query()->whereBetween('tour_date', [$from->toDateString(), $to->toDateString()]);
         if ($scope === 'mine') {
             $q->where('user_id', $userId);
@@ -265,28 +259,27 @@ class OperationsReportController extends Controller
      * @param  array{total:int, by_status: array<string,int>, by_priority: array<string,int>, overdue:int, completion_rate: float|null}  $tasks
      * @param  array{total:int, completed:int, planned_distance_km:float, planned_minutes:int, per_user: array<int, array{user: User, count:int, distance_km:float, minutes:int}>}  $tours
      */
-    private function exportCsv(array $orders, array $tasks, array $tours, string $from, string $to): Response
-    {
+    private function exportCsv(array $orders, array $tasks, array $tours, string $from, string $to): Response {
         $filename = sprintf('operations_%s_%s.csv', $from, $to);
         $rows = [];
         $rows[] = ['Bereich', 'Kennzahl', 'Wert'];
         $rows[] = ['Service-Aufträge', 'Gesamt', $orders['total']];
         $rows[] = ['Service-Aufträge', 'Servicezeit (min)', $orders['service_minutes']];
         foreach ($orders['by_status'] as $st => $c) {
-            $rows[] = ['Service-Aufträge', 'Status: '.$st, $c];
+            $rows[] = ['Service-Aufträge', 'Status: ' . $st, $c];
         }
         foreach ($orders['by_priority'] as $p => $c) {
-            $rows[] = ['Service-Aufträge', 'Priorität: '.$p, $c];
+            $rows[] = ['Service-Aufträge', 'Priorität: ' . $p, $c];
         }
         $rows[] = ['Service-Aufträge', 'Abschlussquote %', $orders['completion_rate'] !== null ? number_format($orders['completion_rate'] * 100, 1, '.', '') : ''];
 
         $rows[] = ['Tasks', 'Gesamt', $tasks['total']];
         $rows[] = ['Tasks', 'Überfällig', $tasks['overdue']];
         foreach ($tasks['by_status'] as $st => $c) {
-            $rows[] = ['Tasks', 'Status: '.$st, $c];
+            $rows[] = ['Tasks', 'Status: ' . $st, $c];
         }
         foreach ($tasks['by_priority'] as $p => $c) {
-            $rows[] = ['Tasks', 'Priorität: '.$p, $c];
+            $rows[] = ['Tasks', 'Priorität: ' . $p, $c];
         }
         $rows[] = ['Tasks', 'Abschlussquote %', $tasks['completion_rate'] !== null ? number_format($tasks['completion_rate'] * 100, 1, '.', '') : ''];
 
@@ -297,7 +290,7 @@ class OperationsReportController extends Controller
         foreach ($tours['per_user'] as $u) {
             $rows[] = [
                 'Touren',
-                'User: '.$u['user']->name.' (km / Min / Anz)',
+                'User: ' . $u['user']->name . ' (km / Min / Anz)',
                 sprintf('%s / %d / %d', number_format($u['distance_km'], 2, '.', ''), $u['minutes'], $u['count']),
             ];
         }
@@ -307,16 +300,16 @@ class OperationsReportController extends Controller
             $csv .= implode(';', array_map(static function ($v): string {
                 $s = (string) $v;
                 if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"'.str_replace('"', '""', $s).'"';
+                    $s = '"' . str_replace('"', '""', $s) . '"';
                 }
 
                 return $s;
-            }, $row))."\r\n";
+            }, $row)) . "\r\n";
         }
 
-        return response("\xEF\xBB\xBF".$csv, 200, [
+        return response("\xEF\xBB\xBF" . $csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 
@@ -325,8 +318,7 @@ class OperationsReportController extends Controller
      * @param  array{total:int, by_status: array<string,int>, by_priority: array<string,int>, overdue:int, completion_rate: float|null}  $tasks
      * @param  array{total:int, completed:int, planned_distance_km:float, planned_minutes:int, per_user: array<int, array{user: User, count:int, distance_km:float, minutes:int}>}  $tours
      */
-    private function exportPdf(array $orders, array $tasks, array $tours, string $from, string $to, string $scope): SymfonyResponse
-    {
+    private function exportPdf(array $orders, array $tasks, array $tours, string $from, string $to, string $scope): SymfonyResponse {
         $filename = sprintf('operations_%s_%s.pdf', $from, $to);
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = Pdf::loadView('reports.pdf.operations', [

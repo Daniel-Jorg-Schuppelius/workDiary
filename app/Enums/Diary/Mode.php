@@ -14,8 +14,7 @@ namespace App\Enums\Diary;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum Mode: string implements HasLabel
-{
+enum Mode: string implements HasLabel {
     use HasOptions;
 
     case Fixed = 'fixed';
@@ -24,8 +23,7 @@ enum Mode: string implements HasLabel
     case Recurring = 'recurring';
     case Backlog = 'backlog';
 
-    public function label(): string
-    {
-        return (string) __('diary.mode.'.$this->value);
+    public function label(): string {
+        return (string) __('diary.mode.' . $this->value);
     }
 }

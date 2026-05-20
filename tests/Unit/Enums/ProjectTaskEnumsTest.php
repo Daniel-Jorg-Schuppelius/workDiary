@@ -16,10 +16,8 @@ use App\Enums\Task\TaskPriority;
 use App\Enums\Task\TaskStatus;
 use Tests\TestCase;
 
-final class ProjectTaskEnumsTest extends TestCase
-{
-    public function test_project_status_values(): void
-    {
+final class ProjectTaskEnumsTest extends TestCase {
+    public function test_project_status_values(): void {
         $this->assertSame(['active', 'paused', 'archived'], ProjectStatus::values());
         $this->assertSame('success', ProjectStatus::Active->tone());
         $this->assertSame('warning', ProjectStatus::Paused->tone());
@@ -28,8 +26,7 @@ final class ProjectTaskEnumsTest extends TestCase
         $this->assertArrayHasKey('active', ProjectStatus::options());
     }
 
-    public function test_task_status_values(): void
-    {
+    public function test_task_status_values(): void {
         $this->assertSame(['open', 'in_progress', 'done'], TaskStatus::values());
         $this->assertSame('neutral', TaskStatus::Open->tone());
         $this->assertSame('info', TaskStatus::InProgress->tone());
@@ -37,8 +34,7 @@ final class ProjectTaskEnumsTest extends TestCase
         $this->assertNotEmpty(TaskStatus::Done->label());
     }
 
-    public function test_task_priority_values(): void
-    {
+    public function test_task_priority_values(): void {
         $this->assertSame(['low', 'medium', 'high', 'urgent'], TaskPriority::values());
         $this->assertSame('ghost', TaskPriority::Low->tone());
         $this->assertSame('error', TaskPriority::Urgent->tone());

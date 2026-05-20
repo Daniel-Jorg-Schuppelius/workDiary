@@ -14,8 +14,7 @@ namespace App\Enums\TimeEntry;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum TimeEntryActivityType: string implements HasLabel
-{
+enum TimeEntryActivityType: string implements HasLabel {
     use HasOptions;
 
     case Project = 'project';
@@ -29,8 +28,7 @@ enum TimeEntryActivityType: string implements HasLabel
     case Standby = 'standby';
     case Other = 'other';
 
-    public function label(): string
-    {
-        return (string) __('time_entry.activity_type.'.$this->value);
+    public function label(): string {
+        return (string) __('time_entry.activity_type.' . $this->value);
     }
 }

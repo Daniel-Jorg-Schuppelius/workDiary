@@ -16,10 +16,8 @@ use App\Enums\Vehicle\VehiclePropulsion;
 use App\Enums\Vehicle\VehicleType;
 use Tests\TestCase;
 
-class VehicleEnumsTest extends TestCase
-{
-    public function test_vehicle_type_cases(): void
-    {
+class VehicleEnumsTest extends TestCase {
+    public function test_vehicle_type_cases(): void {
         $this->assertSame(['car', 'van', 'truck', 'bicycle', 'other'], VehicleType::values());
         $this->assertNull(VehicleType::tryFrom('plane'));
         foreach (VehicleType::cases() as $case) {
@@ -28,8 +26,7 @@ class VehicleEnumsTest extends TestCase
         $this->assertSame(VehicleType::values(), array_keys(VehicleType::options()));
     }
 
-    public function test_vehicle_propulsion_cases_and_energy_unit(): void
-    {
+    public function test_vehicle_propulsion_cases_and_energy_unit(): void {
         $this->assertCount(7, VehiclePropulsion::cases());
         $this->assertSame('kwh', VehiclePropulsion::Electric->expectedEnergyUnit());
         $this->assertSame('liter', VehiclePropulsion::Diesel->expectedEnergyUnit());
@@ -37,8 +34,7 @@ class VehicleEnumsTest extends TestCase
         $this->assertNull(VehiclePropulsion::Other->expectedEnergyUnit());
     }
 
-    public function test_vehicle_ownership_cases(): void
-    {
+    public function test_vehicle_ownership_cases(): void {
         $this->assertSame(['owned', 'leased', 'rental'], VehicleOwnership::values());
         $this->assertSame(VehicleOwnership::Owned, VehicleOwnership::tryFromName('Owned'));
         $this->assertNull(VehicleOwnership::tryFromName('Unknown'));

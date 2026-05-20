@@ -14,15 +14,13 @@ namespace App\Enums\Sickness;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum SickLeaveKind: string implements HasLabel
-{
+enum SickLeaveKind: string implements HasLabel {
     use HasOptions;
 
     case Initial = 'initial';
     case FollowUp = 'follow_up';
 
-    public function label(): string
-    {
-        return (string) __('enums.sickness.kind.'.$this->value);
+    public function label(): string {
+        return (string) __('enums.sickness.kind.' . $this->value);
     }
 }

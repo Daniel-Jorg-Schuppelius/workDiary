@@ -15,10 +15,8 @@ use App\Enums\Attendance\AttendanceSource;
 use App\Enums\Attendance\AttendanceStatus;
 use Tests\TestCase;
 
-final class AttendanceEnumsTest extends TestCase
-{
-    public function test_attendance_status_values(): void
-    {
+final class AttendanceEnumsTest extends TestCase {
+    public function test_attendance_status_values(): void {
         $this->assertSame(
             ['open', 'closed', 'auto_closed', 'adjusted', 'cancelled'],
             AttendanceStatus::values()
@@ -32,8 +30,7 @@ final class AttendanceEnumsTest extends TestCase
         $this->assertArrayHasKey('open', AttendanceStatus::options());
     }
 
-    public function test_attendance_source_values(): void
-    {
+    public function test_attendance_source_values(): void {
         $this->assertSame(
             ['clock', 'manual', 'import', 'auto_close'],
             AttendanceSource::values()

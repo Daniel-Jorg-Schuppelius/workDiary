@@ -24,29 +24,25 @@ use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 use App\Enums\Travel\TravelLogVehicle;
 
-class TravelLogTest extends TestCase
-{
+class TravelLogTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
     private User $user;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
         $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
-    public function test_index_renders(): void
-    {
+    public function test_index_renders(): void {
         $this->actingAs($this->user);
         $this->get(route('travel-logs.index'))->assertOk()->assertSee(__('Fahrtenbuch'));
     }
 
-    public function test_store_creates_travel_log_and_paired_time_entry(): void
-    {
+    public function test_store_creates_travel_log_and_paired_time_entry(): void {
         $this->actingAs($this->user);
 
         $start = CarbonImmutable::today()->setTime(8, 0);
@@ -78,8 +74,7 @@ class TravelLogTest extends TestCase
         $this->assertSame(60, $entry->minutes);
     }
 
-    public function test_store_without_timestamps_does_not_create_time_entry(): void
-    {
+    public function test_store_without_timestamps_does_not_create_time_entry(): void {
         $this->actingAs($this->user);
 
         $this->post(route('travel-logs.store'), [
@@ -93,8 +88,7 @@ class TravelLogTest extends TestCase
         $this->assertSame(0, TimeEntry::query()->where('travel_log_id', $log->id)->count());
     }
 
-    public function test_destroy_removes_paired_entry(): void
-    {
+    public function test_destroy_removes_paired_entry(): void {
         $this->actingAs($this->user);
         $service = app(TravelLogService::class);
 
@@ -118,8 +112,7 @@ class TravelLogTest extends TestCase
         $this->assertDatabaseMissing('time_entries', ['travel_log_id' => $log->id]);
     }
 
-    public function test_user_cannot_edit_others_travel_log(): void
-    {
+    public function test_user_cannot_edit_others_travel_log(): void {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $log = TravelLog::factory()->create([
             'organization_id' => $this->organization->id,
@@ -130,16 +123,14 @@ class TravelLogTest extends TestCase
         $this->get(route('travel-logs.edit', $log))->assertForbidden();
     }
 
-    public function test_mileage_rate_resolver_uses_config(): void
-    {
+    public function test_mileage_rate_resolver_uses_config(): void {
         config()->set('timesheet.travel.rates.private', 0.42);
         $resolver = app(MileageRateResolver::class);
 
         $this->assertSame(0.42, $resolver->rateFor(TravelLogVehicle::Private_->value));
     }
 
-    public function test_csv_export_returns_download(): void
-    {
+    public function test_csv_export_returns_download(): void {
         $this->actingAs($this->user);
 
         TravelLog::factory()->create([
@@ -159,8 +150,7 @@ class TravelLogTest extends TestCase
         $this->assertStringContainsString('12,50', $response->streamedContent());
     }
 
-    public function test_index_uses_global_header_date_range_by_default(): void
-    {
+    public function test_index_uses_global_header_date_range_by_default(): void {
         $this->actingAs($this->user);
 
         // Header selects April 2026 — May entries must NOT be included.

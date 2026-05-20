@@ -18,8 +18,7 @@ use App\Enums\Contracts\HasLabel;
  * Single Source of Truth für Spatie-Permission Role-Slugs.
  * Werte stimmen 1:1 mit den Einträgen in der `roles.name`-Spalte überein.
  */
-enum UserRole: string implements HasLabel
-{
+enum UserRole: string implements HasLabel {
     use HasOptions;
 
     case Admin = 'admin';
@@ -27,8 +26,7 @@ enum UserRole: string implements HasLabel
     case Callcenter = 'callcenter';
     case Buchhaltung = 'buchhaltung';
 
-    public function label(): string
-    {
-        return (string) __('user.role.'.$this->value);
+    public function label(): string {
+        return (string) __('user.role.' . $this->value);
     }
 }

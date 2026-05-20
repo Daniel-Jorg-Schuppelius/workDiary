@@ -14,8 +14,7 @@ namespace App\Enums\Travel;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum TravelLogVehicle: string implements HasLabel
-{
+enum TravelLogVehicle: string implements HasLabel {
     use HasOptions;
 
     case Company = 'company';
@@ -26,8 +25,7 @@ enum TravelLogVehicle: string implements HasLabel
     case Foot = 'foot';
     case Other = 'other';
 
-    public function label(): string
-    {
-        return (string) __('travel.vehicle.'.$this->value);
+    public function label(): string {
+        return (string) __('travel.vehicle.' . $this->value);
     }
 }

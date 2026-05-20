@@ -14,8 +14,7 @@ namespace App\Enums\Vehicle;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-enum VehicleType: string implements HasLabel
-{
+enum VehicleType: string implements HasLabel {
     use HasOptions;
 
     case Car = 'car';
@@ -24,8 +23,7 @@ enum VehicleType: string implements HasLabel
     case Bicycle = 'bicycle';
     case Other = 'other';
 
-    public function label(): string
-    {
-        return (string) __('enums.vehicle.type.'.$this->value);
+    public function label(): string {
+        return (string) __('enums.vehicle.type.' . $this->value);
     }
 }

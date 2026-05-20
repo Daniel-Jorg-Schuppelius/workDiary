@@ -18,17 +18,14 @@ use App\Models\TravelLog;
  * Reads defaults from config('timesheet.travel.rates'). Future versions may
  * layer per-organization overrides on top.
  */
-class MileageRateResolver
-{
-    public function rateFor(string $vehicle, ?int $organizationId = null): float
-    {
+class MileageRateResolver {
+    public function rateFor(string $vehicle, ?int $organizationId = null): float {
         $rates = (array) config('timesheet.travel.rates', []);
 
         return (float) ($rates[$vehicle] ?? 0.0);
     }
 
-    public function rateForTravelLog(TravelLog $log): float
-    {
+    public function rateForTravelLog(TravelLog $log): float {
         if ($log->rate_per_km !== null) {
             return (float) $log->rate_per_km;
         }

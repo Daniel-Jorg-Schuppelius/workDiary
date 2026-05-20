@@ -30,12 +30,11 @@ use App\Enums\Attendance\AttendanceStatus;
  * one consistent number for "Soll", "Anwesenheit", "Erfasst" and the
  * resulting balance.
  */
-class WorkBalanceCalculator
-{
-    public function __construct(protected FlexCalculator $flex) {}
+class WorkBalanceCalculator {
+    public function __construct(protected FlexCalculator $flex) {
+    }
 
-    public function daily(User $user, CarbonInterface $day): DailyBalance
-    {
+    public function daily(User $user, CarbonInterface $day): DailyBalance {
         $dayStr = $day->toDateString();
 
         $attendances = Attendance::query()
@@ -98,8 +97,7 @@ class WorkBalanceCalculator
         );
     }
 
-    public function range(User $user, CarbonInterface $from, CarbonInterface $to): PeriodBalance
-    {
+    public function range(User $user, CarbonInterface $from, CarbonInterface $to): PeriodBalance {
         $days = [];
         $totalTarget = 0;
         $totalAttendance = 0;
@@ -140,15 +138,13 @@ class WorkBalanceCalculator
         );
     }
 
-    public function month(User $user, int $year, int $month): PeriodBalance
-    {
+    public function month(User $user, int $year, int $month): PeriodBalance {
         $start = CarbonImmutable::create($year, $month, 1)?->startOfMonth() ?? CarbonImmutable::now()->startOfMonth();
 
         return $this->range($user, $start, $start->endOfMonth());
     }
 
-    public function year(User $user, int $year): PeriodBalance
-    {
+    public function year(User $user, int $year): PeriodBalance {
         $start = CarbonImmutable::create($year, 1, 1)?->startOfYear() ?? CarbonImmutable::now()->startOfYear();
 
         return $this->range($user, $start, $start->endOfYear());
