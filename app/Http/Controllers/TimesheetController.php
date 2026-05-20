@@ -72,6 +72,24 @@ class TimesheetController extends Controller
         ]);
     }
 
+    /**
+     * Projekt-Picker für die Sidebar-Aktion „Stundenzettel". Analog zum
+     * Zeiteintrag-Picker — Stundenzettel sind immer projektgebunden.
+     */
+    public function pick(): View
+    {
+        Gate::authorize('create', Timesheet::class);
+
+        return view('projects._picker_dialog', Project::pickerData() + [
+            'targetRoute' => 'projects.timesheets.create',
+            'title' => __('Stundenzettel anlegen'),
+            'eyebrow' => __('Stundenzettel'),
+            'icon' => 'description',
+            'description' => __('Wähle ein Projekt, für das der Stundenzettel erstellt werden soll.'),
+            'isDialog' => true,
+        ]);
+    }
+
     public function create(Project $project): View
     {
         Gate::authorize('create', Timesheet::class);

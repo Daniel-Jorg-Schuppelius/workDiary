@@ -806,6 +806,7 @@
                             'items' => [
                                 ['route' => 'diary.create',              'label' => __('Auftrag'),         'icon' => 'assignment'],
                                 ['route' => 'time-entries.create',       'label' => __('Zeiteintrag'),     'icon' => 'timer'],
+                                ['route' => 'timesheets.create',         'label' => __('Stundenzettel'),   'icon' => 'description'],
                                 ['route' => 'admin-time-entries.create', 'label' => __('Verwaltungszeit'), 'icon' => 'schedule'],
                             ],
                         ],

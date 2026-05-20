@@ -52,9 +52,6 @@
                            aria-label="{{ __('Von / Bis') }}"
                            @checked($initialMode === 'range')>
                 </div>
-                <p class="text-xs text-base-content/50 mt-1">
-                    {{ __('„Von / Bis" hält fest, wann gearbeitet wurde — wichtig für Kunden, die einen Zeitnachweis brauchen.') }}
-                </p>
             </div>
 
             {{-- Dauer-Modus: nur Datum + HH:MM --}}
@@ -80,7 +77,7 @@
             <div class="md:col-span-2" data-time-mode-pane="range">
                 <x-date-range
                     type="datetime-local"
-                    layout="split"
+                    layout="join"
                     form-control
                     fromName="started_at"
                     toName="ended_at"
@@ -88,6 +85,7 @@
                     toId="time-entry-ended-at"
                     :from="old('started_at', $entry?->started_at?->format('Y-m-d\TH:i'))"
                     :to="old('ended_at', $entry?->ended_at?->format('Y-m-d\TH:i'))"
+                    :label="__('Von / Bis')"
                     :fromLabel="__('Von')"
                     :toLabel="__('Bis')"
                     :fromError="$errors->first('started_at')"

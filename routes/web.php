@@ -250,6 +250,7 @@ Route::middleware('auth')->group(function () {
 
     // ── Stundenzettel (an Projekt gekoppelt) ────────────────────────────────
     Route::get('timesheets', [TimesheetController::class, 'index'])->name('timesheets.index');
+    Route::get('timesheets/create', [TimesheetController::class, 'pick'])->name('timesheets.create');
     Route::post('timesheets/quick', [TimesheetController::class, 'storeQuick'])->name('timesheets.quick');
     Route::resource('projects.timesheets', TimesheetController::class)
         ->parameters(['timesheets' => 'timesheet'])

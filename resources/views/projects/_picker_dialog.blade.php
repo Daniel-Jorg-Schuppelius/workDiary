@@ -1,26 +1,28 @@
-{{-- Erwartet: $roots, $childrenByParent, $customers, $isDialog
-     Picker-Dialog für die Sidebar-Aktion „Zeiteintrag". Roots werden als
-     Karten gerendert, Sub-Projekte als eingerückte Unterzeilen in derselben
-     Karte — so bleibt der Baum sichtbar und Subprojekte sind nicht verstreut. --}}
+{{-- Generischer Projekt-Picker-Dialog. Erwartet:
+     $roots, $childrenByParent, $customers
+     $targetRoute - Routenname mit {project}-Parameter, z.B.
+                    'projects.time-entries.create' oder 'projects.timesheets.create'
+     $title       - Modal-Titel (z.B. 'Zeiteintrag erfassen')
+     $eyebrow     - Eyebrow-Label (z.B. 'Zeiterfassung')
+     $icon        - Icon-Slug (Material Symbols)
+     $description - Hilfetext oberhalb der Liste --}}
 <x-modal
-    :title="__('Zeiteintrag erfassen')"
-    :eyebrow="__('Zeiterfassung')"
-    icon="timer"
+    :title="$title"
+    :eyebrow="$eyebrow"
+    :icon="$icon"
     tone="primary"
 >
     @if ($roots->isEmpty())
         <x-empty-state compact
                        :title="__('Keine aktiven Projekte')"
-                       :message="__('Lege zuerst ein Projekt an, um Stunden buchen zu können.')">
+                       :message="__('Lege zuerst ein Projekt an, um fortfahren zu können.')">
             <x-slot:action>
                 <x-icon-btn icon="add" tone="primary" :href="route('projects.create')" show-label>{{ __('Projekt') }}</x-icon-btn>
             </x-slot:action>
         </x-empty-state>
     @else
         <div data-filter-scope>
-            <p class="mb-3 text-sm text-base-content/70">
-                {{ __('Wähle ein Projekt, auf das die Stunden gebucht werden sollen.') }}
-            </p>
+            <p class="mb-3 text-sm text-base-content/70">{{ $description }}</p>
 
             <div class="mb-3 flex flex-wrap gap-2">
                 <input type="search"
@@ -46,8 +48,7 @@
                         $children = $childrenByParent->get((int) $root->id, collect());
                     @endphp
                     <li data-card class="rounded-box border border-base-300 bg-base-100 overflow-hidden">
-                        {{-- Hauptprojekt-Zeile --}}
-                        <a href="{{ route('projects.time-entries.create', $root) }}"
+                        <a href="{{ route($targetRoute, $root) }}"
                            data-entry-modal-trigger
                            data-haystack="{{ $rootHaystack }}"
                            data-customer="{{ $rootCust }}"
@@ -73,7 +74,7 @@
                                         $childCust = $child->customer_id ?? 0;
                                     @endphp
                                     <li data-haystack="{{ $childHaystack }}" data-customer="{{ $childCust }}">
-                                        <a href="{{ route('projects.time-entries.create', $child) }}"
+                                        <a href="{{ route($targetRoute, $child) }}"
                                            data-entry-modal-trigger
                                            class="flex items-center gap-2 pl-9 pr-3 py-1.5 hover:bg-primary/10 transition cursor-pointer border-t border-base-200 first:border-t-0">
                                             <x-icon name="subdirectory_arrow_right" class="text-base-content/40 text-sm shrink-0" />

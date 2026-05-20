@@ -1,4 +1,14 @@
 {{-- Shared form fields for Timesheet create & edit --}}
+@php
+    // Beim Neuanlegen Kunden-Felder aus dem Kundenstamm vorbefüllen
+    // (primärer Ansprechpartner des Projekt-Kunden).
+    $isNewTimesheet = ! $timesheet->exists;
+    $customer = $project->customer ?? null;
+    $primaryContact = $customer?->primaryContact() ?? ['name' => null, 'email' => null, 'phone' => null];
+    $defaultCustomerName  = $isNewTimesheet ? ($customer?->name ?? '') : $timesheet->customer_name;
+    $defaultCustomerRole  = $isNewTimesheet ? ($primaryContact['name'] ?? '') : $timesheet->customer_role;
+    $defaultCustomerEmail = $isNewTimesheet ? ($primaryContact['email'] ?? '') : $timesheet->customer_email;
+@endphp
 
 <x-form-group :legend="__('Stammdaten')" icon="description" tone="primary" cols="2">
     <div class="fieldset md:col-span-2">
@@ -11,19 +21,19 @@
     <div class="fieldset md:col-span-2">
         <label class="fieldset-label">{{ __('Kunde – Name') }}</label>
         <input type="text" name="customer_name" maxlength="255"
-               value="{{ old('customer_name', $timesheet->customer_name) }}"
+               value="{{ old('customer_name', $defaultCustomerName) }}"
                class="input input-bordered w-full">
     </div>
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Rolle / Funktion') }}</label>
         <input type="text" name="customer_role" maxlength="255"
-               value="{{ old('customer_role', $timesheet->customer_role) }}"
+               value="{{ old('customer_role', $defaultCustomerRole) }}"
                class="input input-bordered w-full">
     </div>
     <div class="fieldset">
         <label class="fieldset-label">{{ __('E-Mail') }}</label>
         <input type="email" name="customer_email" maxlength="255"
-               value="{{ old('customer_email', $timesheet->customer_email) }}"
+               value="{{ old('customer_email', $defaultCustomerEmail) }}"
                class="input input-bordered w-full">
     </div>
 </x-form-group>
