@@ -24,6 +24,49 @@ use Illuminate\View\View;
 
 class TimeEntryController extends Controller
 {
+    /**
+     * Projekt-Picker für die Sidebar-Aktion „Zeiteintrag". Stunden brauchen
+     * immer ein Projekt — der User wählt hier zuerst eines aus und landet
+     * dann im normalen Erfassungs-Dialog.
+     */
+    public function pick(): View
+    {
+        Gate::authorize('create', TimeEntry::class);
+
+        $projects = Project::query()
+            ->where('status', Project::STATUS_ACTIVE)
+            ->with('customer:id,name,slug')
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug', 'customer_id', 'parent_id', 'color']);
+
+        // Hierarchie: Roots = ohne Parent oder Parent außerhalb des aktiven Sets
+        // (verwaiste Sub-Projekte erscheinen dann selbst als Root). Kinder
+        // werden in der View direkt unter dem Root in derselben Karte gerendert.
+        $byId = $projects->keyBy('id');
+        $childrenByParent = $projects->groupBy(fn ($p) => (int) ($p->parent_id ?? 0));
+        $roots = $projects
+            ->filter(fn ($p) => $p->parent_id === null || ! $byId->has($p->parent_id))
+            ->values();
+
+        // Kunden-Filter: Sentinel "0" für interne Projekte (ohne Kunde), echte
+        // Kunden-IDs sonst. Wird aus der Projektmenge abgeleitet, damit der
+        // Picker keine Kunden anbietet, unter denen es keine Auswahl gibt.
+        $customers = $projects
+            ->map(fn ($p) => $p->customer
+                ? ['id' => (int) $p->customer->id, 'name' => $p->customer->name]
+                : ['id' => 0, 'name' => __('Intern (ohne Kunde)')])
+            ->unique('id')
+            ->sortBy('name')
+            ->values();
+
+        return view('time-entries._picker_dialog', [
+            'roots' => $roots,
+            'childrenByParent' => $childrenByParent,
+            'customers' => $customers,
+            'isDialog' => true,
+        ]);
+    }
+
     public function create(Project $project): View
     {
         Gate::authorize('create', TimeEntry::class);

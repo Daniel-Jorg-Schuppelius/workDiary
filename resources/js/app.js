@@ -160,9 +160,12 @@ window.__initFlatpickr = (el) => {
 
     const common = dialogEl
         ? {
-              // In Dialogen Picker direkt am Feld rendern, damit keine
-              // fehlerhaften Offsets zur Modal-Box entstehen.
-              static: true,
+              // Im Modal: Picker direkt am <dialog>-Element anhängen, nicht
+              // im scrollbaren modal-box. So wird der Picker nicht geclippt
+              // und das Top-Layer-Rendering des Dialogs lässt ihn korrekt
+              // über dem Backdrop erscheinen.
+              static: false,
+              appendTo: dialogEl,
           }
         : {};
     if (t === "date") {
@@ -361,6 +364,64 @@ document.addEventListener("click", (event) => {
         });
     };
 
+    // Date-Range Linking: "Bis" darf nicht vor "Von" liegen. Wirkt sowohl
+    // auf native Inputs (min/max-Constraint) als auch auf Flatpickr-
+    // Instanzen (minDate/maxDate). Beim Setzen von "Von" wird "Bis" auch
+    // korrigiert, falls es jetzt davor liegen würde.
+    const bindRangeLinks = (root) => {
+        if (!root) return;
+        root.querySelectorAll("[data-range-link]").forEach((wrap) => {
+            if (wrap.dataset.rangeLinkBound === "1") return;
+            wrap.dataset.rangeLinkBound = "1";
+            const fromInput = wrap.querySelector("[data-range-from]");
+            const toInput = wrap.querySelector("[data-range-to]");
+            if (!fromInput || !toInput) return;
+
+            const syncFromChanged = () => {
+                const v = fromInput.value;
+                if (toInput._flatpickr) {
+                    toInput._flatpickr.set("minDate", v || null);
+                }
+                if (v) toInput.setAttribute("min", v);
+                else toInput.removeAttribute("min");
+                if (v && toInput.value && toInput.value < v) {
+                    if (toInput._flatpickr) {
+                        toInput._flatpickr.setDate(v, true);
+                    } else {
+                        toInput.value = v;
+                    }
+                }
+            };
+            const syncToChanged = () => {
+                const v = toInput.value;
+                if (fromInput._flatpickr) {
+                    fromInput._flatpickr.set("maxDate", v || null);
+                }
+                if (v) fromInput.setAttribute("max", v);
+                else fromInput.removeAttribute("max");
+            };
+
+            fromInput.addEventListener("change", syncFromChanged);
+            fromInput.addEventListener("input", syncFromChanged);
+            toInput.addEventListener("change", syncToChanged);
+            toInput.addEventListener("input", syncToChanged);
+
+            // Initial sync, falls bereits Werte vorhanden sind oder
+            // Flatpickr nach diesem Handler initialisiert wird.
+            queueMicrotask(() => {
+                syncFromChanged();
+                syncToChanged();
+            });
+        });
+    };
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () =>
+            bindRangeLinks(document),
+        );
+    } else {
+        bindRangeLinks(document);
+    }
+
     const initDynamicFields = (root) => {
         if (!root) return;
         if (typeof window.__initFlatpickr === "function") {
@@ -373,6 +434,143 @@ document.addEventListener("click", (event) => {
         root.querySelectorAll("select[data-recurrence-select]").forEach(
             applyRecurrenceToggle,
         );
+        // Inline-<script>-Tags aus AJAX-Inhalten führt der Browser nicht aus.
+        // Stattdessen binden wir hier die Listener für bekannte Form-Bausteine.
+        bindRangeLinks(root);
+
+        root.querySelectorAll("[data-time-mode-toggle]").forEach((toggle) => {
+            const form = toggle.closest("form");
+            if (!form || form.dataset.timeModeBound === "1") return;
+            form.dataset.timeModeBound = "1";
+
+            const radios = toggle.querySelectorAll("[data-time-mode-radio]");
+            const panes = form.querySelectorAll("[data-time-mode-pane]");
+            const hhmm = form.querySelector("[data-time-hhmm]");
+            const hidden = form.querySelector("[data-time-minutes]");
+
+            const toMinutes = (val) => {
+                const parts = String(val || "").split(":");
+                if (parts.length !== 2) return null;
+                const h = parseInt(parts[0], 10);
+                const m = parseInt(parts[1], 10);
+                if (isNaN(h) || isNaN(m) || m < 0 || m > 59) return null;
+                return h * 60 + m;
+            };
+
+            const applyMode = (mode) => {
+                panes.forEach((p) => {
+                    const active = p.dataset.timeModePane === mode;
+                    p.hidden = !active;
+                    // Inaktive Inputs nicht mitschicken: disabled = ignoriert
+                    // beim Form-Submit, aber bleibt im DOM editierbar, falls
+                    // der User wieder umschaltet.
+                    p.querySelectorAll("input, select").forEach((inp) => {
+                        inp.disabled = !active;
+                    });
+                });
+            };
+
+            radios.forEach((r) => {
+                r.addEventListener("change", () => {
+                    if (r.checked) applyMode(r.dataset.target);
+                });
+            });
+            const initial = Array.from(radios).find((r) => r.checked);
+            applyMode(initial?.dataset.target || "duration");
+
+            hhmm?.addEventListener("input", () => {
+                const min = toMinutes(hhmm.value);
+                if (hidden) hidden.value = min !== null ? String(min) : "";
+            });
+
+            form.addEventListener("submit", () => {
+                if (hhmm && !hhmm.disabled && hidden) {
+                    const min = toMinutes(hhmm.value);
+                    if (min !== null) hidden.value = String(min);
+                }
+            });
+        });
+
+        root.querySelectorAll("[data-filter-list]").forEach((list) => {
+            const scope = list.closest("[data-filter-scope]") || root;
+            const search = scope.querySelector("[data-filter-search]");
+            const select = scope.querySelector("[data-filter-customer]");
+            const empty = scope.querySelector("[data-filter-empty]");
+            const apply = () => {
+                const q = (search?.value || "").trim().toLowerCase();
+                const cust = select?.value || "";
+                let visibleCards = 0;
+                const cards = list.querySelectorAll("[data-card]");
+                if (cards.length > 0) {
+                    // Karten-Modus: Parent-Header und Subprojekte separat
+                    // prüfen. Wenn ein Subprojekt matched, bleibt der Header
+                    // als Kontext-Zeile sichtbar — auch wenn der Header selbst
+                    // weder Such- noch Kundenfilter matched. Damit verliert
+                    // man bei gefilterten Subprojekten nicht die Kunden-/
+                    // Eltern-Zuordnung.
+                    const matches = (item) => {
+                        const matchText =
+                            q === "" || item.dataset.haystack.includes(q);
+                        const matchCust =
+                            cust === "" || item.dataset.customer === cust;
+                        return matchText && matchCust;
+                    };
+                    cards.forEach((card) => {
+                        const parentLink = card.querySelector(
+                            ":scope > [data-haystack]",
+                        );
+                        const childItems = card.querySelectorAll(
+                            ":scope > ul > li[data-haystack]",
+                        );
+
+                        let visibleChildren = 0;
+                        childItems.forEach((item) => {
+                            const show = matches(item);
+                            item.hidden = !show;
+                            if (show) visibleChildren++;
+                        });
+
+                        let parentVisible = false;
+                        if (parentLink) {
+                            parentVisible =
+                                matches(parentLink) || visibleChildren > 0;
+                            parentLink.hidden = !parentVisible;
+                            // Wenn der Header nur als Kontext sichtbar ist,
+                            // dezent ausgrauen, damit erkennbar bleibt, dass
+                            // der Treffer eines der Sub-Projekte ist.
+                            const isContextOnly =
+                                parentVisible &&
+                                !matches(parentLink) &&
+                                visibleChildren > 0;
+                            parentLink.classList.toggle(
+                                "opacity-60",
+                                isContextOnly,
+                            );
+                        }
+
+                        const visibleInCard =
+                            (parentVisible ? 1 : 0) + visibleChildren;
+                        card.hidden = visibleInCard === 0;
+                        if (visibleInCard > 0) visibleCards++;
+                    });
+                } else {
+                    list.querySelectorAll("[data-haystack]").forEach(
+                        (item) => {
+                            const matchText =
+                                q === "" || item.dataset.haystack.includes(q);
+                            const matchCust =
+                                cust === "" || item.dataset.customer === cust;
+                            const show = matchText && matchCust;
+                            item.hidden = !show;
+                            if (show) visibleCards++;
+                        },
+                    );
+                }
+                if (empty) empty.classList.toggle("hidden", visibleCards > 0);
+            };
+            search?.addEventListener("input", apply);
+            select?.addEventListener("change", apply);
+        });
     };
 
     const bindDialogForms = (root) => {

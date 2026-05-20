@@ -239,6 +239,7 @@ Route::middleware('auth')->group(function () {
     Route::post('invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
     Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
     Route::patch('projects/{project}/tasks/{task}/complete', [TaskController::class, 'complete'])->name('projects.tasks.complete');
+    Route::get('time-entries/create', [TimeEntryController::class, 'pick'])->name('time-entries.create');
     Route::resource('projects.time-entries', TimeEntryController::class)->except(['index', 'show']);
     Route::resource('projects.billing-rules', ProjectBillingRuleController::class)->except(['index', 'show', 'edit']);
 

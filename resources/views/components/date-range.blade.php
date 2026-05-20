@@ -20,6 +20,7 @@
     'labelClass' => null,       // override label class in split layout
     'inputClass' => '',         // extra classes appended to inputs
     'formControl' => false,     // wrap split fields with DaisyUI form-control
+    'linked' => true,           // koppelt Von/Bis: Bis kann nicht vor Von liegen
 ])
 
 @php
@@ -29,10 +30,21 @@
     $sizeClass = $size ? 'input-'.$size : '';
     $inputBase = trim('input input-bordered '.$sizeClass);
     $splitLabelClass = $labelClass ?? ($formControl ? 'fieldset-label' : 'label text-sm font-semibold pb-1');
+
+    // Linking: initiale HTML-Constraints + Marker für JS in initDynamicFields.
+    // min/max können von außen überschrieben werden — wir setzen die initialen
+    // Werte nur, wenn nichts explizit gesetzt ist.
+    $fromMax = $max;
+    $toMin = $min;
+    if ($linked) {
+        $fromMax = $fromMax ?? $to;
+        $toMin = $toMin ?? $from;
+    }
+    $rangeAttrs = $linked ? ' data-range-link ' : ' ';
 @endphp
 
 @if ($layout === 'split')
-    <div {{ $attributes->merge(['class' => $gridClass]) }}>
+    <div {{ $attributes->merge(['class' => $gridClass]) }} @if($linked) data-range-link @endif>
         @if ($formControl)
             <div class="fieldset">
                 <label @if($fromId) for="{{ $fromId }}" @endif class="fieldset-label">{{ $fromLabel }}</label>
@@ -43,7 +55,8 @@
                     value="{{ $from }}"
                     @if($required) required @endif
                     @if($min !== null) min="{{ $min }}" @endif
-                    @if($max !== null) max="{{ $max }}" @endif
+                    @if($fromMax !== null) max="{{ $fromMax }}" @endif
+                    @if($linked) data-range-from @endif
                     class="{{ $inputBase }} w-full {{ $inputClass }} @if($fromError) input-error @endif"
                 >
                 @if($fromError)<p class="text-error text-sm">{{ $fromError }}</p>@endif
@@ -56,8 +69,9 @@
                     type="{{ $type }}"
                     value="{{ $to }}"
                     @if($required) required @endif
-                    @if($min !== null) min="{{ $min }}" @endif
+                    @if($toMin !== null) min="{{ $toMin }}" @endif
                     @if($max !== null) max="{{ $max }}" @endif
+                    @if($linked) data-range-to @endif
                     class="{{ $inputBase }} w-full {{ $inputClass }} @if($toError) input-error @endif"
                 >
                 @if($toError)<p class="text-error text-sm">{{ $toError }}</p>@endif
@@ -72,7 +86,8 @@
                     value="{{ $from }}"
                     @if($required) required @endif
                     @if($min !== null) min="{{ $min }}" @endif
-                    @if($max !== null) max="{{ $max }}" @endif
+                    @if($fromMax !== null) max="{{ $fromMax }}" @endif
+                    @if($linked) data-range-from @endif
                     class="{{ $inputBase }} w-full {{ $inputClass }} @if($fromError) input-error @endif"
                 >
                 @if($fromError)<p class="mt-1 text-sm text-error">{{ $fromError }}</p>@endif
@@ -85,8 +100,9 @@
                     type="{{ $type }}"
                     value="{{ $to }}"
                     @if($required) required @endif
-                    @if($min !== null) min="{{ $min }}" @endif
+                    @if($toMin !== null) min="{{ $toMin }}" @endif
                     @if($max !== null) max="{{ $max }}" @endif
+                    @if($linked) data-range-to @endif
                     class="{{ $inputBase }} w-full {{ $inputClass }} @if($toError) input-error @endif"
                 >
                 @if($toError)<p class="mt-1 text-sm text-error">{{ $toError }}</p>@endif
@@ -94,7 +110,7 @@
         @endif
     </div>
 @else
-    <div {{ $attributes->merge(['class' => $formControl ? 'fieldset w-full' : 'flex flex-col']) }}>
+    <div {{ $attributes->merge(['class' => $formControl ? 'fieldset w-full' : 'flex flex-col']) }} @if($linked) data-range-link @endif>
         @if ($label !== false && $label !== '')
             @if ($formControl)
                 <label class="fieldset-label">{{ $label }}</label>
@@ -110,7 +126,8 @@
                 value="{{ $from }}"
                 @if($required) required @endif
                 @if($min !== null) min="{{ $min }}" @endif
-                @if($max !== null) max="{{ $max }}" @endif
+                @if($fromMax !== null) max="{{ $fromMax }}" @endif
+                @if($linked) data-range-from @endif
                 class="join-item flex-1 min-w-0 {{ $inputBase }} {{ $inputClass }}"
                 title="{{ $fromLabel }}"
                 aria-label="{{ $fromLabel }}"
@@ -121,8 +138,9 @@
                 name="{{ $toName }}"
                 value="{{ $to }}"
                 @if($required) required @endif
-                @if($min !== null) min="{{ $min }}" @endif
+                @if($toMin !== null) min="{{ $toMin }}" @endif
                 @if($max !== null) max="{{ $max }}" @endif
+                @if($linked) data-range-to @endif
                 class="join-item flex-1 min-w-0 {{ $inputBase }} {{ $inputClass }}"
                 title="{{ $toLabel }}"
                 aria-label="{{ $toLabel }}"

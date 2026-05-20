@@ -13,6 +13,10 @@
     $currentMinutes = old('minutes', $entry?->minutes ?? 60);
     $hh = str_pad((string) intdiv((int) $currentMinutes, 60), 2, '0', STR_PAD_LEFT);
     $mm = str_pad((string) ((int) $currentMinutes % 60), 2, '0', STR_PAD_LEFT);
+
+    // Startmodus: hat der Eintrag schon Von/Bis → Range-Modus, sonst Dauer.
+    $hasRange = $entry?->started_at && $entry?->ended_at;
+    $initialMode = old('_time_mode', $hasRange ? 'range' : 'duration');
 @endphp
 
 <x-modal
@@ -29,28 +33,74 @@
         <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
     @endif
 
-    {{-- Minuten als verstecktes Feld; wird per JS aus HH:MM befüllt --}}
-    <input type="hidden" name="minutes" id="time_minutes_hidden" value="{{ $currentMinutes }}">
+    {{-- Minuten als verstecktes Feld; wird im Dauer-Modus per JS aus HH:MM
+         befüllt, im Range-Modus rechnet der Model-Hook aus started_at/ended_at. --}}
+    <input type="hidden" name="minutes" data-time-minutes value="{{ $currentMinutes }}">
 
     <x-form-group :legend="__('Zeit')" icon="timer" tone="primary" cols="2">
-            <div class="fieldset">
+            <div class="fieldset md:col-span-2" data-time-mode-toggle>
+                <label class="fieldset-label">{{ __('Erfassungsart') }}</label>
+                <div class="join">
+                    <input type="radio" name="_time_mode" value="duration"
+                           data-time-mode-radio data-target="duration"
+                           class="join-item btn btn-sm"
+                           aria-label="{{ __('Dauer') }}"
+                           @checked($initialMode === 'duration')>
+                    <input type="radio" name="_time_mode" value="range"
+                           data-time-mode-radio data-target="range"
+                           class="join-item btn btn-sm"
+                           aria-label="{{ __('Von / Bis') }}"
+                           @checked($initialMode === 'range')>
+                </div>
+                <p class="text-xs text-base-content/50 mt-1">
+                    {{ __('„Von / Bis" hält fest, wann gearbeitet wurde — wichtig für Kunden, die einen Zeitnachweis brauchen.') }}
+                </p>
+            </div>
+
+            {{-- Dauer-Modus: nur Datum + HH:MM --}}
+            <div class="fieldset" data-time-mode-pane="duration">
                 <label class="fieldset-label">{{ __('Datum') }}</label>
                 <input name="date" type="date"
                        class="input input-bordered w-full"
-                       value="{{ old('date', $entry?->date?->format('Y-m-d') ?? now()->format('Y-m-d')) }}"
-                       required>
+                       value="{{ old('date', $entry?->date?->format('Y-m-d') ?? now()->format('Y-m-d')) }}">
                 @error('date')<p class="text-error text-sm">{{ $message }}</p>@enderror
             </div>
 
-            <div class="fieldset">
+            <div class="fieldset" data-time-mode-pane="duration">
                 <label class="fieldset-label">{{ __('Dauer (HH:MM)') }}</label>
-                <input type="text" id="time_hhmm_input"
+                <input type="text" data-time-hhmm
                        class="input input-bordered w-full"
                        pattern="^\d{1,2}:[0-5]\d$"
                        placeholder="1:30"
-                       value="{{ $hh }}:{{ $mm }}"
-                       required>
+                       value="{{ $hh }}:{{ $mm }}">
                 @error('minutes')<p class="text-error text-sm">{{ $message }}</p>@enderror
+            </div>
+
+            {{-- Range-Modus: Von / Bis (nutzt die bestehende x-date-range-Komponente) --}}
+            <div class="md:col-span-2" data-time-mode-pane="range">
+                <x-date-range
+                    type="datetime-local"
+                    layout="split"
+                    form-control
+                    fromName="started_at"
+                    toName="ended_at"
+                    fromId="time-entry-started-at"
+                    toId="time-entry-ended-at"
+                    :from="old('started_at', $entry?->started_at?->format('Y-m-d\TH:i'))"
+                    :to="old('ended_at', $entry?->ended_at?->format('Y-m-d\TH:i'))"
+                    :fromLabel="__('Von')"
+                    :toLabel="__('Bis')"
+                    :fromError="$errors->first('started_at')"
+                    :toError="$errors->first('ended_at')"
+                />
+            </div>
+
+            <div class="fieldset" data-time-mode-pane="range">
+                <label class="fieldset-label">{{ __('Pause (Minuten)') }}</label>
+                <input name="break_minutes" type="number" min="0" max="600"
+                       class="input input-bordered w-full"
+                       value="{{ old('break_minutes', $entry?->break_minutes ?? 0) }}">
+                @error('break_minutes')<p class="text-error text-sm">{{ $message }}</p>@enderror
             </div>
         </x-form-group>
 
@@ -95,37 +145,3 @@
 
         @include('time-entries._edit_extras', ['entry' => $entry])
 </x-modal>
-
-<script>
-(function () {
-    const hhmm  = document.getElementById('time_hhmm_input');
-    const hidden = document.getElementById('time_minutes_hidden');
-    if (!hhmm || !hidden) return;
-
-    function toMinutes(val) {
-        const parts = val.split(':');
-        if (parts.length !== 2) return null;
-        const h = parseInt(parts[0], 10);
-        const m = parseInt(parts[1], 10);
-        if (isNaN(h) || isNaN(m) || m < 0 || m > 59) return null;
-        return h * 60 + m;
-    }
-
-    hhmm.addEventListener('input', function () {
-        const min = toMinutes(this.value);
-        hidden.value = min !== null ? String(min) : '';
-    });
-
-    document.getElementById('time-entry-form').addEventListener('submit', function (e) {
-        const min = toMinutes(hhmm.value);
-        if (min === null || min < 1 || min > 1440) {
-            e.preventDefault();
-            hhmm.setCustomValidity('{{ __("Bitte gültige Dauer eingeben (z. B. 1:30).") }}');
-            hhmm.reportValidity();
-        } else {
-            hhmm.setCustomValidity('');
-            hidden.value = String(min);
-        }
-    });
-})();
-</script>
