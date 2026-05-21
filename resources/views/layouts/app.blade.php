@@ -16,6 +16,13 @@
             })();
         </script>
         <title>@yield('title', isset($branding) && $branding ? $branding->appName() : config('app.name', 'WorkDiary'))</title>
+
+        {{-- Favicon-/App-Icon-Set (Multi-Size ICO + PNG-Varianten für moderne Browser, iOS und PWA). --}}
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('img/logo/workdiary-mark-32.png') }}">
+        <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('img/logo/workdiary-mark-192.png') }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('img/logo/workdiary-mark-192.png') }}">
+
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=space-grotesk:400,500,700|ibm-plex-sans:400,500,600" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200&display=swap" rel="stylesheet">
@@ -303,7 +310,7 @@
                             $_brandName = isset($branding) && $branding ? $branding->appName() : 'WorkDiary';
                         @endphp
                         @if ($_brandLogo)
-                            <img src="{{ $_brandLogo }}" alt="{{ $_brandName }}" class="h-6 w-auto max-w-32 object-contain shrink-0">
+                            <img src="{{ $_brandLogo }}" alt="{{ $_brandName }}" class="h-9 w-auto max-w-40 object-contain shrink-0">
                         @else
                             <span class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary transition group-hover:opacity-80 shrink-0">{{ $_brandName }}</span>
                         @endif

@@ -14,6 +14,7 @@
                             show-label>{{ __('Zurück') }}</x-icon-btn>
                 @can('update', $shift)
                     <x-icon-btn icon="edit" tone="primary" size="sm"
+                                data-entry-modal-trigger
                                 :href="route('scheduled-shifts.edit', $shift)"
                                 show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                 @endcan

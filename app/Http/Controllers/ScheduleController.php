@@ -39,8 +39,26 @@ class ScheduleController extends Controller {
         $userFilter = (int) $request->query('user', 0);
 
         $range = $this->globalDateRange();
-        $from = $range['from'];
-        $to = $range['to'];
+        $rangeFrom = $range['from'];
+        $rangeTo = $range['to'];
+
+        // Monats-Tabs: Wenn der globale Zeitraum mehr als einen Monat umfasst,
+        // werden Tabs angeboten und die Matrix arbeitet nur auf dem aktiven
+        // Monat. Bei ≤ 1 Monat bleibt das Verhalten wie zuvor.
+        $months = $this->buildMonthsInRange($rangeFrom, $rangeTo);
+        $activeMonthKey = (string) $request->query('activeMonth', '');
+        $activeMonth = collect($months)->firstWhere('key', $activeMonthKey) ?? $months[0];
+        $activeMonthKey = $activeMonth['key'];
+
+        if (count($months) > 1) {
+            $from = CarbonImmutable::create($activeMonth['year'], $activeMonth['month'], 1)
+                ->startOfMonth();
+            $to = $from->endOfMonth();
+        } else {
+            $from = $rangeFrom;
+            $to = $rangeTo;
+        }
+
         $requestedView = (string) $request->query('view', '');
         $view = in_array($requestedView, ['week', 'month'], true)
             ? $requestedView
@@ -70,7 +88,33 @@ class ScheduleController extends Controller {
             'isAdmin' => $auth->isAdmin(),
             'complianceByShift' => $complianceByShift,
             'openSlotsByDate' => $openSlots->compute($from, $to, $shifts),
+            'months' => $months,
+            'activeMonthKey' => $activeMonthKey,
         ]);
+    }
+
+    /**
+     * Baut die Liste aller Monate, die der Zeitraum [from, to] berührt.
+     * Pro Monat: Schlüssel "Y-m", Jahr, Monat, kurzes Label ("Mai 2026").
+     *
+     * @return list<array{key:string,year:int,month:int,label:string,shortLabel:string}>
+     */
+    private function buildMonthsInRange(CarbonImmutable $from, CarbonImmutable $to): array {
+        $months = [];
+        $cursor = $from->startOfMonth();
+        $end = $to->startOfMonth();
+        while ($cursor->lte($end)) {
+            $months[] = [
+                'key' => $cursor->format('Y-m'),
+                'year' => $cursor->year,
+                'month' => $cursor->month,
+                'label' => $cursor->translatedFormat('F Y'),
+                'shortLabel' => $cursor->translatedFormat('M Y'),
+            ];
+            $cursor = $cursor->addMonth();
+        }
+
+        return $months;
     }
 
     /**

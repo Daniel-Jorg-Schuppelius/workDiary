@@ -109,16 +109,17 @@
             </div>
 
             <x-date-range
-                layout="split"
+                layout="join"
                 :from="old('starts_on', $project?->starts_on?->format('Y-m-d'))"
                 :to="old('ends_on', $project?->ends_on?->format('Y-m-d'))"
                 fromName="starts_on"
                 toName="ends_on"
                 :fromLabel="__('Start')"
                 :toLabel="__('Ende')"
+                :label="__('Start – Ende')"
                 size=""
                 formControl
-                gridClass="contents"
+                class="col-span-2"
                 :toError="$errors->first('ends_on')"
                 :fromError="$errors->first('starts_on')"
             />

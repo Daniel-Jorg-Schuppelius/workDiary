@@ -53,7 +53,10 @@
         @endphp
         <header class="fixed inset-x-0 top-0 z-50 border-b border-base-300 bg-base-100 shadow-xs">
             <div class="mx-auto flex w-full max-w-screen-2xl items-center justify-between gap-4 px-6 py-3 xl:px-8 2xl:px-12">
-                <a href="{{ route('home') }}" class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary">WorkDiary</a>
+                <a href="{{ route('home') }}" class="flex items-center gap-2">
+                    <img src="{{ asset('img/logo/workdiary-logo-512.png') }}" alt="WorkDiary"
+                         class="h-10 w-auto max-w-48 object-contain">
+                </a>
                 <div class="ml-auto flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
                     <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
                         <span data-theme-label class="text-base leading-none">◐</span>
@@ -75,7 +78,8 @@
             <header class="mb-6 rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
                 <div class="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
                     <div>
-                        <p class="font-['Space_Grotesk'] text-sm uppercase tracking-[0.35em] text-primary">WorkDiary</p>
+                        <img src="{{ asset('img/logo/workdiary-logo-768.png') }}" alt="WorkDiary"
+                             class="mb-3 h-16 w-auto max-w-xs object-contain">
                         <h1 class="mt-3 font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content md:text-4xl">{{ __('Operations Dashboard') }}</h1>
                         <p class="mt-3 max-w-3xl text-base text-base-content/80">Zentrale Arbeitsoberfläche für Teamstatus, offene Punkte und direkte Aktionen im Tagesgeschäft.</p>
                         @auth

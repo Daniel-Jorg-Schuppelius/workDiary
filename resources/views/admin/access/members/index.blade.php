@@ -54,6 +54,7 @@
                 </td>
                 <td class="text-right">
                     <x-icon-btn icon="manage_accounts" size="xs"
+                                data-entry-modal-trigger
                                 :href="route('admin.access.members.edit', $member)"
                                 :title="__('access.action.edit_assignments')" />
                 </td>

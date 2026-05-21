@@ -67,7 +67,7 @@ class MemberController extends Controller {
 
         $member->load(['roles', 'userGroups']);
 
-        return view('admin.access.members.edit', [
+        return view('admin.access.members._form_dialog', [
             'member' => $member,
             'roles' => $this->availableRoles(),
             'groups' => UserGroup::query()->orderBy('name')->get(),
@@ -108,7 +108,7 @@ class MemberController extends Controller {
 
         $member->userGroups()->sync($validGroupIds);
 
-        return redirect()->route('admin.access.members.edit', $member)
+        return redirect()->route('admin.access.members.index')
             ->with('success', __('access.flash.member_updated'));
     }
 

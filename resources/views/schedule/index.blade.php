@@ -1,6 +1,8 @@
 @extends('layouts.app')
 @section('title', __('Schichtplan') . ' — WorkDiary')
 @section('nav-title', __('Schichtplan'))
+@section('wrapper-height-class', 'h-[calc(100dvh_-_var(--app-header-h))] overflow-clip')
+@section('main-class', 'min-h-0 overflow-clip flex flex-col')
 
 @section('content')
 @php
@@ -60,6 +62,28 @@
                     <li>{{ $err }}</li>
                 @endforeach
             </ul>
+        </div>
+    @endif
+
+    {{-- ── Monats-Tabs (nur wenn globaler Zeitraum > 1 Monat) ──────────── --}}
+    @if (count($months) > 1)
+        <div role="tablist" class="tabs tabs-box flex-nowrap overflow-x-auto">
+            @foreach ($months as $m)
+                @php
+                    $tabParams = ['activeMonth' => $m['key']];
+                    if ($userFilter) {
+                        $tabParams['user'] = $userFilter;
+                    }
+                    if (in_array($view, ['week', 'month'], true)) {
+                        $tabParams['view'] = $view;
+                    }
+                @endphp
+                <a role="tab"
+                   href="{{ route('schedule.index', $tabParams) }}"
+                   class="tab whitespace-nowrap gap-1.5 {{ $m['key'] === $activeMonthKey ? 'tab-active' : '' }}">
+                    <span class="font-semibold">{{ $m['shortLabel'] }}</span>
+                </a>
+            @endforeach
         </div>
     @endif
 

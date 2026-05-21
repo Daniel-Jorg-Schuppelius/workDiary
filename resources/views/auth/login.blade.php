@@ -14,6 +14,12 @@
             })();
         </script>
         <title>{{ __('Anmelden') }} — {{ isset($branding) && $branding ? $branding->appName() : config('app.name', 'WorkDiary') }}</title>
+
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('img/logo/workdiary-mark-32.png') }}">
+        <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('img/logo/workdiary-mark-192.png') }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('img/logo/workdiary-mark-192.png') }}">
+
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=space-grotesk:400,500,700|ibm-plex-sans:400,500,600" rel="stylesheet" />
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,7 +44,7 @@
                 @endphp
                 <a href="{{ route('home') }}" class="flex items-center gap-2">
                     @if ($_loginBrandLogo)
-                        <img src="{{ $_loginBrandLogo }}" alt="{{ $_loginBrandName }}" class="h-6 w-auto max-w-[8rem] object-contain">
+                        <img src="{{ $_loginBrandLogo }}" alt="{{ $_loginBrandName }}" class="h-10 w-auto max-w-48 object-contain">
                     @else
                         <span class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary">{{ $_loginBrandName }}</span>
                     @endif
@@ -58,8 +64,20 @@
         <div class="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4 pb-20 pt-24 lg:px-10">
             <div class="w-full max-w-md">
             <div class="mb-8 text-center">
+                @php
+                    $_loginSlogan = isset($branding) && $branding ? $branding->slogan() : null;
+                @endphp
                 <a href="{{ route('home') }}" class="inline-block">
-                    <p class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary">{{ isset($branding) && $branding ? ($branding->slogan() ?: $branding->appName()) : 'WorkDiary Next' }}</p>
+                    @if ($_loginBrandLogo)
+                        <img src="{{ $_loginBrandLogo }}" alt="{{ $_loginBrandName }}"
+                             class="mx-auto mb-4 h-20 w-auto max-w-xs object-contain">
+                    @else
+                        {{-- Kein Logo gesetzt: App-Name als Text-Fallback rendern. --}}
+                        <p class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary">{{ $_loginBrandName }}</p>
+                    @endif
+                    @if ($_loginSlogan)
+                        <p class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary">{{ $_loginSlogan }}</p>
+                    @endif
                     <h1 class="mt-2 font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content">{{ __('Anmelden') }}</h1>
                 </a>
                 <p class="mt-3 text-sm text-base-content/70">{{ __('Benutzerdaten aus dem bestehenden Tagebuch-System.') }}</p>

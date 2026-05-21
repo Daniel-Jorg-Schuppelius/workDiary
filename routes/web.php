@@ -447,6 +447,8 @@ Route::middleware('auth')->group(function () {
 
             Route::resource('groups', AccessUserGroupController::class)
                 ->parameters(['groups' => 'group']);
+            Route::get('groups/{group}/members/attach', [AccessUserGroupController::class, 'attachMemberForm'])
+                ->name('groups.members.attach.form');
             Route::post('groups/{group}/members', [AccessUserGroupController::class, 'attachMember'])
                 ->name('groups.members.attach');
             Route::delete('groups/{group}/members/{user}', [AccessUserGroupController::class, 'detachMember'])

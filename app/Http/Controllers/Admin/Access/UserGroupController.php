@@ -44,7 +44,7 @@ class UserGroupController extends Controller {
     public function create(): View {
         Gate::authorize('create', UserGroup::class);
 
-        return view('admin.access.groups.form', [
+        return view('admin.access.groups._form_dialog', [
             'group' => new UserGroup,
             'assignedRoles' => [],
             'assignedPermissions' => [],
@@ -79,7 +79,7 @@ class UserGroupController extends Controller {
 
         $this->syncRolesAndPermissions($group, $data['roles'] ?? [], $data['permissions'] ?? []);
 
-        return redirect()->route('admin.access.groups.edit', $group)
+        return redirect()->route('admin.access.groups.show', $group)
             ->with('success', __('access.flash.group_created'));
     }
 
@@ -108,7 +108,7 @@ class UserGroupController extends Controller {
 
         $group->load(['roles', 'permissions']);
 
-        return view('admin.access.groups.form', [
+        return view('admin.access.groups._form_dialog', [
             'group' => $group,
             'assignedRoles' => $group->roles->pluck('id')->all(),
             'assignedPermissions' => $group->permissions->pluck('name')->all(),
@@ -138,7 +138,7 @@ class UserGroupController extends Controller {
 
         $this->syncRolesAndPermissions($group, $data['roles'] ?? [], $data['permissions'] ?? []);
 
-        return redirect()->route('admin.access.groups.edit', $group)
+        return redirect()->route('admin.access.groups.show', $group)
             ->with('success', __('access.flash.group_updated'));
     }
 
@@ -149,6 +149,20 @@ class UserGroupController extends Controller {
 
         return redirect()->route('admin.access.groups.index')
             ->with('success', __('access.flash.group_deleted'));
+    }
+
+    public function attachMemberForm(UserGroup $group): View {
+        Gate::authorize('update', $group);
+
+        $memberIds = $group->members()->pluck('users.id')->all();
+        $addableUsers = User::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $group->organization_id)
+            ->whereNotIn('id', $memberIds)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return view('admin.access.groups._attach_member_dialog', compact('group', 'addableUsers'));
     }
 
     public function attachMember(Request $request, UserGroup $group): RedirectResponse {

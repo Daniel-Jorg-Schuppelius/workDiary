@@ -8,7 +8,9 @@
     <x-slot:toolbar>
         <x-page-toolbar>
             <x-slot:actions>
-                <x-icon-btn icon="edit" size="sm" :href="route('admin.access.groups.edit', $group)" show-label>
+                <x-icon-btn icon="edit" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('admin.access.groups.edit', $group)" show-label>
                     {{ __('access.action.edit') }}
                 </x-icon-btn>
             </x-slot:actions>
@@ -54,15 +56,15 @@
 
     <div class="card bg-base-100 shadow-sm">
         <div class="card-body space-y-4">
-            <h3 class="card-title">{{ __('access.title.members') }} ({{ $group->members->count() }})</h3>
-
-            <form method="POST" action="{{ route('admin.access.groups.members.attach', $group) }}" class="flex gap-2 items-end">
-                @csrf
-                <x-form-group :label="__('access.field.add_member')" name="user_id" class="flex-1">
-                    <x-user-select name="user_id" :users="$addableUsers" required />
-                </x-form-group>
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('access.action.add') }}</button>
-            </form>
+            <div class="flex items-center justify-between">
+                <h3 class="card-title">{{ __('access.title.members') }} ({{ $group->members->count() }})</h3>
+                @if ($addableUsers->isNotEmpty())
+                    <x-icon-btn icon="person_add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('admin.access.groups.members.attach.form', $group)"
+                                show-label>{{ __('access.field.add_member') }}</x-icon-btn>
+                @endif
+            </div>
 
             <x-table>
                 <x-slot:head>

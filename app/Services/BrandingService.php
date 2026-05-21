@@ -92,13 +92,19 @@ class BrandingService {
     }
 
     /**
-     * Signed-URL für das passende Logo. Liefert null, wenn kein Logo
-     * gesetzt ist – das Layout zeigt dann den App-Namen als Text.
+     * Signed-URL für das passende Logo. Greift auf das App-Default-Logo
+     * unter `public/img/logo/workdiary-logo-512.png` zurück, wenn die
+     * Organisation kein eigenes Logo hochgeladen hat — so haben Layout
+     * und Login-Seite immer ein konsistentes Branding statt eines
+     * nackten Textfallbacks.
      */
     public function logoUrl(string $variant = 'light'): ?string {
         $att = $this->logoAttachment($variant);
+        if ($att !== null) {
+            return AttachmentController::downloadUrl($att);
+        }
 
-        return $att !== null ? AttachmentController::downloadUrl($att) : null;
+        return asset('img/logo/workdiary-logo-512.png');
     }
 
     public function logoAttachment(string $variant = 'light'): ?Attachment {

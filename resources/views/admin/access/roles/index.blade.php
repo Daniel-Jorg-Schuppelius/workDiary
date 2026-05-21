@@ -9,6 +9,7 @@
         <x-page-toolbar>
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
                             :href="route('admin.access.roles.create')"
                             show-label>{{ __('access.action.role_new') }}</x-icon-btn>
             </x-slot:actions>
@@ -35,7 +36,9 @@
                     </td>
                     <td>{{ $role->permissions_count }}</td>
                     <td class="text-right">
-                        <x-icon-btn icon="edit" size="xs" :href="route('admin.access.roles.edit', $role)"
+                        <x-icon-btn icon="edit" size="xs"
+                                    data-entry-modal-trigger
+                                    :href="route('admin.access.roles.edit', $role)"
                                     :title="__('access.action.edit')" />
                         @if (! in_array($role->name, $systemRoleNames, true))
                             <form method="POST" action="{{ route('admin.access.roles.destroy', $role) }}" class="inline">

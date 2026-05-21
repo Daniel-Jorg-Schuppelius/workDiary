@@ -33,10 +33,10 @@
     $dayNames = [__('Mo'), __('Di'), __('Mi'), __('Do'), __('Fr'), __('Sa'), __('So')];
 @endphp
 
-<div class="schedule-month-matrix w-full">
+<div class="schedule-month-matrix flex h-full w-full flex-col">
 
     {{-- ── Day-name header ── --}}
-    <div class="grid grid-cols-7 border-b border-base-300 bg-base-100 text-center text-xs font-semibold uppercase tracking-wider text-base-content/50">
+    <div class="grid shrink-0 grid-cols-7 border-b border-base-300 bg-base-100 text-center text-xs font-semibold uppercase tracking-wider text-base-content/50">
         @foreach ($dayNames as $dn)
             <div class="border-r border-base-300 px-1 py-2 last:border-r-0">{{ $dn }}</div>
         @endforeach
@@ -44,7 +44,7 @@
 
     {{-- ── Weeks ── --}}
     @foreach ($weeks as $week)
-        <div class="grid min-h-24 grid-cols-7 border-b border-base-300 last:border-b-0">
+        <div class="grid min-h-24 flex-1 grid-cols-7 border-b border-base-300 last:border-b-0">
             @foreach ($week as $day)
                 @php
                     $dayShifts = $shiftsByDate->get($day['date'], collect());

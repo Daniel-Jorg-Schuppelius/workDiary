@@ -17,7 +17,10 @@
                        :title="__('Keine aktiven Projekte')"
                        :message="__('Lege zuerst ein Projekt an, um fortfahren zu können.')">
             <x-slot:action>
-                <x-icon-btn icon="add" tone="primary" :href="route('projects.create')" show-label>{{ __('Projekt') }}</x-icon-btn>
+                <x-icon-btn icon="add" tone="primary"
+                            :href="route('projects.create')"
+                            data-entry-modal-trigger
+                            show-label>{{ __('Projekt') }}</x-icon-btn>
             </x-slot:action>
         </x-empty-state>
     @else

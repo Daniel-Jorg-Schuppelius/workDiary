@@ -58,7 +58,7 @@ class RoleController extends Controller {
     public function create(): View {
         Gate::authorize('manage-access');
 
-        return view('admin.access.roles.form', [
+        return view('admin.access.roles._form_dialog', [
             'role' => new Role,
             'assigned' => [],
             'permissions' => PermissionEnum::grouped(),
@@ -104,7 +104,7 @@ class RoleController extends Controller {
         Gate::authorize('manage-access');
         $this->ensureEditable($role);
 
-        return view('admin.access.roles.form', [
+        return view('admin.access.roles._form_dialog', [
             'role' => $role,
             'assigned' => $role->permissions()->pluck('name')->all(),
             'permissions' => PermissionEnum::grouped(),
@@ -150,7 +150,7 @@ class RoleController extends Controller {
 
     private function ensureEditable(Role $role): void {
         $organization = $this->currentOrganization();
-        $teamForeign = config('permission.column_names.team_foreign_key', 'team_id');
+        $teamForeign = (string) config('permission.column_names.team_foreign_key', 'team_id');
 
         // Globale Rollen dürfen nicht über die Org-UI verändert werden.
         abort_if($role->{$teamForeign} === null, 403, __('access.error.role_global_readonly'));
@@ -169,10 +169,12 @@ class RoleController extends Controller {
         $allowed = PermissionEnum::values();
         $valid = array_values(array_intersect($names, $allowed));
 
-        return Permission::query()
+        $ids = Permission::query()
             ->whereIn('name', $valid)
             ->where('guard_name', 'web')
             ->pluck('id')
             ->all();
+
+        return array_values(array_map(static fn($id): int => (int) $id, $ids));
     }
 }

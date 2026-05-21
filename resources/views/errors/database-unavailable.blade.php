@@ -46,6 +46,8 @@
       style="font-family: 'IBM Plex Sans', system-ui, sans-serif;">
     <div class="flex min-h-screen items-center justify-center px-4">
         <div class="w-full max-w-lg rounded-3xl border border-base-300 bg-base-100 p-8 text-center shadow-lg">
+            <img src="{{ asset('img/logo/workdiary-logo-512.png') }}" alt="WorkDiary"
+                 class="mx-auto mb-6 h-12 w-auto object-contain">
             <div class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-warning/15 text-warning">
                 <span class="material-symbols-outlined" style="font-size: 2rem; font-variation-settings: 'FILL' 1, 'wght' 500;">database_off</span>
             </div>

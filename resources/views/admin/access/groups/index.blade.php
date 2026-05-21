@@ -9,6 +9,7 @@
         <x-page-toolbar>
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
                             :href="route('admin.access.groups.create')"
                             show-label>{{ __('access.action.group_new') }}</x-icon-btn>
             </x-slot:actions>
@@ -42,7 +43,9 @@
                 <td class="text-right">
                     <x-icon-btn icon="visibility" size="xs" :href="route('admin.access.groups.show', $group)"
                                 :title="__('access.action.view')" />
-                    <x-icon-btn icon="edit" size="xs" :href="route('admin.access.groups.edit', $group)"
+                    <x-icon-btn icon="edit" size="xs"
+                                data-entry-modal-trigger
+                                :href="route('admin.access.groups.edit', $group)"
                                 :title="__('access.action.edit')" />
                     @unless ($group->is_system)
                         <form method="POST" action="{{ route('admin.access.groups.destroy', $group) }}" class="inline">
