@@ -34,7 +34,32 @@ class EnsureLegacyAccess {
                 ], 403);
             }
 
+            // Neu-only-User landen hier u. a. über alte Bookmarks. Statt 403
+            // freundlich in den neuen Bereich umlenken, sofern verfügbar.
+            if ($user instanceof User && $user->canAccessNew()) {
+                $request->session()->put('work_mode', 'new');
+
+                return redirect()->route('dashboard')
+                    ->with('info', __('Sie wurden in das neue System geleitet.'));
+            }
+
             throw new AccessDeniedHttpException(__('Kein Zugriff auf das Legacy-System.'));
+        }
+
+        // Harte Modus-Trennung: ist der User für beide Bereiche berechtigt,
+        // aber gerade im neuen Modus, darf er KEINE Legacy-Seite per Direkt-URL
+        // öffnen. Redirect statt 403.
+        $workMode = $request->hasSession() ? $request->session()->get('work_mode') : null;
+
+        if ($workMode === 'new' && $user->canAccessNew()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => __('Sie sind aktuell im neuen Modus. Bitte wechseln Sie zuerst in den Legacy-Modus.'),
+                ], 409);
+            }
+
+            return redirect()->route('dashboard')
+                ->with('info', __('Sie sind im neuen Modus. Bitte zuerst in den Legacy-Modus wechseln, um diese Seite zu öffnen.'));
         }
 
         return $next($request);

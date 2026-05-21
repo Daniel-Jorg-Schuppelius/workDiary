@@ -50,6 +50,24 @@ class EnsureNewSystemAccess {
             throw new AccessDeniedHttpException(__('Kein Zugriff auf das neue System.'));
         }
 
+        // Harte Modus-Trennung: ist der User berechtigt für beide Bereiche,
+        // aber gerade im Legacy-Modus, darf er KEINE neue-Bereich-Seite per
+        // Direkt-URL öffnen. Statt 403 redirecten wir auf die Legacy-Startseite
+        // mit Hinweis, damit der Tab-Wechsel im UI bewusst erfolgt.
+        $legacyConfigured = filled(config('database.connections.legacy.database'));
+        $workMode = $request->hasSession() ? $request->session()->get('work_mode') : null;
+
+        if ($workMode === 'legacy' && $user->canAccessLegacy() && $legacyConfigured) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => __('Sie sind aktuell im Legacy-Modus. Bitte wechseln Sie zuerst in den neuen Modus.'),
+                ], 409);
+            }
+
+            return redirect()->route('legacy.diary.index')
+                ->with('info', __('Sie sind im Legacy-Modus. Bitte zuerst in den neuen Modus wechseln, um diese Seite zu öffnen.'));
+        }
+
         return $next($request);
     }
 }
