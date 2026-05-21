@@ -16,6 +16,7 @@ use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -40,6 +41,12 @@ class SetOrganizationContext {
 
             if ($org instanceof Organization) {
                 app()->instance('currentOrganization', $org);
+
+                // Spatie-Teams: aktive Organisation als Team-Kontext setzen,
+                // damit Org-spezifische Rollen-Zuweisungen ausgewertet werden.
+                // Globale Rollen (team_id = NULL, z. B. der Plattform-"admin")
+                // bleiben in jedem Kontext gültig.
+                app(PermissionRegistrar::class)->setPermissionsTeamId($org->id);
             }
         }
 

@@ -1,0 +1,268 @@
+<?php
+/*
+ * Created on   : Thu May 21 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : access.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+return [
+    'title' => [
+        'hub' => 'Access Management',
+        'roles' => 'Roles',
+        'role_new' => 'Create New Role',
+        'role_edit' => 'Edit Role: :name',
+        'org_roles' => 'Roles for :org',
+        'global_roles' => 'Global Platform Roles',
+        'groups' => 'User Groups',
+        'group_new' => 'Create New Group',
+        'group_edit' => 'Edit Group: :name',
+        'group_show' => 'Group :name',
+        'permissions' => 'Permissions',
+        'members' => 'Members',
+        'member_edit' => 'Assignments for :name',
+        'assigned_roles' => 'Assigned Roles',
+        'assigned_groups' => 'Assigned Groups',
+        'direct_permissions' => 'Direct Permissions',
+        'effective_permissions' => 'Effective Permissions',
+        'metadata' => 'Metadata',
+    ],
+
+    'subtitle' => [
+        'context' => 'Active organization: :org',
+    ],
+
+    'kpi' => [
+        'roles' => 'Roles',
+        'groups' => 'User Groups',
+        'members' => 'Members',
+        'permissions' => 'Available Permissions',
+    ],
+
+    'hint' => [
+        'hub' => 'Manage roles, user groups and member assignments for the currently active organization. Platform-wide roles are managed globally in addition.',
+        'permissions_readonly' => 'Permissions are defined by the system and cannot be created at runtime. To grant them per role, switch to role editing.',
+        'global_roles' => 'Global roles apply to all organizations and are managed exclusively by the system.',
+        'effective_permissions' => 'Union of direct permissions, role permissions and group permissions.',
+    ],
+
+    'field' => [
+        'role_name' => 'Role Name',
+        'permission_count' => 'Permissions',
+        'group_name' => 'Group Name',
+        'group_slug' => 'Slug',
+        'member_count' => 'Members',
+        'description' => 'Description',
+        'color' => 'Color',
+        'member' => 'Member',
+        'email' => 'Email',
+        'joined_at' => 'Joined',
+        'add_member' => 'Add Member',
+        'roles' => 'Roles',
+        'groups' => 'Groups',
+    ],
+
+    'badge' => [
+        'system' => 'System',
+        'global' => 'Global',
+    ],
+
+    'action' => [
+        'role_new' => 'Create Role',
+        'group_new' => 'Create Group',
+        'edit' => 'Edit',
+        'edit_assignments' => 'Edit Assignments',
+        'view' => 'View',
+        'delete' => 'Delete',
+        'cancel' => 'Cancel',
+        'save' => 'Save',
+        'create' => 'Create',
+        'add' => 'Add',
+        'remove_member' => 'Remove Member',
+        'search' => 'Search',
+        'select_all' => 'All',
+        'select_none' => 'None',
+    ],
+
+    'placeholder' => [
+        'search_members' => 'Name or email…',
+        'filter_permissions' => 'Filter permissions…',
+    ],
+
+    'help' => [
+        'role_name' => 'Lowercase letters, digits, dot, hyphen, underscore only. Cannot be changed after creation.',
+        'role_permissions' => 'Pick the permissions this role should grant.',
+        'group_roles' => 'Members of this group also gain all permissions of the selected roles.',
+        'group_permissions' => 'Direct permissions are inherited by members in addition to role-based permissions.',
+    ],
+
+    'flash' => [
+        'role_created' => 'Role created.',
+        'role_updated' => 'Role updated.',
+        'role_deleted' => 'Role deleted.',
+        'group_created' => 'Group created.',
+        'group_updated' => 'Group updated.',
+        'group_deleted' => 'Group deleted.',
+        'member_added' => 'Member added.',
+        'member_removed' => 'Member removed.',
+        'member_updated' => 'Assignments saved.',
+    ],
+
+    'confirm' => [
+        'role_delete' => 'Really delete this role? Existing assignments will be removed.',
+        'group_delete' => 'Really delete this group? Memberships will be removed; roles remain assigned to members directly.',
+    ],
+
+    'empty' => [
+        'roles' => 'No roles yet.',
+        'groups' => 'No groups yet.',
+        'members' => 'No members yet.',
+        'assigned_roles' => 'No roles assigned to this group.',
+        'direct_permissions' => 'No direct permissions assigned to this group.',
+        'effective_permissions' => 'This person has no effective permissions.',
+    ],
+
+    'error' => [
+        'role_exists' => 'A role with this name already exists in this organization.',
+        'role_global_readonly' => 'Global roles can only be managed by the system.',
+        'role_system_protected' => 'System roles cannot be deleted.',
+    ],
+
+    'group' => [
+        'access' => 'Access & Audit',
+        'organization' => 'Organization',
+        'members' => 'Members',
+        'customers' => 'Customers',
+        'projects' => 'Projects',
+        'time-entries' => 'Time Entries',
+        'timesheets' => 'Timesheets',
+        'invoicing' => 'Invoicing',
+        'diary' => 'Diary',
+        'scheduling' => 'Scheduling',
+        'absences' => 'Absences',
+        'fleet' => 'Fleet & Tours',
+        'reports' => 'Reports',
+        'working-time' => 'Working Time',
+        'master-data' => 'Master Data',
+    ],
+
+    'permission' => [
+        'access.manage' => 'Open access management',
+        'access.roles.assign' => 'Assign roles',
+        'access.groups.assign' => 'Assign groups',
+        'access.audit.view' => 'View audit log',
+
+        'organization.view' => 'View organization',
+        'organization.update' => 'Edit organization',
+        'organization.billing' => 'Manage organization billing',
+        'branding.update' => 'Edit branding',
+
+        'user.viewAny' => 'List members',
+        'user.view' => 'View member',
+        'user.create' => 'Create member',
+        'user.update' => 'Edit member',
+        'user.delete' => 'Remove member',
+        'user.impersonate' => 'Impersonate member',
+        'user.reset-password' => 'Reset password',
+        'user.rates.manage' => 'Manage hourly rates',
+        'user.flex.manage' => 'Manage flex eligibility',
+
+        'customer.viewAny' => 'List customers',
+        'customer.view' => 'View customer',
+        'customer.create' => 'Create customer',
+        'customer.update' => 'Edit customer',
+        'customer.delete' => 'Delete customer',
+        'customer.export' => 'Export customers',
+        'customer.import' => 'Import customers',
+        'customer.lexoffice.sync' => 'Sync customers with Lexoffice',
+
+        'project.viewAny' => 'List projects',
+        'project.view' => 'View project',
+        'project.create' => 'Create project',
+        'project.update' => 'Edit project',
+        'project.delete' => 'Delete project',
+        'project.archive' => 'Archive project',
+        'project.billing.manage' => 'Manage project billing rules',
+        'task.manage' => 'Manage tasks',
+        'milestone.manage' => 'Manage milestones',
+
+        'timeEntry.viewAny' => 'See all time entries',
+        'timeEntry.viewOwn' => 'See own time entries',
+        'timeEntry.create' => 'Create time entry',
+        'timeEntry.update' => 'Edit time entry',
+        'timeEntry.delete' => 'Delete time entry',
+        'timeEntry.create-for-others' => 'Create time entries for others',
+        'timeEntry.approve' => 'Approve time entries',
+
+        'timesheet.viewAny' => 'See all timesheets',
+        'timesheet.create' => 'Create timesheet',
+        'timesheet.update' => 'Edit timesheet',
+        'timesheet.delete' => 'Delete timesheet',
+        'timesheet.sign' => 'Sign timesheet',
+        'timesheet.lock' => 'Lock timesheet',
+        'timesheet.unlock' => 'Unlock timesheet',
+        'timesheet.export' => 'Export timesheet',
+
+        'invoice.viewAny' => 'List invoices',
+        'invoice.view' => 'View invoice',
+        'invoice.create' => 'Create invoice',
+        'invoice.update' => 'Edit invoice',
+        'invoice.delete' => 'Delete invoice',
+        'invoice.issue' => 'Issue invoice',
+        'invoice.pay' => 'Mark invoice as paid',
+        'invoice.export' => 'Export invoice',
+
+        'diary.viewAny' => 'See all diary entries',
+        'diary.viewOwn' => 'See own diary entries',
+        'diary.create' => 'Create diary entry',
+        'diary.update' => 'Edit diary entry',
+        'diary.delete' => 'Delete diary entry',
+        'diary.create-for-others' => 'Create diary entries for others',
+        'diary.export' => 'Export diary',
+
+        'dutyPlan.viewAny' => 'List duty plans',
+        'dutyPlan.create' => 'Create duty plan',
+        'dutyPlan.update' => 'Edit duty plan',
+        'dutyPlan.delete' => 'Delete duty plan',
+        'dutyPlan.publish' => 'Publish duty plan',
+        'shift.manage' => 'Manage shifts',
+        'coverage-requirement.manage' => 'Manage coverage requirements',
+        'on-call-shift.manage' => 'Manage on-call shifts',
+        'emergency-assignment.manage' => 'Manage emergency assignments',
+        'shift-type.manage' => 'Manage shift types',
+        'scheduled-shift.manage' => 'Manage scheduled shifts',
+
+        'vacation.viewAny' => 'See all vacation requests',
+        'vacation.request' => 'Request vacation',
+        'vacation.approve' => 'Approve vacation',
+        'vacation.cancel' => 'Cancel vacation',
+        'sick-leave.viewAny' => 'View sick leaves',
+        'sick-leave.manage' => 'Manage sick leaves',
+
+        'tour.viewAny' => 'View tours',
+        'tour.manage' => 'Manage tours',
+        'vehicle.viewAny' => 'View vehicles',
+        'vehicle.manage' => 'Manage vehicles',
+        'travel-log.viewAny' => 'View travel log',
+        'travel-log.manage' => 'Manage travel log',
+        'energy-log.manage' => 'Manage refuelling and charging',
+
+        'material.manage' => 'Manage materials',
+        'activity-category.manage' => 'Manage activity categories',
+        'tag.manage' => 'Manage tags',
+        'qualification.manage' => 'Manage qualifications',
+        'entry-type.manage' => 'Manage entry types',
+        'holiday.manage' => 'Manage holidays',
+
+        'report.view' => 'View reports',
+        'report.export' => 'Export reports',
+        'audit-log.view' => 'View audit log',
+        'attendance.viewAny' => 'View attendance',
+        'attendance.manage' => 'Manage attendance',
+        'work-schedule.manage' => 'Manage work schedule',
+        'flex.view' => 'View flex balance',
+        'flex.manage' => 'Manage flex balance',
+    ],
+];

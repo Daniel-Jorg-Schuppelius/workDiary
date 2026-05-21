@@ -10,6 +10,11 @@
 
 use App\Http\Controllers\AccountPasswordController;
 use App\Http\Controllers\ActivityCategoryController;
+use App\Http\Controllers\Admin\Access\AccessHubController;
+use App\Http\Controllers\Admin\Access\MemberController as AccessMemberController;
+use App\Http\Controllers\Admin\Access\PermissionController as AccessPermissionController;
+use App\Http\Controllers\Admin\Access\RoleController as AccessRoleController;
+use App\Http\Controllers\Admin\Access\UserGroupController as AccessUserGroupController;
 use App\Http\Controllers\Admin\EntryTypeController;
 use App\Http\Controllers\Admin\PluginController as AdminPluginController;
 use App\Http\Controllers\AdminTimeEntryController;
@@ -32,6 +37,7 @@ use App\Http\Controllers\DutyPlanController;
 use App\Http\Controllers\EmergencyAssignmentController;
 use App\Http\Controllers\EnergyLogController;
 use App\Http\Controllers\FlexController;
+use App\Http\Controllers\FlexEligibilityController;
 use App\Http\Controllers\GeocodeController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\HomeController;
@@ -387,6 +393,16 @@ Route::middleware('auth')->group(function () {
         Route::get('users/{user}/work-schedule', [WorkScheduleController::class, 'edit'])->name('users.work-schedule.edit');
         Route::put('users/{user}/work-schedule', [WorkScheduleController::class, 'update'])->name('users.work-schedule.update');
 
+        // ── Gleitzeit-Berechtigung pro Mitarbeiter (periodisch) ───────────────────
+        Route::get('users/{user}/flex-eligibility', [FlexEligibilityController::class, 'index'])
+            ->name('users.flex-eligibility.index');
+        Route::post('users/{user}/flex-eligibility', [FlexEligibilityController::class, 'store'])
+            ->name('users.flex-eligibility.store');
+        Route::put('users/{user}/flex-eligibility/{eligibility}', [FlexEligibilityController::class, 'update'])
+            ->name('users.flex-eligibility.update');
+        Route::delete('users/{user}/flex-eligibility/{eligibility}', [FlexEligibilityController::class, 'destroy'])
+            ->name('users.flex-eligibility.destroy');
+
         Route::get('archive', [ArchiveController::class, 'index'])->name('archive.index');
         Route::post('archive/run', [ArchiveController::class, 'run'])->name('archive.run');
 
@@ -415,6 +431,31 @@ Route::middleware('auth')->group(function () {
             ->names('org.members')
             ->parameters(['members' => 'member'])
             ->except('show');
+
+        // ── Rechteverwaltung (Rollen, Gruppen, Permissions, Mitgliederzuweisung) ──
+        // Alle Routen sind über das Gate 'manage-access' bzw. die UserGroupPolicy
+        // gesichert. Sichtbar im Admin-Menü ist der Bereich nur für Nutzer, die
+        // entweder Plattform-Admin sind oder die Permission `access.manage` haben.
+        Route::prefix('admin/access')->name('admin.access.')->group(function (): void {
+            Route::get('/', AccessHubController::class)->name('index');
+
+            Route::get('permissions', [AccessPermissionController::class, 'index'])->name('permissions.index');
+
+            Route::resource('roles', AccessRoleController::class)
+                ->parameters(['roles' => 'role'])
+                ->except('show');
+
+            Route::resource('groups', AccessUserGroupController::class)
+                ->parameters(['groups' => 'group']);
+            Route::post('groups/{group}/members', [AccessUserGroupController::class, 'attachMember'])
+                ->name('groups.members.attach');
+            Route::delete('groups/{group}/members/{user}', [AccessUserGroupController::class, 'detachMember'])
+                ->name('groups.members.detach');
+
+            Route::get('members', [AccessMemberController::class, 'index'])->name('members.index');
+            Route::get('members/{member}/edit', [AccessMemberController::class, 'edit'])->name('members.edit');
+            Route::put('members/{member}', [AccessMemberController::class, 'update'])->name('members.update');
+        });
 
         Route::resource('qualifications', QualificationController::class)->except('show');
 

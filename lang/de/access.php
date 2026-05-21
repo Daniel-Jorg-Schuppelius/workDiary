@@ -1,0 +1,268 @@
+<?php
+/*
+ * Created on   : Thu May 21 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : access.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+return [
+    'title' => [
+        'hub' => 'Rechteverwaltung',
+        'roles' => 'Rollen',
+        'role_new' => 'Neue Rolle anlegen',
+        'role_edit' => 'Rolle bearbeiten: :name',
+        'org_roles' => 'Rollen für :org',
+        'global_roles' => 'Globale Plattform-Rollen',
+        'groups' => 'Benutzergruppen',
+        'group_new' => 'Neue Gruppe anlegen',
+        'group_edit' => 'Gruppe bearbeiten: :name',
+        'group_show' => 'Gruppe :name',
+        'permissions' => 'Berechtigungen',
+        'members' => 'Mitglieder',
+        'member_edit' => 'Zuweisungen für :name',
+        'assigned_roles' => 'Zugewiesene Rollen',
+        'assigned_groups' => 'Zugewiesene Gruppen',
+        'direct_permissions' => 'Direkte Berechtigungen',
+        'effective_permissions' => 'Effektive Berechtigungen',
+        'metadata' => 'Stammdaten',
+    ],
+
+    'subtitle' => [
+        'context' => 'Aktive Organisation: :org',
+    ],
+
+    'kpi' => [
+        'roles' => 'Rollen',
+        'groups' => 'Benutzergruppen',
+        'members' => 'Mitglieder',
+        'permissions' => 'Verfügbare Berechtigungen',
+    ],
+
+    'hint' => [
+        'hub' => 'Verwalte Rollen, Benutzergruppen und Mitgliederzuweisungen für die aktuell aktive Organisation. Plattformweite Rollen werden zusätzlich global gepflegt.',
+        'permissions_readonly' => 'Berechtigungen sind systemseitig definiert und können nicht zur Laufzeit angelegt werden. Zur Vergabe pro Rolle wechsle in die Rollen-Bearbeitung.',
+        'global_roles' => 'Globale Rollen gelten für alle Organisationen und werden ausschließlich vom System gepflegt.',
+        'effective_permissions' => 'Vereinigung aus direkten Rechten, Rollen-Rechten und Gruppen-Rechten.',
+    ],
+
+    'field' => [
+        'role_name' => 'Rollen-Name',
+        'permission_count' => 'Berechtigungen',
+        'group_name' => 'Gruppenname',
+        'group_slug' => 'Slug',
+        'member_count' => 'Mitglieder',
+        'description' => 'Beschreibung',
+        'color' => 'Farbe',
+        'member' => 'Mitglied',
+        'email' => 'E-Mail',
+        'joined_at' => 'Beigetreten',
+        'add_member' => 'Mitglied hinzufügen',
+        'roles' => 'Rollen',
+        'groups' => 'Gruppen',
+    ],
+
+    'badge' => [
+        'system' => 'System',
+        'global' => 'Global',
+    ],
+
+    'action' => [
+        'role_new' => 'Rolle anlegen',
+        'group_new' => 'Gruppe anlegen',
+        'edit' => 'Bearbeiten',
+        'edit_assignments' => 'Zuweisungen bearbeiten',
+        'view' => 'Ansehen',
+        'delete' => 'Löschen',
+        'cancel' => 'Abbrechen',
+        'save' => 'Speichern',
+        'create' => 'Anlegen',
+        'add' => 'Hinzufügen',
+        'remove_member' => 'Mitglied entfernen',
+        'search' => 'Suchen',
+        'select_all' => 'Alle',
+        'select_none' => 'Keine',
+    ],
+
+    'placeholder' => [
+        'search_members' => 'Name oder E-Mail…',
+        'filter_permissions' => 'Berechtigungen filtern…',
+    ],
+
+    'help' => [
+        'role_name' => 'Nur Kleinbuchstaben, Ziffern, Punkt, Bindestrich, Unterstrich. Nicht änderbar nach Anlage.',
+        'role_permissions' => 'Wähle die Berechtigungen, die diese Rolle gewähren soll.',
+        'group_roles' => 'Mitglieder dieser Gruppe erhalten zusätzlich alle Berechtigungen der ausgewählten Rollen.',
+        'group_permissions' => 'Direkte Berechtigungen werden zusätzlich zu den Rollen-Berechtigungen an die Mitglieder vererbt.',
+    ],
+
+    'flash' => [
+        'role_created' => 'Rolle wurde angelegt.',
+        'role_updated' => 'Rolle wurde aktualisiert.',
+        'role_deleted' => 'Rolle wurde gelöscht.',
+        'group_created' => 'Gruppe wurde angelegt.',
+        'group_updated' => 'Gruppe wurde aktualisiert.',
+        'group_deleted' => 'Gruppe wurde gelöscht.',
+        'member_added' => 'Mitglied wurde hinzugefügt.',
+        'member_removed' => 'Mitglied wurde entfernt.',
+        'member_updated' => 'Zuweisungen wurden gespeichert.',
+    ],
+
+    'confirm' => [
+        'role_delete' => 'Diese Rolle wirklich löschen? Bestehende Zuweisungen werden entfernt.',
+        'group_delete' => 'Diese Gruppe wirklich löschen? Mitgliedschaften werden entfernt, Rollen bleiben den Mitgliedern direkt zugewiesen erhalten.',
+    ],
+
+    'empty' => [
+        'roles' => 'Noch keine Rollen vorhanden.',
+        'groups' => 'Noch keine Gruppen vorhanden.',
+        'members' => 'Noch keine Mitglieder.',
+        'assigned_roles' => 'Dieser Gruppe sind keine Rollen zugewiesen.',
+        'direct_permissions' => 'Dieser Gruppe sind keine direkten Berechtigungen zugewiesen.',
+        'effective_permissions' => 'Diese Person hat keine effektiven Berechtigungen.',
+    ],
+
+    'error' => [
+        'role_exists' => 'Eine Rolle mit diesem Namen existiert bereits in dieser Organisation.',
+        'role_global_readonly' => 'Globale Rollen können nur vom System gepflegt werden.',
+        'role_system_protected' => 'System-Rollen können nicht gelöscht werden.',
+    ],
+
+    'group' => [
+        'access' => 'Zugriff & Audit',
+        'organization' => 'Organisation',
+        'members' => 'Mitglieder',
+        'customers' => 'Kunden',
+        'projects' => 'Projekte',
+        'time-entries' => 'Zeiteinträge',
+        'timesheets' => 'Stundenzettel',
+        'invoicing' => 'Rechnungen',
+        'diary' => 'Tagebuch',
+        'scheduling' => 'Schichtplanung',
+        'absences' => 'Abwesenheiten',
+        'fleet' => 'Fuhrpark & Touren',
+        'reports' => 'Auswertungen',
+        'working-time' => 'Arbeitszeit',
+        'master-data' => 'Stammdaten',
+    ],
+
+    'permission' => [
+        'access.manage' => 'Rechteverwaltung öffnen',
+        'access.roles.assign' => 'Rollen zuweisen',
+        'access.groups.assign' => 'Gruppen zuweisen',
+        'access.audit.view' => 'Audit-Protokoll einsehen',
+
+        'organization.view' => 'Organisation einsehen',
+        'organization.update' => 'Organisation bearbeiten',
+        'organization.billing' => 'Abrechnung der Organisation',
+        'branding.update' => 'Branding bearbeiten',
+
+        'user.viewAny' => 'Mitglieder auflisten',
+        'user.view' => 'Mitglied ansehen',
+        'user.create' => 'Mitglied anlegen',
+        'user.update' => 'Mitglied bearbeiten',
+        'user.delete' => 'Mitglied entfernen',
+        'user.impersonate' => 'Mitglied vertreten (Impersonation)',
+        'user.reset-password' => 'Passwort zurücksetzen',
+        'user.rates.manage' => 'Stundensätze verwalten',
+        'user.flex.manage' => 'Gleitzeit-Berechtigung verwalten',
+
+        'customer.viewAny' => 'Kunden auflisten',
+        'customer.view' => 'Kunde ansehen',
+        'customer.create' => 'Kunde anlegen',
+        'customer.update' => 'Kunde bearbeiten',
+        'customer.delete' => 'Kunde löschen',
+        'customer.export' => 'Kunden exportieren',
+        'customer.import' => 'Kunden importieren',
+        'customer.lexoffice.sync' => 'Kunden mit Lexoffice synchronisieren',
+
+        'project.viewAny' => 'Projekte auflisten',
+        'project.view' => 'Projekt ansehen',
+        'project.create' => 'Projekt anlegen',
+        'project.update' => 'Projekt bearbeiten',
+        'project.delete' => 'Projekt löschen',
+        'project.archive' => 'Projekt archivieren',
+        'project.billing.manage' => 'Projekt-Abrechnungsregeln verwalten',
+        'task.manage' => 'Aufgaben verwalten',
+        'milestone.manage' => 'Meilensteine verwalten',
+
+        'timeEntry.viewAny' => 'Alle Zeiteinträge sehen',
+        'timeEntry.viewOwn' => 'Eigene Zeiteinträge sehen',
+        'timeEntry.create' => 'Zeiteintrag anlegen',
+        'timeEntry.update' => 'Zeiteintrag bearbeiten',
+        'timeEntry.delete' => 'Zeiteintrag löschen',
+        'timeEntry.create-for-others' => 'Zeiteinträge für andere anlegen',
+        'timeEntry.approve' => 'Zeiteinträge freigeben',
+
+        'timesheet.viewAny' => 'Alle Stundenzettel sehen',
+        'timesheet.create' => 'Stundenzettel anlegen',
+        'timesheet.update' => 'Stundenzettel bearbeiten',
+        'timesheet.delete' => 'Stundenzettel löschen',
+        'timesheet.sign' => 'Stundenzettel unterschreiben',
+        'timesheet.lock' => 'Stundenzettel sperren',
+        'timesheet.unlock' => 'Stundenzettel entsperren',
+        'timesheet.export' => 'Stundenzettel exportieren',
+
+        'invoice.viewAny' => 'Rechnungen auflisten',
+        'invoice.view' => 'Rechnung ansehen',
+        'invoice.create' => 'Rechnung anlegen',
+        'invoice.update' => 'Rechnung bearbeiten',
+        'invoice.delete' => 'Rechnung löschen',
+        'invoice.issue' => 'Rechnung ausstellen',
+        'invoice.pay' => 'Rechnung als bezahlt markieren',
+        'invoice.export' => 'Rechnung exportieren',
+
+        'diary.viewAny' => 'Alle Tagebuch-Einträge sehen',
+        'diary.viewOwn' => 'Eigene Tagebuch-Einträge sehen',
+        'diary.create' => 'Tagebuch-Eintrag anlegen',
+        'diary.update' => 'Tagebuch-Eintrag bearbeiten',
+        'diary.delete' => 'Tagebuch-Eintrag löschen',
+        'diary.create-for-others' => 'Tagebuch-Einträge für andere anlegen',
+        'diary.export' => 'Tagebuch exportieren',
+
+        'dutyPlan.viewAny' => 'Dienstpläne auflisten',
+        'dutyPlan.create' => 'Dienstplan anlegen',
+        'dutyPlan.update' => 'Dienstplan bearbeiten',
+        'dutyPlan.delete' => 'Dienstplan löschen',
+        'dutyPlan.publish' => 'Dienstplan veröffentlichen',
+        'shift.manage' => 'Schichten verwalten',
+        'coverage-requirement.manage' => 'Soll-Besetzung verwalten',
+        'on-call-shift.manage' => 'Rufbereitschaften verwalten',
+        'emergency-assignment.manage' => 'Notdienst-Einsätze verwalten',
+        'shift-type.manage' => 'Schichttypen verwalten',
+        'scheduled-shift.manage' => 'Geplante Schichten verwalten',
+
+        'vacation.viewAny' => 'Alle Urlaubsanträge sehen',
+        'vacation.request' => 'Urlaub beantragen',
+        'vacation.approve' => 'Urlaub genehmigen',
+        'vacation.cancel' => 'Urlaub stornieren',
+        'sick-leave.viewAny' => 'Krankmeldungen einsehen',
+        'sick-leave.manage' => 'Krankmeldungen verwalten',
+
+        'tour.viewAny' => 'Touren einsehen',
+        'tour.manage' => 'Touren verwalten',
+        'vehicle.viewAny' => 'Fahrzeuge einsehen',
+        'vehicle.manage' => 'Fahrzeuge verwalten',
+        'travel-log.viewAny' => 'Fahrtenbuch einsehen',
+        'travel-log.manage' => 'Fahrtenbuch verwalten',
+        'energy-log.manage' => 'Tankungen/Ladevorgänge verwalten',
+
+        'material.manage' => 'Material-Stamm verwalten',
+        'activity-category.manage' => 'Tätigkeitskategorien verwalten',
+        'tag.manage' => 'Tags verwalten',
+        'qualification.manage' => 'Qualifikationen verwalten',
+        'entry-type.manage' => 'Eintragstypen verwalten',
+        'holiday.manage' => 'Feiertage verwalten',
+
+        'report.view' => 'Auswertungen einsehen',
+        'report.export' => 'Auswertungen exportieren',
+        'audit-log.view' => 'Audit-Log einsehen',
+        'attendance.viewAny' => 'Anwesenheiten einsehen',
+        'attendance.manage' => 'Anwesenheit verwalten',
+        'work-schedule.manage' => 'Arbeitszeit-Modell verwalten',
+        'flex.view' => 'Gleitzeit-Saldo einsehen',
+        'flex.manage' => 'Gleitzeit-Saldo verwalten',
+    ],
+];

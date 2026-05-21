@@ -20,9 +20,11 @@ use App\Models\Customer;
 use App\Models\DiaryEntry;
 use App\Models\DutyPlan;
 use App\Models\EmergencyAssignment;
+use App\Models\FlexEligibility;
 use App\Models\Material;
 use App\Models\MaterialUsage;
 use App\Models\Milestone;
+use App\Models\Organization;
 use App\Models\Qualification;
 use App\Models\ScheduledShift;
 use App\Models\ShiftType;
@@ -32,6 +34,7 @@ use App\Models\TimeEntry;
 use App\Models\Timesheet;
 use App\Models\TravelLog;
 use App\Models\User;
+use App\Models\UserGroup;
 use App\Models\WorkSchedule;
 use App\Observers\AttachmentObserver;
 use App\Observers\CommentObserver;
@@ -39,6 +42,7 @@ use App\Observers\CustomerObserver;
 use App\Observers\DiaryEntryObserver;
 use App\Observers\EmergencyAssignmentObserver;
 use App\Observers\MaterialUsageObserver;
+use App\Observers\OrganizationObserver;
 use App\Observers\TagObserver;
 use App\Observers\TimeEntryObserver;
 use App\Observers\TimesheetObserver;
@@ -56,7 +60,9 @@ use App\Policies\ShiftTypePolicy;
 use App\Policies\TaskPolicy;
 use App\Policies\TimeEntryPolicy;
 use App\Policies\TimesheetPolicy;
+use App\Policies\FlexEligibilityPolicy;
 use App\Policies\TravelLogPolicy;
+use App\Policies\UserGroupPolicy;
 use App\Policies\WorkSchedulePolicy;
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\BrandingService;
@@ -113,6 +119,7 @@ class AppServiceProvider extends ServiceProvider {
         TimeEntry::observe(TimeEntryObserver::class);
         Timesheet::observe(TimesheetObserver::class);
         MaterialUsage::observe(MaterialUsageObserver::class);
+        Organization::observe(OrganizationObserver::class);
 
         Gate::policy(DutyPlan::class, DutyPlanPolicy::class);
         Gate::policy(CoverageRequirement::class, CoverageRequirementPolicy::class);
@@ -128,9 +135,35 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(WorkSchedule::class, WorkSchedulePolicy::class);
         Gate::policy(ActivityCategory::class, ActivityCategoryPolicy::class);
         Gate::policy(TravelLog::class, TravelLogPolicy::class);
+        Gate::policy(UserGroup::class, UserGroupPolicy::class);
+        Gate::policy(FlexEligibility::class, FlexEligibilityPolicy::class);
 
         // manage-members: Org-Admin darf Mitglieder der eigenen Org verwalten
         Gate::define('manage-members', [OrganizationPolicy::class, 'manageMembers']);
+
+        // manage-access: Verwaltung des Rechte-Bereichs (Rollen, Gruppen,
+        // Zuweisungen). Erfordert die feingranulare Permission access.manage —
+        // damit auch Nicht-Org-Admins (z. B. dedizierte Rechte-Verwalter)
+        // adressierbar sind. Globale Plattform-Admins kommen über den
+        // Spatie-Permission-Check ebenfalls hier durch, sofern sie die
+        // Permission via PermissionsSeeder erhalten haben.
+        Gate::define('manage-access', static function (User $user): bool {
+            return $user->isAdmin() || $user->hasEffectivePermission('access.manage');
+        });
+
+        // Sekundärer Gate::before-Hook: berücksichtigt zusätzlich Permissions,
+        // die ein Nutzer via Gruppen-Mitgliedschaft erbt. Spatie's eigener
+        // Hook (aktiviert über permission.register_permission_check_method)
+        // prüft nur direkte + via-eigene-Rolle erlangte Permissions am User.
+        // Nur greifen, wenn die Ability einem registrierten Permission-Namen
+        // entspricht, damit wir keine Ressource-Policies kurzschließen.
+        Gate::before(static function (User $user, string $ability): ?bool {
+            if (! str_contains($ability, '.')) {
+                return null;
+            }
+
+            return $user->hasEffectivePermission($ability) ? true : null;
+        });
 
         $this->configureRateLimiters();
 

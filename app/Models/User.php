@@ -26,7 +26,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Models\Permission as SpatiePermission;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -152,6 +154,74 @@ class User extends Authenticatable {
         return $this->belongsTo(Organization::class);
     }
 
+    /**
+     * Gruppen, in denen der User Mitglied ist. Effektive Permissions
+     * werden bei der Auswertung (siehe {@see effectivePermissionNames()})
+     * über alle Gruppen summiert.
+     *
+     * @return BelongsToMany<UserGroup, $this>
+     */
+    public function userGroups(): BelongsToMany {
+        return $this->belongsToMany(UserGroup::class, 'user_user_group')
+            ->withPivot('joined_at')
+            ->withTimestamps();
+    }
+
+    /**
+     * Alle Permission-Namen, die der User effektiv besitzt:
+     *   - direkte Permissions am User,
+     *   - Permissions via eigene Rollen,
+     *   - Permissions via Gruppen-Mitgliedschaften (eigene Permissions der
+     *     Gruppe und Permissions der Rollen, die der Gruppe zugewiesen sind).
+     *
+     * Wird sowohl von Policies (über {@see hasEffectivePermission()}) als
+     * auch von der Admin-UI für die Anzeige verwendet.
+     *
+     * @return Collection<int, string>
+     */
+    public function effectivePermissionNames(): Collection {
+        /** @var Collection<int, SpatiePermission> $direct */
+        $direct = $this->getAllPermissions();
+        $names = $direct->pluck('name');
+
+        $this->loadMissing(['userGroups.permissions', 'userGroups.roles.permissions']);
+
+        foreach ($this->userGroups as $group) {
+            foreach ($group->permissions as $permission) {
+                $names->push($permission->name);
+            }
+            foreach ($group->roles as $role) {
+                foreach ($role->permissions as $permission) {
+                    $names->push($permission->name);
+                }
+            }
+        }
+
+        return $names->unique()->values();
+    }
+
+    /**
+     * Schnelle Prüfung, ob der User die übergebene Permission effektiv
+     * besitzt — wird vom Gate::before-Hook in AuthServiceProvider
+     * aufgerufen, damit `$user->can('xy')` auch Gruppen-Permissions
+     * berücksichtigt.
+     */
+    public function hasEffectivePermission(string $permission): bool {
+        if ($this->hasPermissionTo($permission)) {
+            return true;
+        }
+
+        $this->loadMissing(['userGroups.permissions', 'userGroups.roles.permissions']);
+
+        foreach ($this->userGroups as $group) {
+            if ($group->hasPermissionTo($permission)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /** @return BelongsToMany<Qualification, $this> */
     public function qualifications(): BelongsToMany {
         return $this->belongsToMany(Qualification::class, 'user_qualifications')
@@ -217,6 +287,30 @@ class User extends Authenticatable {
             })
             ->orderByDesc('valid_from')
             ->first();
+    }
+
+    /** @return HasMany<FlexEligibility, $this> */
+    public function flexEligibilities(): HasMany {
+        return $this->hasMany(FlexEligibility::class);
+    }
+
+    /**
+     * Ist der User am angegebenen Stichtag (Default: heute) für die
+     * Gleitzeit-Erfassung freigeschaltet? Stützt sich auf
+     * {@see FlexEligibility}: jede Lücke zwischen Perioden bedeutet
+     * explizit "nicht berechtigt", auch wenn vor- oder nachher Perioden
+     * existieren.
+     */
+    public function isFlexEligible(?CarbonInterface $on = null): bool {
+        $on = $on ? $on->copy()->startOfDay() : now()->startOfDay();
+
+        return FlexEligibility::query()
+            ->where('user_id', $this->id)
+            ->where('valid_from', '<=', $on)
+            ->where(function ($q) use ($on): void {
+                $q->whereNull('valid_to')->orWhere('valid_to', '>=', $on);
+            })
+            ->exists();
     }
 
     public function legacyUser(): ?LegacyUser {

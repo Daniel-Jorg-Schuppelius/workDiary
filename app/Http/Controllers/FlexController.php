@@ -76,8 +76,17 @@ class FlexController extends Controller {
         $year = $active['year'];
         $month = $active['month'];
 
-        $users = $isAdmin
-            ? User::query()->orderBy('name')->get()
+        // Im Admin-Modus nur Mitarbeiter der eigenen Organisation: User hat
+        // keinen globalen OrganizationScope, daher muss hier explizit gefiltert
+        // werden (sonst tauchen Legacy-/Cross-Org-Accounts auf). Zusätzlich nur
+        // User, die jemals eine Gleitzeit-Periode hatten — neue Mitarbeiter
+        // ohne Berechtigung erscheinen erst nach der ersten Eligibility.
+        $users = $isAdmin && $authUser->organization_id
+            ? User::query()
+                ->where('organization_id', $authUser->organization_id)
+                ->whereHas('flexEligibilities')
+                ->orderBy('name')
+                ->get()
             : collect();
 
         return view('flex.index', [

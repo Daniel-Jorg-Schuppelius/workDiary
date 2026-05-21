@@ -362,6 +362,9 @@
                                     $adminNavItems[]  = ['route' => 'admin.branding.edit',           'label' => __('Branding'),         'icon' => 'palette',          'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.entry-types.index',        'label' => __('Eintragstypen'),    'icon' => 'category',         'modal' => false];
                                 }
+                                if (! $isLegacyMode && \Illuminate\Support\Facades\Gate::allows('manage-access')) {
+                                    $adminNavItems[] = ['route' => 'admin.access.index',             'label' => __('access.title.hub'), 'icon' => 'admin_panel_settings', 'modal' => false];
+                                }
                                 $adminNavItems[] = ['route' => 'audit.index',                       'label' => __('Audit-Log'),        'icon' => 'fact_check',       'modal' => false];
                                 $adminNavItems[] = ['route' => 'admin.plugins.index',                'label' => __('Plugins'),          'icon' => 'extension',        'modal' => false];
                                 $adminNavItems[] = ['route' => 'admin.legacy-migration.index',      'label' => __('Legacy-Migration'), 'icon' => 'sync_alt',         'modal' => false];
@@ -387,7 +390,7 @@
                             }
                             $userNavItems[] = ['route' => 'profile.api-tokens.index', 'label' => __('API-Tokens'), 'modal' => false];
 
-                            $isAdminActive  = collect($adminNavItems)->contains(fn ($i) => request()->routeIs($i['route']));
+                            $isAdminActive  = collect($adminNavItems)->contains(fn ($i) => request()->routeIs($i['route'])) || request()->routeIs('admin.access.*');
                             $isManageActive = collect($manageNavItems)->contains(fn ($i) => request()->routeIs($i['route']));
                             $isUserActive = collect($userNavItems)->contains(fn ($i) => request()->routeIs($i['route']));
 

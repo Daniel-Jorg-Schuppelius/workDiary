@@ -46,6 +46,11 @@
                         </td>
                         <td class="text-right">
                             <div class="flex justify-end gap-1">
+                                @can('viewAny', [\App\Models\FlexEligibility::class, $member])
+                                    <x-icon-btn icon="schedule"
+                                                :href="route('users.flex-eligibility.index', $member)"
+                                                :label="__('flex.eligibility.nav_title')" />
+                                @endcan
                                 <x-icon-btn icon="edit"
                                             data-entry-modal-trigger
                                             :href="route('org.members.edit', $member)"
