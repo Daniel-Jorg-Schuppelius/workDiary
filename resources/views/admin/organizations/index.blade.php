@@ -4,6 +4,11 @@
 @section('nav-title', __('Organisationen'))
 
 @section('content')
+@php
+    /** @var \App\Services\OrganizationLifecycleService $orgLifecycle */
+    $orgLifecycle = app(\App\Services\OrganizationLifecycleService::class);
+    $cooldownHours = $orgLifecycle->cooldownHours();
+@endphp
 <x-page-shell gap="6">
     <x-slot:toolbar>
         <x-page-toolbar>
@@ -32,8 +37,19 @@
             </tr>
         </x-slot:head>
             @forelse ($organizations as $org)
+                @php
+                    $canPurge = $orgLifecycle->isPurgeAllowed($org);
+                    $deactivatedAt = $org->deactivated_at;
+                @endphp
                 <tr>
-                    <td class="font-medium">{{ $org->name }}</td>
+                    <td class="font-medium">
+                        {{ $org->name }}
+                        @if (! $org->is_active && $deactivatedAt)
+                            <div class="text-xs text-base-content/50">
+                                {{ __('Deaktiviert am :date', ['date' => $deactivatedAt->format('d.m.Y H:i')]) }}
+                            </div>
+                        @endif
+                    </td>
                     <td class="font-mono text-sm text-base-content/60">{{ $org->slug }}</td>
                     <td>
                         <span class="badge badge-sm {{ $org->plan === 'enterprise' ? 'badge-primary' : ($org->plan === 'pro' ? 'badge-secondary' : 'badge-ghost') }}">
@@ -55,13 +71,86 @@
                                         data-entry-modal-trigger
                                         :href="route('admin.organizations.edit', $org)"
                                         :label="__('Bearbeiten')" />
-                            <form method="POST" action="{{ route('admin.organizations.destroy', $org) }}" class="inline"
-                                  data-confirm-dialog
-                                  data-confirm-message="{{ __('Organisation wirklich löschen?') }}"
-                                  data-confirm-label="{{ __('Löschen') }}">
-                                @csrf @method('DELETE')
-                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
+
+                            {{-- Daten-Export (DSGVO Art. 20): liefert ZIP --}}
+                            <form method="POST" action="{{ route('admin.organizations.export', $org) }}" class="inline">
+                                @csrf
+                                <x-icon-btn icon="download" type="submit"
+                                            :label="__('Daten exportieren (ZIP)')" />
                             </form>
+
+                            @if ($org->is_active)
+                                {{-- Deaktivieren (reversibel) --}}
+                                <form method="POST" action="{{ route('admin.organizations.deactivate', $org) }}" class="inline"
+                                      data-confirm-dialog
+                                      data-confirm-message="{{ __('Organisation ":name" deaktivieren? Sie verschwindet aus dem Org-Switcher und kann nicht mehr als aktiver Kontext gewählt werden, bis sie reaktiviert wird.', ['name' => $org->name]) }}"
+                                      data-confirm-label="{{ __('Deaktivieren') }}">
+                                    @csrf
+                                    <x-icon-btn icon="block" tone="warning" type="submit" :label="__('Deaktivieren')" />
+                                </form>
+                            @else
+                                {{-- Reaktivieren --}}
+                                <form method="POST" action="{{ route('admin.organizations.reactivate', $org) }}" class="inline">
+                                    @csrf
+                                    <x-icon-btn icon="check_circle" tone="success" type="submit" :label="__('Reaktivieren')" />
+                                </form>
+
+                                {{-- Endgültig löschen (Purge) — nur nach Cooldown --}}
+                                @if ($canPurge)
+                                    <button type="button"
+                                            class="btn btn-sm btn-ghost text-error"
+                                            title="{{ __('Endgültig löschen') }}"
+                                            aria-label="{{ __('Endgültig löschen') }}"
+                                            onclick="document.getElementById('purge-modal-{{ $org->id }}').showModal()">
+                                        <x-icon name="delete_forever" />
+                                    </button>
+
+                                    <dialog id="purge-modal-{{ $org->id }}" class="modal">
+                                        <div class="modal-box max-w-lg">
+                                            <h3 class="font-bold text-lg text-error">
+                                                {{ __('Organisation endgültig löschen') }}
+                                            </h3>
+                                            <div class="py-3 space-y-2 text-sm">
+                                                <p>
+                                                    {{ __('Sie sind im Begriff, die Organisation ":name" und ALLE zugehörigen Datensätze und Dateien unwiderruflich zu löschen.', ['name' => $org->name]) }}
+                                                </p>
+                                                <p class="text-warning">
+                                                    {{ __('Diese Aktion kann nicht rückgängig gemacht werden. Erzeugen Sie vorher einen Daten-Export, falls der Kunde die Daten mitnehmen möchte.') }}
+                                                </p>
+                                                <p>
+                                                    {{ __('Zur Bestätigung geben Sie bitte den Slug der Organisation ein:') }}
+                                                    <code class="bg-base-200 px-1.5 py-0.5 rounded text-xs">{{ $org->slug }}</code>
+                                                </p>
+                                            </div>
+                                            <form method="POST" action="{{ route('admin.organizations.purge', $org) }}">
+                                                @csrf @method('DELETE')
+                                                <input type="text"
+                                                       name="confirm_slug"
+                                                       class="input input-bordered w-full font-mono"
+                                                       autocomplete="off"
+                                                       required
+                                                       placeholder="{{ $org->slug }}">
+                                                <div class="modal-action">
+                                                    <button type="button" class="btn btn-ghost"
+                                                            onclick="document.getElementById('purge-modal-{{ $org->id }}').close()">
+                                                        {{ __('Abbrechen') }}
+                                                    </button>
+                                                    <button type="submit" class="btn btn-error">
+                                                        <x-icon name="delete_forever" />
+                                                        {{ __('Endgültig löschen') }}
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+                                    </dialog>
+                                @else
+                                    <span class="text-xs text-base-content/50 self-center"
+                                          title="{{ __('Endgültiges Löschen erst :h Stunden nach Deaktivierung möglich.', ['h' => $cooldownHours]) }}">
+                                        <x-icon name="hourglass_top" class="text-base-content/40" />
+                                    </span>
+                                @endif
+                            @endif
                         </div>
                     </td>
                 </tr>

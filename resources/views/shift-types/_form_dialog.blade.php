@@ -16,7 +16,13 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="$isEdit ? __('Speichern') : __('Anlegen')">
 
-    @include('shift-types._form', ['type' => $type])
+    <x-slot:headerActions>
+        <x-dialog-status-controls
+            :active="$type?->is_active ?? true"
+            :color="$type?->color ?? '#3b82f6'" />
+    </x-slot:headerActions>
+
+    @include('shift-types._form', ['type' => $type, 'skipStatusControls' => true])
 
     @if ($isEdit)
         <x-slot:footerExtra>

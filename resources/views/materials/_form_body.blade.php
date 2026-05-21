@@ -1,3 +1,5 @@
+@php $skipStatusControls = $skipStatusControls ?? false; @endphp
+
 {{-- Shared form fields for Material --}}
 
 <x-form-group :legend="__('Stammdaten')" icon="category" tone="primary" cols="2">
@@ -26,6 +28,7 @@
         <input type="number" step="0.01" min="0" max="100" name="tax_rate"
                value="{{ old('tax_rate', $material->tax_rate) }}" class="input input-bordered w-full">
     </div>
+    @unless ($skipStatusControls)
     <div class="fieldset md:col-span-2">
         <label class="label cursor-pointer justify-start gap-3">
             <input type="hidden" name="is_active" value="0">
@@ -33,6 +36,7 @@
             <span class="fieldset-label">{{ __('Aktiv') }}</span>
         </label>
     </div>
+    @endunless
 </x-form-group>
 
 @if ($errors->any())

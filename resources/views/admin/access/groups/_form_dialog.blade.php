@@ -17,15 +17,16 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="$isEdit ? __('access.action.save') : __('access.action.create')"
 >
+    <x-slot:headerActions>
+        <x-dialog-status-controls
+            :name="null"
+            :color="$group->color ?? '#6b7280'" />
+    </x-slot:headerActions>
+
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <x-form-group :label="__('access.field.group_name')" name="name" class="md:col-span-2" required>
+        <x-form-group :label="__('access.field.group_name')" name="name" class="md:col-span-3" required>
             <input type="text" name="name" value="{{ old('name', $group->name) }}"
                    class="input input-bordered w-full" maxlength="120" required />
-        </x-form-group>
-
-        <x-form-group :label="__('access.field.color')" name="color">
-            <input type="color" name="color" value="{{ old('color', $group->color ?? '#6b7280') }}"
-                   class="input input-bordered w-full h-10" />
         </x-form-group>
 
         <x-form-group :label="__('access.field.description')" name="description" class="md:col-span-3">

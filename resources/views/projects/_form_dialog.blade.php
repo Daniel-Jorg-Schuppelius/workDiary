@@ -101,13 +101,6 @@
                 </select>
             </div>
 
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Farbe') }}</label>
-                <input name="color" type="color"
-                       value="{{ old('color', $project?->color ?? '#3b82f6') }}"
-                       class="input input-bordered h-10 w-20 p-1">
-            </div>
-
             <x-date-range
                 layout="join"
                 :from="old('starts_on', $project?->starts_on?->format('Y-m-d'))"

@@ -36,11 +36,15 @@ use App\Http\Controllers\DutyController;
 use App\Http\Controllers\DutyPlanController;
 use App\Http\Controllers\EmergencyAssignmentController;
 use App\Http\Controllers\EnergyLogController;
+use App\Http\Controllers\EventCategoryController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventParticipantController;
 use App\Http\Controllers\FlexController;
 use App\Http\Controllers\FlexEligibilityController;
 use App\Http\Controllers\GeocodeController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\IcsFeedController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\LicenseController;
@@ -59,6 +63,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectRecurrenceRuleController;
 use App\Http\Controllers\PublicSignatureController;
 use App\Http\Controllers\PushSubscriptionController;
+use App\Http\Controllers\RoomController;
 use App\Http\Controllers\QualificationController;
 use App\Http\Controllers\Reporting\AbsencesReportController;
 use App\Http\Controllers\Reporting\AttendanceReportController;
@@ -122,6 +127,9 @@ Route::get('/register', [TenantRegistrationController::class, 'showForm'])->name
 Route::post('/register', [TenantRegistrationController::class, 'register'])->middleware(['guest', 'throttle:register']);
 
 Route::post('/locale/{locale}', [LocaleController::class, 'switch'])->name('locale.switch');
+
+// Öffentlicher ICS-Feed (nur Visibility=Public Events)
+Route::get('calendar/public.ics', [IcsFeedController::class, 'public'])->name('events.ics.public');
 
 // Öffentlicher Stundenzettel-Sign-Link (Magic-Token)
 Route::get('sign/timesheet/{token}', [PublicSignatureController::class, 'show'])->name('timesheets.public-sign');
@@ -219,6 +227,28 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('tags', TagController::class)->except('show');
 
+        // ── Veranstaltungen / Schulungen ─────────────────────────────────────────
+        Route::get('events/calendar', [EventController::class, 'calendar'])->name('events.calendar');
+        Route::patch('events/{event}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
+        Route::resource('events', EventController::class);
+
+        Route::post('events/{event}/respond', [EventParticipantController::class, 'respond'])->name('events.respond');
+        Route::patch('events/{event}/participants/{user}/attended', [EventParticipantController::class, 'markAttended'])
+            ->name('events.participants.attended');
+        Route::patch('events/{event}/participants/{user}/no-show', [EventParticipantController::class, 'markNoShow'])
+            ->name('events.participants.no-show');
+        Route::patch('events/{event}/participants/{user}/status', [EventParticipantController::class, 'updateStatus'])
+            ->name('events.participants.status');
+        Route::post('events/{event}/participants/{user}/certificate', [EventParticipantController::class, 'issueCertificate'])
+            ->name('events.participants.certificate');
+
+        Route::resource('event-categories', EventCategoryController::class)
+            ->except('show')
+            ->parameters(['event-categories' => 'category']);
+        Route::resource('rooms', RoomController::class)->except('show');
+
+        Route::get('calendar/events.ics', [IcsFeedController::class, 'personal'])->name('events.ics.personal');
+
         // ── Kunden (Kimai-style customers) ──────────────────────────────────────
         Route::get('customers/export', [CustomerController::class, 'export'])->name('customers.export');
         Route::get('customers/import', [CustomerController::class, 'importForm'])->name('customers.import.form');
@@ -313,7 +343,9 @@ Route::middleware('auth')->group(function () {
 
         // ── Tätigkeitskategorien (Admin) ────────────────────────────────────────
         Route::get('activity-categories', [ActivityCategoryController::class, 'index'])->name('activity-categories.index');
+        Route::get('activity-categories/create', [ActivityCategoryController::class, 'create'])->name('activity-categories.create');
         Route::post('activity-categories', [ActivityCategoryController::class, 'store'])->name('activity-categories.store');
+        Route::get('activity-categories/{activityCategory}/edit', [ActivityCategoryController::class, 'edit'])->name('activity-categories.edit');
         Route::put('activity-categories/{activityCategory}', [ActivityCategoryController::class, 'update'])->name('activity-categories.update');
         Route::delete('activity-categories/{activityCategory}', [ActivityCategoryController::class, 'destroy'])->name('activity-categories.destroy');
 
@@ -411,6 +443,19 @@ Route::middleware('auth')->group(function () {
         Route::resource('admin/organizations', OrganizationController::class)
             ->names('admin.organizations')
             ->parameters(['organizations' => 'organization']);
+
+        // Lifecycle-Aktionen einer Organisation: Deaktivieren / Reaktivieren
+        // (reversibel), Daten-Export (DSGVO Art. 20) und endgültiges Löschen
+        // (Purge, DSGVO Art. 17). destroy() bleibt als sicherer Fallback
+        // bestehen, leitet aber bewusst auf die Deaktivierung um.
+        Route::post('admin/organizations/{organization}/deactivate', [OrganizationController::class, 'deactivate'])
+            ->name('admin.organizations.deactivate');
+        Route::post('admin/organizations/{organization}/reactivate', [OrganizationController::class, 'reactivate'])
+            ->name('admin.organizations.reactivate');
+        Route::post('admin/organizations/{organization}/export', [OrganizationController::class, 'export'])
+            ->name('admin.organizations.export');
+        Route::delete('admin/organizations/{organization}/purge', [OrganizationController::class, 'purge'])
+            ->name('admin.organizations.purge');
 
         // Org-Switcher: globalen Admins erlauben, den aktiven
         // Organisations-Kontext per Session umzuschalten.

@@ -1,6 +1,50 @@
 <?php
 
 return [
+    'event' => [
+        'type' => [
+            'training' => 'Training',
+            'workshop' => 'Workshop',
+            'conference' => 'Conference',
+            'meeting' => 'Meeting',
+            'internal_briefing' => 'Internal briefing',
+            'external_visit' => 'External visit',
+        ],
+        'status' => [
+            'planned' => 'Planned',
+            'confirmed' => 'Confirmed',
+            'in_progress' => 'In progress',
+            'completed' => 'Completed',
+            'cancelled' => 'Cancelled',
+        ],
+        'visibility' => [
+            'internal' => 'Internal',
+            'external' => 'External',
+            'public' => 'Public',
+        ],
+        'participant' => [
+            'role' => [
+                'organizer' => 'Organizer',
+                'trainer' => 'Trainer',
+                'attendee' => 'Attendee',
+                'optional' => 'Optional',
+            ],
+            'status' => [
+                'invited' => 'Invited',
+                'accepted' => 'Accepted',
+                'declined' => 'Declined',
+                'attended' => 'Attended',
+                'no_show' => 'No-show',
+            ],
+        ],
+        'reminder' => [
+            'channel' => [
+                'mail' => 'Email',
+                'webpush' => 'Push',
+                'database' => 'In-App',
+            ],
+        ],
+    ],
     'vehicle' => [
         'type' => [
             'car' => 'Car',

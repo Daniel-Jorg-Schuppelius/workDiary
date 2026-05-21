@@ -30,5 +30,11 @@
     "submitted": "Eingereicht",
     "pending": "Ausstehend",
     "planned": "Geplant",
-    "scheduled": "Geplant"
+    "scheduled": "Geplant",
+    "beamer": "Beamer",
+    "whiteboard": "Whiteboard",
+    "video_conf": "Videokonferenz",
+    "flipchart": "Flipchart",
+    "audio": "Audioanlage",
+    "wlan": "WLAN"
 }

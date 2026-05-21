@@ -30,3 +30,18 @@ Schedule::command('recurrence:generate')
     ->dailyAt('04:30')
     ->withoutOverlapping()
     ->onOneServer();
+
+Schedule::command('events:dispatch-reminders')
+    ->everyFiveMinutes()
+    ->withoutOverlapping()
+    ->onOneServer();
+
+Schedule::command('events:check-certificates')
+    ->dailyAt('06:00')
+    ->withoutOverlapping()
+    ->onOneServer();
+
+Schedule::command('events:materialize-recurrences')
+    ->dailyAt('02:00')
+    ->withoutOverlapping()
+    ->onOneServer();

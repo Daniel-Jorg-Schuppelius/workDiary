@@ -554,17 +554,15 @@ document.addEventListener("click", (event) => {
                         if (visibleInCard > 0) visibleCards++;
                     });
                 } else {
-                    list.querySelectorAll("[data-haystack]").forEach(
-                        (item) => {
-                            const matchText =
-                                q === "" || item.dataset.haystack.includes(q);
-                            const matchCust =
-                                cust === "" || item.dataset.customer === cust;
-                            const show = matchText && matchCust;
-                            item.hidden = !show;
-                            if (show) visibleCards++;
-                        },
-                    );
+                    list.querySelectorAll("[data-haystack]").forEach((item) => {
+                        const matchText =
+                            q === "" || item.dataset.haystack.includes(q);
+                        const matchCust =
+                            cust === "" || item.dataset.customer === cust;
+                        const show = matchText && matchCust;
+                        item.hidden = !show;
+                        if (show) visibleCards++;
+                    });
                 }
                 if (empty) empty.classList.toggle("hidden", visibleCards > 0);
             };
@@ -579,6 +577,24 @@ document.addEventListener("click", (event) => {
         root.querySelectorAll("form[data-entry-form]").forEach((form) => {
             if (form.dataset.entryFormBound === "1") return;
             form.dataset.entryFormBound = "1";
+
+            // "Aktiv"-Toggle im Header sperrt/entsperrt den Dialog-Body.
+            const activeToggle = form.querySelector(
+                'input[type="checkbox"][data-dialog-active-toggle]',
+            );
+            const dialogBody = form.querySelector(".wd-dialog__body");
+            if (activeToggle && dialogBody) {
+                const applyLock = () => {
+                    const locked = !activeToggle.checked;
+                    dialogBody.toggleAttribute("inert", locked);
+                    dialogBody.classList.toggle(
+                        "wd-dialog__body--locked",
+                        locked,
+                    );
+                };
+                activeToggle.addEventListener("change", applyLock);
+                applyLock();
+            }
 
             form.addEventListener("submit", async (event) => {
                 event.preventDefault();

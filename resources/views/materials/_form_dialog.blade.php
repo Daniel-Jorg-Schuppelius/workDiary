@@ -15,7 +15,12 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Speichern')">
 
-    @include('materials._form_body', ['material' => $material])
+    <x-slot:headerActions>
+        <x-dialog-status-controls
+            :active="$material->is_active ?? true" />
+    </x-slot:headerActions>
+
+    @include('materials._form_body', ['material' => $material, 'skipStatusControls' => true])
 
     @if ($material->exists)
         <x-slot:footerExtra>

@@ -18,6 +18,8 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
         "minishlink/web-push": "^10.0",
+        "simshaun/recurr": "^6.0",
+        "spatie/icalendar-generator": "^3.0",
         "spatie/laravel-permission": "^7.4"
     },
     "require-dev": {

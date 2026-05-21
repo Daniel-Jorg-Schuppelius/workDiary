@@ -23,9 +23,28 @@ class ActivityCategoryController extends Controller {
         $categories = ActivityCategory::query()
             ->orderBy('sort_order')
             ->orderBy('label')
-            ->get();
+            ->paginate((int) setting('pagination.activity_categories', 50))
+            ->withQueryString();
 
         return view('activity-categories.index', compact('categories'));
+    }
+
+    public function create(): View {
+        Gate::authorize('create', ActivityCategory::class);
+
+        return view('activity-categories._form_dialog', [
+            'category' => null,
+            'isEdit'   => false,
+        ]);
+    }
+
+    public function edit(ActivityCategory $activityCategory): View {
+        Gate::authorize('update', $activityCategory);
+
+        return view('activity-categories._form_dialog', [
+            'category' => $activityCategory,
+            'isEdit'   => true,
+        ]);
     }
 
     public function store(SaveActivityCategoryRequest $request): RedirectResponse {

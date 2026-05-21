@@ -50,6 +50,37 @@ class OrganizationPolicy {
     }
 
     /**
+     * Endgültiges Löschen (Purge) inkl. aller mandantengebundenen
+     * Datensätze und Dateien. Wird vom OrganizationLifecycleService
+     * ausgeführt; im Controller zusätzlich durch Slug-Eingabe und
+     * Deaktivierungs-Cooldown abgesichert. Reserviert für globale
+     * Admins (Admin-Bypass im before()-Hook).
+     */
+    public function purge(User $user, Organization $organization): bool {
+        return false;
+    }
+
+    /**
+     * Vollständigen Datenexport einer Organisation erzeugen (DSGVO Art. 20).
+     * Ebenfalls admin-only via Admin-Bypass.
+     */
+    public function export(User $user, Organization $organization): bool {
+        return false;
+    }
+
+    /**
+     * Deaktivieren / Reaktivieren einer Organisation (reversibel).
+     * Admin-only via Admin-Bypass.
+     */
+    public function deactivate(User $user, Organization $organization): bool {
+        return false;
+    }
+
+    public function reactivate(User $user, Organization $organization): bool {
+        return false;
+    }
+
+    /**
      * Org-Admins dürfen Mitglieder der eigenen Organisation verwalten.
      */
     public function manageMembers(User $user): bool {

@@ -35,6 +35,10 @@
         </legend>
     @endif
 
+    @isset($legendActions)
+        <div class="wd-fieldset__legend-actions">{{ $legendActions }}</div>
+    @endisset
+
     @if ($description)
         <p class="wd-fieldset__description">{{ $description }}</p>
     @endif

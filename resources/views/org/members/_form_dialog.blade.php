@@ -7,8 +7,8 @@
 @endphp
 
 <x-modal
-    :title="$isEdit ? __('Mitglied bearbeiten') : __('Mitglied anlegen')"
-    :eyebrow="__('Mitgliederverwaltung')"
+    :title="$isEdit ? __('Mitarbeiter bearbeiten') : __('Mitarbeiter anlegen')"
+    :eyebrow="__('Mitarbeiterverwaltung')"
     icon="group"
     tone="primary"
     :action="$action"

@@ -413,6 +413,11 @@
     "Mitglieder": "Members",
     "Mitglied anlegen": "Create member",
     "Mitglied bearbeiten": "Edit member",
+    "Mitarbeiter anlegen": "Create employee",
+    "Mitarbeiter bearbeiten": "Edit employee",
+    "Mitarbeiterverwaltung": "Employee management",
+    "Mitarbeiterdaten": "Employee data",
+    "Der Mitarbeiter wird beim ersten Login aufgefordert, das Passwort zu ändern.": "The employee will be prompted to change the password on first login.",
     "Mitglied wurde angelegt.": "Member created.",
     "Mitglied wurde aktualisiert.": "Member updated.",
     "Mitglied wurde entfernt.": "Member removed.",
@@ -1790,5 +1795,11 @@
     "submitted": "Submitted",
     "pending": "Pending",
     "planned": "Planned",
-    "scheduled": "Scheduled"
+    "scheduled": "Scheduled",
+    "beamer": "Projector",
+    "whiteboard": "Whiteboard",
+    "video_conf": "Video conferencing",
+    "flipchart": "Flipchart",
+    "audio": "Audio system",
+    "wlan": "Wi-Fi"
 }

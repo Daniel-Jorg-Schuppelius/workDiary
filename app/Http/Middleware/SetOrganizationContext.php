@@ -54,40 +54,37 @@ class SetOrganizationContext {
     }
 
     private function resolveOrganization(Request $request, User $user): ?Organization {
-        // 1) Session-Override (nur für Admins)
+        // 1) Session-Override (nur für Admins) — nur AKTIVE Org akzeptieren.
         if ($user->isAdmin() && $request->hasSession()) {
             $overrideId = $request->session()->get(OrganizationSwitchController::SESSION_KEY);
             if (is_int($overrideId) || (is_string($overrideId) && ctype_digit($overrideId))) {
                 $override = Organization::query()->find((int) $overrideId);
-                if ($override instanceof Organization) {
+                if ($override instanceof Organization && $override->is_active) {
                     return $override;
                 }
-                // ungültige/gelöschte Org: Override verwerfen
+                // ungültige, gelöschte oder deaktivierte Org: Override verwerfen,
+                // damit auf den Standard-Kontext zurückgefallen wird.
                 $request->session()->forget(OrganizationSwitchController::SESSION_KEY);
             }
         }
 
-        // 2) Standard: Org des Benutzers
+        // 2) Standard: Org des Benutzers — nur wenn aktiv.
         if ($user->organization_id) {
             $own = $user->relationLoaded('organization')
                 ? $user->organization
                 : $user->load('organization')->organization;
-            if ($own instanceof Organization) {
+            if ($own instanceof Organization && $own->is_active) {
                 return $own;
             }
         }
 
         // 3) Fallback nur für globale Admins: falls weder Override noch
-        //    eigene Org auflösbar sind (z. B. nach Löschen der eigenen Org),
-        //    erste verfügbare Organisation aktivieren, damit der Admin nicht
-        //    ausgesperrt wird und die Verwaltung weiterhin nutzbar bleibt.
-        //    Diese Bindung ist bewusst nur in-memory: die persistente
-        //    Zuordnung (users.organization_id) wird ausschließlich beim
-        //    expliziten Anlegen einer Org in OrganizationController::store
-        //    gesetzt, damit Org-gebundene Policies (manage-members etc.)
-        //    weiterhin sauber prüfen können.
+        //    eigene Org auflösbar/aktiv sind (z. B. nach Deaktivieren der eigenen
+        //    Org), erste verfügbare AKTIVE Organisation aktivieren, damit der
+        //    Admin nicht ausgesperrt wird und die Verwaltung weiterhin nutzbar
+        //    bleibt. Diese Bindung ist bewusst nur in-memory.
         if ($user->isAdmin()) {
-            $first = Organization::query()->orderBy('id')->first();
+            $first = Organization::query()->where('is_active', true)->orderBy('id')->first();
             if ($first instanceof Organization) {
                 return $first;
             }

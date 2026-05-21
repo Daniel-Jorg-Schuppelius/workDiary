@@ -86,14 +86,25 @@
     $cancelLbl = $cancelLabel ?? __('Abbrechen');
     $closeLbl  = $closeLabel  ?? __('Schließen');
 
-    $hasActions     = isset($actions);
-    $hasFooterExtra = isset($footerExtra);
-    $hasHeaderExtra = isset($header);
-    $hasAnyHeader   = $title || $eyebrow || $icon || $badge || $hasHeaderExtra;
+    $hasActions       = isset($actions);
+    $hasFooterExtra   = isset($footerExtra);
+    $hasHeaderExtra   = isset($header);
+    $hasHeaderActions = isset($headerActions);
+    $hasAnyHeader     = $title || $eyebrow || $icon || $badge || $hasHeaderExtra || $hasHeaderActions;
     $showFooter     = ! $hideFooter && ($hasActions || $hasFooterExtra || $hasForm || ! $embedded);
 
     // Icon-Prop: wenn Material-Symbols-Name (alphanumerisch + _), via <x-icon> rendern; sonst Raw-HTML/Emoji.
     $iconIsSymbol   = is_string($icon) && $icon !== '' && preg_match('/^[a-z0-9_]+$/', $icon) === 1;
+
+    // Wir schließen das <form> bewusst VOR dem Footer, damit footerExtra
+    // eigene <form>-Elemente (z. B. Löschen) enthalten darf — verschachtelte
+    // Forms werden vom Browser stillschweigend „aufgelöst" und führen sonst
+    // zu falsch zugeordneten Submit-Buttons und _method-Spoofing-Konflikten.
+    // Damit der Submit-Button im Footer weiterhin diese Form abschickt,
+    // bekommt sie immer eine ID, auf die per form="..."-Attribut verwiesen wird.
+    if ($hasForm) {
+        $formId = $formId ?: 'wd-modal-form-' . bin2hex(random_bytes(4));
+    }
 @endphp
 
 @if (! $embedded)
@@ -101,31 +112,31 @@
     <div class="modal-box wd-modal-box {{ $sizeClass }} p-0">
 @endif
 
-@if ($hasForm)
-    <form
-        @if ($formId) id="{{ $formId }}" @endif
-        method="{{ $formMethod }}"
-        action="{{ $action }}"
-        autocomplete="{{ $autocomplete }}"
-        @if ($enctype) enctype="{{ $enctype }}" @endif
-        class="{{ $formClass }}"
-        @foreach ($formData as $fdKey => $fdVal)
-            @if (is_bool($fdVal))
-                @if ($fdVal) {{ $fdKey }} @endif
-            @elseif ($fdVal === null || $fdVal === '')
-                {{ $fdKey }}
-            @else
-                {{ $fdKey }}="{{ $fdVal }}"
-            @endif
-        @endforeach
-    >
-        @csrf
-        @if ($isSpoofed)
-            @method($methodUpper)
-        @endif
-@endif
-
 <div {{ $attributes->merge(['class' => 'wd-dialog']) }}>
+    @if ($hasForm)
+        <form
+            id="{{ $formId }}"
+            method="{{ $formMethod }}"
+            action="{{ $action }}"
+            autocomplete="{{ $autocomplete }}"
+            @if ($enctype) enctype="{{ $enctype }}" @endif
+            class="{{ $formClass }}"
+            @foreach ($formData as $fdKey => $fdVal)
+                @if (is_bool($fdVal))
+                    @if ($fdVal) {{ $fdKey }} @endif
+                @elseif ($fdVal === null || $fdVal === '')
+                    {{ $fdKey }}
+                @else
+                    {{ $fdKey }}="{{ $fdVal }}"
+                @endif
+            @endforeach
+        >
+            @csrf
+            @if ($isSpoofed)
+                @method($methodUpper)
+            @endif
+    @endif
+
     @if ($hasAnyHeader)
         <header @if ($headerId) id="{{ $headerId }}" @endif
                 class="wd-dialog__header sticky top-0 z-10 flex items-start gap-3 border-b border-base-300 bg-linear-to-br {{ $accent }} px-6 py-5 pr-16">
@@ -159,6 +170,9 @@
                     {{ $header }}
                 @endif
             </div>
+            @if ($hasHeaderActions)
+                <div class="wd-dialog__header-actions">{{ $headerActions }}</div>
+            @endif
             @if ($badge)
                 <span class="badge badge-sm badge-{{ $badgeTone }} shrink-0">{{ $badge }}</span>
             @endif
@@ -174,6 +188,10 @@
         {{ $slot }}
     </div>
 
+    @if ($hasForm)
+        </form>
+    @endif
+
     @if ($showFooter)
         <footer class="wd-dialog__footer">
             <div class="wd-dialog__footer-extra">
@@ -188,7 +206,7 @@
                     <button type="button" class="btn btn-ghost gap-2" data-entry-modal-close>
                         <x-icon name="close" /> {{ $cancelLbl }}
                     </button>
-                    <button type="submit" class="btn {{ $submitClass }} gap-2">
+                    <button type="submit" form="{{ $formId }}" class="btn {{ $submitClass }} gap-2">
                         <x-icon name="check" /> {{ $submitLbl }}
                     </button>
                 @else
@@ -200,10 +218,6 @@
         </footer>
     @endif
 </div>
-
-@if ($hasForm)
-    </form>
-@endif
 
 @if (! $embedded)
     </div>

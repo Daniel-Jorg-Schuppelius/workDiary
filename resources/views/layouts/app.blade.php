@@ -283,8 +283,11 @@
             // (via SetOrganizationContext-Middleware bereits aufgelösten)
             // Container-Binding currentOrganization.
             $_isGlobalAdmin = $_authUser instanceof \App\Models\User && $_authUser->isAdmin();
+            // Nur AKTIVE Organisationen im Header-Switcher anbieten; deaktivierte
+            // dürfen nicht als Kontext gewählt werden, bis sie über die Verwaltung
+            // wieder aktiviert wurden.
             $_orgList = $_isGlobalAdmin
-                ? \App\Models\Organization::query()->orderBy('name')->get(['id', 'name'])
+                ? \App\Models\Organization::query()->where('is_active', true)->orderBy('name')->get(['id', 'name'])
                 : collect();
             $_activeOrg = app()->bound('currentOrganization') ? app('currentOrganization') : null;
             $_activeOrgId = $_activeOrg ? (int) $_activeOrg->id : null;
@@ -348,6 +351,7 @@
                                     ['route' => 'customers.index',          'label' => __('Kunden'),         'icon' => 'badge',            'modal' => false, 'matches' => ['customers.*']],
                                     ['route' => 'projects.index',           'label' => __('Projekte'),       'icon' => 'folder_special',   'modal' => false, 'matches' => ['projects.*']],
                                     ['route' => 'invoices.index',           'label' => __('Rechnungen'),     'icon' => 'receipt_long',     'modal' => false, 'matches' => ['invoices.*']],
+                                    ['route' => 'events.index',             'label' => __('Veranstaltungen'),'icon' => 'event',            'modal' => false, 'matches' => ['events.*']],
                                     ['route' => 'flex.index',               'label' => __('Gleitzeit'),      'icon' => 'hourglass_top',    'modal' => false, 'matches' => ['flex.*']],
                                     ['route' => 'archive.index',            'label' => __('Archiv'),         'icon' => 'inventory_2',      'modal' => false, 'matches' => ['archive.*']],
                                 ];
@@ -361,10 +365,11 @@
                                 $manageNavItems[] = ['route' => 'holidays.index',     'label' => __('Feiertage'),   'icon' => 'celebration',     'modal' => false];
                                 if (! $isLegacyMode) {
                                     $manageNavItems[] = ['route' => 'qualifications.index',         'label' => __('Qualifikationen'),  'icon' => 'workspace_premium','modal' => false];
+                                    $manageNavItems[] = ['route' => 'rooms.index',                   'label' => __('Räume'),             'icon' => 'meeting_room',     'modal' => false];
+                                    $manageNavItems[] = ['route' => 'event-categories.index',        'label' => __('Veranstaltungs-Kategorien'), 'icon' => 'category', 'modal' => false];
                                     $manageNavItems[] = ['route' => 'shift-types.index',             'label' => __('Schichttypen'),     'icon' => 'work_history',     'modal' => false];
                                     $manageNavItems[] = ['route' => 'materials.index',               'label' => __('Materialien'),      'icon' => 'inventory',        'modal' => false];
                                     $manageNavItems[] = ['route' => 'tags.index',                    'label' => __('Tags'),             'icon' => 'label',            'modal' => false];
-                                    $manageNavItems[] = ['route' => 'flex.admin',                    'label' => __('Gleitzeit Team'),   'icon' => 'groups',           'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.organizations.index',     'label' => __('Organisationen'),   'icon' => 'corporate_fare',   'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.branding.edit',           'label' => __('Branding'),         'icon' => 'palette',          'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.entry-types.index',        'label' => __('Eintragstypen'),    'icon' => 'category',         'modal' => false];
@@ -879,6 +884,7 @@
                             'items' => [
                                 ['route' => 'duty-plans.create',     'label' => __('Dienstplan'),  'icon' => 'event_available'],
                                 ['route' => 'vacations.create',      'label' => __('Urlaub'),      'icon' => 'beach_access'],
+                                ['route' => 'events.create',         'label' => __('Veranstaltung'),'icon' => 'event'],
                                 ['route' => 'travel-logs.create',    'label' => __('Fahrtbuch'),   'icon' => 'route'],
                                 ['route' => 'tours.create',          'label' => __('Tour'),        'icon' => 'directions_bus'],
                             ],

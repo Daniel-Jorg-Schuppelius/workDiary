@@ -13,7 +13,12 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="$isEdit ? __('Speichern') : __('Anlegen')"
 >
-    @include('admin.entry-types._form_body')
+    <x-slot:headerActions>
+        <x-dialog-status-controls
+            :active="$entryType?->is_active ?? true" />
+    </x-slot:headerActions>
+
+    @include('admin.entry-types._form_body', ['skipStatusControls' => true])
 
     @if ($isEdit)
         <x-slot:footerExtra>

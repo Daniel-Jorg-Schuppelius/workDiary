@@ -1,0 +1,175 @@
+@extends('layouts.app')
+@section('title', __('Räume'))
+@section('nav-title', __('Räume'))
+
+@php
+    /** @var \Illuminate\Pagination\LengthAwarePaginator $rooms */
+    /** @var string $view */
+    /** @var \Carbon\Carbon $day */
+    /** @var array $grid */
+    /** @var \Illuminate\Support\Collection $gridRooms */
+@endphp
+
+@section('content')
+    <x-page-shell gap="6">
+        <x-slot:toolbar>
+            <x-page-toolbar>
+                <x-slot:actions>
+                    <a href="{{ route('rooms.index', ['view' => 'list']) }}"
+                       class="btn btn-sm {{ $view === 'list' ? 'btn-primary' : 'btn-ghost' }}">
+                        <x-icon name="list" /> {{ __('Liste') }}
+                    </a>
+                    <a href="{{ route('rooms.index', ['view' => 'grid', 'day' => $day->format('Y-m-d')]) }}"
+                       class="btn btn-sm {{ $view === 'grid' ? 'btn-primary' : 'btn-ghost' }}">
+                        <x-icon name="grid_view" /> {{ __('Tages-Belegung') }}
+                    </a>
+                    @can('create', App\Models\Room::class)
+                        <x-icon-btn icon="add" tone="primary" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('rooms.create').'?dialog=1'"
+                                    show-label>{{ __('Neuer Raum') }}</x-icon-btn>
+                    @endcan
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
+
+        @if ($view === 'grid')
+            <div class="card bg-base-100 shadow">
+                <div class="card-body p-3 gap-3">
+                    <div class="flex items-center gap-2">
+                        <x-icon-btn icon="chevron_left" tone="ghost" size="xs"
+                                    :href="route('rooms.index', ['view' => 'grid', 'day' => $day->copy()->subDay()->format('Y-m-d')])"
+                                    :label="__('Vortag')" />
+                        <span class="font-semibold">{{ $day->isoFormat('dddd, LL') }}</span>
+                        <x-icon-btn icon="chevron_right" tone="ghost" size="xs"
+                                    :href="route('rooms.index', ['view' => 'grid', 'day' => $day->copy()->addDay()->format('Y-m-d')])"
+                                    :label="__('Folgetag')" />
+                        <a href="{{ route('rooms.index', ['view' => 'grid']) }}" class="btn btn-xs btn-ghost">{{ __('Heute') }}</a>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="table table-sm w-full">
+                            <thead class="bg-base-200">
+                                <tr>
+                                    <th class="w-40">{{ __('Raum') }}</th>
+                                    @for ($h = 6; $h <= 22; $h++)
+                                        <th class="text-center text-xs font-normal">{{ sprintf('%02d', $h) }}</th>
+                                    @endfor
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($gridRooms as $room)
+                                    @php $bookings = $grid[$room->id] ?? []; @endphp
+                                    <tr class="hover">
+                                        <td class="font-semibold">
+                                            <div class="flex items-center gap-2">
+                                                <span class="inline-block w-3 h-3 rounded" style="background:{{ $room->color ?? '#999' }}"></span>
+                                                {{ $room->name }}
+                                            </div>
+                                            @if ($room->capacity)
+                                                <div class="text-xs opacity-70">{{ $room->capacity }} {{ __('Plätze') }}</div>
+                                            @endif
+                                        </td>
+                                        <td colspan="17" class="relative p-0" style="height:48px">
+                                            @foreach ($bookings as $b)
+                                                @php
+                                                    $start = $b['started_at'];
+                                                    $end   = $b['ended_at'];
+                                                    $ev    = $b['event'];
+                                                    $fromH = max(6, min(22, $start->hour + $start->minute / 60));
+                                                    $toH   = max(6, min(23, $end->hour + $end->minute / 60));
+                                                    $left  = (($fromH - 6) / 17) * 100;
+                                                    $width = max(0.5, (($toH - $fromH) / 17) * 100);
+                                                @endphp
+                                                <a href="{{ route('events.show', $ev) }}"
+                                                   class="absolute top-1 bottom-1 rounded px-1 text-xs text-white overflow-hidden whitespace-nowrap"
+                                                   style="left:{{ $left }}%;width:{{ $width }}%;background:{{ $ev->category?->color ?? '#3b82f6' }}"
+                                                   title="{{ $ev->title }} ({{ $start->format('H:i') }}–{{ $end->format('H:i') }})">
+                                                    {{ $ev->title }}
+                                                </a>
+                                            @endforeach
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="18" class="text-center opacity-70 py-6">{{ __('Keine aktiven Räume') }}</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        @else
+            <x-table :pinRows="true" :zebra="true">
+                <thead class="bg-base-200">
+                    <tr>
+                        <th data-sort data-sort-default="asc">{{ __('Name') }}</th>
+                        <th data-sort>{{ __('Code') }}</th>
+                        <th data-sort>{{ __('Gebäude / Etage') }}</th>
+                        <th class="text-right" data-sort data-sort-type="number">{{ __('Kapazität') }}</th>
+                        <th>{{ __('Ausstattung') }}</th>
+                        <th data-sort>{{ __('Status') }}</th>
+                        <th class="w-32 text-right">{{ __('Aktion') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($rooms as $room)
+                        <tr class="hover">
+                            <td>
+                                <div class="flex items-center gap-2 font-semibold">
+                                    <span class="inline-block w-3 h-3 rounded" style="background:{{ $room->color ?? '#999' }}"></span>
+                                    {{ $room->name }}
+                                </div>
+                            </td>
+                            <td><span class="font-mono">{{ $room->code }}</span></td>
+                            <td class="whitespace-nowrap">
+                                {{ $room->building }}@if ($room->floor) · {{ $room->floor }} @endif
+                            </td>
+                            <td class="text-right tabular-nums">{{ $room->capacity }}</td>
+                            <td>
+                                <div class="flex flex-wrap gap-1">
+                                    @foreach (($room->equipment ?? []) as $eq)
+                                        <span class="badge badge-ghost badge-sm">{{ __($eq) }}</span>
+                                    @endforeach
+                                </div>
+                            </td>
+                            <td>
+                                @if ($room->is_active)
+                                    <span class="badge badge-success badge-sm">{{ __('Aktiv') }}</span>
+                                @else
+                                    <span class="badge badge-ghost badge-sm">{{ __('Inaktiv') }}</span>
+                                @endif
+                            </td>
+                            <td class="text-right whitespace-nowrap">
+                                @can('update', $room)
+                                    <x-icon-btn icon="edit"
+                                                data-entry-modal-trigger
+                                                :href="route('rooms.edit', $room).'?dialog=1'"
+                                                :label="__('Bearbeiten')" />
+                                @endcan
+                                @can('delete', $room)
+                                    <form action="{{ route('rooms.destroy', $room) }}" method="POST" class="inline"
+                                          data-confirm-dialog
+                                          data-confirm-message="{{ __('Raum wirklich löschen?') }}"
+                                          data-confirm-label="{{ __('Löschen') }}">
+                                        @csrf @method('DELETE')
+                                        <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
+                                    </form>
+                                @endcan
+                            </td>
+                        </tr>
+                    @empty
+                        <x-table.empty :colspan="7"
+                            icon='<span class="material-symbols-outlined" aria-hidden="true">meeting_room</span>'
+                            :title="__('Noch keine Räume angelegt')" compact />
+                    @endforelse
+                </tbody>
+            </x-table>
+
+            @if ($rooms->hasPages())
+                <div class="flex-none">{{ $rooms->links() }}</div>
+            @endif
+        @endif
+    </x-page-shell>
+@endsection

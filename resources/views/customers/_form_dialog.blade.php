@@ -150,12 +150,6 @@
             </div>
 
             <div class="fieldset">
-                <label class="fieldset-label">{{ __('Farbe') }}</label>
-                <input name="color" type="color"
-                       value="{{ old('color', $customer?->color ?? '#3b82f6') }}"
-                       class="input input-bordered h-10 w-20 p-1">
-            </div>
-            <div class="fieldset">
                 <label class="fieldset-label cursor-pointer gap-3">
                     <input type="hidden" name="billable" value="0">
                     <input type="checkbox" name="billable" value="1" class="toggle toggle-primary"

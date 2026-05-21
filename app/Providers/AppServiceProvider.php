@@ -20,7 +20,10 @@ use App\Models\Customer;
 use App\Models\DiaryEntry;
 use App\Models\DutyPlan;
 use App\Models\EmergencyAssignment;
+use App\Models\Event;
+use App\Models\EventCategory;
 use App\Models\FlexEligibility;
+use App\Models\Room;
 use App\Models\Material;
 use App\Models\MaterialUsage;
 use App\Models\Milestone;
@@ -50,7 +53,10 @@ use App\Observers\UserObserver;
 use App\Policies\ActivityCategoryPolicy;
 use App\Policies\CoverageRequirementPolicy;
 use App\Policies\DutyPlanPolicy;
+use App\Policies\EventCategoryPolicy;
+use App\Policies\EventPolicy;
 use App\Policies\MaterialPolicy;
+use App\Policies\RoomPolicy;
 use App\Policies\MaterialUsagePolicy;
 use App\Policies\MilestonePolicy;
 use App\Policies\OrganizationPolicy;
@@ -74,7 +80,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
@@ -107,7 +113,7 @@ class AppServiceProvider extends ServiceProvider {
             return new LegacyUserProvider($app['hash']);
         });
 
-        Event::subscribe(AuthEventSubscriber::class);
+        EventFacade::subscribe(AuthEventSubscriber::class);
 
         Comment::observe(CommentObserver::class);
         Attachment::observe(AttachmentObserver::class);
@@ -137,6 +143,9 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(TravelLog::class, TravelLogPolicy::class);
         Gate::policy(UserGroup::class, UserGroupPolicy::class);
         Gate::policy(FlexEligibility::class, FlexEligibilityPolicy::class);
+        Gate::policy(Event::class, EventPolicy::class);
+        Gate::policy(EventCategory::class, EventCategoryPolicy::class);
+        Gate::policy(Room::class, RoomPolicy::class);
 
         // manage-members: Org-Admin darf Mitglieder der eigenen Org verwalten
         Gate::define('manage-members', [OrganizationPolicy::class, 'manageMembers']);

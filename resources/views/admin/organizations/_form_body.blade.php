@@ -1,3 +1,5 @@
+@php $skipStatusControls = $skipStatusControls ?? false; @endphp
+
 {{-- Shared form fields for Organization create & edit. --}}
 
 <x-form-group :legend="__('Stammdaten')" icon="apartment" tone="primary" cols="2">
@@ -39,6 +41,7 @@
         @error('plan')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
     </div>
 
+    @unless ($skipStatusControls)
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Aktiv') }}</label>
         <label class="label cursor-pointer justify-start gap-3">
@@ -48,6 +51,7 @@
             <span class="label-text">{{ __('Organisation ist aktiv') }}</span>
         </label>
     </div>
+    @endunless
 </x-form-group>
 
 @if ($organization)

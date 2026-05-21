@@ -8,43 +8,42 @@
         <x-page-toolbar>
             <x-slot:actions>
                 @can('create', App\Models\Tag::class)
-                    @if (auth()->user()->isAdmin())
-                        <x-icon-btn icon="add" tone="primary" size="sm"
-                                    data-entry-modal-trigger
-                                    :href="route('tags.create')"
-                                    show-label>{{ __('Neuer Tag') }}</x-icon-btn>
-                    @endif
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('tags.create')"
+                                show-label>{{ __('Neuer Tag') }}</x-icon-btn>
                 @endcan
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 
     {{-- Tag-Liste --}}
-    <x-table :pin-rows="true" scroll="flex"
+    <x-table :pinRows="true" scroll="flex"
              table-sort="server"
              :route="route('tags.index')"
              :current-sort="$sort ?? null"
              :current-dir="$dir ?? 'asc'">
             <x-slot:head>
-                <tr class="bg-base-200">
+                <tr>
                     <x-table.th sort="name" default>{{ __('Tag') }}</x-table.th>
                     <x-table.th sort="diary" align="right">{{ __('Tagebuch') }}</x-table.th>
                     <x-table.th sort="shifts" align="right">{{ __('Bereitschaft') }}</x-table.th>
                     <x-table.th sort="assignments" align="right">{{ __('Notdienst') }}</x-table.th>
-                    <th class="text-right">{{ __('Aktionen') }}</th>
+                    <th class="w-32 text-right">{{ __('Aktion') }}</th>
                 </tr>
             </x-slot:head>
                 @forelse ($tags as $tag)
                     <tr class="hover">
                         <td>
-                            <span class="badge badge-outline" @if ($tag->color) style="border-color: {{ $tag->color }}; color: {{ $tag->color }};" @endif>
+                            <span class="badge badge-outline"
+                                  @if ($tag->color) style="border-color: {{ $tag->color }}; color: {{ $tag->color }};" @endif>
                                 #{{ $tag->name }}
                             </span>
                         </td>
-                        <td class="text-right">{{ $tag->diary_entries_count }}</td>
-                        <td class="text-right">{{ $tag->shifts_count }}</td>
-                        <td class="text-right">{{ $tag->assignments_count }}</td>
-                        <td class="text-right">
+                        <td class="text-right tabular-nums">{{ $tag->diary_entries_count }}</td>
+                        <td class="text-right tabular-nums">{{ $tag->shifts_count }}</td>
+                        <td class="text-right tabular-nums">{{ $tag->assignments_count }}</td>
+                        <td class="text-right whitespace-nowrap">
                             @can('update', $tag)
                                 <x-icon-btn icon="edit"
                                             data-entry-modal-trigger
@@ -53,10 +52,10 @@
                             @endcan
                             @can('delete', $tag)
                                 <form method="POST" action="{{ route('tags.destroy', $tag) }}" class="inline"
-                                    data-confirm-dialog
-                                    data-confirm-title="{{ __('Tag löschen') }}"
-                                    data-confirm-message="{{ __('Tag wird inklusive aller Verknüpfungen entfernt.') }}"
-                                    data-confirm-label="{{ __('Löschen') }}">
+                                      data-confirm-dialog
+                                      data-confirm-title="{{ __('Tag löschen') }}"
+                                      data-confirm-message="{{ __('Tag wird inklusive aller Verknüpfungen entfernt.') }}"
+                                      data-confirm-label="{{ __('Löschen') }}">
                                     @csrf @method('DELETE')
                                     <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                                 </form>
@@ -69,7 +68,7 @@
     </x-table>
 
     @if ($tags->hasPages())
-        <div>{{ $tags->links('pagination::simple-tailwind') }}</div>
+        <div class="flex-none">{{ $tags->links() }}</div>
     @endif
 </x-page-shell>
 @endsection

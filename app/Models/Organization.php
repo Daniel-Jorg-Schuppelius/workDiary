@@ -94,6 +94,7 @@ class Organization extends Model {
         'timezone',
         'settings',
         'is_active',
+        'deactivated_at',
         'owner_id',
         'trial_ends_at',
     ];
@@ -103,6 +104,7 @@ class Organization extends Model {
         'settings' => 'array',
         'is_active' => 'boolean',
         'trial_ends_at' => 'datetime',
+        'deactivated_at' => 'datetime',
     ];
 
     protected static function booted(): void {

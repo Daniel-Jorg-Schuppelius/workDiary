@@ -58,7 +58,7 @@
         </x-page-toolbar>
 
         {{-- Tabs --}}
-        <div role="tablist" class="tabs tabs-box self-start">
+        <div role="tablist" class="tabs tabs-box flex-nowrap overflow-x-auto">
             @foreach ($tabs as $key => $info)
                 <a role="tab"
                    href="{{ route('duties.index', array_merge($tabFilters, ['tab' => $key])) }}"

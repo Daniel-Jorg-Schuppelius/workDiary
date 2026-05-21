@@ -16,7 +16,12 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="$isEdit ? __('Speichern') : __('Anlegen')">
 
-    @include('qualifications._form', ['qualification' => $qualification ?? null])
+    <x-slot:headerActions>
+        <x-dialog-status-controls
+            :active="$qualification?->is_active ?? true" />
+    </x-slot:headerActions>
+
+    @include('qualifications._form', ['qualification' => $qualification ?? null, 'skipStatusControls' => true])
 
     @if ($errors->any())
         <div class="alert alert-error text-sm">

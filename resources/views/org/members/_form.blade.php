@@ -1,6 +1,6 @@
 {{-- Shared form fields for create & edit --}}
 
-<x-form-group :legend="__('Mitgliedsdaten')" icon="person" tone="primary" cols="2">
+<x-form-group :legend="__('Mitarbeiterdaten')" icon="person" tone="primary" cols="2">
     <div class="fieldset md:col-span-2">
         <label class="fieldset-label">{{ __('Vollständiger Name') }} *</label>
         <input type="text" name="name" class="input input-bordered w-full @error('name') input-error @enderror"
@@ -30,7 +30,7 @@
 
 @if (! isset($member))
     <x-form-group :legend="__('Initial-Passwort')" icon="lock" tone="warning" cols="2"
-                  :description="__('Das Mitglied wird beim ersten Login aufgefordert, das Passwort zu ändern.')">
+                  :description="__('Der Mitarbeiter wird beim ersten Login aufgefordert, das Passwort zu ändern.')">
         <div class="fieldset">
             <label class="fieldset-label">{{ __('Passwort') }} *</label>
             <input type="password" name="password" class="input input-bordered w-full @error('password') input-error @enderror"

@@ -46,6 +46,15 @@ class OrganizationSwitchController extends Controller {
 
         /** @var Organization $org */
         $org = Organization::query()->findOrFail($orgId);
+
+        // Deaktivierte Organisationen dürfen nicht als Kontext gewählt werden.
+        // Sie müssen erst über die Verwaltung wieder aktiviert werden.
+        if (! $org->is_active) {
+            return back()->withErrors([
+                'organization_id' => __('Diese Organisation ist deaktiviert und kann nicht ausgewählt werden.'),
+            ]);
+        }
+
         $request->session()->put(self::SESSION_KEY, $org->id);
 
         return back()->with('success', __('Aktive Organisation: :name', ['name' => $org->name]));

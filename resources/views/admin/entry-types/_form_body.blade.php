@@ -1,3 +1,5 @@
+@php $skipStatusControls = $skipStatusControls ?? false; @endphp
+
 {{-- Shared body for EntryType create/edit (standalone + dialog) --}}
 @php
     /** @var \App\Models\EntryType $entryType */
@@ -49,6 +51,7 @@
                class="input input-bordered input-sm w-full">
     </x-filter-field>
 
+    @unless ($skipStatusControls)
     <x-filter-field show-label :label="__('Aktiv')" for="entrytype-is-active">
         <label class="label cursor-pointer justify-start gap-3">
             <input type="hidden" name="is_active" value="0">
@@ -58,6 +61,7 @@
             <span class="label-text">{{ __('Typ verfügbar') }}</span>
         </label>
     </x-filter-field>
+    @endunless
 </x-form-group>
 
 <x-form-group :legend="__('Pflicht-/Optional-Felder')" icon="rule" tone="info" cols="2"

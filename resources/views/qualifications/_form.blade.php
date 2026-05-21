@@ -1,3 +1,5 @@
+@php $skipStatusControls = $skipStatusControls ?? false; @endphp
+
 {{-- Shared form fields for Qualification --}}
 
 <x-form-group :legend="__('Stammdaten')" icon="school" tone="primary" cols="2">
@@ -21,6 +23,7 @@
         @error('description')<p class="text-error text-sm">{{ $message }}</p>@enderror
     </div>
 
+    @unless ($skipStatusControls)
     <div class="fieldset md:col-span-2">
         <label class="label cursor-pointer gap-3">
             <span class="fieldset-label">{{ __('Aktiv') }}</span>
@@ -29,4 +32,5 @@
                    @checked(old('is_active', $qualification?->is_active ?? true))>
         </label>
     </div>
+    @endunless
 </x-form-group>

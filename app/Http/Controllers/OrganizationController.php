@@ -12,12 +12,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Organization;
 use App\Models\User;
+use App\Services\OrganizationLifecycleService;
 use App\Support\SortableQuery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class OrganizationController extends Controller {
     public function index(Request $request): View {
@@ -191,42 +194,149 @@ class OrganizationController extends Controller {
     public function destroy(Organization $organization): RedirectResponse {
         Gate::authorize('delete', $organization);
 
-        // Verhindere, dass der Admin sich selbst aussperrt, indem er die
-        // letzte vorhandene Organisation löscht: ohne Org gibt es keinen
-        // Tenant-Kontext mehr (und der Guardrail in BelongsToOrganization
-        // würde jede weitere Schreibaktion blockieren).
-        $remaining = Organization::query()->where('id', '!=', $organization->id)->count();
+        // Hard-Delete einer Organisation ist NICHT mehr direkt möglich:
+        // Wir leiten auf die explizite Deaktivierung um. Endgültiges
+        // Löschen muss bewusst über die `purge`-Aktion erfolgen (mit
+        // Slug-Bestätigung und Cooldown nach Deaktivierung).
+        return redirect()
+            ->route('admin.organizations.index')
+            ->with('error', __('Direktes Löschen ist nicht mehr möglich. Bitte zuerst deaktivieren, optional Daten exportieren und anschließend endgültig löschen.'));
+    }
+
+    /**
+     * Setzt die Organisation auf inaktiv (reversibel). Sie verschwindet
+     * sofort aus dem Header-Switcher und kann nicht mehr als aktiver
+     * Mandanten-Kontext gewählt werden.
+     */
+    public function deactivate(
+        Request $request,
+        Organization $organization,
+        OrganizationLifecycleService $lifecycle,
+    ): RedirectResponse {
+        Gate::authorize('deactivate', $organization);
+
+        $remaining = Organization::query()
+            ->where('id', '!=', $organization->id)
+            ->where('is_active', true)
+            ->count();
         if ($remaining === 0) {
             return redirect()->route('admin.organizations.index')
-                ->with('error', __('Die letzte Organisation kann nicht gelöscht werden. Legen Sie zuerst eine neue Organisation an.'));
+                ->with('error', __('Die letzte aktive Organisation kann nicht deaktiviert werden.'));
         }
 
-        $deletedId = (int) $organization->id;
-        $organization->delete();
+        $actor = Auth::user();
+        $lifecycle->deactivate($organization, $actor instanceof User ? $actor : null);
 
-        // Session-Override (Org-Switcher) bereinigen, falls der Admin
-        // gerade die gelöschte Org aktiv hatte.
-        $session = request()->session();
-        if ((int) $session->get(OrganizationSwitchController::SESSION_KEY) === $deletedId) {
+        // Wenn der aktive Switcher-Kontext gerade diese Org war,
+        // räumen wir die Session auf, damit die Middleware auf eine
+        // aktive Org zurückfällt.
+        $session = $request->session();
+        if ((int) $session->get(OrganizationSwitchController::SESSION_KEY) === (int) $organization->id) {
             $session->forget(OrganizationSwitchController::SESSION_KEY);
         }
 
-        // Falls der ausführende Admin selbst dieser Org zugeordnet war
-        // (FK nullOnDelete hat seine organization_id geleert), weisen wir
-        // ihn der ersten verfügbaren Org zu, damit er weiterarbeiten kann.
-        $user = Auth::user();
-        if ($user instanceof User) {
-            $user->refresh();
-            if (empty($user->organization_id)) {
-                $fallback = Organization::query()->orderBy('id')->first();
+        return redirect()->route('admin.organizations.index')
+            ->with('success', __('Organisation wurde deaktiviert.'));
+    }
+
+    public function reactivate(
+        Organization $organization,
+        OrganizationLifecycleService $lifecycle,
+    ): RedirectResponse {
+        Gate::authorize('reactivate', $organization);
+
+        $actor = Auth::user();
+        $lifecycle->reactivate($organization, $actor instanceof User ? $actor : null);
+
+        return redirect()->route('admin.organizations.index')
+            ->with('success', __('Organisation wurde reaktiviert.'));
+    }
+
+    /**
+     * Erzeugt einen vollständigen ZIP-Export aller mandantengebundenen
+     * Datensätze und Dateien (DSGVO Art. 20). Liefert die Datei direkt
+     * als Download zurück.
+     */
+    public function export(
+        Organization $organization,
+        OrganizationLifecycleService $lifecycle,
+    ): BinaryFileResponse {
+        Gate::authorize('export', $organization);
+
+        $actor = Auth::user();
+        $relPath = $lifecycle->export($organization, $actor instanceof User ? $actor : null);
+        $absPath = Storage::disk('local')->path($relPath);
+
+        return response()->download(
+            $absPath,
+            basename($relPath),
+            ['Content-Type' => 'application/zip'],
+        );
+    }
+
+    /**
+     * Endgültiges, unwiderrufliches Löschen einer Organisation inkl.
+     * aller Datensätze und Dateien. Erfordert:
+     *   - Organisation ist deaktiviert
+     *   - Cooldown nach Deaktivierung ist abgelaufen
+     *   - Slug der Organisation wird zur Bestätigung mitgesendet
+     */
+    public function purge(
+        Request $request,
+        Organization $organization,
+        OrganizationLifecycleService $lifecycle,
+    ): RedirectResponse {
+        Gate::authorize('purge', $organization);
+
+        $data = $request->validate([
+            'confirm_slug' => ['required', 'string'],
+        ]);
+
+        if (trim((string) $data['confirm_slug']) !== (string) $organization->slug) {
+            return redirect()->route('admin.organizations.index')
+                ->with('error', __('Bestätigung fehlgeschlagen: der eingegebene Slug stimmt nicht überein.'));
+        }
+
+        if ($organization->is_active) {
+            return redirect()->route('admin.organizations.index')
+                ->with('error', __('Aktive Organisationen können nicht endgültig gelöscht werden. Bitte zuerst deaktivieren.'));
+        }
+
+        if (! $lifecycle->isPurgeAllowed($organization)) {
+            return redirect()->route('admin.organizations.index')
+                ->with('error', __('Endgültiges Löschen ist erst :h Stunden nach Deaktivierung möglich.', [
+                    'h' => $lifecycle->cooldownHours(),
+                ]));
+        }
+
+        // Mindestens eine andere aktive Org muss verbleiben, damit der
+        // ausführende Admin nicht ausgesperrt wird.
+        $remaining = Organization::query()
+            ->where('id', '!=', $organization->id)
+            ->where('is_active', true)
+            ->count();
+        if ($remaining === 0) {
+            return redirect()->route('admin.organizations.index')
+                ->with('error', __('Es muss mindestens eine andere aktive Organisation verbleiben.'));
+        }
+
+        $deletedName = (string) $organization->name;
+        $actor = Auth::user();
+        $lifecycle->purge($organization, $actor instanceof User ? $actor : null);
+
+        // Aus­führenden Admin auffangen, falls er der Org zugeordnet war.
+        if ($actor instanceof User) {
+            $actor->refresh();
+            if (empty($actor->organization_id)) {
+                $fallback = Organization::query()->where('is_active', true)->orderBy('id')->first();
                 if ($fallback instanceof Organization) {
-                    $user->forceFill(['organization_id' => $fallback->id])->save();
+                    $actor->forceFill(['organization_id' => $fallback->id])->save();
                 }
             }
         }
 
         return redirect()->route('admin.organizations.index')
-            ->with('success', __('Organisation wurde gelöscht.'));
+            ->with('success', __('Organisation ":name" wurde endgültig gelöscht.', ['name' => $deletedName]));
     }
 
     /**
