@@ -34,18 +34,18 @@ Die vollständige Permission-zu-Rolle-Matrix wird in
 ist als _Single Source of Truth_ via `PermissionsSeeder::defaultRoleMatrix()`
 codeverbindlich verankert.
 
-| Profil | Slug | Kurzbeschreibung |
-|--------|------|------------------|
-| Systemadmin | `admin` (global) | Plattform-Admin (`team_id = NULL`), umgeht Policies via `HasAdminBypass`. |
-| Kundenadmin | `admin` (org-scoped) | Voller Zugriff innerhalb der eigenen Organisation. |
-| Geschäftsführung | `geschaeftsfuehrung` | Read-only-Sicht inkl. Reporting + Audit, keine Schreibrechte. |
-| Teamleitung | `teamleitung` | Personal-, Zeit-, Dienstplan- und Diary-Führung; keine Finanzfunktionen. |
-| Buchhaltung | `buchhaltung` | Kunden-/Rechnungs-/Stundenzettel-Workflow, Export, Tarife. |
-| Innendienst (Mitarbeiter) | `user` | Eigene Zeit/Diary/Urlaub; Projekte read-only. |
-| Außendienst | `aussendienst` | Mobile Erfassung (eigene Zeit, Diary, Touren, Spesen, Fahrzeug-Log). |
-| Callcenter | `callcenter` | Diary für andere erfassen, Kundenstamm einsehen. |
-| Support | `support` | Anbieter-Support, **strikt read-only** + Auditzugriff. |
-| Kunde (Customer-Portal) | _Folge-Issue_ | Self-Service-Sicht für externe Auftraggeber. **Nicht im MVP-003.** |
+| Profil                    | Slug                 | Kurzbeschreibung                                                          |
+| ------------------------- | -------------------- | ------------------------------------------------------------------------- |
+| Systemadmin               | `admin` (global)     | Plattform-Admin (`team_id = NULL`), umgeht Policies via `HasAdminBypass`. |
+| Kundenadmin               | `admin` (org-scoped) | Voller Zugriff innerhalb der eigenen Organisation.                        |
+| Geschäftsführung          | `geschaeftsfuehrung` | Read-only-Sicht inkl. Reporting + Audit, keine Schreibrechte.             |
+| Teamleitung               | `teamleitung`        | Personal-, Zeit-, Dienstplan- und Diary-Führung; keine Finanzfunktionen.  |
+| Buchhaltung               | `buchhaltung`        | Kunden-/Rechnungs-/Stundenzettel-Workflow, Export, Tarife.                |
+| Innendienst (Mitarbeiter) | `user`               | Eigene Zeit/Diary/Urlaub; Projekte read-only.                             |
+| Außendienst               | `aussendienst`       | Mobile Erfassung (eigene Zeit, Diary, Touren, Spesen, Fahrzeug-Log).      |
+| Callcenter                | `callcenter`         | Diary für andere erfassen, Kundenstamm einsehen.                          |
+| Support                   | `support`            | Anbieter-Support, **strikt read-only** + Auditzugriff.                    |
+| Kunde (Customer-Portal)   | _Folge-Issue_        | Self-Service-Sicht für externe Auftraggeber. **Nicht im MVP-003.**        |
 
 ## Akzeptanzkriterien
 
