@@ -29,12 +29,33 @@
                class="input input-bordered input-sm w-full font-mono">
     </x-filter-field>
 
-    <x-filter-field show-label :label="__('Farbe (Token)')" for="entrytype-color">
-        <select id="entrytype-color" name="color" class="select select-bordered select-sm w-full">
-            @foreach (['primary','secondary','accent','info','success','warning','error','ghost'] as $tone)
-                <option value="{{ $tone }}" @selected(old('color', $entryType->color ?: 'primary') === $tone)>{{ $tone }}</option>
-            @endforeach
-        </select>
+    <x-filter-field show-label :label="__('Farbe')" for="entrytype-color">
+        @php
+            $colorOptions = [
+                'primary'   => __('Primär (Hauptaktion)'),
+                'secondary' => __('Sekundär (Ergänzend)'),
+                'accent'    => __('Akzent (Hervorhebung)'),
+                'info'      => __('Info (Hinweis, Blau)'),
+                'success'   => __('Erfolg (Grün)'),
+                'warning'   => __('Warnung (Gelb/Orange)'),
+                'error'     => __('Fehler (Rot)'),
+                'ghost'     => __('Neutral (Dezent)'),
+            ];
+            $currentColor = old('color', $entryType->color ?: 'primary');
+        @endphp
+        <div class="flex items-center gap-2">
+            <span class="inline-block h-3 w-3 rounded-full border border-base-300" aria-hidden="true"
+                  data-color-preview style="background-color: var(--color-{{ $currentColor }});"></span>
+            <select id="entrytype-color" name="color" class="select select-bordered select-sm w-full"
+                    onchange="this.previousElementSibling.style.backgroundColor='var(--color-'+this.value+')'">
+                @foreach ($colorOptions as $tone => $label)
+                    <option value="{{ $tone }}" @selected($currentColor === $tone)>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
+        <p class="mt-1 text-[0.7rem] text-base-content/60">
+            {{ __('Bestimmt die Akzentfarbe für Icon, Badge und Hervorhebungen in Listen.') }}
+        </p>
     </x-filter-field>
 
     <div class="md:col-span-2">

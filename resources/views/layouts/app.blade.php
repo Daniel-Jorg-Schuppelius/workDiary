@@ -338,7 +338,6 @@
                                 ? [
                                     ['route' => 'legacy.diary.week',           'label' => __('Wochenansicht'), 'icon' => 'calendar_view_week', 'modal' => false, 'matches' => ['legacy.diary.week']],
                                     ['route' => $indexRoute,                   'label' => __('Arbeitsliste'),  'icon' => 'list_alt',           'modal' => false, 'matches' => [$indexRoute, 'legacy.oncall.*', 'legacy.notdienst.*']],
-                                    ['route' => 'legacy.archive.index',        'label' => __('Archiv'),        'icon' => 'inventory_2',        'modal' => false, 'matches' => ['legacy.archive.*']],
                                     ['route' => 'legacy.callcenter.notdienst', 'label' => __('Zentrale'),      'icon' => 'support_agent',      'modal' => false, 'matches' => ['legacy.callcenter.*', 'legacy.overview.*']],
                                 ]
                                 : [
@@ -362,8 +361,8 @@
                                 if ($isLegacyMode) {
                                     $manageNavItems[] = ['route' => 'legacy.users.index', 'label' => __('Mitarbeiter'), 'icon' => 'group', 'modal' => false];
                                 }
-                                $manageNavItems[] = ['route' => 'holidays.index',     'label' => __('Feiertage'),   'icon' => 'celebration',     'modal' => false];
                                 if (! $isLegacyMode) {
+                                    $manageNavItems[] = ['route' => 'holidays.index',     'label' => __('Feiertage'),   'icon' => 'celebration',     'modal' => false];
                                     $manageNavItems[] = ['route' => 'qualifications.index',         'label' => __('Qualifikationen'),  'icon' => 'workspace_premium','modal' => false];
                                     $manageNavItems[] = ['route' => 'rooms.index',                   'label' => __('Räume'),             'icon' => 'meeting_room',     'modal' => false];
                                     $manageNavItems[] = ['route' => 'event-categories.index',        'label' => __('Veranstaltungs-Kategorien'), 'icon' => 'category', 'modal' => false];
@@ -377,8 +376,10 @@
                                 if (! $isLegacyMode && \Illuminate\Support\Facades\Gate::allows('manage-access')) {
                                     $adminNavItems[] = ['route' => 'admin.access.index',             'label' => __('access.title.hub'), 'icon' => 'admin_panel_settings', 'modal' => false];
                                 }
-                                $adminNavItems[] = ['route' => 'audit.index',                       'label' => __('Audit-Log'),        'icon' => 'fact_check',       'modal' => false];
-                                $adminNavItems[] = ['route' => 'admin.plugins.index',                'label' => __('Plugins'),          'icon' => 'extension',        'modal' => false];
+                                if (! $isLegacyMode) {
+                                    $adminNavItems[] = ['route' => 'audit.index',                       'label' => __('Audit-Log'),        'icon' => 'fact_check',       'modal' => false];
+                                    $adminNavItems[] = ['route' => 'admin.plugins.index',                'label' => __('Plugins'),          'icon' => 'extension',        'modal' => false];
+                                }
                                 $adminNavItems[] = ['route' => 'admin.legacy-migration.index',      'label' => __('Legacy-Migration'), 'icon' => 'sync_alt',         'modal' => false];
                             }
                             if (! $isLegacyMode && \Illuminate\Support\Facades\Gate::allows('manage-members')) {
@@ -557,39 +558,32 @@
                             </div>
 
                             @if (! empty($manageNavItems))
-                                <div class="dropdown dropdown-end">
-                                    <label tabindex="0" class="btn btn-sm {{ $isManageActive ? 'btn-primary' : 'btn-ghost' }}" title="{{ __('Verwaltung') }}">
-                                        ≡ <span class="hidden sm:inline ml-1">{{ __('Verwaltung') }}</span>
-                                    </label>
-                                    <ul tabindex="0" class="dropdown-content menu z-50 w-[min(14rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
-                                        @foreach ($manageNavItems as $item)
-                                            @php $active = request()->routeIs($item['route']); @endphp
-                                            <li>
-                                                <a href="{{ route($item['route']) }}" class="{{ $active ? 'active' : '' }}">
-                                                    {{ $item['label'] }}
-                                                </a>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                </div>
+                                @foreach ($manageNavItems as $item)
+                                    @php $active = request()->routeIs($item['route']); @endphp
+                                    <x-icon-btn :icon="$item['icon'] ?? 'tune'"
+                                                :tone="$active ? 'primary' : 'ghost'"
+                                                size="sm"
+                                                :label="$item['label']"
+                                                :href="route($item['route'])" />
+                                @endforeach
                             @endif
 
+                            @php $archiveActive = request()->routeIs('legacy.archive.*'); @endphp
+                            <x-icon-btn icon="inventory_2"
+                                        :tone="$archiveActive ? 'primary' : 'ghost'"
+                                        size="sm"
+                                        :label="__('Archiv')"
+                                        :href="route('legacy.archive.index')" />
+
                             @if (! empty($adminNavItems))
-                                <div class="dropdown dropdown-end">
-                                    <label tabindex="0" class="btn btn-sm {{ $isAdminActive ? 'btn-primary' : 'btn-ghost' }}" title="{{ __('Administration') }}">
-                                        ⚙ <span class="hidden sm:inline ml-1">{{ __('Admin') }}</span>
-                                    </label>
-                                    <ul tabindex="0" class="dropdown-content menu z-50 w-[min(14rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
-                                        @foreach ($adminNavItems as $item)
-                                            @php $active = request()->routeIs($item['route']); @endphp
-                                            <li>
-                                                <a href="{{ route($item['route']) }}" class="{{ $active ? 'active' : '' }}">
-                                                    {{ $item['label'] }}
-                                                </a>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                </div>
+                                @foreach ($adminNavItems as $item)
+                                    @php $active = request()->routeIs($item['route']); @endphp
+                                    <x-icon-btn :icon="$item['icon'] ?? 'tune'"
+                                                :tone="$active ? 'primary' : 'ghost'"
+                                                size="sm"
+                                                :label="$item['label']"
+                                                :href="route($item['route'])" />
+                                @endforeach
                             @endif
 
                             <x-icon-btn icon="add" tone="primary" size="sm"

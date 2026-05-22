@@ -16,6 +16,16 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
+    <div role="alert" class="alert alert-info alert-soft">
+        <x-icon name="info" />
+        <div>
+            <h3 class="font-semibold">{{ __('Was sind Eintragstypen?') }}</h3>
+            <div class="text-sm">
+                {{ __('Eintragstypen kategorisieren Einträge im Tagebuch (z. B. „Einsatz“, „Termin“, „Notiz“) und steuern, welche Felder beim Anlegen sichtbar bzw. verpflichtend sind – etwa ob ein Kunde, eine Adresse, ein Zeitfenster oder eine Tour zugeordnet werden muss. Zusätzlich legen sie Standardwerte (Status, Priorität, Servicedauer) sowie Symbol und Farbe für die Darstellung in Listen und Kalenderansichten fest.') }}
+            </div>
+        </div>
+    </div>
+
     <x-table table-sort="server"
              :route="route('admin.entry-types.index')"
              :current-sort="$sort ?? null"

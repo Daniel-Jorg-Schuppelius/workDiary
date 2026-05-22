@@ -945,6 +945,17 @@
         height: 100%;
     }
 
+    /* <x-modal action="…"> rendert das <form> INNERHALB von .wd-dialog und
+       wickelt damit Header + Body ein (Footer steht außerhalb der Form, damit
+       footerExtra eigene Forms enthalten darf). Damit der Body weiterhin
+       scrollt, muss die Form selbst Flex-Column sein und die Höhe füllen. */
+    .wd-dialog > form {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
     /* Ad-hoc-Dialoge (ohne x-dialog): einheitliche Max-Höhe + Scroll im Body.
        Markup-Konvention: <div class="modal-box wd-modal-box"> ... </div> */
     .modal-box.wd-modal-box {
