@@ -19,15 +19,7 @@ class RolesSeeder extends Seeder {
     public function run(): void {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        foreach (
-            [
-                UserRole::Admin->value,
-                UserRole::User->value,
-                UserRole::Callcenter->value,
-                UserRole::Buchhaltung->value,
-                UserRole::TrainingManager->value,
-            ] as $role
-        ) {
+        foreach (UserRole::values() as $role) {
             Role::findOrCreate($role, 'web');
         }
     }

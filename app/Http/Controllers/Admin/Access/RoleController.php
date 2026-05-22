@@ -13,9 +13,11 @@ namespace App\Http\Controllers\Admin\Access;
 use App\Enums\User\Permission as PermissionEnum;
 use App\Enums\User\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Organization;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -88,13 +90,22 @@ class RoleController extends Controller {
             ->exists();
         abort_if($exists, 422, __('access.error.role_exists'));
 
+        /** @var Role $role */
         $role = Role::create([
             'name' => $slug,
             'guard_name' => 'web',
             $teamForeign => $organization->id,
         ]);
 
-        $role->syncPermissions($this->validatedPermissionNames($data['permissions'] ?? []));
+        $permissions = $this->validatedPermissionNames($data['permissions'] ?? []);
+        $role->syncPermissions($permissions);
+
+        $this->logRoleChange($organization, $role, 'created', [
+            'after' => [
+                'name' => $role->name,
+                'permissions' => $permissions,
+            ],
+        ], $request);
 
         return redirect()->route('admin.access.roles.index')
             ->with('success', __('access.flash.role_created'));
@@ -120,13 +131,23 @@ class RoleController extends Controller {
             'permissions.*' => ['string'],
         ]);
 
-        $role->syncPermissions($this->validatedPermissionNames($data['permissions'] ?? []));
+        $before = $role->permissions()->pluck('name')->sort()->values()->all();
+        $after = $this->validatedPermissionNames($data['permissions'] ?? []);
+        $role->syncPermissions($after);
+
+        $afterSorted = collect($after)->sort()->values()->all();
+        if ($before !== $afterSorted) {
+            $this->logRoleChange($this->currentOrganization(), $role, 'updated', [
+                'before' => ['permissions' => $before],
+                'after' => ['permissions' => $afterSorted],
+            ], $request);
+        }
 
         return redirect()->route('admin.access.roles.index')
             ->with('success', __('access.flash.role_updated'));
     }
 
-    public function destroy(Role $role): RedirectResponse {
+    public function destroy(Request $request, Role $role): RedirectResponse {
         Gate::authorize('manage-access');
         $this->ensureEditable($role);
 
@@ -134,7 +155,18 @@ class RoleController extends Controller {
             return back()->with('error', __('access.error.role_system_protected'));
         }
 
+        $organization = $this->currentOrganization();
+        $before = [
+            'name' => $role->name,
+            'permissions' => $role->permissions()->pluck('name')->sort()->values()->all(),
+        ];
+        $roleId = $role->getKey();
+
         $role->delete();
+
+        $this->logRoleChange($organization, null, 'deleted', [
+            'before' => $before,
+        ], $request, $roleId);
 
         return redirect()->route('admin.access.roles.index')
             ->with('success', __('access.flash.role_deleted'));
@@ -146,6 +178,33 @@ class RoleController extends Controller {
         abort_unless($org instanceof Organization, 403);
 
         return $org;
+    }
+
+    /**
+     * Schreibt einen Audit-Eintrag für Rollen-Änderungen.
+     *
+     * @param  array<string, mixed>  $changes
+     */
+    private function logRoleChange(
+        Organization $organization,
+        ?Role $role,
+        string $event,
+        array $changes,
+        Request $request,
+        ?int $roleId = null,
+    ): void {
+        $auditableId = $roleId ?? ($role !== null ? (int) $role->getKey() : 0);
+
+        AuditLog::create([
+            'organization_id' => $organization->id,
+            'user_id' => Auth::id(),
+            'event' => 'role.' . $event,
+            'auditable_type' => Role::class,
+            'auditable_id' => $auditableId,
+            'changes' => $changes,
+            'ip' => $request->ip(),
+            'user_agent' => substr((string) $request->userAgent(), 0, 255),
+        ]);
     }
 
     private function ensureEditable(Role $role): void {

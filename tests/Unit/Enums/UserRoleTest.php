@@ -14,8 +14,22 @@ use App\Enums\User\UserRole;
 use Tests\TestCase;
 
 final class UserRoleTest extends TestCase {
-    public function test_values_match_legacy_constants(): void {
-        $this->assertSame(['admin', 'user', 'callcenter', 'buchhaltung'], UserRole::values());
+    public function test_values_contain_all_seedable_roles(): void {
+        $values = UserRole::values();
+
+        // Reihenfolge im Enum spiegelt die Sortierung in der Admin-UI wider
+        // und ist daher Teil der \u00f6ffentlichen Vertragsfl\u00e4che.
+        $this->assertSame([
+            'admin',
+            'geschaeftsfuehrung',
+            'teamleitung',
+            'buchhaltung',
+            'user',
+            'aussendienst',
+            'callcenter',
+            'support',
+            'training_manager',
+        ], $values);
     }
 
     public function test_labels_are_non_empty(): void {

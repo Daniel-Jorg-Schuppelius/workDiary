@@ -115,10 +115,94 @@ class PermissionsSeeder extends Seeder {
      * zusätzlich global (team_id = null) angelegt; hier deckt der Eintrag
      * den Org-Admin ab, der innerhalb seiner Organisation alles darf.
      *
+     * Profile gemäß Feature 019 / MVP-003:
+     * - admin (Kundenadmin): alles innerhalb der Org
+     * - geschaeftsfuehrung: read-only über alle Bereiche + Reports + Audit
+     * - teamleitung: Mitarbeiter-, Zeit- und Planungsführung, ohne Finanzen
+     * - buchhaltung: Kunden, Rechnungen, Stundenzettel, Auswertungen
+     * - user (Innendienst): Standard-Mitarbeiter (eigene Zeit, Diary, Urlaub)
+     * - aussendienst: mobile Erfassung (eigene Zeit, Diary, Touren, Spesen)
+     * - callcenter: Tagebuch und Kundendaten ansehen
+     * - support: Anbieter-Support, ausschließlich read-only + Audit
+     *
      * @return array<string, list<PermissionEnum>>
      */
     private static function defaultRoleMatrix(): array {
         $all = PermissionEnum::cases();
+
+        // Geschäftsführung: read-only über alle Bereiche, Reports + Audit.
+        $geschaeftsfuehrung = array_values(array_filter(
+            PermissionEnum::cases(),
+            static function (PermissionEnum $p): bool {
+                $value = $p->value;
+                if (str_ends_with($value, '.viewAny') || str_ends_with($value, '.view') || str_ends_with($value, '.viewOwn')) {
+                    return true;
+                }
+
+                return in_array($value, [
+                    PermissionEnum::OrganizationView->value,
+                    PermissionEnum::ReportView->value,
+                    PermissionEnum::ReportExport->value,
+                    PermissionEnum::AuditLogView->value,
+                    PermissionEnum::AccessAuditView->value,
+                    PermissionEnum::FlexBalanceView->value,
+                ], true);
+            }
+        ));
+
+        // Teamleitung: operative Führung (Personal, Zeit, Plan), ohne Finanzen.
+        $teamleitung = [
+            PermissionEnum::OrganizationView,
+            PermissionEnum::UserViewAny,
+            PermissionEnum::UserView,
+            PermissionEnum::UserFlexManage,
+            PermissionEnum::CustomerViewAny,
+            PermissionEnum::CustomerView,
+            PermissionEnum::ProjectViewAny,
+            PermissionEnum::ProjectView,
+            PermissionEnum::ProjectCreate,
+            PermissionEnum::ProjectUpdate,
+            PermissionEnum::ProjectArchive,
+            PermissionEnum::TaskManage,
+            PermissionEnum::MilestoneManage,
+            PermissionEnum::TimeEntryViewAny,
+            PermissionEnum::TimeEntryApprove,
+            PermissionEnum::TimeEntryCreateForOthers,
+            PermissionEnum::TimesheetViewAny,
+            PermissionEnum::TimesheetSign,
+            PermissionEnum::TimesheetLock,
+            PermissionEnum::TimesheetUnlock,
+            PermissionEnum::DiaryViewAny,
+            PermissionEnum::DiaryCreate,
+            PermissionEnum::DiaryCreateForOthers,
+            PermissionEnum::DiaryUpdate,
+            PermissionEnum::DiaryExport,
+            PermissionEnum::DutyPlanViewAny,
+            PermissionEnum::DutyPlanCreate,
+            PermissionEnum::DutyPlanUpdate,
+            PermissionEnum::DutyPlanPublish,
+            PermissionEnum::ShiftManage,
+            PermissionEnum::ScheduledShiftManage,
+            PermissionEnum::CoverageRequirementManage,
+            PermissionEnum::OnCallShiftManage,
+            PermissionEnum::EmergencyAssignmentManage,
+            PermissionEnum::ShiftTypeManage,
+            PermissionEnum::VacationViewAny,
+            PermissionEnum::VacationApprove,
+            PermissionEnum::VacationCancel,
+            PermissionEnum::SickLeaveViewAny,
+            PermissionEnum::SickLeaveManage,
+            PermissionEnum::AttendanceViewAny,
+            PermissionEnum::AttendanceManage,
+            PermissionEnum::WorkScheduleManage,
+            PermissionEnum::FlexBalanceView,
+            PermissionEnum::FlexBalanceManage,
+            PermissionEnum::TourViewAny,
+            PermissionEnum::TourManage,
+            PermissionEnum::TravelLogViewAny,
+            PermissionEnum::ReportView,
+            PermissionEnum::AccessAuditView,
+        ];
 
         $buchhaltung = [
             PermissionEnum::OrganizationView,
@@ -182,6 +266,36 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::TravelLogManage,
         ];
 
+        // Außendienst: schlanker als user, dafür mit vollem Touren-/Spesen-
+        // Funktionsumfang und KEINER Mitarbeiter-/Finanz-/Planungssicht.
+        $aussendienst = [
+            PermissionEnum::OrganizationView,
+            PermissionEnum::CustomerViewAny,
+            PermissionEnum::CustomerView,
+            PermissionEnum::ProjectViewAny,
+            PermissionEnum::ProjectView,
+            PermissionEnum::TaskManage,
+            PermissionEnum::TimeEntryViewOwn,
+            PermissionEnum::TimeEntryCreate,
+            PermissionEnum::TimeEntryUpdate,
+            PermissionEnum::TimeEntryDelete,
+            PermissionEnum::TimesheetCreate,
+            PermissionEnum::TimesheetUpdate,
+            PermissionEnum::TimesheetSign,
+            PermissionEnum::DiaryViewOwn,
+            PermissionEnum::DiaryCreate,
+            PermissionEnum::DiaryUpdate,
+            PermissionEnum::DiaryDelete,
+            PermissionEnum::TourViewAny,
+            PermissionEnum::TravelLogViewAny,
+            PermissionEnum::TravelLogManage,
+            PermissionEnum::VehicleViewAny,
+            PermissionEnum::EnergyLogManage,
+            PermissionEnum::VacationRequest,
+            PermissionEnum::AttendanceManage,
+            PermissionEnum::FlexBalanceView,
+        ];
+
         $callcenter = [
             PermissionEnum::OrganizationView,
             PermissionEnum::DiaryViewAny,
@@ -192,11 +306,43 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::CustomerView,
         ];
 
+        // Support (Anbieter-Support): strikt read-only über fast alle Bereiche
+        // plus Auditzugriff. KEINE Create/Update/Delete-Permissions.
+        $support = [
+            PermissionEnum::OrganizationView,
+            PermissionEnum::UserViewAny,
+            PermissionEnum::UserView,
+            PermissionEnum::CustomerViewAny,
+            PermissionEnum::CustomerView,
+            PermissionEnum::ProjectViewAny,
+            PermissionEnum::ProjectView,
+            PermissionEnum::TimeEntryViewAny,
+            PermissionEnum::TimesheetViewAny,
+            PermissionEnum::InvoiceViewAny,
+            PermissionEnum::InvoiceView,
+            PermissionEnum::DiaryViewAny,
+            PermissionEnum::DutyPlanViewAny,
+            PermissionEnum::VacationViewAny,
+            PermissionEnum::SickLeaveViewAny,
+            PermissionEnum::AttendanceViewAny,
+            PermissionEnum::TourViewAny,
+            PermissionEnum::TravelLogViewAny,
+            PermissionEnum::VehicleViewAny,
+            PermissionEnum::ReportView,
+            PermissionEnum::AuditLogView,
+            PermissionEnum::AccessAuditView,
+            PermissionEnum::FlexBalanceView,
+        ];
+
         return [
             UserRole::Admin->value => $all,
+            UserRole::Geschaeftsfuehrung->value => $geschaeftsfuehrung,
+            UserRole::Teamleitung->value => $teamleitung,
             UserRole::Buchhaltung->value => $buchhaltung,
             UserRole::User->value => $user,
+            UserRole::Aussendienst->value => $aussendienst,
             UserRole::Callcenter->value => $callcenter,
+            UserRole::Support->value => $support,
         ];
     }
 }

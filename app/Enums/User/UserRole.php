@@ -21,9 +21,13 @@ enum UserRole: string implements HasLabel {
     use HasOptions;
 
     case Admin = 'admin';
-    case User = 'user';
-    case Callcenter = 'callcenter';
+    case Geschaeftsfuehrung = 'geschaeftsfuehrung';
+    case Teamleitung = 'teamleitung';
     case Buchhaltung = 'buchhaltung';
+    case User = 'user';
+    case Aussendienst = 'aussendienst';
+    case Callcenter = 'callcenter';
+    case Support = 'support';
     case TrainingManager = 'training_manager';
 
     public function label(): string {

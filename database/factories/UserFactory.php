@@ -86,6 +86,36 @@ class UserFactory extends Factory {
         });
     }
 
+    public function buchhaltung(): static {
+        return $this->afterCreating(function (User $user): void {
+            self::syncRolesInOwnOrg($user, [UserRole::Buchhaltung->value]);
+        });
+    }
+
+    public function geschaeftsfuehrung(): static {
+        return $this->afterCreating(function (User $user): void {
+            self::syncRolesInOwnOrg($user, [UserRole::Geschaeftsfuehrung->value]);
+        });
+    }
+
+    public function teamleitung(): static {
+        return $this->afterCreating(function (User $user): void {
+            self::syncRolesInOwnOrg($user, [UserRole::Teamleitung->value]);
+        });
+    }
+
+    public function aussendienst(): static {
+        return $this->afterCreating(function (User $user): void {
+            self::syncRolesInOwnOrg($user, [UserRole::Aussendienst->value]);
+        });
+    }
+
+    public function support(): static {
+        return $this->afterCreating(function (User $user): void {
+            self::syncRolesInOwnOrg($user, [UserRole::Support->value]);
+        });
+    }
+
     /**
      * Spatie-Teams wertet Rollen relativ zum aktiven `setPermissionsTeamId`
      * aus. In Tests bleibt dieser Kontext vom letzten Org-Create stehen –

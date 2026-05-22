@@ -3,8 +3,13 @@
 return [
     'role' => [
         'admin' => 'Administrator',
-        'user' => 'Mitarbeiter',
-        'callcenter' => 'Callcenter',
+        'geschaeftsfuehrung' => 'Geschäftsführung',
+        'teamleitung' => 'Teamleitung',
         'buchhaltung' => 'Buchhaltung',
+        'user' => 'Mitarbeiter',
+        'aussendienst' => 'Außendienst',
+        'callcenter' => 'Callcenter',
+        'support' => 'Support',
+        'training_manager' => 'Schulungsverantwortliche/r',
     ],
 ];
