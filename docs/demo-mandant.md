@@ -13,11 +13,11 @@ durchläuft.
 
 ## 2. Bereitstellungs-Modi
 
-| Modus            | Wer kann auslösen                          | Wirkung |
-| ---------------- | ------------------------------------------ | ------- |
-| `freshDemoOrg`   | Plattform-Admin                            | Erzeugt neue Org mit Suffix `(Demo)`, fügt aktuellen User als Org-Admin hinzu |
-| `seedExistingOrg`| Org-Admin (nur leere Org)                  | Befüllt vorhandene leere Org mit Demo-Daten |
-| `resetDemoOrg`   | Plattform-Admin auf bestehende Demo-Org    | Löscht alle Demo-Daten der Org und seedt neu |
+| Modus             | Wer kann auslösen                       | Wirkung                                                                       |
+| ----------------- | --------------------------------------- | ----------------------------------------------------------------------------- |
+| `freshDemoOrg`    | Plattform-Admin                         | Erzeugt neue Org mit Suffix `(Demo)`, fügt aktuellen User als Org-Admin hinzu |
+| `seedExistingOrg` | Org-Admin (nur leere Org)               | Befüllt vorhandene leere Org mit Demo-Daten                                   |
+| `resetDemoOrg`    | Plattform-Admin auf bestehende Demo-Org | Löscht alle Demo-Daten der Org und seedt neu                                  |
 
 Demo-Mandant trägt Marker `organizations.is_demo = true`.
 
@@ -95,11 +95,11 @@ Org selbst und Memberships).
 
 ## 7. Permissions
 
-| Permission                       | Wer            |
-| -------------------------------- | -------------- |
-| `platform.demo.create`           | Plattform-Admin |
-| `platform.demo.reset`            | Plattform-Admin |
-| `org.demo.seed`                  | Org-Admin (nur leere Org) |
+| Permission             | Wer                       |
+| ---------------------- | ------------------------- |
+| `platform.demo.create` | Plattform-Admin           |
+| `platform.demo.reset`  | Plattform-Admin           |
+| `org.demo.seed`        | Org-Admin (nur leere Org) |
 
 ## 8. Audit
 

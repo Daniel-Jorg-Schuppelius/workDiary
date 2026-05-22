@@ -18,13 +18,13 @@ deaktivieren, **ohne** historische Daten zu zerstören.
 - Hauptbereich: Tabelle mit `code`, `label`, `sort_order`, `active`,
   Spalte „Quelle" (Platform / Org / Override).
 - Aktionen pro Zeile:
-  - **Neu** (Org-spezifisch): legt Datensatz mit
-    `organization_id = aktuelle Org` an.
-  - **Override**: dupliziert Plattform-Default in Org-Scope, Label
-    und Sort sind editierbar.
-  - **Deaktivieren**: setzt `active = false` (Plattform-Default per
-    leerem Override deaktivierbar — siehe §3).
-  - **Reaktivieren**: setzt `active = true`.
+    - **Neu** (Org-spezifisch): legt Datensatz mit
+      `organization_id = aktuelle Org` an.
+    - **Override**: dupliziert Plattform-Default in Org-Scope, Label
+      und Sort sind editierbar.
+    - **Deaktivieren**: setzt `active = false` (Plattform-Default per
+      leerem Override deaktivierbar — siehe §3).
+    - **Reaktivieren**: setzt `active = true`.
 
 ### 2.2 Re-Order
 
@@ -61,12 +61,12 @@ pro Import; größere via Job (siehe CSV-Import-MVP-049).
 
 ## 6. Permissions
 
-| Permission                            | Wer                          |
-| ------------------------------------- | ---------------------------- |
-| `classification.org.view`             | Org-Mitglieder.              |
-| `classification.org.manage`           | Org-Admin.                   |
-| `classification.org.deactivateDefault`| Org-Admin (gesonderte Perm). |
-| `classification.org.import`           | Org-Admin.                   |
+| Permission                             | Wer                          |
+| -------------------------------------- | ---------------------------- |
+| `classification.org.view`              | Org-Mitglieder.              |
+| `classification.org.manage`            | Org-Admin.                   |
+| `classification.org.deactivateDefault` | Org-Admin (gesonderte Perm). |
+| `classification.org.import`            | Org-Admin.                   |
 
 ## 7. Audit-Events
 

@@ -34,33 +34,33 @@ Sektionen:
 
 ### 3.1 `licenses`
 
-| Feld           | Typ          | Notizen                              |
-| -------------- | ------------ | ------------------------------------ |
-| id             | uuid         | PK                                   |
-| edition        | enum         | free, pro, enterprise                |
-| issued_at      | datetime     |                                      |
-| valid_until    | datetime     | NULL = unbefristet                   |
-| customer_ref   | string       | Lizenz-Kunde (anonymisiert)          |
-| hardware_hash  | string null  | Optionale Hardware-Bindung           |
-| max_users      | int          |                                      |
-| max_orgs       | int          |                                      |
-| storage_quota_gb | int        |                                      |
-| signature      | text         | Signiertes Lizenz-Payload            |
-| installed_at   | datetime     |                                      |
+| Feld             | Typ         | Notizen                     |
+| ---------------- | ----------- | --------------------------- |
+| id               | uuid        | PK                          |
+| edition          | enum        | free, pro, enterprise       |
+| issued_at        | datetime    |                             |
+| valid_until      | datetime    | NULL = unbefristet          |
+| customer_ref     | string      | Lizenz-Kunde (anonymisiert) |
+| hardware_hash    | string null | Optionale Hardware-Bindung  |
+| max_users        | int         |                             |
+| max_orgs         | int         |                             |
+| storage_quota_gb | int         |                             |
+| signature        | text        | Signiertes Lizenz-Payload   |
+| installed_at     | datetime    |                             |
 
 ### 3.2 `feature_flags`
 
-| Feld           | Typ          | Notizen                                       |
-| -------------- | ------------ | --------------------------------------------- |
-| id             | uuid         |                                               |
-| code           | string       | z. B. `protocols.signed`, `reports.export`    |
-| source         | enum         | license, env, orgOverride                     |
-| state          | enum         | on, off, grace                                |
-| grace_until    | datetime null| Falls grace, Ablauf                           |
-| organization_id| uuid null    | NULL = global                                 |
-| reason         | string null  | Begründung Override                           |
-| created_by     | uuid null    |                                               |
-| created_at     | datetime     |                                               |
+| Feld            | Typ           | Notizen                                    |
+| --------------- | ------------- | ------------------------------------------ |
+| id              | uuid          |                                            |
+| code            | string        | z. B. `protocols.signed`, `reports.export` |
+| source          | enum          | license, env, orgOverride                  |
+| state           | enum          | on, off, grace                             |
+| grace_until     | datetime null | Falls grace, Ablauf                        |
+| organization_id | uuid null     | NULL = global                              |
+| reason          | string null   | Begründung Override                        |
+| created_by      | uuid null     |                                            |
+| created_at      | datetime      |                                            |
 
 `FeatureFlagResolver::isEnabled(code, org)` mit Cache 60 s.
 Auflösungsreihenfolge: `orgOverride` (für org) → `env` → `license`.
@@ -108,15 +108,15 @@ Twig-/Blade-Helfer `@feature('code')` + Middleware
 - UI: Karte wird ausgegraut + Tooltip „Nicht in dieser Lizenz
   enthalten. Edition: Pro erforderlich."
 - Backend: HTTP 423 Locked mit JSON `{error:'feature_disabled',
-  code:'protocols.signed'}`.
+code:'protocols.signed'}`.
 
 ## 7. Permissions
 
-| Permission                       | Wer                       |
-| -------------------------------- | ------------------------- |
-| `platform.license.view`          | Plattform-Admin, Org-Admin |
-| `platform.license.install`       | Plattform-Admin           |
-| `platform.featureFlag.override`  | Plattform-Admin           |
+| Permission                      | Wer                        |
+| ------------------------------- | -------------------------- |
+| `platform.license.view`         | Plattform-Admin, Org-Admin |
+| `platform.license.install`      | Plattform-Admin            |
+| `platform.featureFlag.override` | Plattform-Admin            |
 
 ## 8. Audit
 

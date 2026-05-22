@@ -95,10 +95,10 @@ Validierung: `subject`-Verknüpfung pro `(asset, entry)` /
 
 ## 5. Permissions
 
-| Permission             | Wer                              |
-| ---------------------- | -------------------------------- |
-| `asset.link.create`    | Wer Auftrag/Protokoll bearbeiten darf. |
-| `asset.link.delete`    | dito.                            |
+| Permission          | Wer                                    |
+| ------------------- | -------------------------------------- |
+| `asset.link.create` | Wer Auftrag/Protokoll bearbeiten darf. |
+| `asset.link.delete` | dito.                                  |
 
 ## 6. Audit-Events
 

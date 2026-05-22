@@ -58,15 +58,15 @@ durch `AssetNumberGenerator` (org-Sequence). `serial_no` ist
 
 ## 3. `asset_class`
 
-| Code           | Beispiele                                       |
-| -------------- | ----------------------------------------------- |
-| `device`       | Geräte beim Kunden (Router, Heizung)            |
-| `machine`      | Maschinen / Anlagen                             |
-| `tool`         | Werkzeuge, Messinstrumente                      |
-| `vehicle`      | Fahrzeuge                                       |
-| `installation` | Festinstallation (Baugruppe, Verteiler)         |
-| `software`     | Software-Asset (Lizenz, SaaS)                   |
-| `other`        | Sonstige                                        |
+| Code           | Beispiele                               |
+| -------------- | --------------------------------------- |
+| `device`       | Geräte beim Kunden (Router, Heizung)    |
+| `machine`      | Maschinen / Anlagen                     |
+| `tool`         | Werkzeuge, Messinstrumente              |
+| `vehicle`      | Fahrzeuge                               |
+| `installation` | Festinstallation (Baugruppe, Verteiler) |
+| `software`     | Software-Asset (Lizenz, SaaS)           |
+| `other`        | Sonstige                                |
 
 ## 4. `status`
 
@@ -81,7 +81,7 @@ Wechsel = Audit-Event `asset.statusChanged`.
 - `create`, `update`, `decommission`, `transferOwnership`,
   `move` (Standort), `scheduleMaintenance`.
 - Validierung: `decommissioned_on` impliziert `status =
-  decommissioned`; `customer_id` darf bei `owned_by = org` leer sein,
+decommissioned`; `customer_id` darf bei `owned_by = org` leer sein,
   muss bei `owned_by = customer` gesetzt sein.
 
 ## 6. Standort-Auflösung
@@ -100,13 +100,13 @@ IT-Asset, kW-Leistung für HVAC). Schema-Definition pro Branchenprofil
 
 ## 8. Permissions
 
-| Permission              | Wer                              |
-| ----------------------- | -------------------------------- |
-| `asset.view`            | Mitarbeitende.                   |
-| `asset.create`          | Mitarbeitende mit `assetEditor`. |
-| `asset.update`          | dito.                            |
-| `asset.decommission`    | Org-Admin.                       |
-| `asset.transferOwnership` | Org-Admin.                     |
+| Permission                | Wer                              |
+| ------------------------- | -------------------------------- |
+| `asset.view`              | Mitarbeitende.                   |
+| `asset.create`            | Mitarbeitende mit `assetEditor`. |
+| `asset.update`            | dito.                            |
+| `asset.decommission`      | Org-Admin.                       |
+| `asset.transferOwnership` | Org-Admin.                       |
 
 Customer-Portal: Kunde sieht nur Assets mit `owned_by = customer` und
 `customer_id = eigene Kundennr.`, ohne `inventory_no`, ohne `custom`-

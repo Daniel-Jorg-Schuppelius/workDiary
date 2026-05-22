@@ -11,18 +11,18 @@ erweiterbar (siehe [Kategorien pro Org](kategorien-org.md), MVP-031).
 
 ## 2. Kernklassifikationen (Plattform-Defaults)
 
-| Code                 | Domäne                               | Beispielwerte                                      |
-| -------------------- | ------------------------------------ | -------------------------------------------------- |
-| `entry_type`         | Auftragstyp                          | service, maintenance, installation, repair, advice |
-| `activity`           | Tätigkeit                            | analysis, install, configure, repair, document     |
-| `defect_type`        | Fehlerart                            | hardware, software, wiring, mechanical, user, env  |
-| `root_cause`         | Ursache                              | wear, misuse, defect, configuration, external      |
-| `result`             | Ergebnis                             | resolved, workaround, openIssue, escalated         |
-| `priority`           | Priorität                            | low, normal, high, critical                        |
-| `goodwill_reason`    | Kulanzgrund                          | warranty, customerRelation, escalation, error      |
-| `rework_reason`      | Nacharbeitsgrund                     | qualityIssue, missingPart, additionalScope         |
-| `product_group`      | Produktgruppe                        | router, switch, server, hvac, lighting             |
-| `dienstmittel_type`  | Dienstmittel-Typ                     | tool, vehicle, instrument, device                  |
+| Code                | Domäne           | Beispielwerte                                      |
+| ------------------- | ---------------- | -------------------------------------------------- |
+| `entry_type`        | Auftragstyp      | service, maintenance, installation, repair, advice |
+| `activity`          | Tätigkeit        | analysis, install, configure, repair, document     |
+| `defect_type`       | Fehlerart        | hardware, software, wiring, mechanical, user, env  |
+| `root_cause`        | Ursache          | wear, misuse, defect, configuration, external      |
+| `result`            | Ergebnis         | resolved, workaround, openIssue, escalated         |
+| `priority`          | Priorität        | low, normal, high, critical                        |
+| `goodwill_reason`   | Kulanzgrund      | warranty, customerRelation, escalation, error      |
+| `rework_reason`     | Nacharbeitsgrund | qualityIssue, missingPart, additionalScope         |
+| `product_group`     | Produktgruppe    | router, switch, server, hvac, lighting             |
+| `dienstmittel_type` | Dienstmittel-Typ | tool, vehicle, instrument, device                  |
 
 ## 3. Tabelle `classifications`
 
@@ -83,11 +83,11 @@ Pro Lookup 60s Cache (`classifications.v1.{org}.{domain}`).
 
 ## 7. Permissions
 
-| Permission                       | Wer                                  |
-| -------------------------------- | ------------------------------------ |
-| `classification.list`            | Alle eingeloggten Nutzer (lesend).   |
-| `classification.platform.manage` | Plattform-Admin (siehe MVP-051).     |
-| `classification.org.manage`      | Org-Admin (siehe MVP-031).           |
+| Permission                       | Wer                                |
+| -------------------------------- | ---------------------------------- |
+| `classification.list`            | Alle eingeloggten Nutzer (lesend). |
+| `classification.platform.manage` | Plattform-Admin (siehe MVP-051).   |
+| `classification.org.manage`      | Org-Admin (siehe MVP-031).         |
 
 ## 8. Akzeptanzkriterien
 

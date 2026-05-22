@@ -28,13 +28,13 @@ Ziele:
 
 ## 2. Geltungsbereich
 
-| Bereich                  | Timeline?                                   |
-| ------------------------ | ------------------------------------------- |
-| Auftrag (`DiaryEntry`)   | ✅ Pflicht — Detailseite §3.6 Pkt. 7         |
-| Kunde                    | später (MVP-014 Suche, eigenständige Sicht) |
-| Projekt                  | später (Folge-MVP)                          |
-| Asset/Objekt             | ✅ ab MVP-037 (gleiche Komponente)           |
-| Prozedur-Lauf            | später (`ProcedureRun` history)             |
+| Bereich                | Timeline?                                   |
+| ---------------------- | ------------------------------------------- |
+| Auftrag (`DiaryEntry`) | ✅ Pflicht — Detailseite §3.6 Pkt. 7        |
+| Kunde                  | später (MVP-014 Suche, eigenständige Sicht) |
+| Projekt                | später (Folge-MVP)                          |
+| Asset/Objekt           | ✅ ab MVP-037 (gleiche Komponente)          |
+| Prozedur-Lauf          | später (`ProcedureRun` history)             |
 
 ## 3. Ereignistypen (kanonisch)
 
@@ -42,38 +42,38 @@ Alle Ereignisse werden über einen einheitlichen **Read-Model-Eintrag** in
 die Timeline gespeist. Quelle ist primär `audit_logs`, ergänzt um Daten aus
 `timesheets`, `comments`, `attachments`, `protocols` und `procedure_runs`.
 
-| Typ-Schlüssel              | Icon            | Tone        | Bedeutung / Quelle                                                       |
-| -------------------------- | --------------- | ----------- | ------------------------------------------------------------------------ |
-| `order.created`            | `add`           | `info`      | Auftrag angelegt (`audit:order.created`).                                |
-| `order.status_changed`     | `flag`          | je Tone     | Statuswechsel (`audit:order.status_changed`); Tone aus Ziel-Status.      |
-| `order.assigned`           | `person_add`    | `info`      | Zuweisung Bearbeitende(r) / Team.                                        |
-| `order.unassigned`         | `person_remove` | `ghost`     | Zuweisung entfernt.                                                      |
-| `order.scheduled`          | `event`         | `info`      | Termin/Slot geplant oder verschoben.                                     |
-| `order.priority_changed`   | `priority_high` | `warning`   | Priorität geändert.                                                      |
-| `order.field_changed`      | `edit`          | `ghost`     | Beliebige andere Feldänderung (Beschreibung, Tags) — gruppiert.          |
-| `time.started`             | `play_circle`   | `primary`   | Stoppuhr gestartet (`timesheets`).                                       |
-| `time.stopped`             | `stop_circle`   | `primary`   | Stoppuhr beendet.                                                        |
-| `time.entry_added`         | `schedule`      | `primary`   | Manueller Zeiteintrag erfasst.                                           |
-| `time.entry_corrected`     | `edit_calendar` | `warning`   | Korrekturantrag genehmigt.                                               |
-| `time.submitted`           | `outbox`        | `primary`   | Zeit eingereicht.                                                        |
-| `time.approved`            | `check_circle`  | `success`   | Zeit genehmigt.                                                          |
-| `time.rejected`            | `cancel`        | `error`     | Zeit abgelehnt.                                                          |
-| `comment.added`            | `chat_bubble`   | `ghost`     | Kommentar.                                                               |
-| `attachment.added`         | `attach_file`   | `ghost`     | Anhang hochgeladen.                                                      |
-| `attachment.removed`       | `delete`        | `error`     | Anhang entfernt.                                                         |
-| `protocol.created`         | `description`   | `info`      | Abnahmeprotokoll angelegt.                                               |
-| `protocol.submitted`       | `outbox`        | `primary`   | Protokoll vorgelegt.                                                     |
-| `protocol.accepted`        | `verified`      | `success`   | Abgenommen (clean).                                                      |
-| `protocol.accepted_defects`| `verified`      | `warning`   | Abgenommen mit Mängeln.                                                  |
-| `protocol.rejected`        | `cancel`        | `error`     | Abgelehnt.                                                               |
-| `procedure.started`        | `playlist_play` | `primary`   | Prozedur-Lauf gestartet.                                                 |
-| `procedure.completed`      | `task_alt`      | `success`   | Prozedur-Lauf abgeschlossen.                                             |
-| `procedure.aborted`        | `cancel`        | `error`     | Prozedur-Lauf abgebrochen.                                               |
-| `communication.added`      | `forum`         | `ghost`     | Kommunikationsnotiz (MVP-012).                                           |
-| `open_issue.opened`        | `error_outline` | `warning`   | Offener Punkt eröffnet (Protokoll).                                      |
-| `open_issue.resolved`      | `check_circle`  | `success`   | Offener Punkt geschlossen.                                               |
-| `customer.signed`          | `draw`          | `success`   | Kundenunterschrift.                                                      |
-| `notification.sent`        | `mail`          | `ghost`     | Benachrichtigung verschickt (read-only, ausblendbar).                    |
+| Typ-Schlüssel               | Icon            | Tone      | Bedeutung / Quelle                                                  |
+| --------------------------- | --------------- | --------- | ------------------------------------------------------------------- |
+| `order.created`             | `add`           | `info`    | Auftrag angelegt (`audit:order.created`).                           |
+| `order.status_changed`      | `flag`          | je Tone   | Statuswechsel (`audit:order.status_changed`); Tone aus Ziel-Status. |
+| `order.assigned`            | `person_add`    | `info`    | Zuweisung Bearbeitende(r) / Team.                                   |
+| `order.unassigned`          | `person_remove` | `ghost`   | Zuweisung entfernt.                                                 |
+| `order.scheduled`           | `event`         | `info`    | Termin/Slot geplant oder verschoben.                                |
+| `order.priority_changed`    | `priority_high` | `warning` | Priorität geändert.                                                 |
+| `order.field_changed`       | `edit`          | `ghost`   | Beliebige andere Feldänderung (Beschreibung, Tags) — gruppiert.     |
+| `time.started`              | `play_circle`   | `primary` | Stoppuhr gestartet (`timesheets`).                                  |
+| `time.stopped`              | `stop_circle`   | `primary` | Stoppuhr beendet.                                                   |
+| `time.entry_added`          | `schedule`      | `primary` | Manueller Zeiteintrag erfasst.                                      |
+| `time.entry_corrected`      | `edit_calendar` | `warning` | Korrekturantrag genehmigt.                                          |
+| `time.submitted`            | `outbox`        | `primary` | Zeit eingereicht.                                                   |
+| `time.approved`             | `check_circle`  | `success` | Zeit genehmigt.                                                     |
+| `time.rejected`             | `cancel`        | `error`   | Zeit abgelehnt.                                                     |
+| `comment.added`             | `chat_bubble`   | `ghost`   | Kommentar.                                                          |
+| `attachment.added`          | `attach_file`   | `ghost`   | Anhang hochgeladen.                                                 |
+| `attachment.removed`        | `delete`        | `error`   | Anhang entfernt.                                                    |
+| `protocol.created`          | `description`   | `info`    | Abnahmeprotokoll angelegt.                                          |
+| `protocol.submitted`        | `outbox`        | `primary` | Protokoll vorgelegt.                                                |
+| `protocol.accepted`         | `verified`      | `success` | Abgenommen (clean).                                                 |
+| `protocol.accepted_defects` | `verified`      | `warning` | Abgenommen mit Mängeln.                                             |
+| `protocol.rejected`         | `cancel`        | `error`   | Abgelehnt.                                                          |
+| `procedure.started`         | `playlist_play` | `primary` | Prozedur-Lauf gestartet.                                            |
+| `procedure.completed`       | `task_alt`      | `success` | Prozedur-Lauf abgeschlossen.                                        |
+| `procedure.aborted`         | `cancel`        | `error`   | Prozedur-Lauf abgebrochen.                                          |
+| `communication.added`       | `forum`         | `ghost`   | Kommunikationsnotiz (MVP-012).                                      |
+| `open_issue.opened`         | `error_outline` | `warning` | Offener Punkt eröffnet (Protokoll).                                 |
+| `open_issue.resolved`       | `check_circle`  | `success` | Offener Punkt geschlossen.                                          |
+| `customer.signed`           | `draw`          | `success` | Kundenunterschrift.                                                 |
+| `notification.sent`         | `mail`          | `ghost`   | Benachrichtigung verschickt (read-only, ausblendbar).               |
 
 Aktionsverben in Beschreibungen folgen dem
 [Status- und Aktionsglossar](status-aktionsglossar.md).
@@ -84,19 +84,19 @@ Jeder Timeline-Eintrag enthält die folgenden Felder. Sie werden im
 Read-Model `OrderTimelineEntry` zusammengeführt und an die Blade-Komponente
 `<x-timeline>` (siehe §6) übergeben.
 
-| Feld           | Typ                                 | Pflicht | Beschreibung                                                                 |
-| -------------- | ----------------------------------- | :-----: | ---------------------------------------------------------------------------- |
-| `id`           | string (stabile Kennung)            |   ✅    | z. B. `audit:1234` oder `timesheet:99` — für Anker, Drilldown, Idempotenz.   |
-| `occurred_at`  | `DateTimeImmutable` (UTC)           |   ✅    | Zeitpunkt des Ereignisses.                                                   |
-| `type`         | string (Schlüssel aus §3)           |   ✅    | Steuert Icon, Tone, Beschreibungstext.                                       |
-| `actor`        | `User` / System / „Kunde"           |   ✅    | Wer hat das ausgelöst.                                                       |
-| `title`        | string                              |   ✅    | 1 Zeile, deutsch, ohne HTML.                                                 |
-| `description`  | string / Markdown (sicher escaped)  |   —    | Optionale 1–3 Zeilen Detail (z. B. Diff "Offen → In Bearbeitung").           |
-| `changes`      | array (Feld → {alt, neu})           |   —    | Strukturierter Diff (aus `audit_logs.changes`).                              |
-| `target`       | Eloquent-Model + Route              |   —    | Verlinkt auf Originalobjekt (Drill-down).                                    |
-| `attachments`  | array<Attachment>                   |   —    | Bei Foto-Ereignissen Vorschau direkt im Eintrag.                             |
-| `meta`         | array                               |   —    | Zusatzfelder pro Typ (Dauer bei Zeit, IP bei Support-Aktionen).              |
-| `visibility`   | enum {`internal`, `customer`}       |   ✅    | Steuert Sichtbarkeit für die Kundenrolle (MVP-056 / `kunde`-Portal).         |
+| Feld          | Typ                                | Pflicht | Beschreibung                                                               |
+| ------------- | ---------------------------------- | :-----: | -------------------------------------------------------------------------- |
+| `id`          | string (stabile Kennung)           |   ✅    | z. B. `audit:1234` oder `timesheet:99` — für Anker, Drilldown, Idempotenz. |
+| `occurred_at` | `DateTimeImmutable` (UTC)          |   ✅    | Zeitpunkt des Ereignisses.                                                 |
+| `type`        | string (Schlüssel aus §3)          |   ✅    | Steuert Icon, Tone, Beschreibungstext.                                     |
+| `actor`       | `User` / System / „Kunde"          |   ✅    | Wer hat das ausgelöst.                                                     |
+| `title`       | string                             |   ✅    | 1 Zeile, deutsch, ohne HTML.                                               |
+| `description` | string / Markdown (sicher escaped) |    —    | Optionale 1–3 Zeilen Detail (z. B. Diff "Offen → In Bearbeitung").         |
+| `changes`     | array (Feld → {alt, neu})          |    —    | Strukturierter Diff (aus `audit_logs.changes`).                            |
+| `target`      | Eloquent-Model + Route             |    —    | Verlinkt auf Originalobjekt (Drill-down).                                  |
+| `attachments` | array<Attachment>                  |    —    | Bei Foto-Ereignissen Vorschau direkt im Eintrag.                           |
+| `meta`        | array                              |    —    | Zusatzfelder pro Typ (Dauer bei Zeit, IP bei Support-Aktionen).            |
+| `visibility`  | enum {`internal`, `customer`}      |   ✅    | Steuert Sichtbarkeit für die Kundenrolle (MVP-056 / `kunde`-Portal).       |
 
 ## 5. Datenquellen und Aufbau
 
@@ -145,10 +145,10 @@ Neue Blade-Komponente unter
 
 - `<x-timeline :entries="$entries" :group-by="'day'" />`
 - Jeder Eintrag rendert `<x-timeline.item>` mit:
-  - Datum links (sticky bei langen Listen),
-  - Icon + Tone-Punkt mittig (vertikale Linie),
-  - Titel + Aktor rechts oben, Beschreibung darunter, Diff als
-    `<x-table.diff>` (klein, klappbar).
+    - Datum links (sticky bei langen Listen),
+    - Icon + Tone-Punkt mittig (vertikale Linie),
+    - Titel + Aktor rechts oben, Beschreibung darunter, Diff als
+      `<x-table.diff>` (klein, klappbar).
 - **Filterleiste** (`<x-filter-bar>`): Zeitraum, Typ-Auswahl (Mehrfach),
   Aktor, „Nur kundenrelevant".
 - **Empty-State** über `<x-empty-state icon="history" title="Noch keine Ereignisse"/>`.
@@ -186,11 +186,11 @@ Neue Blade-Komponente unter
 ## 7. Gruppierung und Performance
 
 - **Gruppierung**:
-  - Mehrere identische Feldänderungen am selben Auftrag innerhalb von
-    **2 Minuten** durch denselben Aktor werden zu **einem** Eintrag
-    zusammengefasst (z. B. Tag-Editierung).
-  - `time.started` + `time.stopped` werden bei gleichem Aktor zu
-    `time.entry_added` zusammengefasst, sobald der Eintrag existiert.
+    - Mehrere identische Feldänderungen am selben Auftrag innerhalb von
+      **2 Minuten** durch denselben Aktor werden zu **einem** Eintrag
+      zusammengefasst (z. B. Tag-Editierung).
+    - `time.started` + `time.stopped` werden bei gleichem Aktor zu
+      `time.entry_added` zusammengefasst, sobald der Eintrag existiert.
 - **Pagination**: serverseitig, 50 Einträge pro Seite, Lade-Button
   „Frühere Ereignisse" am unteren Rand (kein Infinite-Scroll im MVP).
 - **Index-Pflicht**: `audit_logs (auditable_type, auditable_id, occurred_at desc)`.
@@ -200,13 +200,13 @@ Neue Blade-Komponente unter
 
 ## 8. Sichtbarkeit und Rechte
 
-| Permission                | Sichtbar                                                |
-| ------------------------- | ------------------------------------------------------- |
+| Permission                | Sichtbar                                                       |
+| ------------------------- | -------------------------------------------------------------- |
 | `diary.show` (Eigentümer) | Eigene Auftrags-Timeline, alle Einträge `internal`+`customer`. |
-| `diary.show.team`         | Teammitglieder.                                         |
-| `diary.show.organization` | Org-Admin / Teamleitung.                                |
-| `customer-portal`         | Nur Einträge mit `visibility = customer`.               |
-| `audit-log.view`          | Zusätzlich technische Felder (IP, Useragent) sichtbar.  |
+| `diary.show.team`         | Teammitglieder.                                                |
+| `diary.show.organization` | Org-Admin / Teamleitung.                                       |
+| `customer-portal`         | Nur Einträge mit `visibility = customer`.                      |
+| `audit-log.view`          | Zusätzlich technische Felder (IP, Useragent) sichtbar.         |
 
 Pflicht: Jede Quelle markiert beim Schreiben die `visibility`. Default ist
 `internal`; Statuswechsel und Abnahmen sind `customer`.

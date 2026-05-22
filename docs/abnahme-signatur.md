@@ -15,12 +15,12 @@ PDF erzeugen und an Auftrag/Fallakte anhängen.
 
 ## 2. Signaturwege
 
-| Methode      | Wann                                                      | Sicherheits-Level |
-| ------------ | --------------------------------------------------------- | ----------------- |
-| `onscreen`   | Vor Ort am Tablet/Smartphone, Finger/Stift.               | mittel            |
-| `portal`     | Kunde unterschreibt im Customer-Portal (Login).           | hoch              |
-| `emailLink`  | Signaturlink per E-Mail an Kunden (Token, 7 Tage gültig). | mittel            |
-| `paper`      | Papier-Abnahme; Unterschrift als Foto + Vermerk im Protokoll. | niedrig       |
+| Methode     | Wann                                                          | Sicherheits-Level |
+| ----------- | ------------------------------------------------------------- | ----------------- |
+| `onscreen`  | Vor Ort am Tablet/Smartphone, Finger/Stift.                   | mittel            |
+| `portal`    | Kunde unterschreibt im Customer-Portal (Login).               | hoch              |
+| `emailLink` | Signaturlink per E-Mail an Kunden (Token, 7 Tage gültig).     | mittel            |
+| `paper`     | Papier-Abnahme; Unterschrift als Foto + Vermerk im Protokoll. | niedrig           |
 
 Für `acceptance` und `handover` ist Mindest-Level der Org-Konfiguration
 hinterlegt (Default: `mittel`).
@@ -32,11 +32,11 @@ hinterlegt (Default: `mittel`).
 - Komponente `<x-signature-pad>` (Canvas) gemäß
   [UX-Pattern-Katalog](ux-pattern-katalog.md) §3.4.
 - Pflichtfelder im selben Dialog:
-  - `signer_name` (Pflicht, ≥ 2 Zeichen)
-  - `role` (`customer`/`contractor`/`witness`)
-  - `signer_email` (optional, aber für Quittungs-Mail)
-  - Bestätigungs-Checkbox „Hiermit nehme ich die dokumentierte Leistung
-    ab" (Pflicht; Text aus Org-Konfig).
+    - `signer_name` (Pflicht, ≥ 2 Zeichen)
+    - `role` (`customer`/`contractor`/`witness`)
+    - `signer_email` (optional, aber für Quittungs-Mail)
+    - Bestätigungs-Checkbox „Hiermit nehme ich die dokumentierte Leistung
+      ab" (Pflicht; Text aus Org-Konfig).
 - Submit zeichnet PNG auf Storage und erstellt
   `protocol_signatures`-Zeile.
 
@@ -70,7 +70,7 @@ hinterlegt (Default: `mittel`).
 Beim Signieren wird ein **Inhalts-Hash** berechnet und in
 `protocol_signatures.hash` gespeichert:
 
-```
+```text
 hash = SHA256(
     canonical_json(protocol) ||
     canonical_json(protocol_items[]) ||
@@ -132,13 +132,13 @@ Datums-/Zahlenformat entsprechend Locale.
 
 ## 7. Permissions
 
-| Permission                       | Wer                                       |
-| -------------------------------- | ----------------------------------------- |
-| `protocol.sign.internal`         | Teamleitung / Org-Admin.                  |
-| `protocol.sign.customer.onscreen`| Mitarbeitender (im Beisein) + Kunde.      |
-| `protocol.sign.customer.portal`  | Kunde (Portal-Login).                     |
-| `protocol.sign.customer.emailLink` | Inhaber des Tokens.                     |
-| `protocol.pdf.download`          | Sehende Rolle (Kunde: nur eigene).        |
+| Permission                         | Wer                                  |
+| ---------------------------------- | ------------------------------------ |
+| `protocol.sign.internal`           | Teamleitung / Org-Admin.             |
+| `protocol.sign.customer.onscreen`  | Mitarbeitender (im Beisein) + Kunde. |
+| `protocol.sign.customer.portal`    | Kunde (Portal-Login).                |
+| `protocol.sign.customer.emailLink` | Inhaber des Tokens.                  |
+| `protocol.pdf.download`            | Sehende Rolle (Kunde: nur eigene).   |
 
 ## 8. Akzeptanzkriterien
 

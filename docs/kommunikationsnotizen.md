@@ -74,48 +74,48 @@ CommunicationNote`).
 
 ### 3.1 `type` (Pflicht)
 
-| Schlüssel    | Label             | Bedeutung                                          |
-| ------------ | ----------------- | -------------------------------------------------- |
-| `call`       | „Telefonat"       | Aktiv geführt oder entgegengenommen.               |
-| `email`      | „E-Mail"          | Schriftlich, an/von Kunde oder Dritte.             |
-| `meeting`    | „Vor-Ort-Gespräch" | Vor-Ort, mit Anwesenheitsliste.                   |
-| `videocall`  | „Videokonferenz"  | Web-Meeting (mit Beteiligten).                     |
-| `chat`       | „Chat / Messenger" | WhatsApp, Teams, Signal etc.                      |
-| `internal`   | „Interne Rücksprache" | Nur intern.                                    |
-| `decision`   | „Entscheidung"    | Verbindliche Festlegung mit Konsequenz.            |
-| `letter`     | „Brief / Fax"     | Postalisch oder Fax (Foto/PDF als Anhang).         |
-| `other`      | „Sonstige"        | Mit Pflichterklärung in `subject` / `body`.        |
+| Schlüssel   | Label                 | Bedeutung                                   |
+| ----------- | --------------------- | ------------------------------------------- |
+| `call`      | „Telefonat"           | Aktiv geführt oder entgegengenommen.        |
+| `email`     | „E-Mail"              | Schriftlich, an/von Kunde oder Dritte.      |
+| `meeting`   | „Vor-Ort-Gespräch"    | Vor-Ort, mit Anwesenheitsliste.             |
+| `videocall` | „Videokonferenz"      | Web-Meeting (mit Beteiligten).              |
+| `chat`      | „Chat / Messenger"    | WhatsApp, Teams, Signal etc.                |
+| `internal`  | „Interne Rücksprache" | Nur intern.                                 |
+| `decision`  | „Entscheidung"        | Verbindliche Festlegung mit Konsequenz.     |
+| `letter`    | „Brief / Fax"         | Postalisch oder Fax (Foto/PDF als Anhang).  |
+| `other`     | „Sonstige"            | Mit Pflichterklärung in `subject` / `body`. |
 
 ### 3.2 `direction` (Pflicht)
 
-| Schlüssel | Label              | Wann                                              |
-| --------- | ------------------ | ------------------------------------------------- |
-| `inbound` | „Eingehend"        | Kunde/Dritte hat sich gemeldet.                   |
-| `outbound`| „Ausgehend"        | Wir haben Kontakt aufgenommen.                    |
-| `internal`| „Intern"           | Nur zwischen Mitarbeitenden, kein externer Kontakt.|
+| Schlüssel  | Label       | Wann                                                |
+| ---------- | ----------- | --------------------------------------------------- |
+| `inbound`  | „Eingehend" | Kunde/Dritte hat sich gemeldet.                     |
+| `outbound` | „Ausgehend" | Wir haben Kontakt aufgenommen.                      |
+| `internal` | „Intern"    | Nur zwischen Mitarbeitenden, kein externer Kontakt. |
 
 Konsistenz: `type = internal` ⇒ `direction = internal` (Validation).
 `visibility = customer` ⇒ `direction ∈ {inbound, outbound}`.
 
 ## 4. Sichtbarkeit und Vertraulichkeit
 
-| Feld         | Standard    | Wirkung                                                          |
-| ------------ | ----------- | ---------------------------------------------------------------- |
-| `visibility = internal` | ✓ | Nur Mitarbeitende der Org. **Nicht** im Kundenportal sichtbar.   |
-| `visibility = customer` | — | Erscheint im Kundenportal & in der Timeline mit `visibility=customer`. |
-| `confidential = true`   | — | Nur Org-Admin + Erfasser sichtbar; Audit-Event `confidential.viewed` bei Aufruf. |
+| Feld                    | Standard | Wirkung                                                                          |
+| ----------------------- | -------- | -------------------------------------------------------------------------------- |
+| `visibility = internal` | ✓        | Nur Mitarbeitende der Org. **Nicht** im Kundenportal sichtbar.                   |
+| `visibility = customer` | —        | Erscheint im Kundenportal & in der Timeline mit `visibility=customer`.           |
+| `confidential = true`   | —        | Nur Org-Admin + Erfasser sichtbar; Audit-Event `confidential.viewed` bei Aufruf. |
 
 `confidential` setzt `visibility = internal` zwingend (Validation).
 
 ## 5. Polymorphe Bezüge
 
-| `notable_type`  | UI-Einbindung                                              |
-| --------------- | ---------------------------------------------------------- |
-| `DiaryEntry`    | Eigene Karte „Kommunikation" auf der Auftragsdetailseite + Eintrag in Auftrags-Timeline. |
-| `Customer`      | Karte auf Kunden-Detailseite; späterer Kunden-Timeline-Aggregat. |
-| `Project`       | Karte auf Projekt-Detailseite; späterer Projekt-Timeline-Aggregat. |
-| `Protocol`      | Karte am Abnahmeprotokoll (MVP-020 ff.) — dokumentiert z. B. Kundenrückmeldung. |
-| `Asset`         | Karte am Objekt (MVP-035 ff.).                              |
+| `notable_type` | UI-Einbindung                                                                            |
+| -------------- | ---------------------------------------------------------------------------------------- |
+| `DiaryEntry`   | Eigene Karte „Kommunikation" auf der Auftragsdetailseite + Eintrag in Auftrags-Timeline. |
+| `Customer`     | Karte auf Kunden-Detailseite; späterer Kunden-Timeline-Aggregat.                         |
+| `Project`      | Karte auf Projekt-Detailseite; späterer Projekt-Timeline-Aggregat.                       |
+| `Protocol`     | Karte am Abnahmeprotokoll (MVP-020 ff.) — dokumentiert z. B. Kundenrückmeldung.          |
+| `Asset`        | Karte am Objekt (MVP-035 ff.).                                                           |
 
 Eine Notiz hat **genau einen** Bezug (kein N:M). Mehrfachzuordnung
 (z. B. „Auftrag X und Kunde Y") wird über zwei separate Notizen abgebildet
@@ -126,28 +126,28 @@ oder über das implizite „Notiz an Auftrag X" + „Kunde Y ist Auftraggeber".
 Aus dem [Status-/Aktionsglossar](status-aktionsglossar.md) wird das Glossar
 um eine neue Domäne ergänzt:
 
-| Aktion-Schlüssel               | Label              | Tone      | Vorbedingung                                  |
-| ------------------------------ | ------------------ | --------- | --------------------------------------------- |
-| `communication.add`            | „Notiz erfassen"   | `primary` | Permission `communication.create` am Bezug.   |
-| `communication.edit`           | „Bearbeiten"       | `ghost`   | Erfasser oder Org-Admin, < 24 h alt.          |
-| `communication.publishToCustomer` | „Für Kunden freigeben" | `success` | `visibility=internal` und nicht confidential. |
-| `communication.markConfidential` | „Vertraulich markieren" | `warning` | Nur Org-Admin.                            |
-| `communication.delete`         | „Löschen"          | `error`   | Org-Admin; erzeugt Soft-Delete + Audit.       |
-| `communication.completeFollowup` | „Folgeaktion erledigt" | `success` | `next_action_due_at` gesetzt.             |
+| Aktion-Schlüssel                  | Label                   | Tone      | Vorbedingung                                  |
+| --------------------------------- | ----------------------- | --------- | --------------------------------------------- |
+| `communication.add`               | „Notiz erfassen"        | `primary` | Permission `communication.create` am Bezug.   |
+| `communication.edit`              | „Bearbeiten"            | `ghost`   | Erfasser oder Org-Admin, < 24 h alt.          |
+| `communication.publishToCustomer` | „Für Kunden freigeben"  | `success` | `visibility=internal` und nicht confidential. |
+| `communication.markConfidential`  | „Vertraulich markieren" | `warning` | Nur Org-Admin.                                |
+| `communication.delete`            | „Löschen"               | `error`   | Org-Admin; erzeugt Soft-Delete + Audit.       |
+| `communication.completeFollowup`  | „Folgeaktion erledigt"  | `success` | `next_action_due_at` gesetzt.                 |
 
 ## 7. Permissions
 
 Neue Permission-Schlüssel (Spatie):
 
-| Permission                       | Wer                                              |
-| -------------------------------- | ------------------------------------------------ |
-| `communication.view.own`         | Eigene Bezüge (z. B. eigene Aufträge).           |
-| `communication.view.team`        | Teammitglieder.                                  |
-| `communication.view.organization`| Org-Admin / Teamleitung.                         |
-| `communication.create`           | Mitarbeitende (Default ja).                      |
-| `communication.update`           | Erfasser, < 24 h; Org-Admin jederzeit.           |
-| `communication.delete`           | Nur Org-Admin.                                   |
-| `communication.confidential.manage` | Nur Org-Admin (markieren/sehen).              |
+| Permission                          | Wer                                    |
+| ----------------------------------- | -------------------------------------- |
+| `communication.view.own`            | Eigene Bezüge (z. B. eigene Aufträge). |
+| `communication.view.team`           | Teammitglieder.                        |
+| `communication.view.organization`   | Org-Admin / Teamleitung.               |
+| `communication.create`              | Mitarbeitende (Default ja).            |
+| `communication.update`              | Erfasser, < 24 h; Org-Admin jederzeit. |
+| `communication.delete`              | Nur Org-Admin.                         |
+| `communication.confidential.manage` | Nur Org-Admin (markieren/sehen).       |
 
 Customer-Portal-Rolle (`kunde`) erhält **keine** dieser Permissions, sieht
 aber Einträge mit `visibility = customer` an ihrem zugewiesenen Auftrag
@@ -158,11 +158,11 @@ read-only über die Auftrags-Timeline.
 Pflichtige Audit-Events (in `audit_logs.event`):
 
 - `communication.created`
-- `communication.updated`  (mit `changes`-Diff)
-- `communication.deleted`  (Soft-Delete, mit Begründung)
-- `communication.published`  (visibility: internal → customer)
+- `communication.updated` (mit `changes`-Diff)
+- `communication.deleted` (Soft-Delete, mit Begründung)
+- `communication.published` (visibility: internal → customer)
 - `communication.confidential.set` / `.unset`
-- `communication.confidential.viewed`  (Zugriff durch nicht-Erfasser)
+- `communication.confidential.viewed` (Zugriff durch nicht-Erfasser)
 - `communication.followup.completed`
 
 Diese Events erscheinen in der [Auftrags-Timeline](auftrags-timeline.md)
@@ -179,7 +179,7 @@ Neue Sektion „**Kommunikation**" zwischen Kommentaren (§3.8) und Historie
   Beteiligte, Betreff (Link), Status-Pille (`internal`/`customer`/
   „vertraulich").
 - Header-Aktion: `<x-icon-btn icon="add_comment" label="Notiz erfassen"
-  tone="primary"/>` öffnet Modal.
+tone="primary"/>` öffnet Modal.
 - Folgeaktionen-Bereich oben („Offene Folgeaktionen") wenn `next_action`
   offen.
 

@@ -126,34 +126,34 @@ abgehakt werden.
 
 ## Tests und Prüfwerkzeuge
 
-| Werkzeug                                    | Wofür                                          |
-| ------------------------------------------- | ---------------------------------------------- |
-| Tastatur (Tab, Shift+Tab, Enter, Esc)       | Bedienflows ohne Maus                          |
-| Browser-DevTools → Lighthouse Accessibility | Schneller Score + Befunde                      |
-| axe DevTools (Browser-Extension)            | Detaillierte WCAG-Verstöße                     |
-| NVDA / VoiceOver / Orca                     | Screenreader-Stichprobe pro neuem Modul        |
-| Browser-Zoom 200 % + Schrift `xx-large`     | Layout-Bruchprüfung                            |
-| `prefers-reduced-motion` (DevTools)         | Animationen drosselbar                         |
-| Farbkontrast-Checker                        | Theme- und Statusfarben gegen Hintergrund      |
+| Werkzeug                                    | Wofür                                     |
+| ------------------------------------------- | ----------------------------------------- |
+| Tastatur (Tab, Shift+Tab, Enter, Esc)       | Bedienflows ohne Maus                     |
+| Browser-DevTools → Lighthouse Accessibility | Schneller Score + Befunde                 |
+| axe DevTools (Browser-Extension)            | Detaillierte WCAG-Verstöße                |
+| NVDA / VoiceOver / Orca                     | Screenreader-Stichprobe pro neuem Modul   |
+| Browser-Zoom 200 % + Schrift `xx-large`     | Layout-Bruchprüfung                       |
+| `prefers-reduced-motion` (DevTools)         | Animationen drosselbar                    |
+| Farbkontrast-Checker                        | Theme- und Statusfarben gegen Hintergrund |
 
 Pflicht pro neuer Seite: **mindestens** Tastatur-Durchgang, Lighthouse-Score
 ≥ 95 und axe ohne Critical/Serious-Befunde.
 
 ## ARIA-Spickzettel (häufige Fälle)
 
-| Situation                                    | Markup                                                              |
-| -------------------------------------------- | ------------------------------------------------------------------- |
-| Schließen-Button im Modal                    | `<button aria-label="Schließen"><span aria-hidden="true">×</span>` |
-| Icon-Button (Bearbeiten)                     | `<button aria-label="Bearbeiten"><x-icon name="edit"/></button>`    |
-| Toggle-Button                                | `aria-pressed="true|false"`                                         |
-| Expandierbare Sektion                        | `aria-expanded="true|false"` + `aria-controls="…id"`                |
-| Tab-Navigation                               | `role="tablist"`/`tab`/`tabpanel`, `aria-selected`                  |
-| Statuspille                                  | `role="status"` oder Text + `aria-label`                            |
-| Sortierbare Spalte                           | `aria-sort="ascending|descending|none"`                             |
-| Live-Region für Toasts                       | `aria-live="polite"` / `aria-live="assertive"`                      |
-| Dekoratives Icon                             | `aria-hidden="true"`                                                |
-| Pflichtfeld                                  | `required` + `aria-required="true"`                                 |
-| Feldfehler                                   | `aria-invalid="true"` + `aria-describedby="feld-error"`             |
+| Situation                 | Markup                                                             |
+| ------------------------- | ------------------------------------------------------------------ |
+| Schließen-Button im Modal | `<button aria-label="Schließen"><span aria-hidden="true">×</span>` |
+| Icon-Button (Bearbeiten)  | `<button aria-label="Bearbeiten"><x-icon name="edit"/></button>`   |
+| Toggle-Button             | `aria-pressed="true\|false"`                                       |
+| Expandierbare Sektion     | `aria-expanded="true\|false"` + `aria-controls="…id"`              |
+| Tab-Navigation            | `role="tablist"`/`tab`/`tabpanel`, `aria-selected`                 |
+| Statuspille               | `role="status"` oder Text + `aria-label`                           |
+| Sortierbare Spalte        | `aria-sort="ascending\|descending\|none"`                          |
+| Live-Region für Toasts    | `aria-live="polite"` / `aria-live="assertive"`                     |
+| Dekoratives Icon          | `aria-hidden="true"`                                               |
+| Pflichtfeld               | `required` + `aria-required="true"`                                |
+| Feldfehler                | `aria-invalid="true"` + `aria-describedby="feld-error"`            |
 
 ## Out-of-scope (MVP)
 

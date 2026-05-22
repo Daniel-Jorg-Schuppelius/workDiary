@@ -29,7 +29,7 @@ Prinzipien:
 
 ## 2. Seitenarchitektur
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────┐
 │ Header: Titel + Statuspille + Aktionsleiste (Phasenwechsel)         │
 ├──────────────────────────────────┬──────────────────────────────────┤
@@ -71,16 +71,16 @@ Vereinbarter Inhalt / Beauftragung (Text, Markdown light). Quelle des
 Tabelle der Lebenszyklus-Daten aus
 [Auftrags-Lebenszyklus](auftrags-lebenszyklus.md) §1:
 
-| Feld                | Wert / Status      |
-| ------------------- | ------------------ |
-| Geplant             | …                  |
-| Akzeptiert          | …                  |
-| Gestartet           | …                  |
-| Pausen gesamt       | …                  |
-| Beendet (Erfasser)  | …                  |
-| Abgenommen (Kunde)  | … + Unterschrift   |
-| Abgerechnet         | …                  |
-| Storniert           | … (falls)          |
+| Feld               | Wert / Status    |
+| ------------------ | ---------------- |
+| Geplant            | …                |
+| Akzeptiert         | …                |
+| Gestartet          | …                |
+| Pausen gesamt      | …                |
+| Beendet (Erfasser) | …                |
+| Abgenommen (Kunde) | … + Unterschrift |
+| Abgerechnet        | …                |
+| Storniert          | … (falls)        |
 
 Aktionsleiste am Sektionskopf: nur die laut Lebenszyklus aktuell
 **zulässigen** Fachaktionen (Akzeptieren / Starten / Pause /
@@ -186,7 +186,7 @@ Anzeige: „Dieser Auftrag ist für Kunde [Kontaktperson] im Portal sichtbar
 
 Globale Header-Aktionsleiste:
 
-- Primär: jeweils einzige *fachliche* Hauptaktion (z. B. „Starten",
+- Primär: jeweils einzige _fachliche_ Hauptaktion (z. B. „Starten",
   „Pausieren", „Beenden", „Abnahme erfassen") aus
   [Lebenszyklus](auftrags-lebenszyklus.md).
 - Sekundär (Icon-Buttons): Bearbeiten, Drucken, Teilen, Duplizieren,
@@ -198,20 +198,20 @@ Globale Header-Aktionsleiste:
 Im Kundenportal (Rolle `kunde`) wird die Auftragsdetailseite **reduziert**
 dargestellt:
 
-| Sektion           | Kundensicht                                        |
-| ----------------- | -------------------------------------------------- |
-| Kerndaten         | Ja, ohne interne Preise.                            |
-| Beschreibung      | Ja.                                                 |
-| Termine           | Planned/Started/Completed/Accepted nur (keine Pausen-Detail). |
-| Zeiterfassung     | Aggregat (Stunden gesamt) — keine Einzelzeilen.    |
-| Material          | Sichtbar wenn vertraglich vereinbart.              |
-| Offene Punkte     | Nur `visibility=customer`.                          |
-| Protokolle        | Nur Unterzeichnete.                                 |
-| Anhänge           | Nur `visibility=customer`.                          |
-| Kommentare        | **Nein** (intern).                                  |
-| Kommunikation     | Nur `visibility=customer`.                          |
-| Timeline          | Nur Events mit `visibility=customer`.               |
-| Audit-Logs        | **Nein**.                                           |
+| Sektion       | Kundensicht                                                   |
+| ------------- | ------------------------------------------------------------- |
+| Kerndaten     | Ja, ohne interne Preise.                                      |
+| Beschreibung  | Ja.                                                           |
+| Termine       | Planned/Started/Completed/Accepted nur (keine Pausen-Detail). |
+| Zeiterfassung | Aggregat (Stunden gesamt) — keine Einzelzeilen.               |
+| Material      | Sichtbar wenn vertraglich vereinbart.                         |
+| Offene Punkte | Nur `visibility=customer`.                                    |
+| Protokolle    | Nur Unterzeichnete.                                           |
+| Anhänge       | Nur `visibility=customer`.                                    |
+| Kommentare    | **Nein** (intern).                                            |
+| Kommunikation | Nur `visibility=customer`.                                    |
+| Timeline      | Nur Events mit `visibility=customer`.                         |
+| Audit-Logs    | **Nein**.                                                     |
 
 Diese Filter sind serverseitig im Repository / Policy realisiert,
 nicht nur per CSS.
@@ -228,15 +228,15 @@ nicht nur per CSS.
 
 ## 8. Permissions (Übersicht)
 
-| Sektion             | Permission                                          |
-| ------------------- | --------------------------------------------------- |
-| Sehen Detailseite   | `order.view.own` oder höher.                        |
-| Termine ändern      | Lebenszyklus-Aktionen (siehe dortige Permissions).  |
-| Zeit erfassen       | `time.create.own`.                                  |
-| Anhänge hochladen   | `attachment.create`.                                |
-| Kommentare          | `comment.create`.                                   |
+| Sektion             | Permission                                                  |
+| ------------------- | ----------------------------------------------------------- |
+| Sehen Detailseite   | `order.view.own` oder höher.                                |
+| Termine ändern      | Lebenszyklus-Aktionen (siehe dortige Permissions).          |
+| Zeit erfassen       | `time.create.own`.                                          |
+| Anhänge hochladen   | `attachment.create`.                                        |
+| Kommentare          | `comment.create`.                                           |
 | Kommunikation       | siehe [Kommunikationsnotizen](kommunikationsnotizen.md) §7. |
-| Audit-Logs anzeigen | `audit.view` (nur Org-Admin).                       |
+| Audit-Logs anzeigen | `audit.view` (nur Org-Admin).                               |
 
 ## 9. Akzeptanzkriterien
 

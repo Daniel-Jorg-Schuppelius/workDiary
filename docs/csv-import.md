@@ -13,51 +13,51 @@ Fehlerberichten.
 
 ### 2.1 `customers.csv`
 
-| Spalte         | Pflicht | Notizen                              |
-| -------------- | ------- | ------------------------------------ |
-| external_ref   | nein    | Stabiler Fremd-Schlüssel (Idempotenz) |
-| name           | ja      |                                      |
-| email          | nein    | RFC-5322                              |
-| phone          | nein    |                                      |
-| address_line   | nein    |                                      |
-| postal_code    | nein    |                                      |
-| city           | nein    |                                      |
-| country        | nein    | ISO-3166-1 alpha-2                   |
-| tax_id         | nein    |                                      |
-| notes          | nein    |                                      |
+| Spalte       | Pflicht | Notizen                               |
+| ------------ | ------- | ------------------------------------- |
+| external_ref | nein    | Stabiler Fremd-Schlüssel (Idempotenz) |
+| name         | ja      |                                       |
+| email        | nein    | RFC-5322                              |
+| phone        | nein    |                                       |
+| address_line | nein    |                                       |
+| postal_code  | nein    |                                       |
+| city         | nein    |                                       |
+| country      | nein    | ISO-3166-1 alpha-2                    |
+| tax_id       | nein    |                                       |
+| notes        | nein    |                                       |
 
 ### 2.2 `projects.csv`
 
-| Spalte             | Pflicht | Notizen                          |
-| ------------------ | ------- | -------------------------------- |
-| external_ref       | nein    |                                  |
-| customer_external_ref | ja   | muss in `customers` existieren   |
-| name               | ja      |                                  |
-| description        | nein    |                                  |
-| start_date         | nein    | YYYY-MM-DD                       |
-| end_date           | nein    | YYYY-MM-DD                       |
-| state              | nein    | active, paused, closed (default active) |
+| Spalte                | Pflicht | Notizen                                 |
+| --------------------- | ------- | --------------------------------------- |
+| external_ref          | nein    |                                         |
+| customer_external_ref | ja      | muss in `customers` existieren          |
+| name                  | ja      |                                         |
+| description           | nein    |                                         |
+| start_date            | nein    | YYYY-MM-DD                              |
+| end_date              | nein    | YYYY-MM-DD                              |
+| state                 | nein    | active, paused, closed (default active) |
 
 ### 2.3 `users.csv`
 
-| Spalte         | Pflicht | Notizen                              |
-| -------------- | ------- | ------------------------------------ |
-| email          | ja      | unique innerhalb Plattform           |
-| name           | ja      |                                      |
-| role           | ja      | org-rolle (admin, operator, …)        |
-| send_invite    | nein    | bool, default false                  |
+| Spalte      | Pflicht | Notizen                        |
+| ----------- | ------- | ------------------------------ |
+| email       | ja      | unique innerhalb Plattform     |
+| name        | ja      |                                |
+| role        | ja      | org-rolle (admin, operator, …) |
+| send_invite | nein    | bool, default false            |
 
 ### 2.4 `materials.csv`
 
-| Spalte         | Pflicht | Notizen                              |
-| -------------- | ------- | ------------------------------------ |
-| external_ref   | nein    |                                      |
-| code           | ja      | unique pro Org                       |
-| name           | ja      |                                      |
-| unit           | ja      | Stk, m, kg, h, l, …                  |
-| default_price  | nein    | dezimal, Punkt als Separator         |
-| vat_rate       | nein    | Prozent ganzzahlig                   |
-| notes          | nein    |                                      |
+| Spalte        | Pflicht | Notizen                      |
+| ------------- | ------- | ---------------------------- |
+| external_ref  | nein    |                              |
+| code          | ja      | unique pro Org               |
+| name          | ja      |                              |
+| unit          | ja      | Stk, m, kg, h, l, …          |
+| default_price | nein    | dezimal, Punkt als Separator |
+| vat_rate      | nein    | Prozent ganzzahlig           |
+| notes         | nein    |                              |
 
 ## 3. Format-Spezifikation
 
@@ -73,20 +73,20 @@ Fehlerberichten.
 `org.import.{entity}`):
 
 1. **Vorprüfung** (`CsvPreflightAnalyzer`):
-   - Header-Validierung,
-   - Pflichtfelder-Check,
-   - Format-Checks (E-Mail, Datum, Zahlen, ISO-Land),
-   - Eindeutigkeit innerhalb Datei,
-   - Vorschau erste 20 Zeilen.
+    - Header-Validierung,
+    - Pflichtfelder-Check,
+    - Format-Checks (E-Mail, Datum, Zahlen, ISO-Land),
+    - Eindeutigkeit innerhalb Datei,
+    - Vorschau erste 20 Zeilen.
 2. **Bestätigung**: User sieht Vorschau + Statistik („402 neue, 18
    Aktualisierungen, 5 Fehler"). Erst nach Bestätigung →
 3. **Ausführung** (`CsvImportJob`, Queue):
-   - In Chunks à 500.
-   - Upsert nach `external_ref` (falls vorhanden) sonst nach
-     fachlichem Schlüssel (`email`, `code`).
-   - Datenbank-Transaktion pro Chunk.
-   - Fehler-Zeilen: Datei `errors_{import_id}.csv` mit
-     Original-Inhalt + Spalte `_error`.
+    - In Chunks à 500.
+    - Upsert nach `external_ref` (falls vorhanden) sonst nach
+      fachlichem Schlüssel (`email`, `code`).
+    - Datenbank-Transaktion pro Chunk.
+    - Fehler-Zeilen: Datei `errors_{import_id}.csv` mit
+      Original-Inhalt + Spalte `_error`.
 4. **Report** (`import_runs`-Tabelle): Zeilen, Erfolg, Warn,
    Fehler, Dauer, Aufrufer, Hash der Eingabedatei.
 
@@ -94,33 +94,33 @@ Fehlerberichten.
 
 ### 5.1 `import_runs`
 
-| Feld           | Typ           | Notizen                          |
-| -------------- | ------------- | -------------------------------- |
-| id             | uuid          |                                  |
-| organization_id| uuid          |                                  |
-| entity         | enum          | customers, projects, users, materials |
-| state          | enum          | preflight, awaitingApproval, running, succeeded, partial, failed |
-| input_filename | string        |                                  |
-| input_hash     | string        | SHA-256                          |
-| rows_total     | int           |                                  |
-| rows_created   | int           |                                  |
-| rows_updated   | int           |                                  |
-| rows_failed    | int           |                                  |
-| started_at     | datetime null |                                  |
-| finished_at    | datetime null |                                  |
-| created_by     | uuid          |                                  |
-| created_at     | datetime      |                                  |
+| Feld            | Typ           | Notizen                                                          |
+| --------------- | ------------- | ---------------------------------------------------------------- |
+| id              | uuid          |                                                                  |
+| organization_id | uuid          |                                                                  |
+| entity          | enum          | customers, projects, users, materials                            |
+| state           | enum          | preflight, awaitingApproval, running, succeeded, partial, failed |
+| input_filename  | string        |                                                                  |
+| input_hash      | string        | SHA-256                                                          |
+| rows_total      | int           |                                                                  |
+| rows_created    | int           |                                                                  |
+| rows_updated    | int           |                                                                  |
+| rows_failed     | int           |                                                                  |
+| started_at      | datetime null |                                                                  |
+| finished_at     | datetime null |                                                                  |
+| created_by      | uuid          |                                                                  |
+| created_at      | datetime      |                                                                  |
 
 ### 5.2 `import_run_errors`
 
-| Feld         | Typ      | Notizen                |
-| ------------ | -------- | ---------------------- |
-| id           | uuid     |                        |
-| import_run_id| uuid     |                        |
-| row_number   | int      | 1-basiert ohne Header   |
-| field        | string null |                     |
-| code         | string   | required, format, unique, fkMissing, … |
-| message      | string   | i18n                   |
+| Feld          | Typ         | Notizen                                |
+| ------------- | ----------- | -------------------------------------- |
+| id            | uuid        |                                        |
+| import_run_id | uuid        |                                        |
+| row_number    | int         | 1-basiert ohne Header                  |
+| field         | string null |                                        |
+| code          | string      | required, format, unique, fkMissing, … |
+| message       | string      | i18n                                   |
 
 ## 6. Idempotenz
 
@@ -132,12 +132,12 @@ Fehlerberichten.
 
 ## 7. Permissions
 
-| Permission                  |
-| --------------------------- |
-| `org.import.customers`      |
-| `org.import.projects`       |
-| `org.import.users`          |
-| `org.import.materials`      |
+| Permission             |
+| ---------------------- |
+| `org.import.customers` |
+| `org.import.projects`  |
+| `org.import.users`     |
+| `org.import.materials` |
 
 Plus `org.import.viewReports` für `import_runs`-Liste.
 

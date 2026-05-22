@@ -118,11 +118,8 @@ Jede Query an `search_index` MUSS folgende WHERE-Bedingungen erzwingen
 1. `organization_id` = aktive Organisation des Nutzers.
 2. Nur Treffer, an deren Original-Aggregat der Nutzer
    `…view.own|team|organization` hat (Policy-Vorprüfung).
-3. Kunden-Portal-Rolle (`kunde`):
-    - Nur `visibility = customer`.
-    - Nur Aggregate des eigenen Kundenkontos (`Customer.id =
-user.customer_id`).
-    - Domänen `Comment` ausgeschlossen (intern).
+3. Kunden-Portal-Rolle (`kunde`): - Nur `visibility = customer`. - Nur Aggregate des eigenen Kundenkontos (`Customer.id =
+user.customer_id`). - Domänen `Comment` ausgeschlossen (intern).
 
 Diese Filter sind **nicht** UI-only: ein Treffer ohne Berechtigung
 darf nie zurückgeliefert werden (Tests).

@@ -41,14 +41,14 @@ ALTER TABLE assets
 
 ## 4. Sperr-Verhalten
 
-| Aktion                          | bei `status = blocked` / `inRepair`    |
-| ------------------------------- | -------------------------------------- |
-| Asset als `tool` einem Auftrag verlinken | Hard-Block (HTTP 409 `asset.notUsable`). |
-| Asset als `subject` verlinken   | Erlaubt (Reparatur braucht das Asset). |
-| Material auf Asset buchen       | Erlaubt nur bei `inRepair`.            |
-| Prozedur-Run starten            | Hard-Block, außer Prozedur ist als „darf an gesperrten Assets laufen" markiert (`procedure_template_versions.allow_blocked = true`). |
-| Ausgabe / Ausleihe              | Hard-Block.                            |
-| Eintrag im Customer-Portal als „aktiv"-Gerät anzeigen | Nein — Pill „in Wartung". |
+| Aktion                                                | bei `status = blocked` / `inRepair`                                                                                                  |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Asset als `tool` einem Auftrag verlinken              | Hard-Block (HTTP 409 `asset.notUsable`).                                                                                             |
+| Asset als `subject` verlinken                         | Erlaubt (Reparatur braucht das Asset).                                                                                               |
+| Material auf Asset buchen                             | Erlaubt nur bei `inRepair`.                                                                                                          |
+| Prozedur-Run starten                                  | Hard-Block, außer Prozedur ist als „darf an gesperrten Assets laufen" markiert (`procedure_template_versions.allow_blocked = true`). |
+| Ausgabe / Ausleihe                                    | Hard-Block.                                                                                                                          |
+| Eintrag im Customer-Portal als „aktiv"-Gerät anzeigen | Nein — Pill „in Wartung".                                                                                                            |
 
 Service: `AssetUsageGuard::ensureUsable(asset, action)`.
 
@@ -74,12 +74,12 @@ durch Scheduled Job `AssetOverdueBlockJob` täglich).
 
 ## 7. Permissions
 
-| Permission                | Wer                              |
-| ------------------------- | -------------------------------- |
-| `asset.block`             | Org-Admin, Teamleitung.          |
-| `asset.unblock`           | Org-Admin, Teamleitung.          |
-| `asset.flagDefect`        | Mitarbeitende.                   |
-| `asset.useDespiteBlock`   | nur Org-Admin (Override mit Pflicht-Begründung; auditiert als `asset.useOverride`). |
+| Permission              | Wer                                                                                 |
+| ----------------------- | ----------------------------------------------------------------------------------- |
+| `asset.block`           | Org-Admin, Teamleitung.                                                             |
+| `asset.unblock`         | Org-Admin, Teamleitung.                                                             |
+| `asset.flagDefect`      | Mitarbeitende.                                                                      |
+| `asset.useDespiteBlock` | nur Org-Admin (Override mit Pflicht-Begründung; auditiert als `asset.useOverride`). |
 
 ## 8. Audit-Events
 
