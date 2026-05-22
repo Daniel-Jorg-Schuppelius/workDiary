@@ -2,7 +2,9 @@
 
 ## Status
 
-Proposed
+Proposed — Teilaspekt *Supportzugriff* ist mit MVP-004 (Issue #4) in
+[`docs/security/supportzugriff-grundsaetze.md`](../security/supportzugriff-grundsaetze.md)
+verbindlich geregelt.
 
 ## Produktversprechen
 
