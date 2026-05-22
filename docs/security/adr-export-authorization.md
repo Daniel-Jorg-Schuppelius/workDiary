@@ -38,9 +38,9 @@ Jeder neue Export-Endpunkt nutzt das folgende mehrschichtige Standardmuster:
    `projects` etc. erben den Scope automatisch.
 5. **Keine** Aufrufe von `withoutGlobalScopes()` in Export-Pfaden. Falls
    trotzdem nötig (z. B. Cross-Tenant-Reporting für Plattform-Admins):
-   - im Code-Kommentar `// TENANT-BYPASS: <Grund>` ergänzen,
-   - im Audit-Dokument (`tenant-audit-2026.md`) registrieren,
-   - per Permission absichern (`platform.reports.cross_tenant`).
+    - im Code-Kommentar `// TENANT-BYPASS: <Grund>` ergänzen,
+    - im Audit-Dokument (`tenant-audit-2026.md`) registrieren,
+    - per Permission absichern (`platform.reports.cross_tenant`).
 6. **Test-Pflicht:** jeder Export bekommt eine Regressionsprüfung in
    [`tests/Feature/Tenant/ExportTenantTest.php`](../../tests/Feature/Tenant/ExportTenantTest.php).
    Der Test legt Org-B-Daten an, loggt sich als Org-A-User ein, ruft den

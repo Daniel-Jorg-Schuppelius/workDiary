@@ -190,16 +190,16 @@ manipulieren und müssen Legacy-Routen aus dem Geltungsbereich ausnehmen.
 
 ## Test-Coverage
 
-| Test                                                                                                                 | Geltungsbereich                                                                                 |
-| -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| [`tests/Feature/Security/OrganizationIsolationTest.php`](../../tests/Feature/Security/OrganizationIsolationTest.php) | Signierte Attachment-URLs, Direkt-Lookups, Kind-Tabellen (Comment, EventReminder, FlexBalance). |
-| `tests/Feature/Tenant/TenantBoundaryTest.php` _(MVP-001)_                                                            | Kerngeschäftsmodelle: cross-org Read/Update/Delete → 403/404.                                   |
-| `tests/Feature/Tenant/AttachmentTenantTest.php` _(MVP-001)_                                                          | Attachment-Download cross-org wird durch Policy/Scope verhindert.                               |
-| `tests/Feature/Tenant/PublicRouteTenantTest.php` _(MVP-001/002)_                                                     | ICS-Feed, PublicSignature, persönlicher ICS, Public-ICS: Tokens aus Org A liefern keine Org-B-Daten. |
+| Test                                                                                                                 | Geltungsbereich                                                                                                          |
+| -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| [`tests/Feature/Security/OrganizationIsolationTest.php`](../../tests/Feature/Security/OrganizationIsolationTest.php) | Signierte Attachment-URLs, Direkt-Lookups, Kind-Tabellen (Comment, EventReminder, FlexBalance).                          |
+| `tests/Feature/Tenant/TenantBoundaryTest.php` _(MVP-001)_                                                            | Kerngeschäftsmodelle: cross-org Read/Update/Delete → 403/404.                                                            |
+| `tests/Feature/Tenant/AttachmentTenantTest.php` _(MVP-001)_                                                          | Attachment-Download cross-org wird durch Policy/Scope verhindert.                                                        |
+| `tests/Feature/Tenant/PublicRouteTenantTest.php` _(MVP-001/002)_                                                     | ICS-Feed, PublicSignature, persönlicher ICS, Public-ICS: Tokens aus Org A liefern keine Org-B-Daten.                     |
 | `tests/Feature/Tenant/ApiTenantTest.php` _(MVP-002)_                                                                 | Sanctum-API (`/api/customers`, `/api/projects`, `/api/tasks`, `/api/diary`): cross-org Index/Show/Update → 403/404/leer. |
-| `tests/Feature/Tenant/ExportTenantTest.php` _(MVP-002)_                                                              | CSV-/PDF-Exporte (Diary, Customer, Travel-Log, Expense) leaken keine Org-B-Datensätze.          |
-| `tests/Feature/Tenant/SearchTenantTest.php` _(MVP-002)_                                                              | Globale Suche (`/api/internal/search`) liefert keine Org-B-Treffer.                             |
-| `tests/Architecture/TenantTraitCoverageTest.php` _(MVP-001)_                                                         | Jedes neue Model in `app/Models/` ohne Trait muss in der Allow-List stehen.                     |
+| `tests/Feature/Tenant/ExportTenantTest.php` _(MVP-002)_                                                              | CSV-/PDF-Exporte (Diary, Customer, Travel-Log, Expense) leaken keine Org-B-Datensätze.                                   |
+| `tests/Feature/Tenant/SearchTenantTest.php` _(MVP-002)_                                                              | Globale Suche (`/api/internal/search`) liefert keine Org-B-Treffer.                                                      |
+| `tests/Architecture/TenantTraitCoverageTest.php` _(MVP-001)_                                                         | Jedes neue Model in `app/Models/` ohne Trait muss in der Allow-List stehen.                                              |
 
 ## Exporte (MVP-002)
 
@@ -208,17 +208,17 @@ Alle Exporte laufen über Eloquent-Queries und sind dadurch implizit über den
 gesetzt ist (Web- + API-Stack). Standardpattern für neue Export-Endpunkte
 siehe [adr-export-authorization.md](./adr-export-authorization.md).
 
-| Endpunkt                                            | Controller                                       | Mandanten-Schutz                          | Testabdeckung |
-| --------------------------------------------------- | ------------------------------------------------ | ----------------------------------------- | ------------- |
-| `GET /diary/export.csv` / `.pdf`                    | `DiaryExportController::{csv,pdf}`               | Eloquent-Scope                            | ✅ (Export)   |
-| `GET /customers/export`                             | `CustomerController::export`                     | Eloquent-Scope                            | ✅ (Export)   |
-| `GET /travel-logs/export`                           | `TravelLogController::export`                    | Eloquent-Scope                            | ✅ (Export)   |
-| `GET /expenses/export`                              | `ExpenseController::export`                      | Eloquent-Scope + User-Filter (non-Admin)  | ✅ (Export)   |
-| `GET /invoices/{invoice}/pdf`                       | `InvoiceController::pdf`                         | Route-Model-Binding + Policy              | ✅ via Tenant-Boundary |
-| `GET /per-diem-trips/{trip}/pdf`                    | `PerDiemTripController::pdf`                     | Route-Model-Binding + Policy              | ✅ via Tenant-Boundary |
-| `GET /projects/{project}/timesheets/{sheet}/pdf`    | `TimesheetSignatureController::pdf`              | Route-Model-Binding + Policy              | ✅ via Tenant-Boundary |
-| `GET /reports/{module}?export=pdf` (18 Reports)     | `Reports/*ReportController::exportPdf`           | Eloquent-Scope                            | stichprobenartig — Standardpattern dokumentiert in ADR |
-| `POST /customers/{c}/lexoffice/time-export`         | Plugin-Controller                                | Eloquent-Scope + Policy                   | offen (Plugin, separate Tests) |
+| Endpunkt                                         | Controller                             | Mandanten-Schutz                         | Testabdeckung                                          |
+| ------------------------------------------------ | -------------------------------------- | ---------------------------------------- | ------------------------------------------------------ |
+| `GET /diary/export.csv` / `.pdf`                 | `DiaryExportController::{csv,pdf}`     | Eloquent-Scope                           | ✅ (Export)                                            |
+| `GET /customers/export`                          | `CustomerController::export`           | Eloquent-Scope                           | ✅ (Export)                                            |
+| `GET /travel-logs/export`                        | `TravelLogController::export`          | Eloquent-Scope                           | ✅ (Export)                                            |
+| `GET /expenses/export`                           | `ExpenseController::export`            | Eloquent-Scope + User-Filter (non-Admin) | ✅ (Export)                                            |
+| `GET /invoices/{invoice}/pdf`                    | `InvoiceController::pdf`               | Route-Model-Binding + Policy             | ✅ via Tenant-Boundary                                 |
+| `GET /per-diem-trips/{trip}/pdf`                 | `PerDiemTripController::pdf`           | Route-Model-Binding + Policy             | ✅ via Tenant-Boundary                                 |
+| `GET /projects/{project}/timesheets/{sheet}/pdf` | `TimesheetSignatureController::pdf`    | Route-Model-Binding + Policy             | ✅ via Tenant-Boundary                                 |
+| `GET /reports/{module}?export=pdf` (18 Reports)  | `Reports/*ReportController::exportPdf` | Eloquent-Scope                           | stichprobenartig — Standardpattern dokumentiert in ADR |
+| `POST /customers/{c}/lexoffice/time-export`      | Plugin-Controller                      | Eloquent-Scope + Policy                  | offen (Plugin, separate Tests)                         |
 
 ## Globale Suche (MVP-002)
 
@@ -237,14 +237,14 @@ Alle Endpunkte unter `routes/api.php` sind durch `auth:sanctum` geschützt.
 `OrganizationScope` bei Sanctum-Requests als No-Op laufen und die API
 Mandantengrenzen leaken.
 
-| Endpunkt-Gruppe                              | Mandanten-Schutz                                | Test                  |
-| -------------------------------------------- | ----------------------------------------------- | --------------------- |
-| `/api/diary` (Index/Show/Update/Destroy)     | Sanctum + Scope + Policy                        | ApiTenantTest         |
-| `/api/customers`, `/api/projects`, `/api/tasks` | Sanctum + Scope + Policy                     | ApiTenantTest         |
-| `/api/timesheets/*`                          | Sanctum + Scope + Policy                        | offen (Folge-Issue)   |
-| `/api/attachments/{id}/download`             | Sanctum + Scope + AttachmentPolicy + signed URL | AttachmentTenantTest  |
-| `/api/comments`, `/api/tags`                 | Sanctum + Scope + Policy                        | ApiTest (Owner/Admin) |
-| `/api/dashboard`, `/api/me`, `/api/stopwatch`, `/api/push-subscriptions` | Sanctum, user-bezogen | ApiTest |
+| Endpunkt-Gruppe                                                          | Mandanten-Schutz                                | Test                  |
+| ------------------------------------------------------------------------ | ----------------------------------------------- | --------------------- |
+| `/api/diary` (Index/Show/Update/Destroy)                                 | Sanctum + Scope + Policy                        | ApiTenantTest         |
+| `/api/customers`, `/api/projects`, `/api/tasks`                          | Sanctum + Scope + Policy                        | ApiTenantTest         |
+| `/api/timesheets/*`                                                      | Sanctum + Scope + Policy                        | offen (Folge-Issue)   |
+| `/api/attachments/{id}/download`                                         | Sanctum + Scope + AttachmentPolicy + signed URL | AttachmentTenantTest  |
+| `/api/comments`, `/api/tags`                                             | Sanctum + Scope + Policy                        | ApiTest (Owner/Admin) |
+| `/api/dashboard`, `/api/me`, `/api/stopwatch`, `/api/push-subscriptions` | Sanctum, user-bezogen                           | ApiTest               |
 
 ## Offene Punkte / Folge-Issues
 
