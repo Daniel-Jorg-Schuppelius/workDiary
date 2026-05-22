@@ -87,9 +87,24 @@ class ExpenseService {
 
         if ($wasSubmitted) {
             $expense->loadMissing('user');
-            $approvers = $this->approverResolver->approversFor($expense);
-            if ($approvers->isNotEmpty()) {
-                Notification::send($approvers, new ExpenseSubmittedNotification($expense));
+            // Automation-Hook: gibt eine aktive Regel ggf. direkt approve/route.
+            // Wird vor der Approver-Notification ausgeführt, damit auto-approve
+            // sofortige Entscheidungs-Benachrichtigung statt offener Anfrage
+            // an Approver auslöst.
+            try {
+                app(\App\Automation\RuleEngine::class)->dispatch('expense.submitted', $expense);
+                $expense->refresh();
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('automation: expense.submitted dispatch failed', [
+                    'expense_id' => $expense->id, 'error' => $e->getMessage(),
+                ]);
+            }
+
+            if ($expense->status === ExpenseStatus::Pending) {
+                $approvers = $this->approverResolver->approversFor($expense);
+                if ($approvers->isNotEmpty()) {
+                    Notification::send($approvers, new ExpenseSubmittedNotification($expense));
+                }
             }
         }
 

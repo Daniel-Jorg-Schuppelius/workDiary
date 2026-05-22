@@ -55,11 +55,16 @@ class WorkScheduleController extends Controller {
     public function self(): View {
         /** @var User $user */
         $user = Auth::user();
+        $defaults = WorkScheduleResolver::defaults();
+        $schedule = $user->workSchedule() ?? new WorkSchedule($defaults + [
+            'user_id' => $user->id,
+            'valid_from' => now()->startOfMonth(),
+        ]);
 
-        return view('work-schedules.show', [
+        return view('work-schedules._self_dialog', [
             'user' => $user,
-            'schedule' => $user->workSchedule(),
-            'defaults' => WorkScheduleResolver::defaults(),
+            'schedule' => $schedule,
+            'defaults' => $defaults,
         ]);
     }
 }

@@ -11,6 +11,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Concerns\HasAttachments;
 use Database\Factories\CommentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,12 +21,13 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Comment extends Model {
     use Auditable;
+    use BelongsToOrganization;
     use HasAttachments;
 
     /** @use HasFactory<CommentFactory> */
     use HasFactory;
 
-    protected $fillable = ['commentable_type', 'commentable_id', 'user_id', 'body'];
+    protected $fillable = ['organization_id', 'commentable_type', 'commentable_id', 'user_id', 'body'];
 
     /** @return MorphTo<Model, $this> */
     public function commentable(): MorphTo {

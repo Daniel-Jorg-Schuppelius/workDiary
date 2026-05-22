@@ -37,4 +37,22 @@ class IcsFeedController extends Controller {
             'Content-Disposition' => 'inline; filename="workdiary-public-events.ics"',
         ]);
     }
+
+    /**
+     * Tokenisierter persönlicher Schedule-Feed (Urlaube + Schichten).
+     * Public route, ohne Auth – Sicherheit über zufälligen Token.
+     */
+    public function personalSchedule(string $token): Response {
+        if (strlen($token) < 32) {
+            abort(404);
+        }
+        $user = User::query()->where('calendar_feed_token', $token)->first();
+        abort_unless($user instanceof User, 404);
+
+        return response($this->ics->feedPersonalSchedule($user), 200, [
+            'Content-Type' => 'text/calendar; charset=utf-8',
+            'Content-Disposition' => 'inline; filename="workdiary-schedule.ics"',
+            'Cache-Control' => 'private, max-age=300',
+        ]);
+    }
 }

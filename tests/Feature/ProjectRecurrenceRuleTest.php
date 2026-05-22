@@ -34,6 +34,7 @@ class ProjectRecurrenceRuleTest extends TestCase {
 
         $this->owner = User::factory()->user()->create();
         $this->project = Project::create([
+            'organization_id' => $this->owner->organization_id,
             'name' => 'Wartung ' . uniqid('', true),
             'status' => ProjectStatus::Active->value,
             'is_maintenance' => true,
@@ -112,7 +113,12 @@ class ProjectRecurrenceRuleTest extends TestCase {
 
     public function test_foreign_user_cannot_modify_rule(): void {
         $rule = $this->makeRule();
-        $stranger = User::factory()->user()->create();
+        // Stranger gehört zur SELBEN Org – der Tenant-Scope schiebt Cross-
+        // Org-Zugriffe bereits vorher mit 404 ab. Hier prüfen wir die
+        // Ownership-Schicht innerhalb derselben Organisation.
+        $stranger = User::factory()->user()->create([
+            'organization_id' => $this->owner->organization_id,
+        ]);
 
         $this->actingAs($stranger)
             ->put(route('projects.recurrence-rules.update', [$this->project, $rule]), [
@@ -131,6 +137,7 @@ class ProjectRecurrenceRuleTest extends TestCase {
      */
     private function makeRule(array $overrides = []): RecurrenceRule {
         return RecurrenceRule::create(array_merge([
+            'organization_id' => $this->owner->organization_id,
             'project_id' => $this->project->id,
             'name' => 'Wöchentliche Routine',
             'content_template' => 'Routine am {date}',

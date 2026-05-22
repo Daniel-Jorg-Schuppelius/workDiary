@@ -23,6 +23,7 @@ class SavePerDiemRateRequest extends FormRequest {
     public function rules(): array {
         return [
             'country' => ['required', 'string', 'size:2'],
+            'region_label' => ['nullable', 'string', 'max:100'],
             'valid_from' => ['required', 'date'],
             'valid_to' => ['nullable', 'date', 'after_or_equal:valid_from'],
             'full_day_amount' => ['required', 'numeric', 'min:0'],

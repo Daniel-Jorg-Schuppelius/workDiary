@@ -5,8 +5,19 @@ import "flatpickr/dist/flatpickr.min.css";
 import { German } from "flatpickr/dist/l10n/de.js";
 import weekSelect from "flatpickr/dist/plugins/weekSelect/weekSelect.js";
 import { bindPushToggle } from "./push.js";
+import { registerServiceWorker, bindInstallPrompt } from "./pwa.js";
 import { __ } from "./i18n.js";
 import "./sortable-tables.js";
+import "./bulk-selection.js";
+import "./global-search.js";
+
+// PWA: Service Worker registrieren + Install-Button binden.
+if (typeof window !== "undefined") {
+    window.addEventListener("load", () => {
+        registerServiceWorker();
+        bindInstallPrompt();
+    });
+}
 
 window.Alpine = Alpine;
 window.SignaturePad = SignaturePad;

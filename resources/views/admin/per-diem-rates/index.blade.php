@@ -39,6 +39,7 @@
         <x-slot:head>
             <tr>
                 <x-table.th sort="country">{{ __('Land') }}</x-table.th>
+                <x-table.th sort="region">{{ __('Region') }}</x-table.th>
                 <x-table.th sort="valid_from">{{ __('Gültig ab') }}</x-table.th>
                 <x-table.th sort="valid_to">{{ __('Gültig bis') }}</x-table.th>
                 <x-table.th sort="full" align="right">{{ __('Vollständig') }}</x-table.th>
@@ -52,6 +53,7 @@
         @forelse ($rates as $rate)
             <tr>
                 <td class="font-mono uppercase">{{ $rate->country }}</td>
+                <td>{{ $rate->region_label ?? '—' }}</td>
                 <td>{{ \Illuminate\Support\Carbon::parse($rate->valid_from)->format('d.m.Y') }}</td>
                 <td>{{ $rate->valid_to ? \Illuminate\Support\Carbon::parse($rate->valid_to)->format('d.m.Y') : '—' }}</td>
                 <td class="text-right tabular-nums">{{ number_format((float) $rate->full_day_amount, 2, ',', '.') }}</td>
@@ -76,7 +78,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">restaurant_menu</span>' :colspan="9" :title="__('Keine Pauschalensätze vorhanden')" compact />
+            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">restaurant_menu</span>' :colspan="10" :title="__('Keine Pauschalensätze vorhanden')" compact />
         @endforelse
     </x-table>
 

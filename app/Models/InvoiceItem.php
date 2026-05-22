@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
+ * @property int|null $organization_id
  * @property int $invoice_id
  * @property int|null $time_entry_id
  * @property int|null $expense_id
@@ -28,10 +30,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $position
  */
 class InvoiceItem extends Model {
+    use BelongsToOrganization;
+
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'invoice_id',
         'time_entry_id',
         'expense_id',

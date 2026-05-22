@@ -10,13 +10,19 @@
 
 namespace App\Services\Dashboard;
 
+use App\Enums\Expense\ExpenseStatus;
+use App\Enums\Expense\PerDiemTripStatus;
+use App\Enums\Vacation\VacationStatus;
 use App\Models\Attachment;
 use App\Models\Comment;
 use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
+use App\Models\Expense;
 use App\Models\OnCallShift;
+use App\Models\PerDiemTrip;
 use App\Models\ScheduledShift;
 use App\Models\User;
+use App\Models\Vacation;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -29,6 +35,7 @@ class DashboardService {
             'now' => $now,
             'user' => $this->personal($user, $now),
             'team' => $user->isAdmin() ? $this->team($now) : null,
+            'finance' => $this->finance($user, $now),
         ];
     }
 
@@ -159,6 +166,95 @@ class DashboardService {
                 'user_count' => $userCount,
             ],
             'recent_activity' => $recentActivity,
+        ];
+    }
+
+    /**
+     * Finanz- und Reise-KPIs: Monat-to-Date für den Benutzer + (für Admins) für
+     * den Approval-Stack der Organisation.
+     *
+     * @return array<string, mixed>
+     */
+    private function finance(User $user, CarbonImmutable $now): array {
+        $orgId = $user->organization_id;
+        $monthStart = $now->startOfMonth();
+        $monthEnd = $now->endOfMonth();
+
+        $expenseAggregates = Expense::query()
+            ->where('user_id', $user->id)
+            ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+            ->whereBetween('date', [$monthStart->toDateString(), $monthEnd->toDateString()])
+            ->selectRaw('
+                COALESCE(SUM(CASE WHEN status IN (?, ?, ?) THEN amount_gross ELSE 0 END), 0) AS submitted_gross,
+                COALESCE(SUM(CASE WHEN status = ? THEN amount_gross ELSE 0 END), 0) AS reimbursed_gross,
+                SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS pending_count,
+                SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS draft_count
+            ', [
+                ExpenseStatus::Pending->value,
+                ExpenseStatus::Approved->value,
+                ExpenseStatus::Reimbursed->value,
+                ExpenseStatus::Reimbursed->value,
+                ExpenseStatus::Pending->value,
+                ExpenseStatus::Draft->value,
+            ])
+            ->first();
+
+        $tripsThisMonth = PerDiemTrip::query()
+            ->where('user_id', $user->id)
+            ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+            ->where('started_at', '>=', $monthStart)
+            ->where('started_at', '<=', $monthEnd)
+            ->count();
+
+        $tripDrafts = PerDiemTrip::query()
+            ->where('user_id', $user->id)
+            ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+            ->where('status', PerDiemTripStatus::Draft)
+            ->count();
+
+        $vacationPending = Vacation::query()
+            ->where('user_id', $user->id)
+            ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+            ->where('status', VacationStatus::Pending)
+            ->count();
+
+        $vacationApprovedThisYear = Vacation::query()
+            ->where('user_id', $user->id)
+            ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+            ->where('status', VacationStatus::Approved)
+            ->whereYear('start_date', $now->year)
+            ->get(['start_date', 'end_date'])
+            ->sum(fn(Vacation $v) => $v->start_date->diffInDays($v->end_date) + 1);
+
+        $approverPending = null;
+        if ($user->isAdmin()) {
+            $approverPending = [
+                'expenses' => Expense::query()
+                    ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                    ->where('status', ExpenseStatus::Pending)
+                    ->count(),
+                'vacations' => Vacation::query()
+                    ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                    ->where('status', VacationStatus::Pending)
+                    ->count(),
+            ];
+        }
+
+        return [
+            'month' => [
+                'label' => $monthStart->translatedFormat('F Y'),
+                'expenses_submitted_gross' => (float) ($expenseAggregates->submitted_gross ?? 0),
+                'expenses_reimbursed_gross' => (float) ($expenseAggregates->reimbursed_gross ?? 0),
+                'expenses_pending_count' => (int) ($expenseAggregates->pending_count ?? 0),
+                'expenses_draft_count' => (int) ($expenseAggregates->draft_count ?? 0),
+                'trips_count' => $tripsThisMonth,
+                'trip_drafts' => $tripDrafts,
+            ],
+            'vacation' => [
+                'pending' => $vacationPending,
+                'approved_days_this_year' => (float) $vacationApprovedThisYear,
+            ],
+            'approver_pending' => $approverPending,
         ];
     }
 }

@@ -83,6 +83,7 @@ use App\Services\BrandingService;
 use App\Services\Routing\NominatimGeocoder;
 use App\Services\Routing\OsrmRouter;
 use App\Services\Timesheet\Stopwatch;
+use App\Services\Reminders\ReminderService;
 use App\Services\UI\DateRangeContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -114,6 +115,17 @@ class AppServiceProvider extends ServiceProvider {
         // BrandingService cached die Organisation pro Request → einmalig
         // pro Container-Lifecycle resolven.
         $this->app->singleton(BrandingService::class);
+
+        // Automation: RuleEngine bekommt alle registrierten Aktionen injiziert.
+        $this->app->singleton(\App\Automation\ConditionEvaluator::class);
+        $this->app->singleton(\App\Automation\RuleEngine::class, function ($app): \App\Automation\RuleEngine {
+            return new \App\Automation\RuleEngine(
+                $app->make(\App\Automation\ConditionEvaluator::class),
+                [
+                    $app->make(\App\Automation\Actions\ApproveExpenseAction::class),
+                ],
+            );
+        });
     }
 
     public function boot(): void {
@@ -192,6 +204,7 @@ class AppServiceProvider extends ServiceProvider {
         $this->registerAttendanceViewComposer();
         $this->registerDateRangeViewComposer();
         $this->registerBrandingViewComposer();
+        $this->registerReminderViewComposer();
 
         Password::defaults(function () {
             $rule = Password::min(12)
@@ -280,6 +293,28 @@ class AppServiceProvider extends ServiceProvider {
                 $current = null;
             }
             $view->with('attendanceCurrent', $current);
+        });
+    }
+
+    /**
+     * Stellt der App-Layout-View die kontextsensitiven Smart-Reminder
+     * (siehe `ReminderService::for()`) als `$reminderItems` zur Verfügung.
+     * Fällt bei Fehlern auf eine leere Liste zurück, damit das Layout
+     * (insb. die Fehlerseite) stets gerendert werden kann.
+     */
+    private function registerReminderViewComposer(): void {
+        View::composer('layouts.app', function ($view): void {
+            $items = [];
+            try {
+                $user = Auth::user();
+                if ($user instanceof User) {
+                    $items = app(ReminderService::class)->for($user);
+                }
+            } catch (\Throwable $e) {
+                report($e);
+                $items = [];
+            }
+            $view->with('reminderItems', $items);
         });
     }
 

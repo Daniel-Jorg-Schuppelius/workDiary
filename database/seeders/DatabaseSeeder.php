@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder {
         $this->call(EntryTypeSeeder::class);
         $this->call(ExpenseCategorySeeder::class);
         $this->call(PerDiemRateSeeder::class);
+        $this->call(PerDiemForeignRateSeeder::class);
 
         $org = Organization::where('slug', 'default')->first();
 

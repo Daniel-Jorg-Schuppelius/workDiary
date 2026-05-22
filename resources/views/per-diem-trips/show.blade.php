@@ -9,6 +9,9 @@
             <x-page-toolbar :title="$trip->location . ' · ' . $trip->started_at->format('d.m.Y')">
                 <x-slot:actions>
                     <span class="badge badge-{{ $trip->status->tone() }}">{{ $trip->status->label() }}</span>
+                    <x-icon-btn icon="picture_as_pdf" tone="ghost" size="sm"
+                                :href="route('per-diem-trips.pdf', $trip)"
+                                show-label>{{ __('PDF') }}</x-icon-btn>
                     @can('update', $trip)
                         <x-icon-btn icon="edit" tone="ghost" size="sm"
                                     data-entry-modal-trigger

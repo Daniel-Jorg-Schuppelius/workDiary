@@ -31,7 +31,31 @@
                         tone="info" />
         </div>
 
+        @php($bulkEnabled = $statusEnum === \App\Enums\Expense\ExpenseStatus::Pending && $expenses->isNotEmpty())
+
         <x-card padding="p-0">
+            @if ($bulkEnabled)
+                <form method="POST" action="{{ route('expense-approvals.bulk-approve') }}" data-bulk-form>
+                    @csrf
+                    <div class="px-3 pt-3">
+                        <x-bulk-toolbar :label="__(':n Spesen ausgewählt')">
+                            <x-slot:actions>
+                                <button type="submit"
+                                        formaction="{{ route('expense-approvals.bulk-approve') }}"
+                                        class="btn btn-success btn-sm"
+                                        onclick="return confirm('{{ __('Alle ausgewählten Spesen genehmigen?') }}');">
+                                    <x-icon name="check_circle" /> {{ __('Genehmigen') }}
+                                </button>
+                                <button type="submit"
+                                        formaction="{{ route('expense-approvals.bulk-reject') }}"
+                                        class="btn btn-error btn-sm"
+                                        onclick="return confirm('{{ __('Alle ausgewählten Spesen ablehnen?') }}');">
+                                    <x-icon name="block" /> {{ __('Ablehnen') }}
+                                </button>
+                            </x-slot:actions>
+                        </x-bulk-toolbar>
+                    </div>
+            @endif
             <x-table table-sort="server"
                      :route="route('expense-approvals.inbox')"
                      :current-sort="$sort ?? null"
@@ -40,6 +64,12 @@
                      bare>
                 <x-slot:head>
                     <tr>
+                        @if ($bulkEnabled)
+                            <th class="w-8">
+                                <input type="checkbox" class="checkbox checkbox-sm" data-bulk-select-all
+                                       aria-label="{{ __('Alle auswählen') }}">
+                            </th>
+                        @endif
                         <x-table.th sort="date" default>{{ __('Datum') }}</x-table.th>
                         <x-table.th sort="owner">{{ __('Mitarbeiter') }}</x-table.th>
                         <x-table.th>{{ __('Kategorie') }}</x-table.th>
@@ -51,6 +81,13 @@
                 </x-slot:head>
                 @forelse ($expenses as $expense)
                     <tr>
+                        @if ($bulkEnabled)
+                            <td>
+                                <input type="checkbox" class="checkbox checkbox-sm"
+                                       data-bulk-checkbox name="ids[]" value="{{ $expense->id }}"
+                                       aria-label="{{ __('Spese :id auswählen', ['id' => $expense->id]) }}">
+                            </td>
+                        @endif
                         <td class="whitespace-nowrap">{{ $expense->date->format('d.m.Y') }}</td>
                         <td>
                             <div class="font-medium">{{ $expense->user?->name ?? '—' }}</div>
@@ -117,11 +154,14 @@
                     </tr>
                 @empty
                     <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">inbox</span>'
-                                   :colspan="7"
+                                   :colspan="$bulkEnabled ? 8 : 7"
                                    :title="__('Keine Spesen in diesem Status')"
                                    compact />
                 @endforelse
             </x-table>
+            @if ($bulkEnabled)
+                </form>
+            @endif
         </x-card>
 
         @if ($expenses->hasPages())

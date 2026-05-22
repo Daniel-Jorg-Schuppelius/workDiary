@@ -11,6 +11,7 @@
 namespace App\Policies;
 
 use App\Models\Attachment;
+use App\Models\Organization;
 use App\Models\User;
 use App\Policies\Concerns\ChecksOwnership;
 use App\Policies\Concerns\HasAdminBypass;
@@ -19,8 +20,14 @@ class AttachmentPolicy {
     use ChecksOwnership;
     use HasAdminBypass;
 
+    /**
+     * Defense in Depth zusätzlich zum OrganizationScope: verweigert
+     * den Zugriff, sobald das Attachment einer anderen Organisation
+     * als der aktuell aktiven gehört. Greift auch in Konsolen-/Queue-
+     * Kontexten, in denen der Global Scope nicht aktiv ist.
+     */
     public function view(User $user, Attachment $attachment): bool {
-        return true;
+        return $this->sharesOrganization($user, $attachment);
     }
 
     public function create(User $user): bool {
@@ -28,6 +35,32 @@ class AttachmentPolicy {
     }
 
     public function delete(User $user, Attachment $attachment): bool {
-        return $this->owns($user, $attachment);
+        return $this->sharesOrganization($user, $attachment) && $this->owns($user, $attachment);
+    }
+
+    private function sharesOrganization(User $user, Attachment $attachment): bool {
+        $attachmentOrgId = $attachment->organization_id;
+
+        // Globale/legacy-Anhänge (kein Org-Bezug, z. B. Logo der
+        // Plattform-Organisation) bleiben für jeden eingeloggten
+        // Benutzer sichtbar.
+        if ($attachmentOrgId === null) {
+            return true;
+        }
+
+        $activeOrgId = null;
+        if (app()->bound('currentOrganization')) {
+            $current = app('currentOrganization');
+            if ($current instanceof Organization) {
+                $activeOrgId = $current->id;
+            }
+        }
+
+        if ($activeOrgId !== null) {
+            return (int) $attachmentOrgId === (int) $activeOrgId;
+        }
+
+        return $user->organization_id !== null
+            && (int) $attachmentOrgId === (int) $user->organization_id;
     }
 }

@@ -40,7 +40,7 @@ class DiaryWebRoutesTest extends TestCase {
 
     public function test_other_user_cannot_edit_foreign_entry(): void {
         $owner = User::factory()->user()->create();
-        $other = User::factory()->user()->create();
+        $other = User::factory()->user()->create(['organization_id' => $owner->organization_id]);
         $entry = DiaryEntry::factory()->for($owner)->create();
 
         $this->actingAs($other)

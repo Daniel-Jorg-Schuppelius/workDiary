@@ -106,7 +106,7 @@ class ArchiveTest extends TestCase {
 
     public function test_other_user_cannot_archive_foreign_entry(): void {
         $owner = User::factory()->user()->create();
-        $other = User::factory()->user()->create();
+        $other = User::factory()->user()->create(['organization_id' => $owner->organization_id]);
         $entry = DiaryEntry::factory()->for($owner)->create();
 
         $this->actingAs($other)
@@ -115,8 +115,8 @@ class ArchiveTest extends TestCase {
     }
 
     public function test_admin_can_archive_any_entry(): void {
-        $admin = User::factory()->admin()->create();
         $owner = User::factory()->user()->create();
+        $admin = User::factory()->admin()->create(['organization_id' => $owner->organization_id]);
         $entry = DiaryEntry::factory()->for($owner)->create();
 
         $this->actingAs($admin)

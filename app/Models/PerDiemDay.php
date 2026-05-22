@@ -11,6 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Expense\PerDiemDayKind;
+use App\Models\Concerns\BelongsToOrganization;
 use Database\Factories\PerDiemDayFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +20,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
+ * @property int|null $organization_id
  * @property int $per_diem_trip_id
  * @property Carbon $date
  * @property PerDiemDayKind $kind
@@ -37,10 +39,13 @@ use Illuminate\Support\Carbon;
  * @property string|null $notes
  */
 class PerDiemDay extends Model {
+    use BelongsToOrganization;
+
     /** @use HasFactory<PerDiemDayFactory> */
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'per_diem_trip_id',
         'date',
         'kind',

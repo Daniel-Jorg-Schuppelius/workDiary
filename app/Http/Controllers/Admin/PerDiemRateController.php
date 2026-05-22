@@ -31,6 +31,7 @@ class PerDiemRateController extends Controller {
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [
             'country' => 'country',
+            'region' => 'region_label',
             'valid_from' => 'valid_from',
             'valid_to' => 'valid_to',
             'full' => 'full_day_amount',

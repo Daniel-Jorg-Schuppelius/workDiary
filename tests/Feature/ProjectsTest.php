@@ -44,8 +44,9 @@ class ProjectsTest extends TestCase {
 
     public function test_non_owner_cannot_edit_foreign_project(): void {
         $owner = User::factory()->user()->create();
-        $other = User::factory()->user()->create();
+        $other = User::factory()->user()->create(['organization_id' => $owner->organization_id]);
         $project = Project::create([
+            'organization_id' => $owner->organization_id,
             'name' => 'Fremdes Projekt',
             'status' => ProjectStatus::Active->value,
             'created_by' => $owner->id,

@@ -134,6 +134,7 @@ class User extends Authenticatable {
         'home_lat',
         'home_lng',
         'preferences',
+        'calendar_feed_token',
     ];
 
     /** @var array<string, string> */

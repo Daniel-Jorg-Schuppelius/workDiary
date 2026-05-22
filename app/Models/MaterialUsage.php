@@ -11,6 +11,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
+ * @property int|null $organization_id
  * @property int $timesheet_id
  * @property int|null $material_id
  * @property string $description
@@ -29,11 +31,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class MaterialUsage extends Model {
     use Auditable;
+    use BelongsToOrganization;
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'timesheet_id',
         'material_id',
         'description',

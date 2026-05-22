@@ -127,4 +127,82 @@ class ExpenseApprovalController extends Controller {
         return redirect()->route('expense-approvals.inbox', ['status' => ExpenseStatus::Approved->value])
             ->with('success', __('Spese als erstattet markiert.'));
     }
+
+    /**
+     * Massen-Genehmigung: akzeptiert "ids[]" und genehmigt alle, die der Approver entscheiden darf
+     * und die aktuell auf Pending stehen. Übersprungene werden gezählt und im Flash kommuniziert.
+     */
+    public function bulkApprove(Request $request): RedirectResponse {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ]);
+
+        /** @var User $approver */
+        $approver = Auth::user();
+        $approved = 0;
+        $skipped = 0;
+
+        /** @var \Illuminate\Database\Eloquent\Collection<int, Expense> $expenses */
+        $expenses = Expense::query()
+            ->whereIn('id', $data['ids'])
+            ->when($approver->organization_id !== null, fn($q) => $q->where('organization_id', $approver->organization_id))
+            ->get();
+
+        foreach ($expenses as $expense) {
+            /** @var Expense $expense */
+            if (! Gate::allows('decide', $expense) || $expense->status !== ExpenseStatus::Pending) {
+                $skipped++;
+                continue;
+            }
+            $this->service->approve($expense, $approver);
+            $approved++;
+        }
+
+        $msg = __(':n Spesen genehmigt.', ['n' => $approved]);
+        if ($skipped > 0) {
+            $msg .= ' ' . __(':n übersprungen (Status oder Berechtigung).', ['n' => $skipped]);
+        }
+
+        return redirect()->route('expense-approvals.inbox')->with('success', $msg);
+    }
+
+    /**
+     * Massen-Ablehnung mit optionalem gemeinsamem Grund.
+     */
+    public function bulkReject(Request $request): RedirectResponse {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+            'reject_reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        /** @var User $approver */
+        $approver = Auth::user();
+        $rejected = 0;
+        $skipped = 0;
+
+        /** @var \Illuminate\Database\Eloquent\Collection<int, Expense> $expenses */
+        $expenses = Expense::query()
+            ->whereIn('id', $data['ids'])
+            ->when($approver->organization_id !== null, fn($q) => $q->where('organization_id', $approver->organization_id))
+            ->get();
+
+        foreach ($expenses as $expense) {
+            /** @var Expense $expense */
+            if (! Gate::allows('decide', $expense) || $expense->status !== ExpenseStatus::Pending) {
+                $skipped++;
+                continue;
+            }
+            $this->service->reject($expense, $approver, $data['reject_reason'] ?? null);
+            $rejected++;
+        }
+
+        $msg = __(':n Spesen abgelehnt.', ['n' => $rejected]);
+        if ($skipped > 0) {
+            $msg .= ' ' . __(':n übersprungen (Status oder Berechtigung).', ['n' => $skipped]);
+        }
+
+        return redirect()->route('expense-approvals.inbox')->with('success', $msg);
+    }
 }

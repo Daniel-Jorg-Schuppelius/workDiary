@@ -11,6 +11,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Models\Concerns\BelongsToOrganization;
 use Database\Factories\AttachmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,6 +21,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
+ * @property int|null $organization_id
  * @property string $attachable_type
  * @property int $attachable_id
  * @property int|null $user_id
@@ -34,6 +36,7 @@ use Illuminate\Support\Carbon;
  */
 class Attachment extends Model {
     use Auditable;
+    use BelongsToOrganization;
 
     /** @use HasFactory<AttachmentFactory> */
     use HasFactory;
@@ -46,6 +49,7 @@ class Attachment extends Model {
     public const META_AVATAR = 'avatar';
 
     protected $fillable = [
+        'organization_id',
         'attachable_type',
         'attachable_id',
         'user_id',
@@ -61,6 +65,43 @@ class Attachment extends Model {
     protected $casts = [
         'size' => 'integer',
     ];
+
+    protected static function booted(): void {
+        // Letzte Verteidigungslinie für organization_id: weder ein
+        // gesetzter currentOrganization-Kontext (Trait-Hook) noch ein
+        // user_id-Fallback haben gegriffen — z. B. in Tests, die das
+        // Attachment per Factory ohne Auth/Org-Kontext anlegen. Wir
+        // leiten dann aus dem polymorphen Parent ab, damit Anhänge
+        // niemals als „Waisen" über den Org-Scope-Filter fallen.
+        static::creating(function (Attachment $attachment): void {
+            if (! empty($attachment->organization_id)) {
+                return;
+            }
+            if (empty($attachment->attachable_type) || empty($attachment->attachable_id)) {
+                return;
+            }
+            $class = $attachment->attachable_type;
+            if (! is_string($class) || ! class_exists($class)) {
+                return;
+            }
+            /** @var Model $parent */
+            $parent = (new $class)->newQueryWithoutScopes()->find($attachment->attachable_id);
+            if ($parent === null) {
+                return;
+            }
+
+            if ($class === \App\Models\Organization::class) {
+                $attachment->organization_id = $parent->getKey();
+
+                return;
+            }
+
+            $parentOrg = $parent->getAttribute('organization_id');
+            if (! empty($parentOrg)) {
+                $attachment->organization_id = (int) $parentOrg;
+            }
+        });
+    }
 
     /** @return MorphTo<Model, $this> */
     public function attachable(): MorphTo {

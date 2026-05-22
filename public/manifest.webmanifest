@@ -1,0 +1,44 @@
+{
+  "name": "workDiary",
+  "short_name": "workDiary",
+  "description": "Tagebuch, Zeiterfassung, Spesen und Schichtplan in einem.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1d232a",
+  "theme_color": "#1d232a",
+  "lang": "de-DE",
+  "categories": ["productivity", "business"],
+  "icons": [
+    {
+      "src": "/img/logo/workdiary-mark-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/logo/workdiary-mark-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "/dashboard"
+    },
+    {
+      "name": "Spesen erfassen",
+      "short_name": "Spese",
+      "url": "/expenses/create"
+    },
+    {
+      "name": "Stundenzettel",
+      "short_name": "Zeiten",
+      "url": "/timesheets"
+    }
+  ]
+}

@@ -34,9 +34,7 @@ class PermissionsSeeder extends Seeder {
         $registrar = app(PermissionRegistrar::class);
         $registrar->forgetCachedPermissions();
 
-        foreach (PermissionEnum::cases() as $permission) {
-            Permission::findOrCreate($permission->value, 'web');
-        }
+        self::ensurePermissionsExist();
 
         // Globaler Plattform-Admin (team_id = null): erhält alle Permissions.
         // Der Plattform-Admin überspringt zusätzlich alle Policies via
@@ -70,6 +68,14 @@ class PermissionsSeeder extends Seeder {
         $registrar ??= app(PermissionRegistrar::class);
         $registrar->setPermissionsTeamId($organization->id);
 
+        // Defense in Depth: bei Org-Creates über den OrganizationObserver
+        // (z. B. in Tests, Tenant-Registrierung, frischer DB) wurde der
+        // Haupt-PermissionsSeeder unter Umständen noch nicht ausgeführt
+        // und die referenzierten Spatie-Permissions existieren noch nicht.
+        // Ohne diese Sicherung würde syncPermissions() unten in eine
+        // PermissionDoesNotExist-Exception laufen und Org-Anlage scheitern.
+        self::ensurePermissionsExist();
+
         $teamForeign = config('permission.column_names.team_foreign_key', 'team_id');
         $rolesAndPermissions = self::defaultRoleMatrix();
 
@@ -88,6 +94,19 @@ class PermissionsSeeder extends Seeder {
             $role->syncPermissions(
                 array_map(static fn(PermissionEnum $p): string => $p->value, $permissions)
             );
+        }
+    }
+
+    /**
+     * Stellt sicher, dass alle in {@see PermissionEnum} definierten
+     * Permissions auf dem 'web'-Guard existieren. Idempotent. Wird vom
+     * Haupt-`run()` und vom Observer-Pfad gleichermaßen verwendet, damit
+     * Org-Erstellungen vor dem ersten Permissions-Seeding nicht in eine
+     * `PermissionDoesNotExist`-Exception laufen.
+     */
+    private static function ensurePermissionsExist(): void {
+        foreach (PermissionEnum::cases() as $permission) {
+            Permission::findOrCreate($permission->value, 'web');
         }
     }
 

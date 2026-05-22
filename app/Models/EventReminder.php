@@ -11,6 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Event\ReminderChannel;
+use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +19,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
+ * @property int|null $organization_id
  * @property int $event_id
  * @property int|null $user_id  null = an alle Teilnehmer
  * @property Carbon $remind_at
@@ -29,7 +31,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 class EventReminder extends Model {
+    use BelongsToOrganization;
+
     protected $fillable = [
+        'organization_id',
         'event_id',
         'user_id',
         'remind_at',

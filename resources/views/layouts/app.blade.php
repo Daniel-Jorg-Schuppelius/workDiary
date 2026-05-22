@@ -23,6 +23,16 @@
         <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('img/logo/workdiary-mark-192.png') }}">
         <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('img/logo/workdiary-mark-192.png') }}">
 
+        {{-- PWA: Manifest + Theme-Color + iOS-Hinweise. --}}
+        <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+        <meta name="theme-color" content="#1d232a" media="(prefers-color-scheme: dark)">
+        <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="workDiary">
+        <meta name="application-name" content="workDiary">
+
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=space-grotesk:400,500,700|ibm-plex-sans:400,500,600" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200&display=swap" rel="stylesheet">
@@ -374,6 +384,7 @@
                                     $adminNavItems[]  = ['route' => 'admin.entry-types.index',        'label' => __('Eintragstypen'),    'icon' => 'category',         'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.expense-categories.index',  'label' => __('Spesenkategorien'), 'icon' => 'receipt_long',     'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.per-diem-rates.index',      'label' => __('Verpflegungspauschalen'), 'icon' => 'restaurant_menu',  'modal' => false];
+                                    $adminNavItems[]  = ['route' => 'admin.automations.index',         'label' => __('Automatisierungen'), 'icon' => 'bolt',             'modal' => false];
                                 }
                                 if (! $isLegacyMode && \Illuminate\Support\Facades\Gate::allows('manage-access')) {
                                     $adminNavItems[] = ['route' => 'admin.access.index',             'label' => __('access.title.hub'), 'icon' => 'admin_panel_settings', 'modal' => false];
@@ -399,7 +410,8 @@
                             $userNavItems = [];
                             if (! $isLegacyMode) {
                                 $userNavItems[] = ['route' => 'account.profile.edit',  'label' => __('Profil bearbeiten'), 'modal' => true];
-                                $userNavItems[] = ['route' => 'account.work-schedule', 'label' => __('Arbeitszeit-Modell'), 'modal' => false];
+                                $userNavItems[] = ['route' => 'account.work-schedule', 'label' => __('Arbeitszeit-Modell'), 'modal' => true];
+                                $userNavItems[] = ['route' => 'account.calendar.show', 'label' => __('Kalender-Abo'), 'modal' => false];
                             } else {
                                 $userNavItems[] = ['route' => 'legacy.account.password.edit', 'label' => __('Passwort ändern'), 'modal' => true];
                             }
@@ -715,6 +727,66 @@
                         @endisset
 
                         <div class="flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
+                            @php
+                                $_reminders = $reminderItems ?? [];
+                                $_reminderTotal = collect($_reminders)->sum(fn($r) => is_object($r) ? $r->count : (int) ($r['count'] ?? 0));
+                                $_reminderHasError = collect($_reminders)->contains(fn($r) => (is_object($r) ? $r->severity : ($r['severity'] ?? '')) === 'error');
+                            @endphp
+                            @if (! $isLegacyMode)
+                            <div class="dropdown dropdown-end">
+                                <label tabindex="0"
+                                       class="btn btn-sm btn-ghost btn-square relative"
+                                       title="{{ __('Erinnerungen') }}"
+                                       aria-label="{{ __('Erinnerungen') }}">
+                                    <x-icon name="notifications" class="text-base" />
+                                    @if ($_reminderTotal > 0)
+                                        <span class="absolute -top-0.5 -right-0.5 badge badge-xs {{ $_reminderHasError ? 'badge-error' : 'badge-warning' }} text-[0.6rem] font-semibold">
+                                            {{ $_reminderTotal > 99 ? '99+' : $_reminderTotal }}
+                                        </span>
+                                    @endif
+                                </label>
+                                <div tabindex="0" class="dropdown-content z-50 mt-2 w-[min(22rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-0 shadow-lg overflow-hidden">
+                                    <div class="px-4 py-2 border-b border-base-200 flex items-center justify-between">
+                                        <span class="text-xs uppercase tracking-wider opacity-60">{{ __('Erinnerungen') }}</span>
+                                        @if (count($_reminders) > 0)
+                                            <span class="text-[0.65rem] opacity-50">{{ count($_reminders) }} {{ __('offen') }}</span>
+                                        @endif
+                                    </div>
+                                    <div class="max-h-96 overflow-y-auto">
+                                        @forelse ($_reminders as $_reminder)
+                                            @php
+                                                $_r = is_object($_reminder) ? $_reminder->toArray() : $_reminder;
+                                            @endphp
+                                            <a href="{{ $_r['url'] }}"
+                                               class="flex items-start gap-3 px-4 py-3 hover:bg-base-200 border-b border-base-200 last:border-b-0">
+                                                <span class="material-symbols-outlined text-base
+                                                    @if ($_r['severity'] === 'error') text-error
+                                                    @elseif ($_r['severity'] === 'warning') text-warning
+                                                    @else text-info @endif"
+                                                      aria-hidden="true">{{ $_r['icon'] }}</span>
+                                                <span class="flex-1 min-w-0">
+                                                    <span class="block text-sm font-medium">{{ $_r['title'] }}</span>
+                                                    <span class="block text-xs opacity-60 mt-0.5">{{ $_r['description'] }}</span>
+                                                </span>
+                                            </a>
+                                        @empty
+                                            <div class="px-4 py-6 text-center text-sm opacity-60">
+                                                <x-icon name="check_circle" class="text-success text-2xl block mb-1 mx-auto" />
+                                                {{ __('Alles erledigt.') }}
+                                            </div>
+                                        @endforelse
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            @if (! $isLegacyMode)
+                                <button type="button" data-global-search-open
+                                        class="btn btn-sm btn-ghost btn-square"
+                                        title="{{ __('Globale Suche (Strg+K / Cmd+K)') }}"
+                                        aria-label="{{ __('Globale Suche öffnen') }}">
+                                    <x-icon name="search" class="text-base" />
+                                </button>
+                            @endif
                             <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
                                 <span data-theme-label class="text-base leading-none">◐</span>
                             </button>
@@ -869,6 +941,12 @@
                 @endunless
             @endauth
         </header>
+
+        @auth
+            @if (! $isLegacyMode)
+                @include('partials.global-search')
+            @endif
+        @endauth
 
         @auth
         @unless ($isLegacyMode)

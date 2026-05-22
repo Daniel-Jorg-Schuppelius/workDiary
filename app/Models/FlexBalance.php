@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
+ * @property int|null $organization_id
  * @property int $user_id
  * @property int $year
  * @property int $month
@@ -29,10 +31,13 @@ use Illuminate\Support\Carbon;
  * @property bool $locked
  */
 class FlexBalance extends Model {
+    use BelongsToOrganization;
+
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'user_id',
         'year',
         'month',

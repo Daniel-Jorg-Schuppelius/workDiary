@@ -1,0 +1,184 @@
+{
+    "_meta": {
+        "title": "BMF Auslandsverpflegungspauschalen",
+        "source": "BMF-Schreiben vom 02.12.2024 (BStBl I S. 1612) - Pauschbeträge für Verpflegungsmehraufwendungen und Übernachtungskosten für berufliche und betriebliche Auslandsreisen ab 01.01.2025",
+        "source_short": "BMF 2024-12-02 (Ausland ab 2025)",
+        "source_url": "https://www.bundesfinanzministerium.de/",
+        "currency": "EUR",
+        "valid_from": "2025-01-01",
+        "valid_to": null,
+        "disclaimer": "Diese Datei enthält eine kuratierte Auswahl der wichtigsten Destinationen aus der BMF-Auslandstabelle. Bitte vor steuerlich relevanter Nutzung mit dem aktuellen BMF-Schreiben abgleichen und um weitere Länder ergänzen. Werte für Voll-/Teiltag in EUR, Übernachtungspauschale (nur ohne Beleg ansetzbar) in EUR."
+    },
+    "rates": [
+        { "country": "AT", "region": null,             "full_day": 45, "partial_day": 30, "overnight": 108 },
+        { "country": "AT", "region": "Wien",           "full_day": 50, "partial_day": 33, "overnight": 108 },
+
+        { "country": "BE", "region": null,             "full_day": 36, "partial_day": 24, "overnight": 135 },
+        { "country": "BE", "region": "Brüssel",        "full_day": 47, "partial_day": 32, "overnight": 140 },
+
+        { "country": "CH", "region": null,             "full_day": 64, "partial_day": 43, "overnight": 186 },
+        { "country": "CH", "region": "Genf",           "full_day": 67, "partial_day": 45, "overnight": 216 },
+
+        { "country": "DK", "region": null,             "full_day": 75, "partial_day": 50, "overnight": 220 },
+
+        { "country": "ES", "region": null,             "full_day": 36, "partial_day": 24, "overnight": 118 },
+        { "country": "ES", "region": "Madrid",         "full_day": 36, "partial_day": 24, "overnight": 153 },
+        { "country": "ES", "region": "Barcelona",      "full_day": 36, "partial_day": 24, "overnight": 162 },
+        { "country": "ES", "region": "Kanarische Inseln", "full_day": 36, "partial_day": 24, "overnight": 116 },
+        { "country": "ES", "region": "Palma de Mallorca", "full_day": 36, "partial_day": 24, "overnight": 125 },
+
+        { "country": "FI", "region": null,             "full_day": 45, "partial_day": 30, "overnight": 123 },
+
+        { "country": "FR", "region": null,             "full_day": 50, "partial_day": 33, "overnight": 123 },
+        { "country": "FR", "region": "Paris",          "full_day": 58, "partial_day": 39, "overnight": 152 },
+        { "country": "FR", "region": "Straßburg",      "full_day": 51, "partial_day": 34, "overnight": 120 },
+        { "country": "FR", "region": "Lyon",           "full_day": 53, "partial_day": 36, "overnight": 122 },
+        { "country": "FR", "region": "Marseille",      "full_day": 51, "partial_day": 34, "overnight": 110 },
+
+        { "country": "GB", "region": null,             "full_day": 47, "partial_day": 32, "overnight": 152 },
+        { "country": "GB", "region": "London",         "full_day": 66, "partial_day": 44, "overnight": 235 },
+        { "country": "GB", "region": "Edinburgh",      "full_day": 47, "partial_day": 32, "overnight": 170 },
+
+        { "country": "GR", "region": null,             "full_day": 36, "partial_day": 24, "overnight": 127 },
+        { "country": "GR", "region": "Athen",          "full_day": 36, "partial_day": 24, "overnight": 132 },
+
+        { "country": "HR", "region": null,             "full_day": 40, "partial_day": 27, "overnight": 89 },
+
+        { "country": "HU", "region": null,             "full_day": 41, "partial_day": 28, "overnight": 100 },
+        { "country": "HU", "region": "Budapest",       "full_day": 41, "partial_day": 28, "overnight": 127 },
+
+        { "country": "IE", "region": null,             "full_day": 58, "partial_day": 39, "overnight": 129 },
+
+        { "country": "IT", "region": null,             "full_day": 40, "partial_day": 27, "overnight": 127 },
+        { "country": "IT", "region": "Mailand",        "full_day": 46, "partial_day": 31, "overnight": 180 },
+        { "country": "IT", "region": "Rom",            "full_day": 46, "partial_day": 31, "overnight": 164 },
+        { "country": "IT", "region": "Florenz",        "full_day": 40, "partial_day": 27, "overnight": 154 },
+        { "country": "IT", "region": "Venedig",        "full_day": 40, "partial_day": 27, "overnight": 145 },
+
+        { "country": "LU", "region": null,             "full_day": 47, "partial_day": 32, "overnight": 130 },
+
+        { "country": "NL", "region": null,             "full_day": 47, "partial_day": 32, "overnight": 132 },
+        { "country": "NL", "region": "Amsterdam",      "full_day": 47, "partial_day": 32, "overnight": 178 },
+
+        { "country": "NO", "region": null,             "full_day": 80, "partial_day": 53, "overnight": 172 },
+
+        { "country": "PL", "region": null,             "full_day": 30, "partial_day": 20, "overnight": 86 },
+        { "country": "PL", "region": "Warschau",       "full_day": 30, "partial_day": 20, "overnight": 119 },
+        { "country": "PL", "region": "Krakau",         "full_day": 30, "partial_day": 20, "overnight": 86 },
+
+        { "country": "PT", "region": null,             "full_day": 36, "partial_day": 24, "overnight": 95 },
+        { "country": "PT", "region": "Lissabon",       "full_day": 36, "partial_day": 24, "overnight": 130 },
+
+        { "country": "RO", "region": null,             "full_day": 32, "partial_day": 21, "overnight": 89 },
+        { "country": "RO", "region": "Bukarest",       "full_day": 32, "partial_day": 21, "overnight": 137 },
+
+        { "country": "SE", "region": null,             "full_day": 50, "partial_day": 33, "overnight": 156 },
+
+        { "country": "SI", "region": null,             "full_day": 38, "partial_day": 25, "overnight": 109 },
+
+        { "country": "SK", "region": null,             "full_day": 34, "partial_day": 23, "overnight": 99 },
+
+        { "country": "CZ", "region": null,             "full_day": 32, "partial_day": 21, "overnight": 97 },
+        { "country": "CZ", "region": "Prag",           "full_day": 39, "partial_day": 26, "overnight": 138 },
+
+        { "country": "BG", "region": null,             "full_day": 22, "partial_day": 15, "overnight": 72 },
+
+        { "country": "LT", "region": null,             "full_day": 29, "partial_day": 20, "overnight": 100 },
+        { "country": "LV", "region": null,             "full_day": 30, "partial_day": 20, "overnight": 80 },
+        { "country": "EE", "region": null,             "full_day": 32, "partial_day": 21, "overnight": 100 },
+
+        { "country": "MT", "region": null,             "full_day": 45, "partial_day": 30, "overnight": 102 },
+        { "country": "CY", "region": null,             "full_day": 39, "partial_day": 26, "overnight": 90 },
+
+        { "country": "IS", "region": null,             "full_day": 53, "partial_day": 36, "overnight": 105 },
+
+        { "country": "RS", "region": null,             "full_day": 30, "partial_day": 20, "overnight": 95 },
+        { "country": "TR", "region": null,             "full_day": 26, "partial_day": 17, "overnight": 82 },
+        { "country": "TR", "region": "Istanbul",       "full_day": 31, "partial_day": 21, "overnight": 170 },
+
+        { "country": "RU", "region": null,             "full_day": 30, "partial_day": 20, "overnight": 95 },
+        { "country": "RU", "region": "Moskau",         "full_day": 30, "partial_day": 20, "overnight": 110 },
+
+        { "country": "UA", "region": null,             "full_day": 32, "partial_day": 21, "overnight": 100 },
+
+        { "country": "US", "region": null,             "full_day": 64, "partial_day": 43, "overnight": 192 },
+        { "country": "US", "region": "New York",       "full_day": 72, "partial_day": 48, "overnight": 308 },
+        { "country": "US", "region": "Los Angeles",    "full_day": 71, "partial_day": 48, "overnight": 253 },
+        { "country": "US", "region": "San Francisco",  "full_day": 68, "partial_day": 45, "overnight": 362 },
+        { "country": "US", "region": "Washington, D.C.", "full_day": 71, "partial_day": 48, "overnight": 258 },
+        { "country": "US", "region": "Boston",         "full_day": 67, "partial_day": 45, "overnight": 270 },
+        { "country": "US", "region": "Chicago",        "full_day": 60, "partial_day": 40, "overnight": 196 },
+        { "country": "US", "region": "Miami",          "full_day": 64, "partial_day": 43, "overnight": 240 },
+
+        { "country": "CA", "region": null,             "full_day": 50, "partial_day": 33, "overnight": 124 },
+        { "country": "CA", "region": "Toronto",        "full_day": 50, "partial_day": 33, "overnight": 176 },
+        { "country": "CA", "region": "Ottawa",         "full_day": 47, "partial_day": 32, "overnight": 153 },
+        { "country": "CA", "region": "Vancouver",      "full_day": 50, "partial_day": 33, "overnight": 161 },
+
+        { "country": "MX", "region": null,             "full_day": 33, "partial_day": 22, "overnight": 117 },
+        { "country": "MX", "region": "Mexiko-Stadt",   "full_day": 41, "partial_day": 28, "overnight": 137 },
+
+        { "country": "BR", "region": null,             "full_day": 38, "partial_day": 25, "overnight": 95 },
+        { "country": "BR", "region": "São Paulo",      "full_day": 45, "partial_day": 30, "overnight": 171 },
+        { "country": "BR", "region": "Rio de Janeiro", "full_day": 47, "partial_day": 32, "overnight": 145 },
+        { "country": "BR", "region": "Brasilia",       "full_day": 42, "partial_day": 28, "overnight": 132 },
+
+        { "country": "AR", "region": null,             "full_day": 36, "partial_day": 24, "overnight": 102 },
+
+        { "country": "JP", "region": null,             "full_day": 55, "partial_day": 37, "overnight": 170 },
+        { "country": "JP", "region": "Tokio",          "full_day": 70, "partial_day": 47, "overnight": 233 },
+
+        { "country": "CN", "region": null,             "full_day": 36, "partial_day": 24, "overnight": 85 },
+        { "country": "CN", "region": "Peking",         "full_day": 46, "partial_day": 31, "overnight": 127 },
+        { "country": "CN", "region": "Shanghai",       "full_day": 47, "partial_day": 32, "overnight": 172 },
+        { "country": "CN", "region": "Hongkong",       "full_day": 64, "partial_day": 43, "overnight": 197 },
+
+        { "country": "KR", "region": null,             "full_day": 50, "partial_day": 33, "overnight": 90 },
+        { "country": "KR", "region": "Seoul",          "full_day": 66, "partial_day": 44, "overnight": 180 },
+
+        { "country": "IN", "region": null,             "full_day": 30, "partial_day": 20, "overnight": 130 },
+        { "country": "IN", "region": "Mumbai",         "full_day": 35, "partial_day": 24, "overnight": 150 },
+        { "country": "IN", "region": "Neu-Delhi",      "full_day": 35, "partial_day": 24, "overnight": 130 },
+
+        { "country": "SG", "region": null,             "full_day": 53, "partial_day": 36, "overnight": 197 },
+
+        { "country": "TH", "region": null,             "full_day": 32, "partial_day": 21, "overnight": 105 },
+        { "country": "TH", "region": "Bangkok",        "full_day": 38, "partial_day": 25, "overnight": 110 },
+
+        { "country": "VN", "region": null,             "full_day": 28, "partial_day": 19, "overnight": 86 },
+
+        { "country": "ID", "region": null,             "full_day": 31, "partial_day": 21, "overnight": 95 },
+
+        { "country": "PH", "region": null,             "full_day": 30, "partial_day": 20, "overnight": 90 },
+
+        { "country": "MY", "region": null,             "full_day": 36, "partial_day": 24, "overnight": 110 },
+
+        { "country": "TW", "region": null,             "full_day": 39, "partial_day": 26, "overnight": 110 },
+
+        { "country": "AE", "region": null,             "full_day": 47, "partial_day": 32, "overnight": 146 },
+        { "country": "AE", "region": "Dubai",          "full_day": 47, "partial_day": 32, "overnight": 146 },
+
+        { "country": "SA", "region": null,             "full_day": 47, "partial_day": 32, "overnight": 100 },
+
+        { "country": "QA", "region": null,             "full_day": 64, "partial_day": 43, "overnight": 200 },
+
+        { "country": "IL", "region": null,             "full_day": 53, "partial_day": 36, "overnight": 175 },
+
+        { "country": "EG", "region": null,             "full_day": 32, "partial_day": 21, "overnight": 119 },
+
+        { "country": "MA", "region": null,             "full_day": 32, "partial_day": 21, "overnight": 105 },
+
+        { "country": "ZA", "region": null,             "full_day": 28, "partial_day": 19, "overnight": 123 },
+        { "country": "ZA", "region": "Kapstadt",       "full_day": 32, "partial_day": 21, "overnight": 142 },
+
+        { "country": "AU", "region": null,             "full_day": 60, "partial_day": 40, "overnight": 154 },
+        { "country": "AU", "region": "Sydney",         "full_day": 60, "partial_day": 40, "overnight": 186 },
+        { "country": "AU", "region": "Melbourne",      "full_day": 60, "partial_day": 40, "overnight": 173 },
+
+        { "country": "NZ", "region": null,             "full_day": 47, "partial_day": 32, "overnight": 108 },
+
+        { "country": "NG", "region": null,             "full_day": 33, "partial_day": 22, "overnight": 230 },
+
+        { "country": "KE", "region": null,             "full_day": 36, "partial_day": 24, "overnight": 142 }
+    ]
+}

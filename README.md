@@ -54,6 +54,19 @@ php artisan legacy:import-plan
 
 `legacy:import-plan` zeigt den Umfang der Alt-Daten an und ist die Grundlage fuer ein spaeteres echtes Importskript.
 
+## Feature-Roadmap
+
+Produktideen und spaetere Differenzierungsfeatures werden unter
+[`docs/features`](docs/features/README.md) gepflegt. WorkDiary wird dort als
+Aufzeichnungs- und Nachweissystem fuer Auftraege, Zeiten, Dienstmittel,
+Material, Fahrten, Belege und Freigaben beschrieben. Zeiterfassung ist als
+zeitliche Achse dieses Nachweises priorisiert. Die Roadmap beruecksichtigt
+ausserdem Mandantenfaehigkeit fuer lokale Installationen, Private-Cloud-Betrieb
+und SaaS. Datenschutz und Datensicherheit sind als zentrales Produktversprechen
+festgehalten: keine Datenverkaeufe, keine versteckte Weitergabe, klare
+Datenhoheit fuer Kunden. Konkrete Umsetzungspakete sollten spaeter als GitHub
+Issues angelegt und in den jeweiligen Feature-Dateien verlinkt werden.
+
 ## Architektur
 
 - `app/Models/Legacy/LegacyUser.php`: Legacy-Modell fuer die bestehende Tabelle `user`

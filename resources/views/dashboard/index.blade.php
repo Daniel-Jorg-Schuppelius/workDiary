@@ -7,6 +7,7 @@
         /** @var \Carbon\CarbonImmutable $now */
         /** @var array $user */
         /** @var array|null $team */
+        /** @var array $finance */
     @endphp
 
     <x-page-shell gap="6" class="mx-auto max-w-screen-2xl px-4 xl:px-8 2xl:px-12">
@@ -44,6 +45,68 @@
             <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                 <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Anstehende Notdienste') }}</p>
                 <p class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $user['kpi']['upcoming_emergencies'] }}</p>
+            </div>
+        </section>
+
+        {{-- Finanz & Reise (Monat-to-Date) --}}
+        <section>
+            <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold uppercase tracking-[0.2em] text-base-content/60">
+                {{ __('Finanzen & Reisen') }} · {{ $finance['month']['label'] ?? '' }}
+            </h2>
+            <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+                <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                    <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Spesen eingereicht (Brutto)') }}</p>
+                    <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums">
+                        {{ number_format((float) ($finance['month']['expenses_submitted_gross'] ?? 0), 2, ',', '.') }} €
+                    </p>
+                </div>
+                <div class="rounded-box border border-success/40 bg-success/5 p-4">
+                    <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Davon erstattet') }}</p>
+                    <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums text-success">
+                        {{ number_format((float) ($finance['month']['expenses_reimbursed_gross'] ?? 0), 2, ',', '.') }} €
+                    </p>
+                </div>
+                <div class="rounded-box border border-warning/40 bg-warning/5 p-4">
+                    <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Spesen ausstehend / Entwurf') }}</p>
+                    <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold">
+                        <span class="text-warning">{{ $finance['month']['expenses_pending_count'] ?? 0 }}</span>
+                        <span class="text-base-content/40 text-base font-normal">/</span>
+                        <span class="opacity-70">{{ $finance['month']['expenses_draft_count'] ?? 0 }}</span>
+                    </p>
+                </div>
+                <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                    <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Reisen (Monat) / Entwürfe') }}</p>
+                    <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold">
+                        {{ $finance['month']['trips_count'] ?? 0 }}
+                        <span class="text-base-content/40 text-base font-normal">/</span>
+                        <span class="opacity-70">{{ $finance['month']['trip_drafts'] ?? 0 }}</span>
+                    </p>
+                </div>
+                <div class="rounded-box border border-info/40 bg-info/5 p-4">
+                    <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Urlaub offen / genehmigt :year', ['year' => $now->year]) }}</p>
+                    <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold">
+                        <span class="text-info">{{ $finance['vacation']['pending'] ?? 0 }}</span>
+                        <span class="text-base-content/40 text-base font-normal">/</span>
+                        <span class="opacity-70">{{ rtrim(rtrim(number_format((float) ($finance['vacation']['approved_days_this_year'] ?? 0), 1, ',', '.'), '0'), ',') }} {{ __('Tage') }}</span>
+                    </p>
+                </div>
+                @if (! empty($finance['approver_pending']))
+                    <div class="rounded-box border border-error/40 bg-error/5 p-4 md:col-span-3">
+                        <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Genehmigungs-Stack (gesamt)') }}</p>
+                        <p class="mt-1 font-['Space_Grotesk'] text-xl font-bold flex items-center gap-4">
+                            <span class="inline-flex items-center gap-1.5">
+                                <x-icon name="receipt_long" class="text-base" />
+                                <span>{{ $finance['approver_pending']['expenses'] }}</span>
+                                <a href="{{ route('expense-approvals.inbox') }}" class="text-xs link link-hover opacity-70">{{ __('Spesen') }}</a>
+                            </span>
+                            <span class="inline-flex items-center gap-1.5">
+                                <x-icon name="beach_access" class="text-base" />
+                                <span>{{ $finance['approver_pending']['vacations'] }}</span>
+                                <a href="{{ route('vacations.index') }}" class="text-xs link link-hover opacity-70">{{ __('Urlaub') }}</a>
+                            </span>
+                        </p>
+                    </div>
+                @endif
             </div>
         </section>
 

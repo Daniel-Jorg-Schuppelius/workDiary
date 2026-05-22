@@ -80,7 +80,11 @@ class ScheduleTest extends TestCase {
 
     public function test_admin_can_update_shift(): void {
         $admin = User::factory()->admin()->create();
-        $shift = ScheduledShift::factory()->create(['created_by' => $admin->id]);
+        $shift = ScheduledShift::factory()->create([
+            'organization_id' => $admin->organization_id,
+            'user_id' => $admin->id,
+            'created_by' => $admin->id,
+        ]);
 
         $this->actingAs($admin)
             ->putJson(route('schedule.shifts.update', $shift), [
@@ -92,7 +96,11 @@ class ScheduleTest extends TestCase {
 
     public function test_admin_can_delete_shift(): void {
         $admin = User::factory()->admin()->create();
-        $shift = ScheduledShift::factory()->create(['created_by' => $admin->id]);
+        $shift = ScheduledShift::factory()->create([
+            'organization_id' => $admin->organization_id,
+            'user_id' => $admin->id,
+            'created_by' => $admin->id,
+        ]);
 
         $this->actingAs($admin)
             ->deleteJson(route('schedule.shifts.destroy', $shift))
@@ -147,7 +155,7 @@ class ScheduleTest extends TestCase {
 
     public function test_user_cannot_confirm_other_users_shift(): void {
         $user = User::factory()->user()->create();
-        $other = User::factory()->user()->create();
+        $other = User::factory()->user()->create(['organization_id' => $user->organization_id]);
         $shift = ScheduledShift::factory()
             ->published()
             ->create(['user_id' => $other->id]);

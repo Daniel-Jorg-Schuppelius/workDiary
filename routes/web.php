@@ -45,6 +45,7 @@ use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\FlexController;
 use App\Http\Controllers\FlexEligibilityController;
 use App\Http\Controllers\GeocodeController;
+use App\Http\Controllers\GlobalSearchController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IcsFeedController;
@@ -135,6 +136,10 @@ Route::post('/locale/{locale}', [LocaleController::class, 'switch'])->name('loca
 // Öffentlicher ICS-Feed (nur Visibility=Public Events)
 Route::get('calendar/public.ics', [IcsFeedController::class, 'public'])->name('events.ics.public');
 
+// Tokenisierter persönlicher Schedule-Feed (Urlaube + Schichten).
+Route::get('calendar/feed/{token}.ics', [IcsFeedController::class, 'personalSchedule'])
+    ->name('calendar.feed.personal');
+
 // Öffentlicher Stundenzettel-Sign-Link (Magic-Token)
 Route::get('sign/timesheet/{token}', [PublicSignatureController::class, 'show'])->name('timesheets.public-sign');
 Route::post('sign/timesheet/{token}', [PublicSignatureController::class, 'store'])->name('timesheets.public-sign.submit');
@@ -153,6 +158,14 @@ Route::middleware('auth')->group(function () {
 
     Route::get('account/profile', [ProfileController::class, 'edit'])->name('account.profile.edit');
     Route::put('account/profile', [ProfileController::class, 'update'])->name('account.profile.update');
+
+    // Persönlicher Kalender-Feed (Token-Generierung + Subscribe-URL).
+    Route::get('account/calendar', [\App\Http\Controllers\CalendarFeedController::class, 'show'])
+        ->name('account.calendar.show');
+    Route::post('account/calendar/rotate', [\App\Http\Controllers\CalendarFeedController::class, 'rotate'])
+        ->name('account.calendar.rotate');
+    Route::delete('account/calendar', [\App\Http\Controllers\CalendarFeedController::class, 'revoke'])
+        ->name('account.calendar.revoke');
 
     // Alle folgenden Routen gehören zum neuen System und sind nur für
     // dort freigeschaltete User (is_new_system=true) bzw. Admins erreichbar.
@@ -381,6 +394,7 @@ Route::middleware('auth')->group(function () {
         Route::get('per-diem-trips/create', [PerDiemTripController::class, 'create'])->name('per-diem-trips.create');
         Route::post('per-diem-trips', [PerDiemTripController::class, 'store'])->name('per-diem-trips.store');
         Route::get('per-diem-trips/{perDiemTrip}', [PerDiemTripController::class, 'show'])->name('per-diem-trips.show');
+        Route::get('per-diem-trips/{perDiemTrip}/pdf', [PerDiemTripController::class, 'pdf'])->name('per-diem-trips.pdf');
         Route::get('per-diem-trips/{perDiemTrip}/edit', [PerDiemTripController::class, 'edit'])->name('per-diem-trips.edit');
         Route::put('per-diem-trips/{perDiemTrip}', [PerDiemTripController::class, 'update'])->name('per-diem-trips.update');
         Route::delete('per-diem-trips/{perDiemTrip}', [PerDiemTripController::class, 'destroy'])->name('per-diem-trips.destroy');
@@ -394,6 +408,8 @@ Route::middleware('auth')->group(function () {
         Route::get('expense-approvals/{expense}/reject', [ExpenseApprovalController::class, 'rejectForm'])->name('expense-approvals.reject-form');
         Route::post('expense-approvals/{expense}/reject', [ExpenseApprovalController::class, 'reject'])->name('expense-approvals.reject');
         Route::post('expense-approvals/{expense}/reimburse', [ExpenseApprovalController::class, 'markReimbursed'])->name('expense-approvals.reimburse');
+        Route::post('expense-approvals/bulk-approve', [ExpenseApprovalController::class, 'bulkApprove'])->name('expense-approvals.bulk-approve');
+        Route::post('expense-approvals/bulk-reject', [ExpenseApprovalController::class, 'bulkReject'])->name('expense-approvals.bulk-reject');
 
         // ── Touren ─────────────────────────────────────────────────────────
         Route::get('tours', [TourController::class, 'index'])->name('tours.index');
@@ -426,6 +442,9 @@ Route::middleware('auth')->group(function () {
 
         // ── Geocoding (intern) ──────────────────────────────────────────────
         Route::post('api/internal/geocode', GeocodeController::class)->name('api.internal.geocode');
+
+        // ── Globale Suche / Command-Palette ─────────────────────────────────
+        Route::get('api/internal/search', GlobalSearchController::class)->name('api.internal.search');
 
         // ── Globale Zeitauswahl (Header-Widget) ─────────────────────────────────
         Route::post('ui/date-range', [DateRangeController::class, 'update'])->name('ui.date-range.update');
@@ -519,6 +538,18 @@ Route::middleware('auth')->group(function () {
             ->names('admin.per-diem-rates')
             ->parameters(['per-diem-rates' => 'perDiemRate'])
             ->except('show');
+
+        // Workflow-Automatisierungen (Wenn-Dann-Regeln pro Org).
+        Route::get('admin/automations', [\App\Http\Controllers\Admin\AutomationRuleController::class, 'index'])
+            ->name('admin.automations.index');
+        Route::post('admin/automations', [\App\Http\Controllers\Admin\AutomationRuleController::class, 'store'])
+            ->name('admin.automations.store');
+        Route::get('admin/automations/{automationRule}', [\App\Http\Controllers\Admin\AutomationRuleController::class, 'show'])
+            ->name('admin.automations.show');
+        Route::post('admin/automations/{automationRule}/toggle', [\App\Http\Controllers\Admin\AutomationRuleController::class, 'toggle'])
+            ->name('admin.automations.toggle');
+        Route::delete('admin/automations/{automationRule}', [\App\Http\Controllers\Admin\AutomationRuleController::class, 'destroy'])
+            ->name('admin.automations.destroy');
 
         Route::resource('org/members', OrgMemberController::class)
             ->names('org.members')

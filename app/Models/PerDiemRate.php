@@ -21,6 +21,7 @@ use Illuminate\Support\Str;
 /**
  * @property int $id
  * @property string $country  ISO 3166-1 alpha-2
+ * @property string|null $region_label  Stadt/Region für Sondertarife (null = Standard)
  * @property Carbon $valid_from
  * @property Carbon|null $valid_to
  * @property string $full_day_amount
@@ -37,6 +38,7 @@ class PerDiemRate extends Model {
 
     protected $fillable = [
         'country',
+        'region_label',
         'valid_from',
         'valid_to',
         'full_day_amount',
@@ -68,6 +70,27 @@ class PerDiemRate extends Model {
      */
     public function scopeForCountry(Builder $query, string $country): Builder {
         return $query->where('country', Str::upper($country));
+    }
+
+    /**
+     * Region-Filter mit Fallback-Semantik:
+     *  - $region === null: nur Standard-Sätze (region_label IS NULL).
+     *  - $region !== null: exakte Region ODER Standard (region_label IS NULL).
+     *
+     * Wird typischerweise mit orderByRaw kombiniert, damit Region-Treffer
+     * vor dem Standard-Fallback erscheinen.
+     *
+     * @param  Builder<PerDiemRate>  $query
+     * @return Builder<PerDiemRate>
+     */
+    public function scopeForRegion(Builder $query, ?string $region): Builder {
+        if ($region === null || $region === '') {
+            return $query->whereNull('region_label');
+        }
+
+        return $query->where(function (Builder $q) use ($region): void {
+            $q->where('region_label', $region)->orWhereNull('region_label');
+        });
     }
 
     /**

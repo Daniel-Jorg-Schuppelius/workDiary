@@ -12,6 +12,7 @@ namespace App\Models;
 
 use App\Enums\Event\ParticipantRole;
 use App\Enums\Event\ParticipantStatus;
+use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
@@ -21,6 +22,7 @@ use Illuminate\Support\Carbon;
  * (markAttended, markDeclined, …) und sauberes Enum-Casting.
  *
  * @property int $event_id
+ * @property int|null $organization_id
  * @property int $user_id
  * @property ParticipantRole $role
  * @property ParticipantStatus $status
@@ -31,6 +33,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $notes
  */
 class EventParticipant extends Pivot {
+    use BelongsToOrganization;
+
     protected $table = 'event_user';
 
     public $incrementing = true;
@@ -46,6 +50,22 @@ class EventParticipant extends Pivot {
         'certificate_issued_at' => 'date',
         'certificate_expires_at' => 'date',
     ];
+
+    protected static function booted(): void {
+        // Pivot-Inserts via Event::participants()->attach()/sync() laufen
+        // ohne den HTTP-Request-Kontext durch und der OrganizationScope-Hook
+        // im Trait würde organization_id nicht setzen. Hier den Wert noch
+        // einmal explizit aus dem Event ableiten.
+        static::creating(function (self $pivot): void {
+            if (! empty($pivot->organization_id) || empty($pivot->event_id)) {
+                return;
+            }
+            $event = Event::query()->withoutGlobalScopes()->find($pivot->event_id);
+            if ($event instanceof Event && ! empty($event->organization_id)) {
+                $pivot->organization_id = $event->organization_id;
+            }
+        });
+    }
 
     public function markAttended(?Carbon $at = null): void {
         $this->forceFill([

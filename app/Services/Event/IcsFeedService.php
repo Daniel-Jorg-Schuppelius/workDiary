@@ -11,8 +11,12 @@
 namespace App\Services\Event;
 
 use App\Enums\Event\EventVisibility;
+use App\Enums\Vacation\VacationStatus;
 use App\Models\Event;
+use App\Models\ScheduledShift;
 use App\Models\User;
+use App\Models\Vacation;
+use Carbon\CarbonImmutable;
 use DateTimeZone;
 use Spatie\IcalendarGenerator\Components\Calendar;
 use Spatie\IcalendarGenerator\Components\Event as IcsEvent;
@@ -48,6 +52,67 @@ class IcsFeedService {
             ->get();
 
         return $this->build($events->all(), 'workDiary – Öffentliche Veranstaltungen');
+    }
+
+    /**
+     * Persönlicher Schedule-Feed: genehmigte Urlaube + veröffentlichte
+     * Schichten des Users. Wird via Token öffentlich abgerufen, damit
+     * externe Kalender (Google/Outlook/Apple) per URL-Subscribe synchronisieren.
+     */
+    public function feedPersonalSchedule(User $user): string {
+        $tz = new DateTimeZone((string) config('app.timezone', 'Europe/Berlin'));
+
+        $calendar = Calendar::create('workDiary – ' . $user->name)
+            ->productIdentifier((string) config('events.ics.product_id', '-//workDiary//Schedule//DE'))
+            ->refreshInterval(60);
+
+        $vacations = Vacation::query()
+            ->where('user_id', $user->id)
+            ->where('status', VacationStatus::Approved->value)
+            ->where('end_date', '>=', CarbonImmutable::now()->subYear()->toDateString())
+            ->orderBy('start_date')
+            ->get();
+
+        foreach ($vacations as $v) {
+            // DTEND ist bei VALUE=DATE exklusiv → +1 Tag (intern via fullDay())
+            $vac = IcsEvent::create(__('Urlaub: :name', ['name' => $user->name]))
+                ->uniqueIdentifier('vacation-' . $v->id . '@workdiary')
+                ->fullDay()
+                ->startsAt($v->start_date->copy()->toDateTimeImmutable())
+                ->endsAt($v->end_date->copy()->addDay()->toDateTimeImmutable());
+
+            $calendar->event($vac);
+        }
+
+        $shifts = ScheduledShift::query()
+            ->with('shiftType')
+            ->where('user_id', $user->id)
+            ->where('date', '>=', CarbonImmutable::now()->subMonths(2)->toDateString())
+            ->orderBy('date')
+            ->get();
+
+        foreach ($shifts as $s) {
+            if (! $s->start_time || ! $s->end_time) {
+                continue;
+            }
+            $date = $s->date->format('Y-m-d');
+            $start = CarbonImmutable::parse($date . ' ' . $s->start_time, $tz);
+            $end = CarbonImmutable::parse($date . ' ' . $s->end_time, $tz);
+            if ($end->lessThanOrEqualTo($start)) {
+                $end = $end->addDay();
+            }
+
+            $label = $s->shiftType?->name ?? __('Schicht');
+            $ics = IcsEvent::create((string) $label)
+                ->uniqueIdentifier('shift-' . $s->id . '@workdiary')
+                ->startsAt($start->toDateTimeImmutable())
+                ->endsAt($end->toDateTimeImmutable())
+                ->withoutTimezone();
+
+            $calendar->event($ics);
+        }
+
+        return $calendar->get();
     }
 
     /**

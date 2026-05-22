@@ -16,6 +16,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\PermissionRegistrar;
 
 /**
  * @extends Factory<User>
@@ -66,7 +67,7 @@ class UserFactory extends Factory {
 
     public function admin(): static {
         return $this->afterCreating(function (User $user): void {
-            $user->syncRoles([UserRole::Admin->value]);
+            self::syncRolesInOwnOrg($user, [UserRole::Admin->value]);
         });
     }
 
@@ -75,13 +76,47 @@ class UserFactory extends Factory {
             'name' => 'TestUser ' . Str::random(8),
             'email' => 'user-' . Str::random(10) . '@example.test',
         ])->afterCreating(function (User $user): void {
-            $user->syncRoles([UserRole::User->value]);
+            self::syncRolesInOwnOrg($user, [UserRole::User->value]);
         });
     }
 
     public function callcenter(): static {
         return $this->afterCreating(function (User $user): void {
-            $user->syncRoles([UserRole::Callcenter->value]);
+            self::syncRolesInOwnOrg($user, [UserRole::Callcenter->value]);
         });
+    }
+
+    /**
+     * Spatie-Teams wertet Rollen relativ zum aktiven `setPermissionsTeamId`
+     * aus. In Tests bleibt dieser Kontext vom letzten Org-Create stehen –
+     * und wenn der Factory-User per ['organization_id' => …] in eine
+     * BESTEHENDE Org hereingehängt wird (typisch für Cross-Org-Tests),
+     * läuft `syncRoles()` sonst gegen die falsche Team-ID. Hier setzen wir
+     * den Kontext explizit auf die Org des Users, weisen die Rollen zu
+     * und stellen den vorherigen Kontext wieder her.
+     *
+     * @param  list<string>  $roles
+     */
+    private static function syncRolesInOwnOrg(User $user, array $roles): void {
+        if (empty($user->organization_id)) {
+            $user->syncRoles($roles);
+
+            return;
+        }
+
+        /** @var PermissionRegistrar $registrar */
+        $registrar = app(PermissionRegistrar::class);
+        $previous = $registrar->getPermissionsTeamId();
+        try {
+            $registrar->setPermissionsTeamId((int) $user->organization_id);
+            $user->syncRoles($roles);
+        } finally {
+            $registrar->setPermissionsTeamId($previous);
+            // Wichtig in Test-Setups: Spatie cached die geladene Permission-
+            // Map pro Container-Lifecycle. Ohne expliziten Reset würden
+            // nachfolgende Role-Checks im selben Test den veralteten
+            // (leeren) Stand für genau diesen User zurückgeben.
+            $registrar->forgetCachedPermissions();
+        }
     }
 }

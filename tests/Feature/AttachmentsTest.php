@@ -92,8 +92,11 @@ class AttachmentsTest extends TestCase {
 
     public function test_only_uploader_or_admin_can_delete(): void {
         $uploader = User::factory()->user()->create();
-        $other = User::factory()->user()->create();
-        $admin = User::factory()->admin()->create();
+        // $other muss in DERSELBEN Organisation wie $uploader sein – sonst
+        // filtert der OrganizationScope das Attachment vor der Policy aus
+        // und wir testen Tenant-Trennung, nicht Ownership.
+        $other = User::factory()->user()->create(['organization_id' => $uploader->organization_id]);
+        $admin = User::factory()->admin()->create(['organization_id' => $uploader->organization_id]);
         $entry = DiaryEntry::factory()->for($uploader)->create();
         $attachment = Attachment::factory()->for($uploader, 'uploader')->create([
             'attachable_type' => DiaryEntry::class,
@@ -109,7 +112,7 @@ class AttachmentsTest extends TestCase {
             ->assertRedirect();
         $this->assertNull(Attachment::find($attachment->id));
 
-        // Admin
+        // Admin (in der gleichen Org)
         $attachment2 = Attachment::factory()->for($uploader, 'uploader')->create([
             'attachable_type' => DiaryEntry::class,
             'attachable_id' => $entry->id,

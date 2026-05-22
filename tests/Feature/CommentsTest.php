@@ -27,7 +27,7 @@ class CommentsTest extends TestCase {
 
     public function test_authenticated_user_can_create_comment(): void {
         $owner = User::factory()->user()->create();
-        $author = User::factory()->user()->create();
+        $author = User::factory()->user()->create(['organization_id' => $owner->organization_id]);
         $entry = DiaryEntry::factory()->for($owner)->create();
 
         $this->actingAs($author)
@@ -67,7 +67,7 @@ class CommentsTest extends TestCase {
 
     public function test_other_user_cannot_update_or_delete_foreign_comment(): void {
         $author = User::factory()->user()->create();
-        $other = User::factory()->user()->create();
+        $other = User::factory()->user()->create(['organization_id' => $author->organization_id]);
         $entry = DiaryEntry::factory()->for($author)->create();
         $comment = Comment::factory()->for($entry, 'commentable')->for($author)->create();
 
@@ -81,8 +81,8 @@ class CommentsTest extends TestCase {
     }
 
     public function test_admin_can_delete_any_comment(): void {
-        $admin = User::factory()->admin()->create();
         $author = User::factory()->user()->create();
+        $admin = User::factory()->admin()->create(['organization_id' => $author->organization_id]);
         $entry = DiaryEntry::factory()->for($author)->create();
         $comment = Comment::factory()->for($entry, 'commentable')->for($author)->create();
 

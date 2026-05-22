@@ -23,12 +23,15 @@ use App\Models\User;
 use App\Services\Expense\PerDiemEligibilityChecker;
 use App\Services\Expense\PerDiemTripService;
 use App\Support\SortableQuery;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class PerDiemTripController extends Controller {
     use ResolvesGlobalDateRange;
@@ -185,6 +188,26 @@ class PerDiemTripController extends Controller {
 
         return redirect()->route('per-diem-trips.index')
             ->with('success', __('Reise storniert.'));
+    }
+
+    /**
+     * Erzeugt die Reisekostenabrechnung als PDF (Verpflegungspauschale je Tag inkl. Kürzungen).
+     */
+    public function pdf(PerDiemTrip $perDiemTrip): SymfonyResponse {
+        Gate::authorize('view', $perDiemTrip);
+
+        $perDiemTrip->load(['days', 'user:id,name,email', 'project:id,name', 'customer:id,name']);
+
+        $slug = Str::slug($perDiemTrip->location ?: 'reise');
+        $date = $perDiemTrip->started_at->format('Y-m-d');
+        $filename = sprintf('verpflegungspauschale-%s-%s-%d.pdf', $date, $slug ?: 'reise', $perDiemTrip->id);
+
+        /** @var \Barryvdh\DomPDF\PDF $pdf */
+        $pdf = Pdf::loadView('per-diem-trips.pdf', [
+            'trip' => $perDiemTrip,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->download($filename);
     }
 
     public function fromTravelLog(TravelLog $travelLog): RedirectResponse {

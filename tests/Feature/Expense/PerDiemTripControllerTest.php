@@ -98,4 +98,43 @@ class PerDiemTripControllerTest extends TestCase {
         $this->delete(route('per-diem-trips.destroy', $trip))->assertRedirect();
         $this->assertSame(0, PerDiemTrip::query()->count());
     }
+
+    public function test_pdf_download_returns_attachment(): void {
+        $this->actingAs($this->user);
+        $this->post(route('per-diem-trips.store'), [
+            'country' => 'DE',
+            'location' => 'Hamburg',
+            'purpose' => 'Audit',
+            'started_at' => '2025-03-10T08:00',
+            'ended_at' => '2025-03-12T18:00',
+            'accommodation_provided' => 0,
+        ]);
+        $trip = PerDiemTrip::query()->where('user_id', $this->user->id)->firstOrFail();
+
+        $response = $this->get(route('per-diem-trips.pdf', $trip));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+        $disposition = $response->headers->get('content-disposition');
+        $this->assertNotNull($disposition);
+        $this->assertStringContainsString('attachment', $disposition);
+        $this->assertStringContainsString('verpflegungspauschale-2025-03-10-hamburg', $disposition);
+        $this->assertStringStartsWith('%PDF', $response->getContent() ?: '');
+    }
+
+    public function test_pdf_forbidden_for_other_user(): void {
+        $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $this->actingAs($this->user);
+        $this->post(route('per-diem-trips.store'), [
+            'country' => 'DE',
+            'location' => 'Köln',
+            'purpose' => 'Schulung',
+            'started_at' => '2025-03-10T08:00',
+            'ended_at' => '2025-03-11T18:00',
+        ]);
+        $trip = PerDiemTrip::query()->where('user_id', $this->user->id)->firstOrFail();
+
+        $this->actingAs($other);
+        $this->get(route('per-diem-trips.pdf', $trip))->assertForbidden();
+    }
 }

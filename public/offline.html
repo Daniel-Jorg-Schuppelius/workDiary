@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="de">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Offline – workDiary</title>
+        <link rel="manifest" href="/manifest.webmanifest">
+        <meta name="theme-color" content="#1d232a">
+        <link rel="icon" type="image/x-icon" href="/favicon.ico">
+        <style>
+            html, body { height: 100%; margin: 0; }
+            body {
+                font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+                background: #1d232a;
+                color: #e5e7eb;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 1.5rem;
+                text-align: center;
+            }
+            .card {
+                max-width: 32rem;
+                background: rgba(255,255,255,0.04);
+                border: 1px solid rgba(255,255,255,0.08);
+                border-radius: 1rem;
+                padding: 2rem;
+            }
+            h1 { margin: 0 0 0.5rem; font-size: 1.5rem; }
+            p { color: #9ca3af; line-height: 1.5; }
+            button {
+                margin-top: 1.5rem;
+                background: #2563eb;
+                color: white;
+                border: 0;
+                padding: 0.75rem 1.25rem;
+                border-radius: 0.5rem;
+                font: inherit;
+                cursor: pointer;
+            }
+            img { width: 64px; height: 64px; margin-bottom: 1rem; }
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <img src="/img/logo/workdiary-mark-192.png" alt="">
+            <h1>Du bist offline</h1>
+            <p>
+                workDiary kann den angeforderten Inhalt gerade nicht laden. Sobald deine Verbindung wieder steht, ist die App wie gewohnt verfügbar.
+            </p>
+            <button type="button" onclick="location.reload()">Erneut versuchen</button>
+        </div>
+    </body>
+</html>

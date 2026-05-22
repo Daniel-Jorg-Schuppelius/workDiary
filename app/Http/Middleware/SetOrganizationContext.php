@@ -46,7 +46,19 @@ class SetOrganizationContext {
                 // damit Org-spezifische Rollen-Zuweisungen ausgewertet werden.
                 // Globale Rollen (team_id = NULL, z. B. der Plattform-"admin")
                 // bleiben in jedem Kontext gültig.
-                app(PermissionRegistrar::class)->setPermissionsTeamId($org->id);
+                $registrar = app(PermissionRegistrar::class);
+                $registrar->setPermissionsTeamId($org->id);
+
+                // Spatie's HasRoles cached die geladenen Rollen/Permissions
+                // sowohl global im Registrar als auch in den geladenen
+                // Eloquent-Relationen des Users. Nach einem Wechsel des
+                // Team-Kontexts (Admin-Override, frischer Request nach
+                // Login, Test-Setup mit mehreren `actingAs`-Calls) muss
+                // beides zurückgesetzt werden, sonst werten Policies und
+                // `isAdmin()`-Checks gegen den alten Team-Cache aus.
+                $registrar->forgetCachedPermissions();
+                $user->unsetRelation('roles');
+                $user->unsetRelation('permissions');
             }
         }
 

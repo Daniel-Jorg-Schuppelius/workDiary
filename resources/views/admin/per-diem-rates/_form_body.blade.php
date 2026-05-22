@@ -13,6 +13,14 @@
                value="{{ old('currency', $rate->currency ?? 'EUR') }}"
                class="input input-bordered w-full uppercase">
     </div>
+    <div class="fieldset md:col-span-2">
+        <label class="fieldset-label">{{ __('Region / Stadt') }}</label>
+        <input type="text" name="region_label" maxlength="100"
+               value="{{ old('region_label', $rate->region_label) }}"
+               class="input input-bordered w-full"
+               placeholder="{{ __('z. B. New York, Paris, London – leer = Standardtarif des Landes') }}">
+        <p class="fieldset-label text-base-content/60">{{ __('Sondertarif für eine Stadt/Region nach BMF-Auslandstabelle. Leer lassen für den Standardtarif des Landes.') }}</p>
+    </div>
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Gültig ab') }} *</label>
         <input type="date" name="valid_from" required

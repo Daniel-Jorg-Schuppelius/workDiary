@@ -24,6 +24,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -50,6 +51,14 @@ return Application::configure(basePath: dirname(__DIR__))
             SetOrganizationContext::class,
             ForcePasswordChange::class,
         ]);
+
+        // SetOrganizationContext MUSS vor SubstituteBindings laufen, damit
+        // der OrganizationScope beim Route-Model-Binding bereits greift —
+        // sonst lädt Laravel {attachment} & Co. aus fremden Organisationen,
+        // bevor unsere Tenant-Trennung überhaupt aktiv wird. StartSession
+        // läuft per Priority-Liste vor SubstituteBindings, der Auth-Status
+        // ist also bereits verfügbar, wenn wir die Org auflösen.
+        $middleware->prependToPriorityList(SubstituteBindings::class, SetOrganizationContext::class);
         $middleware->alias([
             'legacy.callcenter.auth' => EnsureLegacyCallcenterAuthenticated::class,
             'legacy.write' => EnsureLegacyWriteAllowed::class,
