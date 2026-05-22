@@ -33,7 +33,7 @@ MVP-042), Spaltenwahl, Sort.
 - Erste Datenzeile, davor zwei Metadaten-Zeilen mit `#` Präfix
   (Report-Code, Stand, Filter-Hash) — Excel ignoriert diese mit
   `#`-Marker beim Import nicht; daher Org-Option `csv.meta_lines =
-  false` (Default true) zum Deaktivieren.
+false` (Default true) zum Deaktivieren.
 - Spalten enthalten Codes der Klassifikationen, **nicht** Labels
   (für stabile Auswertung), zusätzliche Label-Spalte rechts.
 

@@ -84,10 +84,10 @@ Vor dem Download wird eine **Inhalts-Übersicht** angezeigt:
 
 ## 6. Permissions
 
-| Permission                       | Wer                       |
-| -------------------------------- | ------------------------- |
-| `platform.support.export`        | Plattform-/Org-Admin      |
-| `platform.support.exportWithSamples` | Plattform-Admin       |
+| Permission                           | Wer                  |
+| ------------------------------------ | -------------------- |
+| `platform.support.export`            | Plattform-/Org-Admin |
+| `platform.support.exportWithSamples` | Plattform-Admin      |
 
 ## 7. Audit
 

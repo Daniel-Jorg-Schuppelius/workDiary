@@ -28,12 +28,12 @@ final class DrilldownDescriptor {
 
 Beispiele:
 
-| Kennzahl                         | Descriptor                                          |
-| -------------------------------- | --------------------------------------------------- |
-| `Kundenanalyse.reworkEntryCount` | target=entry, filter={customer:X, rework_reason__notnull, period} |
-| `Auftragstyp.overrunCount`       | target=entry, filter={entry_type:X, overrun:true, period}         |
+| Kennzahl                         | Descriptor                                                               |
+| -------------------------------- | ------------------------------------------------------------------------ |
+| `Kundenanalyse.reworkEntryCount` | target=entry, filter={customer:X, rework_reason\_\_notnull, period}      |
+| `Auftragstyp.overrunCount`       | target=entry, filter={entry_type:X, overrun:true, period}                |
 | `Produkt.openIssueCount`         | target=openIssue, filter={subject_type:asset, subject_id:X, status:open} |
-| `Kundenanalyse.totalMinutes`     | target=timeEntry, filter={customer:X, period}        |
+| `Kundenanalyse.totalMinutes`     | target=timeEntry, filter={customer:X, period}                            |
 
 ## 3. Routen
 
@@ -66,8 +66,7 @@ ausgeblendet (Filter wird zu seiner Sicht beschnitten); Hinweis
 ## 6. Akzeptanzkriterien
 
 1. `DrilldownDescriptor` von allen Report-Buildern erzeugt.
-2. Signed Filter-Token implementiert; manipulierte Filter → HTTP
-   400.
+2. Signed Filter-Token implementiert; manipulierte Filter → HTTP 400.
 3. Konsistenz-Check funktioniert; Hinweis angezeigt, wenn Wert
    abweicht.
 4. Berechtigungs-Filter mit Hinweis bei ausgeblendeten Treffern.
