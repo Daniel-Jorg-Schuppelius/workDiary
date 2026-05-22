@@ -95,7 +95,7 @@ class TenantTraitCoverageTest extends TestCase {
             [],
             $offenders,
             "Folgende Modelle nutzen weder BelongsToOrganization noch sind sie in der Allow-List "
-            . "(siehe docs/security/tenant-audit-2026.md):\n - " . implode("\n - ", $offenders),
+                . "(siehe docs/security/tenant-audit-2026.md):\n - " . implode("\n - ", $offenders),
         );
     }
 

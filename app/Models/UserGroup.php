@@ -80,10 +80,10 @@ class UserGroup extends Model {
                     // Global Scope umgangen, weil booted() im Admin-Kontext
                     // ohne gebundene currentOrganization läuft.
                     static::query()
-                        ->withoutGlobalScopes()
-                        ->where('organization_id', $group->organization_id)
-                        ->where('slug', $slug)
-                        ->exists()
+                    ->withoutGlobalScopes()
+                    ->where('organization_id', $group->organization_id)
+                    ->where('slug', $slug)
+                    ->exists()
                 ) {
                     $slug = $base . '-' . $i++;
                 }

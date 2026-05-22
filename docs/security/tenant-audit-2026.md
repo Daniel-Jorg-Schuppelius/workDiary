@@ -38,64 +38,64 @@ Legacy-Abschnitt dokumentiert.
 
 ### Tenant-scoped Kerngeschäftsmodelle
 
-| Modell | `organization_id` Migration | Abgeleitet von | Policy |
-| --- | --- | --- | --- |
-| Customer | 2026_05_12 | — | ✅ |
-| Project | 2026_05_12 | — | ✅ |
-| Task | 2026_05_12 | projects | ✅ |
-| Milestone | 2026_05_12 | — | ✅ |
-| DiaryEntry | 2026_05_12 | — | ✅ |
-| TimeEntry | 2026_05_12 | diary_entries | ✅ |
-| Timesheet | 2026_05_12 | — | ✅ |
-| Invoice | 2026_05_12 | — | ✅ |
-| InvoiceItem | 2026_05_25_140200 | invoices | ✅ |
-| Event | 2026_05_12 | — | ✅ |
-| PerDiemTrip | 2026_05_12 | — | ✅ |
+| Modell      | `organization_id` Migration | Abgeleitet von | Policy |
+| ----------- | --------------------------- | -------------- | ------ |
+| Customer    | 2026_05_12                  | —              | ✅     |
+| Project     | 2026_05_12                  | —              | ✅     |
+| Task        | 2026_05_12                  | projects       | ✅     |
+| Milestone   | 2026_05_12                  | —              | ✅     |
+| DiaryEntry  | 2026_05_12                  | —              | ✅     |
+| TimeEntry   | 2026_05_12                  | diary_entries  | ✅     |
+| Timesheet   | 2026_05_12                  | —              | ✅     |
+| Invoice     | 2026_05_12                  | —              | ✅     |
+| InvoiceItem | 2026_05_25_140200           | invoices       | ✅     |
+| Event       | 2026_05_12                  | —              | ✅     |
+| PerDiemTrip | 2026_05_12                  | —              | ✅     |
 
 ### Tenant-scoped Operativ-/Stammdaten-/Admin-Modelle
 
-| Modell | Kategorie | Migration | Hinweis |
-| --- | --- | --- | --- |
-| Attachment | Operativ | 2026_05_25_140000 | Polymorph, Backfill via `booted()` |
-| Comment | Operativ | 2026_05_25_140100 | Polymorph |
-| EventParticipant | Operativ | (Pivot) | Pivot `event_user` |
-| EventReminder | Operativ | 2026_05_25_140100 | abgeleitet von events |
-| ExternalReference | Operativ | 2026_05_12 | Polymorph |
-| RecurrenceRule | Operativ | 2026_05_12 | Polymorph |
-| MaterialUsage | Operativ | 2026_05_25_140200 | abgeleitet von timesheets |
-| PerDiemDay | Operativ | 2026_05_25_140200 | abgeleitet von per_diem_trips |
-| Vacation | Operativ | 2026_05_12 | — |
-| SickLeave | Operativ | 2026_05_12 | — |
-| Attendance | Operativ | 2026_05_12 | — |
-| TravelLog | Operativ | 2026_05_12 | — |
-| Tour | Operativ | 2026_05_12 | — |
-| OnCallShift | Operativ | 2026_05_12 | — |
-| ScheduledShift | Operativ | 2026_05_12 | — |
-| DutyPlan | Operativ | 2026_05_12 | — |
-| EmergencyAssignment | Operativ | 2026_05_12 | — |
-| EnergyLog | Operativ | 2026_05_12 | — |
-| Expense | Operativ | 2026_05_12 | — |
-| Tag | Operativ | 2026_05_12 | — |
-| WorkSchedule | Operativ | 2026_05_12 | — |
-| Qualification | Stammdaten | 2026_05_12 | — |
-| EntryType | Stammdaten | 2026_05_12 | — |
-| Vehicle | Stammdaten | 2026_05_12 | — |
-| Material | Stammdaten | 2026_05_12 | — |
-| ActivityCategory | Stammdaten | 2026_05_12 | — |
-| EventCategory | Stammdaten | 2026_05_12 | — |
-| ExpenseCategory | Stammdaten | 2026_05_12 | — |
-| ShiftType | Stammdaten | 2026_05_12 | — |
-| Room | Stammdaten | 2026_05_12 | — |
-| Holiday | Stammdaten | 2026_05_12 | — |
-| AutomationRule | Admin | 2026_05_12 | — |
-| AutomationRuleRun | Admin | 2026_05_25_140200 | abgeleitet von automation_rules |
-| AuditLog | Admin | 2026_05_12 | — |
-| CoverageRequirement | Admin | 2026_05_12 | — |
-| FlexEligibility | Admin | 2026_05_12 | — |
-| FlexBalance | Admin | 2026_05_25_140100 | abgeleitet von users |
-| LexofficeArticle | Admin | 2026_05_12 | — |
-| ProjectBillingRule | Admin | 2026_05_12 | abgeleitet von projects |
-| PushSubscription | Admin | 2026_05_25_140100 | abgeleitet von users |
+| Modell              | Kategorie  | Migration         | Hinweis                            |
+| ------------------- | ---------- | ----------------- | ---------------------------------- |
+| Attachment          | Operativ   | 2026_05_25_140000 | Polymorph, Backfill via `booted()` |
+| Comment             | Operativ   | 2026_05_25_140100 | Polymorph                          |
+| EventParticipant    | Operativ   | (Pivot)           | Pivot `event_user`                 |
+| EventReminder       | Operativ   | 2026_05_25_140100 | abgeleitet von events              |
+| ExternalReference   | Operativ   | 2026_05_12        | Polymorph                          |
+| RecurrenceRule      | Operativ   | 2026_05_12        | Polymorph                          |
+| MaterialUsage       | Operativ   | 2026_05_25_140200 | abgeleitet von timesheets          |
+| PerDiemDay          | Operativ   | 2026_05_25_140200 | abgeleitet von per_diem_trips      |
+| Vacation            | Operativ   | 2026_05_12        | —                                  |
+| SickLeave           | Operativ   | 2026_05_12        | —                                  |
+| Attendance          | Operativ   | 2026_05_12        | —                                  |
+| TravelLog           | Operativ   | 2026_05_12        | —                                  |
+| Tour                | Operativ   | 2026_05_12        | —                                  |
+| OnCallShift         | Operativ   | 2026_05_12        | —                                  |
+| ScheduledShift      | Operativ   | 2026_05_12        | —                                  |
+| DutyPlan            | Operativ   | 2026_05_12        | —                                  |
+| EmergencyAssignment | Operativ   | 2026_05_12        | —                                  |
+| EnergyLog           | Operativ   | 2026_05_12        | —                                  |
+| Expense             | Operativ   | 2026_05_12        | —                                  |
+| Tag                 | Operativ   | 2026_05_12        | —                                  |
+| WorkSchedule        | Operativ   | 2026_05_12        | —                                  |
+| Qualification       | Stammdaten | 2026_05_12        | —                                  |
+| EntryType           | Stammdaten | 2026_05_12        | —                                  |
+| Vehicle             | Stammdaten | 2026_05_12        | —                                  |
+| Material            | Stammdaten | 2026_05_12        | —                                  |
+| ActivityCategory    | Stammdaten | 2026_05_12        | —                                  |
+| EventCategory       | Stammdaten | 2026_05_12        | —                                  |
+| ExpenseCategory     | Stammdaten | 2026_05_12        | —                                  |
+| ShiftType           | Stammdaten | 2026_05_12        | —                                  |
+| Room                | Stammdaten | 2026_05_12        | —                                  |
+| Holiday             | Stammdaten | 2026_05_12        | —                                  |
+| AutomationRule      | Admin      | 2026_05_12        | —                                  |
+| AutomationRuleRun   | Admin      | 2026_05_25_140200 | abgeleitet von automation_rules    |
+| AuditLog            | Admin      | 2026_05_12        | —                                  |
+| CoverageRequirement | Admin      | 2026_05_12        | —                                  |
+| FlexEligibility     | Admin      | 2026_05_12        | —                                  |
+| FlexBalance         | Admin      | 2026_05_25_140100 | abgeleitet von users               |
+| LexofficeArticle    | Admin      | 2026_05_12        | —                                  |
+| ProjectBillingRule  | Admin      | 2026_05_12        | abgeleitet von projects            |
+| PushSubscription    | Admin      | 2026_05_25_140100 | abgeleitet von users               |
 
 ### Allow-List: bewusst nicht tenant-scoped
 
@@ -103,15 +103,15 @@ Diese Modelle nutzen **keinen** `BelongsToOrganization`-Trait. Das ist
 beabsichtigt und im jeweiligen Modell zu dokumentieren. Erweiterungen dieser
 Liste benötigen ein eigenes Issue und ein Review im Audit-Dokument.
 
-| Modell | Begründung |
-| --- | --- |
-| Organization | Root-Tenant, hat selbst keine übergeordnete Organisation. |
-| User | Hat zwar `organization_id`, aber kein Trait — `Authenticatable`-Hierarchie und Org-Wechsel für Plattform-Admins erfordern manuelle Filter. Eigener Audit-Eintrag, eigenes Folge-Issue für eventuelle Trait-Umstellung. |
-| UserGroup | Organisationsbezug existiert, Lifecycle wird in Admin-Controllern bewusst über `withoutGlobalScopes()` gesteuert. |
-| OrganizationAuditLog | Nullable `organization_id`, **bewusst ohne FK**, damit Audit-Einträge eine gelöschte Organisation überleben. |
-| PerDiemRate | Globale Referenzdaten (Tagessätze nach Land/Region) — gilt für alle Mandanten. |
-| GeocodeCache | Globaler Cache geokodierter Adressen, mandantenübergreifend zulässig. |
-| `App\Models\Legacy\*` | Liegen auf separater `legacy`-Connection und sind über Middleware `access.legacy`/`legacy.write` geschützt. Siehe Legacy-Abschnitt. |
+| Modell                | Begründung                                                                                                                                                                                                             |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Organization          | Root-Tenant, hat selbst keine übergeordnete Organisation.                                                                                                                                                              |
+| User                  | Hat zwar `organization_id`, aber kein Trait — `Authenticatable`-Hierarchie und Org-Wechsel für Plattform-Admins erfordern manuelle Filter. Eigener Audit-Eintrag, eigenes Folge-Issue für eventuelle Trait-Umstellung. |
+| UserGroup             | Organisationsbezug existiert, Lifecycle wird in Admin-Controllern bewusst über `withoutGlobalScopes()` gesteuert.                                                                                                      |
+| OrganizationAuditLog  | Nullable `organization_id`, **bewusst ohne FK**, damit Audit-Einträge eine gelöschte Organisation überleben.                                                                                                           |
+| PerDiemRate           | Globale Referenzdaten (Tagessätze nach Land/Region) — gilt für alle Mandanten.                                                                                                                                         |
+| GeocodeCache          | Globaler Cache geokodierter Adressen, mandantenübergreifend zulässig.                                                                                                                                                  |
+| `App\Models\Legacy\*` | Liegen auf separater `legacy`-Connection und sind über Middleware `access.legacy`/`legacy.write` geschützt. Siehe Legacy-Abschnitt.                                                                                    |
 
 ### CI-Gate
 
@@ -126,33 +126,33 @@ Der globale `OrganizationScope` wird an folgenden Stellen bewusst umgangen.
 Jede Stelle ist im Code mit einem `// TENANT-BYPASS:`-Kommentar markiert und
 verantwortet einen der dokumentierten Gründe.
 
-| Datei | Zeile | Grund | Schutzmaßnahme |
-| --- | --- | --- | --- |
-| `app/Models/EventParticipant.php` | 63 | Pivot-Backfill via `event_user`-Tabelle | Org-Konsistenzprüfung gegen Parent-Event |
-| `app/Models/Customer.php` | 139 | Slug-Eindeutigkeitsprüfung beim Anlegen | Expliziter `where('organization_id', ...)`-Filter |
-| `app/Models/Customer.php` | 156 | Berechnung der nächsten Kundennummer (`K-XXXX`) | Expliziter `where('organization_id', ...)`-Filter |
-| `app/Models/AutomationRuleRun.php` | 50 | Queue-Worker lädt Regel nach ID | Org wird aus zugehöriger AutomationRule abgeleitet |
-| `app/Models/Organization.php` | 116 | Slug-Eindeutigkeit der Organisation selbst | Globale Unique-Validation, nicht org-gebunden |
-| `app/Models/UserGroup.php` | 79 | Slug-Eindeutigkeit innerhalb der Org | Expliziter `where('organization_id', ...)`-Filter |
-| `app/Http/Controllers/OrganizationController.php` | 43 | Plattform-Admin listet alle Organisationen | Route hinter `auth` + `access.manage` Permission |
-| `app/Http/Controllers/Admin/Access/MemberController.php` | 42 | Plattform-Admin verwaltet Mitglieder über Orgs hinweg | Permission `manage-members` + expliziter Org-Filter |
-| `app/Http/Controllers/Admin/Access/AccessHubController.php` | 52 | Übersicht aller Nutzer im Plattform-Admin | Permission `manage-access` + expliziter Org-Filter |
-| `app/Http/Controllers/OrgMemberController.php` | 36 | Listet Mitglieder einer ausgewählten Organisation | Expliziter Org-Filter |
-| `app/Http/Controllers/Admin/Access/UserGroupController.php` | 90, 97, 159 | UserGroup-Pflege im Plattform-Admin | Permission + expliziter Org-Filter |
-| `app/Http/Controllers/PublicSignatureController.php` | 42 | Token-Lookup für signierte Stundenzettel-URL | Token-Entropie + `magic_expires_at`; nach Auflösung wird `currentOrganization` an die Org des Timesheets gebunden |
+| Datei                                                       | Zeile       | Grund                                                 | Schutzmaßnahme                                                                                                    |
+| ----------------------------------------------------------- | ----------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `app/Models/EventParticipant.php`                           | 63          | Pivot-Backfill via `event_user`-Tabelle               | Org-Konsistenzprüfung gegen Parent-Event                                                                          |
+| `app/Models/Customer.php`                                   | 139         | Slug-Eindeutigkeitsprüfung beim Anlegen               | Expliziter `where('organization_id', ...)`-Filter                                                                 |
+| `app/Models/Customer.php`                                   | 156         | Berechnung der nächsten Kundennummer (`K-XXXX`)       | Expliziter `where('organization_id', ...)`-Filter                                                                 |
+| `app/Models/AutomationRuleRun.php`                          | 50          | Queue-Worker lädt Regel nach ID                       | Org wird aus zugehöriger AutomationRule abgeleitet                                                                |
+| `app/Models/Organization.php`                               | 116         | Slug-Eindeutigkeit der Organisation selbst            | Globale Unique-Validation, nicht org-gebunden                                                                     |
+| `app/Models/UserGroup.php`                                  | 79          | Slug-Eindeutigkeit innerhalb der Org                  | Expliziter `where('organization_id', ...)`-Filter                                                                 |
+| `app/Http/Controllers/OrganizationController.php`           | 43          | Plattform-Admin listet alle Organisationen            | Route hinter `auth` + `access.manage` Permission                                                                  |
+| `app/Http/Controllers/Admin/Access/MemberController.php`    | 42          | Plattform-Admin verwaltet Mitglieder über Orgs hinweg | Permission `manage-members` + expliziter Org-Filter                                                               |
+| `app/Http/Controllers/Admin/Access/AccessHubController.php` | 52          | Übersicht aller Nutzer im Plattform-Admin             | Permission `manage-access` + expliziter Org-Filter                                                                |
+| `app/Http/Controllers/OrgMemberController.php`              | 36          | Listet Mitglieder einer ausgewählten Organisation     | Expliziter Org-Filter                                                                                             |
+| `app/Http/Controllers/Admin/Access/UserGroupController.php` | 90, 97, 159 | UserGroup-Pflege im Plattform-Admin                   | Permission + expliziter Org-Filter                                                                                |
+| `app/Http/Controllers/PublicSignatureController.php`        | 42          | Token-Lookup für signierte Stundenzettel-URL          | Token-Entropie + `magic_expires_at`; nach Auflösung wird `currentOrganization` an die Org des Timesheets gebunden |
 
 ## Public-Routes (ohne Auth-Middleware)
 
 Diese Routen werden ohne `auth`-Middleware bedient und müssen ihre
 Mandantenbindung selbst herstellen.
 
-| Route | Controller | Mandanten-Schutz |
-| --- | --- | --- |
-| `GET /license` | `LicenseController::show` | Org-agnostisch (Instanz-Lizenz). |
-| `GET /calendar/public.ics` | `IcsFeedController::public` | Liefert ausschließlich als „public" markierte Events der Org, deren Slug im Feed-Subpfad steckt. |
-| `GET /calendar/feed/{token}.ics` | `IcsFeedController::personalSchedule` | Token enthält User-ID + Org-Bindung; Render greift auf `currentOrganization` via Token-Resolver. |
-| `GET /sign/timesheet/{token}` | `PublicSignatureController::show` | Token → Timesheet → Organization wird beim Laden geprüft und gegen `withoutGlobalScopes()`-Bypass abgesichert. |
-| `POST /sign/timesheet/{token}` | `PublicSignatureController::store` | Wie oben; zusätzlich Signatur-Audit-Log mit Tokenscope. |
+| Route                            | Controller                            | Mandanten-Schutz                                                                                               |
+| -------------------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `GET /license`                   | `LicenseController::show`             | Org-agnostisch (Instanz-Lizenz).                                                                               |
+| `GET /calendar/public.ics`       | `IcsFeedController::public`           | Liefert ausschließlich als „public" markierte Events der Org, deren Slug im Feed-Subpfad steckt.               |
+| `GET /calendar/feed/{token}.ics` | `IcsFeedController::personalSchedule` | Token enthält User-ID + Org-Bindung; Render greift auf `currentOrganization` via Token-Resolver.               |
+| `GET /sign/timesheet/{token}`    | `PublicSignatureController::show`     | Token → Timesheet → Organization wird beim Laden geprüft und gegen `withoutGlobalScopes()`-Bypass abgesichert. |
+| `POST /sign/timesheet/{token}`   | `PublicSignatureController::store`    | Wie oben; zusätzlich Signatur-Audit-Log mit Tokenscope.                                                        |
 
 ## Attachment-/Storage-Pfade
 
@@ -188,13 +188,13 @@ manipulieren und müssen Legacy-Routen aus dem Geltungsbereich ausnehmen.
 
 ## Test-Coverage
 
-| Test | Geltungsbereich |
-| --- | --- |
+| Test                                                                                                                 | Geltungsbereich                                                                                 |
+| -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | [`tests/Feature/Security/OrganizationIsolationTest.php`](../../tests/Feature/Security/OrganizationIsolationTest.php) | Signierte Attachment-URLs, Direkt-Lookups, Kind-Tabellen (Comment, EventReminder, FlexBalance). |
-| `tests/Feature/Tenant/TenantBoundaryTest.php` *(NEU im Zuge MVP-001)* | Kerngeschäftsmodelle: cross-org Read/Update/Delete → 403/404. |
-| `tests/Feature/Tenant/AttachmentTenantTest.php` *(NEU)* | Attachment-Download cross-org wird durch Policy/Scope verhindert. |
-| `tests/Feature/Tenant/PublicRouteTenantTest.php` *(NEU)* | ICS-Feed, PublicSignature: Tokens aus Org A liefern keine Org-B-Daten. |
-| `tests/Architecture/TenantTraitCoverageTest.php` *(NEU)* | Jedes neue Model in `app/Models/` ohne Trait muss in der Allow-List stehen. |
+| `tests/Feature/Tenant/TenantBoundaryTest.php` _(NEU im Zuge MVP-001)_                                                | Kerngeschäftsmodelle: cross-org Read/Update/Delete → 403/404.                                   |
+| `tests/Feature/Tenant/AttachmentTenantTest.php` _(NEU)_                                                              | Attachment-Download cross-org wird durch Policy/Scope verhindert.                               |
+| `tests/Feature/Tenant/PublicRouteTenantTest.php` _(NEU)_                                                             | ICS-Feed, PublicSignature: Tokens aus Org A liefern keine Org-B-Daten.                          |
+| `tests/Architecture/TenantTraitCoverageTest.php` _(NEU)_                                                             | Jedes neue Model in `app/Models/` ohne Trait muss in der Allow-List stehen.                     |
 
 ## Offene Punkte / Folge-Issues
 
