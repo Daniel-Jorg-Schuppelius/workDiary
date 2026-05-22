@@ -145,6 +145,43 @@ class PublicRouteTenantTest extends TestCase {
         $this->assertStringContainsString('BEGIN:VCALENDAR', (string) $response->getContent());
     }
 
+    public function test_public_ics_is_org_agnostic_and_only_returns_public_events(): void {
+        // Public-ICS-Feed ist bewusst org-agnostisch: er liefert ausschließlich
+        // Events mit Visibility=Public über ALLE Organisationen hinweg. Test
+        // belegt nur, dass ein nicht öffentliches Event aus Org B NICHT erscheint
+        // (Default-Visibility ist nicht Public, daher reicht ein Default-Event).
+        $orgBEvent = $this->withOrg($this->orgB, fn() => \App\Models\Event::factory()->create([
+            'organization_id' => $this->orgB->id,
+            'responsible_user_id' => $this->userB->id,
+            'title' => 'GEHEIM-ORG-B-PRIVATEVENT',
+        ]));
+
+        app()->forgetInstance('currentOrganization');
+        $response = $this->get(route('events.ics.public'));
+        $this->assertSame(200, $response->status());
+        $body = (string) $response->getContent();
+        $this->assertStringContainsString('BEGIN:VCALENDAR', $body);
+        $this->assertStringNotContainsString('GEHEIM-ORG-B-PRIVATEVENT', $body);
+    }
+
+    public function test_personal_ics_feed_requires_auth_and_scopes_to_own_user(): void {
+        // Unauth → Redirect/401 (web-Auth-Middleware).
+        $response = $this->get(route('events.ics.personal'));
+        $this->assertContains($response->status(), [302, 401], 'Personal-ICS ohne Auth muss 302/401 liefern, war: ' . $response->status());
+
+        // Mit Org-A-User eingeloggt → 200, kein Org-B-Event im Body.
+        $orgBEvent = $this->withOrg($this->orgB, fn() => \App\Models\Event::factory()->create([
+            'organization_id' => $this->orgB->id,
+            'responsible_user_id' => $this->userB->id,
+            'title' => 'GEHEIM-ORG-B-EVENTPERSONAL',
+        ]));
+
+        $this->actingAs($this->userA);
+        $response = $this->get(route('events.ics.personal'));
+        $response->assertOk();
+        $this->assertStringNotContainsString('GEHEIM-ORG-B-EVENTPERSONAL', (string) $response->getContent());
+    }
+
     /**
      * @template T
      * @param  \Closure(): T  $callback

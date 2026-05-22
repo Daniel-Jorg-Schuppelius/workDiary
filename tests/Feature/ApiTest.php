@@ -63,7 +63,10 @@ class ApiTest extends TestCase {
 
     public function test_diary_update_requires_owner(): void {
         $owner = User::factory()->user()->create();
-        $other = User::factory()->user()->create();
+        // $other muss zur selben Organisation gehören, sonst greift bereits der
+        // OrganizationScope und liefert 404. Wir wollen hier explizit den
+        // Policy-Owner-Check absichern (Org-Cross-Boundary deckt ApiTenantTest ab).
+        $other = User::factory()->user()->create(['organization_id' => $owner->organization_id]);
         $entry = DiaryEntry::factory()->for($owner)->create();
         Sanctum::actingAs($other);
         $this->putJson('/api/diary/' . $entry->id, [
@@ -92,8 +95,10 @@ class ApiTest extends TestCase {
     }
 
     public function test_tags_crud(): void {
-        $admin = User::factory()->admin()->create();
         $user = User::factory()->user()->create();
+        // Admin muss zur selben Org wie der erstellende User gehören, sonst
+        // greift der OrganizationScope (Tag in Org A, Admin in Org B → 404).
+        $admin = User::factory()->admin()->create(['organization_id' => $user->organization_id]);
 
         // Anlegen darf jeder
         Sanctum::actingAs($user);

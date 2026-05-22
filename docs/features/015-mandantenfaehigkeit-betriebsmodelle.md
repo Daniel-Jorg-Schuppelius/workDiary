@@ -82,11 +82,19 @@ greifen.
   UserGroup, OrganizationAuditLog, PerDiemRate, GeocodeCache), abgesichert
   durch das Architektur-Gate
   `tests/Unit/Architecture/TenantTraitCoverageTest.php`.
-- Regression-Suiten unter `tests/Feature/Tenant/` (TenantBoundaryTest,
-  AttachmentTenantTest, PublicRouteTenantTest) plus bestehende
+- Regression-Suiten unter `tests/Feature/Tenant/` — MVP-001:
+  TenantBoundaryTest, AttachmentTenantTest, PublicRouteTenantTest;
+  MVP-002 ergänzt: ApiTenantTest, ExportTenantTest, SearchTenantTest
+  sowie zusätzliche ICS-Feed-Tests in PublicRouteTenantTest. Plus bestehende
   `tests/Feature/OrganizationIsolationTest.php`.
 - Gehärtete Public-Route `PublicSignatureController` bindet nach
   Token-Auflösung `currentOrganization` an die Org des Timesheets.
+- API-Stack (`auth:sanctum`) registriert seit MVP-002 ebenfalls
+  `SetOrganizationContext` (siehe `bootstrap/app.php`), damit der
+  `OrganizationScope` auch bei Sanctum-Requests greift.
+- ADR [adr-export-authorization.md](../security/adr-export-authorization.md)
+  beschreibt das Standardpattern für Mandanten-Authorization bei
+  CSV-/PDF-/Report-Exporten.
 - Organisationswechsel für globale Admins.
 - Rollen, Rechte und Gruppen.
 - Lizenzierung mit Domain, Nutzerlimit und Feature-Flags.
@@ -123,3 +131,6 @@ greifen.
 
 - [#1 Mandantensicherheits-Audit](https://github.com/Daniel-Jorg-Schuppelius/workDiary/issues/1)
   — abgeschlossen im Rahmen MVP-001, Quelle: [tenant-audit-2026.md](../security/tenant-audit-2026.md).
+- [#2 Exporte, Suche, Anhänge, Kalenderfeeds und API auf Mandantengrenzen prüfen](https://github.com/Daniel-Jorg-Schuppelius/workDiary/issues/2)
+  — abgeschlossen im Rahmen MVP-002, Quelle: [tenant-audit-2026.md](../security/tenant-audit-2026.md) v2 +
+  [adr-export-authorization.md](../security/adr-export-authorization.md).

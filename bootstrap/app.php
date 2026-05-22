@@ -52,6 +52,14 @@ return Application::configure(basePath: dirname(__DIR__))
             ForcePasswordChange::class,
         ]);
 
+        // Auch der API-Stack (Sanctum-Tokens) MUSS die Organisation an den
+        // Container binden, sonst läuft OrganizationScope als No-Op und die
+        // API leakt Mandantengrenzen (siehe tests/Feature/Tenant/ApiTenantTest).
+        $middleware->api(append: [
+            SecurityHeaders::class,
+            SetOrganizationContext::class,
+        ]);
+
         // SetOrganizationContext MUSS vor SubstituteBindings laufen, damit
         // der OrganizationScope beim Route-Model-Binding bereits greift —
         // sonst lädt Laravel {attachment} & Co. aus fremden Organisationen,
