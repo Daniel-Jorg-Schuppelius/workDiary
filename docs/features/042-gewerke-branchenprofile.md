@@ -2,7 +2,9 @@
 
 ## Status
 
-Proposed
+Proposed — Konzipiert in MVP-033/034:
+[Branchenprofil IT-Service](../branchenprofil-it.md),
+[Branchenprofil Handwerk/Service](../branchenprofil-handwerk.md).
 
 ## Ziel
 

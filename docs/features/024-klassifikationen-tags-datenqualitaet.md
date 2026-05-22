@@ -2,7 +2,10 @@
 
 ## Status
 
-Proposed
+Proposed — Konzipiert in MVP-030 bis MVP-032:
+[Kernklassifikationen](../kernklassifikationen.md),
+[Kategorien pro Organisation](../kategorien-org.md),
+[Pflichtklassifikationen](../pflichtklassifikationen.md).
 
 ## Ziel
 
