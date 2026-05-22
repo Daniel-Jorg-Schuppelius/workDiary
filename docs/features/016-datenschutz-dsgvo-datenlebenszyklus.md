@@ -4,7 +4,10 @@
 
 Proposed — Teilaspekt *Supportzugriff* ist mit MVP-004 (Issue #4) in
 [`docs/security/supportzugriff-grundsaetze.md`](../security/supportzugriff-grundsaetze.md)
-verbindlich geregelt.
+verbindlich geregelt. Die **Datenschutzseite für Org-Admins** ist mit MVP-005
+(Issue #5) in
+[`docs/security/datenschutzseite-konzept.md`](../security/datenschutzseite-konzept.md)
+konzipiert (Routen, Sektionen, Permissions, Akzeptanzkriterien).
 
 ## Produktversprechen
 
