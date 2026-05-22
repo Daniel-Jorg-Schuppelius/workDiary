@@ -67,6 +67,14 @@
                                         data-entry-modal-trigger
                                         :href="route('travel-logs.edit', $log)"
                                         :label="__('Bearbeiten')" />
+                            <form method="POST" action="{{ route('travel-logs.per-diem.generate', $log) }}" class="inline"
+                                  data-confirm-dialog
+                                  data-confirm-message="{{ __('Verpflegungspauschale aus dieser Fahrt erzeugen?') }}"
+                                  data-confirm-label="{{ __('Erzeugen') }}">
+                                @csrf
+                                <x-icon-btn icon="restaurant_menu" tone="primary" type="submit"
+                                            :label="__('Verpflegungspauschale erzeugen')" />
+                            </form>
                             <form method="POST" action="{{ route('travel-logs.destroy', $log) }}" class="inline"
                                   data-confirm-dialog
                                   data-confirm-message="{{ __('Fahrt wirklich löschen?') }}"

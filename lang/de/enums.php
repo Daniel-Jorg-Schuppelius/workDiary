@@ -166,4 +166,17 @@ return [
             'bank_transfer' => 'Banküberweisung',
         ],
     ],
+    'per_diem' => [
+        'day_kind' => [
+            'departure_day' => 'Anreisetag',
+            'full_day' => 'Voller Reisetag',
+            'return_day' => 'Abreisetag',
+            'single_day' => 'Eintagesreise',
+        ],
+        'trip_status' => [
+            'draft' => 'Entwurf',
+            'converted' => 'In Spese überführt',
+            'cancelled' => 'Storniert',
+        ],
+    ],
 ];

@@ -59,6 +59,7 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationSwitchController;
 use App\Http\Controllers\OrgMemberController;
 use App\Http\Controllers\Plugins\LexofficeCustomerController;
+use App\Http\Controllers\PerDiemTripController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectBillingRuleController;
@@ -362,6 +363,7 @@ Route::middleware('auth')->group(function () {
         Route::get('travel-logs/{travelLog}/edit', [TravelLogController::class, 'edit'])->name('travel-logs.edit');
         Route::put('travel-logs/{travelLog}', [TravelLogController::class, 'update'])->name('travel-logs.update');
         Route::delete('travel-logs/{travelLog}', [TravelLogController::class, 'destroy'])->name('travel-logs.destroy');
+        Route::post('travel-logs/{travelLog}/per-diem', [PerDiemTripController::class, 'fromTravelLog'])->name('travel-logs.per-diem.generate');
 
         // ── Spesen / Auslagen ──────────────────────────────────────────────
         Route::get('expenses', [ExpenseController::class, 'index'])->name('expenses.index');
@@ -373,6 +375,18 @@ Route::middleware('auth')->group(function () {
         Route::delete('expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
         Route::post('expenses/{expense}/submit', [ExpenseController::class, 'submit'])->name('expenses.submit');
         Route::post('expenses/{expense}/cancel', [ExpenseController::class, 'cancel'])->name('expenses.cancel');
+
+        // ── Verpflegungsmehraufwand (Per-Diem) ─────────────────────────────
+        Route::get('per-diem-trips', [PerDiemTripController::class, 'index'])->name('per-diem-trips.index');
+        Route::get('per-diem-trips/create', [PerDiemTripController::class, 'create'])->name('per-diem-trips.create');
+        Route::post('per-diem-trips', [PerDiemTripController::class, 'store'])->name('per-diem-trips.store');
+        Route::get('per-diem-trips/{perDiemTrip}', [PerDiemTripController::class, 'show'])->name('per-diem-trips.show');
+        Route::get('per-diem-trips/{perDiemTrip}/edit', [PerDiemTripController::class, 'edit'])->name('per-diem-trips.edit');
+        Route::put('per-diem-trips/{perDiemTrip}', [PerDiemTripController::class, 'update'])->name('per-diem-trips.update');
+        Route::delete('per-diem-trips/{perDiemTrip}', [PerDiemTripController::class, 'destroy'])->name('per-diem-trips.destroy');
+        Route::put('per-diem-trips/{perDiemTrip}/days/{day}', [PerDiemTripController::class, 'updateDay'])->name('per-diem-trips.days.update');
+        Route::post('per-diem-trips/{perDiemTrip}/convert', [PerDiemTripController::class, 'convert'])->name('per-diem-trips.convert');
+        Route::post('per-diem-trips/{perDiemTrip}/cancel', [PerDiemTripController::class, 'cancel'])->name('per-diem-trips.cancel');
 
         // ── Spesen-Genehmigung (Inbox) ─────────────────────────────────────
         Route::get('expense-approvals', [ExpenseApprovalController::class, 'inbox'])->name('expense-approvals.inbox');
@@ -499,6 +513,11 @@ Route::middleware('auth')->group(function () {
         Route::resource('admin/expense-categories', ExpenseCategoryController::class)
             ->names('admin.expense-categories')
             ->parameters(['expense-categories' => 'expenseCategory'])
+            ->except('show');
+
+        Route::resource('admin/per-diem-rates', \App\Http\Controllers\Admin\PerDiemRateController::class)
+            ->names('admin.per-diem-rates')
+            ->parameters(['per-diem-rates' => 'perDiemRate'])
             ->except('show');
 
         Route::resource('org/members', OrgMemberController::class)

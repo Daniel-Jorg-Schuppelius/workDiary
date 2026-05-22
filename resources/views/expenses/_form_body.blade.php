@@ -15,11 +15,21 @@
                 <option value="{{ $cat->id }}"
                         data-tax-rate="{{ $cat->default_tax_rate }}"
                         data-billable-default="{{ $cat->default_billable ? '1' : '0' }}"
+                        data-slug="{{ $cat->slug }}"
                         @selected(old('expense_category_id', $expense?->expense_category_id) == $cat->id)>
                     {{ $cat->label }}
                 </option>
             @endforeach
         </select>
+        <div data-meals-hint class="alert alert-info mt-2 hidden">
+            <x-icon name="restaurant_menu" />
+            <div class="flex-1 text-sm">
+                {{ __('Für Verpflegung gilt im Regelfall die gesetzliche Pauschale (Verpflegungsmehraufwand). Tatsächliche Kosten sind hier nur abzurechnen, wenn ausdrücklich erlaubt.') }}
+            </div>
+            <a href="{{ route('per-diem-trips.create') }}" class="btn btn-sm btn-primary">
+                {{ __('Pauschale erfassen') }}
+            </a>
+        </div>
     </div>
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Beleg / Anbieter') }}</label>
@@ -129,7 +139,15 @@
         const catSelect = root.querySelector('[data-expense-category]');
         const taxInput  = root.querySelector('[data-expense-tax-rate]');
         const billable  = root.querySelector('[data-expense-billable]');
+        const mealsHint = root.querySelector('[data-meals-hint]');
         if (! catSelect) return;
+        const refreshMealsHint = () => {
+            if (! mealsHint) return;
+            const opt = catSelect.options[catSelect.selectedIndex];
+            const isMeals = !! opt && opt.dataset.slug === 'meals';
+            mealsHint.classList.toggle('hidden', ! isMeals);
+        };
+        refreshMealsHint();
         catSelect.addEventListener('change', () => {
             const opt = catSelect.options[catSelect.selectedIndex];
             if (! opt) return;
@@ -141,6 +159,7 @@
             if (billable && opt.dataset.billableDefault === '1' && ! billable.dataset.userTouched) {
                 billable.checked = true;
             }
+            refreshMealsHint();
         });
         billable?.addEventListener('change', () => { billable.dataset.userTouched = '1'; });
     })();

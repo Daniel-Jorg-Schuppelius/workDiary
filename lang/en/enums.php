@@ -166,4 +166,17 @@ return [
             'bank_transfer' => 'Bank transfer',
         ],
     ],
+    'per_diem' => [
+        'day_kind' => [
+            'departure_day' => 'Departure day',
+            'full_day' => 'Full travel day',
+            'return_day' => 'Return day',
+            'single_day' => 'Single-day trip',
+        ],
+        'trip_status' => [
+            'draft' => 'Draft',
+            'converted' => 'Converted to expense',
+            'cancelled' => 'Cancelled',
+        ],
+    ],
 ];

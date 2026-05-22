@@ -373,6 +373,7 @@
                                     $adminNavItems[]  = ['route' => 'admin.branding.edit',           'label' => __('Branding'),         'icon' => 'palette',          'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.entry-types.index',        'label' => __('Eintragstypen'),    'icon' => 'category',         'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.expense-categories.index',  'label' => __('Spesenkategorien'), 'icon' => 'receipt_long',     'modal' => false];
+                                    $adminNavItems[]  = ['route' => 'admin.per-diem-rates.index',      'label' => __('Verpflegungspauschalen'), 'icon' => 'restaurant_menu',  'modal' => false];
                                 }
                                 if (! $isLegacyMode && \Illuminate\Support\Facades\Gate::allows('manage-access')) {
                                     $adminNavItems[] = ['route' => 'admin.access.index',             'label' => __('access.title.hub'), 'icon' => 'admin_panel_settings', 'modal' => false];
@@ -437,12 +438,20 @@
                                         ['route' => 'schedule.index',   'label' => __('Schichtplan'),   'icon' => 'schedule',        'modal' => false, 'matches' => ['schedule.*']],
                                         ['route' => 'timesheets.index', 'label' => __('Stundenzettel'), 'icon' => 'description',     'modal' => false, 'matches' => ['timesheets.*', 'projects.timesheets.*']],
                                         ['route' => 'flex.index',       'label' => __('Gleitzeit'),     'icon' => 'hourglass_top',   'modal' => false, 'matches' => ['flex.*']],
-                                        ['route' => 'travel-logs.index','label' => __('Fahrtenbuch'),   'icon' => 'directions_car',  'modal' => false, 'matches' => ['travel-logs.*']],
-                                        ['route' => 'expenses.index',   'label' => __('Spesen'),        'icon' => 'receipt_long',    'modal' => false, 'matches' => ['expenses.*']],
+                                        ['route' => 'tours.index',      'label' => __('Touren'),        'icon' => 'route',           'modal' => false, 'matches' => ['tours.*']],
+                                    ],
+                                ];
+                                $sidebarSections[] = [
+                                    'key'         => 'travel-expenses',
+                                    'label'       => __('Reisen & Spesen'),
+                                    'collapsible' => true,
+                                    'items'       => [
+                                        ['route' => 'travel-logs.index',    'label' => __('Fahrtenbuch'),            'icon' => 'directions_car',  'modal' => false, 'matches' => ['travel-logs.*']],
+                                        ['route' => 'expenses.index',       'label' => __('Spesen'),                 'icon' => 'receipt_long',    'modal' => false, 'matches' => ['expenses.*']],
+                                        ['route' => 'per-diem-trips.index', 'label' => __('Verpflegungspauschalen'), 'icon' => 'restaurant_menu', 'modal' => false, 'matches' => ['per-diem-trips.*']],
                                         ...($_isGlobalAdmin ? [
                                             ['route' => 'expense-approvals.inbox', 'label' => __('Spesen-Genehmigung'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['expense-approvals.*']],
                                         ] : []),
-                                        ['route' => 'tours.index',      'label' => __('Touren'),        'icon' => 'route',           'modal' => false, 'matches' => ['tours.*']],
                                     ],
                                 ];
                                 $sidebarSections[] = [
@@ -455,12 +464,14 @@
                                     ],
                                 ];
                                 $sidebarSections[] = [
-                                    'key'         => 'data',
-                                    'label'       => __('Stammdaten'),
+                                    'key'         => 'sales',
+                                    'label'       => __('Vertrieb & Abrechnung'),
                                     'collapsible' => true,
                                     'items'       => [
-                                        ['route' => 'customers.index', 'label' => __('Kunden'),   'icon' => 'badge',          'modal' => false, 'matches' => ['customers.*']],
-                                        ['route' => 'projects.index',  'label' => __('Projekte'), 'icon' => 'folder_special', 'modal' => false, 'matches' => ['projects.*']],
+                                        ['route' => 'customers.index', 'label' => __('Kunden'),         'icon' => 'badge',           'modal' => false, 'matches' => ['customers.*']],
+                                        ['route' => 'projects.index',  'label' => __('Projekte'),       'icon' => 'folder_special',  'modal' => false, 'matches' => ['projects.*']],
+                                        ['route' => 'invoices.index',  'label' => __('Rechnungen'),     'icon' => 'request_quote',   'modal' => false, 'matches' => ['invoices.*']],
+                                        ['route' => 'events.index',    'label' => __('Veranstaltungen'),'icon' => 'event',           'modal' => false, 'matches' => ['events.*']],
                                     ],
                                 ];
                                 $sidebarSections[] = [
