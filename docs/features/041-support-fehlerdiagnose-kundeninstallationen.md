@@ -6,6 +6,10 @@ Proposed — Grundsätze und Auditpunkte verbindlich dokumentiert in
 [`docs/security/supportzugriff-grundsaetze.md`](../security/supportzugriff-grundsaetze.md)
 (MVP-004, Issue #4).
 
+Konzepte für MVP-044/045 liegen vor:
+[Diagnose-Seite](../diagnose-seite.md) (MVP-044, Issue #43) und
+[Supportbericht](../supportbericht.md) (MVP-045, Issue #44).
+
 ## Ziel
 
 WorkDiary soll Support und Fehlerdiagnose für lokale Installationen, Private

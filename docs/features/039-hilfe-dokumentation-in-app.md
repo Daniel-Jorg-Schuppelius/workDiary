@@ -2,7 +2,9 @@
 
 ## Status
 
-Proposed
+Proposed — [In-App-Hilfe](../in-app-hilfe.md) (MVP-051, Issue #50)
+konzipiert; verwandt: [Onboarding-Checkliste](../onboarding-checkliste.md)
+(MVP-048, Issue #47).
 
 ## Ziel
 

@@ -2,7 +2,8 @@
 
 ## Status
 
-Proposed
+Proposed — [Demo-Mandant mit vollständigem Beispielauftrag](../demo-mandant.md)
+konzipiert (MVP-050, Issue #49).
 
 ## Ziel
 

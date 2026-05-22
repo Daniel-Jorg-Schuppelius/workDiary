@@ -2,7 +2,8 @@
 
 ## Status
 
-Proposed
+Proposed — Lizenzstatus und Feature-Flags in der Admin-Oberfläche konzipiert
+in [`docs/lizenz-admin.md`](../lizenz-admin.md) (MVP-047, Issue #46).
 
 ## Ziel
 
