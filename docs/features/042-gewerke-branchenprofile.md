@@ -5,6 +5,9 @@
 Proposed — Konzipiert in MVP-033/034:
 [Branchenprofil IT-Service](../branchenprofil-it.md),
 [Branchenprofil Handwerk/Service](../branchenprofil-handwerk.md).
+Weitere geplante Profile:
+[Branchenprofil Steuerberatung](../branchenprofil-steuerberater.md),
+[Branchenprofil Ambulante Pflege](../branchenprofil-ambulante-pflege.md).
 
 ## Ziel
 
