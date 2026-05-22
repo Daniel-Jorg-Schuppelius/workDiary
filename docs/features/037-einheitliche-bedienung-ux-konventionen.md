@@ -5,7 +5,8 @@
 Proposed — der **UX-Pattern-Katalog** ist mit MVP-006 (Issue #6) in
 [`docs/ux-pattern-katalog.md`](../ux-pattern-katalog.md)
 verbindlich festgeschrieben (Komponenten, Aktions-Glossar, Status-Tones,
-Detailseiten-Anatomie, UI-Review-Checkliste).
+Detailseiten-Anatomie, UI-Review-Checkliste). Mit MVP-009 (Issue #9) ergänzt
+um das fachliche [Status- und Aktionsglossar](../status-aktionsglossar.md).
 
 ## Ziel
 

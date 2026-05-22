@@ -17,12 +17,12 @@ Die hier verlinkten Komponenten liegen unter
 
 ## 1. Adressaten und Geltungsbereich
 
-| Adressat                | Nutzung                                                            |
-| ----------------------- | ------------------------------------------------------------------ |
-| **Entwickler**          | Vor jedem neuen Feature: Pattern wählen, nicht neu erfinden.       |
-| **Reviewer**            | UI-Review-Checkliste (§11) abarbeiten, sonst Block-Kommentar.      |
-| **Designer / PO**       | Vorhandene Bausteine als Grundlage für Mockups.                    |
-| **Legacy-Bereich**      | **Nicht** anwendbar — Legacy-Views bleiben unverändert.            |
+| Adressat           | Nutzung                                                       |
+| ------------------ | ------------------------------------------------------------- |
+| **Entwickler**     | Vor jedem neuen Feature: Pattern wählen, nicht neu erfinden.  |
+| **Reviewer**       | UI-Review-Checkliste (§11) abarbeiten, sonst Block-Kommentar. |
+| **Designer / PO**  | Vorhandene Bausteine als Grundlage für Mockups.               |
+| **Legacy-Bereich** | **Nicht** anwendbar — Legacy-Views bleiben unverändert.       |
 
 ## 2. Bediengrundsätze (verbindlich)
 
@@ -216,7 +216,7 @@ Verbindliche Reihenfolge:
 6. **Anhänge** — `@include('attachments._panel', […])`.
 7. **Historie / Audit** (read-only Liste, falls Permission `audit-log.view`).
 
-Referenz: [resources/views/diary/_show_body.blade.php](../resources/views/diary/_show_body.blade.php).
+Referenz: [resources/views/diary/\_show_body.blade.php](../resources/views/diary/_show_body.blade.php).
 
 ### 3.7 Anhänge
 
@@ -271,40 +271,42 @@ auf die zugehörige Detail-/Listenseite.
 
 ## 5. Leer-, Lade- und Fehlerzustände
 
-| Zustand     | Komponente / Pattern                                      | Beispiel                                                                              |
-| ----------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Leer (Karte) | `<x-card><x-empty-state … /></x-card>`                    | „Noch keine Einträge — *Eintrag anlegen*"                                            |
-| Leer (Tabelle) | `<x-table.empty :colspan="…" icon="…" :title="…" compact />` | Innerhalb `@forelse … @empty`                                                       |
-| Laden       | Browser-Default (kein Spinner-Overlay als Pflicht); `disabled` an Submit-Buttons | Submit-Button bekommt `loading`-Class via Alpine/JS bei Klick. |
-| Fehler      | Flash-Message in `<x-page-shell>` plus inline Validation | `lang/de/validation.php`                                                              |
-| Erfolg      | Flash-Message `success`                                   | Wird via `<x-page-shell>` aus Session geladen.                                        |
+| Zustand        | Komponente / Pattern                                                             | Beispiel                                                       |
+| -------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Leer (Karte)   | `<x-card><x-empty-state … /></x-card>`                                           | „Noch keine Einträge — _Eintrag anlegen_"                      |
+| Leer (Tabelle) | `<x-table.empty :colspan="…" icon="…" :title="…" compact />`                     | Innerhalb `@forelse … @empty`                                  |
+| Laden          | Browser-Default (kein Spinner-Overlay als Pflicht); `disabled` an Submit-Buttons | Submit-Button bekommt `loading`-Class via Alpine/JS bei Klick. |
+| Fehler         | Flash-Message in `<x-page-shell>` plus inline Validation                         | `lang/de/validation.php`                                       |
+| Erfolg         | Flash-Message `success`                                                          | Wird via `<x-page-shell>` aus Session geladen.                 |
 
 **Pflicht:** Jeder Leerzustand enthält eine Handlungsaufforderung (CTA), kein bloßes „Nichts da".
 
 ## 6. Aktions-Glossar
 
-Verbindliche Labels und Icons (Google Material Symbols, Outlined):
+Verbindliche Labels und Icons (Google Material Symbols, Outlined). Fachliche
+Aktionen pro Domäne (Annehmen, Beginnen, Abnehmen, Einreichen …) siehe
+[Status- und Aktionsglossar](status-aktionsglossar.md) §4.
 
-| Aktion             | Label          | Icon              | Tone (Default) |
-| ------------------ | -------------- | ----------------- | -------------- |
-| Anlegen            | „Neu"          | `add`             | `primary`      |
-| Speichern          | „Speichern"    | `save`            | `primary`      |
-| Abbrechen          | „Abbrechen"    | `close`           | `ghost`        |
-| Bearbeiten         | „Bearbeiten"   | `edit`            | `ghost`        |
-| Anzeigen           | „Anzeigen"     | `visibility`      | `ghost`        |
-| Löschen            | „Löschen"      | `delete`          | `error`        |
-| Archivieren        | „Archivieren"  | `archive`         | `warning`      |
-| Wiederherstellen   | „Wiederherstellen" | `restore`     | `info`         |
-| Freigeben          | „Freigeben"    | `check_circle`    | `success`      |
-| Sperren            | „Sperren"      | `lock`            | `warning`      |
-| Entsperren         | „Entsperren"   | `lock_open`       | `info`         |
-| Export             | „Exportieren"  | `download`        | `secondary`    |
-| Import             | „Importieren"  | `upload`          | `secondary`    |
-| Anhang hinzufügen  | „Anhang"       | `attach_file`     | `ghost`        |
-| Kommentieren       | „Kommentieren" | `chat_bubble`     | `ghost`        |
-| Suche              | „Suche"        | `search`          | `ghost`        |
-| Filter zurücksetzen| „Zurücksetzen" | `restart_alt`     | `ghost`        |
-| Mitglied vertreten | „Vertreten"    | `support_agent`   | `warning`      |
+| Aktion              | Label              | Icon            | Tone (Default) |
+| ------------------- | ------------------ | --------------- | -------------- |
+| Anlegen             | „Neu"              | `add`           | `primary`      |
+| Speichern           | „Speichern"        | `save`          | `primary`      |
+| Abbrechen           | „Abbrechen"        | `close`         | `ghost`        |
+| Bearbeiten          | „Bearbeiten"       | `edit`          | `ghost`        |
+| Anzeigen            | „Anzeigen"         | `visibility`    | `ghost`        |
+| Löschen             | „Löschen"          | `delete`        | `error`        |
+| Archivieren         | „Archivieren"      | `archive`       | `warning`      |
+| Wiederherstellen    | „Wiederherstellen" | `restore`       | `info`         |
+| Freigeben           | „Freigeben"        | `check_circle`  | `success`      |
+| Sperren             | „Sperren"          | `lock`          | `warning`      |
+| Entsperren          | „Entsperren"       | `lock_open`     | `info`         |
+| Export              | „Exportieren"      | `download`      | `secondary`    |
+| Import              | „Importieren"      | `upload`        | `secondary`    |
+| Anhang hinzufügen   | „Anhang"           | `attach_file`   | `ghost`        |
+| Kommentieren        | „Kommentieren"     | `chat_bubble`   | `ghost`        |
+| Suche               | „Suche"            | `search`        | `ghost`        |
+| Filter zurücksetzen | „Zurücksetzen"     | `restart_alt`   | `ghost`        |
+| Mitglied vertreten  | „Vertreten"        | `support_agent` | `warning`      |
 
 Abweichungen sind nur sinnvoll, wenn der Fachkontext einen anderen Begriff
 verbindlich verlangt (z. B. „Rechnung stellen" statt „Speichern"). In dem
@@ -312,17 +314,20 @@ Fall: gleiche Icon-/Tone-Wahl beibehalten.
 
 ## 7. Status- und Farbsemantik
 
-| Tone         | Bedeutung                                | Beispiel                                       |
-| ------------ | ---------------------------------------- | ---------------------------------------------- |
-| `primary`    | aktive Hauptaktion, „im Fluss"           | „Offen", „In Bearbeitung"                      |
-| `secondary`  | neutrale Sekundär-Aktion                 | „Export", „Drucken"                            |
-| `accent`     | hervorgehobene Spezialfunktion           | „Live", „Empfohlen"                            |
-| `success`    | erfolgreich abgeschlossen / freigegeben  | „Abgeschlossen", „Freigegeben", „Bezahlt"      |
-| `warning`    | benötigt Aufmerksamkeit, nicht kritisch  | „Wartet auf Prüfung", „Bald fällig"            |
-| `error`      | Fehler, gesperrt, abgelehnt              | „Abgelehnt", „Gescheitert"                     |
-| `info`       | informativ, neutraler Status             | „Geplant", „Pausiert"                          |
-| `ghost`      | passiver / sehr neutraler Zustand        | „Entwurf", „Inaktiv"                           |
-| `neutral`    | rein dekorativ                           | Zähler-Badges                                  |
+Domänen-Status (Auftrag, Zeit, Protokoll, Prozedur, Asset, Mandant …)
+verbindlich in [Status- und Aktionsglossar](status-aktionsglossar.md) §3.
+
+| Tone        | Bedeutung                               | Beispiel                                  |
+| ----------- | --------------------------------------- | ----------------------------------------- |
+| `primary`   | aktive Hauptaktion, „im Fluss"          | „Offen", „In Bearbeitung"                 |
+| `secondary` | neutrale Sekundär-Aktion                | „Export", „Drucken"                       |
+| `accent`    | hervorgehobene Spezialfunktion          | „Live", „Empfohlen"                       |
+| `success`   | erfolgreich abgeschlossen / freigegeben | „Abgeschlossen", „Freigegeben", „Bezahlt" |
+| `warning`   | benötigt Aufmerksamkeit, nicht kritisch | „Wartet auf Prüfung", „Bald fällig"       |
+| `error`     | Fehler, gesperrt, abgelehnt             | „Abgelehnt", „Gescheitert"                |
+| `info`      | informativ, neutraler Status            | „Geplant", „Pausiert"                     |
+| `ghost`     | passiver / sehr neutraler Zustand       | „Entwurf", „Inaktiv"                      |
+| `neutral`   | rein dekorativ                          | Zähler-Badges                             |
 
 Tones gelten gleichermaßen für `<x-status-badge>`, `<x-kpi-tile>` und
 `<x-icon-btn>`. **Andere Farben sind verboten**, insbesondere keine
