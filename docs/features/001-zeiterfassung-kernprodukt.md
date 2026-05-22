@@ -2,7 +2,9 @@
 
 ## Status
 
-Proposed
+Proposed — Auftrags-Lebenszyklus (Annahme/Bearbeitung/Abschluss) als MVP-011
+konzipiert: [docs/auftrags-lebenszyklus.md](../auftrags-lebenszyklus.md).
+Auftrags-Timeline (MVP-010): [docs/auftrags-timeline.md](../auftrags-timeline.md).
 
 ## Ziel
 
