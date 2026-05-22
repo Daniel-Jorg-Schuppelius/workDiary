@@ -1,6 +1,11 @@
 # UI-Vereinheitlichung — Seiten-Audit (neuer Bereich)
 
-Diese Checkliste dokumentiert den Rollout der Vereinheitlichung. Pro Seite:
+Diese Checkliste dokumentiert den Rollout der Vereinheitlichung. Die
+verbindlichen Bedienmuster (Komponenten, Aktions-Glossar, Status-Tones,
+Detailseiten-Anatomie, UI-Review-Checkliste) sind im
+[UX-Pattern-Katalog](ux-pattern-katalog.md) festgehalten (MVP-006).
+
+Pro Seite:
 
 - **Shell**: Verwendet [`<x-page-shell>`](../resources/views/components/page-shell.blade.php)
 - **Card**: Inhaltsblöcke verwenden [`<x-card>`](../resources/views/components/card.blade.php)
