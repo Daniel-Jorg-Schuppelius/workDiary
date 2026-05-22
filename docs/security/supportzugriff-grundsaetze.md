@@ -12,7 +12,7 @@ Vorgänge zwingend in den `AuditLog` zu schreiben sind.**
 
 Die Grundsätze gelten gleichermaßen für SaaS-Betrieb, Private-Cloud und
 On-Premise-Installationen. Sie sind die Vertrauensgrundlage gegenüber Kunden:
-*Kundendaten gehören dem Kunden — auch beim Support.*
+_Kundendaten gehören dem Kunden — auch beim Support._
 
 ## 1. Grundsätze
 
@@ -30,7 +30,7 @@ On-Premise-Installationen. Sie sind die Vertrauensgrundlage gegenüber Kunden:
 5. **Transparenz für Kunden.** Kunden können jederzeit nachvollziehen, wann,
    durch welche Support-Identität und in welchem Umfang Zugriff stattgefunden
    hat (`AuditLog`-Sicht für Kundenadmins).
-6. **Trennung Plattform-Support ↔ Org-Admin.** Plattform-Support ist *keine*
+6. **Trennung Plattform-Support ↔ Org-Admin.** Plattform-Support ist _keine_
    Rolle innerhalb der Kundenorganisation. Er wird über globale Rollen
    (`team_id = NULL`) abgebildet und nicht über die Org-spezifische Admin-UI
    bearbeitbar gemacht (siehe Abschnitt 3).
@@ -44,13 +44,13 @@ On-Premise-Installationen. Sie sind die Vertrauensgrundlage gegenüber Kunden:
 
 ## 2. Rollenmodell für Support
 
-| Träger                       | Spatie-Rolle / Permission                     | Geltungsbereich   | Schreibrechte     |
-| ---------------------------- | --------------------------------------------- | ----------------- | ----------------- |
-| **Plattform-Support**        | Rolle `support` mit `team_id = NULL`          | Plattform-weit    | keine (read-only) |
-| **Org-internes Helpdesk**    | Rolle `support` mit `team_id = org.id`        | nur diese Org     | keine (read-only) |
-| **Privilegierte Wartung**    | Rolle `admin` (global) — Notfall, dokumentiert | Plattform-weit   | vollständig       |
-| **Kundenadmin (Org)**        | Rolle `admin` mit `team_id = org.id`          | nur diese Org     | vollständig       |
-| **Impersonation (geplant)**  | Permission `user.impersonate`                 | siehe Abschnitt 5 | siehe Abschnitt 5 |
+| Träger                      | Spatie-Rolle / Permission                      | Geltungsbereich   | Schreibrechte     |
+| --------------------------- | ---------------------------------------------- | ----------------- | ----------------- |
+| **Plattform-Support**       | Rolle `support` mit `team_id = NULL`           | Plattform-weit    | keine (read-only) |
+| **Org-internes Helpdesk**   | Rolle `support` mit `team_id = org.id`         | nur diese Org     | keine (read-only) |
+| **Privilegierte Wartung**   | Rolle `admin` (global) — Notfall, dokumentiert | Plattform-weit    | vollständig       |
+| **Kundenadmin (Org)**       | Rolle `admin` mit `team_id = org.id`           | nur diese Org     | vollständig       |
+| **Impersonation (geplant)** | Permission `user.impersonate`                  | siehe Abschnitt 5 | siehe Abschnitt 5 |
 
 Die Permission-Liste der Rolle `support` ist verbindlich in
 [`rollen-matrix.md`](rollen-matrix.md) dokumentiert (Spalte `support`) und
@@ -103,53 +103,53 @@ Schema der Tabelle: `organization_id`, `user_id`, `event`, `auditable_type`,
 
 Bereits umgesetzt in `Admin\Access\RoleController` (MVP-003):
 
-| Event           | Auslöser                                  | `changes`-Inhalt                                           |
-| --------------- | ----------------------------------------- | ---------------------------------------------------------- |
-| `role.created`  | POST `/admin/access/roles`                | `{ name, permissions: [...] }`                             |
-| `role.updated`  | PUT `/admin/access/roles/{role}`          | `{ permissions: { added: [...], removed: [...] } }`        |
-| `role.deleted`  | DELETE `/admin/access/roles/{role}`       | `{ name, permissions: [...] }`                             |
+| Event          | Auslöser                            | `changes`-Inhalt                                    |
+| -------------- | ----------------------------------- | --------------------------------------------------- |
+| `role.created` | POST `/admin/access/roles`          | `{ name, permissions: [...] }`                      |
+| `role.updated` | PUT `/admin/access/roles/{role}`    | `{ permissions: { added: [...], removed: [...] } }` |
+| `role.deleted` | DELETE `/admin/access/roles/{role}` | `{ name, permissions: [...] }`                      |
 
 Pflicht, ergänzend zu definieren (siehe Folge-MVPs):
 
-| Event                       | Auslöser                                          | `changes`-Inhalt                                  |
-| --------------------------- | ------------------------------------------------- | ------------------------------------------------- |
-| `user.role.assigned`        | Zuweisung einer Rolle an einen User               | `{ role, team_id }`                               |
-| `user.role.revoked`         | Entzug einer Rolle                                | `{ role, team_id }`                               |
-| `user.permission.granted`   | Einzelpermission direkt vergeben (Ausnahmefall)   | `{ permission, team_id, reason }`                 |
-| `user.permission.revoked`   | Einzelpermission entzogen                         | `{ permission, team_id }`                         |
+| Event                     | Auslöser                                        | `changes`-Inhalt                  |
+| ------------------------- | ----------------------------------------------- | --------------------------------- |
+| `user.role.assigned`      | Zuweisung einer Rolle an einen User             | `{ role, team_id }`               |
+| `user.role.revoked`       | Entzug einer Rolle                              | `{ role, team_id }`               |
+| `user.permission.granted` | Einzelpermission direkt vergeben (Ausnahmefall) | `{ permission, team_id, reason }` |
+| `user.permission.revoked` | Einzelpermission entzogen                       | `{ permission, team_id }`         |
 
 ### 4.2 Supportzugriff selbst
 
 Diese Events sind heute **noch nicht implementiert**, aber durch dieses
 Dokument verbindlich für die Folge-MVPs festgelegt:
 
-| Event                          | Auslöser                                                  | `changes`-Inhalt                                                  | Folge-MVP    |
-| ------------------------------ | --------------------------------------------------------- | ----------------------------------------------------------------- | ------------ |
-| `support.access.granted`       | Kundenadmin gibt Support-Session frei                     | `{ granted_by, granted_to, scope, expires_at, ticket_ref }`       | später (s.u.) |
-| `support.access.revoked`       | Kundenadmin oder System (Ablauf) hebt Freigabe auf        | `{ revoked_by, reason }`                                          | später       |
-| `support.session.started`      | Plattform-Support öffnet eine Org im Support-Kontext      | `{ session_id, ticket_ref, ip, user_agent }`                      | später       |
-| `support.session.ended`        | Session-Logout oder Timeout                               | `{ session_id, duration_seconds }`                                | später       |
-| `support.impersonation.start`  | Support tritt in einen User-Account ein (`user.impersonate`) | `{ session_id, target_user_id, ticket_ref }`                   | später       |
-| `support.impersonation.stop`   | Impersonation wird beendet                                | `{ session_id, target_user_id, duration_seconds }`                | später       |
-| `support.report.exported`      | Supportbericht heruntergeladen                            | `{ report_type, anonymized: true, fields_count }`                 | siehe #44     |
+| Event                         | Auslöser                                                     | `changes`-Inhalt                                            | Folge-MVP     |
+| ----------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------- | ------------- |
+| `support.access.granted`      | Kundenadmin gibt Support-Session frei                        | `{ granted_by, granted_to, scope, expires_at, ticket_ref }` | später (s.u.) |
+| `support.access.revoked`      | Kundenadmin oder System (Ablauf) hebt Freigabe auf           | `{ revoked_by, reason }`                                    | später        |
+| `support.session.started`     | Plattform-Support öffnet eine Org im Support-Kontext         | `{ session_id, ticket_ref, ip, user_agent }`                | später        |
+| `support.session.ended`       | Session-Logout oder Timeout                                  | `{ session_id, duration_seconds }`                          | später        |
+| `support.impersonation.start` | Support tritt in einen User-Account ein (`user.impersonate`) | `{ session_id, target_user_id, ticket_ref }`                | später        |
+| `support.impersonation.stop`  | Impersonation wird beendet                                   | `{ session_id, target_user_id, duration_seconds }`          | später        |
+| `support.report.exported`     | Supportbericht heruntergeladen                               | `{ report_type, anonymized: true, fields_count }`           | siehe #44     |
 
 ### 4.3 Datenexport, -löschung, -zugriff auf sensible Felder
 
 Pflicht-Events, die unabhängig von einer Support-Session anfallen:
 
-| Event                       | Auslöser                                            | `changes`-Inhalt                                       |
-| --------------------------- | --------------------------------------------------- | ------------------------------------------------------ |
-| `tenant.export.requested`   | Mandantenexport gestartet                           | `{ scope, requested_by, format }`                      |
-| `tenant.export.completed`   | Mandantenexport abgeschlossen                       | `{ scope, byte_size, file_ref }`                       |
-| `tenant.delete.requested`   | Mandanten-Löschung beantragt                        | `{ scope, requested_by, scheduled_for }`               |
-| `tenant.delete.completed`   | Mandanten-Löschung ausgeführt                       | `{ scope, deleted_records }`                           |
-| `attachment.viewed`         | Anhang aufgerufen (Sichtbarmachung Support-Pfad)    | `{ attachment_id, owner_org_id, mime, byte_size }`    |
-| `audit.exported`            | AuditLog selbst exportiert                          | `{ filter, row_count }`                                |
+| Event                     | Auslöser                                         | `changes`-Inhalt                                   |
+| ------------------------- | ------------------------------------------------ | -------------------------------------------------- |
+| `tenant.export.requested` | Mandantenexport gestartet                        | `{ scope, requested_by, format }`                  |
+| `tenant.export.completed` | Mandantenexport abgeschlossen                    | `{ scope, byte_size, file_ref }`                   |
+| `tenant.delete.requested` | Mandanten-Löschung beantragt                     | `{ scope, requested_by, scheduled_for }`           |
+| `tenant.delete.completed` | Mandanten-Löschung ausgeführt                    | `{ scope, deleted_records }`                       |
+| `attachment.viewed`       | Anhang aufgerufen (Sichtbarmachung Support-Pfad) | `{ attachment_id, owner_org_id, mime, byte_size }` |
+| `audit.exported`          | AuditLog selbst exportiert                       | `{ filter, row_count }`                            |
 
 `event`-Werte sind Konstanten (kein freier String). Vorgeschlagene
 Code-Konstante: `AuditLog::EVENT_*` (Folge-Refactoring).
 
-### 4.4 Was *nicht* in den `AuditLog` gehört
+### 4.4 Was _nicht_ in den `AuditLog` gehört
 
 - Inhaltliche Kundendaten (Auftragstexte, Diary-Inhalte, Anhangs-Bytes,
   Personendaten, IBANs, Krankheitsdetails). Der `changes`-Block enthält
@@ -190,7 +190,7 @@ ist; **nicht** Bestandteil der aktuellen Implementierung von MVP-004.
 implementiert. Die Implementierung **darf erst erfolgen, wenn**:
 
 - Eine `support_access_grants`-Freigabe für den Ziel-User existiert,
-  *oder* der Plattform-Support den globalen `admin`-Notfallzugriff nutzt
+  _oder_ der Plattform-Support den globalen `admin`-Notfallzugriff nutzt
   (eskalationspflichtig, separater Audit-Event).
 - `support.impersonation.start` zwingend vor jedem Step in den
   Imitations-Kontext geschrieben wird.
@@ -227,8 +227,8 @@ verteilt sich auf:
   Mail, Storage, Backupstatus).
 - **#44** [MVP-045] Supportbericht ohne fachliche Kundendaten exportieren
   (referenziert `support.report.exported`).
-- Neues Folge-Issue (separat anzulegen): *temporäre Supportfreigabe +
-  Session- und Impersonation-Lifecycle* (Abschnitt 5).
+- Neues Folge-Issue (separat anzulegen): _temporäre Supportfreigabe +
+  Session- und Impersonation-Lifecycle_ (Abschnitt 5).
 
 ## 9. Änderungsverfahren
 
