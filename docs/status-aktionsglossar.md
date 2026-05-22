@@ -52,26 +52,26 @@ Aus dem UX-Pattern-Katalog (§7) übernommen, hier als kanonische Quelle für
 Verbindliche Standardaktionen (siehe Pattern-Katalog §6 für die volle
 Tabelle mit Icons). Hier nur die kanonischen Labels:
 
-| Aktion-Schlüssel    | Label              | Tone        |
-| ------------------- | ------------------ | ----------- |
-| `action.create`     | "Neu"              | `primary`   |
-| `action.save`       | "Speichern"        | `primary`   |
-| `action.cancel`     | "Abbrechen"        | `ghost`     |
-| `action.edit`       | "Bearbeiten"       | `ghost`     |
-| `action.show`       | "Anzeigen"         | `ghost`     |
-| `action.delete`     | "Löschen"          | `error`     |
-| `action.archive`    | "Archivieren"      | `warning`   |
-| `action.restore`    | "Wiederherstellen" | `info`      |
-| `action.approve`    | "Freigeben"        | `success`   |
-| `action.lock`       | "Sperren"          | `warning`   |
-| `action.unlock`     | "Entsperren"       | `info`      |
-| `action.export`     | "Exportieren"      | `secondary` |
-| `action.import`     | "Importieren"      | `secondary` |
-| `action.attach`     | "Anhang"           | `ghost`     |
-| `action.comment`    | "Kommentieren"     | `ghost`     |
-| `action.search`     | "Suche"            | `ghost`     |
-| `action.reset`      | "Zurücksetzen"     | `ghost`     |
-| `action.impersonate`| "Vertreten"        | `warning`   |
+| Aktion-Schlüssel     | Label              | Tone        |
+| -------------------- | ------------------ | ----------- |
+| `action.create`      | "Neu"              | `primary`   |
+| `action.save`        | "Speichern"        | `primary`   |
+| `action.cancel`      | "Abbrechen"        | `ghost`     |
+| `action.edit`        | "Bearbeiten"       | `ghost`     |
+| `action.show`        | "Anzeigen"         | `ghost`     |
+| `action.delete`      | "Löschen"          | `error`     |
+| `action.archive`     | "Archivieren"      | `warning`   |
+| `action.restore`     | "Wiederherstellen" | `info`      |
+| `action.approve`     | "Freigeben"        | `success`   |
+| `action.lock`        | "Sperren"          | `warning`   |
+| `action.unlock`      | "Entsperren"       | `info`      |
+| `action.export`      | "Exportieren"      | `secondary` |
+| `action.import`      | "Importieren"      | `secondary` |
+| `action.attach`      | "Anhang"           | `ghost`     |
+| `action.comment`     | "Kommentieren"     | `ghost`     |
+| `action.search`      | "Suche"            | `ghost`     |
+| `action.reset`       | "Zurücksetzen"     | `ghost`     |
+| `action.impersonate` | "Vertreten"        | `warning`   |
 
 **Verbotene Synonyme:** "Erstellen" (statt "Neu"), "Hinzufügen" (statt "Neu"
 für Records — ok für Anhänge/Kommentare), "Übernehmen" (statt "Speichern"),
@@ -82,208 +82,208 @@ für Records — ok für Anhänge/Kommentare), "Übernehmen" (statt "Speichern")
 
 ### 3.1 Auftrag (`OrderStatus` / `DiaryEntry::status`)
 
-| Enum-Case          | Label                       | Tone       | Bedeutung                                                   |
-| ------------------ | --------------------------- | ---------- | ----------------------------------------------------------- |
-| `Planned`          | "Geplant"                   | `info`     | Auftrag angelegt, noch nicht begonnen.                      |
-| `Accepted`         | "Angenommen"                | `primary`  | Annahme bestätigt (Annahmedatum gesetzt).                   |
-| `InProgress`       | "In Bearbeitung"            | `primary`  | Mindestens eine Zeit gebucht, noch nicht abgeschlossen.     |
-| `WaitingCustomer`  | "Wartet auf Rückmeldung"    | `warning`  | Rückfrage an Kunden offen, Zeit pausiert.                   |
-| `WaitingMaterial`  | "Wartet auf Material"       | `warning`  | Bestellung läuft, Bearbeitung pausiert.                     |
-| `Completed`        | "Abgeschlossen"             | `success`  | Arbeiten beendet, Abnahme/Abrechnung noch offen.            |
-| `Accepted_Final`   | "Abgenommen"                | `success`  | Vom Kunden abgenommen (Protokoll, Unterschrift).            |
-| `Invoiced`         | "Berechnet"                 | `success`  | Abgerechnet (Rechnung gestellt).                            |
-| `Cancelled`        | "Storniert"                 | `ghost`    | Auftrag zurückgezogen, keine weitere Arbeit.                |
+| Enum-Case         | Label                    | Tone      | Bedeutung                                               |
+| ----------------- | ------------------------ | --------- | ------------------------------------------------------- |
+| `Planned`         | "Geplant"                | `info`    | Auftrag angelegt, noch nicht begonnen.                  |
+| `Accepted`        | "Angenommen"             | `primary` | Annahme bestätigt (Annahmedatum gesetzt).               |
+| `InProgress`      | "In Bearbeitung"         | `primary` | Mindestens eine Zeit gebucht, noch nicht abgeschlossen. |
+| `WaitingCustomer` | "Wartet auf Rückmeldung" | `warning` | Rückfrage an Kunden offen, Zeit pausiert.               |
+| `WaitingMaterial` | "Wartet auf Material"    | `warning` | Bestellung läuft, Bearbeitung pausiert.                 |
+| `Completed`       | "Abgeschlossen"          | `success` | Arbeiten beendet, Abnahme/Abrechnung noch offen.        |
+| `Accepted_Final`  | "Abgenommen"             | `success` | Vom Kunden abgenommen (Protokoll, Unterschrift).        |
+| `Invoiced`        | "Berechnet"              | `success` | Abgerechnet (Rechnung gestellt).                        |
+| `Cancelled`       | "Storniert"              | `ghost`   | Auftrag zurückgezogen, keine weitere Arbeit.            |
 
 ### 3.2 Zeiteintrag (`TimesheetStatus`)
 
-| Enum-Case   | Label              | Tone      | Bedeutung                                                 |
-| ----------- | ------------------ | --------- | --------------------------------------------------------- |
-| `Open`      | "Offen"            | `info`    | Erfasst, noch nicht eingereicht.                          |
-| `Submitted` | "Eingereicht"      | `primary` | Vom Mitarbeitenden zur Prüfung freigegeben.               |
-| `Approved`  | "Genehmigt"        | `success` | Von Teamleitung/Admin geprüft und freigegeben.            |
-| `Rejected`  | "Abgelehnt"        | `error`   | Zurückgewiesen mit Begründung — Korrekturantrag möglich.  |
-| `Locked`    | "Gesperrt"         | `ghost`   | Im Monatsabschluss eingefroren, nicht mehr änderbar.      |
-| `Exported`  | "Exportiert"       | `ghost`   | Zusätzlich in externem System verbucht (Lohn, ERP).       |
+| Enum-Case   | Label         | Tone      | Bedeutung                                                |
+| ----------- | ------------- | --------- | -------------------------------------------------------- |
+| `Open`      | "Offen"       | `info`    | Erfasst, noch nicht eingereicht.                         |
+| `Submitted` | "Eingereicht" | `primary` | Vom Mitarbeitenden zur Prüfung freigegeben.              |
+| `Approved`  | "Genehmigt"   | `success` | Von Teamleitung/Admin geprüft und freigegeben.           |
+| `Rejected`  | "Abgelehnt"   | `error`   | Zurückgewiesen mit Begründung — Korrekturantrag möglich. |
+| `Locked`    | "Gesperrt"    | `ghost`   | Im Monatsabschluss eingefroren, nicht mehr änderbar.     |
+| `Exported`  | "Exportiert"  | `ghost`   | Zusätzlich in externem System verbucht (Lohn, ERP).      |
 
 ### 3.3 Korrekturantrag (`TimeCorrectionStatus`)
 
-| Enum-Case  | Label         | Tone      | Bedeutung                                            |
-| ---------- | ------------- | --------- | ---------------------------------------------------- |
-| `Pending`  | "Offen"       | `warning` | Eingereicht, Prüfung steht aus.                      |
-| `Approved` | "Genehmigt"   | `success` | Übernommen, Zeitdaten angepasst.                     |
-| `Rejected` | "Abgelehnt"   | `error`   | Nicht übernommen, Begründung Pflicht.                |
-| `Withdrawn`| "Zurückgezogen"| `ghost`  | Vom Antragsteller zurückgenommen.                    |
+| Enum-Case   | Label           | Tone      | Bedeutung                             |
+| ----------- | --------------- | --------- | ------------------------------------- |
+| `Pending`   | "Offen"         | `warning` | Eingereicht, Prüfung steht aus.       |
+| `Approved`  | "Genehmigt"     | `success` | Übernommen, Zeitdaten angepasst.      |
+| `Rejected`  | "Abgelehnt"     | `error`   | Nicht übernommen, Begründung Pflicht. |
+| `Withdrawn` | "Zurückgezogen" | `ghost`   | Vom Antragsteller zurückgenommen.     |
 
 ### 3.4 Abnahmeprotokoll (`ProtocolStatus`)
 
-| Enum-Case        | Label              | Tone      | Bedeutung                                                |
-| ---------------- | ------------------ | --------- | -------------------------------------------------------- |
-| `Draft`          | "Entwurf"          | `ghost`   | In Vorbereitung, nicht vorgelegt.                        |
-| `InProgress`     | "In Bearbeitung"   | `primary` | Punkte werden erfasst (vor Ort).                         |
-| `Submitted`      | "Vorgelegt"        | `info`    | Kunden zur Abnahme vorgelegt.                            |
-| `AcceptedClean`  | "Abgenommen"       | `success` | Ohne offene Punkte abgenommen + Unterschrift.            |
-| `AcceptedDefects`| "Abgenommen mit Mängeln" | `warning` | Abgenommen, offene Punkte mit Frist.                |
-| `Rejected`       | "Abgelehnt"        | `error`   | Nicht abgenommen, Nacharbeit nötig.                      |
+| Enum-Case         | Label                    | Tone      | Bedeutung                                     |
+| ----------------- | ------------------------ | --------- | --------------------------------------------- |
+| `Draft`           | "Entwurf"                | `ghost`   | In Vorbereitung, nicht vorgelegt.             |
+| `InProgress`      | "In Bearbeitung"         | `primary` | Punkte werden erfasst (vor Ort).              |
+| `Submitted`       | "Vorgelegt"              | `info`    | Kunden zur Abnahme vorgelegt.                 |
+| `AcceptedClean`   | "Abgenommen"             | `success` | Ohne offene Punkte abgenommen + Unterschrift. |
+| `AcceptedDefects` | "Abgenommen mit Mängeln" | `warning` | Abgenommen, offene Punkte mit Frist.          |
+| `Rejected`        | "Abgelehnt"              | `error`   | Nicht abgenommen, Nacharbeit nötig.           |
 
 ### 3.5 Protokollpunkt (`ProtocolItemStatus`)
 
-| Enum-Case  | Label        | Tone      |
-| ---------- | ------------ | --------- |
-| `Pending`  | "Offen"      | `info`    |
-| `Done`     | "Erledigt"   | `success` |
-| `Defect`   | "Mangel"     | `warning` |
-| `Critical` | "Kritisch"   | `error`   |
-| `Skipped`  | "Übersprungen" | `ghost` |
+| Enum-Case  | Label          | Tone      |
+| ---------- | -------------- | --------- |
+| `Pending`  | "Offen"        | `info`    |
+| `Done`     | "Erledigt"     | `success` |
+| `Defect`   | "Mangel"       | `warning` |
+| `Critical` | "Kritisch"     | `error`   |
+| `Skipped`  | "Übersprungen" | `ghost`   |
 
 ### 3.6 Offene Punkte (`OpenIssueStatus`)
 
-| Enum-Case  | Label       | Tone      |
-| ---------- | ----------- | --------- |
-| `Open`     | "Offen"     | `warning` |
+| Enum-Case    | Label            | Tone      |
+| ------------ | ---------------- | --------- |
+| `Open`       | "Offen"          | `warning` |
 | `InProgress` | "In Bearbeitung" | `primary` |
-| `Resolved` | "Erledigt"  | `success` |
-| `Overdue`  | "Überfällig"| `error`   |
-| `Waived`   | "Verzichtet"| `ghost`   |
+| `Resolved`   | "Erledigt"       | `success` |
+| `Overdue`    | "Überfällig"     | `error`   |
+| `Waived`     | "Verzichtet"     | `ghost`   |
 
 ### 3.7 Prozedur-Ausführung (`ProcedureRunStatus`)
 
-| Enum-Case  | Label              | Tone      | Bedeutung                                            |
-| ---------- | ------------------ | --------- | ---------------------------------------------------- |
-| `Planned`  | "Geplant"          | `info`    | Vorlage instanziiert, nicht begonnen.                |
-| `Running`  | "In Bearbeitung"   | `primary` | Mindestens ein Schritt bearbeitet.                   |
-| `Paused`   | "Unterbrochen"     | `warning` | Bewusst pausiert (Begründung Pflicht).               |
-| `Completed`| "Abgeschlossen"    | `success` | Alle Pflichtschritte erledigt + Freigabe.            |
-| `Aborted`  | "Abgebrochen"      | `error`   | Vor Abschluss beendet (Begründung + Audit).          |
+| Enum-Case   | Label            | Tone      | Bedeutung                                   |
+| ----------- | ---------------- | --------- | ------------------------------------------- |
+| `Planned`   | "Geplant"        | `info`    | Vorlage instanziiert, nicht begonnen.       |
+| `Running`   | "In Bearbeitung" | `primary` | Mindestens ein Schritt bearbeitet.          |
+| `Paused`    | "Unterbrochen"   | `warning` | Bewusst pausiert (Begründung Pflicht).      |
+| `Completed` | "Abgeschlossen"  | `success` | Alle Pflichtschritte erledigt + Freigabe.   |
+| `Aborted`   | "Abgebrochen"    | `error`   | Vor Abschluss beendet (Begründung + Audit). |
 
 ### 3.8 Asset / Objekt (`AssetStatus`)
 
-| Enum-Case  | Label         | Tone      |
-| ---------- | ------------- | --------- |
-| `Active`   | "Aktiv"       | `success` |
-| `Reserved` | "Reserviert"  | `info`    |
-| `Defect`   | "Defekt"      | `error`   |
-| `Locked`   | "Gesperrt"    | `warning` |
-| `Retired`  | "Ausgemustert"| `ghost`   |
+| Enum-Case  | Label          | Tone      |
+| ---------- | -------------- | --------- |
+| `Active`   | "Aktiv"        | `success` |
+| `Reserved` | "Reserviert"   | `info`    |
+| `Defect`   | "Defekt"       | `error`   |
+| `Locked`   | "Gesperrt"     | `warning` |
+| `Retired`  | "Ausgemustert" | `ghost`   |
 
 ### 3.9 Klassifikation (`ClassificationStatus`)
 
-| Enum-Case  | Label        | Tone      |
-| ---------- | ------------ | --------- |
-| `Active`   | "Aktiv"      | `success` |
-| `Deprecated`| "Veraltet"  | `warning` |
-| `Disabled` | "Deaktiviert"| `ghost`   |
+| Enum-Case    | Label         | Tone      |
+| ------------ | ------------- | --------- |
+| `Active`     | "Aktiv"       | `success` |
+| `Deprecated` | "Veraltet"    | `warning` |
+| `Disabled`   | "Deaktiviert" | `ghost`   |
 
 ### 3.10 Mandant / Organisation (`OrganizationStatus`)
 
-| Enum-Case       | Label                | Tone      |
-| --------------- | -------------------- | --------- |
-| `Trial`         | "Test"               | `info`    |
-| `Active`        | "Aktiv"              | `success` |
-| `Suspended`     | "Gesperrt"           | `warning` |
-| `PendingDelete` | "Löschung vorgemerkt"| `error`   |
-| `Archived`      | "Archiviert"         | `ghost`   |
+| Enum-Case       | Label                 | Tone      |
+| --------------- | --------------------- | --------- |
+| `Trial`         | "Test"                | `info`    |
+| `Active`        | "Aktiv"               | `success` |
+| `Suspended`     | "Gesperrt"            | `warning` |
+| `PendingDelete` | "Löschung vorgemerkt" | `error`   |
+| `Archived`      | "Archiviert"          | `ghost`   |
 
 ### 3.11 Mitgliedschaft (`MembershipStatus`)
 
-| Enum-Case  | Label        | Tone      |
-| ---------- | ------------ | --------- |
-| `Active`   | "Aktiv"      | `success` |
-| `Invited`  | "Eingeladen" | `info`    |
-| `Suspended`| "Gesperrt"   | `warning` |
-| `Removed`  | "Entfernt"   | `ghost`   |
+| Enum-Case   | Label        | Tone      |
+| ----------- | ------------ | --------- |
+| `Active`    | "Aktiv"      | `success` |
+| `Invited`   | "Eingeladen" | `info`    |
+| `Suspended` | "Gesperrt"   | `warning` |
+| `Removed`   | "Entfernt"   | `ghost`   |
 
 ## 4. Fachliche Aktionen (Domäne)
 
 ### 4.1 Auftrag
 
-| Aktion-Schlüssel        | Label                     | Tone      | Vorbedingung                                      |
-| ----------------------- | ------------------------- | --------- | ------------------------------------------------- |
-| `order.accept`          | "Annehmen"                | `primary` | Status `Planned`                                   |
-| `order.start`           | "Beginnen"                | `primary` | Status `Accepted`                                  |
-| `order.pause`           | "Pausieren"               | `warning` | Status `InProgress`                                |
-| `order.resume`          | "Fortsetzen"              | `primary` | Status `WaitingCustomer` / `WaitingMaterial`       |
-| `order.complete`        | "Abschließen"             | `success` | Status `InProgress`                                |
-| `order.handover`        | "Abnahme starten"         | `primary` | Status `Completed`                                 |
-| `order.markInvoiced`    | "Als berechnet markieren" | `success` | Status `Accepted_Final`                            |
-| `order.cancel`          | "Stornieren"              | `error`   | Status ∈ {`Planned`, `Accepted`, `InProgress`}     |
+| Aktion-Schlüssel     | Label                     | Tone      | Vorbedingung                                   |
+| -------------------- | ------------------------- | --------- | ---------------------------------------------- |
+| `order.accept`       | "Annehmen"                | `primary` | Status `Planned`                               |
+| `order.start`        | "Beginnen"                | `primary` | Status `Accepted`                              |
+| `order.pause`        | "Pausieren"               | `warning` | Status `InProgress`                            |
+| `order.resume`       | "Fortsetzen"              | `primary` | Status `WaitingCustomer` / `WaitingMaterial`   |
+| `order.complete`     | "Abschließen"             | `success` | Status `InProgress`                            |
+| `order.handover`     | "Abnahme starten"         | `primary` | Status `Completed`                             |
+| `order.markInvoiced` | "Als berechnet markieren" | `success` | Status `Accepted_Final`                        |
+| `order.cancel`       | "Stornieren"              | `error`   | Status ∈ {`Planned`, `Accepted`, `InProgress`} |
 
 ### 4.2 Zeiteintrag
 
-| Aktion-Schlüssel        | Label              | Tone      | Vorbedingung                       |
-| ----------------------- | ------------------ | --------- | ---------------------------------- |
-| `timesheet.submit`      | "Einreichen"       | `primary` | Status `Open`                      |
-| `timesheet.approve`     | "Genehmigen"       | `success` | Status `Submitted`                 |
-| `timesheet.reject`      | "Ablehnen"         | `error`   | Status `Submitted`                 |
-| `timesheet.withdraw`    | "Zurückziehen"     | `ghost`   | Status `Submitted` (Eigentümer)    |
-| `timesheet.lock`        | "Sperren"          | `warning` | Status `Approved`                  |
-| `timesheet.unlock`      | "Entsperren"       | `info`    | Status `Locked` (nur Admin)        |
+| Aktion-Schlüssel              | Label                  | Tone      | Vorbedingung                    |
+| ----------------------------- | ---------------------- | --------- | ------------------------------- |
+| `timesheet.submit`            | "Einreichen"           | `primary` | Status `Open`                   |
+| `timesheet.approve`           | "Genehmigen"           | `success` | Status `Submitted`              |
+| `timesheet.reject`            | "Ablehnen"             | `error`   | Status `Submitted`              |
+| `timesheet.withdraw`          | "Zurückziehen"         | `ghost`   | Status `Submitted` (Eigentümer) |
+| `timesheet.lock`              | "Sperren"              | `warning` | Status `Approved`               |
+| `timesheet.unlock`            | "Entsperren"           | `info`    | Status `Locked` (nur Admin)     |
 | `timesheet.requestCorrection` | "Korrektur beantragen" | `warning` | Status ∈ {`Approved`, `Locked`} |
 
 ### 4.3 Protokoll
 
-| Aktion-Schlüssel        | Label                     | Tone      |
-| ----------------------- | ------------------------- | --------- |
-| `protocol.start`        | "Erfassung starten"       | `primary` |
-| `protocol.submit`       | "Vorlegen"                | `primary` |
-| `protocol.accept`       | "Abnehmen"                | `success` |
-| `protocol.acceptDefects`| "Mit Mängeln abnehmen"    | `warning` |
-| `protocol.reject`       | "Ablehnen"                | `error`   |
-| `protocol.sign`         | "Unterschreiben"          | `primary` |
-| `protocol.exportPdf`    | "Als PDF exportieren"     | `secondary` |
+| Aktion-Schlüssel         | Label                  | Tone        |
+| ------------------------ | ---------------------- | ----------- |
+| `protocol.start`         | "Erfassung starten"    | `primary`   |
+| `protocol.submit`        | "Vorlegen"             | `primary`   |
+| `protocol.accept`        | "Abnehmen"             | `success`   |
+| `protocol.acceptDefects` | "Mit Mängeln abnehmen" | `warning`   |
+| `protocol.reject`        | "Ablehnen"             | `error`     |
+| `protocol.sign`          | "Unterschreiben"       | `primary`   |
+| `protocol.exportPdf`     | "Als PDF exportieren"  | `secondary` |
 
 ### 4.4 Prozedur
 
-| Aktion-Schlüssel        | Label                     | Tone      |
-| ----------------------- | ------------------------- | --------- |
-| `procedure.start`       | "Beginnen"                | `primary` |
-| `procedure.completeStep`| "Schritt abschließen"     | `success` |
-| `procedure.skipStep`    | "Schritt überspringen"    | `warning` |
-| `procedure.pause`       | "Unterbrechen"            | `warning` |
-| `procedure.resume`      | "Fortsetzen"              | `primary` |
-| `procedure.abort`       | "Abbrechen"               | `error`   |
-| `procedure.complete`    | "Abschließen"             | `success` |
+| Aktion-Schlüssel         | Label                  | Tone      |
+| ------------------------ | ---------------------- | --------- |
+| `procedure.start`        | "Beginnen"             | `primary` |
+| `procedure.completeStep` | "Schritt abschließen"  | `success` |
+| `procedure.skipStep`     | "Schritt überspringen" | `warning` |
+| `procedure.pause`        | "Unterbrechen"         | `warning` |
+| `procedure.resume`       | "Fortsetzen"           | `primary` |
+| `procedure.abort`        | "Abbrechen"            | `error`   |
+| `procedure.complete`     | "Abschließen"          | `success` |
 
 ### 4.5 Asset / Objekt
 
-| Aktion-Schlüssel | Label         | Tone      |
-| ---------------- | ------------- | --------- |
-| `asset.markDefect`| "Als defekt melden" | `error` |
-| `asset.lock`     | "Sperren"     | `warning` |
-| `asset.unlock`   | "Entsperren"  | `info`    |
-| `asset.retire`   | "Ausmustern"  | `ghost`   |
-| `asset.reactivate`| "Reaktivieren"| `success`|
+| Aktion-Schlüssel   | Label               | Tone      |
+| ------------------ | ------------------- | --------- |
+| `asset.markDefect` | "Als defekt melden" | `error`   |
+| `asset.lock`       | "Sperren"           | `warning` |
+| `asset.unlock`     | "Entsperren"        | `info`    |
+| `asset.retire`     | "Ausmustern"        | `ghost`   |
+| `asset.reactivate` | "Reaktivieren"      | `success` |
 
 ### 4.6 Korrekturantrag
 
-| Aktion-Schlüssel              | Label         | Tone      |
-| ----------------------------- | ------------- | --------- |
-| `timeCorrection.submit`       | "Einreichen"  | `primary` |
-| `timeCorrection.approve`      | "Genehmigen"  | `success` |
-| `timeCorrection.reject`       | "Ablehnen"    | `error`   |
-| `timeCorrection.withdraw`     | "Zurückziehen"| `ghost`   |
+| Aktion-Schlüssel          | Label          | Tone      |
+| ------------------------- | -------------- | --------- |
+| `timeCorrection.submit`   | "Einreichen"   | `primary` |
+| `timeCorrection.approve`  | "Genehmigen"   | `success` |
+| `timeCorrection.reject`   | "Ablehnen"     | `error`   |
+| `timeCorrection.withdraw` | "Zurückziehen" | `ghost`   |
 
 ### 4.7 Mitgliedschaft / Mandant
 
-| Aktion-Schlüssel        | Label              | Tone      |
-| ----------------------- | ------------------ | --------- |
-| `member.invite`         | "Einladen"         | `primary` |
-| `member.resendInvite`   | "Einladung erneut senden" | `info` |
-| `member.suspend`        | "Sperren"          | `warning` |
-| `member.reactivate`     | "Reaktivieren"     | `success` |
-| `member.remove`         | "Entfernen"        | `error`   |
-| `organization.suspend`  | "Sperren"          | `warning` |
-| `organization.archive`  | "Archivieren"      | `ghost`   |
-| `organization.requestDelete` | "Löschung vorbereiten" | `error` |
+| Aktion-Schlüssel             | Label                     | Tone      |
+| ---------------------------- | ------------------------- | --------- |
+| `member.invite`              | "Einladen"                | `primary` |
+| `member.resendInvite`        | "Einladung erneut senden" | `info`    |
+| `member.suspend`             | "Sperren"                 | `warning` |
+| `member.reactivate`          | "Reaktivieren"            | `success` |
+| `member.remove`              | "Entfernen"               | `error`   |
+| `organization.suspend`       | "Sperren"                 | `warning` |
+| `organization.archive`       | "Archivieren"             | `ghost`   |
+| `organization.requestDelete` | "Löschung vorbereiten"    | `error`   |
 
 ## 5. Übergangsmatrix (Beispiel: Auftrag)
 
-```
+```text
 Planned ──accept──► Accepted ──start──► InProgress ──complete──► Completed ──handover──► Accepted_Final ──markInvoiced──► Invoiced
-                                          │   ▲                                                              
-                                          │   │                                                              
-                                          ▼   │                                                              
-                                       WaitingCustomer / WaitingMaterial ──resume──┘                          
-                                                                                                              
+                                          │   ▲
+                                          │   │
+                                          ▼   │
+                                       WaitingCustomer / WaitingMaterial ──resume──┘
+
 Planned / Accepted / InProgress ──cancel──► Cancelled
 ```
 

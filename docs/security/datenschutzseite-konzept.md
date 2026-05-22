@@ -18,12 +18,12 @@ Umsetzung verteilt sich auf mehrere Folge-MVPs (siehe Abschnitt 10).
 
 ## 1. Ziel und Adressat
 
-| Aspekt              | Festlegung                                                     |
-| ------------------- | -------------------------------------------------------------- |
-| Primärer Adressat   | **Org-Admin** (Rolle `admin` mit `team_id = org.id`)           |
-| Sekundärer Adressat | **Geschäftsführung** (Rolle `geschaeftsfuehrung`, read-only)   |
-| Plattform-Support   | sieht die Seite, kann sie nicht für andere Orgs konsolidieren  |
-| Endnutzer (`user`)  | kein Zugriff                                                   |
+| Aspekt              | Festlegung                                                                                |
+| ------------------- | ----------------------------------------------------------------------------------------- |
+| Primärer Adressat   | **Org-Admin** (Rolle `admin` mit `team_id = org.id`)                                      |
+| Sekundärer Adressat | **Geschäftsführung** (Rolle `geschaeftsfuehrung`, read-only)                              |
+| Plattform-Support   | sieht die Seite, kann sie nicht für andere Orgs konsolidieren                             |
+| Endnutzer (`user`)  | kein Zugriff                                                                              |
 | Zweck               | DSGVO-Transparenzpflichten erfüllen, Vertrauen schaffen, administrative Kontrolle bündeln |
 
 Die Datenschutzseite ist **ein zusammenführender Lesepunkt**, kein neuer
@@ -35,34 +35,34 @@ Stelle bereits modelliert sind (`AuditLog`, `Organization`, `User`,
 
 ### 2.1 Routen (vorgeschlagen)
 
-| Methode | Pfad                                         | Name                              | Permission                         |
-| ------- | -------------------------------------------- | --------------------------------- | ---------------------------------- |
-| GET     | `/admin/privacy`                             | `admin.privacy.index`             | `privacy.view`                     |
-| GET     | `/admin/privacy/sessions`                    | `admin.privacy.sessions.index`    | `privacy.sessions.view`            |
-| DELETE  | `/admin/privacy/sessions/{id}`               | `admin.privacy.sessions.destroy`  | `privacy.sessions.revoke`          |
-| GET     | `/admin/privacy/tokens`                      | `admin.privacy.tokens.index`      | `privacy.tokens.view`              |
-| DELETE  | `/admin/privacy/tokens/{id}`                 | `admin.privacy.tokens.destroy`    | `privacy.tokens.revoke`            |
-| GET     | `/admin/privacy/integrations`                | `admin.privacy.integrations.index`| `privacy.integrations.view`        |
-| GET     | `/admin/privacy/exports`                     | `admin.privacy.exports.index`     | `privacy.exports.view`             |
-| GET     | `/admin/privacy/support-access`              | `admin.privacy.support.index`     | `privacy.support.view`             |
-| GET     | `/admin/privacy/report.pdf`                  | `admin.privacy.report`            | `privacy.report.export`            |
+| Methode | Pfad                            | Name                               | Permission                  |
+| ------- | ------------------------------- | ---------------------------------- | --------------------------- |
+| GET     | `/admin/privacy`                | `admin.privacy.index`              | `privacy.view`              |
+| GET     | `/admin/privacy/sessions`       | `admin.privacy.sessions.index`     | `privacy.sessions.view`     |
+| DELETE  | `/admin/privacy/sessions/{id}`  | `admin.privacy.sessions.destroy`   | `privacy.sessions.revoke`   |
+| GET     | `/admin/privacy/tokens`         | `admin.privacy.tokens.index`       | `privacy.tokens.view`       |
+| DELETE  | `/admin/privacy/tokens/{id}`    | `admin.privacy.tokens.destroy`     | `privacy.tokens.revoke`     |
+| GET     | `/admin/privacy/integrations`   | `admin.privacy.integrations.index` | `privacy.integrations.view` |
+| GET     | `/admin/privacy/exports`        | `admin.privacy.exports.index`      | `privacy.exports.view`      |
+| GET     | `/admin/privacy/support-access` | `admin.privacy.support.index`      | `privacy.support.view`      |
+| GET     | `/admin/privacy/report.pdf`     | `admin.privacy.report`             | `privacy.report.export`     |
 
 ### 2.2 Neue Permissions (Folge-MVP)
 
 Vorgeschlagene Erweiterung in `App\Enums\User\Permission` und Aufnahme in
 `PermissionsSeeder::defaultRoleMatrix()`:
 
-| Permission                     | admin | geschaeftsfuehrung | support |
-| ------------------------------ | :---: | :----------------: | :-----: |
-| `privacy.view`                 |   ✓   |         ✓          |    ✓    |
-| `privacy.sessions.view`        |   ✓   |         ✓          |    ✓    |
-| `privacy.sessions.revoke`      |   ✓   |                    |         |
-| `privacy.tokens.view`          |   ✓   |         ✓          |    ✓    |
-| `privacy.tokens.revoke`        |   ✓   |                    |         |
-| `privacy.integrations.view`    |   ✓   |         ✓          |    ✓    |
-| `privacy.exports.view`         |   ✓   |         ✓          |    ✓    |
-| `privacy.support.view`         |   ✓   |         ✓          |    ✓    |
-| `privacy.report.export`        |   ✓   |         ✓          |         |
+| Permission                  | admin | geschaeftsfuehrung | support |
+| --------------------------- | :---: | :----------------: | :-----: |
+| `privacy.view`              |   ✓   |         ✓          |    ✓    |
+| `privacy.sessions.view`     |   ✓   |         ✓          |    ✓    |
+| `privacy.sessions.revoke`   |   ✓   |                    |         |
+| `privacy.tokens.view`       |   ✓   |         ✓          |    ✓    |
+| `privacy.tokens.revoke`     |   ✓   |                    |         |
+| `privacy.integrations.view` |   ✓   |         ✓          |    ✓    |
+| `privacy.exports.view`      |   ✓   |         ✓          |    ✓    |
+| `privacy.support.view`      |   ✓   |         ✓          |    ✓    |
+| `privacy.report.export`     |   ✓   |         ✓          |         |
 
 Plattform-Support sieht die Seite **read-only** für die Org, in deren Kontext
 er sich gerade befindet (siehe
@@ -88,20 +88,20 @@ Tabellarische Darstellung der personenbezogenen Datenkategorien.
 Quelle: statisch ausgelieferte Konfiguration (`config/privacy.php`,
 noch anzulegen) plus dynamischer Datensatz-Count pro Org.
 
-| Kategorie                  | Modelle (Beispiel)                  | Sensibilitätsstufe | Aufbewahrung (Vorschlag) | Löschpfad                          |
-| -------------------------- | ----------------------------------- | ------------------ | ------------------------ | ---------------------------------- |
-| Mitarbeitende              | `User`, `UserGroup`                 | hoch               | bis Vertragsende + 0     | Org-Admin → User-Löschung          |
-| Arbeitszeit                | `Timesheet`, `Attendance`           | hoch               | 10 Jahre (GoBD)          | gesperrt nach Lock, nicht löschbar |
-| Lohnabwesenheiten          | `SickLeave`, `Vacation`             | besonders sensibel | gemäß Tarif/Gesetz       | Org-Admin nach Frist               |
-| Tagebuch                   | `DiaryEntry`, `Comment`             | mittel             | 5 Jahre (konfigurierbar) | Org-Admin                          |
-| Touren / Standorte         | `TravelLog`, `Tour`                 | hoch               | 2 Jahre (Vorschlag)      | automatischer Löschlauf            |
-| Spesen / Reisekosten       | `Expense`, `PerDiemTrip`, `PerDiemDay` | hoch            | 10 Jahre (GoBD)          | gesperrt, archiviert               |
-| Kundenstamm                | `Customer`, Customer-Contacts       | mittel             | bis Geschäftsbeziehung + Frist | Org-Admin                    |
-| Anhänge (Dokumente, Fotos) | `Attachment`                        | je nach Inhalt     | mit übergeordnetem Datum | gemeinsam mit Owner-Record         |
-| Unterschriften             | `Attachment` (Signatur-Pfad)        | besonders sensibel | wie Auftrag              | gemeinsam mit Auftrag              |
-| Qualifikationen            | `Qualification`                     | hoch               | bis Vertragsende         | Org-Admin                          |
-| Push-Subscriptions         | `PushSubscription`                  | gering             | bei Abmeldung            | automatisch bei Logout/Cleanup     |
-| Audit-Protokoll            | `AuditLog`                          | hoch               | 24 Monate (Vorschlag)    | systemseitiger Rotations-Job       |
+| Kategorie                  | Modelle (Beispiel)                     | Sensibilitätsstufe | Aufbewahrung (Vorschlag)       | Löschpfad                          |
+| -------------------------- | -------------------------------------- | ------------------ | ------------------------------ | ---------------------------------- |
+| Mitarbeitende              | `User`, `UserGroup`                    | hoch               | bis Vertragsende + 0           | Org-Admin → User-Löschung          |
+| Arbeitszeit                | `Timesheet`, `Attendance`              | hoch               | 10 Jahre (GoBD)                | gesperrt nach Lock, nicht löschbar |
+| Lohnabwesenheiten          | `SickLeave`, `Vacation`                | besonders sensibel | gemäß Tarif/Gesetz             | Org-Admin nach Frist               |
+| Tagebuch                   | `DiaryEntry`, `Comment`                | mittel             | 5 Jahre (konfigurierbar)       | Org-Admin                          |
+| Touren / Standorte         | `TravelLog`, `Tour`                    | hoch               | 2 Jahre (Vorschlag)            | automatischer Löschlauf            |
+| Spesen / Reisekosten       | `Expense`, `PerDiemTrip`, `PerDiemDay` | hoch               | 10 Jahre (GoBD)                | gesperrt, archiviert               |
+| Kundenstamm                | `Customer`, Customer-Contacts          | mittel             | bis Geschäftsbeziehung + Frist | Org-Admin                          |
+| Anhänge (Dokumente, Fotos) | `Attachment`                           | je nach Inhalt     | mit übergeordnetem Datum       | gemeinsam mit Owner-Record         |
+| Unterschriften             | `Attachment` (Signatur-Pfad)           | besonders sensibel | wie Auftrag                    | gemeinsam mit Auftrag              |
+| Qualifikationen            | `Qualification`                        | hoch               | bis Vertragsende               | Org-Admin                          |
+| Push-Subscriptions         | `PushSubscription`                     | gering             | bei Abmeldung                  | automatisch bei Logout/Cleanup     |
+| Audit-Protokoll            | `AuditLog`                             | hoch               | 24 Monate (Vorschlag)          | systemseitiger Rotations-Job       |
 
 Die endgültigen Fristen werden in einem Folge-MVP normativ in
 `config/privacy.php` festgeschrieben.
@@ -147,13 +147,13 @@ Aktionen:
 Quelle: Konfiguration zur Laufzeit. Die Seite zeigt nur **konfigurierte
 und aktive** Integrationen, jeweils mit folgender Information:
 
-| Integration                       | Quelle                  | Daten, die abfließen                            |
-| --------------------------------- | ----------------------- | ----------------------------------------------- |
-| Mail-Versand (SMTP / Mailgun / Postmark / Resend / SES) | `config/mail.php`, `config/services.php` | Empfänger-Mailadresse, Betreff, Body |
-| Web-Push                          | `config/webpush.php` (VAPID) | Endpoint-URL (Browser-Hersteller), Push-Payload |
-| Geocoding (Nominatim)             | `App\Services\NominatimGeocoder` | Adress-Strings                          |
-| Slack (sofern konfiguriert)       | `config/services.php`   | Benachrichtigungstexte                          |
-| AWS S3 (sofern als Storage aktiv) | `config/filesystems.php`| Anhangsbytes, Pfadnamen                         |
+| Integration                                             | Quelle                                   | Daten, die abfließen                            |
+| ------------------------------------------------------- | ---------------------------------------- | ----------------------------------------------- |
+| Mail-Versand (SMTP / Mailgun / Postmark / Resend / SES) | `config/mail.php`, `config/services.php` | Empfänger-Mailadresse, Betreff, Body            |
+| Web-Push                                                | `config/webpush.php` (VAPID)             | Endpoint-URL (Browser-Hersteller), Push-Payload |
+| Geocoding (Nominatim)                                   | `App\Services\NominatimGeocoder`         | Adress-Strings                                  |
+| Slack (sofern konfiguriert)                             | `config/services.php`                    | Benachrichtigungstexte                          |
+| AWS S3 (sofern als Storage aktiv)                       | `config/filesystems.php`                 | Anhangsbytes, Pfadnamen                         |
 
 Jede Zeile trägt einen klaren **Aktiv-Status** (aktiv / inaktiv / nicht
 konfiguriert) und einen Link zur Dokumentation des jeweiligen Anbieters.
@@ -162,7 +162,7 @@ konfiguriert) und einen Link zur Dokumentation des jeweiligen Anbieters.
 
 - WorkDiary nutzt **keine** Tracking-, Analytics- oder Werbe-Dienste.
 - Es findet **keine** produktübergreifende Auswertung von Kundendaten
-  statt (siehe Feature 016, *Produktversprechen*).
+  statt (siehe Feature 016, _Produktversprechen_).
 
 ### 3.6 Letzte Exporte
 
@@ -197,14 +197,14 @@ Aktionen:
 
 ### 3.8 DSGVO-Aktionen
 
-| Aktion                             | Umsetzung                                                    |
-| ---------------------------------- | ------------------------------------------------------------ |
-| **Auskunft** (Art. 15)             | Mandantenexport ZIP über `OrganizationController::export`    |
-| **Berichtigung** (Art. 16)         | über vorhandene CRUD-Pfade je Datensatz                      |
-| **Löschung** (Art. 17)             | per Folge-MVP konkretisiert (Tenant-Delete-Workflow)         |
-| **Einschränkung** (Art. 18)        | `archived`-Pfad pro Auditable-Model                          |
-| **Datenübertragbarkeit** (Art. 20) | Mandantenexport, Format dokumentiert in Export-ADR           |
-| **Widerspruch** (Art. 21)          | über Org-Admin, dokumentiert im AuditLog                     |
+| Aktion                             | Umsetzung                                                 |
+| ---------------------------------- | --------------------------------------------------------- |
+| **Auskunft** (Art. 15)             | Mandantenexport ZIP über `OrganizationController::export` |
+| **Berichtigung** (Art. 16)         | über vorhandene CRUD-Pfade je Datensatz                   |
+| **Löschung** (Art. 17)             | per Folge-MVP konkretisiert (Tenant-Delete-Workflow)      |
+| **Einschränkung** (Art. 18)        | `archived`-Pfad pro Auditable-Model                       |
+| **Datenübertragbarkeit** (Art. 20) | Mandantenexport, Format dokumentiert in Export-ADR        |
+| **Widerspruch** (Art. 21)          | über Org-Admin, dokumentiert im AuditLog                  |
 
 Jede DSGVO-Aktion erzeugt einen Eintrag im `AuditLog`
 (`tenant.export.*`, `tenant.delete.*`) und wird in Abschnitt 3.6 sichtbar.
@@ -225,13 +225,13 @@ Der Export selbst schreibt einen Eintrag `audit.exported` mit
 Pflicht-Events, die die Datenschutzseite nutzt (ergänzend zum Katalog
 in [Supportzugriff-Grundsätze §4](supportzugriff-grundsaetze.md#4-auditpunkte-verbindlich)):
 
-| Event                  | Auslöser                                       | `changes`-Inhalt                                |
-| ---------------------- | ---------------------------------------------- | ----------------------------------------------- |
-| `session.revoked`      | Org-Admin widerruft Session                    | `{ revoked_user_id, by_user_id }`               |
-| `api-token.created`    | neuer Sanctum-Token erzeugt                    | `{ token_name, owner_user_id, abilities }`      |
-| `api-token.revoked`    | Token gelöscht                                 | `{ token_name, owner_user_id, by_user_id }`     |
-| `privacy.report.exported` | Datenschutzbericht generiert                | `{ filter, generated_at }`                      |
-| `integration.changed`  | externe Integration aktiviert / deaktiviert    | `{ integration, from, to }`                     |
+| Event                     | Auslöser                                    | `changes`-Inhalt                            |
+| ------------------------- | ------------------------------------------- | ------------------------------------------- |
+| `session.revoked`         | Org-Admin widerruft Session                 | `{ revoked_user_id, by_user_id }`           |
+| `api-token.created`       | neuer Sanctum-Token erzeugt                 | `{ token_name, owner_user_id, abilities }`  |
+| `api-token.revoked`       | Token gelöscht                              | `{ token_name, owner_user_id, by_user_id }` |
+| `privacy.report.exported` | Datenschutzbericht generiert                | `{ filter, generated_at }`                  |
+| `integration.changed`     | externe Integration aktiviert / deaktiviert | `{ integration, from, to }`                 |
 
 ## 5. Sicherheits- und Trennungs-Pflichten
 
