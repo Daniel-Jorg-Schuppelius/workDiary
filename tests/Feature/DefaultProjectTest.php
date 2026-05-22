@@ -15,7 +15,6 @@ use App\Models\Customer;
 use App\Models\Project;
 use App\Models\Timesheet;
 use App\Models\User;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -28,7 +27,6 @@ class DefaultProjectTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create([
             'organization_id' => $this->organization->id,

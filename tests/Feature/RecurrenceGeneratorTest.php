@@ -21,7 +21,6 @@ use App\Models\RecurrenceRule;
 use App\Models\User;
 use App\Services\Recurrence\RecurrenceGenerator;
 use Carbon\CarbonImmutable;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -38,7 +37,6 @@ class RecurrenceGeneratorTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create([
             'organization_id' => $this->organization->id,

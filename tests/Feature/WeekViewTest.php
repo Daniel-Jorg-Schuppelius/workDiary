@@ -17,7 +17,6 @@ use App\Models\User;
 use App\Services\Calendar\WeekViewService;
 use App\Services\UI\DateRangeContext;
 use Carbon\CarbonImmutable;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -26,7 +25,6 @@ class WeekViewTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
     }
 
     public function test_week_route_requires_auth(): void {

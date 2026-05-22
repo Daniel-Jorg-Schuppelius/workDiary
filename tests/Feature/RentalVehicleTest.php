@@ -20,7 +20,6 @@ use App\Models\Vehicle;
 use App\Services\Routing\TourService;
 use Carbon\CarbonImmutable;
 use Database\Seeders\EntryTypeSeeder;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Tests\Concerns\WithOrganization;
@@ -32,7 +31,6 @@ class RentalVehicleTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->seed(EntryTypeSeeder::class);
         $this->setUpOrganization();
         Config::set('timesheet.travel.auto_create_time_entry', false);

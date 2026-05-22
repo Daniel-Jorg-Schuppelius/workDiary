@@ -103,8 +103,21 @@ class PermissionsSeeder extends Seeder {
      * Haupt-`run()` und vom Observer-Pfad gleichermaßen verwendet, damit
      * Org-Erstellungen vor dem ersten Permissions-Seeding nicht in eine
      * `PermissionDoesNotExist`-Exception laufen.
+     *
+     * Fast-Path: Sind bereits ebenso viele 'web'-Permissions vorhanden wie
+     * Enum-Cases, überspringen wir die ~138 findOrCreate-Queries. Das ist
+     * für Tests relevant, in denen pro setUp() eine neue Organization
+     * angelegt wird und der Observer-Pfad sonst jedes Mal die volle Liste
+     * durchwalken würde.
      */
     private static function ensurePermissionsExist(): void {
+        $expected = count(PermissionEnum::cases());
+        $existing = Permission::query()->where('guard_name', 'web')->count();
+
+        if ($existing >= $expected) {
+            return;
+        }
+
         foreach (PermissionEnum::cases() as $permission) {
             Permission::findOrCreate($permission->value, 'web');
         }

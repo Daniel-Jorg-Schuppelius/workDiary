@@ -16,7 +16,6 @@ use App\Enums\Task\TaskStatus;
 use App\Models\Customer;
 use App\Models\Project;
 use App\Models\User;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;
@@ -30,7 +29,6 @@ class CustomerProjectTaskApiTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
     }

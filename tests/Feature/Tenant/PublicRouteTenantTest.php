@@ -16,7 +16,6 @@ use App\Models\Organization;
 use App\Models\Timesheet;
 use App\Models\User;
 use Database\Seeders\PermissionsSeeder;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -45,7 +44,6 @@ class PublicRouteTenantTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->seed(PermissionsSeeder::class);
 
         $this->orgA = Organization::factory()->create(['slug' => 'pub-a']);

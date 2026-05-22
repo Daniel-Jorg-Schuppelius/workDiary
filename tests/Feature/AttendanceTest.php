@@ -21,7 +21,6 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use App\Services\Attendance\AttendanceClockService;
 use Carbon\CarbonImmutable;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -37,7 +36,6 @@ class AttendanceTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }

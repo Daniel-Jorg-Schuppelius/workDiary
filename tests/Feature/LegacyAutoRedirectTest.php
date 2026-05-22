@@ -17,7 +17,6 @@ use App\Legacy\Models\LegacyOnCall;
 use App\Models\EmergencyAssignment;
 use App\Models\OnCallShift;
 use App\Models\User;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\RedirectResponse;
 use Tests\TestCase;
@@ -27,7 +26,6 @@ class LegacyAutoRedirectTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
     }
 
     private function actAsLegacyAdmin(): User {

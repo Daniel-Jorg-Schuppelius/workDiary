@@ -15,7 +15,6 @@ use App\Mail\DiaryStatusChangedMail;
 use App\Models\Comment;
 use App\Models\DiaryEntry;
 use App\Models\User;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
@@ -26,7 +25,6 @@ class MailNotificationsTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         Config::set('app.mail_notifications_enabled', true);
         Mail::fake();
     }

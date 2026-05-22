@@ -15,7 +15,6 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\Fleet\EnergyLogService;
 use Carbon\CarbonImmutable;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -32,7 +31,6 @@ class EnergyLogTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);

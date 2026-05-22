@@ -30,8 +30,6 @@ class PerDiemCalculatorTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(\Database\Seeders\RolesSeeder::class);
-        $this->seed(\Database\Seeders\PermissionsSeeder::class);
         $this->seed(PerDiemRateSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);

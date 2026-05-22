@@ -14,7 +14,6 @@ use App\Models\AuditLog;
 use App\Models\Comment;
 use App\Models\DiaryEntry;
 use App\Models\User;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -23,7 +22,6 @@ class AuditLogTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
     }
 
     public function test_creating_diary_entry_writes_audit_log(): void {

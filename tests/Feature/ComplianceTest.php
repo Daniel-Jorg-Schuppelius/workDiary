@@ -20,7 +20,6 @@ use App\Models\ScheduledShift;
 use App\Models\ShiftType;
 use App\Models\User;
 use App\Models\Vacation;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -31,7 +30,6 @@ class ComplianceTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
     }
 

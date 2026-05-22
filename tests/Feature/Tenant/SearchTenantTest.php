@@ -15,7 +15,6 @@ use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
 use Database\Seeders\PermissionsSeeder;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -40,7 +39,6 @@ class SearchTenantTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->seed(PermissionsSeeder::class);
 
         $this->orgA = Organization::factory()->create(['slug' => 'search-a']);

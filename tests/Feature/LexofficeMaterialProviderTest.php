@@ -12,7 +12,6 @@ namespace Tests\Feature;
 
 use App\Services\Material\MaterialProviderRegistry;
 use App\Services\Material\Provider\LexofficeMaterialProvider;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
@@ -25,7 +24,6 @@ class LexofficeMaterialProviderTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         Config::set('timesheet.providers.lexoffice.api_key', 'test-key');
     }

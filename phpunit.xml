@@ -24,7 +24,12 @@
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
+        <!-- Persistente Datei statt :memory:, damit RefreshDatabase die
+             Migrationen nur einmal pro Prozess fährt und pro Test eine
+             Transaktion mit Rollback nutzt (statt 100 Migrationen je Test).
+             Ablage in /dev/shm (tmpfs), damit Datei-IO unter WSL2 nicht zur
+             neuen Bremse wird – Geschwindigkeit ~vergleichbar mit :memory:. -->
+        <env name="DB_DATABASE" value="/dev/shm/workdiary-testing.sqlite"/>
         <env name="DB_URL" value=""/>
         <env name="LEGACY_DB_DATABASE" value=""/>
         <env name="LEGACY_DB_HOST" value=""/>

@@ -14,7 +14,6 @@ use App\Enums\Vacation\VacationStatus;
 use App\Models\User;
 use App\Models\Vacation;
 use Database\Seeders\PermissionsSeeder;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\Concerns\WithOrganization;
@@ -28,7 +27,6 @@ class CalendarFeedTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);

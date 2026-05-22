@@ -12,7 +12,6 @@ namespace Tests\Feature;
 
 use App\Models\DiaryEntry;
 use App\Models\User;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -21,7 +20,6 @@ class DiaryWebRoutesTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
     }
 
     public function test_owner_can_view_and_edit_own_entry(): void {

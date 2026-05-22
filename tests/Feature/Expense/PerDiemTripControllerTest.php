@@ -17,7 +17,6 @@ use App\Models\PerDiemTrip;
 use App\Models\User;
 use Database\Seeders\PerDiemRateSeeder;
 use Database\Seeders\PermissionsSeeder;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -30,7 +29,6 @@ class PerDiemTripControllerTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->seed(PermissionsSeeder::class);
         $this->seed(PerDiemRateSeeder::class);
         $this->setUpOrganization();

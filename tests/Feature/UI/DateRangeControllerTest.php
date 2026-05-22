@@ -13,7 +13,6 @@ namespace Tests\Feature\UI;
 use App\Models\User;
 use App\Services\UI\DateRangeContext;
 use Carbon\CarbonImmutable;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -27,7 +26,6 @@ class DateRangeControllerTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         CarbonImmutable::setTestNow(CarbonImmutable::create(2026, 5, 15, 12, 0, 0));
-        $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }

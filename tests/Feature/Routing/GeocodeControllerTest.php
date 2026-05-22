@@ -11,7 +11,6 @@
 namespace Tests\Feature\Routing;
 
 use App\Models\User;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\Concerns\WithOrganization;
@@ -23,7 +22,6 @@ class GeocodeControllerTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         config()->set('routing.nominatim.base_url', 'http://nominatim.test');
         config()->set('routing.nominatim.rate_limit_per_sec', 1000);

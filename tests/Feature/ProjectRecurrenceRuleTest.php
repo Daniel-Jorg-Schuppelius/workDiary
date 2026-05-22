@@ -17,7 +17,6 @@ use App\Models\DiaryEntry;
 use App\Models\Project;
 use App\Models\RecurrenceRule;
 use App\Models\User;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -30,7 +29,6 @@ class ProjectRecurrenceRuleTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
 
         $this->owner = User::factory()->user()->create();
         $this->project = Project::create([

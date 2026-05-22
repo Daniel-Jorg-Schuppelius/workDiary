@@ -13,7 +13,6 @@ namespace Tests\Feature;
 use App\Enums\User\UserRole;
 use App\Models\Organization;
 use App\Models\User;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -22,7 +21,6 @@ class TenantRegistrationTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
     }
 
     // ── Feature-Flag deaktiviert (Standard) ─────────────────────────────────

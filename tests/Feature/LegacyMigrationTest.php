@@ -11,7 +11,6 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
@@ -21,7 +20,6 @@ class LegacyMigrationTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
     }
 
     public function test_legacy_write_blocked_by_default(): void {

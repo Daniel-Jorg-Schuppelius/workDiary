@@ -11,9 +11,20 @@
 namespace Tests;
 
 use App\Support\DatabaseHealth;
+use Database\Seeders\TestingSeeder;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase {
+    /**
+     * Wird von Laravels RefreshDatabase ausgewertet: legt einmalig pro
+     * Test-Prozess Permissions und globale Rollen an. Spart so die
+     * sonst per setUp() pro Testmethode ausgeführten RolesSeeder- und
+     * PermissionsSeeder-Calls.
+     */
+    protected bool $seed = true;
+
+    protected string $seeder = TestingSeeder::class;
+
     protected function setUp(): void {
         parent::setUp();
 

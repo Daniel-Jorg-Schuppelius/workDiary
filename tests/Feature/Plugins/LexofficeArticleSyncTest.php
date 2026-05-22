@@ -12,7 +12,6 @@ namespace Tests\Feature\Plugins;
 
 use App\Models\LexofficeArticle;
 use App\Plugins\Lexoffice\LexofficeArticleSync;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\Concerns\WithOrganization;
@@ -24,7 +23,6 @@ class LexofficeArticleSyncTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
     }
 

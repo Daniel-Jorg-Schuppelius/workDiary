@@ -18,7 +18,6 @@ use App\Models\Material;
 use App\Models\Project;
 use App\Models\Timesheet;
 use App\Models\User;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -37,7 +36,6 @@ class TimesheetTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
 
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);

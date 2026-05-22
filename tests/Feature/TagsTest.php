@@ -16,7 +16,6 @@ use App\Models\OnCallShift;
 use App\Models\Tag;
 use App\Models\User;
 use App\Services\UI\DateRangeContext;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -25,7 +24,6 @@ class TagsTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         // Tagebuch-Listing nutzt den globalen Range; auf das ganze Jahr
         // stellen, damit die Factory-Eintr\u00e4ge (\u00b11 Monat) sichtbar sind.
         app(DateRangeContext::class)->set(DateRangeContext::PRESET_THIS_YEAR);
@@ -71,12 +69,16 @@ class TagsTest extends TestCase {
             ->post(route('diary.store'), [
                 'content' => 'Mit Tags gespeichert',
                 'status' => 2,
+                // Mode::Fixed (Default) verlangt start_at/end_at.
+                'start_at' => '2030-01-15 09:00:00',
+                'end_at' => '2030-01-15 10:00:00',
                 'tag_ids' => [$existing->id],
                 'new_tags' => 'Eskalation, Server',
             ])
             ->assertRedirect();
 
         $entry = DiaryEntry::latest('id')->first();
+        $this->assertNotNull($entry, 'DiaryEntry sollte beim Tag-Store angelegt worden sein');
         $names = $entry->tags()->pluck('name')->sort()->values()->all();
 
         $this->assertSame(['Eskalation', 'Server', 'Telefon'], $names);

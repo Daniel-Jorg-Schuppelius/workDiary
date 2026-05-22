@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\User;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -22,7 +21,6 @@ class SystemAccessControlTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
     }
 
     public function test_legacy_only_user_cannot_access_new_dashboard(): void {
@@ -39,9 +37,14 @@ class SystemAccessControlTest extends TestCase {
             'is_new_system' => true,
         ]);
 
+        // New-only-User landen u. a. über alte Bookmarks auf Legacy-URLs.
+        // EnsureLegacyAccess leitet sie statt 403 freundlich aufs Dashboard
+        // mit Info-Flash zurück — entscheidend ist, dass die Legacy-Seite
+        // NICHT ausgeliefert wird.
         $this->actingAs($user)
             ->get(route('legacy.archive.index'))
-            ->assertForbidden();
+            ->assertRedirect(route('dashboard'))
+            ->assertSessionHas('info');
     }
 
     public function test_admin_can_access_both_areas(): void {

@@ -14,7 +14,6 @@ use App\Enums\Sickness\SickLeaveKind;
 use App\Http\Controllers\SickLeaveController;
 use App\Models\SickLeave;
 use App\Models\User;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -31,7 +30,6 @@ class SickLeaveTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);

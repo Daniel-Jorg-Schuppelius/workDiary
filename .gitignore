@@ -5,6 +5,9 @@
 .env.production
 .phpactor.json
 .phpunit.result.cache
+/database/testing.sqlite
+/database/testing.sqlite-journal
+/database/testing.sqlite-*
 /.codex
 /.cursor/
 /.idea

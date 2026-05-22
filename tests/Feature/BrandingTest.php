@@ -14,7 +14,6 @@ use App\Models\Attachment;
 use App\Models\Organization;
 use App\Models\User;
 use App\Services\BrandingService;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -25,7 +24,6 @@ class BrandingTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         Storage::fake('local');
     }
 
@@ -46,7 +44,9 @@ class BrandingTest extends TestCase {
         // Ohne explizit gesetzten app_name fällt der Service auf den
         // Organisationsnamen zurück.
         $this->assertSame($org->name, $service->appName());
-        $this->assertNull($service->logoUrl());
+        // Ohne Org-Logo liefert der Service das App-Default-Logo, damit
+        // Layout und Login-Seite ein konsistentes Branding behalten.
+        $this->assertSame(asset('img/logo/workdiary-logo-512.png'), $service->logoUrl());
         $this->assertSame(config('branding.colors.primary'), $service->primaryColor());
     }
 

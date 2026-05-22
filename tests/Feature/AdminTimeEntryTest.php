@@ -15,7 +15,6 @@ use App\Enums\TimeEntry\TimeEntryActivityType;
 use App\Models\ActivityCategory;
 use App\Models\User;
 use Database\Seeders\ActivityCategorySeeder;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -30,7 +29,6 @@ class AdminTimeEntryTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         $this->seed(ActivityCategorySeeder::class);
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);

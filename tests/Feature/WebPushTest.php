@@ -16,7 +16,6 @@ use App\Models\EmergencyAssignment;
 use App\Models\PushSubscription;
 use App\Models\User;
 use App\Services\WebPushService;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Mockery;
@@ -27,7 +26,6 @@ class WebPushTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         Config::set('webpush.public_key', 'BO-uHxBTpw50e_ZPfZDwBYFhNhEP38RiyWF7ppyCrrSoC6sYSO8ILUZ6_MX1c-iSgOJrTbcuhvMoA_fFnsZSnx0');
         Config::set('webpush.private_key', 'GCpBG_ivebc2Sm61xQtqkwBOWhzQrvJmBnaSoXE7PMs');
     }
@@ -117,14 +115,22 @@ class WebPushTest extends TestCase {
     }
 
     public function test_problem_diary_entry_pushes_to_admins(): void {
-        $admin = User::factory()->admin()->create();
+        // Push geht an Admins derselben Organisation. Spatie-Rollen werden
+        // pro team_id (= organization_id) ausgewertet, daher müssen Admin
+        // und Autor zwingend in derselben Org liegen.
         $author = User::factory()->user()->create();
+        $admin = User::factory()->admin()->create(['organization_id' => $author->organization_id]);
 
         $mock = Mockery::mock(WebPushService::class);
         $mock->shouldReceive('sendToUser')
             ->atLeast()->once()
             ->withArgs(fn($u, $payload) => $u->id === $admin->id);
         $this->app->instance(WebPushService::class, $mock);
+
+        // Spatie-Team-Kontext explizit auf die Author-Org setzen, damit
+        // User::role(...) im PushNotifier den Admin findet.
+        app(\Spatie\Permission\PermissionRegistrar::class)
+            ->setPermissionsTeamId((int) $author->organization_id);
 
         $this->actingAs($author);
         DiaryEntry::factory()->for($author)->create(['status' => 3, 'content' => 'Notlage']);

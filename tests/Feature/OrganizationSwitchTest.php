@@ -13,7 +13,6 @@ namespace Tests\Feature;
 use App\Http\Controllers\OrganizationSwitchController;
 use App\Models\Organization;
 use App\Models\User;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -22,7 +21,6 @@ class OrganizationSwitchTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
     }
 
     public function test_admin_can_switch_active_organization(): void {

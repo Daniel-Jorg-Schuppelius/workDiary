@@ -13,7 +13,6 @@ namespace Tests\Feature\Access;
 use App\Models\AuditLog;
 use App\Models\User;
 use Database\Seeders\PermissionsSeeder;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -34,7 +33,6 @@ class RoleControllerAuditTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         $this->seed(PermissionsSeeder::class);
 

@@ -14,7 +14,6 @@ use App\Enums\Vehicle\VehiclePropulsion;
 use App\Enums\Vehicle\VehicleType;
 use App\Models\User;
 use App\Models\Vehicle;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -29,7 +28,6 @@ class VehicleTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);

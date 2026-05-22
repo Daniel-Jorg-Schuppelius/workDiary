@@ -13,7 +13,6 @@ namespace Tests\Feature;
 use App\Models\DiaryEntry;
 use App\Models\User;
 use App\Services\UI\DateRangeContext;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -22,7 +21,6 @@ class DiarySearchExportTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         // Tagebuch-Listing wird jetzt vom globalen Range gefiltert; die
         // Factory erzeugt zufällige Daten ±1 Monat, daher hier auf das
         // ganze Jahr stellen, damit alle Test-Einträge sichtbar sind.

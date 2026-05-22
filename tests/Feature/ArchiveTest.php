@@ -17,7 +17,6 @@ use App\Models\User;
 use App\Services\Archive\ArchiveService;
 use App\Services\UI\DateRangeContext;
 use Carbon\CarbonImmutable;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -26,7 +25,6 @@ class ArchiveTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         config()->set('archive.threshold_days', 30);
         app(DateRangeContext::class)->set(DateRangeContext::PRESET_THIS_YEAR);
     }

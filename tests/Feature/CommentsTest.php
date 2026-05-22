@@ -13,7 +13,6 @@ namespace Tests\Feature;
 use App\Models\Comment;
 use App\Models\DiaryEntry;
 use App\Models\User;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -22,7 +21,6 @@ class CommentsTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
     }
 
     public function test_authenticated_user_can_create_comment(): void {

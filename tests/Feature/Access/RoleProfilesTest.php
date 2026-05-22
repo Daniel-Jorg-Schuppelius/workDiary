@@ -14,7 +14,6 @@ use App\Enums\User\Permission as PermissionEnum;
 use App\Enums\User\UserRole;
 use App\Models\User;
 use Database\Seeders\PermissionsSeeder;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -39,7 +38,6 @@ class RoleProfilesTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         $this->seed(PermissionsSeeder::class);
         // Org-Kontext im Permission-Registrar aktivieren, damit

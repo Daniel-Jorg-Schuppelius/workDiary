@@ -18,7 +18,6 @@ use App\Models\User;
 use App\Models\WorkSchedule;
 use App\Services\Flextime\FlexCalculator;
 use Carbon\CarbonImmutable;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -33,7 +32,6 @@ class FlexCalculatorTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $this->project = Project::create([

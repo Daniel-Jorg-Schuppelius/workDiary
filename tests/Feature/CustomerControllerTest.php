@@ -16,7 +16,6 @@ use App\Models\ExternalReference;
 use App\Models\Project;
 use App\Models\User;
 use App\Plugins\Lexoffice\LexofficePlugin;
-use Database\Seeders\RolesSeeder;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -35,7 +34,6 @@ class CustomerControllerTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(RolesSeeder::class);
         $this->setUpOrganization();
 
         $this->admin = User::factory()->admin()->create([
