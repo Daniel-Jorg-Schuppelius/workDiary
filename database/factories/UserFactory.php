@@ -117,6 +117,19 @@ class UserFactory extends Factory {
     }
 
     /**
+     * Portal-Account fuer Rolle `kunde`. Setzt customer_id und weist die
+     * Rolle im Spatie-Team-Kontext der Organisation des Kunden zu.
+     */
+    public function kunde(int $customerId, ?int $organizationId = null): static {
+        return $this->state(fn(array $attributes): array => [
+            'customer_id' => $customerId,
+            'organization_id' => $organizationId ?? ($attributes['organization_id'] ?? null),
+        ])->afterCreating(function (User $user): void {
+            self::syncRolesInOwnOrg($user, [UserRole::Kunde->value]);
+        });
+    }
+
+    /**
      * Spatie-Teams wertet Rollen relativ zum aktiven `setPermissionsTeamId`
      * aus. In Tests bleibt dieser Kontext vom letzten Org-Create stehen –
      * und wenn der Factory-User per ['organization_id' => …] in eine

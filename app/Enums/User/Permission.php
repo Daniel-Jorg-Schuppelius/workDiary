@@ -156,6 +156,12 @@ enum Permission: string implements HasLabel {
     case FlexBalanceView = 'flex.view';
     case FlexBalanceManage = 'flex.manage';
 
+    // ── Customer-Portal (Rolle `kunde`) ─────────────────────
+    case CustomerPortalAccess = 'customerPortal.access';
+    case CustomerPortalDiaryView = 'customerPortal.diary.view';
+    case CustomerPortalTimeEntryView = 'customerPortal.timeEntry.view';
+    case CustomerPortalInvoiceView = 'customerPortal.invoice.view';
+
     public function label(): string {
         // Permission-Slugs enthalten Punkte (z. B. "project.view") — Laravels
         // __() / trans() würde die als verschachtelten Pfad interpretieren und
@@ -193,6 +199,7 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'attendance.'),
                 str_starts_with($this->value, 'work-schedule.'),
                 str_starts_with($this->value, 'flex.') => PermissionGroup::WorkingTime,
+            str_starts_with($this->value, 'customerPortal.') => PermissionGroup::CustomerPortal,
             default => PermissionGroup::MasterData,
         };
     }

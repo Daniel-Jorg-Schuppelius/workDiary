@@ -29,6 +29,7 @@ final class UserRoleTest extends TestCase {
             'callcenter',
             'support',
             'training_manager',
+            'kunde',
         ], $values);
     }
 

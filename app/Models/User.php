@@ -122,6 +122,7 @@ class User extends Authenticatable {
 
     protected $fillable = [
         'organization_id',
+        'customer_id',
         'name',
         'email',
         'password',
@@ -153,6 +154,22 @@ class User extends Authenticatable {
     /** @return BelongsTo<Organization, $this> */
     public function organization(): BelongsTo {
         return $this->belongsTo(Organization::class);
+    }
+
+    /** @return BelongsTo<Customer, $this> */
+    public function customer(): BelongsTo {
+        return $this->belongsTo(Customer::class);
+    }
+
+    /**
+     * Ist dieser Account ein Customer-Portal-User?
+     * Wahr genau dann, wenn `customer_id` gesetzt ist. Diese Methode ist die
+     * einzige verlaessliche Quelle fuer die Trennung Portal vs. intern; sie
+     * wird sowohl vom CustomerUserProvider als Whitelist als auch vom
+     * LegacyUserProvider als Blacklist verwendet.
+     */
+    public function isCustomer(): bool {
+        return $this->customer_id !== null;
     }
 
     /**

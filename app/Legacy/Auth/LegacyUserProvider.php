@@ -33,6 +33,26 @@ class LegacyUserProvider extends EloquentUserProvider {
         parent::__construct($hasher, User::class);
     }
 
+    public function retrieveById($identifier): ?Authenticatable {
+        $user = parent::retrieveById($identifier);
+
+        if ($user instanceof User && $user->customer_id !== null) {
+            return null;
+        }
+
+        return $user;
+    }
+
+    public function retrieveByToken($identifier, $token): ?Authenticatable {
+        $user = parent::retrieveByToken($identifier, $token);
+
+        if ($user instanceof User && $user->customer_id !== null) {
+            return null;
+        }
+
+        return $user;
+    }
+
     /** @param array<string, mixed> $credentials */
     public function retrieveByCredentials(array $credentials): ?Authenticatable {
         $username = $credentials['username'] ?? $credentials['email'] ?? null;
@@ -47,7 +67,10 @@ class LegacyUserProvider extends EloquentUserProvider {
 
         if ($legacyUser) {
             /** @var object{id: int, uname: string, email: string|null} $legacyUser */
-            $existing = User::query()->where('legacy_user_id', $legacyUser->id)->first();
+            $existing = User::query()
+                ->where('legacy_user_id', $legacyUser->id)
+                ->whereNull('customer_id')
+                ->first();
 
             if ($existing instanceof User) {
                 // Vorhandenen Datensatz nur in unkritischen Feldern auffrischen.
@@ -71,8 +94,16 @@ class LegacyUserProvider extends EloquentUserProvider {
         }
 
         // Schritt 2: Fallback auf lokale Users-Tabelle (f\u00fcr im neuen System
-        // freigeschaltete/portierte Accounts mit eigenem Passwort).
-        return parent::retrieveByCredentials(['email' => $username, 'password' => $password]);
+        // freigeschaltete/portierte Accounts mit eigenem Passwort). Portal-
+        // Accounts (`customer_id IS NOT NULL`) sind hier explizit ausgeschlossen,
+        // damit sie nie ueber den internen Guard authentifiziert werden koennen.
+        $candidate = parent::retrieveByCredentials(['email' => $username, 'password' => $password]);
+
+        if ($candidate instanceof User && $candidate->customer_id !== null) {
+            return null;
+        }
+
+        return $candidate;
     }
 
     /** @param array<string, mixed> $credentials */
@@ -83,7 +114,10 @@ class LegacyUserProvider extends EloquentUserProvider {
         if (! $password) {
             return false;
         }
-
+        // Portal-Accounts duerfen den internen Guard nicht passieren.
+        if ($user->customer_id !== null) {
+            return false;
+        }
         // Bei Legacy-Accounts: Klartext-Vergleich gegen Legacy-DB; users.password
         // ist nur ein zuf\u00e4lliger Platzhalter und darf NICHT akzeptiert werden.
         if ($user->legacy_user_id !== null) {

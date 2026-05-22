@@ -34,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
         then: function (): void {
+            Route::middleware('web')->group(__DIR__ . '/../routes/customer.php');
             Route::middleware('web')->group(__DIR__ . '/../routes/legacy.php');
         },
     )
@@ -73,6 +74,17 @@ return Application::configure(basePath: dirname(__DIR__))
             'access.legacy' => EnsureLegacyAccess::class,
             'access.new' => EnsureNewSystemAccess::class,
         ]);
+
+        // Pro-Guard-Redirect fuer nicht authentifizierte Anfragen. Ohne
+        // diesen Hook schickt Laravel auch Customer-Portal-Aufrufe an die
+        // interne Login-Seite, was die Trennung der Bereiche aufweicht.
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->routeIs('customer.*') || $request->is('customer-portal/*') || $request->is('customer-portal')) {
+                return route('customer.login');
+            }
+
+            return route('login');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Datenbank nicht erreichbar (Connection refused / timeout / Auth-Fehler):

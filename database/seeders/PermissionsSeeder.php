@@ -347,6 +347,17 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::FlexBalanceView,
         ];
 
+        // Rolle `kunde`: read-only Zugriff auf das Customer-Portal, ausschliesslich
+        // auf die EIGENEN Datensaetze des verknuepften Kunden. Wird vom
+        // `customer`-Guard ausgewertet; interne Routen sind durch den separaten
+        // Provider technisch nicht erreichbar.
+        $kunde = [
+            PermissionEnum::CustomerPortalAccess,
+            PermissionEnum::CustomerPortalDiaryView,
+            PermissionEnum::CustomerPortalTimeEntryView,
+            PermissionEnum::CustomerPortalInvoiceView,
+        ];
+
         return [
             UserRole::Admin->value => $all,
             UserRole::Geschaeftsfuehrung->value => $geschaeftsfuehrung,
@@ -356,6 +367,7 @@ class PermissionsSeeder extends Seeder {
             UserRole::Aussendienst->value => $aussendienst,
             UserRole::Callcenter->value => $callcenter,
             UserRole::Support->value => $support,
+            UserRole::Kunde->value => $kunde,
         ];
     }
 }

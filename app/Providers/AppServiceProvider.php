@@ -10,6 +10,7 @@
 
 namespace App\Providers;
 
+use App\Auth\CustomerUserProvider;
 use App\Legacy\Auth\LegacyUserProvider;
 use App\Listeners\AuthEventSubscriber;
 use App\Models\ActivityCategory;
@@ -131,6 +132,9 @@ class AppServiceProvider extends ServiceProvider {
     public function boot(): void {
         Auth::provider('legacy', function ($app) {
             return new LegacyUserProvider($app['hash']);
+        });
+        Auth::provider('customer-eloquent', function ($app) {
+            return new CustomerUserProvider($app['hash']);
         });
 
         EventFacade::subscribe(AuthEventSubscriber::class);

@@ -29,6 +29,7 @@ enum UserRole: string implements HasLabel {
     case Callcenter = 'callcenter';
     case Support = 'support';
     case TrainingManager = 'training_manager';
+    case Kunde = 'kunde';
 
     public function label(): string {
         return (string) __('user.role.' . $this->value);

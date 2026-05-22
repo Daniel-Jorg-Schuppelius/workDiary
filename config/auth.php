@@ -50,6 +50,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'customer' => [
+            'driver' => 'session',
+            'provider' => 'customers',
+        ],
     ],
 
     /*
@@ -73,6 +77,10 @@ return [
         'users' => [
             'driver' => 'legacy',
             'model' => env('AUTH_MODEL', User::class),
+        ],
+        'customers' => [
+            'driver' => 'customer-eloquent',
+            'model' => User::class,
         ],
     ],
 

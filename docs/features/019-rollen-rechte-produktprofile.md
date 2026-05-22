@@ -45,7 +45,7 @@ codeverbindlich verankert.
 | Außendienst               | `aussendienst`       | Mobile Erfassung (eigene Zeit, Diary, Touren, Spesen, Fahrzeug-Log).      |
 | Callcenter                | `callcenter`         | Diary für andere erfassen, Kundenstamm einsehen.                          |
 | Support                   | `support`            | Anbieter-Support, **strikt read-only** + Auditzugriff.                    |
-| Kunde (Customer-Portal)   | _Folge-Issue_        | Self-Service-Sicht für externe Auftraggeber. **Nicht im MVP-003.**        |
+| Kunde (Customer-Portal)   | `kunde`              | Self-Service-Sicht für externe Auftraggeber (read-only). Eigener Guard, siehe [Customer-Portal-Guard](../security/customer-portal-guard.md). |
 
 ## Akzeptanzkriterien
 
@@ -64,17 +64,15 @@ codeverbindlich verankert.
 - Mandantenfähigkeit und Betriebsmodelle (Feature 015)
 - Datenschutz, Sicherheit und Datenlebenszyklus
 - Audit
-- Kundenportal (separates Feature für Rolle `kunde`)
+- Kundenportal: Rolle `kunde` + dedizierter `customer`-Guard, siehe
+  [Customer-Portal-Guard](../security/customer-portal-guard.md).
 
 ## Offene Folge-Arbeiten
 
-- Rolle `kunde` + Customer-Portal-Guard: Mapping eines externen Auftraggebers
-  auf eingeschränkte Sichten (Projekte, Diary, Rechnungen) — wird als
-  eigenständige Iteration ausgeliefert.
 - Auditierung von Gruppen-Mitgliedschaften (`AccessUserGroupController` ↔
   Members) — bislang nur Rollen-CRUD protokolliert.
 
 ## GitHub Issues
 
 - #3 — MVP-003: Rollenprofile dokumentieren und seedbar machen (umgesetzt)
-- Folge-Issue: Rolle `kunde` + Customer-Portal-Guard (offen)
+- #56 — Rolle `kunde` + Customer-Portal-Guard (umgesetzt)

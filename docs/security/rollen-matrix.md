@@ -25,6 +25,7 @@ erhalten (`syncPermissions` ersetzt die Permission-Liste der jeweiligen Rolle).
 | `callcenter`         | Anrufannahme / Tagebuch-Erfassung                | Tagebuch + Kundenstamm     | Diary (auch für andere)                           |
 | `support`            | Anbieter-Support / Helpdesk                      | nahezu alles + Audit       | **keine** (strikt read-only)                      |
 | `training_manager`   | Schulungsverwaltung (Bestandsrolle, EventPolicy) | Räume/Events               | Räume/Events                                      |
+| `kunde`              | Customer-Self-Service-Portal (eigener Guard)     | nur eigene Kunden-Daten    | **keine** (read-only)                             |
 
 ## Detail-Matrix
 
@@ -164,6 +165,23 @@ nicht-`admin`-Profile enthalten und werden bei Bedarf manuell zugewiesen.
 | `report.view`   |   ✓   |         ✓          |      ✓      |      ✓      |      |              |            |    ✓    |
 | `report.export` |   ✓   |         ✓          |             |      ✓      |      |              |            |         |
 
+### Customer-Portal
+
+Die Rolle `kunde` wird ausschließlich Portal-Accounts (Tabelle `users` mit
+`customer_id IS NOT NULL`) zugewiesen und ist im internen `web`-Guard
+deaktiviert. Authentifizierung läuft über den dedizierten `customer`-Guard
+samt eigenem User-Provider (siehe
+[Customer-Portal-Guard](./customer-portal-guard.md)). Die Permissions sind
+auf reine Lese-Sichten auf Daten des **eigenen** Kunden beschränkt;
+Datenscoping erfolgt zusätzlich in jedem Controller per `customer_id`.
+
+| Permission                      | admin | kunde |
+| ------------------------------- | :---: | :---: |
+| `customerPortal.access`         |   ✓   |   ✓   |
+| `customerPortal.diary.view`     |   ✓   |   ✓   |
+| `customerPortal.timeEntry.view` |   ✓   |   ✓   |
+| `customerPortal.invoice.view`   |   ✓   |   ✓   |
+
 ## Erweiterung & Anpassung
 
 - **Pro Organisation überschreibbar.** Die Admin-UI unter `admin.access.roles`
@@ -182,8 +200,8 @@ nicht-`admin`-Profile enthalten und werden bei Bedarf manuell zugewiesen.
 
 ## Offene Punkte
 
-- Rolle `kunde` (Customer-Self-Service-Portal) wird als separates Feature
-  ausgeliefert — siehe Folge-Issue zu MVP-003.
+- Rolle `kunde` (Customer-Self-Service-Portal) ist mit MVP-003 Folge-Issue #56
+  ausgeliefert; Details siehe [Customer-Portal-Guard](./customer-portal-guard.md).
 - Plattform-Rollen `systemadmin` / `kundenadmin` aus Feature 019 sind als
   `admin` (global vs. org-scoped) bereits über die `team_id`-Trennung des
   Spatie-Setups abgebildet.
