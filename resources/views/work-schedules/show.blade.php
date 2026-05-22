@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', __('Mein Arbeitszeit-Modell'))
+@section('nav-title', __('Mein Arbeitszeit-Modell'))
 @section('content')
 <x-page-shell>
     <x-page-toolbar :title="__('Mein Arbeitszeit-Modell')">

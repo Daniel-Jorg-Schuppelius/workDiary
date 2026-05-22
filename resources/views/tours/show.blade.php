@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', __('Tour') . ' ' . ($tour->name ?? '#' . $tour->id))
+@section('nav-title', __('Tour') . ' ' . ($tour->name ?? '#' . $tour->id))
 
 @section('content')
     @php

@@ -149,4 +149,21 @@ return [
             'standby' => 'Standby',
         ],
     ],
+    'expense' => [
+        'status' => [
+            'draft' => 'Draft',
+            'pending' => 'Submitted',
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
+            'cancelled' => 'Cancelled',
+            'reimbursed' => 'Reimbursed',
+            'invoiced' => 'Invoiced',
+        ],
+        'payment_method' => [
+            'private_paid' => 'Paid privately',
+            'company_card' => 'Company card',
+            'cash' => 'Cash box',
+            'bank_transfer' => 'Bank transfer',
+        ],
+    ],
 ];

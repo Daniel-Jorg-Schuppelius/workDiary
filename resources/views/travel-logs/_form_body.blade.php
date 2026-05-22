@@ -42,18 +42,20 @@
                class="input input-bordered w-full"
                placeholder="{{ __('Auto aus Fahrzeugtyp') }}">
     </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Start (Uhrzeit)') }}</label>
-        <input type="time" name="start_time"
-               value="{{ old('start_time', $log?->started_at?->format('H:i')) }}"
-               class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Ende (Uhrzeit)') }}</label>
-        <input type="time" name="end_time"
-               value="{{ old('end_time', $log?->ended_at?->format('H:i')) }}"
-               class="input input-bordered w-full">
-    </div>
+    <x-date-range
+        class="md:col-span-2"
+        layout="split"
+        type="time"
+        :form-control="true"
+        :linked="true"
+        from-name="start_time"
+        to-name="end_time"
+        :from="old('start_time', $log?->started_at?->format('H:i'))"
+        :to="old('end_time', $log?->ended_at?->format('H:i'))"
+        :from-label="__('Start (Uhrzeit)')"
+        :to-label="__('Ende (Uhrzeit)')"
+        size=""
+    />
     <p class="text-xs text-base-content/60 md:col-span-2">
         {{ __('Tipp: Endet die Fahrt nach Mitternacht? Einfach die kleinere Uhrzeit eintragen — der Folgetag wird automatisch ergänzt.') }}
     </p>

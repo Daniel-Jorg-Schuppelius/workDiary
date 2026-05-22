@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $invoice_id
  * @property int|null $time_entry_id
+ * @property int|null $expense_id
  * @property string $description
  * @property string $quantity
  * @property string $unit
@@ -33,6 +34,7 @@ class InvoiceItem extends Model {
     protected $fillable = [
         'invoice_id',
         'time_entry_id',
+        'expense_id',
         'description',
         'quantity',
         'unit',
@@ -52,6 +54,20 @@ class InvoiceItem extends Model {
         static::saving(function (InvoiceItem $i): void {
             $i->amount = (string) round(((float) $i->quantity) * ((float) $i->unit_price), 2);
         });
+
+        // Wird eine InvoiceItem mit verknuepfter Expense geloescht, geben wir die
+        // Spese wieder frei (Status zurueck auf Approved), damit sie erneut
+        // einer anderen Rechnung zugeordnet werden kann.
+        static::deleted(function (InvoiceItem $i): void {
+            if ($i->expense_id === null) {
+                return;
+            }
+            $expense = Expense::query()->find($i->expense_id);
+            if ($expense !== null && $expense->status === \App\Enums\Expense\ExpenseStatus::Invoiced) {
+                $expense->status = \App\Enums\Expense\ExpenseStatus::Approved;
+                $expense->saveQuietly();
+            }
+        });
     }
 
     /** @return BelongsTo<Invoice, $this> */
@@ -62,5 +78,10 @@ class InvoiceItem extends Model {
     /** @return BelongsTo<TimeEntry, $this> */
     public function timeEntry(): BelongsTo {
         return $this->belongsTo(TimeEntry::class);
+    }
+
+    /** @return BelongsTo<Expense, $this> */
+    public function expense(): BelongsTo {
+        return $this->belongsTo(Expense::class);
     }
 }

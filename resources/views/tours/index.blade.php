@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', __('Touren'))
+@section('nav-title', __('Touren'))
 
 @section('content')
     <x-page-shell>

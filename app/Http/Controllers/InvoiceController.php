@@ -11,8 +11,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\Expense;
 use App\Models\Invoice;
 use App\Models\Project;
+use App\Services\Expense\ExpenseInvoicingService;
 use App\Services\Invoicing\InvoiceGenerator;
 use App\Services\UI\DateRangeContext;
 use App\Support\SortableQuery;
@@ -116,5 +118,31 @@ class InvoiceController extends Controller {
         return Pdf::loadView('invoices.pdf', ['invoice' => $invoice])
             ->setPaper('a4')
             ->download('rechnung-' . $invoice->number . '.pdf');
+    }
+
+    public function expensesForm(Invoice $invoice, ExpenseInvoicingService $service): View {
+        Gate::authorize('update', $invoice);
+        $expenses = $service->availableForInvoice($invoice)->get();
+
+        return view('invoices._attach_expenses_dialog', [
+            'invoice' => $invoice,
+            'expenses' => $expenses,
+        ]);
+    }
+
+    public function attachExpenses(Request $request, Invoice $invoice, ExpenseInvoicingService $service): RedirectResponse {
+        Gate::authorize('update', $invoice);
+
+        $data = $request->validate([
+            'expense_ids' => ['required', 'array', 'min:1'],
+            'expense_ids.*' => ['integer', 'exists:expenses,id'],
+        ]);
+
+        /** @var \Illuminate\Database\Eloquent\Collection<int, Expense> $expenses */
+        $expenses = Expense::query()->whereIn('id', $data['expense_ids'])->get();
+        $service->addToInvoice($invoice, $expenses);
+
+        return redirect()->route('invoices.show', $invoice)
+            ->with('status', __(':count Spese(n) hinzugefügt.', ['count' => $expenses->count()]));
     }
 }

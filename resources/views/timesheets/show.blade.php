@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', __('Stundenzettel') . ' #' . $timesheet->id)
+@section('nav-title', __('Stundenzettel') . ' #' . $timesheet->id)
 
 @section('content')
 @php

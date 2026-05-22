@@ -1,5 +1,8 @@
 @extends('layouts.app')
 
+@section('title', __('Kunden importieren (CSV)'))
+@section('nav-title', __('Kunden importieren (CSV)'))
+
 @section('content')
 <div class="container mx-auto p-6 max-w-2xl">
     <div class="flex items-center justify-between mb-6">

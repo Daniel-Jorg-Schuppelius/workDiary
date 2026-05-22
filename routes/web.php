@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\Access\PermissionController as AccessPermissionCo
 use App\Http\Controllers\Admin\Access\RoleController as AccessRoleController;
 use App\Http\Controllers\Admin\Access\UserGroupController as AccessUserGroupController;
 use App\Http\Controllers\Admin\EntryTypeController;
+use App\Http\Controllers\Admin\ExpenseCategoryController;
 use App\Http\Controllers\Admin\PluginController as AdminPluginController;
 use App\Http\Controllers\AdminTimeEntryController;
 use App\Http\Controllers\ApiTokenController;
@@ -39,6 +40,8 @@ use App\Http\Controllers\EnergyLogController;
 use App\Http\Controllers\EventCategoryController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventParticipantController;
+use App\Http\Controllers\ExpenseApprovalController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\FlexController;
 use App\Http\Controllers\FlexEligibilityController;
 use App\Http\Controllers\GeocodeController;
@@ -281,6 +284,8 @@ Route::middleware('auth')->group(function () {
         Route::post('invoices/{invoice}/issue', [InvoiceController::class, 'issue'])->name('invoices.issue');
         Route::post('invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
         Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
+        Route::get('invoices/{invoice}/expenses', [InvoiceController::class, 'expensesForm'])->name('invoices.expenses.form');
+        Route::post('invoices/{invoice}/expenses', [InvoiceController::class, 'attachExpenses'])->name('invoices.expenses.attach');
         Route::patch('projects/{project}/tasks/{task}/complete', [TaskController::class, 'complete'])->name('projects.tasks.complete');
         Route::get('time-entries/create', [TimeEntryController::class, 'pick'])->name('time-entries.create');
         Route::resource('projects.time-entries', TimeEntryController::class)->except(['index', 'show']);
@@ -358,6 +363,24 @@ Route::middleware('auth')->group(function () {
         Route::put('travel-logs/{travelLog}', [TravelLogController::class, 'update'])->name('travel-logs.update');
         Route::delete('travel-logs/{travelLog}', [TravelLogController::class, 'destroy'])->name('travel-logs.destroy');
 
+        // ── Spesen / Auslagen ──────────────────────────────────────────────
+        Route::get('expenses', [ExpenseController::class, 'index'])->name('expenses.index');
+        Route::get('expenses/export', [ExpenseController::class, 'export'])->name('expenses.export');
+        Route::get('expenses/create', [ExpenseController::class, 'create'])->name('expenses.create');
+        Route::post('expenses', [ExpenseController::class, 'store'])->name('expenses.store');
+        Route::get('expenses/{expense}/edit', [ExpenseController::class, 'edit'])->name('expenses.edit');
+        Route::put('expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
+        Route::delete('expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
+        Route::post('expenses/{expense}/submit', [ExpenseController::class, 'submit'])->name('expenses.submit');
+        Route::post('expenses/{expense}/cancel', [ExpenseController::class, 'cancel'])->name('expenses.cancel');
+
+        // ── Spesen-Genehmigung (Inbox) ─────────────────────────────────────
+        Route::get('expense-approvals', [ExpenseApprovalController::class, 'inbox'])->name('expense-approvals.inbox');
+        Route::post('expense-approvals/{expense}/approve', [ExpenseApprovalController::class, 'approve'])->name('expense-approvals.approve');
+        Route::get('expense-approvals/{expense}/reject', [ExpenseApprovalController::class, 'rejectForm'])->name('expense-approvals.reject-form');
+        Route::post('expense-approvals/{expense}/reject', [ExpenseApprovalController::class, 'reject'])->name('expense-approvals.reject');
+        Route::post('expense-approvals/{expense}/reimburse', [ExpenseApprovalController::class, 'markReimbursed'])->name('expense-approvals.reimburse');
+
         // ── Touren ─────────────────────────────────────────────────────────
         Route::get('tours', [TourController::class, 'index'])->name('tours.index');
         Route::get('tours/create', [TourController::class, 'create'])->name('tours.create');
@@ -413,6 +436,7 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/operations', [OperationsReportController::class, 'index'])->name('reports.operations');
         Route::get('reports/materials', [MaterialReportController::class, 'index'])->name('reports.materials');
         Route::get('reports/billing', [BillingReportController::class, 'index'])->name('reports.billing');
+        Route::get('reports/expenses', [\App\Http\Controllers\Reporting\ExpenseReportController::class, 'index'])->name('reports.expenses');
         Route::get('reports/qualifications', [QualificationReportController::class, 'index'])->name('reports.qualifications');
         Route::get('reports/attendance', [AttendanceReportController::class, 'index'])->name('reports.attendance');
         Route::get('reports/audit-activity', [AuditActivityReportController::class, 'index'])->name('reports.audit-activity');
@@ -470,6 +494,11 @@ Route::middleware('auth')->group(function () {
         Route::resource('admin/entry-types', EntryTypeController::class)
             ->names('admin.entry-types')
             ->parameters(['entry-types' => 'entryType'])
+            ->except('show');
+
+        Route::resource('admin/expense-categories', ExpenseCategoryController::class)
+            ->names('admin.expense-categories')
+            ->parameters(['expense-categories' => 'expenseCategory'])
             ->except('show');
 
         Route::resource('org/members', OrgMemberController::class)

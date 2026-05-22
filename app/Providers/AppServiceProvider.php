@@ -22,6 +22,8 @@ use App\Models\DutyPlan;
 use App\Models\EmergencyAssignment;
 use App\Models\Event;
 use App\Models\EventCategory;
+use App\Models\Expense;
+use App\Models\ExpenseCategory;
 use App\Models\FlexEligibility;
 use App\Models\Room;
 use App\Models\Material;
@@ -55,6 +57,8 @@ use App\Policies\CoverageRequirementPolicy;
 use App\Policies\DutyPlanPolicy;
 use App\Policies\EventCategoryPolicy;
 use App\Policies\EventPolicy;
+use App\Policies\ExpenseCategoryPolicy;
+use App\Policies\ExpensePolicy;
 use App\Policies\MaterialPolicy;
 use App\Policies\RoomPolicy;
 use App\Policies\MaterialUsagePolicy;
@@ -145,6 +149,8 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(FlexEligibility::class, FlexEligibilityPolicy::class);
         Gate::policy(Event::class, EventPolicy::class);
         Gate::policy(EventCategory::class, EventCategoryPolicy::class);
+        Gate::policy(Expense::class, ExpensePolicy::class);
+        Gate::policy(ExpenseCategory::class, ExpenseCategoryPolicy::class);
         Gate::policy(Room::class, RoomPolicy::class);
 
         // manage-members: Org-Admin darf Mitglieder der eigenen Org verwalten

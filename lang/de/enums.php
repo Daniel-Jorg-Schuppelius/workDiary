@@ -149,4 +149,21 @@ return [
             'standby' => 'Bereitschaft',
         ],
     ],
+    'expense' => [
+        'status' => [
+            'draft' => 'Entwurf',
+            'pending' => 'Eingereicht',
+            'approved' => 'Genehmigt',
+            'rejected' => 'Abgelehnt',
+            'cancelled' => 'Storniert',
+            'reimbursed' => 'Erstattet',
+            'invoiced' => 'Abgerechnet',
+        ],
+        'payment_method' => [
+            'private_paid' => 'Privat verauslagt',
+            'company_card' => 'Firmenkarte',
+            'cash' => 'Barkasse',
+            'bank_transfer' => 'Banküberweisung',
+        ],
+    ],
 ];

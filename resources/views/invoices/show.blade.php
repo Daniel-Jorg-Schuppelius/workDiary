@@ -13,6 +13,14 @@
         <div class="text-sm text-base-content/70">{{ $invoice->customer->name }}</div>
         <x-slot:actions>
             <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('invoices.pdf', $invoice)" show-label>{{ __('PDF') }}</x-icon-btn>
+            @can('update', $invoice)
+                @if ($invoice->status === \App\Models\Invoice::STATUS_DRAFT)
+                    <x-icon-btn icon="receipt_long" tone="info" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('invoices.expenses.form', $invoice)"
+                                show-label>{{ __('Spesen hinzufügen') }}</x-icon-btn>
+                @endif
+            @endcan
             @can('issue', $invoice)
                 <form method="POST" action="{{ route('invoices.issue', $invoice) }}" class="inline">@csrf
                     <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Stellen') }}</x-icon-btn>

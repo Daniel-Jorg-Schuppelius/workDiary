@@ -372,6 +372,7 @@
                                     $adminNavItems[]  = ['route' => 'admin.organizations.index',     'label' => __('Organisationen'),   'icon' => 'corporate_fare',   'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.branding.edit',           'label' => __('Branding'),         'icon' => 'palette',          'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.entry-types.index',        'label' => __('Eintragstypen'),    'icon' => 'category',         'modal' => false];
+                                    $adminNavItems[]  = ['route' => 'admin.expense-categories.index',  'label' => __('Spesenkategorien'), 'icon' => 'receipt_long',     'modal' => false];
                                 }
                                 if (! $isLegacyMode && \Illuminate\Support\Facades\Gate::allows('manage-access')) {
                                     $adminNavItems[] = ['route' => 'admin.access.index',             'label' => __('access.title.hub'), 'icon' => 'admin_panel_settings', 'modal' => false];
@@ -437,6 +438,10 @@
                                         ['route' => 'timesheets.index', 'label' => __('Stundenzettel'), 'icon' => 'description',     'modal' => false, 'matches' => ['timesheets.*', 'projects.timesheets.*']],
                                         ['route' => 'flex.index',       'label' => __('Gleitzeit'),     'icon' => 'hourglass_top',   'modal' => false, 'matches' => ['flex.*']],
                                         ['route' => 'travel-logs.index','label' => __('Fahrtenbuch'),   'icon' => 'directions_car',  'modal' => false, 'matches' => ['travel-logs.*']],
+                                        ['route' => 'expenses.index',   'label' => __('Spesen'),        'icon' => 'receipt_long',    'modal' => false, 'matches' => ['expenses.*']],
+                                        ...($_isGlobalAdmin ? [
+                                            ['route' => 'expense-approvals.inbox', 'label' => __('Spesen-Genehmigung'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['expense-approvals.*']],
+                                        ] : []),
                                         ['route' => 'tours.index',      'label' => __('Touren'),        'icon' => 'route',           'modal' => false, 'matches' => ['tours.*']],
                                     ],
                                 ];
@@ -512,6 +517,7 @@
                                             'icon'  => 'request_quote',
                                             'items' => [
                                                 ['route' => 'reports.billing',        'label' => __('Abrechnung'),      'icon' => 'request_quote', 'modal' => false, 'matches' => ['reports.billing']],
+                                                ['route' => 'reports.expenses',       'label' => __('Spesen'),          'icon' => 'receipt_long',  'modal' => false, 'matches' => ['reports.expenses']],
                                                 ['route' => 'reports.audit-activity', 'label' => __('Audit-Aktivität'), 'icon' => 'security',      'modal' => false, 'matches' => ['reports.audit-activity']],
                                             ],
                                         ],
@@ -880,6 +886,7 @@
                                 ['route' => 'vacations.create',      'label' => __('Urlaub'),      'icon' => 'beach_access'],
                                 ['route' => 'events.create',         'label' => __('Veranstaltung'),'icon' => 'event'],
                                 ['route' => 'travel-logs.create',    'label' => __('Fahrtbuch'),   'icon' => 'route'],
+                                ['route' => 'expenses.create',       'label' => __('Spese'),       'icon' => 'receipt_long'],
                                 ['route' => 'tours.create',          'label' => __('Tour'),        'icon' => 'directions_bus'],
                             ],
                         ],

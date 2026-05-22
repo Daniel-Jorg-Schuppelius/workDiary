@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', __('Tour bearbeiten'))
+@section('nav-title', __('Tour bearbeiten'))
 
 @section('content')
     @php

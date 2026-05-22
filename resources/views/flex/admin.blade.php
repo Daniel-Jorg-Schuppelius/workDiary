@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', __('Gleitzeit – Team'))
+@section('nav-title', __('Gleitzeit – Team'))
 @section('content')
 @php
     /** @var \Illuminate\Support\Collection<int, \App\Models\User> $users */

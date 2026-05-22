@@ -1,5 +1,8 @@
 @extends('layouts.app')
 
+@section('title', __('API-Tokens'))
+@section('nav-title', __('API-Tokens'))
+
 @section('content')
 <div class="mx-auto flex h-[calc(100dvh-11rem)] max-w-3xl flex-col gap-6 overflow-auto p-4">
     <h1 class="text-2xl font-semibold">{{ __('API-Tokens') }}</h1>
