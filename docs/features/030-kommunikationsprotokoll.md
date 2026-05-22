@@ -2,7 +2,8 @@
 
 ## Status
 
-Proposed
+Proposed — Kommunikationsnotizen als MVP-012 konzipiert:
+[docs/kommunikationsnotizen.md](../kommunikationsnotizen.md).
 
 ## Ziel
 
