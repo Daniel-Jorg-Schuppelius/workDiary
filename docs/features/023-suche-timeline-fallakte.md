@@ -2,7 +2,9 @@
 
 ## Status
 
-Proposed
+Proposed — Auftrags-Timeline als MVP-010 konzipiert:
+[docs/auftrags-timeline.md](../auftrags-timeline.md). Globale Suche und
+Kunden-/Projekt-/Asset-Timeline folgen in MVP-014 / MVP-037 / Folge-MVPs.
 
 ## Ziel
 
