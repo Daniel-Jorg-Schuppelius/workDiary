@@ -2,7 +2,12 @@
 
 ## Status
 
-Proposed
+Proposed — Konzipiert in MVP-020 bis MVP-024:
+[Protokoll-Datenmodell](../protokoll-datenmodell.md),
+[Protokollpunkt-Typen](../protokollpunkt-typen.md),
+[Abnahme & Signatur](../abnahme-signatur.md),
+[Vorher-/Nachher-Fotos](../protokoll-fotos.md),
+[Offene Punkte](../offene-punkte.md).
 
 ## Ziel
 
