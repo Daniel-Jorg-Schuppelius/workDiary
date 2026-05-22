@@ -113,6 +113,8 @@ class Organization extends Model {
                 $base = Str::slug($org->name) ?: 'org';
                 $slug = $base;
                 $i = 2;
+                // TENANT-BYPASS: Organization ist Root-Tenant und selbst nicht
+                // mandantenscoped; Slug-Eindeutigkeit ist global zu prüfen.
                 while (static::withoutGlobalScopes()->where('slug', $slug)->exists()) {
                     $slug = $base . '-' . $i++;
                 }

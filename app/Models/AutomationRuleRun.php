@@ -47,6 +47,9 @@ class AutomationRuleRun extends Model {
             if (! empty($run->organization_id) || empty($run->rule_id)) {
                 return;
             }
+            // TENANT-BYPASS: Queue-Worker hat keine currentOrganization-Bindung;
+            // organization_id wird direkt aus der zugehörigen AutomationRule
+            // übernommen, deren Mandantengrenze damit auch für den Run greift.
             $rule = AutomationRule::query()->withoutGlobalScopes()->find($run->rule_id);
             if ($rule instanceof AutomationRule && ! empty($rule->organization_id)) {
                 $run->organization_id = $rule->organization_id;

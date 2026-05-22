@@ -38,6 +38,8 @@ class MemberController extends Controller {
         /** @var User $auth */
         $auth = Auth::user();
 
+        // TENANT-BYPASS: User-Sonderfall (kein Trait). Mandantengrenze wird
+        // explizit über where('organization_id', $auth->organization_id) gesetzt.
         $query = User::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $auth->organization_id)

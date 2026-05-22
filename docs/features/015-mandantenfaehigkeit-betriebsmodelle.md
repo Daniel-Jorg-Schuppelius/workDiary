@@ -73,14 +73,28 @@ greifen.
 
 ## Vorhandene Basis
 
-- `Organization` und organisationsbezogene Modelle.
-- `BelongsToOrganization` und `OrganizationScope`.
+- `Organization` und 51 organisationsbezogene Modelle (Stand MVP-001-Audit
+  Mai 2026), die durchgängig den Trait `BelongsToOrganization` nutzen.
+- `BelongsToOrganization` und `OrganizationScope` als zentrale Sicherungen,
+  inkl. dokumentiertem Bypass-Inventar (siehe
+  [tenant-audit-2026.md](../security/tenant-audit-2026.md)).
+- Allow-List für bewusst nicht-tenant-scoped Modelle (Organization, User,
+  UserGroup, OrganizationAuditLog, PerDiemRate, GeocodeCache), abgesichert
+  durch das Architektur-Gate
+  `tests/Unit/Architecture/TenantTraitCoverageTest.php`.
+- Regression-Suiten unter `tests/Feature/Tenant/` (TenantBoundaryTest,
+  AttachmentTenantTest, PublicRouteTenantTest) plus bestehende
+  `tests/Feature/OrganizationIsolationTest.php`.
+- Gehärtete Public-Route `PublicSignatureController` bindet nach
+  Token-Auflösung `currentOrganization` an die Org des Timesheets.
 - Organisationswechsel für globale Admins.
 - Rollen, Rechte und Gruppen.
 - Lizenzierung mit Domain, Nutzerlimit und Feature-Flags.
 - Branding pro Organisation.
 - Deaktivierung, Reaktivierung, Export und Purge von Organisationen.
 - Audit- und Organisation-Audit-Logs.
+- ADR zur Attachment-Pfadstruktur:
+  [adr-attachment-paths.md](../security/adr-attachment-paths.md).
 
 ## Später
 
@@ -107,4 +121,5 @@ greifen.
 
 ## GitHub Issues
 
-- TBD
+- [#1 Mandantensicherheits-Audit](https://github.com/Daniel-Jorg-Schuppelius/workDiary/issues/1)
+  — abgeschlossen im Rahmen MVP-001, Quelle: [tenant-audit-2026.md](../security/tenant-audit-2026.md).

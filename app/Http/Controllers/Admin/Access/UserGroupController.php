@@ -87,12 +87,16 @@ class UserGroupController extends Controller {
         Gate::authorize('view', $group);
 
         $group->load(['roles', 'permissions', 'members' => function ($q): void {
+            // TENANT-BYPASS: User-Sonderfall (kein Trait); Pivot-Members
+            // sind durch group->organization_id implizit gefiltert.
             $q->withoutGlobalScopes()->orderBy('name');
         }]);
 
         // Mitglieder, die noch hinzugefügt werden können: alle User der Org,
         // die nicht bereits in der Gruppe sind.
         $memberIds = $group->members->pluck('id')->all();
+        // TENANT-BYPASS: User-Sonderfall; Org-Filter über group->organization_id
+        // explizit. Group selbst ist tenant-scoped, daher org-konsistent.
         $addableUsers = User::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $group->organization_id)
@@ -155,6 +159,7 @@ class UserGroupController extends Controller {
         Gate::authorize('update', $group);
 
         $memberIds = $group->members()->pluck('users.id')->all();
+        // TENANT-BYPASS: User-Sonderfall; Org-Filter explizit über group->organization_id.
         $addableUsers = User::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $group->organization_id)

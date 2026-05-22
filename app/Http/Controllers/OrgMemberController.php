@@ -33,6 +33,10 @@ class OrgMemberController extends Controller {
         /** @var User $auth */
         $auth = Auth::user();
 
+        // TENANT-BYPASS: User-Model nutzt keinen BelongsToOrganization-Trait
+        // (Authenticatable-Sonderfall, siehe docs/security/tenant-audit-2026.md).
+        // Mandantengrenze wird hier durch where('organization_id', $auth->organization_id)
+        // explizit hergestellt.
         $query = User::withoutGlobalScopes()
             ->where('organization_id', $auth->organization_id)
             ->with('roles');

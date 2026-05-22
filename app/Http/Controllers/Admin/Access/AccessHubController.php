@@ -48,6 +48,7 @@ class AccessHubController extends Controller {
             : 0;
 
         $membersCount = $auth->organization_id
+            // TENANT-BYPASS: User-Sonderfall (kein Trait); Org-Filter explizit.
             ? User::query()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $auth->organization_id)

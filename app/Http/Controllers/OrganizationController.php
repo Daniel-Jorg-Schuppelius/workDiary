@@ -40,6 +40,9 @@ class OrganizationController extends Controller {
             }
         }
 
+        // TENANT-BYPASS: Plattform-Admin listet Organisationen über Mandanten
+        // hinweg. Route ist hinter auth + access.manage abgesichert; ohne
+        // diese Berechtigung erreicht der Aufruf den Controller nicht.
         $query = Organization::query()->withoutGlobalScopes()->withCount('users');
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [

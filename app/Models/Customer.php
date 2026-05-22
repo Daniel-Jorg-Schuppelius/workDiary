@@ -135,6 +135,10 @@ class Customer extends Model {
         $slug = $base;
         $i = 2;
         while (
+            // TENANT-BYPASS: Slug-Eindeutigkeit muss ohne Global Scope geprüft
+            // werden, weil $organizationId hier explizit übergeben wird (z. B.
+            // beim Anlegen aus Admin-Kontexten ohne gebundene currentOrganization).
+            // Der explizite where('organization_id', ...) erhält die Mandantengrenze.
             static::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
@@ -152,6 +156,9 @@ class Customer extends Model {
      * Berechnet die nächste freie Kundennummer im Schema "K-XXXX" für die Organisation.
      */
     public static function nextNumberFor(?int $organizationId): string {
+        // TENANT-BYPASS: $organizationId wird explizit übergeben und unten als
+        // where-Filter gesetzt; Global Scope wird umgangen, damit auch Admin-
+        // oder Konsolen-Kontexte ohne currentOrganization-Bindung funktionieren.
         $max = self::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organizationId)

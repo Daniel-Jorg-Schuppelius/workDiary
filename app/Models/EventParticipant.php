@@ -60,6 +60,9 @@ class EventParticipant extends Pivot {
             if (! empty($pivot->organization_id) || empty($pivot->event_id)) {
                 return;
             }
+            // TENANT-BYPASS: Pivot-Backfill aus Queue-/Admin-Kontexten ohne
+            // gebundene currentOrganization. Wir leiten organization_id direkt
+            // vom Parent-Event ab und übernehmen damit dessen Mandantengrenze.
             $event = Event::query()->withoutGlobalScopes()->find($pivot->event_id);
             if ($event instanceof Event && ! empty($event->organization_id)) {
                 $pivot->organization_id = $event->organization_id;
