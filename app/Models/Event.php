@@ -139,7 +139,7 @@ class Event extends Model {
             ->withTimestamps();
     }
 
-    /** @return BelongsToMany<User, $this> */
+    /** @return BelongsToMany<User, $this, EventParticipant, 'pivot'> */
     public function participants(): BelongsToMany {
         return $this->belongsToMany(User::class, 'event_user')
             ->using(EventParticipant::class)

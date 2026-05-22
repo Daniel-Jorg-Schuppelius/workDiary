@@ -12,6 +12,7 @@ namespace App\Services\Event;
 
 use App\Models\Event;
 use App\Models\Room;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use RuntimeException;
@@ -59,12 +60,15 @@ class RoomBookingService {
             // Feinprüfung in PHP: setup_minutes_before / teardown_minutes_after
             // der bestehenden Buchung berücksichtigen.
             ->filter(function (Event $candidate) use ($room, $blockStart, $blockEnd): bool {
-                $pivot = $candidate->rooms->firstWhere('id', $room->getKey())?->pivot;
-                if ($pivot === null) {
+                $roomMatch = $candidate->rooms->firstWhere('id', $room->getKey());
+                $pivot = $roomMatch?->getRelation('pivot');
+                if (! $pivot instanceof Pivot) {
                     return false;
                 }
-                $start = Carbon::parse($pivot->started_at)->subMinutes((int) ($pivot->setup_minutes_before ?? 0));
-                $end = Carbon::parse($pivot->ended_at)->addMinutes((int) ($pivot->teardown_minutes_after ?? 0));
+                $start = Carbon::parse((string) $pivot->getAttribute('started_at'))
+                    ->subMinutes((int) $pivot->getAttribute('setup_minutes_before'));
+                $end = Carbon::parse((string) $pivot->getAttribute('ended_at'))
+                    ->addMinutes((int) $pivot->getAttribute('teardown_minutes_after'));
 
                 return $start->lt($blockEnd) && $end->gt($blockStart);
             })
@@ -139,10 +143,14 @@ class RoomBookingService {
         $grid = [];
         foreach ($events as $event) {
             foreach ($event->rooms as $room) {
+                $pivot = $room->getRelation('pivot');
+                if (! $pivot instanceof Pivot) {
+                    continue;
+                }
                 $grid[$room->getKey()][] = [
                     'event' => $event,
-                    'started_at' => Carbon::parse($room->pivot->started_at),
-                    'ended_at' => Carbon::parse($room->pivot->ended_at),
+                    'started_at' => Carbon::parse((string) $pivot->getAttribute('started_at')),
+                    'ended_at' => Carbon::parse((string) $pivot->getAttribute('ended_at')),
                 ];
             }
         }

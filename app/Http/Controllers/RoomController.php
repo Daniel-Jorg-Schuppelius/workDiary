@@ -12,9 +12,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Room;
 use App\Services\Event\RoomBookingService;
-use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 

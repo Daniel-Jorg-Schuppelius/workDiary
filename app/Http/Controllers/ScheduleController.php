@@ -52,7 +52,8 @@ class ScheduleController extends Controller {
 
         if (count($months) > 1) {
             $from = CarbonImmutable::create($activeMonth['year'], $activeMonth['month'], 1)
-                ->startOfMonth();
+                ?->startOfMonth()
+                ?? CarbonImmutable::now()->startOfMonth();
             $to = $from->endOfMonth();
         } else {
             $from = $rangeFrom;

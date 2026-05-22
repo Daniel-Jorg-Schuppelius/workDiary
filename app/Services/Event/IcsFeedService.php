@@ -14,7 +14,6 @@ use App\Enums\Event\EventVisibility;
 use App\Models\Event;
 use App\Models\User;
 use DateTimeZone;
-use Illuminate\Support\Carbon;
 use Spatie\IcalendarGenerator\Components\Calendar;
 use Spatie\IcalendarGenerator\Components\Event as IcsEvent;
 use Spatie\IcalendarGenerator\Enums\Classification;
@@ -59,15 +58,11 @@ class IcsFeedService {
             ->productIdentifier((string) config('events.ics.product_id', '-//workDiary//Events//DE'))
             ->refreshInterval(60);
 
-        $tz = new DateTimeZone(config('app.timezone', 'Europe/Berlin'));
+        $tz = new DateTimeZone((string) config('app.timezone', 'Europe/Berlin'));
 
         foreach ($events as $event) {
-            $start = $event->started_at instanceof Carbon
-                ? $event->started_at->copy()->setTimezone($tz)
-                : Carbon::parse($event->started_at)->setTimezone($tz);
-            $end = $event->ended_at instanceof Carbon
-                ? $event->ended_at->copy()->setTimezone($tz)
-                : Carbon::parse($event->ended_at)->setTimezone($tz);
+            $start = $event->started_at->copy()->setTimezone($tz);
+            $end = $event->ended_at->copy()->setTimezone($tz);
 
             $location = $event->rooms
                 ->map(fn($r) => trim($r->building . ' ' . $r->name))
@@ -87,9 +82,9 @@ class IcsFeedService {
                 $ics->address($location);
             }
             $ics->classification(match ($event->visibility) {
-                EventVisibility::Public => Classification::public(),
-                EventVisibility::External => Classification::public(),
-                EventVisibility::Internal => Classification::private(),
+                EventVisibility::Public => Classification::Public,
+                EventVisibility::External => Classification::Public,
+                EventVisibility::Internal => Classification::Private,
             });
 
             $calendar->event($ics);

@@ -108,7 +108,7 @@ class EventController extends Controller {
             ->orderBy('started_at')
             ->get();
 
-        $eventsByDay = $events->groupBy(fn(Event $e) => $e->started_at?->format('Y-m-d'));
+        $eventsByDay = $events->groupBy(fn(Event $e) => $e->started_at->format('Y-m-d'));
 
         return view('events.calendar', [
             'monthStart'  => $monthStart,
@@ -231,7 +231,7 @@ class EventController extends Controller {
         return $data;
     }
 
-    /** @return list<array<string, mixed>> */
+    /** @return array<int, array{room_id: int, started_at?: \Illuminate\Support\Carbon|string, ended_at?: \Illuminate\Support\Carbon|string, setup_minutes_before?: int, teardown_minutes_after?: int}> */
     private function extractRooms(Request $request): array {
         $rows = (array) $request->input('rooms', []);
         $out = [];
@@ -239,19 +239,24 @@ class EventController extends Controller {
             if (empty($row['room_id'])) {
                 continue;
             }
-            $out[] = [
+            $entry = [
                 'room_id' => (int) $row['room_id'],
-                'started_at' => $row['started_at'] ?? null,
-                'ended_at' => $row['ended_at'] ?? null,
                 'setup_minutes_before' => (int) ($row['setup_minutes_before'] ?? 0),
                 'teardown_minutes_after' => (int) ($row['teardown_minutes_after'] ?? 0),
             ];
+            if (! empty($row['started_at'])) {
+                $entry['started_at'] = (string) $row['started_at'];
+            }
+            if (! empty($row['ended_at'])) {
+                $entry['ended_at'] = (string) $row['ended_at'];
+            }
+            $out[] = $entry;
         }
 
         return $out;
     }
 
-    /** @return list<array<string, mixed>> */
+    /** @return array<int, array{user_id: int, role?: string, status?: string}> */
     private function extractParticipants(Request $request): array {
         $rows = (array) $request->input('participants', []);
         $out = [];

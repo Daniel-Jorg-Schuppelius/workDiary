@@ -11,7 +11,6 @@
 namespace App\Services\Event;
 
 use App\Enums\Event\ParticipantStatus;
-use App\Enums\Event\ReminderChannel;
 use App\Models\Event;
 use App\Models\EventReminder;
 use App\Models\User;
@@ -105,6 +104,7 @@ class ReminderService {
             ->with('event.participants')
             ->due($now)
             ->chunkById(100, function ($reminders) use (&$sent): void {
+                /** @var EventReminder $reminder */
                 foreach ($reminders as $reminder) {
                     try {
                         $this->dispatchOne($reminder);
@@ -139,9 +139,7 @@ class ReminderService {
             return;
         }
 
-        $channels = $reminder->channel instanceof ReminderChannel
-            ? [$reminder->channel->value]
-            : [(string) $reminder->channel];
+        $channels = [$reminder->channel->value];
 
         $notification = new EventReminderNotification($event, $channels);
         foreach ($recipients as $user) {
@@ -161,7 +159,12 @@ class ReminderService {
             return collect($user ? [$user] : []);
         }
 
-        return $reminder->event->participants()
+        $event = $reminder->event;
+        if ($event === null) {
+            return collect();
+        }
+
+        return $event->participants()
             ->wherePivotIn('status', [
                 ParticipantStatus::Invited->value,
                 ParticipantStatus::Accepted->value,

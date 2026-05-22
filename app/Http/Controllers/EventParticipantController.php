@@ -100,7 +100,7 @@ class EventParticipantController extends Controller {
         $this->certificates->issue(
             $event,
             $user,
-            isset($data['issued_at']) ? \Carbon\Carbon::parse($data['issued_at']) : null,
+            isset($data['issued_at']) ? \Illuminate\Support\Carbon::parse($data['issued_at']) : null,
         );
 
         return back()->with('success', __('Zertifikat ausgestellt.'));

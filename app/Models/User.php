@@ -187,13 +187,10 @@ class User extends Authenticatable {
         $this->loadMissing(['userGroups.permissions', 'userGroups.roles.permissions']);
 
         foreach ($this->userGroups as $group) {
-            foreach ($group->permissions as $permission) {
+            /** @var Collection<int, SpatiePermission> $groupPermissions */
+            $groupPermissions = $group->getAllPermissions();
+            foreach ($groupPermissions as $permission) {
                 $names->push($permission->name);
-            }
-            foreach ($group->roles as $role) {
-                foreach ($role->permissions as $permission) {
-                    $names->push($permission->name);
-                }
             }
         }
 

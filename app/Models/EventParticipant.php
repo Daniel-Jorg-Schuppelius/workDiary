@@ -12,6 +12,7 @@ namespace App\Models;
 
 use App\Enums\Event\ParticipantRole;
 use App\Enums\Event\ParticipantStatus;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
 
@@ -71,6 +72,11 @@ class EventParticipant extends Pivot {
             'status' => ParticipantStatus::Declined,
             'responded_at' => now(),
         ])->save();
+    }
+
+    /** @return BelongsTo<Event, $this> */
+    public function event(): BelongsTo {
+        return $this->belongsTo(Event::class);
     }
 
     public function hasValidCertificate(?Carbon $on = null): bool {

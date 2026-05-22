@@ -42,6 +42,7 @@ class EventService {
             $event = Event::create($data);
 
             foreach ($rooms as $row) {
+                /** @var Room $room */
                 $room = Room::findOrFail($row['room_id']);
                 $start = isset($row['started_at']) ? Carbon::parse($row['started_at']) : $event->started_at;
                 $end = isset($row['ended_at']) ? Carbon::parse($row['ended_at']) : $event->ended_at;
@@ -79,6 +80,7 @@ class EventService {
             if ($rooms !== null) {
                 $event->rooms()->detach();
                 foreach ($rooms as $row) {
+                    /** @var Room $room */
                     $room = Room::findOrFail($row['room_id']);
                     $start = isset($row['started_at']) ? Carbon::parse($row['started_at']) : $event->started_at;
                     $end = isset($row['ended_at']) ? Carbon::parse($row['ended_at']) : $event->ended_at;
@@ -94,6 +96,7 @@ class EventService {
             }
 
             if ($participants !== null) {
+                /** @var array<int, array{user_id:int, role?:string, status?:string}> $participants */
                 $this->syncParticipants($event, $participants);
             }
 

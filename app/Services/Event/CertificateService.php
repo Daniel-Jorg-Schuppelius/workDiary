@@ -36,7 +36,7 @@ class CertificateService {
         $issued = ($issuedAt ?? now())->copy()->startOfDay();
 
         $validMonths = $event->certificate_valid_months
-            ?? $event->category?->certificate_valid_months
+            ?? $event->category->certificate_valid_months
             ?? (int) config('events.certificate.default_valid_months', 12);
 
         $pivot->forceFill([
@@ -100,7 +100,7 @@ class CertificateService {
                 }
                 $user->notify(new CertificateExpiryNotification(
                     eventId: (int) $pivot->event_id,
-                    eventTitle: (string) ($pivot->event?->title ?? ''),
+                    eventTitle: (string) ($pivot->event->title ?? ''),
                     expiresAt: Carbon::parse($pivot->certificate_expires_at),
                     daysRemaining: $days,
                 ));
