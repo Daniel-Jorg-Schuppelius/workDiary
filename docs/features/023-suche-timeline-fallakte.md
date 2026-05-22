@@ -3,7 +3,8 @@
 ## Status
 
 Proposed — Auftrags-Timeline als MVP-010 konzipiert:
-[docs/auftrags-timeline.md](../auftrags-timeline.md). Globale Suche und
+[docs/auftrags-timeline.md](../auftrags-timeline.md). Fallakte-Layout
+als MVP-013: [docs/fallakte.md](../fallakte.md). Globale Suche und
 Kunden-/Projekt-/Asset-Timeline folgen in MVP-014 / MVP-037 / Folge-MVPs.
 
 ## Ziel
