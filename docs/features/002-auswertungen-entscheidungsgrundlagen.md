@@ -2,7 +2,12 @@
 
 ## Status
 
-Proposed
+Proposed — Konzipiert in MVP-039 bis MVP-043:
+[Kundenanalyse](../kundenanalyse.md),
+[Auftragstypanalyse](../auftragstypanalyse.md),
+[Produkt-/Objektanalyse](../produkt-analyse.md),
+[Drilldown](../report-drilldown.md),
+[CSV/PDF-Export](../report-export.md).
 
 ## Ziel
 
