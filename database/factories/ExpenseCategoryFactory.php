@@ -22,8 +22,14 @@ class ExpenseCategoryFactory extends Factory {
 
     public function definition(): array {
         $label = fake()->unique()->randomElement([
-            'Verpflegung', 'Übernachtung', 'Bewirtung', 'Tickets',
-            'Parking', 'Material', 'Telekommunikation', 'Sonstiges',
+            'Verpflegung',
+            'Übernachtung',
+            'Bewirtung',
+            'Tickets',
+            'Parking',
+            'Material',
+            'Telekommunikation',
+            'Sonstiges',
         ]) . ' ' . fake()->unique()->numberBetween(1, 9999);
 
         return [

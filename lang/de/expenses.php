@@ -55,7 +55,7 @@ return [
         'approve'  => 'Genehmigen',
         'reject'   => 'Ablehnen',
         'cancel'   => 'Stornieren',
-        'reimburse'=> 'Als erstattet markieren',
+        'reimburse' => 'Als erstattet markieren',
         'export'   => 'CSV exportieren',
     ],
 

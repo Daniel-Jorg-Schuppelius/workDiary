@@ -55,7 +55,7 @@ return [
         'approve'  => 'Approve',
         'reject'   => 'Reject',
         'cancel'   => 'Cancel',
-        'reimburse'=> 'Mark as reimbursed',
+        'reimburse' => 'Mark as reimbursed',
         'export'   => 'Export CSV',
     ],
 

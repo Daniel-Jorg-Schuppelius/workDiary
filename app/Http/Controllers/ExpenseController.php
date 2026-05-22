@@ -264,7 +264,8 @@ class ExpenseController extends Controller {
     }
 
     /** @return array<string, mixed> */
-    private function formData(): array {        return [
+    private function formData(): array {
+        return [
             'categories' => ExpenseCategory::query()
                 ->where('is_active', true)
                 ->orderBy('sort')
