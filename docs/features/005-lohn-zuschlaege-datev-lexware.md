@@ -2,7 +2,10 @@
 
 ## Status
 
-Proposed
+Proposed — Monatsfreigabe-Datenmodell (MVP-016):
+[docs/monatsfreigabe.md](../monatsfreigabe.md). Exportgrundlage geprüfter
+Zeiten (MVP-019): [docs/zeit-export.md](../zeit-export.md). DATEV-/
+Lexware-Profile folgen als eigene Issues.
 
 ## Ziel
 
