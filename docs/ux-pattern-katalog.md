@@ -350,6 +350,9 @@ projekt-spezifischen Tailwind-Klassen direkt im Template.
 
 ## 10. Barrierefreiheit
 
+Kurzfassung; verbindliche Vollversion in
+[docs/accessibility-checkliste.md](accessibility-checkliste.md).
+
 - Jeder Icon-Button trägt `:label`. Tooltip + `aria-label` werden von
   `<x-icon-btn>` gesetzt.
 - Tab-Reihenfolge folgt visueller Reihenfolge; keine `tabindex="-1"` ohne
