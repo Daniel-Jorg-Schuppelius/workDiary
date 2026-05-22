@@ -55,7 +55,7 @@ class PerDiemCalculatorTest extends TestCase {
         $this->assertSame(PerDiemDayKind::FullDay, $days[1]->kind);
         $this->assertSame(PerDiemDayKind::ReturnDay, $days[2]->kind);
 
-        $total = array_sum(array_map(fn ($d) => (float) $d->amount, $days));
+        $total = array_sum(array_map(fn($d) => (float) $d->amount, $days));
         $this->assertEqualsWithDelta(14.0 + 28.0 + 14.0, $total, 0.001);
     }
 

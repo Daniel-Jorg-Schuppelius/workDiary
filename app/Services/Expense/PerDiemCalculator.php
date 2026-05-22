@@ -29,7 +29,8 @@ use RuntimeException;
  *    sie wird optional in einer separaten Position oder auf dem Trip aggregiert.
  */
 class PerDiemCalculator {
-    public function __construct(private readonly PerDiemRateLookup $rates) {}
+    public function __construct(private readonly PerDiemRateLookup $rates) {
+    }
 
     /**
      * Erzeugt PerDiemDay-Einträge (unsaved) für einen Trip anhand seines Zeitraums.
