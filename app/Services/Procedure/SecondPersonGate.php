@@ -78,9 +78,11 @@ class SecondPersonGate {
 
         $config = $this->stepConfig($stepRun);
 
-        if ($this->selfExclusion($stepRun)
+        if (
+            $this->selfExclusion($stepRun)
             && $stepRun->executed_by_user_id !== null
-            && $stepRun->executed_by_user_id === $taker->id) {
+            && $stepRun->executed_by_user_id === $taker->id
+        ) {
             throw ProcedureSecondPersonException::selfNotAllowed($stepRun);
         }
 

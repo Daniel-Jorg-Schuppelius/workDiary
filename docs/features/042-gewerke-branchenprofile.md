@@ -6,8 +6,20 @@ Proposed — Konzipiert in MVP-033/034:
 [Branchenprofil IT-Service](../branchenprofil-it.md),
 [Branchenprofil Handwerk/Service](../branchenprofil-handwerk.md).
 Weitere geplante Profile:
+[Branchenprofil Elektro](../branchenprofil-elektro.md),
+[Branchenprofil SHK](../branchenprofil-shk.md),
+[Branchenprofil Facility Management und Hausmeisterdienste](../branchenprofil-facility.md),
+[Branchenprofil Gebäudereinigung](../branchenprofil-gebaeudereinigung.md),
+[Branchenprofil Bau, Ausbau und Trockenbau](../branchenprofil-bau-ausbau.md),
+[Branchenprofil Garten- und Landschaftsbau](../branchenprofil-galabau.md),
+[Branchenprofil Veranstaltungstechnik](../branchenprofil-veranstaltungstechnik.md),
+[Branchenprofil Sicherheitsdienst](../branchenprofil-sicherheitsdienst.md),
+[Branchenprofil Maschinenbau und Anlagenwartung](../branchenprofil-anlagenwartung.md),
+[Branchenprofil Kfz- und Fuhrparkservice](../branchenprofil-kfz-fuhrparkservice.md),
 [Branchenprofil Steuerberatung](../branchenprofil-steuerberater.md),
-[Branchenprofil Ambulante Pflege](../branchenprofil-ambulante-pflege.md).
+[Branchenprofil Ambulante Pflege](../branchenprofil-ambulante-pflege.md),
+[Branchenprofil Partyservice und Catering](../branchenprofil-partyservice.md),
+[Branchenprofil Spedition und Transportlogistik](../branchenprofil-spedition.md).
 
 ## Ziel
 
@@ -30,6 +42,7 @@ Protokollen.
 - Elektro.
 - SHK: Sanitär, Heizung, Klima.
 - Facility Management und Hausmeisterdienste.
+- Gebäudereinigung.
 - IT-Service, Netzwerk, Software und Managed Services.
 - Maschinenbau, Anlagenwartung und Instandhaltung.
 - Bau, Ausbau, Trockenbau.
@@ -37,7 +50,8 @@ Protokollen.
 - Garten- und Landschaftsbau.
 - Sicherheits-, Prüf- und Wartungsdienste.
 - Veranstaltungstechnik.
-- Fuhrpark- und logistiknahe Dienste.
+- Partyservice, Catering und Eventverpflegung.
+- Spedition, Fuhrpark- und logistiknahe Dienste.
 - Pflege-, Sozial- oder betreuungsnahe Dienste, wenn fachlich gewünscht.
 
 ## Profilinhalte

@@ -60,8 +60,10 @@ class DeviationRecorder {
             throw ProcedureDeviationValidationException::reasonTooShort();
         }
 
-        if ($severity === ProcedureDeviationSeverity::Critical
-            && ($action === null || $action === ProcedureDeviationProposedAction::None)) {
+        if (
+            $severity === ProcedureDeviationSeverity::Critical
+            && ($action === null || $action === ProcedureDeviationProposedAction::None)
+        ) {
             // Kritische Abweichungen muessen eine Folgeaktion benennen — wenn
             // keine angegeben wurde, eskalieren wir als sicherer Default.
             $action = ProcedureDeviationProposedAction::Escalate;
