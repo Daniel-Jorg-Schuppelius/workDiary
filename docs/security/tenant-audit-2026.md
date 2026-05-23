@@ -118,6 +118,7 @@ Liste benötigen ein eigenes Issue und ein Review im Audit-Dokument.
 | ProtocolSignature     | Kind-Tabelle von `Protocol`. Zugriff ausschließlich über das Eltern-Protokoll; Signaturen sind durch FK + Hash an das Protokoll gebunden.                                                                                       |
 | ProtocolEvent         | Audit-Log-Child von `Protocol`, analog zu `OpenIssueEvent`. Wird nur über die Protokoll-Relation gelesen/geschrieben.                                                                                                           |
 | ProtocolSignatureToken | Einmal-Link für E-Mail-Signatur (MVP-022); Lookup ausschliesslich per Token-Hash, danach immer auf Eltern-Protokoll gemappt (`organization_id` über Relation).                                                                  |
+| ProtocolItemPhoto     | Pivot zwischen `ProtocolItem` und `Attachment` (MVP-023). Zugriff ausschließlich über `protocol_item_id`; Mandantengrenze ergibt sich über `ProtocolItem → Protocol`.                                                          |
 | `App\Models\Legacy\*` | Liegen auf separater `legacy`-Connection und sind über Middleware `access.legacy`/`legacy.write` geschützt. Siehe Legacy-Abschnitt.                                                                                             |
 
 ### CI-Gate

@@ -210,6 +210,69 @@ class ProtocolController extends Controller {
         return redirect()->back()->with('success', __('protocol.flash.item.removed'));
     }
 
+    public function uploadPhoto(
+        Request $request,
+        ProtocolItem $item,
+        \App\Services\Protocol\ProtocolItemPhotoService $photos,
+    ): RedirectResponse {
+        Gate::authorize('update', $item->protocol);
+        /** @var User $u */
+        $u = Auth::user();
+        $allowGeo = $u->can(\App\Enums\User\Permission::ProtocolItemPhotoViewGeo->value);
+
+        $data = $request->validate([
+            'photo' => [
+                'required',
+                'file',
+                'image',
+                'max:' . (\App\Services\Protocol\ProtocolItemPhotoService::MAX_BYTES / 1024),
+            ],
+            'phase' => [
+                'required',
+                'string',
+                \Illuminate\Validation\Rule::in(array_column(\App\Enums\Protocol\ProtocolItemPhotoPhase::cases(), 'value')),
+            ],
+            'caption' => ['nullable', 'string', 'max:180'],
+            'allow_geo' => ['nullable', 'boolean'],
+        ]);
+
+        $phase = \App\Enums\Protocol\ProtocolItemPhotoPhase::from($data['phase']);
+
+        try {
+            $photos->upload(
+                $item,
+                $request->file('photo'),
+                $phase,
+                $u,
+                [
+                    'caption' => $data['caption'] ?? null,
+                    'allow_geo' => (bool) ($data['allow_geo'] ?? false) && $allowGeo,
+                ],
+            );
+        } catch (InvalidArgumentException $e) {
+            return redirect()->back()->withErrors(['photo' => $e->getMessage()]);
+        }
+
+        return redirect()->back()->with('success', __('protocol.flash.photo.uploaded'));
+    }
+
+    public function destroyPhoto(
+        \App\Models\ProtocolItemPhoto $photo,
+        \App\Services\Protocol\ProtocolItemPhotoService $photos,
+    ): RedirectResponse {
+        $item = $photo->item;
+        if ($item === null) {
+            abort(404);
+        }
+        Gate::authorize('update', $item->protocol);
+        /** @var User $u */
+        $u = Auth::user();
+
+        $photos->detach($photo, $u);
+
+        return redirect()->back()->with('success', __('protocol.flash.photo.removed'));
+    }
+
     public function issueSignatureToken(
         Request $request,
         Protocol $protocol,

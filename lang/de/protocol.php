@@ -56,6 +56,11 @@ return [
             'filled' => 'Punkt erfasst.',
             'removed' => 'Punkt entfernt.',
         ],
+        'photo' => [
+            'uploaded' => 'Foto hinzugefügt.',
+            'removed' => 'Foto entfernt.',
+            'captionUpdated' => 'Bildunterschrift aktualisiert.',
+        ],
     ],
     'validation' => [
         'required' => 'Punkt „:label" ist Pflicht.',
@@ -98,6 +103,9 @@ return [
         ],
         'signature' => [
             'missing' => 'Signatur ist noch nicht verknüpft.',
+        ],
+        'photo' => [
+            'missingPhase' => 'Foto-Punkt „:label": Phase „:phase" benötigt mindestens :need Foto(s) (vorhanden: :have).',
         ],
     ],
     'pdf' => [

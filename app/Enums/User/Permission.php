@@ -178,6 +178,9 @@ enum Permission: string implements HasLabel {
     case ProtocolDelete = 'protocol.delete';
     case ProtocolSignatureRequest = 'protocol.signatureRequest';
     case ProtocolPdfDownload = 'protocol.pdfDownload';
+    case ProtocolItemPhotoAdd = 'protocol.item.photo.add';
+    case ProtocolItemPhotoRemove = 'protocol.item.photo.remove';
+    case ProtocolItemPhotoViewGeo = 'protocol.item.photo.viewGeo';
 
         // ── Customer-Portal (Rolle `kunde`) ─────────────────────
     case CustomerPortalAccess = 'customerPortal.access';

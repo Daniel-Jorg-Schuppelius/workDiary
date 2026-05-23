@@ -261,5 +261,12 @@ return [
             'procedure_step' => 'Prozedur-Schritt',
             'signoff_internal' => 'Interne Freigabe',
         ],
+        'item-photo-phase' => [
+            'before' => 'Vorher',
+            'after' => 'Nachher',
+            'detail' => 'Detail',
+            'defect' => 'Mangel',
+            'reference' => 'Referenz',
+        ],
     ],
 ];

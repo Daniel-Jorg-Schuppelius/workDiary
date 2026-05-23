@@ -435,6 +435,16 @@ class ProtocolService {
     }
 
     /**
+     * Erlaubt anderen Protokoll-Services (z. B. ProtocolItemPhotoService),
+     * Audit-Eintraege ueber dieselbe Pipeline zu loggen.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    public function logEvent(Protocol $protocol, string $event, User $actor, array $payload = []): void {
+        $this->record($protocol, $event, $actor, $payload);
+    }
+
+    /**
      * @param  array<string, mixed>  $payload
      */
     private function record(Protocol $protocol, string $event, User $actor, array $payload = []): void {

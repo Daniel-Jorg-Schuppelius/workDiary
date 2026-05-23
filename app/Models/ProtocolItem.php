@@ -72,4 +72,9 @@ class ProtocolItem extends Model {
     public function children(): HasMany {
         return $this->hasMany(self::class, 'parent_item_id')->orderBy('sort_order');
     }
+
+    /** @return HasMany<ProtocolItemPhoto, $this> */
+    public function photos(): HasMany {
+        return $this->hasMany(ProtocolItemPhoto::class)->orderBy('sort_order');
+    }
 }

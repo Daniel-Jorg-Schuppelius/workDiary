@@ -32,4 +32,8 @@ final class ProtocolEventType {
     public const SignatureLinkOpened = 'protocol.signatureLinkOpened';
     public const PdfRendered = 'protocol.pdfRendered';
     public const PdfDownloaded = 'protocol.pdfDownloaded';
+    public const ItemPhotoAdded = 'protocol.item.photoAdded';
+    public const ItemPhotoRemoved = 'protocol.item.photoRemoved';
+    public const ItemPhotoReordered = 'protocol.item.photoReordered';
+    public const ItemPhotoUpdatedCaption = 'protocol.item.photoUpdatedCaption';
 }

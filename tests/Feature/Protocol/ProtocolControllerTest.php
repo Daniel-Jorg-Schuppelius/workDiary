@@ -152,4 +152,67 @@ class ProtocolControllerTest extends TestCase {
             'measured_by_user_id' => $user->id,
         ]);
     }
+
+    public function test_user_can_upload_and_delete_photo(): void {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $user = User::factory()->user()->create();
+        $entry = DiaryEntry::factory()->for($user)->create();
+        $protocols = app(\App\Services\Protocol\ProtocolService::class);
+        $protocol = $protocols->create($entry, $user, [
+            'type' => ProtocolType::Service->value,
+            'title' => 'Fotoaufnahme',
+        ]);
+        $item = $protocols->addItem($protocol, $user, [
+            'label' => 'Vorher/Nachher',
+            'item_type' => \App\Enums\Protocol\ProtocolItemType::Photo->value,
+        ]);
+
+        $file = \Illuminate\Http\UploadedFile::fake()->image('vorher.jpg', 800, 600);
+
+        $this->actingAs($user)
+            ->from(route('diary.show', $entry))
+            ->post(route('protocols.items.photos.store', $item), [
+                'photo' => $file,
+                'phase' => \App\Enums\Protocol\ProtocolItemPhotoPhase::Before->value,
+                'caption' => 'Ausgangszustand',
+            ])
+            ->assertRedirect();
+
+        $photo = \App\Models\ProtocolItemPhoto::query()
+            ->where('protocol_item_id', $item->id)
+            ->firstOrFail();
+        $this->assertSame('Ausgangszustand', $photo->caption);
+
+        $this->actingAs($user)
+            ->from(route('diary.show', $entry))
+            ->delete(route('protocols.items.photos.destroy', $photo))
+            ->assertRedirect();
+
+        $this->assertNull(\App\Models\ProtocolItemPhoto::query()->find($photo->id));
+    }
+
+    public function test_photo_upload_rejects_non_image(): void {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $user = User::factory()->user()->create();
+        $entry = DiaryEntry::factory()->for($user)->create();
+        $protocols = app(\App\Services\Protocol\ProtocolService::class);
+        $protocol = $protocols->create($entry, $user, [
+            'type' => ProtocolType::Service->value,
+            'title' => 'Bild-Validierung',
+        ]);
+        $item = $protocols->addItem($protocol, $user, [
+            'label' => 'Foto',
+            'item_type' => \App\Enums\Protocol\ProtocolItemType::Photo->value,
+        ]);
+
+        $bad = \Illuminate\Http\UploadedFile::fake()->create('plain.txt', 10, 'text/plain');
+
+        $this->actingAs($user)
+            ->from(route('diary.show', $entry))
+            ->post(route('protocols.items.photos.store', $item), [
+                'photo' => $bad,
+                'phase' => \App\Enums\Protocol\ProtocolItemPhotoPhase::Detail->value,
+            ])
+            ->assertSessionHasErrors('photo');
+    }
 }

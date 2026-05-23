@@ -62,6 +62,48 @@ class ProtocolItemValidator {
             ProtocolItemType::Group => [],
         });
 
+        if ($item->item_type === ProtocolItemType::Photo) {
+            $errors = array_merge($errors, $this->missingPhotoPhases($item));
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Prueft die in `value_json.min_per_phase` geforderten Mindestmengen
+     * je Phase fuer Foto-Items (MVP-023 §5). Fehlt der Schluessel ganz,
+     * wird (rueckwaertskompatibel mit MVP-021) nicht zusaetzlich gefordert.
+     *
+     * @return list<string>
+     */
+    public function missingPhotoPhases(ProtocolItem $item): array {
+        if ($item->item_type !== ProtocolItemType::Photo) {
+            return [];
+        }
+        $value = (array) ($item->value_json ?? []);
+        $min = (array) ($value['min_per_phase'] ?? []);
+        if ($min === []) {
+            return [];
+        }
+        $counts = \App\Models\ProtocolItemPhoto::query()
+            ->where('protocol_item_id', $item->id)
+            ->selectRaw('phase, COUNT(*) as c')
+            ->groupBy('phase')
+            ->pluck('c', 'phase')
+            ->all();
+
+        $errors = [];
+        foreach ($min as $phase => $required) {
+            $have = (int) ($counts[$phase] ?? 0);
+            if ($have < (int) $required) {
+                $errors[] = (string) __('protocol.validation.photo.missingPhase', [
+                    'label' => $item->label,
+                    'phase' => $phase,
+                    'have' => $have,
+                    'need' => (int) $required,
+                ]);
+            }
+        }
         return $errors;
     }
 

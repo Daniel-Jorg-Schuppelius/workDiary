@@ -48,6 +48,7 @@ class TenantTraitCoverageTest extends TestCase {
         \App\Models\ProtocolSignature::class,
         \App\Models\ProtocolEvent::class,
         \App\Models\ProtocolSignatureToken::class,
+        \App\Models\ProtocolItemPhoto::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {
