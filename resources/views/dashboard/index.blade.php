@@ -221,6 +221,65 @@
             </section>
             @endif
 
+            {{-- Meine offenen Punkte --}}
+            @if (isset($user['open_issues_assigned']))
+            <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
+                <header class="mb-3 flex items-center justify-between">
+                    <h3 class="font-['Space_Grotesk'] text-lg font-semibold">
+                        {{ __('Meine offenen Punkte') }}
+                        <span class="ml-1 text-sm font-normal text-base-content/60">
+                            ({{ $user['kpi']['open_issues_assigned'] ?? 0 }})
+                        </span>
+                    </h3>
+                    <span class="text-xs text-base-content/60">
+                        {{ __('Von mir erstellt, offen') }}: {{ $user['kpi']['open_issues_created'] ?? 0 }}
+                    </span>
+                </header>
+                @if ($user['open_issues_assigned']->isEmpty())
+                    <p class="text-sm text-base-content/60">{{ __('Keine offenen Punkte zugewiesen.') }}</p>
+                @else
+                    <ul class="space-y-2 text-sm">
+                        @foreach ($user['open_issues_assigned'] as $issue)
+                            @php
+                                $subjectRoute = null;
+                                if ($issue->subject_type === \App\Models\DiaryEntry::class) {
+                                    $subjectRoute = route('diary.show', $issue->subject_id) . '#open-issues';
+                                }
+                            @endphp
+                            <li class="rounded-box border border-base-300 bg-base-200 px-3 py-2">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span @class([
+                                        'badge badge-xs',
+                                        'badge-warning' => $issue->status->value === 'open',
+                                        'badge-info' => $issue->status->value === 'inProgress',
+                                        'badge-error' => $issue->status->value === 'blocked',
+                                        'badge-ghost' => $issue->status->value === 'reopened',
+                                    ])>{{ $issue->status->label() }}</span>
+                                    <span @class([
+                                        'badge badge-xs badge-outline',
+                                        'badge-error' => $issue->severity->value === 'critical',
+                                        'badge-warning' => $issue->severity->value === 'high',
+                                    ])>{{ $issue->severity->label() }}</span>
+                                    @if ($issue->due_at)
+                                        <span @class([
+                                            'badge badge-xs',
+                                            'badge-error' => $issue->due_at->isPast(),
+                                            'badge-ghost' => ! $issue->due_at->isPast(),
+                                        ])>{{ $issue->due_at->format('d.m.Y') }}</span>
+                                    @endif
+                                </div>
+                                @if ($subjectRoute)
+                                    <a href="{{ $subjectRoute }}" class="link link-primary block">{{ $issue->title }}</a>
+                                @else
+                                    <span class="block font-medium">{{ $issue->title }}</span>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </section>
+            @endif
+
             {{-- Letzte eigene Einträge --}}
             <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
                 <h3 class="mb-3 font-['Space_Grotesk'] text-lg font-semibold">{{ __('Meine letzten Einträge') }}</h3>

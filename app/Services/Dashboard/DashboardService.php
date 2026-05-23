@@ -19,6 +19,7 @@ use App\Models\DiaryEntry;
 use App\Models\EmergencyAssignment;
 use App\Models\Expense;
 use App\Models\OnCallShift;
+use App\Models\OpenIssue;
 use App\Models\PerDiemTrip;
 use App\Models\ScheduledShift;
 use App\Models\User;
@@ -114,12 +115,33 @@ class DashboardService {
             ->limit(7)
             ->get();
 
+        $openIssuesAssigned = OpenIssue::query()
+            ->where('assignee_user_id', $user->id)
+            ->whereNull('closed_at')
+            ->with(['subject', 'creator'])
+            ->orderByRaw('CASE WHEN due_at IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('due_at')
+            ->limit($recentLimit)
+            ->get();
+
+        $openIssuesAssignedCount = OpenIssue::query()
+            ->where('assignee_user_id', $user->id)
+            ->whereNull('closed_at')
+            ->count();
+
+        $openIssuesCreatedCount = OpenIssue::query()
+            ->where('created_by_user_id', $user->id)
+            ->whereNull('closed_at')
+            ->count();
+
         return [
             'kpi' => [
                 'open_entries' => (int) $entryCounts?->open_cnt,
                 'progress_entries' => (int) $entryCounts?->progress_cnt,
                 'upcoming_shifts' => $upcomingShifts->count(),
                 'upcoming_emergencies' => $upcomingEmergencies->count(),
+                'open_issues_assigned' => $openIssuesAssignedCount,
+                'open_issues_created' => $openIssuesCreatedCount,
             ],
             'today_shifts' => $todayShifts,
             'upcoming_shifts' => $upcomingShifts->take($recentLimit),
@@ -128,6 +150,7 @@ class DashboardService {
             'recent_comments' => $recentComments,
             'recent_attachments' => $recentAttachments,
             'upcoming_scheduled' => $upcomingScheduledShifts,
+            'open_issues_assigned' => $openIssuesAssigned,
             'window_end' => $weekEnd,
         ];
     }
