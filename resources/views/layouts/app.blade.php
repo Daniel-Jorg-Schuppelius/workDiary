@@ -382,6 +382,7 @@
                                     $adminNavItems[]  = ['route' => 'admin.organizations.index',     'label' => __('Organisationen'),   'icon' => 'corporate_fare',   'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.branding.edit',           'label' => __('Branding'),         'icon' => 'palette',          'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.entry-types.index',        'label' => __('Eintragstypen'),    'icon' => 'category',         'modal' => false];
+                                    $adminNavItems[]  = ['route' => 'admin.classifications.index',    'label' => __('Klassifikationen'), 'icon' => 'category_search',  'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.expense-categories.index',  'label' => __('Spesenkategorien'), 'icon' => 'receipt_long',     'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.per-diem-rates.index',      'label' => __('Verpflegungspauschalen'), 'icon' => 'restaurant_menu',  'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.automations.index',         'label' => __('Automatisierungen'), 'icon' => 'bolt',             'modal' => false];

@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\Access\PermissionController as AccessPermissionCo
 use App\Http\Controllers\Admin\Access\RoleController as AccessRoleController;
 use App\Http\Controllers\Admin\Access\UserGroupController as AccessUserGroupController;
 use App\Http\Controllers\Admin\AutomationRuleController;
+use App\Http\Controllers\Admin\ClassificationController;
 use App\Http\Controllers\Admin\EntryTypeController;
 use App\Http\Controllers\Admin\ExpenseCategoryController;
 use App\Http\Controllers\Admin\PerDiemRateController;
@@ -571,6 +572,13 @@ Route::middleware('auth')->group(function () {
             ->names('admin.entry-types')
             ->parameters(['entry-types' => 'entryType'])
             ->except('show');
+
+        Route::resource('admin/classifications', ClassificationController::class)
+            ->names('admin.classifications')
+            ->parameters(['classifications' => 'classification'])
+            ->except('show');
+        Route::post('admin/classifications/{classification}/deactivate-default', [ClassificationController::class, 'deactivateDefault'])
+            ->name('admin.classifications.deactivate-default');
 
         Route::resource('admin/expense-categories', ExpenseCategoryController::class)
             ->names('admin.expense-categories')

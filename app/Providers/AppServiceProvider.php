@@ -103,6 +103,8 @@ use App\Policies\UserGroupPolicy;
 use App\Policies\WorkSchedulePolicy;
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\BrandingService;
+use App\Services\Classification\ClassificationManager;
+use App\Services\Classification\ClassificationResolver;
 use App\Services\Reminders\ReminderService;
 use App\Services\Routing\NominatimGeocoder;
 use App\Services\Routing\OsrmRouter;
@@ -138,6 +140,9 @@ class AppServiceProvider extends ServiceProvider {
         // BrandingService cached die Organisation pro Request → einmalig
         // pro Container-Lifecycle resolven.
         $this->app->singleton(BrandingService::class);
+        $this->app->singleton(ClassificationManager::class, function ($app): ClassificationManager {
+            return new ClassificationManager($app->make(ClassificationResolver::class));
+        });
 
         // Automation: RuleEngine bekommt alle registrierten Aktionen injiziert.
         $this->app->singleton(ConditionEvaluator::class);
@@ -259,19 +264,19 @@ class AppServiceProvider extends ServiceProvider {
             $email = (string) $request->input('email', $request->input('username', ''));
 
             return [
-                Limit::perMinute(5)->by(strtolower($email) . '|' . $request->ip()),
+                Limit::perMinute(5)->by(strtolower($email).'|'.$request->ip()),
                 Limit::perMinute(20)->by($request->ip()),
             ];
         });
 
-        RateLimiter::for('register', fn(Request $request) => Limit::perMinute(3)->by($request->ip()));
+        RateLimiter::for('register', fn (Request $request) => Limit::perMinute(3)->by($request->ip()));
 
         RateLimiter::for('password', function (Request $request) {
             $userId = (string) ($request->user()?->getAuthIdentifier() ?? 'guest');
 
             return [
-                Limit::perMinute(5)->by('pwd:' . $userId . '|' . $request->ip()),
-                Limit::perHour(20)->by('pwd:' . $userId),
+                Limit::perMinute(5)->by('pwd:'.$userId.'|'.$request->ip()),
+                Limit::perHour(20)->by('pwd:'.$userId),
             ];
         });
     }
