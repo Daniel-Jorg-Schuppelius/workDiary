@@ -124,6 +124,7 @@ Liste benötigen ein eigenes Issue und ein Review im Audit-Dokument.
 | ProcedureStepRun         | Kind von `ProcedureRun` (MVP-026). Zugriff ausschließlich über den mandantengescopten Eltern-Lauf; keine eigene `organization_id`-Spalte.                                                                                       |
 | ProcedureRunEvent        | Append-only Audit-Child von `ProcedureRun` (MVP-026). Wird nur über den Eltern-Lauf gelesen/geschrieben; Mandantengrenze über `procedure_runs.organization_id`.                                                                 |
 | ProcedureBackupProof     | Kind eines `ProcedureStepRun` (MVP-027). Genau ein Nachweis pro Backup-Schritt; Mandantengrenze über `procedure_step_runs → procedure_runs.organization_id`.                                                                    |
+| Classification           | Kontrollierte Wertelisten (MVP-030). `organization_id` ist nullable: `NULL` markiert Plattform-Defaults, die orgübergreifend sichtbar sein müssen. Org-spezifische Datensätze tragen explizit `organization_id` und werden über Policy + Resolver gefiltert. |
 | `App\Models\Legacy\*`    | Liegen auf separater `legacy`-Connection und sind über Middleware `access.legacy`/`legacy.write` geschützt. Siehe Legacy-Abschnitt.                                                                                             |
 
 ### CI-Gate

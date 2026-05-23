@@ -209,6 +209,10 @@ enum Permission: string implements HasLabel {
     case ProcedureDeviationAcceptRisk = 'procedure.deviation.acceptRisk';
     case ProcedureDeviationUpdate = 'procedure.deviation.update';
     case ProcedureDeviationView = 'procedure.deviation.view';
+    // ── Klassifikationen (MVP-030) ──────────────────────────
+    case ClassificationList = 'classification.list';
+    case ClassificationOrgManage = 'classification.org.manage';
+    case ClassificationPlatformManage = 'classification.platform.manage';
     // ── Customer-Portal (Rolle `kunde`) ─────────────────────
     case CustomerPortalAccess = 'customerPortal.access';
     case CustomerPortalDiaryView = 'customerPortal.diary.view';

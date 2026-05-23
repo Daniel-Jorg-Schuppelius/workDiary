@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -29,6 +30,7 @@ class DatabaseSeeder extends Seeder {
         $this->call(ActivityCategorySeeder::class);
         $this->call(EntryTypeSeeder::class);
         $this->call(ExpenseCategorySeeder::class);
+        $this->call(ClassificationSeeder::class);
         $this->call(PerDiemRateSeeder::class);
         $this->call(PerDiemForeignRateSeeder::class);
 

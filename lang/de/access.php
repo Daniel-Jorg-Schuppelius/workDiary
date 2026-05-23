@@ -310,6 +310,9 @@ return [
         'procedure.deviation.acceptRisk' => 'Kritische Abweichung akzeptieren',
         'procedure.deviation.update' => 'Prozedur-Abweichung aktualisieren',
         'procedure.deviation.view' => 'Prozedur-Abweichungen einsehen',
+        'classification.list' => 'Klassifikationen einsehen',
+        'classification.org.manage' => 'Klassifikationen der Organisation pflegen',
+        'classification.platform.manage' => 'Plattform-Klassifikationen pflegen',
         'customerPortal.openIssue.view' => 'Offene Punkte im Kundenportal einsehen',
     ],
 ];

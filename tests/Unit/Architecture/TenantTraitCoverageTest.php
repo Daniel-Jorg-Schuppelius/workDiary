@@ -11,6 +11,7 @@
 
 namespace Tests\Unit\Architecture;
 
+use App\Models\Classification;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\GeocodeCache;
 use App\Models\OpenIssueEvent;
@@ -72,6 +73,7 @@ class TenantTraitCoverageTest extends TestCase {
         ProcedureStepRun::class,
         ProcedureRunEvent::class,
         ProcedureBackupProof::class,
+        Classification::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {
