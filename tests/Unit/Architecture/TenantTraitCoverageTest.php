@@ -51,6 +51,8 @@ class TenantTraitCoverageTest extends TestCase {
         \App\Models\ProtocolItemPhoto::class,
         \App\Models\ProcedureTemplateVersion::class,
         \App\Models\ProcedureStepDef::class,
+        \App\Models\ProcedureStepRun::class,
+        \App\Models\ProcedureRunEvent::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {

@@ -294,6 +294,10 @@ return [
         'procedure.template.create' => 'Prozedurvorlagen erstellen',
         'procedure.template.update' => 'Prozedurvorlagen bearbeiten',
         'procedure.template.publish' => 'Prozedurvorlagen veröffentlichen',
+        'procedure.run.view' => 'Prozedurläufe einsehen',
+        'procedure.run.start' => 'Prozedurlauf starten',
+        'procedure.run.execute' => 'Prozedurschritte ausführen',
+        'procedure.run.abort' => 'Prozedurlauf abbrechen',
         'customerPortal.openIssue.view' => 'Offene Punkte im Kundenportal einsehen',
     ],
 ];

@@ -239,6 +239,10 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ProcedureTemplateCreate,
             PermissionEnum::ProcedureTemplateUpdate,
             PermissionEnum::ProcedureTemplatePublish,
+            PermissionEnum::ProcedureRunView,
+            PermissionEnum::ProcedureRunStart,
+            PermissionEnum::ProcedureRunExecute,
+            PermissionEnum::ProcedureRunAbort,
             PermissionEnum::ReportView,
             PermissionEnum::AccessAuditView,
         ];
@@ -313,6 +317,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ProtocolItemPhotoAdd,
             PermissionEnum::ProtocolItemPhotoRemove,
             PermissionEnum::ProcedureTemplateView,
+            PermissionEnum::ProcedureRunView,
+            PermissionEnum::ProcedureRunStart,
+            PermissionEnum::ProcedureRunExecute,
         ];
 
         // Außendienst: schlanker als user, dafür mit vollem Touren-/Spesen-

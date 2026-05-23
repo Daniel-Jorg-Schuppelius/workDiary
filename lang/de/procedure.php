@@ -18,8 +18,21 @@ return [
         'stepAdded' => 'Schritt hinzugefügt.',
         'stepUpdated' => 'Schritt aktualisiert.',
         'stepRemoved' => 'Schritt entfernt.',
+        'runStarted' => 'Prozedurlauf gestartet.',
+        'runCompleted' => 'Prozedurlauf abgeschlossen.',
+        'runAborted' => 'Prozedurlauf abgebrochen.',
+        'stepCompleted' => 'Schritt erledigt.',
     ],
     'validation' => [
         'versionLocked' => 'Veröffentlichte Vorlagenversionen sind unveränderlich. Bitte eine neue Version anlegen.',
+        'runIncomplete' => 'Lauf kann nicht abgeschlossen werden: Es sind noch Pflichtschritte offen.',
+    ],
+    'blocked' => [
+        'previousStepIncomplete' => 'Vorheriger Pflichtschritt ist noch nicht abgeschlossen.',
+        'runNotActive' => 'Der Lauf ist nicht aktiv.',
+        'stepAlreadyFinal' => 'Schritt ist bereits abgeschlossen.',
+        'missingQualification' => 'Erforderliche Qualifikation fehlt.',
+        'missingRole' => 'Erforderliche Rolle fehlt.',
+        'secondPersonRequired' => 'Zweite Person ist erforderlich.',
     ],
 ];

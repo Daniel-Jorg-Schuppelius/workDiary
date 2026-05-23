@@ -292,5 +292,20 @@ return [
             'link_protocol' => 'Protokoll verlinken',
             'link_test' => 'Test verlinken',
         ],
+        'run-status' => [
+            'open' => 'Offen',
+            'inProgress' => 'In Bearbeitung',
+            'blocked' => 'Blockiert',
+            'completed' => 'Abgeschlossen',
+            'aborted' => 'Abgebrochen',
+        ],
+        'step-run-status' => [
+            'pending' => 'Offen',
+            'done' => 'Erledigt',
+            'n_a' => 'Nicht zutreffend',
+            'failed' => 'Fehlgeschlagen',
+            'deviated' => 'Abweichung',
+            'blocked' => 'Blockiert',
+        ],
     ],
 ];

@@ -188,6 +188,12 @@ enum Permission: string implements HasLabel {
     case ProcedureTemplateUpdate = 'procedure.template.update';
     case ProcedureTemplatePublish = 'procedure.template.publish';
 
+        // ── Prozedur-Ausfuehrung (MVP-026) ──────────────────────
+    case ProcedureRunView = 'procedure.run.view';
+    case ProcedureRunStart = 'procedure.run.start';
+    case ProcedureRunExecute = 'procedure.run.execute';
+    case ProcedureRunAbort = 'procedure.run.abort';
+
         // ── Customer-Portal (Rolle `kunde`) ─────────────────────
     case CustomerPortalAccess = 'customerPortal.access';
     case CustomerPortalDiaryView = 'customerPortal.diary.view';
