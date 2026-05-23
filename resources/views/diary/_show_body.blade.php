@@ -124,3 +124,5 @@
 </section>
 
 @include('attachments._panel', ['parent' => $diary, 'parentType' => 'diary'])
+
+@include('open-issues._panel', ['subject' => $diary, 'subjectKind' => 'diary'])

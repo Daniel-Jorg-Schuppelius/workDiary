@@ -46,4 +46,20 @@ enum OpenIssueStatus: string implements HasLabel {
     public function isClosed(): bool {
         return in_array($this, [self::Done, self::WontDo], true);
     }
+
+    /**
+     * Aktionsnamen, die im aktuellen Status zulässig sind (passend zu den Routen
+     * `open-issues.transition` und zu `OpenIssueService`).
+     *
+     * @return list<string>
+     */
+    public function allowedTransitions(): array {
+        return match ($this) {
+            self::Open => ['start', 'complete', 'wontDo'],
+            self::InProgress => ['block', 'complete', 'wontDo'],
+            self::Blocked => ['unblock'],
+            self::Done, self::WontDo => ['reopen'],
+            self::Reopened => ['start'],
+        };
+    }
 }
