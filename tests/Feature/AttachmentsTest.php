@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -10,6 +11,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Asset\AssetOwnership;
+use App\Models\Asset;
 use App\Models\Attachment;
 use App\Models\DiaryEntry;
 use App\Models\User;
@@ -25,6 +28,27 @@ class AttachmentsTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         Storage::fake('local');
+    }
+
+    public function test_user_can_upload_attachment_to_asset(): void {
+        $owner = User::factory()->user()->create();
+        $asset = Asset::factory()->create([
+            'organization_id' => $owner->organization_id,
+            'customer_id' => null,
+            'owned_by' => AssetOwnership::Organization->value,
+        ]);
+        $file = UploadedFile::fake()->create('manual.pdf', 80, 'application/pdf');
+
+        $this->actingAs($owner)
+            ->post(route('attachments.store', ['type' => 'asset', 'id' => $asset->id]), ['file' => $file])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('attachments', [
+            'attachable_type' => Asset::class,
+            'attachable_id' => $asset->id,
+            'user_id' => $owner->id,
+            'original_name' => 'manual.pdf',
+        ]);
     }
 
     public function test_user_can_upload_attachment_to_diary_entry(): void {

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -49,7 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('api.comments.destroy');
 
     Route::post('attachments/{type}/{id}', [AttachmentController::class, 'store'])
-        ->whereIn('type', ['diary', 'comment', 'shift', 'assignment'])
+        ->whereIn('type', ['diary', 'comment', 'shift', 'assignment', 'asset'])
         ->whereNumber('id')
         ->name('api.attachments.store');
     Route::get('attachments/{attachment}/download', [AttachmentController::class, 'download'])->name('api.attachments.download');

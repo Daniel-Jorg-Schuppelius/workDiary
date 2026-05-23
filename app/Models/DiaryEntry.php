@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -36,6 +37,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $assigned_user_id
  * @property int|null $project_id
  * @property int|null $customer_id
+ * @property int|null $asset_id
  * @property int|null $on_call_shift_id
  * @property int|null $emergency_assignment_id
  * @property string|null $title
@@ -87,6 +89,7 @@ class DiaryEntry extends Model {
         'assigned_user_id',
         'project_id',
         'customer_id',
+        'asset_id',
         'on_call_shift_id',
         'emergency_assignment_id',
         'title',
@@ -157,6 +160,11 @@ class DiaryEntry extends Model {
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
+    }
+
+    /** @return BelongsTo<Asset, $this> */
+    public function asset(): BelongsTo {
+        return $this->belongsTo(Asset::class);
     }
 
     /** @return BelongsTo<EntryType, $this> */

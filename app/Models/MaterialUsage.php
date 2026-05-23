@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $organization_id
  * @property int $timesheet_id
  * @property int|null $material_id
+ * @property int|null $asset_id
  * @property string $description
  * @property string $quantity
  * @property string $unit
@@ -40,6 +42,7 @@ class MaterialUsage extends Model {
         'organization_id',
         'timesheet_id',
         'material_id',
+        'asset_id',
         'description',
         'quantity',
         'unit',
@@ -72,5 +75,10 @@ class MaterialUsage extends Model {
     /** @return BelongsTo<Material, $this> */
     public function material(): BelongsTo {
         return $this->belongsTo(Material::class);
+    }
+
+    /** @return BelongsTo<Asset, $this> */
+    public function asset(): BelongsTo {
+        return $this->belongsTo(Asset::class);
     }
 }

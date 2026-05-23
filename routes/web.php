@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -15,8 +16,10 @@ use App\Http\Controllers\Admin\Access\MemberController as AccessMemberController
 use App\Http\Controllers\Admin\Access\PermissionController as AccessPermissionController;
 use App\Http\Controllers\Admin\Access\RoleController as AccessRoleController;
 use App\Http\Controllers\Admin\Access\UserGroupController as AccessUserGroupController;
+use App\Http\Controllers\Admin\AutomationRuleController;
 use App\Http\Controllers\Admin\EntryTypeController;
 use App\Http\Controllers\Admin\ExpenseCategoryController;
+use App\Http\Controllers\Admin\PerDiemRateController;
 use App\Http\Controllers\Admin\PluginController as AdminPluginController;
 use App\Http\Controllers\AdminTimeEntryController;
 use App\Http\Controllers\ApiTokenController;
@@ -27,6 +30,7 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\TenantRegistrationController;
 use App\Http\Controllers\BrandingController;
+use App\Http\Controllers\CalendarFeedController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\CoverageRequirementController;
 use App\Http\Controllers\CustomerController;
@@ -56,21 +60,21 @@ use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\MilestoneController;
 use App\Http\Controllers\OnCallShiftController;
+use App\Http\Controllers\OpenIssueController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationSwitchController;
 use App\Http\Controllers\OrgMemberController;
-use App\Http\Controllers\OpenIssueController;
-use App\Http\Controllers\ProtocolController;
-use App\Http\Controllers\Plugins\LexofficeCustomerController;
 use App\Http\Controllers\PerDiemTripController;
+use App\Http\Controllers\Plugins\LexofficeCustomerController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectBillingRuleController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectRecurrenceRuleController;
+use App\Http\Controllers\ProtocolController;
+use App\Http\Controllers\PublicProtocolSignatureController;
 use App\Http\Controllers\PublicSignatureController;
 use App\Http\Controllers\PushSubscriptionController;
-use App\Http\Controllers\RoomController;
 use App\Http\Controllers\QualificationController;
 use App\Http\Controllers\Reporting\AbsencesReportController;
 use App\Http\Controllers\Reporting\AttendanceReportController;
@@ -78,6 +82,7 @@ use App\Http\Controllers\Reporting\AuditActivityReportController;
 use App\Http\Controllers\Reporting\BillingReportController;
 use App\Http\Controllers\Reporting\CoverageReportController;
 use App\Http\Controllers\Reporting\CustomerProjectReportController;
+use App\Http\Controllers\Reporting\ExpenseReportController;
 use App\Http\Controllers\Reporting\FleetReportController;
 use App\Http\Controllers\Reporting\MaterialReportController;
 use App\Http\Controllers\Reporting\MyMonthReportController;
@@ -89,6 +94,7 @@ use App\Http\Controllers\Reporting\QualificationReportController;
 use App\Http\Controllers\Reporting\SicknessReportController;
 use App\Http\Controllers\Reporting\WeekByUserReportController;
 use App\Http\Controllers\Reporting\WorkBalanceReportController;
+use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ScheduledShiftController;
 use App\Http\Controllers\ScheduleImportController;
@@ -148,9 +154,9 @@ Route::post('sign/timesheet/{token}', [PublicSignatureController::class, 'store'
 Route::get('sign/timesheet/thanks', [PublicSignatureController::class, 'thanks'])->name('timesheets.public-thanks');
 
 // Öffentlicher Protokoll-Signaturlink (MVP-022 §3.3)
-Route::get('sign/protocol/{token}', [\App\Http\Controllers\PublicProtocolSignatureController::class, 'show'])
+Route::get('sign/protocol/{token}', [PublicProtocolSignatureController::class, 'show'])
     ->name('protocols.public-sign');
-Route::post('sign/protocol/{token}', [\App\Http\Controllers\PublicProtocolSignatureController::class, 'store'])
+Route::post('sign/protocol/{token}', [PublicProtocolSignatureController::class, 'store'])
     ->middleware('throttle:6,1')
     ->name('protocols.public-sign.submit');
 
@@ -169,11 +175,11 @@ Route::middleware('auth')->group(function () {
     Route::put('account/profile', [ProfileController::class, 'update'])->name('account.profile.update');
 
     // Persönlicher Kalender-Feed (Token-Generierung + Subscribe-URL).
-    Route::get('account/calendar', [\App\Http\Controllers\CalendarFeedController::class, 'show'])
+    Route::get('account/calendar', [CalendarFeedController::class, 'show'])
         ->name('account.calendar.show');
-    Route::post('account/calendar/rotate', [\App\Http\Controllers\CalendarFeedController::class, 'rotate'])
+    Route::post('account/calendar/rotate', [CalendarFeedController::class, 'rotate'])
         ->name('account.calendar.rotate');
-    Route::delete('account/calendar', [\App\Http\Controllers\CalendarFeedController::class, 'revoke'])
+    Route::delete('account/calendar', [CalendarFeedController::class, 'revoke'])
         ->name('account.calendar.revoke');
 
     // Alle folgenden Routen gehören zum neuen System und sind nur für
@@ -195,7 +201,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
         Route::post('attachments/{type}/{id}', [AttachmentController::class, 'store'])
-            ->whereIn('type', ['diary', 'comment', 'shift', 'assignment', 'task', 'customer', 'organization', 'user'])
+            ->whereIn('type', ['diary', 'comment', 'shift', 'assignment', 'task', 'customer', 'organization', 'user', 'asset'])
             ->whereNumber('id')
             ->name('attachments.store');
         Route::get('attachments/{attachment}/download', [AttachmentController::class, 'download'])->name('attachments.download');
@@ -232,19 +238,19 @@ Route::middleware('auth')->group(function () {
             Route::get('vacations', [PrintController::class, 'vacationYear'])->name('vacations');
         });
 
-        Route::get('shifts', fn() => redirect()->route('duties.index'))->name('shifts.index');
-        Route::get('assignments', fn() => redirect()->route('duties.index', ['tab' => 'notdienst']))->name('assignments.index');
+        Route::get('shifts', fn () => redirect()->route('duties.index'))->name('shifts.index');
+        Route::get('assignments', fn () => redirect()->route('duties.index', ['tab' => 'notdienst']))->name('assignments.index');
         Route::resource('shifts', OnCallShiftController::class)->except(['show', 'index'])->parameters(['shifts' => 'shift']);
         Route::resource('assignments', EmergencyAssignmentController::class)->except(['show', 'index'])->parameters(['assignments' => 'assignment']);
 
-        Route::get('vacations', fn() => redirect()->route('duties.index', ['tab' => 'urlaub']))->name('vacations.index');
+        Route::get('vacations', fn () => redirect()->route('duties.index', ['tab' => 'urlaub']))->name('vacations.index');
         Route::resource('vacations', VacationController::class)->except(['show', 'index']);
         Route::patch('vacations/{vacation}/approve', [VacationController::class, 'approve'])->name('vacations.approve');
         Route::patch('vacations/{vacation}/reject', [VacationController::class, 'reject'])->name('vacations.reject');
         Route::get('vacations/{vacation}/reject-form', [VacationController::class, 'rejectForm'])->name('vacations.reject-form');
         Route::patch('vacations/{vacation}/cancel', [VacationController::class, 'cancel'])->name('vacations.cancel');
 
-        Route::get('sick-leaves', fn() => redirect()->route('duties.index', ['tab' => 'krank']))->name('sick-leaves.index');
+        Route::get('sick-leaves', fn () => redirect()->route('duties.index', ['tab' => 'krank']))->name('sick-leaves.index');
         Route::resource('sick-leaves', SickLeaveController::class)->except(['show', 'index'])
             ->parameters(['sick-leaves' => 'sick_leave']);
         Route::patch('sick-leaves/{sick_leave}/cancel', [SickLeaveController::class, 'cancel'])->name('sick-leaves.cancel');
@@ -502,7 +508,7 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/operations', [OperationsReportController::class, 'index'])->name('reports.operations');
         Route::get('reports/materials', [MaterialReportController::class, 'index'])->name('reports.materials');
         Route::get('reports/billing', [BillingReportController::class, 'index'])->name('reports.billing');
-        Route::get('reports/expenses', [\App\Http\Controllers\Reporting\ExpenseReportController::class, 'index'])->name('reports.expenses');
+        Route::get('reports/expenses', [ExpenseReportController::class, 'index'])->name('reports.expenses');
         Route::get('reports/qualifications', [QualificationReportController::class, 'index'])->name('reports.qualifications');
         Route::get('reports/attendance', [AttendanceReportController::class, 'index'])->name('reports.attendance');
         Route::get('reports/audit-activity', [AuditActivityReportController::class, 'index'])->name('reports.audit-activity');
@@ -567,21 +573,21 @@ Route::middleware('auth')->group(function () {
             ->parameters(['expense-categories' => 'expenseCategory'])
             ->except('show');
 
-        Route::resource('admin/per-diem-rates', \App\Http\Controllers\Admin\PerDiemRateController::class)
+        Route::resource('admin/per-diem-rates', PerDiemRateController::class)
             ->names('admin.per-diem-rates')
             ->parameters(['per-diem-rates' => 'perDiemRate'])
             ->except('show');
 
         // Workflow-Automatisierungen (Wenn-Dann-Regeln pro Org).
-        Route::get('admin/automations', [\App\Http\Controllers\Admin\AutomationRuleController::class, 'index'])
+        Route::get('admin/automations', [AutomationRuleController::class, 'index'])
             ->name('admin.automations.index');
-        Route::post('admin/automations', [\App\Http\Controllers\Admin\AutomationRuleController::class, 'store'])
+        Route::post('admin/automations', [AutomationRuleController::class, 'store'])
             ->name('admin.automations.store');
-        Route::get('admin/automations/{automationRule}', [\App\Http\Controllers\Admin\AutomationRuleController::class, 'show'])
+        Route::get('admin/automations/{automationRule}', [AutomationRuleController::class, 'show'])
             ->name('admin.automations.show');
-        Route::post('admin/automations/{automationRule}/toggle', [\App\Http\Controllers\Admin\AutomationRuleController::class, 'toggle'])
+        Route::post('admin/automations/{automationRule}/toggle', [AutomationRuleController::class, 'toggle'])
             ->name('admin.automations.toggle');
-        Route::delete('admin/automations/{automationRule}', [\App\Http\Controllers\Admin\AutomationRuleController::class, 'destroy'])
+        Route::delete('admin/automations/{automationRule}', [AutomationRuleController::class, 'destroy'])
             ->name('admin.automations.destroy');
 
         Route::resource('org/members', OrgMemberController::class)

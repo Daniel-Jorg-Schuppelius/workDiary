@@ -17,10 +17,13 @@ use App\Enums\Asset\AssetOwnership;
 use App\Enums\Asset\AssetStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\HasAttachments;
 use Database\Factories\AssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -51,7 +54,7 @@ use Illuminate\Support\Carbon;
  */
 class Asset extends Model {
     /** @use HasFactory<AssetFactory> */
-    use Auditable, BelongsToOrganization, HasFactory;
+    use Auditable, BelongsToOrganization, HasAttachments, HasFactory;
 
     protected $fillable = [
         'organization_id',
@@ -95,5 +98,23 @@ class Asset extends Model {
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
+    }
+
+    /** @return HasMany<DiaryEntry, $this> */
+    public function diaryEntries(): HasMany {
+        return $this->hasMany(DiaryEntry::class);
+    }
+
+    /** @return HasMany<MaterialUsage, $this> */
+    public function materialUsages(): HasMany {
+        return $this->hasMany(MaterialUsage::class);
+    }
+
+    /** @return MorphMany<Protocol, $this> */
+    public function protocols(): MorphMany {
+        /** @var MorphMany<Protocol, $this> $relation */
+        $relation = $this->morphMany(Protocol::class, 'subject')->orderByDesc('occurred_at')->orderByDesc('id');
+
+        return $relation;
     }
 }
