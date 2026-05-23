@@ -520,6 +520,7 @@
                                             'icon'  => 'folder_special',
                                             'items' => [
                                                 ['route' => 'reports.customers',        'label' => __('Kundenanalyse'),     'icon' => 'bar_chart',  'modal' => false, 'matches' => ['reports.customers']],
+                                                ['route' => 'reports.entry-types',      'label' => __('Auftragstypanalyse'), 'icon' => 'stacked_bar_chart', 'modal' => false, 'matches' => ['reports.entry-types']],
                                                 ['route' => 'reports.customer-project', 'label' => __('Kunden & Projekte'), 'icon' => 'pie_chart',  'modal' => false, 'matches' => ['reports.customer-project']],
                                                 ['route' => 'reports.project-details',  'label' => __('Projekt-Details'),   'icon' => 'analytics',  'modal' => false, 'matches' => ['reports.project-details']],
                                                 ['route' => 'reports.operations',       'label' => __('Operations'),        'icon' => 'assignment', 'modal' => false, 'matches' => ['reports.operations']],

@@ -83,6 +83,7 @@ use App\Http\Controllers\Reporting\BillingReportController;
 use App\Http\Controllers\Reporting\CoverageReportController;
 use App\Http\Controllers\Reporting\CustomerAnalysisReportController;
 use App\Http\Controllers\Reporting\CustomerProjectReportController;
+use App\Http\Controllers\Reporting\EntryTypeAnalysisReportController;
 use App\Http\Controllers\Reporting\ExpenseReportController;
 use App\Http\Controllers\Reporting\FleetReportController;
 use App\Http\Controllers\Reporting\MaterialReportController;
@@ -498,6 +499,7 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/my-year', [MyYearReportController::class, 'index'])->name('reports.my-year');
         Route::get('reports/my-month', [MyMonthReportController::class, 'index'])->name('reports.my-month');
         Route::get('reports/customers', [CustomerAnalysisReportController::class, 'index'])->name('reports.customers');
+        Route::get('reports/entry-types', [EntryTypeAnalysisReportController::class, 'index'])->name('reports.entry-types');
         Route::get('reports/customer-project', [CustomerProjectReportController::class, 'index'])->name('reports.customer-project');
         Route::get('reports/week-by-user', [WeekByUserReportController::class, 'index'])->name('reports.week-by-user');
         Route::get('reports/project-details', [ProjectDetailsReportController::class, 'index'])->name('reports.project-details');

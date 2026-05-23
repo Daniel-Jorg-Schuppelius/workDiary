@@ -51,6 +51,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $time_window_start
  * @property string|null $time_window_end
  * @property int|null $service_minutes
+ * @property int|null $planned_minutes
+ * @property Carbon|null $planned_at
+ * @property int|null $planned_by_user_id
  * @property string|null $address_line
  * @property string|null $address_zip
  * @property string|null $address_city
@@ -103,6 +106,9 @@ class DiaryEntry extends Model {
         'time_window_start',
         'time_window_end',
         'service_minutes',
+        'planned_minutes',
+        'planned_at',
+        'planned_by_user_id',
         'address_line',
         'address_zip',
         'address_city',
@@ -134,6 +140,8 @@ class DiaryEntry extends Model {
         'status' => Status::class,
         'is_archived' => 'boolean',
         'service_minutes' => 'integer',
+        'planned_minutes' => 'integer',
+        'planned_at' => 'datetime',
         'tour_position' => 'integer',
         'address_lat' => 'decimal:7',
         'address_lng' => 'decimal:7',
