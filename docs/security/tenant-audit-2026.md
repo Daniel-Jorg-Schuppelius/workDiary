@@ -105,19 +105,19 @@ Diese Modelle nutzen **keinen** `BelongsToOrganization`-Trait. Das ist
 beabsichtigt und im jeweiligen Modell zu dokumentieren. Erweiterungen dieser
 Liste benötigen ein eigenes Issue und ein Review im Audit-Dokument.
 
-| Modell                | Begründung                                                                                                                                                                                                             |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Organization          | Root-Tenant, hat selbst keine übergeordnete Organisation.                                                                                                                                                              |
-| User                  | Hat zwar `organization_id`, aber kein Trait — `Authenticatable`-Hierarchie und Org-Wechsel für Plattform-Admins erfordern manuelle Filter. Eigener Audit-Eintrag, eigenes Folge-Issue für eventuelle Trait-Umstellung. |
-| UserGroup             | Organisationsbezug existiert, Lifecycle wird in Admin-Controllern bewusst über `withoutGlobalScopes()` gesteuert.                                                                                                      |
-| OrganizationAuditLog  | Nullable `organization_id`, **bewusst ohne FK**, damit Audit-Einträge eine gelöschte Organisation überleben.                                                                                                           |
-| PerDiemRate           | Globale Referenzdaten (Tagessätze nach Land/Region) — gilt für alle Mandanten.                                                                                                                                         |
-| GeocodeCache          | Globaler Cache geokodierter Adressen, mandantenübergreifend zulässig.                                                                                                                                                  |
+| Modell                | Begründung                                                                                                                                                                                                                      |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Organization          | Root-Tenant, hat selbst keine übergeordnete Organisation.                                                                                                                                                                       |
+| User                  | Hat zwar `organization_id`, aber kein Trait — `Authenticatable`-Hierarchie und Org-Wechsel für Plattform-Admins erfordern manuelle Filter. Eigener Audit-Eintrag, eigenes Folge-Issue für eventuelle Trait-Umstellung.          |
+| UserGroup             | Organisationsbezug existiert, Lifecycle wird in Admin-Controllern bewusst über `withoutGlobalScopes()` gesteuert.                                                                                                               |
+| OrganizationAuditLog  | Nullable `organization_id`, **bewusst ohne FK**, damit Audit-Einträge eine gelöschte Organisation überleben.                                                                                                                    |
+| PerDiemRate           | Globale Referenzdaten (Tagessätze nach Land/Region) — gilt für alle Mandanten.                                                                                                                                                  |
+| GeocodeCache          | Globaler Cache geokodierter Adressen, mandantenübergreifend zulässig.                                                                                                                                                           |
 | OpenIssueEvent        | Audit-Log-Child von `OpenIssue`. Zugriff erfolgt ausschließlich über die mandantengescopte Eltern-Relation (`open_issues.organization_id`); Events haben selbst keine `organization_id`-Spalte und werden nie direkt abgefragt. |
-| ProtocolItem          | Kind-Tabelle von `Protocol`. Zugriff ausschließlich über das mandantengescopte Eltern-Protokoll; keine eigene `organization_id`-Spalte. |
-| ProtocolSignature     | Kind-Tabelle von `Protocol`. Zugriff ausschließlich über das Eltern-Protokoll; Signaturen sind durch FK + Hash an das Protokoll gebunden. |
-| ProtocolEvent         | Audit-Log-Child von `Protocol`, analog zu `OpenIssueEvent`. Wird nur über die Protokoll-Relation gelesen/geschrieben. |
-| `App\Models\Legacy\*` | Liegen auf separater `legacy`-Connection und sind über Middleware `access.legacy`/`legacy.write` geschützt. Siehe Legacy-Abschnitt.                                                                                    |
+| ProtocolItem          | Kind-Tabelle von `Protocol`. Zugriff ausschließlich über das mandantengescopte Eltern-Protokoll; keine eigene `organization_id`-Spalte.                                                                                         |
+| ProtocolSignature     | Kind-Tabelle von `Protocol`. Zugriff ausschließlich über das Eltern-Protokoll; Signaturen sind durch FK + Hash an das Protokoll gebunden.                                                                                       |
+| ProtocolEvent         | Audit-Log-Child von `Protocol`, analog zu `OpenIssueEvent`. Wird nur über die Protokoll-Relation gelesen/geschrieben.                                                                                                           |
+| `App\Models\Legacy\*` | Liegen auf separater `legacy`-Connection und sind über Middleware `access.legacy`/`legacy.write` geschützt. Siehe Legacy-Abschnitt.                                                                                             |
 
 ### CI-Gate
 

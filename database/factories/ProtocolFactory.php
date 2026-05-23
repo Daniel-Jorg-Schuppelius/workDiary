@@ -47,17 +47,17 @@ class ProtocolFactory extends Factory {
     }
 
     public function inReview(): self {
-        return $this->state(fn () => ['status' => ProtocolStatus::InReview->value]);
+        return $this->state(fn() => ['status' => ProtocolStatus::InReview->value]);
     }
 
     public function signed(): self {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'status' => ProtocolStatus::Signed->value,
             'signed_at' => now(),
         ]);
     }
 
     public function customerVisible(): self {
-        return $this->state(fn () => ['visibility' => ProtocolVisibility::Customer->value]);
+        return $this->state(fn() => ['visibility' => ProtocolVisibility::Customer->value]);
     }
 }

@@ -41,18 +41,18 @@ class DashboardController extends Controller {
                         $sub->where('subject_type', \App\Models\Customer::class)
                             ->where('subject_id', $customerId);
                     })
-                    ->orWhere(function (Builder $sub) use ($customerId): void {
-                        $sub->where('subject_type', DiaryEntry::class)
-                            ->whereIn('subject_id', DiaryEntry::query()
-                                ->where('customer_id', $customerId)
-                                ->select('id'));
-                    })
-                    ->orWhere(function (Builder $sub) use ($customerId): void {
-                        $sub->where('subject_type', Project::class)
-                            ->whereIn('subject_id', Project::query()
-                                ->where('customer_id', $customerId)
-                                ->select('id'));
-                    });
+                        ->orWhere(function (Builder $sub) use ($customerId): void {
+                            $sub->where('subject_type', DiaryEntry::class)
+                                ->whereIn('subject_id', DiaryEntry::query()
+                                    ->where('customer_id', $customerId)
+                                    ->select('id'));
+                        })
+                        ->orWhere(function (Builder $sub) use ($customerId): void {
+                            $sub->where('subject_type', Project::class)
+                                ->whereIn('subject_id', Project::query()
+                                    ->where('customer_id', $customerId)
+                                    ->select('id'));
+                        });
                 })
                 ->count(),
         ];

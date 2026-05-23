@@ -47,7 +47,7 @@ class OpenIssueFactory extends Factory {
     }
 
     public function critical(): self {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'severity' => OpenIssueSeverity::Critical->value,
             'due_at' => now()->addDays(7),
             'assignee_user_id' => User::factory(),
@@ -55,21 +55,21 @@ class OpenIssueFactory extends Factory {
     }
 
     public function inProgress(): self {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'status' => OpenIssueStatus::InProgress->value,
             'assignee_user_id' => User::factory(),
         ]);
     }
 
     public function done(): self {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'status' => OpenIssueStatus::Done->value,
             'closed_at' => now(),
         ]);
     }
 
     public function customerVisible(): self {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'visibility' => OpenIssueVisibility::Customer->value,
         ]);
     }
