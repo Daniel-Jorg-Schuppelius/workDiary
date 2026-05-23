@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\Access\PermissionController as AccessPermissionCo
 use App\Http\Controllers\Admin\Access\RoleController as AccessRoleController;
 use App\Http\Controllers\Admin\Access\UserGroupController as AccessUserGroupController;
 use App\Http\Controllers\Admin\AutomationRuleController;
+use App\Http\Controllers\Admin\BranchProfileController;
 use App\Http\Controllers\Admin\ClassificationController;
 use App\Http\Controllers\Admin\EntryTypeController;
 use App\Http\Controllers\Admin\ExpenseCategoryController;
@@ -577,6 +578,10 @@ Route::middleware('auth')->group(function () {
             ->names('admin.classifications')
             ->parameters(['classifications' => 'classification'])
             ->except('show');
+        Route::get('admin/branch-profiles', [BranchProfileController::class, 'index'])
+            ->name('admin.branch-profiles.index');
+        Route::post('admin/branch-profiles/{profile}', [BranchProfileController::class, 'install'])
+            ->name('admin.branch-profiles.install');
         Route::get('admin/classifications/import/form', [ClassificationController::class, 'importForm'])
             ->name('admin.classifications.import.form');
         Route::post('admin/classifications/import', [ClassificationController::class, 'import'])
