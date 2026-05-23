@@ -117,4 +117,12 @@ class Asset extends Model {
 
         return $relation;
     }
+
+    /** @return MorphMany<OpenIssue, $this> */
+    public function openIssues(): MorphMany {
+        /** @var MorphMany<OpenIssue, $this> $relation */
+        $relation = $this->morphMany(OpenIssue::class, 'subject')->latest('id');
+
+        return $relation;
+    }
 }
