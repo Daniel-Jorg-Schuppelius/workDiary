@@ -156,11 +156,21 @@ enum Permission: string implements HasLabel {
     case FlexBalanceView = 'flex.view';
     case FlexBalanceManage = 'flex.manage';
 
+    // ── Offene Punkte (Snagging / Restpunkte) ──────────────────────────
+    case OpenIssueViewAny = 'openIssue.viewAny';
+    case OpenIssueView = 'openIssue.view';
+    case OpenIssueCreate = 'openIssue.create';
+    case OpenIssueUpdate = 'openIssue.update';
+    case OpenIssueAssign = 'openIssue.assign';
+    case OpenIssuePublishToCustomer = 'openIssue.publishToCustomer';
+    case OpenIssueDelete = 'openIssue.delete';
+
     // ── Customer-Portal (Rolle `kunde`) ─────────────────────
     case CustomerPortalAccess = 'customerPortal.access';
     case CustomerPortalDiaryView = 'customerPortal.diary.view';
     case CustomerPortalTimeEntryView = 'customerPortal.timeEntry.view';
     case CustomerPortalInvoiceView = 'customerPortal.invoice.view';
+    case CustomerPortalOpenIssueView = 'customerPortal.openIssue.view';
 
     public function label(): string {
         // Permission-Slugs enthalten Punkte (z. B. "project.view") — Laravels
@@ -199,6 +209,7 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'attendance.'),
                 str_starts_with($this->value, 'work-schedule.'),
                 str_starts_with($this->value, 'flex.') => PermissionGroup::WorkingTime,
+            str_starts_with($this->value, 'openIssue.') => PermissionGroup::OpenIssues,
             str_starts_with($this->value, 'customerPortal.') => PermissionGroup::CustomerPortal,
             default => PermissionGroup::MasterData,
         };

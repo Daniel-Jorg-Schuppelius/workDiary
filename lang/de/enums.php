@@ -179,4 +179,29 @@ return [
             'cancelled' => 'Storniert',
         ],
     ],
+    'open-issue' => [
+        'status' => [
+            'open' => 'Offen',
+            'inProgress' => 'In Bearbeitung',
+            'blocked' => 'Blockiert',
+            'done' => 'Erledigt',
+            'wontDo' => 'Wird nicht erledigt',
+            'reopened' => 'Wiedereröffnet',
+        ],
+        'severity' => [
+            'low' => 'Niedrig',
+            'medium' => 'Mittel',
+            'high' => 'Hoch',
+            'critical' => 'Kritisch',
+        ],
+        'source' => [
+            'manual' => 'Manuell',
+            'protocolDefect' => 'Aus Protokoll',
+            'communicationFollowup' => 'Aus Kommunikation',
+        ],
+        'visibility' => [
+            'internal' => 'Intern',
+            'customer' => 'Kunden-sichtbar',
+        ],
+    ],
 ];

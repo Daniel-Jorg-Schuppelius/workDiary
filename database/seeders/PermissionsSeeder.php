@@ -213,6 +213,13 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::TourViewAny,
             PermissionEnum::TourManage,
             PermissionEnum::TravelLogViewAny,
+            PermissionEnum::OpenIssueViewAny,
+            PermissionEnum::OpenIssueView,
+            PermissionEnum::OpenIssueCreate,
+            PermissionEnum::OpenIssueUpdate,
+            PermissionEnum::OpenIssueAssign,
+            PermissionEnum::OpenIssuePublishToCustomer,
+            PermissionEnum::OpenIssueDelete,
             PermissionEnum::ReportView,
             PermissionEnum::AccessAuditView,
         ];
@@ -277,6 +284,10 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::TourViewAny,
             PermissionEnum::TravelLogViewAny,
             PermissionEnum::TravelLogManage,
+            PermissionEnum::OpenIssueViewAny,
+            PermissionEnum::OpenIssueView,
+            PermissionEnum::OpenIssueCreate,
+            PermissionEnum::OpenIssueUpdate,
         ];
 
         // Außendienst: schlanker als user, dafür mit vollem Touren-/Spesen-
@@ -307,6 +318,10 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::VacationRequest,
             PermissionEnum::AttendanceManage,
             PermissionEnum::FlexBalanceView,
+            PermissionEnum::OpenIssueViewAny,
+            PermissionEnum::OpenIssueView,
+            PermissionEnum::OpenIssueCreate,
+            PermissionEnum::OpenIssueUpdate,
         ];
 
         $callcenter = [
@@ -356,6 +371,7 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::CustomerPortalDiaryView,
             PermissionEnum::CustomerPortalTimeEntryView,
             PermissionEnum::CustomerPortalInvoiceView,
+            PermissionEnum::CustomerPortalOpenIssueView,
         ];
 
         return [

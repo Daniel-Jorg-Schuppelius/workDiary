@@ -59,6 +59,7 @@ use App\Http\Controllers\OnCallShiftController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationSwitchController;
 use App\Http\Controllers\OrgMemberController;
+use App\Http\Controllers\OpenIssueController;
 use App\Http\Controllers\Plugins\LexofficeCustomerController;
 use App\Http\Controllers\PerDiemTripController;
 use App\Http\Controllers\PrintController;
@@ -388,6 +389,15 @@ Route::middleware('auth')->group(function () {
         Route::delete('expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
         Route::post('expenses/{expense}/submit', [ExpenseController::class, 'submit'])->name('expenses.submit');
         Route::post('expenses/{expense}/cancel', [ExpenseController::class, 'cancel'])->name('expenses.cancel');
+
+        // ── Offene Punkte (Snagging / Restpunkte) ──────────────────────────
+        Route::post('open-issues', [OpenIssueController::class, 'store'])->name('open-issues.store');
+        Route::put('open-issues/{issue}', [OpenIssueController::class, 'update'])->name('open-issues.update');
+        Route::delete('open-issues/{issue}', [OpenIssueController::class, 'destroy'])->name('open-issues.destroy');
+        Route::put('open-issues/{issue}/assignee', [OpenIssueController::class, 'assign'])->name('open-issues.assign');
+        Route::post('open-issues/{issue}/transitions/{action}', [OpenIssueController::class, 'transition'])
+            ->whereIn('action', ['start', 'block', 'unblock', 'complete', 'wontDo', 'reopen'])
+            ->name('open-issues.transition');
 
         // ── Verpflegungsmehraufwand (Per-Diem) ─────────────────────────────
         Route::get('per-diem-trips', [PerDiemTripController::class, 'index'])->name('per-diem-trips.index');

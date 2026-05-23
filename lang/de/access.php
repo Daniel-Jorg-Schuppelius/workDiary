@@ -146,6 +146,7 @@ return [
         'reports' => 'Auswertungen',
         'working-time' => 'Arbeitszeit',
         'master-data' => 'Stammdaten',
+        'open-issues' => 'Offene Punkte',
     ],
 
     'permission' => [
@@ -264,5 +265,14 @@ return [
         'work-schedule.manage' => 'Arbeitszeit-Modell verwalten',
         'flex.view' => 'Gleitzeit-Saldo einsehen',
         'flex.manage' => 'Gleitzeit-Saldo verwalten',
+
+        'openIssue.viewAny' => 'Alle offenen Punkte sehen',
+        'openIssue.view' => 'Offenen Punkt ansehen',
+        'openIssue.create' => 'Offenen Punkt anlegen',
+        'openIssue.update' => 'Offenen Punkt bearbeiten / Status ändern',
+        'openIssue.assign' => 'Offenen Punkt zuweisen',
+        'openIssue.publishToCustomer' => 'Offenen Punkt im Kundenportal freigeben',
+        'openIssue.delete' => 'Offenen Punkt löschen',
+        'customerPortal.openIssue.view' => 'Offene Punkte im Kundenportal einsehen',
     ],
 ];

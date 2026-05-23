@@ -113,6 +113,7 @@ Liste benötigen ein eigenes Issue und ein Review im Audit-Dokument.
 | OrganizationAuditLog  | Nullable `organization_id`, **bewusst ohne FK**, damit Audit-Einträge eine gelöschte Organisation überleben.                                                                                                           |
 | PerDiemRate           | Globale Referenzdaten (Tagessätze nach Land/Region) — gilt für alle Mandanten.                                                                                                                                         |
 | GeocodeCache          | Globaler Cache geokodierter Adressen, mandantenübergreifend zulässig.                                                                                                                                                  |
+| OpenIssueEvent        | Audit-Log-Child von `OpenIssue`. Zugriff erfolgt ausschließlich über die mandantengescopte Eltern-Relation (`open_issues.organization_id`); Events haben selbst keine `organization_id`-Spalte und werden nie direkt abgefragt. |
 | `App\Models\Legacy\*` | Liegen auf separater `legacy`-Connection und sind über Middleware `access.legacy`/`legacy.write` geschützt. Siehe Legacy-Abschnitt.                                                                                    |
 
 ### CI-Gate
