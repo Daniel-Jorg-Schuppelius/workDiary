@@ -19,6 +19,7 @@ use App\Services\Classification\ClassificationManager;
 use Database\Seeders\ClassificationSeeder;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Role;
@@ -198,6 +199,78 @@ class ClassificationAdminControllerTest extends TestCase {
             'domain' => ClassificationDomain::Result->value,
             'code' => 'escalated',
             'active' => false,
+        ]);
+    }
+
+    public function test_teamleitung_can_reorder_org_classifications_with_domain_form(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+        $first = Classification::factory()
+            ->forOrganization($this->organization->id)
+            ->domain(ClassificationDomain::Activity)
+            ->create(['code' => 'first_activity', 'sort_order' => 300]);
+        $second = Classification::factory()
+            ->forOrganization($this->organization->id)
+            ->domain(ClassificationDomain::Activity)
+            ->create(['code' => 'second_activity', 'sort_order' => 100]);
+
+        $this->actingAs($user)
+            ->post(route('admin.classifications.reorder', ClassificationDomain::Activity->value), [
+                'sort_map' => [
+                    $first->id => 20,
+                    $second->id => 10,
+                ],
+            ])
+            ->assertRedirect(route('admin.classifications.index'));
+
+        $refreshedFirst = $first->fresh();
+        $refreshedSecond = $second->fresh();
+
+        $this->assertInstanceOf(Classification::class, $refreshedFirst);
+        $this->assertInstanceOf(Classification::class, $refreshedSecond);
+        $this->assertSame(20, $refreshedFirst->sort_order);
+        $this->assertSame(10, $refreshedSecond->sort_order);
+    }
+
+    public function test_teamleitung_can_import_classifications_from_csv(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+
+        Classification::factory()
+            ->forOrganization($this->organization->id)
+            ->domain(ClassificationDomain::Result)
+            ->create([
+                'code' => 'custom_result',
+                'label' => 'Alt',
+                'sort_order' => 40,
+            ]);
+
+        $file = UploadedFile::fake()->createWithContent('classifications.csv', implode("\n", [
+            'domain;code;label;sort_order;color_hex;icon',
+            'activity;analysis;Analyse Plus;150;#334455;analytics',
+            'result;custom_result;Neues Ergebnis;120;#112233;check_circle',
+        ]));
+
+        $this->actingAs($user)
+            ->post(route('admin.classifications.import'), ['file' => $file])
+            ->assertRedirect(route('admin.classifications.index'));
+
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->organization->id,
+            'domain' => ClassificationDomain::Activity->value,
+            'code' => 'analysis',
+            'label' => 'Analyse Plus',
+            'sort_order' => 150,
+            'color_hex' => '#334455',
+            'icon' => 'analytics',
+        ]);
+
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->organization->id,
+            'domain' => ClassificationDomain::Result->value,
+            'code' => 'custom_result',
+            'label' => 'Neues Ergebnis',
+            'sort_order' => 120,
+            'color_hex' => '#112233',
+            'icon' => 'check_circle',
         ]);
     }
 

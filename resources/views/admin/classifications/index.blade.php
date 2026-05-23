@@ -16,6 +16,10 @@
                 </div>
             </x-slot:title>
             <x-slot:actions>
+                <x-icon-btn icon="upload" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('admin.classifications.import.form')"
+                            show-label>{{ __('CSV-Import') }}</x-icon-btn>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('admin.classifications.create')"
@@ -47,6 +51,9 @@
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 <section class="space-y-3">
                     <h3 class="text-base font-semibold">{{ __('Organisationswerte') }}</h3>
+                    <form id="classification-reorder-{{ $domain->value }}" method="POST" action="{{ route('admin.classifications.reorder', $domain->value) }}">
+                        @csrf
+                    </form>
                     <x-table>
                         <x-slot:head>
                             <tr>
@@ -67,6 +74,15 @@
                                     @endif
                                 </td>
                                 <td>{{ $classification->sort_order }}</td>
+                                <td>
+                                    <input type="number"
+                                           form="classification-reorder-{{ $domain->value }}"
+                                           name="sort_map[{{ $classification->id }}]"
+                                           value="{{ old('sort_map.' . $classification->id, $classification->sort_order) }}"
+                                           class="input input-bordered input-xs w-24"
+                                           min="0"
+                                           max="100000" />
+                                </td>
                                 <td>
                                     <span class="badge badge-xs {{ $classification->active ? 'badge-success' : 'badge-ghost' }}">
                                         {{ $classification->active ? __('Aktiv') : __('Inaktiv') }}
@@ -91,6 +107,13 @@
                             </tr>
                         @endforelse
                     </x-table>
+                    @if ($orgRows->isNotEmpty())
+                        <div class="flex justify-end">
+                            <button type="submit" form="classification-reorder-{{ $domain->value }}" class="btn btn-sm btn-outline gap-2">
+                                <x-icon name="swap_vert" /> {{ __('Reihenfolge speichern') }}
+                            </button>
+                        </div>
+                    @endif
                 </section>
 
                 <section class="space-y-3">

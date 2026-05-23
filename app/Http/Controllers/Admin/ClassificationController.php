@@ -19,6 +19,7 @@ use App\Models\Organization;
 use App\Services\Classification\ClassificationManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -76,6 +77,12 @@ class ClassificationController extends Controller {
             'domainLabels' => $this->domainLabels(),
             'sourceClassification' => $sourceClassification,
         ]);
+    }
+
+    public function importForm(): View {
+        Gate::authorize('create', Classification::class);
+
+        return view('admin.classifications._import_dialog');
     }
 
     public function store(Request $request): RedirectResponse {
@@ -146,6 +153,87 @@ class ClassificationController extends Controller {
 
         return redirect()->route('admin.classifications.index')
             ->with('success', __('Klassifikation wurde aktualisiert.'));
+    }
+
+    public function import(Request $request): RedirectResponse {
+        Gate::authorize('create', Classification::class);
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimetypes:text/csv,text/plain,application/csv,application/vnd.ms-excel', 'max:'.(int) setting('uploads.csv_import_kb', 10240)],
+        ]);
+
+        $file = $request->file('file');
+        if (! $file instanceof UploadedFile) {
+            return back()->with('error', __('Keine CSV-Datei hochgeladen.'));
+        }
+
+        try {
+            $rows = $this->parseImportFile($file);
+            $result = $this->manager->importCsv($this->currentOrganization()->id, $rows);
+        } catch (ClassificationValidationException $exception) {
+            return redirect()->route('admin.classifications.index')
+                ->with('error', $exception->getMessage());
+        }
+
+        return redirect()->route('admin.classifications.index')
+            ->with('success', __('CSV-Import: :created angelegt, :updated aktualisiert.', [
+                'created' => $result['created'],
+                'updated' => $result['updated'],
+            ]));
+    }
+
+    public function reorder(Request $request, string $domain): RedirectResponse {
+        Gate::authorize('create', Classification::class);
+
+        $domainEnum = ClassificationDomain::tryFrom($domain);
+        abort_unless($domainEnum instanceof ClassificationDomain, 404);
+
+        $validated = $request->validate([
+            'sort_map' => ['required', 'array'],
+            'sort_map.*' => ['integer', 'min:0', 'max:100000'],
+        ]);
+
+        $organization = $this->currentOrganization();
+        $submitted = [];
+
+        foreach ($validated['sort_map'] as $id => $sortOrder) {
+            $submitted[] = [
+                'id' => (int) $id,
+                'sort_order' => (int) $sortOrder,
+            ];
+        }
+
+        usort($submitted, static function (array $left, array $right): int {
+            $bySort = $left['sort_order'] <=> $right['sort_order'];
+
+            return $bySort !== 0 ? $bySort : ($left['id'] <=> $right['id']);
+        });
+
+        $orderedIds = Classification::query()
+            ->where('organization_id', $organization->id)
+            ->where('domain', $domainEnum->value)
+            ->whereIn('id', array_column($submitted, 'id'))
+            ->pluck('id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+
+        $knownIds = array_flip($orderedIds);
+        $orderedIds = [];
+        foreach ($submitted as $row) {
+            if (isset($knownIds[$row['id']])) {
+                $orderedIds[] = $row['id'];
+            }
+        }
+
+        if ($orderedIds === []) {
+            return redirect()->route('admin.classifications.index')
+                ->with('error', __('Keine gültigen Klassifikationen zum Umordnen übergeben.'));
+        }
+
+        $this->manager->reorder($organization->id, $domainEnum, $orderedIds);
+
+        return redirect()->route('admin.classifications.index')
+            ->with('success', __('Reihenfolge für :domain wurde gespeichert.', ['domain' => $this->domainLabels()[$domainEnum->value] ?? $domainEnum->value]));
     }
 
     public function destroy(Classification $classification): RedirectResponse {
@@ -258,6 +346,131 @@ class ClassificationController extends Controller {
         return back()
             ->withInput()
             ->withErrors([$field => $exception->getMessage()]);
+    }
+
+    /**
+     * @return list<array{domain?: string, code?: string, label?: string, sort_order?: int|string|null, color_hex?: string|null, icon?: string|null}>
+     */
+    private function parseImportFile(UploadedFile $file): array {
+        $path = $file->getRealPath();
+        if (! is_string($path) || $path === '') {
+            throw ClassificationValidationException::importInvalid(0, 'CSV-Datei konnte nicht gelesen werden.');
+        }
+
+        $handle = fopen($path, 'rb');
+        if ($handle === false) {
+            throw ClassificationValidationException::importInvalid(0, 'CSV-Datei konnte nicht geöffnet werden.');
+        }
+
+        try {
+            $firstLine = fgets($handle);
+            if (! is_string($firstLine)) {
+                throw ClassificationValidationException::importInvalid(1, 'CSV-Datei ist leer.');
+            }
+
+            $delimiter = $this->detectDelimiter($firstLine);
+            $headers = array_map(
+                fn (string $header): string => $this->normalizeHeader($header),
+                $this->parseCsvLine($firstLine, $delimiter),
+            );
+
+            foreach (['domain', 'code', 'label'] as $requiredHeader) {
+                if (! in_array($requiredHeader, $headers, true)) {
+                    throw ClassificationValidationException::importInvalid(1, "Pflichtspalte '{$requiredHeader}' fehlt.");
+                }
+            }
+
+            $rows = [];
+            $lineNumber = 1;
+            while (($line = fgetcsv($handle, 0, $delimiter)) !== false) {
+                $lineNumber++;
+
+                if (count($line) === 1 && $line[0] === null) {
+                    continue;
+                }
+
+                $row = [];
+                foreach ($headers as $index => $header) {
+                    if ($header === '') {
+                        continue;
+                    }
+
+                    $value = isset($line[$index]) ? trim((string) $line[$index]) : null;
+                    $row[$header] = $value === '' ? null : $value;
+                }
+
+                if ($row === [] || $this->isEmptyImportRow($row)) {
+                    continue;
+                }
+
+                $importRow = [
+                    'domain' => (string) ($row['domain'] ?? ''),
+                    'code' => (string) ($row['code'] ?? ''),
+                    'label' => (string) ($row['label'] ?? ''),
+                ];
+
+                if (array_key_exists('sort_order', $row)) {
+                    $importRow['sort_order'] = $row['sort_order'];
+                }
+                if (array_key_exists('color_hex', $row)) {
+                    $importRow['color_hex'] = $row['color_hex'];
+                }
+                if (array_key_exists('icon', $row)) {
+                    $importRow['icon'] = $row['icon'];
+                }
+
+                $rows[] = $importRow;
+            }
+        } finally {
+            fclose($handle);
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function parseCsvLine(string $line, string $delimiter): array {
+        $parsed = str_getcsv(rtrim($line, "\r\n"), $delimiter);
+
+        return array_map(static fn ($value): string => is_string($value) ? $value : '', $parsed);
+    }
+
+    private function detectDelimiter(string $line): string {
+        $delimiters = [';', ',', "\t"];
+        $best = ';';
+        $bestCount = 0;
+
+        foreach ($delimiters as $delimiter) {
+            $count = count(str_getcsv($line, $delimiter));
+            if ($count > $bestCount) {
+                $best = $delimiter;
+                $bestCount = $count;
+            }
+        }
+
+        return $best;
+    }
+
+    private function normalizeHeader(string $header): string {
+        $normalized = strtolower(trim($header));
+        $normalized = ltrim($normalized, "\xEF\xBB\xBF");
+
+        return str_replace([' ', '-'], '_', $normalized);
+    }
+
+    /**
+     * @param  array<string, string|null>  $row
+     */
+    private function isEmptyImportRow(array $row): bool {
+        foreach ($row as $value) {
+            if ($value !== null) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

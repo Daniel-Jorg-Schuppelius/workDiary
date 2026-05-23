@@ -577,6 +577,12 @@ Route::middleware('auth')->group(function () {
             ->names('admin.classifications')
             ->parameters(['classifications' => 'classification'])
             ->except('show');
+        Route::get('admin/classifications/import/form', [ClassificationController::class, 'importForm'])
+            ->name('admin.classifications.import.form');
+        Route::post('admin/classifications/import', [ClassificationController::class, 'import'])
+            ->name('admin.classifications.import');
+        Route::post('admin/classifications/reorder/{domain}', [ClassificationController::class, 'reorder'])
+            ->name('admin.classifications.reorder');
         Route::post('admin/classifications/{classification}/deactivate-default', [ClassificationController::class, 'deactivateDefault'])
             ->name('admin.classifications.deactivate-default');
 
