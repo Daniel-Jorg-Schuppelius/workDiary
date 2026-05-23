@@ -13,8 +13,11 @@ namespace App\Http\Controllers\CustomerPortal;
 use App\Http\Controllers\Controller;
 use App\Models\DiaryEntry;
 use App\Models\Invoice;
+use App\Models\OpenIssue;
+use App\Models\Project;
 use App\Models\TimeEntry;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -30,6 +33,28 @@ class DashboardController extends Controller {
                 ->whereHas('project', fn($q) => $q->where('customer_id', $customerId))
                 ->count(),
             'invoices' => Invoice::query()->where('customer_id', $customerId)->count(),
+            'open_issues' => OpenIssue::query()
+                ->where('visibility', \App\Enums\OpenIssue\OpenIssueVisibility::Customer->value)
+                ->whereNull('closed_at')
+                ->where(function (Builder $q) use ($customerId): void {
+                    $q->where(function (Builder $sub) use ($customerId): void {
+                        $sub->where('subject_type', \App\Models\Customer::class)
+                            ->where('subject_id', $customerId);
+                    })
+                    ->orWhere(function (Builder $sub) use ($customerId): void {
+                        $sub->where('subject_type', DiaryEntry::class)
+                            ->whereIn('subject_id', DiaryEntry::query()
+                                ->where('customer_id', $customerId)
+                                ->select('id'));
+                    })
+                    ->orWhere(function (Builder $sub) use ($customerId): void {
+                        $sub->where('subject_type', Project::class)
+                            ->whereIn('subject_id', Project::query()
+                                ->where('customer_id', $customerId)
+                                ->select('id'));
+                    });
+                })
+                ->count(),
         ];
 
         return view('customer.dashboard', [

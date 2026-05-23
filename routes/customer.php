@@ -12,6 +12,7 @@ use App\Http\Controllers\CustomerPortal\DashboardController;
 use App\Http\Controllers\CustomerPortal\DiaryController;
 use App\Http\Controllers\CustomerPortal\InvoiceController;
 use App\Http\Controllers\CustomerPortal\LoginController;
+use App\Http\Controllers\CustomerPortal\OpenIssueController;
 use App\Http\Controllers\CustomerPortal\TimeEntryController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,5 +31,6 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
         Route::get('/diary', [DiaryController::class, 'index'])->name('diary.index');
         Route::get('/time-entries', [TimeEntryController::class, 'index'])->name('time-entries.index');
         Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+        Route::get('/open-issues', [OpenIssueController::class, 'index'])->name('open-issues.index');
     });
 });

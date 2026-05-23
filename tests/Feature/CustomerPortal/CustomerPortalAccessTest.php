@@ -13,6 +13,7 @@ namespace Tests\Feature\CustomerPortal;
 use App\Models\Customer;
 use App\Models\DiaryEntry;
 use App\Models\Invoice;
+use App\Models\OpenIssue;
 use App\Models\User;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -172,5 +173,44 @@ class CustomerPortalAccessTest extends TestCase {
         $response->assertOk();
         $response->assertSee('INV-OWN-001');
         $response->assertDontSee('INV-OTHER-001');
+    }
+
+    public function test_customer_only_sees_open_issues_with_customer_visibility(): void {
+        $otherCustomer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+
+        $ownDiary = DiaryEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+        ]);
+        $otherDiary = DiaryEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $otherCustomer->id,
+        ]);
+
+        // Sichtbar: customer-visibility, eigener Diary-Subject
+        OpenIssue::factory()->for($ownDiary, 'subject')->create([
+            'organization_id' => $this->organization->id,
+            'title' => 'Sichtbar fuer Kunde',
+            'visibility' => \App\Enums\OpenIssue\OpenIssueVisibility::Customer->value,
+        ]);
+        // Unsichtbar: internal-visibility am eigenen Diary
+        OpenIssue::factory()->for($ownDiary, 'subject')->create([
+            'organization_id' => $this->organization->id,
+            'title' => 'Intern Nur Mitarbeiter',
+            'visibility' => \App\Enums\OpenIssue\OpenIssueVisibility::Internal->value,
+        ]);
+        // Unsichtbar: customer-visibility am fremden Diary
+        OpenIssue::factory()->for($otherDiary, 'subject')->create([
+            'organization_id' => $this->organization->id,
+            'title' => 'Fremder Kundenpunkt',
+            'visibility' => \App\Enums\OpenIssue\OpenIssueVisibility::Customer->value,
+        ]);
+
+        $this->actingAs($this->portalUser, 'customer');
+        $response = $this->get(route('customer.open-issues.index'));
+        $response->assertOk();
+        $response->assertSee('Sichtbar fuer Kunde');
+        $response->assertDontSee('Intern Nur Mitarbeiter');
+        $response->assertDontSee('Fremder Kundenpunkt');
     }
 }
