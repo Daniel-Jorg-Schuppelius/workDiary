@@ -318,6 +318,9 @@ return [
         'classification.platform.manage' => 'Plattform-Klassifikationen pflegen',
         'classification.requirement.view' => 'Pflichtklassifikationen einsehen',
         'classification.requirement.manage' => 'Pflichtklassifikationen pflegen',
+        'branchProfile.install' => 'Branchenprofile installieren',
+        'branchProfile.viewCatalog' => 'Branchenprofil-Katalog einsehen',
+        'branchProfile.uninstall' => 'Branchenprofile deinstallieren',
         'customerPortal.openIssue.view' => 'Offene Punkte im Kundenportal einsehen',
     ],
 ];

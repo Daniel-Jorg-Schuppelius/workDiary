@@ -218,6 +218,9 @@ enum Permission: string implements HasLabel {
     case ClassificationPlatformManage = 'classification.platform.manage';
     case ClassificationRequirementView = 'classification.requirement.view';
     case ClassificationRequirementManage = 'classification.requirement.manage';
+    case BranchProfileInstall = 'branchProfile.install';
+    case BranchProfileViewCatalog = 'branchProfile.viewCatalog';
+    case BranchProfileUninstall = 'branchProfile.uninstall';
     // ── Customer-Portal (Rolle `kunde`) ─────────────────────
     case CustomerPortalAccess = 'customerPortal.access';
     case CustomerPortalDiaryView = 'customerPortal.diary.view';
