@@ -43,6 +43,8 @@ class ProtocolService {
     public function __construct(
         private readonly ProtocolItemValidator $itemValidator,
         private readonly OpenIssueService $openIssues,
+        private readonly ProtocolHasher $hasher,
+        private readonly ProtocolPdfRenderer $pdfRenderer,
     ) {}
 
     /**
@@ -152,8 +154,30 @@ class ProtocolService {
                 'with_signature' => $signatureData !== null,
             ]);
 
+            $this->renderPdfFor($protocol->refresh(), $actor);
+
             return $protocol->refresh();
         });
+    }
+
+    /**
+     * Erzeugt das PDF (idempotent) und vermerkt den Event mit Pfad + Hash.
+     */
+    public function renderPdfFor(Protocol $protocol, User $actor): string {
+        $start = microtime(true);
+        $path = $this->pdfRenderer->render($protocol);
+        $this->record($protocol, ProtocolEventType::PdfRendered, $actor, [
+            'path' => $path,
+            'hash' => $this->pdfRenderer->hashFor($protocol),
+            'duration_ms' => (int) round((microtime(true) - $start) * 1000),
+        ]);
+        return $path;
+    }
+
+    public function recordPdfDownload(Protocol $protocol, User $actor): void {
+        $this->record($protocol, ProtocolEventType::PdfDownloaded, $actor, [
+            'hash' => $this->pdfRenderer->hashFor($protocol),
+        ]);
     }
 
     public function archive(Protocol $protocol, User $actor): Protocol {
@@ -344,13 +368,12 @@ class ProtocolService {
         $signedAt = isset($data['signed_at']) ? Carbon::parse($data['signed_at']) : Carbon::now();
         $imagePath = $data['signature_image_path'] ?? null;
 
-        $hash = hash('sha256', implode('|', [
-            $protocol->id,
-            $role->value,
+        $hash = $this->hasher->contentHash(
+            $protocol,
             $signerName,
+            $role->value,
             $signedAt->toIso8601String(),
-            (string) $imagePath,
-        ]));
+        );
 
         return ProtocolSignature::query()->create([
             'protocol_id' => $protocol->id,

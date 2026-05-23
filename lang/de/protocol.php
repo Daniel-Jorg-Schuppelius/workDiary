@@ -100,4 +100,27 @@ return [
             'missing' => 'Signatur ist noch nicht verknüpft.',
         ],
     ],
+    'pdf' => [
+        'title' => 'Protokoll – :title',
+        'state' => 'Zustand',
+        'items' => 'Protokollpunkte',
+        'signatures' => 'Unterschriften',
+        'col' => [
+            'label' => 'Punkt',
+            'type' => 'Typ',
+            'value' => 'Wert',
+            'result' => 'Ergebnis',
+            'note' => 'Anmerkung',
+        ],
+        'footer' => [
+            'hash' => 'Prüfsumme',
+            'generated' => 'Erstellt am :at',
+        ],
+    ],
+    'signature' => [
+        'tokenIssued' => 'Signaturlink wurde erstellt.',
+        'tokenExpired' => 'Der Signaturlink ist abgelaufen oder bereits eingelöst.',
+        'tokenUnknown' => 'Signaturlink unbekannt.',
+        'redeemed' => 'Unterschrift wurde gespeichert.',
+    ],
 ];

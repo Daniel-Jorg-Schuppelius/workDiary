@@ -230,6 +230,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ProtocolArchive,
             PermissionEnum::ProtocolSupersede,
             PermissionEnum::ProtocolDelete,
+            PermissionEnum::ProtocolSignatureRequest,
+            PermissionEnum::ProtocolPdfDownload,
             PermissionEnum::ReportView,
             PermissionEnum::AccessAuditView,
         ];
@@ -340,6 +342,7 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ProtocolEditDraft,
             PermissionEnum::ProtocolRequestReview,
             PermissionEnum::ProtocolSignInternal,
+            PermissionEnum::ProtocolPdfDownload,
         ];
 
         $callcenter = [

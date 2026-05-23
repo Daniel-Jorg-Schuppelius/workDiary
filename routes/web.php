@@ -147,6 +147,13 @@ Route::get('sign/timesheet/{token}', [PublicSignatureController::class, 'show'])
 Route::post('sign/timesheet/{token}', [PublicSignatureController::class, 'store'])->name('timesheets.public-sign.submit');
 Route::get('sign/timesheet/thanks', [PublicSignatureController::class, 'thanks'])->name('timesheets.public-thanks');
 
+// Öffentlicher Protokoll-Signaturlink (MVP-022 §3.3)
+Route::get('sign/protocol/{token}', [\App\Http\Controllers\PublicProtocolSignatureController::class, 'show'])
+    ->name('protocols.public-sign');
+Route::post('sign/protocol/{token}', [\App\Http\Controllers\PublicProtocolSignatureController::class, 'store'])
+    ->middleware('throttle:6,1')
+    ->name('protocols.public-sign.submit');
+
 // Tagebuch (nur für eingeloggte Benutzer)
 Route::middleware('auth')->group(function () {
     // Diese Routen sind für jeden eingeloggten User erreichbar – auch für
@@ -410,6 +417,8 @@ Route::middleware('auth')->group(function () {
         Route::post('protocols/{protocol}/items', [ProtocolController::class, 'addItem'])->name('protocols.items.store');
         Route::put('protocol-items/{item}', [ProtocolController::class, 'fillItem'])->name('protocols.items.fill');
         Route::delete('protocol-items/{item}', [ProtocolController::class, 'destroyItem'])->name('protocols.items.destroy');
+        Route::post('protocols/{protocol}/signature-tokens', [ProtocolController::class, 'issueSignatureToken'])->name('protocols.signature-tokens.store');
+        Route::get('protocols/{protocol}/pdf', [ProtocolController::class, 'pdf'])->name('protocols.pdf');
 
         // ── Verpflegungsmehraufwand (Per-Diem) ─────────────────────────────
         Route::get('per-diem-trips', [PerDiemTripController::class, 'index'])->name('per-diem-trips.index');

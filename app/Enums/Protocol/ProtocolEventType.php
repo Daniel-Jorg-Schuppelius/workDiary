@@ -28,4 +28,8 @@ final class ProtocolEventType {
     public const SupersededBy = 'protocol.supersededBy';
     public const AttachmentAdded = 'protocol.attachmentAdded';
     public const AttachmentRemoved = 'protocol.attachmentRemoved';
+    public const SignatureRequested = 'protocol.signatureRequested';
+    public const SignatureLinkOpened = 'protocol.signatureLinkOpened';
+    public const PdfRendered = 'protocol.pdfRendered';
+    public const PdfDownloaded = 'protocol.pdfDownloaded';
 }

@@ -210,6 +210,55 @@ class ProtocolController extends Controller {
         return redirect()->back()->with('success', __('protocol.flash.item.removed'));
     }
 
+    public function issueSignatureToken(
+        Request $request,
+        Protocol $protocol,
+        \App\Services\Protocol\ProtocolSignatureTokenService $tokens,
+    ): RedirectResponse {
+        Gate::authorize('sign', $protocol);
+        /** @var User|null $u */
+        $u = Auth::user();
+        if (! $u || ! $u->can(\App\Enums\User\Permission::ProtocolSignatureRequest->value)) {
+            abort(403);
+        }
+
+        $data = $request->validate([
+            'role' => ['required', 'string', 'in:' . implode(',', array_column(ProtocolSignatureRole::cases(), 'value'))],
+            'signer_name' => ['nullable', 'string', 'max:120'],
+            'signer_email' => ['required', 'email', 'max:180'],
+            'ttl_days' => ['nullable', 'integer', 'min:1', 'max:30'],
+        ]);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $result = $tokens->issue($protocol, $actor, $data);
+
+        return redirect()->back()
+            ->with('success', __('protocol.signature.tokenIssued'))
+            ->with('protocol.signature.token_url', route('protocols.public-sign', ['token' => $result['token']]));
+    }
+
+    public function pdf(
+        Protocol $protocol,
+        \App\Services\Protocol\ProtocolPdfRenderer $renderer,
+    ): \Symfony\Component\HttpFoundation\StreamedResponse {
+        Gate::authorize('view', $protocol);
+        /** @var User|null $u */
+        $u = Auth::user();
+        if (! $u || ! $u->can(\App\Enums\User\Permission::ProtocolPdfDownload->value)) {
+            abort(403);
+        }
+
+        /** @var User $actor */
+        $actor = $u;
+        $path = $this->service->renderPdfFor($protocol, $actor);
+        $this->service->recordPdfDownload($protocol, $actor);
+
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = \Illuminate\Support\Facades\Storage::disk(\App\Services\Protocol\ProtocolPdfRenderer::DISK);
+        return $disk->download($path, sprintf('protokoll-%d-r%d.pdf', $protocol->id, $protocol->revision));
+    }
+
     /**
      * @return array<string, mixed>|null
      */

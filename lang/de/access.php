@@ -284,6 +284,8 @@ return [
         'protocol.archive' => 'Protokoll archivieren',
         'protocol.supersede' => 'Protokoll durch Korrektur-Revision ersetzen',
         'protocol.delete' => 'Protokoll löschen',
+        'protocol.signatureRequest' => 'Signaturlink versenden',
+        'protocol.pdfDownload' => 'Protokoll-PDF herunterladen',
         'customerPortal.openIssue.view' => 'Offene Punkte im Kundenportal einsehen',
     ],
 ];
