@@ -260,6 +260,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ClassificationOrgManage,
             PermissionEnum::ClassificationOrgDeactivateDefault,
             PermissionEnum::ClassificationOrgImport,
+            PermissionEnum::ClassificationRequirementView,
+            PermissionEnum::ClassificationRequirementManage,
             PermissionEnum::ReportView,
             PermissionEnum::AccessAuditView,
         ];
@@ -344,6 +346,7 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ProcedureDeviationView,
             PermissionEnum::ClassificationList,
             PermissionEnum::ClassificationOrgView,
+            PermissionEnum::ClassificationRequirementView,
         ];
 
         // Außendienst: schlanker als user, dafür mit vollem Touren-/Spesen-
@@ -388,6 +391,7 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ProtocolItemPhotoRemove,
             PermissionEnum::ClassificationList,
             PermissionEnum::ClassificationOrgView,
+            PermissionEnum::ClassificationRequirementView,
         ];
 
         $callcenter = [
@@ -400,6 +404,7 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::CustomerView,
             PermissionEnum::ClassificationList,
             PermissionEnum::ClassificationOrgView,
+            PermissionEnum::ClassificationRequirementView,
         ];
 
         // Support (Anbieter-Support): strikt read-only über fast alle Bereiche
@@ -430,6 +435,7 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::FlexBalanceView,
             PermissionEnum::ClassificationList,
             PermissionEnum::ClassificationOrgView,
+            PermissionEnum::ClassificationRequirementView,
         ];
 
         // Rolle `kunde`: read-only Zugriff auf das Customer-Portal, ausschliesslich

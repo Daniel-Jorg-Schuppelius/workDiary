@@ -216,6 +216,8 @@ enum Permission: string implements HasLabel {
     case ClassificationOrgDeactivateDefault = 'classification.org.deactivateDefault';
     case ClassificationOrgImport = 'classification.org.import';
     case ClassificationPlatformManage = 'classification.platform.manage';
+    case ClassificationRequirementView = 'classification.requirement.view';
+    case ClassificationRequirementManage = 'classification.requirement.manage';
     // ── Customer-Portal (Rolle `kunde`) ─────────────────────
     case CustomerPortalAccess = 'customerPortal.access';
     case CustomerPortalDiaryView = 'customerPortal.diary.view';

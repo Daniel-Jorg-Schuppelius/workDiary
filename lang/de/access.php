@@ -316,6 +316,8 @@ return [
         'classification.org.deactivateDefault' => 'Plattform-Defaults org-lokal deaktivieren',
         'classification.org.import' => 'Klassifikationen importieren',
         'classification.platform.manage' => 'Plattform-Klassifikationen pflegen',
+        'classification.requirement.view' => 'Pflichtklassifikationen einsehen',
+        'classification.requirement.manage' => 'Pflichtklassifikationen pflegen',
         'customerPortal.openIssue.view' => 'Offene Punkte im Kundenportal einsehen',
     ],
 ];

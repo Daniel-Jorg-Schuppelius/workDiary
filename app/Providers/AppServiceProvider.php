@@ -20,6 +20,7 @@ use App\Listeners\AuthEventSubscriber;
 use App\Models\ActivityCategory;
 use App\Models\Attachment;
 use App\Models\Classification;
+use App\Models\ClassificationRequirement;
 use App\Models\Comment;
 use App\Models\CoverageRequirement;
 use App\Models\Customer;
@@ -68,6 +69,7 @@ use App\Observers\TimesheetObserver;
 use App\Observers\UserObserver;
 use App\Policies\ActivityCategoryPolicy;
 use App\Policies\ClassificationPolicy;
+use App\Policies\ClassificationRequirementPolicy;
 use App\Policies\CoverageRequirementPolicy;
 use App\Policies\DutyPlanPolicy;
 use App\Policies\EventCategoryPolicy;
@@ -199,6 +201,7 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(ProcedureBackupProof::class, ProcedureBackupProofPolicy::class);
         Gate::policy(ProcedureDeviation::class, ProcedureDeviationPolicy::class);
         Gate::policy(Classification::class, ClassificationPolicy::class);
+        Gate::policy(ClassificationRequirement::class, ClassificationRequirementPolicy::class);
 
         // manage-members: Org-Admin darf Mitglieder der eigenen Org verwalten
         Gate::define('manage-members', [OrganizationPolicy::class, 'manageMembers']);
