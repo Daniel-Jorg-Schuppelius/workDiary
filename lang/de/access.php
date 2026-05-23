@@ -321,6 +321,11 @@ return [
         'branchProfile.install' => 'Branchenprofile installieren',
         'branchProfile.viewCatalog' => 'Branchenprofil-Katalog einsehen',
         'branchProfile.uninstall' => 'Branchenprofile deinstallieren',
+        'asset.view' => 'Assets/Objekte einsehen',
+        'asset.create' => 'Assets/Objekte anlegen',
+        'asset.update' => 'Assets/Objekte bearbeiten',
+        'asset.decommission' => 'Assets/Objekte stilllegen',
+        'asset.transferOwnership' => 'Eigentümerschaft von Assets übertragen',
         'customerPortal.openIssue.view' => 'Offene Punkte im Kundenportal einsehen',
     ],
 ];

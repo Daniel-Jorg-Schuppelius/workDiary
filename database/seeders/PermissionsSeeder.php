@@ -262,6 +262,11 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ClassificationOrgImport,
             PermissionEnum::ClassificationRequirementView,
             PermissionEnum::ClassificationRequirementManage,
+            PermissionEnum::AssetView,
+            PermissionEnum::AssetCreate,
+            PermissionEnum::AssetUpdate,
+            PermissionEnum::AssetDecommission,
+            PermissionEnum::AssetTransferOwnership,
             PermissionEnum::ReportView,
             PermissionEnum::AccessAuditView,
         ];
@@ -347,6 +352,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ClassificationList,
             PermissionEnum::ClassificationOrgView,
             PermissionEnum::ClassificationRequirementView,
+            PermissionEnum::AssetView,
+            PermissionEnum::AssetCreate,
+            PermissionEnum::AssetUpdate,
         ];
 
         // Außendienst: schlanker als user, dafür mit vollem Touren-/Spesen-
@@ -392,6 +400,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ClassificationList,
             PermissionEnum::ClassificationOrgView,
             PermissionEnum::ClassificationRequirementView,
+            PermissionEnum::AssetView,
+            PermissionEnum::AssetCreate,
+            PermissionEnum::AssetUpdate,
         ];
 
         $callcenter = [
@@ -405,6 +416,7 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ClassificationList,
             PermissionEnum::ClassificationOrgView,
             PermissionEnum::ClassificationRequirementView,
+            PermissionEnum::AssetView,
         ];
 
         // Support (Anbieter-Support): strikt read-only über fast alle Bereiche
@@ -436,6 +448,7 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ClassificationList,
             PermissionEnum::ClassificationOrgView,
             PermissionEnum::ClassificationRequirementView,
+            PermissionEnum::AssetView,
         ];
 
         // Rolle `kunde`: read-only Zugriff auf das Customer-Portal, ausschliesslich

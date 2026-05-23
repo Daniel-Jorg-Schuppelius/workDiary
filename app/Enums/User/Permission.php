@@ -221,6 +221,12 @@ enum Permission: string implements HasLabel {
     case BranchProfileInstall = 'branchProfile.install';
     case BranchProfileViewCatalog = 'branchProfile.viewCatalog';
     case BranchProfileUninstall = 'branchProfile.uninstall';
+    // ── Assets / Objektstammdaten (MVP-035) ───────────────
+    case AssetView = 'asset.view';
+    case AssetCreate = 'asset.create';
+    case AssetUpdate = 'asset.update';
+    case AssetDecommission = 'asset.decommission';
+    case AssetTransferOwnership = 'asset.transferOwnership';
     // ── Customer-Portal (Rolle `kunde`) ─────────────────────
     case CustomerPortalAccess = 'customerPortal.access';
     case CustomerPortalDiaryView = 'customerPortal.diary.view';
