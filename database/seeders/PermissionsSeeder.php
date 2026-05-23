@@ -145,7 +145,7 @@ class PermissionsSeeder extends Seeder {
         $all = PermissionEnum::cases();
 
         // Geschäftsführung: read-only über alle Bereiche, Reports + Audit.
-        $geschaeftsfuehrung = array_values(array_filter(
+        $geschaeftsfuehrung = array_filter(
             PermissionEnum::cases(),
             static function (PermissionEnum $p): bool {
                 $value = $p->value;
@@ -162,7 +162,7 @@ class PermissionsSeeder extends Seeder {
                     PermissionEnum::FlexBalanceView->value,
                 ], true);
             }
-        ));
+        );
 
         // Teamleitung: operative Führung (Personal, Zeit, Plan), ohne Finanzen.
         $teamleitung = [
@@ -256,7 +256,10 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ProcedureDeviationUpdate,
             PermissionEnum::ProcedureDeviationView,
             PermissionEnum::ClassificationList,
+            PermissionEnum::ClassificationOrgView,
             PermissionEnum::ClassificationOrgManage,
+            PermissionEnum::ClassificationOrgDeactivateDefault,
+            PermissionEnum::ClassificationOrgImport,
             PermissionEnum::ReportView,
             PermissionEnum::AccessAuditView,
         ];
@@ -340,6 +343,7 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ProcedureDeviationRecord,
             PermissionEnum::ProcedureDeviationView,
             PermissionEnum::ClassificationList,
+            PermissionEnum::ClassificationOrgView,
         ];
 
         // Außendienst: schlanker als user, dafür mit vollem Touren-/Spesen-
@@ -382,6 +386,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ProtocolPdfDownload,
             PermissionEnum::ProtocolItemPhotoAdd,
             PermissionEnum::ProtocolItemPhotoRemove,
+            PermissionEnum::ClassificationList,
+            PermissionEnum::ClassificationOrgView,
         ];
 
         $callcenter = [
@@ -392,6 +398,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::DiaryUpdate,
             PermissionEnum::CustomerViewAny,
             PermissionEnum::CustomerView,
+            PermissionEnum::ClassificationList,
+            PermissionEnum::ClassificationOrgView,
         ];
 
         // Support (Anbieter-Support): strikt read-only über fast alle Bereiche
@@ -420,6 +428,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::AuditLogView,
             PermissionEnum::AccessAuditView,
             PermissionEnum::FlexBalanceView,
+            PermissionEnum::ClassificationList,
+            PermissionEnum::ClassificationOrgView,
         ];
 
         // Rolle `kunde`: read-only Zugriff auf das Customer-Portal, ausschliesslich

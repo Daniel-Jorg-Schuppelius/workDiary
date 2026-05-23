@@ -26,11 +26,13 @@ class ClassificationPolicy {
     use HasAdminBypass;
 
     public function viewAny(User $user): bool {
-        return $user->can(P::ClassificationList->value);
+        return $user->can(P::ClassificationList->value)
+            || $user->can(P::ClassificationOrgView->value);
     }
 
     public function view(User $user, Classification $classification): bool {
-        return $user->can(P::ClassificationList->value);
+        return $user->can(P::ClassificationList->value)
+            || $user->can(P::ClassificationOrgView->value);
     }
 
     public function create(User $user): bool {
@@ -52,5 +54,13 @@ class ClassificationPolicy {
         }
 
         return $user->can(P::ClassificationOrgManage->value);
+    }
+
+    public function deactivateDefault(User $user): bool {
+        return $user->can(P::ClassificationOrgDeactivateDefault->value);
+    }
+
+    public function import(User $user): bool {
+        return $user->can(P::ClassificationOrgImport->value);
     }
 }
