@@ -84,4 +84,33 @@ class BranchProfileInstallerTest extends TestCase {
         $classification->refresh();
         $this->assertSame('Incident', $classification->label);
     }
+
+    public function test_install_handwerk_profile_creates_expected_domain_entries(): void {
+        $result = $this->installer->install($this->org, 'handwerk', $this->actor);
+
+        $this->assertSame('handwerk', $result['profile_code']);
+        $this->assertGreaterThan(0, $result['created']['classifications']);
+
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->org->id,
+            'domain' => 'entry_type',
+            'code' => 'aufmass',
+        ]);
+
+        $this->assertDatabaseHas('classification_requirements', [
+            'organization_id' => $this->org->id,
+            'entry_type_code' => 'repair',
+            'required_domain' => 'defect_type',
+            'enforce_phase' => 'onCreate',
+        ]);
+    }
+
+    public function test_install_handwerk_profile_is_idempotent_without_force(): void {
+        $first = $this->installer->install($this->org, 'handwerk', $this->actor);
+        $second = $this->installer->install($this->org, 'handwerk', $this->actor);
+
+        $this->assertGreaterThan(0, $first['created']['classifications']);
+        $this->assertSame(0, $second['created']['classifications']);
+        $this->assertGreaterThan(0, $second['skipped']['classifications']);
+    }
 }
