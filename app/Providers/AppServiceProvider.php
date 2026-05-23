@@ -63,6 +63,7 @@ use App\Policies\EventPolicy;
 use App\Policies\ExpenseCategoryPolicy;
 use App\Policies\ExpensePolicy;
 use App\Policies\OpenIssuePolicy;
+use App\Policies\ProtocolPolicy;
 use App\Policies\PerDiemTripPolicy;
 use App\Policies\PerDiemRatePolicy;
 use App\Policies\MaterialPolicy;
@@ -176,6 +177,7 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(PerDiemRate::class, PerDiemRatePolicy::class);
         Gate::policy(Room::class, RoomPolicy::class);
         Gate::policy(\App\Models\OpenIssue::class, OpenIssuePolicy::class);
+        Gate::policy(\App\Models\Protocol::class, ProtocolPolicy::class);
 
         // manage-members: Org-Admin darf Mitglieder der eigenen Org verwalten
         Gate::define('manage-members', [OrganizationPolicy::class, 'manageMembers']);

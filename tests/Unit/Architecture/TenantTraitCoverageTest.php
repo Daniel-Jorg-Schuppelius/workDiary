@@ -44,6 +44,9 @@ class TenantTraitCoverageTest extends TestCase {
         \App\Models\PerDiemRate::class,
         \App\Models\GeocodeCache::class,
         \App\Models\OpenIssueEvent::class,
+        \App\Models\ProtocolItem::class,
+        \App\Models\ProtocolSignature::class,
+        \App\Models\ProtocolEvent::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {

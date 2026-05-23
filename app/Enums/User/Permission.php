@@ -165,6 +165,18 @@ enum Permission: string implements HasLabel {
     case OpenIssuePublishToCustomer = 'openIssue.publishToCustomer';
     case OpenIssueDelete = 'openIssue.delete';
 
+    // ── Protokolle (MVP-020) ───────────────────────────────────────────
+    case ProtocolView = 'protocol.view';
+    case ProtocolViewAny = 'protocol.viewAny';
+    case ProtocolCreate = 'protocol.create';
+    case ProtocolEditDraft = 'protocol.editDraft';
+    case ProtocolRequestReview = 'protocol.requestReview';
+    case ProtocolSignInternal = 'protocol.signInternal';
+    case ProtocolSignCustomer = 'protocol.signCustomer';
+    case ProtocolArchive = 'protocol.archive';
+    case ProtocolSupersede = 'protocol.supersede';
+    case ProtocolDelete = 'protocol.delete';
+
     // ── Customer-Portal (Rolle `kunde`) ─────────────────────
     case CustomerPortalAccess = 'customerPortal.access';
     case CustomerPortalDiaryView = 'customerPortal.diary.view';
@@ -210,6 +222,7 @@ enum Permission: string implements HasLabel {
                 str_starts_with($this->value, 'work-schedule.'),
                 str_starts_with($this->value, 'flex.') => PermissionGroup::WorkingTime,
             str_starts_with($this->value, 'openIssue.') => PermissionGroup::OpenIssues,
+            str_starts_with($this->value, 'protocol.') => PermissionGroup::Protocols,
             str_starts_with($this->value, 'customerPortal.') => PermissionGroup::CustomerPortal,
             default => PermissionGroup::MasterData,
         };

@@ -204,4 +204,44 @@ return [
             'customer' => 'Kunden-sichtbar',
         ],
     ],
+    'protocol' => [
+        'status' => [
+            'draft' => 'Entwurf',
+            'in_review' => 'In Prüfung',
+            'signed' => 'Unterschrieben',
+            'archived' => 'Archiviert',
+            'superseded' => 'Ersetzt',
+        ],
+        'type' => [
+            'acceptance' => 'Abnahme',
+            'service' => 'Serviceeinsatz',
+            'maintenance' => 'Wartung',
+            'handover' => 'Übergabe',
+            'defect' => 'Mangelaufnahme',
+            'inspection' => 'Begehung',
+            'siteVisit' => 'Vor-Ort-Termin',
+            'other' => 'Sonstiges',
+        ],
+        'visibility' => [
+            'internal' => 'Intern',
+            'customer' => 'Kunden-sichtbar',
+        ],
+        'item-result' => [
+            'ok' => 'In Ordnung',
+            'notok' => 'Nicht in Ordnung',
+            'n_a' => 'Nicht anwendbar',
+            'open' => 'Offen',
+        ],
+        'signature-role' => [
+            'customer' => 'Kunde',
+            'contractor' => 'Auftragnehmer',
+            'witness' => 'Zeuge',
+        ],
+        'signature-method' => [
+            'onscreen' => 'Bildschirm-Unterschrift',
+            'portal' => 'Kundenportal',
+            'emailLink' => 'E-Mail-Link',
+            'paper' => 'Papier',
+        ],
+    ],
 ];

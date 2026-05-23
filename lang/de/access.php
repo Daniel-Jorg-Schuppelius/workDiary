@@ -147,6 +147,7 @@ return [
         'working-time' => 'Arbeitszeit',
         'master-data' => 'Stammdaten',
         'open-issues' => 'Offene Punkte',
+        'protocols' => 'Protokolle',
     ],
 
     'permission' => [
@@ -273,6 +274,16 @@ return [
         'openIssue.assign' => 'Offenen Punkt zuweisen',
         'openIssue.publishToCustomer' => 'Offenen Punkt im Kundenportal freigeben',
         'openIssue.delete' => 'Offenen Punkt löschen',
+        'protocol.view' => 'Protokoll ansehen',
+        'protocol.viewAny' => 'Alle Protokolle sehen',
+        'protocol.create' => 'Protokoll anlegen',
+        'protocol.editDraft' => 'Protokoll-Entwurf bearbeiten',
+        'protocol.requestReview' => 'Protokoll zur Prüfung einreichen',
+        'protocol.signInternal' => 'Protokoll intern unterschreiben',
+        'protocol.signCustomer' => 'Protokoll für Kunden unterschreiben',
+        'protocol.archive' => 'Protokoll archivieren',
+        'protocol.supersede' => 'Protokoll durch Korrektur-Revision ersetzen',
+        'protocol.delete' => 'Protokoll löschen',
         'customerPortal.openIssue.view' => 'Offene Punkte im Kundenportal einsehen',
     ],
 ];

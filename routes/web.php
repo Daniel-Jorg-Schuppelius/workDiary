@@ -60,6 +60,7 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationSwitchController;
 use App\Http\Controllers\OrgMemberController;
 use App\Http\Controllers\OpenIssueController;
+use App\Http\Controllers\ProtocolController;
 use App\Http\Controllers\Plugins\LexofficeCustomerController;
 use App\Http\Controllers\PerDiemTripController;
 use App\Http\Controllers\PrintController;
@@ -398,6 +399,17 @@ Route::middleware('auth')->group(function () {
         Route::post('open-issues/{issue}/transitions/{action}', [OpenIssueController::class, 'transition'])
             ->whereIn('action', ['start', 'block', 'unblock', 'complete', 'wontDo', 'reopen'])
             ->name('open-issues.transition');
+
+        // ── Protokolle (MVP-020) ───────────────────────────────────────────
+        Route::post('protocols', [ProtocolController::class, 'store'])->name('protocols.store');
+        Route::put('protocols/{protocol}', [ProtocolController::class, 'update'])->name('protocols.update');
+        Route::delete('protocols/{protocol}', [ProtocolController::class, 'destroy'])->name('protocols.destroy');
+        Route::post('protocols/{protocol}/transitions/{action}', [ProtocolController::class, 'transition'])
+            ->whereIn('action', ['requestReview', 'returnToDraft', 'sign', 'archive', 'supersede'])
+            ->name('protocols.transition');
+        Route::post('protocols/{protocol}/items', [ProtocolController::class, 'addItem'])->name('protocols.items.store');
+        Route::put('protocol-items/{item}', [ProtocolController::class, 'fillItem'])->name('protocols.items.fill');
+        Route::delete('protocol-items/{item}', [ProtocolController::class, 'destroyItem'])->name('protocols.items.destroy');
 
         // ── Verpflegungsmehraufwand (Per-Diem) ─────────────────────────────
         Route::get('per-diem-trips', [PerDiemTripController::class, 'index'])->name('per-diem-trips.index');

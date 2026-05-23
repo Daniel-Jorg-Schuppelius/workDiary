@@ -220,6 +220,16 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::OpenIssueAssign,
             PermissionEnum::OpenIssuePublishToCustomer,
             PermissionEnum::OpenIssueDelete,
+            PermissionEnum::ProtocolViewAny,
+            PermissionEnum::ProtocolView,
+            PermissionEnum::ProtocolCreate,
+            PermissionEnum::ProtocolEditDraft,
+            PermissionEnum::ProtocolRequestReview,
+            PermissionEnum::ProtocolSignInternal,
+            PermissionEnum::ProtocolSignCustomer,
+            PermissionEnum::ProtocolArchive,
+            PermissionEnum::ProtocolSupersede,
+            PermissionEnum::ProtocolDelete,
             PermissionEnum::ReportView,
             PermissionEnum::AccessAuditView,
         ];
@@ -288,6 +298,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::OpenIssueView,
             PermissionEnum::OpenIssueCreate,
             PermissionEnum::OpenIssueUpdate,
+            PermissionEnum::ProtocolView,
+            PermissionEnum::ProtocolCreate,
+            PermissionEnum::ProtocolEditDraft,
         ];
 
         // Außendienst: schlanker als user, dafür mit vollem Touren-/Spesen-
@@ -322,6 +335,11 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::OpenIssueView,
             PermissionEnum::OpenIssueCreate,
             PermissionEnum::OpenIssueUpdate,
+            PermissionEnum::ProtocolView,
+            PermissionEnum::ProtocolCreate,
+            PermissionEnum::ProtocolEditDraft,
+            PermissionEnum::ProtocolRequestReview,
+            PermissionEnum::ProtocolSignInternal,
         ];
 
         $callcenter = [
