@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\Access\UserGroupController as AccessUserGroupCont
 use App\Http\Controllers\Admin\AutomationRuleController;
 use App\Http\Controllers\Admin\BranchProfileController;
 use App\Http\Controllers\Admin\ClassificationController;
+use App\Http\Controllers\Admin\ClassificationRequirementController;
 use App\Http\Controllers\Admin\EntryTypeController;
 use App\Http\Controllers\Admin\ExpenseCategoryController;
 use App\Http\Controllers\Admin\PerDiemRateController;
@@ -577,6 +578,10 @@ Route::middleware('auth')->group(function () {
         Route::resource('admin/classifications', ClassificationController::class)
             ->names('admin.classifications')
             ->parameters(['classifications' => 'classification'])
+            ->except('show');
+        Route::resource('admin/classification-requirements', ClassificationRequirementController::class)
+            ->names('admin.classification-requirements')
+            ->parameters(['classification-requirements' => 'classificationRequirement'])
             ->except('show');
         Route::get('admin/branch-profiles', [BranchProfileController::class, 'index'])
             ->name('admin.branch-profiles.index');
