@@ -204,6 +204,11 @@ enum Permission: string implements HasLabel {
     case ProcedureSecondPersonTake = 'procedure.secondPerson.take';
     case ProcedureSecondPersonSign = 'procedure.secondPerson.sign';
     case ProcedureSecondPersonRevoke = 'procedure.secondPerson.revoke';
+    // ── Abweichungen / Folgeaktion (MVP-029) ────────────────
+    case ProcedureDeviationRecord = 'procedure.deviation.record';
+    case ProcedureDeviationAcceptRisk = 'procedure.deviation.acceptRisk';
+    case ProcedureDeviationUpdate = 'procedure.deviation.update';
+    case ProcedureDeviationView = 'procedure.deviation.view';
     // ── Customer-Portal (Rolle `kunde`) ─────────────────────
     case CustomerPortalAccess = 'customerPortal.access';
     case CustomerPortalDiaryView = 'customerPortal.diary.view';

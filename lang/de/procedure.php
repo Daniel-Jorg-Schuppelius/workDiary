@@ -30,6 +30,10 @@ return [
         'secondPersonAssigned' => 'Zweite Person hat die Freigabe übernommen.',
         'secondPersonSigned' => 'Zweite Person hat die Freigabe gegengezeichnet.',
         'secondPersonRevoked' => 'Vier-Augen-Freigabe widerrufen.',
+        'deviationRecorded' => 'Abweichung dokumentiert.',
+        'deviationUpdated' => 'Abweichung aktualisiert.',
+        'deviationActionTriggered' => 'Folgeaktion zur Abweichung ausgelöst.',
+        'criticalRiskAccepted' => 'Kritische Abweichung wurde akzeptiert.',
     ],
     'validation' => [
         'versionLocked' => 'Veröffentlichte Vorlagenversionen sind unveränderlich. Bitte eine neue Version anlegen.',
@@ -38,6 +42,9 @@ return [
         'backupMissingOrExpired' => 'Es fehlt ein gültiger Backup-Nachweis (oder das letzte Backup ist zu alt).',
         'secondPersonMissing' => 'Vier-Augen-Freigabe fehlt oder ist unvollständig.',
         'secondPersonSelfNotAllowed' => 'Die ausführende Person darf die Freigabe nicht selbst übernehmen.',
+        'deviationReasonTooShort' => 'Die Begründung der Abweichung ist zu kurz (mindestens 20 Zeichen).',
+        'deviationInvalid' => 'Abweichung konnte nicht erfasst werden (Grund: :reason).',
+        'criticalDeviationOpen' => 'Lauf kann nicht abgeschlossen werden: Es liegt eine kritische Abweichung ohne Risikoakzeptanz vor.',
     ],
     'blocked' => [
         'previousStepIncomplete' => 'Vorheriger Pflichtschritt ist noch nicht abgeschlossen.',

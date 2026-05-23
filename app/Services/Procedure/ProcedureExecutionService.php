@@ -15,6 +15,7 @@ use App\Enums\Procedure\ProcedureRunEventType;
 use App\Enums\Procedure\ProcedureRunStatus;
 use App\Enums\Procedure\ProcedureStepRunStatus;
 use App\Enums\Procedure\ProcedureStepType;
+use App\Exceptions\ProcedureDeviationValidationException;
 use App\Exceptions\ProcedureRunIncompleteException;
 use App\Exceptions\ProcedureStepBlockedException;
 use App\Models\ProcedureBackupProof;
@@ -42,6 +43,7 @@ class ProcedureExecutionService {
         private readonly ProcedureTemplateService $templates,
         private readonly BackupProofService $backups,
         private readonly SecondPersonGate $secondPerson,
+        private readonly DeviationRecorder $deviations,
     ) {}
 
     /**
@@ -232,6 +234,15 @@ class ProcedureExecutionService {
                 'missing_step_run_ids' => $missing,
             ]);
             throw new ProcedureRunIncompleteException($run, $missing);
+        }
+
+        $blockingDeviations = $this->deviations->blockingDeviationIdsFor($run);
+        if ($blockingDeviations !== []) {
+            $this->recordEvent($run, ProcedureRunEventType::RunCompletionRejected, $actor, null, [
+                'reason' => 'criticalDeviationOpen',
+                'deviation_ids' => $blockingDeviations,
+            ]);
+            throw ProcedureDeviationValidationException::criticalOpen();
         }
 
         return DB::transaction(function () use ($run, $actor) {

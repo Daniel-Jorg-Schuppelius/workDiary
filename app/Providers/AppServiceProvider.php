@@ -38,6 +38,7 @@ use App\Models\Organization;
 use App\Models\PerDiemRate;
 use App\Models\PerDiemTrip;
 use App\Models\ProcedureBackupProof;
+use App\Models\ProcedureDeviation;
 use App\Models\ProcedureRun;
 use App\Models\ProcedureTemplate;
 use App\Models\Protocol;
@@ -80,6 +81,7 @@ use App\Policies\OrganizationPolicy;
 use App\Policies\PerDiemRatePolicy;
 use App\Policies\PerDiemTripPolicy;
 use App\Policies\ProcedureBackupProofPolicy;
+use App\Policies\ProcedureDeviationPolicy;
 use App\Policies\ProcedureRunPolicy;
 use App\Policies\ProcedureTemplatePolicy;
 use App\Policies\ProtocolPolicy;
@@ -193,6 +195,7 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(ProcedureTemplate::class, ProcedureTemplatePolicy::class);
         Gate::policy(ProcedureRun::class, ProcedureRunPolicy::class);
         Gate::policy(ProcedureBackupProof::class, ProcedureBackupProofPolicy::class);
+        Gate::policy(ProcedureDeviation::class, ProcedureDeviationPolicy::class);
 
         // manage-members: Org-Admin darf Mitglieder der eigenen Org verwalten
         Gate::define('manage-members', [OrganizationPolicy::class, 'manageMembers']);

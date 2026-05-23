@@ -322,5 +322,28 @@ return [
             'restoreCheck' => 'Restore-Test',
             'managerConfirmation' => 'Bestätigung Geschäftsleitung',
         ],
+        'deviation-type' => [
+            'not_applicable' => 'Nicht anwendbar',
+            'not_possible' => 'Nicht möglich',
+            'partial' => 'Teilweise erfüllt',
+            'alternative_method' => 'Alternative Methode',
+            'failed_check' => 'Prüfwert außerhalb Toleranz',
+            'material_substitute' => 'Materialersatz',
+            'safety_block' => 'Sicherheitsabbruch',
+            'customer_decline' => 'Kunde lehnt ab',
+        ],
+        'deviation-severity' => [
+            'low' => 'Gering',
+            'medium' => 'Mittel',
+            'high' => 'Hoch',
+            'critical' => 'Kritisch',
+        ],
+        'deviation-proposed-action' => [
+            'none' => 'Keine Folgeaktion',
+            'open_issue' => 'Offener Punkt',
+            'new_diary_entry' => 'Neuer Auftrag',
+            'requalify' => 'Erneut durchlaufen',
+            'escalate' => 'Eskalation',
+        ],
     ],
 ];

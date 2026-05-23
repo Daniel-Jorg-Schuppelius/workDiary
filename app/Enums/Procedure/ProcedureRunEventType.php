@@ -29,4 +29,8 @@ enum ProcedureRunEventType: string {
     case BackupRegistered = 'procedure.backupRegistered';
     case BackupVerified = 'procedure.backupVerified';
     case BackupRejected = 'procedure.backupRejected';
+    case DeviationRecorded = 'procedure.deviationRecorded';
+    case DeviationUpdated = 'procedure.deviationUpdated';
+    case DeviationActionTriggered = 'procedure.deviationActionTriggered';
+    case CriticalRiskAccepted = 'procedure.criticalRiskAccepted';
 }

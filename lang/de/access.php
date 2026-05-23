@@ -306,6 +306,10 @@ return [
         'procedure.secondPerson.take' => 'Vier-Augen-Freigabe übernehmen',
         'procedure.secondPerson.sign' => 'Vier-Augen-Freigabe gegenzeichnen',
         'procedure.secondPerson.revoke' => 'Vier-Augen-Freigabe widerrufen',
+        'procedure.deviation.record' => 'Prozedur-Abweichung erfassen',
+        'procedure.deviation.acceptRisk' => 'Kritische Abweichung akzeptieren',
+        'procedure.deviation.update' => 'Prozedur-Abweichung aktualisieren',
+        'procedure.deviation.view' => 'Prozedur-Abweichungen einsehen',
         'customerPortal.openIssue.view' => 'Offene Punkte im Kundenportal einsehen',
     ],
 ];
