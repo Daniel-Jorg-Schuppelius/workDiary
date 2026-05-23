@@ -26,12 +26,18 @@ return [
         'backupRegistered' => 'Backup-Nachweis erfasst.',
         'backupVerified' => 'Backup-Nachweis verifiziert.',
         'backupRejected' => 'Backup-Nachweis abgelehnt.',
+        'secondPersonRequested' => 'Zweite Person wurde angefordert.',
+        'secondPersonAssigned' => 'Zweite Person hat die Freigabe übernommen.',
+        'secondPersonSigned' => 'Zweite Person hat die Freigabe gegengezeichnet.',
+        'secondPersonRevoked' => 'Vier-Augen-Freigabe widerrufen.',
     ],
     'validation' => [
         'versionLocked' => 'Veröffentlichte Vorlagenversionen sind unveränderlich. Bitte eine neue Version anlegen.',
         'runIncomplete' => 'Lauf kann nicht abgeschlossen werden: Es sind noch Pflichtschritte offen.',
         'backupInvalid' => 'Backup-Nachweis ist ungültig (Grund: :reason).',
         'backupMissingOrExpired' => 'Es fehlt ein gültiger Backup-Nachweis (oder das letzte Backup ist zu alt).',
+        'secondPersonMissing' => 'Vier-Augen-Freigabe fehlt oder ist unvollständig.',
+        'secondPersonSelfNotAllowed' => 'Die ausführende Person darf die Freigabe nicht selbst übernehmen.',
     ],
     'blocked' => [
         'previousStepIncomplete' => 'Vorheriger Pflichtschritt ist noch nicht abgeschlossen.',

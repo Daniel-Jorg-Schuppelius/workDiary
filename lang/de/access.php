@@ -302,6 +302,10 @@ return [
         'procedure.backup.register' => 'Backup-Nachweis erfassen',
         'procedure.backup.verify' => 'Backup-Nachweis verifizieren',
         'procedure.backup.viewExternal' => 'Externe Backup-Ablagen einsehen',
+        'procedure.secondPerson.request' => 'Zweite Person anfordern',
+        'procedure.secondPerson.take' => 'Vier-Augen-Freigabe übernehmen',
+        'procedure.secondPerson.sign' => 'Vier-Augen-Freigabe gegenzeichnen',
+        'procedure.secondPerson.revoke' => 'Vier-Augen-Freigabe widerrufen',
         'customerPortal.openIssue.view' => 'Offene Punkte im Kundenportal einsehen',
     ],
 ];

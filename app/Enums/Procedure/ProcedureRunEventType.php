@@ -24,6 +24,8 @@ enum ProcedureRunEventType: string {
     case RunAborted = 'procedure.runAborted';
     case SecondPersonAssigned = 'procedure.secondPersonAssigned';
     case SecondPersonSigned = 'procedure.secondPersonSigned';
+    case SecondPersonRequested = 'procedure.secondPersonRequested';
+    case SecondPersonRevoked = 'procedure.secondPersonRevoked';
     case BackupRegistered = 'procedure.backupRegistered';
     case BackupVerified = 'procedure.backupVerified';
     case BackupRejected = 'procedure.backupRejected';

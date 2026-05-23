@@ -247,6 +247,10 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ProcedureBackupRegister,
             PermissionEnum::ProcedureBackupVerify,
             PermissionEnum::ProcedureBackupViewExternal,
+            PermissionEnum::ProcedureSecondPersonRequest,
+            PermissionEnum::ProcedureSecondPersonTake,
+            PermissionEnum::ProcedureSecondPersonSign,
+            PermissionEnum::ProcedureSecondPersonRevoke,
             PermissionEnum::ReportView,
             PermissionEnum::AccessAuditView,
         ];
@@ -325,6 +329,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ProcedureRunStart,
             PermissionEnum::ProcedureRunExecute,
             PermissionEnum::ProcedureBackupRegister,
+            PermissionEnum::ProcedureSecondPersonRequest,
+            PermissionEnum::ProcedureSecondPersonSign,
         ];
 
         // Außendienst: schlanker als user, dafür mit vollem Touren-/Spesen-

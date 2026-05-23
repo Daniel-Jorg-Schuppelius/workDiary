@@ -41,6 +41,7 @@ class ProcedureExecutionService {
     public function __construct(
         private readonly ProcedureTemplateService $templates,
         private readonly BackupProofService $backups,
+        private readonly SecondPersonGate $secondPerson,
     ) {}
 
     /**
@@ -128,8 +129,10 @@ class ProcedureExecutionService {
             return ProcedureStepBlockedException::REASON_MISSING_QUALIFICATION;
         }
 
-        if ($def->requires_second_person && $stepRun->second_person_user_id === null) {
-            return ProcedureStepBlockedException::REASON_SECOND_PERSON_REQUIRED;
+        if ($this->secondPerson->requiresSecondPerson($stepRun)) {
+            if ($stepRun->second_person_user_id === null || $stepRun->second_person_signed_at === null) {
+                return ProcedureStepBlockedException::REASON_SECOND_PERSON_REQUIRED;
+            }
         }
 
         $config = is_array($def->config) ? $def->config : [];
@@ -165,6 +168,10 @@ class ProcedureExecutionService {
     public function execute(ProcedureStepRun $stepRun, User $actor, ProcedureStepRunStatus $target, array $payload = []): ProcedureStepRun {
         if (! $target->isFinal()) {
             throw new \InvalidArgumentException('Target status must be a final step-run status.');
+        }
+
+        if ($target === ProcedureStepRunStatus::Done) {
+            $this->secondPerson->ensure($stepRun, $actor);
         }
 
         $this->canExecute($stepRun, $actor);

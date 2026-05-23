@@ -199,7 +199,11 @@ enum Permission: string implements HasLabel {
     case ProcedureBackupRegister = 'procedure.backup.register';
     case ProcedureBackupVerify = 'procedure.backup.verify';
     case ProcedureBackupViewExternal = 'procedure.backup.viewExternal';
-
+    // ── Vier-Augen / Zweite Person (MVP-028) ────────────────
+    case ProcedureSecondPersonRequest = 'procedure.secondPerson.request';
+    case ProcedureSecondPersonTake = 'procedure.secondPerson.take';
+    case ProcedureSecondPersonSign = 'procedure.secondPerson.sign';
+    case ProcedureSecondPersonRevoke = 'procedure.secondPerson.revoke';
     // ── Customer-Portal (Rolle `kunde`) ─────────────────────
     case CustomerPortalAccess = 'customerPortal.access';
     case CustomerPortalDiaryView = 'customerPortal.diary.view';
