@@ -9,6 +9,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
+use App\Http\Controllers\Api\AssetTimelineController;
 use App\Http\Controllers\Api\AttachmentController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\CommentController;
@@ -65,6 +66,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('assignments/{assignment}', [EmergencyAssignmentController::class, 'show'])->name('api.assignments.show');
 
     Route::get('dashboard', DashboardController::class)->name('api.dashboard');
+
+    Route::get('assets/{asset}/timeline', AssetTimelineController::class)
+        ->whereNumber('asset')
+        ->name('api.assets.timeline');
 
     Route::get('push/vapid', [PushSubscriptionController::class, 'vapid'])->name('api.push.vapid');
     Route::post('push/subscribe', [PushSubscriptionController::class, 'store'])->name('api.push.subscribe');
