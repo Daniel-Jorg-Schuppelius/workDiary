@@ -182,6 +182,12 @@ enum Permission: string implements HasLabel {
     case ProtocolItemPhotoRemove = 'protocol.item.photo.remove';
     case ProtocolItemPhotoViewGeo = 'protocol.item.photo.viewGeo';
 
+        // ── Prozedurvorlagen (MVP-025) ──────────────────────────
+    case ProcedureTemplateView = 'procedure.template.view';
+    case ProcedureTemplateCreate = 'procedure.template.create';
+    case ProcedureTemplateUpdate = 'procedure.template.update';
+    case ProcedureTemplatePublish = 'procedure.template.publish';
+
         // ── Customer-Portal (Rolle `kunde`) ─────────────────────
     case CustomerPortalAccess = 'customerPortal.access';
     case CustomerPortalDiaryView = 'customerPortal.diary.view';
@@ -228,6 +234,7 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'flex.') => PermissionGroup::WorkingTime,
             str_starts_with($this->value, 'openIssue.') => PermissionGroup::OpenIssues,
             str_starts_with($this->value, 'protocol.') => PermissionGroup::Protocols,
+            str_starts_with($this->value, 'procedure.') => PermissionGroup::Procedures,
             str_starts_with($this->value, 'customerPortal.') => PermissionGroup::CustomerPortal,
             default => PermissionGroup::MasterData,
         };

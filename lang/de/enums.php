@@ -269,4 +269,28 @@ return [
             'reference' => 'Referenz',
         ],
     ],
+    'procedure' => [
+        'risk-level' => [
+            'low' => 'Niedrig',
+            'normal' => 'Normal',
+            'high' => 'Hoch',
+            'critical' => 'Kritisch',
+        ],
+        'step-type' => [
+            'confirm' => 'Bestätigung',
+            'text' => 'Text',
+            'number' => 'Zahl/Messwert',
+            'choice' => 'Auswahl',
+            'photo' => 'Foto',
+            'file' => 'Datei',
+            'backup' => 'Backup-Nachweis',
+            'signature' => 'Unterschrift',
+            'material' => 'Materialerfassung',
+            'dienstmittel' => 'Dienstmittel',
+            'freigabe' => 'Freigabe (Vier-Augen)',
+            'messreihe' => 'Messreihe',
+            'link_protocol' => 'Protokoll verlinken',
+            'link_test' => 'Test verlinken',
+        ],
+    ],
 ];

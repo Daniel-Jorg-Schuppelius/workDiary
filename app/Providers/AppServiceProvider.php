@@ -178,6 +178,7 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(Room::class, RoomPolicy::class);
         Gate::policy(\App\Models\OpenIssue::class, OpenIssuePolicy::class);
         Gate::policy(\App\Models\Protocol::class, ProtocolPolicy::class);
+        Gate::policy(\App\Models\ProcedureTemplate::class, \App\Policies\ProcedureTemplatePolicy::class);
 
         // manage-members: Org-Admin darf Mitglieder der eigenen Org verwalten
         Gate::define('manage-members', [OrganizationPolicy::class, 'manageMembers']);

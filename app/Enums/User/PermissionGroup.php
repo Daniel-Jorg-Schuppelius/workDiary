@@ -37,6 +37,7 @@ enum PermissionGroup: string implements HasLabel {
     case MasterData = 'master-data';
     case OpenIssues = 'open-issues';
     case Protocols = 'protocols';
+    case Procedures = 'procedures';
     case CustomerPortal = 'customer-portal';
 
     public function label(): string {
@@ -62,6 +63,7 @@ enum PermissionGroup: string implements HasLabel {
             self::MasterData => 'category',
             self::OpenIssues => 'task_alt',
             self::Protocols => 'description',
+            self::Procedures => 'rule',
             self::CustomerPortal => 'support_agent',
         };
     }

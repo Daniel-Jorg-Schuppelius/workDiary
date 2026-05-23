@@ -148,6 +148,7 @@ return [
         'master-data' => 'Stammdaten',
         'open-issues' => 'Offene Punkte',
         'protocols' => 'Protokolle',
+        'procedures' => 'Prozeduren',
     ],
 
     'permission' => [
@@ -289,6 +290,10 @@ return [
         'protocol.item.photo.add' => 'Protokoll-Foto hinzufügen',
         'protocol.item.photo.remove' => 'Protokoll-Foto entfernen',
         'protocol.item.photo.viewGeo' => 'Protokoll-Foto Geodaten sehen',
+        'procedure.template.view' => 'Prozedurvorlagen einsehen',
+        'procedure.template.create' => 'Prozedurvorlagen erstellen',
+        'procedure.template.update' => 'Prozedurvorlagen bearbeiten',
+        'procedure.template.publish' => 'Prozedurvorlagen veröffentlichen',
         'customerPortal.openIssue.view' => 'Offene Punkte im Kundenportal einsehen',
     ],
 ];
