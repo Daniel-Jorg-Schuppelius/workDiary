@@ -130,6 +130,7 @@ class ProtocolControllerTest extends TestCase {
             ->from(route('diary.show', $entry))
             ->post(route('protocols.items.store', $protocol), [
                 'label' => 'Sichtprüfung',
+                'item_type' => \App\Enums\Protocol\ProtocolItemType::Boolean->value,
                 'required' => true,
             ])
             ->assertRedirect();
@@ -139,7 +140,7 @@ class ProtocolControllerTest extends TestCase {
         $this->actingAs($user)
             ->from(route('diary.show', $entry))
             ->put(route('protocols.items.fill', $item), [
-                'result' => 'ok',
+                'value_json' => ['value' => true],
                 'note' => 'i. O.',
             ])
             ->assertRedirect();

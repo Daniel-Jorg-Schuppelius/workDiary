@@ -11,6 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Protocol\ProtocolItemResult;
+use App\Enums\Protocol\ProtocolItemType;
 use App\Models\Concerns\HasAttachments;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,11 +22,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $protocol_id
  * @property int|null $parent_item_id
  * @property int $sort_order
- * @property string $item_type
  * @property string $label
  * @property string|null $description
  * @property bool $required
  * @property array<string, mixed>|null $value_json
+ * @property ProtocolItemType $item_type
  * @property ProtocolItemResult|null $result
  * @property string|null $note
  * @property \Illuminate\Support\Carbon|null $measured_at
@@ -52,6 +53,7 @@ class ProtocolItem extends Model {
     protected $casts = [
         'required' => 'bool',
         'value_json' => 'array',
+        'item_type' => ProtocolItemType::class,
         'result' => ProtocolItemResult::class,
         'measured_at' => 'datetime',
     ];

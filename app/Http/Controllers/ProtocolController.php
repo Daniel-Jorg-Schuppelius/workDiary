@@ -140,6 +140,8 @@ class ProtocolController extends Controller {
             return redirect()->back()->withErrors(['status' => $e->getMessage()]);
         } catch (InvalidArgumentException $e) {
             return redirect()->back()->withErrors(['reason' => $e->getMessage()]);
+        } catch (\App\Exceptions\ProtocolValidationException $e) {
+            return redirect()->back()->withErrors(['validation' => implode(' • ', $e->errors())]);
         }
 
         return redirect()
@@ -155,7 +157,7 @@ class ProtocolController extends Controller {
             'label' => ['required', 'string', 'max:180'],
             'description' => ['nullable', 'string', 'max:5000'],
             'required' => ['nullable', 'boolean'],
-            'item_type' => ['nullable', 'string', 'max:40'],
+            'item_type' => ['nullable', 'string', 'max:40', \Illuminate\Validation\Rule::in(array_map(static fn ($c) => $c->value, \App\Enums\Protocol\ProtocolItemType::cases()))],
             'parent_item_id' => ['nullable', 'integer', 'exists:protocol_items,id'],
         ]);
 
@@ -187,6 +189,8 @@ class ProtocolController extends Controller {
             $this->service->fillItem($item, $actor, $data);
         } catch (InvalidProtocolTransitionException $e) {
             return redirect()->back()->withErrors(['status' => $e->getMessage()]);
+        } catch (\App\Exceptions\ProtocolValidationException $e) {
+            return redirect()->back()->withErrors(['value_json' => implode(' • ', $e->errors())]);
         }
 
         return redirect()->back()->with('success', __('protocol.flash.item.filled'));

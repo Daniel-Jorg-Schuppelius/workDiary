@@ -168,13 +168,14 @@ class ProtocolServiceTest extends TestCase {
 
         $item = $this->service->addItem($protocol, $creator, [
             'label' => 'Sichtprüfung',
+            'item_type' => \App\Enums\Protocol\ProtocolItemType::Boolean->value,
             'required' => true,
         ]);
         $this->assertSame('Sichtprüfung', $item->label);
         $this->assertTrue($item->required);
 
         $filled = $this->service->fillItem($item, $creator, [
-            'result' => ProtocolItemResult::Ok->value,
+            'value_json' => ['value' => true],
             'note' => 'Alles in Ordnung',
         ]);
 

@@ -12,17 +12,20 @@ namespace App\Services\Protocol;
 
 use App\Enums\Protocol\ProtocolEventType;
 use App\Enums\Protocol\ProtocolItemResult;
+use App\Enums\Protocol\ProtocolItemType;
 use App\Enums\Protocol\ProtocolSignatureMethod;
 use App\Enums\Protocol\ProtocolSignatureRole;
 use App\Enums\Protocol\ProtocolStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Enums\Protocol\ProtocolVisibility;
 use App\Exceptions\InvalidProtocolTransitionException;
+use App\Exceptions\ProtocolValidationException;
 use App\Models\Protocol;
 use App\Models\ProtocolEvent;
 use App\Models\ProtocolItem;
 use App\Models\ProtocolSignature;
 use App\Models\User;
+use App\Services\OpenIssue\OpenIssueService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -37,6 +40,11 @@ use InvalidArgumentException;
  * bleiben.
  */
 class ProtocolService {
+    public function __construct(
+        private readonly ProtocolItemValidator $itemValidator,
+        private readonly OpenIssueService $openIssues,
+    ) {}
+
     /**
      * Legt ein neues Protokoll im Status `draft` an.
      *
@@ -103,6 +111,7 @@ class ProtocolService {
 
     public function requestReview(Protocol $protocol, User $actor): Protocol {
         $this->assertTransition($protocol, 'requestReview');
+        $this->assertProtocolValid($protocol);
         $protocol->update(['status' => ProtocolStatus::InReview->value]);
         $this->record($protocol, ProtocolEventType::RequestedReview, $actor);
 
@@ -127,6 +136,7 @@ class ProtocolService {
      */
     public function sign(Protocol $protocol, User $actor, ?array $signatureData = null): Protocol {
         $this->assertTransition($protocol, $protocol->status === ProtocolStatus::Draft ? 'signDirect' : 'sign');
+        $this->assertProtocolValid($protocol);
 
         return DB::transaction(function () use ($protocol, $actor, $signatureData): Protocol {
             $protocol->update([
@@ -211,13 +221,16 @@ class ProtocolService {
     public function addItem(Protocol $protocol, User $actor, array $attributes): ProtocolItem {
         $this->assertEditable($protocol);
 
+        $type = $this->parseItemType($attributes['item_type'] ?? ProtocolItemType::Text->value);
+
         $item = $protocol->items()->create([
             'parent_item_id' => $attributes['parent_item_id'] ?? null,
             'sort_order' => $attributes['sort_order'] ?? ($protocol->items()->max('sort_order') + 1),
-            'item_type' => $attributes['item_type'] ?? 'checklist',
+            'item_type' => $type->value,
             'label' => $attributes['label'],
             'description' => $attributes['description'] ?? null,
             'required' => (bool) ($attributes['required'] ?? false),
+            'value_json' => $attributes['value_json'] ?? null,
         ]);
 
         $this->record($protocol, ProtocolEventType::ItemAdded, $actor, [
@@ -229,7 +242,7 @@ class ProtocolService {
     }
 
     public function removeItem(ProtocolItem $item, User $actor): void {
-        $protocol = $item->protocol;
+        $protocol = $this->protocolOf($item);
         $this->assertEditable($protocol);
 
         $id = $item->id;
@@ -244,21 +257,54 @@ class ProtocolService {
      * @param  array<string, mixed>  $values
      */
     public function fillItem(ProtocolItem $item, User $actor, array $values): ProtocolItem {
-        $this->assertEditable($item->protocol);
+        $protocol = $this->protocolOf($item);
+        $this->assertEditable($protocol);
 
-        $result = isset($values['result'])
+        $newValue = $values['value_json'] ?? $item->value_json;
+
+        // Defect-Punkt: bei erster Befuellung automatisch Open-Issue anlegen
+        // (MVP-021 §3.12, Integration mit MVP-024).
+        if (
+            $item->item_type === ProtocolItemType::Defect
+            && is_array($newValue)
+            && empty($newValue['open_issue_id'])
+            && $protocol->subject !== null
+            && trim((string) ($newValue['description'] ?? '')) !== ''
+        ) {
+            $issue = $this->openIssues->create($protocol->subject, $actor, [
+                'title' => sprintf('%s: %s', $item->label, mb_substr((string) $newValue['description'], 0, 80)),
+                'description' => (string) $newValue['description'],
+                'severity' => $this->mapDefectSeverity((string) ($newValue['severity'] ?? 'low')),
+                'category' => $newValue['category'] ?? null,
+                'source_type' => 'protocolDefect',
+                'source_ref_id' => (string) $item->id,
+            ]);
+            $newValue['open_issue_id'] = $issue->id;
+        }
+
+        $explicitResult = isset($values['result'])
             ? ProtocolItemResult::tryFrom((string) $values['result'])
-            : $item->result;
+            : null;
+
+        $tempItem = (clone $item);
+        $tempItem->value_json = $newValue;
+        $derived = $this->itemValidator->deriveResult($tempItem);
+        $result = $explicitResult ?? $derived ?? $item->result;
 
         $item->update([
-            'value_json' => $values['value_json'] ?? $item->value_json,
+            'value_json' => $newValue,
             'result' => $result?->value,
             'note' => $values['note'] ?? $item->note,
             'measured_at' => Carbon::now(),
             'measured_by_user_id' => $actor->id,
         ]);
 
-        $this->record($item->protocol, ProtocolEventType::ItemFilled, $actor, [
+        $errors = $this->itemValidator->validate($item->refresh());
+        if ($errors !== []) {
+            throw new ProtocolValidationException($errors);
+        }
+
+        $this->record($protocol, ProtocolEventType::ItemFilled, $actor, [
             'item_id' => $item->id,
             'result' => $result?->value,
         ]);
@@ -327,6 +373,36 @@ class ProtocolService {
         if (! $protocol->status->isEditable()) {
             throw InvalidProtocolTransitionException::immutable($protocol->status);
         }
+    }
+
+    private function assertProtocolValid(Protocol $protocol): void {
+        $errors = $this->itemValidator->validateProtocol($protocol->load('items'));
+        if ($errors !== []) {
+            throw new ProtocolValidationException($errors);
+        }
+    }
+
+    private function parseItemType(string $value): ProtocolItemType {
+        $type = ProtocolItemType::tryFrom($value);
+        if (! $type instanceof ProtocolItemType) {
+            throw new InvalidArgumentException(sprintf('Unbekannter Item-Typ „%s".', $value));
+        }
+        return $type;
+    }
+
+    private function mapDefectSeverity(string $severity): string {
+        return match ($severity) {
+            'low' => 'low',
+            'medium' => 'medium',
+            'high' => 'high',
+            'critical' => 'critical',
+            default => 'low',
+        };
+    }
+
+    private function protocolOf(ProtocolItem $item): Protocol {
+        $protocol = $item->protocol ?? Protocol::query()->findOrFail($item->protocol_id);
+        return $protocol;
     }
 
     private function assertTransition(Protocol $protocol, string $action): void {

@@ -57,4 +57,47 @@ return [
             'removed' => 'Punkt entfernt.',
         ],
     ],
+    'validation' => [
+        'required' => 'Punkt „:label" ist Pflicht.',
+        'criticalDefectMissingOpenIssue' => 'Kritischer Mangel „:label" benötigt einen offenen Punkt.',
+        'text' => [
+            'minLength' => 'Text zu kurz (min. :min Zeichen).',
+            'maxLength' => 'Text zu lang (max. :max Zeichen).',
+        ],
+        'boolean' => [
+            'invalid' => 'Es ist ein boolescher Wert erforderlich.',
+        ],
+        'choice' => [
+            'invalid' => 'Es ist eine Auswahl erforderlich.',
+            'notInOptions' => 'Auswahl nicht in der Optionsliste enthalten.',
+        ],
+        'multichoice' => [
+            'invalid' => 'Mindestens eine Auswahl erforderlich.',
+            'notInOptions' => 'Auswahl nicht in der Optionsliste enthalten.',
+        ],
+        'number' => [
+            'invalid' => 'Numerischer Wert erforderlich.',
+            'min' => 'Wert unterschreitet Mindestwert (:bound).',
+            'max' => 'Wert überschreitet Höchstwert (:bound).',
+        ],
+        'date' => [
+            'invalid' => 'Ungültiges Datum.',
+        ],
+        'attachments' => [
+            'required' => 'Mindestens ein Anhang erforderlich.',
+            'min' => 'Mindestens :min Anhänge erforderlich.',
+            'max' => 'Maximal :max Anhänge erlaubt.',
+        ],
+        'defect' => [
+            'severity' => 'Schweregrad muss low/medium/high/critical sein.',
+            'description' => 'Beschreibung des Mangels ist Pflicht.',
+        ],
+        'measurement' => [
+            'empty' => 'Mindestens eine Messung erforderlich.',
+            'invalidSample' => 'Jede Messung benötigt „at" und „value".',
+        ],
+        'signature' => [
+            'missing' => 'Signatur ist noch nicht verknüpft.',
+        ],
+    ],
 ];
