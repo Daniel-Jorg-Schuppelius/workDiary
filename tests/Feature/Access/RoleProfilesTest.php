@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Sat Jun 14 2026
  * Author       : Daniel Jörg Schuppelius
@@ -184,5 +185,103 @@ class RoleProfilesTest extends TestCase {
                 "Rolle '{$roleName}' muss vom Seeder global angelegt werden.",
             );
         }
+    }
+
+    public function test_classification_permissions_are_wired_into_role_profiles(): void {
+        $expectations = [
+            UserRole::Geschaeftsfuehrung->value => [
+                'allowed' => [
+                    PermissionEnum::ClassificationList,
+                    PermissionEnum::ClassificationOrgView,
+                    PermissionEnum::ClassificationRequirementView,
+                ],
+                'denied' => [
+                    PermissionEnum::ClassificationOrgManage,
+                    PermissionEnum::ClassificationOrgDeactivateDefault,
+                    PermissionEnum::ClassificationOrgImport,
+                    PermissionEnum::ClassificationPlatformManage,
+                    PermissionEnum::ClassificationRequirementManage,
+                ],
+            ],
+            UserRole::Teamleitung->value => [
+                'allowed' => [
+                    PermissionEnum::ClassificationList,
+                    PermissionEnum::ClassificationOrgView,
+                    PermissionEnum::ClassificationOrgManage,
+                    PermissionEnum::ClassificationOrgDeactivateDefault,
+                    PermissionEnum::ClassificationOrgImport,
+                    PermissionEnum::ClassificationRequirementView,
+                    PermissionEnum::ClassificationRequirementManage,
+                ],
+                'denied' => [
+                    PermissionEnum::ClassificationPlatformManage,
+                ],
+            ],
+            UserRole::User->value => [
+                'allowed' => [
+                    PermissionEnum::ClassificationList,
+                    PermissionEnum::ClassificationOrgView,
+                    PermissionEnum::ClassificationRequirementView,
+                ],
+                'denied' => [
+                    PermissionEnum::ClassificationOrgManage,
+                    PermissionEnum::ClassificationOrgDeactivateDefault,
+                    PermissionEnum::ClassificationOrgImport,
+                    PermissionEnum::ClassificationPlatformManage,
+                    PermissionEnum::ClassificationRequirementManage,
+                ],
+            ],
+            UserRole::Support->value => [
+                'allowed' => [
+                    PermissionEnum::ClassificationList,
+                    PermissionEnum::ClassificationOrgView,
+                    PermissionEnum::ClassificationRequirementView,
+                ],
+                'denied' => [
+                    PermissionEnum::ClassificationOrgManage,
+                    PermissionEnum::ClassificationOrgDeactivateDefault,
+                    PermissionEnum::ClassificationOrgImport,
+                    PermissionEnum::ClassificationPlatformManage,
+                    PermissionEnum::ClassificationRequirementManage,
+                ],
+            ],
+        ];
+
+        foreach ($expectations as $role => $permissions) {
+            $user = User::factory()
+                ->state(['organization_id' => $this->organization->id])
+                ->create();
+
+            $this->assignRoleWithinOrganization($user, $role);
+
+            foreach ($permissions['allowed'] as $permission) {
+                $this->assertTrue(
+                    $user->hasPermissionTo($permission->value),
+                    "Rolle '{$role}' muss '{$permission->value}' besitzen.",
+                );
+            }
+
+            foreach ($permissions['denied'] as $permission) {
+                $this->assertFalse(
+                    $user->hasPermissionTo($permission->value),
+                    "Rolle '{$role}' darf '{$permission->value}' NICHT besitzen.",
+                );
+            }
+        }
+    }
+
+    private function assignRoleWithinOrganization(User $user, string $role): void {
+        $registrar = app(PermissionRegistrar::class);
+        $registrar->setPermissionsTeamId($this->organization->id);
+
+        $orgRole = Role::query()
+            ->where('name', $role)
+            ->where('team_id', $this->organization->id)
+            ->firstOrFail();
+
+        $user->syncRoles([$orgRole]);
+        $registrar->forgetCachedPermissions();
+        $user->unsetRelation('roles');
+        $user->unsetRelation('permissions');
     }
 }

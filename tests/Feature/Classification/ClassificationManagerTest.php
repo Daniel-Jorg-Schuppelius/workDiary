@@ -99,8 +99,13 @@ class ClassificationManagerTest extends TestCase {
 
         $this->manager->reorder($this->org->id, ClassificationDomain::Activity, [$second->id, $first->id]);
 
-        $this->assertSame(10, $second->fresh()->sort_order);
-        $this->assertSame(20, $first->fresh()->sort_order);
+        $refreshedSecond = $second->fresh();
+        $refreshedFirst = $first->fresh();
+
+        $this->assertInstanceOf(Classification::class, $refreshedSecond);
+        $this->assertInstanceOf(Classification::class, $refreshedFirst);
+        $this->assertSame(10, $refreshedSecond->sort_order);
+        $this->assertSame(20, $refreshedFirst->sort_order);
 
         $sortChanged = AuditLog::query()->where('event', 'classification.sortChanged')->count();
         $this->assertSame(2, $sortChanged);
@@ -163,6 +168,47 @@ class ClassificationManagerTest extends TestCase {
             $this->assertSame(ClassificationValidationException::CODE_REFERENCED, $e->errorCode);
         } finally {
             Schema::dropIfExists('classification_refs');
+        }
+    }
+
+    public function test_delete_removes_org_local_classification_when_unreferenced(): void {
+        $classification = Classification::factory()
+            ->forOrganization($this->org->id)
+            ->domain(ClassificationDomain::Activity)
+            ->create(['code' => 'unreferenced_code']);
+
+        $this->manager->delete($classification);
+
+        $this->assertDatabaseMissing('classifications', [
+            'id' => $classification->id,
+        ]);
+    }
+
+    public function test_delete_rejects_platform_default(): void {
+        $classification = Classification::factory()
+            ->platformDefault()
+            ->domain(ClassificationDomain::Activity)
+            ->create(['code' => 'platform_code']);
+
+        try {
+            $this->manager->delete($classification);
+            $this->fail('Expected ClassificationValidationException was not thrown.');
+        } catch (ClassificationValidationException $e) {
+            $this->assertSame(ClassificationValidationException::CODE_PLATFORM_PROTECTED, $e->errorCode);
+        }
+    }
+
+    public function test_update_rejects_platform_default(): void {
+        $classification = Classification::factory()
+            ->platformDefault()
+            ->domain(ClassificationDomain::Result)
+            ->create(['code' => 'platform_update']);
+
+        try {
+            $this->manager->update($classification, ['label' => 'Neu']);
+            $this->fail('Expected ClassificationValidationException was not thrown.');
+        } catch (ClassificationValidationException $e) {
+            $this->assertSame(ClassificationValidationException::CODE_PLATFORM_PROTECTED, $e->errorCode);
         }
     }
 }
