@@ -113,4 +113,44 @@ class BranchProfileInstallerTest extends TestCase {
         $this->assertSame(0, $second['created']['classifications']);
         $this->assertGreaterThan(0, $second['skipped']['classifications']);
     }
+
+    public function test_install_elektro_profile_creates_expected_entries(): void {
+        $result = $this->installer->install($this->org, 'elektro', $this->actor);
+
+        $this->assertSame('elektro', $result['profile_code']);
+        $this->assertGreaterThan(0, $result['created']['classifications']);
+
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->org->id,
+            'domain' => 'entry_type',
+            'code' => 'eCheck',
+        ]);
+
+        $this->assertDatabaseHas('classification_requirements', [
+            'organization_id' => $this->org->id,
+            'entry_type_code' => 'stoerung',
+            'required_domain' => 'defect_type',
+            'enforce_phase' => 'onCreate',
+        ]);
+    }
+
+    public function test_install_shk_profile_creates_expected_entries(): void {
+        $result = $this->installer->install($this->org, 'shk', $this->actor);
+
+        $this->assertSame('shk', $result['profile_code']);
+        $this->assertGreaterThan(0, $result['created']['classifications']);
+
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->org->id,
+            'domain' => 'entry_type',
+            'code' => 'druckpruefung',
+        ]);
+
+        $this->assertDatabaseHas('classification_requirements', [
+            'organization_id' => $this->org->id,
+            'entry_type_code' => 'wartung',
+            'required_domain' => 'product_group',
+            'enforce_phase' => 'onCreate',
+        ]);
+    }
 }

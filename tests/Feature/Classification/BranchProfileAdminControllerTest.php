@@ -52,7 +52,9 @@ class BranchProfileAdminControllerTest extends TestCase {
             ->assertOk()
             ->assertSee('Branchenprofile')
             ->assertSee('IT-Service / Managed Services')
-            ->assertSee('Handwerk / Service allgemein');
+            ->assertSee('Handwerk / Service allgemein')
+            ->assertSee('Elektro')
+            ->assertSee('SHK');
     }
 
     public function test_admin_can_install_branch_profile(): void {
