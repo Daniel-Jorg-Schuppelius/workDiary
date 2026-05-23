@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Tue Jun 02 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,11 +22,20 @@ class ProcedureStepBlockedException extends RuntimeException {
     public const CODE = 'procedure.stepBlocked';
 
     public const REASON_PREVIOUS_STEP_INCOMPLETE = 'previousStepIncomplete';
+
     public const REASON_RUN_NOT_ACTIVE = 'runNotActive';
+
     public const REASON_STEP_ALREADY_FINAL = 'stepAlreadyFinal';
+
     public const REASON_MISSING_QUALIFICATION = 'missingQualification';
+
     public const REASON_MISSING_ROLE = 'missingRole';
+
     public const REASON_SECOND_PERSON_REQUIRED = 'secondPersonRequired';
+
+    public const REASON_BACKUP_NOT_VERIFIED = 'backupNotVerified';
+
+    public const REASON_PRIOR_BACKUP_MISSING = 'backupMissingOrExpired';
 
     public function __construct(
         public readonly string $reason,

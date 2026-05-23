@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Wed Apr 29 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +12,9 @@
 namespace App\Providers;
 
 use App\Auth\CustomerUserProvider;
+use App\Automation\Actions\ApproveExpenseAction;
+use App\Automation\ConditionEvaluator;
+use App\Automation\RuleEngine;
 use App\Legacy\Auth\LegacyUserProvider;
 use App\Listeners\AuthEventSubscriber;
 use App\Models\ActivityCategory;
@@ -25,15 +29,20 @@ use App\Models\Event;
 use App\Models\EventCategory;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
-use App\Models\PerDiemTrip;
-use App\Models\PerDiemRate;
 use App\Models\FlexEligibility;
-use App\Models\Room;
 use App\Models\Material;
 use App\Models\MaterialUsage;
 use App\Models\Milestone;
+use App\Models\OpenIssue;
 use App\Models\Organization;
+use App\Models\PerDiemRate;
+use App\Models\PerDiemTrip;
+use App\Models\ProcedureBackupProof;
+use App\Models\ProcedureRun;
+use App\Models\ProcedureTemplate;
+use App\Models\Protocol;
 use App\Models\Qualification;
+use App\Models\Room;
 use App\Models\ScheduledShift;
 use App\Models\ShiftType;
 use App\Models\Tag;
@@ -62,31 +71,34 @@ use App\Policies\EventCategoryPolicy;
 use App\Policies\EventPolicy;
 use App\Policies\ExpenseCategoryPolicy;
 use App\Policies\ExpensePolicy;
-use App\Policies\OpenIssuePolicy;
-use App\Policies\ProtocolPolicy;
-use App\Policies\PerDiemTripPolicy;
-use App\Policies\PerDiemRatePolicy;
+use App\Policies\FlexEligibilityPolicy;
 use App\Policies\MaterialPolicy;
-use App\Policies\RoomPolicy;
 use App\Policies\MaterialUsagePolicy;
 use App\Policies\MilestonePolicy;
+use App\Policies\OpenIssuePolicy;
 use App\Policies\OrganizationPolicy;
+use App\Policies\PerDiemRatePolicy;
+use App\Policies\PerDiemTripPolicy;
+use App\Policies\ProcedureBackupProofPolicy;
+use App\Policies\ProcedureRunPolicy;
+use App\Policies\ProcedureTemplatePolicy;
+use App\Policies\ProtocolPolicy;
 use App\Policies\QualificationPolicy;
+use App\Policies\RoomPolicy;
 use App\Policies\ScheduledShiftPolicy;
 use App\Policies\ShiftTypePolicy;
 use App\Policies\TaskPolicy;
 use App\Policies\TimeEntryPolicy;
 use App\Policies\TimesheetPolicy;
-use App\Policies\FlexEligibilityPolicy;
 use App\Policies\TravelLogPolicy;
 use App\Policies\UserGroupPolicy;
 use App\Policies\WorkSchedulePolicy;
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\BrandingService;
+use App\Services\Reminders\ReminderService;
 use App\Services\Routing\NominatimGeocoder;
 use App\Services\Routing\OsrmRouter;
 use App\Services\Timesheet\Stopwatch;
-use App\Services\Reminders\ReminderService;
 use App\Services\UI\DateRangeContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -120,12 +132,12 @@ class AppServiceProvider extends ServiceProvider {
         $this->app->singleton(BrandingService::class);
 
         // Automation: RuleEngine bekommt alle registrierten Aktionen injiziert.
-        $this->app->singleton(\App\Automation\ConditionEvaluator::class);
-        $this->app->singleton(\App\Automation\RuleEngine::class, function ($app): \App\Automation\RuleEngine {
-            return new \App\Automation\RuleEngine(
-                $app->make(\App\Automation\ConditionEvaluator::class),
+        $this->app->singleton(ConditionEvaluator::class);
+        $this->app->singleton(RuleEngine::class, function ($app): RuleEngine {
+            return new RuleEngine(
+                $app->make(ConditionEvaluator::class),
                 [
-                    $app->make(\App\Automation\Actions\ApproveExpenseAction::class),
+                    $app->make(ApproveExpenseAction::class),
                 ],
             );
         });
@@ -176,10 +188,11 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(PerDiemTrip::class, PerDiemTripPolicy::class);
         Gate::policy(PerDiemRate::class, PerDiemRatePolicy::class);
         Gate::policy(Room::class, RoomPolicy::class);
-        Gate::policy(\App\Models\OpenIssue::class, OpenIssuePolicy::class);
-        Gate::policy(\App\Models\Protocol::class, ProtocolPolicy::class);
-        Gate::policy(\App\Models\ProcedureTemplate::class, \App\Policies\ProcedureTemplatePolicy::class);
-        Gate::policy(\App\Models\ProcedureRun::class, \App\Policies\ProcedureRunPolicy::class);
+        Gate::policy(OpenIssue::class, OpenIssuePolicy::class);
+        Gate::policy(Protocol::class, ProtocolPolicy::class);
+        Gate::policy(ProcedureTemplate::class, ProcedureTemplatePolicy::class);
+        Gate::policy(ProcedureRun::class, ProcedureRunPolicy::class);
+        Gate::policy(ProcedureBackupProof::class, ProcedureBackupProofPolicy::class);
 
         // manage-members: Org-Admin darf Mitglieder der eigenen Org verwalten
         Gate::define('manage-members', [OrganizationPolicy::class, 'manageMembers']);
@@ -234,19 +247,19 @@ class AppServiceProvider extends ServiceProvider {
             $email = (string) $request->input('email', $request->input('username', ''));
 
             return [
-                Limit::perMinute(5)->by(strtolower($email) . '|' . $request->ip()),
+                Limit::perMinute(5)->by(strtolower($email).'|'.$request->ip()),
                 Limit::perMinute(20)->by($request->ip()),
             ];
         });
 
-        RateLimiter::for('register', fn(Request $request) => Limit::perMinute(3)->by($request->ip()));
+        RateLimiter::for('register', fn (Request $request) => Limit::perMinute(3)->by($request->ip()));
 
         RateLimiter::for('password', function (Request $request) {
             $userId = (string) ($request->user()?->getAuthIdentifier() ?? 'guest');
 
             return [
-                Limit::perMinute(5)->by('pwd:' . $userId . '|' . $request->ip()),
-                Limit::perHour(20)->by('pwd:' . $userId),
+                Limit::perMinute(5)->by('pwd:'.$userId.'|'.$request->ip()),
+                Limit::perHour(20)->by('pwd:'.$userId),
             ];
         });
     }

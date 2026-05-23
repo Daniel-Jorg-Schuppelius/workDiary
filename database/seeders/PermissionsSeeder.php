@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 21 2026
  * Author       : Daniel Jörg Schuppelius
@@ -92,7 +93,7 @@ class PermissionsSeeder extends Seeder {
             ]);
 
             $role->syncPermissions(
-                array_map(static fn(PermissionEnum $p): string => $p->value, $permissions)
+                array_map(static fn (PermissionEnum $p): string => $p->value, $permissions)
             );
         }
     }
@@ -243,6 +244,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ProcedureRunStart,
             PermissionEnum::ProcedureRunExecute,
             PermissionEnum::ProcedureRunAbort,
+            PermissionEnum::ProcedureBackupRegister,
+            PermissionEnum::ProcedureBackupVerify,
+            PermissionEnum::ProcedureBackupViewExternal,
             PermissionEnum::ReportView,
             PermissionEnum::AccessAuditView,
         ];
@@ -320,6 +324,7 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ProcedureRunView,
             PermissionEnum::ProcedureRunStart,
             PermissionEnum::ProcedureRunExecute,
+            PermissionEnum::ProcedureBackupRegister,
         ];
 
         // Außendienst: schlanker als user, dafür mit vollem Touren-/Spesen-

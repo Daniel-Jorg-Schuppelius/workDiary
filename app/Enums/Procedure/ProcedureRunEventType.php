@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Tue Jun 02 2026
  * Author       : Daniel Jörg Schuppelius
@@ -23,4 +24,7 @@ enum ProcedureRunEventType: string {
     case RunAborted = 'procedure.runAborted';
     case SecondPersonAssigned = 'procedure.secondPersonAssigned';
     case SecondPersonSigned = 'procedure.secondPersonSigned';
+    case BackupRegistered = 'procedure.backupRegistered';
+    case BackupVerified = 'procedure.backupVerified';
+    case BackupRejected = 'procedure.backupRejected';
 }

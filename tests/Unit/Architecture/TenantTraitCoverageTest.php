@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Fri May 22 2026
  * Author       : Daniel Jörg Schuppelius
@@ -11,6 +12,23 @@
 namespace Tests\Unit\Architecture;
 
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\GeocodeCache;
+use App\Models\OpenIssueEvent;
+use App\Models\Organization;
+use App\Models\OrganizationAuditLog;
+use App\Models\PerDiemRate;
+use App\Models\ProcedureBackupProof;
+use App\Models\ProcedureRunEvent;
+use App\Models\ProcedureStepDef;
+use App\Models\ProcedureStepRun;
+use App\Models\ProcedureTemplateVersion;
+use App\Models\ProtocolEvent;
+use App\Models\ProtocolItem;
+use App\Models\ProtocolItemPhoto;
+use App\Models\ProtocolSignature;
+use App\Models\ProtocolSignatureToken;
+use App\Models\User;
+use App\Models\UserGroup;
 use Illuminate\Database\Eloquent\Model;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -37,26 +55,27 @@ class TenantTraitCoverageTest extends TestCase {
      * @var array<int, class-string>
      */
     private const ALLOW_LIST = [
-        \App\Models\Organization::class,
-        \App\Models\User::class,
-        \App\Models\UserGroup::class,
-        \App\Models\OrganizationAuditLog::class,
-        \App\Models\PerDiemRate::class,
-        \App\Models\GeocodeCache::class,
-        \App\Models\OpenIssueEvent::class,
-        \App\Models\ProtocolItem::class,
-        \App\Models\ProtocolSignature::class,
-        \App\Models\ProtocolEvent::class,
-        \App\Models\ProtocolSignatureToken::class,
-        \App\Models\ProtocolItemPhoto::class,
-        \App\Models\ProcedureTemplateVersion::class,
-        \App\Models\ProcedureStepDef::class,
-        \App\Models\ProcedureStepRun::class,
-        \App\Models\ProcedureRunEvent::class,
+        Organization::class,
+        User::class,
+        UserGroup::class,
+        OrganizationAuditLog::class,
+        PerDiemRate::class,
+        GeocodeCache::class,
+        OpenIssueEvent::class,
+        ProtocolItem::class,
+        ProtocolSignature::class,
+        ProtocolEvent::class,
+        ProtocolSignatureToken::class,
+        ProtocolItemPhoto::class,
+        ProcedureTemplateVersion::class,
+        ProcedureStepDef::class,
+        ProcedureStepRun::class,
+        ProcedureRunEvent::class,
+        ProcedureBackupProof::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {
-        $modelsDir = realpath(__DIR__ . '/../../../app/Models');
+        $modelsDir = realpath(__DIR__.'/../../../app/Models');
         $this->assertNotFalse($modelsDir, 'app/Models darf nicht fehlen');
 
         $offenders = [];
@@ -104,8 +123,8 @@ class TenantTraitCoverageTest extends TestCase {
         $this->assertSame(
             [],
             $offenders,
-            "Folgende Modelle nutzen weder BelongsToOrganization noch sind sie in der Allow-List "
-                . "(siehe docs/security/tenant-audit-2026.md):\n - " . implode("\n - ", $offenders),
+            'Folgende Modelle nutzen weder BelongsToOrganization noch sind sie in der Allow-List '
+                ."(siehe docs/security/tenant-audit-2026.md):\n - ".implode("\n - ", $offenders),
         );
     }
 
@@ -141,7 +160,7 @@ class TenantTraitCoverageTest extends TestCase {
         if ($withoutExt === null) {
             return null;
         }
-        $class = 'App\\Models\\' . str_replace(DIRECTORY_SEPARATOR, '\\', $withoutExt);
+        $class = 'App\\Models\\'.str_replace(DIRECTORY_SEPARATOR, '\\', $withoutExt);
 
         return $class;
     }

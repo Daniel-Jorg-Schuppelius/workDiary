@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 21 2026
  * Author       : Daniel Jörg Schuppelius
@@ -298,6 +299,9 @@ return [
         'procedure.run.start' => 'Prozedurlauf starten',
         'procedure.run.execute' => 'Prozedurschritte ausführen',
         'procedure.run.abort' => 'Prozedurlauf abbrechen',
+        'procedure.backup.register' => 'Backup-Nachweis erfassen',
+        'procedure.backup.verify' => 'Backup-Nachweis verifizieren',
+        'procedure.backup.viewExternal' => 'Externe Backup-Ablagen einsehen',
         'customerPortal.openIssue.view' => 'Offene Punkte im Kundenportal einsehen',
     ],
 ];

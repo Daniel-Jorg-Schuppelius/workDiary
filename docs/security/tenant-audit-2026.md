@@ -122,7 +122,8 @@ Liste benötigen ein eigenes Issue und ein Review im Audit-Dokument.
 | ProcedureTemplateVersion | Kind von `ProcedureTemplate` (MVP-025). Mandantengrenze über Eltern-Vorlage via `procedure_template_id`.                                                                                                                        |
 | ProcedureStepDef         | Kind von `ProcedureTemplateVersion` (MVP-025). Zugriff ausschließlich über die Eltern-Version; Mandantengrenze über Vorlage → Version.                                                                                          |
 | ProcedureStepRun         | Kind von `ProcedureRun` (MVP-026). Zugriff ausschließlich über den mandantengescopten Eltern-Lauf; keine eigene `organization_id`-Spalte.                                                                                       |
-| ProcedureRunEvent        | Append-only Audit-Child von `ProcedureRun` (MVP-026). Wird nur über den Eltern-Lauf gelesen/geschrieben; Mandantengrenze über `procedure_runs.organization_id`.                                                                  |
+| ProcedureRunEvent        | Append-only Audit-Child von `ProcedureRun` (MVP-026). Wird nur über den Eltern-Lauf gelesen/geschrieben; Mandantengrenze über `procedure_runs.organization_id`.                                                                 |
+| ProcedureBackupProof     | Kind eines `ProcedureStepRun` (MVP-027). Genau ein Nachweis pro Backup-Schritt; Mandantengrenze über `procedure_step_runs → procedure_runs.organization_id`.                                                                    |
 | `App\Models\Legacy\*`    | Liegen auf separater `legacy`-Connection und sind über Middleware `access.legacy`/`legacy.write` geschützt. Siehe Legacy-Abschnitt.                                                                                             |
 
 ### CI-Gate

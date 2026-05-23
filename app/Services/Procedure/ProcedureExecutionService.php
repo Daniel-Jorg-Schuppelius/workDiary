@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Tue Jun 02 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,8 +14,10 @@ namespace App\Services\Procedure;
 use App\Enums\Procedure\ProcedureRunEventType;
 use App\Enums\Procedure\ProcedureRunStatus;
 use App\Enums\Procedure\ProcedureStepRunStatus;
+use App\Enums\Procedure\ProcedureStepType;
 use App\Exceptions\ProcedureRunIncompleteException;
 use App\Exceptions\ProcedureStepBlockedException;
+use App\Models\ProcedureBackupProof;
 use App\Models\ProcedureRun;
 use App\Models\ProcedureRunEvent;
 use App\Models\ProcedureStepDef;
@@ -35,8 +38,10 @@ use Illuminate\Support\Facades\DB;
  * finalen Status haben.
  */
 class ProcedureExecutionService {
-    public function __construct(private readonly ProcedureTemplateService $templates) {
-    }
+    public function __construct(
+        private readonly ProcedureTemplateService $templates,
+        private readonly BackupProofService $backups,
+    ) {}
 
     /**
      * Startet einen Run auf Basis der aktuell gueltigen Version der
@@ -125,6 +130,24 @@ class ProcedureExecutionService {
 
         if ($def->requires_second_person && $stepRun->second_person_user_id === null) {
             return ProcedureStepBlockedException::REASON_SECOND_PERSON_REQUIRED;
+        }
+
+        $config = is_array($def->config) ? $def->config : [];
+
+        if ($def->step_type === ProcedureStepType::Backup) {
+            $proof = ProcedureBackupProof::query()
+                ->where('procedure_step_run_id', $stepRun->id)
+                ->first();
+            if (! $proof instanceof ProcedureBackupProof || ! $proof->verified) {
+                return ProcedureStepBlockedException::REASON_BACKUP_NOT_VERIFIED;
+            }
+        }
+
+        if (! empty($config['requires_prior_backup'])) {
+            $maxAge = (int) ($config['prior_backup_max_age_minutes'] ?? 0);
+            if (! $this->backups->priorBackupValid($stepRun, $maxAge)) {
+                return ProcedureStepBlockedException::REASON_PRIOR_BACKUP_MISSING;
+            }
         }
 
         return null;

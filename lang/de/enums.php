@@ -307,5 +307,20 @@ return [
             'deviated' => 'Abweichung',
             'blocked' => 'Blockiert',
         ],
+        'backup-scope' => [
+            'config' => 'Konfiguration',
+            'database' => 'Datenbank',
+            'fullSystem' => 'Komplettsystem',
+            'customScript' => 'Eigenes Skript',
+        ],
+        'backup-storage-target' => [
+            'attachment' => 'Anhang',
+            'external' => 'Externe Ablage',
+        ],
+        'backup-verify-method' => [
+            'checksum' => 'Checksum-Vergleich',
+            'restoreCheck' => 'Restore-Test',
+            'managerConfirmation' => 'Bestätigung Geschäftsleitung',
+        ],
     ],
 ];

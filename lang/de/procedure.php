@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Sat May 23 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,10 +23,15 @@ return [
         'runCompleted' => 'Prozedurlauf abgeschlossen.',
         'runAborted' => 'Prozedurlauf abgebrochen.',
         'stepCompleted' => 'Schritt erledigt.',
+        'backupRegistered' => 'Backup-Nachweis erfasst.',
+        'backupVerified' => 'Backup-Nachweis verifiziert.',
+        'backupRejected' => 'Backup-Nachweis abgelehnt.',
     ],
     'validation' => [
         'versionLocked' => 'Veröffentlichte Vorlagenversionen sind unveränderlich. Bitte eine neue Version anlegen.',
         'runIncomplete' => 'Lauf kann nicht abgeschlossen werden: Es sind noch Pflichtschritte offen.',
+        'backupInvalid' => 'Backup-Nachweis ist ungültig (Grund: :reason).',
+        'backupMissingOrExpired' => 'Es fehlt ein gültiger Backup-Nachweis (oder das letzte Backup ist zu alt).',
     ],
     'blocked' => [
         'previousStepIncomplete' => 'Vorheriger Pflichtschritt ist noch nicht abgeschlossen.',
@@ -34,5 +40,7 @@ return [
         'missingQualification' => 'Erforderliche Qualifikation fehlt.',
         'missingRole' => 'Erforderliche Rolle fehlt.',
         'secondPersonRequired' => 'Zweite Person ist erforderlich.',
+        'backupNotVerified' => 'Backup-Nachweis fehlt oder ist nicht verifiziert.',
+        'backupMissingOrExpired' => 'Letztes Backup fehlt oder ist außerhalb des gültigen Zeitfensters.',
     ],
 ];

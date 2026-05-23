@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Created on   : Thu May 21 2026
  * Author       : Daniel Jörg Schuppelius
@@ -26,19 +27,19 @@ use App\Enums\Contracts\HasLabel;
 enum Permission: string implements HasLabel {
     use HasOptions;
 
-        // ── Zugriff / Verwaltung ───────────────────────────────────────────
+    // ── Zugriff / Verwaltung ───────────────────────────────────────────
     case AccessManage = 'access.manage';
     case AccessAssignRoles = 'access.roles.assign';
     case AccessAssignGroups = 'access.groups.assign';
     case AccessAuditView = 'access.audit.view';
 
-        // ── Organisation / Branding ────────────────────────────────────────
+    // ── Organisation / Branding ────────────────────────────────────────
     case OrganizationView = 'organization.view';
     case OrganizationUpdate = 'organization.update';
     case OrganizationBilling = 'organization.billing';
     case BrandingUpdate = 'branding.update';
 
-        // ── Mitglieder (User-Stamm der Org) ────────────────────────────────
+    // ── Mitglieder (User-Stamm der Org) ────────────────────────────────
     case UserViewAny = 'user.viewAny';
     case UserView = 'user.view';
     case UserCreate = 'user.create';
@@ -49,7 +50,7 @@ enum Permission: string implements HasLabel {
     case UserManageRates = 'user.rates.manage';
     case UserFlexManage = 'user.flex.manage';
 
-        // ── Kunden ─────────────────────────────────────────────────────────
+    // ── Kunden ─────────────────────────────────────────────────────────
     case CustomerViewAny = 'customer.viewAny';
     case CustomerView = 'customer.view';
     case CustomerCreate = 'customer.create';
@@ -59,7 +60,7 @@ enum Permission: string implements HasLabel {
     case CustomerImport = 'customer.import';
     case CustomerLexofficeSync = 'customer.lexoffice.sync';
 
-        // ── Projekte / Aufgaben / Meilensteine ─────────────────────────────
+    // ── Projekte / Aufgaben / Meilensteine ─────────────────────────────
     case ProjectViewAny = 'project.viewAny';
     case ProjectView = 'project.view';
     case ProjectCreate = 'project.create';
@@ -70,7 +71,7 @@ enum Permission: string implements HasLabel {
     case TaskManage = 'task.manage';
     case MilestoneManage = 'milestone.manage';
 
-        // ── Zeiteinträge ───────────────────────────────────────────────────
+    // ── Zeiteinträge ───────────────────────────────────────────────────
     case TimeEntryViewAny = 'timeEntry.viewAny';
     case TimeEntryViewOwn = 'timeEntry.viewOwn';
     case TimeEntryCreate = 'timeEntry.create';
@@ -79,7 +80,7 @@ enum Permission: string implements HasLabel {
     case TimeEntryCreateForOthers = 'timeEntry.create-for-others';
     case TimeEntryApprove = 'timeEntry.approve';
 
-        // ── Stundenzettel ──────────────────────────────────────────────────
+    // ── Stundenzettel ──────────────────────────────────────────────────
     case TimesheetViewAny = 'timesheet.viewAny';
     case TimesheetCreate = 'timesheet.create';
     case TimesheetUpdate = 'timesheet.update';
@@ -89,7 +90,7 @@ enum Permission: string implements HasLabel {
     case TimesheetUnlock = 'timesheet.unlock';
     case TimesheetExport = 'timesheet.export';
 
-        // ── Rechnungen ─────────────────────────────────────────────────────
+    // ── Rechnungen ─────────────────────────────────────────────────────
     case InvoiceViewAny = 'invoice.viewAny';
     case InvoiceView = 'invoice.view';
     case InvoiceCreate = 'invoice.create';
@@ -99,7 +100,7 @@ enum Permission: string implements HasLabel {
     case InvoicePay = 'invoice.pay';
     case InvoiceExport = 'invoice.export';
 
-        // ── Diary / Tagebuch ───────────────────────────────────────────────
+    // ── Diary / Tagebuch ───────────────────────────────────────────────
     case DiaryViewAny = 'diary.viewAny';
     case DiaryViewOwn = 'diary.viewOwn';
     case DiaryCreate = 'diary.create';
@@ -108,7 +109,7 @@ enum Permission: string implements HasLabel {
     case DiaryCreateForOthers = 'diary.create-for-others';
     case DiaryExport = 'diary.export';
 
-        // ── Dienstpläne / Schichten ────────────────────────────────────────
+    // ── Dienstpläne / Schichten ────────────────────────────────────────
     case DutyPlanViewAny = 'dutyPlan.viewAny';
     case DutyPlanCreate = 'dutyPlan.create';
     case DutyPlanUpdate = 'dutyPlan.update';
@@ -121,7 +122,7 @@ enum Permission: string implements HasLabel {
     case ShiftTypeManage = 'shift-type.manage';
     case ScheduledShiftManage = 'scheduled-shift.manage';
 
-        // ── Abwesenheiten ──────────────────────────────────────────────────
+    // ── Abwesenheiten ──────────────────────────────────────────────────
     case VacationViewAny = 'vacation.viewAny';
     case VacationRequest = 'vacation.request';
     case VacationApprove = 'vacation.approve';
@@ -129,7 +130,7 @@ enum Permission: string implements HasLabel {
     case SickLeaveViewAny = 'sick-leave.viewAny';
     case SickLeaveManage = 'sick-leave.manage';
 
-        // ── Touren / Fuhrpark ──────────────────────────────────────────────
+    // ── Touren / Fuhrpark ──────────────────────────────────────────────
     case TourViewAny = 'tour.viewAny';
     case TourManage = 'tour.manage';
     case VehicleViewAny = 'vehicle.viewAny';
@@ -138,7 +139,7 @@ enum Permission: string implements HasLabel {
     case TravelLogManage = 'travel-log.manage';
     case EnergyLogManage = 'energy-log.manage';
 
-        // ── Stammdaten / Listen ────────────────────────────────────────────
+    // ── Stammdaten / Listen ────────────────────────────────────────────
     case MaterialManage = 'material.manage';
     case ActivityCategoryManage = 'activity-category.manage';
     case TagManage = 'tag.manage';
@@ -146,7 +147,7 @@ enum Permission: string implements HasLabel {
     case EntryTypeManage = 'entry-type.manage';
     case HolidayManage = 'holiday.manage';
 
-        // ── Reporting / Audit / Sonstiges ──────────────────────────────────
+    // ── Reporting / Audit / Sonstiges ──────────────────────────────────
     case ReportView = 'report.view';
     case ReportExport = 'report.export';
     case AuditLogView = 'audit-log.view';
@@ -156,7 +157,7 @@ enum Permission: string implements HasLabel {
     case FlexBalanceView = 'flex.view';
     case FlexBalanceManage = 'flex.manage';
 
-        // ── Offene Punkte (Snagging / Restpunkte) ──────────────────────────
+    // ── Offene Punkte (Snagging / Restpunkte) ──────────────────────────
     case OpenIssueViewAny = 'openIssue.viewAny';
     case OpenIssueView = 'openIssue.view';
     case OpenIssueCreate = 'openIssue.create';
@@ -165,7 +166,7 @@ enum Permission: string implements HasLabel {
     case OpenIssuePublishToCustomer = 'openIssue.publishToCustomer';
     case OpenIssueDelete = 'openIssue.delete';
 
-        // ── Protokolle (MVP-020) ───────────────────────────────────────────
+    // ── Protokolle (MVP-020) ───────────────────────────────────────────
     case ProtocolView = 'protocol.view';
     case ProtocolViewAny = 'protocol.viewAny';
     case ProtocolCreate = 'protocol.create';
@@ -182,19 +183,24 @@ enum Permission: string implements HasLabel {
     case ProtocolItemPhotoRemove = 'protocol.item.photo.remove';
     case ProtocolItemPhotoViewGeo = 'protocol.item.photo.viewGeo';
 
-        // ── Prozedurvorlagen (MVP-025) ──────────────────────────
+    // ── Prozedurvorlagen (MVP-025) ──────────────────────────
     case ProcedureTemplateView = 'procedure.template.view';
     case ProcedureTemplateCreate = 'procedure.template.create';
     case ProcedureTemplateUpdate = 'procedure.template.update';
     case ProcedureTemplatePublish = 'procedure.template.publish';
 
-        // ── Prozedur-Ausfuehrung (MVP-026) ──────────────────────
+    // ── Prozedur-Ausfuehrung (MVP-026) ──────────────────────
     case ProcedureRunView = 'procedure.run.view';
     case ProcedureRunStart = 'procedure.run.start';
     case ProcedureRunExecute = 'procedure.run.execute';
     case ProcedureRunAbort = 'procedure.run.abort';
 
-        // ── Customer-Portal (Rolle `kunde`) ─────────────────────
+    // ── Backup-Nachweise (MVP-027) ──────────────────────────
+    case ProcedureBackupRegister = 'procedure.backup.register';
+    case ProcedureBackupVerify = 'procedure.backup.verify';
+    case ProcedureBackupViewExternal = 'procedure.backup.viewExternal';
+
+    // ── Customer-Portal (Rolle `kunde`) ─────────────────────
     case CustomerPortalAccess = 'customerPortal.access';
     case CustomerPortalDiaryView = 'customerPortal.diary.view';
     case CustomerPortalTimeEntryView = 'customerPortal.timeEntry.view';
