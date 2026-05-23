@@ -23,7 +23,7 @@ class AssetNumberGenerator {
         $last = Asset::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
-            ->where('asset_no', 'like', $prefix.'%')
+            ->where('asset_no', 'like', $prefix . '%')
             ->orderByDesc('id')
             ->value('asset_no');
 
@@ -36,6 +36,6 @@ class AssetNumberGenerator {
             }
         }
 
-        return $prefix.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+        return $prefix . str_pad((string) $next, 4, '0', STR_PAD_LEFT);
     }
 }

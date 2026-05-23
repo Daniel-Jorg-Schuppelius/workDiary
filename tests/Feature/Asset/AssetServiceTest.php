@@ -55,7 +55,7 @@ class AssetServiceTest extends TestCase {
             'status' => AssetStatus::Active->value,
         ]);
 
-        $this->assertStringStartsWith('AS-'.now()->format('Y').'-', $asset->asset_no);
+        $this->assertStringStartsWith('AS-' . now()->format('Y') . '-', $asset->asset_no);
 
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'asset.created',

@@ -259,19 +259,19 @@ class AppServiceProvider extends ServiceProvider {
             $email = (string) $request->input('email', $request->input('username', ''));
 
             return [
-                Limit::perMinute(5)->by(strtolower($email).'|'.$request->ip()),
+                Limit::perMinute(5)->by(strtolower($email) . '|' . $request->ip()),
                 Limit::perMinute(20)->by($request->ip()),
             ];
         });
 
-        RateLimiter::for('register', fn (Request $request) => Limit::perMinute(3)->by($request->ip()));
+        RateLimiter::for('register', fn(Request $request) => Limit::perMinute(3)->by($request->ip()));
 
         RateLimiter::for('password', function (Request $request) {
             $userId = (string) ($request->user()?->getAuthIdentifier() ?? 'guest');
 
             return [
-                Limit::perMinute(5)->by('pwd:'.$userId.'|'.$request->ip()),
-                Limit::perHour(20)->by('pwd:'.$userId),
+                Limit::perMinute(5)->by('pwd:' . $userId . '|' . $request->ip()),
+                Limit::perHour(20)->by('pwd:' . $userId),
             ];
         });
     }
