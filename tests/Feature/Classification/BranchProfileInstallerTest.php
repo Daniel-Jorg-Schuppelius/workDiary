@@ -153,4 +153,64 @@ class BranchProfileInstallerTest extends TestCase {
             'enforce_phase' => 'onCreate',
         ]);
     }
+
+    public function test_install_spedition_profile_creates_expected_entries(): void {
+        $result = $this->installer->install($this->org, 'spedition', $this->actor);
+
+        $this->assertSame('spedition', $result['profile_code']);
+        $this->assertGreaterThan(0, $result['created']['classifications']);
+
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->org->id,
+            'domain' => 'entry_type',
+            'code' => 'transportauftrag',
+        ]);
+
+        $this->assertDatabaseHas('classification_requirements', [
+            'organization_id' => $this->org->id,
+            'entry_type_code' => 'schaden',
+            'required_domain' => 'defect_type',
+            'enforce_phase' => 'onCreate',
+        ]);
+    }
+
+    public function test_install_steuerberater_profile_creates_expected_entries(): void {
+        $result = $this->installer->install($this->org, 'steuerberater', $this->actor);
+
+        $this->assertSame('steuerberater', $result['profile_code']);
+        $this->assertGreaterThan(0, $result['created']['classifications']);
+
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->org->id,
+            'domain' => 'entry_type',
+            'code' => 'steuererklaerung',
+        ]);
+
+        $this->assertDatabaseHas('classification_requirements', [
+            'organization_id' => $this->org->id,
+            'entry_type_code' => 'voranmeldung',
+            'required_domain' => 'result',
+            'enforce_phase' => 'beforeComplete',
+        ]);
+    }
+
+    public function test_install_veranstaltungstechnik_profile_creates_expected_entries(): void {
+        $result = $this->installer->install($this->org, 'veranstaltungstechnik', $this->actor);
+
+        $this->assertSame('veranstaltungstechnik', $result['profile_code']);
+        $this->assertGreaterThan(0, $result['created']['classifications']);
+
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->org->id,
+            'domain' => 'entry_type',
+            'code' => 'safetyCheck',
+        ]);
+
+        $this->assertDatabaseHas('classification_requirements', [
+            'organization_id' => $this->org->id,
+            'entry_type_code' => 'schaden',
+            'required_domain' => 'defect_type',
+            'enforce_phase' => 'onCreate',
+        ]);
+    }
 }
