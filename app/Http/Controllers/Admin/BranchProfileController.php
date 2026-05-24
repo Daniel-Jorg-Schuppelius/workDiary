@@ -26,7 +26,8 @@ use Illuminate\View\View;
 class BranchProfileController extends Controller {
     public function __construct(
         private readonly BranchProfileInstaller $installer,
-    ) {}
+    ) {
+    }
 
     public function index(Request $request): View {
         $this->authorizeViewCatalog();
@@ -42,7 +43,7 @@ class BranchProfileController extends Controller {
             ->orderByDesc('id')
             ->get()
             ->pluck('changes.profile_code')
-            ->filter(static fn ($value): bool => is_string($value) && $value !== '')
+            ->filter(static fn($value): bool => is_string($value) && $value !== '')
             ->unique()
             ->values()
             ->all();
@@ -52,7 +53,7 @@ class BranchProfileController extends Controller {
             $needle = mb_strtolower($query);
 
             $profiles = $profiles->filter(static function (array $profile) use ($needle): bool {
-                $haystack = mb_strtolower((string) Arr::get($profile, 'label', '').' '.(string) Arr::get($profile, 'code', ''));
+                $haystack = mb_strtolower((string) Arr::get($profile, 'label', '') . ' ' . (string) Arr::get($profile, 'code', ''));
 
                 return str_contains($haystack, $needle);
             })->values();

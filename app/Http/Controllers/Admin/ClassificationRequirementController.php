@@ -27,7 +27,8 @@ use Illuminate\View\View;
 class ClassificationRequirementController extends Controller {
     public function __construct(
         private readonly ClassificationResolver $resolver,
-    ) {}
+    ) {
+    }
 
     public function index(): View {
         Gate::authorize('viewAny', ClassificationRequirement::class);
@@ -163,8 +164,8 @@ class ClassificationRequirementController extends Controller {
         $organization = $this->currentOrganization();
         $entryTypeCodes = array_keys($this->entryTypeOptions());
         $requiredDomains = array_keys($this->requiredDomainOptions());
-        $phases = array_map(static fn (ClassificationRequirementPhase $phase): string => $phase->value, ClassificationRequirementPhase::cases());
-        $severities = array_map(static fn (ClassificationRequirementSeverity $severity): string => $severity->value, ClassificationRequirementSeverity::cases());
+        $phases = array_map(static fn(ClassificationRequirementPhase $phase): string => $phase->value, ClassificationRequirementPhase::cases());
+        $severities = array_map(static fn(ClassificationRequirementSeverity $severity): string => $severity->value, ClassificationRequirementSeverity::cases());
 
         $validated = $request->validate([
             'entry_type_code' => [
