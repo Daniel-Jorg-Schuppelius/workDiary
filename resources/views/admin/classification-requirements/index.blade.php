@@ -23,7 +23,7 @@
     </x-slot:toolbar>
 
     <x-card>
-        <form method="GET" action="{{ route('admin.classification-requirements.index') }}" class="grid grid-cols-1 md:grid-cols-8 gap-3 items-end">
+        <form method="GET" action="{{ route('admin.classification-requirements.index') }}" class="grid grid-cols-1 md:grid-cols-9 gap-3 items-end">
             <label class="form-control md:col-span-2">
                 <span class="label-text text-sm">{{ __('Suche') }}</span>
                 <input type="text"
@@ -75,6 +75,16 @@
             </label>
 
             <label class="form-control">
+                <span class="label-text text-sm">{{ __('Mehrfachauswahl') }}</span>
+                <select name="allow_multi" class="select select-bordered w-full">
+                    <option value="all" @selected(($activeFilters['allow_multi'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
+                    @foreach ($allowMultiOptions as $allowMultiCode => $allowMultiLabel)
+                        <option value="{{ $allowMultiCode }}" @selected(($activeFilters['allow_multi'] ?? 'all') === $allowMultiCode)>{{ $allowMultiLabel }}</option>
+                    @endforeach
+                </select>
+            </label>
+
+            <label class="form-control">
                 <span class="label-text text-sm">{{ __('Schweregrad') }}</span>
                 <select name="severity" class="select select-bordered w-full">
                     <option value="all" @selected(($activeFilters['severity'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
@@ -93,7 +103,7 @@
                 </select>
             </label>
 
-            <div class="md:col-span-8 flex gap-2 md:justify-end">
+            <div class="md:col-span-9 flex gap-2 md:justify-end">
                 <button type="submit" class="btn btn-primary btn-sm">{{ __('Filtern') }}</button>
                 <a href="{{ route('admin.classification-requirements.index') }}" class="btn btn-ghost btn-sm">{{ __('Zuruecksetzen') }}</a>
             </div>
@@ -129,6 +139,7 @@
                     <th>{{ __('Phase') }}</th>
                     <th>{{ __('Schweregrad') }}</th>
                     <th>{{ __('Anzahl') }}</th>
+                    <th>{{ __('Mehrfach') }}</th>
                     <th>{{ __('Hinweis') }}</th>
                     <th>{{ __('Bedingung') }}</th>
                     <th></th>
@@ -145,6 +156,11 @@
                         </span>
                     </td>
                     <td>{{ $requirement->min_count }}@if ($requirement->max_count !== null) - {{ $requirement->max_count }}@endif</td>
+                    <td>
+                        <span class="badge badge-xs {{ $requirement->allow_multi ? 'badge-info' : 'badge-ghost' }}">
+                            {{ $requirement->allow_multi ? __('Ja') : __('Nein') }}
+                        </span>
+                    </td>
                     <td>
                         @if ($requirement->note)
                             <span>{{ $requirement->note }}</span>

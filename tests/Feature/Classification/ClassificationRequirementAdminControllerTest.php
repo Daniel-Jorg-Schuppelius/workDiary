@@ -329,6 +329,36 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
             ->assertDontSee('no-note-row');
     }
 
+    public function test_index_can_filter_requirements_by_allow_multi_state(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::DefectType->value,
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'allow_multi' => true,
+            'note' => 'Mehrfach aktiv',
+        ]);
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::Result->value,
+            'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+            'allow_multi' => false,
+            'only_if_json' => ['marker' => ['single-row']],
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('admin.classification-requirements.index', [
+                'allow_multi' => 'multi',
+            ]))
+            ->assertOk()
+            ->assertSee('Mehrfach aktiv')
+            ->assertSee('Mehrfachauswahl: Mehrfachauswahl')
+            ->assertDontSee('single-row');
+    }
+
     public function test_index_can_sort_requirements_by_domain(): void {
         $user = $this->userWithRole(UserRole::Teamleitung->value);
 

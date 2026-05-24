@@ -37,6 +37,7 @@ class ClassificationRequirementController extends Controller {
         $query = trim(request()->string('q')->toString());
         $domainFilter = $this->normalizeDomainFilter(request()->string('domain')->toString());
         $conditionFilter = $this->normalizeConditionFilter(request()->string('condition')->toString());
+        $allowMultiFilter = $this->normalizeAllowMultiFilter(request()->string('allow_multi')->toString());
         $noteFilter = $this->normalizeNoteFilter(request()->string('note')->toString());
         $phaseFilter = $this->normalizePhaseFilter(request()->string('phase')->toString());
         $severityFilter = $this->normalizeSeverityFilter(request()->string('severity')->toString());
@@ -67,6 +68,14 @@ class ClassificationRequirementController extends Controller {
             $requirementsQuery->whereNull('only_if_json');
         }
 
+        if ($allowMultiFilter === 'multi') {
+            $requirementsQuery->where('allow_multi', true);
+        }
+
+        if ($allowMultiFilter === 'single') {
+            $requirementsQuery->where('allow_multi', false);
+        }
+
         if ($noteFilter === 'with_note') {
             $requirementsQuery->whereNotNull('note');
         }
@@ -90,6 +99,7 @@ class ClassificationRequirementController extends Controller {
         $severityLabels = $this->severityLabels();
         $domainLabels = $this->domainLabels();
         $conditionOptions = $this->conditionOptions();
+        $allowMultiOptions = $this->allowMultiOptions();
         $noteOptions = $this->noteOptions();
         $sortOptions = $this->sortOptions();
 
@@ -100,12 +110,14 @@ class ClassificationRequirementController extends Controller {
             'severityLabels' => $severityLabels,
             'domainLabels' => $domainLabels,
             'conditionOptions' => $conditionOptions,
+            'allowMultiOptions' => $allowMultiOptions,
             'noteOptions' => $noteOptions,
             'sortOptions' => $sortOptions,
             'activeFilters' => [
                 'q' => $query,
                 'domain' => $domainFilter ?? 'all',
                 'condition' => $conditionFilter ?? 'all',
+                'allow_multi' => $allowMultiFilter ?? 'all',
                 'note' => $noteFilter ?? 'all',
                 'phase' => $phaseFilter ?? 'all',
                 'severity' => $severityFilter ?? 'all',
@@ -115,12 +127,13 @@ class ClassificationRequirementController extends Controller {
                 $query !== '' ? __('Suche: :value', ['value' => $query]) : null,
                 $domainFilter !== null ? __('Domain: :value', ['value' => $domainLabels[$domainFilter] ?? $domainFilter]) : null,
                 $conditionFilter !== null ? __('Bedingung: :value', ['value' => $conditionOptions[$conditionFilter] ?? $conditionFilter]) : null,
+                $allowMultiFilter !== null ? __('Mehrfachauswahl: :value', ['value' => $allowMultiOptions[$allowMultiFilter] ?? $allowMultiFilter]) : null,
                 $noteFilter !== null ? __('Hinweis: :value', ['value' => $noteOptions[$noteFilter] ?? $noteFilter]) : null,
                 $phaseFilter !== null ? __('Phase: :value', ['value' => $phaseLabels[$phaseFilter] ?? $phaseFilter]) : null,
                 $severityFilter !== null ? __('Schweregrad: :value', ['value' => $severityLabels[$severityFilter] ?? $severityFilter]) : null,
                 $sortField !== 'entry_type_code' ? __('Sortierung: :value', ['value' => $sortOptions[$sortField] ?? $sortField]) : null,
             ])),
-            'hasActiveFilters' => $query !== '' || $domainFilter !== null || $conditionFilter !== null || $noteFilter !== null || $phaseFilter !== null || $severityFilter !== null || $sortField !== 'entry_type_code',
+            'hasActiveFilters' => $query !== '' || $domainFilter !== null || $conditionFilter !== null || $allowMultiFilter !== null || $noteFilter !== null || $phaseFilter !== null || $severityFilter !== null || $sortField !== 'entry_type_code',
         ]);
     }
 
@@ -331,6 +344,10 @@ class ClassificationRequirementController extends Controller {
 
     private function normalizeConditionFilter(string $value): ?string {
         return array_key_exists($value, $this->conditionOptions()) ? $value : null;
+    }
+
+    private function normalizeAllowMultiFilter(string $value): ?string {
+        return array_key_exists($value, $this->allowMultiOptions()) ? $value : null;
     }
 
     private function normalizeNoteFilter(string $value): ?string {
@@ -614,6 +631,16 @@ class ClassificationRequirementController extends Controller {
         return [
             'always' => __('Immer'),
             'conditional' => __('Mit Bedingung'),
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function allowMultiOptions(): array {
+        return [
+            'single' => __('Einzelauswahl'),
+            'multi' => __('Mehrfachauswahl'),
         ];
     }
 
