@@ -18,6 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ClassificationRequirement;
 use App\Models\Organization;
 use App\Services\Classification\ClassificationResolver;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -64,9 +65,7 @@ class ClassificationRequirementController extends Controller {
             $requirementsQuery->where('severity', $severityFilter);
         }
 
-        foreach ($this->sortColumns($sortField) as $column) {
-            $requirementsQuery->orderBy($column);
-        }
+        $this->applySorting($requirementsQuery, $sortField);
 
         $requirements = $requirementsQuery->get();
         $phaseLabels = $this->phaseLabels();
@@ -519,6 +518,31 @@ class ClassificationRequirementController extends Controller {
             'enforce_phase' => ['enforce_phase', 'entry_type_code', 'required_domain'],
             default => ['entry_type_code', 'enforce_phase', 'required_domain'],
         };
+    }
+
+    /**
+     * @param Builder<ClassificationRequirement> $requirementsQuery
+     */
+    private function applySorting(Builder $requirementsQuery, string $sortField): void {
+        if ($sortField === 'enforce_phase') {
+            $requirementsQuery
+                ->orderByRaw(
+                    'case enforce_phase when ? then 0 when ? then 1 when ? then 2 else 3 end',
+                    [
+                        ClassificationRequirementPhase::OnCreate->value,
+                        ClassificationRequirementPhase::BeforeComplete->value,
+                        ClassificationRequirementPhase::BeforeSign->value,
+                    ]
+                )
+                ->orderBy('entry_type_code')
+                ->orderBy('required_domain');
+
+            return;
+        }
+
+        foreach ($this->sortColumns($sortField) as $column) {
+            $requirementsQuery->orderBy($column);
+        }
     }
 
     /**

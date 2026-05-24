@@ -296,6 +296,40 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
             ->assertSeeInOrder(['Erste Zeile', 'Zweite Zeile']);
     }
 
+    public function test_index_can_sort_requirements_by_phase_in_workflow_order(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::RootCause->value,
+            'enforce_phase' => ClassificationRequirementPhase::BeforeSign->value,
+            'note' => 'Dritte Phase',
+        ]);
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::DefectType->value,
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'note' => 'Erste Phase',
+        ]);
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::Result->value,
+            'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+            'note' => 'Zweite Phase',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('admin.classification-requirements.index', [
+                'sort' => 'enforce_phase',
+            ]))
+            ->assertOk()
+            ->assertSee('Sortierung: Phase')
+            ->assertSeeInOrder(['Erste Phase', 'Zweite Phase', 'Dritte Phase']);
+    }
+
     public function test_create_dialog_contains_entry_type_presets_payload(): void {
         $user = $this->userWithRole(UserRole::Teamleitung->value);
 
