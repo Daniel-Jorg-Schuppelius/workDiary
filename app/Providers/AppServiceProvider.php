@@ -21,6 +21,7 @@ use App\Policies\{ActivityCategoryPolicy, AssetPolicy, ClassificationPolicy, Cla
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\BrandingService;
 use App\Services\Classification\{ClassificationManager, ClassificationResolver};
+use App\Services\I18n\JsTranslationProvider;
 use App\Services\Reminders\ReminderService;
 use App\Services\Routing\{NominatimGeocoder, OsrmRouter};
 use App\Services\Timesheet\Stopwatch;
@@ -156,6 +157,7 @@ class AppServiceProvider extends ServiceProvider {
         $this->registerDateRangeViewComposer();
         $this->registerBrandingViewComposer();
         $this->registerReminderViewComposer();
+        $this->registerJsTranslationsViewComposer();
 
         Password::defaults(function () {
             $rule = Password::min(12)
@@ -266,6 +268,24 @@ class AppServiceProvider extends ServiceProvider {
                 $items = [];
             }
             $view->with('reminderItems', $items);
+        });
+    }
+
+    /**
+     * Stellt dem App-Layout die flachen JS-Übersetzungen (siehe
+     * {@see JsTranslationProvider}) als `$jsTranslations` bereit, damit das
+     * Layout sie via `<script>window.__translations = …</script>` an den
+     * Client-Side-`__()`-Helper übergeben kann.
+     */
+    private function registerJsTranslationsViewComposer(): void {
+        View::composer('layouts.app', function ($view): void {
+            try {
+                $translations = app(JsTranslationProvider::class)->all();
+            } catch (\Throwable $e) {
+                report($e);
+                $translations = [];
+            }
+            $view->with('jsTranslations', $translations);
         });
     }
 

@@ -697,7 +697,12 @@ document.addEventListener("click", (event) => {
 
         const loadingMsg = __("js.dialog.loading");
         const loadFailedMsg = __("js.dialog.load_failed");
-        body.innerHTML = `<div class="p-6 text-sm text-base-content/70">${loadingMsg}</div>`;
+        body.innerHTML = `
+            <div class="flex flex-col items-center justify-center gap-3 p-12 text-base-content/70">
+                <span class="loading loading-spinner loading-lg text-primary" aria-hidden="true"></span>
+                <span class="text-sm">${loadingMsg}</span>
+            </div>
+        `;
         if (typeof modal.showModal === "function") {
             modal.showModal();
         }
