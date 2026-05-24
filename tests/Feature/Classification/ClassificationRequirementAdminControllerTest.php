@@ -187,6 +187,7 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
             'required_domain' => ClassificationDomain::DefectType->value,
             'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
             'severity' => ClassificationRequirementSeverity::Hard->value,
+            'only_if_json' => ['marker' => ['phase-hard']],
         ]);
         ClassificationRequirement::factory()->create([
             'organization_id' => $this->organization->id,
@@ -194,6 +195,7 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
             'required_domain' => ClassificationDomain::RootCause->value,
             'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
             'severity' => ClassificationRequirementSeverity::Soft->value,
+            'only_if_json' => ['marker' => ['phase-soft']],
         ]);
 
         $this->actingAs($user)
@@ -202,8 +204,35 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
                 'severity' => ClassificationRequirementSeverity::Soft->value,
             ]))
             ->assertOk()
-            ->assertSee('Ursachen')
-            ->assertDontSee('Fehlertypen');
+            ->assertSee('phase-soft')
+            ->assertDontSee('phase-hard');
+    }
+
+    public function test_index_can_filter_requirements_by_required_domain(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::DefectType->value,
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'only_if_json' => ['marker' => ['domain-defect']],
+        ]);
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::Result->value,
+            'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+            'only_if_json' => ['marker' => ['domain-result']],
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('admin.classification-requirements.index', [
+                'domain' => ClassificationDomain::Result->value,
+            ]))
+            ->assertOk()
+            ->assertSee('domain-result')
+            ->assertDontSee('domain-defect');
     }
 
     public function test_create_dialog_contains_entry_type_presets_payload(): void {

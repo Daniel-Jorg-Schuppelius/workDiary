@@ -34,6 +34,7 @@ class ClassificationRequirementController extends Controller {
 
         $organization = $this->currentOrganization();
         $query = trim(request()->string('q')->toString());
+        $domainFilter = $this->normalizeDomainFilter(request()->string('domain')->toString());
         $phaseFilter = $this->normalizePhaseFilter(request()->string('phase')->toString());
         $severityFilter = $this->normalizeSeverityFilter(request()->string('severity')->toString());
 
@@ -50,6 +51,10 @@ class ClassificationRequirementController extends Controller {
                     ->orWhere('required_domain', 'like', "%{$query}%")
                     ->orWhere('note', 'like', "%{$query}%");
             });
+        }
+
+        if ($domainFilter !== null) {
+            $requirementsQuery->where('required_domain', $domainFilter);
         }
 
         if ($phaseFilter !== null) {
@@ -70,6 +75,7 @@ class ClassificationRequirementController extends Controller {
             'domainLabels' => $this->domainLabels(),
             'activeFilters' => [
                 'q' => $query,
+                'domain' => $domainFilter ?? 'all',
                 'phase' => $phaseFilter ?? 'all',
                 'severity' => $severityFilter ?? 'all',
             ],
@@ -260,6 +266,20 @@ class ClassificationRequirementController extends Controller {
     private function normalizePhaseFilter(string $value): ?string {
         foreach (ClassificationRequirementPhase::cases() as $phase) {
             if ($phase->value === $value) {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+
+    private function normalizeDomainFilter(string $value): ?string {
+        foreach (ClassificationDomain::cases() as $domain) {
+            if ($domain === ClassificationDomain::EntryType) {
+                continue;
+            }
+
+            if ($domain->value === $value) {
                 return $value;
             }
         }

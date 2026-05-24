@@ -23,7 +23,7 @@
     </x-slot:toolbar>
 
     <x-card>
-        <form method="GET" action="{{ route('admin.classification-requirements.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+        <form method="GET" action="{{ route('admin.classification-requirements.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
             <label class="form-control md:col-span-2">
                 <span class="label-text text-sm">{{ __('Suche') }}</span>
                 <input type="text"
@@ -31,6 +31,17 @@
                        value="{{ $activeFilters['q'] ?? '' }}"
                        class="input input-bordered w-full"
                        placeholder="{{ __('Auftragstyp, Domain oder Hinweis') }}" />
+            </label>
+
+            <label class="form-control">
+                <span class="label-text text-sm">{{ __('Pflicht-Domain') }}</span>
+                <select name="domain" class="select select-bordered w-full">
+                    <option value="all" @selected(($activeFilters['domain'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
+                    @foreach ($domainLabels as $domainCode => $domainLabel)
+                        @continue($domainCode === \App\Enums\Classification\ClassificationDomain::EntryType->value)
+                        <option value="{{ $domainCode }}" @selected(($activeFilters['domain'] ?? 'all') === $domainCode)>{{ $domainLabel }}</option>
+                    @endforeach
+                </select>
             </label>
 
             <label class="form-control">
@@ -53,7 +64,7 @@
                 </select>
             </label>
 
-            <div class="md:col-span-4 flex gap-2 md:justify-end">
+            <div class="md:col-span-5 flex gap-2 md:justify-end">
                 <button type="submit" class="btn btn-primary btn-sm">{{ __('Filtern') }}</button>
                 <a href="{{ route('admin.classification-requirements.index') }}" class="btn btn-ghost btn-sm">{{ __('Zuruecksetzen') }}</a>
             </div>
