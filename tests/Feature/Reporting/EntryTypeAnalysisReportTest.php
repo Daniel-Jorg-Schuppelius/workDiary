@@ -11,6 +11,7 @@
 namespace Tests\Feature\Reporting;
 
 use App\Http\Controllers\Reporting\EntryTypeAnalysisReportController;
+use App\Http\Controllers\Reporting\EntryTypeDrilldownReportController;
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Protocol\ProtocolType;
@@ -472,5 +473,44 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $response->assertHeader('content-type', 'application/pdf');
         $response->assertHeader('content-disposition');
         $this->assertStringStartsWith('%PDF', (string) $response->getContent());
+    }
+
+    public function test_drilldown_export_writes_audit_log_entry(): void {
+        $entry = DiaryEntry::factory()->for($this->user)->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'entry_type_id' => $this->entryType->id,
+            'created_at' => now()->subDays(2),
+        ]);
+
+        Protocol::factory()->for($entry, 'subject')->state([
+            'organization_id' => $this->organization->id,
+            'created_by_user_id' => $this->user->id,
+            'type' => ProtocolType::Defect->value,
+            'title' => 'Audit Drilldown Protokoll',
+            'occurred_at' => now()->subDays(2),
+        ])->create();
+
+        $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.entry-types.drilldown.protocols', [
+                'entry_type_id' => $this->entryType->id,
+                'export' => 'pdf',
+            ]))
+            ->assertOk();
+
+        $log = AuditLog::query()
+            ->where('event', 'report.exported')
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($log);
+        $this->assertSame(EntryTypeDrilldownReportController::class, $log->auditable_type);
+        $this->assertSame($this->organization->id, $log->organization_id);
+        $this->assertSame($this->user->id, $log->user_id);
+        $this->assertSame('entry-type-drilldown-protocols', $log->changes['report_code'] ?? null);
+        $this->assertSame('pdf', $log->changes['format'] ?? null);
+        $this->assertSame($this->entryType->id, $log->changes['filters']['entry_type_id'] ?? null);
+        $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
     }
 }
