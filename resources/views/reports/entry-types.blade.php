@@ -76,9 +76,18 @@
                     @php
                         $ratio = $row['planActualRatio'];
                         $ratioClass = $ratio === null ? 'text-base-content/50' : ($ratio <= 1.0 ? 'text-success' : ($ratio <= 1.2 ? 'text-warning' : 'text-error'));
+                        $drilldownHref = route('diary.index', array_filter([
+                            'from' => $from->toDateString(),
+                            'to' => $to->toDateString(),
+                            'customer' => $customerId,
+                            'entry_type' => $row['entryTypeId'] > 0 ? $row['entryTypeId'] : null,
+                            'status' => $statusFilter,
+                        ]));
                     @endphp
                     <tr>
-                        <td class="font-medium">{{ $row['entryTypeName'] }}</td>
+                        <td class="font-medium">
+                            <a href="{{ $drilldownHref }}" class="link link-hover">{{ $row['entryTypeName'] }}</a>
+                        </td>
                         <td class="text-right tabular-nums">{{ $row['entryCount'] }}</td>
                         <td class="text-right tabular-nums">{{ number_format($row['avgPlannedMinutes'], 2, ',', '.') }}</td>
                         <td class="text-right tabular-nums">{{ number_format($row['avgActualMinutes'], 2, ',', '.') }}</td>

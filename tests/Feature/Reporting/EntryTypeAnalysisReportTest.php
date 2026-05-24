@@ -139,6 +139,11 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $response->assertSee('1,400', false);
         $response->assertSee('1', false);
         $response->assertSee('50,00', false);
+        $response->assertSee(route('diary.index', [
+            'from' => now()->subDays(30)->toDateString(),
+            'to' => now()->toDateString(),
+            'entry_type' => $this->entryType->id,
+        ]), false);
     }
 
     public function test_requires_authentication(): void {
