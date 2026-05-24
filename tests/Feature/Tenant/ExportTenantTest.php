@@ -13,6 +13,7 @@ namespace Tests\Feature\Tenant;
 use App\Models\{Customer, DiaryEntry, Expense, Organization, TravelLog, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 /**
@@ -105,7 +106,7 @@ class ExportTenantTest extends TestCase {
     }
 
     /** Erfasst den Body eines StreamedResponse über Output-Buffering. */
-    private function streamContent(\Illuminate\Testing\TestResponse $response): string {
+    private function streamContent(TestResponse $response): string {
         ob_start();
         $response->baseResponse->sendContent();
 
