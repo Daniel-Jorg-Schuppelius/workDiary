@@ -10,7 +10,9 @@
 
 namespace Tests\Feature;
 
+use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
 use App\Models\{Comment, DiaryEntry, EmergencyAssignment, Expense, OnCallShift, PerDiemTrip, User, Vacation};
+use App\Models\OpenIssue;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -132,5 +134,97 @@ class DashboardTest extends TestCase {
             ->assertSee('169,00 €') // 119 (pending) + 50 (reimbursed)
             ->assertSee('50,00 €')   // reimbursed
             ->assertSee(__('Reisen (Monat) / Entwürfe'));
+    }
+
+    public function test_dashboard_orders_assigned_open_issues_by_due_date_and_puts_null_due_dates_last(): void {
+        $user = User::factory()->user()->create();
+        $other = User::factory()->user()->create(['organization_id' => $user->organization_id]);
+        $entry = DiaryEntry::factory()->for($user)->create(['organization_id' => $user->organization_id]);
+
+        OpenIssue::query()->create([
+            'organization_id' => $user->organization_id,
+            'subject_type' => DiaryEntry::class,
+            'subject_id' => $entry->id,
+            'source_type' => OpenIssueSource::Manual->value,
+            'title' => 'Fällig später',
+            'severity' => OpenIssueSeverity::High->value,
+            'status' => OpenIssueStatus::Open->value,
+            'assignee_user_id' => $user->id,
+            'due_at' => now()->addDays(5),
+            'visibility' => OpenIssueVisibility::Internal->value,
+            'created_by_user_id' => $user->id,
+        ]);
+
+        OpenIssue::query()->create([
+            'organization_id' => $user->organization_id,
+            'subject_type' => DiaryEntry::class,
+            'subject_id' => $entry->id,
+            'source_type' => OpenIssueSource::Manual->value,
+            'title' => 'Fällig zuerst',
+            'severity' => OpenIssueSeverity::Medium->value,
+            'status' => OpenIssueStatus::InProgress->value,
+            'assignee_user_id' => $user->id,
+            'due_at' => now()->addDay(),
+            'visibility' => OpenIssueVisibility::Internal->value,
+            'created_by_user_id' => $user->id,
+        ]);
+
+        OpenIssue::query()->create([
+            'organization_id' => $user->organization_id,
+            'subject_type' => DiaryEntry::class,
+            'subject_id' => $entry->id,
+            'source_type' => OpenIssueSource::Manual->value,
+            'title' => 'Ohne Frist',
+            'severity' => OpenIssueSeverity::Low->value,
+            'status' => OpenIssueStatus::Open->value,
+            'assignee_user_id' => $user->id,
+            'due_at' => null,
+            'visibility' => OpenIssueVisibility::Internal->value,
+            'created_by_user_id' => $user->id,
+        ]);
+
+        // Geschlossen -> darf im Widget nicht mehr erscheinen.
+        OpenIssue::query()->create([
+            'organization_id' => $user->organization_id,
+            'subject_type' => DiaryEntry::class,
+            'subject_id' => $entry->id,
+            'source_type' => OpenIssueSource::Manual->value,
+            'title' => 'Bereits erledigt',
+            'severity' => OpenIssueSeverity::Low->value,
+            'status' => OpenIssueStatus::Done->value,
+            'assignee_user_id' => $user->id,
+            'due_at' => now()->subDay(),
+            'visibility' => OpenIssueVisibility::Internal->value,
+            'closed_at' => now(),
+            'closed_by_user_id' => $user->id,
+            'created_by_user_id' => $user->id,
+        ]);
+
+        // Anderer Assignee -> darf im persönlichen Widget nicht erscheinen.
+        OpenIssue::query()->create([
+            'organization_id' => $user->organization_id,
+            'subject_type' => DiaryEntry::class,
+            'subject_id' => $entry->id,
+            'source_type' => OpenIssueSource::Manual->value,
+            'title' => 'Anderer Assignee',
+            'severity' => OpenIssueSeverity::Low->value,
+            'status' => OpenIssueStatus::Open->value,
+            'assignee_user_id' => $other->id,
+            'visibility' => OpenIssueVisibility::Internal->value,
+            'created_by_user_id' => $user->id,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+        $response->assertOk();
+
+        /** @var \Illuminate\Support\Collection<int, OpenIssue> $issues */
+        $issues = $response->viewData('user')['open_issues_assigned'];
+
+        $this->assertSame(
+            ['Fällig zuerst', 'Fällig später', 'Ohne Frist'],
+            $issues->pluck('title')->values()->all()
+        );
+        $this->assertSame(3, (int) $response->viewData('user')['kpi']['open_issues_assigned']);
+        $this->assertSame(4, (int) $response->viewData('user')['kpi']['open_issues_created']);
     }
 }
