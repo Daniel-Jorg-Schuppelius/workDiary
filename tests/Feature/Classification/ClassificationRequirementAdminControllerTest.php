@@ -206,6 +206,17 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
             ->assertDontSee('Fehlertypen');
     }
 
+    public function test_create_dialog_contains_entry_type_presets_payload(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+
+        $this->actingAs($user)
+            ->get(route('admin.classification-requirements.create'))
+            ->assertOk()
+            ->assertSee('data-entry-type-presets=')
+            ->assertSee('incident')
+            ->assertSee('reklamation');
+    }
+
     private function userWithRole(string $role): User {
         $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $registrar = app(PermissionRegistrar::class);

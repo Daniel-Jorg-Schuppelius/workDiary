@@ -27,8 +27,7 @@ use Illuminate\View\View;
 class ClassificationRequirementController extends Controller {
     public function __construct(
         private readonly ClassificationResolver $resolver,
-    ) {
-    }
+    ) {}
 
     public function index(): View {
         Gate::authorize('viewAny', ClassificationRequirement::class);
@@ -86,6 +85,7 @@ class ClassificationRequirementController extends Controller {
                 'min_count' => 1,
             ]),
             'entryTypeOptions' => $this->entryTypeOptions(),
+            'entryTypePresets' => $this->entryTypePresets(),
             'requiredDomainOptions' => $this->requiredDomainOptions(),
             'phaseLabels' => $this->phaseLabels(),
             'severityLabels' => $this->severityLabels(),
@@ -114,6 +114,7 @@ class ClassificationRequirementController extends Controller {
         return view('admin.classification-requirements._form_dialog', [
             'requirement' => $classificationRequirement,
             'entryTypeOptions' => $this->entryTypeOptions(),
+            'entryTypePresets' => $this->entryTypePresets(),
             'requiredDomainOptions' => $this->requiredDomainOptions(),
             'phaseLabels' => $this->phaseLabels(),
             'severityLabels' => $this->severityLabels(),
@@ -164,8 +165,8 @@ class ClassificationRequirementController extends Controller {
         $organization = $this->currentOrganization();
         $entryTypeCodes = array_keys($this->entryTypeOptions());
         $requiredDomains = array_keys($this->requiredDomainOptions());
-        $phases = array_map(static fn(ClassificationRequirementPhase $phase): string => $phase->value, ClassificationRequirementPhase::cases());
-        $severities = array_map(static fn(ClassificationRequirementSeverity $severity): string => $severity->value, ClassificationRequirementSeverity::cases());
+        $phases = array_map(static fn (ClassificationRequirementPhase $phase): string => $phase->value, ClassificationRequirementPhase::cases());
+        $severities = array_map(static fn (ClassificationRequirementSeverity $severity): string => $severity->value, ClassificationRequirementSeverity::cases());
 
         $validated = $request->validate([
             'entry_type_code' => [
@@ -283,6 +284,63 @@ class ClassificationRequirementController extends Controller {
         }
 
         return $options;
+    }
+
+    /**
+     * @return array<string, array{enforce_phase: string, severity: string, min_count: int, max_count: int|null, allow_multi: bool}>
+     */
+    private function entryTypePresets(): array {
+        return [
+            'service' => [
+                'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+                'severity' => ClassificationRequirementSeverity::Soft->value,
+                'min_count' => 1,
+                'max_count' => null,
+                'allow_multi' => false,
+            ],
+            'incident' => [
+                'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+                'severity' => ClassificationRequirementSeverity::Hard->value,
+                'min_count' => 1,
+                'max_count' => null,
+                'allow_multi' => false,
+            ],
+            'change' => [
+                'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+                'severity' => ClassificationRequirementSeverity::Hard->value,
+                'min_count' => 1,
+                'max_count' => null,
+                'allow_multi' => false,
+            ],
+            'repair' => [
+                'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+                'severity' => ClassificationRequirementSeverity::Hard->value,
+                'min_count' => 1,
+                'max_count' => null,
+                'allow_multi' => false,
+            ],
+            'installation' => [
+                'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+                'severity' => ClassificationRequirementSeverity::Hard->value,
+                'min_count' => 1,
+                'max_count' => null,
+                'allow_multi' => false,
+            ],
+            'wartung' => [
+                'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+                'severity' => ClassificationRequirementSeverity::Hard->value,
+                'min_count' => 1,
+                'max_count' => null,
+                'allow_multi' => false,
+            ],
+            'reklamation' => [
+                'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+                'severity' => ClassificationRequirementSeverity::Soft->value,
+                'min_count' => 1,
+                'max_count' => null,
+                'allow_multi' => false,
+            ],
+        ];
     }
 
     /**
