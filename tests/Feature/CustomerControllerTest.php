@@ -74,8 +74,7 @@ class CustomerControllerTest extends TestCase {
     }
 
     public function test_store_auto_assigns_customer_number(): void {
-        $this->actingAs($this->admin)
-            ->post(route('customers.store'), [
+        $this->postAsAdmin('customers.store', [
                 'name' => 'Neuer Kunde',
                 'currency' => 'EUR',
             ])
@@ -95,16 +94,14 @@ class CustomerControllerTest extends TestCase {
             'number' => 'K-0007',
         ]);
 
-        $this->actingAs($this->admin)
-            ->post(route('customers.store'), ['name' => 'Folgekunde', 'currency' => 'EUR'])
+        $this->postAsAdmin('customers.store', ['name' => 'Folgekunde', 'currency' => 'EUR'])
             ->assertRedirect();
 
         $this->assertDatabaseHas('customers', ['name' => 'Folgekunde', 'number' => 'K-0008']);
     }
 
     public function test_store_persists_contact_persons(): void {
-        $this->actingAs($this->admin)
-            ->post(route('customers.store'), [
+        $this->postAsAdmin('customers.store', [
                 'name' => 'Mit Kontakten',
                 'currency' => 'EUR',
                 'contact_persons' => [
@@ -205,8 +202,7 @@ class CustomerControllerTest extends TestCase {
     }
 
     public function test_audit_log_is_written_on_create_and_update(): void {
-        $this->actingAs($this->admin)
-            ->post(route('customers.store'), ['name' => 'Audit Co.', 'currency' => 'EUR'])
+        $this->postAsAdmin('customers.store', ['name' => 'Audit Co.', 'currency' => 'EUR'])
             ->assertRedirect();
 
         $customer = Customer::where('name', 'Audit Co.')->firstOrFail();
@@ -216,8 +212,7 @@ class CustomerControllerTest extends TestCase {
             'auditable_id' => $customer->id,
         ]);
 
-        $this->actingAs($this->admin)
-            ->put(route('customers.update', $customer), [
+        $this->putAsAdmin('customers.update', $customer, [
                 'name' => 'Audit Co. (geändert)',
                 'currency' => 'EUR',
             ])
@@ -247,8 +242,7 @@ class CustomerControllerTest extends TestCase {
         file_put_contents($tmp, $csv);
         $upload = new UploadedFile($tmp, 'customers.csv', 'text/csv', null, true);
 
-        $response = $this->actingAs($this->admin)
-            ->post(route('customers.import'), ['file' => $upload]);
+        $response = $this->postAsAdmin('customers.import', ['file' => $upload]);
 
         $response->assertRedirect(route('customers.index'));
         $this->assertDatabaseHas('customers', ['id' => $existing->id, 'name' => 'Neu Name', 'hourly_rate' => 95.5]);
@@ -291,5 +285,13 @@ class CustomerControllerTest extends TestCase {
 
     private function deleteAsAdmin(string $routeName, mixed $parameters = []): TestResponse {
         return $this->actingAs($this->admin)->delete(route($routeName, $parameters));
+    }
+
+    private function postAsAdmin(string $routeName, array $payload = [], mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->admin)->post(route($routeName, $parameters), $payload);
+    }
+
+    private function putAsAdmin(string $routeName, mixed $parameters = [], array $payload = []): TestResponse {
+        return $this->actingAs($this->admin)->put(route($routeName, $parameters), $payload);
     }
 }
