@@ -10,9 +10,7 @@
 
 namespace Tests\Feature\Events;
 
-use App\Models\Event;
-use App\Models\Room;
-use App\Models\User;
+use App\Models\{Event, Room, User};
 use App\Services\Event\RoomBookingService;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

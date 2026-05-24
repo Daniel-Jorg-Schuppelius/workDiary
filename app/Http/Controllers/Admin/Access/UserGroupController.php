@@ -12,17 +12,12 @@ namespace App\Http\Controllers\Admin\Access;
 
 use App\Enums\User\Permission as PermissionEnum;
 use App\Http\Controllers\Controller;
-use App\Models\Organization;
-use App\Models\User;
-use App\Models\UserGroup;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use App\Models\{Organization, User, UserGroup};
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\{Permission, Role};
 
 /**
  * Verwaltung der organisationsspezifischen Benutzergruppen. Eine Gruppe

@@ -10,15 +10,13 @@
 
 namespace App\Models;
 
-use App\Enums\TimeEntry\TimeEntryActivityType;
-use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Models\Concerns\BelongsToOrganization;
 use App\Services\RateCalculator;
 use Database\Factories\TimeEntryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany};
 use Illuminate\Support\Carbon;
 
 /**

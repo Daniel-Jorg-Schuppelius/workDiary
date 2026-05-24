@@ -10,18 +10,15 @@
 
 namespace App\Automation\Actions;
 
-use App\Models\Expense;
-use App\Models\User;
-use App\Services\Expense\ApproverResolver;
-use App\Services\Expense\ExpenseService;
+use App\Models\{Expense, User};
+use App\Services\Expense\{ApproverResolver, ExpenseService};
 use Illuminate\Database\Eloquent\Model;
 
 class ApproveExpenseAction implements RuleAction {
     public function __construct(
         private readonly ExpenseService $expenses,
         private readonly ApproverResolver $approverResolver,
-    ) {
-    }
+    ) {}
 
     public function type(): string {
         return 'expense.approve';

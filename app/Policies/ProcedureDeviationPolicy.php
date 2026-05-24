@@ -12,9 +12,7 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\ProcedureDeviation;
-use App\Models\ProcedureStepRun;
-use App\Models\User;
+use App\Models\{ProcedureDeviation, ProcedureStepRun, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 /**

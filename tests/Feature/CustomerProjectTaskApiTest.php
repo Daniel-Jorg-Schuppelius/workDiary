@@ -11,11 +11,8 @@
 namespace Tests\Feature;
 
 use App\Enums\Project\ProjectStatus;
-use App\Enums\Task\TaskPriority;
-use App\Enums\Task\TaskStatus;
-use App\Models\Customer;
-use App\Models\Project;
-use App\Models\User;
+use App\Enums\Task\{TaskPriority, TaskStatus};
+use App\Models\{Customer, Project, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;

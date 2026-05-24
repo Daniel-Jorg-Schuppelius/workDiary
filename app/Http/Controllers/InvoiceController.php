@@ -10,18 +10,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
-use App\Models\Expense;
-use App\Models\Invoice;
-use App\Models\Project;
+use App\Models\{Customer, Expense, Invoice, Project};
 use App\Services\Expense\ExpenseInvoicingService;
 use App\Services\Invoicing\InvoiceGenerator;
 use App\Services\UI\DateRangeContext;
 use App\Support\SortableQuery;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 

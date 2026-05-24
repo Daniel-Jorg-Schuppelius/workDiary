@@ -25,8 +25,7 @@ class LexofficeMaterialProvider implements MaterialProviderInterface {
     public function __construct(
         protected string $apiKey,
         protected string $baseUrl = 'https://api.lexoffice.io/v1',
-    ) {
-    }
+    ) {}
 
     public function name(): string {
         return 'lexoffice';

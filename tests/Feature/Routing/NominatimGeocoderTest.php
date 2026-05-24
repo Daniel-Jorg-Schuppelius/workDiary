@@ -11,8 +11,7 @@
 namespace Tests\Feature\Routing;
 
 use App\Models\GeocodeCache;
-use App\Services\Routing\GeocodingException;
-use App\Services\Routing\NominatimGeocoder;
+use App\Services\Routing\{GeocodingException, NominatimGeocoder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Support\Facades\Http;

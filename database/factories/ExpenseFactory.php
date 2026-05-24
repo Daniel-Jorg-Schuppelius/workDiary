@@ -10,11 +10,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\Expense\ExpenseStatus;
-use App\Enums\Expense\PaymentMethod;
-use App\Models\Expense;
-use App\Models\ExpenseCategory;
-use App\Models\User;
+use App\Enums\Expense\{ExpenseStatus, PaymentMethod};
+use App\Models\{Expense, ExpenseCategory, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 

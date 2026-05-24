@@ -10,15 +10,11 @@
 
 namespace App\Models;
 
-use App\Enums\Expense\ExpenseStatus;
-use App\Enums\Expense\PaymentMethod;
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToOrganization;
-use App\Models\Concerns\HasAttachments;
+use App\Enums\Expense\{ExpenseStatus, PaymentMethod};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments};
 use Database\Factories\ExpenseFactory;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
@@ -55,9 +51,9 @@ use Illuminate\Support\Carbon;
 class Expense extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasAttachments;
     /** @use HasFactory<ExpenseFactory> */
     use HasFactory;
-    use HasAttachments;
 
     protected $fillable = [
         'organization_id',

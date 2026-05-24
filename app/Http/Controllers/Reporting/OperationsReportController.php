@@ -10,23 +10,16 @@
 
 namespace App\Http\Controllers\Reporting;
 
-use App\Enums\Diary\Priority;
-use App\Enums\Diary\Status as DiaryStatus;
-use App\Enums\Task\TaskPriority;
-use App\Enums\Task\TaskStatus;
+use App\Enums\Diary\{Priority, Status as DiaryStatus};
+use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Enums\Tour\TourStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Models\DiaryEntry;
-use App\Models\EntryType;
-use App\Models\Task;
-use App\Models\Tour;
-use App\Models\User;
+use App\Models\{DiaryEntry, EntryType, Task, Tour, User};
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;

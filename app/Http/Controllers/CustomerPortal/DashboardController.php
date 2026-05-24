@@ -11,12 +11,7 @@
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Http\Controllers\Controller;
-use App\Models\DiaryEntry;
-use App\Models\Invoice;
-use App\Models\OpenIssue;
-use App\Models\Project;
-use App\Models\TimeEntry;
-use App\Models\User;
+use App\Models\{DiaryEntry, Invoice, OpenIssue, Project, TimeEntry, User};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;

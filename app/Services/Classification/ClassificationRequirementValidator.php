@@ -12,8 +12,7 @@
 namespace App\Services\Classification;
 
 use App\Enums\Classification\ClassificationRequirementPhase;
-use App\Models\ClassificationRequirement;
-use App\Models\DiaryEntry;
+use App\Models\{ClassificationRequirement, DiaryEntry};
 
 /**
  * Prüft Pflichtklassifikationen pro Auftragstyp und Phase.

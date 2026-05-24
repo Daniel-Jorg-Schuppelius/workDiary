@@ -11,15 +11,11 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Models\ScheduledShift;
-use App\Models\ShiftType;
-use App\Models\User;
+use App\Models\{ScheduledShift, ShiftType, User};
 use Carbon\Carbon;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\{Auth, Session};
 use Illuminate\View\View;
 
 class ScheduleImportController extends Controller {

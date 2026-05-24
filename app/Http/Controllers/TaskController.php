@@ -12,12 +12,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\Task\TaskStatus;
 use App\Http\Requests\SaveTaskRequest;
-use App\Models\Project;
-use App\Models\Task;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use App\Models\{Project, Task};
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class TaskController extends Controller {

@@ -13,8 +13,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\Sickness\SickLeaveKind;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Models\SickLeave;
-use App\Models\User;
+use App\Models\{SickLeave, User};
 use App\Services\HolidayService;
 use App\Services\Sickness\ContinuedPaymentService;
 use Carbon\Carbon;
@@ -36,8 +35,7 @@ class SicknessReportController extends Controller {
     public function __construct(
         private readonly HolidayService $holidayService,
         private readonly ContinuedPaymentService $continuedPayment,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();

@@ -13,14 +13,7 @@ namespace Tests\Feature\Asset;
 
 use App\Enums\Asset\AssetOwnership;
 use App\Enums\Protocol\ProtocolType;
-use App\Models\Asset;
-use App\Models\Attachment;
-use App\Models\DiaryEntry;
-use App\Models\MaterialUsage;
-use App\Models\Project;
-use App\Models\Protocol;
-use App\Models\Timesheet;
-use App\Models\User;
+use App\Models\{Asset, Attachment, DiaryEntry, MaterialUsage, Project, Protocol, Timesheet, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;

@@ -14,15 +14,11 @@ use App\Enums\Timesheet\TimesheetStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveTimesheetRequest;
 use App\Http\Resources\TimesheetResource;
-use App\Models\Project;
-use App\Models\Timesheet;
-use App\Services\Timesheet\PdfRenderer;
-use App\Services\Timesheet\SignatureService;
-use Illuminate\Http\Request;
+use App\Models\{Project, Timesheet};
+use App\Services\Timesheet\{PdfRenderer, SignatureService};
+use Illuminate\Http\{Request, Response};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Auth, Gate};
 
 class TimesheetController extends Controller {
     public function index(Request $request): AnonymousResourceCollection {

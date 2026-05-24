@@ -12,14 +12,10 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
-use App\Models\Project;
-use App\Models\Task;
-use App\Models\TimeEntry;
+use App\Models\{Customer, Project, Task, TimeEntry};
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;

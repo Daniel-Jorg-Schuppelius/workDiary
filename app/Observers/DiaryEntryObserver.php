@@ -12,8 +12,7 @@ namespace App\Observers;
 
 use App\Enums\Diary\Status;
 use App\Models\DiaryEntry;
-use App\Services\MailNotifier;
-use App\Services\PushNotifier;
+use App\Services\{MailNotifier, PushNotifier};
 
 class DiaryEntryObserver {
     public function created(DiaryEntry $entry): void {

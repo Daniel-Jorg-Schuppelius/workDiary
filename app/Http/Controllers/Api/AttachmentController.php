@@ -13,17 +13,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AttachmentResource;
-use App\Models\Asset;
-use App\Models\Attachment;
-use App\Models\Comment;
-use App\Models\DiaryEntry;
-use App\Models\EmergencyAssignment;
-use App\Models\OnCallShift;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
+use App\Models\{Asset, Attachment, Comment, DiaryEntry, EmergencyAssignment, OnCallShift};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 

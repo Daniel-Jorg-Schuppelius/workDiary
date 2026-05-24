@@ -9,27 +9,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Controllers\Api\AssetStatusVisibilityController;
-use App\Http\Controllers\Api\AssetTimelineController;
-use App\Http\Controllers\Api\AttachmentController;
-use App\Http\Controllers\Api\AttendanceController;
-use App\Http\Controllers\Api\CommentController;
-use App\Http\Controllers\Api\CustomerController;
-use App\Http\Controllers\Api\DashboardController;
-use App\Http\Controllers\Api\DiaryController;
-use App\Http\Controllers\Api\EmergencyAssignmentController;
-use App\Http\Controllers\Api\FlexController;
-use App\Http\Controllers\Api\MaterialController;
-use App\Http\Controllers\Api\MeController;
-use App\Http\Controllers\Api\OnCallShiftController;
-use App\Http\Controllers\Api\ProjectController;
-use App\Http\Controllers\Api\PushSubscriptionController;
-use App\Http\Controllers\Api\StopwatchController;
-use App\Http\Controllers\Api\TagController;
-use App\Http\Controllers\Api\TaskController;
-use App\Http\Controllers\Api\TimesheetController;
-use App\Http\Controllers\Api\TimesheetEntryController;
-use App\Http\Controllers\Api\TimesheetMaterialController;
+use App\Http\Controllers\Api\{AssetStatusVisibilityController, AssetTimelineController, AttachmentController, AttendanceController, CommentController, CustomerController, DashboardController, DiaryController, EmergencyAssignmentController, FlexController, MaterialController, MeController, OnCallShiftController, ProjectController, PushSubscriptionController, StopwatchController, TagController, TaskController, TimesheetController, TimesheetEntryController, TimesheetMaterialController};
 use Illuminate\Support\Facades\Route;
 
 // Siehe routes/web.php: Projekt-Bindung akzeptiert ID oder "<kunde>/<projekt>".

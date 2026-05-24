@@ -13,8 +13,7 @@ namespace App\Http\Controllers\Concerns;
 use App\Models\User;
 use App\Support\LookupCache;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 

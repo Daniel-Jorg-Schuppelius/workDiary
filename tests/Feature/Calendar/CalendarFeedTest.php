@@ -11,8 +11,7 @@
 namespace Tests\Feature\Calendar;
 
 use App\Enums\Vacation\VacationStatus;
-use App\Models\User;
-use App\Models\Vacation;
+use App\Models\{User, Vacation};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;

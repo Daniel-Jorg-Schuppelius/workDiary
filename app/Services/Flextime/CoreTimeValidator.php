@@ -10,12 +10,10 @@
 
 namespace App\Services\Flextime;
 
-use App\Models\TimeEntry;
-use App\Models\User;
+use App\Models\{TimeEntry, User};
 
 class CoreTimeValidator {
-    public function __construct(protected WorkScheduleResolver $resolver) {
-    }
+    public function __construct(protected WorkScheduleResolver $resolver) {}
 
     /**
      * Liefert eine Liste mit Verstoß-Beschreibungen (i18n-Key/-String). Leeres Array = ok.

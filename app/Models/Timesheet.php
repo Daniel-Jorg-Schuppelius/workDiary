@@ -10,18 +10,12 @@
 
 namespace App\Models;
 
-use App\Enums\Timesheet\TimesheetKind;
-use App\Enums\Timesheet\TimesheetStatus;
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToOrganization;
-use App\Models\Concerns\HasAttachments;
+use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments};
 use Carbon\CarbonInterface;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\{Builder, Model};
+use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
 
 /**

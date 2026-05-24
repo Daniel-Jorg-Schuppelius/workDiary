@@ -11,12 +11,10 @@
 
 namespace Database\Seeders;
 
-use App\Enums\User\Permission as PermissionEnum;
-use App\Enums\User\UserRole;
+use App\Enums\User\{Permission as PermissionEnum, UserRole};
 use App\Models\Organization;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\{Permission, Role};
 use Spatie\Permission\PermissionRegistrar;
 
 /**

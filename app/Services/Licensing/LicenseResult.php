@@ -15,8 +15,7 @@ final class LicenseResult {
         public readonly LicenseStatus $status,
         public readonly ?LicensePayload $payload = null,
         public readonly ?string $message = null,
-    ) {
-    }
+    ) {}
 
     public static function ok(LicenseStatus $status, LicensePayload $payload, ?string $message = null): self {
         return new self($status, $payload, $message);

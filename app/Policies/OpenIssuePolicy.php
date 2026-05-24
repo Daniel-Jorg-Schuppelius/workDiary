@@ -11,10 +11,8 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\OpenIssue;
-use App\Models\User;
-use App\Policies\Concerns\ChecksOwnership;
-use App\Policies\Concerns\HasAdminBypass;
+use App\Models\{OpenIssue, User};
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class OpenIssuePolicy {
     use ChecksOwnership;

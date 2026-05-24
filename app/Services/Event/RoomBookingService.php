@@ -10,11 +10,9 @@
 
 namespace App\Services\Event;
 
-use App\Models\Event;
-use App\Models\Room;
+use App\Models\{Event, Room};
 use Illuminate\Database\Eloquent\Relations\Pivot;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
+use Illuminate\Support\{Carbon, Collection};
 use RuntimeException;
 
 /**

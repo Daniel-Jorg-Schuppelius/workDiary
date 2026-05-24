@@ -11,12 +11,10 @@
 namespace App\Models;
 
 use App\Enums\Diary\Priority;
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{Auditable, BelongsToOrganization};
 use Database\Factories\EntryTypeFactory;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 

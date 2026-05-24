@@ -11,9 +11,7 @@
 namespace Database\Factories;
 
 use App\Enums\Diary\Status as DiaryStatus;
-use App\Models\DiaryEntry;
-use App\Models\EntryType;
-use App\Models\User;
+use App\Models\{DiaryEntry, EntryType, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

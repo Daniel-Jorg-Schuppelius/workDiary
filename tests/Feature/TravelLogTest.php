@@ -10,18 +10,13 @@
 
 namespace Tests\Feature;
 
-use App\Enums\TimeEntry\TimeEntryActivityType;
-use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Enums\Travel\TravelLogVehicle;
-use App\Models\TimeEntry;
-use App\Models\TravelLog;
-use App\Models\User;
-use App\Services\Travel\MileageRateResolver;
-use App\Services\Travel\TravelLogService;
+use App\Models\{TimeEntry, TravelLog, User};
+use App\Services\Travel\{MileageRateResolver, TravelLogService};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\{Config, Session};
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 

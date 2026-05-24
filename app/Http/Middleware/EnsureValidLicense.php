@@ -10,15 +10,13 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\Licensing\LicenseService;
-use App\Services\Licensing\LicenseStatus;
+use App\Services\Licensing\{LicenseService, LicenseStatus};
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureValidLicense {
-    public function __construct(private readonly LicenseService $service) {
-    }
+    public function __construct(private readonly LicenseService $service) {}
 
     public function handle(Request $request, Closure $next): Response {
         if (! $this->service->isEnforced()) {

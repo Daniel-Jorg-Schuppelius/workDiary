@@ -13,9 +13,7 @@ namespace App\Services\Routing;
 use App\Models\GeocodeCache;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\{Cache, Http, Log};
 
 /**
  * Forward geocoding via Nominatim with persistent cache and rate limit.
@@ -29,8 +27,7 @@ class NominatimGeocoder {
     public function __construct(
         /** @var array<string, mixed> */
         private array $config,
-    ) {
-    }
+    ) {}
 
     public function geocode(string $query): ?GeocodeResult {
         $query = trim($query);

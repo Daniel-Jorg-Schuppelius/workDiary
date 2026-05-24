@@ -10,8 +10,7 @@
 
 namespace App\Policies;
 
-use App\Models\Material;
-use App\Models\User;
+use App\Models\{Material, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 class MaterialPolicy {

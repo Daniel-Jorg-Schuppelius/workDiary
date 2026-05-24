@@ -10,10 +10,8 @@
 
 namespace Tests\Feature;
 
-use App\Enums\Vehicle\VehiclePropulsion;
-use App\Enums\Vehicle\VehicleType;
-use App\Models\User;
-use App\Models\Vehicle;
+use App\Enums\Vehicle\{VehiclePropulsion, VehicleType};
+use App\Models\{User, Vehicle};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

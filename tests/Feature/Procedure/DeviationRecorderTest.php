@@ -11,23 +11,10 @@
 
 namespace Tests\Feature\Procedure;
 
-use App\Enums\Procedure\ProcedureDeviationProposedAction;
-use App\Enums\Procedure\ProcedureDeviationSeverity;
-use App\Enums\Procedure\ProcedureDeviationType;
-use App\Enums\Procedure\ProcedureRunEventType;
-use App\Enums\Procedure\ProcedureStepRunStatus;
-use App\Enums\Procedure\ProcedureStepType;
+use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationSeverity, ProcedureDeviationType, ProcedureRunEventType, ProcedureStepRunStatus, ProcedureStepType};
 use App\Exceptions\ProcedureDeviationValidationException;
-use App\Models\DiaryEntry;
-use App\Models\OpenIssue;
-use App\Models\Organization;
-use App\Models\ProcedureDeviation;
-use App\Models\ProcedureRun;
-use App\Models\ProcedureStepRun;
-use App\Models\User;
-use App\Services\Procedure\DeviationRecorder;
-use App\Services\Procedure\ProcedureExecutionService;
-use App\Services\Procedure\ProcedureTemplateService;
+use App\Models\{DiaryEntry, OpenIssue, Organization, ProcedureDeviation, ProcedureRun, ProcedureStepRun, User};
+use App\Services\Procedure\{DeviationRecorder, ProcedureExecutionService, ProcedureTemplateService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

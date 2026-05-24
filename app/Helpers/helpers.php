@@ -20,8 +20,7 @@ declare(strict_types=1);
  */
 
 use App\Models\Organization;
-use App\Support\Toolkit\DateFacade;
-use App\Support\Toolkit\StringFacade;
+use App\Support\Toolkit\{DateFacade, StringFacade};
 use CommonToolkit\Enums\Month;
 
 if (! function_exists('truncate')) {

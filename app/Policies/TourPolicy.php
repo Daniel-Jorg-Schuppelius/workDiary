@@ -10,10 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\Tour;
-use App\Models\User;
-use App\Policies\Concerns\ChecksOwnership;
-use App\Policies\Concerns\HasAdminBypass;
+use App\Models\{Tour, User};
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class TourPolicy {
     use ChecksOwnership;

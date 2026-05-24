@@ -13,12 +13,8 @@ namespace App\Legacy\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Legacy\Http\Concerns\RequiresLegacyAdmin;
 use App\Legacy\Http\Requests\SaveLegacyUserRequest;
-use App\Legacy\Models\LegacyDiaryEntry;
-use App\Legacy\Models\LegacyNotdienst;
-use App\Legacy\Models\LegacyOnCall;
-use App\Legacy\Models\LegacyUser;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use App\Legacy\Models\{LegacyDiaryEntry, LegacyNotdienst, LegacyOnCall, LegacyUser};
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 
 class LegacyUserAdminController extends Controller {

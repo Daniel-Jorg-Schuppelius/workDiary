@@ -10,10 +10,8 @@
 
 namespace App\Services\Attendance;
 
-use App\Enums\Attendance\AttendanceSource;
-use App\Enums\Attendance\AttendanceStatus;
-use App\Models\Attendance;
-use App\Models\User;
+use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
+use App\Models\{Attendance, User};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -32,8 +30,7 @@ class AttendanceClockService {
     public function __construct(
         /** Maximum allowed open session length in minutes before auto-close. */
         protected int $maxOpenMinutes = 16 * 60,
-    ) {
-    }
+    ) {}
 
     /**
      * Returns the currently open attendance for a user, if any.

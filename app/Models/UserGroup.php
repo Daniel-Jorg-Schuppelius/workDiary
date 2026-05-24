@@ -14,10 +14,8 @@ use App\Models\Concerns\Auditable;
 use App\Models\Scopes\OrganizationScope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
+use Illuminate\Support\{Carbon, Str};
 use Spatie\Permission\Traits\HasRoles;
 
 /**

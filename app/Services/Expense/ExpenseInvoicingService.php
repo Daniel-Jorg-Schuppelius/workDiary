@@ -11,11 +11,8 @@
 namespace App\Services\Expense;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\Customer;
-use App\Models\Expense;
-use App\Models\Invoice;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
+use App\Models\{Expense, Invoice};
+use Illuminate\Database\Eloquent\{Builder, Collection};
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 

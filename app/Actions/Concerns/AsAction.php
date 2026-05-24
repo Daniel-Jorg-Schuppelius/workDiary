@@ -26,5 +26,4 @@ namespace App\Actions\Concerns;
  *      public function handle(User $user, CreateDiaryEntryData $data): DiaryEntry { ... }
  *  }
  */
-interface AsAction {
-}
+interface AsAction {}

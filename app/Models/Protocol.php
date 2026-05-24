@@ -10,18 +10,12 @@
 
 namespace App\Models;
 
-use App\Enums\Protocol\ProtocolStatus;
-use App\Enums\Protocol\ProtocolType;
-use App\Enums\Protocol\ProtocolVisibility;
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToOrganization;
-use App\Models\Concerns\HasAttachments;
+use App\Enums\Protocol\{ProtocolStatus, ProtocolType, ProtocolVisibility};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments};
 use Database\Factories\ProtocolFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
 
 /**
  * @property int $id

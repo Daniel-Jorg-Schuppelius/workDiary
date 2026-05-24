@@ -11,16 +11,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Asset\AssetClass;
-use App\Enums\Asset\AssetOwnership;
-use App\Enums\Asset\AssetStatus;
+use App\Enums\Asset\{AssetClass, AssetOwnership, AssetStatus};
 use App\Exceptions\AssetValidationException;
 use App\Http\Requests\SaveAssetRequest;
-use App\Models\Asset;
-use App\Models\Customer;
+use App\Models\{Asset, Attachment, Customer, DiaryEntry, MaterialUsage, Protocol, User};
 use App\Services\Asset\AssetService;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
@@ -110,6 +106,63 @@ class AssetController extends Controller {
         }
 
         return redirect()->route('assets.index')->with('success', __('Asset angelegt.'));
+    }
+
+    public function show(Asset $asset, Request $request): View {
+        Gate::authorize('view', $asset);
+        $user = $request->user();
+
+        if (! $user instanceof User) {
+            abort(403);
+        }
+
+        $asset->load(['customer:id,name']);
+        $asset->loadCount(['diaryEntries', 'protocols', 'materialUsages', 'attachments']);
+
+        $diaryEntries = $asset->diaryEntries()
+            ->with(['user:id,name', 'project:id,name'])
+            ->limit(12)
+            ->get()
+            ->filter(fn(DiaryEntry $entry): bool => Gate::forUser($user)->allows('view', $entry))
+            ->values();
+
+        $protocols = $asset->protocols()
+            ->with(['creator:id,name'])
+            ->limit(12)
+            ->get()
+            ->filter(fn(Protocol $protocol): bool => Gate::forUser($user)->allows('view', $protocol))
+            ->values();
+
+        $materialUsages = $asset->materialUsages()
+            ->with(['timesheet:id,work_date,user_id', 'timesheet.user:id,name'])
+            ->latest('updated_at')
+            ->limit(12)
+            ->get()
+            ->filter(fn(MaterialUsage $usage): bool => Gate::forUser($user)->allows('view', $usage))
+            ->values();
+
+        $attachments = $asset->attachments()
+            ->latest('created_at')
+            ->limit(12)
+            ->get()
+            ->filter(fn(Attachment $attachment): bool => Gate::forUser($user)->allows('view', $attachment))
+            ->values();
+
+        return view('assets.show', [
+            'asset' => $asset,
+            'classOptions' => $this->assetClassOptions(),
+            'statusOptions' => $this->assetStatusOptions(),
+            'diaryEntries' => $diaryEntries,
+            'protocols' => $protocols,
+            'materialUsages' => $materialUsages,
+            'attachments' => $attachments,
+            'visibleCounts' => [
+                'diary' => $diaryEntries->count(),
+                'protocols' => $protocols->count(),
+                'material' => $materialUsages->count(),
+                'attachments' => $attachments->count(),
+            ],
+        ]);
     }
 
     private function normalizeAssetClass(string $value): ?string {

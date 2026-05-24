@@ -12,8 +12,7 @@ namespace App\Services\Timesheet;
 
 use App\Models\Timesheet;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\{Storage, View};
 
 class PdfRenderer {
     public function render(Timesheet $timesheet): string {

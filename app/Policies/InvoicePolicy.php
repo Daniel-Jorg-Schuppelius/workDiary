@@ -10,8 +10,7 @@
 
 namespace App\Policies;
 
-use App\Models\Invoice;
-use App\Models\User;
+use App\Models\{Invoice, User};
 
 class InvoicePolicy {
     public function viewAny(User $user): bool {

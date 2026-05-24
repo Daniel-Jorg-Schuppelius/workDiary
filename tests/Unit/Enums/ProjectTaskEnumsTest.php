@@ -11,8 +11,7 @@
 namespace Tests\Unit\Enums;
 
 use App\Enums\Project\ProjectStatus;
-use App\Enums\Task\TaskPriority;
-use App\Enums\Task\TaskStatus;
+use App\Enums\Task\{TaskPriority, TaskStatus};
 use Tests\TestCase;
 
 final class ProjectTaskEnumsTest extends TestCase {

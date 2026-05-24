@@ -8,12 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Controllers\CustomerPortal\DashboardController;
-use App\Http\Controllers\CustomerPortal\DiaryController;
-use App\Http\Controllers\CustomerPortal\InvoiceController;
-use App\Http\Controllers\CustomerPortal\LoginController;
-use App\Http\Controllers\CustomerPortal\OpenIssueController;
-use App\Http\Controllers\CustomerPortal\TimeEntryController;
+use App\Http\Controllers\CustomerPortal\{DashboardController, DiaryController, InvoiceController, LoginController, OpenIssueController, TimeEntryController};
 use Illuminate\Support\Facades\Route;
 
 /**

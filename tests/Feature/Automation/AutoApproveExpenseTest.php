@@ -11,11 +11,7 @@
 namespace Tests\Feature\Automation;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\AutomationRule;
-use App\Models\AutomationRuleRun;
-use App\Models\Expense;
-use App\Models\ExpenseCategory;
-use App\Models\User;
+use App\Models\{AutomationRule, AutomationRuleRun, Expense, ExpenseCategory, User};
 use App\Services\Expense\ExpenseService;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

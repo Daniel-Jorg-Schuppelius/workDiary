@@ -10,12 +10,8 @@
 
 namespace Tests\Unit\Reminders;
 
-use App\Enums\Expense\ExpenseStatus;
-use App\Enums\Expense\PerDiemTripStatus;
-use App\Models\Expense;
-use App\Models\ExpenseCategory;
-use App\Models\PerDiemTrip;
-use App\Models\User;
+use App\Enums\Expense\{ExpenseStatus, PerDiemTripStatus};
+use App\Models\{Expense, ExpenseCategory, PerDiemTrip, User};
 use App\Services\Reminders\ReminderService;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionsSeeder;

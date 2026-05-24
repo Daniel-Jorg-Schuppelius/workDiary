@@ -14,8 +14,7 @@ namespace App\Services\Compliance\Rules;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\ScheduledShift;
-use App\Services\Compliance\ComplianceRule;
-use App\Services\Compliance\ComplianceViolation;
+use App\Services\Compliance\{ComplianceRule, ComplianceViolation};
 use Carbon\CarbonImmutable;
 
 /** Max. Anzahl aufeinanderfolgender Arbeitstage (default 6). */

@@ -10,9 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Attachment;
-use App\Models\Organization;
-use App\Models\User;
+use App\Models\{Attachment, Organization, User};
 use App\Services\BrandingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

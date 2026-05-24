@@ -11,10 +11,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\PushSubscription;
-use App\Models\User;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Models\{PushSubscription, User};
+use Illuminate\Http\{JsonResponse, Request};
 
 class PushSubscriptionController extends Controller {
     public function vapid(): JsonResponse {

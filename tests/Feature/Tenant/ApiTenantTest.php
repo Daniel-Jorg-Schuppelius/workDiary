@@ -10,12 +10,7 @@
 
 namespace Tests\Feature\Tenant;
 
-use App\Models\Customer;
-use App\Models\DiaryEntry;
-use App\Models\Organization;
-use App\Models\Project;
-use App\Models\Task;
-use App\Models\User;
+use App\Models\{Customer, DiaryEntry, Organization, Project, Task, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;

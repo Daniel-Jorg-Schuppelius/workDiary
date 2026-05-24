@@ -11,22 +11,18 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Attendance\AttendanceStatus;
-use App\Models\Attendance;
-use App\Models\User;
+use App\Models\{Attendance, User};
 use App\Services\Attendance\AttendanceClockService;
 use App\Support\SortableQuery;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use RuntimeException;
 
 class AttendanceController extends Controller {
-    public function __construct(protected AttendanceClockService $clock) {
-    }
+    public function __construct(protected AttendanceClockService $clock) {}
 
     /**
      * Lists attendances for the authenticated user (current month by default).

@@ -11,12 +11,8 @@
 namespace Tests\Feature;
 
 use App\Enums\Travel\TravelLogVehicle;
-use App\Enums\Vehicle\VehicleOwnership;
-use App\Enums\Vehicle\VehiclePropulsion;
-use App\Enums\Vehicle\VehicleType;
-use App\Models\DiaryEntry;
-use App\Models\User;
-use App\Models\Vehicle;
+use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
+use App\Models\{DiaryEntry, User, Vehicle};
 use App\Services\Routing\TourService;
 use Carbon\CarbonImmutable;
 use Database\Seeders\EntryTypeSeeder;

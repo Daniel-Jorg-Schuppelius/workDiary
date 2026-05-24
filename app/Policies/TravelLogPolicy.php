@@ -10,10 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\TravelLog;
-use App\Models\User;
-use App\Policies\Concerns\ChecksOwnership;
-use App\Policies\Concerns\HasAdminBypass;
+use App\Models\{TravelLog, User};
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class TravelLogPolicy {
     use ChecksOwnership;

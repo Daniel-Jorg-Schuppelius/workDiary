@@ -11,12 +11,10 @@
 namespace App\Models;
 
 use Database\Factories\PerDiemRateFactory;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use DateTimeInterface;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\{Builder, Model};
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\{Carbon, Str};
 
 /**
  * @property int $id

@@ -10,16 +10,8 @@
 
 namespace Tests\Feature;
 
-use App\Enums\Vacation\VacationStatus;
-use App\Enums\Vacation\VacationType;
-use App\Models\DutyPlan;
-use App\Models\EmergencyAssignment;
-use App\Models\OnCallShift;
-use App\Models\Organization;
-use App\Models\ScheduledShift;
-use App\Models\ShiftType;
-use App\Models\User;
-use App\Models\Vacation;
+use App\Enums\Vacation\{VacationStatus, VacationType};
+use App\Models\{DutyPlan, EmergencyAssignment, OnCallShift, Organization, ScheduledShift, ShiftType, User, Vacation};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

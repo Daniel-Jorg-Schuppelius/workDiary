@@ -13,14 +13,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Models\DiaryEntry;
-use App\Models\User;
+use App\Models\{DiaryEntry, User};
 use App\Services\UI\DateRangeContext;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class KanbanController extends Controller {

@@ -11,8 +11,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\Diary\Priority;
-use App\Models\EntryType;
-use App\Models\Organization;
+use App\Models\{EntryType, Organization};
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

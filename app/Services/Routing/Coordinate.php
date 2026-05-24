@@ -17,8 +17,7 @@ final class Coordinate {
     public function __construct(
         public readonly float $lat,
         public readonly float $lng,
-    ) {
-    }
+    ) {}
 
     /** @return array{0: float, 1: float} OSRM-style [lng, lat] tuple. */
     public function toLngLat(): array {

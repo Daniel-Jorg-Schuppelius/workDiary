@@ -28,8 +28,7 @@ class JsTranslationProvider {
      */
     private const EXPOSED_GROUPS = ['js'];
 
-    public function __construct(private readonly Translator $translator) {
-    }
+    public function __construct(private readonly Translator $translator) {}
 
     /**
      * Returns a flat ['group.subkey' => 'translation'] map for the given

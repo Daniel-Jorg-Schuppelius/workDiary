@@ -10,8 +10,7 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\Task\TaskPriority;
-use App\Enums\Task\TaskStatus;
+use App\Enums\Task\{TaskPriority, TaskStatus};
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

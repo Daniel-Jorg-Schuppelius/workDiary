@@ -11,21 +11,17 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\Expense;
-use App\Models\User;
+use App\Models\{Expense, User};
 use App\Services\Expense\ExpenseService;
 use App\Support\SortableQuery;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class ExpenseApprovalController extends Controller {
     public function __construct(
         private readonly ExpenseService $service,
-    ) {
-    }
+    ) {}
 
     public function inbox(Request $request): View {
         // Liste aller offenen / kürzlich entschiedenen Spesen — nur Admin-bypass darf rein.

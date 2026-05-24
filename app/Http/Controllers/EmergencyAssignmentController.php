@@ -11,11 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ManagesShiftLike;
-use App\Models\EmergencyAssignment;
-use App\Models\OnCallShift;
-use App\Models\User;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use App\Models\{EmergencyAssignment, OnCallShift, User};
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;

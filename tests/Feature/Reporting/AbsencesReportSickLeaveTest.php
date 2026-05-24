@@ -11,11 +11,9 @@
 namespace Tests\Feature\Reporting;
 
 use App\Enums\Sickness\SickLeaveKind;
-use App\Models\SickLeave;
-use App\Models\User;
+use App\Models\{SickLeave, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Concerns\WithGlobalDateRange;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
 
 class AbsencesReportSickLeaveTest extends TestCase {

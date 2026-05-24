@@ -10,20 +10,12 @@
 
 namespace App\Models;
 
-use App\Enums\OpenIssue\OpenIssueSeverity;
-use App\Enums\OpenIssue\OpenIssueSource;
-use App\Enums\OpenIssue\OpenIssueStatus;
-use App\Enums\OpenIssue\OpenIssueVisibility;
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToOrganization;
-use App\Models\Concerns\HasAttachments;
+use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments};
 use Database\Factories\OpenIssueFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\{Model, SoftDeletes};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
 
 /**
  * @property int $id
@@ -49,10 +41,10 @@ class OpenIssue extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
-    use SoftDeletes;
-
     /** @use HasFactory<OpenIssueFactory> */
     use HasFactory;
+
+    use SoftDeletes;
 
     protected $fillable = [
         'organization_id',

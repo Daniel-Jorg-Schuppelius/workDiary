@@ -11,8 +11,7 @@
 namespace Database\Factories;
 
 use App\Enums\Expense\PerDiemDayKind;
-use App\Models\PerDiemDay;
-use App\Models\PerDiemTrip;
+use App\Models\{PerDiemDay, PerDiemTrip};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

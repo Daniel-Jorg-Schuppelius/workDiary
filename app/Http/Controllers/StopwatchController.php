@@ -11,19 +11,15 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Timesheet\TimesheetStatus;
-use App\Models\Project;
-use App\Models\Timesheet;
+use App\Models\{Project, Timesheet};
 use App\Services\Timesheet\Stopwatch;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class StopwatchController extends Controller {
-    public function __construct(protected Stopwatch $stopwatch) {
-    }
+    public function __construct(protected Stopwatch $stopwatch) {}
 
     public function current(): View {
         return view('stopwatch._panel', [

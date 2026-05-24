@@ -10,8 +10,7 @@
 
 namespace App\Policies;
 
-use App\Models\ShiftType;
-use App\Models\User;
+use App\Models\{ShiftType, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 class ShiftTypePolicy {

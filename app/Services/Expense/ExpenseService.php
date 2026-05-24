@@ -11,13 +11,9 @@
 namespace App\Services\Expense;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\Expense;
-use App\Models\ExpenseCategory;
-use App\Models\User;
-use App\Notifications\Expense\ExpenseDecidedNotification;
-use App\Notifications\Expense\ExpenseSubmittedNotification;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
+use App\Models\{Expense, ExpenseCategory, User};
+use App\Notifications\Expense\{ExpenseDecidedNotification, ExpenseSubmittedNotification};
+use Illuminate\Support\Facades\{DB, Notification};
 
 /**
  * Kapselt Persistenz und Statuswechsel von {@see Expense}.
@@ -32,8 +28,7 @@ use Illuminate\Support\Facades\Notification;
 class ExpenseService {
     public function __construct(
         private readonly ApproverResolver $approverResolver,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>  $attributes

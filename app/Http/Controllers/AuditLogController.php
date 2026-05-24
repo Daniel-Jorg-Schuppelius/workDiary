@@ -11,17 +11,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Models\Attachment;
-use App\Models\AuditLog;
-use App\Models\Comment;
-use App\Models\DiaryEntry;
-use App\Models\EmergencyAssignment;
-use App\Models\OnCallShift;
+use App\Models\{Attachment, AuditLog, Comment, DiaryEntry, EmergencyAssignment, OnCallShift};
 use App\Services\UI\DateRangeContext;
-use App\Support\LookupCache;
-use App\Support\SortableQuery;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use App\Support\{LookupCache, SortableQuery};
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 

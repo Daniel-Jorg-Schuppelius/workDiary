@@ -11,20 +11,10 @@
 
 namespace App\Services\Procedure;
 
-use App\Enums\OpenIssue\OpenIssueSeverity;
-use App\Enums\OpenIssue\OpenIssueSource;
-use App\Enums\OpenIssue\OpenIssueVisibility;
-use App\Enums\Procedure\ProcedureDeviationProposedAction;
-use App\Enums\Procedure\ProcedureDeviationSeverity;
-use App\Enums\Procedure\ProcedureDeviationType;
-use App\Enums\Procedure\ProcedureRunEventType;
-use App\Enums\Procedure\ProcedureStepRunStatus;
+use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueVisibility};
+use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationSeverity, ProcedureDeviationType, ProcedureRunEventType, ProcedureStepRunStatus};
 use App\Exceptions\ProcedureDeviationValidationException;
-use App\Models\ProcedureDeviation;
-use App\Models\ProcedureRun;
-use App\Models\ProcedureRunEvent;
-use App\Models\ProcedureStepRun;
-use App\Models\User;
+use App\Models\{ProcedureDeviation, ProcedureRun, ProcedureRunEvent, ProcedureStepRun, User};
 use App\Services\OpenIssue\OpenIssueService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

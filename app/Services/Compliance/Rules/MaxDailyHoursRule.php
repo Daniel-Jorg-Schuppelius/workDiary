@@ -14,9 +14,7 @@ namespace App\Services\Compliance\Rules;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\ScheduledShift;
-use App\Services\Compliance\ComplianceRule;
-use App\Services\Compliance\ComplianceViolation;
-use App\Services\Compliance\ResolvesShiftTiming;
+use App\Services\Compliance\{ComplianceRule, ComplianceViolation, ResolvesShiftTiming};
 
 /** ArbZG §3: max. Tagesarbeitszeit (Standard 10h, ggf. erweitert auf 8h Durchschnitt). */
 final class MaxDailyHoursRule implements ComplianceRule {

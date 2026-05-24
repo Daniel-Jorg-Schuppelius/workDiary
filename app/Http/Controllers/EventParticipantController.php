@@ -11,21 +11,16 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Event\ParticipantStatus;
-use App\Models\Event;
-use App\Models\EventParticipant;
-use App\Models\User;
+use App\Models\{Event, EventParticipant, User};
 use App\Services\Event\CertificateService;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 
 class EventParticipantController extends Controller {
     public function __construct(
         private readonly CertificateService $certificates,
-    ) {
-    }
+    ) {}
 
     /**
      * Eigene Antwort eines Teilnehmers (accept | decline).

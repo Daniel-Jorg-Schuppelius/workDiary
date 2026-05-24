@@ -10,8 +10,7 @@
 
 namespace Tests\Unit\Enums;
 
-use App\Enums\Attendance\AttendanceSource;
-use App\Enums\Attendance\AttendanceStatus;
+use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
 use Tests\TestCase;
 
 final class AttendanceEnumsTest extends TestCase {

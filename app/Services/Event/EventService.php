@@ -10,12 +10,8 @@
 
 namespace App\Services\Event;
 
-use App\Enums\Event\EventStatus;
-use App\Enums\Event\ParticipantRole;
-use App\Enums\Event\ParticipantStatus;
-use App\Models\Event;
-use App\Models\Room;
-use App\Models\User;
+use App\Enums\Event\{EventStatus, ParticipantRole, ParticipantStatus};
+use App\Models\{Event, Room, User};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -29,8 +25,7 @@ class EventService {
         private readonly RoomBookingService $rooms,
         private readonly ReminderService $reminders,
         private readonly RecurrenceService $recurrence,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, mixed>                                              $data         Event-Felder (fillable).

@@ -10,14 +10,7 @@
 
 declare(strict_types=1);
 
-use App\Legacy\Http\Controllers\LegacyAccountController;
-use App\Legacy\Http\Controllers\LegacyArchiveController;
-use App\Legacy\Http\Controllers\LegacyCallcenterController;
-use App\Legacy\Http\Controllers\LegacyDiaryController;
-use App\Legacy\Http\Controllers\LegacyMigrationController;
-use App\Legacy\Http\Controllers\LegacyNotdienstController;
-use App\Legacy\Http\Controllers\LegacyOnCallController;
-use App\Legacy\Http\Controllers\LegacyUserAdminController;
+use App\Legacy\Http\Controllers\{LegacyAccountController, LegacyArchiveController, LegacyCallcenterController, LegacyDiaryController, LegacyMigrationController, LegacyNotdienstController, LegacyOnCallController, LegacyUserAdminController};
 use Illuminate\Support\Facades\Route;
 
 /*

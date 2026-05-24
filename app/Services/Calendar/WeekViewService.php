@@ -10,13 +10,9 @@
 
 namespace App\Services\Calendar;
 
-use App\Models\DiaryEntry;
-use App\Models\EmergencyAssignment;
-use App\Models\OnCallShift;
-use App\Models\User;
+use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift, User};
 use App\Support\WeekDay;
-use Carbon\CarbonImmutable;
-use Carbon\CarbonInterface;
+use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 

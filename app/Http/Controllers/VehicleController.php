@@ -10,23 +10,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Vehicle\VehicleOwnership;
-use App\Enums\Vehicle\VehiclePropulsion;
-use App\Enums\Vehicle\VehicleType;
+use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
 use App\Http\Requests\SaveVehicleRequest;
-use App\Models\User;
-use App\Models\Vehicle;
+use App\Models\{User, Vehicle};
 use App\Services\Fleet\VehicleService;
 use App\Support\SortableQuery;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class VehicleController extends Controller {
-    public function __construct(private readonly VehicleService $service) {
-    }
+    public function __construct(private readonly VehicleService $service) {}
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Vehicle::class);

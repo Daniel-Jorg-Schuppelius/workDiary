@@ -11,18 +11,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Attendance;
-use App\Models\User;
+use App\Models\{Attendance, User};
 use App\Services\Attendance\AttendanceClockService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use RuntimeException;
 
 class AttendanceController extends Controller {
-    public function __construct(protected AttendanceClockService $clock) {
-    }
+    public function __construct(protected AttendanceClockService $clock) {}
 
     public function current(): JsonResponse {
         $user = Auth::user();

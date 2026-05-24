@@ -11,9 +11,7 @@
 namespace Tests\Feature\Expense;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\Expense;
-use App\Models\ExpenseCategory;
-use App\Models\User;
+use App\Models\{Expense, ExpenseCategory, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;

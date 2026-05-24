@@ -11,9 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateScheduledShiftRequest;
-use App\Models\ScheduledShift;
-use App\Models\ShiftType;
-use App\Models\User;
+use App\Models\{ScheduledShift, ShiftType, User};
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;

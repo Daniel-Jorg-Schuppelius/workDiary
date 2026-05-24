@@ -10,8 +10,7 @@
 
 namespace App\Policies;
 
-use App\Models\Qualification;
-use App\Models\User;
+use App\Models\{Qualification, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 class QualificationPolicy {

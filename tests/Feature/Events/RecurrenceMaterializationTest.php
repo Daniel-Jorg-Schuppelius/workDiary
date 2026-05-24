@@ -10,8 +10,7 @@
 
 namespace Tests\Feature\Events;
 
-use App\Models\Event;
-use App\Models\User;
+use App\Models\{Event, User};
 use App\Services\Event\RecurrenceService;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

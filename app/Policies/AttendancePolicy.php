@@ -10,10 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\Attendance;
-use App\Models\User;
-use App\Policies\Concerns\ChecksOwnership;
-use App\Policies\Concerns\HasAdminBypass;
+use App\Models\{Attendance, User};
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class AttendancePolicy {
     use ChecksOwnership;

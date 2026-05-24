@@ -14,16 +14,13 @@ use App\Models\Timesheet;
 use App\Services\Timesheet\PdfRenderer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Attachment;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Mail\Mailables\{Attachment, Content, Envelope};
 use Illuminate\Queue\SerializesModels;
 
 class TimesheetSignedMail extends Mailable {
     use Queueable, SerializesModels;
 
-    public function __construct(public Timesheet $timesheet) {
-    }
+    public function __construct(public Timesheet $timesheet) {}
 
     public function envelope(): Envelope {
         return new Envelope(subject: __('Stundenzettel signiert: :date', [

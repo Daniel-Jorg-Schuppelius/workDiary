@@ -12,8 +12,7 @@ declare(strict_types=1);
 
 namespace App\Support\Toolkit;
 
-use CommonToolkit\Enums\DateTimeFormat;
-use CommonToolkit\Enums\Weekday;
+use CommonToolkit\Enums\{DateTimeFormat, Weekday};
 use CommonToolkit\Helper\Data\DateHelper;
 use DateTimeImmutable;
 use DateTimeInterface;

@@ -11,14 +11,8 @@
 
 namespace Tests\Feature\Classification;
 
-use App\Enums\Classification\ClassificationRequirementPhase;
-use App\Enums\Classification\ClassificationRequirementSeverity;
-use App\Models\AuditLog;
-use App\Models\ClassificationRequirement;
-use App\Models\DiaryEntry;
-use App\Models\EntryType;
-use App\Models\Organization;
-use App\Models\User;
+use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequirementSeverity};
+use App\Models\{AuditLog, ClassificationRequirement, DiaryEntry, EntryType, Organization, User};
 use App\Services\Classification\ClassificationRequirementValidator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

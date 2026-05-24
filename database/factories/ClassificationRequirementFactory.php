@@ -11,10 +11,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\Classification\ClassificationRequirementPhase;
-use App\Enums\Classification\ClassificationRequirementSeverity;
-use App\Models\ClassificationRequirement;
-use App\Models\Organization;
+use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequirementSeverity};
+use App\Models\{ClassificationRequirement, Organization};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<ClassificationRequirement> */

@@ -12,12 +12,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CommentResource;
-use App\Models\Comment;
-use App\Models\DiaryEntry;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use App\Models\{Comment, DiaryEntry};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 
 class CommentController extends Controller {
     public function store(Request $request, DiaryEntry $diary): JsonResponse {

@@ -10,15 +10,10 @@
 
 namespace Tests\Feature\CustomerPortal;
 
-use App\Models\Customer;
-use App\Models\DiaryEntry;
-use App\Models\Invoice;
-use App\Models\OpenIssue;
-use App\Models\User;
+use App\Models\{Customer, DiaryEntry, Invoice, OpenIssue, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\{Auth, Hash};
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

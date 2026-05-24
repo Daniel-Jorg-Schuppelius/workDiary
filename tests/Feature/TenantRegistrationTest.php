@@ -11,8 +11,7 @@
 namespace Tests\Feature;
 
 use App\Enums\User\UserRole;
-use App\Models\Organization;
-use App\Models\User;
+use App\Models\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

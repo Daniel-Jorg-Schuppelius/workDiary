@@ -12,16 +12,10 @@ namespace App\Legacy\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Legacy\Http\Requests\RunLegacyMigrationRequest;
-use App\Models\AuditLog;
-use App\Models\DiaryEntry;
-use App\Models\EmergencyAssignment;
-use App\Models\OnCallShift;
-use App\Models\User;
+use App\Models\{AuditLog, DiaryEntry, EmergencyAssignment, OnCallShift, User};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Artisan, DB, Gate};
 
 class LegacyMigrationController extends Controller {
     public function index(): View {

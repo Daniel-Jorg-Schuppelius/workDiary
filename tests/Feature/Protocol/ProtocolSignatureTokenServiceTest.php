@@ -10,14 +10,9 @@
 
 namespace Tests\Feature\Protocol;
 
-use App\Enums\Protocol\ProtocolSignatureRole;
-use App\Enums\Protocol\ProtocolType;
-use App\Models\DiaryEntry;
-use App\Models\Protocol;
-use App\Models\ProtocolSignatureToken;
-use App\Models\User;
-use App\Services\Protocol\ProtocolService;
-use App\Services\Protocol\ProtocolSignatureTokenService;
+use App\Enums\Protocol\{ProtocolSignatureRole, ProtocolType};
+use App\Models\{DiaryEntry, Protocol, ProtocolSignatureToken, User};
+use App\Services\Protocol\{ProtocolService, ProtocolSignatureTokenService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
 use Tests\TestCase;

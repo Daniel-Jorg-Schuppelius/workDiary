@@ -14,13 +14,9 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Mail\TimesheetSignedMail;
-use App\Models\Material;
-use App\Models\Project;
-use App\Models\Timesheet;
-use App\Models\User;
+use App\Models\{Material, Project, Timesheet, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\{Mail, Storage};
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 

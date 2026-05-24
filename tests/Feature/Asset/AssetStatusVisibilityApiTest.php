@@ -12,15 +12,9 @@
 namespace Tests\Feature\Asset;
 
 use App\Enums\Asset\AssetOwnership;
-use App\Enums\OpenIssue\OpenIssueSeverity;
-use App\Enums\OpenIssue\OpenIssueSource;
-use App\Enums\OpenIssue\OpenIssueStatus;
-use App\Enums\OpenIssue\OpenIssueVisibility;
+use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
 use App\Enums\Protocol\ProtocolType;
-use App\Models\Asset;
-use App\Models\OpenIssue;
-use App\Models\Protocol;
-use App\Models\User;
+use App\Models\{Asset, OpenIssue, Protocol, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;

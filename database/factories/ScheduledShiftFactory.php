@@ -11,9 +11,7 @@
 namespace Database\Factories;
 
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Models\ScheduledShift;
-use App\Models\ShiftType;
-use App\Models\User;
+use App\Models\{ScheduledShift, ShiftType, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

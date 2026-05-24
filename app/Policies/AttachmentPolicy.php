@@ -10,11 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\Attachment;
-use App\Models\Organization;
-use App\Models\User;
-use App\Policies\Concerns\ChecksOwnership;
-use App\Policies\Concerns\HasAdminBypass;
+use App\Models\{Attachment, Organization, User};
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class AttachmentPolicy {
     use ChecksOwnership;

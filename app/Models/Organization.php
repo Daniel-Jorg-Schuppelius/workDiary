@@ -10,15 +10,12 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\HasAttachments;
+use App\Models\Concerns\{Auditable, HasAttachments};
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Support\{Carbon, Str};
 
 /**
  * @property int $id

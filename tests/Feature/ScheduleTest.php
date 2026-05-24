@@ -11,8 +11,7 @@
 namespace Tests\Feature;
 
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Models\ScheduledShift;
-use App\Models\User;
+use App\Models\{ScheduledShift, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

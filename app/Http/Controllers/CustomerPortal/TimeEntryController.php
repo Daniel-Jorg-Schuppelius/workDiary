@@ -11,8 +11,7 @@
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Http\Controllers\Controller;
-use App\Models\TimeEntry;
-use App\Models\User;
+use App\Models\{TimeEntry, User};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 

@@ -11,8 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Middleware\SetLocale;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse, Request};
 
 class LocaleController extends Controller {
     public function switch(Request $request, string $locale): RedirectResponse {

@@ -32,6 +32,5 @@ final class PeriodBalance {
         public readonly array $byActivity,
         public readonly array $byKind,
         public readonly array $days,
-    ) {
-    }
+    ) {}
 }

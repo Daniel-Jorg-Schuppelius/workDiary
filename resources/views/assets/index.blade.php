@@ -88,6 +88,7 @@
                             <th>{{ __('Standort') }}</th>
                             <th>{{ __('Kunde') }}</th>
                             <th>{{ __('Status') }}</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -97,19 +98,26 @@
                                 $assetStatusValue = $asset->status instanceof \BackedEnum ? $asset->status->value : (string) $asset->status;
                             @endphp
                             <tr>
-                                <td class="font-mono text-xs">{{ $asset->asset_no }}</td>
+                                <td class="font-mono text-xs">
+                                    <a href="{{ route('assets.show', $asset) }}" class="link link-hover">{{ $asset->asset_no }}</a>
+                                </td>
                                 <td>{{ $classOptions[$assetClassValue] ?? $assetClassValue }}</td>
-                                <td class="font-medium">{{ $asset->name }}</td>
+                                <td class="font-medium">
+                                    <a href="{{ route('assets.show', $asset) }}" class="link link-hover">{{ $asset->name }}</a>
+                                </td>
                                 <td>{{ $asset->serial_no ?: '—' }}</td>
                                 <td>{{ $asset->location_text ?: '—' }}</td>
                                 <td>{{ $asset->customer?->name ?: '—' }}</td>
                                 <td>
                                     <span class="badge badge-outline">{{ $statusOptions[$assetStatusValue] ?? $assetStatusValue }}</span>
                                 </td>
+                                <td class="text-right">
+                                    <x-icon-btn icon="open_in_new" :href="route('assets.show', $asset)" :label="__('Details')" />
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center text-base-content/70">{{ __('Keine Assets gefunden.') }}</td>
+                                <td colspan="8" class="text-center text-base-content/70">{{ __('Keine Assets gefunden.') }}</td>
                             </tr>
                         @endforelse
                     </tbody>

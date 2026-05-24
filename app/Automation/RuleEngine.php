@@ -11,8 +11,7 @@
 namespace App\Automation;
 
 use App\Automation\Actions\RuleAction;
-use App\Models\AutomationRule;
-use App\Models\AutomationRuleRun;
+use App\Models\{AutomationRule, AutomationRuleRun};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 
@@ -33,8 +32,7 @@ class RuleEngine {
     public function __construct(
         private readonly ConditionEvaluator $evaluator,
         private readonly iterable $actions,
-    ) {
-    }
+    ) {}
 
     public function dispatch(string $triggerEvent, Model $subject, ?int $organizationId = null): void {
         $organizationId ??= $this->resolveOrganizationId($subject);

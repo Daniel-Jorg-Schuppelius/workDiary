@@ -12,8 +12,7 @@
 namespace Tests\Feature\Classification;
 
 use App\Enums\Classification\ClassificationDomain;
-use App\Models\Classification;
-use App\Models\Organization;
+use App\Models\{Classification, Organization};
 use App\Services\Classification\ClassificationResolver;
 use Database\Seeders\ClassificationSeeder;
 use Illuminate\Database\QueryException;

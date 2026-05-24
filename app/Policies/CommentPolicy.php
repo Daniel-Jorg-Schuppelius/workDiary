@@ -10,10 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\Comment;
-use App\Models\User;
-use App\Policies\Concerns\ChecksOwnership;
-use App\Policies\Concerns\HasAdminBypass;
+use App\Models\{Comment, User};
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class CommentPolicy {
     use ChecksOwnership;

@@ -10,10 +10,7 @@
 
 namespace Tests\Feature\Tenant;
 
-use App\Models\Attachment;
-use App\Models\DiaryEntry;
-use App\Models\Organization;
-use App\Models\User;
+use App\Models\{Attachment, DiaryEntry, Organization, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;

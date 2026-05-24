@@ -56,8 +56,7 @@ class DateRangeContext {
 
     private const KEY_TO = 'ui.daterange.to';
 
-    public function __construct(private readonly Session $session) {
-    }
+    public function __construct(private readonly Session $session) {}
 
     /**
      * @return array{from: CarbonImmutable, to: CarbonImmutable, preset: string, effectivePreset: string, label: string, unit: string, isoWeekLabel: ?string}

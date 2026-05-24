@@ -11,8 +11,7 @@
 namespace Tests\Unit\Enums;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Enums\Timesheet\TimesheetKind;
-use App\Enums\Timesheet\TimesheetStatus;
+use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
 use Tests\TestCase;
 
 final class TimesheetTimeEntryEnumsTest extends TestCase {

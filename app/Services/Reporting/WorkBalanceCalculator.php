@@ -11,14 +11,10 @@
 namespace App\Services\Reporting;
 
 use App\Enums\Attendance\AttendanceStatus;
-use App\Enums\TimeEntry\TimeEntryActivityType;
-use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\Attendance;
-use App\Models\TimeEntry;
-use App\Models\User;
+use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
+use App\Models\{Attendance, TimeEntry, User};
 use App\Services\Flextime\FlexCalculator;
-use Carbon\CarbonImmutable;
-use Carbon\CarbonInterface;
+use Carbon\{CarbonImmutable, CarbonInterface};
 
 /**
  * Aggregates the unified work-time picture for reporting: combines the
@@ -30,8 +26,7 @@ use Carbon\CarbonInterface;
  * resulting balance.
  */
 class WorkBalanceCalculator {
-    public function __construct(protected FlexCalculator $flex) {
-    }
+    public function __construct(protected FlexCalculator $flex) {}
 
     public function daily(User $user, CarbonInterface $day): DailyBalance {
         $dayStr = $day->toDateString();

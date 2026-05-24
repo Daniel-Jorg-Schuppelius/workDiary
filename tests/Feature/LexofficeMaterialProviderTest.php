@@ -13,8 +13,7 @@ namespace Tests\Feature;
 use App\Services\Material\MaterialProviderRegistry;
 use App\Services\Material\Provider\LexofficeMaterialProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\{Config, Http};
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 

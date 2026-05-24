@@ -11,19 +11,12 @@
 
 namespace App\Models;
 
-use App\Enums\Asset\AssetClass;
-use App\Enums\Asset\AssetHealth;
-use App\Enums\Asset\AssetOwnership;
-use App\Enums\Asset\AssetStatus;
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToOrganization;
-use App\Models\Concerns\HasAttachments;
+use App\Enums\Asset\{AssetClass, AssetHealth, AssetOwnership, AssetStatus};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments};
 use Database\Factories\AssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 use Illuminate\Support\Carbon;
 
 /**
@@ -108,6 +101,11 @@ class Asset extends Model {
     /** @return HasMany<MaterialUsage, $this> */
     public function materialUsages(): HasMany {
         return $this->hasMany(MaterialUsage::class);
+    }
+
+    /** @return HasMany<DiaryEntry, $this> */
+    public function diaryEntries(): HasMany {
+        return $this->hasMany(DiaryEntry::class)->latest('start_at')->latest('id');
     }
 
     /** @return MorphMany<Protocol, $this> */

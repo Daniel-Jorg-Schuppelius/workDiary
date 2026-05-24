@@ -10,8 +10,7 @@
 
 namespace Database\Factories;
 
-use App\Models\CoverageRequirement;
-use App\Models\ShiftType;
+use App\Models\{CoverageRequirement, ShiftType};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

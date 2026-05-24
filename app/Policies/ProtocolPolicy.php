@@ -12,8 +12,7 @@ namespace App\Policies;
 
 use App\Enums\Protocol\ProtocolStatus;
 use App\Enums\User\Permission as P;
-use App\Models\Protocol;
-use App\Models\User;
+use App\Models\{Protocol, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 class ProtocolPolicy {

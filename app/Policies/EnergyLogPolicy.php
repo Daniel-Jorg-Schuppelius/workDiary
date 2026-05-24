@@ -10,10 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\EnergyLog;
-use App\Models\User;
-use App\Policies\Concerns\ChecksOwnership;
-use App\Policies\Concerns\HasAdminBypass;
+use App\Models\{EnergyLog, User};
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class EnergyLogPolicy {
     use ChecksOwnership;

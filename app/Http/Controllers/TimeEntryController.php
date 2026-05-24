@@ -12,13 +12,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\Task\TaskStatus;
 use App\Http\Requests\SaveTimeEntryRequest;
-use App\Models\DiaryEntry;
-use App\Models\Project;
-use App\Models\TimeEntry;
+use App\Models\{DiaryEntry, Project, TimeEntry};
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class TimeEntryController extends Controller {

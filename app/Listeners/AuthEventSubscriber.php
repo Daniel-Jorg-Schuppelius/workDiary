@@ -12,15 +12,9 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Models\AuditLog;
-use App\Models\User;
-use Illuminate\Auth\Events\Failed;
-use Illuminate\Auth\Events\Lockout;
-use Illuminate\Auth\Events\Login;
-use Illuminate\Auth\Events\Logout;
-use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Request;
+use App\Models\{AuditLog, User};
+use Illuminate\Auth\Events\{Failed, Lockout, Login, Logout, PasswordReset};
+use Illuminate\Support\Facades\{Log, Request};
 
 /**
  * Persistiert Auth-Events ins Audit-Log (sofern ein User-Bezug existiert)

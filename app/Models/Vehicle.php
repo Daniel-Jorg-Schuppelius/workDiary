@@ -10,17 +10,12 @@
 
 namespace App\Models;
 
-use App\Enums\Vehicle\VehicleOwnership;
-use App\Enums\Vehicle\VehiclePropulsion;
-use App\Enums\Vehicle\VehicleType;
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToOrganization;
+use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
+use App\Models\Concerns\{Auditable, BelongsToOrganization};
 use Database\Factories\VehicleFactory;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
 
 /**

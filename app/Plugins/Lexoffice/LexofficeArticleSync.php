@@ -10,8 +10,7 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Models\LexofficeArticle;
-use App\Models\Organization;
+use App\Models\{LexofficeArticle, Organization};
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -26,8 +25,7 @@ class LexofficeArticleSync {
     public function __construct(
         private readonly ?string $apiKey,
         private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{created: int, updated: int, archived: int}

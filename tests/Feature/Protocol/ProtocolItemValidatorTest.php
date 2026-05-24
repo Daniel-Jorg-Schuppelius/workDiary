@@ -10,17 +10,10 @@
 
 namespace Tests\Feature\Protocol;
 
-use App\Enums\Protocol\ProtocolItemResult;
-use App\Enums\Protocol\ProtocolItemType;
-use App\Enums\Protocol\ProtocolType;
+use App\Enums\Protocol\{ProtocolItemResult, ProtocolItemType, ProtocolType};
 use App\Exceptions\ProtocolValidationException;
-use App\Models\DiaryEntry;
-use App\Models\OpenIssue;
-use App\Models\Protocol;
-use App\Models\ProtocolItem;
-use App\Models\User;
-use App\Services\Protocol\ProtocolItemValidator;
-use App\Services\Protocol\ProtocolService;
+use App\Models\{DiaryEntry, OpenIssue, Protocol, ProtocolItem, User};
+use App\Services\Protocol\{ProtocolItemValidator, ProtocolService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

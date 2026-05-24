@@ -10,11 +10,9 @@
 
 namespace App\Models;
 
-use App\Enums\Event\ParticipantRole;
-use App\Enums\Event\ParticipantStatus;
+use App\Enums\Event\{ParticipantRole, ParticipantStatus};
 use App\Models\Concerns\BelongsToOrganization;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, Pivot};
 use Illuminate\Support\Carbon;
 
 /**

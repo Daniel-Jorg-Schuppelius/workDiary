@@ -11,12 +11,9 @@
 namespace App\Services\Event;
 
 use App\Enums\Event\ParticipantStatus;
-use App\Models\Event;
-use App\Models\EventParticipant;
-use App\Models\User;
+use App\Models\{Event, EventParticipant, User};
 use App\Notifications\Event\CertificateExpiryNotification;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
+use Illuminate\Support\{Carbon, Collection};
 
 /**
  * Verwaltet Pflichtnachweise (Zertifikate) je Teilnehmer + Event.

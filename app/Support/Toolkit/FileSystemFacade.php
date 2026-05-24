@@ -12,9 +12,7 @@ declare(strict_types=1);
 
 namespace App\Support\Toolkit;
 
-use CommonToolkit\Helper\FileSystem\File;
-use CommonToolkit\Helper\FileSystem\Files;
-use CommonToolkit\Helper\FileSystem\Folder;
+use CommonToolkit\Helper\FileSystem\{File, Files, Folder};
 
 /**
  * Wrapper um die Toolkit-FileSystem-Helper (File, Files, Folder).

@@ -10,8 +10,7 @@
 
 namespace App\Policies;
 
-use App\Models\ExpenseCategory;
-use App\Models\User;
+use App\Models\{ExpenseCategory, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 class ExpenseCategoryPolicy {

@@ -10,10 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\Task;
-use App\Models\User;
-use App\Policies\Concerns\ChecksOwnership;
-use App\Policies\Concerns\HasAdminBypass;
+use App\Models\{Task, User};
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class TaskPolicy {
     use ChecksOwnership;

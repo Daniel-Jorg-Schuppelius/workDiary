@@ -10,22 +10,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Event\EventStatus;
-use App\Enums\Event\EventType;
-use App\Enums\Event\EventVisibility;
-use App\Enums\Event\ParticipantRole;
-use App\Enums\Event\ParticipantStatus;
-use App\Models\Customer;
-use App\Models\Event;
-use App\Models\EventCategory;
-use App\Models\Room;
-use App\Models\User;
+use App\Enums\Event\{EventStatus, EventType, EventVisibility, ParticipantRole, ParticipantStatus};
+use App\Models\{Customer, Event, EventCategory, Room, User};
 use App\Services\Event\EventService;
 use App\Support\LookupCache;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use RuntimeException;
@@ -33,8 +23,7 @@ use RuntimeException;
 class EventController extends Controller {
     public function __construct(
         private readonly EventService $events,
-    ) {
-    }
+    ) {}
 
     // ── Index / Calendar ────────────────────────────────────────────────────
 

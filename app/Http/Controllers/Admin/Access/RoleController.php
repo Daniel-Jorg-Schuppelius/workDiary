@@ -10,19 +10,14 @@
 
 namespace App\Http\Controllers\Admin\Access;
 
-use App\Enums\User\Permission as PermissionEnum;
-use App\Enums\User\UserRole;
+use App\Enums\User\{Permission as PermissionEnum, UserRole};
 use App\Http\Controllers\Controller;
-use App\Models\AuditLog;
-use App\Models\Organization;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use App\Models\{AuditLog, Organization};
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\{Permission, Role};
 
 /**
  * Verwaltung der Rollen für die aktuell aktive Organisation. Globale

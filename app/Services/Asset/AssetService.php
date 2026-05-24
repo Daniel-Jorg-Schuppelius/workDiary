@@ -11,20 +11,16 @@
 
 namespace App\Services\Asset;
 
-use App\Enums\Asset\AssetHealth;
-use App\Enums\Asset\AssetOwnership;
-use App\Enums\Asset\AssetStatus;
+use App\Enums\Asset\{AssetHealth, AssetOwnership, AssetStatus};
 use App\Exceptions\AssetValidationException;
-use App\Models\Asset;
-use App\Models\User;
+use App\Models\{Asset, User};
 use Illuminate\Support\Carbon;
 
 class AssetService {
     public function __construct(
         private readonly AssetNumberGenerator $numbers,
         private readonly AssetStatusMachine $statusMachine,
-    ) {
-    }
+    ) {}
 
     /** @param array<string, mixed> $payload */
     public function create(User $actor, array $payload): Asset {

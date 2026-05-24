@@ -10,15 +10,10 @@
 
 namespace Tests\Feature;
 
-use App\Enums\Diary\LocationMode;
-use App\Enums\Diary\Mode;
-use App\Enums\Diary\Status as DiaryStatus;
+use App\Enums\Diary\{LocationMode, Mode, Status as DiaryStatus};
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Recurrence\RecurrenceFrequency;
-use App\Models\DiaryEntry;
-use App\Models\Project;
-use App\Models\RecurrenceRule;
-use App\Models\User;
+use App\Models\{DiaryEntry, Project, RecurrenceRule, User};
 use App\Services\Recurrence\RecurrenceGenerator;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

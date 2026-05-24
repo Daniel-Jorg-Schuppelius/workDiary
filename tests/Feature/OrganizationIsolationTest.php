@@ -10,16 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Attachment;
-use App\Models\Comment;
-use App\Models\Customer;
-use App\Models\DiaryEntry;
-use App\Models\Event;
-use App\Models\EventReminder;
-use App\Models\FlexBalance;
-use App\Models\Organization;
-use App\Models\Project;
-use App\Models\User;
+use App\Models\{Attachment, Comment, Customer, DiaryEntry, Event, EventReminder, FlexBalance, Organization, Project, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;

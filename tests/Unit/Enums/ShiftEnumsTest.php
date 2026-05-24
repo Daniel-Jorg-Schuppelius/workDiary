@@ -10,9 +10,7 @@
 
 namespace Tests\Unit\Enums;
 
-use App\Enums\Shift\DutyPlanPeriodType;
-use App\Enums\Shift\DutyPlanStatus;
-use App\Enums\Shift\ScheduledShiftStatus;
+use App\Enums\Shift\{DutyPlanPeriodType, DutyPlanStatus, ScheduledShiftStatus};
 use Tests\TestCase;
 
 final class ShiftEnumsTest extends TestCase {

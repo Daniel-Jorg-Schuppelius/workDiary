@@ -10,10 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\OnCallShift;
-use App\Models\User;
-use App\Policies\Concerns\ChecksOwnership;
-use App\Policies\Concerns\HasAdminBypass;
+use App\Models\{OnCallShift, User};
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class OnCallShiftPolicy {
     use ChecksOwnership;

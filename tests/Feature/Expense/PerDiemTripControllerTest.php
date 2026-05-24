@@ -10,13 +10,9 @@
 
 namespace Tests\Feature\Expense;
 
-use App\Enums\Expense\ExpenseStatus;
-use App\Enums\Expense\PerDiemTripStatus;
-use App\Models\ExpenseCategory;
-use App\Models\PerDiemTrip;
-use App\Models\User;
-use Database\Seeders\PerDiemRateSeeder;
-use Database\Seeders\PermissionsSeeder;
+use App\Enums\Expense\{ExpenseStatus, PerDiemTripStatus};
+use App\Models\{ExpenseCategory, PerDiemTrip, User};
+use Database\Seeders\{PerDiemRateSeeder, PermissionsSeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

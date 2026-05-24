@@ -9,8 +9,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Enums\Classification\ClassificationRequirementPhase;
-use App\Enums\Classification\ClassificationRequirementSeverity;
+use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequirementSeverity};
 
 return [
     'code' => 'handwerk',

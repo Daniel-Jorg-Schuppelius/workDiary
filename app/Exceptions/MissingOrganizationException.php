@@ -12,8 +12,7 @@ namespace App\Exceptions;
 
 use App\Models\Organization;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Auth, Gate};
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;

@@ -11,25 +11,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Asset;
-use App\Models\Attachment;
-use App\Models\Comment;
-use App\Models\Customer;
-use App\Models\DiaryEntry;
-use App\Models\EmergencyAssignment;
-use App\Models\OnCallShift;
-use App\Models\Organization;
-use App\Models\Task;
-use App\Models\User;
+use App\Models\{Asset, Attachment, Comment, Customer, DiaryEntry, EmergencyAssignment, OnCallShift, Organization, Task, User};
 use App\Services\Attachments\ImageMetaUploader;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
+use Illuminate\Support\Facades\{Auth, Gate, Storage, URL};
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;

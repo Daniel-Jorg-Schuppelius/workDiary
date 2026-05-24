@@ -10,20 +10,9 @@
 
 namespace App\Services\Dashboard;
 
-use App\Enums\Expense\ExpenseStatus;
-use App\Enums\Expense\PerDiemTripStatus;
+use App\Enums\Expense\{ExpenseStatus, PerDiemTripStatus};
 use App\Enums\Vacation\VacationStatus;
-use App\Models\Attachment;
-use App\Models\Comment;
-use App\Models\DiaryEntry;
-use App\Models\EmergencyAssignment;
-use App\Models\Expense;
-use App\Models\OnCallShift;
-use App\Models\OpenIssue;
-use App\Models\PerDiemTrip;
-use App\Models\ScheduledShift;
-use App\Models\User;
-use App\Models\Vacation;
+use App\Models\{Attachment, Comment, DiaryEntry, EmergencyAssignment, Expense, OnCallShift, OpenIssue, PerDiemTrip, ScheduledShift, User, Vacation};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 

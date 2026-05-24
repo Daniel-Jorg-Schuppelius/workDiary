@@ -10,8 +10,7 @@
 
 namespace App\Policies;
 
-use App\Models\User;
-use App\Models\WorkSchedule;
+use App\Models\{User, WorkSchedule};
 use App\Policies\Concerns\HasAdminBypass;
 
 class WorkSchedulePolicy {

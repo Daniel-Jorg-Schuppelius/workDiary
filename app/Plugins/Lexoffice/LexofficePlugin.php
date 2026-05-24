@@ -10,13 +10,8 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Models\Customer;
-use App\Models\ExternalReference;
-use App\Models\TimeEntry;
-use App\Plugins\Contracts\ContactSyncer;
-use App\Plugins\Contracts\Plugin;
-use App\Plugins\Contracts\PluginCapability;
-use App\Plugins\Contracts\TimeExporter;
+use App\Models\{Customer, ExternalReference, TimeEntry};
+use App\Plugins\Contracts\{ContactSyncer, Plugin, PluginCapability, TimeExporter};
 use Carbon\CarbonImmutable;
 
 /**
@@ -38,8 +33,7 @@ class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
 
     public function __construct(
         private readonly LexofficeService $service,
-    ) {
-    }
+    ) {}
 
     public function id(): string {
         return self::ID;

@@ -11,9 +11,7 @@
 namespace Database\Factories;
 
 use App\Enums\Procedure\ProcedureRiskLevel;
-use App\Models\ProcedureTemplate;
-use App\Models\ProcedureTemplateVersion;
-use App\Models\User;
+use App\Models\{ProcedureTemplate, ProcedureTemplateVersion, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

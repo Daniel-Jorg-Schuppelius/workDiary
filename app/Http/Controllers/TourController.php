@@ -10,23 +10,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Diary\Mode;
-use App\Enums\Diary\Status as DiaryStatus;
+use App\Enums\Diary\{Mode, Status as DiaryStatus};
 use App\Enums\Tour\TourStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveTourRequest;
-use App\Models\DiaryEntry;
-use App\Models\Tour;
-use App\Models\User;
-use App\Models\Vehicle;
+use App\Models\{DiaryEntry, Tour, User, Vehicle};
 use App\Services\Routing\TourService;
 use App\Support\SortableQuery;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -34,8 +28,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 class TourController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function __construct(private readonly TourService $tours) {
-    }
+    public function __construct(private readonly TourService $tours) {}
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Tour::class);

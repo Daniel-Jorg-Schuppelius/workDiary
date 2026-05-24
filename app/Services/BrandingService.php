@@ -11,10 +11,8 @@
 namespace App\Services;
 
 use App\Http\Controllers\AttachmentController;
-use App\Models\Attachment;
-use App\Models\Organization;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use App\Models\{Attachment, Organization};
+use Illuminate\Support\Facades\{Auth, Storage};
 
 /**
  * Zentrale Quelle für Branding-Informationen einer Organisation

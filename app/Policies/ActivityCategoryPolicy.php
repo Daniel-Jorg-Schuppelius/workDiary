@@ -10,8 +10,7 @@
 
 namespace App\Policies;
 
-use App\Models\ActivityCategory;
-use App\Models\User;
+use App\Models\{ActivityCategory, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 class ActivityCategoryPolicy {

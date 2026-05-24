@@ -10,14 +10,8 @@
 
 namespace Tests\Feature\Events;
 
-use App\Enums\Event\EventStatus;
-use App\Enums\Event\EventType;
-use App\Enums\Event\EventVisibility;
-use App\Enums\Event\ParticipantRole;
-use App\Models\Event;
-use App\Models\EventCategory;
-use App\Models\Room;
-use App\Models\User;
+use App\Enums\Event\{EventStatus, EventType, EventVisibility, ParticipantRole};
+use App\Models\{Event, EventCategory, Room, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

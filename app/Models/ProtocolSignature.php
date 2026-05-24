@@ -10,8 +10,7 @@
 
 namespace App\Models;
 
-use App\Enums\Protocol\ProtocolSignatureMethod;
-use App\Enums\Protocol\ProtocolSignatureRole;
+use App\Enums\Protocol\{ProtocolSignatureMethod, ProtocolSignatureRole};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

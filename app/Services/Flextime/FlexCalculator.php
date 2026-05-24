@@ -10,20 +10,13 @@
 
 namespace App\Services\Flextime;
 
-use App\Enums\TimeEntry\TimeEntryActivityType;
-use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Enums\Vacation\VacationStatus;
-use App\Models\FlexBalance;
-use App\Models\Holiday;
-use App\Models\TimeEntry;
-use App\Models\User;
-use App\Models\Vacation;
-use Carbon\CarbonImmutable;
-use Carbon\CarbonInterface;
+use App\Models\{FlexBalance, Holiday, TimeEntry, User, Vacation};
+use Carbon\{CarbonImmutable, CarbonInterface};
 
 class FlexCalculator {
-    public function __construct(protected WorkScheduleResolver $resolver) {
-    }
+    public function __construct(protected WorkScheduleResolver $resolver) {}
 
     /**
      * Tagessoll in Minuten (0 wenn Feiertag, Wochenende oder Urlaub).

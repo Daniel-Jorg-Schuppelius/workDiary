@@ -10,13 +10,11 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Models\Customer;
-use App\Models\TimeEntry;
+use App\Models\{Customer, TimeEntry};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Lexoffice\API\Client;
-use Lexoffice\API\Endpoints\ContactsEndpoint;
-use Lexoffice\API\Endpoints\VouchersEndpoint;
+use Lexoffice\API\Endpoints\{ContactsEndpoint, VouchersEndpoint};
 use Lexoffice\Entities\Contacts\Contact;
 use Lexoffice\Entities\Vouchers\Voucher;
 use RuntimeException;
@@ -36,8 +34,7 @@ class LexofficeService {
         private readonly LexofficeMapper $mapper,
         /** @var array<string, mixed> */
         private readonly array $defaults = [],
-    ) {
-    }
+    ) {}
 
     public function isConfigured(): bool {
         return $this->apiKey !== null && $this->apiKey !== '';

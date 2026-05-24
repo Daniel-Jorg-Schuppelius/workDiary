@@ -13,17 +13,12 @@ namespace App\Http\Controllers;
 use App\Enums\Travel\TravelLogVehicle;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveTravelLogRequest;
-use App\Models\Customer;
-use App\Models\Project;
-use App\Models\TravelLog;
-use App\Models\User;
+use App\Models\{Customer, Project, TravelLog, User};
 use App\Services\Travel\TravelLogService;
 use App\Support\SortableQuery;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -32,8 +27,7 @@ class TravelLogController extends Controller {
 
     public function __construct(
         private readonly TravelLogService $service,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', TravelLog::class);

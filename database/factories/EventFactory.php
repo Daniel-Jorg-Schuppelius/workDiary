@@ -10,12 +10,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\Event\EventStatus;
-use App\Enums\Event\EventType;
-use App\Enums\Event\EventVisibility;
-use App\Models\Event;
-use App\Models\Organization;
-use App\Models\User;
+use App\Enums\Event\{EventStatus, EventType, EventVisibility};
+use App\Models\{Event, Organization, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

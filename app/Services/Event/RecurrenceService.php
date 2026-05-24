@@ -24,8 +24,7 @@ use Recurr\Transformer\Constraint\BetweenConstraint;
 class RecurrenceService {
     public function __construct(
         private readonly ArrayTransformer $transformer = new ArrayTransformer(),
-    ) {
-    }
+    ) {}
 
     /**
      * @return list<DateTimeImmutable>

@@ -11,9 +11,7 @@
 
 namespace App\Models;
 
-use App\Enums\Procedure\ProcedureDeviationProposedAction;
-use App\Enums\Procedure\ProcedureDeviationSeverity;
-use App\Enums\Procedure\ProcedureDeviationType;
+use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationSeverity, ProcedureDeviationType};
 use App\Models\Concerns\BelongsToOrganization;
 use Database\Factories\ProcedureDeviationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

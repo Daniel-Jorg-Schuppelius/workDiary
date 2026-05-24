@@ -10,15 +10,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreShiftTypeRequest;
-use App\Http\Requests\UpdateShiftTypeRequest;
-use App\Models\ShiftType;
-use App\Models\User;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use App\Http\Requests\{StoreShiftTypeRequest, UpdateShiftTypeRequest};
+use App\Models\{ShiftType, User};
+use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class ShiftTypeController extends Controller {

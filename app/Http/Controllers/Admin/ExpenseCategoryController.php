@@ -14,8 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveExpenseCategoryRequest;
 use App\Models\ExpenseCategory;
 use App\Support\SortableQuery;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 

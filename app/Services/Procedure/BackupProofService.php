@@ -11,18 +11,9 @@
 
 namespace App\Services\Procedure;
 
-use App\Enums\Procedure\ProcedureBackupScope;
-use App\Enums\Procedure\ProcedureBackupStorageTarget;
-use App\Enums\Procedure\ProcedureBackupVerifyMethod;
-use App\Enums\Procedure\ProcedureRunEventType;
-use App\Enums\Procedure\ProcedureStepRunStatus;
-use App\Enums\Procedure\ProcedureStepType;
-use App\Exceptions\ProcedureBackupValidationException;
-use App\Exceptions\ProcedureStepBlockedException;
-use App\Models\ProcedureBackupProof;
-use App\Models\ProcedureRunEvent;
-use App\Models\ProcedureStepRun;
-use App\Models\User;
+use App\Enums\Procedure\{ProcedureBackupScope, ProcedureBackupStorageTarget, ProcedureBackupVerifyMethod, ProcedureRunEventType, ProcedureStepRunStatus, ProcedureStepType};
+use App\Exceptions\{ProcedureBackupValidationException, ProcedureStepBlockedException};
+use App\Models\{ProcedureBackupProof, ProcedureRunEvent, ProcedureStepRun, User};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 

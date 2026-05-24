@@ -10,11 +10,8 @@
 
 namespace Tests\Feature\Events;
 
-use App\Enums\Event\ParticipantRole;
-use App\Enums\Event\ParticipantStatus;
-use App\Models\Event;
-use App\Models\EventCategory;
-use App\Models\User;
+use App\Enums\Event\{ParticipantRole, ParticipantStatus};
+use App\Models\{Event, EventCategory, User};
 use App\Services\Event\CertificateService;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

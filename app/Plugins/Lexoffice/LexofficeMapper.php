@@ -10,8 +10,7 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Models\Customer;
-use App\Models\TimeEntry;
+use App\Models\{Customer, TimeEntry};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 

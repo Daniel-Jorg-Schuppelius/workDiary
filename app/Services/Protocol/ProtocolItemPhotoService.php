@@ -10,18 +10,11 @@
 
 namespace App\Services\Protocol;
 
-use App\Enums\Protocol\ProtocolEventType;
-use App\Enums\Protocol\ProtocolItemPhotoPhase;
-use App\Models\Attachment;
-use App\Models\Protocol;
-use App\Models\ProtocolItem;
-use App\Models\ProtocolItemPhoto;
-use App\Models\User;
+use App\Enums\Protocol\{ProtocolEventType, ProtocolItemPhotoPhase};
+use App\Models\{Attachment, Protocol, ProtocolItem, ProtocolItemPhoto, User};
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use Illuminate\Support\{Carbon, Str};
+use Illuminate\Support\Facades\{DB, Storage};
 use InvalidArgumentException;
 use RuntimeException;
 

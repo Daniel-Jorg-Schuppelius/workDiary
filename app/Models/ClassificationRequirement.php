@@ -11,10 +11,8 @@
 
 namespace App\Models;
 
-use App\Enums\Classification\ClassificationRequirementPhase;
-use App\Enums\Classification\ClassificationRequirementSeverity;
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToOrganization;
+use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequirementSeverity};
+use App\Models\Concerns\{Auditable, BelongsToOrganization};
 use Database\Factories\ClassificationRequirementFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

@@ -10,11 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Comment;
-use App\Models\DiaryEntry;
-use App\Models\EmergencyAssignment;
-use App\Models\PushSubscription;
-use App\Models\User;
+use App\Models\{Comment, DiaryEntry, EmergencyAssignment, PushSubscription, User};
 use App\Services\WebPushService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;

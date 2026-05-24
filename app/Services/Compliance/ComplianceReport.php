@@ -17,8 +17,7 @@ namespace App\Services\Compliance;
  */
 final class ComplianceReport {
     /** @param list<ComplianceViolation> $violations */
-    public function __construct(public readonly array $violations = []) {
-    }
+    public function __construct(public readonly array $violations = []) {}
 
     public function hasViolations(): bool {
         return $this->violations !== [];

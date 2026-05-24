@@ -11,8 +11,7 @@
 namespace Tests\Unit\Sickness;
 
 use App\Enums\Sickness\SickLeaveKind;
-use App\Models\SickLeave;
-use App\Models\User;
+use App\Models\{SickLeave, User};
 use App\Services\Sickness\ContinuedPaymentService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

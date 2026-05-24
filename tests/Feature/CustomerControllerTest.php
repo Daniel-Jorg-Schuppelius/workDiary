@@ -11,13 +11,9 @@
 namespace Tests\Feature;
 
 use App\Enums\Project\ProjectStatus;
-use App\Models\Customer;
-use App\Models\ExternalReference;
-use App\Models\Project;
-use App\Models\User;
+use App\Models\{Customer, ExternalReference, Project, User};
 use App\Plugins\Lexoffice\LexofficePlugin;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\{MorphMany, MorphToMany};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;

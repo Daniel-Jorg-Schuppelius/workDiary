@@ -16,17 +16,14 @@ use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Gate, Log};
 use Throwable;
 
 class LexofficeCustomerController extends Controller {
     public function __construct(
         private readonly PluginManager $manager,
-    ) {
-    }
+    ) {}
 
     /**
      * Push the customer to Lexoffice as a contact (idempotent: updates the

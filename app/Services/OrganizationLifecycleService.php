@@ -11,15 +11,9 @@
 namespace App\Services;
 
 use App\Http\Controllers\OrganizationSwitchController;
-use App\Models\Organization;
-use App\Models\OrganizationAuditLog;
-use App\Models\User;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use App\Models\{Organization, OrganizationAuditLog, User};
+use Illuminate\Support\{Carbon, Str};
+use Illuminate\Support\Facades\{DB, Log, Schema, Storage};
 use RuntimeException;
 use ZipArchive;
 

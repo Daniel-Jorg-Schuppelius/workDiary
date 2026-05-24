@@ -11,12 +11,8 @@
 namespace App\Services\Expense;
 
 use App\Enums\Expense\PerDiemDayKind;
-use App\Models\PerDiemDay;
-use App\Models\PerDiemRate;
-use App\Models\PerDiemTrip;
-use Carbon\CarbonImmutable;
-use Carbon\CarbonInterface;
-use Carbon\CarbonPeriod;
+use App\Models\{PerDiemDay, PerDiemTrip};
+use Carbon\{CarbonImmutable, CarbonInterface, CarbonPeriod};
 use RuntimeException;
 
 /**
@@ -29,8 +25,7 @@ use RuntimeException;
  *    sie wird optional in einer separaten Position oder auf dem Trip aggregiert.
  */
 class PerDiemCalculator {
-    public function __construct(private readonly PerDiemRateLookup $rates) {
-    }
+    public function __construct(private readonly PerDiemRateLookup $rates) {}
 
     /**
      * Erzeugt PerDiemDay-Einträge (unsaved) für einen Trip anhand seines Zeitraums.

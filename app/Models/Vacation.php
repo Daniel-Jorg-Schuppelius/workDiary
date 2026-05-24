@@ -10,15 +10,11 @@
 
 namespace App\Models;
 
-use App\Enums\Vacation\VacationStatus;
-use App\Enums\Vacation\VacationType;
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToOrganization;
+use App\Enums\Vacation\{VacationStatus, VacationType};
+use App\Models\Concerns\{Auditable, BelongsToOrganization};
 use App\Services\HolidayService;
-use Carbon\Carbon;
-use Carbon\CarbonInterface;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
+use Carbon\{Carbon, CarbonInterface};
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**

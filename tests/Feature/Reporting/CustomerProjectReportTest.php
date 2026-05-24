@@ -12,13 +12,9 @@ namespace Tests\Feature\Reporting;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\Customer;
-use App\Models\Project;
-use App\Models\TimeEntry;
-use App\Models\User;
+use App\Models\{Customer, Project, TimeEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Concerns\WithGlobalDateRange;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
 
 class CustomerProjectReportTest extends TestCase {

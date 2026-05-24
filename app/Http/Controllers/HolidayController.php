@@ -11,15 +11,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Models\AuditLog;
-use App\Models\Holiday;
+use App\Models\{AuditLog, Holiday};
 use App\Services\HolidayService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class HolidayController extends Controller {

@@ -12,22 +12,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\AuditLog;
-use App\Models\Organization;
-use App\Models\User;
+use App\Models\{AuditLog, Organization, User};
 use App\Services\Classification\BranchProfileInstaller;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\{Arr, Collection};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class BranchProfileController extends Controller {
     public function __construct(
         private readonly BranchProfileInstaller $installer,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View {
         $this->authorizeViewCatalog();

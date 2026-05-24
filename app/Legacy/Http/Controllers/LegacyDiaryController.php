@@ -13,21 +13,13 @@ namespace App\Legacy\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Legacy\Http\Concerns\RequiresLegacyAdmin;
 use App\Legacy\Http\Requests\SaveLegacyDiaryEntryRequest;
-use App\Legacy\Models\LegacyDiaryEntry;
-use App\Legacy\Models\LegacyNotdienst;
-use App\Legacy\Models\LegacyOnCall;
-use App\Legacy\Models\LegacyUser;
-use App\Legacy\Services\LegacyDashboardService;
-use App\Legacy\Services\LegacyWeekCalendarService;
+use App\Legacy\Models\{LegacyDiaryEntry, LegacyNotdienst, LegacyOnCall, LegacyUser};
+use App\Legacy\Services\{LegacyDashboardService, LegacyWeekCalendarService};
 use App\Legacy\Support\LegacyRoleResolver;
 use App\Models\User;
 use App\Services\HolidayService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Http\{JsonResponse, RedirectResponse, Request, Response};
+use Illuminate\Support\Facades\{Auth, Mail};
 use Illuminate\View\View;
 
 class LegacyDiaryController extends Controller {

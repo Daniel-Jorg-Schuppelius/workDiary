@@ -10,15 +10,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Vacation\VacationStatus;
-use App\Enums\Vacation\VacationType;
-use App\Models\User;
-use App\Models\Vacation;
+use App\Enums\Vacation\{VacationStatus, VacationType};
+use App\Models\{User, Vacation};
 use App\Support\LookupCache;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 

@@ -10,8 +10,7 @@
 
 namespace App\Policies;
 
-use App\Models\EntryType;
-use App\Models\User;
+use App\Models\{EntryType, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 class EntryTypePolicy {

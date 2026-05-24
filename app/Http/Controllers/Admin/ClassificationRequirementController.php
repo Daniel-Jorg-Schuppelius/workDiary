@@ -11,16 +11,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\Classification\ClassificationDomain;
-use App\Enums\Classification\ClassificationRequirementPhase;
-use App\Enums\Classification\ClassificationRequirementSeverity;
+use App\Enums\Classification\{ClassificationDomain, ClassificationRequirementPhase, ClassificationRequirementSeverity};
 use App\Http\Controllers\Controller;
-use App\Models\ClassificationRequirement;
-use App\Models\Organization;
+use App\Models\{ClassificationRequirement, Organization};
 use App\Services\Classification\ClassificationResolver;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;

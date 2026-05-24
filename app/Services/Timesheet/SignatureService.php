@@ -12,13 +12,9 @@ namespace App\Services\Timesheet;
 
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Mail\TimesheetSignedMail;
-use App\Models\Attachment;
-use App\Models\Timesheet;
-use App\Models\User;
+use App\Models\{Attachment, Timesheet, User};
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\{Auth, Mail, Storage};
 use Illuminate\Support\Str;
 use RuntimeException;
 

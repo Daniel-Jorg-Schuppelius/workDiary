@@ -10,11 +10,8 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Enums\Diary\Priority;
-use App\Enums\Diary\Status;
-use App\Models\DiaryEntry;
-use App\Models\EntryType;
-use App\Models\User;
+use App\Enums\Diary\{Priority, Status};
+use App\Models\{DiaryEntry, EntryType, User};
 use Database\Seeders\EntryTypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

@@ -10,8 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Attendance;
-use App\Models\User;
+use App\Models\{Attendance, User};
 use App\Services\Timekeeping\BreakRuleEvaluator;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

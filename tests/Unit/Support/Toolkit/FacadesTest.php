@@ -12,8 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Support\Toolkit;
 
-use App\Support\Toolkit\NumberFacade;
-use App\Support\Toolkit\StringFacade;
+use App\Support\Toolkit\{NumberFacade, StringFacade};
 use CommonToolkit\Enums\CountryCode;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

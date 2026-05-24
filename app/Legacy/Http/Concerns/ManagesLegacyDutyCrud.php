@@ -11,10 +11,8 @@
 namespace App\Legacy\Http\Concerns;
 
 use App\Legacy\Support\LegacyRoleResolver;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\{Builder, Model};
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 
 trait ManagesLegacyDutyCrud {

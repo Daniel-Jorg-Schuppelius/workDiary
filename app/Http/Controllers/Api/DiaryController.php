@@ -12,14 +12,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DiaryEntryResource;
-use App\Models\DiaryEntry;
-use App\Models\User;
+use App\Models\{DiaryEntry, User};
 use App\Services\Archive\ArchiveService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Auth, Gate};
 
 class DiaryController extends Controller {
     public function index(Request $request): AnonymousResourceCollection {

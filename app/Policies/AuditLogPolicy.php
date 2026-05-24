@@ -10,8 +10,7 @@
 
 namespace App\Policies;
 
-use App\Models\AuditLog;
-use App\Models\User;
+use App\Models\{AuditLog, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 class AuditLogPolicy {

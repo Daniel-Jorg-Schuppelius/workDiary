@@ -11,12 +11,7 @@
 
 namespace Tests\Feature\Classification;
 
-use App\Models\AuditLog;
-use App\Models\Classification;
-use App\Models\ClassificationRequirement;
-use App\Models\Organization;
-use App\Models\Tag;
-use App\Models\User;
+use App\Models\{AuditLog, Classification, ClassificationRequirement, Organization, Tag, User};
 use App\Services\Classification\BranchProfileInstaller;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

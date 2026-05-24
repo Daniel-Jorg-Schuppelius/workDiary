@@ -12,11 +12,7 @@ namespace App\Http\Controllers\CustomerPortal;
 
 use App\Enums\OpenIssue\OpenIssueVisibility;
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
-use App\Models\DiaryEntry;
-use App\Models\OpenIssue;
-use App\Models\Project;
-use App\Models\User;
+use App\Models\{Customer, DiaryEntry, OpenIssue, Project, User};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;

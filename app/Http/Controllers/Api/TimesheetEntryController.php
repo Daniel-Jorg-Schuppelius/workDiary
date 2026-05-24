@@ -14,12 +14,10 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveTimesheetEntryRequest;
 use App\Http\Resources\TimeEntryResource;
-use App\Models\TimeEntry;
-use App\Models\Timesheet;
+use App\Models\{TimeEntry, Timesheet};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Auth, Gate};
 
 class TimesheetEntryController extends Controller {
     public function index(Timesheet $timesheet): AnonymousResourceCollection {

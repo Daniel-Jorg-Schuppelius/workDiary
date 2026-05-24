@@ -10,19 +10,12 @@
 
 namespace App\Models;
 
-use App\Enums\Event\EventStatus;
-use App\Enums\Event\EventType;
-use App\Enums\Event\EventVisibility;
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToOrganization;
-use App\Models\Concerns\HasAttachments;
+use App\Enums\Event\{EventStatus, EventType, EventVisibility};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments};
 use Database\Factories\EventFactory;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};
 use Illuminate\Support\Carbon;
 
 /**

@@ -10,17 +10,13 @@
 
 namespace App\Models;
 
-use App\Enums\Attendance\AttendanceSource;
-use App\Enums\Attendance\AttendanceStatus;
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToOrganization;
+use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
+use App\Models\Concerns\{Auditable, BelongsToOrganization};
 use App\Services\Timekeeping\BreakRuleEvaluator;
 use Database\Factories\AttendanceFactory;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
 
 /**

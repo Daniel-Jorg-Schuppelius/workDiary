@@ -10,15 +10,7 @@
 
 namespace Tests\Feature\Tenant;
 
-use App\Models\Event;
-use App\Models\Milestone;
-use App\Models\Organization;
-use App\Models\PerDiemTrip;
-use App\Models\Project;
-use App\Models\Task;
-use App\Models\TimeEntry;
-use App\Models\Timesheet;
-use App\Models\User;
+use App\Models\{Event, Milestone, Organization, PerDiemTrip, Project, Task, TimeEntry, Timesheet, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

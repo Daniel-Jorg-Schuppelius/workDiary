@@ -10,15 +10,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
-use App\Models\Expense;
-use App\Models\PerDiemTrip;
-use App\Models\Project;
-use App\Models\User;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use App\Models\{Customer, Expense, PerDiemTrip, Project, User};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 
 /**
  * Liefert die Treffer für die globale Suche (Command-Palette / Spotlight).

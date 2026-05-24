@@ -11,8 +11,7 @@
 namespace Database\Factories;
 
 use App\Enums\Travel\TravelLogVehicle;
-use App\Models\TravelLog;
-use App\Models\User;
+use App\Models\{TravelLog, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 

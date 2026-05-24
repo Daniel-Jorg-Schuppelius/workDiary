@@ -13,18 +13,14 @@ namespace App\Http\Controllers\Api;
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TimeEntryResource;
-use App\Models\Project;
-use App\Models\Timesheet;
+use App\Models\{Project, Timesheet};
 use App\Services\Timesheet\Stopwatch;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 
 class StopwatchController extends Controller {
-    public function __construct(protected Stopwatch $stopwatch) {
-    }
+    public function __construct(protected Stopwatch $stopwatch) {}
 
     public function current(): JsonResponse|TimeEntryResource {
         $entry = $this->stopwatch->current($this->authUser());

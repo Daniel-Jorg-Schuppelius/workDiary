@@ -10,12 +10,9 @@
 
 namespace App\Services\Travel;
 
-use App\Enums\TimeEntry\TimeEntryActivityType;
-use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Enums\Travel\TravelLogVehicle;
-use App\Models\TimeEntry;
-use App\Models\TravelLog;
-use App\Models\Vehicle;
+use App\Models\{TimeEntry, TravelLog, Vehicle};
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -24,8 +21,7 @@ use Illuminate\Support\Facades\DB;
  * is visible on the daily dashboard and in reports.
  */
 class TravelLogService {
-    public function __construct(private readonly MileageRateResolver $rates) {
-    }
+    public function __construct(private readonly MileageRateResolver $rates) {}
 
     /**
      * @param  array<string, mixed>  $attributes

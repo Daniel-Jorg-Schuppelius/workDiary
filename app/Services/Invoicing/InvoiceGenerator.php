@@ -10,14 +10,10 @@
 
 namespace App\Services\Invoicing;
 
-use App\Models\Customer;
-use App\Models\Invoice;
-use App\Models\Project;
-use App\Models\TimeEntry;
+use App\Models\{Customer, Invoice, Project, TimeEntry};
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{Auth, DB};
 
 class InvoiceGenerator {
     public function nextNumber(?int $organizationId, ?CarbonInterface $when = null): string {

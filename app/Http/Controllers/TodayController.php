@@ -10,9 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Attendance;
-use App\Models\TimeEntry;
-use App\Models\User;
+use App\Models\{Attendance, TimeEntry, User};
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\Flextime\FlexCalculator;
 use Carbon\CarbonImmutable;
@@ -24,8 +22,7 @@ class TodayController extends Controller {
     public function __construct(
         protected AttendanceClockService $clock,
         protected FlexCalculator $flex,
-    ) {
-    }
+    ) {}
 
     public function show(Request $request): View {
         /** @var User $user */

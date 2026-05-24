@@ -10,8 +10,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\ExpenseCategory;
-use App\Models\Organization;
+use App\Models\{ExpenseCategory, Organization};
 use Illuminate\Database\Seeder;
 
 class ExpenseCategorySeeder extends Seeder {

@@ -10,10 +10,8 @@
 
 namespace App\Observers;
 
-use App\Models\Comment;
-use App\Models\DiaryEntry;
-use App\Services\MailNotifier;
-use App\Services\PushNotifier;
+use App\Models\{Comment, DiaryEntry};
+use App\Services\{MailNotifier, PushNotifier};
 
 class CommentObserver {
     public function created(Comment $comment): void {

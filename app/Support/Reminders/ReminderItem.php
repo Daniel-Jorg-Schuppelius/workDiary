@@ -25,8 +25,7 @@ final class ReminderItem {
         public readonly string $icon = 'notifications',
         public readonly string $severity = 'info',
         public readonly int $count = 1,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{key:string,title:string,description:string,url:string,icon:string,severity:string,count:int}

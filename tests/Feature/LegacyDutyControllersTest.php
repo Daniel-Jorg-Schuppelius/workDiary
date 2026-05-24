@@ -12,8 +12,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{Config, DB};
 use Tests\Concerns\UsesLegacySqlite;
 use Tests\TestCase;
 

@@ -12,18 +12,13 @@ namespace App\Http\Controllers;
 
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Http\Requests\SaveTimesheetRequest;
-use App\Models\Customer;
-use App\Models\Project;
-use App\Models\Timesheet;
-use App\Models\User;
+use App\Models\{Customer, Project, Timesheet, User};
 use App\Services\Material\MaterialProviderRegistry;
 use App\Services\UI\DateRangeContext;
 use App\Support\SortableQuery;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class TimesheetController extends Controller {

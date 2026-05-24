@@ -12,14 +12,10 @@
 namespace Tests\Feature;
 
 use App\Enums\Asset\AssetOwnership;
-use App\Models\Asset;
-use App\Models\Attachment;
-use App\Models\DiaryEntry;
-use App\Models\User;
+use App\Models\{Asset, Attachment, DiaryEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\{Storage, URL};
 use Tests\TestCase;
 
 class AttachmentsTest extends TestCase {

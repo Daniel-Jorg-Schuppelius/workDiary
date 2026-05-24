@@ -11,19 +11,13 @@
 namespace App\Http\Controllers;
 
 use App\Mail\TimesheetSignatureRequestedMail;
-use App\Models\Project;
-use App\Models\Timesheet;
-use App\Services\Timesheet\PdfRenderer;
-use App\Services\Timesheet\SignatureService;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Mail;
+use App\Models\{Project, Timesheet};
+use App\Services\Timesheet\{PdfRenderer, SignatureService};
+use Illuminate\Http\{RedirectResponse, Request, Response};
+use Illuminate\Support\Facades\{Gate, Mail};
 
 class TimesheetSignatureController extends Controller {
-    public function __construct(protected SignatureService $signatures) {
-    }
+    public function __construct(protected SignatureService $signatures) {}
 
     public function store(Request $request, Project $project, Timesheet $timesheet): RedirectResponse {
         Gate::authorize('sign', $timesheet);

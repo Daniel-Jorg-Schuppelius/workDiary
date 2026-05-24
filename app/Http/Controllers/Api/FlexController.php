@@ -13,12 +13,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\Flextime\FlexCalculator;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{JsonResponse, Request};
 
 class FlexController extends Controller {
-    public function __construct(protected FlexCalculator $calc) {
-    }
+    public function __construct(protected FlexCalculator $calc) {}
 
     public function summary(Request $request): JsonResponse {
         $year = (int) $request->input('year', CarbonImmutable::now()->year);

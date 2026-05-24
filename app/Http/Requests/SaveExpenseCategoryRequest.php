@@ -10,8 +10,7 @@
 
 namespace App\Http\Requests;
 
-use App\Models\ExpenseCategory;
-use App\Models\Organization;
+use App\Models\{ExpenseCategory, Organization};
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

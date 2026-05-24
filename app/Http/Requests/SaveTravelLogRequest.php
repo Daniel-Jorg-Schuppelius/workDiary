@@ -13,8 +13,7 @@ namespace App\Http\Requests;
 use App\Enums\Travel\TravelLogVehicle;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
+use Illuminate\Validation\{Rule, Validator};
 
 class SaveTravelLogRequest extends FormRequest {
     public function authorize(): bool {

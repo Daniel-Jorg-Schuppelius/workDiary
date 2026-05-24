@@ -10,8 +10,7 @@
 
 namespace Database\Factories;
 
-use App\Models\EmergencyAssignment;
-use App\Models\User;
+use App\Models\{EmergencyAssignment, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

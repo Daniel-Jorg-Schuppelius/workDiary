@@ -10,10 +10,8 @@
 
 namespace App\Services\Protocol;
 
-use App\Enums\Protocol\ProtocolItemResult;
-use App\Enums\Protocol\ProtocolItemType;
-use App\Models\Protocol;
-use App\Models\ProtocolItem;
+use App\Enums\Protocol\{ProtocolItemResult, ProtocolItemType};
+use App\Models\{Protocol, ProtocolItem};
 
 /**
  * Validiert ein {@see ProtocolItem} gemäß seinem `item_type` (MVP-021 §4).

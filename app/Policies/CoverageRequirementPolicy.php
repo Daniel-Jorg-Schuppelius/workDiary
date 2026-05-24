@@ -10,8 +10,7 @@
 
 namespace App\Policies;
 
-use App\Models\CoverageRequirement;
-use App\Models\User;
+use App\Models\{CoverageRequirement, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 class CoverageRequirementPolicy {

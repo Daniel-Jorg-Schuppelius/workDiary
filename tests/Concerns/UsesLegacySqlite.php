@@ -10,8 +10,7 @@
 
 namespace Tests\Concerns;
 
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{Config, DB};
 
 trait UsesLegacySqlite {
     protected function useLegacySqlite(): void {

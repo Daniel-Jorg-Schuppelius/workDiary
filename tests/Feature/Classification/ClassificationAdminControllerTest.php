@@ -13,15 +13,12 @@ namespace Tests\Feature\Classification;
 
 use App\Enums\Classification\ClassificationDomain;
 use App\Enums\User\UserRole;
-use App\Models\Classification;
-use App\Models\User;
+use App\Models\{Classification, User};
 use App\Services\Classification\ClassificationManager;
-use Database\Seeders\ClassificationSeeder;
-use Database\Seeders\PermissionsSeeder;
+use Database\Seeders\{ClassificationSeeder, PermissionsSeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\{DB, Schema};
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;

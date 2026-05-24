@@ -10,10 +10,8 @@
 
 namespace App\Observers;
 
-use App\Models\AuditLog;
-use App\Models\Customer;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Request;
+use App\Models\{AuditLog, Customer};
+use Illuminate\Support\Facades\{Auth, Request};
 
 class CustomerObserver {
     public function created(Customer $customer): void {

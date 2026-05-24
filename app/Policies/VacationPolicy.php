@@ -11,10 +11,8 @@
 namespace App\Policies;
 
 use App\Enums\Vacation\VacationStatus;
-use App\Models\User;
-use App\Models\Vacation;
-use App\Policies\Concerns\ChecksOwnership;
-use App\Policies\Concerns\HasAdminBypass;
+use App\Models\{User, Vacation};
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class VacationPolicy {
     use ChecksOwnership;

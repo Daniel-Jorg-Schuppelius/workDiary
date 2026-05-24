@@ -11,21 +11,12 @@
 
 namespace App\Models;
 
-use App\Enums\Diary\LocationMode;
-use App\Enums\Diary\Mode;
-use App\Enums\Diary\Priority;
-use App\Enums\Diary\Status;
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToOrganization;
-use App\Models\Concerns\HasAttachments;
-use App\Models\Concerns\HasTags;
+use App\Enums\Diary\{LocationMode, Mode, Priority, Status};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasTags};
 use Database\Factories\DiaryEntryFactory;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 use Illuminate\Support\Carbon;
 
 /**

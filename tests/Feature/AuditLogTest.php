@@ -10,10 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\AuditLog;
-use App\Models\Comment;
-use App\Models\DiaryEntry;
-use App\Models\User;
+use App\Models\{AuditLog, Comment, DiaryEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

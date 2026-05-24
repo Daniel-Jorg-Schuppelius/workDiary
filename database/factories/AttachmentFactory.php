@@ -10,9 +10,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Attachment;
-use App\Models\DiaryEntry;
-use App\Models\User;
+use App\Models\{Attachment, DiaryEntry, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

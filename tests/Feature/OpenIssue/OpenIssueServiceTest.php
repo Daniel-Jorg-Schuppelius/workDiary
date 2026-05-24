@@ -10,14 +10,9 @@
 
 namespace Tests\Feature\OpenIssue;
 
-use App\Enums\OpenIssue\OpenIssueEventType;
-use App\Enums\OpenIssue\OpenIssueSeverity;
-use App\Enums\OpenIssue\OpenIssueStatus;
-use App\Enums\OpenIssue\OpenIssueVisibility;
+use App\Enums\OpenIssue\{OpenIssueEventType, OpenIssueSeverity, OpenIssueStatus, OpenIssueVisibility};
 use App\Exceptions\InvalidOpenIssueTransitionException;
-use App\Models\DiaryEntry;
-use App\Models\OpenIssue;
-use App\Models\User;
+use App\Models\{DiaryEntry, User};
 use App\Services\OpenIssue\OpenIssueService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;

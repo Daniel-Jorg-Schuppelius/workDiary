@@ -11,8 +11,7 @@
 namespace App\Legacy\Services;
 
 use App\Support\WeekDay;
-use Carbon\Carbon;
-use Carbon\CarbonInterface;
+use Carbon\{Carbon, CarbonInterface};
 
 class LegacyWeekCalendarService {
     /**

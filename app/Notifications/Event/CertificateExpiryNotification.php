@@ -23,8 +23,7 @@ class CertificateExpiryNotification extends Notification {
         public readonly string $eventTitle,
         public readonly CarbonInterface $expiresAt,
         public readonly int $daysRemaining,
-    ) {
-    }
+    ) {}
 
     /** @return list<string> */
     public function via(object $notifiable): array {

@@ -10,27 +10,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Diary\LocationMode;
-use App\Enums\Diary\Mode;
+use App\Enums\Diary\{LocationMode, Mode};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveDiaryEntryRequest;
 use App\Legacy\Models\LegacyDiaryEntry;
-use App\Models\Customer;
-use App\Models\DiaryEntry;
-use App\Models\EntryType;
-use App\Models\Tag;
-use App\Models\Tour;
-use App\Models\User;
+use App\Models\{Customer, DiaryEntry, EntryType, Tag, Tour, User};
 use App\Services\Archive\ArchiveService;
 use App\Services\UI\DateRangeContext;
 use App\Support\LookupCache;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class DiaryController extends Controller {

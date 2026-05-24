@@ -14,10 +14,7 @@ namespace App\Support\Toolkit;
 
 use CommonToolkit\Builders\CSVDocumentBuilder;
 use CommonToolkit\Contracts\Interfaces\CSV\FieldInterface;
-use CommonToolkit\Entities\CSV\DataField;
-use CommonToolkit\Entities\CSV\DataLine;
-use CommonToolkit\Entities\CSV\HeaderField;
-use CommonToolkit\Entities\CSV\HeaderLine;
+use CommonToolkit\Entities\CSV\{DataField, DataLine, HeaderField, HeaderLine};
 use CommonToolkit\Parsers\CSVDocumentParser;
 use Generator;
 

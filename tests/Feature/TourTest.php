@@ -10,13 +10,10 @@
 
 namespace Tests\Feature;
 
-use App\Enums\Diary\Mode;
-use App\Enums\Diary\Status as DiaryStatus;
+use App\Enums\Diary\{Mode, Status as DiaryStatus};
 use App\Enums\Tour\TourStatus;
 use App\Enums\Travel\TravelLogVehicle;
-use App\Models\DiaryEntry;
-use App\Models\Tour;
-use App\Models\User;
+use App\Models\{DiaryEntry, Tour, User};
 use App\Services\Routing\TourService;
 use Carbon\CarbonImmutable;
 use Database\Seeders\EntryTypeSeeder;

@@ -11,8 +11,7 @@
 namespace App\Http\Middleware;
 
 use App\Http\Controllers\OrganizationSwitchController;
-use App\Models\Organization;
-use App\Models\User;
+use App\Models\{Organization, User};
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

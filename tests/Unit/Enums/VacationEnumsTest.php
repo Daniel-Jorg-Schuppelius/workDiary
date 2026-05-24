@@ -10,8 +10,7 @@
 
 namespace Tests\Unit\Enums;
 
-use App\Enums\Vacation\VacationStatus;
-use App\Enums\Vacation\VacationType;
+use App\Enums\Vacation\{VacationStatus, VacationType};
 use Tests\TestCase;
 
 class VacationEnumsTest extends TestCase {

@@ -10,16 +10,10 @@
 
 namespace App\Services\Protocol;
 
-use App\Enums\Protocol\ProtocolEventType;
-use App\Enums\Protocol\ProtocolSignatureMethod;
-use App\Enums\Protocol\ProtocolSignatureRole;
-use App\Models\Protocol;
-use App\Models\ProtocolEvent;
-use App\Models\ProtocolSignatureToken;
-use App\Models\User;
-use Illuminate\Support\Carbon;
+use App\Enums\Protocol\{ProtocolEventType, ProtocolSignatureMethod, ProtocolSignatureRole};
+use App\Models\{Protocol, ProtocolEvent, ProtocolSignatureToken, User};
+use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use InvalidArgumentException;
 use RuntimeException;
 

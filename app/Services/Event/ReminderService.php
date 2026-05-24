@@ -11,9 +11,7 @@
 namespace App\Services\Event;
 
 use App\Enums\Event\ParticipantStatus;
-use App\Models\Event;
-use App\Models\EventReminder;
-use App\Models\User;
+use App\Models\{Event, EventReminder, User};
 use App\Notifications\Event\EventReminderNotification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;

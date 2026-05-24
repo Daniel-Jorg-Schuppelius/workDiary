@@ -13,8 +13,7 @@ namespace Tests\Feature\Classification;
 
 use App\Enums\Classification\ClassificationDomain;
 use App\Enums\User\UserRole;
-use App\Models\Classification;
-use App\Models\User;
+use App\Models\{Classification, User};
 use App\Policies\ClassificationPolicy;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -12,25 +12,20 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveEnergyLogRequest;
-use App\Models\EnergyLog;
-use App\Models\User;
-use App\Models\Vehicle;
+use App\Models\{EnergyLog, User, Vehicle};
 use App\Services\Fleet\EnergyLogService;
 use App\Support\SortableQuery;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class EnergyLogController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function __construct(private readonly EnergyLogService $service) {
-    }
+    public function __construct(private readonly EnergyLogService $service) {}
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', EnergyLog::class);

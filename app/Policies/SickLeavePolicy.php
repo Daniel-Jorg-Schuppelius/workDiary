@@ -10,11 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\Attachment;
-use App\Models\SickLeave;
-use App\Models\User;
-use App\Policies\Concerns\ChecksOwnership;
-use App\Policies\Concerns\HasAdminBypass;
+use App\Models\{Attachment, SickLeave, User};
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class SickLeavePolicy {
     use ChecksOwnership;

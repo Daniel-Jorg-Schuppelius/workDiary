@@ -12,12 +12,7 @@
 namespace Tests\Feature\Asset;
 
 use App\Enums\Asset\AssetOwnership;
-use App\Models\Asset;
-use App\Models\DiaryEntry;
-use App\Models\MaterialUsage;
-use App\Models\Project;
-use App\Models\Timesheet;
-use App\Models\User;
+use App\Models\{Asset, DiaryEntry, MaterialUsage, Project, Timesheet, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

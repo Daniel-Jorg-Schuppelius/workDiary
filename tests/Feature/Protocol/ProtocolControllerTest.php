@@ -12,15 +12,8 @@
 namespace Tests\Feature\Protocol;
 
 use App\Enums\Asset\AssetOwnership;
-use App\Enums\Protocol\ProtocolItemPhotoPhase;
-use App\Enums\Protocol\ProtocolItemType;
-use App\Enums\Protocol\ProtocolStatus;
-use App\Enums\Protocol\ProtocolType;
-use App\Models\Asset;
-use App\Models\DiaryEntry;
-use App\Models\Protocol;
-use App\Models\ProtocolItemPhoto;
-use App\Models\User;
+use App\Enums\Protocol\{ProtocolItemPhotoPhase, ProtocolItemType, ProtocolStatus, ProtocolType};
+use App\Models\{Asset, DiaryEntry, Protocol, ProtocolItemPhoto, User};
 use App\Services\Protocol\ProtocolService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

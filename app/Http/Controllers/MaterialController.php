@@ -13,8 +13,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SaveMaterialRequest;
 use App\Models\Material;
 use App\Support\SortableQuery;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 

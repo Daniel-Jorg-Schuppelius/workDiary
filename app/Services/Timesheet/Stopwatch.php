@@ -11,9 +11,7 @@
 namespace App\Services\Timesheet;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\TimeEntry;
-use App\Models\Timesheet;
-use App\Models\User;
+use App\Models\{TimeEntry, Timesheet, User};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use RuntimeException;

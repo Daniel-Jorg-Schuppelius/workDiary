@@ -10,11 +10,8 @@
 
 namespace App\Services\Procedure;
 
-use App\Models\DiaryEntry;
-use App\Models\ProcedureTemplate;
-use App\Models\ProcedureTemplateVersion;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
+use App\Models\{DiaryEntry, ProcedureTemplate, ProcedureTemplateVersion};
+use Illuminate\Support\{Carbon, Collection};
 
 /**
  * Filtert veroeffentlichte Prozedurvorlagen anhand des
@@ -30,8 +27,7 @@ use Illuminate\Support\Collection;
  * Vorlage als "universell anwendbar" und wird vorgeschlagen.
  */
 class ProcedureApplicabilityResolver {
-    public function __construct(private readonly ProcedureTemplateService $templates) {
-    }
+    public function __construct(private readonly ProcedureTemplateService $templates) {}
 
     /**
      * @return Collection<int, ProcedureTemplate>

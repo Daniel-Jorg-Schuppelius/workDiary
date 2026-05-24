@@ -11,18 +11,10 @@
 
 namespace Tests\Feature\Asset;
 
-use App\Enums\Asset\AssetClass;
-use App\Enums\Asset\AssetOwnership;
-use App\Enums\Asset\AssetStatus;
+use App\Enums\Asset\{AssetClass, AssetOwnership, AssetStatus};
 use App\Exceptions\AssetValidationException;
-use App\Models\Asset;
-use App\Models\AuditLog;
-use App\Models\Customer;
-use App\Models\Organization;
-use App\Models\User;
-use App\Services\Asset\AssetNumberGenerator;
-use App\Services\Asset\AssetService;
-use App\Services\Asset\AssetStatusMachine;
+use App\Models\{Asset, AuditLog, Customer, Organization, User};
+use App\Services\Asset\{AssetNumberGenerator, AssetService, AssetStatusMachine};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

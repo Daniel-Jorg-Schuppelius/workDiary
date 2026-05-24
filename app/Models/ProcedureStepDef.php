@@ -10,8 +10,7 @@
 
 namespace App\Models;
 
-use App\Enums\Procedure\ProcedureProofType;
-use App\Enums\Procedure\ProcedureStepType;
+use App\Enums\Procedure\{ProcedureProofType, ProcedureStepType};
 use Database\Factories\ProcedureStepDefFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

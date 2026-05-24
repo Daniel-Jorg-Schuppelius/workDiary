@@ -10,15 +10,9 @@
 
 namespace App\Services\OpenIssue;
 
-use App\Enums\OpenIssue\OpenIssueEventType;
-use App\Enums\OpenIssue\OpenIssueSeverity;
-use App\Enums\OpenIssue\OpenIssueSource;
-use App\Enums\OpenIssue\OpenIssueStatus;
-use App\Enums\OpenIssue\OpenIssueVisibility;
+use App\Enums\OpenIssue\{OpenIssueEventType, OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
 use App\Exceptions\InvalidOpenIssueTransitionException;
-use App\Models\OpenIssue;
-use App\Models\OpenIssueEvent;
-use App\Models\User;
+use App\Models\{OpenIssue, OpenIssueEvent, User};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

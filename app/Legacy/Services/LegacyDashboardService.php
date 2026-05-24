@@ -13,12 +13,9 @@ declare(strict_types=1);
 namespace App\Legacy\Services;
 
 use App\Enums\Vacation\VacationStatus;
-use App\Legacy\Models\LegacyDiaryEntry;
-use App\Legacy\Models\LegacyNotdienst;
-use App\Legacy\Models\LegacyOnCall;
+use App\Legacy\Models\{LegacyDiaryEntry, LegacyNotdienst, LegacyOnCall};
 use App\Legacy\Support\LegacyRoleResolver;
-use App\Models\User;
-use App\Models\Vacation;
+use App\Models\{User, Vacation};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 

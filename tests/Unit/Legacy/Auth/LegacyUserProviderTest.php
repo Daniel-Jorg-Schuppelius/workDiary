@@ -15,8 +15,7 @@ namespace Tests\Unit\Legacy\Auth;
 use App\Legacy\Auth\LegacyUserProvider;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\{DB, Hash};
 use Tests\TestCase;
 
 class LegacyUserProviderTest extends TestCase {

@@ -10,8 +10,7 @@
 
 namespace Database\Factories;
 
-use App\Models\EventCategory;
-use App\Models\Organization;
+use App\Models\{EventCategory, Organization};
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

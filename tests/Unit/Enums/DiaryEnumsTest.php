@@ -10,10 +10,7 @@
 
 namespace Tests\Unit\Enums;
 
-use App\Enums\Diary\LocationMode;
-use App\Enums\Diary\Mode;
-use App\Enums\Diary\Priority;
-use App\Enums\Diary\Status;
+use App\Enums\Diary\{LocationMode, Mode, Priority, Status};
 use Tests\TestCase;
 
 final class DiaryEnumsTest extends TestCase {

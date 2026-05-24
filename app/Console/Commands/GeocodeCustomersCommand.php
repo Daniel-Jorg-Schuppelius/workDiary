@@ -11,8 +11,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Customer;
-use App\Services\Routing\GeocodingException;
-use App\Services\Routing\NominatimGeocoder;
+use App\Services\Routing\{GeocodingException, NominatimGeocoder};
 use Illuminate\Console\Command;
 
 /**

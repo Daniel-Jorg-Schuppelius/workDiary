@@ -12,12 +12,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Requests\SaveTimesheetEntryRequest;
-use App\Models\Project;
-use App\Models\TimeEntry;
-use App\Models\Timesheet;
+use App\Models\{Project, TimeEntry, Timesheet};
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class TimesheetEntryController extends Controller {

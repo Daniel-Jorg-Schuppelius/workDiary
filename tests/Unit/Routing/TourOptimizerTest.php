@@ -10,8 +10,7 @@
 
 namespace Tests\Unit\Routing;
 
-use App\Services\Routing\Coordinate;
-use App\Services\Routing\TourOptimizer;
+use App\Services\Routing\{Coordinate, TourOptimizer};
 use Tests\TestCase;
 
 class TourOptimizerTest extends TestCase {

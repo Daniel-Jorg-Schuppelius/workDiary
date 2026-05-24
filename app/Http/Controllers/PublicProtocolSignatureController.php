@@ -11,15 +11,13 @@
 namespace App\Http\Controllers;
 
 use App\Services\Protocol\ProtocolSignatureTokenService;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 class PublicProtocolSignatureController extends Controller {
-    public function __construct(private readonly ProtocolSignatureTokenService $tokens) {
-    }
+    public function __construct(private readonly ProtocolSignatureTokenService $tokens) {}
 
     public function show(string $token): View|Response {
         try {

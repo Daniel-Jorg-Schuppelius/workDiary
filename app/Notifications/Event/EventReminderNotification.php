@@ -24,8 +24,7 @@ class EventReminderNotification extends Notification {
     public function __construct(
         public readonly Event $event,
         public readonly array $channels = ['mail', 'database'],
-    ) {
-    }
+    ) {}
 
     /** @return list<string> */
     public function via(object $notifiable): array {

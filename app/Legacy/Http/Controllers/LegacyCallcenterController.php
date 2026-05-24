@@ -12,26 +12,20 @@ namespace App\Legacy\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Legacy\Http\Requests\LegacyCallcenterLoginRequest;
-use App\Legacy\Models\LegacyDiaryEntry;
-use App\Legacy\Models\LegacyNotdienst;
-use App\Legacy\Models\LegacyOnCall;
+use App\Legacy\Models\{LegacyDiaryEntry, LegacyNotdienst, LegacyOnCall};
 use App\Legacy\Support\LegacyRoleResolver;
 use App\Models\User;
 use App\Services\HolidayService;
 use Carbon\Carbon;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\{Auth, DB, RateLimiter};
 use Illuminate\View\View;
 
 class LegacyCallcenterController extends Controller {
     private const MAX_LOGIN_ATTEMPTS = 5;
 
-    public function __construct(private readonly HolidayService $holidayService) {
-    }
+    public function __construct(private readonly HolidayService $holidayService) {}
 
     public function showLoginForm(): View {
         return view('legacy.callcenter.login');

@@ -11,8 +11,7 @@
 namespace App\Providers;
 
 use App\Plugins\Contracts\Plugin;
-use App\Plugins\Lexoffice\LexofficeMapper;
-use App\Plugins\Lexoffice\LexofficeService;
+use App\Plugins\Lexoffice\{LexofficeMapper, LexofficeService};
 use App\Plugins\PluginManager;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;

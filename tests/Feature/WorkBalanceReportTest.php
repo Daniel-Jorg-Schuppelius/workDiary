@@ -11,12 +11,8 @@
 namespace Tests\Feature;
 
 use App\Enums\Project\ProjectStatus;
-use App\Enums\TimeEntry\TimeEntryActivityType;
-use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\Attendance;
-use App\Models\Project;
-use App\Models\TimeEntry;
-use App\Models\User;
+use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
+use App\Models\{Attendance, Project, TimeEntry, User};
 use App\Services\Reporting\WorkBalanceCalculator;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

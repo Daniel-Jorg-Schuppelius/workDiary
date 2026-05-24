@@ -12,14 +12,10 @@ namespace App\Services\Event;
 
 use App\Enums\Event\EventVisibility;
 use App\Enums\Vacation\VacationStatus;
-use App\Models\Event;
-use App\Models\ScheduledShift;
-use App\Models\User;
-use App\Models\Vacation;
+use App\Models\{Event, ScheduledShift, User, Vacation};
 use Carbon\CarbonImmutable;
 use DateTimeZone;
-use Spatie\IcalendarGenerator\Components\Calendar;
-use Spatie\IcalendarGenerator\Components\Event as IcsEvent;
+use Spatie\IcalendarGenerator\Components\{Calendar, Event as IcsEvent};
 use Spatie\IcalendarGenerator\Enums\Classification;
 
 /**

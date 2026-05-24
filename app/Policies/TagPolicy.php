@@ -10,8 +10,7 @@
 
 namespace App\Policies;
 
-use App\Models\Tag;
-use App\Models\User;
+use App\Models\{Tag, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 class TagPolicy {

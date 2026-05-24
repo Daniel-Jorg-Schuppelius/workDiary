@@ -11,13 +11,11 @@
 namespace App\Http\Controllers;
 
 use App\Services\Licensing\LicenseService;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 
 class LicenseController extends Controller {
-    public function __construct(private readonly LicenseService $service) {
-    }
+    public function __construct(private readonly LicenseService $service) {}
 
     public function show(Request $request): View {
         $result = $this->service->current($request->getHost());

@@ -11,14 +11,11 @@
 namespace App\Models;
 
 use App\Enums\Procedure\ProcedureRunStatus;
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{Auditable, BelongsToOrganization};
 use Database\Factories\ProcedureRunFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
 
 /**
  * Instanz einer {@see ProcedureTemplateVersion} fuer ein Subjekt

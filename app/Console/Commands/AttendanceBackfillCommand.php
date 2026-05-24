@@ -10,10 +10,8 @@
 
 namespace App\Console\Commands;
 
-use App\Enums\Attendance\AttendanceSource;
-use App\Enums\Attendance\AttendanceStatus;
-use App\Models\Attendance;
-use App\Models\TimeEntry;
+use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
+use App\Models\{Attendance, TimeEntry};
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;

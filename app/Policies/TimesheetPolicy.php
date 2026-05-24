@@ -10,10 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\Timesheet;
-use App\Models\User;
-use App\Policies\Concerns\ChecksOwnership;
-use App\Policies\Concerns\HasAdminBypass;
+use App\Models\{Timesheet, User};
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class TimesheetPolicy {
     use ChecksOwnership;

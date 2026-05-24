@@ -11,15 +11,13 @@
 
 namespace Tests\Feature\Access;
 
-use App\Enums\User\Permission as PermissionEnum;
-use App\Enums\User\UserRole;
+use App\Enums\User\{Permission as PermissionEnum, UserRole};
 use App\Models\User;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\{Permission, Role};
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

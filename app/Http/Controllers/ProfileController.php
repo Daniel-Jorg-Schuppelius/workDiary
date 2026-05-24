@@ -10,18 +10,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Attachment;
-use App\Models\User;
+use App\Models\{Attachment, User};
 use App\Services\Attachments\ImageMetaUploader;
 use Illuminate\Contracts\View\View;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
+use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller {
-    public function __construct(private readonly ImageMetaUploader $avatarUploader) {
-    }
+    public function __construct(private readonly ImageMetaUploader $avatarUploader) {}
 
     public function edit(): View {
         /** @var User $user */

@@ -10,11 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\DiaryEntry;
-use App\Models\EmergencyAssignment;
-use App\Models\OnCallShift;
-use App\Models\Tag;
-use App\Models\User;
+use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift, Tag, User};
 use App\Services\UI\DateRangeContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

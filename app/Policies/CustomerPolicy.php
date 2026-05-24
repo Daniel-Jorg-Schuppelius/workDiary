@@ -11,10 +11,8 @@
 namespace App\Policies;
 
 use App\Enums\User\UserRole;
-use App\Models\Customer;
-use App\Models\User;
-use App\Policies\Concerns\ChecksOwnership;
-use App\Policies\Concerns\HasAdminBypass;
+use App\Models\{Customer, User};
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class CustomerPolicy {
     use ChecksOwnership;

@@ -11,8 +11,7 @@
 namespace App\Policies;
 
 use App\Enums\User\UserRole;
-use App\Models\EventCategory;
-use App\Models\User;
+use App\Models\{EventCategory, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 class EventCategoryPolicy {

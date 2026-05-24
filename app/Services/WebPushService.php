@@ -10,11 +10,9 @@
 
 namespace App\Services;
 
-use App\Models\PushSubscription;
-use App\Models\User;
+use App\Models\{PushSubscription, User};
 use Illuminate\Support\Facades\Log;
-use Minishlink\WebPush\Subscription;
-use Minishlink\WebPush\WebPush;
+use Minishlink\WebPush\{Subscription, WebPush};
 
 class WebPushService {
     protected ?WebPush $webPush = null;

@@ -10,10 +10,8 @@
 
 namespace App\Services;
 
-use App\Models\Customer;
-use App\Models\TimeEntry;
-use Carbon\CarbonImmutable;
-use Carbon\CarbonInterface;
+use App\Models\{Customer, TimeEntry};
+use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Support\Facades\DB;
 
 /**

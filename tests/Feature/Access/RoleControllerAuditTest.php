@@ -10,8 +10,7 @@
 
 namespace Tests\Feature\Access;
 
-use App\Models\AuditLog;
-use App\Models\User;
+use App\Models\{AuditLog, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;

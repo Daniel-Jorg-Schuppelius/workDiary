@@ -10,15 +10,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Comment;
-use App\Models\DiaryEntry;
-use App\Models\TimeEntry;
+use App\Models\{Comment, DiaryEntry, TimeEntry};
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Auth, Gate};
 
 class CommentController extends Controller {
     public function store(Request $request, DiaryEntry $diary): RedirectResponse {

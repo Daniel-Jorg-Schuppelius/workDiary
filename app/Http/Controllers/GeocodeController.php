@@ -10,10 +10,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Routing\GeocodingException;
-use App\Services\Routing\NominatimGeocoder;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Services\Routing\{GeocodingException, NominatimGeocoder};
+use Illuminate\Http\{JsonResponse, Request};
 
 /**
  * Internal AJAX endpoint used by Blade forms (TravelLog/Customer) to
@@ -21,8 +19,7 @@ use Illuminate\Http\Request;
  * to anonymous callers.
  */
 class GeocodeController extends Controller {
-    public function __construct(private readonly NominatimGeocoder $geocoder) {
-    }
+    public function __construct(private readonly NominatimGeocoder $geocoder) {}
 
     public function __invoke(Request $request): JsonResponse {
         $data = $request->validate([

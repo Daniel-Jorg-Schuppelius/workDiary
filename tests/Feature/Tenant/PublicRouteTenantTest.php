@@ -10,11 +10,8 @@
 
 namespace Tests\Feature\Tenant;
 
-use App\Enums\Timesheet\TimesheetKind;
-use App\Enums\Timesheet\TimesheetStatus;
-use App\Models\Organization;
-use App\Models\Timesheet;
-use App\Models\User;
+use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
+use App\Models\{Organization, Timesheet, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;

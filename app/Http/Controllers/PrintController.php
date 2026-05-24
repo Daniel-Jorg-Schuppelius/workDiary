@@ -13,20 +13,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\Vacation\VacationStatus;
-use App\Models\DutyPlan;
-use App\Models\EmergencyAssignment;
-use App\Models\OnCallShift;
-use App\Models\ScheduledShift;
-use App\Models\ShiftType;
-use App\Models\User;
-use App\Models\Vacation;
+use App\Models\{DutyPlan, EmergencyAssignment, OnCallShift, ScheduledShift, ShiftType, User, Vacation};
 use App\Services\HolidayService;
-use Carbon\CarbonImmutable;
-use Carbon\CarbonPeriod;
+use Carbon\{CarbonImmutable, CarbonPeriod};
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 /**
@@ -37,8 +29,7 @@ use Illuminate\View\View;
  * Anonymisation: append `?anonymous=1` to any route to display only initials.
  */
 class PrintController extends Controller {
-    public function __construct(private readonly HolidayService $holidays) {
-    }
+    public function __construct(private readonly HolidayService $holidays) {}
 
     /**
      * A3 querformat — Monats-Aushang: alle Mitarbeiter × alle Tage des Plans.

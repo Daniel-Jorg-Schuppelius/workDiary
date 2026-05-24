@@ -10,8 +10,7 @@
 
 namespace Database\Factories;
 
-use App\Enums\Shift\DutyPlanPeriodType;
-use App\Enums\Shift\DutyPlanStatus;
+use App\Enums\Shift\{DutyPlanPeriodType, DutyPlanStatus};
 use App\Models\DutyPlan;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;

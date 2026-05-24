@@ -13,13 +13,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveTaskRequest;
 use App\Http\Resources\TaskResource;
-use App\Models\Project;
-use App\Models\Task;
-use Illuminate\Http\Request;
+use App\Models\{Project, Task};
+use Illuminate\Http\{Request, Response};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Auth, Gate};
 
 class TaskController extends Controller {
     public function index(Request $request): AnonymousResourceCollection {

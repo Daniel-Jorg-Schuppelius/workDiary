@@ -10,13 +10,10 @@
 
 namespace App\Models\Concerns;
 
-use App\Models\AuditLog;
-use App\Models\Organization;
-use App\Models\User;
+use App\Models\{AuditLog, Organization, User};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\{Auth, Request};
 
 /**
  * @method static void created(\Closure $callback)

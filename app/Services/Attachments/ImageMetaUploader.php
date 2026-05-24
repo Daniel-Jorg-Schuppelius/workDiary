@@ -10,12 +10,9 @@
 
 namespace App\Services\Attachments;
 
-use App\Models\Attachment;
-use App\Models\Organization;
-use App\Models\User;
+use App\Models\{Attachment, Organization, User};
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\{Auth, Storage};
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 

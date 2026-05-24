@@ -13,16 +13,11 @@ namespace Tests\Feature\Classification;
 
 use App\Enums\Classification\ClassificationDomain;
 use App\Exceptions\ClassificationValidationException;
-use App\Models\AuditLog;
-use App\Models\Classification;
-use App\Models\Organization;
-use App\Models\User;
-use App\Services\Classification\ClassificationManager;
-use App\Services\Classification\ClassificationResolver;
+use App\Models\{AuditLog, Classification, Organization, User};
+use App\Services\Classification\{ClassificationManager, ClassificationResolver};
 use Database\Seeders\ClassificationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\{DB, Schema};
 use Tests\TestCase;
 
 class ClassificationManagerTest extends TestCase {

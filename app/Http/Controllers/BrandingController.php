@@ -10,13 +10,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Organization;
-use App\Models\User;
+use App\Models\{Organization, User};
 use App\Services\BrandingService;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 /**

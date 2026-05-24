@@ -21,8 +21,7 @@ class LicenseService {
     public function __construct(
         private readonly Filesystem $files,
         private readonly CacheRepository $cache,
-    ) {
-    }
+    ) {}
 
     public function isEnforced(): bool {
         return (bool) config('license.enforce', true);

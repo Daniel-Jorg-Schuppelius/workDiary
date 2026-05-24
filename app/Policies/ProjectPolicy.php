@@ -10,10 +10,8 @@
 
 namespace App\Policies;
 
-use App\Models\Project;
-use App\Models\User;
-use App\Policies\Concerns\ChecksOwnership;
-use App\Policies\Concerns\HasAdminBypass;
+use App\Models\{Project, User};
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class ProjectPolicy {
     use ChecksOwnership;

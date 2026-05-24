@@ -10,15 +10,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Organization;
-use App\Models\User;
+use App\Models\{Organization, User};
 use App\Services\OrganizationLifecycleService;
 use App\Support\SortableQuery;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 

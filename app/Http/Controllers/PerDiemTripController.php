@@ -12,23 +12,14 @@ namespace App\Http\Controllers;
 
 use App\Enums\Expense\PerDiemTripStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Http\Requests\SavePerDiemDayRequest;
-use App\Http\Requests\SavePerDiemTripRequest;
-use App\Models\Customer;
-use App\Models\PerDiemDay;
-use App\Models\PerDiemTrip;
-use App\Models\Project;
-use App\Models\TravelLog;
-use App\Models\User;
-use App\Services\Expense\PerDiemEligibilityChecker;
-use App\Services\Expense\PerDiemTripService;
+use App\Http\Requests\{SavePerDiemDayRequest, SavePerDiemTripRequest};
+use App\Models\{Customer, PerDiemDay, PerDiemTrip, Project, TravelLog, User};
+use App\Services\Expense\{PerDiemEligibilityChecker, PerDiemTripService};
 use App\Support\SortableQuery;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -39,8 +30,7 @@ class PerDiemTripController extends Controller {
     public function __construct(
         private readonly PerDiemTripService $service,
         private readonly PerDiemEligibilityChecker $eligibility,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', PerDiemTrip::class);

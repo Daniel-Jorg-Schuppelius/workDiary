@@ -8,21 +8,12 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Middleware\EnsureNewSystemAccess;
-use App\Http\Middleware\EnsureValidLicense;
-use App\Http\Middleware\ForcePasswordChange;
-use App\Http\Middleware\HandleDatabaseUnavailable;
-use App\Http\Middleware\SecurityHeaders;
-use App\Http\Middleware\SetLocale;
-use App\Http\Middleware\SetOrganizationContext;
-use App\Legacy\Http\Middleware\EnsureLegacyAccess;
-use App\Legacy\Http\Middleware\EnsureLegacyCallcenterAuthenticated;
-use App\Legacy\Http\Middleware\EnsureLegacyWriteAllowed;
+use App\Http\Middleware\{EnsureNewSystemAccess, EnsureValidLicense, ForcePasswordChange, HandleDatabaseUnavailable, SecurityHeaders, SetLocale, SetOrganizationContext};
+use App\Legacy\Http\Middleware\{EnsureLegacyAccess, EnsureLegacyCallcenterAuthenticated, EnsureLegacyWriteAllowed};
 use App\Support\DatabaseHealth;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
-use Illuminate\Foundation\Configuration\Exceptions;
-use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Foundation\Configuration\{Exceptions, Middleware};
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;

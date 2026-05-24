@@ -28,6 +28,5 @@ final class DailyBalance {
         public readonly int $balanceMinutes,
         public readonly array $byActivity,
         public readonly array $byKind,
-    ) {
-    }
+    ) {}
 }

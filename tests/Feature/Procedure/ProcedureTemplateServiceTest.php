@@ -10,12 +10,9 @@
 
 namespace Tests\Feature\Procedure;
 
-use App\Enums\Procedure\ProcedureRiskLevel;
-use App\Enums\Procedure\ProcedureStepType;
+use App\Enums\Procedure\{ProcedureRiskLevel, ProcedureStepType};
 use App\Exceptions\PublishedProcedureVersionLockedException;
-use App\Models\Organization;
-use App\Models\ProcedureTemplate;
-use App\Models\User;
+use App\Models\{Organization, User};
 use App\Services\Procedure\ProcedureTemplateService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

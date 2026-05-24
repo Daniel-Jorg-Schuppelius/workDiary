@@ -23,8 +23,7 @@ final class RouteResult {
         public readonly int $durationSeconds,
         public readonly ?array $geometry,
         public readonly array $legs = [],
-    ) {
-    }
+    ) {}
 
     public function distanceKm(): float {
         return round($this->distanceMeters / 1000, 2);

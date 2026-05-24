@@ -10,9 +10,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Milestone;
-use App\Models\Project;
-use App\Models\User;
+use App\Models\{Milestone, Project, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

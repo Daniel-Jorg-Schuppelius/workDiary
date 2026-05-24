@@ -14,9 +14,7 @@ namespace App\Services\Compliance\Rules;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\ScheduledShift;
-use App\Services\Compliance\ComplianceRule;
-use App\Services\Compliance\ComplianceViolation;
-use App\Services\Compliance\ResolvesShiftTiming;
+use App\Services\Compliance\{ComplianceRule, ComplianceViolation, ResolvesShiftTiming};
 use Carbon\CarbonImmutable;
 
 /** Wochenarbeitszeit (default 48h, ISO-Woche). */

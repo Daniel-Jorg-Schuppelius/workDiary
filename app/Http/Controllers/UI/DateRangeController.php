@@ -12,8 +12,7 @@ namespace App\Http\Controllers\UI;
 
 use App\Http\Controllers\Controller;
 use App\Services\UI\DateRangeContext;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Validation\Rule;
 
 class DateRangeController extends Controller {

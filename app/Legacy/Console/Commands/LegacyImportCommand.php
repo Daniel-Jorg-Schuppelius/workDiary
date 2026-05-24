@@ -10,14 +10,10 @@
 
 namespace App\Legacy\Console\Commands;
 
-use App\Models\DiaryEntry;
-use App\Models\EmergencyAssignment;
-use App\Models\OnCallShift;
-use App\Models\User;
+use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift, User};
 use CommonToolkit\Helper\Data\StringHelper as ToolkitStringHelper;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\{DB, Hash};
 use Illuminate\Support\Str;
 
 class LegacyImportCommand extends Command {

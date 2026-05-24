@@ -8,8 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Providers\AppServiceProvider;
-use App\Providers\PluginServiceProvider;
+use App\Providers\{AppServiceProvider, PluginServiceProvider};
 
 return [
     AppServiceProvider::class,

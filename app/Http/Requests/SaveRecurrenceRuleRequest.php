@@ -10,8 +10,7 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\Diary\LocationMode;
-use App\Enums\Diary\Priority;
+use App\Enums\Diary\{LocationMode, Priority};
 use App\Enums\Recurrence\RecurrenceFrequency;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

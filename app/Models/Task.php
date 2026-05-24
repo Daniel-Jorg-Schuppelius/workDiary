@@ -10,15 +10,12 @@
 
 namespace App\Models;
 
-use App\Enums\Task\TaskPriority;
-use App\Enums\Task\TaskStatus;
-use App\Models\Concerns\BelongsToOrganization;
-use App\Models\Concerns\HasAttachments;
+use App\Enums\Task\{TaskPriority, TaskStatus};
+use App\Models\Concerns\{BelongsToOrganization, HasAttachments};
 use Database\Factories\TaskFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
 
 /**

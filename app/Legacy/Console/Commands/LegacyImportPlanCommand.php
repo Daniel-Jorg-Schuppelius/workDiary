@@ -10,8 +10,7 @@
 
 namespace App\Legacy\Console\Commands;
 
-use App\Legacy\Models\LegacyDiaryEntry;
-use App\Legacy\Models\LegacyUser;
+use App\Legacy\Models\{LegacyDiaryEntry, LegacyUser};
 use Illuminate\Console\Command;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;

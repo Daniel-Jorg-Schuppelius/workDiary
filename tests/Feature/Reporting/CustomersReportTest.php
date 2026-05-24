@@ -11,23 +11,13 @@
 
 namespace Tests\Feature\Reporting;
 
-use App\Enums\OpenIssue\OpenIssueSeverity;
-use App\Enums\OpenIssue\OpenIssueSource;
-use App\Enums\OpenIssue\OpenIssueStatus;
-use App\Enums\OpenIssue\OpenIssueVisibility;
+use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\Customer;
-use App\Models\DiaryEntry;
-use App\Models\OpenIssue;
-use App\Models\Project;
-use App\Models\Protocol;
-use App\Models\TimeEntry;
-use App\Models\User;
+use App\Models\{Customer, DiaryEntry, OpenIssue, Project, Protocol, TimeEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Concerns\WithGlobalDateRange;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
 
 class CustomersReportTest extends TestCase {

@@ -11,22 +11,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SaveCustomerRequest;
-use App\Models\AuditLog;
-use App\Models\Customer;
-use App\Models\ExternalReference;
-use App\Models\Tag;
-use App\Models\TimeEntry;
-use App\Models\User;
+use App\Models\{AuditLog, Customer, ExternalReference, Tag, TimeEntry, User};
 use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
-use App\Services\CustomerCsvImporter;
-use App\Services\CustomerStatsService;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use App\Services\{CustomerCsvImporter, CustomerStatsService};
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 

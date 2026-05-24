@@ -13,12 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Schedule;
 
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Models\DutyPlan;
-use App\Models\ScheduledShift;
-use App\Models\ShiftType;
+use App\Models\{DutyPlan, ScheduledShift, ShiftType};
 use App\Services\CoverageService;
-use Carbon\CarbonImmutable;
-use Carbon\CarbonPeriod;
+use Carbon\{CarbonImmutable, CarbonPeriod};
 use Illuminate\Support\Collection;
 
 /**
@@ -26,8 +23,7 @@ use Illuminate\Support\Collection;
  * (Soll aus aktiven `DutyPlan`s, Ist aus geladenen Schichten außer `cancelled`).
  */
 class OpenSlotService {
-    public function __construct(private readonly CoverageService $coverage) {
-    }
+    public function __construct(private readonly CoverageService $coverage) {}
 
     /**
      * @param  Collection<int, ScheduledShift>  $shifts

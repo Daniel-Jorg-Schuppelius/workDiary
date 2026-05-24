@@ -30,8 +30,7 @@ class ExpenseDecidedNotification extends Notification {
     public function __construct(
         public readonly Expense $expense,
         public readonly array $channels = ['mail', 'database'],
-    ) {
-    }
+    ) {}
 
     /** @return list<string> */
     public function via(object $notifiable): array {

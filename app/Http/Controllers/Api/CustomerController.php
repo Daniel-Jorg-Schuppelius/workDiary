@@ -14,11 +14,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveCustomerRequest;
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
-use Illuminate\Http\Request;
+use Illuminate\Http\{Request, Response};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Auth, Gate};
 
 class CustomerController extends Controller {
     public function index(Request $request): AnonymousResourceCollection {

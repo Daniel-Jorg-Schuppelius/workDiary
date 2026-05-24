@@ -10,10 +10,7 @@
 
 namespace Tests\Feature\Tenant;
 
-use App\Models\Customer;
-use App\Models\Organization;
-use App\Models\Project;
-use App\Models\User;
+use App\Models\{Customer, Organization, Project, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

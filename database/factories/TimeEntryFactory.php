@@ -10,11 +10,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\TimeEntry\TimeEntryActivityType;
-use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\Project;
-use App\Models\TimeEntry;
-use App\Models\User;
+use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
+use App\Models\{Project, TimeEntry, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

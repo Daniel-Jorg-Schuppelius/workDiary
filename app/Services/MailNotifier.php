@@ -10,14 +10,10 @@
 
 namespace App\Services;
 
-use App\Mail\CommentCreatedMail;
-use App\Mail\DiaryStatusChangedMail;
-use App\Models\Comment;
-use App\Models\DiaryEntry;
-use App\Models\User;
+use App\Mail\{CommentCreatedMail, DiaryStatusChangedMail};
+use App\Models\{Comment, DiaryEntry, User};
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\{Auth, Mail};
 
 class MailNotifier {
     public function commentCreated(Comment $comment): void {

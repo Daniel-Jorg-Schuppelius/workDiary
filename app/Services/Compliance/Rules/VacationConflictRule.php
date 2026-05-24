@@ -13,10 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Compliance\Rules;
 
 use App\Enums\Vacation\VacationStatus;
-use App\Models\ScheduledShift;
-use App\Models\Vacation;
-use App\Services\Compliance\ComplianceRule;
-use App\Services\Compliance\ComplianceViolation;
+use App\Models\{ScheduledShift, Vacation};
+use App\Services\Compliance\{ComplianceRule, ComplianceViolation};
 
 /** Schicht fällt in genehmigten Urlaub des Mitarbeiters. */
 final class VacationConflictRule implements ComplianceRule {

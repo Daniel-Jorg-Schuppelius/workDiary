@@ -12,16 +12,10 @@ namespace App\Services;
 
 use App\Enums\Diary\Status;
 use App\Enums\User\UserRole;
-use App\Models\Attachment;
-use App\Models\Comment;
-use App\Models\DiaryEntry;
-use App\Models\EmergencyAssignment;
-use App\Models\Timesheet;
-use App\Models\User;
+use App\Models\{Attachment, Comment, DiaryEntry, EmergencyAssignment, Timesheet, User};
 
 class PushNotifier {
-    public function __construct(protected WebPushService $webPush) {
-    }
+    public function __construct(protected WebPushService $webPush) {}
 
     public function newComment(Comment $comment): void {
         /** @var DiaryEntry|null $entry */

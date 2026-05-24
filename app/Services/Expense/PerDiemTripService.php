@@ -10,14 +10,8 @@
 
 namespace App\Services\Expense;
 
-use App\Enums\Expense\ExpenseStatus;
-use App\Enums\Expense\PaymentMethod;
-use App\Enums\Expense\PerDiemTripStatus;
-use App\Models\Expense;
-use App\Models\ExpenseCategory;
-use App\Models\PerDiemDay;
-use App\Models\PerDiemTrip;
-use App\Models\TravelLog;
+use App\Enums\Expense\{ExpenseStatus, PaymentMethod, PerDiemTripStatus};
+use App\Models\{Expense, ExpenseCategory, PerDiemDay, PerDiemTrip, TravelLog};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -32,8 +26,7 @@ use RuntimeException;
 class PerDiemTripService {
     public function __construct(
         private readonly PerDiemCalculator $calculator,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>  $attributes

@@ -10,8 +10,7 @@
 
 namespace Tests\Feature\Routing;
 
-use App\Services\Routing\OsrmRouter;
-use App\Services\Routing\RoutingException;
+use App\Services\Routing\{OsrmRouter, RoutingException};
 use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;

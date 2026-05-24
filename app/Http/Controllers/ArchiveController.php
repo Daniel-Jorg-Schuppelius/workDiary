@@ -12,11 +12,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\User;
-use App\Services\Archive\ArchiveService;
-use App\Services\Archive\ArchiveSummaryService;
+use App\Services\Archive\{ArchiveService, ArchiveSummaryService};
 use App\Services\UI\DateRangeContext;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 

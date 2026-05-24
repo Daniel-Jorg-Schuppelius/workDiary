@@ -11,19 +11,13 @@
 namespace App\Models;
 
 use App\Enums\Sickness\SickLeaveKind;
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToOrganization;
-use App\Models\Concerns\HasAttachments;
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments};
 use App\Services\HolidayService;
-use Carbon\Carbon;
-use Carbon\CarbonInterface;
+use Carbon\{Carbon, CarbonInterface};
 use Database\Factories\SickLeaveFactory;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\{Builder, Collection, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
 /**
  * @property int $id

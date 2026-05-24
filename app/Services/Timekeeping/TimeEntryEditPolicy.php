@@ -11,8 +11,7 @@
 namespace App\Services\Timekeeping;
 
 use App\Models\TimeEntry;
-use Carbon\CarbonImmutable;
-use Carbon\CarbonInterface;
+use Carbon\{CarbonImmutable, CarbonInterface};
 
 /**
  * Determines whether a TimeEntry is still self-editable by its owner.

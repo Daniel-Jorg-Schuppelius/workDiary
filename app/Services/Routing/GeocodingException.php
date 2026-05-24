@@ -12,5 +12,4 @@ namespace App\Services\Routing;
 
 use RuntimeException;
 
-class GeocodingException extends RuntimeException {
-}
+class GeocodingException extends RuntimeException {}

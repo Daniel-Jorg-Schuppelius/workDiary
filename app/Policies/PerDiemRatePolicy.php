@@ -10,8 +10,7 @@
 
 namespace App\Policies;
 
-use App\Models\PerDiemRate;
-use App\Models\User;
+use App\Models\{PerDiemRate, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 class PerDiemRatePolicy {

@@ -11,11 +11,8 @@
 namespace Tests\Feature;
 
 use App\Enums\Project\ProjectStatus;
-use App\Enums\Task\TaskPriority;
-use App\Enums\Task\TaskStatus;
-use App\Models\Project;
-use App\Models\Task;
-use App\Models\User;
+use App\Enums\Task\{TaskPriority, TaskStatus};
+use App\Models\{Project, Task, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

@@ -11,12 +11,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\Asset\AssetClass;
-use App\Enums\Asset\AssetHealth;
-use App\Enums\Asset\AssetOwnership;
-use App\Enums\Asset\AssetStatus;
-use App\Models\Asset;
-use App\Models\Organization;
+use App\Enums\Asset\{AssetClass, AssetHealth, AssetOwnership, AssetStatus};
+use App\Models\{Asset, Organization};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<Asset> */

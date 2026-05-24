@@ -11,16 +11,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SaveRecurrenceRuleRequest;
-use App\Models\Customer;
-use App\Models\EntryType;
-use App\Models\Project;
-use App\Models\RecurrenceRule;
-use App\Models\User;
+use App\Models\{Customer, EntryType, Project, RecurrenceRule, User};
 use App\Services\Recurrence\RecurrenceGenerator;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 

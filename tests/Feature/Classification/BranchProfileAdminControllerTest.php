@@ -12,11 +12,7 @@
 namespace Tests\Feature\Classification;
 
 use App\Enums\User\UserRole;
-use App\Models\AuditLog;
-use App\Models\Classification;
-use App\Models\ClassificationRequirement;
-use App\Models\Tag;
-use App\Models\User;
+use App\Models\{AuditLog, Classification, ClassificationRequirement, Tag, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;

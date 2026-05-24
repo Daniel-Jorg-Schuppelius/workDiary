@@ -12,11 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Compliance\Rules;
 
-use App\Models\CoverageRequirement;
-use App\Models\ScheduledShift;
-use App\Models\User;
-use App\Services\Compliance\ComplianceRule;
-use App\Services\Compliance\ComplianceViolation;
+use App\Models\{CoverageRequirement, ScheduledShift, User};
+use App\Services\Compliance\{ComplianceRule, ComplianceViolation};
 
 /**
  * Prüft, ob der Mitarbeiter die für diese Schicht/Datum nötigen Qualifikationen besitzt.

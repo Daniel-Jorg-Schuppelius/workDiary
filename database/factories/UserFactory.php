@@ -11,8 +11,7 @@
 namespace Database\Factories;
 
 use App\Enums\User\UserRole;
-use App\Models\Organization;
-use App\Models\User;
+use App\Models\{Organization, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;

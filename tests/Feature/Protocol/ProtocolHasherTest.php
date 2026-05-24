@@ -10,12 +10,9 @@
 
 namespace Tests\Feature\Protocol;
 
-use App\Enums\Protocol\ProtocolItemType;
-use App\Enums\Protocol\ProtocolType;
-use App\Models\DiaryEntry;
-use App\Models\User;
-use App\Services\Protocol\ProtocolHasher;
-use App\Services\Protocol\ProtocolService;
+use App\Enums\Protocol\{ProtocolItemType, ProtocolType};
+use App\Models\{DiaryEntry, User};
+use App\Services\Protocol\{ProtocolHasher, ProtocolService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

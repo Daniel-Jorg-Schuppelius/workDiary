@@ -12,8 +12,7 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\Classification;
-use App\Models\User;
+use App\Models\{Classification, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 /**

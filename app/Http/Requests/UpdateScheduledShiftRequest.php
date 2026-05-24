@@ -12,12 +12,10 @@ namespace App\Http\Requests;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Http\Requests\Concerns\ChecksShiftCompliance;
-use App\Models\ScheduledShift;
-use App\Models\User;
+use App\Models\{ScheduledShift, User};
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
+use Illuminate\Validation\{Rule, Validator};
 
 class UpdateScheduledShiftRequest extends FormRequest {
     use ChecksShiftCompliance;

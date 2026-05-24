@@ -11,13 +11,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\Procedure\ProcedureDeviationProposedAction;
-use App\Enums\Procedure\ProcedureDeviationSeverity;
-use App\Enums\Procedure\ProcedureDeviationType;
-use App\Models\Organization;
-use App\Models\ProcedureDeviation;
-use App\Models\ProcedureStepRun;
-use App\Models\User;
+use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationSeverity, ProcedureDeviationType};
+use App\Models\{Organization, ProcedureDeviation, ProcedureStepRun, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

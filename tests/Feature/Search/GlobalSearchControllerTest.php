@@ -10,9 +10,7 @@
 
 namespace Tests\Feature\Search;
 
-use App\Models\Customer;
-use App\Models\Project;
-use App\Models\User;
+use App\Models\{Customer, Project, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

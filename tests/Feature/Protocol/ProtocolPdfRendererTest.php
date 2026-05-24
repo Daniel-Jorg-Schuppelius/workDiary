@@ -11,10 +11,8 @@
 namespace Tests\Feature\Protocol;
 
 use App\Enums\Protocol\ProtocolType;
-use App\Models\DiaryEntry;
-use App\Models\User;
-use App\Services\Protocol\ProtocolPdfRenderer;
-use App\Services\Protocol\ProtocolService;
+use App\Models\{DiaryEntry, User};
+use App\Services\Protocol\{ProtocolPdfRenderer, ProtocolService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;

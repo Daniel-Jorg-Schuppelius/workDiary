@@ -11,9 +11,7 @@
 namespace Database\Factories;
 
 use App\Enums\Procedure\ProcedureStepRunStatus;
-use App\Models\ProcedureRun;
-use App\Models\ProcedureStepDef;
-use App\Models\ProcedureStepRun;
+use App\Models\{ProcedureRun, ProcedureStepDef, ProcedureStepRun};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

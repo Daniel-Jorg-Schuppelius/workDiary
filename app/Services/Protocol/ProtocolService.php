@@ -10,21 +10,9 @@
 
 namespace App\Services\Protocol;
 
-use App\Enums\Protocol\ProtocolEventType;
-use App\Enums\Protocol\ProtocolItemResult;
-use App\Enums\Protocol\ProtocolItemType;
-use App\Enums\Protocol\ProtocolSignatureMethod;
-use App\Enums\Protocol\ProtocolSignatureRole;
-use App\Enums\Protocol\ProtocolStatus;
-use App\Enums\Protocol\ProtocolType;
-use App\Enums\Protocol\ProtocolVisibility;
-use App\Exceptions\InvalidProtocolTransitionException;
-use App\Exceptions\ProtocolValidationException;
-use App\Models\Protocol;
-use App\Models\ProtocolEvent;
-use App\Models\ProtocolItem;
-use App\Models\ProtocolSignature;
-use App\Models\User;
+use App\Enums\Protocol\{ProtocolEventType, ProtocolItemResult, ProtocolItemType, ProtocolSignatureMethod, ProtocolSignatureRole, ProtocolStatus, ProtocolType, ProtocolVisibility};
+use App\Exceptions\{InvalidProtocolTransitionException, ProtocolValidationException};
+use App\Models\{Protocol, ProtocolEvent, ProtocolItem, ProtocolSignature, User};
 use App\Services\OpenIssue\OpenIssueService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;

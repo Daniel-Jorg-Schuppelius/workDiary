@@ -14,8 +14,7 @@ use App\Enums\TimeEntry\TimeEntryActivityType;
 use App\Models\TimeEntry;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
+use Illuminate\Validation\{Rule, Validator};
 
 /**
  * Validates a non-project (administrative / travel / training) TimeEntry.

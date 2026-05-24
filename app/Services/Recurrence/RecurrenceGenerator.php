@@ -10,15 +10,12 @@
 
 namespace App\Services\Recurrence;
 
-use App\Enums\Diary\Mode;
-use App\Enums\Diary\Status as DiaryStatus;
+use App\Enums\Diary\{Mode, Status as DiaryStatus};
 use App\Enums\Recurrence\RecurrenceFrequency;
-use App\Models\DiaryEntry;
-use App\Models\RecurrenceRule;
+use App\Models\{DiaryEntry, RecurrenceRule};
 use Carbon\CarbonImmutable;
 use Carbon\Constants\UnitValue;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
+use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -27,8 +24,7 @@ use Illuminate\Support\Facades\DB;
  * bereits ein Eintrag (über `due_date`), wird nichts erzeugt.
  */
 class RecurrenceGenerator {
-    public function __construct(private readonly int $defaultLookaheadDays = 28) {
-    }
+    public function __construct(private readonly int $defaultLookaheadDays = 28) {}
 
     /**
      * Iteriert über alle aktiven Regeln und erzeugt fehlende Aufträge.

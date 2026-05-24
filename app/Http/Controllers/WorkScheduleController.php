@@ -11,12 +11,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SaveWorkScheduleRequest;
-use App\Models\User;
-use App\Models\WorkSchedule;
+use App\Models\{User, WorkSchedule};
 use App\Services\Flextime\WorkScheduleResolver;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class WorkScheduleController extends Controller {

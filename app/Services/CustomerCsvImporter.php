@@ -13,13 +13,10 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Customer;
-use App\Support\Toolkit\CsvFacade;
-use App\Support\Toolkit\NumberFacade;
-use App\Support\Toolkit\StringFacade;
+use App\Support\Toolkit\{CsvFacade, NumberFacade, StringFacade};
 use CommonToolkit\Enums\CountryCode;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{Auth, DB};
 use Throwable;
 
 /**

@@ -10,20 +10,9 @@
 
 namespace Tests\Feature\Protocol;
 
-use App\Enums\Protocol\ProtocolEventType;
-use App\Enums\Protocol\ProtocolItemPhotoPhase;
-use App\Enums\Protocol\ProtocolItemType;
-use App\Enums\Protocol\ProtocolType;
-use App\Models\Attachment;
-use App\Models\DiaryEntry;
-use App\Models\Protocol;
-use App\Models\ProtocolEvent;
-use App\Models\ProtocolItem;
-use App\Models\ProtocolItemPhoto;
-use App\Models\User;
-use App\Services\Protocol\ProtocolItemPhotoService;
-use App\Services\Protocol\ProtocolItemValidator;
-use App\Services\Protocol\ProtocolService;
+use App\Enums\Protocol\{ProtocolEventType, ProtocolItemPhotoPhase, ProtocolItemType, ProtocolType};
+use App\Models\{Attachment, DiaryEntry, ProtocolEvent, ProtocolItem, ProtocolItemPhoto, User};
+use App\Services\Protocol\{ProtocolItemPhotoService, ProtocolItemValidator, ProtocolService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;

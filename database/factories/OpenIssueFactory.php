@@ -10,13 +10,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\OpenIssue\OpenIssueSeverity;
-use App\Enums\OpenIssue\OpenIssueSource;
-use App\Enums\OpenIssue\OpenIssueStatus;
-use App\Enums\OpenIssue\OpenIssueVisibility;
-use App\Models\DiaryEntry;
-use App\Models\OpenIssue;
-use App\Models\User;
+use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
+use App\Models\{DiaryEntry, OpenIssue, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

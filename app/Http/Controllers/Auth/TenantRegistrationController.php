@@ -12,13 +12,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Enums\User\UserRole;
 use App\Http\Controllers\Controller;
-use App\Models\Organization;
-use App\Models\User;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
+use App\Models\{Organization, User};
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, DB, Hash};
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 use Spatie\Permission\Models\Role;

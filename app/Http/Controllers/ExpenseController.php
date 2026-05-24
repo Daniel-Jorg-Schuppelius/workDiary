@@ -10,22 +10,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Expense\ExpenseStatus;
-use App\Enums\Expense\PaymentMethod;
+use App\Enums\Expense\{ExpenseStatus, PaymentMethod};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveExpenseRequest;
-use App\Models\Customer;
-use App\Models\Expense;
-use App\Models\ExpenseCategory;
-use App\Models\Project;
-use App\Models\User;
+use App\Models\{Customer, Expense, ExpenseCategory, Project, User};
 use App\Services\Expense\ExpenseService;
 use App\Support\SortableQuery;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -34,8 +27,7 @@ class ExpenseController extends Controller {
 
     public function __construct(
         private readonly ExpenseService $service,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Expense::class);

@@ -8,9 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use Monolog\Handler\NullHandler;
-use Monolog\Handler\StreamHandler;
-use Monolog\Handler\SyslogUdpHandler;
+use Monolog\Handler\{NullHandler, StreamHandler, SyslogUdpHandler};
 use Monolog\Processor\PsrLogMessageProcessor;
 
 return [

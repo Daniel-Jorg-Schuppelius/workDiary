@@ -11,12 +11,7 @@
 namespace Tests\Feature;
 
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Models\CoverageRequirement;
-use App\Models\DutyPlan;
-use App\Models\Organization;
-use App\Models\ScheduledShift;
-use App\Models\ShiftType;
-use App\Models\User;
+use App\Models\{CoverageRequirement, DutyPlan, Organization, ScheduledShift, ShiftType, User};
 use App\Services\CoverageService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

@@ -11,25 +11,8 @@
 
 namespace Tests\Unit\Architecture;
 
-use App\Models\Classification;
+use App\Models\{Classification, GeocodeCache, OpenIssueEvent, Organization, OrganizationAuditLog, PerDiemRate, ProcedureBackupProof, ProcedureRunEvent, ProcedureStepDef, ProcedureStepRun, ProcedureTemplateVersion, ProtocolEvent, ProtocolItem, ProtocolItemPhoto, ProtocolSignature, ProtocolSignatureToken, User, UserGroup};
 use App\Models\Concerns\BelongsToOrganization;
-use App\Models\GeocodeCache;
-use App\Models\OpenIssueEvent;
-use App\Models\Organization;
-use App\Models\OrganizationAuditLog;
-use App\Models\PerDiemRate;
-use App\Models\ProcedureBackupProof;
-use App\Models\ProcedureRunEvent;
-use App\Models\ProcedureStepDef;
-use App\Models\ProcedureStepRun;
-use App\Models\ProcedureTemplateVersion;
-use App\Models\ProtocolEvent;
-use App\Models\ProtocolItem;
-use App\Models\ProtocolItemPhoto;
-use App\Models\ProtocolSignature;
-use App\Models\ProtocolSignatureToken;
-use App\Models\User;
-use App\Models\UserGroup;
 use Illuminate\Database\Eloquent\Model;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;

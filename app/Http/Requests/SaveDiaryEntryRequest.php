@@ -10,9 +10,7 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\Diary\LocationMode;
-use App\Enums\Diary\Mode;
-use App\Enums\Diary\Priority;
+use App\Enums\Diary\{LocationMode, Mode, Priority};
 use App\Models\EntryType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

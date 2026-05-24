@@ -12,11 +12,7 @@ namespace App\Services\Procedure;
 
 use App\Enums\Procedure\ProcedureRiskLevel;
 use App\Exceptions\PublishedProcedureVersionLockedException;
-use App\Models\Organization;
-use App\Models\ProcedureStepDef;
-use App\Models\ProcedureTemplate;
-use App\Models\ProcedureTemplateVersion;
-use App\Models\User;
+use App\Models\{Organization, ProcedureStepDef, ProcedureTemplate, ProcedureTemplateVersion, User};
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

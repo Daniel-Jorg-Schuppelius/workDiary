@@ -13,15 +13,13 @@ namespace App\Mail;
 use App\Models\Comment;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Mail\Mailables\{Content, Envelope};
 use Illuminate\Queue\SerializesModels;
 
 class CommentCreatedMail extends Mailable {
     use Queueable, SerializesModels;
 
-    public function __construct(public Comment $comment) {
-    }
+    public function __construct(public Comment $comment) {}
 
     public function envelope(): Envelope {
         $entryId = $this->comment->commentable_id;

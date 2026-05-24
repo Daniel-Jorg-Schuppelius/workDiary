@@ -10,12 +10,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\Protocol\ProtocolStatus;
-use App\Enums\Protocol\ProtocolType;
-use App\Enums\Protocol\ProtocolVisibility;
-use App\Models\DiaryEntry;
-use App\Models\Protocol;
-use App\Models\User;
+use App\Enums\Protocol\{ProtocolStatus, ProtocolType, ProtocolVisibility};
+use App\Models\{DiaryEntry, Protocol, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

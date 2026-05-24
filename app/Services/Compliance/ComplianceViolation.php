@@ -32,8 +32,7 @@ final class ComplianceViolation {
         public readonly string $message,
         public readonly array $relatedShiftIds = [],
         public readonly array $context = [],
-    ) {
-    }
+    ) {}
 
     /** @return array<string, mixed> */
     public function toArray(): array {

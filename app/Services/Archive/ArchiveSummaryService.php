@@ -13,11 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Archive;
 
 use App\Enums\Vacation\VacationStatus;
-use App\Models\DiaryEntry;
-use App\Models\EmergencyAssignment;
-use App\Models\OnCallShift;
-use App\Models\User;
-use App\Models\Vacation;
+use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift, User, Vacation};
 use App\Support\SortableQuery;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;

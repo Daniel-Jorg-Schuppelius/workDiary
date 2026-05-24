@@ -11,8 +11,7 @@
 namespace App\Services\Material;
 
 use App\Models\Material;
-use App\Services\Material\Provider\LexofficeMaterialProvider;
-use App\Services\Material\Provider\LocalMaterialProvider;
+use App\Services\Material\Provider\{LexofficeMaterialProvider, LocalMaterialProvider};
 use Illuminate\Support\Collection;
 
 class MaterialProviderRegistry {

@@ -11,8 +11,7 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\Asset\AssetClass;
-use App\Enums\Asset\AssetStatus;
+use App\Enums\Asset\{AssetClass, AssetStatus};
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
@@ -33,7 +32,7 @@ class SaveAssetRequest extends FormRequest {
                 'nullable',
                 'integer',
                 Rule::exists('customers', 'id')->where(
-                    fn ($query) => $query->where('organization_id', $this->user()?->organization_id)
+                    fn($query) => $query->where('organization_id', $this->user()?->organization_id)
                 ),
             ],
             'status' => ['required', new Enum(AssetStatus::class), Rule::notIn([AssetStatus::Decommissioned->value])],

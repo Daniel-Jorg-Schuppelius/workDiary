@@ -12,8 +12,7 @@ declare(strict_types=1);
 
 namespace App\Support\Toolkit;
 
-use CommonToolkit\Enums\CountryCode;
-use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Enums\{CountryCode, CurrencyCode};
 use CommonToolkit\Helper\Data\NumberHelper;
 
 /**

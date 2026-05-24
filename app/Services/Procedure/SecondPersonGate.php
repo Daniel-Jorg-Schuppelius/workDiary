@@ -11,13 +11,9 @@
 
 namespace App\Services\Procedure;
 
-use App\Enums\Procedure\ProcedureRunEventType;
-use App\Enums\Procedure\ProcedureStepRunStatus;
-use App\Enums\Procedure\ProcedureStepType;
+use App\Enums\Procedure\{ProcedureRunEventType, ProcedureStepRunStatus, ProcedureStepType};
 use App\Exceptions\ProcedureSecondPersonException;
-use App\Models\ProcedureRunEvent;
-use App\Models\ProcedureStepRun;
-use App\Models\User;
+use App\Models\{ProcedureRunEvent, ProcedureStepRun, User};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 

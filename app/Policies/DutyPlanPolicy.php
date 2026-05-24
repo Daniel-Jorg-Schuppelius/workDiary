@@ -10,8 +10,7 @@
 
 namespace App\Policies;
 
-use App\Models\DutyPlan;
-use App\Models\User;
+use App\Models\{DutyPlan, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 class DutyPlanPolicy {

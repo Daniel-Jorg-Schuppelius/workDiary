@@ -10,14 +10,10 @@
 
 namespace Tests\Feature;
 
-use App\Mail\CommentCreatedMail;
-use App\Mail\DiaryStatusChangedMail;
-use App\Models\Comment;
-use App\Models\DiaryEntry;
-use App\Models\User;
+use App\Mail\{CommentCreatedMail, DiaryStatusChangedMail};
+use App\Models\{Comment, DiaryEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\{Config, Mail};
 use Tests\TestCase;
 
 class MailNotificationsTest extends TestCase {

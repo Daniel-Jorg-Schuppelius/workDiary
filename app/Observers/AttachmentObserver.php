@@ -10,8 +10,7 @@
 
 namespace App\Observers;
 
-use App\Models\Attachment;
-use App\Models\DiaryEntry;
+use App\Models\{Attachment, DiaryEntry};
 use App\Services\PushNotifier;
 
 class AttachmentObserver {

@@ -10,8 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{Auditable, BelongsToOrganization};
 use Database\Factories\ProcedureTemplateFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

@@ -24,8 +24,7 @@ final readonly class ContinuedPaymentStatus {
         public ?CarbonImmutable $chainStart,
         public ?CarbonImmutable $exhaustionDate,
         public bool $exhausted,
-    ) {
-    }
+    ) {}
 
     public function usedPercent(): int {
         if ($this->entitlementDays <= 0) {

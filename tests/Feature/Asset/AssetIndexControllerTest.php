@@ -11,12 +11,9 @@
 
 namespace Tests\Feature\Asset;
 
-use App\Enums\Asset\AssetClass;
-use App\Enums\Asset\AssetStatus;
+use App\Enums\Asset\{AssetClass, AssetStatus};
 use App\Enums\User\UserRole;
-use App\Models\Asset;
-use App\Models\Customer;
-use App\Models\User;
+use App\Models\{Asset, Customer, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;

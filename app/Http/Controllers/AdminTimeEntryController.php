@@ -12,15 +12,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Requests\SaveAdminTimeEntryRequest;
-use App\Models\ActivityCategory;
-use App\Models\Attendance;
-use App\Models\TimeEntry;
-use App\Models\User;
+use App\Models\{ActivityCategory, Attendance, TimeEntry, User};
 use Carbon\CarbonImmutable;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 /**

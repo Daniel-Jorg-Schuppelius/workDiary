@@ -11,14 +11,10 @@
 namespace App\Http\Controllers\Admin\Access;
 
 use App\Http\Controllers\Controller;
-use App\Models\Organization;
-use App\Models\User;
-use App\Models\UserGroup;
+use App\Models\{Organization, User, UserGroup};
 use App\Support\SortableQuery;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use Spatie\Permission\Models\Role;
 

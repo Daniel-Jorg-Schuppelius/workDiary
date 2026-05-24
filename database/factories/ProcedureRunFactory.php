@@ -11,11 +11,7 @@
 namespace Database\Factories;
 
 use App\Enums\Procedure\ProcedureRunStatus;
-use App\Models\DiaryEntry;
-use App\Models\Organization;
-use App\Models\ProcedureRun;
-use App\Models\ProcedureTemplateVersion;
-use App\Models\User;
+use App\Models\{DiaryEntry, Organization, ProcedureRun, ProcedureTemplateVersion, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

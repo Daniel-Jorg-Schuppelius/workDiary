@@ -10,17 +10,12 @@
 
 namespace App\Services\Routing;
 
-use App\Enums\Diary\Mode;
-use App\Enums\Diary\Status as DiaryStatus;
+use App\Enums\Diary\{Mode, Status as DiaryStatus};
 use App\Enums\Tour\TourStatus;
 use App\Enums\Travel\TravelLogVehicle;
-use App\Models\DiaryEntry;
-use App\Models\Tour;
-use App\Models\TravelLog;
-use App\Models\User;
+use App\Models\{DiaryEntry, Tour, TravelLog, User};
 use App\Services\Travel\TravelLogService;
-use Carbon\CarbonImmutable;
-use Carbon\CarbonInterface;
+use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -37,8 +32,7 @@ class TourService {
         private readonly TourOptimizer $optimizer,
         private readonly OsrmRouter $router,
         private readonly TravelLogService $travelLogs,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  list<int>  $orderIds  service-order IDs in the desired initial order

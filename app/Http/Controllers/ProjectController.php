@@ -12,14 +12,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\Project\ProjectStatus;
 use App\Http\Requests\SaveProjectRequest;
-use App\Models\DiaryEntry;
-use App\Models\Project;
-use App\Models\RecurrenceRule;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
+use App\Models\{DiaryEntry, Project, RecurrenceRule};
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
 
 class ProjectController extends Controller {

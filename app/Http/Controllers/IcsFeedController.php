@@ -18,8 +18,7 @@ use Illuminate\Support\Facades\Auth;
 class IcsFeedController extends Controller {
     public function __construct(
         private readonly IcsFeedService $ics,
-    ) {
-    }
+    ) {}
 
     public function personal(): Response {
         /** @var User $user */

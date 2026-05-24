@@ -10,8 +10,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\EntryType;
-use App\Models\Organization;
+use App\Models\{EntryType, Organization};
 use Illuminate\Database\Seeder;
 
 class EntryTypeSeeder extends Seeder {

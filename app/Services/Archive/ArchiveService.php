@@ -12,9 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Archive;
 
-use App\Models\DiaryEntry;
-use App\Models\EmergencyAssignment;
-use App\Models\OnCallShift;
+use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift};
 use Carbon\CarbonImmutable;
 
 final class ArchiveService {

@@ -10,9 +10,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Comment;
-use App\Models\DiaryEntry;
-use App\Models\User;
+use App\Models\{Comment, DiaryEntry, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

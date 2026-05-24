@@ -10,9 +10,7 @@
 
 namespace Database\Factories;
 
-use App\Models\EnergyLog;
-use App\Models\User;
-use App\Models\Vehicle;
+use App\Models\{EnergyLog, User, Vehicle};
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 

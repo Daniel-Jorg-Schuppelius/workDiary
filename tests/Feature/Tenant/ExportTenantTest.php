@@ -10,12 +10,7 @@
 
 namespace Tests\Feature\Tenant;
 
-use App\Models\Customer;
-use App\Models\DiaryEntry;
-use App\Models\Expense;
-use App\Models\Organization;
-use App\Models\TravelLog;
-use App\Models\User;
+use App\Models\{Customer, DiaryEntry, Expense, Organization, TravelLog, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

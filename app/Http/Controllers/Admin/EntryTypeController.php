@@ -10,14 +10,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\Diary\Priority;
-use App\Enums\Diary\Status as DiaryStatus;
+use App\Enums\Diary\{Priority, Status as DiaryStatus};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveEntryTypeRequest;
 use App\Models\EntryType;
 use App\Support\SortableQuery;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 

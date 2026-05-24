@@ -10,14 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Comment;
-use App\Models\DiaryEntry;
-use App\Models\EmergencyAssignment;
-use App\Models\Expense;
-use App\Models\OnCallShift;
-use App\Models\PerDiemTrip;
-use App\Models\User;
-use App\Models\Vacation;
+use App\Models\{Comment, DiaryEntry, EmergencyAssignment, Expense, OnCallShift, PerDiemTrip, User, Vacation};
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

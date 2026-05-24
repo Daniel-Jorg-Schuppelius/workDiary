@@ -12,16 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Compliance;
 
-use App\Models\Organization;
-use App\Models\ScheduledShift;
-use App\Services\Compliance\Rules\ConsecutiveDaysRule;
-use App\Services\Compliance\Rules\HolidayDoubleBookRule;
-use App\Services\Compliance\Rules\MaxDailyHoursRule;
-use App\Services\Compliance\Rules\MaxWeeklyHoursRule;
-use App\Services\Compliance\Rules\OverlapRule;
-use App\Services\Compliance\Rules\QualificationMatchRule;
-use App\Services\Compliance\Rules\RestPeriodRule;
-use App\Services\Compliance\Rules\VacationConflictRule;
+use App\Models\{Organization, ScheduledShift};
+use App\Services\Compliance\Rules\{ConsecutiveDaysRule, HolidayDoubleBookRule, MaxDailyHoursRule, MaxWeeklyHoursRule, OverlapRule, QualificationMatchRule, RestPeriodRule, VacationConflictRule};
 
 /**
  * Aggregiert die Compliance-Regeln und prüft eine geplante Schicht.

@@ -11,11 +11,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SaveMilestoneRequest;
-use App\Models\Milestone;
-use App\Models\Project;
+use App\Models\{Milestone, Project};
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class MilestoneController extends Controller {

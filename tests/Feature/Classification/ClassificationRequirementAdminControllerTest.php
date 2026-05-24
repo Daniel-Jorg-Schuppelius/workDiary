@@ -11,15 +11,10 @@
 
 namespace Tests\Feature\Classification;
 
-use App\Enums\Classification\ClassificationDomain;
-use App\Enums\Classification\ClassificationRequirementPhase;
-use App\Enums\Classification\ClassificationRequirementSeverity;
+use App\Enums\Classification\{ClassificationDomain, ClassificationRequirementPhase, ClassificationRequirementSeverity};
 use App\Enums\User\UserRole;
-use App\Models\Classification;
-use App\Models\ClassificationRequirement;
-use App\Models\User;
-use Database\Seeders\ClassificationSeeder;
-use Database\Seeders\PermissionsSeeder;
+use App\Models\{Classification, ClassificationRequirement, User};
+use Database\Seeders\{ClassificationSeeder, PermissionsSeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;

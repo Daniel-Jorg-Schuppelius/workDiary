@@ -10,13 +10,8 @@
 
 namespace Tests\Feature\Procedure;
 
-use App\Models\DiaryEntry;
-use App\Models\EntryType;
-use App\Models\Organization;
-use App\Models\ProcedureTemplate;
-use App\Models\User;
-use App\Services\Procedure\ProcedureApplicabilityResolver;
-use App\Services\Procedure\ProcedureTemplateService;
+use App\Models\{DiaryEntry, EntryType, Organization, ProcedureTemplate, User};
+use App\Services\Procedure\{ProcedureApplicabilityResolver, ProcedureTemplateService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

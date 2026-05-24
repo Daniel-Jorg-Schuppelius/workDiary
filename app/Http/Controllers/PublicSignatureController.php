@@ -11,16 +11,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PublicSignatureRequest;
-use App\Models\Organization;
-use App\Models\Timesheet;
+use App\Models\{Organization, Timesheet};
 use App\Services\Timesheet\SignatureService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
 class PublicSignatureController extends Controller {
-    public function __construct(protected SignatureService $signatures) {
-    }
+    public function __construct(protected SignatureService $signatures) {}
 
     public function show(string $token): View|Response {
         $timesheet = $this->resolve($token);

@@ -24,8 +24,7 @@ final class GeocodeResult {
         public readonly array $raw = [],
         public readonly string $provider = 'nominatim',
         public readonly bool $fromCache = false,
-    ) {
-    }
+    ) {}
 
     /** @return array<string, mixed> */
     public function toArray(): array {

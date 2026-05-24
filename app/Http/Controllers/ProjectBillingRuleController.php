@@ -12,11 +12,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Requests\SaveProjectBillingRuleRequest;
-use App\Models\LexofficeArticle;
-use App\Models\Project;
-use App\Models\ProjectBillingRule;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use App\Models\{LexofficeArticle, Project, ProjectBillingRule};
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 

@@ -10,8 +10,7 @@
 
 namespace App\Policies;
 
-use App\Models\Organization;
-use App\Models\User;
+use App\Models\{Organization, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 class OrganizationPolicy {

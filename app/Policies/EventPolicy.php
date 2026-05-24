@@ -11,10 +11,8 @@
 namespace App\Policies;
 
 use App\Enums\User\UserRole;
-use App\Models\Event;
-use App\Models\User;
-use App\Policies\Concerns\ChecksOwnership;
-use App\Policies\Concerns\HasAdminBypass;
+use App\Models\{Event, User};
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class EventPolicy {
     use ChecksOwnership;

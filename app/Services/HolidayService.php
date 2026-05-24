@@ -15,8 +15,7 @@ namespace App\Services;
 use App\Models\Holiday as CustomHoliday;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Schema;
-use Yasumi\Holiday;
-use Yasumi\Yasumi;
+use Yasumi\{Holiday, Yasumi};
 
 class HolidayService {
     /**

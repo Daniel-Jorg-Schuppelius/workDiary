@@ -10,9 +10,7 @@
 
 namespace Database\Factories;
 
-use App\Enums\Vehicle\VehicleOwnership;
-use App\Enums\Vehicle\VehiclePropulsion;
-use App\Enums\Vehicle\VehicleType;
+use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
 use App\Models\Vehicle;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
