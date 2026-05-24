@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\User\Permission;
 use App\Models\{AuditLog, OnboardingProgress, User};
 use App\Services\Onboarding\OnboardingChecklistResolver;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
@@ -124,6 +125,7 @@ class OnboardingController extends Controller {
         return view('onboarding.index', [
             'organization' => $organization,
             'checklist' => array_merge($checklist, ['steps' => $steps]),
+            'widgetDismissedAt' => $organization->groupSettings('ui')['onboarding_widget_dismissed_at'] ?? null,
         ]);
     }
 
@@ -174,5 +176,37 @@ class OnboardingController extends Controller {
         ]);
 
         return back()->with('success', __('Onboarding-Schritt wurde übersprungen.'));
+    }
+
+    public function dismissWidget(Request $request): \Illuminate\Http\RedirectResponse {
+        /** @var User $user */
+        $user = $request->user();
+
+        Gate::authorize(Permission::OrgOnboardingDismissWidget->value);
+
+        $organization = $user->organization;
+        abort_if($organization === null, 404);
+
+        $settings = is_array($organization->settings) ? $organization->settings : [];
+        $ui = is_array($settings['ui'] ?? null) ? $settings['ui'] : [];
+        $dismissedAt = CarbonImmutable::now()->toIso8601String();
+        $ui['onboarding_widget_dismissed_at'] = $dismissedAt;
+        $settings['ui'] = $ui;
+
+        $organization->settings = $settings;
+        $organization->save();
+
+        AuditLog::query()->create([
+            'organization_id' => $organization->id,
+            'user_id' => $user->id,
+            'event' => 'onboarding.widgetDismissed',
+            'auditable_type' => $organization::class,
+            'auditable_id' => $organization->id,
+            'changes' => [
+                'dismissed_at' => $dismissedAt,
+            ],
+        ]);
+
+        return back()->with('success', __('Onboarding-Widget wurde ausgeblendet.'));
     }
 }

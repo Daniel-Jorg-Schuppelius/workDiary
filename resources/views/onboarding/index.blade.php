@@ -17,6 +17,19 @@
                 'total' => $checklist['required_total'],
                 'percent' => $checklist['progress_percent'],
             ]) }}
+
+            <x-slot:actions>
+                @if (empty($widgetDismissedAt))
+                    <form method="POST" action="{{ route('onboarding.widget.dismiss') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-ghost text-base-content/70">{{ __('Widget ausblenden') }}</button>
+                    </form>
+                @else
+                    <span class="text-xs text-base-content/60">
+                        {{ __('Widget ausgeblendet: :date', ['date' => $widgetDismissedAt]) }}
+                    </span>
+                @endif
+            </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 

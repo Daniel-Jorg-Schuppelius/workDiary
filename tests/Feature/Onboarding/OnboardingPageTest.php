@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Onboarding;
 
-use App\Models\{AuditLog, OnboardingProgress, User};
+use App\Models\{AuditLog, OnboardingProgress, Organization, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -96,6 +96,39 @@ class OnboardingPageTest extends TestCase {
             'organization_id' => $admin->organization_id,
             'step_code' => 'org.profile',
             'state' => 'skipped',
+        ]);
+    }
+
+    public function test_widget_dismiss_requires_permission(): void {
+        $user = User::factory()->user()->create();
+
+        $this->actingAs($user)
+            ->from(route('onboarding.index'))
+            ->post(route('onboarding.widget.dismiss'))
+            ->assertForbidden();
+    }
+
+    public function test_admin_can_dismiss_widget_and_audit_is_written(): void {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->from(route('onboarding.index'))
+            ->post(route('onboarding.widget.dismiss'))
+            ->assertRedirect(route('onboarding.index'));
+
+        $organization = Organization::query()->findOrFail($admin->organization_id);
+        $settings = is_array($organization->settings) ? $organization->settings : [];
+        $ui = is_array($settings['ui'] ?? null) ? $settings['ui'] : [];
+
+        $this->assertArrayHasKey('onboarding_widget_dismissed_at', $ui);
+        $this->assertIsString($ui['onboarding_widget_dismissed_at']);
+
+        $this->assertDatabaseHas('audit_logs', [
+            'organization_id' => $admin->organization_id,
+            'user_id' => $admin->id,
+            'event' => 'onboarding.widgetDismissed',
+            'auditable_type' => Organization::class,
+            'auditable_id' => $admin->organization_id,
         ]);
     }
 }
