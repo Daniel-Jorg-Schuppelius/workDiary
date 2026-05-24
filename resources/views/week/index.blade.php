@@ -57,6 +57,8 @@
                 <a href="{{ route('week.index', ['scope' => 'team']) }}"
                    class="join-item btn btn-sm {{ $teamScope ? 'btn-primary' : 'btn-ghost' }}">{{ __('Team-Woche') }}</a>
             </div>
+
+            <x-help-button topic="time-entries.start" />
         </div>
     </div>
 

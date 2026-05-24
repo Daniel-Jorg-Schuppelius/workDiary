@@ -41,8 +41,8 @@ class OnboardingPageTest extends TestCase {
         $this->actingAs($admin)
             ->get(route('onboarding.index'))
             ->assertOk()
-            ->assertSee(__('Onboarding-Checkliste'))
-            ->assertSee(__('Fortschritt'))
+            ->assertSee(__('onboarding.page.heading'))
+            ->assertSee(__('onboarding.page.progress_label'))
             ->assertSee('org.profile');
     }
 

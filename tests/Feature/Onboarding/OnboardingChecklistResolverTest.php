@@ -142,4 +142,71 @@ class OnboardingChecklistResolverTest extends TestCase {
         $this->assertSame('skipped', $row->state);
         $this->assertSame('Wird später erledigt', $row->skipped_reason);
     }
+
+    public function test_resolver_writes_step_completed_audit_only_on_transition_to_done(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+
+        $resolver = app(OnboardingChecklistResolver::class);
+        $resolver->forOrganization($this->organization, $admin);
+
+        $firstRunCount = AuditLog::query()
+            ->where('organization_id', $this->organization->id)
+            ->where('event', 'onboarding.stepCompleted')
+            ->where('changes->step_code', 'org.profile')
+            ->count();
+        $this->assertSame(1, $firstRunCount, 'org.profile sollte beim ersten Lauf als completed protokolliert werden.');
+
+        // Zweiter Lauf ohne Zustandsänderung — kein neues Event.
+        $resolver->forOrganization($this->organization, $admin);
+
+        $secondRunCount = AuditLog::query()
+            ->where('organization_id', $this->organization->id)
+            ->where('event', 'onboarding.stepCompleted')
+            ->where('changes->step_code', 'org.profile')
+            ->count();
+        $this->assertSame(1, $secondRunCount, 'stepCompleted darf nur beim Übergang open→done geschrieben werden.');
+    }
+
+    public function test_resolver_writes_completed_audit_when_all_required_steps_done_first_time(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        // Operator-Rolle in derselben Org, damit roles.check (Admin + User) erfüllt ist.
+        User::factory()->user()->create(['organization_id' => $this->organization->id]);
+
+        $settings = is_array($this->organization->settings) ? $this->organization->settings : [];
+        $settings['branch_profile_code'] = 'it_service';
+        $this->organization->settings = $settings;
+        $this->organization->save();
+
+        Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'created_by' => $admin->id,
+        ]);
+
+        Project::create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Onboarding-Projekt',
+            'status' => \App\Enums\Project\ProjectStatus::Active->value,
+            'created_by' => $admin->id,
+        ]);
+
+        $resolver = app(OnboardingChecklistResolver::class);
+        $result = $resolver->forOrganization($this->organization, $admin);
+
+        $this->assertTrue($result['all_required_done']);
+
+        $this->assertDatabaseHas('audit_logs', [
+            'organization_id' => $this->organization->id,
+            'event' => 'onboarding.completed',
+            'auditable_type' => Organization::class,
+            'auditable_id' => $this->organization->id,
+        ]);
+
+        // Zweiter Lauf — onboarding.completed darf nicht erneut geschrieben werden.
+        $resolver->forOrganization($this->organization, $admin);
+        $completedCount = AuditLog::query()
+            ->where('organization_id', $this->organization->id)
+            ->where('event', 'onboarding.completed')
+            ->count();
+        $this->assertSame(1, $completedCount, 'onboarding.completed darf nur einmal pro Übergang geschrieben werden.');
+    }
 }

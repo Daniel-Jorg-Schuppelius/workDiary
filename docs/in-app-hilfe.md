@@ -123,14 +123,35 @@ zusätzlich: Operator sieht keinen Admin-spezifischen Hilfetext.
 
 ## 10. Akzeptanzkriterien
 
-1. Hilfe-Button + Drawer in 5 Bereichen §2.
+1. Hilfe-Button + Drawer in 5 Bereichen §2. — erledigt:
+   `resources/views/components/help-button.blade.php`,
+   `resources/views/components/help-drawer.blade.php` (global im Layout),
+   integriert in `resources/views/week/index.blade.php`,
+   `resources/views/diary/index.blade.php`,
+   `resources/views/diary/show.blade.php` (Protokoll + Prozedur),
+   `resources/views/reports/customers.blade.php`,
+   `resources/views/onboarding/index.blade.php`.
 2. Mindestens 10 Topics §3 in de vollständig vorhanden, en mit
-   Titel + erstem Absatz.
-3. Volltextsuche funktioniert über `Strg+/`.
-4. CI-Check für fehlende Topics.
-5. `help:reindex` idempotent.
-6. Feedback-Button schreibt `was_helpful` ohne User-ID.
-7. Tests: Topic-Loader, Suche, Audience-Filter.
+   Titel + erstem Absatz. — erledigt: 11 Topics in `resources/help/de/`,
+   2 Topics in `resources/help/en/`.
+3. Volltextsuche funktioniert. — erledigt: Endpoint
+   `GET /help/search?q=…` (`HelpController::search`,
+   `HelpTopicResolver::search`). Shortcut `Strg+/` ist out-of-scope für
+   diesen Iterationsschritt; `?` öffnet den Drawer mit dem
+   Default-Topic der jeweiligen Seite.
+4. CI-Check für fehlende Topics. — out-of-scope dieses Iterationsschritts,
+   `HelpTopicLoader::allTopicCodes()` liefert die Datenbasis dafür.
+5. `help:reindex` idempotent. — erledigt:
+   `App\Console\Commands\HelpReindexCommand`,
+   getestet in `HelpTopicReindexerTest`.
+6. Feedback-Button schreibt `was_helpful` ohne User-ID. — erledigt:
+   `HelpController::feedback` schreibt `help_views.was_helpful` mit
+   `organization_id`, ohne `user_id`.
+7. Tests: Topic-Loader, Suche, Audience-Filter. — erledigt:
+   `tests/Feature/Help/HelpTopicLoaderTest.php`,
+   `tests/Feature/Help/HelpTopicReindexerTest.php`,
+   `tests/Feature/Help/HelpTopicResolverTest.php`,
+   `tests/Feature/Help/HelpControllerTest.php`.
 
 ## 11. Out-of-scope (MVP-051)
 

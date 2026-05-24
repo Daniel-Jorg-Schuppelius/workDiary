@@ -8,6 +8,7 @@
         /** @var array $user */
         /** @var array|null $team */
         /** @var array $finance */
+        /** @var array|null $onboarding */
     @endphp
 
     <x-page-shell gap="6">
@@ -27,6 +28,12 @@
                             show-label>{{ __('Neuer Eintrag') }}</x-icon-btn>
             </div>
         </div>
+
+        @isset($onboarding)
+            <x-onboarding-widget
+                :checklist="$onboarding['checklist']"
+                :widget-dismissed-at="$onboarding['widget_dismissed_at']" />
+        @endisset
 
         {{-- Personal KPIs --}}
         <section class="grid grid-cols-2 gap-3 md:grid-cols-4">

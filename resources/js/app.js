@@ -10,6 +10,7 @@ import { __ } from "./i18n.js";
 import "./sortable-tables.js";
 import "./bulk-selection.js";
 import "./global-search.js";
+import "./help-drawer.js";
 
 // PWA: Service Worker registrieren + Install-Button binden.
 if (typeof window !== "undefined") {

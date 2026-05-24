@@ -66,6 +66,11 @@ class AppServiceProvider extends ServiceProvider {
                 ],
             );
         });
+
+        // In-App-Hilfe (MVP-051): Loader liest aus resources/help/.
+        $this->app->singleton(\App\Services\Help\HelpTopicLoader::class, function (): \App\Services\Help\HelpTopicLoader {
+            return new \App\Services\Help\HelpTopicLoader(\App\Services\Help\HelpTopicLoader::defaultPath());
+        });
     }
 
     public function boot(): void {

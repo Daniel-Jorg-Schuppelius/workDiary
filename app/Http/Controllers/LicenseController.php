@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\{AuditLog, User};
 use App\Services\Licensing\LicenseService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
@@ -40,6 +41,27 @@ class LicenseController extends Controller {
             ]);
         }
 
+        $this->writeInstalledAudit($request->user(), $result);
+
         return redirect('/')->with('status', 'Lizenz erfolgreich aktiviert.');
+    }
+
+    private function writeInstalledAudit(?User $user, \App\Services\Licensing\LicenseResult $result): void {
+        $payload = $result->payload;
+        $licenseHash = $payload !== null ? hash('sha256', $payload->licenseId) : null;
+
+        AuditLog::query()->create([
+            'organization_id' => $user?->organization_id,
+            'user_id' => $user?->id,
+            'event' => 'license.installed',
+            'auditable_type' => User::class,
+            'auditable_id' => $user?->id ?? 0,
+            'changes' => [
+                'license_id_sha256' => $licenseHash,
+                'status' => $result->status->value,
+                'licensee' => $payload?->licensee,
+                'expires_at' => $payload?->expiresAt?->toIso8601String(),
+            ],
+        ]);
     }
 }

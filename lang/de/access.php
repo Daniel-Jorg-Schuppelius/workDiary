@@ -149,6 +149,7 @@ return [
         'open-issues' => 'Offene Punkte',
         'protocols' => 'Protokolle',
         'procedures' => 'Prozeduren',
+        'platform' => 'Plattform / Betrieb',
     ],
 
     'permission' => [
@@ -164,6 +165,13 @@ return [
         'org.onboarding.view' => 'Onboarding-Checkliste einsehen',
         'org.onboarding.skipStep' => 'Onboarding-Schritt überspringen',
         'org.onboarding.dismissWidget' => 'Onboarding-Widget ausblenden',
+        'platform.diagnostics.view' => 'Diagnose-Seite einsehen',
+        'platform.diagnostics.runCheck' => 'Diagnose-Tests auslösen (Mail/Backup)',
+        'platform.support.export' => 'Supportbericht erzeugen',
+        'platform.support.exportWithSamples' => 'Supportbericht inkl. anonymisierter Beispiele',
+        'platform.license.view' => 'Lizenzstatus einsehen',
+        'platform.license.install' => 'Lizenz installieren / hochladen',
+        'platform.featureFlag.override' => 'Feature-Flag manuell übersteuern',
 
         'user.viewAny' => 'Mitglieder auflisten',
         'user.view' => 'Mitglied ansehen',

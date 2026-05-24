@@ -74,6 +74,7 @@
                     <li><a href="{{ route('diary.export.pdf', $filters) }}" target="_blank">{{ __('PDF (Druckansicht)') }}</a></li>
                 </ul>
             </div>
+            <x-help-button topic="diary-entries.create" />
         </x-slot:extra>
     </x-filter-bar>
 

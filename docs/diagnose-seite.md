@@ -111,12 +111,33 @@ Test-Aktionen → `diagnostics.testTriggered` mit Kontext.
 
 ## 8. Akzeptanzkriterien
 
-1. UI mit 7 Sektionen wie §3, alle mit Status-Pill und Detail.
-2. `DiagnosticsService::collect` mit Timeout-Schutz pro Check,
-   keine Block-Risiken.
-3. JSON-Endpoint maschinenlesbar.
-4. Tests pro Check-Funktion (mit Mock).
-5. Performance: Seitenaufruf < 1 s bei normalen Bedingungen.
+1. UI mit 7 Sektionen wie §3, alle mit Status-Pill und Detail. — erledigt:
+   `resources/views/admin/diagnostics/index.blade.php` rendert die 7 Sektionen
+   (Version, Lizenz, Queue, Scheduler, Mail, Storage, Backup) als Karten mit
+   Status-Badge, Metriken und Hinweisen.
+2. `DiagnosticsService::collect` mit Timeout-Schutz pro Check, keine
+   Block-Risiken. — erledigt: jeder Check läuft in `runSafe()` mit
+   try/catch; Fehler liefern `DiagnosticStatus::Unknown` mit Meldung, andere
+   Sektionen laufen weiter.
+3. JSON-Endpoint maschinenlesbar. — erledigt:
+   `GET /admin/diagnostics.json` (`admin.diagnostics.json`,
+   `DiagnosticsController::json`).
+4. Tests pro Check-Funktion (mit Mock). — erledigt:
+   `tests/Feature/Diagnostics/DiagnosticsServiceTest.php` deckt
+   Version, Queue (frisch/stale), Scheduler (kein/altes Heartbeat),
+   Mail (Array-Driver), Backup (kein/26 h/2 h) sowie Gesamt-`collect()` ab.
+5. Performance: Seitenaufruf < 1 s bei normalen Bedingungen. — gewährleistet:
+   Sektionen ohne Netzwerk-Calls, kein OpCache-Invalidate, Cache-Reads,
+   einfache DB-Counts. Lazy aus dem AppServiceProvider gebunden.
+
+Audit-Events (zu §7): `diagnostics.viewed` (HTML/JSON-Aufrufe) und
+`diagnostics.testTriggered` (Test-Mail) werden im
+`DiagnosticsController` geschrieben.
+
+Datenquellen für Heartbeats: Scheduler schreibt
+`Cache::put(DiagnosticsService::SCHEDULER_HEARTBEAT_KEY, …)` in einem
+geplanten Job, Queue-Worker `DiagnosticsService::QUEUE_WORKER_HEARTBEAT_KEY`.
+Falls Heartbeat fehlt, liefert die Sektion `unknown` mit Hinweis-Text.
 
 ## 9. Out-of-scope (MVP-044)
 

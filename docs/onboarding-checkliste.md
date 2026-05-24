@@ -80,12 +80,12 @@ Aufruf der Seite).
 
 ## 7. Akzeptanzkriterien
 
-1. Migration `onboarding_progress`.
-2. `OnboardingChecklistResolver` mit Tests pro Bedingung §2.
-3. Dashboard-Widget + Detailseite.
-4. „Überspringen" erfordert Begründung; nicht möglich für Pflichtschritte mit Hard-Bedingung (Schritt 1, 4, 6, 7).
-5. Audit-Events §6.
-6. Lokalisierung de + en für Schritt-Titel und Beschreibungen.
+1. Migration `onboarding_progress`. — erledigt: `database/migrations/2026_06_04_160000_create_onboarding_progress_table.php`.
+2. `OnboardingChecklistResolver` mit Tests pro Bedingung §2. — erledigt: `app/Services/Onboarding/OnboardingChecklistResolver.php`, Tests in `tests/Feature/Onboarding/OnboardingChecklistResolverTest.php`.
+3. Dashboard-Widget + Detailseite. — erledigt: `resources/views/components/onboarding-widget.blade.php` (eingebunden in `resources/views/dashboard/index.blade.php`), Detailseite `resources/views/onboarding/index.blade.php`.
+4. „Überspringen" erfordert Begründung; nicht möglich für Pflichtschritte mit Hard-Bedingung (Schritt 1, 4, 6, 7). — erledigt in `OnboardingController::skipStep`.
+5. Audit-Events §6. — erledigt: `stepSkipped`/`widgetDismissed` im Controller, `stepCompleted`/`completed` im Resolver beim Übergang offen→done.
+6. Lokalisierung de + en für Schritt-Titel und Beschreibungen. — erledigt: `lang/de/onboarding.php`, `lang/en/onboarding.php`.
 
 ## 8. Out-of-scope (MVP-048)
 

@@ -39,6 +39,7 @@ enum PermissionGroup: string implements HasLabel {
     case Protocols = 'protocols';
     case Procedures = 'procedures';
     case CustomerPortal = 'customer-portal';
+    case Platform = 'platform';
 
     public function label(): string {
         return (string) __('access.group.' . $this->value);
@@ -65,6 +66,7 @@ enum PermissionGroup: string implements HasLabel {
             self::Protocols => 'description',
             self::Procedures => 'rule',
             self::CustomerPortal => 'support_agent',
+            self::Platform => 'memory',
         };
     }
 }

@@ -1,32 +1,33 @@
 @extends('layouts.app')
 
-@section('title', __('Onboarding') . ' - ' . config('app.name', 'WorkDiary'))
-@section('nav-title', __('Onboarding'))
+@section('title', __('onboarding.page.title') . ' - ' . config('app.name', 'WorkDiary'))
+@section('nav-title', __('onboarding.page.title'))
 
 @section('content')
 <x-page-shell gap="6">
     <x-slot:toolbar>
         <x-page-toolbar
-            :title="__('Onboarding-Checkliste')"
+            :title="__('onboarding.page.heading')"
             :subtitle="$organization->name"
             :badge="sprintf('%d/%d', (int) $checklist['required_done'], (int) $checklist['required_total'])"
             badge-tone="primary"
         >
-            {{ __('Pflichtschritte: :done von :total (:percent %)', [
+            {{ __('onboarding.page.progress_summary', [
                 'done' => $checklist['required_done'],
                 'total' => $checklist['required_total'],
                 'percent' => $checklist['progress_percent'],
             ]) }}
 
             <x-slot:actions>
+                <x-help-button topic="onboarding.checklist" />
                 @if (empty($widgetDismissedAt))
                     <form method="POST" action="{{ route('onboarding.widget.dismiss') }}">
                         @csrf
-                        <button type="submit" class="btn btn-sm btn-ghost text-base-content/70">{{ __('Widget ausblenden') }}</button>
+                        <button type="submit" class="btn btn-sm btn-ghost text-base-content/70">{{ __('onboarding.widget.dismiss') }}</button>
                     </form>
                 @else
                     <span class="text-xs text-base-content/60">
-                        {{ __('Widget ausgeblendet: :date', ['date' => $widgetDismissedAt]) }}
+                        {{ __('onboarding.widget.dismissed_at', ['date' => $widgetDismissedAt]) }}
                     </span>
                 @endif
             </x-slot:actions>
@@ -36,7 +37,7 @@
     <div class="card border border-base-300 bg-base-100 shadow-sm">
         <div class="card-body gap-3">
             <div class="flex items-center justify-between gap-3">
-                <h2 class="font-['Space_Grotesk'] text-lg font-semibold text-base-content">{{ __('Fortschritt') }}</h2>
+                <h2 class="font-['Space_Grotesk'] text-lg font-semibold text-base-content">{{ __('onboarding.page.progress_label') }}</h2>
                 <span class="badge {{ $checklist['all_required_done'] ? 'badge-success' : 'badge-primary' }} badge-outline">
                     {{ $checklist['progress_percent'] }} %
                 </span>
@@ -47,6 +48,13 @@
 
     <div class="grid grid-cols-1 gap-4">
         @foreach ($checklist['steps'] as $step)
+            @php
+                $stateBadge = match ($step['state']) {
+                    'done' => ['class' => 'badge-success', 'label' => __('onboarding.page.badge_done')],
+                    'skipped' => ['class' => 'badge-ghost', 'label' => __('onboarding.page.badge_skipped')],
+                    default => ['class' => 'badge-warning', 'label' => __('onboarding.page.badge_open')],
+                };
+            @endphp
             <article class="card border border-base-300 bg-base-100 shadow-sm">
                 <div class="card-body gap-3">
                     <div class="flex flex-wrap items-start justify-between gap-3">
@@ -56,18 +64,23 @@
                                         class="{{ $step['done'] ? 'text-success' : 'text-base-content/50' }}" />
                                 <h3 class="font-['Space_Grotesk'] text-base font-semibold text-base-content">{{ $step['title'] }}</h3>
                                 @if ($step['required'])
-                                    <span class="badge badge-sm badge-primary badge-outline">{{ __('Pflicht') }}</span>
+                                    <span class="badge badge-sm badge-primary badge-outline">{{ __('onboarding.page.badge_required') }}</span>
                                 @else
-                                    <span class="badge badge-sm badge-ghost">{{ __('Empfohlen') }}</span>
+                                    <span class="badge badge-sm badge-ghost">{{ __('onboarding.page.badge_recommended') }}</span>
                                 @endif
                             </div>
                             @if (! empty($step['description']))
                                 <p class="mt-1 text-sm text-base-content/70">{{ $step['description'] }}</p>
                             @endif
+                            @if ($step['state'] === 'skipped' && ! empty($step['skipped_reason']))
+                                <p class="mt-1 text-xs text-base-content/60">
+                                    {{ __('onboarding.page.badge_skipped') }}: {{ $step['skipped_reason'] }}
+                                </p>
+                            @endif
                         </div>
 
-                        <span class="badge {{ $step['done'] ? 'badge-success' : 'badge-warning' }} badge-outline">
-                            {{ $step['done'] ? __('Erledigt') : __('Offen') }}
+                        <span class="badge {{ $stateBadge['class'] }} badge-outline">
+                            {{ $stateBadge['label'] }}
                         </span>
                     </div>
 
@@ -85,8 +98,8 @@
                                            maxlength="1000"
                                            required
                                            class="input input-bordered input-sm w-64"
-                                           placeholder="{{ __('Begründung für Überspringen') }}">
-                                    <button type="submit" class="btn btn-sm btn-ghost text-warning">{{ __('Überspringen') }}</button>
+                                           placeholder="{{ __('onboarding.action.skip_placeholder') }}">
+                                    <button type="submit" class="btn btn-sm btn-ghost text-warning">{{ __('onboarding.action.skip') }}</button>
                                 </form>
                             @endif
                         </div>

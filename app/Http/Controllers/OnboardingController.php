@@ -43,6 +43,20 @@ class OnboardingController extends Controller {
         'work.first',
     ];
 
+    /** @var array<string, string> */
+    private const STEP_ROUTES = [
+        'org.profile' => 'account.profile.edit',
+        'org.branch_profile' => 'admin.branch-profiles.index',
+        'users.invite' => 'org-members.index',
+        'roles.check' => 'admin.access.members.index',
+        'classification.check' => 'admin.classifications.index',
+        'customer.first' => 'customers.index',
+        'work.first' => 'projects.index',
+        'time.first' => 'time-entries.create',
+        'protocol.first_signed' => 'diary.index',
+        'backup.heartbeat' => 'audit.index',
+    ];
+
     public function __invoke(Request $request, OnboardingChecklistResolver $resolver): View {
         /** @var User $user */
         $user = $request->user();
@@ -54,68 +68,14 @@ class OnboardingController extends Controller {
 
         $checklist = $resolver->forOrganization($organization, $user);
 
-        $stepMeta = [
-            'org.profile' => [
-                'description' => __('Pflege Name, Zeitzone und lokale Grundeinstellungen der Organisation.'),
-                'label' => __('Organisation öffnen'),
-                'href' => Route::has('account.profile.edit') ? route('account.profile.edit') : null,
-            ],
-            'org.branch_profile' => [
-                'description' => __('Wähle ein Branchenprofil, damit passende Defaults für Klassifikationen bereitstehen.'),
-                'label' => __('Branchenprofile öffnen'),
-                'href' => Route::has('admin.branch-profiles.index') ? route('admin.branch-profiles.index') : null,
-            ],
-            'users.invite' => [
-                'description' => __('Lade mindestens eine weitere aktive Person in deine Organisation ein.'),
-                'label' => __('Mitglieder öffnen'),
-                'href' => Route::has('org-members.index') ? route('org-members.index') : null,
-            ],
-            'roles.check' => [
-                'description' => __('Prüfe, dass mindestens ein Org-Admin und ein Operator zugewiesen sind.'),
-                'label' => __('Rechteverwaltung öffnen'),
-                'href' => Route::has('admin.access.members.index') ? route('admin.access.members.index') : null,
-            ],
-            'classification.check' => [
-                'description' => __('Bestätige oder überschreibe mindestens eine Klassifikationsdomäne für die Organisation.'),
-                'label' => __('Klassifikationen öffnen'),
-                'href' => Route::has('admin.classifications.index') ? route('admin.classifications.index') : null,
-            ],
-            'customer.first' => [
-                'description' => __('Lege den ersten Kunden manuell an oder nutze den CSV-Import.'),
-                'label' => __('Kunden öffnen'),
-                'href' => Route::has('customers.index') ? route('customers.index') : null,
-            ],
-            'work.first' => [
-                'description' => __('Erzeuge ein erstes Projekt oder starte den ersten Auftrag im Tagebuch.'),
-                'label' => __('Projekte öffnen'),
-                'href' => Route::has('projects.index') ? route('projects.index') : null,
-            ],
-            'time.first' => [
-                'description' => __('Erfasse mindestens einen Zeiteintrag, um die Arbeitszeiterfassung zu aktivieren.'),
-                'label' => __('Zeiterfassung öffnen'),
-                'href' => Route::has('time-entries.create') ? route('time-entries.create') : null,
-            ],
-            'protocol.first_signed' => [
-                'description' => __('Erstelle ein Protokoll und schließe die Signatur ab.'),
-                'label' => __('Tagebuch öffnen'),
-                'href' => Route::has('diary.index') ? route('diary.index') : null,
-            ],
-            'backup.heartbeat' => [
-                'description' => __('Konfiguriere den Backup-Lauf so, dass regelmäßig erfolgreiche Heartbeats geschrieben werden.'),
-                'label' => __('Audit-Log öffnen'),
-                'href' => Route::has('audit.index') ? route('audit.index') : null,
-            ],
-        ];
-
         $steps = array_map(
-            static function (array $step) use ($stepMeta): array {
-                $meta = $stepMeta[$step['code']] ?? [
-                    'description' => null,
-                    'label' => null,
-                    'href' => null,
-                ];
+            static function (array $step): array {
+                $routeName = self::STEP_ROUTES[$step['code']] ?? null;
 
-                return array_merge($step, $meta, [
+                return array_merge($step, [
+                    'description' => __('onboarding.step.' . $step['code'] . '.description'),
+                    'label' => __('onboarding.step.' . $step['code'] . '.link'),
+                    'href' => $routeName !== null && Route::has($routeName) ? route($routeName) : null,
                     'skippable' => ! in_array($step['code'], self::HARD_REQUIRED_STEP_CODES, true),
                 ]);
             },
@@ -139,7 +99,7 @@ class OnboardingController extends Controller {
 
         if (in_array($step, self::HARD_REQUIRED_STEP_CODES, true)) {
             return back()->withErrors([
-                'step' => __('Dieser Onboarding-Schritt kann nicht übersprungen werden.'),
+                'step' => __('onboarding.action.error_step_not_skippable'),
             ]);
         }
 
@@ -175,7 +135,7 @@ class OnboardingController extends Controller {
             ],
         ]);
 
-        return back()->with('success', __('Onboarding-Schritt wurde übersprungen.'));
+        return back()->with('success', __('onboarding.action.flash_skipped'));
     }
 
     public function dismissWidget(Request $request): \Illuminate\Http\RedirectResponse {
@@ -207,6 +167,6 @@ class OnboardingController extends Controller {
             ],
         ]);
 
-        return back()->with('success', __('Onboarding-Widget wurde ausgeblendet.'));
+        return back()->with('success', __('onboarding.action.flash_dismissed'));
     }
 }

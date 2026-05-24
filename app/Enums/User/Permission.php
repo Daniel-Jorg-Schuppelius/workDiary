@@ -40,6 +40,16 @@ enum Permission: string implements HasLabel {
     case OrgOnboardingView = 'org.onboarding.view';
     case OrgOnboardingSkipStep = 'org.onboarding.skipStep';
     case OrgOnboardingDismissWidget = 'org.onboarding.dismissWidget';
+        // ── Plattform-Diagnose (MVP-044) ────────────────────────────
+    case PlatformDiagnosticsView = 'platform.diagnostics.view';
+    case PlatformDiagnosticsRunCheck = 'platform.diagnostics.runCheck';
+        // ── Plattform-Supportbericht (MVP-045) ──────────────────────
+    case PlatformSupportExport = 'platform.support.export';
+    case PlatformSupportExportWithSamples = 'platform.support.exportWithSamples';
+        // ── Plattform-Lizenz (MVP-047) ──────────────────────────────
+    case PlatformLicenseView = 'platform.license.view';
+    case PlatformLicenseInstall = 'platform.license.install';
+    case PlatformFeatureFlagOverride = 'platform.featureFlag.override';
 
         // ── Mitglieder (User-Stamm der Org) ────────────────────────────────
     case UserViewAny = 'user.viewAny';
@@ -277,6 +287,7 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'protocol.') => PermissionGroup::Protocols,
             str_starts_with($this->value, 'procedure.') => PermissionGroup::Procedures,
             str_starts_with($this->value, 'customerPortal.') => PermissionGroup::CustomerPortal,
+            str_starts_with($this->value, 'platform.') => PermissionGroup::Platform,
             default => PermissionGroup::MasterData,
         };
     }

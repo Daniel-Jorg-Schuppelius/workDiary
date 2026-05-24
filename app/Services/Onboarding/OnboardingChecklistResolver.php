@@ -17,48 +17,69 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
 class OnboardingChecklistResolver {
-    /** @var list<array{code:string, title:string, required:bool}> */
+    /** @var list<array{code:string, required:bool}> */
     private const STEPS = [
-        ['code' => 'org.profile', 'title' => 'Organisationsdaten vervollständigen', 'required' => true],
-        ['code' => 'org.branch_profile', 'title' => 'Branchenprofil wählen', 'required' => true],
-        ['code' => 'users.invite', 'title' => 'Erste Nutzer einladen', 'required' => false],
-        ['code' => 'roles.check', 'title' => 'Rollen prüfen', 'required' => true],
-        ['code' => 'classification.check', 'title' => 'Klassifikationen prüfen', 'required' => false],
-        ['code' => 'customer.first', 'title' => 'Ersten Kunden anlegen', 'required' => true],
-        ['code' => 'work.first', 'title' => 'Erstes Projekt oder Auftrag', 'required' => true],
-        ['code' => 'time.first', 'title' => 'Erste Zeiterfassung', 'required' => false],
-        ['code' => 'protocol.first_signed', 'title' => 'Erstes Protokoll signieren', 'required' => false],
-        ['code' => 'backup.heartbeat', 'title' => 'Backup-Heartbeat', 'required' => false],
+        ['code' => 'org.profile', 'required' => true],
+        ['code' => 'org.branch_profile', 'required' => true],
+        ['code' => 'users.invite', 'required' => false],
+        ['code' => 'roles.check', 'required' => true],
+        ['code' => 'classification.check', 'required' => false],
+        ['code' => 'customer.first', 'required' => true],
+        ['code' => 'work.first', 'required' => true],
+        ['code' => 'time.first', 'required' => false],
+        ['code' => 'protocol.first_signed', 'required' => false],
+        ['code' => 'backup.heartbeat', 'required' => false],
     ];
 
     /**
-     * @return array{steps:list<array{code:string,title:string,required:bool,done:bool}>, required_done:int, required_total:int, progress_percent:int, all_required_done:bool}
+     * @return array{steps:list<array{code:string,title:string,required:bool,done:bool,state:string,skipped_reason:?string}>, required_done:int, required_total:int, progress_percent:int, all_required_done:bool}
      */
     public function forOrganization(Organization $organization, ?User $actor = null): array {
         $doneMap = $this->evaluate($organization);
         $now = CarbonImmutable::now();
 
+        $existingRows = OnboardingProgress::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->get()
+            ->keyBy('step_code');
+
+        $previouslyAllDone = $this->wasPreviouslyComplete($existingRows);
+
         $steps = array_map(
-            static fn(array $step): array => [
-                'code' => $step['code'],
-                'title' => $step['title'],
-                'required' => $step['required'],
-                'done' => (bool) ($doneMap[$step['code']] ?? false),
-            ],
+            function (array $step) use ($doneMap, $existingRows): array {
+                $existing = $existingRows->get($step['code']);
+                $manuallySkipped = $existing instanceof OnboardingProgress && $existing->state === 'skipped';
+                $done = (bool) ($doneMap[$step['code']] ?? false);
+
+                return [
+                    'code' => $step['code'],
+                    'title' => __('onboarding.step.' . $step['code'] . '.title'),
+                    'required' => $step['required'],
+                    'done' => $done,
+                    'state' => $done ? 'done' : ($manuallySkipped ? 'skipped' : 'open'),
+                    'skipped_reason' => $manuallySkipped ? $existing->skipped_reason : null,
+                ];
+            },
             self::STEPS
         );
 
         $requiredTotal = count(array_filter($steps, static fn(array $step): bool => $step['required']));
         $requiredDone = count(array_filter($steps, static fn(array $step): bool => $step['required'] && $step['done']));
 
-        $this->syncProgressRows($organization, $steps, $actor, $now);
+        $this->syncProgressRows($organization, $steps, $existingRows, $actor, $now);
+
+        $allRequiredDone = $requiredDone === $requiredTotal;
+        if ($allRequiredDone && ! $previouslyAllDone) {
+            $this->writeCompletedAudit($organization, $actor);
+        }
 
         return [
             'steps' => $steps,
             'required_done' => $requiredDone,
             'required_total' => $requiredTotal,
             'progress_percent' => $requiredTotal > 0 ? (int) floor(($requiredDone / $requiredTotal) * 100) : 100,
-            'all_required_done' => $requiredDone === $requiredTotal,
+            'all_required_done' => $allRequiredDone,
         ];
     }
 
@@ -114,16 +135,12 @@ class OnboardingChecklistResolver {
     }
 
     /**
-     * @param  list<array{code:string,title:string,required:bool,done:bool}>  $steps
+     * @param  list<array{code:string,title:string,required:bool,done:bool,state:string,skipped_reason:?string}>  $steps
+     * @param  \Illuminate\Support\Collection<string, OnboardingProgress>  $existingRows
      */
-    private function syncProgressRows(Organization $organization, array $steps, ?User $actor, CarbonImmutable $now): void {
+    private function syncProgressRows(Organization $organization, array $steps, $existingRows, ?User $actor, CarbonImmutable $now): void {
         foreach ($steps as $step) {
-            /** @var OnboardingProgress|null $existing */
-            $existing = OnboardingProgress::query()
-                ->withoutGlobalScopes()
-                ->where('organization_id', $organization->id)
-                ->where('step_code', $step['code'])
-                ->first();
+            $existing = $existingRows->get($step['code']);
 
             // Manuell auf "skipped" gesetzte Schritte werden nicht überschrieben,
             // solange die Bedingung noch nicht erfüllt ist.
@@ -132,6 +149,7 @@ class OnboardingChecklistResolver {
             }
 
             if ($step['done']) {
+                $previousState = $existing?->state;
                 $doneAt = $existing !== null ? ($existing->done_at ?? $now) : $now;
 
                 OnboardingProgress::query()->withoutGlobalScopes()->updateOrCreate(
@@ -143,6 +161,10 @@ class OnboardingChecklistResolver {
                         'skipped_reason' => null,
                     ]
                 );
+
+                if ($previousState !== 'done') {
+                    $this->writeStepCompletedAudit($organization, $step['code'], $actor);
+                }
 
                 continue;
             }
@@ -156,5 +178,45 @@ class OnboardingChecklistResolver {
                 ]
             );
         }
+    }
+
+    /** @param \Illuminate\Support\Collection<string, OnboardingProgress> $existingRows */
+    private function wasPreviouslyComplete($existingRows): bool {
+        $requiredCodes = array_map(static fn(array $s): string => $s['code'], array_filter(self::STEPS, static fn(array $s): bool => $s['required']));
+        if ($existingRows->count() < count($requiredCodes)) {
+            return false;
+        }
+        foreach ($requiredCodes as $code) {
+            $row = $existingRows->get($code);
+            if (! $row instanceof OnboardingProgress || $row->state !== 'done') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function writeStepCompletedAudit(Organization $organization, string $stepCode, ?User $actor): void {
+        AuditLog::query()->create([
+            'organization_id' => $organization->id,
+            'user_id' => $actor?->id,
+            'event' => 'onboarding.stepCompleted',
+            'auditable_type' => Organization::class,
+            'auditable_id' => $organization->id,
+            'changes' => [
+                'step_code' => $stepCode,
+            ],
+        ]);
+    }
+
+    private function writeCompletedAudit(Organization $organization, ?User $actor): void {
+        AuditLog::query()->create([
+            'organization_id' => $organization->id,
+            'user_id' => $actor?->id,
+            'event' => 'onboarding.completed',
+            'auditable_type' => Organization::class,
+            'auditable_id' => $organization->id,
+            'changes' => [],
+        ]);
     }
 }

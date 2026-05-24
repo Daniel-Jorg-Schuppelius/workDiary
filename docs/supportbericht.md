@@ -96,13 +96,32 @@ Vor dem Download wird eine **Inhalts-Übersicht** angezeigt:
 
 ## 8. Akzeptanzkriterien
 
-1. Bundle-Inhalt §2 vollständig; Tests für jede „Niemals"-Regel
-   §2.3.
-2. `SupportReportLogFilter` redaktiert mit Tests (mind. 10
-   Beispieltexte).
-3. ZIP-Erzeugung mit / ohne Passwort, Hash korrekt.
-4. Audit-Events §7.
-5. Inhalts-Übersicht zeigt Größen und Optionen.
+1. Bundle-Inhalt §2 vollständig; Tests für jede „Niemals"-Regel §2.3.
+   — erledigt: `app/Services/Support/SupportReportBuilder.php` deckt alle
+   Pflicht-Sektionen ab (Installation, DiagnosticsReport, Composer/NPM-Hashes,
+   Migrations, Config-Schlüssel, ENV-Schlüssel mit Redaktion sensibler Werte,
+   Tabellen-Counts, failed_jobs ohne Payloads, gefilterter Log-Tail,
+   Audit-Event-Counts der letzten 24 h). Tests in
+   `tests/Feature/Support/SupportReportBuilderTest.php` prüfen die
+   Niemals-Regeln: keine Kundendaten (`name`), keine Admin-E-Mail, kein
+   `LICENSE_KEY`-Wert.
+2. `SupportReportLogFilter` redaktiert mit Tests (mind. 10 Beispieltexte).
+   — erledigt: `app/Services/Support/SupportReportLogFilter.php` mit
+   IBAN/E-Mail/IPv4/IPv6/Telefon/JWT-Mustern und konsistenten ID-Surrogaten;
+   `tests/Feature/Support/SupportReportLogFilterTest.php` mit 10 Tests.
+3. ZIP-Erzeugung mit / ohne Passwort, Hash korrekt. — erledigt:
+   `app/Services/Support/SupportReportPackager.php` (AES-256, wenn vom System
+   unterstützt) + Tests in `SupportReportPackagerTest.php`. SHA-256 wird über
+   `hash_file('sha256', $path)` bestätigt.
+4. Audit-Events §7. — erledigt: `support.reportGenerated` und
+   `support.reportDownloaded` werden im
+   `Admin\SupportReportController::generate` geschrieben.
+   `support.reportUploaded` ist out-of-scope für diesen Iterationsschritt
+   (gehört zur Upload-URL-Option in §4 Schritt 4, ebenfalls out-of-scope).
+5. Inhalts-Übersicht zeigt Größen und Optionen. — erledigt:
+   `SupportReportPackager::preview()` liefert Top-Sektionen nach Größe,
+   `resources/views/admin/support/report.blade.php` rendert das Vorab-Review
+   inkl. Opt-In-Checkboxen und Passwortfeld.
 
 ## 9. Out-of-scope (MVP-045)
 

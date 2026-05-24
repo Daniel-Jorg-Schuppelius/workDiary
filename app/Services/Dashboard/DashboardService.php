@@ -11,12 +11,18 @@
 namespace App\Services\Dashboard;
 
 use App\Enums\Expense\{ExpenseStatus, PerDiemTripStatus};
+use App\Enums\User\Permission;
 use App\Enums\Vacation\VacationStatus;
 use App\Models\{Attachment, Comment, DiaryEntry, EmergencyAssignment, Expense, OnCallShift, OpenIssue, PerDiemTrip, ScheduledShift, User, Vacation};
+use App\Services\Onboarding\OnboardingChecklistResolver;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
 class DashboardService {
+    public function __construct(
+        private readonly OnboardingChecklistResolver $onboardingResolver,
+    ) {}
+
     /** @return array<string, mixed> */
     public function summarize(User $user, ?CarbonImmutable $now = null): array {
         $now ??= CarbonImmutable::now();
@@ -26,6 +32,29 @@ class DashboardService {
             'user' => $this->personal($user, $now),
             'team' => $user->isAdmin() ? $this->team($now) : null,
             'finance' => $this->finance($user, $now),
+            'onboarding' => $this->onboarding($user),
+        ];
+    }
+
+    /**
+     * @return array{checklist: array<string,mixed>, widget_dismissed_at: ?string}|null
+     */
+    private function onboarding(User $user): ?array {
+        if (! $user->can(Permission::OrgOnboardingView->value)) {
+            return null;
+        }
+
+        $organization = $user->organization;
+        if ($organization === null) {
+            return null;
+        }
+
+        $checklist = $this->onboardingResolver->forOrganization($organization, $user);
+        $widgetDismissedAt = $organization->groupSettings('ui')['onboarding_widget_dismissed_at'] ?? null;
+
+        return [
+            'checklist' => $checklist,
+            'widget_dismissed_at' => is_string($widgetDismissedAt) ? $widgetDismissedAt : null,
         ];
     }
 

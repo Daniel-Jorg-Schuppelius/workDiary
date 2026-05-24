@@ -146,6 +146,7 @@ return [
         'reports' => 'Reports',
         'working-time' => 'Working Time',
         'master-data' => 'Master Data',
+        'platform' => 'Platform / Operations',
     ],
 
     'permission' => [
@@ -161,6 +162,13 @@ return [
         'org.onboarding.view' => 'View onboarding checklist',
         'org.onboarding.skipStep' => 'Skip onboarding step',
         'org.onboarding.dismissWidget' => 'Dismiss onboarding widget',
+        'platform.diagnostics.view' => 'View diagnostics page',
+        'platform.diagnostics.runCheck' => 'Trigger diagnostics tests (mail/backup)',
+        'platform.support.export' => 'Generate support report',
+        'platform.support.exportWithSamples' => 'Support report including anonymized samples',
+        'platform.license.view' => 'View licence status',
+        'platform.license.install' => 'Install / upload licence',
+        'platform.featureFlag.override' => 'Override feature flag manually',
 
         'user.viewAny' => 'List members',
         'user.view' => 'View member',

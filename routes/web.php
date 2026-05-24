@@ -8,9 +8,9 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, BrandingController, CalendarFeedController, CommentController, CoverageRequirementController, CustomerController, DashboardController, DiaryController, DiaryExportController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, FlexController, FlexEligibilityController, GeocodeController, GlobalSearchController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnboardingController, OnCallShiftController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectRecurrenceRuleController, ProtocolController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, RoomController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftTypeController, SickLeaveController, StopwatchController, TagController, TaskController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, VacationController, VehicleController, WeekController, WorkScheduleController};
+use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, BrandingController, CalendarFeedController, CommentController, CoverageRequirementController, CustomerController, DashboardController, DiaryController, DiaryExportController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, FlexController, FlexEligibilityController, GeocodeController, GlobalSearchController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, HelpController, OnboardingController, OnCallShiftController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectRecurrenceRuleController, ProtocolController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, RoomController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftTypeController, SickLeaveController, StopwatchController, TagController, TaskController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, VacationController, VehicleController, WeekController, WorkScheduleController};
 use App\Http\Controllers\Admin\Access\{AccessHubController, MemberController as AccessMemberController, PermissionController as AccessPermissionController, RoleController as AccessRoleController, UserGroupController as AccessUserGroupController};
-use App\Http\Controllers\Admin\{AutomationRuleController, BranchProfileController, ClassificationController, ClassificationRequirementController, EntryTypeController, ExpenseCategoryController, PerDiemRateController, PluginController as AdminPluginController};
+use App\Http\Controllers\Admin\{AutomationRuleController, BranchProfileController, ClassificationController, ClassificationRequirementController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, LicenseAdminController, PerDiemRateController, PluginController as AdminPluginController, SupportReportController};
 use App\Http\Controllers\Auth\{LoginController, TenantRegistrationController};
 use App\Http\Controllers\Plugins\LexofficeCustomerController;
 use App\Http\Controllers\Reporting\{AbsencesReportController, AttendanceReportController, AuditActivityReportController, BillingReportController, CoverageReportController, CustomerAnalysisReportController, CustomerProjectReportController, EntryTypeAnalysisReportController, EntryTypeDrilldownReportController, ExpenseReportController, FleetReportController, MaterialReportController, MyMonthReportController, MyYearReportController, OnCallReportController, OperationsReportController, ProjectDetailsReportController, QualificationReportController, SicknessReportController, WeekByUserReportController, WorkBalanceReportController};
@@ -87,6 +87,32 @@ Route::middleware('auth')->group(function () {
         Route::get('onboarding', [OnboardingController::class, '__invoke'])->name('onboarding.index');
         Route::post('onboarding/steps/{step}/skip', [OnboardingController::class, 'skipStep'])->name('onboarding.steps.skip');
         Route::post('onboarding/widget/dismiss', [OnboardingController::class, 'dismissWidget'])->name('onboarding.widget.dismiss');
+
+        // In-App-Hilfe (MVP-051): topic-Code muss Punkte zulassen (z. B. "diary-entries.create").
+        Route::get('help/search', [HelpController::class, 'search'])->name('help.search');
+        Route::get('help/topics/{topic}', [HelpController::class, 'show'])
+            ->where('topic', '[a-z0-9.\-]+')
+            ->name('help.topics.show');
+        Route::post('help/topics/{topic}/feedback', [HelpController::class, 'feedback'])
+            ->where('topic', '[a-z0-9.\-]+')
+            ->middleware('throttle:30,1')
+            ->name('help.topics.feedback');
+
+        // Diagnose-Seite (MVP-044)
+        Route::get('admin/diagnostics', [DiagnosticsController::class, 'index'])->name('admin.diagnostics.index');
+        Route::get('admin/diagnostics.json', [DiagnosticsController::class, 'json'])->name('admin.diagnostics.json');
+        Route::post('admin/diagnostics/test-mail', [DiagnosticsController::class, 'testMail'])
+            ->middleware('throttle:6,1')
+            ->name('admin.diagnostics.test-mail');
+
+        // Supportbericht (MVP-045)
+        Route::get('admin/support/report', [SupportReportController::class, 'index'])->name('admin.support.report.index');
+        Route::post('admin/support/report', [SupportReportController::class, 'generate'])
+            ->middleware('throttle:3,1')
+            ->name('admin.support.report.generate');
+
+        // Lizenz-Admin (MVP-047)
+        Route::get('admin/license', [LicenseAdminController::class, 'index'])->name('admin.license.index');
 
         Route::get('diary/export.csv', [DiaryExportController::class, 'csv'])->name('diary.export.csv');
         Route::get('diary/export.pdf', [DiaryExportController::class, 'pdf'])->name('diary.export.pdf');

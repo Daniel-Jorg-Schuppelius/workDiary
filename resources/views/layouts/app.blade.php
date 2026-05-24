@@ -1599,5 +1599,10 @@
                 })();
             </script>
             @stack('scripts')
+
+            {{-- In-App-Hilfe-Drawer (MVP-051): einmal pro Seite, befüllt von JS. --}}
+            @auth
+                <x-help-drawer />
+            @endauth
     </body>
 </html>
