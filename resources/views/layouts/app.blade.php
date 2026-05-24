@@ -474,6 +474,9 @@
                                     'label'       => __('Fuhrpark'),
                                     'collapsible' => true,
                                     'items'       => [
+                                        ...(\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Asset::class) ? [
+                                            ['route' => 'assets.index',      'label' => __('Objekte & Assets'), 'icon' => 'precision_manufacturing', 'modal' => false, 'matches' => ['assets.*']],
+                                        ] : []),
                                         ['route' => 'vehicles.index',    'label' => __('Fahrzeuge'),       'icon' => 'directions_car',  'modal' => false, 'matches' => ['vehicles.*']],
                                         ['route' => 'energy-logs.index', 'label' => __('Tank & Ladelog'),  'icon' => 'local_gas_station','modal' => false, 'matches' => ['energy-logs.*']],
                                     ],

@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\PluginController as AdminPluginController;
 use App\Http\Controllers\AdminTimeEntryController;
 use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\ArchiveController;
+use App\Http\Controllers\AssetController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuditLogController;
@@ -469,6 +470,8 @@ Route::middleware('auth')->group(function () {
         Route::post('tours/{tour}/materialize', [TourController::class, 'materialize'])->name('tours.materialize');
 
         // ── Fuhrpark ───────────────────────────────────────────────────────
+        Route::get('assets', [AssetController::class, 'index'])->name('assets.index');
+
         Route::get('vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
         Route::get('vehicles/create', [VehicleController::class, 'create'])->name('vehicles.create');
         Route::post('vehicles', [VehicleController::class, 'store'])->name('vehicles.store');

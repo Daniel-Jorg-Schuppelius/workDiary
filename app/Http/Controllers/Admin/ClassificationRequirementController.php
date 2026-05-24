@@ -585,6 +585,7 @@ class ClassificationRequirementController extends Controller {
             'required_domain' => ['required_domain', 'entry_type_code', 'enforce_phase'],
             'enforce_phase' => ['enforce_phase', 'entry_type_code', 'required_domain'],
             'severity' => ['severity', 'entry_type_code', 'required_domain'],
+            'max_count' => ['max_count', 'entry_type_code', 'required_domain'],
             default => ['entry_type_code', 'enforce_phase', 'required_domain'],
         };
     }
@@ -624,6 +625,16 @@ class ClassificationRequirementController extends Controller {
             return;
         }
 
+        if ($sortField === 'max_count') {
+            $requirementsQuery
+                ->orderByRaw('case when max_count is null then 0 else 1 end')
+                ->orderBy('max_count')
+                ->orderBy('entry_type_code')
+                ->orderBy('required_domain');
+
+            return;
+        }
+
         foreach ($this->sortColumns($sortField) as $column) {
             $requirementsQuery->orderBy($column);
         }
@@ -638,6 +649,7 @@ class ClassificationRequirementController extends Controller {
             'required_domain' => __('Pflicht-Domain'),
             'enforce_phase' => __('Phase'),
             'severity' => __('Schweregrad'),
+            'max_count' => __('Maximalanzahl'),
         ];
     }
 

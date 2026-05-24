@@ -479,6 +479,35 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
             ->assertSeeInOrder(['Blockierend zuerst vorne', 'Hinweis zuerst hinten']);
     }
 
+    public function test_index_can_sort_requirements_by_max_count(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::RootCause->value,
+            'enforce_phase' => ClassificationRequirementPhase::BeforeSign->value,
+            'max_count' => 4,
+            'note' => 'Begrenzung vier',
+        ]);
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::DefectType->value,
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'max_count' => null,
+            'note' => 'Offen ohne Limit',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('admin.classification-requirements.index', [
+                'sort' => 'max_count',
+            ]))
+            ->assertOk()
+            ->assertSee('Sortierung: Maximalanzahl')
+            ->assertSeeInOrder(['Offen ohne Limit', 'Begrenzung vier']);
+    }
+
     public function test_create_dialog_contains_entry_type_presets_payload(): void {
         $user = $this->userWithRole(UserRole::Teamleitung->value);
 
