@@ -224,25 +224,8 @@ class EntryTypeAnalysisReportTest extends TestCase {
     }
 
     public function test_report_export_writes_audit_log_entry(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'entry_type_id' => $this->entryType->id,
-            'planned_minutes' => 60,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        TimeEntry::create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'diary_entry_id' => $entry->id,
-            'user_id' => $this->user->id,
-            'date' => now()->subDays(2)->toDateString(),
-            'started_at' => now()->subDays(2)->setTime(10, 0)->toDateTimeString(),
-            'ended_at' => now()->subDays(2)->setTime(11, 0)->toDateTimeString(),
-            'kind' => TimeEntryKind::Work->value,
-            'billable' => true,
-        ]);
+        $entry = $this->createEntryTypeDiaryEntry();
+        $this->createEntryTypeWorkTimeEntry($entry);
 
         $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
@@ -267,25 +250,8 @@ class EntryTypeAnalysisReportTest extends TestCase {
     }
 
     public function test_report_csv_export_writes_audit_log_entry(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'entry_type_id' => $this->entryType->id,
-            'planned_minutes' => 60,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        TimeEntry::create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'diary_entry_id' => $entry->id,
-            'user_id' => $this->user->id,
-            'date' => now()->subDays(2)->toDateString(),
-            'started_at' => now()->subDays(2)->setTime(10, 0)->toDateTimeString(),
-            'ended_at' => now()->subDays(2)->setTime(11, 0)->toDateTimeString(),
-            'kind' => TimeEntryKind::Work->value,
-            'billable' => true,
-        ]);
+        $entry = $this->createEntryTypeDiaryEntry();
+        $this->createEntryTypeWorkTimeEntry($entry);
 
         $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
@@ -521,20 +487,8 @@ class EntryTypeAnalysisReportTest extends TestCase {
     }
 
     public function test_drilldown_export_writes_audit_log_entry(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'entry_type_id' => $this->entryType->id,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        Protocol::factory()->for($entry, 'subject')->state([
-            'organization_id' => $this->organization->id,
-            'created_by_user_id' => $this->user->id,
-            'type' => ProtocolType::Defect->value,
-            'title' => 'Audit Drilldown Protokoll',
-            'occurred_at' => now()->subDays(2),
-        ])->create();
+        $entry = $this->createEntryTypeDiaryEntry(null);
+        $this->createEntryTypeProtocol($entry, 'Audit Drilldown Protokoll');
 
         $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
@@ -562,32 +516,8 @@ class EntryTypeAnalysisReportTest extends TestCase {
     }
 
     public function test_open_issues_drilldown_export_writes_audit_log_entry(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'entry_type_id' => $this->entryType->id,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        OpenIssue::create([
-            'organization_id' => $this->organization->id,
-            'subject_type' => DiaryEntry::class,
-            'subject_id' => $entry->id,
-            'source_type' => OpenIssueSource::Manual->value,
-            'source_ref_id' => null,
-            'title' => 'Audit Drilldown Punkt',
-            'description' => null,
-            'category' => 'entry',
-            'severity' => OpenIssueSeverity::High->value,
-            'status' => OpenIssueStatus::Blocked->value,
-            'assignee_user_id' => $this->user->id,
-            'due_at' => now()->addDays(2),
-            'visibility' => OpenIssueVisibility::Internal->value,
-            'closed_at' => null,
-            'closed_by_user_id' => null,
-            'closed_reason' => null,
-            'created_by_user_id' => $this->user->id,
-        ]);
+        $entry = $this->createEntryTypeDiaryEntry(null);
+        $this->createEntryTypeOpenIssue($entry, 'Audit Drilldown Punkt');
 
         $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
@@ -616,20 +546,8 @@ class EntryTypeAnalysisReportTest extends TestCase {
     }
 
     public function test_protocols_drilldown_csv_export_writes_audit_log_entry(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'entry_type_id' => $this->entryType->id,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        Protocol::factory()->for($entry, 'subject')->state([
-            'organization_id' => $this->organization->id,
-            'created_by_user_id' => $this->user->id,
-            'type' => ProtocolType::Defect->value,
-            'title' => 'Audit Drilldown Protokoll CSV',
-            'occurred_at' => now()->subDays(2),
-        ])->create();
+        $entry = $this->createEntryTypeDiaryEntry(null);
+        $this->createEntryTypeProtocol($entry, 'Audit Drilldown Protokoll CSV');
 
         $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
@@ -657,32 +575,8 @@ class EntryTypeAnalysisReportTest extends TestCase {
     }
 
     public function test_open_issues_drilldown_pdf_export_writes_audit_log_entry(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'entry_type_id' => $this->entryType->id,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        OpenIssue::create([
-            'organization_id' => $this->organization->id,
-            'subject_type' => DiaryEntry::class,
-            'subject_id' => $entry->id,
-            'source_type' => OpenIssueSource::Manual->value,
-            'source_ref_id' => null,
-            'title' => 'Audit Drilldown Punkt PDF',
-            'description' => null,
-            'category' => 'entry',
-            'severity' => OpenIssueSeverity::High->value,
-            'status' => OpenIssueStatus::Blocked->value,
-            'assignee_user_id' => $this->user->id,
-            'due_at' => now()->addDays(2),
-            'visibility' => OpenIssueVisibility::Internal->value,
-            'closed_at' => null,
-            'closed_by_user_id' => null,
-            'closed_reason' => null,
-            'created_by_user_id' => $this->user->id,
-        ]);
+        $entry = $this->createEntryTypeDiaryEntry(null);
+        $this->createEntryTypeOpenIssue($entry, 'Audit Drilldown Punkt PDF');
 
         $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
@@ -708,5 +602,66 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
         $this->assertSame('127.0.0.1', $log->ip);
         $this->assertTrue(is_string($log->user_agent));
+    }
+
+    private function createEntryTypeDiaryEntry(?int $plannedMinutes = 60): DiaryEntry {
+        $attributes = [
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'entry_type_id' => $this->entryType->id,
+            'created_at' => now()->subDays(2),
+        ];
+
+        if ($plannedMinutes !== null) {
+            $attributes['planned_minutes'] = $plannedMinutes;
+        }
+
+        return DiaryEntry::factory()->for($this->user)->create($attributes);
+    }
+
+    private function createEntryTypeWorkTimeEntry(DiaryEntry $entry): void {
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'diary_entry_id' => $entry->id,
+            'user_id' => $this->user->id,
+            'date' => now()->subDays(2)->toDateString(),
+            'started_at' => now()->subDays(2)->setTime(10, 0)->toDateTimeString(),
+            'ended_at' => now()->subDays(2)->setTime(11, 0)->toDateTimeString(),
+            'kind' => TimeEntryKind::Work->value,
+            'billable' => true,
+        ]);
+    }
+
+    private function createEntryTypeOpenIssue(DiaryEntry $entry, string $title): OpenIssue {
+        return OpenIssue::create([
+            'organization_id' => $this->organization->id,
+            'subject_type' => DiaryEntry::class,
+            'subject_id' => $entry->id,
+            'source_type' => OpenIssueSource::Manual->value,
+            'source_ref_id' => null,
+            'title' => $title,
+            'description' => null,
+            'category' => 'entry',
+            'severity' => OpenIssueSeverity::High->value,
+            'status' => OpenIssueStatus::Blocked->value,
+            'assignee_user_id' => $this->user->id,
+            'due_at' => now()->addDays(2),
+            'visibility' => OpenIssueVisibility::Internal->value,
+            'closed_at' => null,
+            'closed_by_user_id' => null,
+            'closed_reason' => null,
+            'created_by_user_id' => $this->user->id,
+        ]);
+    }
+
+    private function createEntryTypeProtocol(DiaryEntry $entry, string $title): Protocol {
+        return Protocol::factory()->for($entry, 'subject')->state([
+            'organization_id' => $this->organization->id,
+            'created_by_user_id' => $this->user->id,
+            'type' => ProtocolType::Defect->value,
+            'title' => $title,
+            'occurred_at' => now()->subDays(2),
+        ])->create();
     }
 }
