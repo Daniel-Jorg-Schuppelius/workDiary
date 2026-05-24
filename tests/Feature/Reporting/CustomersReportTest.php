@@ -290,6 +290,8 @@ class CustomersReportTest extends TestCase {
         $this->assertSame(CustomerAnalysisReportController::class, $log->auditable_type);
         $this->assertSame($this->organization->id, $log->organization_id);
         $this->assertSame($this->user->id, $log->user_id);
+        $this->assertSame('127.0.0.1', $log->ip);
+        $this->assertTrue(is_string($log->user_agent));
         $this->assertSame('customers-analysis', $log->changes['report_code'] ?? null);
         $this->assertSame('csv', $log->changes['format'] ?? null);
         $this->assertSame($this->project->id, $log->changes['filters']['project_id'] ?? null);
@@ -525,6 +527,8 @@ class CustomersReportTest extends TestCase {
         $this->assertSame(CustomerDrilldownReportController::class, $log->auditable_type);
         $this->assertSame($this->organization->id, $log->organization_id);
         $this->assertSame($this->user->id, $log->user_id);
+        $this->assertSame('127.0.0.1', $log->ip);
+        $this->assertTrue(is_string($log->user_agent));
         $this->assertSame('customer-drilldown-open-issues', $log->changes['report_code'] ?? null);
         $this->assertSame('csv', $log->changes['format'] ?? null);
         $this->assertSame($this->customer->id, $log->changes['filters']['customer_id'] ?? null);
@@ -564,6 +568,8 @@ class CustomersReportTest extends TestCase {
         $this->assertSame(CustomerDrilldownReportController::class, $log->auditable_type);
         $this->assertSame($this->organization->id, $log->organization_id);
         $this->assertSame($this->user->id, $log->user_id);
+        $this->assertSame('127.0.0.1', $log->ip);
+        $this->assertTrue(is_string($log->user_agent));
         $this->assertSame('customer-drilldown-protocols', $log->changes['report_code'] ?? null);
         $this->assertSame('pdf', $log->changes['format'] ?? null);
         $this->assertSame($this->customer->id, $log->changes['filters']['customer_id'] ?? null);

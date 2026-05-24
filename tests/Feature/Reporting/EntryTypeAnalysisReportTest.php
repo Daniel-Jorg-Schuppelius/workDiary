@@ -262,6 +262,8 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $this->assertSame('pdf', $log->changes['format'] ?? null);
         $this->assertSame($this->entryType->id, $log->changes['filters']['entry_type_id'] ?? null);
         $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
+        $this->assertSame('127.0.0.1', $log->ip);
+        $this->assertTrue(is_string($log->user_agent));
     }
 
     public function test_open_issues_drilldown_route_renders_for_entry_type(): void {
@@ -512,6 +514,8 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $this->assertSame('pdf', $log->changes['format'] ?? null);
         $this->assertSame($this->entryType->id, $log->changes['filters']['entry_type_id'] ?? null);
         $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
+        $this->assertSame('127.0.0.1', $log->ip);
+        $this->assertTrue(is_string($log->user_agent));
     }
 
     public function test_open_issues_drilldown_export_writes_audit_log_entry(): void {
@@ -564,5 +568,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $this->assertSame('csv', $log->changes['format'] ?? null);
         $this->assertSame($this->entryType->id, $log->changes['filters']['entry_type_id'] ?? null);
         $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
+        $this->assertSame('127.0.0.1', $log->ip);
+        $this->assertTrue(is_string($log->user_agent));
     }
 }
