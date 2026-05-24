@@ -228,10 +228,10 @@ class CustomersReportTest extends TestCase {
         $entry = $this->createCustomerDiaryEntry();
         $this->createCustomerWorkTimeEntry($entry);
 
-        $this->actingAs($this->user)
-            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
-            ->get(route('reports.customers', ['project_id' => $this->project->id, 'export' => 'csv']))
-            ->assertOk();
+        $this->getWithDateRange('reports.customers', [
+            'project_id' => $this->project->id,
+            'export' => 'csv',
+        ])->assertOk();
 
         $log = $this->latestReportExportAuditLog();
 
@@ -249,10 +249,10 @@ class CustomersReportTest extends TestCase {
         $entry = $this->createCustomerDiaryEntry();
         $this->createCustomerWorkTimeEntry($entry);
 
-        $this->actingAs($this->user)
-            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
-            ->get(route('reports.customers', ['project_id' => $this->project->id, 'export' => 'pdf']))
-            ->assertOk();
+        $this->getWithDateRange('reports.customers', [
+            'project_id' => $this->project->id,
+            'export' => 'pdf',
+        ])->assertOk();
 
         $log = $this->latestReportExportAuditLog();
 
@@ -387,14 +387,11 @@ class CustomersReportTest extends TestCase {
     public function test_drilldown_export_writes_audit_log_entry(): void {
         $this->createCustomerOpenIssue('Audit Drilldown Punkt');
 
-        $this->actingAs($this->user)
-            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
-            ->get(route('reports.customers.drilldown.open-issues', [
-                'customer_id' => $this->customer->id,
-                'escalated' => 1,
-                'export' => 'csv',
-            ]))
-            ->assertOk();
+        $this->getWithDateRange('reports.customers.drilldown.open-issues', [
+            'customer_id' => $this->customer->id,
+            'escalated' => 1,
+            'export' => 'csv',
+        ])->assertOk();
 
         $log = $this->latestReportExportAuditLog();
 
@@ -412,13 +409,10 @@ class CustomersReportTest extends TestCase {
         $entry = $this->createCustomerDiaryEntry();
         $this->createCustomerProtocol($entry, 'Audit Drilldown Protokoll');
 
-        $this->actingAs($this->user)
-            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
-            ->get(route('reports.customers.drilldown.protocols', [
-                'customer_id' => $this->customer->id,
-                'export' => 'pdf',
-            ]))
-            ->assertOk();
+        $this->getWithDateRange('reports.customers.drilldown.protocols', [
+            'customer_id' => $this->customer->id,
+            'export' => 'pdf',
+        ])->assertOk();
 
         $log = $this->latestReportExportAuditLog();
 
@@ -435,14 +429,11 @@ class CustomersReportTest extends TestCase {
     public function test_open_issues_drilldown_pdf_export_writes_audit_log_entry(): void {
         $this->createCustomerOpenIssue('Audit Drilldown Punkt PDF');
 
-        $this->actingAs($this->user)
-            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
-            ->get(route('reports.customers.drilldown.open-issues', [
-                'customer_id' => $this->customer->id,
-                'escalated' => 1,
-                'export' => 'pdf',
-            ]))
-            ->assertOk();
+        $this->getWithDateRange('reports.customers.drilldown.open-issues', [
+            'customer_id' => $this->customer->id,
+            'escalated' => 1,
+            'export' => 'pdf',
+        ])->assertOk();
 
         $log = $this->latestReportExportAuditLog();
 
@@ -460,13 +451,10 @@ class CustomersReportTest extends TestCase {
         $entry = $this->createCustomerDiaryEntry();
         $this->createCustomerProtocol($entry, 'Audit Drilldown Protokoll CSV');
 
-        $this->actingAs($this->user)
-            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
-            ->get(route('reports.customers.drilldown.protocols', [
-                'customer_id' => $this->customer->id,
-                'export' => 'csv',
-            ]))
-            ->assertOk();
+        $this->getWithDateRange('reports.customers.drilldown.protocols', [
+            'customer_id' => $this->customer->id,
+            'export' => 'csv',
+        ])->assertOk();
 
         $log = $this->latestReportExportAuditLog();
 
@@ -508,6 +496,12 @@ class CustomersReportTest extends TestCase {
             ->where('event', 'report.exported')
             ->latest('id')
             ->first();
+    }
+
+    private function getWithDateRange(string $routeName, array $parameters = []): \Illuminate\Testing\TestResponse {
+        return $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route($routeName, $parameters));
     }
 
     private function createCustomerDiaryEntry(): DiaryEntry {
