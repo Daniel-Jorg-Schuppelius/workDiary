@@ -86,6 +86,7 @@ class ClassificationRequirementController extends Controller {
             ]),
             'entryTypeOptions' => $this->entryTypeOptions(),
             'entryTypePresets' => $this->entryTypePresets(),
+            'requiredDomainPresets' => $this->requiredDomainPresets(),
             'requiredDomainOptions' => $this->requiredDomainOptions(),
             'phaseLabels' => $this->phaseLabels(),
             'severityLabels' => $this->severityLabels(),
@@ -115,6 +116,7 @@ class ClassificationRequirementController extends Controller {
             'requirement' => $classificationRequirement,
             'entryTypeOptions' => $this->entryTypeOptions(),
             'entryTypePresets' => $this->entryTypePresets(),
+            'requiredDomainPresets' => $this->requiredDomainPresets(),
             'requiredDomainOptions' => $this->requiredDomainOptions(),
             'phaseLabels' => $this->phaseLabels(),
             'severityLabels' => $this->severityLabels(),
@@ -162,6 +164,8 @@ class ClassificationRequirementController extends Controller {
      * @return array<string, mixed>
      */
     private function validatePayload(Request $request, ?ClassificationRequirement $requirement = null): array {
+        $request->merge($this->applyRequirementPresetFallbacks($request));
+
         $organization = $this->currentOrganization();
         $entryTypeCodes = array_keys($this->entryTypeOptions());
         $requiredDomains = array_keys($this->requiredDomainOptions());
@@ -287,6 +291,51 @@ class ClassificationRequirementController extends Controller {
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    private function applyRequirementPresetFallbacks(Request $request): array {
+        $entryTypeCode = trim((string) $request->input('entry_type_code', ''));
+        $requiredDomain = trim((string) $request->input('required_domain', ''));
+        $preset = $this->resolveRequirementPreset($entryTypeCode, $requiredDomain);
+
+        if ($preset === []) {
+            return [];
+        }
+
+        $merged = [];
+
+        foreach (['enforce_phase', 'severity', 'min_count', 'max_count'] as $field) {
+            $value = $request->input($field);
+            if (($value === null || $value === '') && array_key_exists($field, $preset)) {
+                $merged[$field] = $preset[$field];
+            }
+        }
+
+        if (! $request->has('allow_multi') && array_key_exists('allow_multi', $preset)) {
+            $merged['allow_multi'] = $preset['allow_multi'];
+        }
+
+        return $merged;
+    }
+
+    /**
+     * @return array{enforce_phase?: string, severity?: string, min_count?: int, max_count?: int|null, allow_multi?: bool}
+     */
+    private function resolveRequirementPreset(string $entryTypeCode, string $requiredDomain): array {
+        $preset = [];
+
+        if ($requiredDomain !== '' && isset($this->requiredDomainPresets()[$requiredDomain])) {
+            $preset = $this->requiredDomainPresets()[$requiredDomain];
+        }
+
+        if ($entryTypeCode !== '' && isset($this->entryTypePresets()[$entryTypeCode])) {
+            $preset = array_merge($preset, $this->entryTypePresets()[$entryTypeCode]);
+        }
+
+        return $preset;
+    }
+
+    /**
      * @return array<string, array{enforce_phase: string, severity: string, min_count: int, max_count: int|null, allow_multi: bool}>
      */
     private function entryTypePresets(): array {
@@ -336,6 +385,49 @@ class ClassificationRequirementController extends Controller {
             'reklamation' => [
                 'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
                 'severity' => ClassificationRequirementSeverity::Soft->value,
+                'min_count' => 1,
+                'max_count' => null,
+                'allow_multi' => false,
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, array{enforce_phase: string, severity: string, min_count: int, max_count: int|null, allow_multi: bool}>
+     */
+    private function requiredDomainPresets(): array {
+        return [
+            ClassificationDomain::DefectType->value => [
+                'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+                'severity' => ClassificationRequirementSeverity::Hard->value,
+                'min_count' => 1,
+                'max_count' => null,
+                'allow_multi' => false,
+            ],
+            ClassificationDomain::Priority->value => [
+                'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+                'severity' => ClassificationRequirementSeverity::Hard->value,
+                'min_count' => 1,
+                'max_count' => null,
+                'allow_multi' => false,
+            ],
+            ClassificationDomain::ProductGroup->value => [
+                'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+                'severity' => ClassificationRequirementSeverity::Hard->value,
+                'min_count' => 1,
+                'max_count' => null,
+                'allow_multi' => false,
+            ],
+            ClassificationDomain::Result->value => [
+                'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+                'severity' => ClassificationRequirementSeverity::Hard->value,
+                'min_count' => 1,
+                'max_count' => null,
+                'allow_multi' => false,
+            ],
+            ClassificationDomain::RootCause->value => [
+                'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+                'severity' => ClassificationRequirementSeverity::Hard->value,
                 'min_count' => 1,
                 'max_count' => null,
                 'allow_multi' => false,

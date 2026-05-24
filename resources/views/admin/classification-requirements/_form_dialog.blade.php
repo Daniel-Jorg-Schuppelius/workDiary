@@ -2,11 +2,13 @@
     /** @var \App\Models\ClassificationRequirement $requirement */
     /** @var array<string, string> $entryTypeOptions */
     /** @var array<string, array{enforce_phase: string, severity: string, min_count: int, max_count: int|null, allow_multi: bool}> $entryTypePresets */
+    /** @var array<string, array{enforce_phase: string, severity: string, min_count: int, max_count: int|null, allow_multi: bool}> $requiredDomainPresets */
     /** @var array<string, string> $requiredDomainOptions */
     /** @var array<string, string> $phaseLabels */
     /** @var array<string, string> $severityLabels */
     $isEdit = (bool) ($requirement->id ?? false);
     $entryTypePresetsJson = json_encode($entryTypePresets, JSON_UNESCAPED_UNICODE);
+    $requiredDomainPresetsJson = json_encode($requiredDomainPresets, JSON_UNESCAPED_UNICODE);
     $hasOldInput = session()->getOldInput() !== [];
 @endphp
 
@@ -38,7 +40,11 @@
         </div>
         <div>
             <label class="label" for="req-domain"><span class="label-text">{{ __('Pflicht-Domain') }}</span></label>
-            <select id="req-domain" name="required_domain" class="select select-bordered w-full" required>
+            <select id="req-domain"
+                    name="required_domain"
+                    class="select select-bordered w-full"
+                    required
+                    data-required-domain-presets='{{ $requiredDomainPresetsJson }}'>
                 <option value="">{{ __('Bitte wählen') }}</option>
                 @foreach ($requiredDomainOptions as $code => $label)
                     <option value="{{ $code }}" @selected(old('required_domain', $requirement->required_domain) === $code)>{{ $label }}</option>
@@ -90,16 +96,25 @@
 <script>
     (function () {
         var entryTypeSelect = document.getElementById('req-entry-type');
-        if (!entryTypeSelect) {
+        var requiredDomainSelect = document.getElementById('req-domain');
+        if (!entryTypeSelect || !requiredDomainSelect) {
             return;
         }
 
-        var presetsRaw = entryTypeSelect.dataset.entryTypePresets || '{}';
-        var presets = {};
+        var entryTypePresetsRaw = entryTypeSelect.dataset.entryTypePresets || '{}';
+        var entryTypePresets = {};
         try {
-            presets = JSON.parse(presetsRaw);
+            entryTypePresets = JSON.parse(entryTypePresetsRaw);
         } catch (_error) {
-            presets = {};
+            entryTypePresets = {};
+        }
+
+        var requiredDomainPresetsRaw = requiredDomainSelect.dataset.requiredDomainPresets || '{}';
+        var requiredDomainPresets = {};
+        try {
+            requiredDomainPresets = JSON.parse(requiredDomainPresetsRaw);
+        } catch (_error) {
+            requiredDomainPresets = {};
         }
 
         var fields = {
@@ -110,9 +125,24 @@
             allow_multi: document.querySelector('[data-preset-target="allow_multi"]')
         };
 
-        function applyPreset(entryTypeCode, force) {
-            var preset = presets[entryTypeCode];
-            if (!preset) {
+        function combinedPreset() {
+            var preset = {};
+            var requiredDomainPreset = requiredDomainPresets[requiredDomainSelect.value];
+            var entryTypePreset = entryTypePresets[entryTypeSelect.value];
+
+            if (requiredDomainPreset) {
+                Object.assign(preset, requiredDomainPreset);
+            }
+            if (entryTypePreset) {
+                Object.assign(preset, entryTypePreset);
+            }
+
+            return preset;
+        }
+
+        function applyPreset(force) {
+            var preset = combinedPreset();
+            if (Object.keys(preset).length === 0) {
                 return;
             }
 
@@ -134,13 +164,17 @@
         }
 
         entryTypeSelect.addEventListener('change', function () {
-            applyPreset(entryTypeSelect.value, true);
+            applyPreset(true);
+        });
+
+        requiredDomainSelect.addEventListener('change', function () {
+            applyPreset(true);
         });
 
         var isEditMode = entryTypeSelect.dataset.requirementEditMode === '1';
         var hasOldInput = entryTypeSelect.dataset.hasOldInput === '1';
-        if (!isEditMode && !hasOldInput && entryTypeSelect.value !== '') {
-            applyPreset(entryTypeSelect.value, false);
+        if (!isEditMode && !hasOldInput && (entryTypeSelect.value !== '' || requiredDomainSelect.value !== '')) {
+            applyPreset(false);
         }
     })();
 </script>

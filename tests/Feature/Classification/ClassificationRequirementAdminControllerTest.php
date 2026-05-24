@@ -213,8 +213,35 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
             ->get(route('admin.classification-requirements.create'))
             ->assertOk()
             ->assertSee('data-entry-type-presets=')
+            ->assertSee('data-required-domain-presets=')
             ->assertSee('incident')
+            ->assertSee('result')
             ->assertSee('reklamation');
+    }
+
+    public function test_store_applies_domain_preset_fallbacks_when_request_omits_defaults(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+
+        Classification::factory()->forOrganization($this->organization->id)->domain(ClassificationDomain::EntryType)->create([
+            'code' => 'service',
+            'label' => 'Service lokal',
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('admin.classification-requirements.store'), [
+                'entry_type_code' => 'service',
+                'required_domain' => ClassificationDomain::Result->value,
+            ])
+            ->assertRedirect(route('admin.classification-requirements.index'));
+
+        $this->assertDatabaseHas('classification_requirements', [
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::Result->value,
+            'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+            'severity' => ClassificationRequirementSeverity::Soft->value,
+            'min_count' => 1,
+        ]);
     }
 
     private function userWithRole(string $role): User {
