@@ -30,7 +30,7 @@
                        name="q"
                        value="{{ $activeFilters['q'] ?? '' }}"
                        class="input input-bordered w-full"
-                       placeholder="{{ __('Auftragstyp, Domain oder Hinweis') }}" />
+                      placeholder="{{ __('Auftragstyp, Domain, Hinweis oder Bedingung') }}" />
             </label>
 
             <label class="form-control">

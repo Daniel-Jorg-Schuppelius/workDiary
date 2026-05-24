@@ -47,7 +47,8 @@ class ClassificationRequirementController extends Controller {
                 $builder
                     ->where('entry_type_code', 'like', "%{$query}%")
                     ->orWhere('required_domain', 'like', "%{$query}%")
-                    ->orWhere('note', 'like', "%{$query}%");
+                    ->orWhere('note', 'like', "%{$query}%")
+                    ->orWhere('only_if_json', 'like', "%{$query}%");
             });
         }
 

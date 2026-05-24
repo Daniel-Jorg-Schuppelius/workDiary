@@ -183,6 +183,34 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
             ->assertDontSee('maintenance');
     }
 
+    public function test_index_can_filter_requirements_by_condition_query(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::DefectType->value,
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'only_if_json' => ['priority' => ['critical']],
+            'note' => 'Kritischer Fall',
+        ]);
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'maintenance',
+            'required_domain' => ClassificationDomain::Result->value,
+            'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+            'only_if_json' => ['priority' => ['low']],
+            'note' => 'Unkritischer Fall',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('admin.classification-requirements.index', ['q' => 'critical']))
+            ->assertOk()
+            ->assertSee('Kritischer Fall')
+            ->assertSee('Suche: critical')
+            ->assertDontSee('Unkritischer Fall');
+    }
+
     public function test_index_can_filter_requirements_by_phase_and_severity(): void {
         $user = $this->userWithRole(UserRole::Teamleitung->value);
 
