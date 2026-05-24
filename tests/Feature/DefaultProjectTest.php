@@ -13,6 +13,7 @@ namespace Tests\Feature;
 use App\Enums\Project\ProjectStatus;
 use App\Models\{Customer, Project, Timesheet, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -80,7 +81,7 @@ class DefaultProjectTest extends TestCase {
             'organization_id' => $this->organization->id,
         ]);
 
-        $response = $this->actingAs($this->user)->post(route('timesheets.quick'), [
+        $response = $this->postQuickAsUser([
             'customer_id' => $customer->id,
         ]);
 
@@ -102,7 +103,7 @@ class DefaultProjectTest extends TestCase {
             'status' => ProjectStatus::Active->value,
         ]);
 
-        $response = $this->actingAs($this->user)->post(route('timesheets.quick'), [
+        $response = $this->postQuickAsUser([
             'customer_id' => $customer->id,
             'project_id' => $explicit->id,
             'work_date' => '2026-05-10',
@@ -126,5 +127,9 @@ class DefaultProjectTest extends TestCase {
         $response->assertRedirect(route('customers.index'));
         $this->assertDatabaseMissing('customers', ['id' => $customer->id]);
         $this->assertDatabaseMissing('projects', ['customer_id' => $customer->id]);
+    }
+
+    private function postQuickAsUser(array $payload): TestResponse {
+        return $this->actingAs($this->user)->post(route('timesheets.quick'), $payload);
     }
 }
