@@ -84,6 +84,7 @@
                     <th>{{ __('Phase') }}</th>
                     <th>{{ __('Schweregrad') }}</th>
                     <th>{{ __('Anzahl') }}</th>
+                    <th>{{ __('Hinweis') }}</th>
                     <th>{{ __('Bedingung') }}</th>
                     <th></th>
                 </tr>
@@ -99,6 +100,13 @@
                         </span>
                     </td>
                     <td>{{ $requirement->min_count }}@if ($requirement->max_count !== null) - {{ $requirement->max_count }}@endif</td>
+                    <td>
+                        @if ($requirement->note)
+                            <span>{{ $requirement->note }}</span>
+                        @else
+                            <span class="text-base-content/50">{{ __('—') }}</span>
+                        @endif
+                    </td>
                     <td>
                         @if ($requirement->only_if_json)
                             <pre class="text-xs whitespace-pre-wrap">{{ json_encode($requirement->only_if_json, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) }}</pre>

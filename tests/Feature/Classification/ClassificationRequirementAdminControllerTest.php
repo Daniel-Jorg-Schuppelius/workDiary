@@ -163,18 +163,21 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
             'entry_type_code' => 'service',
             'required_domain' => ClassificationDomain::DefectType->value,
             'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'note' => 'Suchbarer Service-Hinweis',
         ]);
         ClassificationRequirement::factory()->create([
             'organization_id' => $this->organization->id,
             'entry_type_code' => 'maintenance',
             'required_domain' => ClassificationDomain::Result->value,
             'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+            'note' => 'Wartungs-Hinweis',
         ]);
 
         $this->actingAs($user)
             ->get(route('admin.classification-requirements.index', ['q' => 'service']))
             ->assertOk()
             ->assertSee('service')
+            ->assertSee('Suchbarer Service-Hinweis')
             ->assertDontSee('maintenance');
     }
 
