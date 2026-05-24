@@ -203,16 +203,14 @@ class EntryTypeAnalysisReportTest extends TestCase {
             ->latest('id')
             ->first();
 
-        $this->assertNotNull($log);
-        $this->assertSame(EntryTypeAnalysisReportController::class, $log->auditable_type);
-        $this->assertSame($this->organization->id, $log->organization_id);
-        $this->assertSame($this->user->id, $log->user_id);
-        $this->assertSame('entry-types-analysis', $log->changes['report_code'] ?? null);
-        $this->assertSame('pdf', $log->changes['format'] ?? null);
-        $this->assertSame($this->entryType->id, $log->changes['filters']['entry_type_id'] ?? null);
-        $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
-        $this->assertSame('127.0.0.1', $log->ip);
-        $this->assertTrue(is_string($log->user_agent));
+        $this->assertExportAuditLog(
+            $log,
+            EntryTypeAnalysisReportController::class,
+            'entry-types-analysis',
+            'pdf',
+            'entry_type_id',
+            $this->entryType->id
+        );
     }
 
     public function test_report_csv_export_writes_audit_log_entry(): void {
@@ -229,16 +227,14 @@ class EntryTypeAnalysisReportTest extends TestCase {
             ->latest('id')
             ->first();
 
-        $this->assertNotNull($log);
-        $this->assertSame(EntryTypeAnalysisReportController::class, $log->auditable_type);
-        $this->assertSame($this->organization->id, $log->organization_id);
-        $this->assertSame($this->user->id, $log->user_id);
-        $this->assertSame('entry-types-analysis', $log->changes['report_code'] ?? null);
-        $this->assertSame('csv', $log->changes['format'] ?? null);
-        $this->assertSame($this->entryType->id, $log->changes['filters']['entry_type_id'] ?? null);
-        $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
-        $this->assertSame('127.0.0.1', $log->ip);
-        $this->assertTrue(is_string($log->user_agent));
+        $this->assertExportAuditLog(
+            $log,
+            EntryTypeAnalysisReportController::class,
+            'entry-types-analysis',
+            'csv',
+            'entry_type_id',
+            $this->entryType->id
+        );
     }
 
     public function test_open_issues_drilldown_route_renders_for_entry_type(): void {
@@ -385,16 +381,14 @@ class EntryTypeAnalysisReportTest extends TestCase {
             ->latest('id')
             ->first();
 
-        $this->assertNotNull($log);
-        $this->assertSame(EntryTypeDrilldownReportController::class, $log->auditable_type);
-        $this->assertSame($this->organization->id, $log->organization_id);
-        $this->assertSame($this->user->id, $log->user_id);
-        $this->assertSame('entry-type-drilldown-protocols', $log->changes['report_code'] ?? null);
-        $this->assertSame('pdf', $log->changes['format'] ?? null);
-        $this->assertSame($this->entryType->id, $log->changes['filters']['entry_type_id'] ?? null);
-        $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
-        $this->assertSame('127.0.0.1', $log->ip);
-        $this->assertTrue(is_string($log->user_agent));
+        $this->assertExportAuditLog(
+            $log,
+            EntryTypeDrilldownReportController::class,
+            'entry-type-drilldown-protocols',
+            'pdf',
+            'entry_type_id',
+            $this->entryType->id
+        );
     }
 
     public function test_open_issues_drilldown_export_writes_audit_log_entry(): void {
@@ -415,16 +409,14 @@ class EntryTypeAnalysisReportTest extends TestCase {
             ->latest('id')
             ->first();
 
-        $this->assertNotNull($log);
-        $this->assertSame(EntryTypeDrilldownReportController::class, $log->auditable_type);
-        $this->assertSame($this->organization->id, $log->organization_id);
-        $this->assertSame($this->user->id, $log->user_id);
-        $this->assertSame('entry-type-drilldown-open-issues', $log->changes['report_code'] ?? null);
-        $this->assertSame('csv', $log->changes['format'] ?? null);
-        $this->assertSame($this->entryType->id, $log->changes['filters']['entry_type_id'] ?? null);
-        $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
-        $this->assertSame('127.0.0.1', $log->ip);
-        $this->assertTrue(is_string($log->user_agent));
+        $this->assertExportAuditLog(
+            $log,
+            EntryTypeDrilldownReportController::class,
+            'entry-type-drilldown-open-issues',
+            'csv',
+            'entry_type_id',
+            $this->entryType->id
+        );
     }
 
     public function test_protocols_drilldown_csv_export_writes_audit_log_entry(): void {
@@ -444,16 +436,14 @@ class EntryTypeAnalysisReportTest extends TestCase {
             ->latest('id')
             ->first();
 
-        $this->assertNotNull($log);
-        $this->assertSame(EntryTypeDrilldownReportController::class, $log->auditable_type);
-        $this->assertSame($this->organization->id, $log->organization_id);
-        $this->assertSame($this->user->id, $log->user_id);
-        $this->assertSame('entry-type-drilldown-protocols', $log->changes['report_code'] ?? null);
-        $this->assertSame('csv', $log->changes['format'] ?? null);
-        $this->assertSame($this->entryType->id, $log->changes['filters']['entry_type_id'] ?? null);
-        $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
-        $this->assertSame('127.0.0.1', $log->ip);
-        $this->assertTrue(is_string($log->user_agent));
+        $this->assertExportAuditLog(
+            $log,
+            EntryTypeDrilldownReportController::class,
+            'entry-type-drilldown-protocols',
+            'csv',
+            'entry_type_id',
+            $this->entryType->id
+        );
     }
 
     public function test_open_issues_drilldown_pdf_export_writes_audit_log_entry(): void {
@@ -474,13 +464,31 @@ class EntryTypeAnalysisReportTest extends TestCase {
             ->latest('id')
             ->first();
 
+        $this->assertExportAuditLog(
+            $log,
+            EntryTypeDrilldownReportController::class,
+            'entry-type-drilldown-open-issues',
+            'pdf',
+            'entry_type_id',
+            $this->entryType->id
+        );
+    }
+
+    private function assertExportAuditLog(
+        ?AuditLog $log,
+        string $auditableType,
+        string $reportCode,
+        string $format,
+        string $filterKey,
+        int $filterValue
+    ): void {
         $this->assertNotNull($log);
-        $this->assertSame(EntryTypeDrilldownReportController::class, $log->auditable_type);
+        $this->assertSame($auditableType, $log->auditable_type);
         $this->assertSame($this->organization->id, $log->organization_id);
         $this->assertSame($this->user->id, $log->user_id);
-        $this->assertSame('entry-type-drilldown-open-issues', $log->changes['report_code'] ?? null);
-        $this->assertSame('pdf', $log->changes['format'] ?? null);
-        $this->assertSame($this->entryType->id, $log->changes['filters']['entry_type_id'] ?? null);
+        $this->assertSame($reportCode, $log->changes['report_code'] ?? null);
+        $this->assertSame($format, $log->changes['format'] ?? null);
+        $this->assertSame($filterValue, $log->changes['filters'][$filterKey] ?? null);
         $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
         $this->assertSame('127.0.0.1', $log->ip);
         $this->assertTrue(is_string($log->user_agent));
