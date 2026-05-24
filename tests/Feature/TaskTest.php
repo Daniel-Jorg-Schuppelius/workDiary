@@ -43,10 +43,10 @@ class TaskTest extends TestCase {
 
     public function test_user_can_create_task(): void {
         $this->postAsUser('projects.tasks.store', [
-                'title' => 'Neue Aufgabe',
-                'status' => TaskStatus::Open->value,
-                'priority' => TaskPriority::Medium->value,
-            ], $this->project)
+            'title' => 'Neue Aufgabe',
+            'status' => TaskStatus::Open->value,
+            'priority' => TaskPriority::Medium->value,
+        ], $this->project)
             ->assertRedirect();
 
         $this->assertDatabaseHas('tasks', [
@@ -68,11 +68,11 @@ class TaskTest extends TestCase {
         ]);
 
         $this->postAsUser('projects.tasks.store', [
-                'title' => 'Sub-Task',
-                'status' => TaskStatus::Open->value,
-                'priority' => TaskPriority::Low->value,
-                'parent_task_id' => $parent->id,
-            ], $this->project)
+            'title' => 'Sub-Task',
+            'status' => TaskStatus::Open->value,
+            'priority' => TaskPriority::Low->value,
+            'parent_task_id' => $parent->id,
+        ], $this->project)
             ->assertRedirect();
 
         $this->assertDatabaseHas('tasks', [
@@ -117,10 +117,10 @@ class TaskTest extends TestCase {
         ]);
 
         $this->putAsUser('projects.tasks.update', [
-                'title' => 'Neu',
-                'status' => TaskStatus::InProgress->value,
-                'priority' => TaskPriority::High->value,
-            ], [$this->project, $task])
+            'title' => 'Neu',
+            'status' => TaskStatus::InProgress->value,
+            'priority' => TaskPriority::High->value,
+        ], [$this->project, $task])
             ->assertRedirect();
 
         $this->assertDatabaseHas('tasks', [
