@@ -270,6 +270,36 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
             ->assertDontSee('domain-defect');
     }
 
+    public function test_index_can_filter_requirements_by_condition_state(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::DefectType->value,
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'only_if_json' => ['marker' => ['conditional-row']],
+            'note' => 'Mit Bedingung',
+        ]);
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::Result->value,
+            'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+            'only_if_json' => null,
+            'note' => 'Immer aktiv',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('admin.classification-requirements.index', [
+                'condition' => 'always',
+            ]))
+            ->assertOk()
+            ->assertSee('Immer aktiv')
+            ->assertSee('Bedingung: Immer')
+            ->assertDontSee('conditional-row');
+    }
+
     public function test_index_can_sort_requirements_by_domain(): void {
         $user = $this->userWithRole(UserRole::Teamleitung->value);
 

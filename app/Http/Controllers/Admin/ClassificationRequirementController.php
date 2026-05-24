@@ -36,6 +36,7 @@ class ClassificationRequirementController extends Controller {
         $organization = $this->currentOrganization();
         $query = trim(request()->string('q')->toString());
         $domainFilter = $this->normalizeDomainFilter(request()->string('domain')->toString());
+        $conditionFilter = $this->normalizeConditionFilter(request()->string('condition')->toString());
         $phaseFilter = $this->normalizePhaseFilter(request()->string('phase')->toString());
         $severityFilter = $this->normalizeSeverityFilter(request()->string('severity')->toString());
         $sortField = $this->normalizeSortField(request()->string('sort')->toString());
@@ -57,6 +58,14 @@ class ClassificationRequirementController extends Controller {
             $requirementsQuery->where('required_domain', $domainFilter);
         }
 
+        if ($conditionFilter === 'conditional') {
+            $requirementsQuery->whereNotNull('only_if_json');
+        }
+
+        if ($conditionFilter === 'always') {
+            $requirementsQuery->whereNull('only_if_json');
+        }
+
         if ($phaseFilter !== null) {
             $requirementsQuery->where('enforce_phase', $phaseFilter);
         }
@@ -71,6 +80,7 @@ class ClassificationRequirementController extends Controller {
         $phaseLabels = $this->phaseLabels();
         $severityLabels = $this->severityLabels();
         $domainLabels = $this->domainLabels();
+        $conditionOptions = $this->conditionOptions();
         $sortOptions = $this->sortOptions();
 
         return view('admin.classification-requirements.index', [
@@ -79,10 +89,12 @@ class ClassificationRequirementController extends Controller {
             'phaseLabels' => $phaseLabels,
             'severityLabels' => $severityLabels,
             'domainLabels' => $domainLabels,
+            'conditionOptions' => $conditionOptions,
             'sortOptions' => $sortOptions,
             'activeFilters' => [
                 'q' => $query,
                 'domain' => $domainFilter ?? 'all',
+                'condition' => $conditionFilter ?? 'all',
                 'phase' => $phaseFilter ?? 'all',
                 'severity' => $severityFilter ?? 'all',
                 'sort' => $sortField,
@@ -90,11 +102,12 @@ class ClassificationRequirementController extends Controller {
             'activeFilterChips' => array_values(array_filter([
                 $query !== '' ? __('Suche: :value', ['value' => $query]) : null,
                 $domainFilter !== null ? __('Domain: :value', ['value' => $domainLabels[$domainFilter] ?? $domainFilter]) : null,
+                $conditionFilter !== null ? __('Bedingung: :value', ['value' => $conditionOptions[$conditionFilter] ?? $conditionFilter]) : null,
                 $phaseFilter !== null ? __('Phase: :value', ['value' => $phaseLabels[$phaseFilter] ?? $phaseFilter]) : null,
                 $severityFilter !== null ? __('Schweregrad: :value', ['value' => $severityLabels[$severityFilter] ?? $severityFilter]) : null,
                 $sortField !== 'entry_type_code' ? __('Sortierung: :value', ['value' => $sortOptions[$sortField] ?? $sortField]) : null,
             ])),
-            'hasActiveFilters' => $query !== '' || $domainFilter !== null || $phaseFilter !== null || $severityFilter !== null || $sortField !== 'entry_type_code',
+            'hasActiveFilters' => $query !== '' || $domainFilter !== null || $conditionFilter !== null || $phaseFilter !== null || $severityFilter !== null || $sortField !== 'entry_type_code',
         ]);
     }
 
@@ -301,6 +314,10 @@ class ClassificationRequirementController extends Controller {
         }
 
         return null;
+    }
+
+    private function normalizeConditionFilter(string $value): ?string {
+        return array_key_exists($value, $this->conditionOptions()) ? $value : null;
     }
 
     private function normalizeSortField(string $value): string {
@@ -570,6 +587,16 @@ class ClassificationRequirementController extends Controller {
             'required_domain' => __('Pflicht-Domain'),
             'enforce_phase' => __('Phase'),
             'severity' => __('Schweregrad'),
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function conditionOptions(): array {
+        return [
+            'always' => __('Immer'),
+            'conditional' => __('Mit Bedingung'),
         ];
     }
 
