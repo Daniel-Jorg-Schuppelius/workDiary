@@ -16,13 +16,13 @@ use App\Enums\Protocol\ProtocolType;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, DiaryEntry, OpenIssue, Project, Protocol};
-use Illuminate\Http\Request;
+use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
 
 class CustomerDrilldownReportController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function openIssues(Request $request): View {
+    public function openIssues(Request $request): View|Response {
         $range = $this->globalDateRange();
         $from = $range['from']->startOfDay();
         $to = $range['to']->endOfDay();
@@ -59,7 +59,7 @@ class CustomerDrilldownReportController extends Controller {
             OpenIssueStatus::Reopened->value,
         ];
 
-        $issues = OpenIssue::query()
+        $issuesQuery = OpenIssue::query()
             ->with(['assignee:id,name'])
             ->whereIn('status', $openStatuses)
             ->when($escalatedOnly, fn ($q) => $q->where('status', OpenIssueStatus::Blocked->value))
@@ -83,9 +83,15 @@ class CustomerDrilldownReportController extends Controller {
                     });
                 }
             })
-            ->orderByDesc('updated_at')
-            ->paginate(50)
-            ->withQueryString();
+            ->orderByDesc('updated_at');
+
+        if ($request->query('export') === 'csv') {
+            $issues = $issuesQuery->clone()->get()->all();
+
+            return $this->exportOpenIssuesCsv($issues, $customerId, $from->toDateString(), $to->toDateString(), $escalatedOnly);
+        }
+
+        $issues = $issuesQuery->paginate(50)->withQueryString();
 
         /** @var view-string $openIssuesView */
         $openIssuesView = 'reports.drilldown.customer-open-issues';
@@ -101,7 +107,7 @@ class CustomerDrilldownReportController extends Controller {
         ]);
     }
 
-    public function protocols(Request $request): View {
+    public function protocols(Request $request): View|Response {
         $range = $this->globalDateRange();
         $from = $range['from']->startOfDay();
         $to = $range['to']->endOfDay();
@@ -123,15 +129,21 @@ class CustomerDrilldownReportController extends Controller {
             ->map(static fn ($v): int => (int) $v)
             ->all();
 
-        $protocols = Protocol::query()
+        $protocolsQuery = Protocol::query()
             ->with(['creator:id,name'])
             ->where('type', ProtocolType::Defect->value)
             ->where('subject_type', DiaryEntry::class)
             ->whereBetween('occurred_at', [$from, $to])
             ->when($entryIds !== [], fn ($q) => $q->whereIn('subject_id', $entryIds), fn ($q) => $q->whereRaw('1=0'))
-            ->orderByDesc('occurred_at')
-            ->paginate(50)
-            ->withQueryString();
+            ->orderByDesc('occurred_at');
+
+        if ($request->query('export') === 'csv') {
+            $protocols = $protocolsQuery->clone()->get()->all();
+
+            return $this->exportProtocolsCsv($protocols, $customerId, $from->toDateString(), $to->toDateString());
+        }
+
+        $protocols = $protocolsQuery->paginate(50)->withQueryString();
 
         /** @var view-string $protocolsView */
         $protocolsView = 'reports.drilldown.customer-protocols';
@@ -143,6 +155,92 @@ class CustomerDrilldownReportController extends Controller {
             'customerId' => $customerId,
             'projectId' => $projectId,
             'userId' => $userId,
+        ]);
+    }
+
+    /**
+      * @param  list<OpenIssue>  $issues
+     */
+    private function exportOpenIssuesCsv(
+          array $issues,
+        int $customerId,
+        string $from,
+        string $to,
+        bool $escalatedOnly,
+    ): Response {
+        $filename = sprintf(
+            'kunden-drilldown-open-issues-%d-%s-%s%s.csv',
+            $customerId,
+            $from,
+            $to,
+            $escalatedOnly ? '-escalated' : ''
+        );
+
+        $out = [];
+        $out[] = ['ID', 'Titel', 'Status', 'Severity', 'Faellig', 'Zugewiesen'];
+        foreach ($issues as $issue) {
+            /** @var OpenIssue $issue */
+            $out[] = [
+                $issue->id,
+                $issue->title,
+                $issue->status->label(),
+                $issue->severity->label(),
+                $issue->due_at?->format('Y-m-d') ?? '',
+                $issue->assignee ? $issue->assignee->name : '',
+            ];
+        }
+
+        return $this->csvResponse($out, $filename);
+    }
+
+    /**
+      * @param  list<Protocol>  $protocols
+     */
+    private function exportProtocolsCsv(
+          array $protocols,
+        int $customerId,
+        string $from,
+        string $to,
+    ): Response {
+        $filename = sprintf('kunden-drilldown-defektprotokolle-%d-%s-%s.csv', $customerId, $from, $to);
+
+        $out = [];
+        $out[] = ['ID', 'Titel', 'Status', 'Typ', 'Zeitpunkt', 'ErstelltVon', 'AuftragID'];
+        foreach ($protocols as $protocol) {
+            /** @var Protocol $protocol */
+            $out[] = [
+                $protocol->id,
+                $protocol->title,
+                $protocol->status->label(),
+                $protocol->type->label(),
+                $protocol->occurred_at->format('Y-m-d H:i'),
+                $protocol->creator ? $protocol->creator->name : '',
+                $protocol->subject_id,
+            ];
+        }
+
+        return $this->csvResponse($out, $filename);
+    }
+
+    /**
+     * @param  list<list<string|int|float>>  $rows
+     */
+    private function csvResponse(array $rows, string $filename): Response {
+        $csv = '';
+        foreach ($rows as $row) {
+            $csv .= implode(';', array_map(static function ($value): string {
+                $string = (string) $value;
+                if (str_contains($string, ';') || str_contains($string, '"') || str_contains($string, "\n")) {
+                    $string = '"' . str_replace('"', '""', $string) . '"';
+                }
+
+                return $string;
+            }, $row)) . "\r\n";
+        }
+
+        return response("\xEF\xBB\xBF" . $csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 }

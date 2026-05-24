@@ -13,6 +13,9 @@
             @endif
         </x-slot:subtitle>
         <x-slot:actions>
+            <x-icon-btn icon="download" tone="outline" size="sm"
+                        :href="route('reports.customers.drilldown.open-issues', array_filter(['customer_id' => $customerId, 'project_id' => $projectId, 'user_id' => $userId, 'escalated' => $escalatedOnly ? 1 : null, 'export' => 'csv']))"
+                        show-label>CSV</x-icon-btn>
             <x-icon-btn icon="arrow_back" tone="outline" size="sm"
                         :href="route('reports.customers', array_filter(['project_id' => $projectId, 'user_id' => $userId]))"
                         show-label>{{ __('Zur Kundenanalyse') }}</x-icon-btn>

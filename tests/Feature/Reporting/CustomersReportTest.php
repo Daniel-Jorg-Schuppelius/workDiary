@@ -278,4 +278,73 @@ class CustomersReportTest extends TestCase {
         $response->assertOk();
         $response->assertSeeText('Drilldown Defektprotokoll');
     }
+
+    public function test_open_issues_drilldown_can_be_exported_as_csv(): void {
+        OpenIssue::create([
+            'organization_id' => $this->organization->id,
+            'subject_type' => Customer::class,
+            'subject_id' => $this->customer->id,
+            'source_type' => OpenIssueSource::Manual->value,
+            'source_ref_id' => null,
+            'title' => 'CSV Offener Punkt',
+            'description' => null,
+            'category' => 'customer',
+            'severity' => OpenIssueSeverity::High->value,
+            'status' => OpenIssueStatus::Blocked->value,
+            'assignee_user_id' => $this->user->id,
+            'due_at' => now()->addDays(1),
+            'visibility' => OpenIssueVisibility::Internal->value,
+            'closed_at' => null,
+            'closed_by_user_id' => null,
+            'closed_reason' => null,
+            'created_by_user_id' => $this->user->id,
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.customers.drilldown.open-issues', [
+                'customer_id' => $this->customer->id,
+                'export' => 'csv',
+            ]));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
+        $response->assertHeader('content-disposition');
+
+        $content = (string) $response->getContent();
+        $this->assertStringContainsString('ID;Titel;Status;Severity', $content);
+        $this->assertStringContainsString('CSV Offener Punkt', $content);
+    }
+
+    public function test_protocols_drilldown_can_be_exported_as_csv(): void {
+        $entry = DiaryEntry::factory()->for($this->user)->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'project_id' => $this->project->id,
+            'created_at' => now()->subDays(2),
+        ]);
+
+        Protocol::factory()->for($entry, 'subject')->state([
+            'organization_id' => $this->organization->id,
+            'created_by_user_id' => $this->user->id,
+            'type' => ProtocolType::Defect->value,
+            'title' => 'CSV Defektprotokoll',
+            'occurred_at' => now()->subDays(2),
+        ])->create();
+
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.customers.drilldown.protocols', [
+                'customer_id' => $this->customer->id,
+                'export' => 'csv',
+            ]));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
+        $response->assertHeader('content-disposition');
+
+        $content = (string) $response->getContent();
+        $this->assertStringContainsString('ID;Titel;Status;Typ', $content);
+        $this->assertStringContainsString('CSV Defektprotokoll', $content);
+    }
 }
