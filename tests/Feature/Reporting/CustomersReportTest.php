@@ -298,6 +298,48 @@ class CustomersReportTest extends TestCase {
         $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
     }
 
+    public function test_report_pdf_export_writes_audit_log_entry(): void {
+        $entry = DiaryEntry::factory()->for($this->user)->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'project_id' => $this->project->id,
+            'created_at' => now()->subDays(2),
+        ]);
+
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'diary_entry_id' => $entry->id,
+            'user_id' => $this->user->id,
+            'date' => now()->subDays(2)->toDateString(),
+            'started_at' => now()->subDays(2)->setTime(10, 0)->toDateTimeString(),
+            'ended_at' => now()->subDays(2)->setTime(11, 30)->toDateTimeString(),
+            'kind' => TimeEntryKind::Work->value,
+            'billable' => true,
+        ]);
+
+        $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.customers', ['project_id' => $this->project->id, 'export' => 'pdf']))
+            ->assertOk();
+
+        $log = AuditLog::query()
+            ->where('event', 'report.exported')
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($log);
+        $this->assertSame(CustomerAnalysisReportController::class, $log->auditable_type);
+        $this->assertSame($this->organization->id, $log->organization_id);
+        $this->assertSame($this->user->id, $log->user_id);
+        $this->assertSame('127.0.0.1', $log->ip);
+        $this->assertTrue(is_string($log->user_agent));
+        $this->assertSame('customers-analysis', $log->changes['report_code'] ?? null);
+        $this->assertSame('pdf', $log->changes['format'] ?? null);
+        $this->assertSame($this->project->id, $log->changes['filters']['project_id'] ?? null);
+        $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
+    }
+
     public function test_open_issues_drilldown_route_renders_for_customer(): void {
         OpenIssue::create([
             'organization_id' => $this->organization->id,

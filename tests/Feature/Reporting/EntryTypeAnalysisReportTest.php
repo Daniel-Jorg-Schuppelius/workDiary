@@ -266,6 +266,49 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $this->assertTrue(is_string($log->user_agent));
     }
 
+    public function test_report_csv_export_writes_audit_log_entry(): void {
+        $entry = DiaryEntry::factory()->for($this->user)->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'entry_type_id' => $this->entryType->id,
+            'planned_minutes' => 60,
+            'created_at' => now()->subDays(2),
+        ]);
+
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'diary_entry_id' => $entry->id,
+            'user_id' => $this->user->id,
+            'date' => now()->subDays(2)->toDateString(),
+            'started_at' => now()->subDays(2)->setTime(10, 0)->toDateTimeString(),
+            'ended_at' => now()->subDays(2)->setTime(11, 0)->toDateTimeString(),
+            'kind' => TimeEntryKind::Work->value,
+            'billable' => true,
+        ]);
+
+        $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.entry-types', ['entry_type_id' => $this->entryType->id, 'export' => 'csv']))
+            ->assertOk();
+
+        $log = AuditLog::query()
+            ->where('event', 'report.exported')
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($log);
+        $this->assertSame(EntryTypeAnalysisReportController::class, $log->auditable_type);
+        $this->assertSame($this->organization->id, $log->organization_id);
+        $this->assertSame($this->user->id, $log->user_id);
+        $this->assertSame('entry-types-analysis', $log->changes['report_code'] ?? null);
+        $this->assertSame('csv', $log->changes['format'] ?? null);
+        $this->assertSame($this->entryType->id, $log->changes['filters']['entry_type_id'] ?? null);
+        $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
+        $this->assertSame('127.0.0.1', $log->ip);
+        $this->assertTrue(is_string($log->user_agent));
+    }
+
     public function test_open_issues_drilldown_route_renders_for_entry_type(): void {
         $entry = DiaryEntry::factory()->for($this->user)->create([
             'organization_id' => $this->organization->id,
