@@ -136,11 +136,12 @@ class CustomersReportTest extends TestCase {
             'project' => null,
             'user' => null,
         ]), false);
-        $response->assertSee(route('diary.index', [
-            'customer' => $this->customer->id,
-            'from' => now()->subDays(30)->toDateString(),
-            'to' => now()->toDateString(),
-            'status' => 3,
+        $response->assertSee(route('reports.customers.drilldown.protocols', [
+            'customer_id' => $this->customer->id,
+        ]), false);
+        $response->assertSee(route('reports.customers.drilldown.open-issues', [
+            'customer_id' => $this->customer->id,
+            'escalated' => 1,
         ]), false);
     }
 
@@ -218,5 +219,63 @@ class CustomersReportTest extends TestCase {
         $content = (string) $response->getContent();
         $this->assertStringContainsString('Kunde;Auftraege;GesamtMinuten', $content);
         $this->assertStringContainsString('Musterkunde GmbH', $content);
+    }
+
+    public function test_open_issues_drilldown_route_renders_for_customer(): void {
+        OpenIssue::create([
+            'organization_id' => $this->organization->id,
+            'subject_type' => Customer::class,
+            'subject_id' => $this->customer->id,
+            'source_type' => OpenIssueSource::Manual->value,
+            'source_ref_id' => null,
+            'title' => 'Drilldown Offener Punkt',
+            'description' => null,
+            'category' => 'customer',
+            'severity' => OpenIssueSeverity::High->value,
+            'status' => OpenIssueStatus::Blocked->value,
+            'assignee_user_id' => $this->user->id,
+            'due_at' => now()->addDays(2),
+            'visibility' => OpenIssueVisibility::Internal->value,
+            'closed_at' => null,
+            'closed_by_user_id' => null,
+            'closed_reason' => null,
+            'created_by_user_id' => $this->user->id,
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.customers.drilldown.open-issues', [
+                'customer_id' => $this->customer->id,
+                'escalated' => 1,
+            ]));
+
+        $response->assertOk();
+        $response->assertSeeText('Drilldown Offener Punkt');
+    }
+
+    public function test_protocols_drilldown_route_renders_for_customer(): void {
+        $entry = DiaryEntry::factory()->for($this->user)->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'project_id' => $this->project->id,
+            'created_at' => now()->subDays(2),
+        ]);
+
+        Protocol::factory()->for($entry, 'subject')->state([
+            'organization_id' => $this->organization->id,
+            'created_by_user_id' => $this->user->id,
+            'type' => ProtocolType::Defect->value,
+            'title' => 'Drilldown Defektprotokoll',
+            'occurred_at' => now()->subDays(2),
+        ])->create();
+
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.customers.drilldown.protocols', [
+                'customer_id' => $this->customer->id,
+            ]));
+
+        $response->assertOk();
+        $response->assertSeeText('Drilldown Defektprotokoll');
     }
 }

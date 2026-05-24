@@ -109,6 +109,11 @@
                             'project' => $projectId,
                             'user' => $userId,
                         ];
+                        $reportDrilldownBase = array_filter([
+                            'customer_id' => $row['customerId'],
+                            'project_id' => $projectId,
+                            'user_id' => $userId,
+                        ]);
                     @endphp
                     <tr>
                         <td class="font-medium">
@@ -126,13 +131,13 @@
                         <td class="text-right tabular-nums">{{ $row['nonBillableMinutes'] }}</td>
                         <td class="text-right tabular-nums">{{ number_format((float) $row['nonBillableShare'], 2, ',', '.') }}</td>
                         <td class="text-right tabular-nums">
-                            <a href="{{ route('diary.index', $drilldownBase) }}" class="link link-hover">{{ $row['reworkEntryCount'] }}</a>
+                            <a href="{{ route('reports.customers.drilldown.protocols', $reportDrilldownBase) }}" class="link link-hover">{{ $row['reworkEntryCount'] }}</a>
                         </td>
                         <td class="text-right tabular-nums">
-                            <a href="{{ route('diary.index', $drilldownBase) }}" class="link link-hover">{{ $row['openIssueCount'] }}</a>
+                            <a href="{{ route('reports.customers.drilldown.open-issues', $reportDrilldownBase) }}" class="link link-hover">{{ $row['openIssueCount'] }}</a>
                         </td>
                         <td class="text-right tabular-nums">
-                            <a href="{{ route('diary.index', array_merge($drilldownBase, ['status' => 3])) }}" class="link link-hover">{{ $row['escalationCount'] }}</a>
+                            <a href="{{ route('reports.customers.drilldown.open-issues', array_merge($reportDrilldownBase, ['escalated' => 1])) }}" class="link link-hover">{{ $row['escalationCount'] }}</a>
                         </td>
                         <td class="text-right tabular-nums">{{ $row['avgEntryMinutes'] }}</td>
                         <td class="text-right tabular-nums">{{ $row['trend30d'] }}</td>

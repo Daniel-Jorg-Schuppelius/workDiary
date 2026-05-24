@@ -402,6 +402,10 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/my-year', [MyYearReportController::class, 'index'])->name('reports.my-year');
         Route::get('reports/my-month', [MyMonthReportController::class, 'index'])->name('reports.my-month');
         Route::get('reports/customers', [CustomerAnalysisReportController::class, 'index'])->name('reports.customers');
+        Route::get('reports/customers/drilldown/open-issues', [\App\Http\Controllers\Reporting\CustomerDrilldownReportController::class, 'openIssues'])
+            ->name('reports.customers.drilldown.open-issues');
+        Route::get('reports/customers/drilldown/protocols', [\App\Http\Controllers\Reporting\CustomerDrilldownReportController::class, 'protocols'])
+            ->name('reports.customers.drilldown.protocols');
         Route::get('reports/entry-types', [EntryTypeAnalysisReportController::class, 'index'])->name('reports.entry-types');
         Route::get('reports/customer-project', [CustomerProjectReportController::class, 'index'])->name('reports.customer-project');
         Route::get('reports/week-by-user', [WeekByUserReportController::class, 'index'])->name('reports.week-by-user');
