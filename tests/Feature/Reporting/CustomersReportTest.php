@@ -136,6 +136,12 @@ class CustomersReportTest extends TestCase {
             'project' => null,
             'user' => null,
         ]), false);
+        $response->assertSee(route('diary.index', [
+            'customer' => $this->customer->id,
+            'from' => now()->subDays(30)->toDateString(),
+            'to' => now()->toDateString(),
+            'status' => 3,
+        ]), false);
     }
 
     public function test_diary_index_filters_by_customer_from_report_drilldown(): void {

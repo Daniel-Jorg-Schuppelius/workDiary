@@ -101,20 +101,39 @@
                     </tr>
                 </x-slot:head>
                 @foreach($rows as $row)
+                    @php
+                        $drilldownBase = [
+                            'customer' => $row['customerId'],
+                            'from' => $from->toDateString(),
+                            'to' => $to->toDateString(),
+                            'project' => $projectId,
+                            'user' => $userId,
+                        ];
+                    @endphp
                     <tr>
                         <td class="font-medium">
-                            <a href="{{ route('diary.index', ['customer' => $row['customerId'], 'from' => $from->toDateString(), 'to' => $to->toDateString(), 'project' => $projectId, 'user' => $userId]) }}" class="link link-hover">
+                            <a href="{{ route('diary.index', $drilldownBase) }}" class="link link-hover">
                                 {{ $row['customerName'] }}
                             </a>
                         </td>
-                        <td class="text-right tabular-nums">{{ $row['entryCount'] }}</td>
-                        <td class="text-right tabular-nums" title="{{ $fmt($row['totalMinutes']) }}">{{ $row['totalMinutes'] }}</td>
+                        <td class="text-right tabular-nums">
+                            <a href="{{ route('diary.index', $drilldownBase) }}" class="link link-hover">{{ $row['entryCount'] }}</a>
+                        </td>
+                        <td class="text-right tabular-nums" title="{{ $fmt($row['totalMinutes']) }}">
+                            <a href="{{ route('diary.index', $drilldownBase) }}" class="link link-hover">{{ $row['totalMinutes'] }}</a>
+                        </td>
                         <td class="text-right tabular-nums">{{ $row['billableMinutes'] }}</td>
                         <td class="text-right tabular-nums">{{ $row['nonBillableMinutes'] }}</td>
                         <td class="text-right tabular-nums">{{ number_format((float) $row['nonBillableShare'], 2, ',', '.') }}</td>
-                        <td class="text-right tabular-nums">{{ $row['reworkEntryCount'] }}</td>
-                        <td class="text-right tabular-nums">{{ $row['openIssueCount'] }}</td>
-                        <td class="text-right tabular-nums">{{ $row['escalationCount'] }}</td>
+                        <td class="text-right tabular-nums">
+                            <a href="{{ route('diary.index', $drilldownBase) }}" class="link link-hover">{{ $row['reworkEntryCount'] }}</a>
+                        </td>
+                        <td class="text-right tabular-nums">
+                            <a href="{{ route('diary.index', $drilldownBase) }}" class="link link-hover">{{ $row['openIssueCount'] }}</a>
+                        </td>
+                        <td class="text-right tabular-nums">
+                            <a href="{{ route('diary.index', array_merge($drilldownBase, ['status' => 3])) }}" class="link link-hover">{{ $row['escalationCount'] }}</a>
+                        </td>
                         <td class="text-right tabular-nums">{{ $row['avgEntryMinutes'] }}</td>
                         <td class="text-right tabular-nums">{{ $row['trend30d'] }}</td>
                     </tr>
