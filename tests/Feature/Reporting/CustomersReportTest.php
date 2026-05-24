@@ -530,4 +530,43 @@ class CustomersReportTest extends TestCase {
         $this->assertSame($this->customer->id, $log->changes['filters']['customer_id'] ?? null);
         $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
     }
+
+    public function test_protocols_drilldown_export_writes_audit_log_entry(): void {
+        $entry = DiaryEntry::factory()->for($this->user)->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'project_id' => $this->project->id,
+            'created_at' => now()->subDays(2),
+        ]);
+
+        Protocol::factory()->for($entry, 'subject')->state([
+            'organization_id' => $this->organization->id,
+            'created_by_user_id' => $this->user->id,
+            'type' => ProtocolType::Defect->value,
+            'title' => 'Audit Drilldown Protokoll',
+            'occurred_at' => now()->subDays(2),
+        ])->create();
+
+        $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.customers.drilldown.protocols', [
+                'customer_id' => $this->customer->id,
+                'export' => 'pdf',
+            ]))
+            ->assertOk();
+
+        $log = AuditLog::query()
+            ->where('event', 'report.exported')
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($log);
+        $this->assertSame(CustomerDrilldownReportController::class, $log->auditable_type);
+        $this->assertSame($this->organization->id, $log->organization_id);
+        $this->assertSame($this->user->id, $log->user_id);
+        $this->assertSame('customer-drilldown-protocols', $log->changes['report_code'] ?? null);
+        $this->assertSame('pdf', $log->changes['format'] ?? null);
+        $this->assertSame($this->customer->id, $log->changes['filters']['customer_id'] ?? null);
+        $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
+    }
 }

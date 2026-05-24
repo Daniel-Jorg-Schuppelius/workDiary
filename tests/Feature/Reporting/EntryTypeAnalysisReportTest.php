@@ -513,4 +513,56 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $this->assertSame($this->entryType->id, $log->changes['filters']['entry_type_id'] ?? null);
         $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
     }
+
+    public function test_open_issues_drilldown_export_writes_audit_log_entry(): void {
+        $entry = DiaryEntry::factory()->for($this->user)->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'entry_type_id' => $this->entryType->id,
+            'created_at' => now()->subDays(2),
+        ]);
+
+        OpenIssue::create([
+            'organization_id' => $this->organization->id,
+            'subject_type' => DiaryEntry::class,
+            'subject_id' => $entry->id,
+            'source_type' => OpenIssueSource::Manual->value,
+            'source_ref_id' => null,
+            'title' => 'Audit Drilldown Punkt',
+            'description' => null,
+            'category' => 'entry',
+            'severity' => OpenIssueSeverity::High->value,
+            'status' => OpenIssueStatus::Blocked->value,
+            'assignee_user_id' => $this->user->id,
+            'due_at' => now()->addDays(2),
+            'visibility' => OpenIssueVisibility::Internal->value,
+            'closed_at' => null,
+            'closed_by_user_id' => null,
+            'closed_reason' => null,
+            'created_by_user_id' => $this->user->id,
+        ]);
+
+        $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.entry-types.drilldown.open-issues', [
+                'entry_type_id' => $this->entryType->id,
+                'escalated' => 1,
+                'export' => 'csv',
+            ]))
+            ->assertOk();
+
+        $log = AuditLog::query()
+            ->where('event', 'report.exported')
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($log);
+        $this->assertSame(EntryTypeDrilldownReportController::class, $log->auditable_type);
+        $this->assertSame($this->organization->id, $log->organization_id);
+        $this->assertSame($this->user->id, $log->user_id);
+        $this->assertSame('entry-type-drilldown-open-issues', $log->changes['report_code'] ?? null);
+        $this->assertSame('csv', $log->changes['format'] ?? null);
+        $this->assertSame($this->entryType->id, $log->changes['filters']['entry_type_id'] ?? null);
+        $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
+    }
 }
