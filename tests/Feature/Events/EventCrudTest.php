@@ -14,6 +14,7 @@ use App\Enums\Event\{EventStatus, EventType, EventVisibility, ParticipantRole};
 use App\Models\{Event, EventCategory, Room, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -34,14 +35,13 @@ class EventCrudTest extends TestCase {
     }
 
     public function test_admin_can_create_event_with_room_and_participants(): void {
-        $this->actingAs($this->admin);
         $room = Room::factory()->create(['organization_id' => $this->organization->id]);
         $category = EventCategory::factory()->create(['organization_id' => $this->organization->id]);
 
         $start = now()->addDay()->setTime(10, 0);
         $end = (clone $start)->addHours(2);
 
-        $response = $this->post(route('events.store'), [
+        $response = $this->postAsAdmin('events.store', [
             'title' => 'Pflichtschulung Brandschutz',
             'event_type' => EventType::Training->value,
             'status' => EventStatus::Planned->value,
@@ -72,9 +72,7 @@ class EventCrudTest extends TestCase {
     }
 
     public function test_regular_user_cannot_create_event(): void {
-        $this->actingAs($this->user);
-
-        $this->post(route('events.store'), [
+        $this->postAsUser('events.store', [
             'title' => 'Verboten',
             'event_type' => EventType::Meeting->value,
             'status' => EventStatus::Planned->value,
@@ -87,28 +85,25 @@ class EventCrudTest extends TestCase {
     }
 
     public function test_index_renders_for_authenticated_user(): void {
-        $this->actingAs($this->user);
         Event::factory()->create([
             'organization_id' => $this->organization->id,
             'responsible_user_id' => $this->user->id,
         ]);
 
-        $this->get(route('events.index'))->assertOk();
+        $this->getAsUser('events.index')->assertOk();
     }
 
     public function test_calendar_renders(): void {
-        $this->actingAs($this->user);
-        $this->get(route('events.calendar'))->assertOk();
+        $this->getAsUser('events.calendar')->assertOk();
     }
 
     public function test_admin_can_cancel_event(): void {
-        $this->actingAs($this->admin);
         $event = Event::factory()->create([
             'organization_id' => $this->organization->id,
             'responsible_user_id' => $this->admin->id,
         ]);
 
-        $this->patch(route('events.cancel', $event), ['cancel_reason' => 'Krankheit'])
+        $this->patchAsAdmin('events.cancel', ['cancel_reason' => 'Krankheit'], $event)
             ->assertRedirect();
 
         $event->refresh();
@@ -117,13 +112,32 @@ class EventCrudTest extends TestCase {
     }
 
     public function test_admin_can_destroy_event(): void {
-        $this->actingAs($this->admin);
         $event = Event::factory()->create([
             'organization_id' => $this->organization->id,
             'responsible_user_id' => $this->admin->id,
         ]);
 
-        $this->delete(route('events.destroy', $event))->assertRedirect(route('events.index'));
+        $this->deleteAsAdmin('events.destroy', $event)->assertRedirect(route('events.index'));
         $this->assertSame(0, Event::query()->count());
+    }
+
+    private function getAsUser(string $routeName, mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->get(route($routeName, $parameters));
+    }
+
+    private function postAsUser(string $routeName, array $payload = [], mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->post(route($routeName, $parameters), $payload);
+    }
+
+    private function postAsAdmin(string $routeName, array $payload = [], mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->admin)->post(route($routeName, $parameters), $payload);
+    }
+
+    private function patchAsAdmin(string $routeName, array $payload = [], mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->admin)->patch(route($routeName, $parameters), $payload);
+    }
+
+    private function deleteAsAdmin(string $routeName, mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->admin)->delete(route($routeName, $parameters));
     }
 }
