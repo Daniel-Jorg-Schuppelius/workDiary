@@ -232,32 +232,8 @@ class EntryTypeAnalysisReportTest extends TestCase {
     }
 
     public function test_open_issues_drilldown_route_renders_for_entry_type(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'entry_type_id' => $this->entryType->id,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        OpenIssue::create([
-            'organization_id' => $this->organization->id,
-            'subject_type' => DiaryEntry::class,
-            'subject_id' => $entry->id,
-            'source_type' => OpenIssueSource::Manual->value,
-            'source_ref_id' => null,
-            'title' => 'EntryType Drilldown Issue',
-            'description' => null,
-            'category' => 'entry',
-            'severity' => OpenIssueSeverity::High->value,
-            'status' => OpenIssueStatus::Blocked->value,
-            'assignee_user_id' => $this->user->id,
-            'due_at' => now()->addDays(2),
-            'visibility' => OpenIssueVisibility::Internal->value,
-            'closed_at' => null,
-            'closed_by_user_id' => null,
-            'closed_reason' => null,
-            'created_by_user_id' => $this->user->id,
-        ]);
+        $entry = $this->createEntryTypeDiaryEntry(null);
+        $this->createEntryTypeOpenIssue($entry, 'EntryType Drilldown Issue');
 
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))

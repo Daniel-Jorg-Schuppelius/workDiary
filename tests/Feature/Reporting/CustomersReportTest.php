@@ -267,25 +267,7 @@ class CustomersReportTest extends TestCase {
     }
 
     public function test_open_issues_drilldown_route_renders_for_customer(): void {
-        OpenIssue::create([
-            'organization_id' => $this->organization->id,
-            'subject_type' => Customer::class,
-            'subject_id' => $this->customer->id,
-            'source_type' => OpenIssueSource::Manual->value,
-            'source_ref_id' => null,
-            'title' => 'Drilldown Offener Punkt',
-            'description' => null,
-            'category' => 'customer',
-            'severity' => OpenIssueSeverity::High->value,
-            'status' => OpenIssueStatus::Blocked->value,
-            'assignee_user_id' => $this->user->id,
-            'due_at' => now()->addDays(2),
-            'visibility' => OpenIssueVisibility::Internal->value,
-            'closed_at' => null,
-            'closed_by_user_id' => null,
-            'closed_reason' => null,
-            'created_by_user_id' => $this->user->id,
-        ]);
+        $this->createCustomerOpenIssue('Drilldown Offener Punkt');
 
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
