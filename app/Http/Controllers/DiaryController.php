@@ -128,6 +128,11 @@ class DiaryController extends Controller {
             $query->where('user_id', Auth::id());
         }
 
+        $customerId = $request->integer('customer');
+        if ($customerId > 0) {
+            $query->where('customer_id', $customerId);
+        }
+
         $showArchived = $request->boolean('archived');
         if (! $showArchived) {
             $query->where('is_archived', false);
@@ -166,7 +171,7 @@ class DiaryController extends Controller {
             });
         }
 
-        $filters = $request->only('status', 'mine', 'archived', 'tag', 'project', 'q', 'entry_type', 'mode', 'location');
+        $filters = $request->only('status', 'mine', 'archived', 'tag', 'project', 'q', 'entry_type', 'mode', 'location', 'customer');
         $filters['from'] = $from;
         $filters['to'] = $to;
 

@@ -129,6 +129,52 @@ class CustomersReportTest extends TestCase {
         $response->assertSee('120', false);
         $response->assertSee('60', false);
         $response->assertSee('1', false);
+        $response->assertSee(route('diary.index', [
+            'customer' => $this->customer->id,
+            'from' => now()->subDays(30)->toDateString(),
+            'to' => now()->toDateString(),
+            'project' => null,
+            'user' => null,
+        ]), false);
+    }
+
+    public function test_diary_index_filters_by_customer_from_report_drilldown(): void {
+        $otherCustomer = Customer::create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Zweitkunde AG',
+        ]);
+
+        DiaryEntry::factory()->for($this->user)->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'project_id' => $this->project->id,
+            'title' => 'Passender Auftrag',
+            'content' => 'Passender Auftrag mit relevanten Details',
+            'created_at' => now()->subDays(2),
+        ]);
+
+        DiaryEntry::factory()->for($this->user)->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $otherCustomer->id,
+            'project_id' => Project::create([
+                'organization_id' => $this->organization->id,
+                'customer_id' => $otherCustomer->id,
+                'name' => 'Fremdprojekt',
+                'status' => ProjectStatus::Active->value,
+                'created_by' => $this->user->id,
+            ])->id,
+            'title' => 'Fremder Auftrag',
+            'content' => 'Fremder Auftrag mit fremden Details',
+            'created_at' => now()->subDays(2),
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('diary.index', ['customer' => $this->customer->id]));
+
+        $response->assertOk();
+        $response->assertSeeText('Passender Auftrag mit relevanten Details');
+        $response->assertDontSeeText('Fremder Auftrag mit fremden Details');
     }
 
     public function test_requires_authentication(): void {

@@ -49,7 +49,7 @@ class CustomerAnalysisReportController extends Controller {
             'projectId' => $projectId,
             'userId' => $userId,
             'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'reportUsers' => User::query()->orderBy('name')->get(['id', 'name']),
             'topByMinutes' => $topByMinutes,
             'topByRework' => $topByRework,
             'topByNonBillable' => $topByNonBillable,

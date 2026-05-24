@@ -30,8 +30,8 @@
         <x-filter-field :label="__('Mitarbeiter')" for="rep-user">
             <select id="rep-user" name="user_id" class="select select-sm select-bordered">
                 <option value="">{{ __('Alle') }}</option>
-                @foreach($users as $user)
-                    <option value="{{ $user->id }}" @selected($userId === $user->id)>{{ $user->name }}</option>
+                @foreach($reportUsers as $reportUser)
+                    <option value="{{ $reportUser->id }}" @selected($userId === $reportUser->id)>{{ $reportUser->name }}</option>
                 @endforeach
             </select>
         </x-filter-field>
@@ -96,7 +96,11 @@
                 </x-slot:head>
                 @foreach($rows as $row)
                     <tr>
-                        <td class="font-medium">{{ $row['customerName'] }}</td>
+                        <td class="font-medium">
+                            <a href="{{ route('diary.index', ['customer' => $row['customerId'], 'from' => $from->toDateString(), 'to' => $to->toDateString(), 'project' => $projectId, 'user' => $userId]) }}" class="link link-hover">
+                                {{ $row['customerName'] }}
+                            </a>
+                        </td>
                         <td class="text-right tabular-nums">{{ $row['entryCount'] }}</td>
                         <td class="text-right tabular-nums" title="{{ $fmt($row['totalMinutes']) }}">{{ $row['totalMinutes'] }}</td>
                         <td class="text-right tabular-nums">{{ $row['billableMinutes'] }}</td>
