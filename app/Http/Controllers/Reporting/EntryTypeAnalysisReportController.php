@@ -18,13 +18,13 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, DiaryEntry, EntryType, OpenIssue, Protocol, TimeEntry, User};
 use Carbon\CarbonImmutable;
-use Illuminate\Http\Request;
+use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
 
 class EntryTypeAnalysisReportController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request): View {
+    public function index(Request $request): View|Response {
         $range = $this->globalDateRange();
         $from = $range['from']->startOfDay();
         $to = $range['to']->endOfDay();
@@ -36,13 +36,17 @@ class EntryTypeAnalysisReportController extends Controller {
 
         $rows = $this->buildRows($from, $to, $customerId, $userId, $entryTypeFilter, $statusFilter);
 
+        if ($request->query('export') === 'csv') {
+            return $this->exportCsv($rows, $from->toDateString(), $to->toDateString());
+        }
+
         return view('reports.entry-types', [
             'rows' => $rows,
             'label' => $range['label'],
             'from' => $from,
             'to' => $to,
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'reportUsers' => User::query()->orderBy('name')->get(['id', 'name']),
             'entryTypes' => EntryType::query()->ordered()->get(['id', 'label']),
             'customerId' => $customerId,
             'userId' => $userId,
@@ -210,6 +214,83 @@ class EntryTypeAnalysisReportController extends Controller {
         usort($rows, static fn (array $a, array $b): int => strnatcasecmp($a['entryTypeName'], $b['entryTypeName']));
 
         return $rows;
+    }
+
+    /**
+     * @param  list<array{
+     *   entryTypeId:int,
+     *   entryTypeName:string,
+     *   entryCount:int,
+     *   avgPlannedMinutes:float,
+     *   avgActualMinutes:float,
+     *   planActualRatio:float|null,
+     *   overrunCount:int,
+     *   overrunShare:float,
+     *   reworkCount:int,
+     *   reworkShare:float,
+     *   escalationCount:int,
+     *   escalationShare:float,
+     *   firstTimeRightShare:float,
+     *   medianActualMinutes:float,
+     *   p90ActualMinutes:float
+     * }>  $rows
+     */
+    private function exportCsv(array $rows, string $from, string $to): Response {
+        $filename = sprintf('auftragstypanalyse_%s_%s.csv', $from, $to);
+
+        $out = [];
+        $out[] = [
+            'Auftragstyp',
+            'Auftraege',
+            'DurchschnittPlanMinuten',
+            'DurchschnittIstMinuten',
+            'PlanIstVerhaeltnis',
+            'UeberzugAnzahl',
+            'UeberzugProzent',
+            'NacharbeitAnzahl',
+            'NacharbeitProzent',
+            'EscalationAnzahl',
+            'EscalationProzent',
+            'FirstTimeRightProzent',
+            'MedianIstMinuten',
+            'P90IstMinuten',
+        ];
+
+        foreach ($rows as $row) {
+            $out[] = [
+                $row['entryTypeName'],
+                $row['entryCount'],
+                number_format((float) $row['avgPlannedMinutes'], 2, '.', ''),
+                number_format((float) $row['avgActualMinutes'], 2, '.', ''),
+                $row['planActualRatio'] === null ? '' : number_format((float) $row['planActualRatio'], 3, '.', ''),
+                $row['overrunCount'],
+                number_format((float) $row['overrunShare'], 2, '.', ''),
+                $row['reworkCount'],
+                number_format((float) $row['reworkShare'], 2, '.', ''),
+                $row['escalationCount'],
+                number_format((float) $row['escalationShare'], 2, '.', ''),
+                number_format((float) $row['firstTimeRightShare'], 2, '.', ''),
+                number_format((float) $row['medianActualMinutes'], 2, '.', ''),
+                number_format((float) $row['p90ActualMinutes'], 2, '.', ''),
+            ];
+        }
+
+        $csv = '';
+        foreach ($out as $csvRow) {
+            $csv .= implode(';', array_map(static function ($value): string {
+                $string = (string) $value;
+                if (str_contains($string, ';') || str_contains($string, '"') || str_contains($string, "\n")) {
+                    $string = '"' . str_replace('"', '""', $string) . '"';
+                }
+
+                return $string;
+            }, $csvRow)) . "\r\n";
+        }
+
+        return response("\xEF\xBB\xBF" . $csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 
     /**

@@ -17,8 +17,8 @@
         <x-filter-field :label="__('Mitarbeiter')" for="rep-user">
             <select id="rep-user" name="user_id" class="select select-sm select-bordered">
                 <option value="">{{ __('Alle') }}</option>
-                @foreach($users as $user)
-                    <option value="{{ $user->id }}" @selected($userId === $user->id)>{{ $user->name }}</option>
+                @foreach($reportUsers as $reportUser)
+                    <option value="{{ $reportUser->id }}" @selected($userId === $reportUser->id)>{{ $reportUser->name }}</option>
                 @endforeach
             </select>
         </x-filter-field>
@@ -40,6 +40,12 @@
                 @endforeach
             </select>
         </x-filter-field>
+
+        <x-slot:extra>
+            <x-icon-btn icon="download" tone="outline" size="sm"
+                        :href="route('reports.entry-types', array_filter(['customer_id' => $customerId, 'user_id' => $userId, 'entry_type_id' => $entryTypeFilter, 'status' => $statusFilter, 'export' => 'csv']))"
+                        show-label>CSV</x-icon-btn>
+        </x-slot:extra>
     </x-filter-bar>
 
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
