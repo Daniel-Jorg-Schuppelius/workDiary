@@ -65,9 +65,7 @@ class CustomerProjectReportTest extends TestCase {
             'billable' => true,
         ]);
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeSession(now()->startOfYear()->toDateString(), now()->endOfYear()->toDateString()))
-            ->get(route('reports.customer-project'));
+        $response = $this->getWithDateRange('reports.customer-project');
         $response->assertOk();
         $response->assertSee('Acme GmbH');
         $response->assertSee('Website-Relaunch');
@@ -90,9 +88,7 @@ class CustomerProjectReportTest extends TestCase {
             'billable' => true,
         ]);
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeSession(now()->startOfYear()->toDateString(), now()->endOfYear()->toDateString()))
-            ->get(route('reports.customer-project', ['export' => 'csv']));
+        $response = $this->getWithDateRange('reports.customer-project', ['export' => 'csv']);
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $body = $response->getContent() ?: '';
@@ -113,12 +109,16 @@ class CustomerProjectReportTest extends TestCase {
             'billable' => true,
         ]);
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeSession(now()->startOfYear()->toDateString(), now()->endOfYear()->toDateString()))
-            ->get(route('reports.customer-project', ['export' => 'pdf']));
+        $response = $this->getWithDateRange('reports.customer-project', ['export' => 'pdf']);
         $response->assertOk();
         $response->assertHeader('Content-Type', 'application/pdf');
         $this->assertStringContainsString('kunden-projekte_', (string) $response->headers->get('Content-Disposition'));
         $this->assertStringStartsWith('%PDF', (string) $response->getContent());
+    }
+
+    private function getWithDateRange(string $routeName, array $parameters = []): \Illuminate\Testing\TestResponse {
+        return $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->startOfYear()->toDateString(), now()->endOfYear()->toDateString()))
+            ->get(route($routeName, $parameters));
     }
 }
