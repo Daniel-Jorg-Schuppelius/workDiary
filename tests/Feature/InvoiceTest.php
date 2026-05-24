@@ -14,6 +14,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Customer, Invoice, Project, TimeEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -50,7 +51,7 @@ class InvoiceTest extends TestCase {
     public function test_index_requires_billing_role(): void {
         $regular = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($regular)->get(route('invoices.index'))->assertForbidden();
-        $this->actingAs($this->admin)->get(route('invoices.index'))->assertOk();
+        $this->getAsAdmin('invoices.index')->assertOk();
     }
 
     public function test_create_invoice_from_time_entries(): void {
@@ -65,8 +66,7 @@ class InvoiceTest extends TestCase {
             'hourly_rate' => '90.00',
         ]);
 
-        $this->actingAs($this->admin)
-            ->post(route('invoices.store'), [
+        $this->postAsAdmin('invoices.store', [
                 'customer_id' => $this->customer->id,
                 'project_id' => $this->project->id,
             ])
@@ -90,12 +90,10 @@ class InvoiceTest extends TestCase {
             'created_by' => $this->admin->id,
         ]);
 
-        $this->actingAs($this->admin)
-            ->post(route('invoices.issue', $invoice))->assertRedirect();
+        $this->postAsAdmin('invoices.issue', [], $invoice)->assertRedirect();
         $this->assertSame(Invoice::STATUS_ISSUED, $invoice->fresh()?->status);
 
-        $this->actingAs($this->admin)
-            ->post(route('invoices.pay', $invoice))->assertRedirect();
+        $this->postAsAdmin('invoices.pay', [], $invoice)->assertRedirect();
         $this->assertSame(Invoice::STATUS_PAID, $invoice->fresh()?->status);
     }
 
@@ -117,8 +115,16 @@ class InvoiceTest extends TestCase {
             'position' => 1,
         ]);
 
-        $response = $this->actingAs($this->admin)->get(route('invoices.pdf', $invoice));
+        $response = $this->getAsAdmin('invoices.pdf', $invoice);
         $response->assertOk();
         $this->assertStringStartsWith('%PDF', (string) $response->getContent());
+    }
+
+    private function getAsAdmin(string $routeName, mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->admin)->get(route($routeName, $parameters));
+    }
+
+    private function postAsAdmin(string $routeName, array $payload = [], mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->admin)->post(route($routeName, $parameters), $payload);
     }
 }
