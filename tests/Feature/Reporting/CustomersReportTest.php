@@ -514,6 +514,8 @@ class CustomersReportTest extends TestCase {
         $this->assertTrue(is_string($log->user_agent));
         $this->assertSame($reportCode, $log->changes['report_code'] ?? null);
         $this->assertSame($format, $log->changes['format'] ?? null);
+        $this->assertIsArray($log->changes['filters'] ?? null);
+        $this->assertArrayHasKey($filterKey, $log->changes['filters'] ?? []);
         $this->assertSame($filterValue, $log->changes['filters'][$filterKey] ?? null);
         $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
     }

@@ -488,6 +488,8 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $this->assertSame($this->user->id, $log->user_id);
         $this->assertSame($reportCode, $log->changes['report_code'] ?? null);
         $this->assertSame($format, $log->changes['format'] ?? null);
+        $this->assertIsArray($log->changes['filters'] ?? null);
+        $this->assertArrayHasKey($filterKey, $log->changes['filters'] ?? []);
         $this->assertSame($filterValue, $log->changes['filters'][$filterKey] ?? null);
         $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
         $this->assertSame('127.0.0.1', $log->ip);
