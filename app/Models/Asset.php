@@ -95,17 +95,12 @@ class Asset extends Model {
 
     /** @return HasMany<DiaryEntry, $this> */
     public function diaryEntries(): HasMany {
-        return $this->hasMany(DiaryEntry::class);
+        return $this->hasMany(DiaryEntry::class)->latest('start_at')->latest('id');
     }
 
     /** @return HasMany<MaterialUsage, $this> */
     public function materialUsages(): HasMany {
         return $this->hasMany(MaterialUsage::class);
-    }
-
-    /** @return HasMany<DiaryEntry, $this> */
-    public function diaryEntries(): HasMany {
-        return $this->hasMany(DiaryEntry::class)->latest('start_at')->latest('id');
     }
 
     /** @return MorphMany<Protocol, $this> */
