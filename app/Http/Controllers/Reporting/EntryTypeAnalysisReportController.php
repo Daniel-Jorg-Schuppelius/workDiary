@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sat May 23 2026
  * Author       : Daniel Jörg Schuppelius
@@ -108,10 +107,10 @@ class EntryTypeAnalysisReportController extends Controller {
     ): array {
         $entries = DiaryEntry::query()
             ->whereBetween('created_at', [$from, $to])
-            ->when($customerId !== null, fn ($q) => $q->where('customer_id', $customerId))
-            ->when($userId !== null, fn ($q) => $q->where('user_id', $userId))
-            ->when($entryTypeFilter !== null, fn ($q) => $q->where('entry_type_id', $entryTypeFilter))
-            ->when($statusFilter !== null, fn ($q) => $q->where('status', $statusFilter))
+            ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
+            ->when($userId !== null, fn($q) => $q->where('user_id', $userId))
+            ->when($entryTypeFilter !== null, fn($q) => $q->where('entry_type_id', $entryTypeFilter))
+            ->when($statusFilter !== null, fn($q) => $q->where('status', $statusFilter))
             ->get(['id', 'entry_type_id', 'planned_minutes', 'service_minutes']);
 
         if ($entries->isEmpty()) {
@@ -119,14 +118,14 @@ class EntryTypeAnalysisReportController extends Controller {
         }
 
         /** @var list<int> $entryIds */
-        $entryIds = $entries->pluck('id')->map(static fn ($v): int => (int) $v)->values()->all();
+        $entryIds = $entries->pluck('id')->map(static fn($v): int => (int) $v)->values()->all();
 
         $actualByEntry = TimeEntry::query()
             ->whereIn('diary_entry_id', $entryIds)
             ->selectRaw('diary_entry_id, COALESCE(SUM(minutes), 0) as total_minutes')
             ->groupBy('diary_entry_id')
             ->pluck('total_minutes', 'diary_entry_id')
-            ->map(static fn ($v): int => (int) $v)
+            ->map(static fn($v): int => (int) $v)
             ->all();
 
         /** @var list<int> $reworkEntryIds */
@@ -137,7 +136,7 @@ class EntryTypeAnalysisReportController extends Controller {
             ->whereBetween('occurred_at', [$from, $to])
             ->distinct('subject_id')
             ->pluck('subject_id')
-            ->map(static fn ($v): int => (int) $v)
+            ->map(static fn($v): int => (int) $v)
             ->values()
             ->all();
 
@@ -148,7 +147,7 @@ class EntryTypeAnalysisReportController extends Controller {
             ->where('status', OpenIssueStatus::Blocked->value)
             ->distinct('subject_id')
             ->pluck('subject_id')
-            ->map(static fn ($v): int => (int) $v)
+            ->map(static fn($v): int => (int) $v)
             ->values()
             ->all();
 
@@ -165,7 +164,7 @@ class EntryTypeAnalysisReportController extends Controller {
             if (! isset($bucket[$typeId])) {
                 $bucket[$typeId] = [
                     'entryTypeId' => $typeId,
-                    'entryTypeName' => $typeId > 0 ? (string) ($entryTypeLabels[$typeId] ?? ('#'.$typeId)) : (string) __('Ohne Auftragstyp'),
+                    'entryTypeName' => $typeId > 0 ? (string) ($entryTypeLabels[$typeId] ?? ('#' . $typeId)) : (string) __('Ohne Auftragstyp'),
                     'entryCount' => 0,
                     'plannedSum' => 0,
                     'plannedKnownCount' => 0,
@@ -235,7 +234,7 @@ class EntryTypeAnalysisReportController extends Controller {
             ];
         }
 
-        usort($rows, static fn (array $a, array $b): int => strnatcasecmp($a['entryTypeName'], $b['entryTypeName']));
+        usort($rows, static fn(array $a, array $b): int => strnatcasecmp($a['entryTypeName'], $b['entryTypeName']));
 
         return $rows;
     }

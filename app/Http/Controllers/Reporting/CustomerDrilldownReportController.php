@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 24 2026
  * Author       : Daniel Jorg Schuppelius
@@ -40,18 +39,18 @@ class CustomerDrilldownReportController extends Controller {
 
         $projectIds = Project::query()
             ->where('customer_id', $customerId)
-            ->when($projectId !== null, fn ($q) => $q->where('id', $projectId))
+            ->when($projectId !== null, fn($q) => $q->where('id', $projectId))
             ->pluck('id')
-            ->map(static fn ($v): int => (int) $v)
+            ->map(static fn($v): int => (int) $v)
             ->all();
 
         $entryIds = DiaryEntry::query()
             ->where('customer_id', $customerId)
             ->whereBetween('created_at', [$from, $to])
-            ->when($projectId !== null, fn ($q) => $q->where('project_id', $projectId))
-            ->when($userId !== null, fn ($q) => $q->where('user_id', $userId))
+            ->when($projectId !== null, fn($q) => $q->where('project_id', $projectId))
+            ->when($userId !== null, fn($q) => $q->where('user_id', $userId))
             ->pluck('id')
-            ->map(static fn ($v): int => (int) $v)
+            ->map(static fn($v): int => (int) $v)
             ->all();
 
         $openStatuses = [
@@ -64,7 +63,7 @@ class CustomerDrilldownReportController extends Controller {
         $issuesQuery = OpenIssue::query()
             ->with(['assignee:id,name'])
             ->whereIn('status', $openStatuses)
-            ->when($escalatedOnly, fn ($q) => $q->where('status', OpenIssueStatus::Blocked->value))
+            ->when($escalatedOnly, fn($q) => $q->where('status', OpenIssueStatus::Blocked->value))
             ->where(function ($q) use ($customerId, $entryIds, $projectIds): void {
                 $q->where(function ($sub) use ($customerId): void {
                     $sub->where('subject_type', Customer::class)
@@ -159,10 +158,10 @@ class CustomerDrilldownReportController extends Controller {
         $entryIds = DiaryEntry::query()
             ->where('customer_id', $customerId)
             ->whereBetween('created_at', [$from, $to])
-            ->when($projectId !== null, fn ($q) => $q->where('project_id', $projectId))
-            ->when($userId !== null, fn ($q) => $q->where('user_id', $userId))
+            ->when($projectId !== null, fn($q) => $q->where('project_id', $projectId))
+            ->when($userId !== null, fn($q) => $q->where('user_id', $userId))
             ->pluck('id')
-            ->map(static fn ($v): int => (int) $v)
+            ->map(static fn($v): int => (int) $v)
             ->all();
 
         $protocolsQuery = Protocol::query()
@@ -170,7 +169,7 @@ class CustomerDrilldownReportController extends Controller {
             ->where('type', ProtocolType::Defect->value)
             ->where('subject_type', DiaryEntry::class)
             ->whereBetween('occurred_at', [$from, $to])
-            ->when($entryIds !== [], fn ($q) => $q->whereIn('subject_id', $entryIds), fn ($q) => $q->whereRaw('1=0'))
+            ->when($entryIds !== [], fn($q) => $q->whereIn('subject_id', $entryIds), fn($q) => $q->whereRaw('1=0'))
             ->orderByDesc('occurred_at');
 
         if ($request->query('export') === 'csv') {
@@ -225,11 +224,11 @@ class CustomerDrilldownReportController extends Controller {
         ]);
     }
 
-        /**
-            * @param  array<int, OpenIssue>  $issues
-         */
+    /**
+     * @param  array<int, OpenIssue>  $issues
+     */
     private function exportOpenIssuesCsv(
-          array $issues,
+        array $issues,
         int $customerId,
         string $from,
         string $to,
@@ -288,11 +287,11 @@ class CustomerDrilldownReportController extends Controller {
         ])->setPaper('a4')->download($filename);
     }
 
-        /**
-            * @param  array<int, Protocol>  $protocols
-         */
+    /**
+     * @param  array<int, Protocol>  $protocols
+     */
     private function exportProtocolsCsv(
-          array $protocols,
+        array $protocols,
         int $customerId,
         string $from,
         string $to,

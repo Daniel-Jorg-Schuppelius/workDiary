@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Fri May 22 2026
  * Author       : Daniel Jörg Schuppelius
@@ -60,7 +59,7 @@ class TenantTraitCoverageTest extends TestCase {
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {
-        $modelsDir = realpath(__DIR__.'/../../../app/Models');
+        $modelsDir = realpath(__DIR__ . '/../../../app/Models');
         $this->assertNotFalse($modelsDir, 'app/Models darf nicht fehlen');
 
         $offenders = [];
@@ -109,7 +108,7 @@ class TenantTraitCoverageTest extends TestCase {
             [],
             $offenders,
             'Folgende Modelle nutzen weder BelongsToOrganization noch sind sie in der Allow-List '
-                ."(siehe docs/security/tenant-audit-2026.md):\n - ".implode("\n - ", $offenders),
+                . "(siehe docs/security/tenant-audit-2026.md):\n - " . implode("\n - ", $offenders),
         );
     }
 
@@ -145,7 +144,7 @@ class TenantTraitCoverageTest extends TestCase {
         if ($withoutExt === null) {
             return null;
         }
-        $class = 'App\\Models\\'.str_replace(DIRECTORY_SEPARATOR, '\\', $withoutExt);
+        $class = 'App\\Models\\' . str_replace(DIRECTORY_SEPARATOR, '\\', $withoutExt);
 
         return $class;
     }

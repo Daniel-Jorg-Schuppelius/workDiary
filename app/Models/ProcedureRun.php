@@ -33,6 +33,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
  * @property \Illuminate\Support\Carbon|null $aborted_at
  * @property string|null $abort_reason
  * @property int $created_by_user_id
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, ProcedureStepRun> $stepRuns
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, ProcedureRunEvent> $events
  */
 class ProcedureRun extends Model {
     use Auditable;

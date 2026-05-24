@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sat May 23 2026
  * Author       : Daniel Jörg Schuppelius
@@ -24,7 +23,8 @@ use Illuminate\View\View;
 class ClassificationController extends Controller {
     public function __construct(
         private readonly ClassificationManager $manager,
-    ) {}
+    ) {
+    }
 
     public function index(): View {
         Gate::authorize('viewAny', Classification::class);
@@ -37,7 +37,7 @@ class ClassificationController extends Controller {
             ->orderBy('sort_order')
             ->orderBy('label')
             ->get()
-            ->groupBy(static fn (Classification $classification): string => $classification->domain->value);
+            ->groupBy(static fn(Classification $classification): string => $classification->domain->value);
 
         $orgByDomain = Classification::query()
             ->where('organization_id', $organization->id)
@@ -45,7 +45,7 @@ class ClassificationController extends Controller {
             ->orderBy('sort_order')
             ->orderBy('label')
             ->get()
-            ->groupBy(static fn (Classification $classification): string => $classification->domain->value);
+            ->groupBy(static fn(Classification $classification): string => $classification->domain->value);
 
         return view('admin.classifications.index', [
             'organization' => $organization,
@@ -87,7 +87,7 @@ class ClassificationController extends Controller {
 
         $validated = $request->validate([
             'source_classification_id' => ['nullable', 'integer', 'exists:classifications,id'],
-            'domain' => ['required_without:source_classification_id', 'string', Rule::in(array_map(static fn (ClassificationDomain $domain): string => $domain->value, ClassificationDomain::cases()))],
+            'domain' => ['required_without:source_classification_id', 'string', Rule::in(array_map(static fn(ClassificationDomain $domain): string => $domain->value, ClassificationDomain::cases()))],
             'code' => ['required_without:source_classification_id', 'string', 'max:60'],
             'label' => ['required', 'string', 'max:180'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:100000'],
@@ -156,7 +156,7 @@ class ClassificationController extends Controller {
         Gate::authorize('create', Classification::class);
 
         $request->validate([
-            'file' => ['required', 'file', 'mimetypes:text/csv,text/plain,application/csv,application/vnd.ms-excel', 'max:'.(int) setting('uploads.csv_import_kb', 10240)],
+            'file' => ['required', 'file', 'mimetypes:text/csv,text/plain,application/csv,application/vnd.ms-excel', 'max:' . (int) setting('uploads.csv_import_kb', 10240)],
         ]);
 
         $file = $request->file('file');
@@ -211,7 +211,7 @@ class ClassificationController extends Controller {
             ->where('domain', $domainEnum->value)
             ->whereIn('id', array_column($submitted, 'id'))
             ->pluck('id')
-            ->map(static fn ($id): int => (int) $id)
+            ->map(static fn($id): int => (int) $id)
             ->all();
 
         $knownIds = array_flip($orderedIds);
@@ -367,7 +367,7 @@ class ClassificationController extends Controller {
 
             $delimiter = $this->detectDelimiter($firstLine);
             $headers = array_map(
-                fn (string $header): string => $this->normalizeHeader($header),
+                fn(string $header): string => $this->normalizeHeader($header),
                 $this->parseCsvLine($firstLine, $delimiter),
             );
 
@@ -431,7 +431,7 @@ class ClassificationController extends Controller {
     private function parseCsvLine(string $line, string $delimiter): array {
         $parsed = str_getcsv(rtrim($line, "\r\n"), $delimiter);
 
-        return array_map(static fn ($value): string => is_string($value) ? $value : '', $parsed);
+        return array_map(static fn($value): string => is_string($value) ? $value : '', $parsed);
     }
 
     private function detectDelimiter(string $line): string {

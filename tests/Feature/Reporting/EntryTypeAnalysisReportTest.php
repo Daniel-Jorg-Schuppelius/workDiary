@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sat May 23 2026
  * Author       : Daniel Jörg Schuppelius
@@ -144,14 +143,14 @@ class EntryTypeAnalysisReportTest extends TestCase {
             'from' => now()->subDays(30)->toDateString(),
             'to' => now()->toDateString(),
             'entry_type' => $this->entryType->id,
-        ]), false);
+        ]));
         $response->assertSee(route('reports.entry-types.drilldown.protocols', [
             'entry_type_id' => $this->entryType->id,
         ]), false);
         $response->assertSee(route('reports.entry-types.drilldown.open-issues', [
             'entry_type_id' => $this->entryType->id,
             'escalated' => 1,
-        ]), false);
+        ]));
     }
 
     public function test_requires_authentication(): void {

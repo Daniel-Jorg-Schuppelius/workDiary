@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sat May 23 2026
  * Author       : Daniel Jörg Schuppelius
@@ -91,12 +90,12 @@ class CustomerAnalysisReportController extends Controller {
      * @return list<array{
      *   customerId:int,
      *   customerName:string,
-     *   entryCount:int<0, max>,
+     *   entryCount:int,
      *   totalMinutes:int,
      *   billableMinutes:int,
-     *   nonBillableMinutes:int<0, max>,
+     *   nonBillableMinutes:int,
      *   nonBillableShare:float,
-     *   reworkEntryCount:int<0, max>,
+     *   reworkEntryCount:int,
      *   openIssueCount:int,
      *   escalationCount:int,
      *   avgEntryMinutes:int,
@@ -206,12 +205,12 @@ class CustomerAnalysisReportController extends Controller {
      * @param  array<int, array{
      *   customerId:int,
      *   customerName:string,
-      *   entryCount:int,
+     *   entryCount:int,
      *   totalMinutes:int,
      *   billableMinutes:int,
-      *   nonBillableMinutes:int,
+     *   nonBillableMinutes:int,
      *   nonBillableShare:float,
-      *   reworkEntryCount:int,
+     *   reworkEntryCount:int,
      *   openIssueCount:int,
      *   escalationCount:int,
      *   avgEntryMinutes:int,

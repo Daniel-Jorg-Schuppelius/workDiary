@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $description
  * @property string|null $domain
  * @property bool $active
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, ProcedureTemplateVersion> $versions
  */
 class ProcedureTemplate extends Model {
     use Auditable;

@@ -47,7 +47,9 @@ class ProtocolItemPhotoServiceTest extends TestCase {
 
         $attachment = Attachment::query()->find($photo->attachment_id);
         $this->assertNotNull($attachment);
-        Storage::disk($attachment->disk)->assertExists($attachment->path);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk($attachment->disk);
+        $disk->assertExists($attachment->path);
 
         $this->assertDatabaseHas('protocol_events', [
             'protocol_id' => $item->protocol_id,

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Jun 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -22,7 +21,8 @@ class RequirementResult {
         public readonly int $minCount,
         public readonly ?int $maxCount,
         public readonly string $phase,
-    ) {}
+    ) {
+    }
 
     public function isBlocking(): bool {
         return $this->severity->isHard();

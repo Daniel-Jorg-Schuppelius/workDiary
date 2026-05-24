@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Jun 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -29,6 +28,7 @@ class ClassificationRequirementValidator {
             return [];
         }
 
+        /** @var \Illuminate\Database\Eloquent\Collection<int, ClassificationRequirement> $requirements */
         $requirements = ClassificationRequirement::query()
             ->where('organization_id', $entry->organization_id)
             ->where('entry_type_code', $entryTypeCode)

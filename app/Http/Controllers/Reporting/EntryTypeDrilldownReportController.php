@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 24 2026
  * Author       : Daniel Jorg Schuppelius
@@ -52,8 +51,8 @@ class EntryTypeDrilldownReportController extends Controller {
             ->with(['assignee:id,name'])
             ->whereIn('status', $openStatuses)
             ->where('subject_type', DiaryEntry::class)
-            ->when($escalatedOnly, fn ($q) => $q->where('status', OpenIssueStatus::Blocked->value))
-            ->when($entryIds !== [], fn ($q) => $q->whereIn('subject_id', $entryIds), fn ($q) => $q->whereRaw('1=0'))
+            ->when($escalatedOnly, fn($q) => $q->where('status', OpenIssueStatus::Blocked->value))
+            ->when($entryIds !== [], fn($q) => $q->whereIn('subject_id', $entryIds), fn($q) => $q->whereRaw('1=0'))
             ->orderByDesc('updated_at');
 
         if ($request->query('export') === 'csv') {
@@ -100,10 +99,7 @@ class EntryTypeDrilldownReportController extends Controller {
 
         $issues = $issuesQuery->paginate(50)->withQueryString();
 
-        /** @var view-string $view */
-        $view = 'reports.drilldown.entry-type-open-issues';
-
-        return view($view, [
+        return view('reports.drilldown.entry-type-open-issues', [
             'issues' => $issues,
             'entryType' => $entryType,
             'label' => $range['label'],
@@ -136,7 +132,7 @@ class EntryTypeDrilldownReportController extends Controller {
             ->where('type', ProtocolType::Defect->value)
             ->where('subject_type', DiaryEntry::class)
             ->whereBetween('occurred_at', [$from, $to])
-            ->when($entryIds !== [], fn ($q) => $q->whereIn('subject_id', $entryIds), fn ($q) => $q->whereRaw('1=0'))
+            ->when($entryIds !== [], fn($q) => $q->whereIn('subject_id', $entryIds), fn($q) => $q->whereRaw('1=0'))
             ->orderByDesc('occurred_at');
 
         if ($request->query('export') === 'csv') {
@@ -180,10 +176,7 @@ class EntryTypeDrilldownReportController extends Controller {
 
         $protocols = $protocolsQuery->paginate(50)->withQueryString();
 
-        /** @var view-string $view */
-        $view = 'reports.drilldown.entry-type-protocols';
-
-        return view($view, [
+        return view('reports.drilldown.entry-type-protocols', [
             'protocols' => $protocols,
             'entryType' => $entryType,
             'label' => $range['label'],
@@ -200,12 +193,12 @@ class EntryTypeDrilldownReportController extends Controller {
     private function entryIds(string $from, string $to, int $entryTypeId, ?int $customerId, ?int $userId, ?int $statusFilter): array {
         return DiaryEntry::query()
             ->whereBetween('created_at', [$from, $to])
-            ->when($entryTypeId > 0, fn ($q) => $q->where('entry_type_id', $entryTypeId))
-            ->when($customerId !== null, fn ($q) => $q->where('customer_id', $customerId))
-            ->when($userId !== null, fn ($q) => $q->where('user_id', $userId))
-            ->when($statusFilter !== null, fn ($q) => $q->where('status', $statusFilter))
+            ->when($entryTypeId > 0, fn($q) => $q->where('entry_type_id', $entryTypeId))
+            ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
+            ->when($userId !== null, fn($q) => $q->where('user_id', $userId))
+            ->when($statusFilter !== null, fn($q) => $q->where('status', $statusFilter))
             ->pluck('id')
-            ->map(static fn ($v): int => (int) $v)
+            ->map(static fn($v): int => (int) $v)
             ->values()
             ->all();
     }

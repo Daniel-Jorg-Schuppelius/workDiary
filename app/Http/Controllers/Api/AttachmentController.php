@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -51,7 +50,7 @@ class AttachmentController extends Controller {
         $class = self::TYPE_MAP[$type] ?? abort(404);
         $parent = $class::findOrFail($id);
 
-        $request->validate(['file' => ['required', 'file', 'max:'.(self::MAX_BYTES / 1024)]]);
+        $request->validate(['file' => ['required', 'file', 'max:' . (self::MAX_BYTES / 1024)]]);
         $file = $request->file('file');
         $ext = strtolower($file->getClientOriginalExtension() ?: $file->extension());
         if (! in_array($ext, self::ALLOWED_EXTENSIONS, true)) {
@@ -61,7 +60,7 @@ class AttachmentController extends Controller {
         if (! in_array($serverMime, self::ALLOWED_MIMES, true)) {
             return response()->json(['message' => __('Dateityp nicht erlaubt.')], 422);
         }
-        $path = $file->storeAs('attachments/'.now()->format('Y/m'), Str::uuid().'.'.$ext, 'local');
+        $path = $file->storeAs('attachments/' . now()->format('Y/m'), Str::uuid() . '.' . $ext, 'local');
         $att = $parent->attachments()->create([
             'user_id' => Auth::id(),
             'disk' => 'local',

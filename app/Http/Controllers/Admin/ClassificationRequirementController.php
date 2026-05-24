@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sat May 23 2026
  * Author       : Daniel Jörg Schuppelius
@@ -24,21 +23,22 @@ use Illuminate\View\View;
 class ClassificationRequirementController extends Controller {
     public function __construct(
         private readonly ClassificationResolver $resolver,
-    ) {}
+    ) {
+    }
 
-    public function index(): View {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', ClassificationRequirement::class);
 
         $organization = $this->currentOrganization();
-        $query = trim(request()->string('q')->toString());
-        $domainFilter = $this->normalizeDomainFilter(request()->string('domain')->toString());
-        $conditionFilter = $this->normalizeConditionFilter(request()->string('condition')->toString());
-        $allowMultiFilter = $this->normalizeAllowMultiFilter(request()->string('allow_multi')->toString());
-        $noteFilter = $this->normalizeNoteFilter(request()->string('note')->toString());
-        $maxCountFilter = $this->normalizeMaxCountFilter(request()->string('max_count')->toString());
-        $phaseFilter = $this->normalizePhaseFilter(request()->string('phase')->toString());
-        $severityFilter = $this->normalizeSeverityFilter(request()->string('severity')->toString());
-        $sortField = $this->normalizeSortField(request()->string('sort')->toString());
+        $query = trim($request->string('q')->toString());
+        $domainFilter = $this->normalizeDomainFilter($request->string('domain')->toString());
+        $conditionFilter = $this->normalizeConditionFilter($request->string('condition')->toString());
+        $allowMultiFilter = $this->normalizeAllowMultiFilter($request->string('allow_multi')->toString());
+        $noteFilter = $this->normalizeNoteFilter($request->string('note')->toString());
+        $maxCountFilter = $this->normalizeMaxCountFilter($request->string('max_count')->toString());
+        $phaseFilter = $this->normalizePhaseFilter($request->string('phase')->toString());
+        $severityFilter = $this->normalizeSeverityFilter($request->string('severity')->toString());
+        $sortField = $this->normalizeSortField($request->string('sort')->toString());
 
         $requirementsQuery = ClassificationRequirement::query()
             ->where('organization_id', $organization->id);
@@ -239,8 +239,8 @@ class ClassificationRequirementController extends Controller {
         $organization = $this->currentOrganization();
         $entryTypeCodes = array_keys($this->entryTypeOptions());
         $requiredDomains = array_keys($this->requiredDomainOptions());
-        $phases = array_map(static fn (ClassificationRequirementPhase $phase): string => $phase->value, ClassificationRequirementPhase::cases());
-        $severities = array_map(static fn (ClassificationRequirementSeverity $severity): string => $severity->value, ClassificationRequirementSeverity::cases());
+        $phases = array_map(static fn(ClassificationRequirementPhase $phase): string => $phase->value, ClassificationRequirementPhase::cases());
+        $severities = array_map(static fn(ClassificationRequirementSeverity $severity): string => $severity->value, ClassificationRequirementSeverity::cases());
 
         $validated = $request->validate([
             'entry_type_code' => [
@@ -269,7 +269,7 @@ class ClassificationRequirementController extends Controller {
         $onlyIfJson = $this->parseOnlyIfJson($validated['only_if_json'] ?? null);
         $maxCount = $validated['max_count'] ?? null;
         if ($maxCount !== null && (int) $maxCount < (int) $validated['min_count']) {
-            return back()->withInput()->withErrors(['max_count' => __('Maximalanzahl darf nicht kleiner als Minimalanzahl sein.')])->throwResponse();
+            back()->withInput()->withErrors(['max_count' => __('Maximalanzahl darf nicht kleiner als Minimalanzahl sein.')])->throwResponse();
         }
 
         return [

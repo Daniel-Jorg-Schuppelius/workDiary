@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue Jun 02 2026
  * Author       : Daniel Jörg Schuppelius
@@ -35,7 +34,7 @@ class DeviationRecorderTest extends TestCase {
     }
 
     public function test_record_sets_step_deviated_and_logs_event(): void {
-        [, $user, $stepRun, $run] = $this->makeRun();
+        ['user' => $user, 'stepRun' => $stepRun, 'run' => $run] = $this->makeRun();
 
         $deviation = $this->deviations->record($stepRun, $user, [
             'deviation_type' => ProcedureDeviationType::NotPossible->value,
@@ -53,7 +52,7 @@ class DeviationRecorderTest extends TestCase {
     }
 
     public function test_record_rejects_when_reason_text_is_too_short(): void {
-        [, $user, $stepRun] = $this->makeRun();
+        ['user' => $user, 'stepRun' => $stepRun] = $this->makeRun();
 
         try {
             $this->deviations->record($stepRun, $user, [
@@ -67,7 +66,7 @@ class DeviationRecorderTest extends TestCase {
     }
 
     public function test_open_issue_action_creates_linked_issue(): void {
-        [, $user, $stepRun, $run] = $this->makeRun();
+        ['user' => $user, 'stepRun' => $stepRun, 'run' => $run] = $this->makeRun();
 
         $deviation = $this->deviations->record($stepRun, $user, [
             'deviation_type' => ProcedureDeviationType::FailedCheck->value,
@@ -86,7 +85,7 @@ class DeviationRecorderTest extends TestCase {
     }
 
     public function test_critical_deviation_blocks_run_complete_without_risk_accept(): void {
-        [$org, $user, $stepRun, $run] = $this->makeRun();
+        ['user' => $user, 'stepRun' => $stepRun, 'run' => $run] = $this->makeRun();
 
         $this->deviations->record($stepRun, $user, [
             'deviation_type' => ProcedureDeviationType::SafetyBlock->value,
@@ -103,7 +102,7 @@ class DeviationRecorderTest extends TestCase {
     }
 
     public function test_accept_risk_unblocks_run_complete_and_logs_event(): void {
-        [, $user, $stepRun, $run] = $this->makeRun();
+        ['user' => $user, 'stepRun' => $stepRun, 'run' => $run] = $this->makeRun();
 
         $deviation = $this->deviations->record($stepRun, $user, [
             'deviation_type' => ProcedureDeviationType::SafetyBlock->value,
@@ -122,7 +121,7 @@ class DeviationRecorderTest extends TestCase {
     }
 
     public function test_default_severity_is_derived_from_deviation_type(): void {
-        [, $user, $stepRun] = $this->makeRun();
+        ['user' => $user, 'stepRun' => $stepRun] = $this->makeRun();
 
         $deviation = $this->deviations->record($stepRun, $user, [
             'deviation_type' => ProcedureDeviationType::AlternativeMethod->value,
@@ -133,7 +132,7 @@ class DeviationRecorderTest extends TestCase {
     }
 
     public function test_duplicate_recording_is_rejected(): void {
-        [, $user, $stepRun] = $this->makeRun();
+        ['user' => $user, 'stepRun' => $stepRun] = $this->makeRun();
 
         $this->deviations->record($stepRun, $user, [
             'deviation_type' => ProcedureDeviationType::Partial->value,
@@ -147,12 +146,12 @@ class DeviationRecorderTest extends TestCase {
         ]);
     }
 
-    /** @return array{0: Organization, 1: User, 2: ProcedureStepRun, 3: ProcedureRun} */
+    /** @return array{org: Organization, user: User, stepRun: ProcedureStepRun, run: ProcedureRun} */
     private function makeRun(): array {
         $user = User::factory()->geschaeftsfuehrung()->create();
         $org = $user->organization;
         $template = $this->templates->create($org, $user, [
-            'code' => 'DV-'.uniqid(),
+            'code' => 'DV-' . uniqid(),
             'name' => 'Abweichungs-Vorlage',
         ]);
         $version = $template->versions->first();
@@ -169,6 +168,6 @@ class DeviationRecorderTest extends TestCase {
         /** @var ProcedureStepRun $stepRun */
         $stepRun = $run->stepRuns->first();
 
-        return [$org, $user, $stepRun, $run];
+        return ['org' => $org, 'user' => $user, 'stepRun' => $stepRun, 'run' => $run];
     }
 }

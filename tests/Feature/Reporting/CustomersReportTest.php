@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sat May 23 2026
  * Author       : Daniel Jörg Schuppelius
@@ -136,14 +135,14 @@ class CustomersReportTest extends TestCase {
             'to' => now()->toDateString(),
             'project' => null,
             'user' => null,
-        ]), false);
+        ]));
         $response->assertSee(route('reports.customers.drilldown.protocols', [
             'customer_id' => $this->customer->id,
         ]), false);
         $response->assertSee(route('reports.customers.drilldown.open-issues', [
             'customer_id' => $this->customer->id,
             'escalated' => 1,
-        ]), false);
+        ]));
     }
 
     public function test_diary_index_filters_by_customer_from_report_drilldown(): void {
@@ -158,6 +157,8 @@ class CustomersReportTest extends TestCase {
             'project_id' => $this->project->id,
             'title' => 'Passender Auftrag',
             'content' => 'Passender Auftrag mit relevanten Details',
+            'start_at' => now()->subDays(2),
+            'end_at' => now()->subDays(2)->addHour(),
             'created_at' => now()->subDays(2),
         ]);
 
@@ -173,6 +174,8 @@ class CustomersReportTest extends TestCase {
             ])->id,
             'title' => 'Fremder Auftrag',
             'content' => 'Fremder Auftrag mit fremden Details',
+            'start_at' => now()->subDays(2),
+            'end_at' => now()->subDays(2)->addHour(),
             'created_at' => now()->subDays(2),
         ]);
 

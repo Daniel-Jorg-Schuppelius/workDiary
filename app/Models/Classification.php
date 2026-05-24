@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Jun 03 2026
  * Author       : Daniel Jörg Schuppelius

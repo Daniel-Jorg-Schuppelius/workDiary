@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue Jun 02 2026
  * Author       : Daniel Jörg Schuppelius
@@ -29,7 +28,8 @@ class DeviationRecorder {
 
     public function __construct(
         private readonly OpenIssueService $openIssues,
-    ) {}
+    ) {
+    }
 
     /**
      * @param  array<string, mixed>  $payload
@@ -129,7 +129,7 @@ class DeviationRecorder {
             ->whereNull('risk_accepted_at')
             ->pluck('id');
 
-        return array_values(array_map(static fn ($id): int => (int) $id, $rows->all()));
+        return array_values(array_map(static fn($id): int => (int) $id, $rows->all()));
     }
 
     /**

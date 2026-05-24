@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue Jun 02 2026
  * Author       : Daniel Jörg Schuppelius
@@ -147,7 +146,7 @@ class SecondPersonGateTest extends TestCase {
     public function test_freigabe_step_type_implies_second_person_requirement(): void {
         [$org, $user] = $this->makeOrgAndUser();
         $template = $this->templates->create($org, $user, [
-            'code' => 'FREI-'.uniqid(),
+            'code' => 'FREI-' . uniqid(),
             'name' => 'Freigabe-Vorlage',
         ]);
         $version = $template->versions->first();
@@ -174,7 +173,7 @@ class SecondPersonGateTest extends TestCase {
 
     private function makeTemplateWithSecondPersonStep(Organization $org, User $user): ProcedureTemplate {
         $template = $this->templates->create($org, $user, [
-            'code' => '4A-'.uniqid(),
+            'code' => '4A-' . uniqid(),
             'name' => 'Vier-Augen-Vorlage',
         ]);
         $version = $template->versions->first();

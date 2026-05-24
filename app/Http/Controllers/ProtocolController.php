@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 31 2026
  * Author       : Daniel Jörg Schuppelius
@@ -39,20 +38,21 @@ class ProtocolController extends Controller {
 
     public function __construct(
         private readonly ProtocolService $service,
-    ) {}
+    ) {
+    }
 
     public function store(Request $request): RedirectResponse {
         Gate::authorize('create', Protocol::class);
 
         $data = $request->validate([
-            'subject_kind' => ['required', 'string', 'in:'.implode(',', array_keys(self::SUBJECT_MAP))],
+            'subject_kind' => ['required', 'string', 'in:' . implode(',', array_keys(self::SUBJECT_MAP))],
             'subject_id' => ['required', 'integer', 'min:1'],
-            'type' => ['required', 'string', 'in:'.implode(',', array_column(ProtocolType::cases(), 'value'))],
+            'type' => ['required', 'string', 'in:' . implode(',', array_column(ProtocolType::cases(), 'value'))],
             'title' => ['required', 'string', 'max:180'],
             'description' => ['nullable', 'string', 'max:10000'],
             'state_initial' => ['nullable', 'string', 'max:10000'],
             'occurred_at' => ['nullable', 'date'],
-            'visibility' => ['nullable', 'string', 'in:'.implode(',', array_column(ProtocolVisibility::cases(), 'value'))],
+            'visibility' => ['nullable', 'string', 'in:' . implode(',', array_column(ProtocolVisibility::cases(), 'value'))],
             'template_id' => ['nullable', 'integer', 'min:1'],
             'template_version' => ['nullable', 'integer', 'min:1'],
         ]);
@@ -72,7 +72,7 @@ class ProtocolController extends Controller {
         return redirect()
             ->back()
             ->with('success', __('protocol.flash.created'))
-            ->withFragment('protocol-'.$protocol->id);
+            ->withFragment('protocol-' . $protocol->id);
     }
 
     public function update(Request $request, Protocol $protocol): RedirectResponse {
@@ -84,8 +84,8 @@ class ProtocolController extends Controller {
             'state_initial' => ['sometimes', 'nullable', 'string', 'max:10000'],
             'state_final' => ['sometimes', 'nullable', 'string', 'max:10000'],
             'occurred_at' => ['sometimes', 'nullable', 'date'],
-            'visibility' => ['sometimes', 'nullable', 'string', 'in:'.implode(',', array_column(ProtocolVisibility::cases(), 'value'))],
-            'type' => ['sometimes', 'nullable', 'string', 'in:'.implode(',', array_column(ProtocolType::cases(), 'value'))],
+            'visibility' => ['sometimes', 'nullable', 'string', 'in:' . implode(',', array_column(ProtocolVisibility::cases(), 'value'))],
+            'type' => ['sometimes', 'nullable', 'string', 'in:' . implode(',', array_column(ProtocolType::cases(), 'value'))],
         ]);
 
         /** @var User $actor */
@@ -129,7 +129,7 @@ class ProtocolController extends Controller {
                     $actor,
                     (string) $request->validate(['reason' => ['required', 'string', 'max:2000']])['reason'],
                 ),
-                default => throw new InvalidArgumentException('Unbekannte Aktion: '.$action),
+                default => throw new InvalidArgumentException('Unbekannte Aktion: ' . $action),
             };
         } catch (InvalidProtocolTransitionException $e) {
             return redirect()->back()->withErrors(['status' => $e->getMessage()]);
@@ -141,8 +141,8 @@ class ProtocolController extends Controller {
 
         return redirect()
             ->back()
-            ->with('success', __('protocol.flash.transition.'.$action))
-            ->withFragment('protocol-'.$protocol->id);
+            ->with('success', __('protocol.flash.transition.' . $action))
+            ->withFragment('protocol-' . $protocol->id);
     }
 
     public function addItem(Request $request, Protocol $protocol): RedirectResponse {
@@ -152,7 +152,7 @@ class ProtocolController extends Controller {
             'label' => ['required', 'string', 'max:180'],
             'description' => ['nullable', 'string', 'max:5000'],
             'required' => ['nullable', 'boolean'],
-            'item_type' => ['nullable', 'string', 'max:40', Rule::in(array_map(static fn ($c) => $c->value, ProtocolItemType::cases()))],
+            'item_type' => ['nullable', 'string', 'max:40', Rule::in(array_map(static fn($c) => $c->value, ProtocolItemType::cases()))],
             'parent_item_id' => ['nullable', 'integer', 'exists:protocol_items,id'],
         ]);
 
@@ -220,7 +220,7 @@ class ProtocolController extends Controller {
                 'required',
                 'file',
                 'image',
-                'max:'.(ProtocolItemPhotoService::MAX_BYTES / 1024),
+                'max:' . (ProtocolItemPhotoService::MAX_BYTES / 1024),
             ],
             'phase' => [
                 'required',
@@ -281,7 +281,7 @@ class ProtocolController extends Controller {
         }
 
         $data = $request->validate([
-            'role' => ['required', 'string', 'in:'.implode(',', array_column(ProtocolSignatureRole::cases(), 'value'))],
+            'role' => ['required', 'string', 'in:' . implode(',', array_column(ProtocolSignatureRole::cases(), 'value'))],
             'signer_name' => ['nullable', 'string', 'max:120'],
             'signer_email' => ['required', 'email', 'max:180'],
             'ttl_days' => ['nullable', 'integer', 'min:1', 'max:30'],
@@ -327,10 +327,10 @@ class ProtocolController extends Controller {
         }
 
         $data = $request->validate([
-            'signature.role' => ['required', 'string', 'in:'.implode(',', array_column(ProtocolSignatureRole::cases(), 'value'))],
+            'signature.role' => ['required', 'string', 'in:' . implode(',', array_column(ProtocolSignatureRole::cases(), 'value'))],
             'signature.signer_name' => ['required', 'string', 'max:120'],
             'signature.signer_email' => ['nullable', 'email', 'max:180'],
-            'signature.method' => ['required', 'string', 'in:'.implode(',', array_column(ProtocolSignatureMethod::cases(), 'value'))],
+            'signature.method' => ['required', 'string', 'in:' . implode(',', array_column(ProtocolSignatureMethod::cases(), 'value'))],
             'signature.signature_image_path' => ['nullable', 'string', 'max:255'],
         ]);
 

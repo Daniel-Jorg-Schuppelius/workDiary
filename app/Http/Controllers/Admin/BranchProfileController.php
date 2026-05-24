@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sat May 23 2026
  * Author       : Daniel Jörg Schuppelius
@@ -16,13 +15,14 @@ use App\Models\{AuditLog, Organization, User};
 use App\Services\Classification\BranchProfileInstaller;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\{Arr, Collection};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class BranchProfileController extends Controller {
     public function __construct(
         private readonly BranchProfileInstaller $installer,
-    ) {}
+    ) {
+    }
 
     public function index(Request $request): View {
         $this->authorizeViewCatalog();
@@ -102,11 +102,11 @@ class BranchProfileController extends Controller {
     }
 
     private function authorizeViewCatalog(): void {
-        abort_unless(Auth::user()?->can('branchProfile.viewCatalog') ?? false, 403);
+        abort_unless(Gate::allows('branchProfile.viewCatalog'), 403);
     }
 
     private function authorizeInstall(): void {
-        abort_unless(Auth::user()?->can('branchProfile.install') ?? false, 403);
+        abort_unless(Gate::allows('branchProfile.install'), 403);
     }
 
     private function normalizeInstalledFilter(string $value): string {

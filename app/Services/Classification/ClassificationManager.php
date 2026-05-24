@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Jun 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -54,7 +53,8 @@ class ClassificationManager {
 
     public function __construct(
         private readonly ClassificationResolver $resolver,
-    ) {}
+    ) {
+    }
 
     /**
      * Registriert eine FK-Referenz für den Löschschutz.

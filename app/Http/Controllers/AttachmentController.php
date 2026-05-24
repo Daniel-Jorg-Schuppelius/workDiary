@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -21,7 +20,8 @@ use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AttachmentController extends Controller {
-    public function __construct(private readonly ImageMetaUploader $imageUploader) {}
+    public function __construct(private readonly ImageMetaUploader $imageUploader) {
+    }
 
     private const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 
@@ -83,7 +83,7 @@ class AttachmentController extends Controller {
         }
 
         $request->validate([
-            'file' => ['required', 'file', 'max:'.(self::MAX_BYTES / 1024)],
+            'file' => ['required', 'file', 'max:' . (self::MAX_BYTES / 1024)],
         ]);
 
         $file = $request->file('file');
@@ -98,8 +98,8 @@ class AttachmentController extends Controller {
             return back()->withErrors(['file' => __('Dateityp nicht erlaubt.')]);
         }
 
-        $folder = 'attachments/'.now()->format('Y/m');
-        $filename = Str::uuid()->toString().'.'.$ext;
+        $folder = 'attachments/' . now()->format('Y/m');
+        $filename = Str::uuid()->toString() . '.' . $ext;
         $path = $file->storeAs($folder, $filename, 'local');
 
         /** @var DiaryEntry|Comment|OnCallShift|EmergencyAssignment|Task|Customer|Organization|User|Asset $parent */

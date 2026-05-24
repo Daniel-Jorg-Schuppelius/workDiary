@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sat May 23 2026
  * Author       : Daniel Jörg Schuppelius
@@ -23,6 +22,6 @@ enum OpenIssueSource: string implements HasLabel {
     case ProcedureDeviation = 'procedureDeviation';
 
     public function label(): string {
-        return (string) __('enums.open-issue.source.'.$this->value);
+        return (string) __('enums.open-issue.source.' . $this->value);
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Tue Jun 02 2026
  * Author       : Daniel Jörg Schuppelius
@@ -150,7 +149,7 @@ class BackupProofServiceTest extends TestCase {
         [$org, $user] = $this->makeOrgAndUser();
         // Backup step + follow-up Confirm step that requires prior backup
         $template = $this->templates->create($org, $user, [
-            'code' => 'BK-PRIOR-'.uniqid(),
+            'code' => 'BK-PRIOR-' . uniqid(),
             'name' => 'Backup + Maint',
         ]);
         $version = $template->versions->first();
@@ -214,7 +213,7 @@ class BackupProofServiceTest extends TestCase {
     /** @param  array<string, mixed>  $stepConfig */
     private function makeBackupTemplate(Organization $org, User $user, array $stepConfig = []): ProcedureTemplate {
         $template = $this->templates->create($org, $user, [
-            'code' => 'BK-'.uniqid(),
+            'code' => 'BK-' . uniqid(),
             'name' => 'Backup-Vorlage',
         ]);
         $version = $template->versions->first();

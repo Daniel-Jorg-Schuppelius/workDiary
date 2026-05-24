@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Jun 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -81,10 +80,10 @@ class ClassificationResolver {
         $orgRows = $organizationId === null
             ? collect()
             : Classification::query()
-                ->where('organization_id', $organizationId)
-                ->where('domain', $domain->value)
-                ->where('active', true)
-                ->get(['id', 'code']);
+            ->where('organization_id', $organizationId)
+            ->where('domain', $domain->value)
+            ->where('active', true)
+            ->get(['id', 'code']);
 
         $platformRows = Classification::query()
             ->whereNull('organization_id')
@@ -94,8 +93,8 @@ class ClassificationResolver {
 
         $overrideCodes = $orgRows->pluck('code')->all();
         $effective = $orgRows
-            ->concat($platformRows->reject(fn ($row) => in_array($row->code, $overrideCodes, true)));
+            ->concat($platformRows->reject(fn($row) => in_array($row->code, $overrideCodes, true)));
 
-        return array_values(array_map(static fn ($row): int => (int) $row->id, $effective->all()));
+        return array_values(array_map(static fn($row): int => (int) $row->id, $effective->all()));
     }
 }

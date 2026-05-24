@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Sun May 25 2026
  * Author       : Daniel Jörg Schuppelius
@@ -13,10 +12,8 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 
-final class PwaAssetsTest extends TestCase
-{
-    public function test_manifest_is_published_and_valid_json(): void
-    {
+final class PwaAssetsTest extends TestCase {
+    public function test_manifest_is_published_and_valid_json(): void {
         $path = public_path('manifest.webmanifest');
         $this->assertFileExists($path);
 
@@ -28,8 +25,7 @@ final class PwaAssetsTest extends TestCase
         $this->assertNotEmpty($json['icons'] ?? []);
     }
 
-    public function test_service_worker_keeps_push_handlers(): void
-    {
+    public function test_service_worker_keeps_push_handlers(): void {
         $path = public_path('sw.js');
         $this->assertFileExists($path);
 
@@ -42,8 +38,7 @@ final class PwaAssetsTest extends TestCase
         $this->assertStringNotContainsString("addEventListener(\"fetch\"", $code);
     }
 
-    public function test_offline_fallback_page_exists(): void
-    {
+    public function test_offline_fallback_page_exists(): void {
         $path = public_path('offline.html');
         $this->assertFileExists($path);
         $html = (string) file_get_contents($path);

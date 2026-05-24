@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Wed Jun 03 2026
  * Author       : Daniel Jörg Schuppelius
@@ -54,7 +53,7 @@ class ClassificationResolverTest extends TestCase {
         $rows = $this->resolver->list($this->org->id, ClassificationDomain::Priority);
 
         $this->assertCount($platformCount, $rows);
-        $this->assertTrue($rows->every(fn (Classification $c): bool => $c->isPlatformDefault()));
+        $this->assertTrue($rows->every(fn(Classification $c): bool => $c->isPlatformDefault()));
     }
 
     public function test_org_override_replaces_platform_default_with_same_code(): void {

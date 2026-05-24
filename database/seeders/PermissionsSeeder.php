@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Created on   : Thu May 21 2026
  * Author       : Daniel Jörg Schuppelius
@@ -91,7 +90,7 @@ class PermissionsSeeder extends Seeder {
             ]);
 
             $role->syncPermissions(
-                array_map(static fn (PermissionEnum $p): string => $p->value, $permissions)
+                array_map(static fn(PermissionEnum $p): string => $p->value, $permissions)
             );
         }
     }
