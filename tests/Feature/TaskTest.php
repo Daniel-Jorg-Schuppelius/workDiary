@@ -14,6 +14,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Models\{Project, Task, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -41,12 +42,11 @@ class TaskTest extends TestCase {
     }
 
     public function test_user_can_create_task(): void {
-        $this->actingAs($this->user)
-            ->post(route('projects.tasks.store', $this->project), [
+        $this->postAsUser('projects.tasks.store', [
                 'title' => 'Neue Aufgabe',
                 'status' => TaskStatus::Open->value,
                 'priority' => TaskPriority::Medium->value,
-            ])
+            ], $this->project)
             ->assertRedirect();
 
         $this->assertDatabaseHas('tasks', [
@@ -67,13 +67,12 @@ class TaskTest extends TestCase {
             'position' => 0,
         ]);
 
-        $this->actingAs($this->user)
-            ->post(route('projects.tasks.store', $this->project), [
+        $this->postAsUser('projects.tasks.store', [
                 'title' => 'Sub-Task',
                 'status' => TaskStatus::Open->value,
                 'priority' => TaskPriority::Low->value,
                 'parent_task_id' => $parent->id,
-            ])
+            ], $this->project)
             ->assertRedirect();
 
         $this->assertDatabaseHas('tasks', [
@@ -94,15 +93,13 @@ class TaskTest extends TestCase {
         ]);
 
         // Toggle → done
-        $this->actingAs($this->user)
-            ->patch(route('projects.tasks.complete', [$this->project, $task]))
+        $this->patchAsUser('projects.tasks.complete', [], [$this->project, $task])
             ->assertRedirect();
 
         $this->assertDatabaseHas('tasks', ['id' => $task->id, 'status' => TaskStatus::Done->value]);
 
         // Toggle zurück → open
-        $this->actingAs($this->user)
-            ->patch(route('projects.tasks.complete', [$this->project, $task]))
+        $this->patchAsUser('projects.tasks.complete', [], [$this->project, $task])
             ->assertRedirect();
 
         $this->assertDatabaseHas('tasks', ['id' => $task->id, 'status' => TaskStatus::Open->value]);
@@ -119,12 +116,11 @@ class TaskTest extends TestCase {
             'position' => 0,
         ]);
 
-        $this->actingAs($this->user)
-            ->put(route('projects.tasks.update', [$this->project, $task]), [
+        $this->putAsUser('projects.tasks.update', [
                 'title' => 'Neu',
                 'status' => TaskStatus::InProgress->value,
                 'priority' => TaskPriority::High->value,
-            ])
+            ], [$this->project, $task])
             ->assertRedirect();
 
         $this->assertDatabaseHas('tasks', [
@@ -183,10 +179,25 @@ class TaskTest extends TestCase {
             'position' => 0,
         ]);
 
-        $this->actingAs($this->user)
-            ->delete(route('projects.tasks.destroy', [$this->project, $task]))
+        $this->deleteAsUser('projects.tasks.destroy', [$this->project, $task])
             ->assertRedirect();
 
         $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
+    }
+
+    private function postAsUser(string $routeName, array $payload = [], mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->post(route($routeName, $parameters), $payload);
+    }
+
+    private function putAsUser(string $routeName, array $payload = [], mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->put(route($routeName, $parameters), $payload);
+    }
+
+    private function patchAsUser(string $routeName, array $payload = [], mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->patch(route($routeName, $parameters), $payload);
+    }
+
+    private function deleteAsUser(string $routeName, mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->delete(route($routeName, $parameters));
     }
 }
