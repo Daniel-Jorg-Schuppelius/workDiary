@@ -16,6 +16,7 @@ use App\Plugins\Lexoffice\LexofficePlugin;
 use Illuminate\Database\Eloquent\Relations\{MorphMany, MorphToMany};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Testing\TestResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -46,7 +47,7 @@ class CustomerControllerTest extends TestCase {
             'created_by' => $this->user->id,
         ]);
 
-        $response = $this->actingAs($this->user)->get(route('customers.index'));
+        $response = $this->getAsUser('customers.index');
 
         $response->assertOk();
         $response->assertViewHas('customers');
@@ -67,7 +68,7 @@ class CustomerControllerTest extends TestCase {
             'name' => 'Foobar AG',
         ]);
 
-        $response = $this->actingAs($this->user)->get(route('customers.index', ['q' => 'acme']));
+        $response = $this->getAsUser('customers.index', ['q' => 'acme']);
         $response->assertOk();
         $this->assertSame(1, $response->viewData('customers')->total());
     }
@@ -196,7 +197,7 @@ class CustomerControllerTest extends TestCase {
             'created_by' => $this->user->id,
         ]);
 
-        $response = $this->actingAs($this->user)->get(route('customers.export'));
+        $response = $this->getAsUser('customers.export');
 
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
@@ -285,5 +286,9 @@ class CustomerControllerTest extends TestCase {
         $response->sendContent();
 
         return (string) ob_get_clean();
+    }
+
+    private function getAsUser(string $routeName, array $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->get(route($routeName, $parameters));
     }
 }
