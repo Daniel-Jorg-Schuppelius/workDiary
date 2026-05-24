@@ -31,15 +31,24 @@ let flatItems = [];
 let debounceTimer = null;
 let lastQuery = "";
 
-const setStatus = (root, text) => {
+const setStatus = (root, text, { loading = false } = {}) => {
     const el = root.querySelector("[data-global-search-status]");
     if (!el) return;
     if (!text) {
         el.classList.add("hidden");
-        el.textContent = "";
+        el.innerHTML = "";
         return;
     }
-    el.textContent = text;
+    if (loading) {
+        el.innerHTML = `
+            <span class="inline-flex items-center gap-2">
+                <span class="loading loading-spinner loading-xs text-primary" aria-hidden="true"></span>
+                <span>${escapeHtml(text)}</span>
+            </span>
+        `;
+    } else {
+        el.textContent = text;
+    }
     el.classList.remove("hidden");
 };
 
@@ -112,7 +121,7 @@ const updateActive = (root) => {
 };
 
 const fetchResults = async (root, term) => {
-    setStatus(root, __("Suche …"));
+    setStatus(root, __("Suche …"), { loading: true });
     try {
         const res = await fetch(`${searchUrl()}?q=${encodeURIComponent(term)}`, {
             method: "GET",
