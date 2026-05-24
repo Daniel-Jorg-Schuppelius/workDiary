@@ -17,6 +17,7 @@ use App\Services\Travel\{MileageRateResolver, TravelLogService};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Config, Session};
+use Illuminate\Testing\TestResponse;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -33,17 +34,14 @@ class TravelLogTest extends TestCase {
     }
 
     public function test_index_renders(): void {
-        $this->actingAs($this->user);
-        $this->get(route('travel-logs.index'))->assertOk()->assertSee(__('Fahrtenbuch'));
+        $this->getAsUser('travel-logs.index')->assertOk()->assertSee(__('Fahrtenbuch'));
     }
 
     public function test_store_creates_travel_log_and_paired_time_entry(): void {
-        $this->actingAs($this->user);
-
         $start = CarbonImmutable::today()->setTime(8, 0);
         $end = $start->addHour();
 
-        $this->post(route('travel-logs.store'), [
+        $this->postAsUser('travel-logs.store', [
             'date' => $start->toDateString(),
             'started_at' => $start->format('Y-m-d\TH:i'),
             'ended_at' => $end->format('Y-m-d\TH:i'),
@@ -70,9 +68,7 @@ class TravelLogTest extends TestCase {
     }
 
     public function test_store_without_timestamps_does_not_create_time_entry(): void {
-        $this->actingAs($this->user);
-
-        $this->post(route('travel-logs.store'), [
+        $this->postAsUser('travel-logs.store', [
             'date' => CarbonImmutable::today()->toDateString(),
             'distance_km' => 10,
             'vehicle' => TravelLogVehicle::Private_->value,
@@ -84,7 +80,6 @@ class TravelLogTest extends TestCase {
     }
 
     public function test_destroy_removes_paired_entry(): void {
-        $this->actingAs($this->user);
         $service = app(TravelLogService::class);
 
         $start = CarbonImmutable::today()->setTime(9, 0);
@@ -101,7 +96,7 @@ class TravelLogTest extends TestCase {
 
         $this->assertDatabaseHas('time_entries', ['travel_log_id' => $log->id]);
 
-        $this->delete(route('travel-logs.destroy', $log))->assertRedirect();
+        $this->deleteAsUser('travel-logs.destroy', $log)->assertRedirect();
 
         $this->assertDatabaseMissing('travel_logs', ['id' => $log->id]);
         $this->assertDatabaseMissing('time_entries', ['travel_log_id' => $log->id]);
@@ -114,8 +109,7 @@ class TravelLogTest extends TestCase {
             'user_id' => $other->id,
         ]);
 
-        $this->actingAs($this->user);
-        $this->get(route('travel-logs.edit', $log))->assertForbidden();
+        $this->getAsUser('travel-logs.edit', $log)->assertForbidden();
     }
 
     public function test_mileage_rate_resolver_uses_config(): void {
@@ -126,8 +120,6 @@ class TravelLogTest extends TestCase {
     }
 
     public function test_csv_export_returns_download(): void {
-        $this->actingAs($this->user);
-
         TravelLog::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $this->user->id,
@@ -139,15 +131,13 @@ class TravelLogTest extends TestCase {
             'to_address' => 'B',
         ]);
 
-        $response = $this->get(route('travel-logs.export'));
+        $response = $this->getAsUser('travel-logs.export');
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $this->assertStringContainsString('12,50', $response->streamedContent());
     }
 
     public function test_index_uses_global_header_date_range_by_default(): void {
-        $this->actingAs($this->user);
-
         // Header selects April 2026 — May entries must NOT be included.
         Session::put('ui.daterange.preset', 'custom');
         Session::put('ui.daterange.from', '2026-04-01');
@@ -174,10 +164,22 @@ class TravelLogTest extends TestCase {
             'to_address' => 'D',
         ]);
 
-        $response = $this->get(route('travel-logs.index'));
+        $response = $this->getAsUser('travel-logs.index');
         $response->assertOk();
         $this->assertSame(50.0, (float) $response->viewData('totals')['distance_km']);
         $this->assertSame('2026-04-01', $response->viewData('from')->toDateString());
         $this->assertSame('2026-04-30', $response->viewData('to')->toDateString());
+    }
+
+    private function getAsUser(string $routeName, mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->get(route($routeName, $parameters));
+    }
+
+    private function postAsUser(string $routeName, array $payload = [], mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->post(route($routeName, $parameters), $payload);
+    }
+
+    private function deleteAsUser(string $routeName, mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->delete(route($routeName, $parameters));
     }
 }
