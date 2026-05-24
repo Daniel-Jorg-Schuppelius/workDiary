@@ -23,7 +23,7 @@
     </x-slot:toolbar>
 
     <x-card>
-        <form method="GET" action="{{ route('admin.classification-requirements.index') }}" class="grid grid-cols-1 md:grid-cols-9 gap-3 items-end">
+        <form method="GET" action="{{ route('admin.classification-requirements.index') }}" class="grid grid-cols-1 md:grid-cols-10 gap-3 items-end">
             <label class="form-control md:col-span-2">
                 <span class="label-text text-sm">{{ __('Suche') }}</span>
                 <input type="text"
@@ -85,6 +85,16 @@
             </label>
 
             <label class="form-control">
+                <span class="label-text text-sm">{{ __('Maximalanzahl') }}</span>
+                <select name="max_count" class="select select-bordered w-full">
+                    <option value="all" @selected(($activeFilters['max_count'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
+                    @foreach ($maxCountOptions as $maxCountCode => $maxCountLabel)
+                        <option value="{{ $maxCountCode }}" @selected(($activeFilters['max_count'] ?? 'all') === $maxCountCode)>{{ $maxCountLabel }}</option>
+                    @endforeach
+                </select>
+            </label>
+
+            <label class="form-control">
                 <span class="label-text text-sm">{{ __('Schweregrad') }}</span>
                 <select name="severity" class="select select-bordered w-full">
                     <option value="all" @selected(($activeFilters['severity'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
@@ -103,7 +113,7 @@
                 </select>
             </label>
 
-            <div class="md:col-span-9 flex gap-2 md:justify-end">
+            <div class="md:col-span-10 flex gap-2 md:justify-end">
                 <button type="submit" class="btn btn-primary btn-sm">{{ __('Filtern') }}</button>
                 <a href="{{ route('admin.classification-requirements.index') }}" class="btn btn-ghost btn-sm">{{ __('Zuruecksetzen') }}</a>
             </div>
@@ -140,6 +150,7 @@
                     <th>{{ __('Schweregrad') }}</th>
                     <th>{{ __('Anzahl') }}</th>
                     <th>{{ __('Mehrfach') }}</th>
+                    <th>{{ __('Limit') }}</th>
                     <th>{{ __('Hinweis') }}</th>
                     <th>{{ __('Bedingung') }}</th>
                     <th></th>
@@ -160,6 +171,13 @@
                         <span class="badge badge-xs {{ $requirement->allow_multi ? 'badge-info' : 'badge-ghost' }}">
                             {{ $requirement->allow_multi ? __('Ja') : __('Nein') }}
                         </span>
+                    </td>
+                    <td>
+                        @if ($requirement->max_count !== null)
+                            <span class="badge badge-xs badge-outline">{{ __('Begrenzt') }}</span>
+                        @else
+                            <span class="text-base-content/50">{{ __('Offen') }}</span>
+                        @endif
                     </td>
                     <td>
                         @if ($requirement->note)

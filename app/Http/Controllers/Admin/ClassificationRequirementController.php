@@ -39,6 +39,7 @@ class ClassificationRequirementController extends Controller {
         $conditionFilter = $this->normalizeConditionFilter(request()->string('condition')->toString());
         $allowMultiFilter = $this->normalizeAllowMultiFilter(request()->string('allow_multi')->toString());
         $noteFilter = $this->normalizeNoteFilter(request()->string('note')->toString());
+        $maxCountFilter = $this->normalizeMaxCountFilter(request()->string('max_count')->toString());
         $phaseFilter = $this->normalizePhaseFilter(request()->string('phase')->toString());
         $severityFilter = $this->normalizeSeverityFilter(request()->string('severity')->toString());
         $sortField = $this->normalizeSortField(request()->string('sort')->toString());
@@ -84,6 +85,14 @@ class ClassificationRequirementController extends Controller {
             $requirementsQuery->whereNull('note');
         }
 
+        if ($maxCountFilter === 'bounded') {
+            $requirementsQuery->whereNotNull('max_count');
+        }
+
+        if ($maxCountFilter === 'open') {
+            $requirementsQuery->whereNull('max_count');
+        }
+
         if ($phaseFilter !== null) {
             $requirementsQuery->where('enforce_phase', $phaseFilter);
         }
@@ -101,6 +110,7 @@ class ClassificationRequirementController extends Controller {
         $conditionOptions = $this->conditionOptions();
         $allowMultiOptions = $this->allowMultiOptions();
         $noteOptions = $this->noteOptions();
+        $maxCountOptions = $this->maxCountOptions();
         $sortOptions = $this->sortOptions();
 
         return view('admin.classification-requirements.index', [
@@ -112,6 +122,7 @@ class ClassificationRequirementController extends Controller {
             'conditionOptions' => $conditionOptions,
             'allowMultiOptions' => $allowMultiOptions,
             'noteOptions' => $noteOptions,
+            'maxCountOptions' => $maxCountOptions,
             'sortOptions' => $sortOptions,
             'activeFilters' => [
                 'q' => $query,
@@ -119,6 +130,7 @@ class ClassificationRequirementController extends Controller {
                 'condition' => $conditionFilter ?? 'all',
                 'allow_multi' => $allowMultiFilter ?? 'all',
                 'note' => $noteFilter ?? 'all',
+                'max_count' => $maxCountFilter ?? 'all',
                 'phase' => $phaseFilter ?? 'all',
                 'severity' => $severityFilter ?? 'all',
                 'sort' => $sortField,
@@ -129,11 +141,12 @@ class ClassificationRequirementController extends Controller {
                 $conditionFilter !== null ? __('Bedingung: :value', ['value' => $conditionOptions[$conditionFilter] ?? $conditionFilter]) : null,
                 $allowMultiFilter !== null ? __('Mehrfachauswahl: :value', ['value' => $allowMultiOptions[$allowMultiFilter] ?? $allowMultiFilter]) : null,
                 $noteFilter !== null ? __('Hinweis: :value', ['value' => $noteOptions[$noteFilter] ?? $noteFilter]) : null,
+                $maxCountFilter !== null ? __('Maximalanzahl: :value', ['value' => $maxCountOptions[$maxCountFilter] ?? $maxCountFilter]) : null,
                 $phaseFilter !== null ? __('Phase: :value', ['value' => $phaseLabels[$phaseFilter] ?? $phaseFilter]) : null,
                 $severityFilter !== null ? __('Schweregrad: :value', ['value' => $severityLabels[$severityFilter] ?? $severityFilter]) : null,
                 $sortField !== 'entry_type_code' ? __('Sortierung: :value', ['value' => $sortOptions[$sortField] ?? $sortField]) : null,
             ])),
-            'hasActiveFilters' => $query !== '' || $domainFilter !== null || $conditionFilter !== null || $allowMultiFilter !== null || $noteFilter !== null || $phaseFilter !== null || $severityFilter !== null || $sortField !== 'entry_type_code',
+            'hasActiveFilters' => $query !== '' || $domainFilter !== null || $conditionFilter !== null || $allowMultiFilter !== null || $noteFilter !== null || $maxCountFilter !== null || $phaseFilter !== null || $severityFilter !== null || $sortField !== 'entry_type_code',
         ]);
     }
 
@@ -352,6 +365,10 @@ class ClassificationRequirementController extends Controller {
 
     private function normalizeNoteFilter(string $value): ?string {
         return array_key_exists($value, $this->noteOptions()) ? $value : null;
+    }
+
+    private function normalizeMaxCountFilter(string $value): ?string {
+        return array_key_exists($value, $this->maxCountOptions()) ? $value : null;
     }
 
     private function normalizeSortField(string $value): string {
@@ -651,6 +668,16 @@ class ClassificationRequirementController extends Controller {
         return [
             'with_note' => __('Mit Hinweis'),
             'without_note' => __('Ohne Hinweis'),
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function maxCountOptions(): array {
+        return [
+            'open' => __('Offen'),
+            'bounded' => __('Begrenzt'),
         ];
     }
 

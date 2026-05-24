@@ -359,6 +359,36 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
             ->assertDontSee('single-row');
     }
 
+    public function test_index_can_filter_requirements_by_max_count_state(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::DefectType->value,
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'max_count' => 2,
+            'note' => 'Begrenzte Zeile',
+        ]);
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::Result->value,
+            'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+            'max_count' => null,
+            'only_if_json' => ['marker' => ['open-row']],
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('admin.classification-requirements.index', [
+                'max_count' => 'bounded',
+            ]))
+            ->assertOk()
+            ->assertSee('Begrenzte Zeile')
+            ->assertSee('Maximalanzahl: Begrenzt')
+            ->assertDontSee('open-row');
+    }
+
     public function test_index_can_sort_requirements_by_domain(): void {
         $user = $this->userWithRole(UserRole::Teamleitung->value);
 
