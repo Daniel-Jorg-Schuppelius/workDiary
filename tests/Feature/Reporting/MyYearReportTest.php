@@ -14,6 +14,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Project, TimeEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
 
@@ -39,9 +40,7 @@ class MyYearReportTest extends TestCase {
     }
 
     public function test_route_renders_for_authenticated_user(): void {
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeYear(2030))
-            ->get(route('reports.my-year'));
+        $response = $this->getWithYearRange('reports.my-year');
         $response->assertOk();
         $response->assertSee('Mein Jahr 2030', false);
     }
@@ -79,9 +78,7 @@ class MyYearReportTest extends TestCase {
             'billable' => true,
         ]);
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeYear(2030))
-            ->get(route('reports.my-year'));
+        $response = $this->getWithYearRange('reports.my-year');
         $response->assertOk();
         // 3:00 + 1:30 = 4:30 h Jahressumme
         $response->assertSee('4:30 h', false);
@@ -107,9 +104,7 @@ class MyYearReportTest extends TestCase {
             'kind' => TimeEntryKind::Travel->value,
         ]);
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeYear(2030))
-            ->get(route('reports.my-year', ['kind' => 'travel']));
+        $response = $this->getWithYearRange('reports.my-year', ['kind' => 'travel']);
         $response->assertOk();
         $response->assertSee('5:00 h', false); // nur Reise = 5:00
         $response->assertDontSee('7:00 h', false); // Summe wäre 7:00
@@ -117,5 +112,11 @@ class MyYearReportTest extends TestCase {
 
     public function test_requires_authentication(): void {
         $this->get(route('reports.my-year'))->assertRedirect(route('login'));
+    }
+
+    private function getWithYearRange(string $routeName, array $parameters = []): TestResponse {
+        return $this->actingAs($this->user)
+            ->withSession($this->dateRangeYear(2030))
+            ->get(route($routeName, $parameters));
     }
 }

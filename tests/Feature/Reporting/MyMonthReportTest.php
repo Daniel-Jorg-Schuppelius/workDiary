@@ -14,6 +14,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Project, TimeEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
 
@@ -39,9 +40,7 @@ class MyMonthReportTest extends TestCase {
     }
 
     public function test_route_renders(): void {
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeMonth(2030, 4))
-            ->get(route('reports.my-month'));
+        $response = $this->getWithMonthRange('reports.my-month');
         $response->assertOk();
     }
 
@@ -57,9 +56,7 @@ class MyMonthReportTest extends TestCase {
             'description' => 'Konzept-Workshop',
         ]);
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeMonth(2030, 4))
-            ->get(route('reports.my-month'));
+        $response = $this->getWithMonthRange('reports.my-month');
         $response->assertOk();
         $response->assertSee('Konzept-Workshop');
         $response->assertSee('2:30 h', false);
@@ -80,9 +77,7 @@ class MyMonthReportTest extends TestCase {
             'kind' => TimeEntryKind::Work->value,
             'description' => 'Workshop',
         ]);
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeMonth(2030, 4))
-            ->get(route('reports.my-month', ['export' => 'csv']));
+        $response = $this->getWithMonthRange('reports.my-month', ['export' => 'csv']);
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $this->assertStringContainsString('mein-monat-2030-04.csv', (string) $response->headers->get('Content-Disposition'));
@@ -101,12 +96,16 @@ class MyMonthReportTest extends TestCase {
             'kind' => TimeEntryKind::Work->value,
             'description' => 'Workshop',
         ]);
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeMonth(2030, 4))
-            ->get(route('reports.my-month', ['export' => 'pdf']));
+        $response = $this->getWithMonthRange('reports.my-month', ['export' => 'pdf']);
         $response->assertOk();
         $response->assertHeader('Content-Type', 'application/pdf');
         $this->assertStringContainsString('mein-monat-2030-04.pdf', (string) $response->headers->get('Content-Disposition'));
         $this->assertStringStartsWith('%PDF', (string) $response->getContent());
+    }
+
+    private function getWithMonthRange(string $routeName, array $parameters = []): TestResponse {
+        return $this->actingAs($this->user)
+            ->withSession($this->dateRangeMonth(2030, 4))
+            ->get(route($routeName, $parameters));
     }
 }
