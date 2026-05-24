@@ -12,10 +12,11 @@
 namespace Tests\Feature\Asset;
 
 use App\Enums\Asset\AssetStatus;
+use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
 use App\Enums\Protocol\ProtocolType;
 use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
 use App\Enums\User\UserRole;
-use App\Models\{Asset, Attachment, DiaryEntry, MaterialUsage, Project, Protocol, Timesheet, User};
+use App\Models\{Asset, Attachment, DiaryEntry, MaterialUsage, OpenIssue, Project, Protocol, Timesheet, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
@@ -106,6 +107,26 @@ class AssetShowControllerTest extends TestCase {
             'line_total_net' => '19.00',
         ]);
 
+        OpenIssue::query()->create([
+            'organization_id' => $this->organization->id,
+            'subject_type' => Asset::class,
+            'subject_id' => $asset->id,
+            'source_type' => OpenIssueSource::ProtocolDefect->value,
+            'source_ref_id' => null,
+            'title' => 'Blocker Defekt',
+            'description' => null,
+            'category' => 'asset',
+            'severity' => OpenIssueSeverity::Critical->value,
+            'status' => OpenIssueStatus::Blocked->value,
+            'assignee_user_id' => $user->id,
+            'due_at' => now()->addDay(),
+            'visibility' => OpenIssueVisibility::Internal->value,
+            'closed_at' => null,
+            'closed_by_user_id' => null,
+            'closed_reason' => null,
+            'created_by_user_id' => $user->id,
+        ]);
+
         Attachment::query()->create([
             'organization_id' => $this->organization->id,
             'attachable_type' => Asset::class,
@@ -128,6 +149,10 @@ class AssetShowControllerTest extends TestCase {
             ->assertSeeText('Anhänge (1)')
             ->assertSeeText('Timeline')
             ->assertSeeText('Status geändert')
+            ->assertSeeText('Asset gesperrt')
+            ->assertSeeText('Offene Issues: 1')
+            ->assertSeeText('Kritisch: 1')
+            ->assertSeeText('Defektprotokolle: 0')
             ->assertSeeText('Auftrag am Asset')
             ->assertSeeText('Serviceprotokoll Asset')
             ->assertSeeText('Filtereinsatz')

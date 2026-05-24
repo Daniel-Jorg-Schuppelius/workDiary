@@ -15,7 +15,7 @@ use App\Enums\Asset\{AssetClass, AssetOwnership, AssetStatus};
 use App\Exceptions\AssetValidationException;
 use App\Http\Requests\SaveAssetRequest;
 use App\Models\{Asset, Attachment, Customer, DiaryEntry, MaterialUsage, Protocol, User};
-use App\Services\Asset\{AssetService, AssetTimelineService};
+use App\Services\Asset\{AssetService, AssetStatusVisibilityService, AssetTimelineService};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -109,7 +109,12 @@ class AssetController extends Controller {
         return redirect()->route('assets.index')->with('success', __('Asset angelegt.'));
     }
 
-    public function show(Asset $asset, Request $request, AssetTimelineService $assetTimeline): View {
+    public function show(
+        Asset $asset,
+        Request $request,
+        AssetTimelineService $assetTimeline,
+        AssetStatusVisibilityService $assetStatusVisibility,
+    ): View {
         Gate::authorize('view', $asset);
         $user = $request->user();
 
@@ -171,6 +176,8 @@ class AssetController extends Controller {
             ->map(fn(array $event): array => $this->formatTimelineEvent($event))
             ->values();
 
+        $visibilitySummary = $assetStatusVisibility->summarize($asset);
+
         return view('assets.show', [
             'asset' => $asset,
             'classOptions' => $this->assetClassOptions(),
@@ -180,6 +187,7 @@ class AssetController extends Controller {
             'materialUsages' => $materialUsages,
             'attachments' => $attachments,
             'timelineEntries' => $timelineEntries,
+            'statusSummary' => $visibilitySummary,
             'visibleCounts' => [
                 'diary' => $diaryEntries->count(),
                 'protocols' => $protocols->count(),

@@ -30,6 +30,25 @@
                 </div>
             </div>
 
+            @php
+                $attentionLevel = (string) ($statusSummary['attention_level'] ?? 'normal');
+                $isBlocked = (bool) ($statusSummary['is_blocked'] ?? false);
+                $openIssueTotal = (int) ($statusSummary['open_issues']['total'] ?? 0);
+                $criticalIssueTotal = (int) ($statusSummary['open_issues']['critical'] ?? 0);
+                $defectProtocolTotal = (int) ($statusSummary['defect_protocols']['total'] ?? 0);
+            @endphp
+
+            @if ($isBlocked || $openIssueTotal > 0 || $defectProtocolTotal > 0)
+                <div class="alert mt-4 {{ $attentionLevel === 'critical' ? 'alert-error' : 'alert-warning' }}">
+                    <div class="flex flex-wrap items-center gap-2 text-sm">
+                        <span class="font-semibold">{{ $isBlocked ? __('Asset gesperrt') : __('Asset unter Beobachtung') }}</span>
+                        <span class="badge badge-outline">{{ __('Offene Issues: :count', ['count' => $openIssueTotal]) }}</span>
+                        <span class="badge badge-outline">{{ __('Kritisch: :count', ['count' => $criticalIssueTotal]) }}</span>
+                        <span class="badge badge-outline">{{ __('Defektprotokolle: :count', ['count' => $defectProtocolTotal]) }}</span>
+                    </div>
+                </div>
+            @endif
+
             <div class="mt-4 grid gap-3 md:grid-cols-3">
                 <div class="rounded-box border border-base-300 p-3">
                     <div class="text-xs text-base-content/60">{{ __('Standort') }}</div>
