@@ -212,6 +212,8 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
         $this->actingAs($user)
             ->get(route('admin.classification-requirements.create'))
             ->assertOk()
+            ->assertSee('Aktive Presets')
+            ->assertSee('req-preset-summary')
             ->assertSee('data-entry-type-presets=')
             ->assertSee('data-required-domain-presets=')
             ->assertSee('incident')

@@ -51,6 +51,15 @@
                 @endforeach
             </select>
         </div>
+        <div id="req-preset-hint" class="md:col-span-2 alert alert-info alert-soft">
+            <x-icon name="info" class="shrink-0" />
+            <div class="space-y-1 text-sm">
+                <div class="font-medium">{{ __('Aktive Presets') }}</div>
+                <p id="req-preset-summary" class="text-sm">
+                    {{ __('Wählen Sie Auftragstyp und Pflicht-Domain, um empfohlene Defaults zu sehen.') }}
+                </p>
+            </div>
+        </div>
         <div>
             <label class="label" for="req-phase"><span class="label-text">{{ __('Phase') }}</span></label>
             <select id="req-phase" name="enforce_phase" class="select select-bordered w-full" required data-preset-target="enforce_phase">
@@ -124,6 +133,58 @@
             max_count: document.querySelector('[data-preset-target="max_count"]'),
             allow_multi: document.querySelector('[data-preset-target="allow_multi"]')
         };
+        var presetSummary = document.getElementById('req-preset-summary');
+
+        function optionLabel(select, value) {
+            if (!select) {
+                return '';
+            }
+
+            var option = Array.prototype.find.call(select.options, function (candidate) {
+                return candidate.value === value;
+            });
+
+            return option ? option.textContent.trim() : value;
+        }
+
+        function updatePresetHint() {
+            if (!presetSummary) {
+                return;
+            }
+
+            var requiredDomainPreset = requiredDomainPresets[requiredDomainSelect.value];
+            var entryTypePreset = entryTypePresets[entryTypeSelect.value];
+            var preset = combinedPreset();
+
+            if (Object.keys(preset).length === 0) {
+                presetSummary.textContent = entryTypeSelect.value !== '' || requiredDomainSelect.value !== ''
+                    ? @json(__('Für diese Kombination sind keine Presets definiert.'))
+                    : @json(__('Wählen Sie Auftragstyp und Pflicht-Domain, um empfohlene Defaults zu sehen.'));
+
+                return;
+            }
+
+            var sources = [];
+            if (requiredDomainPreset) {
+                sources.push(@json(__('Pflicht-Domain')));
+            }
+            if (entryTypePreset) {
+                sources.push(@json(__('Auftragstyp')));
+            }
+
+            var sourceText = sources.join(' + ');
+            var phaseText = optionLabel(fields.enforce_phase, preset.enforce_phase);
+            var severityText = optionLabel(fields.severity, preset.severity);
+            var maxCountText = preset.max_count === null ? @json(__('offen')) : String(preset.max_count);
+            var allowMultiText = preset.allow_multi ? @json(__('Ja')) : @json(__('Nein'));
+
+            presetSummary.textContent = @json(__('Preset aus')) + ' ' + sourceText + ': '
+                + @json(__('Phase')) + ' ' + phaseText
+                + ' · ' + @json(__('Schweregrad')) + ' ' + severityText
+                + ' · ' + @json(__('Min.')) + ' ' + String(preset.min_count)
+                + ' · ' + @json(__('Max.')) + ' ' + maxCountText
+                + ' · ' + @json(__('Mehrfachauswahl')) + ' ' + allowMultiText;
+        }
 
         function combinedPreset() {
             var preset = {};
@@ -161,6 +222,8 @@
             if (fields.allow_multi && force) {
                 fields.allow_multi.checked = Boolean(preset.allow_multi);
             }
+
+            updatePresetHint();
         }
 
         entryTypeSelect.addEventListener('change', function () {
@@ -175,6 +238,8 @@
         var hasOldInput = entryTypeSelect.dataset.hasOldInput === '1';
         if (!isEditMode && !hasOldInput && (entryTypeSelect.value !== '' || requiredDomainSelect.value !== '')) {
             applyPreset(false);
+        } else {
+            updatePresetHint();
         }
     })();
 </script>
