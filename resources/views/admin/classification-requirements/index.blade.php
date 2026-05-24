@@ -23,7 +23,7 @@
     </x-slot:toolbar>
 
     <x-card>
-        <form method="GET" action="{{ route('admin.classification-requirements.index') }}" class="grid grid-cols-1 md:grid-cols-7 gap-3 items-end">
+        <form method="GET" action="{{ route('admin.classification-requirements.index') }}" class="grid grid-cols-1 md:grid-cols-8 gap-3 items-end">
             <label class="form-control md:col-span-2">
                 <span class="label-text text-sm">{{ __('Suche') }}</span>
                 <input type="text"
@@ -65,6 +65,16 @@
             </label>
 
             <label class="form-control">
+                <span class="label-text text-sm">{{ __('Hinweis') }}</span>
+                <select name="note" class="select select-bordered w-full">
+                    <option value="all" @selected(($activeFilters['note'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
+                    @foreach ($noteOptions as $noteCode => $noteLabel)
+                        <option value="{{ $noteCode }}" @selected(($activeFilters['note'] ?? 'all') === $noteCode)>{{ $noteLabel }}</option>
+                    @endforeach
+                </select>
+            </label>
+
+            <label class="form-control">
                 <span class="label-text text-sm">{{ __('Schweregrad') }}</span>
                 <select name="severity" class="select select-bordered w-full">
                     <option value="all" @selected(($activeFilters['severity'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
@@ -83,7 +93,7 @@
                 </select>
             </label>
 
-            <div class="md:col-span-7 flex gap-2 md:justify-end">
+            <div class="md:col-span-8 flex gap-2 md:justify-end">
                 <button type="submit" class="btn btn-primary btn-sm">{{ __('Filtern') }}</button>
                 <a href="{{ route('admin.classification-requirements.index') }}" class="btn btn-ghost btn-sm">{{ __('Zuruecksetzen') }}</a>
             </div>

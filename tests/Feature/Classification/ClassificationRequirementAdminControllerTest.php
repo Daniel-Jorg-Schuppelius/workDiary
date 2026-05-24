@@ -300,6 +300,35 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
             ->assertDontSee('conditional-row');
     }
 
+    public function test_index_can_filter_requirements_by_note_state(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::DefectType->value,
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'note' => 'Hat Hinweis',
+        ]);
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::Result->value,
+            'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+            'note' => null,
+            'only_if_json' => ['marker' => ['no-note-row']],
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('admin.classification-requirements.index', [
+                'note' => 'with_note',
+            ]))
+            ->assertOk()
+            ->assertSee('Hat Hinweis')
+            ->assertSee('Hinweis: Mit Hinweis')
+            ->assertDontSee('no-note-row');
+    }
+
     public function test_index_can_sort_requirements_by_domain(): void {
         $user = $this->userWithRole(UserRole::Teamleitung->value);
 
