@@ -15,8 +15,9 @@ use App\Enums\Asset\{AssetClass, AssetOwnership, AssetStatus};
 use App\Exceptions\AssetValidationException;
 use App\Http\Requests\SaveAssetRequest;
 use App\Models\{Asset, Attachment, Customer, DiaryEntry, MaterialUsage, Protocol, User};
-use App\Services\Asset\AssetService;
+use App\Services\Asset\{AssetService, AssetTimelineService};
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
@@ -108,7 +109,7 @@ class AssetController extends Controller {
         return redirect()->route('assets.index')->with('success', __('Asset angelegt.'));
     }
 
-    public function show(Asset $asset, Request $request): View {
+    public function show(Asset $asset, Request $request, AssetTimelineService $assetTimeline): View {
         Gate::authorize('view', $asset);
         $user = $request->user();
 
@@ -148,6 +149,28 @@ class AssetController extends Controller {
             ->filter(fn(Attachment $attachment): bool => Gate::forUser($user)->allows('view', $attachment))
             ->values();
 
+        $visibleDiaryIds = $diaryEntries->pluck('id')->all();
+        $visibleProtocolIds = $protocols->pluck('id')->all();
+        $visibleMaterialIds = $materialUsages->pluck('id')->all();
+        $visibleAttachmentIds = $attachments->pluck('id')->all();
+
+        $timelineEntries = collect($assetTimeline->build($asset, 24))
+            ->filter(function (array $event) use ($visibleAttachmentIds, $visibleDiaryIds, $visibleMaterialIds, $visibleProtocolIds): bool {
+                $kind = (string) ($event['kind'] ?? '');
+                $payload = is_array($event['payload'] ?? null) ? $event['payload'] : [];
+                $id = (int) ($payload['id'] ?? 0);
+
+                return match ($kind) {
+                    'order.linked' => in_array($id, $visibleDiaryIds, true),
+                    'protocol.linked' => in_array($id, $visibleProtocolIds, true),
+                    'material.linked' => in_array($id, $visibleMaterialIds, true),
+                    'attachment.linked' => in_array($id, $visibleAttachmentIds, true),
+                    default => true,
+                };
+            })
+            ->map(fn(array $event): array => $this->formatTimelineEvent($event))
+            ->values();
+
         return view('assets.show', [
             'asset' => $asset,
             'classOptions' => $this->assetClassOptions(),
@@ -156,6 +179,7 @@ class AssetController extends Controller {
             'protocols' => $protocols,
             'materialUsages' => $materialUsages,
             'attachments' => $attachments,
+            'timelineEntries' => $timelineEntries,
             'visibleCounts' => [
                 'diary' => $diaryEntries->count(),
                 'protocols' => $protocols->count(),
@@ -163,6 +187,64 @@ class AssetController extends Controller {
                 'attachments' => $attachments->count(),
             ],
         ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $event
+     * @return array{kind: string, title: string, detail: string, occurred_at_formatted: string}
+     */
+    private function formatTimelineEvent(array $event): array {
+        $kind = (string) ($event['kind'] ?? '');
+        $payload = is_array($event['payload'] ?? null) ? $event['payload'] : [];
+        $auditEvent = (string) ($payload['event'] ?? '');
+
+        $title = match ($kind) {
+            'order.linked' => __('Auftrag verknüpft'),
+            'protocol.linked' => __('Protokoll verknüpft'),
+            'material.linked' => __('Materialeinsatz verknüpft'),
+            'attachment.linked' => __('Anhang verknüpft'),
+            'asset.audit' => $this->assetAuditTitle($auditEvent),
+            default => __('Ereignis'),
+        };
+
+        $detail = match ($kind) {
+            'order.linked' => (string) ($payload['title'] ?? ('#' . ((int) ($payload['id'] ?? 0)))),
+            'protocol.linked' => (string) ($payload['title'] ?? ('#' . ((int) ($payload['id'] ?? 0)))),
+            'material.linked' => (string) ($payload['description'] ?? ('#' . ((int) ($payload['id'] ?? 0)))),
+            'attachment.linked' => (string) ($payload['name'] ?? ('#' . ((int) ($payload['id'] ?? 0)))),
+            'asset.audit' => $auditEvent !== '' ? $auditEvent : __('Audit-Log'),
+            default => __('Unbekanntes Ereignis'),
+        };
+
+        return [
+            'kind' => $kind,
+            'title' => $title,
+            'detail' => $detail,
+            'occurred_at_formatted' => $this->formatTimelineDate($event['occurred_at'] ?? null),
+        ];
+    }
+
+    private function assetAuditTitle(string $auditEvent): string {
+        return match ($auditEvent) {
+            'asset.statusChanged' => __('Status geändert'),
+            'asset.decommissioned' => __('Außer Betrieb gesetzt'),
+            'asset.ownershipTransferred' => __('Eigentum übertragen'),
+            'asset.moved' => __('Standort geändert'),
+            'asset.updated' => __('Asset aktualisiert'),
+            'asset.created' => __('Asset angelegt'),
+            'created' => __('Datensatz angelegt'),
+            'updated' => __('Datensatz geändert'),
+            'deleted' => __('Datensatz gelöscht'),
+            default => __('Asset-Ereignis'),
+        };
+    }
+
+    private function formatTimelineDate(mixed $value): string {
+        if (! is_string($value) || trim($value) === '') {
+            return '—';
+        }
+
+        return Carbon::parse($value)->format('d.m.Y H:i');
     }
 
     private function normalizeAssetClass(string $value): ?string {

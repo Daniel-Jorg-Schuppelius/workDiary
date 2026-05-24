@@ -64,7 +64,7 @@
         ],
         "test": [
             "@php artisan config:clear --ansi",
-            "@php artisan test"
+            "@php artisan test --parallel"
         ],
         "lint": "phpstan analyse --memory-limit=1G",
         "format": "pint --test",

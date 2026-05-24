@@ -53,6 +53,12 @@ class AssetShowControllerTest extends TestCase {
             'status' => AssetStatus::Active->value,
         ]);
 
+        $asset->audit('asset.statusChanged', [
+            'from' => AssetStatus::Active->value,
+            'to' => AssetStatus::Blocked->value,
+            'actor_id' => $user->id,
+        ]);
+
         DiaryEntry::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $user->id,
@@ -120,6 +126,8 @@ class AssetShowControllerTest extends TestCase {
             ->assertSeeText('Protokolle (1)')
             ->assertSeeText('Materialeinsatz (1)')
             ->assertSeeText('Anhänge (1)')
+            ->assertSeeText('Timeline')
+            ->assertSeeText('Status geändert')
             ->assertSeeText('Auftrag am Asset')
             ->assertSeeText('Serviceprotokoll Asset')
             ->assertSeeText('Filtereinsatz')

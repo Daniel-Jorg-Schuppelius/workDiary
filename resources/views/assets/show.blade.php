@@ -81,6 +81,25 @@
         </x-card>
 
         <x-card>
+            <h2 class="mb-3 text-base font-semibold">{{ __('Timeline') }} ({{ $timelineEntries->count() }})</h2>
+            @if ($timelineEntries->isEmpty())
+                <p class="text-sm text-base-content/70">{{ __('Keine Timeline-Einträge vorhanden.') }}</p>
+            @else
+                <ul class="divide-y divide-base-300">
+                    @foreach ($timelineEntries as $event)
+                        <li class="flex items-start justify-between gap-3 py-3">
+                            <div class="space-y-1">
+                                <div class="text-sm font-semibold">{{ $event['title'] }}</div>
+                                <div class="text-sm text-base-content/80">{{ $event['detail'] }}</div>
+                            </div>
+                            <span class="shrink-0 text-xs text-base-content/60">{{ $event['occurred_at_formatted'] }}</span>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </x-card>
+
+        <x-card>
             <h2 class="mb-3 text-base font-semibold">{{ __('Protokolle') }} ({{ $visibleCounts['protocols'] }})</h2>
             @if ($protocols->isEmpty())
                 <p class="text-sm text-base-content/70">{{ __('Keine verknüpften Protokolle sichtbar.') }}</p>
