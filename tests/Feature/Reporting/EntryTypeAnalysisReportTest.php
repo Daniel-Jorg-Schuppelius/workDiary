@@ -486,6 +486,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $this->assertSame($auditableType, $log->auditable_type);
         $this->assertSame($this->organization->id, $log->organization_id);
         $this->assertSame($this->user->id, $log->user_id);
+        $this->assertIsArray($log->changes ?? null);
         $this->assertSame($reportCode, $log->changes['report_code'] ?? null);
         $this->assertSame($format, $log->changes['format'] ?? null);
         $this->assertIsArray($log->changes['filters'] ?? null);

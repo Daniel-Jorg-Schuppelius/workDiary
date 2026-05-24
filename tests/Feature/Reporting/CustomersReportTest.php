@@ -512,6 +512,7 @@ class CustomersReportTest extends TestCase {
         $this->assertSame($this->user->id, $log->user_id);
         $this->assertSame('127.0.0.1', $log->ip);
         $this->assertTrue(is_string($log->user_agent));
+        $this->assertIsArray($log->changes ?? null);
         $this->assertSame($reportCode, $log->changes['report_code'] ?? null);
         $this->assertSame($format, $log->changes['format'] ?? null);
         $this->assertIsArray($log->changes['filters'] ?? null);
