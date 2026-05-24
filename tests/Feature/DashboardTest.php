@@ -227,4 +227,28 @@ class DashboardTest extends TestCase {
         $this->assertSame(3, (int) $response->viewData('user')['kpi']['open_issues_assigned']);
         $this->assertSame(4, (int) $response->viewData('user')['kpi']['open_issues_created']);
     }
+
+    public function test_dashboard_marks_critical_open_issues_with_error_badge(): void {
+        $user = User::factory()->user()->create();
+        $entry = DiaryEntry::factory()->for($user)->create(['organization_id' => $user->organization_id]);
+
+        OpenIssue::query()->create([
+            'organization_id' => $user->organization_id,
+            'subject_type' => DiaryEntry::class,
+            'subject_id' => $entry->id,
+            'source_type' => OpenIssueSource::Manual->value,
+            'title' => 'Kritischer Mangel',
+            'severity' => OpenIssueSeverity::Critical->value,
+            'status' => OpenIssueStatus::Open->value,
+            'assignee_user_id' => $user->id,
+            'due_at' => now()->addDays(3),
+            'visibility' => OpenIssueVisibility::Internal->value,
+            'created_by_user_id' => $user->id,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+        $response->assertOk();
+        $response->assertSee('Kritischer Mangel');
+        $response->assertSee('badge-outline badge-error', false);
+    }
 }
