@@ -99,11 +99,11 @@ class ExpenseReportController extends Controller {
         $grandTotal = 0.0;
 
         foreach ($expenses as $expense) {
-            $userName = $expense->user?->name ?? '—';
-            $categoryLabel = $expense->category?->label ?? '—';
+            $userName = $expense->user->name ?? '—';
+            $categoryLabel = $expense->category->label ?? '—';
             $color = $expense->category?->color;
             $icon = $expense->category?->icon;
-            $month = $expense->date?->format('Y-m') ?? '—';
+            $month = $expense->date->format('Y-m');
             $amount = (float) $expense->amount_gross;
 
             $rowKey = $userName . '||' . $categoryLabel;

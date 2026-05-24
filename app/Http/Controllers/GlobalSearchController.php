@@ -100,8 +100,8 @@ class GlobalSearchController extends Controller {
                 ->map(fn(Expense $e) => [
                     'id' => $e->id,
                     'title' => $e->vendor ?: ($e->description ?: __('Spese #:id', ['id' => $e->id])),
-                    'subtitle' => $e->date?->format('d.m.Y')
-                        . ($e->amount_gross !== null ? ' · ' . number_format((float) $e->amount_gross, 2, ',', '.') . ' €' : ''),
+                    'subtitle' => $e->date->format('d.m.Y')
+                        . ' · ' . number_format((float) $e->amount_gross, 2, ',', '.') . ' €',
                     'url' => route('expenses.show', $e),
                 ])
                 ->all(),
@@ -125,7 +125,7 @@ class GlobalSearchController extends Controller {
                 ->map(fn(PerDiemTrip $t) => [
                     'id' => $t->id,
                     'title' => trim(($t->location ?: '—') . ($t->country ? ' (' . $t->country . ')' : '')),
-                    'subtitle' => $t->started_at?->format('d.m.Y')
+                    'subtitle' => $t->started_at->format('d.m.Y')
                         . ($t->purpose ? ' · ' . mb_strimwidth($t->purpose, 0, 60, '…') : ''),
                     'url' => route('per-diem-trips.show', $t),
                 ])

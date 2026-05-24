@@ -113,7 +113,7 @@ class AutomationRuleController extends Controller {
     }
 
     private function ensureOwnsRule(AutomationRule $rule): void {
-        $orgId = (int) (app('currentOrganization')?->id ?? 0);
+        $orgId = (int) (app('currentOrganization')->id ?? 0);
         abort_unless($rule->organization_id === $orgId, 404);
     }
 

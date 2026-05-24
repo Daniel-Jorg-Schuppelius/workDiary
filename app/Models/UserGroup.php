@@ -38,6 +38,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property bool $is_system
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Role> $roles
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Permission> $permissions
  */
 #[ScopedBy([OrganizationScope::class])]
 class UserGroup extends Model {

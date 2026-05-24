@@ -47,6 +47,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property array<string, mixed>|null $preferences
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Role> $roles
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Permission> $permissions
  */
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable {

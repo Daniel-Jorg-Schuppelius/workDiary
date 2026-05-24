@@ -225,7 +225,7 @@ class ExpenseController extends Controller {
             ], ';');
             foreach ($expenses as $expense) {
                 fputcsv($out, [
-                    $expense->date?->format('Y-m-d'),
+                    $expense->date->format('Y-m-d'),
                     $expense->user->name ?? '',
                     $expense->category->label ?? '',
                     (string) $expense->vendor,
@@ -236,12 +236,8 @@ class ExpenseController extends Controller {
                     number_format((float) $expense->tax_amount, 2, ',', ''),
                     number_format((float) $expense->tax_rate, 2, ',', ''),
                     (string) $expense->currency,
-                    $expense->payment_method instanceof PaymentMethod
-                        ? $expense->payment_method->label()
-                        : (string) $expense->payment_method,
-                    $expense->status instanceof ExpenseStatus
-                        ? $expense->status->label()
-                        : (string) $expense->status,
+                    $expense->payment_method->label(),
+                    $expense->status->label(),
                     $expense->billable ? 'ja' : 'nein',
                     $expense->decided_at?->format('Y-m-d'),
                     $expense->reimbursed_at?->format('Y-m-d'),

@@ -98,7 +98,7 @@ class IcsFeedService {
                 $end = $end->addDay();
             }
 
-            $label = $s->shiftType?->name ?? __('Schicht');
+            $label = $s->shiftType->name ?? __('Schicht');
             $ics = IcsEvent::create((string) $label)
                 ->uniqueIdentifier('shift-' . $s->id . '@workdiary')
                 ->startsAt($start->toDateTimeImmutable())

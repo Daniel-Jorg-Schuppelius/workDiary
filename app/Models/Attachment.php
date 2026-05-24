@@ -79,11 +79,10 @@ class Attachment extends Model {
                 return;
             }
             $class = $attachment->attachable_type;
-            if (! is_string($class) || ! class_exists($class)) {
+            if (! is_string($class) || $class === '' || ! class_exists($class) || ! is_subclass_of($class, Model::class)) {
                 return;
             }
-            /** @var Model $parent */
-            $parent = (new $class)->newQueryWithoutScopes()->find($attachment->attachable_id);
+            $parent = $class::query()->withoutGlobalScopes()->find($attachment->attachable_id);
             if ($parent === null) {
                 return;
             }

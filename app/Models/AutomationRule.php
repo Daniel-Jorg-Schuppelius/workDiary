@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int $organization_id
  * @property string $name
  * @property string $trigger_event
- * @property array<int, array<string, mixed>>|array<string, mixed> $conditions
+ * @property array<string, mixed> $conditions
  * @property array<int, array<string, mixed>> $actions
  * @property bool $is_active
  * @property int $priority

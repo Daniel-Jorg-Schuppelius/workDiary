@@ -49,14 +49,14 @@ Jeder neue Export-Endpunkt nutzt das folgende mehrschichtige Standardmuster:
 
 ## Konsequenzen
 
-**Vorteile**
+### Vorteile
 
 - Defense-in-Depth: Scope + Policy + Tests.
 - Konsistent für CSV, PDF und JSON-Exports.
 - Neue Exports müssen sich nicht ums Tenant-Filtering kümmern, solange
   Eloquent verwendet wird.
 
-**Aufwand**
+### Aufwand
 
 - Pro neuem Export ein Tenant-Regressionstest (~10 Zeilen).
 - Beim Hinzufügen von Reports muss die Liste in `tenant-audit-2026.md`
