@@ -23,7 +23,7 @@
     </x-slot:toolbar>
 
     <x-card>
-        <form method="GET" action="{{ route('admin.classification-requirements.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+        <form method="GET" action="{{ route('admin.classification-requirements.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
             <label class="form-control md:col-span-2">
                 <span class="label-text text-sm">{{ __('Suche') }}</span>
                 <input type="text"
@@ -64,12 +64,32 @@
                 </select>
             </label>
 
-            <div class="md:col-span-5 flex gap-2 md:justify-end">
+            <label class="form-control">
+                <span class="label-text text-sm">{{ __('Sortierung') }}</span>
+                <select name="sort" class="select select-bordered w-full">
+                    @foreach ($sortOptions as $sortCode => $sortLabel)
+                        <option value="{{ $sortCode }}" @selected(($activeFilters['sort'] ?? 'entry_type_code') === $sortCode)>{{ $sortLabel }}</option>
+                    @endforeach
+                </select>
+            </label>
+
+            <div class="md:col-span-6 flex gap-2 md:justify-end">
                 <button type="submit" class="btn btn-primary btn-sm">{{ __('Filtern') }}</button>
                 <a href="{{ route('admin.classification-requirements.index') }}" class="btn btn-ghost btn-sm">{{ __('Zuruecksetzen') }}</a>
             </div>
         </form>
     </x-card>
+
+    @if ($hasActiveFilters)
+        <x-card>
+            <div class="flex flex-wrap items-center gap-2">
+                <span class="text-sm font-medium">{{ __('Aktive Filter') }}</span>
+                @foreach ($activeFilterChips as $chip)
+                    <span class="badge badge-outline badge-sm">{{ $chip }}</span>
+                @endforeach
+            </div>
+        </x-card>
+    @endif
 
     @if ($requirements->isEmpty())
         <x-card>

@@ -178,6 +178,8 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
             ->assertOk()
             ->assertSee('service')
             ->assertSee('Suchbarer Service-Hinweis')
+            ->assertSee('Aktive Filter')
+            ->assertSee('Suche: service')
             ->assertDontSee('maintenance');
     }
 
@@ -235,7 +237,35 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
             ]))
             ->assertOk()
             ->assertSee('domain-result')
+            ->assertSee('Domain: Ergebnisse')
             ->assertDontSee('domain-defect');
+    }
+
+    public function test_index_can_sort_requirements_by_domain(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::Result->value,
+            'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+            'note' => 'Zweite Zeile',
+        ]);
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::DefectType->value,
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'note' => 'Erste Zeile',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('admin.classification-requirements.index', [
+                'sort' => 'required_domain',
+            ]))
+            ->assertOk()
+            ->assertSee('Sortierung: Pflicht-Domain')
+            ->assertSeeInOrder(['Erste Zeile', 'Zweite Zeile']);
     }
 
     public function test_create_dialog_contains_entry_type_presets_payload(): void {
@@ -246,6 +276,8 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
             ->assertOk()
             ->assertSee('Aktive Presets')
             ->assertSee('req-preset-summary')
+            ->assertSee('req-preset-details')
+            ->assertSee('Domain setzt die Basis')
             ->assertSee('data-entry-type-presets=')
             ->assertSee('data-required-domain-presets=')
             ->assertSee('incident')

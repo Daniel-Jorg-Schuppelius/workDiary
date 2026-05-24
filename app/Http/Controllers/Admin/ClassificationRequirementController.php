@@ -37,12 +37,10 @@ class ClassificationRequirementController extends Controller {
         $domainFilter = $this->normalizeDomainFilter(request()->string('domain')->toString());
         $phaseFilter = $this->normalizePhaseFilter(request()->string('phase')->toString());
         $severityFilter = $this->normalizeSeverityFilter(request()->string('severity')->toString());
+        $sortField = $this->normalizeSortField(request()->string('sort')->toString());
 
         $requirementsQuery = ClassificationRequirement::query()
-            ->where('organization_id', $organization->id)
-            ->orderBy('entry_type_code')
-            ->orderBy('enforce_phase')
-            ->orderBy('required_domain');
+            ->where('organization_id', $organization->id);
 
         if ($query !== '') {
             $requirementsQuery->where(function ($builder) use ($query): void {
@@ -65,20 +63,38 @@ class ClassificationRequirementController extends Controller {
             $requirementsQuery->where('severity', $severityFilter);
         }
 
+        foreach ($this->sortColumns($sortField) as $column) {
+            $requirementsQuery->orderBy($column);
+        }
+
         $requirements = $requirementsQuery->get();
+        $phaseLabels = $this->phaseLabels();
+        $severityLabels = $this->severityLabels();
+        $domainLabels = $this->domainLabels();
+        $sortOptions = $this->sortOptions();
 
         return view('admin.classification-requirements.index', [
             'organization' => $organization,
             'requirements' => $requirements,
-            'phaseLabels' => $this->phaseLabels(),
-            'severityLabels' => $this->severityLabels(),
-            'domainLabels' => $this->domainLabels(),
+            'phaseLabels' => $phaseLabels,
+            'severityLabels' => $severityLabels,
+            'domainLabels' => $domainLabels,
+            'sortOptions' => $sortOptions,
             'activeFilters' => [
                 'q' => $query,
                 'domain' => $domainFilter ?? 'all',
                 'phase' => $phaseFilter ?? 'all',
                 'severity' => $severityFilter ?? 'all',
+                'sort' => $sortField,
             ],
+            'activeFilterChips' => array_values(array_filter([
+                $query !== '' ? __('Suche: :value', ['value' => $query]) : null,
+                $domainFilter !== null ? __('Domain: :value', ['value' => $domainLabels[$domainFilter] ?? $domainFilter]) : null,
+                $phaseFilter !== null ? __('Phase: :value', ['value' => $phaseLabels[$phaseFilter] ?? $phaseFilter]) : null,
+                $severityFilter !== null ? __('Schweregrad: :value', ['value' => $severityLabels[$severityFilter] ?? $severityFilter]) : null,
+                $sortField !== 'entry_type_code' ? __('Sortierung: :value', ['value' => $sortOptions[$sortField] ?? $sortField]) : null,
+            ])),
+            'hasActiveFilters' => $query !== '' || $domainFilter !== null || $phaseFilter !== null || $severityFilter !== null || $sortField !== 'entry_type_code',
         ]);
     }
 
@@ -287,6 +303,10 @@ class ClassificationRequirementController extends Controller {
         return null;
     }
 
+    private function normalizeSortField(string $value): string {
+        return array_key_exists($value, $this->sortOptions()) ? $value : 'entry_type_code';
+    }
+
     private function normalizeSeverityFilter(string $value): ?string {
         foreach (ClassificationRequirementSeverity::cases() as $severity) {
             if ($severity->value === $value) {
@@ -486,6 +506,28 @@ class ClassificationRequirementController extends Controller {
             ClassificationDomain::ReworkReason->value => __('Nacharbeitsgründe'),
             ClassificationDomain::ProductGroup->value => __('Produktgruppen'),
             ClassificationDomain::DienstmittelType->value => __('Dienstmitteltypen'),
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function sortColumns(string $sortField): array {
+        return match ($sortField) {
+            'required_domain' => ['required_domain', 'entry_type_code', 'enforce_phase'],
+            'enforce_phase' => ['enforce_phase', 'entry_type_code', 'required_domain'],
+            default => ['entry_type_code', 'enforce_phase', 'required_domain'],
+        };
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function sortOptions(): array {
+        return [
+            'entry_type_code' => __('Auftragstyp'),
+            'required_domain' => __('Pflicht-Domain'),
+            'enforce_phase' => __('Phase'),
         ];
     }
 

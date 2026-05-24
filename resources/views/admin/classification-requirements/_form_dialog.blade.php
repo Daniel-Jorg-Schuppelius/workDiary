@@ -58,6 +58,9 @@
                 <p id="req-preset-summary" class="text-sm">
                     {{ __('Wählen Sie Auftragstyp und Pflicht-Domain, um empfohlene Defaults zu sehen.') }}
                 </p>
+                <p id="req-preset-details" class="text-xs text-base-content/70">
+                    {{ __('Domain setzt die Basis, Auftragstyp kann einzelne Felder gezielt überschreiben.') }}
+                </p>
             </div>
         </div>
         <div>
@@ -134,6 +137,7 @@
             allow_multi: document.querySelector('[data-preset-target="allow_multi"]')
         };
         var presetSummary = document.getElementById('req-preset-summary');
+        var presetDetails = document.getElementById('req-preset-details');
 
         function optionLabel(select, value) {
             if (!select) {
@@ -155,11 +159,21 @@
             var requiredDomainPreset = requiredDomainPresets[requiredDomainSelect.value];
             var entryTypePreset = entryTypePresets[entryTypeSelect.value];
             var preset = combinedPreset();
+            var fieldLabels = {
+                enforce_phase: @json(__('Phase')),
+                severity: @json(__('Schweregrad')),
+                min_count: @json(__('Minimalanzahl')),
+                max_count: @json(__('Maximalanzahl')),
+                allow_multi: @json(__('Mehrfachauswahl'))
+            };
 
             if (Object.keys(preset).length === 0) {
                 presetSummary.textContent = entryTypeSelect.value !== '' || requiredDomainSelect.value !== ''
                     ? @json(__('Für diese Kombination sind keine Presets definiert.'))
                     : @json(__('Wählen Sie Auftragstyp und Pflicht-Domain, um empfohlene Defaults zu sehen.'));
+                if (presetDetails) {
+                    presetDetails.textContent = @json(__('Domain setzt die Basis, Auftragstyp kann einzelne Felder gezielt überschreiben.'));
+                }
 
                 return;
             }
@@ -184,6 +198,32 @@
                 + ' · ' + @json(__('Min.')) + ' ' + String(preset.min_count)
                 + ' · ' + @json(__('Max.')) + ' ' + maxCountText
                 + ' · ' + @json(__('Mehrfachauswahl')) + ' ' + allowMultiText;
+
+            if (presetDetails) {
+                var domainFields = [];
+                var overriddenFields = [];
+
+                Object.keys(fieldLabels).forEach(function (field) {
+                    if (requiredDomainPreset && Object.prototype.hasOwnProperty.call(requiredDomainPreset, field)) {
+                        domainFields.push(fieldLabels[field]);
+                    }
+                    if (requiredDomainPreset && entryTypePreset
+                        && Object.prototype.hasOwnProperty.call(requiredDomainPreset, field)
+                        && Object.prototype.hasOwnProperty.call(entryTypePreset, field)
+                        && requiredDomainPreset[field] !== entryTypePreset[field]) {
+                        overriddenFields.push(fieldLabels[field]);
+                    }
+                });
+
+                if (domainFields.length === 0 && entryTypePreset) {
+                    presetDetails.textContent = @json(__('Alle gezeigten Werte stammen direkt aus dem Auftragstyp-Preset.'));
+                } else if (overriddenFields.length === 0) {
+                    presetDetails.textContent = @json(__('Basis aus Domain-Preset für:')) + ' ' + domainFields.join(', ');
+                } else {
+                    presetDetails.textContent = @json(__('Basis aus Domain-Preset für:')) + ' ' + domainFields.join(', ')
+                        + ' · ' + @json(__('Vom Auftragstyp überschrieben:')) + ' ' + overriddenFields.join(', ');
+                }
+            }
         }
 
         function combinedPreset() {
