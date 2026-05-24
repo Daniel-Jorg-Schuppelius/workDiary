@@ -45,6 +45,9 @@
             <x-icon-btn icon="download" tone="outline" size="sm"
                         :href="route('reports.entry-types', array_filter(['customer_id' => $customerId, 'user_id' => $userId, 'entry_type_id' => $entryTypeFilter, 'status' => $statusFilter, 'export' => 'csv']))"
                         show-label>CSV</x-icon-btn>
+            <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
+                        :href="route('reports.entry-types', array_filter(['customer_id' => $customerId, 'user_id' => $userId, 'entry_type_id' => $entryTypeFilter, 'status' => $statusFilter, 'export' => 'pdf']))"
+                        show-label>PDF</x-icon-btn>
         </x-slot:extra>
     </x-filter-bar>
 

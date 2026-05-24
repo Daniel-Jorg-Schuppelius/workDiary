@@ -16,14 +16,16 @@ use App\Enums\Protocol\ProtocolType;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, DiaryEntry, OpenIssue, Project, Protocol, TimeEntry, User};
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class CustomerAnalysisReportController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request): View|Response {
+    public function index(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
         $from = $range['from']->startOfDay();
         $to = $range['to']->endOfDay();
@@ -38,6 +40,15 @@ class CustomerAnalysisReportController extends Controller {
 
         if ($request->query('export') === 'csv') {
             return $this->exportCsv(array_values($rows->all()), $from->toDateString(), $to->toDateString());
+        }
+
+        if ($request->query('export') === 'pdf') {
+            return $this->exportPdf(
+                array_values($rows->all()),
+                $range['label'],
+                $from->toDateString(),
+                $to->toDateString()
+            );
         }
 
         $topByMinutes = $rows->sortByDesc('totalMinutes')->take(5)->values();
@@ -240,6 +251,31 @@ class CustomerAnalysisReportController extends Controller {
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
+    }
+
+    /**
+     * @param  array<int, array{
+     *   customerId:int,
+     *   customerName:string,
+     *   entryCount:int,
+     *   totalMinutes:int,
+     *   billableMinutes:int,
+     *   nonBillableMinutes:int,
+     *   nonBillableShare:float,
+     *   reworkEntryCount:int,
+     *   openIssueCount:int,
+     *   escalationCount:int,
+     *   avgEntryMinutes:int,
+     *   trend30d:int
+     * }>  $rows
+     */
+    private function exportPdf(array $rows, string $label, string $from, string $to): SymfonyResponse {
+        $filename = sprintf('kundenanalyse_%s_%s.pdf', $from, $to);
+
+        return Pdf::loadView('reports.pdf.customers', [
+            'rows' => $rows,
+            'label' => $label,
+        ])->setPaper('a4', 'landscape')->download($filename);
     }
 
     private function trend30d(int $customerId, ?int $projectId, ?int $userId, CarbonImmutable $to): int {

@@ -191,6 +191,37 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $this->assertStringContainsString('Service', $content);
     }
 
+    public function test_report_can_be_exported_as_pdf(): void {
+        $entry = DiaryEntry::factory()->for($this->user)->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'entry_type_id' => $this->entryType->id,
+            'planned_minutes' => 60,
+            'created_at' => now()->subDays(2),
+        ]);
+
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'diary_entry_id' => $entry->id,
+            'user_id' => $this->user->id,
+            'date' => now()->subDays(2)->toDateString(),
+            'started_at' => now()->subDays(2)->setTime(10, 0)->toDateTimeString(),
+            'ended_at' => now()->subDays(2)->setTime(11, 0)->toDateTimeString(),
+            'kind' => TimeEntryKind::Work->value,
+            'billable' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.entry-types', ['export' => 'pdf']));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+        $response->assertHeader('content-disposition');
+        $this->assertStringStartsWith('%PDF', (string) $response->getContent());
+    }
+
     public function test_open_issues_drilldown_route_renders_for_entry_type(): void {
         $entry = DiaryEntry::factory()->for($this->user)->create([
             'organization_id' => $this->organization->id,

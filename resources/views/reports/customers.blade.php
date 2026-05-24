@@ -40,6 +40,9 @@
             <x-icon-btn icon="download" tone="outline" size="sm"
                         :href="route('reports.customers', array_filter(['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'project_id' => $projectId, 'user_id' => $userId, 'export' => 'csv']))"
                         show-label>CSV</x-icon-btn>
+            <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
+                        :href="route('reports.customers', array_filter(['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'project_id' => $projectId, 'user_id' => $userId, 'export' => 'pdf']))"
+                        show-label>PDF</x-icon-btn>
         </x-slot:extra>
     </x-filter-bar>
 

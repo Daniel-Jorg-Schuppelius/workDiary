@@ -17,14 +17,16 @@ use App\Enums\Protocol\ProtocolType;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, DiaryEntry, EntryType, OpenIssue, Protocol, TimeEntry, User};
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class EntryTypeAnalysisReportController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request): View|Response {
+    public function index(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
         $from = $range['from']->startOfDay();
         $to = $range['to']->endOfDay();
@@ -38,6 +40,10 @@ class EntryTypeAnalysisReportController extends Controller {
 
         if ($request->query('export') === 'csv') {
             return $this->exportCsv($rows, $from->toDateString(), $to->toDateString());
+        }
+
+        if ($request->query('export') === 'pdf') {
+            return $this->exportPdf($rows, $range['label'], $from->toDateString(), $to->toDateString());
         }
 
         return view('reports.entry-types', [
@@ -291,6 +297,34 @@ class EntryTypeAnalysisReportController extends Controller {
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
+    }
+
+    /**
+     * @param  list<array{
+     *   entryTypeId:int,
+     *   entryTypeName:string,
+     *   entryCount:int,
+     *   avgPlannedMinutes:float,
+     *   avgActualMinutes:float,
+     *   planActualRatio:float|null,
+     *   overrunCount:int,
+     *   overrunShare:float,
+     *   reworkCount:int,
+     *   reworkShare:float,
+     *   escalationCount:int,
+     *   escalationShare:float,
+     *   firstTimeRightShare:float,
+     *   medianActualMinutes:float,
+     *   p90ActualMinutes:float
+     * }>  $rows
+     */
+    private function exportPdf(array $rows, string $label, string $from, string $to): SymfonyResponse {
+        $filename = sprintf('auftragstypanalyse_%s_%s.pdf', $from, $to);
+
+        return Pdf::loadView('reports.pdf.entry-types', [
+            'rows' => $rows,
+            'label' => $label,
+        ])->setPaper('a4', 'landscape')->download($filename);
     }
 
     /**
