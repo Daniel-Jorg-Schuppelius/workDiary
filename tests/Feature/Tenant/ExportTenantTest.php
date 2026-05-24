@@ -52,8 +52,10 @@ class ExportTenantTest extends TestCase {
             'content' => 'GEHEIM-ORG-B-DIARY',
         ]));
 
-        $this->actingAs($this->adminA);
-        $response = $this->get(route('diary.export.csv', ['from' => now()->subMonth()->toDateString(), 'to' => now()->addMonth()->toDateString()]));
+        $response = $this->getAsAdminA('diary.export.csv', [
+            'from' => now()->subMonth()->toDateString(),
+            'to' => now()->addMonth()->toDateString(),
+        ]);
 
         $response->assertOk();
         $body = $this->streamContent($response);
@@ -66,8 +68,7 @@ class ExportTenantTest extends TestCase {
             'name' => 'GEHEIM-ORG-B-KUNDE',
         ]));
 
-        $this->actingAs($this->adminA);
-        $response = $this->get(route('customers.export'));
+        $response = $this->getAsAdminA('customers.export');
 
         $response->assertOk();
         $body = $this->streamContent($response);
@@ -82,8 +83,10 @@ class ExportTenantTest extends TestCase {
             'date' => now()->toDateString(),
         ]));
 
-        $this->actingAs($this->adminA);
-        $response = $this->get(route('travel-logs.export', ['from' => now()->subWeek()->toDateString(), 'to' => now()->addWeek()->toDateString()]));
+        $response = $this->getAsAdminA('travel-logs.export', [
+            'from' => now()->subWeek()->toDateString(),
+            'to' => now()->addWeek()->toDateString(),
+        ]);
 
         $response->assertOk();
         $body = $this->streamContent($response);
@@ -97,8 +100,10 @@ class ExportTenantTest extends TestCase {
             'date' => now()->toDateString(),
         ]));
 
-        $this->actingAs($this->adminA);
-        $response = $this->get(route('expenses.export', ['from' => now()->subWeek()->toDateString(), 'to' => now()->addWeek()->toDateString()]));
+        $response = $this->getAsAdminA('expenses.export', [
+            'from' => now()->subWeek()->toDateString(),
+            'to' => now()->addWeek()->toDateString(),
+        ]);
 
         $response->assertOk();
         $body = $this->streamContent($response);
@@ -125,6 +130,10 @@ class ExportTenantTest extends TestCase {
         }
 
         return implode("\n", $ids);
+    }
+
+    private function getAsAdminA(string $routeName, array $parameters = []): TestResponse {
+        return $this->actingAs($this->adminA)->get(route($routeName, $parameters));
     }
 
     /**
