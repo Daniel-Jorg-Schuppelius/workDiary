@@ -14,6 +14,7 @@ use App\Models\{EnergyLog, User, Vehicle};
 use App\Services\Fleet\EnergyLogService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -36,15 +37,13 @@ class EnergyLogTest extends TestCase {
     }
 
     public function test_index_renders(): void {
-        $this->actingAs($this->user);
-        $this->get(route('energy-logs.index'))->assertOk()->assertSee(__('Tank- & Ladelog'));
+        $this->getAsUser('energy-logs.index')->assertOk()->assertSee(__('Tank- & Ladelog'));
     }
 
     public function test_store_creates_fuel_entry(): void {
-        $this->actingAs($this->user);
         $start = CarbonImmutable::today()->setTime(10, 0);
 
-        $this->post(route('energy-logs.store'), [
+        $this->postAsUser('energy-logs.store', [
             'vehicle_id' => $this->vehicle->id,
             'energy_type' => EnergyLog::TYPE_FUEL,
             'fuel_kind' => EnergyLog::FUEL_DIESEL,
@@ -61,10 +60,9 @@ class EnergyLogTest extends TestCase {
     }
 
     public function test_electric_entry_forces_kwh_unit_and_clears_fuel_kind(): void {
-        $this->actingAs($this->user);
         $start = CarbonImmutable::today()->setTime(11, 0);
 
-        $this->post(route('energy-logs.store'), [
+        $this->postAsUser('energy-logs.store', [
             'vehicle_id' => $this->vehicle->id,
             'energy_type' => EnergyLog::TYPE_ELECTRIC,
             'fuel_kind' => EnergyLog::FUEL_DIESEL, // should be discarded by model hook
@@ -119,14 +117,12 @@ class EnergyLogTest extends TestCase {
             'user_id' => $other->id,
         ]);
 
-        $this->actingAs($this->user);
-        $this->get(route('energy-logs.edit', $log))->assertForbidden();
+        $this->getAsUser('energy-logs.edit', $log)->assertForbidden();
     }
 
     public function test_non_admin_cannot_view_other_users_logs(): void {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
-        $this->actingAs($this->user);
-        $this->get(route('energy-logs.index', ['user' => $other->id]))->assertForbidden();
+        $this->getAsUser('energy-logs.index', ['user' => $other->id])->assertForbidden();
     }
 
     public function test_admin_can_view_all_users_logs(): void {
@@ -139,7 +135,18 @@ class EnergyLogTest extends TestCase {
             'ended_at' => CarbonImmutable::today()->addMinutes(5),
         ]);
 
-        $this->actingAs($this->admin);
-        $this->get(route('energy-logs.index', ['user' => 'all']))->assertOk();
+        $this->getAsAdmin('energy-logs.index', ['user' => 'all'])->assertOk();
+    }
+
+    private function getAsUser(string $routeName, mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->get(route($routeName, $parameters));
+    }
+
+    private function postAsUser(string $routeName, array $payload = [], mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->post(route($routeName, $parameters), $payload);
+    }
+
+    private function getAsAdmin(string $routeName, mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->admin)->get(route($routeName, $parameters));
     }
 }
