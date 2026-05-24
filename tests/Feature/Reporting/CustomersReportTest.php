@@ -194,24 +194,8 @@ class CustomersReportTest extends TestCase {
     }
 
     public function test_report_can_be_exported_as_csv(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'customer_id' => $this->customer->id,
-            'project_id' => $this->project->id,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        TimeEntry::create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'diary_entry_id' => $entry->id,
-            'user_id' => $this->user->id,
-            'date' => now()->subDays(2)->toDateString(),
-            'started_at' => now()->subDays(2)->setTime(10, 0)->toDateTimeString(),
-            'ended_at' => now()->subDays(2)->setTime(11, 30)->toDateTimeString(),
-            'kind' => TimeEntryKind::Work->value,
-            'billable' => true,
-        ]);
+        $entry = $this->createCustomerDiaryEntry();
+        $this->createCustomerWorkTimeEntry($entry);
 
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
@@ -227,24 +211,8 @@ class CustomersReportTest extends TestCase {
     }
 
     public function test_report_can_be_exported_as_pdf(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'customer_id' => $this->customer->id,
-            'project_id' => $this->project->id,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        TimeEntry::create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'diary_entry_id' => $entry->id,
-            'user_id' => $this->user->id,
-            'date' => now()->subDays(2)->toDateString(),
-            'started_at' => now()->subDays(2)->setTime(10, 0)->toDateTimeString(),
-            'ended_at' => now()->subDays(2)->setTime(11, 30)->toDateTimeString(),
-            'kind' => TimeEntryKind::Work->value,
-            'billable' => true,
-        ]);
+        $entry = $this->createCustomerDiaryEntry();
+        $this->createCustomerWorkTimeEntry($entry);
 
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
@@ -341,20 +309,8 @@ class CustomersReportTest extends TestCase {
     }
 
     public function test_protocols_drilldown_route_renders_for_customer(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'customer_id' => $this->customer->id,
-            'project_id' => $this->project->id,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        Protocol::factory()->for($entry, 'subject')->state([
-            'organization_id' => $this->organization->id,
-            'created_by_user_id' => $this->user->id,
-            'type' => ProtocolType::Defect->value,
-            'title' => 'Drilldown Defektprotokoll',
-            'occurred_at' => now()->subDays(2),
-        ])->create();
+        $entry = $this->createCustomerDiaryEntry();
+        $this->createCustomerProtocol($entry, 'Drilldown Defektprotokoll');
 
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
@@ -367,25 +323,7 @@ class CustomersReportTest extends TestCase {
     }
 
     public function test_open_issues_drilldown_can_be_exported_as_csv(): void {
-        OpenIssue::create([
-            'organization_id' => $this->organization->id,
-            'subject_type' => Customer::class,
-            'subject_id' => $this->customer->id,
-            'source_type' => OpenIssueSource::Manual->value,
-            'source_ref_id' => null,
-            'title' => 'CSV Offener Punkt',
-            'description' => null,
-            'category' => 'customer',
-            'severity' => OpenIssueSeverity::High->value,
-            'status' => OpenIssueStatus::Blocked->value,
-            'assignee_user_id' => $this->user->id,
-            'due_at' => now()->addDays(1),
-            'visibility' => OpenIssueVisibility::Internal->value,
-            'closed_at' => null,
-            'closed_by_user_id' => null,
-            'closed_reason' => null,
-            'created_by_user_id' => $this->user->id,
-        ]);
+        $this->createCustomerOpenIssue('CSV Offener Punkt');
 
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
@@ -404,20 +342,8 @@ class CustomersReportTest extends TestCase {
     }
 
     public function test_protocols_drilldown_can_be_exported_as_csv(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'customer_id' => $this->customer->id,
-            'project_id' => $this->project->id,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        Protocol::factory()->for($entry, 'subject')->state([
-            'organization_id' => $this->organization->id,
-            'created_by_user_id' => $this->user->id,
-            'type' => ProtocolType::Defect->value,
-            'title' => 'CSV Defektprotokoll',
-            'occurred_at' => now()->subDays(2),
-        ])->create();
+        $entry = $this->createCustomerDiaryEntry();
+        $this->createCustomerProtocol($entry, 'CSV Defektprotokoll');
 
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
@@ -436,25 +362,7 @@ class CustomersReportTest extends TestCase {
     }
 
     public function test_open_issues_drilldown_can_be_exported_as_pdf(): void {
-        OpenIssue::create([
-            'organization_id' => $this->organization->id,
-            'subject_type' => Customer::class,
-            'subject_id' => $this->customer->id,
-            'source_type' => OpenIssueSource::Manual->value,
-            'source_ref_id' => null,
-            'title' => 'PDF Offener Punkt',
-            'description' => null,
-            'category' => 'customer',
-            'severity' => OpenIssueSeverity::High->value,
-            'status' => OpenIssueStatus::Blocked->value,
-            'assignee_user_id' => $this->user->id,
-            'due_at' => now()->addDays(1),
-            'visibility' => OpenIssueVisibility::Internal->value,
-            'closed_at' => null,
-            'closed_by_user_id' => null,
-            'closed_reason' => null,
-            'created_by_user_id' => $this->user->id,
-        ]);
+        $this->createCustomerOpenIssue('PDF Offener Punkt');
 
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
@@ -470,20 +378,8 @@ class CustomersReportTest extends TestCase {
     }
 
     public function test_protocols_drilldown_can_be_exported_as_pdf(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'customer_id' => $this->customer->id,
-            'project_id' => $this->project->id,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        Protocol::factory()->for($entry, 'subject')->state([
-            'organization_id' => $this->organization->id,
-            'created_by_user_id' => $this->user->id,
-            'type' => ProtocolType::Defect->value,
-            'title' => 'PDF Defektprotokoll',
-            'occurred_at' => now()->subDays(2),
-        ])->create();
+        $entry = $this->createCustomerDiaryEntry();
+        $this->createCustomerProtocol($entry, 'PDF Defektprotokoll');
 
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))

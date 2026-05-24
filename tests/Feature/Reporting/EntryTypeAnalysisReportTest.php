@@ -159,25 +159,8 @@ class EntryTypeAnalysisReportTest extends TestCase {
     }
 
     public function test_report_can_be_exported_as_csv(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'entry_type_id' => $this->entryType->id,
-            'planned_minutes' => 60,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        TimeEntry::create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'diary_entry_id' => $entry->id,
-            'user_id' => $this->user->id,
-            'date' => now()->subDays(2)->toDateString(),
-            'started_at' => now()->subDays(2)->setTime(10, 0)->toDateTimeString(),
-            'ended_at' => now()->subDays(2)->setTime(11, 0)->toDateTimeString(),
-            'kind' => TimeEntryKind::Work->value,
-            'billable' => true,
-        ]);
+        $entry = $this->createEntryTypeDiaryEntry();
+        $this->createEntryTypeWorkTimeEntry($entry);
 
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
@@ -193,25 +176,8 @@ class EntryTypeAnalysisReportTest extends TestCase {
     }
 
     public function test_report_can_be_exported_as_pdf(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'entry_type_id' => $this->entryType->id,
-            'planned_minutes' => 60,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        TimeEntry::create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'diary_entry_id' => $entry->id,
-            'user_id' => $this->user->id,
-            'date' => now()->subDays(2)->toDateString(),
-            'started_at' => now()->subDays(2)->setTime(10, 0)->toDateTimeString(),
-            'ended_at' => now()->subDays(2)->setTime(11, 0)->toDateTimeString(),
-            'kind' => TimeEntryKind::Work->value,
-            'billable' => true,
-        ]);
+        $entry = $this->createEntryTypeDiaryEntry();
+        $this->createEntryTypeWorkTimeEntry($entry);
 
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
@@ -315,20 +281,8 @@ class EntryTypeAnalysisReportTest extends TestCase {
     }
 
     public function test_protocols_drilldown_route_renders_for_entry_type(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'entry_type_id' => $this->entryType->id,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        Protocol::factory()->for($entry, 'subject')->state([
-            'organization_id' => $this->organization->id,
-            'created_by_user_id' => $this->user->id,
-            'type' => ProtocolType::Defect->value,
-            'title' => 'EntryType Drilldown Protocol',
-            'occurred_at' => now()->subDays(2),
-        ])->create();
+        $entry = $this->createEntryTypeDiaryEntry(null);
+        $this->createEntryTypeProtocol($entry, 'EntryType Drilldown Protocol');
 
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
@@ -341,32 +295,8 @@ class EntryTypeAnalysisReportTest extends TestCase {
     }
 
     public function test_open_issues_drilldown_can_be_exported_as_csv(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'entry_type_id' => $this->entryType->id,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        OpenIssue::create([
-            'organization_id' => $this->organization->id,
-            'subject_type' => DiaryEntry::class,
-            'subject_id' => $entry->id,
-            'source_type' => OpenIssueSource::Manual->value,
-            'source_ref_id' => null,
-            'title' => 'EntryType CSV Issue',
-            'description' => null,
-            'category' => 'entry',
-            'severity' => OpenIssueSeverity::High->value,
-            'status' => OpenIssueStatus::Blocked->value,
-            'assignee_user_id' => $this->user->id,
-            'due_at' => now()->addDays(2),
-            'visibility' => OpenIssueVisibility::Internal->value,
-            'closed_at' => null,
-            'closed_by_user_id' => null,
-            'closed_reason' => null,
-            'created_by_user_id' => $this->user->id,
-        ]);
+        $entry = $this->createEntryTypeDiaryEntry(null);
+        $this->createEntryTypeOpenIssue($entry, 'EntryType CSV Issue');
 
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
@@ -385,20 +315,8 @@ class EntryTypeAnalysisReportTest extends TestCase {
     }
 
     public function test_protocols_drilldown_can_be_exported_as_csv(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'entry_type_id' => $this->entryType->id,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        Protocol::factory()->for($entry, 'subject')->state([
-            'organization_id' => $this->organization->id,
-            'created_by_user_id' => $this->user->id,
-            'type' => ProtocolType::Defect->value,
-            'title' => 'EntryType CSV Protocol',
-            'occurred_at' => now()->subDays(2),
-        ])->create();
+        $entry = $this->createEntryTypeDiaryEntry(null);
+        $this->createEntryTypeProtocol($entry, 'EntryType CSV Protocol');
 
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
@@ -417,32 +335,8 @@ class EntryTypeAnalysisReportTest extends TestCase {
     }
 
     public function test_open_issues_drilldown_can_be_exported_as_pdf(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'entry_type_id' => $this->entryType->id,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        OpenIssue::create([
-            'organization_id' => $this->organization->id,
-            'subject_type' => DiaryEntry::class,
-            'subject_id' => $entry->id,
-            'source_type' => OpenIssueSource::Manual->value,
-            'source_ref_id' => null,
-            'title' => 'EntryType PDF Issue',
-            'description' => null,
-            'category' => 'entry',
-            'severity' => OpenIssueSeverity::High->value,
-            'status' => OpenIssueStatus::Blocked->value,
-            'assignee_user_id' => $this->user->id,
-            'due_at' => now()->addDays(2),
-            'visibility' => OpenIssueVisibility::Internal->value,
-            'closed_at' => null,
-            'closed_by_user_id' => null,
-            'closed_reason' => null,
-            'created_by_user_id' => $this->user->id,
-        ]);
+        $entry = $this->createEntryTypeDiaryEntry(null);
+        $this->createEntryTypeOpenIssue($entry, 'EntryType PDF Issue');
 
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
@@ -458,20 +352,8 @@ class EntryTypeAnalysisReportTest extends TestCase {
     }
 
     public function test_protocols_drilldown_can_be_exported_as_pdf(): void {
-        $entry = DiaryEntry::factory()->for($this->user)->create([
-            'organization_id' => $this->organization->id,
-            'project_id' => $this->project->id,
-            'entry_type_id' => $this->entryType->id,
-            'created_at' => now()->subDays(2),
-        ]);
-
-        Protocol::factory()->for($entry, 'subject')->state([
-            'organization_id' => $this->organization->id,
-            'created_by_user_id' => $this->user->id,
-            'type' => ProtocolType::Defect->value,
-            'title' => 'EntryType PDF Protocol',
-            'occurred_at' => now()->subDays(2),
-        ])->create();
+        $entry = $this->createEntryTypeDiaryEntry(null);
+        $this->createEntryTypeProtocol($entry, 'EntryType PDF Protocol');
 
         $response = $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
