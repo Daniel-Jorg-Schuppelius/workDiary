@@ -14,6 +14,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Customer, Project, TimeEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
 
@@ -116,7 +117,7 @@ class CustomerProjectReportTest extends TestCase {
         $this->assertStringStartsWith('%PDF', (string) $response->getContent());
     }
 
-    private function getWithDateRange(string $routeName, array $parameters = []): \Illuminate\Testing\TestResponse {
+    private function getWithDateRange(string $routeName, array $parameters = []): TestResponse {
         return $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->startOfYear()->toDateString(), now()->endOfYear()->toDateString()))
             ->get(route($routeName, $parameters));
