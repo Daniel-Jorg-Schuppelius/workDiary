@@ -14,6 +14,7 @@ use App\Enums\Expense\{ExpenseStatus, PerDiemTripStatus};
 use App\Models\{ExpenseCategory, PerDiemTrip, User};
 use Database\Seeders\{PerDiemRateSeeder, PermissionsSeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -37,14 +38,11 @@ class PerDiemTripControllerTest extends TestCase {
     }
 
     public function test_index_renders(): void {
-        $this->actingAs($this->user);
-        $this->get(route('per-diem-trips.index'))->assertOk();
+        $this->getAsUser('per-diem-trips.index')->assertOk();
     }
 
     public function test_store_creates_trip_with_days(): void {
-        $this->actingAs($this->user);
-
-        $response = $this->post(route('per-diem-trips.store'), [
+        $response = $this->postAsUser('per-diem-trips.store', [
             'country' => 'DE',
             'location' => 'Frankfurt',
             'purpose' => 'Workshop',
@@ -61,8 +59,7 @@ class PerDiemTripControllerTest extends TestCase {
     }
 
     public function test_convert_creates_expense_and_sets_status(): void {
-        $this->actingAs($this->user);
-        $this->post(route('per-diem-trips.store'), [
+        $this->postAsUser('per-diem-trips.store', [
             'country' => 'DE',
             'location' => 'Berlin',
             'purpose' => 'Konferenz',
@@ -72,7 +69,7 @@ class PerDiemTripControllerTest extends TestCase {
         ]);
         $trip = PerDiemTrip::query()->where('user_id', $this->user->id)->firstOrFail();
 
-        $this->post(route('per-diem-trips.convert', $trip))->assertRedirect(route('expenses.index'));
+        $this->postAsUser('per-diem-trips.convert', [], $trip)->assertRedirect(route('expenses.index'));
         $trip->refresh();
         $this->assertSame(PerDiemTripStatus::Converted, $trip->status);
         $this->assertNotNull($trip->expense_id);
@@ -80,8 +77,7 @@ class PerDiemTripControllerTest extends TestCase {
     }
 
     public function test_destroy_only_for_draft(): void {
-        $this->actingAs($this->user);
-        $this->post(route('per-diem-trips.store'), [
+        $this->postAsUser('per-diem-trips.store', [
             'country' => 'DE',
             'location' => 'München',
             'purpose' => 'Meeting',
@@ -89,13 +85,12 @@ class PerDiemTripControllerTest extends TestCase {
             'ended_at' => '2025-03-11T18:00',
         ]);
         $trip = PerDiemTrip::query()->where('user_id', $this->user->id)->firstOrFail();
-        $this->delete(route('per-diem-trips.destroy', $trip))->assertRedirect();
+        $this->deleteAsUser('per-diem-trips.destroy', $trip)->assertRedirect();
         $this->assertSame(0, PerDiemTrip::query()->count());
     }
 
     public function test_pdf_download_returns_attachment(): void {
-        $this->actingAs($this->user);
-        $this->post(route('per-diem-trips.store'), [
+        $this->postAsUser('per-diem-trips.store', [
             'country' => 'DE',
             'location' => 'Hamburg',
             'purpose' => 'Audit',
@@ -105,7 +100,7 @@ class PerDiemTripControllerTest extends TestCase {
         ]);
         $trip = PerDiemTrip::query()->where('user_id', $this->user->id)->firstOrFail();
 
-        $response = $this->get(route('per-diem-trips.pdf', $trip));
+        $response = $this->getAsUser('per-diem-trips.pdf', $trip);
 
         $response->assertOk();
         $response->assertHeader('content-type', 'application/pdf');
@@ -118,8 +113,7 @@ class PerDiemTripControllerTest extends TestCase {
 
     public function test_pdf_forbidden_for_other_user(): void {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
-        $this->actingAs($this->user);
-        $this->post(route('per-diem-trips.store'), [
+        $this->postAsUser('per-diem-trips.store', [
             'country' => 'DE',
             'location' => 'Köln',
             'purpose' => 'Schulung',
@@ -130,5 +124,17 @@ class PerDiemTripControllerTest extends TestCase {
 
         $this->actingAs($other);
         $this->get(route('per-diem-trips.pdf', $trip))->assertForbidden();
+    }
+
+    private function getAsUser(string $routeName, mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->get(route($routeName, $parameters));
+    }
+
+    private function postAsUser(string $routeName, array $payload = [], mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->post(route($routeName, $parameters), $payload);
+    }
+
+    private function deleteAsUser(string $routeName, mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->delete(route($routeName, $parameters));
     }
 }
