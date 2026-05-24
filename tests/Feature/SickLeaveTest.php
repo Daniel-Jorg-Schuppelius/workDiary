@@ -16,6 +16,7 @@ use App\Models\{SickLeave, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\TestResponse;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -37,9 +38,7 @@ class SickLeaveTest extends TestCase {
     }
 
     public function test_user_can_create_two_day_sick_leave_without_attachment(): void {
-        $this->actingAs($this->user);
-
-        $this->post(route('sick-leaves.store'), [
+        $this->postAsUser('sick-leaves.store', [
             'start_date' => '2026-05-04',
             'end_date' => '2026-05-05',
             'kind' => SickLeaveKind::Initial->value,
@@ -56,8 +55,6 @@ class SickLeaveTest extends TestCase {
     }
 
     public function test_long_sick_leave_requires_au_file(): void {
-        $this->actingAs($this->user);
-
         $this->from(route('sick-leaves.create'))
             ->post(route('sick-leaves.store'), [
                 'start_date' => '2026-05-04',
@@ -70,11 +67,9 @@ class SickLeaveTest extends TestCase {
     }
 
     public function test_long_sick_leave_succeeds_with_au_file(): void {
-        $this->actingAs($this->user);
-
         $file = UploadedFile::fake()->create('au.pdf', 50, 'application/pdf');
 
-        $this->post(route('sick-leaves.store'), [
+        $this->postAsUser('sick-leaves.store', [
             'start_date' => '2026-05-04',
             'end_date' => '2026-05-10',
             'kind' => SickLeaveKind::Initial->value,
@@ -86,8 +81,6 @@ class SickLeaveTest extends TestCase {
     }
 
     public function test_follow_up_chain_links_to_previous(): void {
-        $this->actingAs($this->user);
-
         $initial = SickLeave::factory()->create([
             'user_id' => $this->user->id,
             'start_date' => '2026-05-04',
@@ -95,7 +88,7 @@ class SickLeaveTest extends TestCase {
             'kind' => SickLeaveKind::Initial->value,
         ]);
 
-        $this->post(route('sick-leaves.store'), [
+        $this->postAsUser('sick-leaves.store', [
             'start_date' => '2026-05-07',
             'end_date' => '2026-05-09',
             'kind' => SickLeaveKind::FollowUp->value,
@@ -110,8 +103,6 @@ class SickLeaveTest extends TestCase {
     }
 
     public function test_follow_up_requires_previous_id(): void {
-        $this->actingAs($this->user);
-
         $this->from(route('sick-leaves.create'))
             ->post(route('sick-leaves.store'), [
                 'start_date' => '2026-05-07',
@@ -122,15 +113,13 @@ class SickLeaveTest extends TestCase {
     }
 
     public function test_user_can_cancel_own_sick_leave(): void {
-        $this->actingAs($this->user);
-
         $sickLeave = SickLeave::factory()->create([
             'user_id' => $this->user->id,
         ]);
 
-        $this->patch(route('sick-leaves.cancel', $sickLeave), [
+        $this->patchAsUser('sick-leaves.cancel', [
             'cancel_reason' => 'Falsch erfasst',
-        ])->assertRedirect();
+        ], $sickLeave)->assertRedirect();
 
         $sickLeave->refresh();
         $this->assertNotNull($sickLeave->cancelled_at);
@@ -141,19 +130,16 @@ class SickLeaveTest extends TestCase {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $sickLeave = SickLeave::factory()->create(['user_id' => $other->id]);
 
-        $this->actingAs($this->user);
-        $this->put(route('sick-leaves.update', $sickLeave), [
+        $this->putAsUser('sick-leaves.update', [
             'start_date' => '2026-05-01',
             'end_date' => '2026-05-02',
             'kind' => SickLeaveKind::Initial->value,
-        ])->assertForbidden();
+        ], $sickLeave)->assertForbidden();
     }
 
     public function test_attachment_download_requires_signed_url(): void {
-        $this->actingAs($this->user);
-
         $file = UploadedFile::fake()->create('au.pdf', 50, 'application/pdf');
-        $this->post(route('sick-leaves.store'), [
+        $this->postAsUser('sick-leaves.store', [
             'start_date' => '2026-05-04',
             'end_date' => '2026-05-10',
             'kind' => SickLeaveKind::Initial->value,
@@ -176,9 +162,7 @@ class SickLeaveTest extends TestCase {
     }
 
     public function test_admin_can_create_sick_leave_for_other_user(): void {
-        $this->actingAs($this->admin);
-
-        $this->post(route('sick-leaves.store'), [
+        $this->postAsAdmin('sick-leaves.store', [
             'user_id' => $this->user->id,
             'start_date' => '2026-05-04',
             'end_date' => '2026-05-05',
@@ -189,5 +173,21 @@ class SickLeaveTest extends TestCase {
             'user_id' => $this->user->id,
             'recorded_by' => $this->admin->id,
         ]);
+    }
+
+    private function postAsUser(string $routeName, array $payload = [], mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->post(route($routeName, $parameters), $payload);
+    }
+
+    private function postAsAdmin(string $routeName, array $payload = [], mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->admin)->post(route($routeName, $parameters), $payload);
+    }
+
+    private function putAsUser(string $routeName, array $payload = [], mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->put(route($routeName, $parameters), $payload);
+    }
+
+    private function patchAsUser(string $routeName, array $payload = [], mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->user)->patch(route($routeName, $parameters), $payload);
     }
 }
