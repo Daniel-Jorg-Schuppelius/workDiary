@@ -25,6 +25,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\{Carbon, Collection};
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Exceptions\PermissionDoesNotExist;
 use Spatie\Permission\Models\Permission as SpatiePermission;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -221,15 +222,23 @@ class User extends Authenticatable {
      * berücksichtigt.
      */
     public function hasEffectivePermission(string $permission): bool {
-        if ($this->hasPermissionTo($permission)) {
-            return true;
+        try {
+            if ($this->hasPermissionTo($permission)) {
+                return true;
+            }
+        } catch (PermissionDoesNotExist) {
+            return false;
         }
 
         $this->loadMissing(['userGroups.permissions', 'userGroups.roles.permissions']);
 
         foreach ($this->userGroups as $group) {
-            if ($group->hasPermissionTo($permission)) {
-                return true;
+            try {
+                if ($group->hasPermissionTo($permission)) {
+                    return true;
+                }
+            } catch (PermissionDoesNotExist) {
+                return false;
             }
         }
 

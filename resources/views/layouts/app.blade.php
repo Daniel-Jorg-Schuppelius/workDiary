@@ -33,6 +33,10 @@
         <meta name="apple-mobile-web-app-title" content="workDiary">
         <meta name="application-name" content="workDiary">
 
+           {{-- Robust fallback: stellt sicher, dass Material Symbols auch ohne
+               erfolgreich geladenes App-Bundle verfügbar bleiben. --}}
+           <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
+
         <style>
             :root { --sidebar-w: min(16rem, 85vw); --app-header-h: 3.5rem; --app-footer-h: 3rem; }
             @media (min-width: 1024px) { :root { --sidebar-w: 16rem; } }
@@ -210,10 +214,28 @@
             /* Collapsed-Mode: Header-Padding minimieren, Dropdown-Trigger zentriert. */
             body.sidebar-collapsed #app-sidebar .sidebar-header { padding-left: .25rem; padding-right: .25rem; }
             body.sidebar-collapsed #app-sidebar .sidebar-cta-menu { min-width: 16rem; }
-            /* Material Symbols Outlined ist eine Single-Color-Variable-Font und folgt automatisch
-               currentColor — sie funktioniert in jedem DaisyUI-Theme, auf jedem Hintergrund und in
-               allen Button-/Badge-/Alert-Farben ohne weitere CSS-Hacks. */
-            .material-symbols-outlined { font-size: 1.25rem; line-height: 1; vertical-align: middle; }
+                /* Material Symbols Outlined ist eine Single-Color-Variable-Font und folgt automatisch
+                    currentColor — sie funktioniert in jedem DaisyUI-Theme, auf jedem Hintergrund und in
+                    allen Button-/Badge-/Alert-Farben ohne weitere CSS-Hacks. Enthält bewusst die
+                    kompletten Basis-Styles als Fallback, falls Bundle-CSS temporär ausfällt. */
+                .material-symbols-outlined {
+                     font-family: 'Material Symbols Outlined';
+                     font-weight: normal;
+                     font-style: normal;
+                     font-size: 1.25rem;
+                     line-height: 1;
+                     letter-spacing: normal;
+                     text-transform: none;
+                     display: inline-block;
+                     white-space: nowrap;
+                     word-wrap: normal;
+                     direction: ltr;
+                     vertical-align: middle;
+                     font-feature-settings: 'liga';
+                     -webkit-font-feature-settings: 'liga';
+                     -webkit-font-smoothing: antialiased;
+                     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+                }
 
             /* Backwards-Compat: bestehende `material-icons-two-tone`-Spans
                werden transparent über die Symbols-Outlined-Variable-Font gerendert, bis sie

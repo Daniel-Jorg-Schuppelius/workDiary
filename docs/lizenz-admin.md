@@ -127,15 +127,35 @@ code:'protocols.signed'}`.
 
 ## 9. Akzeptanzkriterien
 
-1. UI mit drei Sektionen (Lizenz-Karte, Limits, Feature-Flags) +
-   Aktionen.
-2. `LicenseValidator` mit ECDSA-Signaturprüfung, Tests für jeden
-   Status-Code §4.
-3. `LimitGuard` mit Tests für jeden Limit-Typ §5.
-4. `@feature` / `requires-feature` Middleware mit Tests.
-5. Diagnose-Seite (MVP-044) zeigt Lizenz-Sektion mit gleichem
-   Status.
-6. Audit-Events §8.
+1. UI mit drei Sektionen (Lizenz-Karte, Limits, Feature-Flags) + Aktionen.
+   — erledigt: `app/Http/Controllers/Admin/LicenseAdminController.php` und
+   `resources/views/admin/license/index.blade.php` rendern Lizenz-Karte
+   (Lizenznehmer, Lizenz-ID, Ausstellung, Ablauf inkl. „n Tage verbleibend",
+   Domain-Bindung), Limits-Karten (Nutzer/Organisationen mit
+   Auslastungsbalken und Schwellen-Färbung ok/warn/critical) sowie
+   Feature-Flags-Tabelle aus `LicensePayload->features`. Aktionen-Slot
+   verlinkt auf die bestehende Aktivierungs-Seite `license.show`.
+2. `LicenseValidator` mit ECDSA-Signaturprüfung, Tests für jeden Status-Code §4.
+   — bereits vorhanden: `app/Services/Licensing/LicenseService.php` +
+   `LicenseSeal` mit ECDSA-P256. Status-Mapping läuft im
+   `LicenseAdminController::badgeTone`.
+3. `LimitGuard` mit Tests für jeden Limit-Typ §5. — **out-of-scope** dieses
+   Iterationsschritts. UI zeigt die Auslastung; Enforcement (Block bei
+   Überschreitung) bleibt für einen späteren Schritt.
+4. `@feature` / `requires-feature` Middleware mit Tests. — **out-of-scope**
+   dieses Iterationsschritts. Feature-Flags sind im UI sichtbar, eine
+   `FeatureFlagResolver`-Klasse + `requires-feature`-Middleware folgen
+   separat.
+5. Diagnose-Seite (MVP-044) zeigt Lizenz-Sektion mit gleichem Status.
+   — erledigt: `DiagnosticsService::checkLicense()` verwendet denselben
+   `LicenseService->current()` und mappt `LicenseStatus` auf
+   `DiagnosticStatus`.
+6. Audit-Events §8. — teilweise erledigt: `license.installed` wird beim
+   erfolgreichen Install im bestehenden `LicenseController::store()`
+   geschrieben (mit `license_id_sha256`, Status, Lizenznehmer, Ablauf).
+   `license.expired` / `license.gracePeriodEntered` / `license.blocked` /
+   `featureFlag.overridden` / `limit.exceeded` setzen den später folgenden
+   `LimitGuard` und `FeatureFlagResolver` voraus.
 
 ## 10. Out-of-scope (MVP-047)
 
