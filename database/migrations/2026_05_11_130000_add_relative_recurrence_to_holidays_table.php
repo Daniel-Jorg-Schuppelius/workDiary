@@ -10,28 +10,76 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\{DB, Schema};
 
 return new class extends Migration {
     public function up(): void {
-        Schema::table('holidays', function (Blueprint $table): void {
-            // date wird für relative Feiertage NULL (NULL != NULL → unique constraint bleibt)
-            $table->date('date')->nullable()->change();
+        if (! Schema::hasTable('holidays')) {
+            return;
+        }
 
-            $table->string('recurrence_type', 10)->default('fixed')->after('is_recurring');
+        $isSqlite = DB::connection()->getDriverName() === 'sqlite';
+
+        if (! $isSqlite && Schema::hasColumn('holidays', 'date')) {
+            Schema::table('holidays', function (Blueprint $table): void {
+                // date wird für relative Feiertage NULL (NULL != NULL → unique constraint bleibt)
+                $table->date('date')->nullable()->change();
+            });
+        }
+
+        Schema::table('holidays', function (Blueprint $table) use ($isSqlite): void {
+            if (! Schema::hasColumn('holidays', 'recurrence_type')) {
+                $column = $table->string('recurrence_type', 10)->default('fixed');
+                if (! $isSqlite) {
+                    $column->after('is_recurring');
+                }
+            }
             // 0=So, 1=Mo, 2=Di, 3=Mi, 4=Do, 5=Fr, 6=Sa (Carbon-Konstanten)
-            $table->tinyInteger('recurrence_weekday')->nullable()->after('recurrence_type');
+            if (! Schema::hasColumn('holidays', 'recurrence_weekday')) {
+                $column = $table->tinyInteger('recurrence_weekday')->nullable();
+                if (! $isSqlite) {
+                    $column->after('recurrence_type');
+                }
+            }
             // 1–4 = Nth, -1 = letzter
-            $table->tinyInteger('recurrence_week')->nullable()->after('recurrence_weekday');
+            if (! Schema::hasColumn('holidays', 'recurrence_week')) {
+                $column = $table->tinyInteger('recurrence_week')->nullable();
+                if (! $isSqlite) {
+                    $column->after('recurrence_weekday');
+                }
+            }
             // 1–12 oder NULL = jeden Monat
-            $table->tinyInteger('recurrence_month')->nullable()->after('recurrence_week');
+            if (! Schema::hasColumn('holidays', 'recurrence_month')) {
+                $column = $table->tinyInteger('recurrence_month')->nullable();
+                if (! $isSqlite) {
+                    $column->after('recurrence_week');
+                }
+            }
         });
     }
 
     public function down(): void {
+        if (! Schema::hasTable('holidays')) {
+            return;
+        }
+
         Schema::table('holidays', function (Blueprint $table): void {
-            $table->dropColumn(['recurrence_type', 'recurrence_weekday', 'recurrence_week', 'recurrence_month']);
-            $table->date('date')->nullable(false)->change();
+            $dropColumns = array_values(array_filter([
+                Schema::hasColumn('holidays', 'recurrence_type') ? 'recurrence_type' : null,
+                Schema::hasColumn('holidays', 'recurrence_weekday') ? 'recurrence_weekday' : null,
+                Schema::hasColumn('holidays', 'recurrence_week') ? 'recurrence_week' : null,
+                Schema::hasColumn('holidays', 'recurrence_month') ? 'recurrence_month' : null,
+            ]));
+
+            if ($dropColumns !== []) {
+                $table->dropColumn($dropColumns);
+            }
         });
+
+        if (DB::connection()->getDriverName() !== 'sqlite' && Schema::hasColumn('holidays', 'date')) {
+            Schema::table('holidays', function (Blueprint $table): void {
+                $table->date('date')->nullable(false)->change();
+            });
+        }
     }
 };

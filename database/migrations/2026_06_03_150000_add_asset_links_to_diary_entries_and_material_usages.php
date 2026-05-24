@@ -15,19 +15,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up(): void {
-        Schema::table('diary_entries', function (Blueprint $table): void {
-            $table->foreignId('asset_id')->nullable()->after('customer_id')
-                ->constrained('assets')->nullOnDelete();
+        if (Schema::hasTable('diary_entries') && ! Schema::hasColumn('diary_entries', 'asset_id')) {
+            Schema::table('diary_entries', function (Blueprint $table): void {
+                $table->foreignId('asset_id')->nullable()->after('customer_id')
+                    ->constrained('assets')->nullOnDelete();
 
-            $table->index(['organization_id', 'asset_id'], 'de_org_asset_idx');
-        });
+                $table->index(['organization_id', 'asset_id'], 'de_org_asset_idx');
+            });
+        }
 
-        Schema::table('material_usages', function (Blueprint $table): void {
-            $table->foreignId('asset_id')->nullable()->after('material_id')
-                ->constrained('assets')->nullOnDelete();
+        if (Schema::hasTable('material_usages') && ! Schema::hasColumn('material_usages', 'asset_id')) {
+            Schema::table('material_usages', function (Blueprint $table): void {
+                $table->foreignId('asset_id')->nullable()->after('material_id')
+                    ->constrained('assets')->nullOnDelete();
 
-            $table->index(['organization_id', 'asset_id'], 'material_usages_org_asset_idx');
-        });
+                $table->index(['organization_id', 'asset_id'], 'material_usages_org_asset_idx');
+            });
+        }
     }
 
     public function down(): void {

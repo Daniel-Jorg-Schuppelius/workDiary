@@ -98,9 +98,7 @@
                         <tbody>
                             @foreach ($protocols as $protocol)
                                 <tr>
-                                    <td>
-                                        <a href="{{ route('protocols.show', $protocol) }}" class="link link-hover">{{ $protocol->title }}</a>
-                                    </td>
+                                    <td>{{ $protocol->title }}</td>
                                     <td>{{ $protocol->type->label() }}</td>
                                     <td>{{ $protocol->status->label() }}</td>
                                     <td>{{ optional($protocol->occurred_at)->format('d.m.Y H:i') ?: '—' }}</td>
@@ -134,13 +132,7 @@
                                     <td>{{ number_format((float) $usage->quantity, 3, ',', '.') }} {{ $usage->unit }}</td>
                                     <td>{{ number_format((float) $usage->line_total_net, 2, ',', '.') }} €</td>
                                     <td>
-                                        @if ($usage->timesheet)
-                                            <a href="{{ route('timesheets.show', $usage->timesheet) }}" class="link link-hover">
-                                                {{ optional($usage->timesheet->work_date)->format('d.m.Y') ?: ('#' . $usage->timesheet->id) }}
-                                            </a>
-                                        @else
-                                            —
-                                        @endif
+                                        {{ optional($usage->timesheet?->work_date)->format('d.m.Y') ?: ($usage->timesheet ? ('#' . $usage->timesheet->id) : '—') }}
                                     </td>
                                 </tr>
                             @endforeach

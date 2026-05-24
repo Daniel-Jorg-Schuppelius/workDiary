@@ -10,7 +10,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\{DB, Schema};
 
 return new class extends Migration {
     /** @var list<string> Tables that receive organization_id */
@@ -29,13 +29,19 @@ return new class extends Migration {
     ];
 
     public function up(): void {
+        $isSqlite = DB::connection()->getDriverName() === 'sqlite';
+
         foreach ($this->tables as $table) {
-            Schema::table($table, function (Blueprint $blueprint) use ($table) {
-                $blueprint->foreignId('organization_id')
-                    ->nullable()
-                    ->after('id')
-                    ->constrained('organizations')
-                    ->nullOnDelete();
+            if (! Schema::hasTable($table) || Schema::hasColumn($table, 'organization_id')) {
+                continue;
+            }
+
+            Schema::table($table, function (Blueprint $blueprint) use ($table, $isSqlite) {
+                $column = $blueprint->foreignId('organization_id')->nullable();
+                if (! $isSqlite) {
+                    $column->after('id');
+                }
+                $column->constrained('organizations')->nullOnDelete();
 
                 $blueprint->index('organization_id', "idx_{$table}_org");
             });
@@ -44,6 +50,10 @@ return new class extends Migration {
 
     public function down(): void {
         foreach (array_reverse($this->tables) as $table) {
+            if (! Schema::hasTable($table) || ! Schema::hasColumn($table, 'organization_id')) {
+                continue;
+            }
+
             Schema::table($table, function (Blueprint $blueprint) use ($table) {
                 $blueprint->dropForeign(['organization_id']);
                 $blueprint->dropIndex("idx_{$table}_org");
