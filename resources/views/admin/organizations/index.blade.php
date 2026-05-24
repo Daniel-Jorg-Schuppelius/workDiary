@@ -106,7 +106,7 @@
                                     </button>
 
                                     <dialog id="purge-modal-{{ $org->id }}" class="modal">
-                                        <div class="modal-box max-w-lg">
+                                        <div class="modal-box wd-modal-box wd-modal-box--standard">
                                             <h3 class="font-bold text-lg text-error">
                                                 {{ __('Organisation endgültig löschen') }}
                                             </h3>

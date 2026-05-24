@@ -15,10 +15,13 @@
         "vite": "^8.0.0"
     },
     "dependencies": {
+        "@fontsource/ibm-plex-sans": "^5.2.8",
+        "@fontsource/space-grotesk": "^5.2.10",
         "alpinejs": "^3.15.12",
         "flatpickr": "^4.6.13",
         "leaflet": "^1.9.4",
         "leaflet-defaulticon-compatibility": "^0.1.2",
+        "material-symbols": "^0.44.9",
         "signature_pad": "^5.1.3"
     }
 }

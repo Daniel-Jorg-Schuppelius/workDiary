@@ -33,9 +33,6 @@
         <meta name="apple-mobile-web-app-title" content="workDiary">
         <meta name="application-name" content="workDiary">
 
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=space-grotesk:400,500,700|ibm-plex-sans:400,500,600" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200&display=swap" rel="stylesheet">
         <style>
             :root { --sidebar-w: min(16rem, 85vw); --app-header-h: 3.5rem; --app-footer-h: 3rem; }
             @media (min-width: 1024px) { :root { --sidebar-w: 16rem; } }

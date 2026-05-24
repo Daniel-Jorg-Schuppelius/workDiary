@@ -90,6 +90,19 @@ Standard-Anatomie:
 Referenzimplementierungen: [resources/views/org/members/index.blade.php](../resources/views/org/members/index.blade.php),
 [resources/views/archive/index.blade.php](../resources/views/archive/index.blade.php).
 
+Layout-Regeln:
+
+- Der Contentbereich nutzt im modernen App-Layout grundsätzlich die volle
+  verfügbare Breite. Neue Views setzen keine zusätzlichen `max-w-*`,
+  `container` oder `mx-auto`-Begrenzungen um `<x-page-shell>`.
+- `<x-page-shell>` bleibt der Außencontainer und nutzt standardmäßig die
+  verfügbare Contenthöhe. Nur bewusst kleine Sonderseiten setzen
+  `height="content"`.
+- Seitentitel werden vom App-Header über `@section('nav-title', …)` gehalten.
+  Im Content keine zweite identische `h1` ausgeben. `<x-page-toolbar>` bleibt
+  für Aktionen, Badges, Kontext oder Untertitel; `:title` nur verwenden, wenn
+  es einen konkreten Datensatz oder Subkontext benennt.
+
 ### 3.2 Filterleiste
 
 Listenseiten verwenden **immer** `<x-filter-bar>`. Filterfelder werden über
@@ -121,6 +134,13 @@ Regeln:
 - „Zurücksetzen" wird durch `:reset` automatisch eingehängt.
 - Mehr als sechs Felder ⇒ zweite Zeile per `flex-wrap`, kein Akkordeon.
 - Filter werden **nicht** in einen Modal verpackt.
+- Es gibt genau eine Filterfläche pro Liste: das Standard-Filter-Div ist
+  `<x-filter-bar>`. Zusätzliche Filter-Karten oder freie Inline-Formulare
+  werden nicht neu eingeführt.
+- Zeitraumwechsel, die zwischen mehreren Perioden umschalten, werden als Tabs
+  organisiert. Beispiele: Wochenansicht (`week.index`) mit Wochen-Tabs und
+  Schichtplan/Dienstplan-Ansichten mit Monats-/Perioden-Tabs. Der Filter bleibt
+  für Eingrenzungen wie Status, Mitarbeiter oder Suchtext zuständig.
 
 ### 3.3 Eingabe-Modal (Create / Edit)
 
@@ -157,6 +177,14 @@ auch in inline-Seiten wiederverwendet werden kann.
 
 Trigger: Listen-Buttons öffnen Modale über `data-entry-modal-trigger`
 (JS-Konvention, siehe `resources/js/entry-modal.js`).
+
+Dialogbreiten:
+
+- Standarddialoge verwenden die einheitliche Breite von `<x-modal>`; `size`
+  wird nur für `compact` oder dokumentierte `wide`-Ausnahmen gesetzt.
+- Dialoge folgen dem Corporate Design über DaisyUI-Theme-Tokens, Border,
+  Header-Akzent und sticky Footer. Freie `modal-box max-w-*`-Varianten sind
+  nur für dokumentierte Spezialfälle zulässig.
 
 ### 3.4 Formular-Anatomie
 
@@ -337,6 +365,9 @@ projekt-spezifischen Tailwind-Klassen direkt im Template.
 
 - Set: **Google Material Symbols, Outlined** (kein Mix mit Heroicons,
   FontAwesome u. ä.).
+- Fonts und Icon-Fonts werden ausschließlich lokal über npm/Vite gebündelt
+  (`@fontsource/ibm-plex-sans`, `@fontsource/space-grotesk`,
+  `material-symbols`). Keine CDN-/Remote-Font-Links in Blade-Layouts.
 - Verwendung: `<x-icon name="edit" />` oder im Notfall
   `<span class="material-symbols-outlined">edit</span>`.
 - Icon-only-Buttons benötigen immer `:label="…"` für Screenreader und Tooltip.
@@ -372,8 +403,14 @@ Kurzfassung; verbindliche Vollversion in
 Vor dem Merge eines Pull Requests, der Views ändert oder hinzufügt:
 
 - [ ] `<x-page-shell>` als Außencontainer (außer dokumentierte Ausnahme).
-- [ ] `<x-page-toolbar>` mit Titel und ggf. Aktions-Slot vorhanden.
+- [ ] Content nutzt volle Breite; keine unnötigen `max-w-*`/`container` um den
+      Hauptbereich.
+- [ ] Kein doppelter Seitentitel im Content; der App-Header hält den Titel.
+- [ ] `<x-page-toolbar>` für Aktionen/Kontext vorhanden, aber ohne identischen
+      Seitentitel.
 - [ ] Filter über `<x-filter-bar>` / `<x-filter-field>`; GET-Form.
+- [ ] Zeitraumwechsel über Tabs, nicht über zusätzliche Filter- oder
+      Überschriftenblöcke.
 - [ ] Tabellen über `<x-table>` mit `<x-table.th>` für sortierbare Spalten
       und `<x-table.empty>` für Leerzustand.
 - [ ] Eingaben in `<x-modal>` (Ausnahme dokumentiert).

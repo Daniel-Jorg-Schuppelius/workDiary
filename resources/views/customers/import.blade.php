@@ -4,17 +4,20 @@
 @section('nav-title', __('Kunden importieren (CSV)'))
 
 @section('content')
-<div class="container mx-auto p-6 max-w-2xl">
-    <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-semibold">{{ __('Kunden importieren (CSV)') }}</h1>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('customers.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
-    </div>
+<x-page-shell gap="6">
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:actions>
+                <x-icon-btn icon="arrow_back" size="sm" :href="route('customers.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if (session('error'))
-        <div class="alert alert-error mb-4"><span>{{ session('error') }}</span></div>
+        <div class="alert alert-error"><span>{{ session('error') }}</span></div>
     @endif
 
-    <div class="card bg-base-100 shadow">
+    <div class="card border border-base-300 bg-base-100 shadow-xs">
         <div class="card-body">
             <form method="POST" action="{{ route('customers.import') }}" enctype="multipart/form-data" class="space-y-4">
                 @csrf
@@ -46,5 +49,5 @@
             </form>
         </div>
     </div>
-</div>
+</x-page-shell>
 @endsection

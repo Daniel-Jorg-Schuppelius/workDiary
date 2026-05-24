@@ -22,7 +22,7 @@
         <div class="card bg-base-100 shadow">
             <div class="card-body gap-2">
                 <div class="text-xs uppercase tracking-wide opacity-70">{{ $event->event_type?->label() }}</div>
-                <h1 class="text-2xl font-bold">{{ $event->title }}</h1>
+                <h2 class="text-2xl font-bold">{{ $event->title }}</h2>
                 <div class="flex flex-wrap items-center gap-2 text-sm">
                     <x-status-badge :status="$event->status?->value" :label="$event->status?->label()" />
                     @if ($event->is_mandatory)

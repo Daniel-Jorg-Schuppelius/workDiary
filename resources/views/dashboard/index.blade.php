@@ -10,7 +10,7 @@
         /** @var array $finance */
     @endphp
 
-    <x-page-shell gap="6" class="mx-auto max-w-screen-2xl px-4 xl:px-8 2xl:px-12">
+    <x-page-shell gap="6">
 
         {{-- Header --}}
         <div class="flex flex-wrap items-end justify-between gap-3">

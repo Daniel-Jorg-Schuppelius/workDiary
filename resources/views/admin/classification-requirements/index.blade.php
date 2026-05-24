@@ -9,7 +9,7 @@
         <x-page-toolbar>
             <x-slot:title>
                 <div>
-                    <h1 class="text-xl font-semibold">{{ __('Pflichtregeln') }}</h1>
+                    <h2 class="text-xl font-semibold">{{ __('Pflichtregeln') }}</h2>
                     <p class="text-sm text-base-content/60">{{ __('Pflichtklassifikationen pro Auftragstyp für :org verwalten.', ['org' => $organization->name]) }}</p>
                 </div>
             </x-slot:title>

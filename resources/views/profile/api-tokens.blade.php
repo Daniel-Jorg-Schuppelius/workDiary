@@ -4,15 +4,13 @@
 @section('nav-title', __('API-Tokens'))
 
 @section('content')
-<div class="mx-auto flex h-[calc(100dvh-11rem)] max-w-3xl flex-col gap-6 overflow-auto p-4">
-    <h1 class="text-2xl font-semibold">{{ __('API-Tokens') }}</h1>
+<x-page-shell gap="6">
 
     @if (! empty($newToken))
-            <div class="space-y-2">
-                <p class="font-semibold">{{ __('Neuer Token erstellt') }} ({{ $newTokenName }})</p>
-                <p class="text-sm">{{ __('Dieser Token wird nur einmalig angezeigt — bitte sicher speichern:') }}</p>
-                <code class="block break-all rounded bg-base-200 p-2 text-sm">{{ $newToken }}</code>
-            </div>
+        <div class="rounded-box border border-success/30 bg-success/10 p-4">
+            <p class="font-semibold">{{ __('Neuer Token erstellt') }} ({{ $newTokenName }})</p>
+            <p class="text-sm">{{ __('Dieser Token wird nur einmalig angezeigt — bitte sicher speichern:') }}</p>
+            <code class="mt-2 block break-all rounded bg-base-200 p-2 text-sm">{{ $newToken }}</code>
         </div>
     @endif
 
@@ -29,35 +27,34 @@
     </form>
 
     <x-table>
-                <thead>
-                    <tr>
-                        <th>{{ __('Name') }}</th>
-                        <th>{{ __('Erstellt') }}</th>
-                        <th>{{ __('Zuletzt benutzt') }}</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($tokens as $token)
-                        <tr>
-                            <td>{{ $token->name }}</td>
-                            <td>{{ optional($token->created_at)->format('d.m.Y H:i') }}</td>
-                            <td>{{ $token->last_used_at ? $token->last_used_at->diffForHumans() : '—' }}</td>
-                            <td class="text-right">
-                                <form method="POST" action="{{ route('profile.api-tokens.destroy', $token->id) }}" class="inline"
-                                      data-confirm-dialog
-                                      data-confirm-message="{{ __('Token wirklich widerrufen?') }}"
-                                      data-confirm-label="{{ __('Widerrufen') }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <x-icon-btn icon="block" tone="error" type="submit" :label="__('Widerrufen')" />
-                                </form>
-                            </td>
-                        </tr>
-                    @empty
-                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">key</span>' :colspan="4" :title="__('Keine API-Token vorhanden')" compact />
-                    @endforelse
-                </tbody>
+        <x-slot:head>
+            <tr>
+                <th>{{ __('Name') }}</th>
+                <th>{{ __('Erstellt') }}</th>
+                <th>{{ __('Zuletzt benutzt') }}</th>
+                <th></th>
+            </tr>
+        </x-slot:head>
+
+        @forelse ($tokens as $token)
+            <tr>
+                <td>{{ $token->name }}</td>
+                <td>{{ optional($token->created_at)->format('d.m.Y H:i') }}</td>
+                <td>{{ $token->last_used_at ? $token->last_used_at->diffForHumans() : '—' }}</td>
+                <td class="text-right">
+                    <form method="POST" action="{{ route('profile.api-tokens.destroy', $token->id) }}" class="inline"
+                          data-confirm-dialog
+                          data-confirm-message="{{ __('Token wirklich widerrufen?') }}"
+                          data-confirm-label="{{ __('Widerrufen') }}">
+                        @csrf
+                        @method('DELETE')
+                        <x-icon-btn icon="block" tone="error" type="submit" :label="__('Widerrufen')" />
+                    </form>
+                </td>
+            </tr>
+        @empty
+            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">key</span>' :colspan="4" :title="__('Keine API-Token vorhanden')" compact />
+        @endforelse
     </x-table>
-</div>
+</x-page-shell>
 @endsection

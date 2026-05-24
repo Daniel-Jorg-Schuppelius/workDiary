@@ -17,9 +17,6 @@
         })();
     </script>
     <title>{{ __('Datenbank nicht erreichbar') }} – {{ config('app.name', 'WorkDiary') }}</title>
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=space-grotesk:400,500,700|ibm-plex-sans:400,500,600" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200&display=swap" rel="stylesheet">
     <style>
         .material-symbols-outlined {
             font-family: 'Material Symbols Outlined';

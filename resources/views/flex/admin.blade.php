@@ -7,8 +7,7 @@
     /** @var \App\Models\User $user */
     /** @var \App\Services\Calendar\WeekViewService $service */
 @endphp
-<div class="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto">
-    <h1 class="font-['Space_Grotesk'] text-xl font-semibold">{{ __('Gleitzeit – Team') }}</h1>
+<x-page-shell>
 
     @if ($users->isNotEmpty())
         <div role="tablist" class="tabs tabs-box">
@@ -31,4 +30,5 @@
     @endif
 
     @include('flex.index', ['isAdmin' => true])
+</x-page-shell>
 @endsection

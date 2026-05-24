@@ -8,7 +8,7 @@
     <x-slot:toolbar>
         <x-page-toolbar>
             <x-slot:title>
-                <h1 class="text-xl font-semibold">{{ $member->name }}</h1>
+                <h2 class="text-xl font-semibold">{{ $member->name }}</h2>
                 <p class="text-sm text-base-content/60">{{ __('flex.eligibility.subtitle', ['name' => $member->name]) }}</p>
             </x-slot:title>
             <x-slot:actions>

@@ -1,3 +1,10 @@
+@import "@fontsource/ibm-plex-sans/latin-400.css";
+@import "@fontsource/ibm-plex-sans/latin-500.css";
+@import "@fontsource/ibm-plex-sans/latin-600.css";
+@import "@fontsource/space-grotesk/latin-400.css";
+@import "@fontsource/space-grotesk/latin-500.css";
+@import "@fontsource/space-grotesk/latin-700.css";
+@import "material-symbols/outlined.css";
 @import "tailwindcss";
 
 @plugin '../../node_modules/daisyui/index.js' {
@@ -31,6 +38,9 @@
         /* Dialoge: zentrale Max-Höhe – luftiger als 100vh,
            siehe /memories/repo/workdiary-dialog-rules.md */
         --wd-dialog-max-h: 68vh;
+        --wd-dialog-w-compact: 36rem;
+        --wd-dialog-w-standard: 48rem;
+        --wd-dialog-w-wide: 64rem;
     }
 
     body {
@@ -961,8 +971,22 @@
     .modal-box.wd-modal-box {
         display: flex;
         flex-direction: column;
+        width: min(var(--wd-dialog-w-standard), calc(100vw - 2rem));
+        max-width: calc(100vw - 2rem);
         max-height: var(--wd-dialog-max-h, 68vh);
         overflow: hidden; /* der innere .wd-modal-body scrollt */
+    }
+
+    .modal-box.wd-modal-box--compact {
+        width: min(var(--wd-dialog-w-compact), calc(100vw - 2rem));
+    }
+
+    .modal-box.wd-modal-box--standard {
+        width: min(var(--wd-dialog-w-standard), calc(100vw - 2rem));
+    }
+
+    .modal-box.wd-modal-box--wide {
+        width: min(var(--wd-dialog-w-wide), calc(100vw - 2rem));
     }
 
     .modal-box.wd-modal-box > .wd-modal-body {

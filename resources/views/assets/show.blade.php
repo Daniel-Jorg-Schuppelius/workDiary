@@ -13,7 +13,7 @@
         <x-card>
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div class="space-y-1">
-                    <h1 class="text-xl font-semibold">{{ $asset->name }}</h1>
+                    <h2 class="text-xl font-semibold">{{ $asset->name }}</h2>
                     <div class="text-sm text-base-content/70">
                         {{ __('Asset-Nr.') }}: <span class="font-mono">{{ $asset->asset_no }}</span>
                     </div>

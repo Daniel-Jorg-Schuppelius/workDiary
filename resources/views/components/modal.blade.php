@@ -29,7 +29,7 @@
     'badge' => null,
     'badgeTone' => 'ghost',
     'tone' => 'primary',
-    'size' => 'lg',
+    'size' => 'standard',
     'embedded' => true,
     'action' => null,
     'method' => 'POST',
@@ -70,12 +70,15 @@
     ][$tone] ?? 'bg-primary/15 text-primary';
 
     $sizeClass = [
-        'sm'  => 'max-w-sm',
-        'md'  => 'max-w-md',
-        'lg'  => 'max-w-3xl',
-        'xl'  => 'max-w-5xl',
-        '2xl' => 'max-w-7xl',
-    ][$size] ?? 'max-w-3xl';
+        'sm'       => 'wd-modal-box--compact',
+        'compact'  => 'wd-modal-box--compact',
+        'md'       => 'wd-modal-box--standard',
+        'lg'       => 'wd-modal-box--standard',
+        'standard' => 'wd-modal-box--standard',
+        'xl'       => 'wd-modal-box--standard',
+        '2xl'      => 'wd-modal-box--standard',
+        'wide'     => 'wd-modal-box--wide',
+    ][$size] ?? 'wd-modal-box--standard';
 
     $methodUpper = strtoupper($method ?? 'POST');
     $isSpoofed   = in_array($methodUpper, ['PUT', 'PATCH', 'DELETE'], true);

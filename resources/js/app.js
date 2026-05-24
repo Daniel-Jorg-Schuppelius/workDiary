@@ -338,7 +338,7 @@ document.addEventListener("click", (event) => {
         dialog.id = "entry-modal";
         dialog.className = "modal";
         dialog.innerHTML = `
-            <div class="modal-box w-11/12 max-w-4xl p-0">
+            <div class="modal-box wd-modal-box wd-modal-box--standard p-0">
                 <div id="entry-modal-body"></div>
             </div>
             <form method="dialog" class="modal-backdrop">

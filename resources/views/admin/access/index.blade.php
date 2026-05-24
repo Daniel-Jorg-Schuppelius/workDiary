@@ -8,7 +8,7 @@
     <x-slot:toolbar>
         <x-page-toolbar>
             <x-slot:title>
-                <h1 class="text-xl font-semibold">{{ __('access.title.hub') }}</h1>
+                <h2 class="text-xl font-semibold">{{ __('access.title.hub') }}</h2>
                 @if ($organization)
                     <p class="text-sm text-base-content/60">
                         {{ __('access.subtitle.context', ['org' => $organization->name]) }}
