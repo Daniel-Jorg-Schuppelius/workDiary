@@ -66,6 +66,11 @@ return [
             'show_contact' => false,
             'show_footer' => true,
         ],
+        'report' => [
+            'logo' => 'light',
+            'show_contact' => true,
+            'show_footer' => true,
+        ],
     ],
 
     // Upload-Limits in KB.

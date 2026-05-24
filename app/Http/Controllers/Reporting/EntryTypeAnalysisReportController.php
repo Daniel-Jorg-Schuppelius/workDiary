@@ -16,7 +16,7 @@ use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, DiaryEntry, EntryType, OpenIssue, Protocol, TimeEntry, User};
+use App\Models\{AuditLog, Customer, DiaryEntry, EntryType, OpenIssue, Protocol, TimeEntry, User};
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{Request, Response};
@@ -39,10 +39,28 @@ class EntryTypeAnalysisReportController extends Controller {
         $rows = $this->buildRows($from, $to, $customerId, $userId, $entryTypeFilter, $statusFilter);
 
         if ($request->query('export') === 'csv') {
+            $this->auditExport($request, 'entry-types-analysis', 'csv', [
+                'from' => $from->toDateString(),
+                'to' => $to->toDateString(),
+                'customer_id' => $customerId,
+                'user_id' => $userId,
+                'entry_type_id' => $entryTypeFilter,
+                'status' => $statusFilter,
+            ]);
+
             return $this->exportCsv($rows, $from->toDateString(), $to->toDateString());
         }
 
         if ($request->query('export') === 'pdf') {
+            $this->auditExport($request, 'entry-types-analysis', 'pdf', [
+                'from' => $from->toDateString(),
+                'to' => $to->toDateString(),
+                'customer_id' => $customerId,
+                'user_id' => $userId,
+                'entry_type_id' => $entryTypeFilter,
+                'status' => $statusFilter,
+            ]);
+
             return $this->exportPdf($rows, $range['label'], $from->toDateString(), $to->toDateString());
         }
 
@@ -358,5 +376,34 @@ class EntryTypeAnalysisReportController extends Controller {
         }
 
         return $options;
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    private function auditExport(Request $request, string $reportCode, string $format, array $filters): void {
+        $user = $request->user();
+        if (! $user instanceof User || $user->organization_id === null) {
+            return;
+        }
+
+        $payload = json_encode($filters, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $filterHash = hash('sha256', $payload === false ? '' : $payload);
+
+        AuditLog::create([
+            'organization_id' => $user->organization_id,
+            'user_id' => $user->id,
+            'event' => 'report.exported',
+            'auditable_type' => self::class,
+            'auditable_id' => 0,
+            'changes' => [
+                'report_code' => $reportCode,
+                'format' => $format,
+                'filter_hash' => $filterHash,
+                'filters' => $filters,
+            ],
+            'ip' => $request->ip(),
+            'user_agent' => substr((string) $request->userAgent(), 0, 255),
+        ]);
     }
 }

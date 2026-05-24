@@ -15,7 +15,7 @@ use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, DiaryEntry, OpenIssue, Project, Protocol};
+use App\Models\{AuditLog, Customer, DiaryEntry, OpenIssue, Project, Protocol, User};
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
@@ -91,12 +91,30 @@ class CustomerDrilldownReportController extends Controller {
             /** @var list<OpenIssue> $issues */
             $issues = $issuesQuery->clone()->get()->all();
 
+            $this->auditExport($request, 'customer-drilldown-open-issues', 'csv', [
+                'from' => $from->toDateString(),
+                'to' => $to->toDateString(),
+                'customer_id' => $customerId,
+                'project_id' => $projectId,
+                'user_id' => $userId,
+                'escalated' => $escalatedOnly,
+            ]);
+
             return $this->exportOpenIssuesCsv($issues, $customerId, $from->toDateString(), $to->toDateString(), $escalatedOnly);
         }
 
         if ($request->query('export') === 'pdf') {
             /** @var list<OpenIssue> $issues */
             $issues = $issuesQuery->clone()->get()->all();
+
+            $this->auditExport($request, 'customer-drilldown-open-issues', 'pdf', [
+                'from' => $from->toDateString(),
+                'to' => $to->toDateString(),
+                'customer_id' => $customerId,
+                'project_id' => $projectId,
+                'user_id' => $userId,
+                'escalated' => $escalatedOnly,
+            ]);
 
             return $this->exportOpenIssuesPdf(
                 $issues,
@@ -159,12 +177,28 @@ class CustomerDrilldownReportController extends Controller {
             /** @var list<Protocol> $protocols */
             $protocols = $protocolsQuery->clone()->get()->all();
 
+            $this->auditExport($request, 'customer-drilldown-protocols', 'csv', [
+                'from' => $from->toDateString(),
+                'to' => $to->toDateString(),
+                'customer_id' => $customerId,
+                'project_id' => $projectId,
+                'user_id' => $userId,
+            ]);
+
             return $this->exportProtocolsCsv($protocols, $customerId, $from->toDateString(), $to->toDateString());
         }
 
         if ($request->query('export') === 'pdf') {
             /** @var list<Protocol> $protocols */
             $protocols = $protocolsQuery->clone()->get()->all();
+
+            $this->auditExport($request, 'customer-drilldown-protocols', 'pdf', [
+                'from' => $from->toDateString(),
+                'to' => $to->toDateString(),
+                'customer_id' => $customerId,
+                'project_id' => $projectId,
+                'user_id' => $userId,
+            ]);
 
             return $this->exportProtocolsPdf(
                 $protocols,
@@ -322,6 +356,35 @@ class CustomerDrilldownReportController extends Controller {
         return response("\xEF\xBB\xBF" . $csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    private function auditExport(Request $request, string $reportCode, string $format, array $filters): void {
+        $user = $request->user();
+        if (! $user instanceof User || $user->organization_id === null) {
+            return;
+        }
+
+        $payload = json_encode($filters, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $filterHash = hash('sha256', $payload === false ? '' : $payload);
+
+        AuditLog::create([
+            'organization_id' => $user->organization_id,
+            'user_id' => $user->id,
+            'event' => 'report.exported',
+            'auditable_type' => self::class,
+            'auditable_id' => 0,
+            'changes' => [
+                'report_code' => $reportCode,
+                'format' => $format,
+                'filter_hash' => $filterHash,
+                'filters' => $filters,
+            ],
+            'ip' => $request->ip(),
+            'user_agent' => substr((string) $request->userAgent(), 0, 255),
         ]);
     }
 }
