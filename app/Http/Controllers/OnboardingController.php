@@ -11,14 +11,37 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\Permission;
-use App\Models\User;
+use App\Models\{AuditLog, OnboardingProgress, User};
 use App\Services\Onboarding\OnboardingChecklistResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class OnboardingController extends Controller {
+    /** @var list<string> */
+    private const STEP_CODES = [
+        'org.profile',
+        'org.branch_profile',
+        'users.invite',
+        'roles.check',
+        'classification.check',
+        'customer.first',
+        'work.first',
+        'time.first',
+        'protocol.first_signed',
+        'backup.heartbeat',
+    ];
+
+    /** @var list<string> */
+    private const HARD_REQUIRED_STEP_CODES = [
+        'org.profile',
+        'roles.check',
+        'customer.first',
+        'work.first',
+    ];
+
     public function __invoke(Request $request, OnboardingChecklistResolver $resolver): View {
         /** @var User $user */
         $user = $request->user();
@@ -91,7 +114,9 @@ class OnboardingController extends Controller {
                     'href' => null,
                 ];
 
-                return array_merge($step, $meta);
+                return array_merge($step, $meta, [
+                    'skippable' => ! in_array($step['code'], self::HARD_REQUIRED_STEP_CODES, true),
+                ]);
             },
             $checklist['steps']
         );
@@ -100,5 +125,54 @@ class OnboardingController extends Controller {
             'organization' => $organization,
             'checklist' => array_merge($checklist, ['steps' => $steps]),
         ]);
+    }
+
+    public function skipStep(Request $request, string $step): \Illuminate\Http\RedirectResponse {
+        /** @var User $user */
+        $user = $request->user();
+
+        Gate::authorize(Permission::OrgOnboardingSkipStep->value);
+
+        abort_unless(in_array($step, self::STEP_CODES, true), Response::HTTP_NOT_FOUND);
+
+        if (in_array($step, self::HARD_REQUIRED_STEP_CODES, true)) {
+            return back()->withErrors([
+                'step' => __('Dieser Onboarding-Schritt kann nicht übersprungen werden.'),
+            ]);
+        }
+
+        $data = $request->validate([
+            'reason' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $organization = $user->organization;
+        abort_if($organization === null, 404);
+
+        $progress = OnboardingProgress::query()->withoutGlobalScopes()->updateOrCreate(
+            [
+                'organization_id' => $organization->id,
+                'step_code' => $step,
+            ],
+            [
+                'state' => 'skipped',
+                'done_at' => null,
+                'done_by_user_id' => $user->id,
+                'skipped_reason' => (string) $data['reason'],
+            ]
+        );
+
+        AuditLog::query()->create([
+            'organization_id' => $organization->id,
+            'user_id' => $user->id,
+            'event' => 'onboarding.stepSkipped',
+            'auditable_type' => OnboardingProgress::class,
+            'auditable_id' => $progress->id,
+            'changes' => [
+                'step_code' => $step,
+                'reason' => (string) $data['reason'],
+            ],
+        ]);
+
+        return back()->with('success', __('Onboarding-Schritt wurde übersprungen.'));
     }
 }

@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Onboarding;
 
-use App\Models\User;
+use App\Models\{AuditLog, OnboardingProgress, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -44,5 +44,58 @@ class OnboardingPageTest extends TestCase {
             ->assertSee(__('Onboarding-Checkliste'))
             ->assertSee(__('Fortschritt'))
             ->assertSee('org.profile');
+    }
+
+    public function test_skip_requires_permission(): void {
+        $user = User::factory()->user()->create();
+
+        $this->actingAs($user)
+            ->from(route('onboarding.index'))
+            ->post(route('onboarding.steps.skip', ['step' => 'users.invite']), [
+                'reason' => 'Vorübergehend alleiniger Admin',
+            ])
+            ->assertForbidden();
+    }
+
+    public function test_admin_can_skip_non_hard_step_with_reason(): void {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->from(route('onboarding.index'))
+            ->post(route('onboarding.steps.skip', ['step' => 'users.invite']), [
+                'reason' => 'Aktuell noch kein zweiter Account verfügbar',
+            ])
+            ->assertRedirect(route('onboarding.index'));
+
+        $this->assertDatabaseHas('onboarding_progress', [
+            'organization_id' => $admin->organization_id,
+            'step_code' => 'users.invite',
+            'state' => 'skipped',
+            'done_by_user_id' => $admin->id,
+        ]);
+
+        $this->assertDatabaseHas('audit_logs', [
+            'organization_id' => $admin->organization_id,
+            'user_id' => $admin->id,
+            'event' => 'onboarding.stepSkipped',
+            'auditable_type' => OnboardingProgress::class,
+        ]);
+    }
+
+    public function test_hard_step_cannot_be_skipped(): void {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->from(route('onboarding.index'))
+            ->post(route('onboarding.steps.skip', ['step' => 'org.profile']), [
+                'reason' => 'Sollte nicht erlaubt sein',
+            ])
+            ->assertSessionHasErrors('step');
+
+        $this->assertDatabaseMissing('onboarding_progress', [
+            'organization_id' => $admin->organization_id,
+            'step_code' => 'org.profile',
+            'state' => 'skipped',
+        ]);
     }
 }

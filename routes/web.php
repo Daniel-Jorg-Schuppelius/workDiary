@@ -85,6 +85,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('access.new')->group(function () {
         Route::get('dashboard', [DashboardController::class, '__invoke'])->name('dashboard');
         Route::get('onboarding', [OnboardingController::class, '__invoke'])->name('onboarding.index');
+        Route::post('onboarding/steps/{step}/skip', [OnboardingController::class, 'skipStep'])->name('onboarding.steps.skip');
 
         Route::get('diary/export.csv', [DiaryExportController::class, 'csv'])->name('diary.export.csv');
         Route::get('diary/export.pdf', [DiaryExportController::class, 'pdf'])->name('diary.export.pdf');
