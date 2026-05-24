@@ -128,9 +128,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
             'created_by_user_id' => $this->user->id,
         ]);
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
-            ->get(route('reports.entry-types'));
+        $response = $this->getWithDateRange('reports.entry-types');
 
         $response->assertOk();
         $response->assertSee('Service');
@@ -162,9 +160,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $entry = $this->createEntryTypeDiaryEntry();
         $this->createEntryTypeWorkTimeEntry($entry);
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
-            ->get(route('reports.entry-types', ['export' => 'csv']));
+        $response = $this->getWithDateRange('reports.entry-types', ['export' => 'csv']);
 
         $response->assertOk();
         $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
@@ -179,9 +175,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $entry = $this->createEntryTypeDiaryEntry();
         $this->createEntryTypeWorkTimeEntry($entry);
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
-            ->get(route('reports.entry-types', ['export' => 'pdf']));
+        $response = $this->getWithDateRange('reports.entry-types', ['export' => 'pdf']);
 
         $response->assertOk();
         $response->assertHeader('content-type', 'application/pdf');
@@ -235,12 +229,10 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $entry = $this->createEntryTypeDiaryEntry(null);
         $this->createEntryTypeOpenIssue($entry, 'EntryType Drilldown Issue');
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
-            ->get(route('reports.entry-types.drilldown.open-issues', [
-                'entry_type_id' => $this->entryType->id,
-                'escalated' => 1,
-            ]));
+        $response = $this->getWithDateRange('reports.entry-types.drilldown.open-issues', [
+            'entry_type_id' => $this->entryType->id,
+            'escalated' => 1,
+        ]);
 
         $response->assertOk();
         $response->assertSeeText('EntryType Drilldown Issue');
@@ -250,11 +242,9 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $entry = $this->createEntryTypeDiaryEntry(null);
         $this->createEntryTypeProtocol($entry, 'EntryType Drilldown Protocol');
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
-            ->get(route('reports.entry-types.drilldown.protocols', [
-                'entry_type_id' => $this->entryType->id,
-            ]));
+        $response = $this->getWithDateRange('reports.entry-types.drilldown.protocols', [
+            'entry_type_id' => $this->entryType->id,
+        ]);
 
         $response->assertOk();
         $response->assertSeeText('EntryType Drilldown Protocol');
@@ -264,12 +254,10 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $entry = $this->createEntryTypeDiaryEntry(null);
         $this->createEntryTypeOpenIssue($entry, 'EntryType CSV Issue');
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
-            ->get(route('reports.entry-types.drilldown.open-issues', [
-                'entry_type_id' => $this->entryType->id,
-                'export' => 'csv',
-            ]));
+        $response = $this->getWithDateRange('reports.entry-types.drilldown.open-issues', [
+            'entry_type_id' => $this->entryType->id,
+            'export' => 'csv',
+        ]);
 
         $response->assertOk();
         $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
@@ -284,12 +272,10 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $entry = $this->createEntryTypeDiaryEntry(null);
         $this->createEntryTypeProtocol($entry, 'EntryType CSV Protocol');
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
-            ->get(route('reports.entry-types.drilldown.protocols', [
-                'entry_type_id' => $this->entryType->id,
-                'export' => 'csv',
-            ]));
+        $response = $this->getWithDateRange('reports.entry-types.drilldown.protocols', [
+            'entry_type_id' => $this->entryType->id,
+            'export' => 'csv',
+        ]);
 
         $response->assertOk();
         $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
@@ -304,12 +290,10 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $entry = $this->createEntryTypeDiaryEntry(null);
         $this->createEntryTypeOpenIssue($entry, 'EntryType PDF Issue');
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
-            ->get(route('reports.entry-types.drilldown.open-issues', [
-                'entry_type_id' => $this->entryType->id,
-                'export' => 'pdf',
-            ]));
+        $response = $this->getWithDateRange('reports.entry-types.drilldown.open-issues', [
+            'entry_type_id' => $this->entryType->id,
+            'export' => 'pdf',
+        ]);
 
         $response->assertOk();
         $response->assertHeader('content-type', 'application/pdf');
@@ -321,12 +305,10 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $entry = $this->createEntryTypeDiaryEntry(null);
         $this->createEntryTypeProtocol($entry, 'EntryType PDF Protocol');
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
-            ->get(route('reports.entry-types.drilldown.protocols', [
-                'entry_type_id' => $this->entryType->id,
-                'export' => 'pdf',
-            ]));
+        $response = $this->getWithDateRange('reports.entry-types.drilldown.protocols', [
+            'entry_type_id' => $this->entryType->id,
+            'export' => 'pdf',
+        ]);
 
         $response->assertOk();
         $response->assertHeader('content-type', 'application/pdf');
