@@ -75,9 +75,9 @@ class CustomerControllerTest extends TestCase {
 
     public function test_store_auto_assigns_customer_number(): void {
         $this->postAsAdmin('customers.store', [
-                'name' => 'Neuer Kunde',
-                'currency' => 'EUR',
-            ])
+            'name' => 'Neuer Kunde',
+            'currency' => 'EUR',
+        ])
             ->assertRedirect();
 
         $this->assertDatabaseHas('customers', [
@@ -102,14 +102,14 @@ class CustomerControllerTest extends TestCase {
 
     public function test_store_persists_contact_persons(): void {
         $this->postAsAdmin('customers.store', [
-                'name' => 'Mit Kontakten',
-                'currency' => 'EUR',
-                'contact_persons' => [
-                    ['name' => 'Anna Beispiel', 'email' => 'anna@example.com', 'phone' => '+49 1', 'primary' => '1'],
-                    ['name' => '', 'email' => '', 'phone' => ''], // leer → wird gefiltert
-                    ['name' => 'Bert Test', 'email' => 'bert@example.com', 'phone' => ''],
-                ],
-            ])
+            'name' => 'Mit Kontakten',
+            'currency' => 'EUR',
+            'contact_persons' => [
+                ['name' => 'Anna Beispiel', 'email' => 'anna@example.com', 'phone' => '+49 1', 'primary' => '1'],
+                ['name' => '', 'email' => '', 'phone' => ''], // leer → wird gefiltert
+                ['name' => 'Bert Test', 'email' => 'bert@example.com', 'phone' => ''],
+            ],
+        ])
             ->assertRedirect();
 
         $customer = Customer::where('name', 'Mit Kontakten')->firstOrFail();
@@ -213,9 +213,9 @@ class CustomerControllerTest extends TestCase {
         ]);
 
         $this->putAsAdmin('customers.update', $customer, [
-                'name' => 'Audit Co. (geändert)',
-                'currency' => 'EUR',
-            ])
+            'name' => 'Audit Co. (geändert)',
+            'currency' => 'EUR',
+        ])
             ->assertRedirect();
 
         $this->assertDatabaseHas('audit_logs', [

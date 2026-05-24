@@ -67,9 +67,9 @@ class InvoiceTest extends TestCase {
         ]);
 
         $this->postAsAdmin('invoices.store', [
-                'customer_id' => $this->customer->id,
-                'project_id' => $this->project->id,
-            ])
+            'customer_id' => $this->customer->id,
+            'project_id' => $this->project->id,
+        ])
             ->assertRedirect();
 
         $invoice = Invoice::firstOrFail();
