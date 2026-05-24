@@ -16,13 +16,15 @@ use App\Enums\Protocol\ProtocolType;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{DiaryEntry, EntryType, OpenIssue, Protocol, User};
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class EntryTypeDrilldownReportController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function openIssues(Request $request): View|Response {
+    public function openIssues(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
         $from = $range['from']->startOfDay();
         $to = $range['to']->endOfDay();
@@ -61,6 +63,21 @@ class EntryTypeDrilldownReportController extends Controller {
             return $this->exportOpenIssuesCsv($issues, $entryTypeId, $from->toDateString(), $to->toDateString(), $escalatedOnly);
         }
 
+        if ($request->query('export') === 'pdf') {
+            /** @var list<OpenIssue> $issues */
+            $issues = $issuesQuery->clone()->get()->all();
+
+            return $this->exportOpenIssuesPdf(
+                $issues,
+                ($entryType !== null ? $entryType->label : null) ?? ('#' . $entryTypeId),
+                $range['label'],
+                $entryTypeId,
+                $from->toDateString(),
+                $to->toDateString(),
+                $escalatedOnly
+            );
+        }
+
         $issues = $issuesQuery->paginate(50)->withQueryString();
 
         /** @var view-string $view */
@@ -78,7 +95,7 @@ class EntryTypeDrilldownReportController extends Controller {
         ]);
     }
 
-    public function protocols(Request $request): View|Response {
+    public function protocols(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
         $from = $range['from']->startOfDay();
         $to = $range['to']->endOfDay();
@@ -107,6 +124,20 @@ class EntryTypeDrilldownReportController extends Controller {
             $protocols = $protocolsQuery->clone()->get()->all();
 
             return $this->exportProtocolsCsv($protocols, $entryTypeId, $from->toDateString(), $to->toDateString());
+        }
+
+        if ($request->query('export') === 'pdf') {
+            /** @var list<Protocol> $protocols */
+            $protocols = $protocolsQuery->clone()->get()->all();
+
+            return $this->exportProtocolsPdf(
+                $protocols,
+                ($entryType !== null ? $entryType->label : null) ?? ('#' . $entryTypeId),
+                $range['label'],
+                $entryTypeId,
+                $from->toDateString(),
+                $to->toDateString()
+            );
         }
 
         $protocols = $protocolsQuery->paginate(50)->withQueryString();
@@ -170,6 +201,26 @@ class EntryTypeDrilldownReportController extends Controller {
     }
 
     /**
+     * @param  list<OpenIssue>  $issues
+     */
+    private function exportOpenIssuesPdf(array $issues, string $entryTypeLabel, string $label, int $entryTypeId, string $from, string $to, bool $escalatedOnly): SymfonyResponse {
+        $filename = sprintf(
+            'auftragstyp-drilldown-open-issues-%d-%s-%s%s.pdf',
+            $entryTypeId,
+            $from,
+            $to,
+            $escalatedOnly ? '-escalated' : ''
+        );
+
+        return Pdf::loadView('reports.drilldown.pdf.entry-type-open-issues', [
+            'issues' => $issues,
+            'entryTypeLabel' => $entryTypeLabel,
+            'label' => $label,
+            'escalatedOnly' => $escalatedOnly,
+        ])->setPaper('a4')->download($filename);
+    }
+
+    /**
      * @param  list<Protocol>  $protocols
      */
     private function exportProtocolsCsv(array $protocols, int $entryTypeId, string $from, string $to): Response {
@@ -190,6 +241,19 @@ class EntryTypeDrilldownReportController extends Controller {
         }
 
         return $this->csvResponse($rows, $filename);
+    }
+
+    /**
+     * @param  list<Protocol>  $protocols
+     */
+    private function exportProtocolsPdf(array $protocols, string $entryTypeLabel, string $label, int $entryTypeId, string $from, string $to): SymfonyResponse {
+        $filename = sprintf('auftragstyp-drilldown-defektprotokolle-%d-%s-%s.pdf', $entryTypeId, $from, $to);
+
+        return Pdf::loadView('reports.drilldown.pdf.entry-type-protocols', [
+            'protocols' => $protocols,
+            'entryTypeLabel' => $entryTypeLabel,
+            'label' => $label,
+        ])->setPaper('a4')->download($filename);
     }
 
     /**

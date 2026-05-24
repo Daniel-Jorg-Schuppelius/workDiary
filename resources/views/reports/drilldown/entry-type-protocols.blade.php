@@ -13,6 +13,9 @@
             <x-icon-btn icon="download" tone="outline" size="sm"
                         :href="route('reports.entry-types.drilldown.protocols', array_filter(['entry_type_id' => $entryTypeId, 'customer_id' => $customerId, 'user_id' => $userId, 'status' => $statusFilter, 'export' => 'csv']))"
                         show-label>CSV</x-icon-btn>
+            <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
+                        :href="route('reports.entry-types.drilldown.protocols', array_filter(['entry_type_id' => $entryTypeId, 'customer_id' => $customerId, 'user_id' => $userId, 'status' => $statusFilter, 'export' => 'pdf']))"
+                        show-label>PDF</x-icon-btn>
             <x-icon-btn icon="arrow_back" tone="outline" size="sm"
                         :href="route('reports.entry-types', array_filter(['customer_id' => $customerId, 'user_id' => $userId, 'entry_type_id' => $entryTypeId, 'status' => $statusFilter]))"
                         show-label>{{ __('Zur Auftragstypanalyse') }}</x-icon-btn>

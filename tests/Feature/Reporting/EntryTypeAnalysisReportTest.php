@@ -331,4 +331,74 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $this->assertStringContainsString('ID;Titel;Status;Typ', $content);
         $this->assertStringContainsString('EntryType CSV Protocol', $content);
     }
+
+    public function test_open_issues_drilldown_can_be_exported_as_pdf(): void {
+        $entry = DiaryEntry::factory()->for($this->user)->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'entry_type_id' => $this->entryType->id,
+            'created_at' => now()->subDays(2),
+        ]);
+
+        OpenIssue::create([
+            'organization_id' => $this->organization->id,
+            'subject_type' => DiaryEntry::class,
+            'subject_id' => $entry->id,
+            'source_type' => OpenIssueSource::Manual->value,
+            'source_ref_id' => null,
+            'title' => 'EntryType PDF Issue',
+            'description' => null,
+            'category' => 'entry',
+            'severity' => OpenIssueSeverity::High->value,
+            'status' => OpenIssueStatus::Blocked->value,
+            'assignee_user_id' => $this->user->id,
+            'due_at' => now()->addDays(2),
+            'visibility' => OpenIssueVisibility::Internal->value,
+            'closed_at' => null,
+            'closed_by_user_id' => null,
+            'closed_reason' => null,
+            'created_by_user_id' => $this->user->id,
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.entry-types.drilldown.open-issues', [
+                'entry_type_id' => $this->entryType->id,
+                'export' => 'pdf',
+            ]));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+        $response->assertHeader('content-disposition');
+        $this->assertStringStartsWith('%PDF', (string) $response->getContent());
+    }
+
+    public function test_protocols_drilldown_can_be_exported_as_pdf(): void {
+        $entry = DiaryEntry::factory()->for($this->user)->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'entry_type_id' => $this->entryType->id,
+            'created_at' => now()->subDays(2),
+        ]);
+
+        Protocol::factory()->for($entry, 'subject')->state([
+            'organization_id' => $this->organization->id,
+            'created_by_user_id' => $this->user->id,
+            'type' => ProtocolType::Defect->value,
+            'title' => 'EntryType PDF Protocol',
+            'occurred_at' => now()->subDays(2),
+        ])->create();
+
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.entry-types.drilldown.protocols', [
+                'entry_type_id' => $this->entryType->id,
+                'export' => 'pdf',
+            ]));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+        $response->assertHeader('content-disposition');
+        $this->assertStringStartsWith('%PDF', (string) $response->getContent());
+    }
 }
