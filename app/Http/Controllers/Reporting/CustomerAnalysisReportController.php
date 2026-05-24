@@ -17,13 +17,13 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, DiaryEntry, OpenIssue, Project, Protocol, TimeEntry, User};
 use Carbon\CarbonImmutable;
-use Illuminate\Http\Request;
+use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
 
 class CustomerAnalysisReportController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function index(Request $request): View {
+    public function index(Request $request): View|Response {
         $range = $this->globalDateRange();
         $from = $range['from']->startOfDay();
         $to = $range['to']->endOfDay();
@@ -33,8 +33,12 @@ class CustomerAnalysisReportController extends Controller {
         $userId = $request->filled('user_id') ? (int) $request->integer('user_id') : null;
 
         $rows = collect($this->buildRows($from, $to, $projectId, $userId))
-            ->filter(static fn (array $row): bool => $row['totalMinutes'] >= $minMinutes)
+            ->filter(static fn(array $row): bool => $row['totalMinutes'] >= $minMinutes)
             ->values();
+
+        if ($request->query('export') === 'csv') {
+            return $this->exportCsv(array_values($rows->all()), $from->toDateString(), $to->toDateString());
+        }
 
         $topByMinutes = $rows->sortByDesc('totalMinutes')->take(5)->values();
         $topByRework = $rows->sortByDesc('reworkEntryCount')->take(5)->values();
@@ -79,24 +83,24 @@ class CustomerAnalysisReportController extends Controller {
             ->map(function (Customer $customer) use ($from, $to, $projectId, $userId): array {
                 $projectIds = Project::query()
                     ->where('customer_id', $customer->id)
-                    ->when($projectId !== null, fn ($q) => $q->where('id', $projectId))
+                    ->when($projectId !== null, fn($q) => $q->where('id', $projectId))
                     ->pluck('id')
-                    ->map(static fn ($v): int => (int) $v)
+                    ->map(static fn($v): int => (int) $v)
                     ->all();
 
                 $entryQuery = DiaryEntry::query()
                     ->where('customer_id', $customer->id)
                     ->whereBetween('created_at', [$from, $to])
-                    ->when($projectId !== null, fn ($q) => $q->where('project_id', $projectId))
-                    ->when($userId !== null, fn ($q) => $q->where('user_id', $userId));
+                    ->when($projectId !== null, fn($q) => $q->where('project_id', $projectId))
+                    ->when($userId !== null, fn($q) => $q->where('user_id', $userId));
 
-                $entryIds = $entryQuery->clone()->pluck('id')->map(static fn ($v): int => (int) $v)->all();
+                $entryIds = $entryQuery->clone()->pluck('id')->map(static fn($v): int => (int) $v)->all();
                 $entryCount = count($entryIds);
 
                 $timeQuery = TimeEntry::query()
                     ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
-                    ->when($projectIds !== [], fn ($q) => $q->whereIn('project_id', $projectIds), fn ($q) => $q->whereRaw('1=0'))
-                    ->when($userId !== null, fn ($q) => $q->where('user_id', $userId));
+                    ->when($projectIds !== [], fn($q) => $q->whereIn('project_id', $projectIds), fn($q) => $q->whereRaw('1=0'))
+                    ->when($userId !== null, fn($q) => $q->where('user_id', $userId));
 
                 $totalMinutes = (int) $timeQuery->clone()->sum('minutes');
                 $billableMinutes = (int) $timeQuery->clone()->where('billable', true)->sum('minutes');
@@ -142,7 +146,7 @@ class CustomerAnalysisReportController extends Controller {
                     ->where('type', ProtocolType::Defect->value)
                     ->where('subject_type', DiaryEntry::class)
                     ->whereBetween('occurred_at', [$from, $to])
-                    ->when($entryIds !== [], fn ($q) => $q->whereIn('subject_id', $entryIds), fn ($q) => $q->whereRaw('1=0'))
+                    ->when($entryIds !== [], fn($q) => $q->whereIn('subject_id', $entryIds), fn($q) => $q->whereRaw('1=0'))
                     ->distinct('subject_id')
                     ->count('subject_id');
 
@@ -171,6 +175,73 @@ class CustomerAnalysisReportController extends Controller {
             ->all());
     }
 
+    /**
+     * @param  array<int, array{
+     *   customerId:int,
+     *   customerName:string,
+      *   entryCount:int,
+     *   totalMinutes:int,
+     *   billableMinutes:int,
+      *   nonBillableMinutes:int,
+     *   nonBillableShare:float,
+      *   reworkEntryCount:int,
+     *   openIssueCount:int,
+     *   escalationCount:int,
+     *   avgEntryMinutes:int,
+     *   trend30d:int
+     * }>  $rows
+     */
+    private function exportCsv(array $rows, string $from, string $to): Response {
+        $filename = sprintf('kundenanalyse_%s_%s.csv', $from, $to);
+        $out = [];
+        $out[] = [
+            'Kunde',
+            'Auftraege',
+            'GesamtMinuten',
+            'AbrechenbarMinuten',
+            'NichtAbrechenbarMinuten',
+            'NichtAbrechenbarAnteilProzent',
+            'Nacharbeit',
+            'OffenePunkte',
+            'Eskaliert',
+            'DurchschnittMinutenProAuftrag',
+            'Trend30d',
+        ];
+
+        foreach ($rows as $row) {
+            $out[] = [
+                $row['customerName'],
+                $row['entryCount'],
+                $row['totalMinutes'],
+                $row['billableMinutes'],
+                $row['nonBillableMinutes'],
+                number_format((float) $row['nonBillableShare'], 2, '.', ''),
+                $row['reworkEntryCount'],
+                $row['openIssueCount'],
+                $row['escalationCount'],
+                $row['avgEntryMinutes'],
+                $row['trend30d'],
+            ];
+        }
+
+        $csv = '';
+        foreach ($out as $csvRow) {
+            $csv .= implode(';', array_map(static function ($value): string {
+                $string = (string) $value;
+                if (str_contains($string, ';') || str_contains($string, '"') || str_contains($string, "\n")) {
+                    $string = '"' . str_replace('"', '""', $string) . '"';
+                }
+
+                return $string;
+            }, $csvRow)) . "\r\n";
+        }
+
+        return response("\xEF\xBB\xBF" . $csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
     private function trend30d(int $customerId, ?int $projectId, ?int $userId, CarbonImmutable $to): int {
         $latestFrom = $to->subDays(29)->startOfDay();
         $prevFrom = $latestFrom->subDays(30)->startOfDay();
@@ -178,8 +249,8 @@ class CustomerAnalysisReportController extends Controller {
 
         $base = DiaryEntry::query()
             ->where('customer_id', $customerId)
-            ->when($projectId !== null, fn ($q) => $q->where('project_id', $projectId))
-            ->when($userId !== null, fn ($q) => $q->where('user_id', $userId));
+            ->when($projectId !== null, fn($q) => $q->where('project_id', $projectId))
+            ->when($userId !== null, fn($q) => $q->where('user_id', $userId));
 
         $latest = (int) $base->clone()->whereBetween('created_at', [$latestFrom, $to])->count();
         $previous = (int) $base->clone()->whereBetween('created_at', [$prevFrom, $prevTo])->count();

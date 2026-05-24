@@ -35,6 +35,12 @@
                 @endforeach
             </select>
         </x-filter-field>
+
+        <x-slot:extra>
+            <x-icon-btn icon="download" tone="outline" size="sm"
+                        :href="route('reports.customers', array_filter(['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'project_id' => $projectId, 'user_id' => $userId, 'export' => 'csv']))"
+                        show-label>CSV</x-icon-btn>
+        </x-slot:extra>
     </x-filter-bar>
 
     <div class="grid gap-4 lg:grid-cols-3">
