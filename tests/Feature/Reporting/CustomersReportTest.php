@@ -617,4 +617,92 @@ class CustomersReportTest extends TestCase {
         $this->assertSame($this->customer->id, $log->changes['filters']['customer_id'] ?? null);
         $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
     }
+
+    public function test_open_issues_drilldown_pdf_export_writes_audit_log_entry(): void {
+        OpenIssue::create([
+            'organization_id' => $this->organization->id,
+            'subject_type' => Customer::class,
+            'subject_id' => $this->customer->id,
+            'source_type' => OpenIssueSource::Manual->value,
+            'source_ref_id' => null,
+            'title' => 'Audit Drilldown Punkt PDF',
+            'description' => null,
+            'category' => 'customer',
+            'severity' => OpenIssueSeverity::High->value,
+            'status' => OpenIssueStatus::Blocked->value,
+            'assignee_user_id' => $this->user->id,
+            'due_at' => now()->addDays(1),
+            'visibility' => OpenIssueVisibility::Internal->value,
+            'closed_at' => null,
+            'closed_by_user_id' => null,
+            'closed_reason' => null,
+            'created_by_user_id' => $this->user->id,
+        ]);
+
+        $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.customers.drilldown.open-issues', [
+                'customer_id' => $this->customer->id,
+                'escalated' => 1,
+                'export' => 'pdf',
+            ]))
+            ->assertOk();
+
+        $log = AuditLog::query()
+            ->where('event', 'report.exported')
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($log);
+        $this->assertSame(CustomerDrilldownReportController::class, $log->auditable_type);
+        $this->assertSame($this->organization->id, $log->organization_id);
+        $this->assertSame($this->user->id, $log->user_id);
+        $this->assertSame('127.0.0.1', $log->ip);
+        $this->assertTrue(is_string($log->user_agent));
+        $this->assertSame('customer-drilldown-open-issues', $log->changes['report_code'] ?? null);
+        $this->assertSame('pdf', $log->changes['format'] ?? null);
+        $this->assertSame($this->customer->id, $log->changes['filters']['customer_id'] ?? null);
+        $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
+    }
+
+    public function test_protocols_drilldown_csv_export_writes_audit_log_entry(): void {
+        $entry = DiaryEntry::factory()->for($this->user)->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'project_id' => $this->project->id,
+            'created_at' => now()->subDays(2),
+        ]);
+
+        Protocol::factory()->for($entry, 'subject')->state([
+            'organization_id' => $this->organization->id,
+            'created_by_user_id' => $this->user->id,
+            'type' => ProtocolType::Defect->value,
+            'title' => 'Audit Drilldown Protokoll CSV',
+            'occurred_at' => now()->subDays(2),
+        ])->create();
+
+        $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.customers.drilldown.protocols', [
+                'customer_id' => $this->customer->id,
+                'export' => 'csv',
+            ]))
+            ->assertOk();
+
+        $log = AuditLog::query()
+            ->where('event', 'report.exported')
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($log);
+        $this->assertSame(CustomerDrilldownReportController::class, $log->auditable_type);
+        $this->assertSame($this->organization->id, $log->organization_id);
+        $this->assertSame($this->user->id, $log->user_id);
+        $this->assertSame('127.0.0.1', $log->ip);
+        $this->assertTrue(is_string($log->user_agent));
+        $this->assertSame('customer-drilldown-protocols', $log->changes['report_code'] ?? null);
+        $this->assertSame('csv', $log->changes['format'] ?? null);
+        $this->assertSame($this->customer->id, $log->changes['filters']['customer_id'] ?? null);
+        $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
+    }
 }
