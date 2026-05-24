@@ -155,6 +155,57 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
         $this->assertDatabaseMissing('classification_requirements', ['id' => $requirement->id]);
     }
 
+    public function test_index_can_filter_requirements_by_search_query(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::DefectType->value,
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+        ]);
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'maintenance',
+            'required_domain' => ClassificationDomain::Result->value,
+            'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('admin.classification-requirements.index', ['q' => 'service']))
+            ->assertOk()
+            ->assertSee('service')
+            ->assertDontSee('maintenance');
+    }
+
+    public function test_index_can_filter_requirements_by_phase_and_severity(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::DefectType->value,
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'severity' => ClassificationRequirementSeverity::Hard->value,
+        ]);
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::RootCause->value,
+            'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+            'severity' => ClassificationRequirementSeverity::Soft->value,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('admin.classification-requirements.index', [
+                'phase' => ClassificationRequirementPhase::BeforeComplete->value,
+                'severity' => ClassificationRequirementSeverity::Soft->value,
+            ]))
+            ->assertOk()
+            ->assertSee('Ursachen')
+            ->assertDontSee('Fehlertypen');
+    }
+
     private function userWithRole(string $role): User {
         $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $registrar = app(PermissionRegistrar::class);

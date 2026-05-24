@@ -33,12 +33,34 @@ class ClassificationRequirementController extends Controller {
         Gate::authorize('viewAny', ClassificationRequirement::class);
 
         $organization = $this->currentOrganization();
-        $requirements = ClassificationRequirement::query()
+        $query = trim(request()->string('q')->toString());
+        $phaseFilter = $this->normalizePhaseFilter(request()->string('phase')->toString());
+        $severityFilter = $this->normalizeSeverityFilter(request()->string('severity')->toString());
+
+        $requirementsQuery = ClassificationRequirement::query()
             ->where('organization_id', $organization->id)
             ->orderBy('entry_type_code')
             ->orderBy('enforce_phase')
-            ->orderBy('required_domain')
-            ->get();
+            ->orderBy('required_domain');
+
+        if ($query !== '') {
+            $requirementsQuery->where(function ($builder) use ($query): void {
+                $builder
+                    ->where('entry_type_code', 'like', "%{$query}%")
+                    ->orWhere('required_domain', 'like', "%{$query}%")
+                    ->orWhere('note', 'like', "%{$query}%");
+            });
+        }
+
+        if ($phaseFilter !== null) {
+            $requirementsQuery->where('enforce_phase', $phaseFilter);
+        }
+
+        if ($severityFilter !== null) {
+            $requirementsQuery->where('severity', $severityFilter);
+        }
+
+        $requirements = $requirementsQuery->get();
 
         return view('admin.classification-requirements.index', [
             'organization' => $organization,
@@ -46,6 +68,11 @@ class ClassificationRequirementController extends Controller {
             'phaseLabels' => $this->phaseLabels(),
             'severityLabels' => $this->severityLabels(),
             'domainLabels' => $this->domainLabels(),
+            'activeFilters' => [
+                'q' => $query,
+                'phase' => $phaseFilter ?? 'all',
+                'severity' => $severityFilter ?? 'all',
+            ],
         ]);
     }
 
@@ -222,6 +249,26 @@ class ClassificationRequirementController extends Controller {
         $trimmed = trim($value);
 
         return $trimmed === '' ? null : $trimmed;
+    }
+
+    private function normalizePhaseFilter(string $value): ?string {
+        foreach (ClassificationRequirementPhase::cases() as $phase) {
+            if ($phase->value === $value) {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+
+    private function normalizeSeverityFilter(string $value): ?string {
+        foreach (ClassificationRequirementSeverity::cases() as $severity) {
+            if ($severity->value === $value) {
+                return $value;
+            }
+        }
+
+        return null;
     }
 
     /**

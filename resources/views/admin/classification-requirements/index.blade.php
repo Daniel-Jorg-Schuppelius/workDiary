@@ -22,54 +22,94 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    <x-table>
-        <x-slot:head>
-            <tr>
-                <th>{{ __('Auftragstyp') }}</th>
-                <th>{{ __('Pflicht-Domain') }}</th>
-                <th>{{ __('Phase') }}</th>
-                <th>{{ __('Schweregrad') }}</th>
-                <th>{{ __('Anzahl') }}</th>
-                <th>{{ __('Bedingung') }}</th>
-                <th></th>
-            </tr>
-        </x-slot:head>
-        @forelse ($requirements as $requirement)
-            <tr>
-                <td class="font-mono text-sm">{{ $requirement->entry_type_code }}</td>
-                <td>{{ $domainLabels[$requirement->required_domain] ?? $requirement->required_domain }}</td>
-                <td>{{ $phaseLabels[$requirement->enforce_phase->value] ?? $requirement->enforce_phase->value }}</td>
-                <td>
-                    <span class="badge badge-xs {{ $requirement->severity->value === 'hard' ? 'badge-error' : 'badge-warning' }}">
-                        {{ $severityLabels[$requirement->severity->value] ?? $requirement->severity->value }}
-                    </span>
-                </td>
-                <td>{{ $requirement->min_count }}@if ($requirement->max_count !== null) - {{ $requirement->max_count }}@endif</td>
-                <td>
-                    @if ($requirement->only_if_json)
-                        <pre class="text-xs whitespace-pre-wrap">{{ json_encode($requirement->only_if_json, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) }}</pre>
-                    @else
-                        <span class="text-base-content/50">{{ __('Immer') }}</span>
-                    @endif
-                </td>
-                <td class="text-right whitespace-nowrap">
-                    <x-icon-btn icon="edit" size="xs"
-                                data-entry-modal-trigger
-                                :href="route('admin.classification-requirements.edit', $requirement)"
-                                :title="__('Bearbeiten')" />
-                    <form method="POST" action="{{ route('admin.classification-requirements.destroy', $requirement) }}" class="inline">
-                        @csrf @method('DELETE')
-                        <x-icon-btn type="submit" icon="delete" size="xs" tone="error"
-                                    :title="__('Löschen')"
-                                    data-confirm="{{ __('Pflichtregel wirklich löschen?') }}" />
-                    </form>
-                </td>
-            </tr>
-        @empty
-            <tr>
-                <td colspan="7" class="text-center text-base-content/60 py-6">{{ __('Noch keine Pflichtregeln vorhanden.') }}</td>
-            </tr>
-        @endforelse
-    </x-table>
+    <x-card>
+        <form method="GET" action="{{ route('admin.classification-requirements.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+            <label class="form-control md:col-span-2">
+                <span class="label-text text-sm">{{ __('Suche') }}</span>
+                <input type="text"
+                       name="q"
+                       value="{{ $activeFilters['q'] ?? '' }}"
+                       class="input input-bordered w-full"
+                       placeholder="{{ __('Auftragstyp, Domain oder Hinweis') }}" />
+            </label>
+
+            <label class="form-control">
+                <span class="label-text text-sm">{{ __('Phase') }}</span>
+                <select name="phase" class="select select-bordered w-full">
+                    <option value="all" @selected(($activeFilters['phase'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
+                    @foreach ($phaseLabels as $phaseCode => $phaseLabel)
+                        <option value="{{ $phaseCode }}" @selected(($activeFilters['phase'] ?? 'all') === $phaseCode)>{{ $phaseLabel }}</option>
+                    @endforeach
+                </select>
+            </label>
+
+            <label class="form-control">
+                <span class="label-text text-sm">{{ __('Schweregrad') }}</span>
+                <select name="severity" class="select select-bordered w-full">
+                    <option value="all" @selected(($activeFilters['severity'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
+                    @foreach ($severityLabels as $severityCode => $severityLabel)
+                        <option value="{{ $severityCode }}" @selected(($activeFilters['severity'] ?? 'all') === $severityCode)>{{ $severityLabel }}</option>
+                    @endforeach
+                </select>
+            </label>
+
+            <div class="md:col-span-4 flex gap-2 md:justify-end">
+                <button type="submit" class="btn btn-primary btn-sm">{{ __('Filtern') }}</button>
+                <a href="{{ route('admin.classification-requirements.index') }}" class="btn btn-ghost btn-sm">{{ __('Zuruecksetzen') }}</a>
+            </div>
+        </form>
+    </x-card>
+
+    @if ($requirements->isEmpty())
+        <x-card>
+            <p class="text-sm text-base-content/70">{{ __('Keine Pflichtregeln fuer den aktuellen Filter gefunden.') }}</p>
+        </x-card>
+    @else
+        <x-table>
+            <x-slot:head>
+                <tr>
+                    <th>{{ __('Auftragstyp') }}</th>
+                    <th>{{ __('Pflicht-Domain') }}</th>
+                    <th>{{ __('Phase') }}</th>
+                    <th>{{ __('Schweregrad') }}</th>
+                    <th>{{ __('Anzahl') }}</th>
+                    <th>{{ __('Bedingung') }}</th>
+                    <th></th>
+                </tr>
+            </x-slot:head>
+            @foreach ($requirements as $requirement)
+                <tr>
+                    <td class="font-mono text-sm">{{ $requirement->entry_type_code }}</td>
+                    <td>{{ $domainLabels[$requirement->required_domain] ?? $requirement->required_domain }}</td>
+                    <td>{{ $phaseLabels[$requirement->enforce_phase->value] ?? $requirement->enforce_phase->value }}</td>
+                    <td>
+                        <span class="badge badge-xs {{ $requirement->severity->value === 'hard' ? 'badge-error' : 'badge-warning' }}">
+                            {{ $severityLabels[$requirement->severity->value] ?? $requirement->severity->value }}
+                        </span>
+                    </td>
+                    <td>{{ $requirement->min_count }}@if ($requirement->max_count !== null) - {{ $requirement->max_count }}@endif</td>
+                    <td>
+                        @if ($requirement->only_if_json)
+                            <pre class="text-xs whitespace-pre-wrap">{{ json_encode($requirement->only_if_json, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) }}</pre>
+                        @else
+                            <span class="text-base-content/50">{{ __('Immer') }}</span>
+                        @endif
+                    </td>
+                    <td class="text-right whitespace-nowrap">
+                        <x-icon-btn icon="edit" size="xs"
+                                    data-entry-modal-trigger
+                                    :href="route('admin.classification-requirements.edit', $requirement)"
+                                    :title="__('Bearbeiten')" />
+                        <form method="POST" action="{{ route('admin.classification-requirements.destroy', $requirement) }}" class="inline">
+                            @csrf @method('DELETE')
+                            <x-icon-btn type="submit" icon="delete" size="xs" tone="error"
+                                        :title="__('Löschen')"
+                                        data-confirm="{{ __('Pflichtregel wirklich löschen?') }}" />
+                        </form>
+                    </td>
+                </tr>
+            @endforeach
+        </x-table>
+    @endif
 </x-page-shell>
 @endsection
