@@ -14,6 +14,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Customer, Project, TimeEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
 
@@ -53,11 +54,7 @@ class ProjectDetailsReportTest extends TestCase {
             'ended_at' => '2030-04-10 11:00:00',
             'kind' => TimeEntryKind::Work->value,
         ]);
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeYear(2030))
-            ->get(route('reports.project-details', [
-                'project_id' => $this->project->id,
-            ]));
+        $response = $this->getWithYearRange('reports.project-details');
         $response->assertOk();
         $response->assertSee('Website-Relaunch');
     }
@@ -72,12 +69,7 @@ class ProjectDetailsReportTest extends TestCase {
             'ended_at' => '2030-04-10 11:00:00',
             'kind' => TimeEntryKind::Work->value,
         ]);
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeYear(2030))
-            ->get(route('reports.project-details', [
-                'project_id' => $this->project->id,
-                'export' => 'csv',
-            ]));
+        $response = $this->getWithYearRange('reports.project-details', ['export' => 'csv']);
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $body = $response->getContent() ?: '';
@@ -94,12 +86,7 @@ class ProjectDetailsReportTest extends TestCase {
             'ended_at' => '2030-04-10 11:00:00',
             'kind' => TimeEntryKind::Work->value,
         ]);
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeYear(2030))
-            ->get(route('reports.project-details', [
-                'project_id' => $this->project->id,
-                'export' => 'pdf',
-            ]));
+        $response = $this->getWithYearRange('reports.project-details', ['export' => 'pdf']);
         $response->assertOk();
         $response->assertHeader('Content-Type', 'application/pdf');
         $this->assertStringStartsWith('%PDF', (string) $response->getContent());
@@ -107,5 +94,11 @@ class ProjectDetailsReportTest extends TestCase {
 
     public function test_requires_authentication(): void {
         $this->get(route('reports.project-details'))->assertRedirect(route('login'));
+    }
+
+    private function getWithYearRange(string $routeName, array $parameters = []): TestResponse {
+        return $this->actingAs($this->user)
+            ->withSession($this->dateRangeYear(2030))
+            ->get(route($routeName, ['project_id' => $this->project->id] + $parameters));
     }
 }
