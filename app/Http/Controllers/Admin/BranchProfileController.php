@@ -18,6 +18,7 @@ use App\Models\User;
 use App\Services\Classification\BranchProfileInstaller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -27,11 +28,14 @@ class BranchProfileController extends Controller {
         private readonly BranchProfileInstaller $installer,
     ) {}
 
-    public function index(): View {
+    public function index(Request $request): View {
         $this->authorizeViewCatalog();
 
         $organization = $this->currentOrganization();
         $profiles = $this->availableProfiles();
+        $query = trim($request->string('q')->toString());
+        $installedFilter = $this->normalizeInstalledFilter($request->string('installed')->toString());
+
         $installedCodes = AuditLog::query()
             ->where('organization_id', $organization->id)
             ->where('event', 'branch_profile.installed')
@@ -42,11 +46,38 @@ class BranchProfileController extends Controller {
             ->unique()
             ->values()
             ->all();
+        $installedSet = array_fill_keys($installedCodes, true);
+
+        if ($query !== '') {
+            $needle = mb_strtolower($query);
+
+            $profiles = $profiles->filter(static function (array $profile) use ($needle): bool {
+                $haystack = mb_strtolower((string) Arr::get($profile, 'label', '').' '.(string) Arr::get($profile, 'code', ''));
+
+                return str_contains($haystack, $needle);
+            })->values();
+        }
+
+        if ($installedFilter !== 'all') {
+            $profiles = $profiles->filter(static function (array $profile) use ($installedFilter, $installedSet): bool {
+                $isInstalled = isset($installedSet[(string) Arr::get($profile, 'code', '')]);
+
+                if ($installedFilter === 'installed') {
+                    return $isInstalled;
+                }
+
+                return ! $isInstalled;
+            })->values();
+        }
 
         return view('admin.branch-profiles.index', [
             'organization' => $organization,
             'profiles' => $profiles,
             'installedCodes' => $installedCodes,
+            'activeFilters' => [
+                'q' => $query,
+                'installed' => $installedFilter,
+            ],
         ]);
     }
 
@@ -80,6 +111,14 @@ class BranchProfileController extends Controller {
 
     private function authorizeInstall(): void {
         abort_unless(Auth::user()?->can('branchProfile.install') ?? false, 403);
+    }
+
+    private function normalizeInstalledFilter(string $value): string {
+        return match ($value) {
+            'installed' => 'installed',
+            'not_installed' => 'not_installed',
+            default => 'all',
+        };
     }
 
     private function currentOrganization(): Organization {

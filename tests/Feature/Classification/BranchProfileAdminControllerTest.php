@@ -60,6 +60,36 @@ class BranchProfileAdminControllerTest extends TestCase {
             ->assertSee('Veranstaltungstechnik');
     }
 
+    public function test_admin_can_filter_branch_profile_catalog_by_search_query(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.branch-profiles.index', ['q' => 'elektro']))
+            ->assertOk()
+            ->assertSee('Elektro')
+            ->assertDontSee('Steuerberatung');
+    }
+
+    public function test_admin_can_filter_branch_profile_catalog_by_installed_state(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.branch-profiles.install', 'it'))
+            ->assertRedirect(route('admin.branch-profiles.index'));
+
+        $this->actingAs($admin)
+            ->get(route('admin.branch-profiles.index', ['installed' => 'installed']))
+            ->assertOk()
+            ->assertSee('IT-Service / Managed Services')
+            ->assertDontSee('Elektro');
+
+        $this->actingAs($admin)
+            ->get(route('admin.branch-profiles.index', ['installed' => 'not_installed']))
+            ->assertOk()
+            ->assertSee('Elektro')
+            ->assertDontSee('IT-Service / Managed Services');
+    }
+
     public function test_admin_can_install_branch_profile(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 
