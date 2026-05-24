@@ -44,6 +44,18 @@ class AssetIndexControllerTest extends TestCase {
             ->assertForbidden();
     }
 
+    public function test_teamleitung_can_open_create_dialog(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+
+        $this->actingAs($user)
+            ->get(route('assets.create'))
+            ->assertOk()
+            ->assertSee('Asset anlegen')
+            ->assertSee('name="asset_class"', false)
+            ->assertSee('name="status"', false)
+            ->assertSee('name="name"', false);
+    }
+
     public function test_teamleitung_can_view_asset_index(): void {
         $user = $this->userWithRole(UserRole::Teamleitung->value);
         $customer = Customer::factory()->create([
@@ -107,6 +119,36 @@ class AssetIndexControllerTest extends TestCase {
             ->assertSee('Typ: Fahrzeug')
             ->assertSee('Status: Gesperrt')
             ->assertDontSee('Bohrhammer');
+    }
+
+    public function test_teamleitung_can_create_asset_with_minimal_master_data(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Musterkunde GmbH',
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('assets.store'), [
+                'asset_class' => AssetClass::Machine->value,
+                'name' => 'Kompressor 3000',
+                'serial_no' => 'COMP-3000',
+                'location_text' => 'Werk 2 / Halle A',
+                'customer_id' => $customer->id,
+                'status' => AssetStatus::Active->value,
+            ])
+            ->assertRedirect(route('assets.index'));
+
+        $this->assertDatabaseHas('assets', [
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Machine->value,
+            'name' => 'Kompressor 3000',
+            'serial_no' => 'COMP-3000',
+            'location_text' => 'Werk 2 / Halle A',
+            'customer_id' => $customer->id,
+            'status' => AssetStatus::Active->value,
+            'owned_by' => 'customer',
+        ]);
     }
 
     private function userWithRole(string $role): User {

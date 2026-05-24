@@ -10,10 +10,20 @@
 @extends('layouts.app')
 
 @section('title', __('Objekte & Assets'))
+@section('nav-title', __('Objekte & Assets'))
 
 @section('content')
     <x-page-shell>
-        <x-page-toolbar :title="__('Objekte & Assets')" :subtitle="__('Stammdaten, Status und Zuordnung im Überblick.')" />
+        <x-page-toolbar :title="__('Objekte & Assets')" :subtitle="__('Stammdaten, Status und Zuordnung im Überblick.')">
+            <x-slot:actions>
+                @if ($canCreate)
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('assets.create')"
+                                show-label>{{ __('Asset') }}</x-icon-btn>
+                @endif
+            </x-slot:actions>
+        </x-page-toolbar>
 
         <x-card>
             <form method="GET" action="{{ route('assets.index') }}" class="grid gap-3 md:grid-cols-12 md:items-end">

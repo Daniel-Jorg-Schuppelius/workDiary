@@ -12,8 +12,14 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Asset\AssetClass;
+use App\Enums\Asset\AssetOwnership;
 use App\Enums\Asset\AssetStatus;
+use App\Exceptions\AssetValidationException;
+use App\Http\Requests\SaveAssetRequest;
 use App\Models\Asset;
+use App\Models\Customer;
+use App\Services\Asset\AssetService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -56,6 +62,7 @@ class AssetController extends Controller {
             'assets' => $assets,
             'classOptions' => $classOptions,
             'statusOptions' => $statusOptions,
+            'canCreate' => Gate::allows('create', Asset::class),
             'activeFilters' => [
                 'q' => $query,
                 'class' => $classFilter ?? 'all',
@@ -70,12 +77,57 @@ class AssetController extends Controller {
         ]);
     }
 
+    public function create(): View {
+        Gate::authorize('create', Asset::class);
+
+        return view('assets._form_dialog', [
+            'asset' => new Asset(['status' => AssetStatus::Active->value]),
+            'classOptions' => $this->assetClassOptions(),
+            'statusOptions' => $this->assetStatusOptionsForCreate(),
+            'customers' => $this->customerOptions(),
+        ]);
+    }
+
+    public function store(SaveAssetRequest $request, AssetService $assetService): RedirectResponse {
+        Gate::authorize('create', Asset::class);
+        $user = $request->user();
+
+        if (! $user instanceof \App\Models\User) {
+            abort(403);
+        }
+
+        $payload = $request->validated();
+        $payload['owned_by'] = ($payload['customer_id'] ?? null) === null
+            ? AssetOwnership::Organization->value
+            : AssetOwnership::Customer->value;
+
+        try {
+            $assetService->create($user, $payload);
+        } catch (AssetValidationException $exception) {
+            return back()
+                ->withInput()
+                ->withErrors(['status' => __($exception->getMessage())]);
+        }
+
+        return redirect()->route('assets.index')->with('success', __('Asset angelegt.'));
+    }
+
     private function normalizeAssetClass(string $value): ?string {
         return array_key_exists($value, $this->assetClassOptions()) ? $value : null;
     }
 
     private function normalizeAssetStatus(string $value): ?string {
         return array_key_exists($value, $this->assetStatusOptions()) ? $value : null;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function customerOptions(): array {
+        return Customer::query()
+            ->orderBy('name')
+            ->pluck('name', 'id')
+            ->all();
     }
 
     /**
@@ -106,6 +158,22 @@ class AssetController extends Controller {
             AssetStatus::LoanOut->value => __('Ausgeliehen'),
             AssetStatus::Replaced->value => __('Ersetzt'),
             AssetStatus::Decommissioned->value => __('Außer Betrieb'),
+            AssetStatus::Lost->value => __('Verloren'),
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function assetStatusOptionsForCreate(): array {
+        return [
+            AssetStatus::Active->value => __('Aktiv'),
+            AssetStatus::InMaintenance->value => __('In Wartung'),
+            AssetStatus::InRepair->value => __('In Reparatur'),
+            AssetStatus::Blocked->value => __('Gesperrt'),
+            AssetStatus::Reserved->value => __('Reserviert'),
+            AssetStatus::LoanOut->value => __('Ausgeliehen'),
+            AssetStatus::Replaced->value => __('Ersetzt'),
             AssetStatus::Lost->value => __('Verloren'),
         ];
     }

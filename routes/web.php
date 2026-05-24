@@ -471,6 +471,8 @@ Route::middleware('auth')->group(function () {
 
         // ── Fuhrpark ───────────────────────────────────────────────────────
         Route::get('assets', [AssetController::class, 'index'])->name('assets.index');
+        Route::get('assets/create', [AssetController::class, 'create'])->name('assets.create');
+        Route::post('assets', [AssetController::class, 'store'])->name('assets.store');
 
         Route::get('vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
         Route::get('vehicles/create', [VehicleController::class, 'create'])->name('vehicles.create');
