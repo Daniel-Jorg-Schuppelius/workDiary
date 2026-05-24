@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <title>Kunden Drilldown - Defektprotokolle</title>
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #111827; }
+        h1 { font-size: 18px; margin: 0 0 8px; }
+        .meta { margin: 0 0 12px; color: #374151; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #d1d5db; padding: 6px 8px; text-align: left; vertical-align: top; }
+        th { background: #f3f4f6; }
+    </style>
+</head>
+<body>
+    <h1>Kunden Drilldown: Defektprotokolle</h1>
+    <p class="meta">
+        Kunde: {{ $customerName }}<br>
+        Zeitraum: {{ $label }}
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Titel</th>
+                <th>Status</th>
+                <th>Typ</th>
+                <th>Zeitpunkt</th>
+                <th>Erstellt von</th>
+                <th>Auftrag</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($protocols as $protocol)
+                <tr>
+                    <td>{{ $protocol->id }}</td>
+                    <td>{{ $protocol->title }}</td>
+                    <td>{{ $protocol->status->label() }}</td>
+                    <td>{{ $protocol->type->label() }}</td>
+                    <td>{{ $protocol->occurred_at->format('Y-m-d H:i') }}</td>
+                    <td>{{ $protocol->creator?->name ?? '' }}</td>
+                    <td>{{ $protocol->subject_id }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+</body>
+</html>

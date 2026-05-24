@@ -16,13 +16,15 @@ use App\Enums\Protocol\ProtocolType;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, DiaryEntry, OpenIssue, Project, Protocol};
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class CustomerDrilldownReportController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function openIssues(Request $request): View|Response {
+    public function openIssues(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
         $from = $range['from']->startOfDay();
         $to = $range['to']->endOfDay();
@@ -86,9 +88,25 @@ class CustomerDrilldownReportController extends Controller {
             ->orderByDesc('updated_at');
 
         if ($request->query('export') === 'csv') {
+            /** @var list<OpenIssue> $issues */
             $issues = $issuesQuery->clone()->get()->all();
 
             return $this->exportOpenIssuesCsv($issues, $customerId, $from->toDateString(), $to->toDateString(), $escalatedOnly);
+        }
+
+        if ($request->query('export') === 'pdf') {
+            /** @var list<OpenIssue> $issues */
+            $issues = $issuesQuery->clone()->get()->all();
+
+            return $this->exportOpenIssuesPdf(
+                $issues,
+                ($customer !== null ? $customer->name : null) ?? ('#' . $customerId),
+                $range['label'],
+                $customerId,
+                $from->toDateString(),
+                $to->toDateString(),
+                $escalatedOnly
+            );
         }
 
         $issues = $issuesQuery->paginate(50)->withQueryString();
@@ -107,7 +125,7 @@ class CustomerDrilldownReportController extends Controller {
         ]);
     }
 
-    public function protocols(Request $request): View|Response {
+    public function protocols(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
         $from = $range['from']->startOfDay();
         $to = $range['to']->endOfDay();
@@ -138,9 +156,24 @@ class CustomerDrilldownReportController extends Controller {
             ->orderByDesc('occurred_at');
 
         if ($request->query('export') === 'csv') {
+            /** @var list<Protocol> $protocols */
             $protocols = $protocolsQuery->clone()->get()->all();
 
             return $this->exportProtocolsCsv($protocols, $customerId, $from->toDateString(), $to->toDateString());
+        }
+
+        if ($request->query('export') === 'pdf') {
+            /** @var list<Protocol> $protocols */
+            $protocols = $protocolsQuery->clone()->get()->all();
+
+            return $this->exportProtocolsPdf(
+                $protocols,
+                ($customer !== null ? $customer->name : null) ?? ('#' . $customerId),
+                $range['label'],
+                $customerId,
+                $from->toDateString(),
+                $to->toDateString()
+            );
         }
 
         $protocols = $protocolsQuery->paginate(50)->withQueryString();
@@ -158,9 +191,9 @@ class CustomerDrilldownReportController extends Controller {
         ]);
     }
 
-    /**
-      * @param  list<OpenIssue>  $issues
-     */
+        /**
+            * @param  array<int, OpenIssue>  $issues
+         */
     private function exportOpenIssuesCsv(
           array $issues,
         int $customerId,
@@ -194,8 +227,36 @@ class CustomerDrilldownReportController extends Controller {
     }
 
     /**
-      * @param  list<Protocol>  $protocols
+     * @param  array<int, OpenIssue>  $issues
      */
+    private function exportOpenIssuesPdf(
+        array $issues,
+        string $customerName,
+        string $label,
+        int $customerId,
+        string $from,
+        string $to,
+        bool $escalatedOnly,
+    ): SymfonyResponse {
+        $filename = sprintf(
+            'kunden-drilldown-open-issues-%d-%s-%s%s.pdf',
+            $customerId,
+            $from,
+            $to,
+            $escalatedOnly ? '-escalated' : ''
+        );
+
+        return Pdf::loadView('reports.drilldown.pdf.customer-open-issues', [
+            'issues' => $issues,
+            'customerName' => $customerName,
+            'label' => $label,
+            'escalatedOnly' => $escalatedOnly,
+        ])->setPaper('a4')->download($filename);
+    }
+
+        /**
+            * @param  array<int, Protocol>  $protocols
+         */
     private function exportProtocolsCsv(
           array $protocols,
         int $customerId,
@@ -220,6 +281,26 @@ class CustomerDrilldownReportController extends Controller {
         }
 
         return $this->csvResponse($out, $filename);
+    }
+
+    /**
+     * @param  array<int, Protocol>  $protocols
+     */
+    private function exportProtocolsPdf(
+        array $protocols,
+        string $customerName,
+        string $label,
+        int $customerId,
+        string $from,
+        string $to,
+    ): SymfonyResponse {
+        $filename = sprintf('kunden-drilldown-defektprotokolle-%d-%s-%s.pdf', $customerId, $from, $to);
+
+        return Pdf::loadView('reports.drilldown.pdf.customer-protocols', [
+            'protocols' => $protocols,
+            'customerName' => $customerName,
+            'label' => $label,
+        ])->setPaper('a4')->download($filename);
     }
 
     /**
