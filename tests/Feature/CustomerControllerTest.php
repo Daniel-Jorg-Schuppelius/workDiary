@@ -135,8 +135,7 @@ class CustomerControllerTest extends TestCase {
             'created_by' => $this->admin->id,
         ]);
 
-        $this->actingAs($this->admin)
-            ->delete(route('customers.destroy', $customer))
+        $this->deleteAsAdmin('customers.destroy', $customer)
             ->assertRedirect(route('customers.show', $customer))
             ->assertSessionHas('error');
 
@@ -159,8 +158,7 @@ class CustomerControllerTest extends TestCase {
             'synced_at' => now(),
         ]);
 
-        $this->actingAs($this->admin)
-            ->delete(route('customers.destroy', $customer))
+        $this->deleteAsAdmin('customers.destroy', $customer)
             ->assertRedirect(route('customers.show', $customer))
             ->assertSessionHas('error');
 
@@ -173,8 +171,7 @@ class CustomerControllerTest extends TestCase {
             'created_by' => $this->admin->id,
         ]);
 
-        $this->actingAs($this->admin)
-            ->delete(route('customers.destroy', $customer))
+        $this->deleteAsAdmin('customers.destroy', $customer)
             ->assertRedirect(route('customers.index'));
 
         $this->assertDatabaseMissing('customers', ['id' => $customer->id]);
@@ -290,5 +287,9 @@ class CustomerControllerTest extends TestCase {
 
     private function getAsUser(string $routeName, array $parameters = []): TestResponse {
         return $this->actingAs($this->user)->get(route($routeName, $parameters));
+    }
+
+    private function deleteAsAdmin(string $routeName, mixed $parameters = []): TestResponse {
+        return $this->actingAs($this->admin)->delete(route($routeName, $parameters));
     }
 }
