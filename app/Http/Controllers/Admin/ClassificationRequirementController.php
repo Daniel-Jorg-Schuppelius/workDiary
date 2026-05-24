@@ -516,12 +516,13 @@ class ClassificationRequirementController extends Controller {
         return match ($sortField) {
             'required_domain' => ['required_domain', 'entry_type_code', 'enforce_phase'],
             'enforce_phase' => ['enforce_phase', 'entry_type_code', 'required_domain'],
+            'severity' => ['severity', 'entry_type_code', 'required_domain'],
             default => ['entry_type_code', 'enforce_phase', 'required_domain'],
         };
     }
 
     /**
-     * @param Builder<ClassificationRequirement> $requirementsQuery
+     * @param  Builder<ClassificationRequirement>  $requirementsQuery
      */
     private function applySorting(Builder $requirementsQuery, string $sortField): void {
         if ($sortField === 'enforce_phase') {
@@ -532,6 +533,21 @@ class ClassificationRequirementController extends Controller {
                         ClassificationRequirementPhase::OnCreate->value,
                         ClassificationRequirementPhase::BeforeComplete->value,
                         ClassificationRequirementPhase::BeforeSign->value,
+                    ]
+                )
+                ->orderBy('entry_type_code')
+                ->orderBy('required_domain');
+
+            return;
+        }
+
+        if ($sortField === 'severity') {
+            $requirementsQuery
+                ->orderByRaw(
+                    'case severity when ? then 0 when ? then 1 else 2 end',
+                    [
+                        ClassificationRequirementSeverity::Hard->value,
+                        ClassificationRequirementSeverity::Soft->value,
                     ]
                 )
                 ->orderBy('entry_type_code')
@@ -553,6 +569,7 @@ class ClassificationRequirementController extends Controller {
             'entry_type_code' => __('Auftragstyp'),
             'required_domain' => __('Pflicht-Domain'),
             'enforce_phase' => __('Phase'),
+            'severity' => __('Schweregrad'),
         ];
     }
 

@@ -330,6 +330,35 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
             ->assertSeeInOrder(['Erste Phase', 'Zweite Phase', 'Dritte Phase']);
     }
 
+    public function test_index_can_sort_requirements_by_severity(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::RootCause->value,
+            'enforce_phase' => ClassificationRequirementPhase::BeforeSign->value,
+            'severity' => ClassificationRequirementSeverity::Soft->value,
+            'note' => 'Hinweis zuerst hinten',
+        ]);
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'entry_type_code' => 'service',
+            'required_domain' => ClassificationDomain::DefectType->value,
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'severity' => ClassificationRequirementSeverity::Hard->value,
+            'note' => 'Blockierend zuerst vorne',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('admin.classification-requirements.index', [
+                'sort' => 'severity',
+            ]))
+            ->assertOk()
+            ->assertSee('Sortierung: Schweregrad')
+            ->assertSeeInOrder(['Blockierend zuerst vorne', 'Hinweis zuerst hinten']);
+    }
+
     public function test_create_dialog_contains_entry_type_presets_payload(): void {
         $user = $this->userWithRole(UserRole::Teamleitung->value);
 
