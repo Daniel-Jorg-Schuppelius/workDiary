@@ -198,10 +198,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
             ->get(route('reports.entry-types', ['entry_type_id' => $this->entryType->id, 'export' => 'pdf']))
             ->assertOk();
 
-        $log = AuditLog::query()
-            ->where('event', 'report.exported')
-            ->latest('id')
-            ->first();
+        $log = $this->latestReportExportAuditLog();
 
         $this->assertExportAuditLog(
             $log,
@@ -222,10 +219,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
             ->get(route('reports.entry-types', ['entry_type_id' => $this->entryType->id, 'export' => 'csv']))
             ->assertOk();
 
-        $log = AuditLog::query()
-            ->where('event', 'report.exported')
-            ->latest('id')
-            ->first();
+        $log = $this->latestReportExportAuditLog();
 
         $this->assertExportAuditLog(
             $log,
@@ -376,10 +370,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
             ]))
             ->assertOk();
 
-        $log = AuditLog::query()
-            ->where('event', 'report.exported')
-            ->latest('id')
-            ->first();
+        $log = $this->latestReportExportAuditLog();
 
         $this->assertExportAuditLog(
             $log,
@@ -404,10 +395,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
             ]))
             ->assertOk();
 
-        $log = AuditLog::query()
-            ->where('event', 'report.exported')
-            ->latest('id')
-            ->first();
+        $log = $this->latestReportExportAuditLog();
 
         $this->assertExportAuditLog(
             $log,
@@ -431,10 +419,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
             ]))
             ->assertOk();
 
-        $log = AuditLog::query()
-            ->where('event', 'report.exported')
-            ->latest('id')
-            ->first();
+        $log = $this->latestReportExportAuditLog();
 
         $this->assertExportAuditLog(
             $log,
@@ -459,10 +444,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
             ]))
             ->assertOk();
 
-        $log = AuditLog::query()
-            ->where('event', 'report.exported')
-            ->latest('id')
-            ->first();
+        $log = $this->latestReportExportAuditLog();
 
         $this->assertExportAuditLog(
             $log,
@@ -495,6 +477,13 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
         $this->assertSame('127.0.0.1', $log->ip);
         $this->assertTrue(is_string($log->user_agent));
+    }
+
+    private function latestReportExportAuditLog(): ?AuditLog {
+        return AuditLog::query()
+            ->where('event', 'report.exported')
+            ->latest('id')
+            ->first();
     }
 
     private function createEntryTypeDiaryEntry(?int $plannedMinutes = 60): DiaryEntry {

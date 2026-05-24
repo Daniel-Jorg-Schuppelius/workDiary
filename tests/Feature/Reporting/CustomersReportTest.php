@@ -233,10 +233,7 @@ class CustomersReportTest extends TestCase {
             ->get(route('reports.customers', ['project_id' => $this->project->id, 'export' => 'csv']))
             ->assertOk();
 
-        $log = AuditLog::query()
-            ->where('event', 'report.exported')
-            ->latest('id')
-            ->first();
+        $log = $this->latestReportExportAuditLog();
 
         $this->assertExportAuditLog(
             $log,
@@ -257,10 +254,7 @@ class CustomersReportTest extends TestCase {
             ->get(route('reports.customers', ['project_id' => $this->project->id, 'export' => 'pdf']))
             ->assertOk();
 
-        $log = AuditLog::query()
-            ->where('event', 'report.exported')
-            ->latest('id')
-            ->first();
+        $log = $this->latestReportExportAuditLog();
 
         $this->assertExportAuditLog(
             $log,
@@ -402,10 +396,7 @@ class CustomersReportTest extends TestCase {
             ]))
             ->assertOk();
 
-        $log = AuditLog::query()
-            ->where('event', 'report.exported')
-            ->latest('id')
-            ->first();
+        $log = $this->latestReportExportAuditLog();
 
         $this->assertExportAuditLog(
             $log,
@@ -429,10 +420,7 @@ class CustomersReportTest extends TestCase {
             ]))
             ->assertOk();
 
-        $log = AuditLog::query()
-            ->where('event', 'report.exported')
-            ->latest('id')
-            ->first();
+        $log = $this->latestReportExportAuditLog();
 
         $this->assertExportAuditLog(
             $log,
@@ -456,10 +444,7 @@ class CustomersReportTest extends TestCase {
             ]))
             ->assertOk();
 
-        $log = AuditLog::query()
-            ->where('event', 'report.exported')
-            ->latest('id')
-            ->first();
+        $log = $this->latestReportExportAuditLog();
 
         $this->assertExportAuditLog(
             $log,
@@ -483,10 +468,7 @@ class CustomersReportTest extends TestCase {
             ]))
             ->assertOk();
 
-        $log = AuditLog::query()
-            ->where('event', 'report.exported')
-            ->latest('id')
-            ->first();
+        $log = $this->latestReportExportAuditLog();
 
         $this->assertExportAuditLog(
             $log,
@@ -519,6 +501,13 @@ class CustomersReportTest extends TestCase {
         $this->assertArrayHasKey($filterKey, $log->changes['filters'] ?? []);
         $this->assertSame($filterValue, $log->changes['filters'][$filterKey] ?? null);
         $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
+    }
+
+    private function latestReportExportAuditLog(): ?AuditLog {
+        return AuditLog::query()
+            ->where('event', 'report.exported')
+            ->latest('id')
+            ->first();
     }
 
     private function createCustomerDiaryEntry(): DiaryEntry {
