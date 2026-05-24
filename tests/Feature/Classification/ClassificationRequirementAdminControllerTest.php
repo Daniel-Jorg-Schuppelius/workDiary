@@ -176,6 +176,7 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
         $this->actingAs($user)
             ->get(route('admin.classification-requirements.index', ['q' => 'service']))
             ->assertOk()
+            ->assertSee('1 Pflichtregel angezeigt')
             ->assertSee('service')
             ->assertSee('Suchbarer Service-Hinweis')
             ->assertSee('Aktive Filter')

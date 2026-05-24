@@ -80,16 +80,21 @@
         </form>
     </x-card>
 
-    @if ($hasActiveFilters)
-        <x-card>
-            <div class="flex flex-wrap items-center gap-2">
-                <span class="text-sm font-medium">{{ __('Aktive Filter') }}</span>
-                @foreach ($activeFilterChips as $chip)
-                    <span class="badge badge-outline badge-sm">{{ $chip }}</span>
-                @endforeach
-            </div>
-        </x-card>
-    @endif
+    <x-card>
+        <div class="flex flex-wrap items-center gap-3">
+            <span class="text-sm font-medium">
+                {{ trans_choice(':count Pflichtregel angezeigt|:count Pflichtregeln angezeigt', $requirements->count(), ['count' => $requirements->count()]) }}
+            </span>
+            @if ($hasActiveFilters)
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-sm font-medium">{{ __('Aktive Filter') }}</span>
+                    @foreach ($activeFilterChips as $chip)
+                        <span class="badge badge-outline badge-sm">{{ $chip }}</span>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </x-card>
 
     @if ($requirements->isEmpty())
         <x-card>
