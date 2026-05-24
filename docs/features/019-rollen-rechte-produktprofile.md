@@ -45,7 +45,10 @@ codeverbindlich verankert.
 | Außendienst               | `aussendienst`       | Mobile Erfassung (eigene Zeit, Diary, Touren, Spesen, Fahrzeug-Log).      |
 | Callcenter                | `callcenter`         | Diary für andere erfassen, Kundenstamm einsehen.                          |
 | Support                   | `support`            | Anbieter-Support, **strikt read-only** + Auditzugriff.                    |
-| Kunde (Customer-Portal)   | `kunde`              | Self-Service-Sicht für externe Auftraggeber (read-only). Eigener Guard, siehe [Customer-Portal-Guard](../security/customer-portal-guard.md). |
+| Kunde (Customer-Portal)   | `kunde`              | Self-Service-Sicht für externe Auftraggeber (read-only), eigener Guard.   |
+
+Der Kunden-Guard ist separat dokumentiert: siehe
+[Customer-Portal-Guard](../security/customer-portal-guard.md).
 
 ## Akzeptanzkriterien
 
@@ -69,8 +72,8 @@ codeverbindlich verankert.
 
 ## Offene Folge-Arbeiten
 
-- Auditierung von Gruppen-Mitgliedschaften (`AccessUserGroupController` ↔
-  Members) — bislang nur Rollen-CRUD protokolliert.
+- Kundenportal-Rollenprüfung und externe Links sind weiterhin als Folgearbeit
+  dokumentiert.
 
 ## GitHub Issues
 

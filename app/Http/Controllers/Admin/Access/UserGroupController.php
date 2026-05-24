@@ -176,9 +176,18 @@ class UserGroupController extends Controller {
         $user = User::query()->find($data['user_id']);
         abort_unless($user instanceof User && $user->organization_id === $group->organization_id, 422);
 
+        $alreadyMember = $group->members()->whereKey($user->id)->exists();
+
         $group->members()->syncWithoutDetaching([
             $user->id => ['joined_at' => Carbon::now()],
         ]);
+
+        if (! $alreadyMember) {
+            $group->audit('user_group.member_added', [
+                'member_id' => $user->id,
+                'member_name' => $user->name,
+            ]);
+        }
 
         return back()->with('success', __('access.flash.member_added'));
     }
@@ -187,7 +196,14 @@ class UserGroupController extends Controller {
         Gate::authorize('update', $group);
         abort_unless($user->organization_id === $group->organization_id, 403);
 
-        $group->members()->detach($user->id);
+        $detached = $group->members()->detach($user->id);
+
+        if ($detached > 0) {
+            $group->audit('user_group.member_removed', [
+                'member_id' => $user->id,
+                'member_name' => $user->name,
+            ]);
+        }
 
         return back()->with('success', __('access.flash.member_removed'));
     }
