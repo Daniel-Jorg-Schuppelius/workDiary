@@ -144,6 +144,13 @@ class EntryTypeAnalysisReportTest extends TestCase {
             'to' => now()->toDateString(),
             'entry_type' => $this->entryType->id,
         ]), false);
+        $response->assertSee(route('reports.entry-types.drilldown.protocols', [
+            'entry_type_id' => $this->entryType->id,
+        ]), false);
+        $response->assertSee(route('reports.entry-types.drilldown.open-issues', [
+            'entry_type_id' => $this->entryType->id,
+            'escalated' => 1,
+        ]), false);
     }
 
     public function test_requires_authentication(): void {
@@ -182,5 +189,146 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $content = (string) $response->getContent();
         $this->assertStringContainsString('Auftragstyp;Auftraege;DurchschnittPlanMinuten', $content);
         $this->assertStringContainsString('Service', $content);
+    }
+
+    public function test_open_issues_drilldown_route_renders_for_entry_type(): void {
+        $entry = DiaryEntry::factory()->for($this->user)->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'entry_type_id' => $this->entryType->id,
+            'created_at' => now()->subDays(2),
+        ]);
+
+        OpenIssue::create([
+            'organization_id' => $this->organization->id,
+            'subject_type' => DiaryEntry::class,
+            'subject_id' => $entry->id,
+            'source_type' => OpenIssueSource::Manual->value,
+            'source_ref_id' => null,
+            'title' => 'EntryType Drilldown Issue',
+            'description' => null,
+            'category' => 'entry',
+            'severity' => OpenIssueSeverity::High->value,
+            'status' => OpenIssueStatus::Blocked->value,
+            'assignee_user_id' => $this->user->id,
+            'due_at' => now()->addDays(2),
+            'visibility' => OpenIssueVisibility::Internal->value,
+            'closed_at' => null,
+            'closed_by_user_id' => null,
+            'closed_reason' => null,
+            'created_by_user_id' => $this->user->id,
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.entry-types.drilldown.open-issues', [
+                'entry_type_id' => $this->entryType->id,
+                'escalated' => 1,
+            ]));
+
+        $response->assertOk();
+        $response->assertSeeText('EntryType Drilldown Issue');
+    }
+
+    public function test_protocols_drilldown_route_renders_for_entry_type(): void {
+        $entry = DiaryEntry::factory()->for($this->user)->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'entry_type_id' => $this->entryType->id,
+            'created_at' => now()->subDays(2),
+        ]);
+
+        Protocol::factory()->for($entry, 'subject')->state([
+            'organization_id' => $this->organization->id,
+            'created_by_user_id' => $this->user->id,
+            'type' => ProtocolType::Defect->value,
+            'title' => 'EntryType Drilldown Protocol',
+            'occurred_at' => now()->subDays(2),
+        ])->create();
+
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.entry-types.drilldown.protocols', [
+                'entry_type_id' => $this->entryType->id,
+            ]));
+
+        $response->assertOk();
+        $response->assertSeeText('EntryType Drilldown Protocol');
+    }
+
+    public function test_open_issues_drilldown_can_be_exported_as_csv(): void {
+        $entry = DiaryEntry::factory()->for($this->user)->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'entry_type_id' => $this->entryType->id,
+            'created_at' => now()->subDays(2),
+        ]);
+
+        OpenIssue::create([
+            'organization_id' => $this->organization->id,
+            'subject_type' => DiaryEntry::class,
+            'subject_id' => $entry->id,
+            'source_type' => OpenIssueSource::Manual->value,
+            'source_ref_id' => null,
+            'title' => 'EntryType CSV Issue',
+            'description' => null,
+            'category' => 'entry',
+            'severity' => OpenIssueSeverity::High->value,
+            'status' => OpenIssueStatus::Blocked->value,
+            'assignee_user_id' => $this->user->id,
+            'due_at' => now()->addDays(2),
+            'visibility' => OpenIssueVisibility::Internal->value,
+            'closed_at' => null,
+            'closed_by_user_id' => null,
+            'closed_reason' => null,
+            'created_by_user_id' => $this->user->id,
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.entry-types.drilldown.open-issues', [
+                'entry_type_id' => $this->entryType->id,
+                'export' => 'csv',
+            ]));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
+        $response->assertHeader('content-disposition');
+
+        $content = (string) $response->getContent();
+        $this->assertStringContainsString('ID;Titel;Status;Severity', $content);
+        $this->assertStringContainsString('EntryType CSV Issue', $content);
+    }
+
+    public function test_protocols_drilldown_can_be_exported_as_csv(): void {
+        $entry = DiaryEntry::factory()->for($this->user)->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'entry_type_id' => $this->entryType->id,
+            'created_at' => now()->subDays(2),
+        ]);
+
+        Protocol::factory()->for($entry, 'subject')->state([
+            'organization_id' => $this->organization->id,
+            'created_by_user_id' => $this->user->id,
+            'type' => ProtocolType::Defect->value,
+            'title' => 'EntryType CSV Protocol',
+            'occurred_at' => now()->subDays(2),
+        ])->create();
+
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.entry-types.drilldown.protocols', [
+                'entry_type_id' => $this->entryType->id,
+                'export' => 'csv',
+            ]));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
+        $response->assertHeader('content-disposition');
+
+        $content = (string) $response->getContent();
+        $this->assertStringContainsString('ID;Titel;Status;Typ', $content);
+        $this->assertStringContainsString('EntryType CSV Protocol', $content);
     }
 }

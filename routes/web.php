@@ -14,7 +14,7 @@ use App\Http\Controllers\Admin\Access\{AccessHubController, MemberController as 
 use App\Http\Controllers\Admin\{AutomationRuleController, BranchProfileController, ClassificationController, ClassificationRequirementController, EntryTypeController, ExpenseCategoryController, PerDiemRateController, PluginController as AdminPluginController};
 use App\Http\Controllers\Auth\{LoginController, TenantRegistrationController};
 use App\Http\Controllers\Plugins\LexofficeCustomerController;
-use App\Http\Controllers\Reporting\{AbsencesReportController, AttendanceReportController, AuditActivityReportController, BillingReportController, CoverageReportController, CustomerAnalysisReportController, CustomerProjectReportController, EntryTypeAnalysisReportController, ExpenseReportController, FleetReportController, MaterialReportController, MyMonthReportController, MyYearReportController, OnCallReportController, OperationsReportController, ProjectDetailsReportController, QualificationReportController, SicknessReportController, WeekByUserReportController, WorkBalanceReportController};
+use App\Http\Controllers\Reporting\{AbsencesReportController, AttendanceReportController, AuditActivityReportController, BillingReportController, CoverageReportController, CustomerAnalysisReportController, CustomerProjectReportController, EntryTypeAnalysisReportController, EntryTypeDrilldownReportController, ExpenseReportController, FleetReportController, MaterialReportController, MyMonthReportController, MyYearReportController, OnCallReportController, OperationsReportController, ProjectDetailsReportController, QualificationReportController, SicknessReportController, WeekByUserReportController, WorkBalanceReportController};
 use App\Http\Controllers\UI\DateRangeController;
 use Illuminate\Support\Facades\Route;
 
@@ -407,6 +407,10 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/customers/drilldown/protocols', [\App\Http\Controllers\Reporting\CustomerDrilldownReportController::class, 'protocols'])
             ->name('reports.customers.drilldown.protocols');
         Route::get('reports/entry-types', [EntryTypeAnalysisReportController::class, 'index'])->name('reports.entry-types');
+        Route::get('reports/entry-types/drilldown/open-issues', [EntryTypeDrilldownReportController::class, 'openIssues'])
+            ->name('reports.entry-types.drilldown.open-issues');
+        Route::get('reports/entry-types/drilldown/protocols', [EntryTypeDrilldownReportController::class, 'protocols'])
+            ->name('reports.entry-types.drilldown.protocols');
         Route::get('reports/customer-project', [CustomerProjectReportController::class, 'index'])->name('reports.customer-project');
         Route::get('reports/week-by-user', [WeekByUserReportController::class, 'index'])->name('reports.week-by-user');
         Route::get('reports/project-details', [ProjectDetailsReportController::class, 'index'])->name('reports.project-details');

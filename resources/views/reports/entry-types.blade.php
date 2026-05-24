@@ -83,6 +83,12 @@
                             'entry_type' => $row['entryTypeId'] > 0 ? $row['entryTypeId'] : null,
                             'status' => $statusFilter,
                         ]));
+                        $reportDrilldown = array_filter([
+                            'entry_type_id' => $row['entryTypeId'] > 0 ? $row['entryTypeId'] : null,
+                            'customer_id' => $customerId,
+                            'user_id' => $userId,
+                            'status' => $statusFilter,
+                        ]);
                     @endphp
                     <tr>
                         <td class="font-medium">
@@ -94,9 +100,13 @@
                         <td class="text-right tabular-nums {{ $ratioClass }}">{{ $ratio === null ? '—' : number_format($ratio, 3, ',', '.') }}</td>
                         <td class="text-right tabular-nums">{{ $row['overrunCount'] }}</td>
                         <td class="text-right tabular-nums">{{ number_format($row['overrunShare'], 2, ',', '.') }}</td>
-                        <td class="text-right tabular-nums">{{ $row['reworkCount'] }}</td>
+                        <td class="text-right tabular-nums">
+                            <a href="{{ route('reports.entry-types.drilldown.protocols', $reportDrilldown) }}" class="link link-hover">{{ $row['reworkCount'] }}</a>
+                        </td>
                         <td class="text-right tabular-nums">{{ number_format($row['reworkShare'], 2, ',', '.') }}</td>
-                        <td class="text-right tabular-nums">{{ number_format($row['escalationShare'], 2, ',', '.') }}</td>
+                        <td class="text-right tabular-nums">
+                            <a href="{{ route('reports.entry-types.drilldown.open-issues', array_merge($reportDrilldown, ['escalated' => 1])) }}" class="link link-hover">{{ number_format($row['escalationShare'], 2, ',', '.') }}</a>
+                        </td>
                         <td class="text-right tabular-nums">{{ number_format($row['firstTimeRightShare'], 2, ',', '.') }}</td>
                         <td class="text-right tabular-nums">{{ number_format($row['medianActualMinutes'], 2, ',', '.') }}</td>
                         <td class="text-right tabular-nums">{{ number_format($row['p90ActualMinutes'], 2, ',', '.') }}</td>
