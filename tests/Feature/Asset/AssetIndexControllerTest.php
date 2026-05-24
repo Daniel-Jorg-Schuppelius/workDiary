@@ -118,6 +118,30 @@ class AssetIndexControllerTest extends TestCase {
             ->assertDontSee('Bohrhammer');
     }
 
+    public function test_index_lists_blocked_assets_after_non_blocked_assets(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+
+        Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_no' => 'AS-2026-0100',
+            'name' => 'Aktives Asset',
+            'status' => AssetStatus::Active->value,
+        ]);
+
+        Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_no' => 'AS-2026-0200',
+            'name' => 'Blockiertes Asset',
+            'status' => AssetStatus::Blocked->value,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('assets.index'))
+            ->assertOk()
+            ->assertSeeInOrder(['AS-2026-0100', 'AS-2026-0200'])
+            ->assertSee('badge badge-error');
+    }
+
     public function test_teamleitung_can_create_asset_with_minimal_master_data(): void {
         $user = $this->userWithRole(UserRole::Teamleitung->value);
         $customer = Customer::factory()->create([

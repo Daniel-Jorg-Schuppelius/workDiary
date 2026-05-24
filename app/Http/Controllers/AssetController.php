@@ -31,6 +31,7 @@ class AssetController extends Controller {
 
         $assetsQuery = Asset::query()
             ->with(['customer:id,name'])
+            ->orderByRaw("case when status = ? then 1 else 0 end asc", [AssetStatus::Blocked->value])
             ->latest('updated_at');
 
         if ($query !== '') {
@@ -188,6 +189,7 @@ class AssetController extends Controller {
             'attachments' => $attachments,
             'timelineEntries' => $timelineEntries,
             'statusSummary' => $visibilitySummary,
+            'canUnblock' => Gate::forUser($user)->allows('update', $asset),
             'visibleCounts' => [
                 'diary' => $diaryEntries->count(),
                 'protocols' => $protocols->count(),
@@ -195,6 +197,23 @@ class AssetController extends Controller {
                 'attachments' => $attachments->count(),
             ],
         ]);
+    }
+
+    public function unblock(Asset $asset, Request $request, AssetService $assetService): RedirectResponse {
+        Gate::authorize('update', $asset);
+
+        $user = $request->user();
+        if (! $user instanceof User) {
+            abort(403);
+        }
+
+        if ($asset->status === AssetStatus::Blocked) {
+            $assetService->update($asset, $user, ['status' => AssetStatus::Active->value]);
+        }
+
+        return redirect()
+            ->route('assets.show', $asset)
+            ->with('success', __('Asset-Sperre aufgehoben.'));
     }
 
     /**

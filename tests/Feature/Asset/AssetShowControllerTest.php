@@ -159,6 +159,23 @@ class AssetShowControllerTest extends TestCase {
             ->assertSeeText('spec-sheet.pdf');
     }
 
+    public function test_teamleitung_can_unblock_blocked_asset(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'status' => AssetStatus::Blocked->value,
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('assets.unblock', $asset))
+            ->assertRedirect(route('assets.show', $asset));
+
+        $this->assertDatabaseHas('assets', [
+            'id' => $asset->id,
+            'status' => AssetStatus::Active->value,
+        ]);
+    }
+
     private function userWithRole(string $role): User {
         $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $registrar = app(PermissionRegistrar::class);

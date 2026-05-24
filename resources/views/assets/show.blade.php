@@ -26,6 +26,12 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
+                    @if ($canUnblock && $assetStatusValue === \App\Enums\Asset\AssetStatus::Blocked->value)
+                        <form method="POST" action="{{ route('assets.unblock', $asset) }}">
+                            @csrf
+                            <x-icon-btn icon="lock_open" tone="success" size="sm" type="submit" show-label>{{ __('Sperre aufheben') }}</x-icon-btn>
+                        </form>
+                    @endif
                     <x-icon-btn icon="arrow_back" size="sm" :href="route('assets.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
                 </div>
             </div>

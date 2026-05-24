@@ -96,6 +96,7 @@
                             @php
                                 $assetClassValue = $asset->asset_class instanceof \BackedEnum ? $asset->asset_class->value : (string) $asset->asset_class;
                                 $assetStatusValue = $asset->status instanceof \BackedEnum ? $asset->status->value : (string) $asset->status;
+                                $isBlocked = $assetStatusValue === \App\Enums\Asset\AssetStatus::Blocked->value;
                             @endphp
                             <tr>
                                 <td class="font-mono text-xs">
@@ -109,7 +110,7 @@
                                 <td>{{ $asset->location_text ?: '—' }}</td>
                                 <td>{{ $asset->customer?->name ?: '—' }}</td>
                                 <td>
-                                    <span class="badge badge-outline">{{ $statusOptions[$assetStatusValue] ?? $assetStatusValue }}</span>
+                                    <span class="badge {{ $isBlocked ? 'badge-error' : 'badge-outline' }}">{{ $statusOptions[$assetStatusValue] ?? $assetStatusValue }}</span>
                                 </td>
                                 <td class="text-right">
                                     <x-icon-btn icon="open_in_new" :href="route('assets.show', $asset)" :label="__('Details')" />
