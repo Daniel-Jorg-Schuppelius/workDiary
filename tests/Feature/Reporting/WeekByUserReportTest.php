@@ -14,6 +14,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Project, TimeEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
 
@@ -55,9 +56,7 @@ class WeekByUserReportTest extends TestCase {
             'kind' => TimeEntryKind::Work->value,
         ]);
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeWeek(2030, 14))
-            ->get(route('reports.week-by-user'));
+        $response = $this->getWithWeekRange('reports.week-by-user');
         $response->assertOk();
         $response->assertSee('2:00');
     }
@@ -73,9 +72,7 @@ class WeekByUserReportTest extends TestCase {
             'kind' => TimeEntryKind::Work->value,
         ]);
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeWeek(2030, 14))
-            ->get(route('reports.week-by-user', ['export' => 'csv']));
+        $response = $this->getWithWeekRange('reports.week-by-user', ['export' => 'csv']);
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $this->assertStringContainsString('woche_2030-W14.csv', (string) $response->headers->get('Content-Disposition'));
@@ -93,9 +90,7 @@ class WeekByUserReportTest extends TestCase {
             'kind' => TimeEntryKind::Work->value,
         ]);
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeWeek(2030, 14))
-            ->get(route('reports.week-by-user', ['export' => 'pdf']));
+        $response = $this->getWithWeekRange('reports.week-by-user', ['export' => 'pdf']);
         $response->assertOk();
         $response->assertHeader('Content-Type', 'application/pdf');
         $this->assertStringStartsWith('%PDF', (string) $response->getContent());
@@ -103,5 +98,11 @@ class WeekByUserReportTest extends TestCase {
 
     public function test_requires_authentication(): void {
         $this->get(route('reports.week-by-user'))->assertRedirect(route('login'));
+    }
+
+    private function getWithWeekRange(string $routeName, array $parameters = []): TestResponse {
+        return $this->actingAs($this->user)
+            ->withSession($this->dateRangeWeek(2030, 14))
+            ->get(route($routeName, $parameters));
     }
 }
