@@ -18,6 +18,7 @@ use App\Enums\Protocol\ProtocolType;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{AuditLog, DiaryEntry, EntryType, OpenIssue, Project, Protocol, TimeEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
 
@@ -432,7 +433,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
             ->first();
     }
 
-    private function getWithDateRange(string $routeName, array $parameters = []): \Illuminate\Testing\TestResponse {
+    private function getWithDateRange(string $routeName, array $parameters = []): TestResponse {
         return $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
             ->get(route($routeName, $parameters));
