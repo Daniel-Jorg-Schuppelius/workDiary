@@ -37,6 +37,9 @@ enum Permission: string implements HasLabel {
     case OrganizationUpdate = 'organization.update';
     case OrganizationBilling = 'organization.billing';
     case BrandingUpdate = 'branding.update';
+    case OrgOnboardingView = 'org.onboarding.view';
+    case OrgOnboardingSkipStep = 'org.onboarding.skipStep';
+    case OrgOnboardingDismissWidget = 'org.onboarding.dismissWidget';
 
         // ── Mitglieder (User-Stamm der Org) ────────────────────────────────
     case UserViewAny = 'user.viewAny';
@@ -246,7 +249,7 @@ enum Permission: string implements HasLabel {
     public function group(): PermissionGroup {
         return match (true) {
             str_starts_with($this->value, 'access.'), str_starts_with($this->value, 'audit-log.') => PermissionGroup::Access,
-            str_starts_with($this->value, 'organization.'), str_starts_with($this->value, 'branding.') => PermissionGroup::Organization,
+            str_starts_with($this->value, 'organization.'), str_starts_with($this->value, 'branding.'), str_starts_with($this->value, 'org.onboarding.') => PermissionGroup::Organization,
             str_starts_with($this->value, 'user.') => PermissionGroup::Members,
             str_starts_with($this->value, 'customer.') => PermissionGroup::Customers,
             str_starts_with($this->value, 'project.'), str_starts_with($this->value, 'task.'), str_starts_with($this->value, 'milestone.') => PermissionGroup::Projects,

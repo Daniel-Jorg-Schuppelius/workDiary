@@ -158,6 +158,9 @@ return [
         'organization.update' => 'Edit organization',
         'organization.billing' => 'Manage organization billing',
         'branding.update' => 'Edit branding',
+        'org.onboarding.view' => 'View onboarding checklist',
+        'org.onboarding.skipStep' => 'Skip onboarding step',
+        'org.onboarding.dismissWidget' => 'Dismiss onboarding widget',
 
         'user.viewAny' => 'List members',
         'user.view' => 'View member',

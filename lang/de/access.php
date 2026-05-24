@@ -161,6 +161,9 @@ return [
         'organization.update' => 'Organisation bearbeiten',
         'organization.billing' => 'Abrechnung der Organisation',
         'branding.update' => 'Branding bearbeiten',
+        'org.onboarding.view' => 'Onboarding-Checkliste einsehen',
+        'org.onboarding.skipStep' => 'Onboarding-Schritt überspringen',
+        'org.onboarding.dismissWidget' => 'Onboarding-Widget ausblenden',
 
         'user.viewAny' => 'Mitglieder auflisten',
         'user.view' => 'Mitglied ansehen',
