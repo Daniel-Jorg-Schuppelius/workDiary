@@ -13,6 +13,7 @@ namespace Tests\Feature\Reporting;
 use App\Enums\Sickness\SickLeaveKind;
 use App\Models\{SickLeave, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
 
@@ -45,9 +46,7 @@ class AbsencesReportSickLeaveTest extends TestCase {
             'end_date' => '2026-05-15',
         ]);
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeYear(2026))
-            ->get(route('reports.absences'));
+        $response = $this->getWithYearRange('reports.absences');
 
         $response->assertOk();
         $response->assertViewHas('rows', function (array $rows): bool {
@@ -69,10 +68,14 @@ class AbsencesReportSickLeaveTest extends TestCase {
             'kind' => SickLeaveKind::Initial->value,
         ]);
 
-        $response = $this->actingAs($this->user)
-            ->withSession($this->dateRangeYear(2026))
-            ->get(route('reports.sickness'));
+        $response = $this->getWithYearRange('reports.sickness');
 
         $response->assertOk();
+    }
+
+    private function getWithYearRange(string $routeName, array $parameters = []): TestResponse {
+        return $this->actingAs($this->user)
+            ->withSession($this->dateRangeYear(2026))
+            ->get(route($routeName, $parameters));
     }
 }
