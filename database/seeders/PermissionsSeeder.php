@@ -158,6 +158,9 @@ class PermissionsSeeder extends Seeder {
                     PermissionEnum::AccessAuditView->value,
                     PermissionEnum::FlexBalanceView->value,
                     PermissionEnum::ClassificationList->value,
+                    // MVP-005: Datenschutzbericht als PDF/Export — die
+                    // .view-Heuristik trifft hier nicht, daher explizit.
+                    PermissionEnum::PrivacyReportExport->value,
                 ], true);
             }
         );
@@ -447,6 +450,16 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ClassificationOrgView,
             PermissionEnum::ClassificationRequirementView,
             PermissionEnum::AssetView,
+            // Datenschutzseite (MVP-005): Support sieht die Seite read-only,
+            // ohne Widerruf-Knöpfe. Die *.view-Permissions liegen für die
+            // Geschäftsführung bereits implizit über die `.view`-Heuristik;
+            // Support hat keine Heuristik, daher explizit.
+            PermissionEnum::PrivacyView,
+            PermissionEnum::PrivacySessionsView,
+            PermissionEnum::PrivacyTokensView,
+            PermissionEnum::PrivacyIntegrationsView,
+            PermissionEnum::PrivacyExportsView,
+            PermissionEnum::PrivacySupportView,
         ];
 
         // Rolle `kunde`: read-only Zugriff auf das Customer-Portal, ausschliesslich

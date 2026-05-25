@@ -94,6 +94,8 @@ class Organization extends Model {
         'deactivated_at',
         'owner_id',
         'trial_ends_at',
+        'is_demo',
+        'demo_seeded_at',
     ];
 
     /** @var array<string, string> */
@@ -102,6 +104,8 @@ class Organization extends Model {
         'is_active' => 'boolean',
         'trial_ends_at' => 'datetime',
         'deactivated_at' => 'datetime',
+        'is_demo' => 'boolean',
+        'demo_seeded_at' => 'datetime',
     ];
 
     protected static function booted(): void {

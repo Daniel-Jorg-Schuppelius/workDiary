@@ -71,6 +71,10 @@ class AppServiceProvider extends ServiceProvider {
         $this->app->singleton(\App\Services\Help\HelpTopicLoader::class, function (): \App\Services\Help\HelpTopicLoader {
             return new \App\Services\Help\HelpTopicLoader(\App\Services\Help\HelpTopicLoader::defaultPath());
         });
+
+        // Feature-Flags (Folge zu MVP-047): einmal pro Request, damit
+        // @feature und requires-feature dieselbe Auflösung sehen.
+        $this->app->singleton(\App\Services\Licensing\FeatureFlagResolver::class);
     }
 
     public function boot(): void {
@@ -196,6 +200,13 @@ class AppServiceProvider extends ServiceProvider {
                 Limit::perMinute(5)->by('pwd:' . $userId . '|' . $request->ip()),
                 Limit::perHour(20)->by('pwd:' . $userId),
             ];
+        });
+
+        // @feature('code') Blade-Direktive (Folge zu MVP-047). Identisch
+        // zu @if (app(FeatureFlagResolver::class)->isEnabled('code')), nur
+        // kürzer in Views. Mit @endfeature schließen.
+        \Illuminate\Support\Facades\Blade::if('feature', function (string $code): bool {
+            return app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled($code);
         });
     }
 

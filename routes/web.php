@@ -10,7 +10,7 @@
 
 use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, BrandingController, CalendarFeedController, CommentController, CoverageRequirementController, CustomerController, DashboardController, DiaryController, DiaryExportController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, FlexController, FlexEligibilityController, GeocodeController, GlobalSearchController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, HelpController, OnboardingController, OnCallShiftController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectRecurrenceRuleController, ProtocolController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, RoomController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftTypeController, SickLeaveController, StopwatchController, TagController, TaskController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, VacationController, VehicleController, WeekController, WorkScheduleController};
 use App\Http\Controllers\Admin\Access\{AccessHubController, MemberController as AccessMemberController, PermissionController as AccessPermissionController, RoleController as AccessRoleController, UserGroupController as AccessUserGroupController};
-use App\Http\Controllers\Admin\{AutomationRuleController, BranchProfileController, ClassificationController, ClassificationRequirementController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, LicenseAdminController, PerDiemRateController, PluginController as AdminPluginController, SupportReportController};
+use App\Http\Controllers\Admin\{AutomationRuleController, BranchProfileController, ClassificationController, ClassificationRequirementController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, LicenseAdminController, PerDiemRateController, PluginController as AdminPluginController, PrivacyController, SupportReportController};
 use App\Http\Controllers\Auth\{LoginController, TenantRegistrationController};
 use App\Http\Controllers\Plugins\LexofficeCustomerController;
 use App\Http\Controllers\Reporting\{AbsencesReportController, AttendanceReportController, AuditActivityReportController, BillingReportController, CoverageReportController, CustomerAnalysisReportController, CustomerProjectReportController, EntryTypeAnalysisReportController, EntryTypeDrilldownReportController, ExpenseReportController, FleetReportController, MaterialReportController, MyMonthReportController, MyYearReportController, OnCallReportController, OperationsReportController, ProjectDetailsReportController, QualificationReportController, SicknessReportController, WeekByUserReportController, WorkBalanceReportController};
@@ -113,6 +113,24 @@ Route::middleware('auth')->group(function () {
 
         // Lizenz-Admin (MVP-047)
         Route::get('admin/license', [LicenseAdminController::class, 'index'])->name('admin.license.index');
+
+        // Demo-Mandant (MVP-050)
+        Route::get('admin/demo', [DemoTenantController::class, 'index'])->name('admin.demo.index');
+        Route::post('admin/demo/seed', [DemoTenantController::class, 'seed'])
+            ->middleware('throttle:3,1')
+            ->name('admin.demo.seed');
+        Route::post('admin/demo/reset', [DemoTenantController::class, 'reset'])
+            ->middleware('throttle:3,1')
+            ->name('admin.demo.reset');
+
+        // Datenschutzseite (MVP-005)
+        Route::get('admin/privacy', [PrivacyController::class, 'index'])->name('admin.privacy.index');
+        Route::delete('admin/privacy/sessions/{id}', [PrivacyController::class, 'destroySession'])
+            ->where('id', '[A-Za-z0-9\-_]+')
+            ->name('admin.privacy.sessions.destroy');
+        Route::delete('admin/privacy/tokens/{id}', [PrivacyController::class, 'destroyToken'])
+            ->where('id', '\d+')
+            ->name('admin.privacy.tokens.destroy');
 
         Route::get('diary/export.csv', [DiaryExportController::class, 'csv'])->name('diary.export.csv');
         Route::get('diary/export.pdf', [DiaryExportController::class, 'pdf'])->name('diary.export.pdf');

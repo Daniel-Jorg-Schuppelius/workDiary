@@ -50,6 +50,20 @@ enum Permission: string implements HasLabel {
     case PlatformLicenseView = 'platform.license.view';
     case PlatformLicenseInstall = 'platform.license.install';
     case PlatformFeatureFlagOverride = 'platform.featureFlag.override';
+        // ── Demo-Mandant (MVP-050) ──────────────────────────────────
+    case PlatformDemoCreate = 'platform.demo.create';
+    case PlatformDemoReset = 'platform.demo.reset';
+    case OrgDemoSeed = 'org.demo.seed';
+        // ── Datenschutzseite (MVP-005) ──────────────────────────────
+    case PrivacyView = 'privacy.view';
+    case PrivacySessionsView = 'privacy.sessions.view';
+    case PrivacySessionsRevoke = 'privacy.sessions.revoke';
+    case PrivacyTokensView = 'privacy.tokens.view';
+    case PrivacyTokensRevoke = 'privacy.tokens.revoke';
+    case PrivacyIntegrationsView = 'privacy.integrations.view';
+    case PrivacyExportsView = 'privacy.exports.view';
+    case PrivacySupportView = 'privacy.support.view';
+    case PrivacyReportExport = 'privacy.report.export';
 
         // ── Mitglieder (User-Stamm der Org) ────────────────────────────────
     case UserViewAny = 'user.viewAny';
@@ -259,7 +273,7 @@ enum Permission: string implements HasLabel {
     public function group(): PermissionGroup {
         return match (true) {
             str_starts_with($this->value, 'access.'), str_starts_with($this->value, 'audit-log.') => PermissionGroup::Access,
-            str_starts_with($this->value, 'organization.'), str_starts_with($this->value, 'branding.'), str_starts_with($this->value, 'org.onboarding.') => PermissionGroup::Organization,
+            str_starts_with($this->value, 'organization.'), str_starts_with($this->value, 'branding.'), str_starts_with($this->value, 'org.onboarding.'), str_starts_with($this->value, 'privacy.') => PermissionGroup::Organization,
             str_starts_with($this->value, 'user.') => PermissionGroup::Members,
             str_starts_with($this->value, 'customer.') => PermissionGroup::Customers,
             str_starts_with($this->value, 'project.'), str_starts_with($this->value, 'task.'), str_starts_with($this->value, 'milestone.') => PermissionGroup::Projects,

@@ -108,16 +108,48 @@ erzeugten Datensätze.
 
 ## 9. Akzeptanzkriterien
 
-1. `DemoSeederService` deterministisch (gleicher Aufruf → gleiche
-   IDs/Inhalte).
-2. Hauptauftrag „Server-Migration ACME" deckt alle in §3 genannten
-   Bausteine ab.
-3. Reports zeigen verwendbare Zahlen (mindestens 25
-   Hintergrund-Aufträge).
-4. Reset-Modus löscht ausschließlich Demo-Org-Daten.
-5. Demo-Banner sichtbar bei `is_demo = true`.
-6. Audit-Events §8.
-7. Seeder läuft < 30 s.
+1. `DemoSeederService` deterministisch (gleicher Aufruf → gleiche IDs/Inhalte).
+   — erledigt: `app/Services/Demo/DemoSeederService.php` setzt Faker-Seed `42`
+   und legt Kunden/Projekte/User/Aufträge in stabiler Reihenfolge an.
+   Test `DemoSeederServiceTest::test_seed_is_deterministic_in_record_counts_across_runs`.
+2. Hauptauftrag „Server-Migration ACME" deckt alle in §3 genannten Bausteine ab.
+   — teilweise erledigt: Kunde, Projekt, Auftrag (Plan 480 min, Klassifikation),
+   3 Zeiterfassungen (180/120/220 min = Ist 520 min ⇒ Overrun), 1 offener Punkt
+   sind drin. **Out-of-scope dieser Iteration**: Protokoll mit Signatur,
+   Prozedur-Run mit Backup-Proof und Vier-Augen-Schritt, sowie Anhänge. Diese
+   Bausteine brauchen ihrerseits umfangreiches Setup (Templates, Signaturen,
+   Storage) und folgen separat.
+3. Reports zeigen verwendbare Zahlen (mindestens 25 Hintergrund-Aufträge).
+   — erledigt: `seedBackgroundEntries()` erzeugt 25 historische DiaryEntries
+   der letzten 60 Tage, verteilt auf Kunden/Projekte/User.
+4. Reset-Modus löscht ausschließlich Demo-Org-Daten. — erledigt:
+   `DemoSeederService::reset()` wirft `RuntimeException`, wenn die Org nicht
+   `is_demo` ist. Test
+   `DemoSeederServiceTest::test_reset_refuses_for_non_demo_organization` plus
+   Controller-Test `test_reset_refuses_when_org_is_not_demo`.
+5. Demo-Banner sichtbar bei `is_demo = true`. — erledigt:
+   `resources/views/components/demo-banner.blade.php` (eingebunden in
+   `resources/views/layouts/app.blade.php`), Test
+   `DemoTenantControllerTest::test_banner_visible_on_dashboard_when_organization_is_demo`.
+6. Audit-Events §8. — erledigt: `demo.seeded` und `demo.reset` mit Counts der
+   erzeugten Datensätze werden im `DemoTenantController` geschrieben.
+   `demo.orgCreated` ist out-of-scope (`freshDemoOrg`-Modus wird in dieser
+   Iteration nicht angeboten — Org-Anlage läuft regulär, Demo-Seeding setzt
+   `is_demo=true` auf der bestehenden leeren Org).
+7. Seeder läuft < 30 s. — gewährleistet: alle Operationen sind in einer
+   `DB::transaction`-Hülle, keine Netzwerk-Calls, kein Image-Generieren; in den
+   Tests läuft jeder Seed-Lauf unter 2 s.
+
+### Bereitstellungs-Modi (§2)
+
+- `seedExistingOrg` (Org-Admin auf leerer Org) — erledigt: `POST /admin/demo/seed`,
+  Permission `org.demo.seed`. Controller blockiert, wenn die Org bereits
+  Echtdaten enthält.
+- `resetDemoOrg` (Plattform-Admin) — erledigt: `POST /admin/demo/reset`,
+  Permission `platform.demo.reset`. Nur für Orgs mit `is_demo=true`.
+- `freshDemoOrg` (Plattform-Admin erstellt neue Demo-Org) —
+  **out-of-scope** dieser Iteration. Erfordert Org-Anlage-UI + automatische
+  Membership-Zuweisung; folgt zusammen mit `demo.orgCreated`-Audit.
 
 ## 10. Out-of-scope (MVP-050)
 

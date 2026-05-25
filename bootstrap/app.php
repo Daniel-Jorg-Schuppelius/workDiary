@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Middleware\{EnsureNewSystemAccess, EnsureValidLicense, ForcePasswordChange, HandleDatabaseUnavailable, SecurityHeaders, SetLocale, SetOrganizationContext};
+use App\Http\Middleware\{EnsureNewSystemAccess, EnsureValidLicense, ForcePasswordChange, HandleDatabaseUnavailable, RequiresFeature, SecurityHeaders, SetLocale, SetOrganizationContext};
 use App\Legacy\Http\Middleware\{EnsureLegacyAccess, EnsureLegacyCallcenterAuthenticated, EnsureLegacyWriteAllowed};
 use App\Support\DatabaseHealth;
 use Illuminate\Database\QueryException;
@@ -64,6 +64,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'legacy.write' => EnsureLegacyWriteAllowed::class,
             'access.legacy' => EnsureLegacyAccess::class,
             'access.new' => EnsureNewSystemAccess::class,
+            // Folge zu MVP-047: Feature-Gate per Route.
+            'requires-feature' => RequiresFeature::class,
         ]);
 
         // Pro-Guard-Redirect fuer nicht authentifizierte Anfragen. Ohne

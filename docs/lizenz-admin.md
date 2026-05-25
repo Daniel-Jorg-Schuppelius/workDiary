@@ -139,13 +139,26 @@ code:'protocols.signed'}`.
    — bereits vorhanden: `app/Services/Licensing/LicenseService.php` +
    `LicenseSeal` mit ECDSA-P256. Status-Mapping läuft im
    `LicenseAdminController::badgeTone`.
-3. `LimitGuard` mit Tests für jeden Limit-Typ §5. — **out-of-scope** dieses
-   Iterationsschritts. UI zeigt die Auslastung; Enforcement (Block bei
-   Überschreitung) bleibt für einen späteren Schritt.
-4. `@feature` / `requires-feature` Middleware mit Tests. — **out-of-scope**
-   dieses Iterationsschritts. Feature-Flags sind im UI sichtbar, eine
-   `FeatureFlagResolver`-Klasse + `requires-feature`-Middleware folgen
-   separat.
+3. `LimitGuard` mit Tests für jeden Limit-Typ §5. — teilweise erledigt:
+   `app/Services/Licensing/LimitGuard.php` deckt `max_users` ab (häufigster
+   Fall, einziger der direkt aus `LicensePayload->maxUsers` ableitbar ist);
+   `LimitExceededException` rendert HTTP 423 mit JSON-Payload für API und
+   Flash-Errors für HTML. Audit-Event `limit.exceeded` mit
+   `{limit, current, max}` wird vor dem Throw geschrieben.
+   `max_orgs` und `storage_quota_gb` brauchen ihrerseits zusätzliche
+   `LicensePayload`-Felder und folgen separat. Tests:
+   `tests/Feature/Licensing/LimitGuardTest.php` (4 Szenarien:
+   nicht-erzwungen / kein Limit / unter Limit / am Limit + Audit).
+4. `@feature` / `requires-feature` Middleware mit Tests. — erledigt:
+   `app/Services/Licensing/FeatureFlagResolver.php` löst Features aus
+   `LicensePayload->features` (`list<string>`) auf, mit Env-Override über
+   `config('license.feature_overrides')` als Vorrang (assoc code → bool).
+   Blade-Direktive `@feature('code') ... @endfeature` registriert in
+   `AppServiceProvider::boot()` via `Blade::if`.
+   Middleware `requires-feature:code` registriert in `bootstrap/app.php`
+   als Alias, liefert HTTP 423 mit JSON-Payload bei deaktiviertem Feature.
+   Tests: 4 Resolver-Szenarien + 3 Middleware-Szenarien + 3 Blade-Check-
+   Szenarien (insgesamt 10 Tests).
 5. Diagnose-Seite (MVP-044) zeigt Lizenz-Sektion mit gleichem Status.
    — erledigt: `DiagnosticsService::checkLicense()` verwendet denselben
    `LicenseService->current()` und mappt `LicenseStatus` auf

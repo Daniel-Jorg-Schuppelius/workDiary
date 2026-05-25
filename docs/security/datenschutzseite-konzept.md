@@ -261,20 +261,57 @@ in [Supportzugriff-Grundsätze §4](supportzugriff-grundsaetze.md#4-auditpunkte-
 ## 7. Akzeptanzkriterien (für Umsetzungs-MVP)
 
 1. Ein Org-Admin erreicht die Datenschutzseite über `/admin/privacy`
-   ohne weitere Klicks aus dem Org-Admin-Menü.
-2. Alle in Abschnitt 3 genannten Sektionen sind erreichbar.
+   ohne weitere Klicks aus dem Org-Admin-Menü. — erledigt: Route
+   `admin.privacy.index` in `routes/web.php`.
+2. Alle in Abschnitt 3 genannten Sektionen sind erreichbar. — größtenteils
+   erledigt: §3.1 Kopfbereich, §3.2 Datenkategorien, §3.3 Sessions, §3.4
+   API-Tokens, §3.6 Mandantenexporte (letzte 20 Audit-Events mit Präfix
+   `tenant.export.*`, Cross-Org-sicher), §3.7 Letzte Supportzugriffe
+   (letzte 20 Audit-Events mit Präfix `support.*`) sind als Sektionen auf
+   der Seite enthalten (`resources/views/admin/privacy/index.blade.php`).
+   §3.5 Externe Integrationen und §3.9 PDF-Bericht sind aus dieser
+   Iteration **out-of-scope** und in der UI als „Folge-Sektionen" verlinkt.
 3. Plattform-Support sieht die Seite read-only, sieht keinen
-   „Widerrufen"-Knopf für Sessions/Tokens.
+   „Widerrufen"-Knopf für Sessions/Tokens. — erledigt: `support`-Rolle
+   bekommt `privacy.{view,sessions.view,tokens.view,integrations.view,
+   exports.view,support.view}`, aber **nicht** `privacy.sessions.revoke`
+   / `privacy.tokens.revoke`. Geprüft in
+   `PrivacyPageTest::test_support_role_has_privacy_view_permissions_but_not_revoke`.
 4. Geschäftsführung sieht die Seite read-only inkl. PDF-Export.
+   — erledigt für read-only-Permissions (geprüft in
+   `PrivacyPageTest::test_geschaeftsfuehrung_role_has_privacy_view_permissions_but_not_revoke`).
+   PDF-Renderer selbst ist out-of-scope (siehe §7.7);
+   `privacy.report.export` ist der Geschäftsführung explizit zugewiesen.
 5. Endnutzer (`user`-Rolle) erhält 403 auf jeder Route der Seite.
+   — erledigt: `PrivacyPageTest::test_index_forbidden_for_regular_user`,
+   `PrivacySessionRevokeTest::test_revoke_session_requires_permission`,
+   `PrivacyTokenRevokeTest::test_revoke_token_requires_permission`.
 6. Jede schreibende Aktion (Session-/Token-Widerruf, Support-Freigabe
    widerrufen, Bericht-Export) erzeugt einen `AuditLog`-Eintrag mit dem
-   in §4 spezifizierten `event` und Inhalt.
+   in §4 spezifizierten `event` und Inhalt. — teilweise erledigt:
+   `session.revoked` und `token.revoked` werden mit
+   `revoked_user_id`/`revoked_token_id`/`by_user_id` im
+   `PrivacyController` geschrieben. `support.access.revoked` und der
+   Bericht-Export-Audit sind out-of-scope dieser Iteration.
 7. Der PDF-Bericht enthält keine personenbezogenen Detaildaten.
+   — **out-of-scope dieser Iteration**: Renderer und Vorgaben für den
+   PDF-Bericht folgen separat (vergleichbar Aufwand wie MVP-045
+   Supportbericht).
 8. Alle Permissions aus §2.2 sind im Enum, im `PermissionsSeeder` und in
-   `lang/de/access.php` vorhanden.
+   `lang/de/access.php` vorhanden. — erledigt: 9 Privacy-Permissions in
+   `App\Enums\User\Permission`, DE/EN-Übersetzungen in
+   `lang/{de,en}/access.php`. `support`-Rolle explizit ergänzt,
+   `geschaeftsfuehrung` über `.view`-Heuristik plus expliziten
+   `privacy.report.export`. Cross-Org-Zugriff blockiert (siehe
+   `PrivacySessionRevokeTest::test_admin_cannot_revoke_session_of_other_organization`).
 9. Tests prüfen Sichtbarkeit pro Rolle (admin / geschaeftsfuehrung /
-   support / user) und Idempotenz der Permission-Seeds.
+   support / user) und Idempotenz der Permission-Seeds. — erledigt:
+   12 Tests in `tests/Feature/Privacy/`. Die Rollen-spezifischen Tests
+   prüfen die Permission-Matrix direkt am `Role`-Modell statt über
+   HTTP-Render, weil nicht-Admin-Rollen unter Spatie-team-scoped Setup
+   einem bekannten Test-Infrastructure-Gap unterliegen (gleicher
+   Pre-existing-Issue wie der seit langem skipped
+   `DashboardTest::test_dashboard_shows_team_section_for_admin`).
 
 ## 8. Out of scope (gehört in spätere MVPs)
 
