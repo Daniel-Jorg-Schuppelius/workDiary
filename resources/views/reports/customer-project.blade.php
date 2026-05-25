@@ -29,6 +29,9 @@
             <x-icon-btn icon="download" tone="outline" size="sm"
                         :href="route('reports.customer-project', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'csv']))"
                         show-label>CSV</x-icon-btn>
+            <x-icon-btn icon="table_chart" tone="outline" size="sm"
+                        :href="route('reports.customer-project', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'xlsx']))"
+                        show-label>XLSX</x-icon-btn>
             <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
                         :href="route('reports.customer-project', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'pdf']))"
                         show-label>PDF</x-icon-btn>

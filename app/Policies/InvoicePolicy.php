@@ -40,4 +40,30 @@ class InvoicePolicy {
     public function pay(User $user, Invoice $invoice): bool {
         return $user->canManageBilling() && $invoice->status === Invoice::STATUS_ISSUED;
     }
+
+    /**
+     * Direktes Storno: nur für unbezahlte Rechnungen (draft/issued).
+     * Bezahlte Rechnungen müssen über eine Korrekturrechnung
+     * (siehe {@see createCreditNote}) storniert werden.
+     */
+    public function cancel(User $user, Invoice $invoice): bool {
+        return $user->canManageBilling() && $invoice->canBeCancelled();
+    }
+
+    /**
+     * Gutschrift (Korrekturrechnung): nur für bezahlte Original-Rechnungen,
+     * und nur genau einmal pro Original (siehe Invoice::needsCreditNoteToCancel()).
+     */
+    public function createCreditNote(User $user, Invoice $invoice): bool {
+        return $user->canManageBilling() && $invoice->needsCreditNoteToCancel();
+    }
+
+    /**
+     * Mailversand: alle Rechnungen außer Drafts ohne Empfänger-Eingabe.
+     * Drafts werden beim Versand automatisch auf "issued" gehoben.
+     * Stornierte Rechnungen dürfen nochmal verschickt werden (z.B. zur Info).
+     */
+    public function send(User $user, Invoice $invoice): bool {
+        return $user->canManageBilling();
+    }
 }

@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, Project, Task, TimeEntry};
+use App\Support\{CsvNumber, XlsxExport};
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\{Request, Response};
@@ -77,6 +78,9 @@ class MyMonthReportController extends Controller {
         if ($request->query('export') === 'csv') {
             return $this->exportCsv($entries, $year, $month);
         }
+        if ($request->query('export') === 'xlsx') {
+            return $this->exportXlsx($entries, $year, $month);
+        }
         if ($request->query('export') === 'pdf') {
             return $this->exportPdf($byDay, $monthLabel, $monthMinutes, $monthRate, $year, $month);
         }
@@ -92,13 +96,18 @@ class MyMonthReportController extends Controller {
     }
 
     /**
-     * @param  \Illuminate\Database\Eloquent\Collection<int, TimeEntry>  $entries
+     * @return list<string>
      */
-    private function exportCsv(\Illuminate\Database\Eloquent\Collection $entries, int $year, int $month): Response {
-        $filename = sprintf('mein-monat-%04d-%02d.csv', $year, $month);
-        $rows = [
-            ['Datum', 'Start', 'Ende', 'Art', 'Kunde', 'Projekt', 'Aufgabe', 'Beschreibung', 'Minuten', 'Erloes'],
-        ];
+    private function exportHeaders(): array {
+        return ['Datum', 'Start', 'Ende', 'Art', 'Kunde', 'Projekt', 'Aufgabe', 'Beschreibung', 'Minuten', 'Erloes'];
+    }
+
+    /**
+     * @param  \Illuminate\Database\Eloquent\Collection<int, TimeEntry>  $entries
+     * @return list<list<int|float|string|null>>
+     */
+    private function exportRows(\Illuminate\Database\Eloquent\Collection $entries): array {
+        $rows = [];
         foreach ($entries as $e) {
             $startedAt = $e->started_at !== null ? Carbon::parse((string) $e->started_at)->format('H:i') : '';
             $endedAt = $e->ended_at !== null ? Carbon::parse((string) $e->ended_at)->format('H:i') : '';
@@ -117,8 +126,23 @@ class MyMonthReportController extends Controller {
                 $taskTitle,
                 (string) ($e->description ?? ''),
                 (int) $e->minutes,
-                number_format((float) $e->rate, 2, '.', ''),
+                (float) $e->rate,
             ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @param  \Illuminate\Database\Eloquent\Collection<int, TimeEntry>  $entries
+     */
+    private function exportCsv(\Illuminate\Database\Eloquent\Collection $entries, int $year, int $month): Response {
+        $filename = sprintf('mein-monat-%04d-%02d.csv', $year, $month);
+        $rows = [$this->exportHeaders()];
+        foreach ($this->exportRows($entries) as $row) {
+            // Floats für CSV als DE-Decimal-String serialisieren.
+            $row = array_map(static fn($v) => is_float($v) ? CsvNumber::decimal($v) : $v, $row);
+            $rows[] = $row;
         }
 
         $csv = '';
@@ -137,6 +161,15 @@ class MyMonthReportController extends Controller {
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
+    }
+
+    /**
+     * @param  \Illuminate\Database\Eloquent\Collection<int, TimeEntry>  $entries
+     */
+    private function exportXlsx(\Illuminate\Database\Eloquent\Collection $entries, int $year, int $month): SymfonyResponse {
+        $filename = sprintf('mein-monat-%04d-%02d.xlsx', $year, $month);
+
+        return XlsxExport::streamFromArray($filename, $this->exportHeaders(), $this->exportRows($entries));
     }
 
     /**

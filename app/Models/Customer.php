@@ -85,6 +85,7 @@ class Customer extends Model {
         'internal_rate',
         'comment',
         'invoice_text',
+        'invoice_template_id',
         'billable',
         'archived_at',
         'created_by',

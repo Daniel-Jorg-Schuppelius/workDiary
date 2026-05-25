@@ -17,8 +17,21 @@ use App\Models\{Project, Task};
 use Illuminate\Http\{Request, Response};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\{Auth, Gate};
+use OpenApi\Attributes as OA;
 
 class TaskController extends Controller {
+    #[OA\Get(
+        path: '/tasks',
+        summary: 'Tasks auflisten',
+        tags: ['Tasks'],
+        security: [['bearerAuth' => []]],
+        parameters: [
+            new OA\Parameter(name: 'project', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'status', in: 'query', schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'assigned_to', in: 'query', schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [new OA\Response(response: 200, description: 'OK')],
+    )]
     public function index(Request $request): AnonymousResourceCollection {
         Gate::authorize('viewAny', Task::class);
         $query = Task::query();
@@ -35,6 +48,14 @@ class TaskController extends Controller {
         return TaskResource::collection($query->orderBy('position')->orderBy('id')->paginate((int) $request->input('per_page', 25)));
     }
 
+    #[OA\Post(
+        path: '/projects/{project}/tasks',
+        summary: 'Task im Projekt anlegen',
+        tags: ['Tasks'],
+        security: [['bearerAuth' => []]],
+        parameters: [new OA\Parameter(name: 'project', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 201, description: 'Created')],
+    )]
     public function store(Project $project, SaveTaskRequest $request): TaskResource {
         Gate::authorize('create', Task::class);
         $task = $project->tasks()->create($request->validated() + [
@@ -45,12 +66,28 @@ class TaskController extends Controller {
         return new TaskResource($task);
     }
 
+    #[OA\Get(
+        path: '/tasks/{task}',
+        summary: 'Task anzeigen',
+        tags: ['Tasks'],
+        security: [['bearerAuth' => []]],
+        parameters: [new OA\Parameter(name: 'task', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'OK')],
+    )]
     public function show(Task $task): TaskResource {
         Gate::authorize('view', $task);
 
         return new TaskResource($task);
     }
 
+    #[OA\Put(
+        path: '/tasks/{task}',
+        summary: 'Task aktualisieren',
+        tags: ['Tasks'],
+        security: [['bearerAuth' => []]],
+        parameters: [new OA\Parameter(name: 'task', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'OK')],
+    )]
     public function update(Task $task, SaveTaskRequest $request): TaskResource {
         Gate::authorize('update', $task);
         $task->update($request->validated());
@@ -58,6 +95,14 @@ class TaskController extends Controller {
         return new TaskResource($task->fresh() ?? $task);
     }
 
+    #[OA\Delete(
+        path: '/tasks/{task}',
+        summary: 'Task löschen',
+        tags: ['Tasks'],
+        security: [['bearerAuth' => []]],
+        parameters: [new OA\Parameter(name: 'task', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 204, description: 'No Content')],
+    )]
     public function destroy(Task $task): Response {
         Gate::authorize('delete', $task);
         $task->delete();

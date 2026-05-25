@@ -46,13 +46,13 @@ class SecurityHeaders {
         $directives = [
             "default-src 'self'",
             // Tailwind/daisyUI sind kompiliert; inline Styles für Alpine x-bind/Color-Tokens noch erlaubt.
-            // Externe Font-Stylesheets (Bunny + Google Material Icons) explizit erlauben.
-            "style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com" . $viteDev,
+            // Fonts (IBM Plex Sans, Space Grotesk, Material Symbols) werden lokal aus dem App-Bundle ausgeliefert.
+            "style-src 'self' 'unsafe-inline'" . $viteDev,
             // Inline-Scripts in Auth-/Legacy-Views vorhanden; bis Refactor kompatibel halten.
             "script-src 'self' 'unsafe-inline' 'unsafe-eval'" . $viteDev,
             "img-src 'self' data: blob:",
-            // Webfonts: Bunny liefert WOFF2 von fonts.bunny.net, Google Material Icons von fonts.gstatic.com.
-            "font-src 'self' data: https://fonts.bunny.net https://fonts.gstatic.com",
+            // Webfonts werden lokal aus /build/assets/ geladen (siehe @fontsource-Imports in resources/css/app.css).
+            "font-src 'self' data:",
             "connect-src 'self'" . $viteDev,
             "media-src 'self' blob:",
             "object-src 'none'",

@@ -8,12 +8,12 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, BrandingController, CalendarFeedController, CommentController, CoverageRequirementController, CustomerController, DashboardController, DiaryController, DiaryExportController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, FlexController, FlexEligibilityController, GeocodeController, GlobalSearchController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, HelpController, OnboardingController, OnCallShiftController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectRecurrenceRuleController, ProtocolController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, RoomController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftTypeController, SickLeaveController, StopwatchController, TagController, TaskController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, VacationController, VehicleController, WeekController, WorkScheduleController};
+use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, BrandingController, CalendarFeedController, CommentController, CoverageRequirementController, CustomerController, DashboardController, DiaryController, DiaryExportController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, FlexController, FlexEligibilityController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectRecurrenceRuleController, ProtocolController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, RoomController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftTypeController, SickLeaveController, StopwatchController, TagController, TaskController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VehicleController, WeekController, WorkScheduleController};
 use App\Http\Controllers\Admin\Access\{AccessHubController, MemberController as AccessMemberController, PermissionController as AccessPermissionController, RoleController as AccessRoleController, UserGroupController as AccessUserGroupController};
-use App\Http\Controllers\Admin\{AutomationRuleController, BranchProfileController, ClassificationController, ClassificationRequirementController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, LicenseAdminController, PerDiemRateController, PluginController as AdminPluginController, PrivacyController, SupportReportController};
+use App\Http\Controllers\Admin\{AutomationRuleController, BranchProfileController, ClassificationController, ClassificationRequirementController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, InvoiceMailTemplateController, LicenseAdminController, PerDiemRateController, PluginController as AdminPluginController, PrivacyController, SupportReportController};
 use App\Http\Controllers\Auth\{LoginController, TenantRegistrationController};
 use App\Http\Controllers\Plugins\LexofficeCustomerController;
-use App\Http\Controllers\Reporting\{AbsencesReportController, AttendanceReportController, AuditActivityReportController, BillingReportController, CoverageReportController, CustomerAnalysisReportController, CustomerProjectReportController, EntryTypeAnalysisReportController, EntryTypeDrilldownReportController, ExpenseReportController, FleetReportController, MaterialReportController, MyMonthReportController, MyYearReportController, OnCallReportController, OperationsReportController, ProjectDetailsReportController, QualificationReportController, SicknessReportController, WeekByUserReportController, WorkBalanceReportController};
+use App\Http\Controllers\Reporting\{AbsencesReportController, AttendanceReportController, AuditActivityReportController, BillingReportController, CoverageReportController, CustomerAnalysisReportController, CustomerProjectReportController, EntryTypeAnalysisReportController, EntryTypeDrilldownReportController, ExpenseReportController, FleetReportController, MaterialReportController, MonthByUserTeamReportController, MyMonthReportController, MyYearReportController, OnCallReportController, OperationsReportController, ProjectDetailsReportController, ProjectInactiveReportController, QualificationReportController, SicknessReportController, WeekByUserReportController, WorkBalanceReportController};
 use App\Http\Controllers\UI\DateRangeController;
 use Illuminate\Support\Facades\Route;
 
@@ -71,6 +71,26 @@ Route::middleware('auth')->group(function () {
 
     Route::get('account/profile', [ProfileController::class, 'edit'])->name('account.profile.edit');
     Route::put('account/profile', [ProfileController::class, 'update'])->name('account.profile.update');
+
+    // Persönliche Lesezeichen (Phase H)
+    Route::get('account/bookmarks', [UserBookmarkController::class, 'index'])->name('bookmarks.index');
+    Route::get('account/bookmarks/create', [UserBookmarkController::class, 'create'])->name('bookmarks.create');
+    Route::post('account/bookmarks', [UserBookmarkController::class, 'store'])->name('bookmarks.store');
+    Route::get('account/bookmarks/{bookmark}/edit', [UserBookmarkController::class, 'edit'])->name('bookmarks.edit');
+    Route::put('account/bookmarks/{bookmark}', [UserBookmarkController::class, 'update'])->name('bookmarks.update');
+    Route::delete('account/bookmarks/{bookmark}', [UserBookmarkController::class, 'destroy'])->name('bookmarks.destroy');
+
+    // Filter-Presets (Folge-Iteration zu Phase H).
+    Route::get('account/filter-presets', [\App\Http\Controllers\UserFilterPresetController::class, 'index'])->name('filter-presets.index');
+    Route::post('account/filter-presets', [\App\Http\Controllers\UserFilterPresetController::class, 'store'])->name('filter-presets.store');
+    Route::put('account/filter-presets/{preset}', [\App\Http\Controllers\UserFilterPresetController::class, 'update'])->name('filter-presets.update');
+    Route::delete('account/filter-presets/{preset}', [\App\Http\Controllers\UserFilterPresetController::class, 'destroy'])->name('filter-presets.destroy');
+
+    // Dashboard-Widget-Konfiguration (Phase G).
+    Route::get('me/dashboard/customize', [\App\Http\Controllers\Me\DashboardCustomizationController::class, 'index'])
+        ->name('dashboard.customize');
+    Route::post('me/dashboard/customize', [\App\Http\Controllers\Me\DashboardCustomizationController::class, 'save'])
+        ->name('dashboard.customize.save');
 
     // Persönlicher Kalender-Feed (Token-Generierung + Subscribe-URL).
     Route::get('account/calendar', [CalendarFeedController::class, 'show'])
@@ -158,6 +178,8 @@ Route::middleware('auth')->group(function () {
             ->name('attachments.destroyMeta');
 
         Route::get('week', WeekController::class)->name('week.index');
+        Route::get('calendar', [\App\Http\Controllers\CalendarController::class, 'index'])->name('calendar.index');
+        Route::get('calendar/events', [\App\Http\Controllers\CalendarController::class, 'events'])->name('calendar.events');
 
         Route::get('kanban', [KanbanController::class, 'index'])->name('kanban.index');
         Route::patch('kanban/{entry}/status', [KanbanController::class, 'updateStatus'])->name('kanban.status');
@@ -245,9 +267,23 @@ Route::middleware('auth')->group(function () {
         // ── Plugin-Übersicht (Admin) ────────────────────────────────────────────
         Route::get('admin/plugins', [AdminPluginController::class, 'index'])->name('admin.plugins.index');
 
+        // ── Rechnungs-Mail-Templates (Admin) ─────────────────────────────────────
+        Route::resource('admin/invoice-mail-templates', InvoiceMailTemplateController::class)
+            ->except(['show'])
+            ->names('admin.invoice-mail-templates')
+            ->parameters(['admin/invoice-mail-templates' => 'invoiceMailTemplate']);
+
         Route::resource('projects', ProjectController::class);
         Route::resource('projects.milestones', MilestoneController::class)->except(['index', 'show']);
         Route::resource('projects.tasks', TaskController::class)->except(['index', 'show']);
+
+        // Globale Aufgaben (Activities ohne Projekt)
+        Route::get('tasks/global', [\App\Http\Controllers\GlobalTaskController::class, 'index'])->name('tasks.global.index');
+        Route::get('tasks/global/create', [\App\Http\Controllers\GlobalTaskController::class, 'create'])->name('tasks.global.create');
+        Route::post('tasks/global', [\App\Http\Controllers\GlobalTaskController::class, 'store'])->name('tasks.global.store');
+        Route::get('tasks/global/{task}/edit', [\App\Http\Controllers\GlobalTaskController::class, 'edit'])->name('tasks.global.edit');
+        Route::put('tasks/global/{task}', [\App\Http\Controllers\GlobalTaskController::class, 'update'])->name('tasks.global.update');
+        Route::delete('tasks/global/{task}', [\App\Http\Controllers\GlobalTaskController::class, 'destroy'])->name('tasks.global.destroy');
 
         // ── Rechnungen / Invoicing ────────────────────────────────────
         Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
@@ -257,9 +293,21 @@ Route::middleware('auth')->group(function () {
         Route::delete('invoices/{invoice}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
         Route::post('invoices/{invoice}/issue', [InvoiceController::class, 'issue'])->name('invoices.issue');
         Route::post('invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
+        Route::post('invoices/{invoice}/cancel', [InvoiceController::class, 'cancel'])->name('invoices.cancel');
+        Route::post('invoices/{invoice}/credit-note', [InvoiceController::class, 'creditNote'])->name('invoices.credit-note');
+        Route::get('invoices/{invoice}/send', [InvoiceController::class, 'sendForm'])->name('invoices.send.form');
+        Route::post('invoices/{invoice}/send', [InvoiceController::class, 'send'])->name('invoices.send');
         Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
         Route::get('invoices/{invoice}/expenses', [InvoiceController::class, 'expensesForm'])->name('invoices.expenses.form');
         Route::post('invoices/{invoice}/expenses', [InvoiceController::class, 'attachExpenses'])->name('invoices.expenses.attach');
+        Route::get('invoices/{invoice}/items/create', [InvoiceController::class, 'itemForm'])->name('invoices.items.create');
+        Route::post('invoices/{invoice}/items', [InvoiceController::class, 'addItem'])->name('invoices.items.store');
+        Route::get('invoices/{invoice}/items/{item}/edit', [InvoiceController::class, 'itemForm'])->name('invoices.items.edit');
+        Route::put('invoices/{invoice}/items/{item}', [InvoiceController::class, 'updateItem'])->name('invoices.items.update');
+        Route::delete('invoices/{invoice}/items/{item}', [InvoiceController::class, 'removeItem'])->name('invoices.items.destroy');
+        Route::resource('invoice-templates', \App\Http\Controllers\InvoiceTemplateController::class)
+            ->except(['show'])
+            ->parameters(['invoice-templates' => 'template']);
         Route::patch('projects/{project}/tasks/{task}/complete', [TaskController::class, 'complete'])->name('projects.tasks.complete');
         Route::get('time-entries/create', [TimeEntryController::class, 'pick'])->name('time-entries.create');
         Route::resource('projects.time-entries', TimeEntryController::class)->except(['index', 'show']);
@@ -459,6 +507,9 @@ Route::middleware('auth')->group(function () {
             ->name('reports.entry-types.drilldown.protocols');
         Route::get('reports/customer-project', [CustomerProjectReportController::class, 'index'])->name('reports.customer-project');
         Route::get('reports/week-by-user', [WeekByUserReportController::class, 'index'])->name('reports.week-by-user');
+        Route::get('reports/month-by-user-team', [MonthByUserTeamReportController::class, 'index'])->name('reports.month-by-user-team');
+        Route::get('reports/project-inactive', [ProjectInactiveReportController::class, 'index'])->name('reports.project-inactive');
+        Route::post('reports/project-inactive/archive', [ProjectInactiveReportController::class, 'archive'])->name('reports.project-inactive.archive');
         Route::get('reports/project-details', [ProjectDetailsReportController::class, 'index'])->name('reports.project-details');
         Route::get('reports/work-balance', [WorkBalanceReportController::class, 'index'])->name('reports.work-balance');
         Route::get('reports/fleet', [FleetReportController::class, 'index'])->name('reports.fleet');

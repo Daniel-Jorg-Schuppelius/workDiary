@@ -55,7 +55,8 @@ class SickLeaveTest extends TestCase {
     }
 
     public function test_long_sick_leave_requires_au_file(): void {
-        $this->from(route('sick-leaves.create'))
+        $this->actingAs($this->user)
+            ->from(route('sick-leaves.create'))
             ->post(route('sick-leaves.store'), [
                 'start_date' => '2026-05-04',
                 'end_date' => '2026-05-10',
@@ -103,7 +104,8 @@ class SickLeaveTest extends TestCase {
     }
 
     public function test_follow_up_requires_previous_id(): void {
-        $this->from(route('sick-leaves.create'))
+        $this->actingAs($this->user)
+            ->from(route('sick-leaves.create'))
             ->post(route('sick-leaves.store'), [
                 'start_date' => '2026-05-07',
                 'end_date' => '2026-05-09',

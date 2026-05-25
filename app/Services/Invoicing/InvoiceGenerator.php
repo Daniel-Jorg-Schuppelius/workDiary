@@ -16,16 +16,26 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Auth, DB};
 
 class InvoiceGenerator {
-    public function nextNumber(?int $organizationId, ?CarbonInterface $when = null): string {
+    /**
+     * Liefert die nächste freie Rechnungsnummer für Jahr + Organisation.
+     *
+     * MUSS innerhalb einer DB-Transaktion mit `lockForUpdate()` aufgerufen werden,
+     * damit parallele Generierungen nicht dieselbe Nummer vergeben
+     * (Rückwirkungs-Schutz für die unique-Constraint (organization_id, number)).
+     *
+     * @param  string  $prefixLetter  'R' = Rechnung, 'G' = Gutschrift/Korrekturrechnung
+     */
+    public function nextNumber(?int $organizationId, ?CarbonInterface $when = null, string $prefixLetter = 'R'): string {
         $when ??= Carbon::now();
         $year = (int) $when->format('Y');
-        $prefix = sprintf('R%d-', $year);
+        $prefix = sprintf('%s%d-', $prefixLetter, $year);
 
         /** @var string|null $last */
         $last = Invoice::query()
             ->where('organization_id', $organizationId)
             ->where('number', 'like', $prefix . '%')
             ->orderByDesc('number')
+            ->lockForUpdate()
             ->value('number');
 
         $seq = 1;
@@ -94,6 +104,63 @@ class InvoiceGenerator {
             $invoice->save();
 
             return $invoice;
+        });
+    }
+
+    /**
+     * Erzeugt eine Gutschrift (Korrekturrechnung) zu einer bezahlten Rechnung.
+     *
+     * - Kopiert alle Positionen mit NEGATIVEN Mengen (DE-Buchhaltungsstandard).
+     * - Eigene Rechnungsnummer mit Prefix 'G' (z.B. G2026-0001).
+     * - parent_invoice_id verweist auf das Original.
+     * - Status startet als 'draft' — muss vom Benutzer gestellt werden.
+     *
+     * @throws \LogicException Wenn das Original nicht bezahlt ist oder bereits
+     *                         eine Gutschrift existiert.
+     */
+    public function creditNoteFor(Invoice $original, ?int $userId = null): Invoice {
+        if (! $original->needsCreditNoteToCancel()) {
+            throw new \LogicException('Original invoice is not eligible for credit note (status: ' . $original->status . ')');
+        }
+
+        return DB::transaction(function () use ($original, $userId): Invoice {
+            $original->loadMissing('items');
+
+            $credit = Invoice::create([
+                'organization_id' => $original->organization_id,
+                'customer_id' => $original->customer_id,
+                'project_id' => $original->project_id,
+                'number' => $this->nextNumber($original->organization_id, prefixLetter: 'G'),
+                'status' => Invoice::STATUS_DRAFT,
+                'type' => Invoice::TYPE_CREDIT_NOTE,
+                'parent_invoice_id' => $original->id,
+                'currency' => $original->currency,
+                'tax_rate' => (string) $original->tax_rate,
+                'notes' => __('Korrekturrechnung zu Rechnung :nr vom :date', [
+                    'nr' => $original->number,
+                    'date' => optional($original->issued_on ?? $original->created_at)->format('d.m.Y'),
+                ]),
+                'created_by' => $userId ?? Auth::id(),
+            ]);
+
+            $position = 0;
+            foreach ($original->items as $item) {
+                $credit->items()->create([
+                    'organization_id' => $original->organization_id,
+                    'description' => $item->description,
+                    'quantity' => (string) (-1 * (float) $item->quantity),
+                    'unit' => $item->unit,
+                    'unit_price' => (string) $item->unit_price,
+                    'position' => ++$position,
+                    // bewusst KEINE time_entry_id / expense_id — Zeit/Spese bleibt am Original
+                ]);
+            }
+
+            $credit->load('items');
+            $credit->recalculate();
+            $credit->save();
+
+            return $credit;
         });
     }
 }

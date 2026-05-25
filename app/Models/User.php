@@ -257,6 +257,21 @@ class User extends Authenticatable {
         return $this->hasMany(DiaryEntry::class);
     }
 
+    /** @return HasMany<UserBookmark, $this> */
+    public function bookmarks(): HasMany {
+        return $this->hasMany(UserBookmark::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    /** @return HasMany<UserDashboardWidget, $this> */
+    public function dashboardWidgets(): HasMany {
+        return $this->hasMany(UserDashboardWidget::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    /** @return HasMany<UserFilterPreset, $this> */
+    public function filterPresets(): HasMany {
+        return $this->hasMany(UserFilterPreset::class)->orderBy('sort_order')->orderBy('id');
+    }
+
     /** @return HasMany<OnCallShift, $this> */
     public function onCallShifts(): HasMany {
         return $this->hasMany(OnCallShift::class);

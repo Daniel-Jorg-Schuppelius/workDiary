@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, Project, TimeEntry, User};
+use App\Support\{CsvNumber, XlsxExport};
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\{Request, Response};
@@ -51,6 +52,9 @@ class CustomerProjectReportController extends Controller {
 
         if ($request->query('export') === 'csv') {
             return $this->exportCsv($bucket, $totalMinutes, $totalRate, $from, $to);
+        }
+        if ($request->query('export') === 'xlsx') {
+            return $this->exportXlsx($bucket, $totalMinutes, $totalRate, $from, $to);
         }
         if ($request->query('export') === 'pdf') {
             return $this->exportPdf($bucket, $totalMinutes, $totalRate, $from, $to, $scope);
@@ -155,10 +159,10 @@ class CustomerProjectReportController extends Controller {
 
     /**
      * @param  array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}>  $bucket
+     * @return list<list<int|float|string|null>>
      */
-    private function exportCsv(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to): Response {
-        $filename = sprintf('kunden-projekte_%s_%s.csv', $from, $to);
-        $rows = [['Kunde', 'Projekt', 'Projektnummer', 'Minuten', 'Erloes']];
+    private function buildRows(array $bucket, int $totalMinutes, float $totalRate): array {
+        $rows = [];
         foreach ($bucket as $row) {
             $customerName = $row['customer'] instanceof Customer ? $row['customer']->name : '(Ohne Kunde)';
             foreach ($row['projects'] as $entry) {
@@ -167,11 +171,24 @@ class CustomerProjectReportController extends Controller {
                     (string) $entry['project']->name,
                     (string) ($entry['project']->number ?? ''),
                     (int) $entry['minutes'],
-                    number_format((float) $entry['rate'], 2, '.', ''),
+                    (float) $entry['rate'],
                 ];
             }
         }
-        $rows[] = ['Gesamt', '', '', $totalMinutes, number_format($totalRate, 2, '.', '')];
+        $rows[] = ['Gesamt', '', '', $totalMinutes, (float) $totalRate];
+
+        return $rows;
+    }
+
+    /**
+     * @param  array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}>  $bucket
+     */
+    private function exportCsv(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to): Response {
+        $filename = sprintf('kunden-projekte_%s_%s.csv', $from, $to);
+        $rows = [['Kunde', 'Projekt', 'Projektnummer', 'Minuten', 'Erloes']];
+        foreach ($this->buildRows($bucket, $totalMinutes, $totalRate) as $row) {
+            $rows[] = array_map(static fn($v) => is_float($v) ? CsvNumber::decimal($v) : $v, $row);
+        }
 
         $csv = '';
         foreach ($rows as $row) {
@@ -189,6 +206,16 @@ class CustomerProjectReportController extends Controller {
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
+    }
+
+    /**
+     * @param  array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}>  $bucket
+     */
+    private function exportXlsx(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to): SymfonyResponse {
+        $filename = sprintf('kunden-projekte_%s_%s.xlsx', $from, $to);
+        $headers = ['Kunde', 'Projekt', 'Projektnummer', 'Minuten', 'Erloes'];
+
+        return XlsxExport::streamFromArray($filename, $headers, $this->buildRows($bucket, $totalMinutes, $totalRate));
     }
 
     /**

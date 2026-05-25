@@ -10,7 +10,7 @@
 
 namespace Tests\Unit\Architecture;
 
-use App\Models\{Classification, GeocodeCache, OpenIssueEvent, Organization, OrganizationAuditLog, PerDiemRate, ProcedureBackupProof, ProcedureRunEvent, ProcedureStepDef, ProcedureStepRun, ProcedureTemplateVersion, ProtocolEvent, ProtocolItem, ProtocolItemPhoto, ProtocolSignature, ProtocolSignatureToken, User, UserGroup};
+use App\Models\{Classification, GeocodeCache, HelpTopic, HelpView, OpenIssueEvent, Organization, OrganizationAuditLog, PerDiemRate, ProcedureBackupProof, ProcedureRunEvent, ProcedureStepDef, ProcedureStepRun, ProcedureTemplateVersion, ProtocolEvent, ProtocolItem, ProtocolItemPhoto, ProtocolSignature, ProtocolSignatureToken, User, UserBookmark, UserDashboardWidget, UserFilterPreset, UserGroup};
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Model;
 use PHPUnit\Framework\TestCase;
@@ -56,6 +56,16 @@ class TenantTraitCoverageTest extends TestCase {
         ProcedureRunEvent::class,
         ProcedureBackupProof::class,
         Classification::class,
+        // Globale Hilfe-Inhalte (HelpTopic) und anonyme Hilfe-Telemetrie (HelpView,
+        // nullable organization_id) gehören bewusst nicht zur Mandantengrenze.
+        HelpTopic::class,
+        HelpView::class,
+        // Persönliche User-Daten (Lesezeichen, Dashboard-Widget-Konfiguration) sind
+        // bereits über user_id an den User gebunden und damit transitiv
+        // mandantenfähig — kein eigenes organization_id-Feld nötig.
+        UserBookmark::class,
+        UserDashboardWidget::class,
+        UserFilterPreset::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {

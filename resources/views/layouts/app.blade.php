@@ -33,9 +33,8 @@
         <meta name="apple-mobile-web-app-title" content="workDiary">
         <meta name="application-name" content="workDiary">
 
-           {{-- Robust fallback: stellt sicher, dass Material Symbols auch ohne
-               erfolgreich geladenes App-Bundle verfügbar bleiben. --}}
-           <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
+        {{-- Material Symbols werden lokal über @fontsource im App-Bundle (resources/css/app.css)
+             ausgeliefert; kein externer Fallback nötig. --}}
 
         <style>
             :root { --sidebar-w: min(16rem, 85vw); --app-header-h: 3.5rem; --app-footer-h: 3rem; }
@@ -435,6 +434,7 @@
                                 $userNavItems[] = ['route' => 'account.profile.edit',  'label' => __('Profil bearbeiten'), 'modal' => true];
                                 $userNavItems[] = ['route' => 'account.work-schedule', 'label' => __('Arbeitszeit-Modell'), 'modal' => true];
                                 $userNavItems[] = ['route' => 'account.calendar.show', 'label' => __('Kalender-Abo'), 'modal' => false];
+                                $userNavItems[] = ['route' => 'bookmarks.index',       'label' => __('Lesezeichen'), 'modal' => false];
                             } else {
                                 $userNavItems[] = ['route' => 'legacy.account.password.edit', 'label' => __('Passwort ändern'), 'modal' => true];
                             }
@@ -534,6 +534,7 @@
                                             'icon'  => 'groups',
                                             'items' => [
                                                 ['route' => 'reports.week-by-user',   'label' => __('Woche pro Mitarbeiter'), 'icon' => 'date_range',  'modal' => false, 'matches' => ['reports.week-by-user']],
+                                                ['route' => 'reports.month-by-user-team', 'label' => __('Monat pro Mitarbeiter'), 'icon' => 'calendar_view_month', 'modal' => false, 'matches' => ['reports.month-by-user-team']],
                                                 ['route' => 'reports.coverage',       'label' => __('Coverage'),              'icon' => 'group_work',  'modal' => false, 'matches' => ['reports.coverage']],
                                                 ['route' => 'reports.absences',       'label' => __('Urlaub & Flex'),         'icon' => 'event_busy',  'modal' => false, 'matches' => ['reports.absences']],
                                                 ['route' => 'reports.sickness',       'label' => __('Krankheiten'),           'icon' => 'sick',        'modal' => false, 'matches' => ['reports.sickness']],
@@ -549,6 +550,7 @@
                                                 ['route' => 'reports.entry-types',      'label' => __('Auftragstypanalyse'), 'icon' => 'stacked_bar_chart', 'modal' => false, 'matches' => ['reports.entry-types']],
                                                 ['route' => 'reports.customer-project', 'label' => __('Kunden & Projekte'), 'icon' => 'pie_chart',  'modal' => false, 'matches' => ['reports.customer-project']],
                                                 ['route' => 'reports.project-details',  'label' => __('Projekt-Details'),   'icon' => 'analytics',  'modal' => false, 'matches' => ['reports.project-details']],
+                                                ['route' => 'reports.project-inactive', 'label' => __('Inaktive Projekte'), 'icon' => 'folder_off', 'modal' => false, 'matches' => ['reports.project-inactive']],
                                                 ['route' => 'reports.operations',       'label' => __('Operations'),        'icon' => 'assignment', 'modal' => false, 'matches' => ['reports.operations']],
                                             ],
                                         ],
@@ -760,6 +762,48 @@
                                 $_reminderTotal = collect($_reminders)->sum(fn($r) => is_object($r) ? $r->count : (int) ($r['count'] ?? 0));
                                 $_reminderHasError = collect($_reminders)->contains(fn($r) => (is_object($r) ? $r->severity : ($r['severity'] ?? '')) === 'error');
                             @endphp
+                            @if (! $isLegacyMode)
+                            @php
+                                $_bookmarks = $userBookmarks ?? collect();
+                            @endphp
+                            <div class="dropdown dropdown-end">
+                                <label tabindex="0"
+                                       class="btn btn-sm btn-ghost btn-square"
+                                       title="{{ __('Lesezeichen') }}"
+                                       aria-label="{{ __('Lesezeichen') }}">
+                                    <x-icon name="bookmarks" class="text-base" />
+                                </label>
+                                <div tabindex="0" class="dropdown-content z-50 mt-2 w-[min(20rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-0 shadow-lg overflow-hidden">
+                                    <div class="px-4 py-2 border-b border-base-200 flex items-center justify-between gap-2">
+                                        <span class="text-xs uppercase tracking-wider opacity-60">{{ __('Lesezeichen') }}</span>
+                                        <a href="{{ route('bookmarks.create') }}?url={{ urlencode(request()->fullUrl()) }}"
+                                           data-entry-modal-trigger
+                                           class="btn btn-xs btn-ghost"
+                                           title="{{ __('Diese Seite merken') }}">
+                                            <x-icon name="add" class="text-sm" />
+                                            <span>{{ __('Merken') }}</span>
+                                        </a>
+                                    </div>
+                                    <div class="max-h-96 overflow-y-auto">
+                                        @forelse ($_bookmarks as $_bm)
+                                            <a href="{{ $_bm->url }}"
+                                               class="flex items-start gap-3 px-4 py-3 hover:bg-base-200 border-b border-base-200 last:border-b-0">
+                                                <span class="material-symbols-outlined text-base" aria-hidden="true">{{ $_bm->icon ?: 'bookmark' }}</span>
+                                                <span class="flex-1 min-w-0 text-sm font-medium truncate">{{ $_bm->label }}</span>
+                                            </a>
+                                        @empty
+                                            <div class="px-4 py-6 text-center text-sm opacity-60">
+                                                <x-icon name="bookmark_border" class="text-2xl block mb-1 mx-auto" />
+                                                {{ __('Noch keine Lesezeichen.') }}
+                                            </div>
+                                        @endforelse
+                                    </div>
+                                    <div class="px-4 py-2 border-t border-base-200 text-right">
+                                        <a href="{{ route('bookmarks.index') }}" class="text-xs link link-hover opacity-70">{{ __('Verwalten') }} →</a>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
                             @if (! $isLegacyMode)
                             <div class="dropdown dropdown-end">
                                 <label tabindex="0"

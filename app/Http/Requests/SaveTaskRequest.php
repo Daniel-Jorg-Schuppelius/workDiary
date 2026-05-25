@@ -19,6 +19,13 @@ class SaveTaskRequest extends FormRequest {
         return true;
     }
 
+    protected function prepareForValidation(): void {
+        $this->merge([
+            'is_global' => $this->boolean('is_global'),
+            'billable' => $this->has('billable') ? $this->boolean('billable') : true,
+        ]);
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
@@ -30,6 +37,14 @@ class SaveTaskRequest extends FormRequest {
             'parent_task_id' => ['nullable', 'integer', Rule::exists('tasks', 'id')],
             'assigned_to' => ['nullable', 'integer', Rule::exists('users', 'id')],
             'due_date' => ['nullable', 'date'],
+            'is_global' => ['sometimes', 'boolean'],
+            'hourly_rate' => ['nullable', 'numeric', 'min:0'],
+            'internal_rate' => ['nullable', 'numeric', 'min:0'],
+            'time_budget' => ['nullable', 'integer', 'min:0'],
+            'budget' => ['nullable', 'numeric', 'min:0'],
+            'budget_type' => ['nullable', Rule::in(['month', 'year'])],
+            'billable' => ['sometimes', 'boolean'],
+            'color' => ['nullable', 'string', 'max:16'],
         ];
     }
 }

@@ -85,6 +85,23 @@ class MyMonthReportTest extends TestCase {
         $this->assertStringContainsString('120', $response->getContent() ?: ''); // 2h = 120 min
     }
 
+    public function test_xlsx_export_returns_download(): void {
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'date' => '2030-04-10',
+            'started_at' => '2030-04-10 08:00:00',
+            'ended_at' => '2030-04-10 10:00:00',
+            'kind' => TimeEntryKind::Work->value,
+            'description' => 'Workshop',
+        ]);
+        $response = $this->getWithMonthRange('reports.my-month', ['export' => 'xlsx']);
+        $response->assertOk();
+        $response->assertHeader('Content-Type', \App\Support\XlsxExport::MIME);
+        $this->assertStringContainsString('mein-monat-2030-04.xlsx', (string) $response->headers->get('Content-Disposition'));
+    }
+
     public function test_pdf_export_returns_download(): void {
         TimeEntry::create([
             'organization_id' => $this->organization->id,

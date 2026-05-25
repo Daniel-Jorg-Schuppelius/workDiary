@@ -17,8 +17,21 @@ use App\Models\Customer;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\{Auth, Gate};
+use OpenApi\Attributes as OA;
 
 class CustomerController extends Controller {
+    #[OA\Get(
+        path: '/customers',
+        summary: 'Kunden auflisten',
+        tags: ['Customers'],
+        security: [['bearerAuth' => []]],
+        parameters: [
+            new OA\Parameter(name: 'search', in: 'query', required: false, schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'archived', in: 'query', required: false, schema: new OA\Schema(type: 'boolean')),
+            new OA\Parameter(name: 'per_page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 25)),
+        ],
+        responses: [new OA\Response(response: 200, description: 'OK')],
+    )]
     public function index(Request $request): AnonymousResourceCollection {
         Gate::authorize('viewAny', Customer::class);
         $query = Customer::query();
@@ -32,6 +45,13 @@ class CustomerController extends Controller {
         return CustomerResource::collection($query->orderBy('name')->paginate((int) $request->input('per_page', 25)));
     }
 
+    #[OA\Post(
+        path: '/customers',
+        summary: 'Kunde anlegen',
+        tags: ['Customers'],
+        security: [['bearerAuth' => []]],
+        responses: [new OA\Response(response: 201, description: 'Created')],
+    )]
     public function store(SaveCustomerRequest $request): CustomerResource {
         Gate::authorize('create', Customer::class);
         $data = $request->validated();
@@ -43,12 +63,28 @@ class CustomerController extends Controller {
         return new CustomerResource($customer);
     }
 
+    #[OA\Get(
+        path: '/customers/{customer}',
+        summary: 'Kunde anzeigen',
+        tags: ['Customers'],
+        security: [['bearerAuth' => []]],
+        parameters: [new OA\Parameter(name: 'customer', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'OK'), new OA\Response(response: 404, description: 'Not Found')],
+    )]
     public function show(Customer $customer): CustomerResource {
         Gate::authorize('view', $customer);
 
         return new CustomerResource($customer);
     }
 
+    #[OA\Put(
+        path: '/customers/{customer}',
+        summary: 'Kunde aktualisieren',
+        tags: ['Customers'],
+        security: [['bearerAuth' => []]],
+        parameters: [new OA\Parameter(name: 'customer', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'OK')],
+    )]
     public function update(Customer $customer, SaveCustomerRequest $request): CustomerResource {
         Gate::authorize('update', $customer);
         $customer->update($request->validated());
@@ -56,6 +92,14 @@ class CustomerController extends Controller {
         return new CustomerResource($customer->fresh() ?? $customer);
     }
 
+    #[OA\Delete(
+        path: '/customers/{customer}',
+        summary: 'Kunde löschen',
+        tags: ['Customers'],
+        security: [['bearerAuth' => []]],
+        parameters: [new OA\Parameter(name: 'customer', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 204, description: 'No Content')],
+    )]
     public function destroy(Customer $customer): Response {
         Gate::authorize('delete', $customer);
         $customer->delete();

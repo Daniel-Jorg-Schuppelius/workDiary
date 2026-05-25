@@ -22,12 +22,42 @@
             <div class="flex flex-wrap gap-2">
                 <x-icon-btn icon="calendar_view_week" size="sm" :href="route('week.index')" show-label>{{ __('Wochenansicht') }}</x-icon-btn>
                 <x-icon-btn icon="menu_book" size="sm" :href="route('diary.index')" show-label>{{ __('Tagebuch') }}</x-icon-btn>
+                <x-icon-btn icon="tune" size="sm" :href="route('dashboard.customize')" show-label>{{ __('Anpassen') }}</x-icon-btn>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('diary.create')"
                             show-label>{{ __('Neuer Eintrag') }}</x-icon-btn>
             </div>
         </div>
+
+        {{-- Eigene Widgets (Phase G) --}}
+        @php
+            /** @var \App\Dashboard\WidgetRegistry $widgetRegistry */
+            $widgetRegistry = app(\App\Dashboard\WidgetRegistry::class);
+            $widgetUser = Auth::user();
+            $widgetAvailable = $widgetRegistry->availableFor($widgetUser);
+            $widgetConfig = $widgetUser->dashboardWidgets()->get()->keyBy('widget_key');
+            $widgetsToRender = $widgetAvailable
+                ->map(function ($w) use ($widgetConfig) {
+                    $stored = $widgetConfig->get($w->key());
+                    return [
+                        'widget' => $w,
+                        'sort_order' => $stored?->sort_order ?? 999,
+                        'hidden' => (bool) ($stored?->hidden ?? false),
+                    ];
+                })
+                ->reject(fn (array $i) => $i['hidden'])
+                ->sortBy(fn (array $i) => [$i['sort_order'], $i['widget']->label()])
+                ->values();
+        @endphp
+
+        @if ($widgetsToRender->isNotEmpty())
+            <div class="grid gap-4 lg:grid-cols-2">
+                @foreach ($widgetsToRender as $entry)
+                    {{ $entry['widget']->render($widgetUser) }}
+                @endforeach
+            </div>
+        @endif
 
         @isset($onboarding)
             <x-onboarding-widget

@@ -76,6 +76,22 @@ class ProjectDetailsReportTest extends TestCase {
         $this->assertStringContainsString('120', $body);
     }
 
+    public function test_xlsx_export(): void {
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'date' => '2030-04-10',
+            'started_at' => '2030-04-10 09:00:00',
+            'ended_at' => '2030-04-10 11:00:00',
+            'kind' => TimeEntryKind::Work->value,
+        ]);
+        $response = $this->getWithYearRange('reports.project-details', ['export' => 'xlsx']);
+        $response->assertOk();
+        $response->assertHeader('Content-Type', \App\Support\XlsxExport::MIME);
+        $this->assertStringContainsString('.xlsx', (string) $response->headers->get('Content-Disposition'));
+    }
+
     public function test_pdf_export(): void {
         TimeEntry::create([
             'organization_id' => $this->organization->id,

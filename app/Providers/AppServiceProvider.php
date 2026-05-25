@@ -75,6 +75,10 @@ class AppServiceProvider extends ServiceProvider {
         // Feature-Flags (Folge zu MVP-047): einmal pro Request, damit
         // @feature und requires-feature dieselbe Auflösung sehen.
         $this->app->singleton(\App\Services\Licensing\FeatureFlagResolver::class);
+
+        // Widget-Dashboard (Phase G): Registry als Singleton; Default-Widgets
+        // werden in boot() registriert.
+        $this->app->singleton(\App\Dashboard\WidgetRegistry::class);
     }
 
     public function boot(): void {
@@ -131,6 +135,9 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(ProcedureDeviation::class, ProcedureDeviationPolicy::class);
         Gate::policy(Classification::class, ClassificationPolicy::class);
         Gate::policy(ClassificationRequirement::class, ClassificationRequirementPolicy::class);
+        Gate::policy(\App\Models\UserBookmark::class, \App\Policies\UserBookmarkPolicy::class);
+        Gate::policy(\App\Models\UserFilterPreset::class, \App\Policies\UserFilterPresetPolicy::class);
+        Gate::policy(\App\Models\InvoiceTemplate::class, \App\Policies\InvoiceTemplatePolicy::class);
 
         // manage-members: Org-Admin darf Mitglieder der eigenen Org verwalten
         Gate::define('manage-members', [OrganizationPolicy::class, 'manageMembers']);
@@ -167,6 +174,8 @@ class AppServiceProvider extends ServiceProvider {
         $this->registerBrandingViewComposer();
         $this->registerReminderViewComposer();
         $this->registerJsTranslationsViewComposer();
+        $this->registerBookmarksViewComposer();
+        $this->registerDashboardWidgets();
 
         Password::defaults(function () {
             $rule = Password::min(12)
@@ -341,5 +350,34 @@ class AppServiceProvider extends ServiceProvider {
             }
             $view->with('branding', $branding);
         });
+    }
+
+    /**
+     * Stellt dem App-Layout die Lesezeichen des eingeloggten Users
+     * als `$userBookmarks` bereit (Phase H).
+     */
+    private function registerBookmarksViewComposer(): void {
+        View::composer('layouts.app', function ($view): void {
+            $user = Auth::user();
+            $bookmarks = $user instanceof User ? $user->bookmarks()->get() : collect();
+            $view->with('userBookmarks', $bookmarks);
+        });
+    }
+
+    /**
+     * Registriert die Standard-Dashboard-Widgets in der Registry (Phase G).
+     */
+    private function registerDashboardWidgets(): void {
+        /** @var \App\Dashboard\WidgetRegistry $registry */
+        $registry = $this->app->make(\App\Dashboard\WidgetRegistry::class);
+
+        $registry->register($this->app->make(\App\Dashboard\Widgets\PersonalKpisWidget::class));
+        $registry->register($this->app->make(\App\Dashboard\Widgets\TeamKpisWidget::class));
+        $registry->register($this->app->make(\App\Dashboard\Widgets\FinanceWidget::class));
+        $registry->register($this->app->make(\App\Dashboard\Widgets\VacationFlexWidget::class));
+        $registry->register($this->app->make(\App\Dashboard\Widgets\UpcomingShiftsWidget::class));
+        $registry->register($this->app->make(\App\Dashboard\Widgets\RecentEmergenciesWidget::class));
+        $registry->register($this->app->make(\App\Dashboard\Widgets\OnboardingWidget::class));
+        $registry->register($this->app->make(\App\Dashboard\Widgets\BookmarksWidget::class));
     }
 }

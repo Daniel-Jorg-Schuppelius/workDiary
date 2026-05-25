@@ -98,6 +98,25 @@ class CustomerProjectReportTest extends TestCase {
         $this->assertStringContainsString('120', $body);
     }
 
+    public function test_xlsx_export_returns_download(): void {
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'date' => now()->startOfYear()->addMonth()->toDateString(),
+            'started_at' => now()->startOfYear()->addMonth()->setTime(9, 0)->toDateTimeString(),
+            'ended_at' => now()->startOfYear()->addMonth()->setTime(11, 0)->toDateTimeString(),
+            'kind' => TimeEntryKind::Work->value,
+            'billable' => true,
+        ]);
+
+        $response = $this->getWithDateRange('reports.customer-project', ['export' => 'xlsx']);
+        $response->assertOk();
+        $response->assertHeader('Content-Type', \App\Support\XlsxExport::MIME);
+        $this->assertStringContainsString('kunden-projekte_', (string) $response->headers->get('Content-Disposition'));
+        $this->assertStringContainsString('.xlsx', (string) $response->headers->get('Content-Disposition'));
+    }
+
     public function test_pdf_export_returns_download(): void {
         TimeEntry::create([
             'organization_id' => $this->organization->id,

@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Project, TimeEntry, User};
+use App\Support\{CsvNumber, XlsxExport};
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
@@ -62,6 +63,9 @@ class ProjectDetailsReportController extends Controller {
 
         if ($request->query('export') === 'csv' && $project instanceof Project) {
             return $this->exportCsv($project, $year, $monthMatrix, $monthLabels, $byUser, $users, $yearMinutes, $yearRate);
+        }
+        if ($request->query('export') === 'xlsx' && $project instanceof Project) {
+            return $this->exportXlsx($project, $year, $monthMatrix, $monthLabels, $byUser, $users, $yearMinutes, $yearRate);
         }
         if ($request->query('export') === 'pdf' && $project instanceof Project) {
             return $this->exportPdf($project, $year, $monthMatrix, $monthLabels, $byUser, $users, $yearMinutes, $yearRate);
@@ -189,15 +193,15 @@ class ProjectDetailsReportController extends Controller {
         $filename = sprintf('projekt-%d-%d.csv', $project->id, $year);
         $rows = [['Monat', 'Minuten', 'Erloes']];
         foreach ($monthMatrix as $idx => $row) {
-            $rows[] = [$monthLabels[$idx] ?? (string) $idx, (int) $row['minutes'], number_format((float) $row['rate'], 2, '.', '')];
+            $rows[] = [$monthLabels[$idx] ?? (string) $idx, (int) $row['minutes'], CsvNumber::decimal((float) $row['rate'])];
         }
-        $rows[] = ['Gesamt', $yearMinutes, number_format($yearRate, 2, '.', '')];
+        $rows[] = ['Gesamt', $yearMinutes, CsvNumber::decimal($yearRate)];
         $rows[] = [];
         $rows[] = ['Mitarbeiter', 'Minuten', 'Erloes'];
         foreach ($byUser as $uid => $row) {
             $userModel = $users->get($uid);
             $name = $userModel instanceof User ? $userModel->name : '#' . $uid;
-            $rows[] = [(string) $name, (int) $row['minutes'], number_format((float) $row['rate'], 2, '.', '')];
+            $rows[] = [(string) $name, (int) $row['minutes'], CsvNumber::decimal((float) $row['rate'])];
         }
 
         $csv = '';
@@ -216,6 +220,31 @@ class ProjectDetailsReportController extends Controller {
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
+    }
+
+    /**
+     * @param  array<int, array{minutes: int, rate: float}>  $monthMatrix
+     * @param  array<int, string>  $monthLabels
+     * @param  array<int, array{minutes: int, rate: float}>  $byUser
+     * @param  Collection<int, User>  $users
+     */
+    private function exportXlsx(Project $project, int $year, array $monthMatrix, array $monthLabels, array $byUser, $users, int $yearMinutes, float $yearRate): SymfonyResponse {
+        $filename = sprintf('projekt-%d-%d.xlsx', $project->id, $year);
+
+        // Bauen einer kombinierten Tabelle: erst Monate, dann separator, dann Mitarbeiter.
+        $headers = ['Bereich', 'Bezeichnung', 'Minuten', 'Erloes'];
+        $rows = [];
+        foreach ($monthMatrix as $idx => $row) {
+            $rows[] = ['Monat', $monthLabels[$idx] ?? (string) $idx, (int) $row['minutes'], (float) $row['rate']];
+        }
+        $rows[] = ['Monat', 'Gesamt', (int) $yearMinutes, (float) $yearRate];
+        foreach ($byUser as $uid => $row) {
+            $userModel = $users->get($uid);
+            $name = $userModel instanceof User ? $userModel->name : '#' . $uid;
+            $rows[] = ['Mitarbeiter', (string) $name, (int) $row['minutes'], (float) $row['rate']];
+        }
+
+        return XlsxExport::streamFromArray($filename, $headers, $rows);
     }
 
     /**

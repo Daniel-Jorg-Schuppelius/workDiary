@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{TimeEntry, User};
+use App\Support\{CsvNumber, XlsxExport};
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\{Carbon, CarbonImmutable};
 use Illuminate\Database\Eloquent\Collection;
@@ -136,6 +137,9 @@ class WeekByUserReportController extends Controller {
         if ($request->query('export') === 'csv') {
             return $this->exportCsv($byUser, $users, $dayLabels, $dayTotals, $weekTotal, $weekRate, $year, $week);
         }
+        if ($request->query('export') === 'xlsx') {
+            return $this->exportXlsx($byUser, $users, $dayLabels, $dayTotals, $weekTotal, $weekRate, $year, $week);
+        }
         if ($request->query('export') === 'pdf') {
             return $this->exportPdf($byUser, $users, $dayLabels, $dayTotals, $weekTotal, $weekRate, $weekLabel, $year, $week);
         }
@@ -162,12 +166,11 @@ class WeekByUserReportController extends Controller {
     /**
      * @param  array<int, array{days: array<int, int>, total: int, rate: float}>  $byUser
      * @param  Collection<int, User>  $users
-     * @param  array<int, string>  $dayLabels
      * @param  array<int, int>  $dayTotals
+     * @return list<list<int|float|string|null>>
      */
-    private function exportCsv(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, int $year, int $week): Response {
-        $filename = sprintf('woche_%04d-W%02d.csv', $year, $week);
-        $rows = [array_merge(['Mitarbeiter'], $dayLabels, ['Wochensumme', 'Erloes'])];
+    private function buildRows(array $byUser, $users, array $dayTotals, int $weekTotal, float $weekRate): array {
+        $rows = [];
         foreach ($byUser as $uid => $row) {
             $userModel = $users->get($uid);
             $name = $userModel instanceof User ? $userModel->name : '#' . $uid;
@@ -176,7 +179,7 @@ class WeekByUserReportController extends Controller {
                 $cols[] = (int) $m;
             }
             $cols[] = (int) $row['total'];
-            $cols[] = number_format((float) $row['rate'], 2, '.', '');
+            $cols[] = (float) $row['rate'];
             $rows[] = $cols;
         }
         $totalRow = ['Gesamt'];
@@ -184,8 +187,24 @@ class WeekByUserReportController extends Controller {
             $totalRow[] = (int) $m;
         }
         $totalRow[] = (int) $weekTotal;
-        $totalRow[] = number_format((float) $weekRate, 2, '.', '');
+        $totalRow[] = (float) $weekRate;
         $rows[] = $totalRow;
+
+        return $rows;
+    }
+
+    /**
+     * @param  array<int, array{days: array<int, int>, total: int, rate: float}>  $byUser
+     * @param  Collection<int, User>  $users
+     * @param  array<int, string>  $dayLabels
+     * @param  array<int, int>  $dayTotals
+     */
+    private function exportCsv(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, int $year, int $week): Response {
+        $filename = sprintf('woche_%04d-W%02d.csv', $year, $week);
+        $rows = [array_merge(['Mitarbeiter'], $dayLabels, ['Wochensumme', 'Erloes'])];
+        foreach ($this->buildRows($byUser, $users, $dayTotals, $weekTotal, $weekRate) as $row) {
+            $rows[] = array_map(static fn($v) => is_float($v) ? CsvNumber::decimal($v) : $v, $row);
+        }
 
         $csv = '';
         foreach ($rows as $row) {
@@ -203,6 +222,19 @@ class WeekByUserReportController extends Controller {
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
+    }
+
+    /**
+     * @param  array<int, array{days: array<int, int>, total: int, rate: float}>  $byUser
+     * @param  Collection<int, User>  $users
+     * @param  array<int, string>  $dayLabels
+     * @param  array<int, int>  $dayTotals
+     */
+    private function exportXlsx(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, int $year, int $week): SymfonyResponse {
+        $filename = sprintf('woche_%04d-W%02d.xlsx', $year, $week);
+        $headers = array_merge(['Mitarbeiter'], array_values($dayLabels), ['Wochensumme', 'Erloes']);
+
+        return XlsxExport::streamFromArray($filename, $headers, $this->buildRows($byUser, $users, $dayTotals, $weekTotal, $weekRate));
     }
 
     /**

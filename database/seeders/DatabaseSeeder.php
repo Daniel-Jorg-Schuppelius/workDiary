@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder {
         $this->call(ClassificationSeeder::class);
         $this->call(PerDiemRateSeeder::class);
         $this->call(PerDiemForeignRateSeeder::class);
+        $this->call(InvoiceMailTemplateSeeder::class);
 
         $org = Organization::where('slug', 'default')->first();
 

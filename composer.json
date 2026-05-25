@@ -13,11 +13,13 @@
         "azuyalabs/yasumi": "^2.11",
         "barryvdh/laravel-dompdf": "^3.1",
         "daniel-jorg-schuppelius/lexoffice-php-sdk": "^1.0",
+        "darkaonline/l5-swagger": "^11.0",
         "dschuppelius/php-common-toolkit": "^1.7",
         "laravel/framework": "^13.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
         "minishlink/web-push": "^10.0",
+        "phpoffice/phpspreadsheet": "^5.7",
         "simshaun/recurr": "^6.0",
         "spatie/icalendar-generator": "^3.0",
         "spatie/laravel-permission": "^7.4"

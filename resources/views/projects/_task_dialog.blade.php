@@ -90,6 +90,50 @@
             </div>
         </x-form-group>
 
+        <x-form-group :legend="__('Activity')" icon="payments" tone="success" cols="2">
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Stundensatz (EUR)') }}</label>
+                <input name="hourly_rate" type="number" step="0.01" min="0"
+                       class="input input-bordered w-full"
+                       value="{{ old('hourly_rate', $task?->hourly_rate) }}">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Interner Satz (EUR)') }}</label>
+                <input name="internal_rate" type="number" step="0.01" min="0"
+                       class="input input-bordered w-full"
+                       value="{{ old('internal_rate', $task?->internal_rate) }}">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Zeitbudget (Minuten)') }}</label>
+                <input name="time_budget" type="number" step="1" min="0"
+                       class="input input-bordered w-full"
+                       value="{{ old('time_budget', $task?->time_budget) }}">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Geldbudget (EUR)') }}</label>
+                <input name="budget" type="number" step="0.01" min="0"
+                       class="input input-bordered w-full"
+                       value="{{ old('budget', $task?->budget) }}">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Budget-Typ') }}</label>
+                <select name="budget_type" class="select select-bordered w-full">
+                    <option value="" @selected(old('budget_type', $task?->budget_type) === null || old('budget_type', $task?->budget_type) === '')>{{ __('Gesamt') }}</option>
+                    <option value="month" @selected(old('budget_type', $task?->budget_type) === 'month')>{{ __('Pro Monat') }}</option>
+                    <option value="year" @selected(old('budget_type', $task?->budget_type) === 'year')>{{ __('Pro Jahr') }}</option>
+                </select>
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Abrechenbar') }}</label>
+                <label class="label cursor-pointer justify-start gap-2">
+                    <input type="hidden" name="billable" value="0">
+                    <input type="checkbox" name="billable" value="1" class="checkbox checkbox-sm checkbox-info"
+                           @checked(old('billable', $task?->billable ?? true))>
+                    <span>{{ __('Diese Aufgabe ist abrechenbar.') }}</span>
+                </label>
+            </div>
+        </x-form-group>
+
         @if ($milestones->isNotEmpty() || ($parentTasks->isNotEmpty() && (! $task || ! $task->parent_task_id)))
             <x-form-group :legend="__('Verknüpfung')" icon="link" tone="ghost" cols="2">
                 @if ($milestones->isNotEmpty())

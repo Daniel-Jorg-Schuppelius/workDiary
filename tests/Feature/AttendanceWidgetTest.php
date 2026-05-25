@@ -1,0 +1,49 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature;
+
+use App\Models\User;
+use App\Services\Attendance\AttendanceClockService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\WithOrganization;
+use Tests\TestCase;
+
+class AttendanceWidgetTest extends TestCase {
+    use RefreshDatabase;
+    use WithOrganization;
+
+    private User $user;
+
+    protected function setUp(): void {
+        parent::setUp();
+        $this->setUpOrganization();
+        $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+    }
+
+    public function test_dashboard_does_not_render_attendance_chip_when_idle(): void {
+        $response = $this->actingAs($this->user)
+            ->get(route('dashboard'))
+            ->assertOk();
+
+        $html = $response->getContent() ?: '';
+        $this->assertStringNotContainsString(route('attendance.clock-out'), $html);
+    }
+
+    public function test_dashboard_shows_clock_out_form_when_punched_in(): void {
+        $attendance = app(AttendanceClockService::class)->clockIn($this->user);
+        $attendance->forceFill(['started_at' => now()->subHour()])->saveQuietly();
+        $attendance->refresh();
+        $this->assertNotNull($attendance->started_at);
+
+        $response = $this->actingAs($this->user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee(__('Ausstempeln'))
+            ->assertSee(route('attendance.clock-out'), false);
+
+        $html = $response->getContent() ?: '';
+        $this->assertStringContainsString($attendance->started_at->toIso8601String(), $html);
+    }
+}
