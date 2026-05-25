@@ -72,13 +72,13 @@ Jede neue Index-/Listenseite (`resources/views/**/index.blade.php`) MUSS dem fol
 2. **Subtitle Pflicht**: kurze Beschreibung der Seite — was wird hier verwaltet, in welchem Kontext.
 3. **Aktionen**: rechte Toolbar-Aktionen ausschließlich via `<x-slot:actions>` mit `<x-icon-btn>`. Primär-Action ist meist „Anlegen" (`icon="add"`, `tone="primary"`, `size="sm"`, `show-label`).
 4. **Filter/Suche**:
-   - Wenn vorhanden: `<x-filter-bar>` direkt unter der Toolbar (einzeilig, scrollbar, sm-Größen).
-   - Wenn NICHT vorhanden: filter-bar komplett weglassen — keine leere Karte stehen lassen.
-   - Inputs/Selects mit `input-sm` / `select-sm` / `shrink-0` und fixer Breite (`w-24`..`w-48`).
+    - Wenn vorhanden: `<x-filter-bar>` direkt unter der Toolbar (einzeilig, scrollbar, sm-Größen).
+    - Wenn NICHT vorhanden: filter-bar komplett weglassen — keine leere Karte stehen lassen.
+    - Inputs/Selects mit `input-sm` / `select-sm` / `shrink-0` und fixer Breite (`w-24`..`w-48`).
 5. **Empty-State**:
-   - Liste/Cards: `<x-empty-state framed icon="…" />` — Defaults für `title` und `message` greifen.
-   - Tabelle: `<x-table.empty :colspan="…" icon="…" />` als letzte Zeile.
-   - Nur `icon` (Domain-Kontext) zwingend setzen; `title`/`message` nur bei abweichendem Wording (z. B. „Noch keine Dienstpläne vorhanden").
+    - Liste/Cards: `<x-empty-state framed icon="…" />` — Defaults für `title` und `message` greifen.
+    - Tabelle: `<x-table.empty :colspan="…" icon="…" />` als letzte Zeile.
+    - Nur `icon` (Domain-Kontext) zwingend setzen; `title`/`message` nur bei abweichendem Wording (z. B. „Noch keine Dienstpläne vorhanden").
 6. **Größen-Standard**: `input-sm` / `select-sm` / `btn-sm`. **Kein `xs`.**
 7. **Material Symbols** nur gültige Namen (z. B. `add`, `groups`, `calendar_month`, `menu_book`, `inbox`). Heroicon-Namen werden als Literal-Text gerendert.
 

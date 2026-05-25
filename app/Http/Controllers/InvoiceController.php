@@ -32,8 +32,8 @@ class InvoiceController extends Controller {
         $statusFilter = in_array($status, Invoice::STATUSES, true) ? $status : '';
 
         $query = Invoice::query()->with(['customer'])
-            ->when($customerId, fn ($q) => $q->where('customer_id', $customerId))
-            ->when($statusFilter !== '', fn ($q) => $q->where('status', $statusFilter));
+            ->when($customerId, fn($q) => $q->where('customer_id', $customerId))
+            ->when($statusFilter !== '', fn($q) => $q->where('status', $statusFilter));
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [
             'number' => 'number',
