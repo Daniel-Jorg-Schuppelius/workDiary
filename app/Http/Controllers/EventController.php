@@ -11,9 +11,11 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Event\{EventStatus, EventType, EventVisibility, ParticipantRole, ParticipantStatus};
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{Customer, Event, EventCategory, Room, User};
 use App\Services\Event\EventService;
 use App\Support\LookupCache;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -21,9 +23,12 @@ use Illuminate\View\View;
 use RuntimeException;
 
 class EventController extends Controller {
+    use ResolvesGlobalDateRange;
+
     public function __construct(
         private readonly EventService $events,
-    ) {}
+    ) {
+    }
 
     // ── Index / Calendar ────────────────────────────────────────────────────
 
@@ -81,15 +86,27 @@ class EventController extends Controller {
         ]);
     }
 
-    public function calendar(Request $request): View {
+    public function calendar(Request $request, \App\Services\HolidayService $holidays): View {
         Gate::authorize('viewAny', Event::class);
-        $monthStart = $request->query('month')
-            ? \Carbon\Carbon::parse((string) $request->query('month'))->startOfMonth()
-            : now()->startOfMonth();
-        $monthEnd = $monthStart->copy()->endOfMonth();
 
-        $gridStart = $monthStart->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
-        $gridEnd = $monthEnd->copy()->endOfWeek(\Carbon\Carbon::SUNDAY);
+        // Globaler Header-Zeitraum (analog Schichtplan). Bei Mehrmonats-Range
+        // gibt es Monats-Tabs; aktive Monat per ?activeMonth=Y-m.
+        $range     = $this->globalDateRange();
+        $rangeFrom = $range['from'];
+        $rangeTo   = $range['to'];
+
+        $months         = $this->buildMonthsInRange($rangeFrom, $rangeTo);
+        $activeMonthKey = (string) $request->query('activeMonth', '');
+        $activeMonth    = collect($months)->firstWhere('key', $activeMonthKey) ?? $months[0];
+        $activeMonthKey = $activeMonth['key'];
+
+        $monthStart = CarbonImmutable::create($activeMonth['year'], $activeMonth['month'], 1)
+            ?->startOfMonth()
+            ?? CarbonImmutable::now()->startOfMonth();
+        $monthEnd = $monthStart->endOfMonth();
+
+        $gridStart = $monthStart->startOfWeek(CarbonImmutable::MONDAY);
+        $gridEnd   = $monthEnd->endOfWeek(CarbonImmutable::SUNDAY);
 
         $events = Event::query()
             ->with(['category', 'rooms'])
@@ -100,9 +117,12 @@ class EventController extends Controller {
         $eventsByDay = $events->groupBy(fn(Event $e) => $e->started_at->format('Y-m-d'));
 
         return view('events.calendar', [
-            'monthStart'  => $monthStart,
-            'monthEnd'    => $monthEnd,
-            'eventsByDay' => $eventsByDay,
+            'monthStart'     => $monthStart,
+            'monthEnd'       => $monthEnd,
+            'eventsByDay'    => $eventsByDay,
+            'holidays'       => $holidays,
+            'months'         => $months,
+            'activeMonthKey' => $activeMonthKey,
         ]);
     }
 

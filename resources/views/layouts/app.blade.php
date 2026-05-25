@@ -1,10 +1,83 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="dim">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="geocode-url" content="{{ route('api.internal.geocode') }}">
+
+        {{-- Font-Preloads: starten den Download von IBM Plex Sans (400/600),
+             Space Grotesk (700) und Material Symbols PARALLEL zum CSS-Parsing.
+             Ohne diese Preloads sieht der Browser die @font-face-Deklarationen
+             erst, nachdem das app.css geladen und ausgewertet ist — dadurch
+             entstehen sichtbare Layout-Shifts und unrenderte Material-Symbol-
+             Ligaturen (z. B. "task_alt" als Text statt Icon). --}}
+        @php
+            $fontKeys = [
+                'node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2',
+                'node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-600-normal.woff2',
+                'node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-700-normal.woff2',
+                'node_modules/material-symbols/material-symbols-outlined.woff2',
+            ];
+            $fontPreloads = [];
+            $hotFile = public_path('hot');
+            $manifestFile = public_path('build/manifest.json');
+            if (is_file($hotFile)) {
+                // Dev-Modus: Vite serviert die Fonts direkt aus node_modules/.
+                $devUrl = rtrim((string) @file_get_contents($hotFile), "\n\r ");
+                foreach ($fontKeys as $key) {
+                    $fontPreloads[] = $devUrl . '/' . $key;
+                }
+            } elseif (is_file($manifestFile)) {
+                $manifest = json_decode((string) @file_get_contents($manifestFile), true) ?: [];
+                foreach ($fontKeys as $key) {
+                    if (isset($manifest[$key]['file'])) {
+                        $fontPreloads[] = asset('build/' . $manifest[$key]['file']);
+                    }
+                }
+            }
+        @endphp
+        @foreach ($fontPreloads as $href)
+            <link rel="preload" as="font" type="font/woff2" href="{{ $href }}" crossorigin>
+        @endforeach
+
+        {{-- Theme + Anti-Flash: Inline-Skript läuft VOR jeglichem CSS,
+             damit data-theme synchron beim ersten Paint passt. Vorher
+             war data-theme="dim" hartcodiert; bei Light-Usern flackerte
+             es bei jedem Seitenwechsel dunkel → hell. --}}
+        <style>
+            /* Frühe Basis vor dem CSS-Bundle, damit der erste Paint nicht
+               als unstyled white-on-Times-Roman sichtbar wird, bevor Vite
+               das CSS injiziert hat (FOUC im Dev-Modus). */
+            html { color-scheme: light dark; background: Canvas; color: CanvasText; }
+            html[data-theme="dim"] { color-scheme: dark; background: #1d232a; color: #e7e9ea; }
+            html[data-theme="corporate"] { color-scheme: light; background: #ffffff; color: #1f2937; }
+            body { font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+
+            /* Anti-Layout-Shift für Material-Symbols-Ligaturen:
+               Vor dem Laden der Icon-Font würden die Ligatur-Codes wie
+               "task_alt" als reiner Text sichtbar werden und Buttons/Zellen
+               aufblähen. Mit visibility:hidden + reservierter 1em×1em-Box
+               bleibt der finale Icon-Platz erhalten, ohne dass der Text-Code
+               flackert. Sobald `document.fonts.ready` aufgelöst ist, setzt
+               das Inline-Skript die Klasse `fonts-loaded` und die Icons
+               werden sichtbar. */
+            .material-symbols-outlined {
+                visibility: hidden;
+                display: inline-block;
+                width: 1em;
+                height: 1em;
+                line-height: 1;
+                overflow: hidden;
+                vertical-align: middle;
+            }
+            html.fonts-loaded .material-symbols-outlined {
+                visibility: visible;
+                width: auto;
+                height: auto;
+                overflow: visible;
+            }
+        </style>
         <script>
             (function () {
                 var savedTheme = localStorage.getItem('workDiaryTheme');
@@ -13,6 +86,16 @@
                 var root = document.documentElement;
                 root.setAttribute('data-theme', theme);
                 root.style.colorScheme = theme === 'corporate' ? 'light' : 'dark';
+
+                if (document.fonts && document.fonts.ready) {
+                    document.fonts.ready.then(function () {
+                        document.documentElement.classList.add('fonts-loaded');
+                    });
+                } else {
+                    // Browser ohne Font-Loading-API: Klasse direkt setzen,
+                    // damit Icons nicht permanent unsichtbar bleiben.
+                    document.documentElement.classList.add('fonts-loaded');
+                }
             })();
         </script>
         <title>@yield('title', isset($branding) && $branding ? $branding->appName() : config('app.name', 'WorkDiary'))</title>
@@ -50,7 +133,19 @@
             @media (min-width: 1536px) {
                 .with-sidebar-pad { padding-left: calc(var(--sidebar-w) + 3rem) !important; }
             }
-            /* 3-stufiger Header: <900 zentriert gestapelt; 900-1695 zwei Zeilen; >=1696 eine Zeile */
+            /* 3-stufiger Header über CSS Container Queries statt Viewport-
+               Breakpoints. Vorteil: das Layout reagiert auf den tatsächlich
+               verfügbaren Header-Platz (also nach Abzug der Sidebar) und nicht
+               auf die Bildschirmbreite. Dadurch greift das 3-Spalten-Layout
+               erst dann, wenn auch zusätzliche header-rechts-Pillen (z. B.
+               die Stempeluhr-Anzeige) noch reinpassen — keine Überschneidung
+               mit dem zentrierten Zeitraum-Element mehr.
+
+               Stufen:
+               - <600cqi:           gestapelt (3 Zeilen)
+               - 600-1399cqi:       zwei Zeilen ("left right" oben, "center" unten)
+               - >=1400cqi:         eine Zeile ("left center right") */
+            #app-header { container-type: inline-size; container-name: app-header; }
             .header-row {
                 display: grid;
                 gap: 0.5rem 0.75rem;
@@ -62,7 +157,7 @@
             .header-row .header-left   { grid-area: left;   min-width: 0; max-width: 100%; }
             .header-row .header-center { grid-area: center; min-width: 0; max-width: 100%; display: flex; justify-content: center; }
             .header-row .header-right  { grid-area: right;  min-width: 0; max-width: 100%; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.5rem; }
-            @media (min-width: 900px) {
+            @container app-header (min-width: 600px) {
                 .header-row {
                     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
                     grid-template-areas: "left right" "center center";
@@ -72,7 +167,7 @@
                 .header-row .header-right  { justify-self: end; flex-wrap: nowrap; justify-content: flex-end; }
                 .header-row .header-center { justify-self: center; }
             }
-            @media (min-width: 1696px) {
+            @container app-header (min-width: 1400px) {
                 .header-row {
                     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
                     grid-template-areas: "left center right";
@@ -859,91 +954,107 @@
                                     <x-icon name="search" class="text-base" />
                                 </button>
                             @endif
-                            <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
-                                <span data-theme-label class="text-base leading-none">◐</span>
-                            </button>
+                            {{-- Einstellungen-Dropdown: bündelt Theme-Toggle, Sprache,
+                                 Modus-Switch (Legacy) und Org-Switch in einem einzigen
+                                 Top-Level-Element. Reduziert sichtbare Header-Items von
+                                 ~8 auf 5 — verhindert Überschneidung mit dem zentrierten
+                                 Zeitraum-Element auf mittleren Viewports. --}}
                             <div class="dropdown dropdown-end">
-                                <label tabindex="0" class="btn btn-sm btn-ghost btn-square" title="{{ __('Sprache wechseln') }}" aria-label="{{ __('Sprache wechseln') }}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zm0 0c2.5 0 4-4.03 4-9s-1.5-9-4-9m0 18c-2.5 0-4-4.03-4-9s1.5-9 4-9M3 12h18" />
-                                    </svg>
+                                <label tabindex="0"
+                                       class="btn btn-sm btn-ghost btn-square"
+                                       title="{{ __('Einstellungen') }}"
+                                       aria-label="{{ __('Einstellungen') }}">
+                                    <x-icon name="tune" class="text-base" />
                                 </label>
-                                <ul tabindex="0" class="dropdown-content menu z-50 w-[min(10rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-1 shadow">
-                                    @foreach ($supportedLocales as $code => $locale)
-                                        <li>
-                                            <form method="POST" action="{{ route('locale.switch', $code) }}">
-                                                @csrf
-                                                <button type="submit" class="flex w-full items-center gap-2 {{ $currentLocale === $code ? 'active' : '' }}">
-                                                    <span class="rounded px-1 py-0.5 font-mono text-[0.65rem] font-bold leading-none ring-1 ring-current opacity-70">{{ $locale['code'] }}</span>
-                                                    <span>{{ $locale['label'] }}</span>
-                                                    @if ($currentLocale === $code)
-                                                        <span class="ml-auto opacity-60">•</span>
-                                                    @endif
-                                                </button>
-                                            </form>
-                                        </li>
-                                    @endforeach
-                                </ul>
+                                <div tabindex="0" class="dropdown-content z-50 mt-2 w-[min(20rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-0 shadow-lg overflow-hidden">
+                                    {{-- Farbschema --}}
+                                    <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-base-200">
+                                        <span class="text-sm font-medium">{{ __('Farbschema') }}</span>
+                                        <button type="button"
+                                                data-theme-toggle
+                                                aria-label="{{ __('Farbschema wechseln') }}"
+                                                title="{{ __('Farbschema wechseln') }}"
+                                                class="btn btn-xs btn-ghost gap-2">
+                                            <span data-theme-label class="text-base leading-none">◐</span>
+                                            <span class="text-xs opacity-70">{{ __('Wechseln') }}</span>
+                                        </button>
+                                    </div>
+
+                                    {{-- Sprache --}}
+                                    <div class="px-4 py-3 border-b border-base-200">
+                                        <p class="mb-2 text-xs uppercase tracking-wider opacity-60">{{ __('Sprache') }}</p>
+                                        <div class="flex flex-wrap gap-1">
+                                            @foreach ($supportedLocales as $code => $locale)
+                                                <form method="POST" action="{{ route('locale.switch', $code) }}">
+                                                    @csrf
+                                                    <button type="submit"
+                                                            class="btn btn-xs {{ $currentLocale === $code ? 'btn-primary' : 'btn-ghost' }} gap-1.5"
+                                                            title="{{ $locale['label'] }}">
+                                                        <span class="font-mono text-[0.65rem] font-bold opacity-80">{{ $locale['code'] }}</span>
+                                                        <span>{{ $locale['label'] }}</span>
+                                                    </button>
+                                                </form>
+                                            @endforeach
+                                        </div>
+                                    </div>
+
+                                    @if ($showModeSwitch)
+                                        {{-- Legacy-Toggle-Switch (nur sichtbar wenn der User Zugriff auf BEIDE Bereiche hat) --}}
+                                        <form method="POST"
+                                              action="{{ route('mode.switch', $isLegacyMode ? 'new' : 'legacy') }}"
+                                              id="mode-switch-form"
+                                              class="flex items-center justify-between gap-3 px-4 py-3 border-b border-base-200">
+                                            @csrf
+                                            <input type="hidden" name="origin" value="{{ $originRoute }}">
+                                            <label for="mode-switch-toggle"
+                                                   class="text-sm font-medium cursor-pointer select-none"
+                                                   title="{{ __('Modus wechseln') }}">
+                                                {{ __('Legacy-Modus') }}
+                                            </label>
+                                            <button type="submit" id="mode-switch-toggle" role="switch"
+                                                    aria-checked="{{ $isLegacyMode ? 'true' : 'false' }}"
+                                                    aria-label="{{ __('Legacy-Modus') }}"
+                                                    title="{{ __('Modus wechseln') }}"
+                                                    class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full
+                                                           border-2 border-transparent transition-colors duration-200 focus:outline-none focus-visible:ring-2
+                                                           focus-visible:ring-primary focus-visible:ring-offset-2
+                                                           {{ $isLegacyMode ? 'bg-primary' : 'bg-base-300' }}">
+                                                <span class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-md ring-0
+                                                             transform transition-transform duration-200
+                                                             {{ $isLegacyMode ? 'translate-x-4' : 'translate-x-0' }}"></span>
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    @if ($showOrgSwitch && ! $isLegacyMode)
+                                        {{-- Org-Switcher: nur fuer globale Admins, nur im neuen Modus sinnvoll. --}}
+                                        <form method="POST"
+                                              action="{{ route('admin.organizations.switch') }}"
+                                              id="org-switch-form"
+                                              class="px-4 py-3">
+                                            @csrf
+                                            <label for="org-switch-select"
+                                                   class="block mb-1 text-xs uppercase tracking-wider opacity-60"
+                                                   title="{{ __('Aktive Organisation') }}">
+                                                {{ __('Aktive Organisation') }}
+                                            </label>
+                                            <select name="organization_id"
+                                                    id="org-switch-select"
+                                                    class="select select-bordered select-sm w-full"
+                                                    onchange="this.form.submit()"
+                                                    aria-label="{{ __('Aktive Organisation waehlen') }}"
+                                                    title="{{ __('Aktive Organisation waehlen') }}">
+                                                @foreach ($_orgList as $_orgItem)
+                                                    <option value="{{ $_orgItem->id }}"
+                                                            {{ $_activeOrgId === (int) $_orgItem->id ? 'selected' : '' }}>
+                                                        {{ $_orgItem->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </form>
+                                    @endif
+                                </div>
                             </div>
-                            @if ($showModeSwitch)
-                                {{-- Legacy-Toggle-Switch (nur sichtbar wenn der User Zugriff auf BEIDE Bereiche hat) --}}
-                                <form method="POST"
-                                      action="{{ route('mode.switch', $isLegacyMode ? 'new' : 'legacy') }}"
-                                      id="mode-switch-form"
-                                      class="flex items-center gap-1.5">
-                                    @csrf
-                                    <input type="hidden" name="origin" value="{{ $originRoute }}">
-                                    <label for="mode-switch-toggle"
-                                           class="text-[0.65rem] font-semibold uppercase tracking-widest cursor-pointer select-none
-                                                  {{ $isLegacyMode ? 'text-base-content/70' : 'text-base-content/40' }}"
-                                           title="{{ __('Modus wechseln') }}">
-                                        Legacy
-                                    </label>
-                                    <button type="submit" id="mode-switch-toggle" role="switch"
-                                            aria-checked="{{ $isLegacyMode ? 'true' : 'false' }}"
-                                            aria-label="{{ __('Legacy-Modus') }}"
-                                            title="{{ __('Modus wechseln') }}"
-                                            class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full
-                                                   border-2 border-transparent transition-colors duration-200 focus:outline-none focus-visible:ring-2
-                                                   focus-visible:ring-primary focus-visible:ring-offset-2
-                                                   {{ $isLegacyMode ? 'bg-primary' : 'bg-base-300' }}">
-                                        <span class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-md ring-0
-                                                     transform transition-transform duration-200
-                                                     {{ $isLegacyMode ? 'translate-x-4' : 'translate-x-0' }}"></span>
-                                    </button>
-                                </form>
-                            @endif
-                            @if ($showModeSwitch && $showOrgSwitch && ! $isLegacyMode)
-                                {{-- Visueller Trenner zwischen Mode- und Org-Switch --}}
-                                <span class="hidden sm:block h-5 w-px bg-base-300" aria-hidden="true"></span>
-                            @endif
-                            @if ($showOrgSwitch && ! $isLegacyMode)
-                                {{-- Org-Switcher: nur fuer globale Admins, nur im neuen Modus sinnvoll. --}}
-                                <form method="POST"
-                                      action="{{ route('admin.organizations.switch') }}"
-                                      id="org-switch-form"
-                                      class="flex items-center gap-1.5">
-                                    @csrf
-                                    <label for="org-switch-select"
-                                           class="text-[0.65rem] font-semibold uppercase tracking-widest text-base-content/60 select-none"
-                                           title="{{ __('Aktive Organisation') }}">
-                                        {{ __('Org') }}
-                                    </label>
-                                    <select name="organization_id"
-                                            id="org-switch-select"
-                                            class="select select-bordered select-xs max-w-40"
-                                            onchange="this.form.submit()"
-                                            aria-label="{{ __('Aktive Organisation waehlen') }}"
-                                            title="{{ __('Aktive Organisation waehlen') }}">
-                                        @foreach ($_orgList as $_orgItem)
-                                            <option value="{{ $_orgItem->id }}"
-                                                    {{ $_activeOrgId === (int) $_orgItem->id ? 'selected' : '' }}>
-                                                {{ $_orgItem->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </form>
-                            @endif
                             <div class="dropdown dropdown-end">
                                 <label tabindex="0"
                                        class="btn btn-sm gap-1.5 {{ $isUserActive ? 'btn-primary' : 'btn-ghost' }}"

@@ -17,11 +17,20 @@ export default defineConfig({
         tailwindcss(),
     ],
     server: {
-        host: "127.0.0.1",
+        // 0.0.0.0 lässt Vite auf allen Interfaces lauschen, damit auch
+        // Windows-Browser auf WSL2 die Assets (Fonts, Symbols, woff2)
+        // unter http://localhost:5173 erreichen können. Vorher band 127.0.0.1
+        // nur auf das WSL2-interne Loopback — Fonts schlugen dann silent
+        // fehl (Browser zeigte Times als Fallback, Material-Symbol-Ligatures
+        // blieben als Text sichtbar).
+        host: "0.0.0.0",
         port: 5173,
         strictPort: true,
+        cors: true,
         hmr: {
-            host: "127.0.0.1",
+            // Aus Browser-Sicht ist der HMR-Endpoint via localhost erreichbar
+            // (sowohl direkt in Linux als auch über WSL2-Localhost-Forwarding).
+            host: "localhost",
             port: 5173,
         },
         watch: {

@@ -12,16 +12,25 @@
 
 @section('content')
 <x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar>
-            <x-slot:actions>
-                <x-icon-btn icon="download" size="sm"
-                            :href="route('customers.export', array_filter(['status' => $status, 'q' => $search]))"
-                            show-label>{{ __('CSV-Export') }}</x-icon-btn>
-                @if (auth()->user()?->canManageBilling())
-                    <x-icon-btn icon="upload" size="sm"
-                                :href="route('customers.import.form')"
-                                show-label>{{ __('CSV-Import') }}</x-icon-btn>
+    {{-- Toolbar (Aktionen) und Filter-Bar (Suche) in einem gemeinsamen
+         Container: spart einen separaten Block über der Filter-Zeile.
+         Die Aktions-Buttons kommen über den extra-Slot der filter-bar in
+         die gleiche Zeile wie das Suchfeld und die Filter-Buttons. --}}
+    <x-filter-bar :action="route('customers.index')" :reset="$search !== '' ? route('customers.index', ['status' => $status]) : null">
+        <input type="hidden" name="status" value="{{ $status }}">
+        <x-filter-field :label="__('Suche')" for="cust-q" class="flex-1 min-w-60">
+            <input id="cust-q" type="text" name="q" value="{{ $search }}" placeholder="{{ __('Suche…') }}"
+                   class="input input-sm input-bordered">
+        </x-filter-field>
+
+        <x-slot:extra>
+            <x-icon-btn icon="download" size="sm"
+                        :href="route('customers.export', array_filter(['status' => $status, 'q' => $search]))"
+                        show-label>{{ __('CSV-Export') }}</x-icon-btn>
+            @if (auth()->user()?->canManageBilling())
+                <x-icon-btn icon="upload" size="sm"
+                            :href="route('customers.import.form')"
+                            show-label>{{ __('CSV-Import') }}</x-icon-btn>
                 <form method="POST" action="{{ route('customers.lexoffice.push-all') }}"
                       data-confirm-dialog
                       data-confirm-message="{{ __('Alle nicht synchronisierten Kunden zu Lexoffice übertragen?') }}"
@@ -39,16 +48,7 @@
                             :href="route('customers.create')"
                             show-label>{{ __('Kunde') }}</x-icon-btn>
             @endcan
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
-
-    <x-filter-bar :action="route('customers.index')" :reset="$search !== '' ? route('customers.index', ['status' => $status]) : null">
-        <input type="hidden" name="status" value="{{ $status }}">
-        <x-filter-field :label="__('Suche')" for="cust-q" class="flex-1 min-w-60">
-            <input id="cust-q" type="text" name="q" value="{{ $search }}" placeholder="{{ __('Suche…') }}"
-                   class="input input-sm input-bordered">
-        </x-filter-field>
+        </x-slot:extra>
     </x-filter-bar>
 
     {{-- Tabs: Status --}}

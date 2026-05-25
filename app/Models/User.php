@@ -88,6 +88,14 @@ class User extends Authenticatable {
     }
 
     /**
+     * Darf Gleitzeit-Konten anderer Mitarbeiter einsehen (Admin + Buchhaltung).
+     * Mitarbeiter ohne dieses Recht sehen ausschließlich ihre eigenen Zeiten.
+     */
+    public function canViewOthersFlex(): bool {
+        return $this->isAdmin() || $this->hasRole(UserRole::Buchhaltung->value);
+    }
+
+    /**
      * Existiert dieser User im Legacy-System? Kein Live-DB-Check; reines
      * Flag auf Basis der bereits aufgelösten legacy_user_id.
      */

@@ -51,8 +51,13 @@ class SecurityHeaders {
             // Inline-Scripts in Auth-/Legacy-Views vorhanden; bis Refactor kompatibel halten.
             "script-src 'self' 'unsafe-inline' 'unsafe-eval'" . $viteDev,
             "img-src 'self' data: blob:",
-            // Webfonts werden lokal aus /build/assets/ geladen (siehe @fontsource-Imports in resources/css/app.css).
-            "font-src 'self' data:",
+            // Webfonts werden im Production-Build aus /build/assets/ geladen.
+            // Im Dev-Modus liefert Vite die Fonts unter $viteDev aus
+            // (node_modules/@fontsource/… und node_modules/material-symbols/…),
+            // daher muss die gleiche Origin auch hier zugelassen sein, sonst
+            // blockiert der Browser die woff2-Requests still und fällt auf
+            // Times / unrenderte Material-Symbol-Ligaturen zurück.
+            "font-src 'self' data:" . $viteDev,
             "connect-src 'self'" . $viteDev,
             "media-src 'self' blob:",
             "object-src 'none'",

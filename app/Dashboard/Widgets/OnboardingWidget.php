@@ -17,7 +17,8 @@ use App\Services\Dashboard\DashboardService;
 use Illuminate\Contracts\View\View;
 
 class OnboardingWidget extends Widget {
-    public function __construct(private readonly DashboardService $service) {}
+    public function __construct(private readonly DashboardService $service) {
+    }
 
     public function key(): string {
         return 'onboarding';

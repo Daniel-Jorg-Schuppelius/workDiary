@@ -53,7 +53,8 @@ class WidgetRegistryTest extends TestCase {
 
     private function makeWidget(string $key, ?string $ability): Widget {
         return new class($key, $ability) extends Widget {
-            public function __construct(private readonly string $widgetKey, private readonly ?string $ability) {}
+            public function __construct(private readonly string $widgetKey, private readonly ?string $ability) {
+            }
 
             public function key(): string {
                 return $this->widgetKey;

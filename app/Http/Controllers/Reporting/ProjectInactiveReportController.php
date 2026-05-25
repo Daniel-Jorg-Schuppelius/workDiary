@@ -67,7 +67,7 @@ class ProjectInactiveReportController extends Controller {
 
         /** @var array<int> $ids */
         $ids = (array) $request->input('project_ids', []);
-        $ids = array_values(array_filter(array_map('intval', $ids), static fn (int $id): bool => $id > 0));
+        $ids = array_values(array_filter(array_map('intval', $ids), static fn(int $id): bool => $id > 0));
 
         if (count($ids) === 0) {
             return redirect()->route('reports.project-inactive')

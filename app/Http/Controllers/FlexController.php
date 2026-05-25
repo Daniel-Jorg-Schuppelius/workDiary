@@ -23,7 +23,8 @@ use Illuminate\View\View;
 class FlexController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function __construct(protected FlexCalculator $calc, protected WeekViewService $weekService) {}
+    public function __construct(protected FlexCalculator $calc, protected WeekViewService $weekService) {
+    }
 
     public function index(Request $request): View|RedirectResponse {
         if ($redirect = $this->migrateLegacyYearMonth($request, 'flex.index')) {
@@ -32,11 +33,11 @@ class FlexController extends Controller {
 
         /** @var User $authUser */
         $authUser = Auth::user();
-        $isAdmin = $authUser->isAdmin();
+        $canSeeOthers = $authUser->canViewOthersFlex();
 
-        // Admins dürfen via ?user=… die Gleitzeit eines anderen Users sehen.
+        // Admins/Buchhaltung dürfen via ?user=… die Gleitzeit eines anderen Users sehen.
         $targetId = (int) ($request->input('user') ?? $authUser->id);
-        $user = ($isAdmin && $targetId !== (int) $authUser->id)
+        $user = ($canSeeOthers && $targetId !== (int) $authUser->id)
             ? User::findOrFail($targetId)
             : $authUser;
 
@@ -74,17 +75,17 @@ class FlexController extends Controller {
         $year = $active['year'];
         $month = $active['month'];
 
-        // Im Admin-Modus nur Mitarbeiter der eigenen Organisation: User hat
-        // keinen globalen OrganizationScope, daher muss hier explizit gefiltert
-        // werden (sonst tauchen Legacy-/Cross-Org-Accounts auf). Zusätzlich nur
-        // User, die jemals eine Gleitzeit-Periode hatten — neue Mitarbeiter
-        // ohne Berechtigung erscheinen erst nach der ersten Eligibility.
-        $users = $isAdmin && $authUser->organization_id
+        // Im Berechtigungs-Modus (Admin/Buchhaltung) alle Mitarbeiter der eigenen
+        // Organisation auflisten: User hat keinen globalen OrganizationScope, daher
+        // muss hier explizit gefiltert werden (sonst tauchen Legacy-/Cross-Org-
+        // Accounts auf). Wir filtern hier NICHT mehr auf bestehende
+        // flexEligibilities, sonst ist die Auswahl in frischen Organisationen
+        // komplett leer und die Berechtigten können niemanden anklicken.
+        $users = $canSeeOthers && $authUser->organization_id
             ? User::query()
-                ->where('organization_id', $authUser->organization_id)
-                ->whereHas('flexEligibilities')
-                ->orderBy('name')
-                ->get()
+            ->where('organization_id', $authUser->organization_id)
+            ->orderBy('name')
+            ->get()
             : collect();
 
         return view('flex.index', [
@@ -96,7 +97,8 @@ class FlexController extends Controller {
             'months' => $months,
             'activeKey' => $activeKey,
             'summary' => $this->calc->monthlyBalance($user, $year, $month),
-            'isAdmin' => $isAdmin,
+            'isAdmin' => $canSeeOthers,
+            'canSeeOthers' => $canSeeOthers,
             'service' => $this->weekService,
         ]);
     }
@@ -104,7 +106,7 @@ class FlexController extends Controller {
     public function admin(Request $request): RedirectResponse {
         /** @var User|null $authUser */
         $authUser = Auth::user();
-        abort_unless((bool) $authUser?->isAdmin(), 403);
+        abort_unless((bool) $authUser?->canViewOthersFlex(), 403);
 
         // Admin-Ansicht ist jetzt in index() integriert (User-Tabs).
         return redirect()->route('flex.index', $request->only(['user']));

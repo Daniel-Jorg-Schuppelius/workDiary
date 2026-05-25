@@ -8,6 +8,10 @@
     /** @var \App\Models\User|null $authUser */
     /** @var \Illuminate\Support\Collection<int, \App\Models\User> $users */
     /** @var \App\Services\Calendar\WeekViewService $service */
+    // canSeeOthers ist die neue, semantisch saubere Variable (Admin + Buchhaltung).
+    // Fallback auf $isAdmin für Aufrufer (z. B. flex/admin.blade.php), die die
+    // neue Variable noch nicht setzen.
+    $canSeeOthers = $canSeeOthers ?? $isAdmin;
     $monthName = \DateTime::createFromFormat('!m', (string)$month)->format('F');
 @endphp
 @section('nav-title', __('Gleitzeit-Konto') . ' – ' . $monthName . ' ' . $year)
@@ -28,27 +32,28 @@
     };
 @endphp
 <x-page-shell>
-    @if($isAdmin && $users->isNotEmpty())
-        <div role="tablist" class="tabs tabs-box">
-            @foreach ($users as $u)
-                @php
-                    $hue = $service->userHue((int) $u->id);
-                    $isActive = (int) $user->id === (int) $u->id;
-                    $color = "hsl({$hue} 70% 45%)";
-                    $soft = "hsl({$hue} 70% 92%)";
-                    $isSelf = (int) $u->id === (int) ($authUser->id ?? 0);
-                @endphp
-                <a role="tab"
-                   href="{{ route('flex.index', $isSelf ? [] : ['user' => $u->id]) }}"
-                   class="tab gap-2 {{ $isActive ? 'tab-active' : '' }}"
-                   style="--tab-bg: {{ $soft }}; --tab-border-color: {{ $color }}; {{ $isActive ? 'color: ' . $color . ';' : '' }}">
-                    <span class="inline-block h-2.5 w-2.5 rounded-full" style="background: {{ $color }};"></span>
-                    <span>{{ $u->name }}</span>
-                    @if($isSelf)
-                        <span class="text-xs text-base-content/50">({{ __('Ich') }})</span>
-                    @endif
-                </a>
-            @endforeach
+    @if($canSeeOthers && $users->isNotEmpty())
+        @php
+            $selfId = (int) ($authUser->id ?? 0);
+        @endphp
+        <div class="flex flex-wrap items-center gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <label for="flex-user-select" class="text-sm font-medium text-base-content/70">
+                {{ __('Mitarbeiter') }}
+            </label>
+            <select id="flex-user-select"
+                    class="select select-sm select-bordered w-full sm:max-w-xs"
+                    onchange="if (this.value) window.location.href = this.value;">
+                @foreach ($users as $u)
+                    @php
+                        $isSelf = (int) $u->id === $selfId;
+                        $href = route('flex.index', $isSelf ? [] : ['user' => $u->id]);
+                        $isActive = (int) $user->id === (int) $u->id;
+                    @endphp
+                    <option value="{{ $href }}" {{ $isActive ? 'selected' : '' }}>
+                        {{ $u->name }}@if($isSelf) ({{ __('Ich') }})@endif
+                    </option>
+                @endforeach
+            </select>
         </div>
     @endif
 
@@ -58,7 +63,7 @@
             @foreach ($months as $m)
                 @php
                     $params = ['activeMonth' => $m['key']];
-                    if ($isAdmin && (int) $user->id !== (int) ($authUser->id ?? 0)) {
+                    if ($canSeeOthers && (int) $user->id !== (int) ($authUser->id ?? 0)) {
                         $params['user'] = $user->id;
                     }
                 @endphp
@@ -101,9 +106,19 @@
                     $isEmpty = $b['target'] === 0 && $b['actual'] === 0;
                     $carbonDate = \Carbon\Carbon::parse($date);
                     $isSunday = $carbonDate->isSunday();
+                    $isHoliday = (bool) ($b['is_holiday'] ?? false);
+                    $isVacation = (bool) ($b['is_vacation'] ?? false);
+                    $holidayName = $b['holiday_name'] ?? null;
                 @endphp
-                <tr class="{{ $isEmpty ? 'opacity-40' : '' }} {{ $isSunday ? 'text-error' : '' }}">
-                    <td data-sort-value="{{ $carbonDate->format('Y-m-d') }}">{{ $carbonDate->translatedFormat('D, d.m.') }}</td>
+                <tr class="{{ $isEmpty && ! $isHoliday && ! $isVacation ? 'opacity-40' : '' }} {{ $isSunday || $isHoliday ? 'text-error' : '' }}">
+                    <td data-sort-value="{{ $carbonDate->format('Y-m-d') }}">
+                        <span>{{ $carbonDate->translatedFormat('D, d.m.') }}</span>
+                        @if ($isHoliday)
+                            <span class="badge badge-xs badge-error badge-soft ml-1" title="{{ $holidayName }}">{{ __('Feiertag') }}@if ($holidayName): {{ $holidayName }}@endif</span>
+                        @elseif ($isVacation)
+                            <span class="badge badge-xs badge-info badge-soft ml-1">{{ __('Urlaub') }}</span>
+                        @endif
+                    </td>
                     <td class="text-right tabular-nums @if ($b['target'] === 0) opacity-50 @endif" data-sort-value="{{ (int) $b['target'] }}">{{ $fmtCell($b['target']) }}</td>
                     <td class="text-right tabular-nums @if ($b['actual'] === 0) opacity-50 @endif" data-sort-value="{{ (int) $b['actual'] }}">{{ $fmtCell($b['actual']) }}</td>
                     <td class="text-right tabular-nums @if ($b['balance'] === 0) opacity-50 @endif {{ $b['balance'] < 0 ? 'text-error' : '' }}" data-sort-value="{{ (int) $b['balance'] }}">{{ $fmtCell($b['balance']) }}</td>

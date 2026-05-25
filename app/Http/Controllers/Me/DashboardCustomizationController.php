@@ -38,7 +38,7 @@ class DashboardCustomizationController extends Controller {
                 'hidden' => $stored !== null ? $stored->hidden : false,
             ];
         })
-            ->sortBy(fn (array $i) => [$i['sort_order'], $i['label']])
+            ->sortBy(fn(array $i) => [$i['sort_order'], $i['label']])
             ->values()
             ->all();
 

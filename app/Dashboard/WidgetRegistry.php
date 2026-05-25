@@ -32,6 +32,6 @@ class WidgetRegistry {
 
     /** @return Collection<string, Widget> */
     public function availableFor(User $user): Collection {
-        return $this->all()->filter(fn (Widget $w) => $w->availableFor($user));
+        return $this->all()->filter(fn(Widget $w) => $w->availableFor($user));
     }
 }

@@ -6,13 +6,7 @@
 @section('content')
 <x-page-shell gap="6">
     <x-slot:toolbar>
-        <x-page-toolbar>
-            <x-slot:title>
-                <div>
-                    <h2 class="text-xl font-semibold">{{ __('Pflichtregeln') }}</h2>
-                    <p class="text-sm text-base-content/60">{{ __('Pflichtklassifikationen pro Auftragstyp für :org verwalten.', ['org' => $organization->name]) }}</p>
-                </div>
-            </x-slot:title>
+        <x-page-toolbar :subtitle="__('Pflichtklassifikationen pro Auftragstyp für :org verwalten.', ['org' => $organization->name])">
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
@@ -23,118 +17,89 @@
     </x-slot:toolbar>
 
     <x-card>
-        <form method="GET" action="{{ route('admin.classification-requirements.index') }}" class="grid grid-cols-1 md:grid-cols-10 gap-3 items-end">
-            <label class="form-control md:col-span-2">
-                <span class="label-text text-sm">{{ __('Suche') }}</span>
-                <input type="text"
-                       name="q"
-                       value="{{ $activeFilters['q'] ?? '' }}"
-                       class="input input-bordered w-full"
-                      placeholder="{{ __('Auftragstyp, Domain, Hinweis oder Bedingung') }}" />
-            </label>
+        <form method="GET" action="{{ route('admin.classification-requirements.index') }}"
+              class="flex flex-nowrap items-center gap-2 overflow-x-auto">
+            <input type="text"
+                   name="q"
+                   value="{{ $activeFilters['q'] ?? '' }}"
+                   class="input input-sm input-bordered w-48 shrink-0"
+                   placeholder="{{ __('Suche') }}"
+                   aria-label="{{ __('Suche') }}" />
 
-            <label class="form-control">
-                <span class="label-text text-sm">{{ __('Pflicht-Domain') }}</span>
-                <select name="domain" class="select select-bordered w-full">
-                    <option value="all" @selected(($activeFilters['domain'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
-                    @foreach ($domainLabels as $domainCode => $domainLabel)
-                        @continue($domainCode === \App\Enums\Classification\ClassificationDomain::EntryType->value)
-                        <option value="{{ $domainCode }}" @selected(($activeFilters['domain'] ?? 'all') === $domainCode)>{{ $domainLabel }}</option>
-                    @endforeach
-                </select>
-            </label>
+            <select name="domain" class="select select-sm select-bordered w-32 shrink-0" aria-label="{{ __('Pflicht-Domain') }}" title="{{ __('Pflicht-Domain') }}">
+                <option value="all" @selected(($activeFilters['domain'] ?? 'all') === 'all')>{{ __('Domain') }}</option>
+                @foreach ($domainLabels as $domainCode => $domainLabel)
+                    @continue($domainCode === \App\Enums\Classification\ClassificationDomain::EntryType->value)
+                    <option value="{{ $domainCode }}" @selected(($activeFilters['domain'] ?? 'all') === $domainCode)>{{ $domainLabel }}</option>
+                @endforeach
+            </select>
 
-            <label class="form-control">
-                <span class="label-text text-sm">{{ __('Phase') }}</span>
-                <select name="phase" class="select select-bordered w-full">
-                    <option value="all" @selected(($activeFilters['phase'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
-                    @foreach ($phaseLabels as $phaseCode => $phaseLabel)
-                        <option value="{{ $phaseCode }}" @selected(($activeFilters['phase'] ?? 'all') === $phaseCode)>{{ $phaseLabel }}</option>
-                    @endforeach
-                </select>
-            </label>
+            <select name="phase" class="select select-sm select-bordered w-28 shrink-0" aria-label="{{ __('Phase') }}" title="{{ __('Phase') }}">
+                <option value="all" @selected(($activeFilters['phase'] ?? 'all') === 'all')>{{ __('Phase') }}</option>
+                @foreach ($phaseLabels as $phaseCode => $phaseLabel)
+                    <option value="{{ $phaseCode }}" @selected(($activeFilters['phase'] ?? 'all') === $phaseCode)>{{ $phaseLabel }}</option>
+                @endforeach
+            </select>
 
-            <label class="form-control">
-                <span class="label-text text-sm">{{ __('Bedingung') }}</span>
-                <select name="condition" class="select select-bordered w-full">
-                    <option value="all" @selected(($activeFilters['condition'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
-                    @foreach ($conditionOptions as $conditionCode => $conditionLabel)
-                        <option value="{{ $conditionCode }}" @selected(($activeFilters['condition'] ?? 'all') === $conditionCode)>{{ $conditionLabel }}</option>
-                    @endforeach
-                </select>
-            </label>
+            <select name="condition" class="select select-sm select-bordered w-28 shrink-0" aria-label="{{ __('Bedingung') }}" title="{{ __('Bedingung') }}">
+                <option value="all" @selected(($activeFilters['condition'] ?? 'all') === 'all')>{{ __('Bedingung') }}</option>
+                @foreach ($conditionOptions as $conditionCode => $conditionLabel)
+                    <option value="{{ $conditionCode }}" @selected(($activeFilters['condition'] ?? 'all') === $conditionCode)>{{ $conditionLabel }}</option>
+                @endforeach
+            </select>
 
-            <label class="form-control">
-                <span class="label-text text-sm">{{ __('Hinweis') }}</span>
-                <select name="note" class="select select-bordered w-full">
-                    <option value="all" @selected(($activeFilters['note'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
-                    @foreach ($noteOptions as $noteCode => $noteLabel)
-                        <option value="{{ $noteCode }}" @selected(($activeFilters['note'] ?? 'all') === $noteCode)>{{ $noteLabel }}</option>
-                    @endforeach
-                </select>
-            </label>
+            <select name="note" class="select select-sm select-bordered w-28 shrink-0" aria-label="{{ __('Hinweis') }}" title="{{ __('Hinweis') }}">
+                <option value="all" @selected(($activeFilters['note'] ?? 'all') === 'all')>{{ __('Hinweis') }}</option>
+                @foreach ($noteOptions as $noteCode => $noteLabel)
+                    <option value="{{ $noteCode }}" @selected(($activeFilters['note'] ?? 'all') === $noteCode)>{{ $noteLabel }}</option>
+                @endforeach
+            </select>
 
-            <label class="form-control">
-                <span class="label-text text-sm">{{ __('Mehrfachauswahl') }}</span>
-                <select name="allow_multi" class="select select-bordered w-full">
-                    <option value="all" @selected(($activeFilters['allow_multi'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
-                    @foreach ($allowMultiOptions as $allowMultiCode => $allowMultiLabel)
-                        <option value="{{ $allowMultiCode }}" @selected(($activeFilters['allow_multi'] ?? 'all') === $allowMultiCode)>{{ $allowMultiLabel }}</option>
-                    @endforeach
-                </select>
-            </label>
+            <select name="allow_multi" class="select select-sm select-bordered w-28 shrink-0" aria-label="{{ __('Mehrfachauswahl') }}" title="{{ __('Mehrfachauswahl') }}">
+                <option value="all" @selected(($activeFilters['allow_multi'] ?? 'all') === 'all')>{{ __('Mehrfach') }}</option>
+                @foreach ($allowMultiOptions as $allowMultiCode => $allowMultiLabel)
+                    <option value="{{ $allowMultiCode }}" @selected(($activeFilters['allow_multi'] ?? 'all') === $allowMultiCode)>{{ $allowMultiLabel }}</option>
+                @endforeach
+            </select>
 
-            <label class="form-control">
-                <span class="label-text text-sm">{{ __('Maximalanzahl') }}</span>
-                <select name="max_count" class="select select-bordered w-full">
-                    <option value="all" @selected(($activeFilters['max_count'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
-                    @foreach ($maxCountOptions as $maxCountCode => $maxCountLabel)
-                        <option value="{{ $maxCountCode }}" @selected(($activeFilters['max_count'] ?? 'all') === $maxCountCode)>{{ $maxCountLabel }}</option>
-                    @endforeach
-                </select>
-            </label>
+            <select name="max_count" class="select select-sm select-bordered w-24 shrink-0" aria-label="{{ __('Maximalanzahl') }}" title="{{ __('Maximalanzahl') }}">
+                <option value="all" @selected(($activeFilters['max_count'] ?? 'all') === 'all')>{{ __('Limit') }}</option>
+                @foreach ($maxCountOptions as $maxCountCode => $maxCountLabel)
+                    <option value="{{ $maxCountCode }}" @selected(($activeFilters['max_count'] ?? 'all') === $maxCountCode)>{{ $maxCountLabel }}</option>
+                @endforeach
+            </select>
 
-            <label class="form-control">
-                <span class="label-text text-sm">{{ __('Schweregrad') }}</span>
-                <select name="severity" class="select select-bordered w-full">
-                    <option value="all" @selected(($activeFilters['severity'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
-                    @foreach ($severityLabels as $severityCode => $severityLabel)
-                        <option value="{{ $severityCode }}" @selected(($activeFilters['severity'] ?? 'all') === $severityCode)>{{ $severityLabel }}</option>
-                    @endforeach
-                </select>
-            </label>
+            <select name="severity" class="select select-sm select-bordered w-28 shrink-0" aria-label="{{ __('Schweregrad') }}" title="{{ __('Schweregrad') }}">
+                <option value="all" @selected(($activeFilters['severity'] ?? 'all') === 'all')>{{ __('Schwere') }}</option>
+                @foreach ($severityLabels as $severityCode => $severityLabel)
+                    <option value="{{ $severityCode }}" @selected(($activeFilters['severity'] ?? 'all') === $severityCode)>{{ $severityLabel }}</option>
+                @endforeach
+            </select>
 
-            <label class="form-control">
-                <span class="label-text text-sm">{{ __('Sortierung') }}</span>
-                <select name="sort" class="select select-bordered w-full">
-                    @foreach ($sortOptions as $sortCode => $sortLabel)
-                        <option value="{{ $sortCode }}" @selected(($activeFilters['sort'] ?? 'entry_type_code') === $sortCode)>{{ $sortLabel }}</option>
-                    @endforeach
-                </select>
-            </label>
+            <select name="sort" class="select select-sm select-bordered w-32 shrink-0" aria-label="{{ __('Sortierung') }}" title="{{ __('Sortierung') }}">
+                @foreach ($sortOptions as $sortCode => $sortLabel)
+                    <option value="{{ $sortCode }}" @selected(($activeFilters['sort'] ?? 'entry_type_code') === $sortCode)>{{ $sortLabel }}</option>
+                @endforeach
+            </select>
 
-            <div class="md:col-span-10 flex gap-2 md:justify-end">
-                <button type="submit" class="btn btn-primary btn-sm">{{ __('Filtern') }}</button>
-                <a href="{{ route('admin.classification-requirements.index') }}" class="btn btn-ghost btn-sm">{{ __('Zuruecksetzen') }}</a>
+            <div class="flex gap-1 ml-auto shrink-0">
+                <button type="submit" class="btn btn-sm btn-primary">{{ __('Filtern') }}</button>
+                <a href="{{ route('admin.classification-requirements.index') }}" class="btn btn-sm btn-ghost">{{ __('Reset') }}</a>
             </div>
         </form>
     </x-card>
 
-    <x-card>
-        <div class="flex flex-wrap items-center gap-3">
-            <span class="text-sm font-medium">
-                {{ trans_choice(':count Pflichtregel angezeigt|:count Pflichtregeln angezeigt', $requirements->count(), ['count' => $requirements->count()]) }}
-            </span>
-            @if ($hasActiveFilters)
-                <div class="flex flex-wrap items-center gap-2">
-                    <span class="text-sm font-medium">{{ __('Aktive Filter') }}</span>
-                    @foreach ($activeFilterChips as $chip)
-                        <span class="badge badge-outline badge-sm">{{ $chip }}</span>
-                    @endforeach
-                </div>
-            @endif
-        </div>
-    </x-card>
+    <div class="flex flex-wrap items-center gap-3 px-1">
+        <span class="text-sm font-medium">
+            {{ trans_choice(':count Pflichtregel angezeigt|:count Pflichtregeln angezeigt', $requirements->count(), ['count' => $requirements->count()]) }}
+        </span>
+        @if ($hasActiveFilters)
+            <span class="text-sm font-medium">{{ __('Aktive Filter') }}</span>
+            @foreach ($activeFilterChips as $chip)
+                <span class="badge badge-outline badge-sm">{{ $chip }}</span>
+            @endforeach
+        @endif
+    </div>
 
     @if ($requirements->isEmpty())
         <x-card>

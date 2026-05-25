@@ -48,7 +48,7 @@ class ActivityCategorySeeder extends Seeder {
                 'billable_default' => false,
                 'counts_as_work' => true,
                 'color' => '#6b7280',
-                'icon' => 'briefcase',
+                'icon' => 'work',
                 'description' => 'Allgemeine Verwaltungs- und Büroarbeiten.',
             ],
             [
@@ -58,7 +58,7 @@ class ActivityCategorySeeder extends Seeder {
                 'billable_default' => false,
                 'counts_as_work' => true,
                 'color' => '#2563eb',
-                'icon' => 'users',
+                'icon' => 'groups',
                 'description' => 'Interne Besprechungen und Abstimmungen.',
             ],
             [
@@ -68,7 +68,7 @@ class ActivityCategorySeeder extends Seeder {
                 'billable_default' => false,
                 'counts_as_work' => true,
                 'color' => '#0ea5e9',
-                'icon' => 'academic-cap',
+                'icon' => 'school',
                 'description' => 'Eigene Weiterbildung oder Schulungen.',
             ],
             [
@@ -78,7 +78,7 @@ class ActivityCategorySeeder extends Seeder {
                 'billable_default' => false,
                 'counts_as_work' => true,
                 'color' => '#16a34a',
-                'icon' => 'cog',
+                'icon' => 'settings',
                 'description' => 'Werkzeugpflege, Lager, interne IT etc.',
             ],
             [
@@ -88,7 +88,7 @@ class ActivityCategorySeeder extends Seeder {
                 'billable_default' => false,
                 'counts_as_work' => true,
                 'color' => '#f59e0b',
-                'icon' => 'truck',
+                'icon' => 'local_shipping',
                 'description' => 'Fahrtzeiten ohne direkten Projektbezug.',
             ],
             [
@@ -98,7 +98,7 @@ class ActivityCategorySeeder extends Seeder {
                 'billable_default' => false,
                 'counts_as_work' => true,
                 'color' => '#a855f7',
-                'icon' => 'bell',
+                'icon' => 'notifications',
                 'description' => 'Rufbereitschaft / Standby ohne Einsatz.',
             ],
             [
@@ -118,7 +118,7 @@ class ActivityCategorySeeder extends Seeder {
                 'billable_default' => false,
                 'counts_as_work' => false,
                 'color' => '#ef4444',
-                'icon' => 'heart',
+                'icon' => 'sick',
                 'description' => 'Krankheit mit Lohnfortzahlung.',
             ],
         ];

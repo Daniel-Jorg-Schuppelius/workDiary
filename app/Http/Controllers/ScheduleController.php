@@ -90,30 +90,6 @@ class ScheduleController extends Controller {
     }
 
     /**
-     * Baut die Liste aller Monate, die der Zeitraum [from, to] berührt.
-     * Pro Monat: Schlüssel "Y-m", Jahr, Monat, kurzes Label ("Mai 2026").
-     *
-     * @return list<array{key:string,year:int,month:int,label:string,shortLabel:string}>
-     */
-    private function buildMonthsInRange(CarbonImmutable $from, CarbonImmutable $to): array {
-        $months = [];
-        $cursor = $from->startOfMonth();
-        $end = $to->startOfMonth();
-        while ($cursor->lte($end)) {
-            $months[] = [
-                'key' => $cursor->format('Y-m'),
-                'year' => $cursor->year,
-                'month' => $cursor->month,
-                'label' => $cursor->translatedFormat('F Y'),
-                'shortLabel' => $cursor->translatedFormat('M Y'),
-            ];
-            $cursor = $cursor->addMonth();
-        }
-
-        return $months;
-    }
-
-    /**
      * @return Collection<int, ScheduledShift>
      */
     private function loadShifts(CarbonImmutable $from, CarbonImmutable $to, int $userFilter): Collection {

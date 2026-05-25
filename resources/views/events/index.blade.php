@@ -14,22 +14,56 @@
 
 @section('content')
     <x-page-shell gap="6">
-        <div class="grid grid-cols-1 gap-3 flex-none sm:grid-cols-2 lg:grid-cols-4">
-            <x-kpi-tile :label="__('Anstehend')"         :value="$counts['upcoming']  ?? 0" tone="primary" />
-            <x-kpi-tile :label="__('Heute')"             :value="$counts['today']     ?? 0" tone="info" />
-            <x-kpi-tile :label="__('Pflichtschulungen')" :value="$counts['mandatory'] ?? 0" tone="warning" />
-            <x-kpi-tile :label="__('Gesamt')"            :value="$counts['total']     ?? 0" tone="neutral" />
-        </div>
-
         <x-filter-bar :action="route('events.index')" :reset="route('events.index')">
-            <x-filter-field name="q" :label="__('Suche')" type="search" :value="request('q')" placeholder="{{ __('Titel, Thema …') }}" />
-            <x-filter-field name="event_type"  :label="__('Typ')"          type="select" :value="request('event_type')"  :options="EventType::options()"       placeholder="{{ __('Alle') }}" onchange="this.form.submit()" />
-            <x-filter-field name="status"      :label="__('Status')"       type="select" :value="request('status')"      :options="EventStatus::options()"     placeholder="{{ __('Alle') }}" onchange="this.form.submit()" />
-            <x-filter-field name="visibility"  :label="__('Sichtbarkeit')" type="select" :value="request('visibility')"  :options="EventVisibility::options()" placeholder="{{ __('Alle') }}" onchange="this.form.submit()" />
-            <x-filter-field name="category_id" :label="__('Kategorie')"    type="select" :value="request('category_id')" :options="$categories->pluck('name', 'id')->all()" placeholder="{{ __('Alle') }}" onchange="this.form.submit()" />
-            <x-filter-field name="from" :label="__('Von')" type="date" :value="request('from')" />
-            <x-filter-field name="to"   :label="__('Bis')" type="date" :value="request('to')" />
-            <x-filter-field name="only_mandatory" :label="__('Nur Pflicht')" type="checkbox" :value="request('only_mandatory')" onchange="this.form.submit()" />
+            <x-filter-field :label="__('Suche')" for="ev-q" class="flex-1 min-w-60">
+                <input id="ev-q" type="search" name="q" value="{{ request('q') }}"
+                       placeholder="{{ __('Titel, Thema …') }}"
+                       class="input input-sm input-bordered w-full">
+            </x-filter-field>
+            <x-filter-field :label="__('Typ')" for="ev-event-type" class="min-w-40">
+                <select id="ev-event-type" name="event_type" class="select select-sm select-bordered w-full"
+                        onchange="this.form.submit()">
+                    <option value="">{{ __('Alle') }}</option>
+                    @foreach (EventType::options() as $value => $label)
+                        <option value="{{ $value }}" @selected(request('event_type') === (string) $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+            <x-filter-field :label="__('Status')" for="ev-status" class="min-w-40">
+                <select id="ev-status" name="status" class="select select-sm select-bordered w-full"
+                        onchange="this.form.submit()">
+                    <option value="">{{ __('Alle') }}</option>
+                    @foreach (EventStatus::options() as $value => $label)
+                        <option value="{{ $value }}" @selected(request('status') === (string) $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+            <x-filter-field :label="__('Sichtbarkeit')" for="ev-visibility" class="min-w-40">
+                <select id="ev-visibility" name="visibility" class="select select-sm select-bordered w-full"
+                        onchange="this.form.submit()">
+                    <option value="">{{ __('Alle') }}</option>
+                    @foreach (EventVisibility::options() as $value => $label)
+                        <option value="{{ $value }}" @selected(request('visibility') === (string) $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+            <x-filter-field :label="__('Kategorie')" for="ev-category" class="min-w-44">
+                <select id="ev-category" name="category_id" class="select select-sm select-bordered w-full"
+                        onchange="this.form.submit()">
+                    <option value="">{{ __('Alle') }}</option>
+                    @foreach ($categories as $category)
+                        <option value="{{ $category->id }}" @selected((string) request('category_id') === (string) $category->id)>{{ $category->name }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+
+            <label class="flex items-center gap-2 pb-2">
+                <input type="checkbox" id="ev-only-mandatory" name="only_mandatory" value="1"
+                       @checked(request('only_mandatory'))
+                       class="checkbox checkbox-primary checkbox-sm"
+                       onchange="this.form.submit()">
+                <span class="text-sm text-base-content/75">{{ __('Nur Pflicht') }}</span>
+            </label>
 
             <x-slot:extra>
                 <x-icon-btn icon="calendar_month" tone="ghost" size="sm" :href="route('events.calendar')" show-label>
@@ -42,6 +76,13 @@
                 @endcan
             </x-slot:extra>
         </x-filter-bar>
+
+        <div class="grid grid-cols-1 gap-3 flex-none sm:grid-cols-2 lg:grid-cols-4">
+            <x-kpi-tile :label="__('Anstehend')"         :value="$counts['upcoming']  ?? 0" tone="primary" />
+            <x-kpi-tile :label="__('Heute')"             :value="$counts['today']     ?? 0" tone="info" />
+            <x-kpi-tile :label="__('Pflichtschulungen')" :value="$counts['mandatory'] ?? 0" tone="warning" />
+            <x-kpi-tile :label="__('Gesamt')"            :value="$counts['total']     ?? 0" tone="neutral" />
+        </div>
 
         <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm">
             <thead class="bg-base-200">
@@ -64,11 +105,11 @@
                             <a href="{{ route('events.show', $event) }}" class="link link-hover">
                                 {{ $event->title }}
                             </a>
-                            @if ($event->is_mandatory)
-                                <span class="badge badge-warning badge-sm ml-1">{{ __('Pflicht') }}</span>
-                            @endif
                             @if ($event->topic)
                                 <div class="text-xs opacity-70">{{ $event->topic }}</div>
+                            @endif
+                            @if ($event->is_mandatory)
+                                <span class="badge badge-warning badge-sm ml-1">{{ __('Pflicht') }}</span>
                             @endif
                         </td>
                         <td>{{ $event->event_type?->label() }}</td>

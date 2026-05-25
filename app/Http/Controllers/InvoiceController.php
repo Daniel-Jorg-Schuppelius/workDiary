@@ -116,9 +116,9 @@ class InvoiceController extends Controller {
         $template = $invoice->customer?->invoice_template_id
             ? \App\Models\InvoiceTemplate::find($invoice->customer->invoice_template_id)
             : \App\Models\InvoiceTemplate::query()
-                ->where('organization_id', $invoice->organization_id)
-                ->where('is_default', true)
-                ->first();
+            ->where('organization_id', $invoice->organization_id)
+            ->where('is_default', true)
+            ->first();
 
         return Pdf::loadView('invoices.pdf', ['invoice' => $invoice, 'template' => $template])
             ->setPaper('a4')

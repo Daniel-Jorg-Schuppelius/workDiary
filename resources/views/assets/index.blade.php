@@ -14,118 +14,104 @@
 
 @section('content')
     <x-page-shell>
-        <x-page-toolbar :title="__('Objekte & Assets')" :subtitle="__('Stammdaten, Status und Zuordnung im Überblick.')">
-            <x-slot:actions>
+        {{-- Toolbar (Aktionen) und Filter-Form sind hier in einer gemeinsamen
+             filter-bar zusammengefasst — der bisherige x-page-toolbar-Block
+             entfällt, die "Asset"-Schaltfläche sitzt im extra-Slot rechts
+             neben Suche, Typ- und Status-Filter. --}}
+        <x-filter-bar :action="route('assets.index')"
+                      :reset="$hasActiveFilters ? route('assets.index') : null">
+            <x-filter-field :label="__('Suche')" for="asset-q" class="flex-1 min-w-60">
+                <input id="asset-q" type="search" name="q"
+                       value="{{ $activeFilters['q'] }}"
+                       placeholder="{{ __('Asset-Nr., Name, Seriennummer, Standort') }}"
+                       class="input input-sm input-bordered w-full">
+            </x-filter-field>
+
+            <x-filter-field :label="__('Typ')" for="asset-class" class="min-w-40">
+                <select id="asset-class" name="class" class="select select-sm select-bordered w-full">
+                    <option value="all">{{ __('Alle') }}</option>
+                    @foreach ($classOptions as $value => $label)
+                        <option value="{{ $value }}" @selected($activeFilters['class'] === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+
+            <x-filter-field :label="__('Status')" for="asset-status" class="min-w-40">
+                <select id="asset-status" name="status" class="select select-sm select-bordered w-full">
+                    <option value="all">{{ __('Alle') }}</option>
+                    @foreach ($statusOptions as $value => $label)
+                        <option value="{{ $value }}" @selected($activeFilters['status'] === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+
+            <x-slot:extra>
                 @if ($canCreate)
                     <x-icon-btn icon="add" tone="primary" size="sm"
                                 data-entry-modal-trigger
                                 :href="route('assets.create')"
                                 show-label>{{ __('Asset') }}</x-icon-btn>
                 @endif
-            </x-slot:actions>
-        </x-page-toolbar>
+            </x-slot:extra>
+        </x-filter-bar>
 
-        <x-card>
-            <form method="GET" action="{{ route('assets.index') }}" class="grid gap-3 md:grid-cols-12 md:items-end">
-                <label class="form-control md:col-span-6">
-                    <span class="label-text">{{ __('Suche') }}</span>
-                    <input
-                        type="search"
-                        name="q"
-                        value="{{ $activeFilters['q'] }}"
-                        placeholder="{{ __('Asset-Nr., Name, Seriennummer, Standort') }}"
-                        class="input input-bordered w-full"
-                    >
-                </label>
-
-                <label class="form-control md:col-span-3">
-                    <span class="label-text">{{ __('Typ') }}</span>
-                    <select name="class" class="select select-bordered w-full">
-                        <option value="all">{{ __('Alle') }}</option>
-                        @foreach ($classOptions as $value => $label)
-                            <option value="{{ $value }}" @selected($activeFilters['class'] === $value)>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </label>
-
-                <label class="form-control md:col-span-3">
-                    <span class="label-text">{{ __('Status') }}</span>
-                    <select name="status" class="select select-bordered w-full">
-                        <option value="all">{{ __('Alle') }}</option>
-                        @foreach ($statusOptions as $value => $label)
-                            <option value="{{ $value }}" @selected($activeFilters['status'] === $value)>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </label>
-
-                <div class="md:col-span-12 flex flex-wrap items-center gap-2">
-                    <button type="submit" class="btn btn-primary btn-sm">{{ __('Filtern') }}</button>
-                    @if ($hasActiveFilters)
-                        <a href="{{ route('assets.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurücksetzen') }}</a>
-                    @endif
-                    <span class="text-sm text-base-content/70">{{ trans_choice(':count Ergebnis|:count Ergebnisse', $assets->total(), ['count' => $assets->total()]) }}</span>
-                </div>
-            </form>
-
-            @if ($hasActiveFilters)
-                <div class="mt-3 flex flex-wrap gap-2">
-                    @foreach ($activeFilterChips as $chip)
-                        <span class="badge badge-outline">{{ $chip }}</span>
-                    @endforeach
-                </div>
-            @endif
-        </x-card>
-
-        <x-card>
-            <div class="overflow-x-auto">
-                <table class="table table-zebra">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Asset-Nr.') }}</th>
-                            <th>{{ __('Typ') }}</th>
-                            <th>{{ __('Name') }}</th>
-                            <th>{{ __('Seriennummer') }}</th>
-                            <th>{{ __('Standort') }}</th>
-                            <th>{{ __('Kunde') }}</th>
-                            <th>{{ __('Status') }}</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($assets as $asset)
-                            @php
-                                $assetClassValue = $asset->asset_class instanceof \BackedEnum ? $asset->asset_class->value : (string) $asset->asset_class;
-                                $assetStatusValue = $asset->status instanceof \BackedEnum ? $asset->status->value : (string) $asset->status;
-                                $isBlocked = $assetStatusValue === \App\Enums\Asset\AssetStatus::Blocked->value;
-                            @endphp
-                            <tr>
-                                <td class="font-mono text-xs">
-                                    <a href="{{ route('assets.show', $asset) }}" class="link link-hover">{{ $asset->asset_no }}</a>
-                                </td>
-                                <td>{{ $classOptions[$assetClassValue] ?? $assetClassValue }}</td>
-                                <td class="font-medium">
-                                    <a href="{{ route('assets.show', $asset) }}" class="link link-hover">{{ $asset->name }}</a>
-                                </td>
-                                <td>{{ $asset->serial_no ?: '—' }}</td>
-                                <td>{{ $asset->location_text ?: '—' }}</td>
-                                <td>{{ $asset->customer?->name ?: '—' }}</td>
-                                <td>
-                                    <span class="badge {{ $isBlocked ? 'badge-error' : 'badge-outline' }}">{{ $statusOptions[$assetStatusValue] ?? $assetStatusValue }}</span>
-                                </td>
-                                <td class="text-right">
-                                    <x-icon-btn icon="open_in_new" :href="route('assets.show', $asset)" :label="__('Details')" />
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="text-center text-base-content/70">{{ __('Keine Assets gefunden.') }}</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+        @if ($hasActiveFilters || $assets->total() > 0)
+            <div class="flex flex-wrap items-center gap-2 px-1 text-sm text-base-content/70">
+                <span>{{ trans_choice(':count Ergebnis|:count Ergebnisse', $assets->total(), ['count' => $assets->total()]) }}</span>
+                @foreach ($activeFilterChips as $chip)
+                    <span class="badge badge-outline badge-sm">{{ $chip }}</span>
+                @endforeach
             </div>
+        @endif
 
-            <div class="mt-4">{{ $assets->links() }}</div>
-        </x-card>
+        <x-table table-sort="client">
+            <x-slot:head>
+                <tr>
+                    <x-table.th sort type="string">{{ __('Asset-Nr.') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Typ') }}</x-table.th>
+                    <x-table.th sort type="string" default>{{ __('Name') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Seriennummer') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Standort') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Kunde') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
+                    <th></th>
+                </tr>
+            </x-slot:head>
+            @forelse ($assets as $asset)
+                @php
+                    $assetClassValue = $asset->asset_class instanceof \BackedEnum ? $asset->asset_class->value : (string) $asset->asset_class;
+                    $assetStatusValue = $asset->status instanceof \BackedEnum ? $asset->status->value : (string) $asset->status;
+                    $isBlocked = $assetStatusValue === \App\Enums\Asset\AssetStatus::Blocked->value;
+                @endphp
+                <tr class="hover">
+                    <td class="font-mono text-xs">
+                        <a href="{{ route('assets.show', $asset) }}" class="link link-hover">{{ $asset->asset_no }}</a>
+                    </td>
+                    <td class="text-base-content/70">{{ $classOptions[$assetClassValue] ?? $assetClassValue }}</td>
+                    <td>
+                        <a href="{{ route('assets.show', $asset) }}" class="link link-hover font-medium">{{ $asset->name }}</a>
+                    </td>
+                    <td class="text-base-content/70">{{ $asset->serial_no ?: '—' }}</td>
+                    <td class="text-base-content/70">{{ $asset->location_text ?: '—' }}</td>
+                    <td class="text-base-content/70">{{ $asset->customer?->name ?: '—' }}</td>
+                    <td>
+                        <span class="badge badge-sm {{ $isBlocked ? 'badge-error' : 'badge-outline' }}">{{ $statusOptions[$assetStatusValue] ?? $assetStatusValue }}</span>
+                    </td>
+                    <td class="text-right">
+                        <x-icon-btn icon="open_in_new" :href="route('assets.show', $asset)" :label="__('Details')" />
+                    </td>
+                </tr>
+            @empty
+                <x-table.empty :colspan="8"
+                               :title="__('Keine Assets gefunden')"
+                               :message="$hasActiveFilters ? __('Für die aktuellen Filter wurden keine Assets gefunden.') : __('Es sind noch keine Assets erfasst.')" />
+            @endforelse
+        </x-table>
+
+        @if ($assets->hasPages())
+            <div class="px-1">
+                {{ $assets->links() }}
+            </div>
+        @endif
     </x-page-shell>
 @endsection

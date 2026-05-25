@@ -20,10 +20,42 @@
     };
     $balance = $attendanceMinutes - $targetMinutes;
     $progress = $targetMinutes > 0 ? min(100, (int) round($attendanceMinutes / $targetMinutes * 100)) : 0;
+
+    // Live-Ticker (Folgeproblem: ohne JS bleiben Anwesenheit/Saldo/Progress
+    // bei laufender Stempelung auf dem Render-Zeitpunkt eingefroren).
+    $isLive = $current !== null && $current->started_at !== null;
+    $renderedAt = now()->toIso8601String();
+    $currentStartedAt = $isLive ? $current->started_at->toIso8601String() : null;
 @endphp
 
 @section('content')
-    <x-page-shell gap="6">
+    <x-page-shell gap="6"
+        x-data="{
+            isLive: {{ $isLive ? 'true' : 'false' }},
+            baseAttendance: {{ $attendanceMinutes }},
+            entriesMin: {{ $entriesMinutes }},
+            target: {{ $targetMinutes }},
+            renderedAt: new Date('{{ $renderedAt }}').getTime(),
+            now: Date.now(),
+            get extraMinutes() {
+                if (! this.isLive) return 0;
+                return Math.max(0, Math.floor((this.now - this.renderedAt) / 60000));
+            },
+            get attendanceMin() { return this.baseAttendance + this.extraMinutes; },
+            get untrackedMin() { return Math.max(0, this.attendanceMin - this.entriesMin); },
+            get balance() { return this.attendanceMin - this.target; },
+            get progress() {
+                return this.target > 0
+                    ? Math.min(100, Math.round(this.attendanceMin / this.target * 100))
+                    : 0;
+            },
+            fmt(m) {
+                var sign = m < 0 ? '-' : '';
+                var abs = Math.abs(m);
+                return sign + Math.floor(abs / 60) + ':' + String(abs % 60).padStart(2, '0') + ' h';
+            },
+        }"
+        x-init="if (isLive) { setInterval(() => { now = Date.now(); }, 1000); }">
         <x-slot:toolbar>
             <x-page-toolbar :subtitle="$day->translatedFormat('l, d.m.Y')">
                 <x-slot:actions>
@@ -48,18 +80,44 @@
         </x-slot:toolbar>
 
         <section class="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <x-kpi-tile :label="__('Soll')"        :value="$fmt($targetMinutes)" />
-            <x-kpi-tile :label="__('Anwesenheit')" :value="$fmt($attendanceMinutes)" tone="success" />
-            <x-kpi-tile :label="__('Erfasst')"     :value="$fmt($entriesMinutes)"    tone="info" />
-            <x-kpi-tile :label="__('Unverteilt')"  :value="$fmt($untrackedMinutes)"  :tone="$untrackedMinutes > 0 ? 'warning' : 'neutral'" />
+            <x-kpi-tile :label="__('Soll')" :value="$fmt($targetMinutes)" />
+
+            {{-- Anwesenheit-Tile: tickert live mit dem Header-Stempel-Timer mit. --}}
+            <div class="rounded-box border border-success/40 bg-base-100 px-4 py-3 shadow-xs">
+                <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ __('Anwesenheit') }}</p>
+                <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-success"
+                   x-text="fmt(attendanceMin)">{{ $fmt($attendanceMinutes) }}</p>
+            </div>
+
+            <x-kpi-tile :label="__('Erfasst')" :value="$fmt($entriesMinutes)" tone="info" />
+
+            {{-- Unverteilt-Tile: leitet sich aus Anwesenheit ab, also auch live. --}}
+            <div class="rounded-box border bg-base-100 px-4 py-3 shadow-xs"
+                 :class="untrackedMin > 0 ? 'border-warning/40' : 'border-base-300'">
+                <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ __('Unverteilt') }}</p>
+                <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold"
+                   :class="untrackedMin > 0 ? 'text-warning' : 'text-base-content'"
+                   x-text="fmt(untrackedMin)">{{ $fmt($untrackedMinutes) }}</p>
+            </div>
         </section>
 
         <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
             <div class="flex flex-wrap items-center justify-between gap-2">
                 <h2 class="font-['Space_Grotesk'] text-sm font-semibold uppercase tracking-widest text-base-content/60">{{ __('Tagesfortschritt') }}</h2>
-                <span class="text-xs text-base-content/60">{{ $fmt($attendanceMinutes) }} / {{ $fmt($targetMinutes) }} ({{ $progress }}%) · {{ __('Saldo') }}: <strong class="{{ $balance >= 0 ? 'text-success' : 'text-error' }}">{{ $fmt($balance) }}</strong></span>
+                <span class="text-xs text-base-content/60">
+                    <span x-text="fmt(attendanceMin)">{{ $fmt($attendanceMinutes) }}</span>
+                    / {{ $fmt($targetMinutes) }}
+                    (<span x-text="progress">{{ $progress }}</span>%)
+                    · {{ __('Saldo') }}:
+                    <strong :class="balance >= 0 ? 'text-success' : 'text-error'"
+                            x-text="fmt(balance)">{{ $fmt($balance) }}</strong>
+                </span>
             </div>
-            <progress class="progress {{ $balance >= 0 ? 'progress-success' : 'progress-warning' }} mt-2 w-full" value="{{ $progress }}" max="100"></progress>
+            <progress class="progress mt-2 w-full"
+                      :class="balance >= 0 ? 'progress-success' : 'progress-warning'"
+                      :value="progress"
+                      max="100"
+                      value="{{ $progress }}"></progress>
         </section>
 
         <div class="grid gap-4 lg:grid-cols-3">

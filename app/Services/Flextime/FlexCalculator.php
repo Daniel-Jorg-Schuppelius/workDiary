@@ -12,11 +12,13 @@ namespace App\Services\Flextime;
 
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Enums\Vacation\VacationStatus;
-use App\Models\{FlexBalance, Holiday, TimeEntry, User, Vacation};
+use App\Models\{Attendance, FlexBalance, TimeEntry, User, Vacation};
+use App\Services\HolidayService;
 use Carbon\{CarbonImmutable, CarbonInterface};
 
 class FlexCalculator {
-    public function __construct(protected WorkScheduleResolver $resolver) {}
+    public function __construct(protected WorkScheduleResolver $resolver, protected HolidayService $holidays) {
+    }
 
     /**
      * Tagessoll in Minuten (0 wenn Feiertag, Wochenende oder Urlaub).
@@ -34,12 +36,54 @@ class FlexCalculator {
     }
 
     public function actualMinutes(User $user, CarbonInterface $day): int {
-        return (int) TimeEntry::query()
+        // 1. Stempelzeiten (Attendance) sind die primäre Quelle für Ist-Arbeitszeit.
+        //    Geschlossene Stempelungen liefern bereits eine pausenbereinigte
+        //    `duration_minutes`. Offene Stempelungen (z. B. heute laufend)
+        //    werden live bis jetzt hochgerechnet.
+        $attendanceMinutes = $this->attendanceMinutes($user, $day);
+
+        // 2. Zusätzlich manuelle TimeEntries OHNE Attendance-Bezug (z. B. nachträglich
+        //    erfasste Projektzeiten ohne Stempeluhr). TimeEntries, die an eine
+        //    Attendance gehängt sind, würden doppelt zählen und werden ausgeschlossen.
+        $entryMinutes = (int) TimeEntry::query()
             ->where('user_id', $user->id)
             ->whereDate('date', $day->toDateString())
+            ->whereNull('attendance_id')
             ->whereIn('kind', $this->countedKinds())
             ->whereNotIn('activity_type', $this->excludedActivityTypes())
             ->sum('minutes');
+
+        return $attendanceMinutes + $entryMinutes;
+    }
+
+    /**
+     * Summe der Stempelzeiten (Anwesenheiten) für einen Tag in Minuten.
+     * Offene Stempelungen werden bis "jetzt" hochgerechnet, abzüglich der
+     * bereits eingetragenen Pausenminuten.
+     */
+    public function attendanceMinutes(User $user, CarbonInterface $day): int {
+        $rows = Attendance::query()
+            ->where('user_id', $user->id)
+            ->whereDate('date', $day->toDateString())
+            ->get(['started_at', 'ended_at', 'duration_minutes', 'break_minutes_auto', 'break_minutes_manual']);
+
+        $sum = 0;
+        $now = CarbonImmutable::now();
+        foreach ($rows as $a) {
+            if ($a->ended_at !== null) {
+                $sum += (int) $a->duration_minutes;
+                continue;
+            }
+            // Offene Stempelung: live bis jetzt rechnen (nur, wenn der
+            // Start in der Vergangenheit liegt).
+            if ($a->started_at !== null && $a->started_at->lessThan($now)) {
+                $gross = (int) $a->started_at->diffInMinutes($now, false);
+                $breaks = (int) ($a->break_minutes_auto ?? 0) + (int) ($a->break_minutes_manual ?? 0);
+                $sum += max(0, $gross - $breaks);
+            }
+        }
+
+        return $sum;
     }
 
     /**
@@ -75,21 +119,33 @@ class FlexCalculator {
     }
 
     /**
-     * @return array{target:int, actual:int, balance:int, days:array<string, array{target:int, actual:int, balance:int}>}
+     * @return array{target:int, actual:int, balance:int, days:array<string, array{target:int, actual:int, balance:int, is_holiday:bool, is_vacation:bool, holiday_name:?string}>}
      */
     public function monthlyBalance(User $user, int $year, int $month): array {
         $start = CarbonImmutable::createFromDate($year, $month, 1)->startOfMonth();
         $end = $start->endOfMonth();
+
+        // Feiertage einmalig für den Zeitraum vorladen (statt pro Tag).
+        $holidayMap = $this->holidayMap($year);
 
         $target = 0;
         $actual = 0;
         $days = [];
 
         for ($day = $start; $day->lte($end); $day = $day->addDay()) {
+            $iso = $day->toDateString();
+            $holidayName = $holidayMap[$iso] ?? null;
+            $isHoliday = $holidayName !== null;
+            $isVacation = $this->isVacation($user, $day);
+
             $b = $this->dailyBalance($user, $day);
+            $b['is_holiday'] = $isHoliday;
+            $b['is_vacation'] = $isVacation;
+            $b['holiday_name'] = $holidayName;
+
             $target += $b['target'];
             $actual += $b['actual'];
-            $days[$day->toDateString()] = $b;
+            $days[$iso] = $b;
         }
 
         return [
@@ -98,6 +154,16 @@ class FlexCalculator {
             'balance' => $actual - $target,
             'days' => $days,
         ];
+    }
+
+    /**
+     * Liefert eine Map Y-m-d => Feiertagsname für das gegebene Jahr.
+     * Nutzt HolidayService (Yasumi + eigene Holiday-Tabelle).
+     *
+     * @return array<string, string>
+     */
+    protected function holidayMap(int $year): array {
+        return $this->holidays->forYear($year);
     }
 
     public function recompute(User $user, int $year, int $month): FlexBalance {
@@ -115,15 +181,7 @@ class FlexCalculator {
     }
 
     protected function isHoliday(CarbonInterface $day): bool {
-        $year = (int) $day->year;
-        $iso = $day->toDateString();
-
-        $dates = collect(Holiday::all())
-            ->flatMap(fn(Holiday $h) => $h->is_recurring ? $h->resolveForYear($year) : [optional($h->date)->format('Y-m-d')])
-            ->filter()
-            ->values();
-
-        return $dates->contains($iso);
+        return $this->holidays->isHoliday($day);
     }
 
     protected function isVacation(User $user, CarbonInterface $day): bool {

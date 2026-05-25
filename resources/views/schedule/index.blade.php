@@ -88,13 +88,15 @@
     @endif
 
     {{-- ── Matrix ──────────────────────────────────────────────────────── --}}
-    <div class="min-h-0 flex-1 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-        @if ($view === 'month')
-            @include('schedule.partials._month_matrix')
-        @else
+    @if ($view === 'month')
+        {{-- <x-month-calendar> bringt eigenen Rahmen + rounded-box + shadow mit,
+             daher KEIN zusätzlicher Wrapper-Border (vermeidet Doppel-Rahmen). --}}
+        @include('schedule.partials._month_matrix')
+    @else
+        <div class="min-h-0 flex-1 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
             @include('schedule.partials._week_matrix')
-        @endif
-    </div>
+        </div>
+    @endif
 
 </x-page-shell>
 

@@ -25,4 +25,27 @@ trait ResolvesGlobalDateRange {
     protected function globalDateRange(): array {
         return app(DateRangeContext::class)->current();
     }
+
+    /**
+     * Splits a date range into a list of months (Y-m keys) for tab navigation.
+     *
+     * @return list<array{key:string,year:int,month:int,label:string,shortLabel:string}>
+     */
+    protected function buildMonthsInRange(CarbonImmutable $from, CarbonImmutable $to): array {
+        $months = [];
+        $cursor = $from->startOfMonth();
+        $end = $to->startOfMonth();
+        while ($cursor->lte($end)) {
+            $months[] = [
+                'key' => $cursor->format('Y-m'),
+                'year' => $cursor->year,
+                'month' => $cursor->month,
+                'label' => $cursor->translatedFormat('F Y'),
+                'shortLabel' => $cursor->translatedFormat('M Y'),
+            ];
+            $cursor = $cursor->addMonth();
+        }
+
+        return $months;
+    }
 }

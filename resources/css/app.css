@@ -38,9 +38,11 @@
         /* Dialoge: zentrale Max-Höhe – luftiger als 100vh,
            siehe /memories/repo/workdiary-dialog-rules.md */
         --wd-dialog-max-h: 68vh;
-        --wd-dialog-w-compact: 36rem;
-        --wd-dialog-w-standard: 48rem;
-        --wd-dialog-w-wide: 64rem;
+        /* Dialog-Breiten erweitert: vorher 36/48/64rem; Formulare wirkten
+           zu eng (zwei-spaltige Layouts und lange Listen brachen früh um). */
+        --wd-dialog-w-compact: 44rem;   /* ~704px */
+        --wd-dialog-w-standard: 60rem;  /* ~960px */
+        --wd-dialog-w-wide: 80rem;      /* ~1280px */
     }
 
     body {
@@ -968,26 +970,32 @@
     }
 
     /* Ad-hoc-Dialoge (ohne x-dialog): einheitliche Max-Höhe + Scroll im Body.
-       Markup-Konvention: <div class="modal-box wd-modal-box"> ... </div> */
+       Markup-Konvention: <div class="modal-box wd-modal-box"> ... </div>
+       Hinweis zu !important: DaisyUI definiert `.modal-box { max-width: 32rem }`
+       UNLAYERED (außerhalb jeder @layer). Unsere Rules hier liegen in
+       `@layer components`. Bei der CSS-Cascade gewinnen unlayered Regeln immer
+       gegen layered — unabhängig von Spezifität. Daher müssen die Modal-
+       Breiten hier mit !important markiert sein, sonst greift DaisyUI's
+       32rem-Cap. */
     .modal-box.wd-modal-box {
         display: flex;
         flex-direction: column;
-        width: min(var(--wd-dialog-w-standard), calc(100vw - 2rem));
-        max-width: calc(100vw - 2rem);
+        width: min(var(--wd-dialog-w-standard), calc(100vw - 2rem)) !important;
+        max-width: calc(100vw - 2rem) !important;
         max-height: var(--wd-dialog-max-h, 68vh);
         overflow: hidden; /* der innere .wd-modal-body scrollt */
     }
 
     .modal-box.wd-modal-box--compact {
-        width: min(var(--wd-dialog-w-compact), calc(100vw - 2rem));
+        width: min(var(--wd-dialog-w-compact), calc(100vw - 2rem)) !important;
     }
 
     .modal-box.wd-modal-box--standard {
-        width: min(var(--wd-dialog-w-standard), calc(100vw - 2rem));
+        width: min(var(--wd-dialog-w-standard), calc(100vw - 2rem)) !important;
     }
 
     .modal-box.wd-modal-box--wide {
-        width: min(var(--wd-dialog-w-wide), calc(100vw - 2rem));
+        width: min(var(--wd-dialog-w-wide), calc(100vw - 2rem)) !important;
     }
 
     .modal-box.wd-modal-box > .wd-modal-body {

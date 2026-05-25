@@ -17,7 +17,7 @@ class GlobalTaskController extends Controller {
         $user = $request->user();
         $tasks = Task::query()
             ->where('is_global', true)
-            ->when($user?->organization_id, fn ($q, $orgId) => $q->where('organization_id', $orgId))
+            ->when($user?->organization_id, fn($q, $orgId) => $q->where('organization_id', $orgId))
             ->orderBy('position')
             ->orderBy('title')
             ->paginate(50);
