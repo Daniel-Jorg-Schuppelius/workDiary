@@ -6,13 +6,21 @@
 ])
 
 {{--
-    Einheitliche Toolbar für Content-Pages.
-    Standard: Karte mit `bg-base-100`, Border + Schatten — wirkt in jedem DaisyUI-Theme korrekt.
-    `title` ist optional, da der App-Header bereits den Seitentitel via `nav-title` zeigt;
-    Untertitel/Sub-Kontext (z. B. Kundenname) kommen hier rein.
+    <x-page-toolbar> — Einheitliche Toolbar-Karte oben auf Content-Pages.
+
+    Corporate-Design-Standard (Index-Seiten):
+      - KEIN `title` (der Seitentitel kommt aus @section('nav-title') im Layout).
+      - `:subtitle` als kurze Beschreibung ist Pflicht.
+      - Rechte Aktionen via Slot `actions` (z. B. <x-icon-btn icon="add">).
+
+    Für Index-Seiten bevorzugt <x-index-page> verwenden, das diese Toolbar
+    bereits in <x-page-shell> einbettet.
+
+    Standard-Optik: `bg-base-100`, Border + Schatten — wirkt in jedem
+    DaisyUI-Theme korrekt.
 --}}
 <div {{ $attributes->class([
-    'flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs',
+    'flex min-h-16 flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs',
 ]) }}>
     <div class="min-w-0 flex flex-col gap-0.5">
         @if ($title || $badge)

@@ -13,7 +13,7 @@
 @section('content')
     <x-page-shell gap="6">
         <x-slot:toolbar>
-            <x-page-toolbar>
+            <x-page-toolbar :subtitle="__('Räume und Standorte des Mandanten verwalten.')">
                 <x-slot:actions>
                     <a href="{{ route('rooms.index', ['view' => 'list']) }}"
                        class="btn btn-sm {{ $view === 'list' ? 'btn-primary' : 'btn-ghost' }}">

@@ -6,16 +6,7 @@
 @section('content')
 <x-page-shell gap="6">
     <x-slot:toolbar>
-        <x-page-toolbar>
-            <x-slot:title>
-                <h2 class="text-xl font-semibold">{{ __('access.title.hub') }}</h2>
-                @if ($organization)
-                    <p class="text-sm text-base-content/60">
-                        {{ __('access.subtitle.context', ['org' => $organization->name]) }}
-                    </p>
-                @endif
-            </x-slot:title>
-        </x-page-toolbar>
+        <x-page-toolbar :subtitle="$organization ? __('Rollen, Gruppen, Mitglieder und Berechtigungen für :org verwalten.', ['org' => $organization->name]) : __('Zugriffssteuerung & Berechtigungen.')" />
     </x-slot:toolbar>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -13,7 +13,6 @@
 <x-page-shell gap="6">
     <x-slot:toolbar>
         <x-page-toolbar
-            :title="__('Demo-Mandant')"
             :subtitle="$organization->name"
             :badge="$alreadySeeded ? __('Aktiv') : __('Nicht aktiv')"
             :badge-tone="$alreadySeeded ? 'warning' : 'ghost'"

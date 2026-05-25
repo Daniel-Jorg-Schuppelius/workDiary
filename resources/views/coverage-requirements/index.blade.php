@@ -4,7 +4,7 @@
 @section('content')
 <x-page-shell gap="6">
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('Soll-Besetzung')" :subtitle="$dutyPlan->title . ' · ' . $dutyPlan->from_date->format('d.m.Y') . ' – ' . $dutyPlan->to_date->format('d.m.Y')">
+        <x-page-toolbar :subtitle="$dutyPlan->title . ' · ' . $dutyPlan->from_date->format('d.m.Y') . ' – ' . $dutyPlan->to_date->format('d.m.Y')">
             <x-slot:actions>
                 <x-icon-btn icon="arrow_back" size="sm"
                             :href="route('duty-plans.show', $dutyPlan)"
@@ -20,12 +20,10 @@
     </x-slot:toolbar>
 
     @if ($requirements->isEmpty())
-        <x-card>
-            <x-empty-state
-                icon='<span class="material-symbols-outlined" aria-hidden="true">shield_person</span>'
-                :title="__('Noch keine Soll-Besetzungen für diesen Dienstplan definiert.')"
-                :message="__('Hinweis: Ohne Anforderungen gilt die Mindestbesetzung des Dienstplans:') . ' ' . $dutyPlan->min_staff" />
-        </x-card>
+        <x-empty-state framed
+            icon='<span class="material-symbols-outlined" aria-hidden="true">shield_person</span>'
+            :title="__('Noch keine Soll-Besetzungen für diesen Dienstplan definiert.')"
+            :message="__('Hinweis: Ohne Anforderungen gilt die Mindestbesetzung des Dienstplans:') . ' ' . $dutyPlan->min_staff" />
     @else
         <x-table table-sort="client">
             <x-slot:head>

@@ -30,7 +30,6 @@
 <x-page-shell gap="6">
     <x-slot:toolbar>
         <x-page-toolbar
-            :title="__('Lizenz')"
             :subtitle="$payload?->licensee ?? __('Keine aktive Lizenz')"
             :badge="$statusLabel"
             :badge-tone="$badgeTone"

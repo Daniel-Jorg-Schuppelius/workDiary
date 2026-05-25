@@ -12,7 +12,7 @@
 
     <x-page-shell gap="6">
         <x-slot:toolbar>
-            <x-page-toolbar>
+            <x-page-toolbar :subtitle="__('Stempelungen und Anwesenheiten der Mitarbeiter einsehen.')">
                 <x-slot:actions>
                     <x-icon-btn icon="today" size="sm"
                                 :href="route('today.show')"

@@ -3,7 +3,19 @@
 @section('nav-title', __('Stundenzettel'))
 
 @section('content')
-<x-page-shell>
+<x-page-shell gap="6">
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Stundenzettel verwalten und signieren lassen.')">
+            <x-slot:actions>
+                @can('create', \App\Models\Timesheet::class)
+                    <x-icon-btn icon="add" tone="primary" size="sm" type="button"
+                                onclick="document.getElementById('quick-timesheet-dialog').showModal()"
+                                show-label>{{ __('Stundenzettel anlegen') }}</x-icon-btn>
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
+
     {{-- Filter --}}
     <x-filter-bar :action="route('timesheets.index')" :reset="route('timesheets.index')">
         @if($isAdmin)
@@ -22,23 +34,14 @@
                 @endforeach
             </select>
         </x-filter-field>
-        <x-slot:extra>
-            @can('create', \App\Models\Timesheet::class)
-                <x-icon-btn icon="add" tone="primary" size="sm" type="button"
-                            onclick="document.getElementById('quick-timesheet-dialog').showModal()"
-                            show-label>{{ __('Stundenzettel') }}</x-icon-btn>
-            @endcan
-        </x-slot:extra>
     </x-filter-bar>
 
     @if($timesheets->isEmpty())
-        <x-card>
-            <x-empty-state
-                icon='<span class="material-symbols-outlined" aria-hidden="true">description</span>'
-                :title="__('Keine Stundenzettel gefunden')"
-                :message="__('Lege den ersten Stundenzettel über den Button oben rechts an.')"
-            />
-        </x-card>
+        <x-empty-state framed
+            icon='<span class="material-symbols-outlined" aria-hidden="true">description</span>'
+            :title="__('Keine Stundenzettel gefunden')"
+            :message="__('Lege den ersten Stundenzettel über den Button oben rechts an.')"
+        />
     @else
         <x-table table-sort="server"
                  :route="route('timesheets.index')"

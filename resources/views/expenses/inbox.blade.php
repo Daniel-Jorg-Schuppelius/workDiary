@@ -6,21 +6,19 @@
 @section('content')
     <x-page-shell>
         <x-slot:toolbar>
-            <x-page-toolbar>
-                <x-slot:actions>
-                    <form method="GET" action="{{ route('expense-approvals.inbox') }}" class="flex items-center gap-1">
-                        <label for="inbox-status" class="sr-only">{{ __('Status') }}</label>
-                        <select id="inbox-status" name="status"
-                                class="select select-bordered select-sm"
-                                onchange="this.form.submit()">
-                            @foreach ($statusOptions as $opt)
-                                <option value="{{ $opt->value }}" @selected($statusEnum === $opt)>{{ $opt->label() }}</option>
-                            @endforeach
-                        </select>
-                    </form>
-                </x-slot:actions>
-            </x-page-toolbar>
+            <x-page-toolbar :subtitle="__('Eingereichte Spesen prüfen, genehmigen oder ablehnen.')" />
         </x-slot:toolbar>
+
+        <x-filter-bar :action="route('expense-approvals.inbox')" :reset="route('expense-approvals.inbox')">
+            <x-filter-field :label="__('Status')" for="inbox-status">
+                <select id="inbox-status" name="status" class="select select-sm select-bordered shrink-0"
+                        onchange="this.form.submit()">
+                    @foreach ($statusOptions as $opt)
+                        <option value="{{ $opt->value }}" @selected($statusEnum === $opt)>{{ $opt->label() }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+        </x-filter-bar>
 
         <div class="grid gap-3 sm:grid-cols-2">
             <x-kpi-tile :label="__('Offen')"

@@ -57,18 +57,6 @@
             </x-slot:actions>
         </x-page-toolbar>
 
-        {{-- Tabs --}}
-        <div role="tablist" class="tabs tabs-box flex-nowrap overflow-x-auto">
-            @foreach ($tabs as $key => $info)
-                <a role="tab"
-                   href="{{ route('duties.index', array_merge($tabFilters, ['tab' => $key])) }}"
-                   class="tab {{ $tab === $key ? 'tab-active' : '' }}">
-                    {{ $info['label'] }}
-                    <span class="badge badge-sm ml-2">{{ $info['count'] }}</span>
-                </a>
-            @endforeach
-        </div>
-
         {{-- Filter --}}
         <x-filter-bar :action="route('duties.index')" :reset="! empty($tabFilters) ? route('duties.index', ['tab' => $tab]) : null">
             <input type="hidden" name="tab" value="{{ $tab }}">
@@ -168,6 +156,9 @@
                 </x-filter-field>
             @endif
         </x-filter-bar>
+
+        {{-- Tabs --}}
+        @include('duties._tab_strip', ['tabs' => $tabs, 'tab' => $tab, 'tabFilters' => $tabFilters])
 
         {{-- KPI-Kacheln --}}
         @php

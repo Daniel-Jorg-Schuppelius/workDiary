@@ -6,24 +6,8 @@
 @section('content')
     <x-page-shell>
         <x-slot:toolbar>
-            <x-page-toolbar>
+            <x-page-toolbar :subtitle="__('Belege & Auslagen erfassen, prüfen und freigeben.')">
                 <x-slot:actions>
-                    <form method="GET" action="{{ route('expenses.index') }}" class="flex items-center gap-1">
-                        <label for="exp-status" class="sr-only">{{ __('Status') }}</label>
-                        <select id="exp-status" name="status"
-                                class="select select-bordered select-sm"
-                                onchange="this.form.submit()">
-                            <option value="">{{ __('Alle Status') }}</option>
-                            @foreach ($statusOptions as $opt)
-                                <option value="{{ $opt->value }}" @selected($statusFilter === $opt->value)>{{ $opt->label() }}</option>
-                            @endforeach
-                        </select>
-                        @if ($statusFilter !== '')
-                            <x-icon-btn icon="restart_alt" tone="ghost" size="sm"
-                                        :href="route('expenses.index')"
-                                        :label="__('Filter zurücksetzen')" />
-                        @endif
-                    </form>
                     <x-icon-btn icon="download" tone="ghost" size="sm"
                                 :href="route('expenses.export', ['status' => $statusFilter])"
                                 show-label>{{ __('CSV-Export') }}</x-icon-btn>
@@ -34,6 +18,18 @@
                 </x-slot:actions>
             </x-page-toolbar>
         </x-slot:toolbar>
+
+        <x-filter-bar :action="route('expenses.index')" :reset="route('expenses.index')">
+            <x-filter-field :label="__('Status')" for="exp-status">
+                <select id="exp-status" name="status" class="select select-sm select-bordered shrink-0"
+                        onchange="this.form.submit()">
+                    <option value="">{{ __('Alle Status') }}</option>
+                    @foreach ($statusOptions as $opt)
+                        <option value="{{ $opt->value }}" @selected($statusFilter === $opt->value)>{{ $opt->label() }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+        </x-filter-bar>
 
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <x-kpi-tile :label="__('Summe (Brutto)')"

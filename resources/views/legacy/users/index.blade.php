@@ -5,7 +5,7 @@
 @section('content')
     <?php $legacyUsers = collect($users ?? []); ?>
     <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
-        <x-page-toolbar>
+        <x-page-toolbar :subtitle="__('Legacy-Mitarbeiterliste aus dem Altsystem.')">
             <span class="text-sm text-base-content/60">{{ trans_choice(':n Mitarbeiter|:n Mitarbeiter', $legacyUsers->count(), ['n' => $legacyUsers->count()]) }}</span>
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"

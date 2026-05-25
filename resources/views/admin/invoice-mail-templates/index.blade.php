@@ -5,17 +5,19 @@
 
 @section('content')
 <x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('E-Mail-Vorlagen für den Rechnungsversand verwalten.')">
+            <x-slot:actions>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            :href="route('admin.invoice-mail-templates.create')"
+                            show-label>{{ __('Neues Template') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
+
     @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
-
-    <x-page-toolbar :title="__('Rechnungs-Mail-Templates')">
-        <x-slot:actions>
-            <x-icon-btn icon="add" tone="primary" size="sm"
-                        :href="route('admin.invoice-mail-templates.create')"
-                        show-label>{{ __('Neues Template') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
 
     <x-table>
         <x-slot:head>

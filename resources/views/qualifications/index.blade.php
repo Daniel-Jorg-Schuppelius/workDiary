@@ -4,7 +4,7 @@
 @section('content')
 <x-page-shell gap="6">
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar :subtitle="__('Qualifikationen und Zertifikate der Mitarbeiter verwalten.')">
             <x-slot:actions>
                 @can('create', \App\Models\Qualification::class)
                     <x-icon-btn icon="add" tone="primary" size="sm"

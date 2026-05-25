@@ -11,7 +11,7 @@
 @endphp
 <x-page-shell gap="6">
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar :subtitle="__('Mandanten der Plattform verwalten und konfigurieren.')">
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger

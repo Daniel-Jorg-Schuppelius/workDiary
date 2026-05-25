@@ -8,19 +8,24 @@
 --}}
 @extends('layouts.app')
 
+@section('title', __('Kalender'))
+@section('nav-title', __('Kalender'))
+
 @push('scripts')
     @vite('resources/js/calendar.js')
 @endpush
 
 @section('content')
-<x-page-shell gap="gap-6">
-    <x-page-toolbar :title="__('Kalender')" :subtitle="__('Bereitschaft, Notdienst und Tagebucheinträge im Überblick.')">
-        <x-slot:actions>
-            <a href="{{ route('week.index') }}" class="btn btn-secondary">
-                <x-icon name="view_week" class="mr-1" /> {{ __('Wochenansicht') }}
-            </a>
-        </x-slot:actions>
-    </x-page-toolbar>
+<x-page-shell gap="6">
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Bereitschaft, Notdienst und Tagebucheinträge im Überblick.')">
+            <x-slot:actions>
+                <x-icon-btn icon="view_week" tone="secondary" size="sm"
+                            :href="route('week.index')"
+                            show-label>{{ __('Wochenansicht') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <x-card>
         <div

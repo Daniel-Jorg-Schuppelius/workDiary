@@ -6,16 +6,7 @@
 @section('content')
 <x-page-shell gap="6">
     <x-slot:toolbar>
-        <x-page-toolbar>
-            <x-slot:title>
-                <div>
-                    <h2 class="text-xl font-semibold">{{ __('Branchenprofile') }}</h2>
-                    <p class="text-sm text-base-content/60">
-                        {{ __('Vorlagen für :org: Klassifikationen, Pflichtregeln und Tags in einem Schritt installieren.', ['org' => $organization->name]) }}
-                    </p>
-                </div>
-            </x-slot:title>
-        </x-page-toolbar>
+        <x-page-toolbar :subtitle="__('Vorlagen für :org: Klassifikationen, Pflichtregeln und Tags in einem Schritt installieren.', ['org' => $organization->name])" />
     </x-slot:toolbar>
 
     <x-filter-bar :action="route('admin.branch-profiles.index')" :reset="route('admin.branch-profiles.index')">
@@ -38,9 +29,9 @@
     </x-filter-bar>
 
     @if ($profiles->isEmpty())
-        <x-card>
-            <p class="text-sm text-base-content/70">{{ __('Keine Branchenprofile fuer den aktuellen Filter gefunden.') }}</p>
-        </x-card>
+        <x-empty-state framed
+            icon='<span class="material-symbols-outlined" aria-hidden="true">store</span>'
+            :title="__('Keine Branchenprofile für den aktuellen Filter gefunden.')" />
     @else
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
             @foreach ($profiles as $profile)

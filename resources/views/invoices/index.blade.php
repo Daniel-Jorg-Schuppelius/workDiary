@@ -6,7 +6,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar :subtitle="__('Rechnungen erstellen, versenden und nachverfolgen.')">
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
@@ -15,6 +15,21 @@
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    <x-filter-bar :action="route('invoices.index')" :reset="route('invoices.index')">
+        <select name="customer" class="select select-sm select-bordered w-48 shrink-0" aria-label="{{ __('Kunde') }}">
+            <option value="">{{ __('Alle Kunden') }}</option>
+            @foreach ($customers as $c)
+                <option value="{{ $c->id }}" @selected((int) ($filters['customer'] ?? 0) === (int) $c->id)>{{ $c->name }}</option>
+            @endforeach
+        </select>
+        <select name="status" class="select select-sm select-bordered w-40 shrink-0" aria-label="{{ __('Status') }}">
+            <option value="">{{ __('Alle Status') }}</option>
+            @foreach ($statuses as $s)
+                <option value="{{ $s }}" @selected(($filters['status'] ?? '') === $s)>{{ __($s) }}</option>
+            @endforeach
+        </select>
+    </x-filter-bar>
 
     @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>

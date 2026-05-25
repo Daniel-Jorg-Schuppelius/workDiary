@@ -4,6 +4,9 @@
 
 @section('content')
 <x-page-shell overflow="clip">
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Tagebuch-Einträge erfassen, kommentieren und auswerten.')" />
+    </x-slot:toolbar>
     {{-- Filter-Leiste --}}
     <x-filter-bar :action="route('diary.index')" :reset="array_filter($filters) ? route('diary.index') : null">
         <x-filter-field :label="__('Suche')" for="diary-q" class="flex-1 min-w-60">

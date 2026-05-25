@@ -5,6 +5,16 @@
 
 @section('content')
     <x-page-shell>
+        <x-slot:toolbar>
+            <x-page-toolbar :subtitle="__('Fahrzeuge des Fuhrparks verwalten.')">
+                <x-slot:actions>
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('vehicles.create')"
+                                show-label>{{ __('Neues Fahrzeug') }}</x-icon-btn>
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
         <x-filter-bar :action="route('vehicles.index')" submit-label="{{ __('Anwenden') }}">
             <x-filter-field :label="__('Ansicht')" for="veh-archived">
                 <select id="veh-archived" name="archived" class="select select-sm select-bordered" onchange="this.form.submit()">
@@ -12,12 +22,6 @@
                     <option value="1" @selected($showArchived)>{{ __('Archiv') }}</option>
                 </select>
             </x-filter-field>
-            <x-slot:extra>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('vehicles.create')"
-                            show-label>{{ __('Neues Fahrzeug') }}</x-icon-btn>
-            </x-slot:extra>
         </x-filter-bar>
 
         <x-card padding="p-0">

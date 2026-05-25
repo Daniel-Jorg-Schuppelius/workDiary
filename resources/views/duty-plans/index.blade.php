@@ -3,6 +3,19 @@
 @section('nav-title', __('Dienstpläne'))
 @section('content')
 <x-page-shell gap="6">
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Dienstpläne des Mandanten verwalten.')">
+            <x-slot:actions>
+                @can('create', \App\Models\DutyPlan::class)
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('duty-plans.create')"
+                                show-label>{{ __('Dienstplan anlegen') }}</x-icon-btn>
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
+
     <x-filter-bar :action="route('duty-plans.index')" :reset="route('duty-plans.index')">
         <x-filter-field :label="__('Status')" for="dp-status">
             <select id="dp-status" name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
@@ -12,14 +25,6 @@
                 @endforeach
             </select>
         </x-filter-field>
-        <x-slot:extra>
-            @can('create', \App\Models\DutyPlan::class)
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('duty-plans.create')"
-                            show-label>{{ __('Dienstplan anlegen') }}</x-icon-btn>
-            @endcan
-        </x-slot:extra>
     </x-filter-bar>
 
     <x-table table-sort="server"

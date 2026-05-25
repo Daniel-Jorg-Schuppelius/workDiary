@@ -6,7 +6,7 @@
 @section('content')
 <x-page-shell gap="6">
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar :subtitle="__('Mitgliedschaften und Rollen-Zuweisungen pro Organisation verwalten.')">
             <x-slot:actions>
                 <form method="GET" action="{{ route('admin.access.members.index') }}" class="join">
                     <input type="text" name="q" value="{{ $search ?? '' }}"
@@ -60,7 +60,9 @@
                 </td>
             </tr>
         @empty
-            <tr><td colspan="5" class="text-center text-base-content/60 py-6">{{ __('access.empty.members') }}</td></tr>
+            <x-table.empty :colspan="5"
+                icon='<span class="material-symbols-outlined" aria-hidden="true">person</span>'
+                :title="__('access.empty.members')" compact />
         @endforelse
     </x-table>
 

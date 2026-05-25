@@ -6,7 +6,7 @@
 @section('content')
 <x-page-shell gap="6">
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar :subtitle="__('Pauschalensätze für Verpflegungs- und Übernachtungskosten verwalten.')">
             <x-slot:actions>
                 <form method="GET" action="{{ route('admin.per-diem-rates.index') }}" class="inline-flex items-center gap-2">
                     <input type="text" name="country" maxlength="2" placeholder="DE"

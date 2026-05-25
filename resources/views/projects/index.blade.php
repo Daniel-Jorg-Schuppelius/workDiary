@@ -29,27 +29,30 @@
 @endphp
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
-            <div class="join">
-                @foreach ($statusOptions as $value => $label)
-                    <a href="{{ route('projects.index', $value === '' ? [] : ['status' => $value]) }}"
-                       class="join-item btn btn-sm {{ $statusFilter === $value ? 'btn-primary' : 'btn-ghost' }}">{{ $label }}</a>
-                @endforeach
-            </div>
+        <x-page-toolbar :subtitle="__('Projekte und ihre Zuordnungen verwalten.')">
             <x-slot:actions>
                 @can('create', App\Models\Project::class)
                     <x-icon-btn icon="add" tone="primary" size="sm"
                                 data-entry-modal-trigger
                                 :href="route('projects.create')"
-                                show-label>{{ __('Projekt') }}</x-icon-btn>
+                                show-label>{{ __('Projekt anlegen') }}</x-icon-btn>
                 @endcan
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 
+    <x-filter-bar :action="route('projects.index')" method="GET" :reset="route('projects.index')">
+        <div class="join">
+            @foreach ($statusOptions as $value => $label)
+                <a href="{{ route('projects.index', $value === '' ? [] : ['status' => $value]) }}"
+                   class="join-item btn btn-sm {{ $statusFilter === $value ? 'btn-primary' : 'btn-ghost' }}">{{ $label }}</a>
+            @endforeach
+        </div>
+    </x-filter-bar>
+
     @if ($projects->isEmpty())
         <x-card>
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">folder_open</span>' :title="__('Noch keine Projekte angelegt')" />
+            <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">folder_open</span>' :title="__('Noch keine Projekte angelegt')" />
         </x-card>
     @else
         <x-card padding="p-0">

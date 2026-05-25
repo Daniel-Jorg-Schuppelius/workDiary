@@ -5,7 +5,7 @@
 @section('content')
 <x-page-shell gap="6">
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar :subtitle="__('Externe Schichtplan-Dateien importieren und Mitarbeiter zuordnen.')">
             <x-slot:actions>
                 <x-icon-btn icon="arrow_back" size="sm" :href="route('schedule.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
             </x-slot:actions>

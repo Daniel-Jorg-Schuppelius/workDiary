@@ -1,21 +1,19 @@
 @extends('layouts.app')
 
 @section('content')
-    <x-page-shell gap="gap-6">
-        <x-page-toolbar
-            :title="__('Filter-Presets')"
-            :subtitle="__('Gespeicherte Filter pro Ansicht.')" />
+    <x-page-shell gap="6">
+        <x-page-toolbar :subtitle="__('Gespeicherte Filter pro Ansicht.')" />
 
         @if (session('status'))
             <div class="alert alert-success">{{ session('status') }}</div>
         @endif
 
-        <x-card padding="p-0">
-            @if ($presets->isEmpty())
-                <div class="p-6 text-center text-sm text-base-content/60">
-                    {{ __('Noch keine Filter-Presets gespeichert.') }}
-                </div>
-            @else
+        @if ($presets->isEmpty())
+            <x-empty-state framed
+                icon='<span class="material-symbols-outlined" aria-hidden="true">filter_alt</span>'
+                :title="__('Noch keine Filter-Presets gespeichert.')" />
+        @else
+            <x-card padding="p-0">
                 <x-table zebra>
                     <thead>
                         <tr>
@@ -48,7 +46,7 @@
                         @endforeach
                     </tbody>
                 </x-table>
-            @endif
-        </x-card>
+            </x-card>
+        @endif
     </x-page-shell>
 @endsection

@@ -6,7 +6,7 @@
 @section('content')
 <x-page-shell gap="6">
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar :subtitle="__('Berechtigungen für Gleitzeit-Sonderregeln je Mitarbeiter pflegen.')">
             <x-slot:title>
                 <h2 class="text-xl font-semibold">{{ $member->name }}</h2>
                 <p class="text-sm text-base-content/60">{{ __('flex.eligibility.subtitle', ['name' => $member->name]) }}</p>
@@ -97,11 +97,9 @@
                 </td>
             </tr>
         @empty
-            <tr>
-                <td colspan="4" class="text-center text-base-content/60 py-6">
-                    {{ __('flex.eligibility.empty', ['name' => $member->name]) }}
-                </td>
-            </tr>
+            <x-table.empty :colspan="4"
+                icon='<span class="material-symbols-outlined" aria-hidden="true">rule</span>'
+                :title="__('flex.eligibility.empty', ['name' => $member->name])" compact />
         @endforelse
     </x-table>
 </x-page-shell>

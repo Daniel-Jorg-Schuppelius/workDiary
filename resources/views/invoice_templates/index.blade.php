@@ -8,15 +8,20 @@
 --}}
 @extends('layouts.app')
 
+@section('title', __('Rechnungsvorlagen'))
+@section('nav-title', __('Rechnungsvorlagen'))
+
 @section('content')
-<x-page-shell gap="gap-6">
-    <x-page-toolbar :title="__('Rechnungsvorlagen')" :subtitle="__('PDF-Layouts pro Mandant verwalten.')">
-        <x-slot:actions>
-            <a href="{{ route('invoice-templates.create') }}" class="btn btn-primary">
-                <x-icon name="add" class="mr-1" /> {{ __('Neue Vorlage') }}
-            </a>
-        </x-slot:actions>
-    </x-page-toolbar>
+<x-page-shell gap="6">
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('PDF-Layouts pro Mandant verwalten.')">
+            <x-slot:actions>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            :href="route('invoice-templates.create')"
+                            show-label>{{ __('Neue Vorlage') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>

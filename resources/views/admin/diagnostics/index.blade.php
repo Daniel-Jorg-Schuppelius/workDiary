@@ -41,7 +41,6 @@
 <x-page-shell gap="6">
     <x-slot:toolbar>
         <x-page-toolbar
-            :title="__('Diagnose')"
             :subtitle="__('Erzeugt: :at', ['at' => $report->generatedAt->translatedFormat('d.m.Y H:i:s')])"
             :badge="$statusToLabel[$report->overallStatus()->value] ?? null"
             :badge-tone="match ($report->overallStatus()->value) {

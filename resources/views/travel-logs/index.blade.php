@@ -6,7 +6,7 @@
 @section('content')
     <x-page-shell>
         <x-slot:toolbar>
-            <x-page-toolbar>
+            <x-page-toolbar :subtitle="__('Dienstfahrten und Kilometerstände erfassen.')">
                 <x-slot:actions>
                     <x-icon-btn icon="download" size="sm"
                                 :href="route('travel-logs.export', array_merge(request()->query(), ['from' => $from->toDateString(), 'to' => $to->toDateString()]))"
@@ -19,6 +19,17 @@
             </x-page-toolbar>
         </x-slot:toolbar>
 
+        <x-filter-bar :action="route('travel-logs.index')" :reset="route('travel-logs.index')">
+            <x-filter-field :label="__('Fahrzeug')" for="tl-vehicle">
+                <select id="tl-vehicle" name="vehicle" class="select select-sm select-bordered shrink-0"
+                        onchange="this.form.submit()">
+                    <option value="">{{ __('alle') }}</option>
+                    @foreach ($vehicles as $v)
+                        <option value="{{ $v->value }}" @selected($selectedVehicle === $v->value)>{{ $v->label() }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+        </x-filter-bar>
 
         <div class="grid gap-3 sm:grid-cols-2">
             <x-kpi-tile :label="__('Gefahrene Kilometer')" :value="number_format($totals['distance_km'], 2, ',', '.') . ' km'" />

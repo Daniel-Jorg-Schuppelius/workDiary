@@ -5,16 +5,17 @@
 @section('main-class', 'min-h-0 overflow-clip flex flex-col')
 
 @section('content')
+@php
+    $tabs = [
+        'mine' => ['label' => __('Meine'), 'url' => route('kanban.index', ['scope' => 'mine'])],
+        'team' => ['label' => __('Team'),  'url' => route('kanban.index', ['scope' => 'team'])],
+    ];
+    $activeTab = $teamScope ? 'team' : 'mine';
+@endphp
 <x-page-shell>
     {{-- Toolbar --}}
     <x-slot:toolbar>
-        <x-page-toolbar>
-            <div class="join">
-                <a href="{{ route('kanban.index', ['scope' => 'mine']) }}"
-                   class="join-item btn btn-sm {{ $teamScope ? 'btn-ghost' : 'btn-primary' }}">{{ __('Meine') }}</a>
-                <a href="{{ route('kanban.index', ['scope' => 'team']) }}"
-                   class="join-item btn btn-sm {{ $teamScope ? 'btn-primary' : 'btn-ghost' }}">{{ __('Team') }}</a>
-            </div>
+        <x-page-toolbar :subtitle="__('Offene Tagebuch-Einträge nach Status visualisieren.')">
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
@@ -23,6 +24,9 @@
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    {{-- Tabs --}}
+    @include('duties._tab_strip', ['tabs' => $tabs, 'tab' => $activeTab])
 
     @if ($isLimited)
         <div class="rounded-box border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-base-content/80">

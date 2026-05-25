@@ -4,7 +4,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar :subtitle="__('Mitarbeiter des Mandanten verwalten.')">
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
@@ -15,13 +15,11 @@
     </x-slot:toolbar>
 
     @if ($members->isEmpty())
-        <x-card>
-            <x-empty-state
-                icon='<span class="material-symbols-outlined" aria-hidden="true">group</span>'
-                :title="__('Noch keine Mitarbeiter')"
-                :message="__('Lege das erste Teammitglied an.')"
-            />
-        </x-card>
+        <x-empty-state framed
+            icon='<span class="material-symbols-outlined" aria-hidden="true">group</span>'
+            :title="__('Noch keine Mitarbeiter')"
+            :message="__('Lege das erste Teammitglied an.')"
+        />
     @else
         <x-table table-sort="server"
                  :route="route('org.members.index')"

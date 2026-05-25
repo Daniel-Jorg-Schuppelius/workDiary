@@ -50,26 +50,15 @@
     @endphp
 
     <x-page-shell overflow="clip">
-
-        <x-page-toolbar :badge="__('Archiv')" badge-tone="neutral">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm"
-                            :href="route('duties.index', ['tab' => match($tab) { 'diary' => 'diary', 'urlaub' => 'urlaub', default => $tab }])"
-                            show-label>{{ __('Aktive Arbeitsliste') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
-
-        {{-- Tabs --}}
-        <div role="tablist" class="tabs tabs-box self-start">
-            @foreach ($tabs as $key => $info)
-                <a role="tab"
-                   href="{{ route('archive.index', array_merge($tabFilters, ['tab' => $key])) }}"
-                   class="tab {{ $tab === $key ? 'tab-active' : '' }}">
-                    {{ $info['label'] }}
-                    <span class="badge badge-sm ml-2">{{ $info['count'] }}</span>
-                </a>
-            @endforeach
-        </div>
+        <x-slot:toolbar>
+            <x-page-toolbar :subtitle="__('Archivierte Einträge des Mandanten einsehen.')" :badge="__('Archiv')" badge-tone="neutral">
+                <x-slot:actions>
+                    <x-icon-btn icon="arrow_back" size="sm"
+                                :href="route('duties.index', ['tab' => match($tab) { 'diary' => 'diary', 'urlaub' => 'urlaub', default => $tab }])"
+                                show-label>{{ __('Aktive Arbeitsliste') }}</x-icon-btn>
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
 
         {{-- Filter --}}
         <x-filter-bar :action="route('archive.index')" :reset="! empty($tabFilters) ? route('archive.index', ['tab' => $tab]) : null">
@@ -114,6 +103,18 @@
                 </x-filter-field>
             @endif
         </x-filter-bar>
+
+        {{-- Tabs --}}
+        <div role="tablist" class="tabs tabs-box self-start">
+            @foreach ($tabs as $key => $info)
+                <a role="tab"
+                   href="{{ route('archive.index', array_merge($tabFilters, ['tab' => $key])) }}"
+                   class="tab {{ $tab === $key ? 'tab-active' : '' }}">
+                    {{ $info['label'] }}
+                    <span class="badge badge-sm ml-2">{{ $info['count'] }}</span>
+                </a>
+            @endforeach
+        </div>
 
         {{-- KPI-Kacheln --}}
         <div class="flex-none grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

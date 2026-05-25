@@ -14,10 +14,19 @@
 
 @section('content')
     <x-page-shell>
-        {{-- Toolbar (Aktionen) und Filter-Form sind hier in einer gemeinsamen
-             filter-bar zusammengefasst — der bisherige x-page-toolbar-Block
-             entfällt, die "Asset"-Schaltfläche sitzt im extra-Slot rechts
-             neben Suche, Typ- und Status-Filter. --}}
+        <x-slot:toolbar>
+            <x-page-toolbar :subtitle="__('Objekte, Geräte und Anlagen des Mandanten verwalten.')">
+                <x-slot:actions>
+                    @if ($canCreate)
+                        <x-icon-btn icon="add" tone="primary" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('assets.create')"
+                                    show-label>{{ __('Asset anlegen') }}</x-icon-btn>
+                    @endif
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
+
         <x-filter-bar :action="route('assets.index')"
                       :reset="$hasActiveFilters ? route('assets.index') : null">
             <x-filter-field :label="__('Suche')" for="asset-q" class="flex-1 min-w-60">
@@ -44,15 +53,6 @@
                     @endforeach
                 </select>
             </x-filter-field>
-
-            <x-slot:extra>
-                @if ($canCreate)
-                    <x-icon-btn icon="add" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('assets.create')"
-                                show-label>{{ __('Asset') }}</x-icon-btn>
-                @endif
-            </x-slot:extra>
         </x-filter-bar>
 
         @if ($hasActiveFilters || $assets->total() > 0)

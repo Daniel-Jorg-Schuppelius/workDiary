@@ -5,7 +5,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar :subtitle="__('Tags zur Klassifikation von Tagebuch-Einträgen verwalten.')">
             <x-slot:actions>
                 @can('create', App\Models\Tag::class)
                     <x-icon-btn icon="add" tone="primary" size="sm"

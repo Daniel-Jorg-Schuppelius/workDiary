@@ -4,17 +4,13 @@
 @section('nav-title', __('Pflichtregeln'))
 
 @section('content')
-<x-page-shell gap="6">
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Pflichtklassifikationen pro Auftragstyp für :org verwalten.', ['org' => $organization->name])">
-            <x-slot:actions>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('admin.classification-requirements.create')"
-                            show-label>{{ __('Pflichtregel anlegen') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page :subtitle="__('Pflichtklassifikationen pro Auftragstyp für :org verwalten.', ['org' => $organization->name])">
+    <x-slot:actions>
+        <x-icon-btn icon="add" tone="primary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('admin.classification-requirements.create')"
+                    show-label>{{ __('Pflichtregel anlegen') }}</x-icon-btn>
+    </x-slot:actions>
 
     <x-card>
         <form method="GET" action="{{ route('admin.classification-requirements.index') }}"
@@ -102,9 +98,8 @@
     </div>
 
     @if ($requirements->isEmpty())
-        <x-card>
-            <p class="text-sm text-base-content/70">{{ __('Keine Pflichtregeln fuer den aktuellen Filter gefunden.') }}</p>
-        </x-card>
+        <x-empty-state framed
+            icon='<span class="material-symbols-outlined" aria-hidden="true">rule</span>' />
     @else
         <x-table>
             <x-slot:head>
@@ -174,5 +169,5 @@
             @endforeach
         </x-table>
     @endif
-</x-page-shell>
+</x-index-page>
 @endsection

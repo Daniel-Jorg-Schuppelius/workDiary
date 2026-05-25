@@ -14,6 +14,20 @@
 
 @section('content')
     <x-page-shell gap="6">
+        <x-slot:toolbar>
+            <x-page-toolbar :subtitle="__('Veranstaltungen und Termine planen und verwalten.')">
+                <x-slot:actions>
+                    <x-icon-btn icon="calendar_month" tone="ghost" size="sm" :href="route('events.calendar')" show-label>
+                        {{ __('Kalender') }}
+                    </x-icon-btn>
+                    @can('create', App\Models\Event::class)
+                        <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger :href="route('events.create').'?dialog=1'" show-label>
+                            {{ __('Neue Veranstaltung') }}
+                        </x-icon-btn>
+                    @endcan
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
         <x-filter-bar :action="route('events.index')" :reset="route('events.index')">
             <x-filter-field :label="__('Suche')" for="ev-q" class="flex-1 min-w-60">
                 <input id="ev-q" type="search" name="q" value="{{ request('q') }}"
@@ -64,17 +78,6 @@
                        onchange="this.form.submit()">
                 <span class="text-sm text-base-content/75">{{ __('Nur Pflicht') }}</span>
             </label>
-
-            <x-slot:extra>
-                <x-icon-btn icon="calendar_month" tone="ghost" size="sm" :href="route('events.calendar')" show-label>
-                    {{ __('Kalender') }}
-                </x-icon-btn>
-                @can('create', App\Models\Event::class)
-                    <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger :href="route('events.create').'?dialog=1'" show-label>
-                        {{ __('Neue Veranstaltung') }}
-                    </x-icon-btn>
-                @endcan
-            </x-slot:extra>
         </x-filter-bar>
 
         <div class="grid grid-cols-1 gap-3 flex-none sm:grid-cols-2 lg:grid-cols-4">

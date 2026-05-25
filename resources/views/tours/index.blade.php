@@ -5,7 +5,16 @@
 
 @section('content')
     <x-page-shell>
-
+        <x-slot:toolbar>
+            <x-page-toolbar :subtitle="__('Touren und Routen für Außendienst-Einsätze erfassen.')">
+                <x-slot:actions>
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('tours.create')"
+                                show-label>{{ __('Neue Tour') }}</x-icon-btn>
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
 
         <x-filter-bar :action="route('tours.index')" :reset="route('tours.index')">
             <x-filter-field :label="__('Status')" for="tours-status">
@@ -26,12 +35,6 @@
                     </select>
                 </x-filter-field>
             @endif
-            <x-slot:extra>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('tours.create')"
-                            show-label>{{ __('Neue Tour') }}</x-icon-btn>
-            </x-slot:extra>
         </x-filter-bar>
 
         <x-card padding="p-0">

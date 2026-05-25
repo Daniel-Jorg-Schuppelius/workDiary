@@ -34,9 +34,14 @@ class TravelLogController extends Controller {
 
         [$from, $to] = $this->resolveRange($request);
 
+        $vehicle = $request->string('vehicle')->toString();
+        $vehicleEnum = TravelLogVehicle::tryFrom($vehicle);
+        $vehicleValue = $vehicleEnum?->value;
+
         $query = TravelLog::query()
             ->where('user_id', Auth::id())
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()]);
+            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->when($vehicleValue, fn ($q) => $q->where('vehicle', $vehicleValue));
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [
             'date' => 'date',
@@ -54,10 +59,12 @@ class TravelLogController extends Controller {
             'distance_km' => (float) TravelLog::query()
                 ->where('user_id', Auth::id())
                 ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+                ->when($vehicleValue, fn ($q) => $q->where('vehicle', $vehicleValue))
                 ->sum('distance_km'),
             'reimbursement' => (float) TravelLog::query()
                 ->where('user_id', Auth::id())
                 ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+                ->when($vehicleValue, fn ($q) => $q->where('vehicle', $vehicleValue))
                 ->sum('reimbursement_total'),
         ];
 
@@ -68,6 +75,8 @@ class TravelLogController extends Controller {
             'totals' => $totals,
             'sort' => $sort,
             'dir' => $dir,
+            'vehicles' => TravelLogVehicle::cases(),
+            'selectedVehicle' => $vehicleValue,
         ]);
     }
 

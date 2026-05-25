@@ -6,7 +6,7 @@
 
 <x-page-shell overflow="clip">
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar :subtitle="__('Gesetzliche und eigene Feiertage des Mandanten verwalten.')">
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger

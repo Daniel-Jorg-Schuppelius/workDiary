@@ -26,7 +26,14 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class InvoiceController extends Controller {
     public function index(Request $request): View {
         Gate::authorize('viewAny', Invoice::class);
-        $query = Invoice::query()->with(['customer']);
+
+        $customerId = $request->integer('customer') ?: null;
+        $status = $request->string('status')->toString();
+        $statusFilter = in_array($status, Invoice::STATUSES, true) ? $status : '';
+
+        $query = Invoice::query()->with(['customer'])
+            ->when($customerId, fn ($q) => $q->where('customer_id', $customerId))
+            ->when($statusFilter !== '', fn ($q) => $q->where('status', $statusFilter));
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [
             'number' => 'number',
@@ -37,8 +44,10 @@ class InvoiceController extends Controller {
 
         $invoices = $query->paginate(25)->withQueryString();
         $statuses = Invoice::STATUSES;
+        $customers = Customer::query()->orderBy('name')->get(['id', 'name']);
+        $filters = ['customer' => $customerId, 'status' => $statusFilter];
 
-        return view('invoices.index', compact('invoices', 'statuses', 'sort', 'dir'));
+        return view('invoices.index', compact('invoices', 'statuses', 'customers', 'filters', 'sort', 'dir'));
     }
 
     public function create(Request $request): View {

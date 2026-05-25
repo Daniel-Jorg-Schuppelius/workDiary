@@ -12,7 +12,10 @@
     @endphp
     <x-page-shell>
         <x-slot:toolbar>
-            <x-filter-bar :action="route('audit.index')" :reset="route('audit.index')">
+            <x-page-toolbar :subtitle="__('Prüfprotokoll über Änderungen und Aktionen im System.')" />
+        </x-slot:toolbar>
+
+        <x-filter-bar :action="route('audit.index')" :reset="route('audit.index')">
                 <x-filter-field :label="__('Aktion')" for="audit-event">
                     <select id="audit-event" name="event" class="select select-bordered select-sm">
                         <option value="">{{ __('alle') }}</option>
@@ -38,7 +41,6 @@
                     </select>
                 </x-filter-field>
             </x-filter-bar>
-        </x-slot:toolbar>
 
         <x-table scroll="flex" :pinRows="true" :zebra="true" size="xs"
                  table-sort="server"

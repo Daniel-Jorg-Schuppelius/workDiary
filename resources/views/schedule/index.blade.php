@@ -20,8 +20,9 @@
     /** @var bool $isAdmin */
 @endphp
 
-<x-page-shell overflow="clip">
-
+<x-page-shell overflow="clip">    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Personalplanung und Schichtzuweisung des Mandanten.')" />
+    </x-slot:toolbar>
     {{-- ── Filter & Toolbar ────────────────────────────────────────────── --}}
     <x-filter-bar :action="route('schedule.index')" class="bg-base-100!">
         {{-- User filter --}}

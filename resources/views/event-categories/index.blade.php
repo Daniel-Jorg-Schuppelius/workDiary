@@ -9,7 +9,7 @@
 @section('content')
     <x-page-shell gap="6">
         <x-slot:toolbar>
-            <x-page-toolbar>
+            <x-page-toolbar :subtitle="__('Kategorien für Veranstaltungen und Termine pflegen.')">
                 <x-slot:actions>
                     @can('create', App\Models\EventCategory::class)
                         <x-icon-btn icon="add" tone="primary" size="sm"

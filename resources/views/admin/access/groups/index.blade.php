@@ -6,7 +6,7 @@
 @section('content')
 <x-page-shell gap="6">
     <x-slot:toolbar>
-        <x-page-toolbar>
+        <x-page-toolbar :subtitle="__('Gruppen für Berechtigungs-Bündelung verwalten.')">
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
@@ -58,7 +58,9 @@
                 </td>
             </tr>
         @empty
-            <tr><td colspan="5" class="text-center text-base-content/60 py-6">{{ __('access.empty.groups') }}</td></tr>
+            <x-table.empty :colspan="5"
+                icon='<span class="material-symbols-outlined" aria-hidden="true">groups</span>'
+                :title="__('access.empty.groups')" compact />
         @endforelse
     </x-table>
 

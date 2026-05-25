@@ -46,7 +46,6 @@
 <x-page-shell gap="6">
     <x-slot:toolbar>
         <x-page-toolbar
-            :title="__('Datenschutz')"
             :subtitle="$organization->name"
             :badge="$modeLabel"
             badge-tone="primary"

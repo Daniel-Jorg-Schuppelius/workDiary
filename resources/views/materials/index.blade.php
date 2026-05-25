@@ -3,6 +3,9 @@
 @section('nav-title', __('Materialien'))
 @section('content')
 <x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Materialien und Verbrauchsmittel verwalten.')" />
+    </x-slot:toolbar>
     <x-filter-bar :action="route('materials.index')" :reset="$q !== '' ? route('materials.index') : null">
         <x-filter-field :label="__('Suche')" for="mat-q" class="flex-1 min-w-60">
             <input id="mat-q" type="search" name="q" value="{{ $q }}" placeholder="{{ __('Suche…') }}"

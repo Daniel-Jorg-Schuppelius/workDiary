@@ -5,7 +5,16 @@
 
 @section('content')
     <x-page-shell>
-
+        <x-slot:toolbar>
+            <x-page-toolbar :subtitle="__('Tank- und Ladevorgänge der Fahrzeuge erfassen.')">
+                <x-slot:actions>
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('energy-logs.create')"
+                                show-label>{{ __('Neuer Eintrag') }}</x-icon-btn>
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
 
         <x-filter-bar :action="route('energy-logs.index')" :reset="route('energy-logs.index')">
             @if ($selectableUsers)
@@ -30,12 +39,6 @@
             @foreach (request()->except(['user', 'vehicle']) as $k => $v)
                 <input type="hidden" name="{{ $k }}" value="{{ $v }}">
             @endforeach
-            <x-slot:extra>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('energy-logs.create')"
-                            show-label>{{ __('Neuer Eintrag') }}</x-icon-btn>
-            </x-slot:extra>
         </x-filter-bar>
 
         <div class="grid gap-3 sm:grid-cols-4">

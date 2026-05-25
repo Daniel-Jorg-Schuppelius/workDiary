@@ -63,9 +63,9 @@
                 </td>
             </tr>
         @empty
-            <tr>
-                <td colspan="6" class="text-center text-base-content/60 py-8">{{ __('Keine Regeln definiert.') }}</td>
-            </tr>
+            <x-table.empty :colspan="6"
+                icon='<span class="material-symbols-outlined" aria-hidden="true">smart_toy</span>'
+                :title="__('Keine Regeln definiert.')" compact />
         @endforelse
     </x-table>
 

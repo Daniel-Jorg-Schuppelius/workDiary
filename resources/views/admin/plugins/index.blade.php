@@ -5,7 +5,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('Registrierte Plugins')" :subtitle="__('Plugins werden über config/plugins.php registriert. Konfiguration erfolgt aktuell über .env.')" />
+        <x-page-toolbar :subtitle="__('Plugins werden über config/plugins.php registriert. Konfiguration erfolgt aktuell über .env.')" />
     </x-slot:toolbar>
 
     <x-card padding="p-0">

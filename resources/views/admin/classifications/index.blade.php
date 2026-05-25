@@ -6,15 +6,7 @@
 @section('content')
 <x-page-shell gap="6">
     <x-slot:toolbar>
-        <x-page-toolbar>
-            <x-slot:title>
-                <div>
-                    <h2 class="text-xl font-semibold">{{ __('Klassifikationen') }}</h2>
-                    <p class="text-sm text-base-content/60">
-                        {{ __('Plattform-Defaults vergleichen und organisationsspezifische Werte pflegen für :org.', ['org' => $organization->name]) }}
-                    </p>
-                </div>
-            </x-slot:title>
+        <x-page-toolbar :subtitle="__('Plattform-Defaults vergleichen und organisationsspezifische Werte pflegen für :org.', ['org' => $organization->name])">
             <x-slot:actions>
                 <x-icon-btn icon="upload" size="sm"
                             data-entry-modal-trigger
@@ -79,7 +71,7 @@
                                            form="classification-reorder-{{ $domain->value }}"
                                            name="sort_map[{{ $classification->id }}]"
                                            value="{{ old('sort_map.' . $classification->id, $classification->sort_order) }}"
-                                           class="input input-bordered input-xs w-24"
+                                           class="input input-bordered input-sm w-24"
                                            min="0"
                                            max="100000" />
                                 </td>

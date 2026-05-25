@@ -32,6 +32,9 @@
     };
 @endphp
 <x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Gleitzeitkonto: Buchungen und Saldo des gewählten Monats.')" />
+    </x-slot:toolbar>
     @if($canSeeOthers && $users->isNotEmpty())
         @php
             $selfId = (int) ($authUser->id ?? 0);

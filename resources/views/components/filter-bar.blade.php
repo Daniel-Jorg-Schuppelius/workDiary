@@ -5,6 +5,22 @@
     'submitLabel' => null,
 ])
 
+{{--
+    <x-filter-bar> — einzeilige Filter-/Suchleiste für Index-Seiten.
+
+    Layout-Standard (Corporate Design):
+      - Hülle: rounded-box border bg-base-100 shadow-xs (wie x-card).
+      - Innen: flex flex-nowrap items-center gap-2 overflow-x-auto — Filter
+        bleiben in einer Zeile und scrollen horizontal wenn nötig.
+      - Filter-Felder im Slot sollen `select-sm` / `input-sm` und `shrink-0`
+        tragen (Größen-Standard `sm`, kein `xs`).
+      - Aktionsblock rechts via `ml-auto shrink-0` (automatisch).
+
+    Slots:
+      - default : Filterfelder
+      - extra   : zusätzliche Aktionen links der Filter-/Reset-Buttons
+--}}
+
 @php
     $methodUpper = strtoupper($method);
     $isGet = $methodUpper === 'GET';
@@ -13,7 +29,7 @@
 <form
     method="{{ $isGet ? 'GET' : 'POST' }}"
     @if ($action) action="{{ $action }}" @endif
-    {{ $attributes->class(['flex-none rounded-box border border-base-300 bg-base-100 p-4 shadow-xs']) }}
+    {{ $attributes->class(['flex min-h-16 flex-none flex-col justify-center rounded-box border border-base-300 bg-base-100 p-4 shadow-xs']) }}
 >
     @if (! $isGet)
         @csrf
@@ -21,10 +37,10 @@
             @method($methodUpper)
         @endif
     @endif
-    <div class="flex flex-wrap items-end gap-2">
+    <div class="flex flex-nowrap items-center gap-2 overflow-x-auto">
         {{ $slot }}
 
-        <div class="ml-auto flex items-end gap-2">
+        <div class="ml-auto flex shrink-0 items-center gap-2">
             @isset($extra)
                 {{ $extra }}
             @endisset
