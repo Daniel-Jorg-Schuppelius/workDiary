@@ -7,6 +7,7 @@
  *
  * Usage: php scripts/translations-merge-en.php map1.php [map2.php ...]
  */
+
 declare(strict_types=1);
 
 const ROOT = __DIR__ . '/..';

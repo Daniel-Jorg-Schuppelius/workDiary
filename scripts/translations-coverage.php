@@ -142,7 +142,7 @@ foreach ($usedKeys as $key => $occ) {
 
 $hardcoded = []; // file => [ [line, snippet], ... ]
 
-$bladeKeywords = ['extends','section','endsection','include','if','else','elseif','endif','foreach','endforeach','forelse','endforelse','for','endfor','isset','endisset','empty','endempty','php','endphp','yield','stack','endstack','push','endpush','slot','endslot','props','use','endsection','can','endcan','cannot','endcannot','endwhile','while','switch','case','endswitch','env','json','dd','dump','class','endcomponent','component','livewire'];
+$bladeKeywords = ['extends', 'section', 'endsection', 'include', 'if', 'else', 'elseif', 'endif', 'foreach', 'endforeach', 'forelse', 'endforelse', 'for', 'endfor', 'isset', 'endisset', 'empty', 'endempty', 'php', 'endphp', 'yield', 'stack', 'endstack', 'push', 'endpush', 'slot', 'endslot', 'props', 'use', 'endsection', 'can', 'endcan', 'cannot', 'endcannot', 'endwhile', 'while', 'switch', 'case', 'endswitch', 'env', 'json', 'dd', 'dump', 'class', 'endcomponent', 'component', 'livewire'];
 
 foreach (walk(ROOT . '/resources/views', ['.blade.php']) as $file) {
     $rel = str_replace(ROOT . '/', '', $file->getPathname());

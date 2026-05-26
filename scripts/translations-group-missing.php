@@ -3,6 +3,7 @@
  * keys by source file/module (first occurrence). Outputs a tsv:
  *   <module>\t<key>
  */
+
 declare(strict_types=1);
 
 const ROOT = __DIR__ . '/..';
