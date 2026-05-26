@@ -19,7 +19,7 @@
 </head>
 <body>
 
-<h1>Kunden &amp; Projekte</h1>
+<h1>{{ __('Kunden & Projekte') }}</h1>
 <div class="meta">
     Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->format('d.m.Y') }}</strong> bis
     <strong>{{ \Carbon\Carbon::parse($to)->format('d.m.Y') }}</strong> ·
@@ -30,10 +30,10 @@
 <table>
     <thead>
         <tr>
-            <th>Kunde / Projekt</th>
-            <th style="width: 14%">Projekt-Nr.</th>
+            <th>{{ __('Kunde / Projekt') }}</th>
+            <th style="width: 14%">{{ __('Projekt-Nr.') }}</th>
             <th class="right" style="width: 14%">Stunden</th>
-            <th class="right" style="width: 16%">Erlös</th>
+            <th class="right" style="width: 16%">{{ __('Erlös') }}</th>
         </tr>
     </thead>
     <tbody>

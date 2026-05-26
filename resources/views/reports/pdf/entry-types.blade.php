@@ -9,17 +9,17 @@
             <tr>
                 <th>Auftragstyp</th>
                 <th class="num">Auftraege</th>
-                <th class="num">Durchschnitt Plan</th>
-                <th class="num">Durchschnitt Ist</th>
-                <th class="num">Plan/Ist</th>
+                <th class="num">{{ __('Durchschnitt Plan') }}</th>
+                <th class="num">{{ __('Durchschnitt Ist') }}</th>
+                <th class="num">{{ __('Plan/Ist') }}</th>
                 <th class="num">Ueberzug</th>
                 <th class="num">Ueberzug %</th>
                 <th class="num">Nacharbeit</th>
                 <th class="num">Nacharbeit %</th>
                 <th class="num">Escalation %</th>
-                <th class="num">First-Time-Right %</th>
-                <th class="num">Median Ist</th>
-                <th class="num">P90 Ist</th>
+                <th class="num">{{ __('First-Time-Right %') }}</th>
+                <th class="num">{{ __('Median Ist') }}</th>
+                <th class="num">{{ __('P90 Ist') }}</th>
             </tr>
         </thead>
         <tbody>

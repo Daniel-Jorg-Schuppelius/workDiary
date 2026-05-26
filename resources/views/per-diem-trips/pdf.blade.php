@@ -39,7 +39,7 @@
     $totalPayout = $trip->days->sum(fn ($d) => (float) $d->amount);
 @endphp
 
-<h1>Reisekostenabrechnung – Verpflegungspauschale</h1>
+<h1>{{ __('Reisekostenabrechnung – Verpflegungspauschale') }}</h1>
 <div class="meta">
     Reise #{{ $trip->id }} · Status: <strong>{{ $trip->status->label() }}</strong> ·
     Erstellt: {{ now()->format('d.m.Y H:i') }}
@@ -53,7 +53,7 @@
         <td><strong>{{ $trip->country }}</strong></td>
     </tr>
     <tr>
-        <td class="label">Ort / Ziel</td>
+        <td class="label">{{ __('Ort / Ziel') }}</td>
         <td>{{ $trip->location }}</td>
         <td class="label">Zeitraum</td>
         <td>{{ $trip->started_at->format('d.m.Y H:i') }} – {{ $trip->ended_at->format('d.m.Y H:i') }}</td>
@@ -71,7 +71,7 @@
     </tr>
     @endif
     <tr>
-        <td class="label">Übernachtung gestellt</td>
+        <td class="label">{{ __('Übernachtung gestellt') }}</td>
         <td>{{ $trip->accommodation_provided ? 'Ja' : 'Nein' }}</td>
         <td class="label">Reisetage</td>
         <td>{{ $trip->days->count() }}</td>
@@ -81,7 +81,7 @@
 <table class="kpis">
     <tr>
         <td><div class="label">Pauschale (Basis)</div><div class="value">{{ $fmtEur($totalBase) }}</div></td>
-        <td><div class="label">Mahlzeitenkürzung</div><div class="value">@if ($totalDeductions > 0)− {{ $fmtEur($totalDeductions) }}@else —@endif</div></td>
+        <td><div class="label">{{ __('Mahlzeitenkürzung') }}</div><div class="value">@if ($totalDeductions > 0)− {{ $fmtEur($totalDeductions) }}@else —@endif</div></td>
         <td><div class="label">Auszahlbetrag</div><div class="value">{{ $fmtEur($totalPayout) }}</div></td>
         <td><div class="label">Tage</div><div class="value">{{ $trip->days->count() }}</div></td>
     </tr>
@@ -97,7 +97,7 @@
             <th class="center">F</th>
             <th class="center">M</th>
             <th class="center">A</th>
-            <th class="right">Kürzung</th>
+            <th class="right">{{ __('Kürzung') }}</th>
             <th class="right">Auszahlung</th>
         </tr>
     </thead>
@@ -125,9 +125,7 @@
 </table>
 
 <div class="note">
-    F = Frühstück, M = Mittagessen, A = Abendessen. Eine vom Arbeitgeber oder Dritten gestellte Mahlzeit
-    mindert die Pauschale gemäß § 9 Abs. 4a Satz 8 EStG (Frühstück 20 %, Mittag- und Abendessen je 40 %
-    des Volltagessatzes).
+    {{ __('F = Frühstück, M = Mittagessen, A = Abendessen. Eine vom Arbeitgeber oder Dritten gestellte Mahlzeit mindert die Pauschale gemäß § 9 Abs. 4a Satz 8 EStG (Frühstück 20 %, Mittag- und Abendessen je 40 % des Volltagessatzes).') }}
 </div>
 
 @if ($trip->notes)
@@ -137,8 +135,8 @@
 
 <table class="sig">
     <tr>
-        <td>Datum, Unterschrift Mitarbeiter</td>
-        <td>Datum, Unterschrift Vorgesetzte/r</td>
+        <td>{{ __('Datum, Unterschrift Mitarbeiter') }}</td>
+        <td>{{ __('Datum, Unterschrift Vorgesetzte/r') }}</td>
     </tr>
 </table>
 

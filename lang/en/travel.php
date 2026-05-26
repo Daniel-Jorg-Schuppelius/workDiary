@@ -10,4 +10,6 @@ return [
         'foot' => 'On foot',
         'other' => 'Other',
     ],
+    'tour_leg_purpose' => 'Leg to :title',
+    'tour_return_purpose' => 'Return trip',
 ];

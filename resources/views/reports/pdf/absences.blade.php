@@ -30,7 +30,7 @@
     };
 @endphp
 
-<h1>Urlaub &amp; Flex</h1>
+<h1>{{ __('Urlaub & Flex') }}</h1>
 <div class="meta">
     Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->format('d.m.Y') }}</strong> bis
     <strong>{{ \Carbon\Carbon::parse($to)->format('d.m.Y') }}</strong> ·
@@ -43,7 +43,7 @@
         <td><div class="label">Mitarbeiter</div><div class="value">{{ $totals['users'] }}</div></td>
         <td><div class="label">Urlaub (Werktage)</div><div class="value">{{ $totals['vacation_days'] }}</div></td>
         <td><div class="label">Krank</div><div class="value">{{ $totals['sick_days'] }}</div></td>
-        <td><div class="label">Sonder / Unbezahlt</div><div class="value">{{ $totals['special_days'] }} / {{ $totals['unpaid_days'] }}</div></td>
+        <td><div class="label">{{ __('Sonder / Unbezahlt') }}</div><div class="value">{{ $totals['special_days'] }} / {{ $totals['unpaid_days'] }}</div></td>
         <td><div class="label">Ausstehend</div><div class="value">{{ $totals['pending_days'] }}</div></td>
         <td><div class="label">Flex Δ</div><div class="value {{ $totals['flex_change_minutes'] < 0 ? 'neg' : 'pos' }}">{{ $fmtMin($totals['flex_change_minutes']) }}</div></td>
     </tr>
@@ -59,7 +59,7 @@
             <th class="right">Unbezahlt</th>
             <th class="right">Ausstehend</th>
             <th class="right">Flex Δ</th>
-            <th class="right">Flex-Saldo</th>
+            <th class="right">{{ __('Flex-Saldo') }}</th>
         </tr>
     </thead>
     <tbody>

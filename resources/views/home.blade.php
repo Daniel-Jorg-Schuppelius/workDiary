@@ -76,7 +76,7 @@
                         <img src="{{ asset('img/logo/workdiary-logo-768.png') }}" alt="WorkDiary"
                              class="mb-3 h-16 w-auto max-w-xs object-contain">
                         <h1 class="mt-3 font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content md:text-4xl">{{ __('Operations Dashboard') }}</h1>
-                        <p class="mt-3 max-w-3xl text-base text-base-content/80">Zentrale Arbeitsoberfläche für Teamstatus, offene Punkte und direkte Aktionen im Tagesgeschäft.</p>
+                        <p class="mt-3 max-w-3xl text-base text-base-content/80">{{ __('Zentrale Arbeitsoberfläche für Teamstatus, offene Punkte und direkte Aktionen im Tagesgeschäft.') }}</p>
                         @auth
                             <div class="mt-4 inline-flex items-center gap-2 rounded-full border border-base-300 bg-base-200 px-3 py-1.5 text-xs uppercase tracking-[0.24em] text-base-content/80">
                                 <span>{{ __('Aktiver Modus') }}</span>
@@ -189,7 +189,7 @@
                                     <p class="mt-2 text-sm text-base-content/70">{{ __('Neueste Einträge aus dem laufenden Betrieb.') }}</p>
                                 </div>
                                 <div class="badge badge-ghost badge-lg px-4 py-3 text-xs uppercase tracking-[0.3em] text-base-content/70">
-                                    Produktiver Betrieb
+                                    {{ __('Produktiver Betrieb') }}
                                 </div>
                             </div>
 
@@ -221,7 +221,7 @@
                                     </article>
                                 @empty
                                     <div class="rounded-[1.4rem] border border-dashed border-base-300 bg-base-100 p-6 text-base-content/70">
-                                        Noch keine Legacy-Daten sichtbar. Sobald LEGACY_DB_* gesetzt ist, liest die neue App direkt aus den vorhandenen Tabellen.
+                                        {{ __('Noch keine Legacy-Daten sichtbar. Sobald LEGACY_DB_* gesetzt ist, liest die neue App direkt aus den vorhandenen Tabellen.') }}
                                     </div>
                                 @endforelse
                             </div>
@@ -229,7 +229,7 @@
                     @else
                         <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
                             <p class="font-['Space_Grotesk'] text-2xl font-bold text-base-content">{{ __('Produktzugang erforderlich') }}</p>
-                                <p class="mt-3 text-base-content/80">Diese Oberfläche ist ein Arbeitsprodukt. Operative Inhalte, Kennzahlen und Teamdaten sind nur nach Anmeldung sichtbar.</p>
+                                <p class="mt-3 text-base-content/80">{{ __('Diese Oberfläche ist ein Arbeitsprodukt. Operative Inhalte, Kennzahlen und Teamdaten sind nur nach Anmeldung sichtbar.') }}</p>
                             <div class="mt-4"><a href="{{ route('login') }}" class=" btn btn-sm btn-primary">⇢ Jetzt anmelden</a></div>
                         </section>
                     @endif
@@ -240,19 +240,19 @@
                         <p class="font-['Space_Grotesk'] text-2xl font-bold text-base-content">{{ __('Heute arbeiten') }}</p>
                         <div class="mt-5 space-y-4">
                             <div class="rounded-[1.4rem] border border-base-300 bg-base-200 p-4">
-                                <p class="font-semibold text-base-content">1. Offene Punkte priorisieren</p>
+                                <p class="font-semibold text-base-content">{{ __('1. Offene Punkte priorisieren') }}</p>
                                 <p class="mt-2 text-sm text-base-content/75">{{ __('Arbeitsliste filtern und zuerst kritische Probleme bearbeiten.') }}</p>
                             </div>
                             <div class="rounded-[1.4rem] border border-base-300 bg-base-200 p-4">
-                                <p class="font-semibold text-base-content">2. Neue Einträge dokumentieren</p>
+                                <p class="font-semibold text-base-content">{{ __('2. Neue Einträge dokumentieren') }}</p>
                                 <p class="mt-2 text-sm text-base-content/75">{{ __('Vorgänge sauber erfassen, Zeitraum und Status direkt setzen.') }}</p>
                             </div>
                             <div class="rounded-[1.4rem] border border-base-300 bg-base-200 p-4">
-                                <p class="font-semibold text-base-content">3. Rückmeldungen nachziehen</p>
+                                <p class="font-semibold text-base-content">{{ __('3. Rückmeldungen nachziehen') }}</p>
                                 <p class="mt-2 text-sm text-base-content/75">{{ __('Offene Antworten finalisieren und auf erledigt setzen.') }}</p>
                             </div>
                             @auth
-                                <a href="{{ route($indexRoute, ['status' => 2]) }}" class=" btn btn-sm btn-outline w-full">↗ Zu offenen Aufgaben</a>
+                                <a href="{{ route($indexRoute, ['status' => 2]) }}" class=" btn btn-sm btn-outline w-full">↗ {{ __('Zu offenen Aufgaben') }}</a>
                             @endif
                         </div>
                     </section>

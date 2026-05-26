@@ -28,7 +28,7 @@
                 <th class="right">{{ $label }}</th>
             @endforeach
             <th class="right">Σ Stunden</th>
-            <th class="right">Erlös</th>
+            <th class="right">{{ __('Erlös') }}</th>
         </tr>
     </thead>
     <tbody>

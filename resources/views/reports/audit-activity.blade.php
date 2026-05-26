@@ -4,17 +4,23 @@
 
 @section('content')
 @php
-    $eventLabels = [
-        'created'    => __('Angelegt'),
-        'updated'    => __('Geändert'),
-        'deleted'    => __('Gelöscht'),
-        'archived'   => __('Archiviert'),
-        'restored'   => __('Wiederhergestellt'),
-    ];
+    /** Übersetzte Audit-Event-Bezeichnungen (mit Fallback auf den Roh-Key). */
+    $eventLabel = function (string $event): string {
+        $key = 'audit-events.' . $event;
+        return \Illuminate\Support\Facades\Lang::has($key) ? (string) __($key) : $event;
+    };
     $shortType = function (?string $fqcn): string {
         if ($fqcn === null || $fqcn === '') return '—';
         $parts = explode('\\', $fqcn);
-        return end($parts) ?: $fqcn;
+        $short = end($parts) ?: $fqcn;
+        $key = 'entity-types.' . $short;
+        return \Illuminate\Support\Facades\Lang::has($key) ? (string) __($key) : $short;
+    };
+    /** Lokalisiert kanonische Seed-Namen (z. B. „Administrator“); freie Namen bleiben. */
+    $userLabel = function (?string $name): string {
+        if ($name === null || $name === '') return '—';
+        $key = 'well-known-names.' . $name;
+        return \Illuminate\Support\Facades\Lang::has($key) ? (string) __($key) : $name;
     };
 @endphp
 
@@ -34,7 +40,7 @@
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Events Σ') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['total'] }}</div></div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Aktive User') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['users'] }}</div></div>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Aktive Benutzer') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['users'] }}</div></div>
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Entity-Typen') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['types'] }}</div></div>
     </div>
 
@@ -49,7 +55,7 @@
                     </tr>
                 </x-slot:head>
                 @forelse ($byEvent as $ev => $c)
-                    <tr><td>{{ $eventLabels[$ev] ?? $ev }}</td><td class="text-right tabular-nums">{{ $c }}</td></tr>
+                    <tr><td>{{ $eventLabel($ev) }}</td><td class="text-right tabular-nums">{{ $c }}</td></tr>
                 @empty
                     <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">history</span>' :colspan="2" :title="__('Keine Daten')" compact />
                 @endforelse
@@ -74,16 +80,16 @@
         </div>
 
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Nach User (Top 20)') }}</h3>
+            <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Nach Benutzer (Top 20)') }}</h3>
             <x-table table-sort="client" bare>
                 <x-slot:head>
                     <tr>
-                        <x-table.th sort type="string">{{ __('User') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Benutzer') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Anzahl') }}</x-table.th>
                     </tr>
                 </x-slot:head>
                 @forelse ($byUser as $u)
-                    <tr><td>{{ $u['user']?->name ?? '—' }}</td><td class="text-right tabular-nums">{{ $u['count'] }}</td></tr>
+                    <tr><td>{{ $userLabel($u['user']?->name) }}</td><td class="text-right tabular-nums">{{ $u['count'] }}</td></tr>
                 @empty
                     <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">history</span>' :colspan="2" :title="__('Keine Daten')" compact />
                 @endforelse
@@ -100,7 +106,7 @@
                 <x-slot:head>
                     <tr>
                         <x-table.th sort type="date">{{ __('Zeitpunkt') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('User') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Benutzer') }}</x-table.th>
                         <x-table.th sort type="string">{{ __('Event') }}</x-table.th>
                         <x-table.th sort type="string">{{ __('Typ') }}</x-table.th>
                         <x-table.th sort type="number">{{ __('ID') }}</x-table.th>
@@ -110,8 +116,8 @@
                 @foreach ($recent as $log)
                     <tr>
                         <td class="tabular-nums" data-sort-value="{{ optional($log->created_at)->format('Y-m-d H:i:s') }}">{{ optional($log->created_at)->format('d.m.Y H:i:s') }}</td>
-                        <td>{{ $log->user?->name ?? '—' }}</td>
-                        <td>{{ $eventLabels[$log->event] ?? $log->event }}</td>
+                        <td>{{ $userLabel($log->user?->name) }}</td>
+                        <td>{{ $eventLabel($log->event) }}</td>
                         <td class="text-xs">{{ $shortType($log->auditable_type) }}</td>
                         <td class="tabular-nums">{{ $log->auditable_id }}</td>
                         <td class="text-xs text-base-content/60">{{ $log->ip }}</td>

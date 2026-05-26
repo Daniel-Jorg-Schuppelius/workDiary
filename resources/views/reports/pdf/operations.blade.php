@@ -32,7 +32,7 @@
     $num = fn (float $v, int $d = 2) => number_format($v, $d, ',', '.');
 @endphp
 
-<h1>Operations-Auswertung</h1>
+<h1>{{ __('Operations-Auswertung') }}</h1>
 <div class="meta">
     Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->format('d.m.Y') }}</strong> bis
     <strong>{{ \Carbon\Carbon::parse($to)->format('d.m.Y') }}</strong> ·
@@ -42,11 +42,11 @@
 
 <table class="kpis">
     <tr>
-        <td><div class="label">Service-Aufträge</div><div class="value">{{ $orders['total'] }}</div></td>
+        <td><div class="label">{{ __('Service-Aufträge') }}</div><div class="value">{{ $orders['total'] }}</div></td>
         <td><div class="label">Servicezeit Σ</div><div class="value">{{ $fmtMin($orders['service_minutes']) }}</div></td>
         <td><div class="label">SO Abschluss</div><div class="value">{{ $pct($orders['completion_rate']) }}</div></td>
         <td><div class="label">Tasks (Überfällig)</div><div class="value">{{ $tasks['total'] }} ({{ $tasks['overdue'] }})</div></td>
-        <td><div class="label">Tasks Abschluss</div><div class="value">{{ $pct($tasks['completion_rate']) }}</div></td>
+        <td><div class="label">{{ __('Tasks Abschluss') }}</div><div class="value">{{ $pct($tasks['completion_rate']) }}</div></td>
         <td><div class="label">Touren</div><div class="value">{{ $tours['total'] }} · {{ $num($tours['planned_distance_km'], 0) }} km</div></td>
     </tr>
 </table>
@@ -54,7 +54,7 @@
 <table class="grid">
     <tr>
         <td>
-            <h2>Service-Aufträge – Status</h2>
+            <h2>{{ __('Service-Aufträge – Status') }}</h2>
             <table class="data">
                 <thead><tr><th>Status</th><th class="right">Anzahl</th></tr></thead>
                 <tbody>
@@ -63,9 +63,9 @@
                     @endforeach
                 </tbody>
             </table>
-            <h2>Service-Aufträge – Priorität</h2>
+            <h2>{{ __('Service-Aufträge – Priorität') }}</h2>
             <table class="data">
-                <thead><tr><th>Priorität</th><th class="right">Anzahl</th></tr></thead>
+                <thead><tr><th>{{ __('Priorität') }}</th><th class="right">{{ __('Anzahl') }}</th></tr></thead>
                 <tbody>
                     @foreach ($orders['by_priority'] as $p => $c)
                         <tr><td>{{ $p }}</td><td class="right">{{ $c }}</td></tr>
@@ -74,7 +74,7 @@
             </table>
         </td>
         <td>
-            <h2>Tasks – Status</h2>
+            <h2>{{ __('Tasks – Status') }}</h2>
             <table class="data">
                 <thead><tr><th>Status</th><th class="right">Anzahl</th></tr></thead>
                 <tbody>
@@ -83,9 +83,9 @@
                     @endforeach
                 </tbody>
             </table>
-            <h2>Tasks – Priorität</h2>
+            <h2>{{ __('Tasks – Priorität') }}</h2>
             <table class="data">
-                <thead><tr><th>Priorität</th><th class="right">Anzahl</th></tr></thead>
+                <thead><tr><th>{{ __('Priorität') }}</th><th class="right">{{ __('Anzahl') }}</th></tr></thead>
                 <tbody>
                     @foreach ($tasks['by_priority'] as $p => $c)
                         <tr><td>{{ $p }}</td><td class="right">{{ $c }}</td></tr>
@@ -96,14 +96,14 @@
     </tr>
 </table>
 
-<h2>Touren – pro Mitarbeiter</h2>
+<h2>{{ __('Touren – pro Mitarbeiter') }}</h2>
 <table class="data">
     <thead>
         <tr>
             <th>Mitarbeiter</th>
             <th class="right">Touren</th>
             <th class="right">Plan-km</th>
-            <th class="right">Plan-Dauer</th>
+            <th class="right">{{ __('Plan-Dauer') }}</th>
         </tr>
     </thead>
     <tbody>

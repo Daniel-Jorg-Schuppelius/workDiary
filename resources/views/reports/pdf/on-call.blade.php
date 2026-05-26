@@ -29,7 +29,7 @@
     $pct = fn (float $v) => number_format($v * 100, 1, ',', '.') . ' %';
 @endphp
 
-<h1>Notdienst-Auswertung</h1>
+<h1>{{ __('Notdienst-Auswertung') }}</h1>
 <div class="meta">
     Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->format('d.m.Y') }}</strong> bis
     <strong>{{ \Carbon\Carbon::parse($to)->format('d.m.Y') }}</strong> ·
@@ -42,8 +42,8 @@
         <td><div class="label">Mitarbeiter</div><div class="value">{{ $totals['users'] }}</div></td>
         <td><div class="label">Bereitschaft</div><div class="value">{{ $fmt($totals['shift_minutes']) }}</div></td>
         <td><div class="label">Schichten</div><div class="value">{{ $totals['shift_count'] }}</div></td>
-        <td><div class="label">Einsätze</div><div class="value">{{ $totals['assignment_count'] }} · {{ $fmt($totals['assignment_minutes']) }}</div></td>
-        <td><div class="label">Aktiv-Anteil</div><div class="value">{{ $totals['ratio'] !== null ? $pct($totals['ratio']) : '–' }}</div></td>
+        <td><div class="label">{{ __('Einsätze') }}</div><div class="value">{{ $totals['assignment_count'] }} · {{ $fmt($totals['assignment_minutes']) }}</div></td>
+        <td><div class="label">{{ __('Aktiv-Anteil') }}</div><div class="value">{{ $totals['ratio'] !== null ? $pct($totals['ratio']) : '–' }}</div></td>
     </tr>
 </table>
 
@@ -53,9 +53,9 @@
             <th>Mitarbeiter</th>
             <th class="right">Schichten</th>
             <th class="right">Bereitschaft</th>
-            <th class="right">Einsätze</th>
-            <th class="right">Einsatzzeit</th>
-            <th class="right">Aktiv-Anteil</th>
+            <th class="right">{{ __('Einsätze') }}</th>
+            <th class="right">{{ __('Einsatzzeit') }}</th>
+            <th class="right">{{ __('Aktiv-Anteil') }}</th>
         </tr>
     </thead>
     <tbody>

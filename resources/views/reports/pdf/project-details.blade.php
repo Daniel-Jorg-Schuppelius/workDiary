@@ -24,7 +24,7 @@
 <h2>Monatswerte</h2>
 <table>
     <thead>
-        <tr><th>Monat</th><th class="right">Stunden</th><th class="right">Erlös</th></tr>
+        <tr><th>{{ __('Monat') }}</th><th class="right">{{ __('Stunden') }}</th><th class="right">{{ __('Erlös') }}</th></tr>
     </thead>
     <tbody>
         @foreach ($monthMatrix as $idx => $row)
@@ -49,10 +49,10 @@
 </table>
 
 @if (count($byUser) > 0)
-    <h2>Aufteilung pro Mitarbeiter</h2>
+    <h2>{{ __('Aufteilung pro Mitarbeiter') }}</h2>
     <table>
         <thead>
-            <tr><th>Mitarbeiter</th><th class="right">Stunden</th><th class="right">Erlös</th></tr>
+            <tr><th>{{ __('Mitarbeiter') }}</th><th class="right">{{ __('Stunden') }}</th><th class="right">{{ __('Erlös') }}</th></tr>
         </thead>
         <tbody>
             @foreach ($byUser as $uid => $row)

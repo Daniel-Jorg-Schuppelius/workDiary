@@ -10,4 +10,6 @@ return [
         'foot' => 'zu Fuß',
         'other' => 'Sonstiges',
     ],
+    'tour_leg_purpose' => 'Etappe zu :title',
+    'tour_return_purpose' => 'Rückfahrt',
 ];

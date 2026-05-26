@@ -25,7 +25,7 @@
     $num   = fn (float $v, int $d = 2) => number_format($v, $d, ',', '.');
 @endphp
 
-<h1>Fuhrpark-Auswertung</h1>
+<h1>{{ __('Fuhrpark-Auswertung') }}</h1>
 <div class="meta">
     Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->format('d.m.Y') }}</strong> bis
     <strong>{{ \Carbon\Carbon::parse($to)->format('d.m.Y') }}</strong> ·
@@ -38,7 +38,7 @@
         <td><div class="label">Fahrzeuge</div><div class="value">{{ $totals['vehicles'] }}</div></td>
         <td><div class="label">Σ km</div><div class="value">{{ $num($totals['km'], 1) }}</div></td>
         <td><div class="label">Fahrten</div><div class="value">{{ $totals['trip_count'] }}</div></td>
-        <td><div class="label">Tankungen / Ladungen</div><div class="value">{{ $totals['fuel_count'] }}</div></td>
+        <td><div class="label">{{ __('Tankungen / Ladungen') }}</div><div class="value">{{ $totals['fuel_count'] }}</div></td>
         <td><div class="label">Energiekosten</div><div class="value">{{ $money($totals['energy_cost']) }}</div></td>
         <td><div class="label">Ø €/km</div><div class="value">{{ $totals['avg_cost_per_km'] !== null ? $num($totals['avg_cost_per_km'], 3) . ' €' : '–' }}</div></td>
     </tr>

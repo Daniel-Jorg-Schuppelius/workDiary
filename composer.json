@@ -73,10 +73,14 @@
         "format:fix": "pint",
         "audit": "@composer audit",
         "i18n:check": "@php scripts/find-untranslated.php",
+        "lang:check": "@php scripts/translations-diff.php",
+        "lang:coverage": "@php scripts/translations-coverage.php",
         "qa": [
             "@format",
             "@lint",
-            "@test"
+            "@test",
+            "@lang:check",
+            "@lang:coverage"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

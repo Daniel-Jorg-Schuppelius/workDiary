@@ -42,9 +42,9 @@
                 <th style="width: 8%">Start</th>
                 <th style="width: 8%">Ende</th>
                 <th style="width: 10%">Art</th>
-                <th>Projekt / Aufgabe / Beschreibung</th>
+                <th>{{ __('Projekt / Aufgabe / Beschreibung') }}</th>
                 <th class="right" style="width: 12%">Dauer</th>
-                <th class="right" style="width: 14%">Erlös</th>
+                <th class="right" style="width: 14%">{{ __('Erlös') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -71,7 +71,7 @@
         </tbody>
     </table>
 @empty
-    <p>Keine Einträge im gewählten Monat.</p>
+    <p>{{ __('Keine Einträge im gewählten Monat.') }}</p>
 @endforelse
 
 @php

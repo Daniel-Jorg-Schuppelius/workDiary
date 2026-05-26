@@ -11,10 +11,10 @@
                 <th class="num">Auftraege</th>
                 <th class="num">Gesamt</th>
                 <th class="num">Abrechenbar</th>
-                <th class="num">Nicht abrechenbar</th>
+                <th class="num">{{ __('Nicht abrechenbar') }}</th>
                 <th class="num">Anteil %</th>
                 <th class="num">Nacharbeit</th>
-                <th class="num">Offene Punkte</th>
+                <th class="num">{{ __('Offene Punkte') }}</th>
                 <th class="num">Eskaliert</th>
                 <th class="num">Durchschnitt</th>
                 <th class="num">Trend 30d</th>

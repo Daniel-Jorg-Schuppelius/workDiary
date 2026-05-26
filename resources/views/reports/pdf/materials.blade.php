@@ -64,7 +64,7 @@
                 <td class="right">{{ $eur($r['line_total_net']) }}</td>
             </tr>
         @empty
-            <tr><td colspan="6" style="text-align:center; padding:12pt; color:#888;">Keine Daten im Zeitraum.</td></tr>
+            <tr><td colspan="6" style="text-align:center; padding:12pt; color:#888;">{{ __('Keine Daten im Zeitraum.') }}</td></tr>
         @endforelse
         @if (! empty($rows))
             <tr class="totals">

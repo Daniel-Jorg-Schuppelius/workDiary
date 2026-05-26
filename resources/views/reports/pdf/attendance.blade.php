@@ -31,7 +31,7 @@
     $varClass = fn (int $v) => $v < 0 ? 'neg' : ($v > 0 ? 'pos' : '');
 @endphp
 
-<h1>Anwesenheits-Auswertung</h1>
+<h1>{{ __('Anwesenheits-Auswertung') }}</h1>
 <div class="meta">
     Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->format('d.m.Y') }}</strong> bis
     <strong>{{ \Carbon\Carbon::parse($to)->format('d.m.Y') }}</strong> ·
@@ -70,7 +70,7 @@
                 <td class="right {{ $varClass($r['variance']) }}">{{ $fmtMin($r['variance']) }}</td>
             </tr>
         @empty
-            <tr><td colspan="6" style="text-align:center; padding:12pt; color:#888;">Keine Daten.</td></tr>
+            <tr><td colspan="6" style="text-align:center; padding:12pt; color:#888;">{{ __('Keine Daten.') }}</td></tr>
         @endforelse
         @if (! empty($rows))
             <tr class="totals">

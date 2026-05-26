@@ -17,7 +17,7 @@
                 <th>Status</th>
                 <th>Typ</th>
                 <th>Zeitpunkt</th>
-                <th>Erstellt von</th>
+                <th>{{ __('Erstellt von') }}</th>
                 <th>Auftrag</th>
             </tr>
         </thead>

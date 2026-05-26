@@ -27,7 +27,7 @@
     $pct = fn (float $v) => number_format($v * 100, 1, ',', '.') . ' %';
 @endphp
 
-<h1>Coverage / Soll-Ist-Besetzung</h1>
+<h1>{{ __('Coverage / Soll-Ist-Besetzung') }}</h1>
 <div class="meta">
     Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->format('d.m.Y') }}</strong> bis
     <strong>{{ \Carbon\Carbon::parse($to)->format('d.m.Y') }}</strong> ·
@@ -40,21 +40,21 @@
         <td><div class="label">Soll (Personentage)</div><div class="value">{{ $totals['required'] }}</div></td>
         <td><div class="label">Ist (Personentage)</div><div class="value">{{ $totals['scheduled'] }}</div></td>
         <td><div class="label">Differenz</div><div class="value {{ $totals['gap'] < 0 ? 'neg' : 'pos' }}">{{ $totals['gap'] > 0 ? '+' : '' }}{{ $totals['gap'] }}</div></td>
-        <td><div class="label">Erfüllung</div><div class="value">{{ $totals['fill_rate'] !== null ? $pct($totals['fill_rate']) : '–' }}</div></td>
+        <td><div class="label">{{ __('Erfüllung') }}</div><div class="value">{{ $totals['fill_rate'] !== null ? $pct($totals['fill_rate']) : '–' }}</div></td>
         <td><div class="label">Tage unter</div><div class="value {{ $totals['days_under'] > 0 ? 'neg' : '' }}">{{ $totals['days_under'] }}</div></td>
     </tr>
 </table>
 
-<h2>Pro Schichttyp</h2>
+<h2>{{ __('Pro Schichttyp') }}</h2>
 <table class="data">
     <thead>
         <tr>
-            <th>Schichttyp</th>
-            <th class="right">Soll</th>
-            <th class="right">Ist</th>
-            <th class="right">Differenz</th>
-            <th class="right">Erfüllung</th>
-            <th class="right">Tage unter</th>
+            <th>{{ __('Schichttyp') }}</th>
+            <th class="right">{{ __('Soll') }}</th>
+            <th class="right">{{ __('Ist') }}</th>
+            <th class="right">{{ __('Differenz') }}</th>
+            <th class="right">{{ __('Erfüllung') }}</th>
+            <th class="right">{{ __('Tage unter') }}</th>
         </tr>
     </thead>
     <tbody>
@@ -84,11 +84,11 @@
     <table class="data">
         <thead>
             <tr>
-                <th>Datum</th>
-                <th>Schichttyp</th>
-                <th class="right">Soll</th>
-                <th class="right">Ist</th>
-                <th class="right">Lücke</th>
+                <th>{{ __('Datum') }}</th>
+                <th>{{ __('Schichttyp') }}</th>
+                <th class="right">{{ __('Soll') }}</th>
+                <th class="right">{{ __('Ist') }}</th>
+                <th class="right">{{ __('Lücke') }}</th>
             </tr>
         </thead>
         <tbody>

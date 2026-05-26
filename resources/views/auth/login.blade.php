@@ -125,13 +125,13 @@
                         type="submit"
                         class="btn btn-primary w-full rounded-2xl font-['Space_Grotesk'] font-semibold"
                     >
-                        ⇢ Anmelden
+                        ⇢ {{ __('Anmelden') }}
                     </button>
                 </form>
             </div>
 
             <p class="mt-6 text-center text-sm text-base-content/70">
-                <a href="{{ route('home') }}" class="text-primary transition hover:opacity-80">← Zurück zur Startseite</a>
+                <a href="{{ route('home') }}" class="text-primary transition hover:opacity-80">← {{ __('Zurück zur Startseite') }}</a>
             </p>
             @if (config('app.registration_enabled'))
             <p class="mt-3 text-center text-sm text-base-content/70">
@@ -144,7 +144,7 @@
 
         <footer class="fixed inset-x-0 bottom-0 z-50 border-t border-base-300 bg-base-100 shadow-xs">
             <div class="mx-auto flex w-full max-w-screen-2xl items-center justify-center px-4 py-3 text-xs text-base-content/70 xl:px-8 2xl:px-12">
-                &copy; {{ date('Y') }} {{ isset($branding) && $branding ? $branding->appName() : 'WorkDiary' }}. Alle Rechte vorbehalten.
+                &copy; {{ date('Y') }} {{ isset($branding) && $branding ? $branding->appName() : 'WorkDiary' }}. {{ __('Alle Rechte vorbehalten.') }}
             </div>
         </footer>
         <script>

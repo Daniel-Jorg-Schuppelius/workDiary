@@ -81,11 +81,11 @@
         <div class="card-body gap-3">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Inhalt des Demo-Mandanten') }}</h2>
             <ul class="space-y-1 text-sm text-base-content/80">
-                <li>3 Demo-Kunden (ACME GmbH, Beispiel-Apotheke, Mustermann KG)</li>
-                <li>5 Demo-Projekte</li>
-                <li>6 Demo-Nutzer mit unterschiedlichen Rollen (Admin, Operator, Disponent, Buchhaltung, Read-Only)</li>
-                <li>1 Hauptauftrag „Server-Migration ACME" mit 3 Zeiterfassungen und 1 offenem Punkt</li>
-                <li>25 Hintergrund-Aufträge der letzten 60 Tage</li>
+                <li>{{ __('3 Demo-Kunden (ACME GmbH, Beispiel-Apotheke, Mustermann KG)') }}</li>
+                <li>{{ __('5 Demo-Projekte') }}</li>
+                <li>{{ __('6 Demo-Nutzer mit unterschiedlichen Rollen (Admin, Operator, Disponent, Buchhaltung, Read-Only)') }}</li>
+                <li>{{ __('1 Hauptauftrag „Server-Migration ACME" mit 3 Zeiterfassungen und 1 offenem Punkt') }}</li>
+                <li>{{ __('25 Hintergrund-Aufträge der letzten 60 Tage') }}</li>
             </ul>
         </div>
     </article>

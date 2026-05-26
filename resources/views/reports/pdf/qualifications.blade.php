@@ -56,7 +56,7 @@
 </table>
 
 @if ($users->isEmpty() || $qualifications->isEmpty())
-    <p style="text-align:center; padding:20pt; color:#888;">Keine Daten vorhanden.</p>
+    <p style="text-align:center; padding:20pt; color:#888;">{{ __('Keine Daten vorhanden.') }}</p>
 @else
     <table class="data">
         <thead>

@@ -42,17 +42,17 @@
 
 <table class="kpis">
     <tr>
-        <td><div class="label">Ausgestellt + Bezahlt</div><div class="value">{{ $eur($totalIssuedPaid) }}</div></td>
-        <td><div class="label">Offene Forderungen</div><div class="value">{{ $eur($aging['open_total']) }}</div></td>
+        <td><div class="label">{{ __('Ausgestellt + Bezahlt') }}</div><div class="value">{{ $eur($totalIssuedPaid) }}</div></td>
+        <td><div class="label">{{ __('Offene Forderungen') }}</div><div class="value">{{ $eur($aging['open_total']) }}</div></td>
         <td><div class="label">&gt; 30 Tage</div><div class="value {{ $aging['buckets']['30_plus']['count'] > 0 ? 'warn' : '' }}">{{ $aging['buckets']['30_plus']['count'] }} ({{ $eur($aging['buckets']['30_plus']['total']) }})</div></td>
-        <td><div class="label">Unbillte Zeit</div><div class="value">{{ $fmtMin($unbilled['minutes']) }} · {{ $eur($unbilled['projected_revenue']) }}</div></td>
+        <td><div class="label">{{ __('Unbillte Zeit') }}</div><div class="value">{{ $fmtMin($unbilled['minutes']) }} · {{ $eur($unbilled['projected_revenue']) }}</div></td>
     </tr>
 </table>
 
 <table class="grid">
     <tr>
         <td>
-            <h2>Rechnungen nach Status</h2>
+            <h2>{{ __('Rechnungen nach Status') }}</h2>
             <table class="data">
                 <thead><tr><th>Status</th><th class="right">Anzahl</th><th class="right">Netto</th><th class="right">Brutto</th></tr></thead>
                 <tbody>
@@ -68,7 +68,7 @@
             </table>
         </td>
         <td>
-            <h2>Aging – offene Posten</h2>
+            <h2>{{ __('Aging – offene Posten') }}</h2>
             <table class="data">
                 <thead><tr><th>Bucket</th><th class="right">Anzahl</th><th class="right">Summe</th></tr></thead>
                 <tbody>
@@ -97,7 +97,7 @@
                 <td class="right">{{ $eur($r['total']) }}</td>
             </tr>
         @empty
-            <tr><td colspan="3" style="text-align:center; padding:12pt; color:#888;">Keine Rechnungen im Zeitraum.</td></tr>
+            <tr><td colspan="3" style="text-align:center; padding:12pt; color:#888;">{{ __('Keine Rechnungen im Zeitraum.') }}</td></tr>
         @endforelse
     </tbody>
 </table>

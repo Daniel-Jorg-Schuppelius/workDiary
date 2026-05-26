@@ -195,6 +195,20 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'inhalt' => 'Content',
+        'content' => 'Content',
+        'response' => 'Response',
+        'status' => 'Status',
+        'start_at' => 'Start time',
+        'end_at' => 'End time',
+        'von' => 'From',
+        'bis' => 'To',
+        'user' => 'Employee',
+        'uname' => 'Username',
+        'userpw' => 'Password',
+        'email' => 'Email',
+        'week_date' => 'Week',
+    ],
 
 ];
