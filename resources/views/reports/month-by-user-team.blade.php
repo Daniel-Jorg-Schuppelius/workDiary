@@ -14,20 +14,21 @@
 @endphp
 
 <x-page-shell>
-
-    <x-filter-bar :action="route('reports.month-by-user-team')" :reset="route('reports.month-by-user-team')">
-        <x-slot:extra>
-            <x-icon-btn icon="download" tone="outline" size="sm"
-                        :href="route('reports.month-by-user-team', ['export' => 'csv'])"
-                        show-label>CSV</x-icon-btn>
-            <x-icon-btn icon="table_chart" tone="outline" size="sm"
-                        :href="route('reports.month-by-user-team', ['export' => 'xlsx'])"
-                        show-label>XLSX</x-icon-btn>
-            <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                        :href="route('reports.month-by-user-team', ['export' => 'pdf'])"
-                        show-label>PDF</x-icon-btn>
-        </x-slot:extra>
-    </x-filter-bar>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Stunden je Mitarbeiter und Monat über das Jahr.')">
+            <x-slot:actions>
+                <x-icon-btn icon="download" tone="outline" size="sm"
+                            :href="route('reports.month-by-user-team', ['export' => 'csv'])"
+                            show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="table_chart" tone="outline" size="sm"
+                            :href="route('reports.month-by-user-team', ['export' => 'xlsx'])"
+                            show-label>XLSX</x-icon-btn>
+                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
+                            :href="route('reports.month-by-user-team', ['export' => 'pdf'])"
+                            show-label>PDF</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">

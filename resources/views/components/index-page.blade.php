@@ -2,7 +2,7 @@
     'subtitle' => null,
     'badge'    => null,
     'badgeTone' => 'primary',
-    'gap'      => 6,
+    'gap'      => 4,
     'overflow' => 'auto',
     'height'   => 'standard',
 ])
@@ -22,7 +22,7 @@
       - badgeTone : Tone für Badge (primary|success|warning|error|info)
 
     Props (Shell, durchgereicht an x-page-shell):
-      - gap       : Lücke zwischen Karten (Tailwind-Spacing, Default 6)
+      - gap       : Lücke zwischen Karten (Tailwind-Spacing, Default 4)
       - overflow  : auto (Default) | clip
       - height    : standard (Default) | content
 

@@ -4,6 +4,19 @@
 
 @section('content')
 <x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Plan vs. Ist, Nacharbeit und Eskalation je Auftragstyp.')">
+            <x-slot:actions>
+                <x-icon-btn icon="download" tone="outline" size="sm"
+                            :href="route('reports.entry-types', array_filter(['customer_id' => $customerId, 'user_id' => $userId, 'entry_type_id' => $entryTypeFilter, 'status' => $statusFilter, 'export' => 'csv']))"
+                            show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
+                            :href="route('reports.entry-types', array_filter(['customer_id' => $customerId, 'user_id' => $userId, 'entry_type_id' => $entryTypeFilter, 'status' => $statusFilter, 'export' => 'pdf']))"
+                            show-label>PDF</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
+
     <x-filter-bar :action="route('reports.entry-types')" :reset="route('reports.entry-types')">
         <x-filter-field :label="__('Kunde')" for="rep-customer">
             <select id="rep-customer" name="customer_id" class="select select-sm select-bordered">
@@ -40,15 +53,6 @@
                 @endforeach
             </select>
         </x-filter-field>
-
-        <x-slot:extra>
-            <x-icon-btn icon="download" tone="outline" size="sm"
-                        :href="route('reports.entry-types', array_filter(['customer_id' => $customerId, 'user_id' => $userId, 'entry_type_id' => $entryTypeFilter, 'status' => $statusFilter, 'export' => 'csv']))"
-                        show-label>CSV</x-icon-btn>
-            <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                        :href="route('reports.entry-types', array_filter(['customer_id' => $customerId, 'user_id' => $userId, 'entry_type_id' => $entryTypeFilter, 'status' => $statusFilter, 'export' => 'pdf']))"
-                        show-label>PDF</x-icon-btn>
-        </x-slot:extra>
     </x-filter-bar>
 
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">

@@ -10,7 +10,7 @@
 
 @section('content')
 @php $isEdit = (bool) $template->exists; @endphp
-<x-page-shell gap="6">
+<x-page-shell>
     <x-page-toolbar :title="$isEdit ? __('Vorlage bearbeiten') : __('Neue Vorlage')">
         <x-slot:actions>
             <a href="{{ route('invoice-templates.index') }}" class="btn btn-secondary">{{ __('Zurück') }}</a>

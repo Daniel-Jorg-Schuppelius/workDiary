@@ -22,17 +22,18 @@
 @endphp
 
 <x-page-shell>
-
-    <x-filter-bar :action="route('reports.qualifications')" :reset="route('reports.qualifications')">
-        <x-slot:extra>
-            <x-icon-btn icon="download" tone="outline" size="sm"
-                        :href="route('reports.qualifications', ['export' => 'csv'])"
-                        show-label>CSV</x-icon-btn>
-            <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                        :href="route('reports.qualifications', ['export' => 'pdf'])"
-                        show-label>PDF</x-icon-btn>
-        </x-slot:extra>
-    </x-filter-bar>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Qualifikationsmatrix der Mitarbeiter inkl. Ablauf- und Warnstatus.')">
+            <x-slot:actions>
+                <x-icon-btn icon="download" tone="outline" size="sm"
+                            :href="route('reports.qualifications', ['export' => 'csv'])"
+                            show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
+                            :href="route('reports.qualifications', ['export' => 'pdf'])"
+                            show-label>PDF</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['users'] }}</div></div>

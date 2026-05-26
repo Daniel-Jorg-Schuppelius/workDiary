@@ -4,17 +4,20 @@
 
 @section('content')
 <x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Krankheitsfälle, AU-Bescheinigungen und Lohnfortzahlung je Mitarbeiter.')" />
+    </x-slot:toolbar>
 
-    <x-filter-bar :action="route('reports.sickness')" :reset="route('reports.sickness')">
-        @if ($isAdmin)
+    @if ($isAdmin)
+        <x-filter-bar :action="route('reports.sickness')" :reset="route('reports.sickness')">
             <x-filter-field :label="__('Bereich')" for="rep-scope">
                 <select id="rep-scope" name="scope" class="select select-sm select-bordered" onchange="this.form.submit()">
                     <option value="mine" @selected($scope === 'mine')>{{ __('Nur eigene') }}</option>
                     <option value="team" @selected($scope === 'team')>{{ __('Gesamtes Team') }}</option>
                 </select>
             </x-filter-field>
-        @endif
-    </x-filter-bar>
+        </x-filter-bar>
+    @endif
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">

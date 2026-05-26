@@ -12,7 +12,7 @@
 @section('nav-title', __('Rechnungsvorlagen'))
 
 @section('content')
-<x-page-shell gap="6">
+<x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('PDF-Layouts pro Mandant verwalten.')">
             <x-slot:actions>

@@ -25,26 +25,24 @@
 @endphp
 
 <x-page-shell>
-
-    <x-filter-bar :action="route('reports.my-month')" :reset="route('reports.my-month')">
-        <x-slot:extra>
-            <x-icon-btn icon="download" tone="outline" size="sm"
-                        :href="route('reports.my-month', ['export' => 'csv'])"
-                        show-label>CSV</x-icon-btn>
-            <x-icon-btn icon="table_chart" tone="outline" size="sm"
-                        :href="route('reports.my-month', ['export' => 'xlsx'])"
-                        show-label>XLSX</x-icon-btn>
-            <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                        :href="route('reports.my-month', ['export' => 'pdf'])"
-                        show-label>PDF</x-icon-btn>
-        </x-slot:extra>
-    </x-filter-bar>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Tagesweise Übersicht aller eigenen Zeiteinträge im Monat.')">
+            <x-slot:actions>
+                <x-icon-btn icon="download" tone="outline" size="sm"
+                            :href="route('reports.my-month', ['export' => 'csv'])"
+                            show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="table_chart" tone="outline" size="sm"
+                            :href="route('reports.my-month', ['export' => 'xlsx'])"
+                            show-label>XLSX</x-icon-btn>
+                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
+                            :href="route('reports.my-month', ['export' => 'pdf'])"
+                            show-label>PDF</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-            <p class="text-xs text-base-content/60">
-                {{ __('Tagesweise Übersicht aller eigenen Zeiteinträge im Monat.') }}
-            </p>
+        <div class="mb-3 flex flex-wrap items-baseline justify-end gap-2">
             <div class="flex items-baseline gap-4">
                 <div class="flex items-baseline gap-2">
                     <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">Σ Std.</span>

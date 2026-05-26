@@ -62,9 +62,7 @@
     </div>
 
     @if ($customers->total() === 0)
-        <x-card>
-            <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">business</span>' :title="$search !== '' ? __('Keine Kunden für „:q“ gefunden.', ['q' => $search]) : __('Noch keine Kunden in dieser Ansicht')" />
-        </x-card>
+        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">business</span>' :title="$search !== '' ? __('Keine Kunden für „:q“ gefunden.', ['q' => $search]) : __('Noch keine Kunden in dieser Ansicht')" />
     @else
         <x-card padding="p-0">
             <x-table table-sort="server"

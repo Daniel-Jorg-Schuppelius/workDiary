@@ -4,7 +4,7 @@
 @section('nav-title', __('Branchenprofile'))
 
 @section('content')
-<x-page-shell gap="6">
+<x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Vorlagen für :org: Klassifikationen, Pflichtregeln und Tags in einem Schritt installieren.', ['org' => $organization->name])" />
     </x-slot:toolbar>

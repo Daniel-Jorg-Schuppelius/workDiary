@@ -36,6 +36,9 @@
 @endphp
 
 <x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Stunden pro Tag und Monat — Färbung skaliert mit dem höchsten Tageswert des Jahres.')" />
+    </x-slot:toolbar>
 
     <x-filter-bar :action="route('reports.my-year')" :reset="route('reports.my-year')">
         <x-filter-field :label="__('Art')" for="rep-kind">
@@ -49,10 +52,7 @@
     </x-filter-bar>
 
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <p class="text-xs text-base-content/60">
-                {{ __('Stunden pro Tag und Monat — Färbung skaliert mit dem höchsten Tageswert des Jahres.') }}
-            </p>
+        <div class="mb-3 flex flex-wrap items-center justify-end gap-2">
             <div class="flex items-baseline gap-2">
                 <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ __('Jahressumme') }}</span>
                 <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $yearTotal > 0 ? 'text-primary' : 'text-base-content/50' }}">

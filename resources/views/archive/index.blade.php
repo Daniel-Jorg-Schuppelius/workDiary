@@ -51,7 +51,7 @@
 
     <x-page-shell overflow="clip">
         <x-slot:toolbar>
-            <x-page-toolbar :subtitle="__('Archivierte Einträge des Mandanten einsehen.')" :badge="__('Archiv')" badge-tone="neutral">
+            <x-page-toolbar :badge="__('Archiv')" badge-tone="neutral">
                 <x-slot:actions>
                     <x-icon-btn icon="arrow_back" size="sm"
                                 :href="route('duties.index', ['tab' => match($tab) { 'diary' => 'diary', 'urlaub' => 'urlaub', default => $tab }])"

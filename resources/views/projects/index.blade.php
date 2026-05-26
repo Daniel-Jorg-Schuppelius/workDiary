@@ -51,9 +51,7 @@
     </x-filter-bar>
 
     @if ($projects->isEmpty())
-        <x-card>
-            <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">folder_open</span>' :title="__('Noch keine Projekte angelegt')" />
-        </x-card>
+        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">folder_open</span>' :title="__('Noch keine Projekte angelegt')" />
     @else
         <x-card padding="p-0">
             <x-table bare>

@@ -4,7 +4,7 @@
 @section('nav-title', __('API-Tokens'))
 
 @section('content')
-<x-page-shell gap="6">
+<x-page-shell>
 
     @if (! empty($newToken))
         <div class="rounded-box border border-success/30 bg-success/10 p-4">

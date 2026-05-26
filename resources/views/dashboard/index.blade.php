@@ -11,7 +11,7 @@
         /** @var array|null $onboarding */
     @endphp
 
-    <x-page-shell gap="6">
+    <x-page-shell>
 
         {{-- Header --}}
         <div class="flex flex-wrap items-end justify-between gap-3">

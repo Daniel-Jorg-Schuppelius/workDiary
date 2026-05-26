@@ -4,6 +4,9 @@
 
 @section('content')
 <x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Spesen je Mitarbeiter und Kategorie über den Zeitraum.')" />
+    </x-slot:toolbar>
 
     <x-filter-bar :action="route('reports.expenses')" :reset="route('reports.expenses')">
         @if ($isAdmin)

@@ -4,7 +4,7 @@
 @section('nav-title', __('access.title.roles'))
 
 @section('content')
-<x-page-shell gap="6">
+<x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Organisations- und Plattform-Rollen für :org verwalten.', ['org' => $organization->name])">
             <x-slot:actions>

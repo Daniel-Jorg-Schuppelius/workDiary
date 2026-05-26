@@ -4,7 +4,7 @@
 @section('nav-title', __('Automatisierung: :name', ['name' => $rule->name]))
 
 @section('content')
-<x-page-shell gap="6">
+<x-page-shell>
     <a href="{{ route('admin.automations.index') }}" class="link link-hover text-sm">&larr; {{ __('Zur Übersicht') }}</a>
 
     <div class="card bg-base-100 border border-base-300">

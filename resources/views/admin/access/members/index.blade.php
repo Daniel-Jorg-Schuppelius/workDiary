@@ -4,7 +4,7 @@
 @section('nav-title', __('access.title.members'))
 
 @section('content')
-<x-page-shell gap="6">
+<x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Mitgliedschaften und Rollen-Zuweisungen pro Organisation verwalten.')">
             <x-slot:actions>

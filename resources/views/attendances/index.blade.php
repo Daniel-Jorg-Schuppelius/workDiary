@@ -10,7 +10,7 @@
         /** @var \Carbon\CarbonInterface $to */
     @endphp
 
-    <x-page-shell gap="6">
+    <x-page-shell>
         <x-slot:toolbar>
             <x-page-toolbar :subtitle="__('Stempelungen und Anwesenheiten der Mitarbeiter einsehen.')">
                 <x-slot:actions>

@@ -14,6 +14,23 @@
 @endphp
 
 <x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Stunden und Erlöse je Monat für ein einzelnes Projekt.')">
+            <x-slot:actions>
+                @if ($project)
+                    <x-icon-btn icon="download" tone="outline" size="sm"
+                                :href="route('reports.project-details', ['project_id' => $projectId, 'export' => 'csv'])"
+                                show-label>CSV</x-icon-btn>
+                    <x-icon-btn icon="table_chart" tone="outline" size="sm"
+                                :href="route('reports.project-details', ['project_id' => $projectId, 'export' => 'xlsx'])"
+                                show-label>XLSX</x-icon-btn>
+                    <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
+                                :href="route('reports.project-details', ['project_id' => $projectId, 'export' => 'pdf'])"
+                                show-label>PDF</x-icon-btn>
+                @endif
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <x-filter-bar :action="route('reports.project-details')" :reset="route('reports.project-details')">
         <x-filter-field :label="__('Projekt')" for="rep-project">
@@ -25,19 +42,6 @@
                 @endforeach
             </select>
         </x-filter-field>
-        <x-slot:extra>
-            @if ($project)
-                <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.project-details', ['project_id' => $projectId, 'export' => 'csv'])"
-                            show-label>CSV</x-icon-btn>
-                <x-icon-btn icon="table_chart" tone="outline" size="sm"
-                            :href="route('reports.project-details', ['project_id' => $projectId, 'export' => 'xlsx'])"
-                            show-label>XLSX</x-icon-btn>
-                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.project-details', ['project_id' => $projectId, 'export' => 'pdf'])"
-                            show-label>PDF</x-icon-btn>
-            @endif
-        </x-slot:extra>
     </x-filter-bar>
 
     @if (! $project)

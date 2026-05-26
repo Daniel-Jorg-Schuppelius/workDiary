@@ -4,7 +4,7 @@
 @section('nav-title', __('access.title.permissions'))
 
 @section('content')
-<x-page-shell gap="6">
+<x-page-shell>
     <div class="alert">
         <x-icon name="lock" />
         <span>{{ __('access.hint.permissions_readonly') }}</span>

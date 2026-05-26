@@ -3,7 +3,7 @@
 @section('nav-title', __('Schichttypen'))
 
 @section('content')
-    <x-page-shell gap="6">
+    <x-page-shell>
         <x-slot:toolbar>
             <x-page-toolbar :subtitle="__('Schichttypen für Dienstpläne und Stempelungen verwalten.')">
                 <x-slot:actions>

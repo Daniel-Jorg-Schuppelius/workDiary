@@ -9,7 +9,7 @@
     $orgLifecycle = app(\App\Services\OrganizationLifecycleService::class);
     $cooldownHours = $orgLifecycle->cooldownHours();
 @endphp
-<x-page-shell gap="6">
+<x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Mandanten der Plattform verwalten und konfigurieren.')">
             <x-slot:actions>

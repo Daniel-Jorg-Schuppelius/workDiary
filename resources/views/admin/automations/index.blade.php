@@ -4,7 +4,7 @@
 @section('nav-title', __('Automatisierungen'))
 
 @section('content')
-<x-page-shell gap="6">
+<x-page-shell>
     <div role="alert" class="alert alert-info alert-soft">
         <x-icon name="bolt" />
         <div>

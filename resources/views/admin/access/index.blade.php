@@ -4,7 +4,7 @@
 @section('nav-title', __('access.title.hub'))
 
 @section('content')
-<x-page-shell gap="6">
+<x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$organization ? __('Rollen, Gruppen, Mitglieder und Berechtigungen für :org verwalten.', ['org' => $organization->name]) : __('Zugriffssteuerung & Berechtigungen.')" />
     </x-slot:toolbar>

@@ -14,28 +14,32 @@
 @endphp
 
 <x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Stunden je Mitarbeiter und Tag in der ausgewählten Kalenderwoche.')">
+            <x-slot:actions>
+                <x-icon-btn icon="download" tone="outline" size="sm"
+                            :href="route('reports.week-by-user', array_filter(['scope' => $isAdmin ? $scope : null, 'week' => $activeKey, 'export' => 'csv']))"
+                            show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="table_chart" tone="outline" size="sm"
+                            :href="route('reports.week-by-user', array_filter(['scope' => $isAdmin ? $scope : null, 'week' => $activeKey, 'export' => 'xlsx']))"
+                            show-label>XLSX</x-icon-btn>
+                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
+                            :href="route('reports.week-by-user', array_filter(['scope' => $isAdmin ? $scope : null, 'week' => $activeKey, 'export' => 'pdf']))"
+                            show-label>PDF</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
-    <x-filter-bar :action="route('reports.week-by-user')" :reset="route('reports.week-by-user')">
-        @if ($isAdmin)
+    @if ($isAdmin)
+        <x-filter-bar :action="route('reports.week-by-user')" :reset="route('reports.week-by-user')">
             <x-filter-field :label="__('Bereich')" for="rep-scope">
                 <select id="rep-scope" name="scope" class="select select-sm select-bordered" onchange="this.form.submit()">
                     <option value="mine" @selected($scope === 'mine')>{{ __('Nur meine') }}</option>
                     <option value="team" @selected($scope === 'team')>{{ __('Gesamtes Team') }}</option>
                 </select>
             </x-filter-field>
-        @endif
-        <x-slot:extra>
-            <x-icon-btn icon="download" tone="outline" size="sm"
-                        :href="route('reports.week-by-user', array_filter(['scope' => $isAdmin ? $scope : null, 'week' => $activeKey, 'export' => 'csv']))"
-                        show-label>CSV</x-icon-btn>
-            <x-icon-btn icon="table_chart" tone="outline" size="sm"
-                        :href="route('reports.week-by-user', array_filter(['scope' => $isAdmin ? $scope : null, 'week' => $activeKey, 'export' => 'xlsx']))"
-                        show-label>XLSX</x-icon-btn>
-            <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                        :href="route('reports.week-by-user', array_filter(['scope' => $isAdmin ? $scope : null, 'week' => $activeKey, 'export' => 'pdf']))"
-                        show-label>PDF</x-icon-btn>
-        </x-slot:extra>
-    </x-filter-bar>
+        </x-filter-bar>
+    @endif
 
     @if ($weeksTruncated ?? false)
         <div class="alert alert-warning text-sm">

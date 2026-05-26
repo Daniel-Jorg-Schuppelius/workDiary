@@ -12,78 +12,70 @@
                     show-label>{{ __('Pflichtregel anlegen') }}</x-icon-btn>
     </x-slot:actions>
 
-    <x-card>
-        <form method="GET" action="{{ route('admin.classification-requirements.index') }}"
-              class="flex flex-nowrap items-center gap-2 overflow-x-auto">
-            <input type="text"
-                   name="q"
-                   value="{{ $activeFilters['q'] ?? '' }}"
-                   class="input input-sm input-bordered w-48 shrink-0"
-                   placeholder="{{ __('Suche') }}"
-                   aria-label="{{ __('Suche') }}" />
+    <x-filter-bar :action="route('admin.classification-requirements.index')" :reset="route('admin.classification-requirements.index')">
+        <input type="text"
+               name="q"
+               value="{{ $activeFilters['q'] ?? '' }}"
+               class="input input-sm input-bordered w-48 shrink-0"
+               placeholder="{{ __('Suche') }}"
+               aria-label="{{ __('Suche') }}" />
 
-            <select name="domain" class="select select-sm select-bordered w-32 shrink-0" aria-label="{{ __('Pflicht-Domain') }}" title="{{ __('Pflicht-Domain') }}">
-                <option value="all" @selected(($activeFilters['domain'] ?? 'all') === 'all')>{{ __('Domain') }}</option>
-                @foreach ($domainLabels as $domainCode => $domainLabel)
-                    @continue($domainCode === \App\Enums\Classification\ClassificationDomain::EntryType->value)
-                    <option value="{{ $domainCode }}" @selected(($activeFilters['domain'] ?? 'all') === $domainCode)>{{ $domainLabel }}</option>
-                @endforeach
-            </select>
+        <select name="domain" class="select select-sm select-bordered w-32 shrink-0" aria-label="{{ __('Pflicht-Domain') }}" title="{{ __('Pflicht-Domain') }}">
+            <option value="all" @selected(($activeFilters['domain'] ?? 'all') === 'all')>{{ __('Domain') }}</option>
+            @foreach ($domainLabels as $domainCode => $domainLabel)
+                @continue($domainCode === \App\Enums\Classification\ClassificationDomain::EntryType->value)
+                <option value="{{ $domainCode }}" @selected(($activeFilters['domain'] ?? 'all') === $domainCode)>{{ $domainLabel }}</option>
+            @endforeach
+        </select>
 
-            <select name="phase" class="select select-sm select-bordered w-28 shrink-0" aria-label="{{ __('Phase') }}" title="{{ __('Phase') }}">
-                <option value="all" @selected(($activeFilters['phase'] ?? 'all') === 'all')>{{ __('Phase') }}</option>
-                @foreach ($phaseLabels as $phaseCode => $phaseLabel)
-                    <option value="{{ $phaseCode }}" @selected(($activeFilters['phase'] ?? 'all') === $phaseCode)>{{ $phaseLabel }}</option>
-                @endforeach
-            </select>
+        <select name="phase" class="select select-sm select-bordered w-28 shrink-0" aria-label="{{ __('Phase') }}" title="{{ __('Phase') }}">
+            <option value="all" @selected(($activeFilters['phase'] ?? 'all') === 'all')>{{ __('Phase') }}</option>
+            @foreach ($phaseLabels as $phaseCode => $phaseLabel)
+                <option value="{{ $phaseCode }}" @selected(($activeFilters['phase'] ?? 'all') === $phaseCode)>{{ $phaseLabel }}</option>
+            @endforeach
+        </select>
 
-            <select name="condition" class="select select-sm select-bordered w-28 shrink-0" aria-label="{{ __('Bedingung') }}" title="{{ __('Bedingung') }}">
-                <option value="all" @selected(($activeFilters['condition'] ?? 'all') === 'all')>{{ __('Bedingung') }}</option>
-                @foreach ($conditionOptions as $conditionCode => $conditionLabel)
-                    <option value="{{ $conditionCode }}" @selected(($activeFilters['condition'] ?? 'all') === $conditionCode)>{{ $conditionLabel }}</option>
-                @endforeach
-            </select>
+        <select name="condition" class="select select-sm select-bordered w-28 shrink-0" aria-label="{{ __('Bedingung') }}" title="{{ __('Bedingung') }}">
+            <option value="all" @selected(($activeFilters['condition'] ?? 'all') === 'all')>{{ __('Bedingung') }}</option>
+            @foreach ($conditionOptions as $conditionCode => $conditionLabel)
+                <option value="{{ $conditionCode }}" @selected(($activeFilters['condition'] ?? 'all') === $conditionCode)>{{ $conditionLabel }}</option>
+            @endforeach
+        </select>
 
-            <select name="note" class="select select-sm select-bordered w-28 shrink-0" aria-label="{{ __('Hinweis') }}" title="{{ __('Hinweis') }}">
-                <option value="all" @selected(($activeFilters['note'] ?? 'all') === 'all')>{{ __('Hinweis') }}</option>
-                @foreach ($noteOptions as $noteCode => $noteLabel)
-                    <option value="{{ $noteCode }}" @selected(($activeFilters['note'] ?? 'all') === $noteCode)>{{ $noteLabel }}</option>
-                @endforeach
-            </select>
+        <select name="note" class="select select-sm select-bordered w-28 shrink-0" aria-label="{{ __('Hinweis') }}" title="{{ __('Hinweis') }}">
+            <option value="all" @selected(($activeFilters['note'] ?? 'all') === 'all')>{{ __('Hinweis') }}</option>
+            @foreach ($noteOptions as $noteCode => $noteLabel)
+                <option value="{{ $noteCode }}" @selected(($activeFilters['note'] ?? 'all') === $noteCode)>{{ $noteLabel }}</option>
+            @endforeach
+        </select>
 
-            <select name="allow_multi" class="select select-sm select-bordered w-28 shrink-0" aria-label="{{ __('Mehrfachauswahl') }}" title="{{ __('Mehrfachauswahl') }}">
-                <option value="all" @selected(($activeFilters['allow_multi'] ?? 'all') === 'all')>{{ __('Mehrfach') }}</option>
-                @foreach ($allowMultiOptions as $allowMultiCode => $allowMultiLabel)
-                    <option value="{{ $allowMultiCode }}" @selected(($activeFilters['allow_multi'] ?? 'all') === $allowMultiCode)>{{ $allowMultiLabel }}</option>
-                @endforeach
-            </select>
+        <select name="allow_multi" class="select select-sm select-bordered w-28 shrink-0" aria-label="{{ __('Mehrfachauswahl') }}" title="{{ __('Mehrfachauswahl') }}">
+            <option value="all" @selected(($activeFilters['allow_multi'] ?? 'all') === 'all')>{{ __('Mehrfach') }}</option>
+            @foreach ($allowMultiOptions as $allowMultiCode => $allowMultiLabel)
+                <option value="{{ $allowMultiCode }}" @selected(($activeFilters['allow_multi'] ?? 'all') === $allowMultiCode)>{{ $allowMultiLabel }}</option>
+            @endforeach
+        </select>
 
-            <select name="max_count" class="select select-sm select-bordered w-24 shrink-0" aria-label="{{ __('Maximalanzahl') }}" title="{{ __('Maximalanzahl') }}">
-                <option value="all" @selected(($activeFilters['max_count'] ?? 'all') === 'all')>{{ __('Limit') }}</option>
-                @foreach ($maxCountOptions as $maxCountCode => $maxCountLabel)
-                    <option value="{{ $maxCountCode }}" @selected(($activeFilters['max_count'] ?? 'all') === $maxCountCode)>{{ $maxCountLabel }}</option>
-                @endforeach
-            </select>
+        <select name="max_count" class="select select-sm select-bordered w-24 shrink-0" aria-label="{{ __('Maximalanzahl') }}" title="{{ __('Maximalanzahl') }}">
+            <option value="all" @selected(($activeFilters['max_count'] ?? 'all') === 'all')>{{ __('Limit') }}</option>
+            @foreach ($maxCountOptions as $maxCountCode => $maxCountLabel)
+                <option value="{{ $maxCountCode }}" @selected(($activeFilters['max_count'] ?? 'all') === $maxCountCode)>{{ $maxCountLabel }}</option>
+            @endforeach
+        </select>
 
-            <select name="severity" class="select select-sm select-bordered w-28 shrink-0" aria-label="{{ __('Schweregrad') }}" title="{{ __('Schweregrad') }}">
-                <option value="all" @selected(($activeFilters['severity'] ?? 'all') === 'all')>{{ __('Schwere') }}</option>
-                @foreach ($severityLabels as $severityCode => $severityLabel)
-                    <option value="{{ $severityCode }}" @selected(($activeFilters['severity'] ?? 'all') === $severityCode)>{{ $severityLabel }}</option>
-                @endforeach
-            </select>
+        <select name="severity" class="select select-sm select-bordered w-28 shrink-0" aria-label="{{ __('Schweregrad') }}" title="{{ __('Schweregrad') }}">
+            <option value="all" @selected(($activeFilters['severity'] ?? 'all') === 'all')>{{ __('Schwere') }}</option>
+            @foreach ($severityLabels as $severityCode => $severityLabel)
+                <option value="{{ $severityCode }}" @selected(($activeFilters['severity'] ?? 'all') === $severityCode)>{{ $severityLabel }}</option>
+            @endforeach
+        </select>
 
-            <select name="sort" class="select select-sm select-bordered w-32 shrink-0" aria-label="{{ __('Sortierung') }}" title="{{ __('Sortierung') }}">
-                @foreach ($sortOptions as $sortCode => $sortLabel)
-                    <option value="{{ $sortCode }}" @selected(($activeFilters['sort'] ?? 'entry_type_code') === $sortCode)>{{ $sortLabel }}</option>
-                @endforeach
-            </select>
-
-            <div class="flex gap-1 ml-auto shrink-0">
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('Filtern') }}</button>
-                <a href="{{ route('admin.classification-requirements.index') }}" class="btn btn-sm btn-ghost">{{ __('Reset') }}</a>
-            </div>
-        </form>
-    </x-card>
+        <select name="sort" class="select select-sm select-bordered w-32 shrink-0" aria-label="{{ __('Sortierung') }}" title="{{ __('Sortierung') }}">
+            @foreach ($sortOptions as $sortCode => $sortLabel)
+                <option value="{{ $sortCode }}" @selected(($activeFilters['sort'] ?? 'entry_type_code') === $sortCode)>{{ $sortLabel }}</option>
+            @endforeach
+        </select>
+    </x-filter-bar>
 
     <div class="flex flex-wrap items-center gap-3 px-1">
         <span class="text-sm font-medium">

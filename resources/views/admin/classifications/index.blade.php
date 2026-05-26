@@ -4,7 +4,7 @@
 @section('nav-title', __('Klassifikationen'))
 
 @section('content')
-<x-page-shell gap="6">
+<x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Plattform-Defaults vergleichen und organisationsspezifische Werte pflegen für :org.', ['org' => $organization->name])">
             <x-slot:actions>

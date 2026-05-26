@@ -17,7 +17,7 @@
     $logoHelper = __('PNG, JPG oder WEBP. Max. :max KB.', ['max' => $logoMaxKb]);
 @endphp
 
-<x-page-shell gap="6">
+<x-page-shell>
     @if (session('success'))
         <div class="alert alert-success">
             <x-icon name="check_circle" /> <span>{{ session('success') }}</span>

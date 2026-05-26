@@ -13,25 +13,29 @@
 @endphp
 
 <x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Bereitschaftsschichten, aktive Einsätze und Aktiv-Anteil je Mitarbeiter.')">
+            <x-slot:actions>
+                <x-icon-btn icon="download" tone="outline" size="sm"
+                            :href="route('reports.on-call', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'csv']))"
+                            show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
+                            :href="route('reports.on-call', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'pdf']))"
+                            show-label>PDF</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
-    <x-filter-bar :action="route('reports.on-call')" :reset="route('reports.on-call')">
-        @if ($isAdmin)
+    @if ($isAdmin)
+        <x-filter-bar :action="route('reports.on-call')" :reset="route('reports.on-call')">
             <x-filter-field :label="__('Bereich')" for="rep-scope">
                 <select id="rep-scope" name="scope" class="select select-sm select-bordered" onchange="this.form.submit()">
                     <option value="mine" @selected($scope === 'mine')>{{ __('Nur meine Bereitschaft') }}</option>
                     <option value="team" @selected($scope === 'team')>{{ __('Gesamtes Team') }}</option>
                 </select>
             </x-filter-field>
-        @endif
-        <x-slot:extra>
-            <x-icon-btn icon="download" tone="outline" size="sm"
-                        :href="route('reports.on-call', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'csv']))"
-                        show-label>CSV</x-icon-btn>
-            <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                        :href="route('reports.on-call', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'pdf']))"
-                        show-label>PDF</x-icon-btn>
-        </x-slot:extra>
-    </x-filter-bar>
+        </x-filter-bar>
+    @endif
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">

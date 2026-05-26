@@ -3,7 +3,7 @@
 @section('nav-title', __('Schicht am :date', ['date' => $shift->date->format('d.m.Y')]))
 
 @section('content')
-    <x-page-shell gap="6">
+    <x-page-shell>
         <x-page-toolbar :badge="$shift->statusLabel()" :badge-tone="$shift->statusTone()">
             @if ($shift->user)
                 <span>{{ $shift->user->name }}</span>

@@ -12,25 +12,29 @@
 @endphp
 
 <x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Soll, Anwesenheit, gebuchte Zeit und Saldo je Mitarbeiter im Zeitraum.')">
+            <x-slot:actions>
+                <x-icon-btn icon="download" tone="outline" size="sm"
+                            :href="route('reports.attendance', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'csv']))"
+                            show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
+                            :href="route('reports.attendance', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'pdf']))"
+                            show-label>PDF</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
-    <x-filter-bar :action="route('reports.attendance')" :reset="route('reports.attendance')">
-        @if ($isAdmin)
+    @if ($isAdmin)
+        <x-filter-bar :action="route('reports.attendance')" :reset="route('reports.attendance')">
             <x-filter-field :label="__('Bereich')" for="rep-scope">
                 <select id="rep-scope" name="scope" class="select select-sm select-bordered" onchange="this.form.submit()">
                     <option value="mine" @selected($scope === 'mine')>{{ __('Nur eigene') }}</option>
                     <option value="team" @selected($scope === 'team')>{{ __('Gesamtes Team') }}</option>
                 </select>
             </x-filter-field>
-        @endif
-        <x-slot:extra>
-            <x-icon-btn icon="download" tone="outline" size="sm"
-                        :href="route('reports.attendance', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'csv']))"
-                        show-label>CSV</x-icon-btn>
-            <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                        :href="route('reports.attendance', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'pdf']))"
-                        show-label>PDF</x-icon-btn>
-        </x-slot:extra>
-    </x-filter-bar>
+        </x-filter-bar>
+    @endif
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Soll') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $fmtMin($totals['target']) }}</div></div>

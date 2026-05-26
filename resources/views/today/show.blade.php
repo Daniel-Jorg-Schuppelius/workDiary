@@ -29,7 +29,7 @@
 @endphp
 
 @section('content')
-    <x-page-shell gap="6"
+    <x-page-shell
         x-data="{
             isLive: {{ $isLive ? 'true' : 'false' }},
             baseAttendance: {{ $attendanceMinutes }},

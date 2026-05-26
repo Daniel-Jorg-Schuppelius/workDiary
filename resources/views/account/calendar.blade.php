@@ -4,7 +4,7 @@
 @section('nav-title', __('Kalender-Abo'))
 
 @section('content')
-<x-page-shell gap="6">
+<x-page-shell>
     <div role="alert" class="alert alert-info alert-soft">
         <x-icon name="calendar_month" />
         <div>

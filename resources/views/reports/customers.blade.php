@@ -13,6 +13,20 @@
 @endphp
 
 <x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Aufwand, Nacharbeit und Nicht-Abrechenbares je Kunde.')">
+            <x-slot:actions>
+                <x-icon-btn icon="download" tone="outline" size="sm"
+                            :href="route('reports.customers', array_filter(['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'project_id' => $projectId, 'user_id' => $userId, 'export' => 'csv']))"
+                            show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
+                            :href="route('reports.customers', array_filter(['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'project_id' => $projectId, 'user_id' => $userId, 'export' => 'pdf']))"
+                            show-label>PDF</x-icon-btn>
+                <x-help-button topic="reports.customer-analysis" />
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
+
     <x-filter-bar :action="route('reports.customers')" :reset="route('reports.customers')">
         <x-filter-field :label="__('Mindest-Aufwand (Minuten)')" for="rep-min-minutes">
             <input id="rep-min-minutes" type="number" name="min_minutes" value="{{ $minMinutes }}" min="0" class="input input-sm input-bordered w-36" />
@@ -35,16 +49,6 @@
                 @endforeach
             </select>
         </x-filter-field>
-
-        <x-slot:extra>
-            <x-icon-btn icon="download" tone="outline" size="sm"
-                        :href="route('reports.customers', array_filter(['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'project_id' => $projectId, 'user_id' => $userId, 'export' => 'csv']))"
-                        show-label>CSV</x-icon-btn>
-            <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                        :href="route('reports.customers', array_filter(['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'project_id' => $projectId, 'user_id' => $userId, 'export' => 'pdf']))"
-                        show-label>PDF</x-icon-btn>
-            <x-help-button topic="reports.customer-analysis" />
-        </x-slot:extra>
     </x-filter-bar>
 
     <div class="grid gap-4 lg:grid-cols-3">

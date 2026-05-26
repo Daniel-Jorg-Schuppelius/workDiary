@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <x-page-shell gap="6">
+    <x-page-shell>
         <x-page-toolbar :subtitle="__('Gespeicherte Filter pro Ansicht.')" />
 
         @if (session('status'))

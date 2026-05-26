@@ -4,7 +4,7 @@
 @section('nav-title', __('access.title.groups'))
 
 @section('content')
-<x-page-shell gap="6">
+<x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Gruppen für Berechtigungs-Bündelung verwalten.')">
             <x-slot:actions>

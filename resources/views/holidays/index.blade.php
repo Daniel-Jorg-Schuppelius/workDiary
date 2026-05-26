@@ -4,7 +4,7 @@
 
 @section('content')
 
-<x-page-shell overflow="clip">
+<x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Gesetzliche und eigene Feiertage des Mandanten verwalten.')">
             <x-slot:actions>
@@ -17,7 +17,7 @@
     </x-slot:toolbar>
 
     {{-- Tabs: Jahresübersicht | Eigene Feiertage --}}
-    <div role="tablist" class="tabs tabs-box w-fit">
+    <div role="tablist" class="tabs tabs-box">
         <a role="tab" href="#yearly" class="tab tab-active" data-holiday-tab="yearly">
             {{ __('Jahresübersicht') }} <span class="badge badge-sm ml-2">{{ $merged->count() }}</span>
         </a>
@@ -27,7 +27,7 @@
     </div>
 
     {{-- Jahresübersicht --}}
-    <div data-holiday-pane="yearly" class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
+    <div data-holiday-pane="yearly" class="rounded-box border border-base-300 bg-base-100 shadow-xs">
         <x-table table-sort="client" bare scroll="none" :pinRows="true">
             <x-slot:head>
                 <tr>
@@ -88,7 +88,7 @@
     </div>
 
     {{-- Eigene Feiertage (Verwaltung) --}}
-    <div data-holiday-pane="custom" class="hidden flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
+    <div data-holiday-pane="custom" class="hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
         <x-table table-sort="client" bare scroll="none" :pinRows="true">
             <x-slot:head>
                 <tr>

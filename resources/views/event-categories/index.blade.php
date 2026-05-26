@@ -7,7 +7,7 @@
 @endphp
 
 @section('content')
-    <x-page-shell gap="6">
+    <x-page-shell>
         <x-slot:toolbar>
             <x-page-toolbar :subtitle="__('Kategorien für Veranstaltungen und Termine pflegen.')">
                 <x-slot:actions>

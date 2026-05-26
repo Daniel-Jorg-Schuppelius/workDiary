@@ -4,7 +4,7 @@
 @section('nav-title', __('flex.eligibility.nav_title'))
 
 @section('content')
-<x-page-shell gap="6">
+<x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Berechtigungen für Gleitzeit-Sonderregeln je Mitarbeiter pflegen.')">
             <x-slot:title>

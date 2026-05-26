@@ -11,7 +11,7 @@
 @endphp
 
 @section('content')
-    <x-page-shell gap="6">
+    <x-page-shell>
         <x-slot:toolbar>
             <x-page-toolbar :subtitle="__('Räume und Standorte des Mandanten verwalten.')">
                 <x-slot:actions>

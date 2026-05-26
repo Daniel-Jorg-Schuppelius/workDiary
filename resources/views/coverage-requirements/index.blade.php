@@ -2,7 +2,7 @@
 @section('title', __('Soll-Besetzung') . ' – ' . $dutyPlan->title)
 @section('nav-title', __('Soll-Besetzung'))
 @section('content')
-<x-page-shell gap="6">
+<x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$dutyPlan->title . ' · ' . $dutyPlan->from_date->format('d.m.Y') . ' – ' . $dutyPlan->to_date->format('d.m.Y')">
             <x-slot:actions>

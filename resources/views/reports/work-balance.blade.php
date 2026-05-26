@@ -14,28 +14,27 @@
 @section('content')
     <x-page-shell>
         <x-slot:toolbar>
-            <x-page-toolbar :subtitle="$user->name">
+            <x-page-toolbar :subtitle="__('Soll-Ist-Vergleich von Anwesenheit, erfasster Zeit und Saldo für :user.', ['user' => $user->name])">
                 <x-slot:actions>
-                    @if (! empty($selectableUsers))
-                        <form method="GET" action="{{ route('reports.work-balance') }}" class="flex items-end gap-2">
-                            @foreach (request()->except(['user', 'export']) as $k => $v)
-                                <input type="hidden" name="{{ $k }}" value="{{ $v }}">
-                            @endforeach
-                            <select name="user" class="select select-bordered select-sm" onchange="this.form.submit()">
-                                @foreach ($selectableUsers as $u)
-                                    <option value="{{ $u->id }}" @selected((int) $u->id === (int) $user->id)>
-                                        {{ $u->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </form>
-                    @endif
                     <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
                                 :href="route('reports.work-balance', array_merge(request()->query(), ['export' => 'pdf']))"
                                 show-label>PDF</x-icon-btn>
                 </x-slot:actions>
             </x-page-toolbar>
         </x-slot:toolbar>
+
+        @if (! empty($selectableUsers))
+            <x-filter-bar :action="route('reports.work-balance')" :reset="route('reports.work-balance')">
+                @foreach (request()->except(['user', 'export']) as $k => $v)
+                    <input type="hidden" name="{{ $k }}" value="{{ $v }}">
+                @endforeach
+                <select name="user" class="select select-sm select-bordered w-56 shrink-0" aria-label="{{ __('Nutzer') }}" onchange="this.form.submit()">
+                    @foreach ($selectableUsers as $u)
+                        <option value="{{ $u->id }}" @selected((int) $u->id === (int) $user->id)>{{ $u->name }}</option>
+                    @endforeach
+                </select>
+            </x-filter-bar>
+        @endif
 
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <div class="rounded-box border border-base-300 bg-base-100 p-3">

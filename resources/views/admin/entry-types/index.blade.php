@@ -4,7 +4,7 @@
 @section('nav-title', __('Eintragstypen'))
 
 @section('content')
-<x-page-shell gap="6">
+<x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Auftragstypen und ihre Pflichtklassifikationen pro Mandant verwalten.')">
             <x-slot:actions>

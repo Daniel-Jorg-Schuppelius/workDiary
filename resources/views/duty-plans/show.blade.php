@@ -2,7 +2,7 @@
 @section('title', $dutyPlan->title)
 @section('nav-title', $dutyPlan->title)
 @section('content')
-<x-page-shell gap="6">
+<x-page-shell>
 
     <x-page-toolbar :title="$dutyPlan->title"
                     :badge="$dutyPlan->isPublished() ? __('duty_plan.status.published') : __('duty_plan.status.draft')"

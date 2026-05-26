@@ -8,17 +8,18 @@
 @endphp
 
 <x-page-shell>
-
-    <x-filter-bar :action="route('reports.coverage')" :reset="route('reports.coverage')">
-        <x-slot:extra>
-            <x-icon-btn icon="download" tone="outline" size="sm"
-                        :href="route('reports.coverage', ['export' => 'csv'])"
-                        show-label>CSV</x-icon-btn>
-            <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                        :href="route('reports.coverage', ['export' => 'pdf'])"
-                        show-label>PDF</x-icon-btn>
-        </x-slot:extra>
-    </x-filter-bar>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Soll-Ist-Besetzung je Schichttyp inkl. Erfüllung und Unterdeckungstagen.')">
+            <x-slot:actions>
+                <x-icon-btn icon="download" tone="outline" size="sm"
+                            :href="route('reports.coverage', ['export' => 'csv'])"
+                            show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
+                            :href="route('reports.coverage', ['export' => 'pdf'])"
+                            show-label>PDF</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
