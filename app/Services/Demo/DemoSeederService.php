@@ -16,8 +16,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\User\UserRole;
 use App\Models\{Customer, DiaryEntry, OpenIssue, Organization, Project, TimeEntry, User};
 use Carbon\CarbonImmutable;
-use Faker\Factory as FakerFactory;
-use Faker\Generator as Faker;
+use Faker\{Factory as FakerFactory, Generator as Faker};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{DB, Hash};
 use RuntimeException;
@@ -71,7 +70,7 @@ class DemoSeederService {
             if (! str_ends_with($organization->name, '(Demo)')) {
                 $organization->name = trim($organization->name . ' (Demo)');
             }
-            $organization->demo_seeded_at = CarbonImmutable::now();
+            $organization->demo_seeded_at = \Carbon\Carbon::now();
             $organization->save();
 
             $users = $this->seedUsers($organization, $actor);
@@ -83,7 +82,13 @@ class DemoSeederService {
             $projects = $this->seedProjects($organization, $customers, $users->first());
             $counts['projects'] = $projects->count();
 
-            $mainDiary = $this->seedMainCase($organization, $customers->first(), $projects->first(), $users);
+            $mainCustomer = $customers->first();
+            $mainProject = $projects->first();
+            if ($mainCustomer === null || $mainProject === null) {
+                throw new RuntimeException('Demo-Seeder: keine Kunden oder Projekte erzeugt.');
+            }
+
+            $mainDiary = $this->seedMainCase($organization, $mainCustomer, $mainProject, $users);
             $counts['main_diary_entries'] = 1;
             $counts['time_entries'] = TimeEntry::query()
                 ->where('organization_id', $organization->id)
@@ -231,8 +236,11 @@ class DemoSeederService {
     /** @param Collection<int, User> $users */
     private function seedMainCase(Organization $organization, Customer $customer, Project $project, Collection $users): DiaryEntry {
         $admin = $users->first();
-        $operatorA = $users->get(1, $admin);
-        $operatorB = $users->get(2, $admin);
+        if ($admin === null) {
+            throw new RuntimeException('Demo-Seeder: keine User für Hauptfall vorhanden.');
+        }
+        $operatorA = $users->get(1) ?? $admin;
+        $operatorB = $users->get(2) ?? $admin;
 
         $now = CarbonImmutable::now();
 
@@ -253,17 +261,21 @@ class DemoSeederService {
             'end_at' => $now->subDays(2)->setTime(17, 0),
         ]);
 
-        foreach ([
-            ['user' => $operatorA, 'minutes' => 180],
-            ['user' => $operatorB, 'minutes' => 120],
-            ['user' => $operatorA, 'minutes' => 220],
-        ] as $offset => $row) {
+        foreach (
+            [
+                ['user' => $operatorA, 'minutes' => 180],
+                ['user' => $operatorB, 'minutes' => 120],
+                ['user' => $operatorA, 'minutes' => 220],
+            ] as $offset => $row
+        ) {
             $started = $now->subDays(2)->setTime(9 + $offset * 2, 0);
+            /** @var User $rowUser */
+            $rowUser = $row['user'];
             TimeEntry::query()->create([
                 'organization_id' => $organization->id,
                 'project_id' => $project->id,
                 'diary_entry_id' => $entry->id,
-                'user_id' => $row['user']->id,
+                'user_id' => $rowUser->id,
                 'date' => $started->toDateString(),
                 'started_at' => $started,
                 'ended_at' => $started->addMinutes($row['minutes']),
@@ -307,11 +319,17 @@ class DemoSeederService {
         $count = 25;
         $now = CarbonImmutable::now();
 
+        if ($users->isEmpty() || $projects->isEmpty()) {
+            return 0;
+        }
+
         for ($i = 0; $i < $count; $i++) {
             $offsetDays = $faker->numberBetween(1, 60);
             $started = $now->subDays($offsetDays)->setTime($faker->numberBetween(8, 16), 0);
             $minutes = $faker->numberBetween(30, 240);
+            /** @var Project $project */
             $project = $projects[$i % $projects->count()];
+            /** @var User $user */
             $user = $users[$i % $users->count()];
 
             DiaryEntry::query()->create([

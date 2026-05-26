@@ -122,6 +122,141 @@ class InvoiceTest extends TestCase {
         $this->assertStringStartsWith('%PDF', (string) $response->getContent());
     }
 
+    public function test_publish_to_lexoffice_sends_payload_and_updates_invoice(): void {
+        config()->set('plugins.lexoffice.enabled', true);
+        config()->set('plugins.lexoffice.api_key', 'test-key');
+
+        $invoice = Invoice::create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'number' => 'DRAFT-0001',
+            'status' => Invoice::STATUS_DRAFT,
+            'currency' => 'EUR',
+            'tax_rate' => '19.00',
+            'created_by' => $this->admin->id,
+        ]);
+        $invoice->items()->create([
+            'description' => 'Beratung',
+            'quantity' => '3.00',
+            'unit' => 'h',
+            'unit_price' => '95.00',
+            'position' => 1,
+        ]);
+
+        \Illuminate\Support\Facades\Http::fake([
+            'https://api.lexoffice.io/v1/invoices?finalize=true' => \Illuminate\Support\Facades\Http::response([
+                'id' => 'lex-inv-1',
+                'resourceUri' => 'https://api.lexoffice.io/v1/invoices/lex-inv-1',
+            ], 201),
+            'https://api.lexoffice.io/v1/invoices/lex-inv-1' => \Illuminate\Support\Facades\Http::response([
+                'id' => 'lex-inv-1',
+                'voucherNumber' => 'RE-2030-007',
+                'voucherStatus' => 'open',
+            ], 200),
+        ]);
+
+        $this->postAsAdmin('invoices.lexoffice.publish', [], $invoice)->assertRedirect();
+
+        $invoice->refresh();
+        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->status);
+        $this->assertSame('RE-2030-007', $invoice->number);
+
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
+            'external_type' => \App\Plugins\Lexoffice\LexofficeInvoiceService::EXT_TYPE_INVOICE,
+            'referenceable_id' => $invoice->id,
+            'external_id' => 'lex-inv-1',
+        ]);
+    }
+
+    public function test_publish_to_lexoffice_requires_draft_status(): void {
+        config()->set('plugins.lexoffice.enabled', true);
+        config()->set('plugins.lexoffice.api_key', 'test-key');
+
+        $invoice = Invoice::create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'number' => 'ISSUED-0001',
+            'status' => Invoice::STATUS_ISSUED,
+            'currency' => 'EUR',
+            'tax_rate' => '19.00',
+            'created_by' => $this->admin->id,
+        ]);
+
+        // Bereits ausgestellte Rechnungen werden vom issue-Gate geblockt → 403,
+        // die Lexoffice-Übertragung kommt also gar nicht erst zur Ausführung.
+        $this->postAsAdmin('invoices.lexoffice.publish', [], $invoice)
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('external_references', [
+            'referenceable_id' => $invoice->id,
+            'external_type' => \App\Plugins\Lexoffice\LexofficeInvoiceService::EXT_TYPE_INVOICE,
+        ]);
+    }
+
+    public function test_pdf_redirects_to_plugin_when_invoice_is_linked(): void {
+        // Core-PDF-Route delegiert per Redirect an die Plugin-eigene Route,
+        // sobald eine external_reference vom Typ 'invoice' existiert.
+        $invoice = Invoice::create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'number' => 'LINKED-0001',
+            'status' => Invoice::STATUS_ISSUED,
+            'currency' => 'EUR',
+            'tax_rate' => '19.00',
+            'created_by' => $this->admin->id,
+        ]);
+
+        \App\Models\ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
+            'external_type' => \App\Plugins\Lexoffice\LexofficeInvoiceService::EXT_TYPE_INVOICE,
+            'referenceable_type' => $invoice->getMorphClass(),
+            'referenceable_id' => $invoice->id,
+            'external_id' => 'lex-inv-9',
+            'synced_at' => now(),
+        ]);
+
+        $this->getAsAdmin('invoices.pdf', $invoice)
+            ->assertRedirect(route('invoices.lexoffice.pdf', $invoice));
+    }
+
+    public function test_plugin_pdf_route_streams_lexoffice_pdf(): void {
+        config()->set('plugins.lexoffice.api_key', 'test-key');
+
+        $invoice = Invoice::create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'number' => 'LINKED-0002',
+            'status' => Invoice::STATUS_ISSUED,
+            'currency' => 'EUR',
+            'tax_rate' => '19.00',
+            'created_by' => $this->admin->id,
+        ]);
+
+        \App\Models\ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
+            'external_type' => \App\Plugins\Lexoffice\LexofficeInvoiceService::EXT_TYPE_INVOICE,
+            'referenceable_type' => $invoice->getMorphClass(),
+            'referenceable_id' => $invoice->id,
+            'external_id' => 'lex-inv-9',
+            'synced_at' => now(),
+        ]);
+
+        \Illuminate\Support\Facades\Http::fake([
+            'https://api.lexoffice.io/v1/invoices/lex-inv-9/document' => \Illuminate\Support\Facades\Http::response([
+                'documentFileId' => 'file-abc',
+            ], 200),
+            'https://api.lexoffice.io/v1/files/file-abc' => \Illuminate\Support\Facades\Http::response('%PDF-1.4 fake', 200),
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('invoices.lexoffice.pdf', $invoice));
+        $response->assertOk();
+        $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
+        $this->assertStringStartsWith('%PDF', (string) $response->getContent());
+    }
+
     private function getAsAdmin(string $routeName, mixed $parameters = []): TestResponse {
         return $this->actingAs($this->admin)->get(route($routeName, $parameters));
     }

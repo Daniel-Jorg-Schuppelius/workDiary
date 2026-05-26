@@ -8,6 +8,9 @@ Status: Geplant • Quelle:
 Referenzprofil für **Gebäudereinigung und infrastrukturelle Services**.
 Bildet Unterhaltsreinigung, Grundreinigung, Glasreinigung, Sonderreinigung,
 Qualitätskontrollen, Materialverbrauch, Objektpläne und Reklamationen ab.
+Räume, Raumgruppen und Sonderflächen können besondere Anforderungen tragen,
+z. B. Sonderreinigung, Hygienehinweis, Zugangsbeschränkung oder
+Foto-/Abnahmepflicht.
 
 ## 2. Strukturparallele
 
@@ -25,7 +28,17 @@ Qualitätskontrollen, Materialverbrauch, Objektpläne und Reklamationen ab.
 | `result`        | erledigt, teilErledigt, nacharbeit, nichtMoeglich, kundeInformiert, eskaliert                                   |
 | `product_group` | buero, sanitaer, treppenhaus, glas, boden, kueche, industrie, medizinisch, aussenbereich                        |
 
-## 4. Pflichtklassifikationen
+## 4. Raum- und Reinigungsanforderungen
+
+- Raum, Raumgruppe oder Fläche am Reinigungsauftrag erfassen.
+- Raumbezogene Anforderungen: Reinigungsfrequenz, Sonderreinigung,
+  Hygienestufe, Materialbedarf, Zugangsbeschränkung und Abnahmepflicht.
+- Qualitätskontrollen und Reklamationen bleiben am Raum oder Bereich
+  auswertbar.
+- Besondere Reinigung kann als einmalige Anforderung oder als wiederkehrende
+  Pflicht am Raum hinterlegt werden.
+
+## 5. Pflichtklassifikationen
 
 - `entry_type=unterhaltsreinigung`: Pflicht Objekt, Bereich und
   Checklistenstatus.
@@ -36,28 +49,29 @@ Qualitätskontrollen, Materialverbrauch, Objektpläne und Reklamationen ab.
 - `entry_type=sonderreinigung`: Pflicht Leistungsbeschreibung,
   Sicherheits-/Materialhinweis und Abnahme.
 
-## 5. Prozedurvorlagen
+## 6. Prozedurvorlagen
 
 `GR_UNTERHALT`, `GR_GRUNDREINIGUNG`, `GR_GLAS`,
 `GR_SONDERREINIGUNG`, `GR_QS_KONTROLLE`, `GR_REKLAMATION`.
 
-## 6. Protokollvorlagen
+## 7. Protokollvorlagen
 
 `GR_REINIGUNGSNACHWEIS`, `GR_OBJEKTPLAN`, `GR_QS_PROTOKOLL`,
 `GR_REKLAMATIONSBERICHT`, `GR_MATERIALVERBRAUCH`, `GR_ABNAHME`.
 
-## 7. Asset-Kategorien
+## 8. Asset-Kategorien
 
 `reinigungswagen`, `einscheibenmaschine`, `nasssauger`,
 `glasreinigungsset`, `leiter`, `dosieranlage`, `psaReinigung`.
 
-## 8. Tags-Seed
+## 9. Tags-Seed
 
 `#unterhalt`, `#sonderreinigung`, `#glas`, `#sanitaer`,
 `#nacharbeit`, `#reklamation`, `#hygiene`.
 
-## 9. Akzeptanzkriterien
+## 10. Akzeptanzkriterien
 
-1. `database/data/branchprofiles/gebaeudereinigung.php` enthält Inhalte aus §3-§8.
+1. `database/data/branchprofiles/gebaeudereinigung.php` enthält Inhalte aus §3-§9.
 2. Pflichtfelder für Reinigung, QS und Reklamation greifen.
 3. Onboarding-Wizard listet „Gebäudereinigung".
+4. Räume und Sonderflächen können besondere Reinigungsanforderungen tragen.

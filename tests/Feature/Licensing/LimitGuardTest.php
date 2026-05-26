@@ -11,7 +11,7 @@
 namespace Tests\Feature\Licensing;
 
 use App\Exceptions\LimitExceededException;
-use App\Models\User;
+use App\Models\{Attachment, DiaryEntry, Organization, User};
 use App\Services\Licensing\{LicensePayload, LicenseResult, LicenseService, LicenseStatus, LimitGuard};
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionsSeeder;
@@ -76,6 +76,75 @@ class LimitGuardTest extends TestCase {
         ]);
     }
 
+    public function test_org_limit_passes_when_under(): void {
+        $this->bindLicense(LicenseResult::ok(LicenseStatus::Valid, $this->payload(maxUsers: null, maxOrgs: 5)));
+        // setUpOrganization() created one organization; 1 < 5.
+
+        app(LimitGuard::class)->ensureCanCreateOrganization($this->organization);
+
+        $this->assertTrue(true);
+    }
+
+    public function test_org_limit_throws_and_audits_when_reached(): void {
+        Organization::factory()->count(2)->create();
+        $current = Organization::query()->count();
+        $this->bindLicense(LicenseResult::ok(LicenseStatus::Valid, $this->payload(maxUsers: null, maxOrgs: $current)));
+
+        try {
+            app(LimitGuard::class)->ensureCanCreateOrganization($this->organization);
+            $this->fail('LimitExceededException erwartet.');
+        } catch (LimitExceededException $e) {
+            $this->assertSame('max_orgs', $e->limit);
+            $this->assertSame($current, $e->current);
+            $this->assertSame($current, $e->max);
+        }
+
+        $this->assertDatabaseHas('audit_logs', [
+            'organization_id' => $this->organization->id,
+            'event' => 'limit.exceeded',
+        ]);
+    }
+
+    public function test_storage_quota_passes_when_no_quota(): void {
+        $this->bindLicense(LicenseResult::ok(LicenseStatus::Valid, $this->payload(maxUsers: null, storageQuotaGb: null)));
+
+        app(LimitGuard::class)->ensureCanStoreAttachment($this->organization, 10_000_000);
+
+        $this->assertTrue(true);
+    }
+
+    public function test_storage_quota_passes_when_under(): void {
+        $this->bindLicense(LicenseResult::ok(LicenseStatus::Valid, $this->payload(maxUsers: null, storageQuotaGb: 1)));
+
+        app(LimitGuard::class)->ensureCanStoreAttachment($this->organization, 1024);
+
+        $this->assertTrue(true);
+    }
+
+    public function test_storage_quota_throws_when_upload_exceeds_limit(): void {
+        $this->bindLicense(LicenseResult::ok(LicenseStatus::Valid, $this->payload(maxUsers: null, storageQuotaGb: 1)));
+
+        $entry = DiaryEntry::factory()->create(['organization_id' => $this->organization->id]);
+        Attachment::factory()->create([
+            'organization_id' => $this->organization->id,
+            'attachable_type' => DiaryEntry::class,
+            'attachable_id' => $entry->id,
+            'size' => 1024 * 1024 * 1024 - 1000, // 1 GB minus 1000 B
+        ]);
+
+        try {
+            app(LimitGuard::class)->ensureCanStoreAttachment($this->organization, 2000);
+            $this->fail('LimitExceededException erwartet.');
+        } catch (LimitExceededException $e) {
+            $this->assertSame('storage_quota_gb', $e->limit);
+        }
+
+        $this->assertDatabaseHas('audit_logs', [
+            'organization_id' => $this->organization->id,
+            'event' => 'limit.exceeded',
+        ]);
+    }
+
     private function bindLicense(LicenseResult $result, bool $enforced = true): void {
         $stub = new class($result, $enforced) extends LicenseService {
             public function __construct(private readonly LicenseResult $result, private readonly bool $enforced) {}
@@ -85,7 +154,7 @@ class LimitGuardTest extends TestCase {
         $this->app->instance(LicenseService::class, $stub);
     }
 
-    private function payload(?int $maxUsers): LicensePayload {
+    private function payload(?int $maxUsers, ?int $maxOrgs = null, ?int $storageQuotaGb = null): LicensePayload {
         return new LicensePayload(
             licensee: 'TestCo',
             email: null,
@@ -93,6 +162,8 @@ class LimitGuardTest extends TestCase {
             expiresAt: CarbonImmutable::now()->addYear(),
             domain: null,
             maxUsers: $maxUsers,
+            maxOrgs: $maxOrgs,
+            storageQuotaGb: $storageQuotaGb,
             features: [],
             licenseId: 'test-' . bin2hex(random_bytes(4)),
         );

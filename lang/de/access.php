@@ -194,6 +194,7 @@ return [
         'user.reset-password' => 'Passwort zurücksetzen',
         'user.rates.manage' => 'Stundensätze verwalten',
         'user.flex.manage' => 'Gleitzeit-Berechtigung verwalten',
+        'user.import' => 'Benutzer importieren',
 
         'customer.viewAny' => 'Kunden auflisten',
         'customer.view' => 'Kunde ansehen',
@@ -211,6 +212,7 @@ return [
         'project.delete' => 'Projekt löschen',
         'project.archive' => 'Projekt archivieren',
         'project.billing.manage' => 'Projekt-Abrechnungsregeln verwalten',
+        'project.import' => 'Projekte importieren',
         'task.manage' => 'Aufgaben verwalten',
         'milestone.manage' => 'Meilensteine verwalten',
 
@@ -276,6 +278,7 @@ return [
         'energy-log.manage' => 'Tankungen/Ladevorgänge verwalten',
 
         'material.manage' => 'Material-Stamm verwalten',
+        'material.import' => 'Material importieren',
         'activity-category.manage' => 'Tätigkeitskategorien verwalten',
         'tag.manage' => 'Tags verwalten',
         'qualification.manage' => 'Qualifikationen verwalten',
@@ -283,6 +286,7 @@ return [
         'holiday.manage' => 'Feiertage verwalten',
 
         'report.view' => 'Auswertungen einsehen',
+        'import.viewReports' => 'CSV-Import-Berichte einsehen',
         'report.export' => 'Auswertungen exportieren',
         'audit-log.view' => 'Audit-Log einsehen',
         'attendance.viewAny' => 'Anwesenheiten einsehen',

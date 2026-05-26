@@ -44,6 +44,10 @@ use Illuminate\Support\{Carbon, Str};
  * @property string|null $internal_rate
  * @property string|null $comment
  * @property string|null $invoice_text
+ * @property string|null $bank_account_holder
+ * @property string|null $bank_iban
+ * @property string|null $bank_bic
+ * @property string|null $bank_name
  * @property bool $billable
  * @property Carbon|null $archived_at
  * @property int|null $created_by
@@ -86,6 +90,10 @@ class Customer extends Model {
         'comment',
         'invoice_text',
         'invoice_template_id',
+        'bank_account_holder',
+        'bank_iban',
+        'bank_bic',
+        'bank_name',
         'billable',
         'archived_at',
         'created_by',
@@ -218,6 +226,27 @@ class Customer extends Model {
 
     public function hasNonDefaultProjects(): bool {
         return $this->projects()->where('is_default', false)->exists();
+    }
+
+    /**
+     * Bankverbindung als formatiertes Array für PDF/Show. Leer wenn keine
+     * Felder gepflegt sind. `hasAny` erleichtert den Blade-Check.
+     *
+     * @return array{has_any: bool, holder: ?string, iban: ?string, bic: ?string, bank: ?string}
+     */
+    public function bankDetails(): array {
+        $hasAny = (string) $this->bank_iban !== ''
+            || (string) $this->bank_bic !== ''
+            || (string) $this->bank_name !== ''
+            || (string) $this->bank_account_holder !== '';
+
+        return [
+            'has_any' => $hasAny,
+            'holder' => $this->bank_account_holder,
+            'iban' => $this->bank_iban,
+            'bic' => $this->bank_bic,
+            'bank' => $this->bank_name,
+        ];
     }
 
     /**

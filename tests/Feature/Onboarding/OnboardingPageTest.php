@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Onboarding;
 
-use App\Models\{AuditLog, OnboardingProgress, Organization, User};
+use App\Models\{OnboardingProgress, Organization, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

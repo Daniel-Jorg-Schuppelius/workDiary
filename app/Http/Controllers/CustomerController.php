@@ -16,6 +16,10 @@ use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
 use App\Services\{CustomerCsvImporter, CustomerStatsService};
+// HINWEIS: Lexoffice-Push-Logik ist in das Plugin verlagert
+// (App\Plugins\Lexoffice\Http\Controllers\LexofficeCustomerController).
+// Die Imports oben werden nur noch für die Show-View (Anzeige der bisherigen
+// Referenzen) gebraucht.
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -279,53 +283,6 @@ class CustomerController extends Controller {
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
-    }
-
-    /**
-     * Push aller noch nicht synchronisierten Kunden zu Lexoffice.
-     */
-    public function bulkPushLexoffice(PluginManager $plugins): RedirectResponse {
-        Gate::authorize('viewAny', Customer::class);
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-        if (! $authUser?->canManageBilling()) {
-            abort(403);
-        }
-
-        /** @var LexofficePlugin|null $lex */
-        $lex = $plugins->withCapability(PluginCapability::CONTACT_SYNC)->get(LexofficePlugin::ID);
-        if ($lex === null) {
-            return back()->with('error', __('Lexoffice-Plugin ist nicht aktiviert.'));
-        }
-
-        $alreadySyncedIds = ExternalReference::query()
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
-            ->where('referenceable_type', (new Customer)->getMorphClass())
-            ->pluck('referenceable_id')
-            ->all();
-
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Customer> $candidates */
-        $candidates = Customer::query()
-            ->whereNull('archived_at')
-            ->whereNotIn('id', $alreadySyncedIds)
-            ->get();
-
-        $ok = 0;
-        $fail = 0;
-        foreach ($candidates as $customer) {
-            try {
-                $lex->pushContact($customer);
-                $ok++;
-            } catch (\Throwable $e) {
-                $fail++;
-                report($e);
-            }
-        }
-
-        $msg = __('Lexoffice-Sync: :ok übertragen, :fail Fehler.', ['ok' => $ok, 'fail' => $fail]);
-
-        return back()->with($fail > 0 ? 'info' : 'success', $msg);
     }
 
     /**

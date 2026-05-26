@@ -38,8 +38,7 @@ class ProtocolController extends Controller {
 
     public function __construct(
         private readonly ProtocolService $service,
-    ) {
-    }
+    ) {}
 
     public function store(Request $request): RedirectResponse {
         Gate::authorize('create', Protocol::class);

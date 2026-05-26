@@ -80,12 +80,12 @@ foreach (array_keys($allFiles) as $file) {
         foreach ($report as $loc => $info) {
             if ($info['missing']) {
                 echo "  missing in $loc (" . count($info['missing']) . "):\n";
-                foreach ($info['missing'] as $k) echo "    - $k\n";
+                foreach ($info['missing'] as $k) { echo "    - $k\n"; }
                 $exit = 1;
             }
             if ($info['extra']) {
                 echo "  extra in $loc (" . count($info['extra']) . "):\n";
-                foreach ($info['extra'] as $k) echo "    + $k\n";
+                foreach ($info['extra'] as $k) { echo "    + $k\n"; }
                 $exit = 1;
             }
         }
@@ -112,7 +112,7 @@ if (is_file($enJsonPath)) {
         if ($loc !== 'de' && $missing) {
             echo "=== lang/$loc.json ===\n";
             echo "  missing in $loc (" . count($missing) . ") vs en.json:\n";
-            foreach ($missing as $k) echo "    - $k\n";
+            foreach ($missing as $k) { echo "    - $k\n"; }
             $exit = 1;
         }
     }

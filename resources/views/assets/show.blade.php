@@ -74,6 +74,133 @@
         </x-card>
 
         <x-card>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="text-base font-semibold">{{ __('Wartungspläne') }} ({{ $maintenancePlans->count() }})</h2>
+                @if ($canManageMaintenance)
+                    <details class="dropdown dropdown-end">
+                        <summary class="btn btn-sm btn-primary">
+                            <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                            {{ __('Plan anlegen') }}
+                        </summary>
+                        <form method="POST" action="{{ route('assets.maintenance-plans.store', $asset) }}"
+                              class="dropdown-content z-10 mt-2 w-80 rounded-box border border-base-300 bg-base-100 p-3 shadow-lg space-y-2">
+                            @csrf
+                            <label class="form-control">
+                                <span class="label-text text-xs">{{ __('Bezeichnung') }}</span>
+                                <input type="text" name="label" required maxlength="180"
+                                       class="input input-sm input-bordered" />
+                            </label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="form-control">
+                                    <span class="label-text text-xs">{{ __('Intervall') }}</span>
+                                    <select name="interval_kind" class="select select-sm select-bordered">
+                                        @foreach ($intervalKindOptions as $value => $label)
+                                            <option value="{{ $value }}" @selected($value === 'months')>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </label>
+                                <label class="form-control">
+                                    <span class="label-text text-xs">{{ __('Wert') }}</span>
+                                    <input type="number" name="interval_value" min="1" value="6"
+                                           class="input input-sm input-bordered" required />
+                                </label>
+                            </div>
+                            <label class="form-control">
+                                <span class="label-text text-xs">{{ __('Toleranz (Tage)') }}</span>
+                                <input type="number" name="tolerance_days" min="0" max="365" value="7"
+                                       class="input input-sm input-bordered" />
+                            </label>
+                            <label class="form-control">
+                                <span class="label-text text-xs">{{ __('Erste Fälligkeit') }}</span>
+                                <input type="date" name="next_due_on" class="input input-sm input-bordered" />
+                            </label>
+                            <button type="submit" class="btn btn-sm btn-primary w-full">{{ __('Anlegen') }}</button>
+                        </form>
+                    </details>
+                @endif
+            </div>
+
+            @if ($maintenancePlans->isEmpty())
+                <p class="mt-3 text-sm text-base-content/70">{{ __('Noch keine Wartungspläne hinterlegt.') }}</p>
+            @else
+                <div class="mt-3 overflow-x-auto">
+                    <table class="table table-zebra">
+                        <thead>
+                            <tr>
+                                <th>{{ __('Plan') }}</th>
+                                <th>{{ __('Intervall') }}</th>
+                                <th>{{ __('Nächste Fälligkeit') }}</th>
+                                <th>{{ __('Letzte Ausführung') }}</th>
+                                <th>{{ __('Status') }}</th>
+                                <th class="text-end">{{ __('Aktionen') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($maintenancePlans as $plan)
+                                @php
+                                    $kindValue = $plan->interval_kind instanceof \BackedEnum ? $plan->interval_kind->value : (string) $plan->interval_kind;
+                                    $isDue = $plan->isDue();
+                                @endphp
+                                <tr>
+                                    <td>
+                                        <div class="font-medium">{{ $plan->label }}</div>
+                                        <div class="text-xs text-base-content/60 font-mono">{{ $plan->code }}</div>
+                                    </td>
+                                    <td>{{ $plan->interval_value }} {{ $intervalKindOptions[$kindValue] ?? $kindValue }}</td>
+                                    <td>
+                                        @if ($plan->next_due_on)
+                                            <span class="@if ($isDue) text-error font-semibold @endif">
+                                                {{ $plan->next_due_on->format('d.m.Y') }}
+                                            </span>
+                                        @else
+                                            —
+                                        @endif
+                                    </td>
+                                    <td>{{ optional($plan->last_run_at)->format('d.m.Y H:i') ?: '—' }}</td>
+                                    <td>
+                                        @if (! $plan->is_active)
+                                            <span class="badge badge-ghost">{{ __('pausiert') }}</span>
+                                        @elseif ($isDue)
+                                            <span class="badge badge-error">{{ __('fällig') }}</span>
+                                        @else
+                                            <span class="badge badge-success">{{ __('aktiv') }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-end">
+                                        @if ($canManageMaintenance)
+                                            <div class="join">
+                                                <form method="POST" action="{{ route('assets.maintenance-plans.complete', [$asset, $plan]) }}" class="join-item">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-xs btn-ghost" title="{{ __('Erledigt') }}">
+                                                        <span class="material-symbols-outlined">check</span>
+                                                    </button>
+                                                </form>
+                                                <form method="POST" action="{{ route('assets.maintenance-plans.toggle', [$asset, $plan]) }}" class="join-item">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-xs btn-ghost" title="{{ $plan->is_active ? __('Pausieren') : __('Reaktivieren') }}">
+                                                        <span class="material-symbols-outlined">{{ $plan->is_active ? 'pause' : 'play_arrow' }}</span>
+                                                    </button>
+                                                </form>
+                                                <form method="POST" action="{{ route('assets.maintenance-plans.destroy', [$asset, $plan]) }}" class="join-item"
+                                                      onsubmit="return confirm('{{ __('Plan wirklich löschen?') }}');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-xs btn-ghost text-error" title="{{ __('Löschen') }}">
+                                                        <span class="material-symbols-outlined">delete</span>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </x-card>
+
+        <x-card>
             <h2 class="mb-3 text-base font-semibold">{{ __('Aufträge') }} ({{ $visibleCounts['diary'] }})</h2>
             @if ($diaryEntries->isEmpty())
                 <p class="text-sm text-base-content/70">{{ __('Keine verknüpften Aufträge sichtbar.') }}</p>

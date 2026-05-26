@@ -75,6 +75,7 @@ enum Permission: string implements HasLabel {
     case UserResetPassword = 'user.reset-password';
     case UserManageRates = 'user.rates.manage';
     case UserFlexManage = 'user.flex.manage';
+    case UserImport = 'user.import';
 
         // ── Kunden ─────────────────────────────────────────────────────────
     case CustomerViewAny = 'customer.viewAny';
@@ -94,6 +95,7 @@ enum Permission: string implements HasLabel {
     case ProjectDelete = 'project.delete';
     case ProjectArchive = 'project.archive';
     case ProjectManageBilling = 'project.billing.manage';
+    case ProjectImport = 'project.import';
     case TaskManage = 'task.manage';
     case MilestoneManage = 'milestone.manage';
 
@@ -115,6 +117,31 @@ enum Permission: string implements HasLabel {
     case TimesheetLock = 'timesheet.lock';
     case TimesheetUnlock = 'timesheet.unlock';
     case TimesheetExport = 'timesheet.export';
+
+        // ── Monatsfreigabe (MVP-016) ───────────────────────────────────────
+    case MonthViewOwn = 'month.view.own';
+    case MonthViewTeam = 'month.view.team';
+    case MonthViewOrganization = 'month.view.organization';
+    case MonthSubmitOwn = 'month.submit.own';
+    case MonthApprove = 'month.approve';
+    case MonthReject = 'month.reject';
+    case MonthReopen = 'month.reopen';
+    case MonthLock = 'month.lock';
+
+        // ── Zeit-Korrekturanträge (MVP-017) ────────────────────────────────
+    case CorrectionCreateOwn = 'correction.create.own';
+    case CorrectionSubmitOwn = 'correction.submit.own';
+    case CorrectionWithdrawOwn = 'correction.withdraw.own';
+    case CorrectionViewTeam = 'correction.view.team';
+    case CorrectionViewOrganization = 'correction.view.organization';
+    case CorrectionApprove = 'correction.approve';
+    case CorrectionReject = 'correction.reject';
+    case CorrectionApplySystem = 'correction.apply.system';
+
+        // ── Zeit-Export / Lohnübergabe (MVP-019) ───────────────────────────
+    case ExportTimeCreate = 'export.time.create';
+    case ExportTimeDeliver = 'export.time.deliver';
+    case ExportTimeDelete = 'export.time.delete';
 
         // ── Rechnungen ─────────────────────────────────────────────────────
     case InvoiceViewAny = 'invoice.viewAny';
@@ -167,6 +194,7 @@ enum Permission: string implements HasLabel {
 
         // ── Stammdaten / Listen ────────────────────────────────────────────
     case MaterialManage = 'material.manage';
+    case MaterialImport = 'material.import';
     case ActivityCategoryManage = 'activity-category.manage';
     case TagManage = 'tag.manage';
     case QualificationManage = 'qualification.manage';
@@ -176,6 +204,7 @@ enum Permission: string implements HasLabel {
         // ── Reporting / Audit / Sonstiges ──────────────────────────────────
     case ReportView = 'report.view';
     case ReportExport = 'report.export';
+    case ImportViewReports = 'import.viewReports';
     case AuditLogView = 'audit-log.view';
     case AttendanceViewAny = 'attendance.viewAny';
     case AttendanceManage = 'attendance.manage';

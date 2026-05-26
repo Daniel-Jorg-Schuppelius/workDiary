@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $organization_id
  * @property string $external_id
+ * @property int|null $external_version
  * @property string $name
  * @property ?string $article_number
  * @property ?string $description
@@ -29,6 +30,8 @@ use Illuminate\Support\Carbon;
  * @property string $currency
  * @property ?string $vat_rate
  * @property ?Carbon $synced_at
+ * @property bool $is_dirty
+ * @property ?Carbon $last_pushed_at
  * @property ?Carbon $archived_at
  */
 class LexofficeArticle extends Model {
@@ -37,6 +40,7 @@ class LexofficeArticle extends Model {
     protected $fillable = [
         'organization_id',
         'external_id',
+        'external_version',
         'name',
         'article_number',
         'description',
@@ -46,14 +50,19 @@ class LexofficeArticle extends Model {
         'currency',
         'vat_rate',
         'synced_at',
+        'is_dirty',
+        'last_pushed_at',
         'archived_at',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
+        'external_version' => 'integer',
         'net_unit_price' => 'decimal:4',
         'vat_rate' => 'decimal:2',
         'synced_at' => 'datetime',
+        'is_dirty' => 'boolean',
+        'last_pushed_at' => 'datetime',
         'archived_at' => 'datetime',
     ];
 

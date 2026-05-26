@@ -31,8 +31,7 @@ class ProcedureExecutionService {
         private readonly BackupProofService $backups,
         private readonly SecondPersonGate $secondPerson,
         private readonly DeviationRecorder $deviations,
-    ) {
-    }
+    ) {}
 
     /**
      * Startet einen Run auf Basis der aktuell gueltigen Version der

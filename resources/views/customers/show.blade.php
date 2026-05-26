@@ -131,6 +131,18 @@
                     <p class="whitespace-pre-line">{{ $customer->invoice_text }}</p>
                 </div>
             @endif
+            @php $bank = $customer->bankDetails(); @endphp
+            @if ($bank['has_any'])
+                <div class="pt-3 border-t border-base-300">
+                    <h3 class="mb-1 text-sm font-semibold">{{ __('Bankverbindung') }}</h3>
+                    <dl class="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
+                        @if ($bank['holder'])<dt class="text-base-content/60">{{ __('Kontoinhaber') }}</dt><dd>{{ $bank['holder'] }}</dd>@endif
+                        @if ($bank['iban'])<dt class="text-base-content/60">{{ __('IBAN') }}</dt><dd class="tabular-nums">{{ $bank['iban'] }}</dd>@endif
+                        @if ($bank['bic'])<dt class="text-base-content/60">{{ __('BIC') }}</dt><dd>{{ $bank['bic'] }}</dd>@endif
+                        @if ($bank['bank'])<dt class="text-base-content/60">{{ __('Bank') }}</dt><dd>{{ $bank['bank'] }}</dd>@endif
+                    </dl>
+                </div>
+            @endif
         </div>
     </div>
 

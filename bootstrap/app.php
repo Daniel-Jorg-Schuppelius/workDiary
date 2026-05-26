@@ -68,6 +68,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'requires-feature' => RequiresFeature::class,
         ]);
 
+        // Token-Endpunkte ohne Session/CSRF: Backup-Heartbeat (MVP-046 §5).
+        $middleware->validateCsrfTokens(except: [
+            'admin/backup/heartbeat',
+        ]);
+
         // Pro-Guard-Redirect fuer nicht authentifizierte Anfragen. Ohne
         // diesen Hook schickt Laravel auch Customer-Portal-Aufrufe an die
         // interne Login-Seite, was die Trennung der Bereiche aufweicht.

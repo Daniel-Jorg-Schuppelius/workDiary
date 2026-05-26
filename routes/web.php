@@ -10,10 +10,10 @@
 
 use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, BrandingController, CalendarFeedController, CommentController, CoverageRequirementController, CustomerController, DashboardController, DiaryController, DiaryExportController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, FlexController, FlexEligibilityController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectRecurrenceRuleController, ProtocolController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, RoomController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftTypeController, SickLeaveController, StopwatchController, TagController, TaskController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VehicleController, WeekController, WorkScheduleController};
 use App\Http\Controllers\Admin\Access\{AccessHubController, MemberController as AccessMemberController, PermissionController as AccessPermissionController, RoleController as AccessRoleController, UserGroupController as AccessUserGroupController};
-use App\Http\Controllers\Admin\{AutomationRuleController, BranchProfileController, ClassificationController, ClassificationRequirementController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, InvoiceMailTemplateController, LicenseAdminController, PerDiemRateController, PluginController as AdminPluginController, PrivacyController, SupportReportController};
+use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatController, BranchProfileController, ClassificationController, ClassificationRequirementController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, SupportAccessAuditController, SupportReportController};
+use App\Http\Controllers\Asset\MaintenancePlanController;
 use App\Http\Controllers\Auth\{LoginController, TenantRegistrationController};
-use App\Http\Controllers\Plugins\LexofficeCustomerController;
-use App\Http\Controllers\Reporting\{AbsencesReportController, AttendanceReportController, AuditActivityReportController, BillingReportController, CoverageReportController, CustomerAnalysisReportController, CustomerProjectReportController, EntryTypeAnalysisReportController, EntryTypeDrilldownReportController, ExpenseReportController, FleetReportController, MaterialReportController, MonthByUserTeamReportController, MyMonthReportController, MyYearReportController, OnCallReportController, OperationsReportController, ProjectDetailsReportController, ProjectInactiveReportController, QualificationReportController, SicknessReportController, WeekByUserReportController, WorkBalanceReportController};
+use App\Http\Controllers\Reporting\{AbsencesReportController, AssetAnalysisReportController, AttendanceReportController, AuditActivityReportController, BillingReportController, CoverageReportController, CustomerAnalysisReportController, CustomerProjectReportController, EntryTypeAnalysisReportController, EntryTypeDrilldownReportController, ExpenseReportController, FleetReportController, MaterialReportController, MonthByUserTeamReportController, MyMonthReportController, MyYearReportController, OnCallReportController, OperationsReportController, ProjectDetailsReportController, ProjectInactiveReportController, QualificationReportController, SicknessReportController, WeekByUserReportController, WorkBalanceReportController};
 use App\Http\Controllers\UI\DateRangeController;
 use Illuminate\Support\Facades\Route;
 
@@ -57,6 +57,12 @@ Route::get('sign/protocol/{token}', [PublicProtocolSignatureController::class, '
 Route::post('sign/protocol/{token}', [PublicProtocolSignatureController::class, 'store'])
     ->middleware('throttle:6,1')
     ->name('protocols.public-sign.submit');
+
+// Backup-Heartbeat (MVP-046 §5): externer Endpoint mit Bearer-Token,
+// daher außerhalb von Auth-Gruppen, mit CSRF-Ausnahme (siehe bootstrap/app.php).
+Route::post('admin/backup/heartbeat', [BackupHeartbeatController::class, 'store'])
+    ->middleware('throttle:60,1')
+    ->name('admin.backup.heartbeat');
 
 // Tagebuch (nur für eingeloggte Benutzer)
 Route::middleware('auth')->group(function () {
@@ -131,8 +137,15 @@ Route::middleware('auth')->group(function () {
             ->middleware('throttle:3,1')
             ->name('admin.support.report.generate');
 
+        // Supportzugriffe-Audit (MVP-004)
+        Route::get('admin/support/access-audit', [SupportAccessAuditController::class, 'index'])
+            ->name('admin.support.access-audit.index');
+
         // Lizenz-Admin (MVP-047)
         Route::get('admin/license', [LicenseAdminController::class, 'index'])->name('admin.license.index');
+        Route::post('admin/license/flags/{flag}/toggle', [LicenseAdminController::class, 'toggleFlag'])
+            ->where('flag', '[A-Za-z0-9._-]+')
+            ->name('admin.license.flags.toggle');
 
         // Demo-Mandant (MVP-050)
         Route::get('admin/demo', [DemoTenantController::class, 'index'])->name('admin.demo.index');
@@ -145,6 +158,7 @@ Route::middleware('auth')->group(function () {
 
         // Datenschutzseite (MVP-005)
         Route::get('admin/privacy', [PrivacyController::class, 'index'])->name('admin.privacy.index');
+        Route::get('admin/privacy/export', [PrivacyController::class, 'export'])->name('admin.privacy.export');
         Route::delete('admin/privacy/sessions/{id}', [PrivacyController::class, 'destroySession'])
             ->where('id', '[A-Za-z0-9\-_]+')
             ->name('admin.privacy.sessions.destroy');
@@ -252,20 +266,25 @@ Route::middleware('auth')->group(function () {
         Route::get('customers/export', [CustomerController::class, 'export'])->name('customers.export');
         Route::get('customers/import', [CustomerController::class, 'importForm'])->name('customers.import.form');
         Route::post('customers/import', [CustomerController::class, 'import'])->name('customers.import');
-        Route::post('customers/lexoffice/push-all', [CustomerController::class, 'bulkPushLexoffice'])
-            ->name('customers.lexoffice.push-all');
         Route::resource('customers', CustomerController::class);
         Route::post('customers/{customer}/archive', [CustomerController::class, 'archive'])->name('customers.archive');
         Route::post('customers/{customer}/restore', [CustomerController::class, 'restore'])->name('customers.restore');
 
-        // ── Plugin-Aktionen (Lexoffice) ─────────────────────────────────────────
-        Route::post('customers/{customer}/lexoffice/contact', [LexofficeCustomerController::class, 'pushContact'])
-            ->name('customers.lexoffice.contact');
-        Route::post('customers/{customer}/lexoffice/time-export', [LexofficeCustomerController::class, 'exportTime'])
-            ->name('customers.lexoffice.time-export');
+        // Plugin-spezifische Routen (z. B. Lexoffice customers.lexoffice.*) werden
+        // vom jeweiligen Plugin-ServiceProvider geladen — siehe app/Plugins/*/routes.php.
 
         // ── Plugin-Übersicht (Admin) ────────────────────────────────────────────
         Route::get('admin/plugins', [AdminPluginController::class, 'index'])->name('admin.plugins.index');
+        Route::get('admin/plugins/{plugin}', [AdminPluginController::class, 'edit'])->name('admin.plugins.edit');
+        Route::put('admin/plugins/{plugin}', [AdminPluginController::class, 'update'])->name('admin.plugins.update');
+        Route::post('admin/plugins/{plugin}/toggle', [AdminPluginController::class, 'toggle'])->name('admin.plugins.toggle');
+        Route::post('admin/plugins/{plugin}/health-check', [AdminPluginController::class, 'healthCheck'])->name('admin.plugins.health-check');
+        Route::post('admin/plugins/{plugin}/reset-errors', [AdminPluginErrorController::class, 'reset'])->name('admin.plugins.reset-errors');
+
+        // ── Plugin-Fehler-Inbox (Admin) ─────────────────────────────────────────
+        Route::get('admin/plugin-errors', [AdminPluginErrorController::class, 'index'])->name('admin.plugin-errors.index');
+        Route::get('admin/plugin-errors/{pluginError}', [AdminPluginErrorController::class, 'show'])->name('admin.plugin-errors.show');
+        Route::post('admin/plugin-errors/{pluginError}/acknowledge', [AdminPluginErrorController::class, 'acknowledge'])->name('admin.plugin-errors.acknowledge');
 
         // ── Rechnungs-Mail-Templates (Admin) ─────────────────────────────────────
         Route::resource('admin/invoice-mail-templates', InvoiceMailTemplateController::class)
@@ -463,6 +482,12 @@ Route::middleware('auth')->group(function () {
         Route::post('assets/{asset}/unblock', [AssetController::class, 'unblock'])->name('assets.unblock');
         Route::get('assets/{asset}', [AssetController::class, 'show'])->name('assets.show');
 
+        Route::post('assets/{asset}/maintenance-plans', [MaintenancePlanController::class, 'store'])->name('assets.maintenance-plans.store');
+        Route::put('assets/{asset}/maintenance-plans/{plan}', [MaintenancePlanController::class, 'update'])->name('assets.maintenance-plans.update');
+        Route::post('assets/{asset}/maintenance-plans/{plan}/complete', [MaintenancePlanController::class, 'complete'])->name('assets.maintenance-plans.complete');
+        Route::post('assets/{asset}/maintenance-plans/{plan}/toggle', [MaintenancePlanController::class, 'toggle'])->name('assets.maintenance-plans.toggle');
+        Route::delete('assets/{asset}/maintenance-plans/{plan}', [MaintenancePlanController::class, 'destroy'])->name('assets.maintenance-plans.destroy');
+
         Route::get('vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
         Route::get('vehicles/create', [VehicleController::class, 'create'])->name('vehicles.create');
         Route::post('vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
@@ -492,6 +517,75 @@ Route::middleware('auth')->group(function () {
         Route::get('flex', [FlexController::class, 'index'])->name('flex.index');
         Route::get('flex/admin', [FlexController::class, 'admin'])->name('flex.admin');
 
+        // ── Monatsfreigaben (MVP-016) ───────────────────────────────────────────
+        Route::get('month-approval', [\App\Http\Controllers\MonthApprovalController::class, 'index'])
+            ->name('month-approval.index');
+        Route::get('month-approval/{year}/{month}', [\App\Http\Controllers\MonthApprovalController::class, 'show'])
+            ->whereNumber(['year', 'month'])
+            ->name('month-approval.show');
+        Route::post('month-approval/{year}/{month}/submit', [\App\Http\Controllers\MonthApprovalController::class, 'submit'])
+            ->whereNumber(['year', 'month'])
+            ->name('month-approval.submit');
+        Route::post('month-approval/{year}/{month}/reopen', [\App\Http\Controllers\MonthApprovalController::class, 'reopen'])
+            ->whereNumber(['year', 'month'])
+            ->name('month-approval.reopen');
+
+        Route::get('admin/month-approval', [\App\Http\Controllers\Admin\MonthApprovalInboxController::class, 'index'])
+            ->name('admin.month-approval.index');
+        Route::post('admin/month-approval/{monthClosure}/approve', [\App\Http\Controllers\Admin\MonthApprovalInboxController::class, 'approve'])
+            ->name('admin.month-approval.approve');
+        Route::post('admin/month-approval/{monthClosure}/reject', [\App\Http\Controllers\Admin\MonthApprovalInboxController::class, 'reject'])
+            ->name('admin.month-approval.reject');
+        Route::post('admin/month-approval/{monthClosure}/reopen', [\App\Http\Controllers\Admin\MonthApprovalInboxController::class, 'reopen'])
+            ->name('admin.month-approval.reopen');
+        Route::post('admin/month-approval/{monthClosure}/lock', [\App\Http\Controllers\Admin\MonthApprovalInboxController::class, 'lock'])
+            ->name('admin.month-approval.lock');
+
+        // ── Zeit-Korrekturanträge (MVP-017) ─────────────────────────────────────
+        Route::get('corrections', [\App\Http\Controllers\TimeCorrectionController::class, 'index'])
+            ->name('corrections.index');
+        Route::get('corrections/create', [\App\Http\Controllers\TimeCorrectionController::class, 'create'])
+            ->name('corrections.create');
+        Route::post('corrections', [\App\Http\Controllers\TimeCorrectionController::class, 'store'])
+            ->name('corrections.store');
+        Route::get('corrections/{correction}', [\App\Http\Controllers\TimeCorrectionController::class, 'show'])
+            ->name('corrections.show');
+        Route::post('corrections/{correction}/submit', [\App\Http\Controllers\TimeCorrectionController::class, 'submit'])
+            ->name('corrections.submit');
+        Route::post('corrections/{correction}/withdraw', [\App\Http\Controllers\TimeCorrectionController::class, 'withdraw'])
+            ->name('corrections.withdraw');
+
+        Route::get('admin/corrections', [\App\Http\Controllers\Admin\TimeCorrectionInboxController::class, 'index'])
+            ->name('admin.corrections.index');
+        Route::get('admin/corrections/{correction}', [\App\Http\Controllers\Admin\TimeCorrectionInboxController::class, 'show'])
+            ->name('admin.corrections.show');
+        Route::post('admin/corrections/{correction}/approve', [\App\Http\Controllers\Admin\TimeCorrectionInboxController::class, 'approve'])
+            ->name('admin.corrections.approve');
+        Route::post('admin/corrections/{correction}/reject', [\App\Http\Controllers\Admin\TimeCorrectionInboxController::class, 'reject'])
+            ->name('admin.corrections.reject');
+        Route::post('admin/corrections/{correction}/apply', [\App\Http\Controllers\Admin\TimeCorrectionInboxController::class, 'apply'])
+            ->name('admin.corrections.apply');
+
+        // ── Zeit-Export (MVP-019) ──────────────────────────────────────────────
+        Route::get('exports', [\App\Http\Controllers\TimeExportController::class, 'index'])
+            ->name('exports.index');
+        Route::get('exports/create', [\App\Http\Controllers\TimeExportController::class, 'create'])
+            ->name('exports.create');
+        Route::post('exports', [\App\Http\Controllers\TimeExportController::class, 'store'])
+            ->name('exports.store');
+        Route::get('exports/{export}', [\App\Http\Controllers\TimeExportController::class, 'show'])
+            ->name('exports.show');
+        Route::get('exports/{export}/download', [\App\Http\Controllers\TimeExportController::class, 'download'])
+            ->name('exports.download');
+        Route::post('exports/{export}/deliver', [\App\Http\Controllers\TimeExportController::class, 'deliver'])
+            ->name('exports.deliver');
+        Route::post('exports/{export}/reject', [\App\Http\Controllers\TimeExportController::class, 'reject'])
+            ->name('exports.reject');
+
+        // ── Plan/Ist-Report (MVP-018) ──────────────────────────────────────────
+        Route::get('reports/plan-ist/presence', [\App\Http\Controllers\Reporting\PlanIstReportController::class, 'presence'])
+            ->name('reports.plan-ist.presence');
+
         // ── Auswertungen ────────────────────────────────────────────────────────
         Route::get('reports/my-year', [MyYearReportController::class, 'index'])->name('reports.my-year');
         Route::get('reports/my-month', [MyMonthReportController::class, 'index'])->name('reports.my-month');
@@ -505,6 +599,11 @@ Route::middleware('auth')->group(function () {
             ->name('reports.entry-types.drilldown.open-issues');
         Route::get('reports/entry-types/drilldown/protocols', [EntryTypeDrilldownReportController::class, 'protocols'])
             ->name('reports.entry-types.drilldown.protocols');
+        Route::get('reports/assets', [AssetAnalysisReportController::class, 'index'])->name('reports.assets');
+        Route::get('reports/assets/drilldown/open-issues', [\App\Http\Controllers\Reporting\AssetDrilldownReportController::class, 'openIssues'])
+            ->name('reports.assets.drilldown.open-issues');
+        Route::get('reports/assets/drilldown/protocols', [\App\Http\Controllers\Reporting\AssetDrilldownReportController::class, 'protocols'])
+            ->name('reports.assets.drilldown.protocols');
         Route::get('reports/customer-project', [CustomerProjectReportController::class, 'index'])->name('reports.customer-project');
         Route::get('reports/week-by-user', [WeekByUserReportController::class, 'index'])->name('reports.week-by-user');
         Route::get('reports/month-by-user-team', [MonthByUserTeamReportController::class, 'index'])->name('reports.month-by-user-team');
@@ -588,6 +687,15 @@ Route::middleware('auth')->group(function () {
             ->names('admin.classification-requirements')
             ->parameters(['classification-requirements' => 'classificationRequirement'])
             ->except('show');
+
+        // MVP-049 — CSV-Import Wizard
+        Route::get('admin/imports', [ImportController::class, 'index'])->name('admin.imports.index');
+        Route::get('admin/imports/create', [ImportController::class, 'create'])->name('admin.imports.create');
+        Route::post('admin/imports/preflight', [ImportController::class, 'preflight'])->name('admin.imports.preflight');
+        Route::get('admin/imports/{import}', [ImportController::class, 'show'])->name('admin.imports.show');
+        Route::post('admin/imports/{import}/confirm', [ImportController::class, 'confirm'])->name('admin.imports.confirm');
+        Route::delete('admin/imports/{import}', [ImportController::class, 'destroy'])->name('admin.imports.destroy');
+        Route::get('admin/imports/{import}/errors.csv', [ImportController::class, 'downloadErrors'])->name('admin.imports.errors');
         Route::get('admin/branch-profiles', [BranchProfileController::class, 'index'])
             ->name('admin.branch-profiles.index');
         Route::post('admin/branch-profiles/{profile}', [BranchProfileController::class, 'install'])

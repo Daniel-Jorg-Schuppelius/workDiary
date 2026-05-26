@@ -12,7 +12,9 @@ namespace App\Plugins\Lexoffice;
 
 use App\Models\{Customer, ExternalReference, TimeEntry};
 use App\Plugins\Contracts\{ContactSyncer, Plugin, PluginCapability, TimeExporter};
+use App\Plugins\{PluginDefaults, PluginHealth};
 use Carbon\CarbonImmutable;
+use Throwable;
 
 /**
  * Lexoffice integration plugin.
@@ -25,7 +27,11 @@ use Carbon\CarbonImmutable;
  * external_references table. The plugin id is "lexoffice".
  */
 class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
+    use PluginDefaults;
+
     public const ID = 'lexoffice';
+
+    public const SERVICE_PROVIDER = LexofficeServiceProvider::class;
 
     public const EXT_TYPE_CONTACT = 'contact';
 
@@ -47,11 +53,48 @@ class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
         return '0.1.0';
     }
 
+    public function schemaVersion(): string {
+        // Aktuell liefert das Lexoffice-Plugin keine eigenen Migrations.
+        // Wird beim ersten Plugin-eigenen Schema-Wechsel hochgezogen.
+        return '1.0.0';
+    }
+
+    /**
+     * Kurzer Ping gegen den Lexoffice-/profile-Endpunkt. Antwortet die API,
+     * gilt das Plugin als gesund; 401 → failing (Key ungültig);
+     * Netz-/Timeout-Fehler → degraded; sonstige Fehler → failing mit Message.
+     */
+    public function healthCheck(): PluginHealth {
+        if (! $this->service->isConfigured()) {
+            return PluginHealth::degraded(__('Lexoffice ist nicht konfiguriert.'));
+        }
+        try {
+            $ok = $this->service->ping();
+
+            return $ok
+                ? PluginHealth::ok(__('Lexoffice-API erreichbar.'))
+                : PluginHealth::failing(__('Lexoffice-API antwortet nicht erwartungsgemäß.'));
+        } catch (Throwable $e) {
+            return PluginHealth::failing($e->getMessage());
+        }
+    }
+
     public function description(): string {
         return __('Synchronisiert Kunden mit Lexoffice und überträgt erfasste Zeiten als Beleg.');
     }
 
     public function isEnabled(): bool {
+        // Wenn eine Organisation gebunden ist, entscheidet die DB; sonst Fallback auf config (Tests + Konsolen-Kontexte ohne Org).
+        if (app()->bound('currentOrganization')) {
+            $org = app('currentOrganization');
+            if ($org instanceof \App\Models\Organization) {
+                $row = \App\Models\PluginSetting::forOrganization($org->id, self::ID);
+                if ($row->exists || ($row->enabled || ($row->settings['api_key'] ?? null) !== null)) {
+                    return $row->enabled && (string) ($row->get('api_key') ?? '') !== '';
+                }
+            }
+        }
+
         return (bool) config('plugins.lexoffice.enabled') && $this->service->isConfigured();
     }
 
@@ -63,7 +106,31 @@ class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
     }
 
     public function adminPanel(): ?array {
-        return null; // Settings live in .env / config/plugins.php for now.
+        return [
+            'route' => 'admin.plugins.edit',
+            'label' => __('Lexoffice-Einstellungen'),
+            'icon' => 'cloud_sync',
+        ];
+    }
+
+    public function serviceProvider(): ?string {
+        return \App\Plugins\Lexoffice\LexofficeServiceProvider::class;
+    }
+
+    public function settingsSchema(): array {
+        return [
+            ['key' => 'api_key', 'label' => __('API-Key'), 'type' => 'password', 'required' => true, 'help' => __('Public API-Token aus dem Lexoffice-Account.')],
+            ['key' => 'base_url', 'label' => __('API-Basis-URL'), 'type' => 'text', 'default' => 'https://api.lexoffice.io/v1'],
+            ['key' => 'default_currency', 'label' => __('Standardwährung'), 'type' => 'text', 'default' => 'EUR'],
+            ['key' => 'default_tax_type', 'label' => __('Steuerart'), 'type' => 'select', 'options' => ['net' => 'net', 'gross' => 'gross'], 'default' => 'net'],
+            ['key' => 'default_vat_rate', 'label' => __('Standard-USt %'), 'type' => 'text', 'default' => '19'],
+            ['key' => 'match_policy', 'label' => __('Konflikt-Strategie'), 'type' => 'select', 'options' => [
+                'lexoffice_wins' => __('Lexoffice gewinnt'),
+                'local_wins' => __('Lokal gewinnt'),
+                'manual_review' => __('Manuelle Prüfung'),
+            ], 'default' => 'manual_review'],
+            ['key' => 'create_missing_local', 'label' => __('Fehlende Kunden aus Lexoffice neu anlegen'), 'type' => 'boolean', 'default' => false],
+        ];
     }
 
     public function pushContact(Customer $customer): string {
@@ -84,6 +151,40 @@ class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
         );
 
         return $externalId;
+    }
+
+    /**
+     * View-Slot-Renderer. Wird vom Core über {@see \App\Plugins\PluginManager::renderSlot()}
+     * aufgerufen; das Plugin entscheidet selbst, ob und welcher Button erscheinen soll.
+     */
+    public function renderActions(string $slot, mixed $context = null): ?string {
+        if (! $this->isEnabled()) {
+            return null;
+        }
+
+        if ($slot === 'invoice-show.actions' && $context instanceof \App\Models\Invoice && $context->status === \App\Models\Invoice::STATUS_DRAFT) {
+            $url = route('invoices.lexoffice.publish', $context);
+            $csrf = csrf_token();
+            $label = __('An Lexoffice');
+            $confirm = __('Rechnung an Lexoffice übertragen und dort finalisieren? Die Rechnungsnummer wird ggf. von Lexoffice gesetzt.');
+
+            return <<<HTML
+                <form method="POST" action="{$url}" class="inline"
+                      data-confirm-dialog
+                      data-confirm-message="{$confirm}"
+                      data-confirm-icon="cloud_upload"
+                      data-confirm-tone="primary"
+                      data-confirm-label="{$label}">
+                    <input type="hidden" name="_token" value="{$csrf}">
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        <span class="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
+                        <span>{$label}</span>
+                    </button>
+                </form>
+            HTML;
+        }
+
+        return null;
     }
 
     public function exportCustomerTime(Customer $customer, CarbonImmutable $from, CarbonImmutable $to): array {

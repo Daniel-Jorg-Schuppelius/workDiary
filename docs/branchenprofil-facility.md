@@ -9,6 +9,8 @@ Referenzprofil für **Facility Management, Objektbetreuung und
 Hausmeisterdienste**. Bildet Objektkontrollen, Kleinreparaturen,
 Mängelmanagement, Schlüsselverwaltung, Winterdienst, Zählerstände,
 Dienstleisterkoordination und wiederkehrende Betreiberpflichten ab.
+Gebäude, Etagen, Räume und Außenbereiche dienen dabei als fachlicher Kontext
+für Aufträge, Protokolle, Mängel und Betreiberpflichten.
 
 ## 2. Strukturparallele
 
@@ -26,7 +28,16 @@ Dienstleisterkoordination und wiederkehrende Betreiberpflichten ab.
 | `result`        | erledigt, offen, weitergeleitet, nacharbeit, materialFehlt, kundeInformiert, eskaliert                            |
 | `product_group` | gebaeude, tuer, tor, beleuchtung, heizung, aufzug, aussenanlage, brandschutz, schluessel, zaehler                 |
 
-## 4. Pflichtklassifikationen
+## 4. Raum- und Objektanforderungen
+
+- Gebäude, Etage, Raum oder Außenbereich am Auftrag erfassen.
+- Raumbezogene Anforderungen: Brandschutz, Zugang, Schlüssel, Zähler,
+  gesperrter Bereich, Betreiberpflicht oder besondere Kontrolle.
+- Mängel können direkt an Raum, Anlage oder Bauteil hängen.
+- Folgeaufträge übernehmen den Objekt-/Raumbezug, damit Historie und
+  Auswertung erhalten bleiben.
+
+## 5. Pflichtklassifikationen
 
 - `entry_type=objektkontrolle`: Pflicht Objekt, Checkliste und Ergebnis.
 - `entry_type=maengelmeldung`: Pflicht Foto, Ort, `defect_type` und
@@ -36,28 +47,29 @@ Dienstleisterkoordination und wiederkehrende Betreiberpflichten ab.
 - `entry_type=winterdienst`: Pflicht Zeitraum, Wetterlage und erledigte
   Flächen.
 
-## 5. Prozedurvorlagen
+## 6. Prozedurvorlagen
 
 `FM_OBJEKTKONTROLLE`, `FM_MAENGEL`, `FM_KLEINREPARATUR`,
 `FM_WINTERDIENST`, `FM_SCHLUESSEL`, `FM_ZAEHLERSTAND`.
 
-## 6. Protokollvorlagen
+## 7. Protokollvorlagen
 
 `FM_OBJEKTBERICHT`, `FM_MAENGELPROTOKOLL`, `FM_SCHLUESSELNACHWEIS`,
 `FM_WINTERDIENSTNACHWEIS`, `FM_ZAEHLERABLESUNG`, `FM_NOTFALLBERICHT`.
 
-## 7. Asset-Kategorien
+## 8. Asset-Kategorien
 
 `servicefahrzeug`, `werkzeugkoffer`, `leiter`, `schneefraese`,
 `streuwagen`, `schluesselkasten`, `zaehlerkamera`, `funkgeraet`.
 
-## 8. Tags-Seed
+## 9. Tags-Seed
 
 `#objektkontrolle`, `#winterdienst`, `#schluessel`, `#mangel`,
 `#notfall`, `#brandschutz`, `#weitergeleitet`.
 
-## 9. Akzeptanzkriterien
+## 10. Akzeptanzkriterien
 
-1. `database/data/branchprofiles/facility.php` enthält Inhalte aus §3-§8.
+1. `database/data/branchprofiles/facility.php` enthält Inhalte aus §3-§9.
 2. Pflichtfelder für Objektkontrollen, Mängel und Schlüssel greifen.
 3. Onboarding-Wizard listet „Facility Management und Hausmeisterdienste".
+4. Aufträge und Protokolle können Gebäude, Bereich oder Raum referenzieren.

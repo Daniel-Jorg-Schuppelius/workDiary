@@ -14,6 +14,7 @@ use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\{AuditLog, DiaryEntry, EntryType, OpenIssue, Protocol, User};
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\{Request, Response};
@@ -22,6 +23,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class EntryTypeDrilldownReportController extends Controller {
     use ResolvesGlobalDateRange;
+    use WritesReportCsv;
 
     public function openIssues(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
@@ -59,7 +61,7 @@ class EntryTypeDrilldownReportController extends Controller {
             /** @var list<OpenIssue> $issues */
             $issues = $issuesQuery->clone()->get()->all();
 
-            $this->auditExport($request, 'entry-type-drilldown-open-issues', 'csv', [
+            $exportFilters = [
                 'from' => $from->toDateString(),
                 'to' => $to->toDateString(),
                 'entry_type_id' => $entryTypeId,
@@ -67,9 +69,10 @@ class EntryTypeDrilldownReportController extends Controller {
                 'user_id' => $userId,
                 'status' => $statusFilter,
                 'escalated' => $escalatedOnly,
-            ]);
+            ];
+            $this->auditExport($request, 'entry-type-drilldown-open-issues', 'csv', $exportFilters);
 
-            return $this->exportOpenIssuesCsv($issues, $entryTypeId, $from->toDateString(), $to->toDateString(), $escalatedOnly);
+            return $this->exportOpenIssuesCsv($issues, $entryTypeId, $from->toDateString(), $to->toDateString(), $escalatedOnly, $exportFilters);
         }
 
         if ($request->query('export') === 'pdf') {
@@ -139,16 +142,17 @@ class EntryTypeDrilldownReportController extends Controller {
             /** @var list<Protocol> $protocols */
             $protocols = $protocolsQuery->clone()->get()->all();
 
-            $this->auditExport($request, 'entry-type-drilldown-protocols', 'csv', [
+            $exportFilters = [
                 'from' => $from->toDateString(),
                 'to' => $to->toDateString(),
                 'entry_type_id' => $entryTypeId,
                 'customer_id' => $customerId,
                 'user_id' => $userId,
                 'status' => $statusFilter,
-            ]);
+            ];
+            $this->auditExport($request, 'entry-type-drilldown-protocols', 'csv', $exportFilters);
 
-            return $this->exportProtocolsCsv($protocols, $entryTypeId, $from->toDateString(), $to->toDateString());
+            return $this->exportProtocolsCsv($protocols, $entryTypeId, $from->toDateString(), $to->toDateString(), $exportFilters);
         }
 
         if ($request->query('export') === 'pdf') {
@@ -204,9 +208,10 @@ class EntryTypeDrilldownReportController extends Controller {
     }
 
     /**
-     * @param  list<OpenIssue>  $issues
+     * @param  list<OpenIssue>          $issues
+     * @param  array<string, mixed>     $filters
      */
-    private function exportOpenIssuesCsv(array $issues, int $entryTypeId, string $from, string $to, bool $escalatedOnly): Response {
+    private function exportOpenIssuesCsv(array $issues, int $entryTypeId, string $from, string $to, bool $escalatedOnly, array $filters): Response {
         $filename = sprintf(
             'auftragstyp-drilldown-open-issues-%d-%s-%s%s.csv',
             $entryTypeId,
@@ -228,7 +233,7 @@ class EntryTypeDrilldownReportController extends Controller {
             ];
         }
 
-        return $this->csvResponse($rows, $filename);
+        return $this->csvWithMetadata($rows, $filename, 'entry-type-drilldown-open-issues', $filters);
     }
 
     /**
@@ -252,9 +257,10 @@ class EntryTypeDrilldownReportController extends Controller {
     }
 
     /**
-     * @param  list<Protocol>  $protocols
+     * @param  list<Protocol>           $protocols
+     * @param  array<string, mixed>     $filters
      */
-    private function exportProtocolsCsv(array $protocols, int $entryTypeId, string $from, string $to): Response {
+    private function exportProtocolsCsv(array $protocols, int $entryTypeId, string $from, string $to, array $filters): Response {
         $filename = sprintf('auftragstyp-drilldown-defektprotokolle-%d-%s-%s.csv', $entryTypeId, $from, $to);
 
         $rows = [];
@@ -271,7 +277,7 @@ class EntryTypeDrilldownReportController extends Controller {
             ];
         }
 
-        return $this->csvResponse($rows, $filename);
+        return $this->csvWithMetadata($rows, $filename, 'entry-type-drilldown-protocols', $filters);
     }
 
     /**
@@ -288,28 +294,6 @@ class EntryTypeDrilldownReportController extends Controller {
     }
 
     /**
-     * @param  list<list<string|int|float>>  $rows
-     */
-    private function csvResponse(array $rows, string $filename): Response {
-        $csv = '';
-        foreach ($rows as $row) {
-            $csv .= implode(';', array_map(static function ($value): string {
-                $string = (string) $value;
-                if (str_contains($string, ';') || str_contains($string, '"') || str_contains($string, "\n")) {
-                    $string = '"' . str_replace('"', '""', $string) . '"';
-                }
-
-                return $string;
-            }, $row)) . "\r\n";
-        }
-
-        return response("\xEF\xBB\xBF" . $csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
-    }
-
-    /**
      * @param  array<string, mixed>  $filters
      */
     private function auditExport(Request $request, string $reportCode, string $format, array $filters): void {
@@ -318,8 +302,7 @@ class EntryTypeDrilldownReportController extends Controller {
             return;
         }
 
-        $payload = json_encode($filters, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $filterHash = hash('sha256', $payload === false ? '' : $payload);
+        $filterHash = $this->reportFilterHashFull($filters);
 
         AuditLog::create([
             'organization_id' => $user->organization_id,

@@ -35,6 +35,8 @@ return [
         'tax_number' => null,
         'iban' => null,
         'bic' => null,
+        'bank_name' => null,
+        'account_holder' => null,
         'register' => null,
         'footer_text' => null,
     ],

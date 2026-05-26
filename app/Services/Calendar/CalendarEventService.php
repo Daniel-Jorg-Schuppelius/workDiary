@@ -38,7 +38,7 @@ class CalendarEventService {
         foreach ($shifts as $shift) {
             $events[] = [
                 'id' => 'shift-' . $shift->id,
-                'title' => __('Bereitschaft') . ' · ' . ($shift->user?->name ?? '—'),
+                'title' => __('Bereitschaft') . ' · ' . ($shift->user->name ?? '—'),
                 'start' => $shift->start_at->toIso8601String(),
                 'end' => $shift->end_at->toIso8601String(),
                 'color' => '#0ea5e9',
@@ -56,9 +56,9 @@ class CalendarEventService {
         foreach ($assignments as $assignment) {
             $events[] = [
                 'id' => 'emergency-' . $assignment->id,
-                'title' => __('Notdienst') . ' · ' . ($assignment->user?->name ?? '—'),
+                'title' => __('Notdienst') . ' · ' . ($assignment->user->name ?? '—'),
                 'start' => $assignment->start_at->toIso8601String(),
-                'end' => $assignment->end_at?->toIso8601String(),
+                'end' => $assignment->end_at->toIso8601String(),
                 'color' => '#dc2626',
                 'url' => null,
             ];

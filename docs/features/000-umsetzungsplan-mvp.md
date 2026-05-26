@@ -23,6 +23,8 @@ Mandantentrennung und einheitliche Bedienung sind Teil des Kernprodukts.
 - Tages- und Monatsabschluss für Arbeitszeiten.
 - Protokoll-/Dokumentationsgrundlage mit Fotos, Checklisten und Unterschrift.
 - Prozeduren mit Pflichtschritten, z. B. Backup vor Update.
+- Facility-Management-Grundlage: Gebäude, Bereiche, Räume und raumbezogene
+  Anforderungen für unterschiedliche Gewerke.
 - Grundauswertungen für Kunde, Auftrag, Zeit, Material und Nacharbeit.
 - Datenschutzgrundsätze sichtbar und technisch unterstützt.
 - Einheitliche Bedienung für Listen, Filter, Formulare, Detailseiten und
@@ -181,14 +183,18 @@ Issues:
 
 - `MVP-030`: Kernklassifikationen definieren: Auftragstyp, Tätigkeit, Fehlerart, Ursache, Ergebnis, Nacharbeit, Kulanzgrund.
 - `MVP-031`: Kategorien pro Organisation pflegbar machen.
-- `MVP-032`: Pflichtklassifikationen pro Auftragstyp ermöglichen.
-- `MVP-033`: Branchenprofil `IT-Service` als erstes Referenzprofil anlegen.
-- `MVP-034`: Branchenprofil `Handwerk/Service allgemein` als zweites Referenzprofil anlegen.
+- `MVP-032`: Pflichtklassifikationen pro Auftragstyp, Gewerk und Objekt-/Raumtyp ermöglichen.
+- `MVP-033`: Branchenprofil `IT-Service` als erstes Referenzprofil anlegen, inkl. Erfassung von Kundenrechnern und Netzwerkkomponenten pro Raum.
+- `MVP-034`: Branchenprofile `Facility Management` und `Gebäudereinigung` als Referenzprofile anlegen; `Handwerk/Service allgemein` bleibt Basisprofil für gewerkeübergreifende Servicefälle.
 
 Definition of Done:
 
 - Auswertungen basieren nicht nur auf Freitext.
-- Profile liefern Startwerte, sind aber kundenspezifisch anpassbar.
+- Profile liefern Startwerte für Auftragstypen, Raum-/Objekttypen,
+  Pflichtfelder und Protokolle, sind aber kundenspezifisch anpassbar.
+- Unterschiedliche Gewerke können für denselben Raum unterschiedliche
+  Anforderungen definieren, z. B. Sonderreinigung, technische Prüfung oder
+  IT-Inventarisierung.
 
 ### Epic 3.2: Objektakte, Assets und Dienstmittel
 
@@ -198,7 +204,7 @@ Quellen:
 
 Issues:
 
-- `MVP-035`: Asset-/Objekt-Stammdaten minimal modellieren: Typ, Name, Seriennummer, Standort, Kunde, Status.
+- `MVP-035`: Asset-/Objekt-Stammdaten minimal modellieren: Typ, Name, Seriennummer, Gebäude/Bereich/Raum, Kunde, Status.
 - `MVP-036`: Asset/Objekt mit Auftrag, Protokoll, Material und Anhang verknüpfen.
 - `MVP-037`: Objekt-Timeline anzeigen.
 - `MVP-038`: Defekt-/gesperrt-Status sichtbar machen.
@@ -206,6 +212,10 @@ Issues:
 Definition of Done:
 
 - Ein Objekt oder Dienstmittel hat eine Historie.
+- Gebäude, Bereiche und Räume können als Objekte geführt oder referenziert
+  werden.
+- Kundenrechner, Reinigungsbereiche, technische Anlagen und Dienstmittel lassen
+  sich einem Raum oder Gebäudebereich zuordnen.
 - Wiederkehrende Probleme können später objektbezogen ausgewertet werden.
 
 ### Epic 3.3: Management-Auswertungen MVP
@@ -217,8 +227,8 @@ Quellen:
 Issues:
 
 - `MVP-039`: Kundenanalyse: Zeit, Anzahl Aufträge, Nacharbeit, offene Punkte, nicht abrechenbare Zeit.
-- `MVP-040`: Auftragstypanalyse: Plan/Ist, Durchschnittsdauer, Nacharbeit.
-- `MVP-041`: Produkt-/Objektanalyse: wiederkehrende Fehlerarten und offene Punkte.
+- `MVP-040`: Auftragstyp- und Gewerkeanalyse: Plan/Ist, Durchschnittsdauer, Nacharbeit.
+- `MVP-041`: Produkt-/Objekt-/Raumanalyse: wiederkehrende Fehlerarten, Sonderreinigungen, offene Punkte und betroffene Assets.
 - `MVP-042`: Drill-down von Kennzahl zu Aufträgen sicherstellen.
 - `MVP-043`: CSV/PDF-Export für MVP-Reports definieren.
 
@@ -226,7 +236,8 @@ Definition of Done:
 
 - Jede Kennzahl ist bis zum Auftrag nachvollziehbar.
 - Auswertungen unterscheiden abrechenbare, interne, Reise- und Nacharbeitszeit.
-- Zeitraum-, Kunde-, Auftragstyp- und Statusfilter sind vorhanden.
+- Zeitraum-, Kunde-, Objekt-/Raum-, Gewerk-, Auftragstyp- und Statusfilter sind
+  vorhanden.
 
 ## Phase 4: Betrieb und Einführung
 

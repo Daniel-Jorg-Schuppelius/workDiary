@@ -14,6 +14,7 @@ use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\{AuditLog, Customer, DiaryEntry, OpenIssue, Project, Protocol, TimeEntry, User};
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
@@ -23,6 +24,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class CustomerAnalysisReportController extends Controller {
     use ResolvesGlobalDateRange;
+    use WritesReportCsv;
 
     public function index(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
@@ -37,26 +39,22 @@ class CustomerAnalysisReportController extends Controller {
             ->filter(static fn(array $row): bool => $row['totalMinutes'] >= $minMinutes)
             ->values();
 
-        if ($request->query('export') === 'csv') {
-            $this->auditExport($request, 'customers-analysis', 'csv', [
-                'from' => $from->toDateString(),
-                'to' => $to->toDateString(),
-                'min_minutes' => $minMinutes,
-                'project_id' => $projectId,
-                'user_id' => $userId,
-            ]);
+        $exportContext = [
+            'from' => $from->toDateString(),
+            'to' => $to->toDateString(),
+            'min_minutes' => $minMinutes,
+            'project_id' => $projectId,
+            'user_id' => $userId,
+        ];
 
-            return $this->exportCsv(array_values($rows->all()), $from->toDateString(), $to->toDateString());
+        if ($request->query('export') === 'csv') {
+            $this->auditExport($request, 'customers-analysis', 'csv', $exportContext);
+
+            return $this->exportCsv(array_values($rows->all()), $from->toDateString(), $to->toDateString(), $exportContext);
         }
 
         if ($request->query('export') === 'pdf') {
-            $this->auditExport($request, 'customers-analysis', 'pdf', [
-                'from' => $from->toDateString(),
-                'to' => $to->toDateString(),
-                'min_minutes' => $minMinutes,
-                'project_id' => $projectId,
-                'user_id' => $userId,
-            ]);
+            $this->auditExport($request, 'customers-analysis', 'pdf', $exportContext);
 
             return $this->exportPdf(
                 array_values($rows->all()),
@@ -215,9 +213,10 @@ class CustomerAnalysisReportController extends Controller {
      *   escalationCount:int,
      *   avgEntryMinutes:int,
      *   trend30d:int
-     * }>  $rows
+     * }>             $rows
+     * @param  array<string, mixed>  $filters
      */
-    private function exportCsv(array $rows, string $from, string $to): Response {
+    private function exportCsv(array $rows, string $from, string $to, array $filters): Response {
         $filename = sprintf('kundenanalyse_%s_%s.csv', $from, $to);
         $out = [];
         $out[] = [
@@ -250,22 +249,7 @@ class CustomerAnalysisReportController extends Controller {
             ];
         }
 
-        $csv = '';
-        foreach ($out as $csvRow) {
-            $csv .= implode(';', array_map(static function ($value): string {
-                $string = (string) $value;
-                if (str_contains($string, ';') || str_contains($string, '"') || str_contains($string, "\n")) {
-                    $string = '"' . str_replace('"', '""', $string) . '"';
-                }
-
-                return $string;
-            }, $csvRow)) . "\r\n";
-        }
-
-        return response("\xEF\xBB\xBF" . $csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
+        return $this->csvWithMetadata($out, $filename, 'customers-analysis', $filters);
     }
 
     /**
@@ -318,8 +302,7 @@ class CustomerAnalysisReportController extends Controller {
             return;
         }
 
-        $payload = json_encode($filters, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $filterHash = hash('sha256', $payload === false ? '' : $payload);
+        $filterHash = $this->reportFilterHashFull($filters);
 
         AuditLog::create([
             'organization_id' => $user->organization_id,

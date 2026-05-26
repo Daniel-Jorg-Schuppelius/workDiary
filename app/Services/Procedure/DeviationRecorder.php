@@ -28,8 +28,7 @@ class DeviationRecorder {
 
     public function __construct(
         private readonly OpenIssueService $openIssues,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>  $payload

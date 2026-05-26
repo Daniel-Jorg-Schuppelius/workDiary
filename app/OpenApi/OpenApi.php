@@ -30,5 +30,4 @@ use OpenApi\Attributes as OA;
 #[OA\Tag(name: 'Customers', description: 'Kundenverwaltung')]
 #[OA\Tag(name: 'Projects', description: 'Projektverwaltung')]
 #[OA\Tag(name: 'Tasks', description: 'Tasks (Activities) je Projekt')]
-class OpenApi {
-}
+class OpenApi {}

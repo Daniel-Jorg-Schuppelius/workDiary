@@ -25,11 +25,11 @@ const REPORT = ROOT . '/storage/reports/translations-coverage.md';
 
 /** @return iterable<SplFileInfo> */
 function walk(string $dir, array $extensions): iterable {
-    if (! is_dir($dir)) return;
+    if (! is_dir($dir)) { return; }
     $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS));
     foreach ($it as $file) {
         /** @var SplFileInfo $file */
-        if (! $file->isFile()) continue;
+        if (! $file->isFile()) { continue; }
         foreach ($extensions as $ext) {
             if (str_ends_with($file->getFilename(), $ext)) {
                 yield $file;
@@ -43,7 +43,7 @@ function walk(string $dir, array $extensions): iterable {
 function flatten(array $arr, string $prefix = ''): array {
     $out = [];
     foreach ($arr as $k => $v) {
-        $key = $prefix === '' ? (string)$k : $prefix . '.' . $k;
+        $key = $prefix === '' ? (string) $k : $prefix . '.' . $k;
         if (is_array($v)) {
             $out = array_merge($out, flatten($v, $key));
         } else {
@@ -61,7 +61,7 @@ foreach (['lang/de.json', 'lang/en.json'] as $rel) {
     if (is_file($path)) {
         $data = json_decode((string) file_get_contents($path), true);
         if (is_array($data)) {
-            foreach (array_keys($data) as $k) $definedJson[$k] = true;
+            foreach (array_keys($data) as $k) { $definedJson[$k] = true; }
         }
     }
 }
@@ -70,10 +70,10 @@ $definedPhp = [];
 $definedPhpPrefix = []; // parent paths returning arrays (allow `trans('access.permission')` which returns array)
 foreach (['de', 'en'] as $locale) {
     $dir = ROOT . '/lang/' . $locale;
-    if (! is_dir($dir)) continue;
+    if (! is_dir($dir)) { continue; }
     foreach (glob($dir . '/*.php') as $file) {
         $data = require $file;
-        if (! is_array($data)) continue;
+        if (! is_array($data)) { continue; }
         $module = basename($file, '.php');
         $definedPhpPrefix[$module] = true;
         foreach (flatten($data) as $path) {
@@ -103,13 +103,13 @@ $lookDirs = [
 foreach ($lookDirs as $dir) {
     foreach (walk($dir, ['.blade.php', '.php', '.js']) as $file) {
         $content = (string) file_get_contents($file->getPathname());
-        if (! preg_match_all($pattern, $content, $m, PREG_OFFSET_CAPTURE)) continue;
+        if (! preg_match_all($pattern, $content, $m, PREG_OFFSET_CAPTURE)) { continue; }
         foreach ($m[2] as $i => $cap) {
             $key = (string) $cap[0];
             // unescape \\' \\" \\\\ -> ' " \
             $key = str_replace(['\\\'', '\\"', '\\\\'], ['\'', '"', '\\'], $key);
             // skip dynamic concat: contains "$" or backslash escapes that suggest interpolation? best-effort
-            if ($key === '' || str_contains($key, "\n")) continue;
+            if ($key === '' || str_contains($key, "\n")) { continue; }
             $offset = (int) $m[0][$i][1];
             $line = substr_count(substr($content, 0, $offset), "\n") + 1;
             $rel = str_replace(ROOT . '/', '', $file->getPathname());
@@ -125,16 +125,16 @@ foreach ($usedKeys as $key => $occ) {
     // Dotted key with leading module-like segment "alpha[._]" -> check PHP catalog
     $isDotted = (bool) preg_match('/^[a-z][a-z0-9_-]*(?:\.[a-zA-Z0-9_-]+)+$/', $key);
     if ($isDotted) {
-        if (isset($definedPhp[$key])) continue;
+        if (isset($definedPhp[$key])) { continue; }
         // Accept array-parent usage (e.g. trans('access.permission') returns nested array).
-        if (isset($definedPhpPrefix[$key])) continue;
+        if (isset($definedPhpPrefix[$key])) { continue; }
         $missing[$key] = $occ;
         continue;
     }
     // Plain text key → JSON
-    if (isset($definedJson[$key])) continue;
+    if (isset($definedJson[$key])) { continue; }
     // If the key itself is identical in DE & EN (e.g. "OK", "PDF", "CSV") and short, ignore.
-    if (preg_match('/^[A-Z0-9]{1,4}$/', $key)) continue;
+    if (preg_match('/^[A-Z0-9]{1,4}$/', $key)) { continue; }
     $missing[$key] = $occ;
 }
 
@@ -198,19 +198,19 @@ foreach (walk(ROOT . '/resources/views', ['.blade.php']) as $file) {
     if (preg_match_all('/>([^<]{3,})</u', $masked, $tnodes, PREG_OFFSET_CAPTURE)) {
         foreach ($tnodes[1] as $node) {
             $raw = trim((string) $node[0]);
-            if ($raw === '') continue;
+            if ($raw === '') { continue; }
             // skip pure code-ish content
-            if (preg_match('/^[\s\W\d]+$/u', $raw)) continue;
+            if (preg_match('/^[\s\W\d]+$/u', $raw)) { continue; }
             // skip blade output we already removed (becomes spaces) and stray braces
-            if (preg_match('/[{}@]/', $raw)) continue;
+            if (preg_match('/[{}@]/', $raw)) { continue; }
             // skip PHP-code-ish fragments that leaked through (arrow ops, scope ops, $vars, function calls).
-            if (preg_match('/->|::|\$[a-zA-Z_]|\([^)]*\)\s*$|=>/u', $raw)) continue;
+            if (preg_match('/->|::|\$[a-zA-Z_]|\([^)]*\)\s*$|=>/u', $raw)) { continue; }
             // keyword filter
             $low = mb_strtolower($raw);
             $isGerman = (bool) preg_match('/[äöüÄÖÜß]/u', $raw)
                 || (preg_match_all('/\b[A-ZÄÖÜ][a-zäöüß]+\b/u', $raw, $w) >= 2)
                 || (bool) preg_match('/\b(und|oder|nicht|mit|für|von|der|die|das|ein|eine|kein|keine|wird|werden|sind|ist|sein|noch|bereits|aktuell|verfügbar|gespeichert|gelöscht|gespeichert)\b/u', $low);
-            if (! $isGerman) continue;
+            if (! $isGerman) { continue; }
             // skip if only ascii alphanumeric short (e.g. "Lorem ipsum dolor")
             $offset = (int) $node[1];
             $line = substr_count(substr($masked, 0, $offset), "\n") + 1;

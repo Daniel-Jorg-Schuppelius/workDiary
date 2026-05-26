@@ -207,4 +207,98 @@ class BranchProfileInstallerTest extends TestCase {
             'enforce_phase' => 'onCreate',
         ]);
     }
+
+    public function test_install_bau_ausbau_profile_creates_expected_entries(): void {
+        $result = $this->installer->install($this->org, 'bau-ausbau', $this->actor);
+
+        $this->assertSame('bau-ausbau', $result['profile_code']);
+        $this->assertGreaterThan(0, $result['created']['classifications']);
+
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->org->id,
+            'domain' => 'entry_type',
+            'code' => 'bautagesbericht',
+        ]);
+
+        $this->assertDatabaseHas('classification_requirements', [
+            'organization_id' => $this->org->id,
+            'entry_type_code' => 'mangel',
+            'required_domain' => 'defect_type',
+            'enforce_phase' => 'onCreate',
+        ]);
+    }
+
+    public function test_install_galabau_profile_creates_expected_entries(): void {
+        $result = $this->installer->install($this->org, 'galabau', $this->actor);
+
+        $this->assertSame('galabau', $result['profile_code']);
+        $this->assertGreaterThan(0, $result['created']['classifications']);
+
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->org->id,
+            'domain' => 'entry_type',
+            'code' => 'winterdienst',
+        ]);
+
+        $this->assertDatabaseHas('classification_requirements', [
+            'organization_id' => $this->org->id,
+            'entry_type_code' => 'abnahme',
+            'required_domain' => 'result',
+            'enforce_phase' => 'beforeComplete',
+        ]);
+    }
+
+    public function test_install_gebaeudereinigung_profile_creates_expected_entries(): void {
+        $result = $this->installer->install($this->org, 'gebaeudereinigung', $this->actor);
+
+        $this->assertSame('gebaeudereinigung', $result['profile_code']);
+        $this->assertGreaterThan(0, $result['created']['classifications']);
+
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->org->id,
+            'domain' => 'entry_type',
+            'code' => 'unterhaltsreinigung',
+        ]);
+
+        $this->assertDatabaseHas('classification_requirements', [
+            'organization_id' => $this->org->id,
+            'entry_type_code' => 'reklamation',
+            'required_domain' => 'defect_type',
+            'enforce_phase' => 'onCreate',
+        ]);
+    }
+
+    public function test_install_facility_profile_creates_expected_entries(): void {
+        $result = $this->installer->install($this->org, 'facility', $this->actor);
+
+        $this->assertSame('facility', $result['profile_code']);
+        $this->assertGreaterThan(0, $result['created']['classifications']);
+
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->org->id,
+            'domain' => 'entry_type',
+            'code' => 'objektkontrolle',
+        ]);
+
+        $this->assertDatabaseHas('classification_requirements', [
+            'organization_id' => $this->org->id,
+            'entry_type_code' => 'schluessel',
+            'required_domain' => 'activity',
+            'enforce_phase' => 'onCreate',
+        ]);
+    }
+
+    public function test_install_facility_profile_creates_maintenance_plan_templates(): void {
+        $result = $this->installer->install($this->org, 'facility', $this->actor);
+
+        $this->assertGreaterThan(0, $result['created']['maintenance_plan_templates']);
+        $this->assertDatabaseHas('maintenance_plan_templates', [
+            'organization_id' => $this->org->id,
+            'code' => 'FM-LEITER-12M',
+        ]);
+
+        $second = $this->installer->install($this->org, 'facility', $this->actor);
+        $this->assertSame(0, $second['created']['maintenance_plan_templates']);
+        $this->assertGreaterThan(0, $second['skipped']['maintenance_plan_templates']);
+    }
 }

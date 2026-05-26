@@ -15,8 +15,7 @@ use App\Models\{AuditLog, OnboardingProgress, User};
 use App\Services\Onboarding\OnboardingChecklistResolver;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\{Gate, Route};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 

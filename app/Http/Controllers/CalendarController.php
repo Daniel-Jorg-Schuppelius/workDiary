@@ -12,8 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Services\Calendar\CalendarEventService;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 

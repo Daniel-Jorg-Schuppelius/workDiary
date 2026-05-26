@@ -10,6 +10,7 @@
 
 namespace App\Services\Licensing;
 
+use App\Models\AuditLog;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Filesystem\Filesystem;
@@ -17,6 +18,7 @@ use Illuminate\Http\Request;
 
 class LicenseService {
     private const CACHE_KEY = 'license:current';
+    private const STATUS_KEY = 'license:lastStatus';
 
     public function __construct(
         private readonly Filesystem $files,
@@ -43,6 +45,8 @@ class LicenseService {
 
         $result = $this->evaluate($host);
 
+        $this->recordStatusTransition($result);
+
         if ($ttl > 0) {
             $this->cache->put(self::CACHE_KEY . ':' . ($host ?? '_'), $result, $ttl);
         }
@@ -54,6 +58,7 @@ class LicenseService {
         // Cache hat eine kleine Key-Variation pro Host; einfacher: per Tag oder
         // generischer Flush. Wir nutzen direkte Forgets für die häufigsten Fälle.
         $this->cache->forget(self::CACHE_KEY . ':_');
+        $this->cache->forget(self::STATUS_KEY);
     }
 
     public function install(string $licenseKey): LicenseResult {
@@ -145,13 +150,74 @@ class LicenseService {
         return LicenseResult::ok(LicenseStatus::Valid, $payload);
     }
 
-    private function evaluate(?string $host): LicenseResult {
+    protected function evaluate(?string $host): LicenseResult {
         $key = $this->rawKey();
         if ($key === null) {
             return LicenseResult::fail(LicenseStatus::Missing, 'Keine Lizenz installiert.');
         }
 
         return $this->verify($key, $host);
+    }
+
+    /**
+     * Erkennt Übergänge zwischen Lizenz-Status und schreibt einen
+     * passenden Audit-Eintrag (`license.expired`, `license.gracePeriodEntered`,
+     * `license.blocked`). Wird nur bei tatsächlichem Statuswechsel ausgelöst,
+     * der zuletzt gesehene Status liegt im Cache (`license:lastStatus`).
+     */
+    private function recordStatusTransition(LicenseResult $result): void {
+        $newStatus = $result->status;
+        $previousValue = $this->cache->get(self::STATUS_KEY);
+        $previousStatus = is_string($previousValue)
+            ? LicenseStatus::tryFrom($previousValue)
+            : null;
+
+        if ($previousStatus === $newStatus) {
+            return;
+        }
+
+        $this->cache->forever(self::STATUS_KEY, $newStatus->value);
+
+        // Erster bekannter Status (frischer Cache): nichts auditieren,
+        // sonst entsteht beim ersten Request immer ein Eintrag.
+        if ($previousStatus === null) {
+            return;
+        }
+
+        $events = [];
+        if ($newStatus === LicenseStatus::GracePeriod && $previousStatus !== LicenseStatus::GracePeriod) {
+            $events[] = 'license.expired';
+            $events[] = 'license.gracePeriodEntered';
+        }
+        if ($newStatus === LicenseStatus::Expired && $previousStatus !== LicenseStatus::Expired) {
+            if ($previousStatus !== LicenseStatus::GracePeriod) {
+                $events[] = 'license.expired';
+            }
+            $events[] = 'license.blocked';
+        }
+
+        if ($events === []) {
+            return;
+        }
+
+        $payload = $result->payload;
+        $changes = [
+            'from' => $previousStatus->value,
+            'to' => $newStatus->value,
+            'license_id' => $payload?->licenseId,
+            'expires_at' => $payload?->expiresAt?->toIso8601String(),
+        ];
+
+        foreach ($events as $event) {
+            AuditLog::query()->create([
+                'organization_id' => null,
+                'user_id' => null,
+                'event' => $event,
+                'auditable_type' => self::class,
+                'auditable_id' => 0,
+                'changes' => $changes,
+            ]);
+        }
     }
 
     /**

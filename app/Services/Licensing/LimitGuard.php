@@ -11,16 +11,12 @@
 namespace App\Services\Licensing;
 
 use App\Exceptions\LimitExceededException;
-use App\Models\{AuditLog, Organization, User};
+use App\Models\{Attachment, AuditLog, Organization, User};
 
 /**
  * Prüft Lizenz-Limits vor Create-Aktionen (MVP-047 §5).
  *
- * Diese Iteration deckt `max_users` ab — der häufigste Fall und der
- * einzige, der ein lizenzspezifisches Feld (`LicensePayload->maxUsers`)
- * direkt nutzt. `max_orgs` und `storage_quota_gb` aus der Spec folgen
- * separat, sobald `LicensePayload` die jeweiligen Felder hat.
- *
+ * Deckt aktuell `max_users`, `max_orgs` und `storage_quota_gb` ab.
  * Wird die Lizenzprüfung nicht erzwungen (Dev/Test, siehe
  * {@see LicenseService::isEnforced()}), passiert nichts.
  */
@@ -54,6 +50,76 @@ class LimitGuard {
             limit: 'max_users',
             current: $current,
             max: $max,
+        );
+    }
+
+    /**
+     * Wirft {@see LimitExceededException}, wenn das Limit der maximal
+     * zulässigen Organisationen (`max_orgs`) erreicht ist. Audit-Kontext
+     * ist die zuletzt bekannte Organisation (für Filterbarkeit), der
+     * Limit-Typ ist `max_orgs`.
+     */
+    public function ensureCanCreateOrganization(?Organization $context = null, ?User $actor = null): void {
+        if (! $this->licenses->isEnforced()) {
+            return;
+        }
+
+        $payload = $this->licenses->current()->payload;
+        $max = $payload?->maxOrgs;
+        if ($max === null || $max <= 0) {
+            return;
+        }
+
+        $current = Organization::query()->count();
+        if ($current < $max) {
+            return;
+        }
+
+        if ($context !== null) {
+            $this->writeAudit($context, $actor, 'max_orgs', $current, $max);
+        }
+
+        throw new LimitExceededException(
+            limit: 'max_orgs',
+            current: $current,
+            max: $max,
+        );
+    }
+
+    /**
+     * Wirft {@see LimitExceededException}, wenn das Hochladen einer
+     * weiteren Datei das Speicherkontingent (`storage_quota_gb`) der
+     * Organisation überschreiten würde.
+     */
+    public function ensureCanStoreAttachment(Organization $organization, int $additionalBytes, ?User $actor = null): void {
+        if (! $this->licenses->isEnforced()) {
+            return;
+        }
+        if ($additionalBytes < 0) {
+            $additionalBytes = 0;
+        }
+
+        $payload = $this->licenses->current()->payload;
+        $quotaGb = $payload?->storageQuotaGb;
+        if ($quotaGb === null || $quotaGb <= 0) {
+            return;
+        }
+
+        $quotaBytes = $quotaGb * 1024 * 1024 * 1024;
+        $current = (int) Attachment::query()
+            ->where('organization_id', $organization->id)
+            ->sum('size');
+
+        if ($current + $additionalBytes <= $quotaBytes) {
+            return;
+        }
+
+        $this->writeAudit($organization, $actor, 'storage_quota_gb', $current + $additionalBytes, $quotaBytes);
+
+        throw new LimitExceededException(
+            limit: 'storage_quota_gb',
+            current: $current + $additionalBytes,
+            max: $quotaBytes,
         );
     }
 

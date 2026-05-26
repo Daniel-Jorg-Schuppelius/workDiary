@@ -20,8 +20,7 @@ use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AttachmentController extends Controller {
-    public function __construct(private readonly ImageMetaUploader $imageUploader) {
-    }
+    public function __construct(private readonly ImageMetaUploader $imageUploader) {}
 
     private const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 

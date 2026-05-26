@@ -10,8 +10,7 @@
 
 namespace App\Exceptions;
 
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{JsonResponse, Request};
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -33,6 +32,14 @@ class LimitExceededException extends RuntimeException {
     public static function defaultMessage(string $limit, int $current, int $max): string {
         return match ($limit) {
             'max_users' => __('Nutzerlimit (:current/:max) der aktuellen Lizenz erreicht. Bitte Lizenz erweitern.', [
+                'current' => $current,
+                'max' => $max,
+            ]),
+            'max_orgs' => __('Organisationslimit (:current/:max) der aktuellen Lizenz erreicht. Bitte Lizenz erweitern.', [
+                'current' => $current,
+                'max' => $max,
+            ]),
+            'storage_quota_gb' => __('Speicherkontingent erreicht (:current/:max Bytes). Bitte Lizenz erweitern oder Speicher freigeben.', [
                 'current' => $current,
                 'max' => $max,
             ]),

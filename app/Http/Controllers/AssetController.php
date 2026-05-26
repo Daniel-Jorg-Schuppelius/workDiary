@@ -13,7 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\Asset\{AssetClass, AssetOwnership, AssetStatus};
 use App\Exceptions\AssetValidationException;
 use App\Http\Requests\SaveAssetRequest;
-use App\Models\{Asset, Attachment, Customer, DiaryEntry, MaterialUsage, Protocol, User};
+use App\Models\{Asset, Attachment, Customer, DiaryEntry, MaintenancePlan, MaterialUsage, Protocol, User};
 use App\Services\Asset\{AssetService, AssetStatusVisibilityService, AssetTimelineService};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
@@ -178,6 +178,18 @@ class AssetController extends Controller {
 
         $visibilitySummary = $assetStatusVisibility->summarize($asset);
 
+        $maintenancePlans = $asset->maintenancePlans()->get();
+        $intervalKindOptions = collect(\App\Enums\Asset\MaintenanceIntervalKind::cases())
+            ->mapWithKeys(fn(\App\Enums\Asset\MaintenanceIntervalKind $k): array => [$k->value => match ($k) {
+                \App\Enums\Asset\MaintenanceIntervalKind::Days => __('Tage'),
+                \App\Enums\Asset\MaintenanceIntervalKind::Weeks => __('Wochen'),
+                \App\Enums\Asset\MaintenanceIntervalKind::Months => __('Monate'),
+                \App\Enums\Asset\MaintenanceIntervalKind::OperatingHours => __('Betriebsstunden'),
+                \App\Enums\Asset\MaintenanceIntervalKind::Kilometers => __('Kilometer'),
+            }])
+            ->all();
+        $canManageMaintenance = Gate::forUser($user)->allows('create', MaintenancePlan::class);
+
         return view('assets.show', [
             'asset' => $asset,
             'classOptions' => $this->assetClassOptions(),
@@ -189,6 +201,9 @@ class AssetController extends Controller {
             'timelineEntries' => $timelineEntries,
             'statusSummary' => $visibilitySummary,
             'canUnblock' => Gate::forUser($user)->allows('update', $asset),
+            'maintenancePlans' => $maintenancePlans,
+            'intervalKindOptions' => $intervalKindOptions,
+            'canManageMaintenance' => $canManageMaintenance,
             'visibleCounts' => [
                 'diary' => $diaryEntries->count(),
                 'protocols' => $protocols->count(),

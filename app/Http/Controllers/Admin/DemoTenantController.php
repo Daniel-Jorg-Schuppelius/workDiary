@@ -29,8 +29,7 @@ class DemoTenantController extends Controller {
         $organization = $user->organization;
         abort_if($organization === null, 404);
 
-        $isEmpty = $organization->id !== null
-            && \App\Models\Customer::query()->where('organization_id', $organization->id)->doesntExist()
+        $isEmpty = \App\Models\Customer::query()->where('organization_id', $organization->id)->doesntExist()
             && \App\Models\DiaryEntry::query()->where('organization_id', $organization->id)->doesntExist();
 
         return view('admin.demo.index', [

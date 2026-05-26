@@ -80,6 +80,8 @@
                 <form method="POST" action="{{ route('invoices.issue', $invoice) }}" class="inline">@csrf
                     <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Stellen') }}</x-icon-btn>
                 </form>
+                {{-- Plugin-Slot: jedes aktive Plugin kann hier eigene Aktionen (z. B. "An Lexoffice senden") einklinken --}}
+                {!! app(\App\Plugins\PluginManager::class)->renderSlot('invoice-show.actions', $invoice) !!}
             @endcan
             @can('pay', $invoice)
                 <form method="POST" action="{{ route('invoices.pay', $invoice) }}" class="inline">@csrf

@@ -17,8 +17,7 @@ use App\Services\HolidayService;
 use Carbon\{CarbonImmutable, CarbonInterface};
 
 class FlexCalculator {
-    public function __construct(protected WorkScheduleResolver $resolver, protected HolidayService $holidays) {
-    }
+    public function __construct(protected WorkScheduleResolver $resolver, protected HolidayService $holidays) {}
 
     /**
      * Tagessoll in Minuten (0 wenn Feiertag, Wochenende oder Urlaub).

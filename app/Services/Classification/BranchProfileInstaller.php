@@ -10,7 +10,7 @@
 
 namespace App\Services\Classification;
 
-use App\Models\{AuditLog, Classification, ClassificationRequirement, Organization, Tag, User};
+use App\Models\{AuditLog, Classification, ClassificationRequirement, MaintenancePlanTemplate, Organization, Tag, User};
 use Illuminate\Support\Arr;
 
 /**
@@ -28,16 +28,19 @@ class BranchProfileInstaller {
             'classifications' => 0,
             'classification_requirements' => 0,
             'tags' => 0,
+            'maintenance_plan_templates' => 0,
         ];
         $updated = [
             'classifications' => 0,
             'classification_requirements' => 0,
             'tags' => 0,
+            'maintenance_plan_templates' => 0,
         ];
         $skipped = [
             'classifications' => 0,
             'classification_requirements' => 0,
             'tags' => 0,
+            'maintenance_plan_templates' => 0,
         ];
 
         /** @var array<string, list<array<string, mixed>>> $classificationDomains */
@@ -154,6 +157,48 @@ class BranchProfileInstaller {
                 'created_by' => $actor?->id,
             ]);
             $created['tags']++;
+        }
+
+        /** @var list<array<string, mixed>> $maintenancePlans */
+        $maintenancePlans = (array) Arr::get($profile, 'maintenance_plans_seed', []);
+        foreach ($maintenancePlans as $row) {
+            $code = (string) ($row['code'] ?? '');
+            if ($code === '') {
+                continue;
+            }
+
+            $existing = MaintenancePlanTemplate::query()
+                ->where('organization_id', $organization->id)
+                ->where('code', $code)
+                ->first();
+
+            $payload = [
+                'label' => (string) ($row['label'] ?? $code),
+                'asset_class' => $row['asset_class'] ?? null,
+                'category_code' => $row['category_code'] ?? null,
+                'interval_kind' => (string) ($row['interval_kind'] ?? 'months'),
+                'interval_value' => max(1, (int) ($row['interval_value'] ?? 12)),
+                'tolerance_days' => max(0, (int) ($row['tolerance_days'] ?? 0)),
+                'procedure_template_code' => $row['procedure_template_code'] ?? null,
+                'is_active' => (bool) ($row['is_active'] ?? true),
+            ];
+
+            if ($existing instanceof MaintenancePlanTemplate) {
+                if ($force) {
+                    $existing->update($payload);
+                    $updated['maintenance_plan_templates']++;
+                } else {
+                    $skipped['maintenance_plan_templates']++;
+                }
+
+                continue;
+            }
+
+            MaintenancePlanTemplate::query()->create(array_merge([
+                'organization_id' => $organization->id,
+                'code' => $code,
+            ], $payload));
+            $created['maintenance_plan_templates']++;
         }
 
         AuditLog::query()->create([

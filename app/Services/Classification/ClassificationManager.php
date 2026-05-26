@@ -53,8 +53,7 @@ class ClassificationManager {
 
     public function __construct(
         private readonly ClassificationResolver $resolver,
-    ) {
-    }
+    ) {}
 
     /**
      * Registriert eine FK-Referenz für den Löschschutz.

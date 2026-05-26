@@ -10,12 +10,11 @@
 
 namespace Tests\Feature\Reporting;
 
-use App\Http\Controllers\Reporting\CustomerAnalysisReportController;
-use App\Http\Controllers\Reporting\CustomerDrilldownReportController;
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Enums\TimeEntry\TimeEntryKind;
+use App\Http\Controllers\Reporting\{CustomerAnalysisReportController, CustomerDrilldownReportController};
 use App\Models\{AuditLog, Customer, DiaryEntry, OpenIssue, Project, Protocol, TimeEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;

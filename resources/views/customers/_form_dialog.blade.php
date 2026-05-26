@@ -159,6 +159,36 @@
             </div>
         </x-form-group>
 
+        <x-form-group :legend="__('Bankverbindung')" icon="account_balance" tone="ghost" cols="2">
+            <div class="fieldset md:col-span-2">
+                <label class="fieldset-label">{{ __('Kontoinhaber') }}</label>
+                <input name="bank_account_holder" type="text" maxlength="200"
+                       class="input input-bordered w-full"
+                       value="{{ old('bank_account_holder', $customer?->bank_account_holder) }}">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('IBAN') }}</label>
+                <input name="bank_iban" type="text" maxlength="64"
+                       class="input input-bordered w-full uppercase"
+                       value="{{ old('bank_iban', $customer?->bank_iban) }}"
+                       placeholder="DE00 0000 0000 0000 0000 00">
+                @error('bank_iban')<p class="text-error text-sm">{{ $message }}</p>@enderror
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('BIC') }}</label>
+                <input name="bank_bic" type="text" maxlength="32"
+                       class="input input-bordered w-full uppercase"
+                       value="{{ old('bank_bic', $customer?->bank_bic) }}">
+                @error('bank_bic')<p class="text-error text-sm">{{ $message }}</p>@enderror
+            </div>
+            <div class="fieldset md:col-span-2">
+                <label class="fieldset-label">{{ __('Bank') }}</label>
+                <input name="bank_name" type="text" maxlength="200"
+                       class="input input-bordered w-full"
+                       value="{{ old('bank_name', $customer?->bank_name) }}">
+            </div>
+        </x-form-group>
+
         <x-form-group :legend="__('Notizen')" icon="description" tone="ghost">
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('Notiz (intern)') }}</label>

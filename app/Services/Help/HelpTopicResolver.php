@@ -81,7 +81,7 @@ class HelpTopicResolver {
         }
 
         foreach ($audience as $code) {
-            if (! is_string($code) || $code === '') {
+            if ($code === '') {
                 continue;
             }
             if ($user->hasRole($code)) {

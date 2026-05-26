@@ -509,6 +509,7 @@
                                 if (! $isLegacyMode) {
                                     $adminNavItems[] = ['route' => 'audit.index',                       'label' => __('Audit-Log'),        'icon' => 'fact_check',       'modal' => false];
                                     $adminNavItems[] = ['route' => 'admin.plugins.index',                'label' => __('Plugins'),          'icon' => 'extension',        'modal' => false];
+                                    $adminNavItems[] = ['route' => 'admin.plugin-errors.index',          'label' => __('Plugin-Fehler'),    'icon' => 'bug_report',       'modal' => false];
                                 }
                                 $adminNavItems[] = ['route' => 'admin.legacy-migration.index',      'label' => __('Legacy-Migration'), 'icon' => 'sync_alt',         'modal' => false];
                             }
@@ -643,6 +644,7 @@
                                             'items' => [
                                                 ['route' => 'reports.customers',        'label' => __('Kundenanalyse'),     'icon' => 'bar_chart',  'modal' => false, 'matches' => ['reports.customers']],
                                                 ['route' => 'reports.entry-types',      'label' => __('Auftragstypanalyse'), 'icon' => 'stacked_bar_chart', 'modal' => false, 'matches' => ['reports.entry-types']],
+                                                ['route' => 'reports.assets',           'label' => __('Produktanalyse'),    'icon' => 'inventory_2', 'modal' => false, 'matches' => ['reports.assets']],
                                                 ['route' => 'reports.customer-project', 'label' => __('Kunden & Projekte'), 'icon' => 'pie_chart',  'modal' => false, 'matches' => ['reports.customer-project']],
                                                 ['route' => 'reports.project-details',  'label' => __('Projekt-Details'),   'icon' => 'analytics',  'modal' => false, 'matches' => ['reports.project-details']],
                                                 ['route' => 'reports.project-inactive', 'label' => __('Inaktive Projekte'), 'icon' => 'folder_off', 'modal' => false, 'matches' => ['reports.project-inactive']],

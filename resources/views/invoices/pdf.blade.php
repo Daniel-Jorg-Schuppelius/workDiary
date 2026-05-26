@@ -23,6 +23,10 @@
     .banner-credit { color: #b45309; border-color: #b45309; background: #fef3c7; }
     .tpl-header { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #ddd; white-space: pre-line; }
     .tpl-footer { margin-top: 24px; padding-top: 8px; border-top: 1px solid #ddd; font-size: 10px; color: #555; white-space: pre-line; }
+    .bank-block { margin-top: 18px; padding: 8px 10px; border: 1px solid #ddd; font-size: 10px; }
+    .bank-block table { width: 100%; margin: 0; }
+    .bank-block table td { border: none; padding: 2px 6px; }
+    .bank-block .label { color: #666; width: 25%; }
     @page { margin: 20mm; }
 </style>
 </head>
@@ -94,6 +98,31 @@
 
 @if ($invoice->notes)
 <p style="margin-top: 16px;">{{ $invoice->notes }}</p>
+@endif
+
+@php
+    $legal = $orgLegal ?? [];
+    $hasOrgBank = ! empty($legal['iban']) || ! empty($legal['bic']) || ! empty($legal['bank_name']);
+@endphp
+@if ($hasOrgBank && ! $invoice->isCreditNote())
+    <div class="bank-block">
+        <strong>{{ __('Zahlbar per Überweisung auf folgendes Konto') }}:</strong>
+        <table>
+            @if (! empty($legal['account_holder']))
+                <tr><td class="label">{{ __('Kontoinhaber') }}</td><td>{{ $legal['account_holder'] }}</td></tr>
+            @endif
+            @if (! empty($legal['bank_name']))
+                <tr><td class="label">{{ __('Bank') }}</td><td>{{ $legal['bank_name'] }}</td></tr>
+            @endif
+            @if (! empty($legal['iban']))
+                <tr><td class="label">{{ __('IBAN') }}</td><td>{{ $legal['iban'] }}</td></tr>
+            @endif
+            @if (! empty($legal['bic']))
+                <tr><td class="label">{{ __('BIC') }}</td><td>{{ $legal['bic'] }}</td></tr>
+            @endif
+            <tr><td class="label">{{ __('Verwendungszweck') }}</td><td>{{ $invoice->number }}</td></tr>
+        </table>
+    </div>
 @endif
 
 @if (! empty(($template ?? null)?->footer_text))

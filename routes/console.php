@@ -44,3 +44,18 @@ Schedule::command('events:materialize-recurrences')
     ->dailyAt('02:00')
     ->withoutOverlapping()
     ->onOneServer();
+
+Schedule::command('plugin:healthcheck')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer();
+
+Schedule::command('workdiary:backup:check-restore')
+    ->dailyAt('05:00')
+    ->withoutOverlapping()
+    ->onOneServer();
+
+Schedule::command('maintenance:scan-due')
+    ->dailyAt('05:30')
+    ->withoutOverlapping()
+    ->onOneServer();

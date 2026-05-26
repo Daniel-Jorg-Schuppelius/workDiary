@@ -13,9 +13,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SaveInvoiceTemplateRequest;
 use App\Models\InvoiceTemplate;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
 
 class InvoiceTemplateController extends Controller {

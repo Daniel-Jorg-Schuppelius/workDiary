@@ -94,6 +94,41 @@ class BrandingTest extends TestCase {
         $this->assertFalse((bool) data_get($org->settings, 'branding.pdf.diary.show_footer'));
     }
 
+    public function test_admin_can_persist_bank_details_with_normalized_iban_bic(): void {
+        $org = $this->makeOrg();
+        $admin = User::factory()->admin()->create(['organization_id' => $org->id]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.branding.update'), [
+                'branding' => [
+                    'legal' => [
+                        'account_holder' => 'workDiary GmbH',
+                        'bank_name' => 'Commerzbank',
+                        'iban' => ' de89 3704 0044 0532 0130 00 ',
+                        'bic' => 'cobadeffxxx',
+                    ],
+                ],
+            ])
+            ->assertRedirect();
+
+        $org->refresh();
+        $this->assertSame('DE89370400440532013000', data_get($org->settings, 'branding.legal.iban'));
+        $this->assertSame('COBADEFFXXX', data_get($org->settings, 'branding.legal.bic'));
+        $this->assertSame('Commerzbank', data_get($org->settings, 'branding.legal.bank_name'));
+        $this->assertSame('workDiary GmbH', data_get($org->settings, 'branding.legal.account_holder'));
+    }
+
+    public function test_branding_rejects_invalid_iban(): void {
+        $org = $this->makeOrg();
+        $admin = User::factory()->admin()->create(['organization_id' => $org->id]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.branding.update'), [
+                'branding' => ['legal' => ['iban' => 'NOT-AN-IBAN']],
+            ])
+            ->assertSessionHasErrors('branding.legal.iban');
+    }
+
     public function test_non_admin_cannot_update_branding(): void {
         $org = $this->makeOrg();
         $regular = User::factory()->user()->create(['organization_id' => $org->id]);

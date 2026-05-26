@@ -103,11 +103,13 @@
 
         <x-form-group :legend="__('Rechtliches & PDF-Fuß')" icon="gavel" tone="ghost" cols="2">
             @foreach ([
-                'vat_id'      => __('USt-IdNr.'),
-                'tax_number'  => __('Steuernummer'),
-                'iban'        => __('IBAN'),
-                'bic'         => __('BIC'),
-                'register'    => __('Handelsregister'),
+                'vat_id'         => __('USt-IdNr.'),
+                'tax_number'     => __('Steuernummer'),
+                'account_holder' => __('Kontoinhaber'),
+                'bank_name'      => __('Bank'),
+                'iban'           => __('IBAN'),
+                'bic'            => __('BIC'),
+                'register'       => __('Handelsregister'),
             ] as $field => $label)
                 <div class="fieldset">
                     <label class="fieldset-label">{{ $label }}</label>

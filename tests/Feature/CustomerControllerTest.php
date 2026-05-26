@@ -119,6 +119,50 @@ class CustomerControllerTest extends TestCase {
         $this->assertTrue($persons[0]['primary'] ?? false);
     }
 
+    public function test_store_persists_bank_details_and_normalizes_iban_bic(): void {
+        $this->postAsAdmin('customers.store', [
+            'name' => 'Bankkunde',
+            'currency' => 'EUR',
+            'bank_account_holder' => 'Max Beispiel',
+            'bank_iban' => ' de89 3704 0044 0532 0130 00 ', // mit Leerzeichen und Lowercase
+            'bank_bic' => 'cobadeffxxx',
+            'bank_name' => 'Commerzbank',
+        ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('customers', [
+            'name' => 'Bankkunde',
+            'bank_account_holder' => 'Max Beispiel',
+            'bank_iban' => 'DE89370400440532013000',
+            'bank_bic' => 'COBADEFFXXX',
+            'bank_name' => 'Commerzbank',
+        ]);
+    }
+
+    public function test_store_rejects_invalid_iban(): void {
+        $this->postAsAdmin('customers.store', [
+            'name' => 'Bankkunde',
+            'currency' => 'EUR',
+            'bank_iban' => 'NOT-AN-IBAN',
+        ])
+            ->assertSessionHasErrors('bank_iban');
+    }
+
+    public function test_bank_details_helper_returns_has_any_flag(): void {
+        $withBank = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'created_by' => $this->admin->id,
+            'bank_iban' => 'DE89370400440532013000',
+        ]);
+        $withoutBank = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'created_by' => $this->admin->id,
+        ]);
+
+        $this->assertTrue($withBank->bankDetails()['has_any']);
+        $this->assertFalse($withoutBank->bankDetails()['has_any']);
+    }
+
     public function test_destroy_blocked_when_projects_exist(): void {
         $customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,

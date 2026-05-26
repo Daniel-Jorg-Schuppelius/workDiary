@@ -37,8 +37,7 @@ class InvoiceMail extends Mailable implements ShouldQueue {
         public string $renderedSubject,
         public string $renderedHtml,
         public string $renderedText,
-    ) {
-    }
+    ) {}
 
     public function envelope(): Envelope {
         return new Envelope(subject: $this->renderedSubject);

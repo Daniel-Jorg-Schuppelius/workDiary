@@ -10,18 +10,24 @@
 
 namespace App\Services\Licensing;
 
+use App\Models\{LicenseFlagOverride, Organization};
+use Illuminate\Support\Facades\Schema;
+
 /**
  * Löst Feature-Flags auf (MVP-047 §4 / Folge zu MVP-047).
  *
  * Auflösungsreihenfolge (vereinfacht für diese Iteration):
  *  1. Env-Override `config('license.feature_overrides')` (assoc code → bool)
  *  2. Lizenz-Payload (`LicensePayload->features` als list<string>; enthalten = on)
- *  3. Default: off
+ *  3. DB-Override `license_flag_overrides` (Option A, MVP-047):
+ *     kann lizenzierte Flags lokal NUR deaktivieren — niemals zusätzlich
+ *     freischalten. Pro Organisation (`currentOrganization` aus dem
+ *     Container) plus plattformweite Overrides (`organization_id = NULL`).
+ *  4. Default: off
  *
- * Pro-Organisation-Overrides (`orgOverride`) sind in der Roadmap als
- * `feature_flags`-Tabelle vorgesehen und folgen als separater Schritt.
- * Request-Level-Caching reicht für den MVP — ein 60-s-Cache (`Cache::remember`)
- * lohnt sich erst, sobald die DB-Override-Quelle dazukommt.
+ * Request-Level-Caching reicht für den MVP — ein 60-s-Cache
+ * (`Cache::remember`) lohnt sich erst, sobald die DB-Override-Quelle
+ * massiv wächst.
  */
 class FeatureFlagResolver {
     /** @var array<string, bool>|null */
@@ -66,12 +72,55 @@ class FeatureFlagResolver {
         /** @var array<string, bool> $envOverrides */
         $envOverrides = (array) config('license.feature_overrides', []);
         foreach ($envOverrides as $code => $enabled) {
-            if (! is_string($code) || $code === '') {
+            if ($code === '') {
                 continue;
             }
             $map[$code] = (bool) $enabled;
         }
 
+        // MVP-047 Option A: DB-Overrides können nur DEAKTIVIEREN.
+        // Lizenzierte Features lokal abschalten, niemals fremde Features
+        // freischalten.
+        foreach ($this->disabledFlags() as $flag) {
+            if (($map[$flag] ?? false) === true) {
+                $map[$flag] = false;
+            }
+        }
+
         return $this->resolved = $map;
+    }
+
+    /**
+     * Liest alle aktuell wirksamen Disable-Overrides:
+     *  - plattformweite Einträge (`organization_id IS NULL`)
+     *  - Einträge der aktuellen Organisation (aus dem Container)
+     *
+     * Robust auch dann, wenn die Tabelle (z. B. in Konsolen-Setups vor
+     * Migration) noch nicht existiert.
+     *
+     * @return array<int, string>
+     */
+    private function disabledFlags(): array {
+        if (! Schema::hasTable('license_flag_overrides')) {
+            return [];
+        }
+
+        $orgId = null;
+        if (app()->bound('currentOrganization')) {
+            $org = app('currentOrganization');
+            if ($org instanceof Organization) {
+                $orgId = $org->id;
+            }
+        }
+
+        return LicenseFlagOverride::query()
+            ->where(function ($q) use ($orgId): void {
+                $q->whereNull('organization_id');
+                if ($orgId !== null) {
+                    $q->orWhere('organization_id', $orgId);
+                }
+            })
+            ->pluck('flag')
+            ->all();
     }
 }

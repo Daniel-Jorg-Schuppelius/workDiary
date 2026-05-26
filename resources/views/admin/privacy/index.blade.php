@@ -20,6 +20,7 @@
     /** @var \Illuminate\Database\Eloquent\Collection $auditActors */
     /** @var bool $canViewExports */
     /** @var bool $canViewSupport */
+    /** @var bool $canExportReport */
     $modeLabel = match ($operatingMode) {
         'saas' => __('SaaS'),
         'private_cloud' => __('Private Cloud'),
@@ -50,6 +51,16 @@
             :badge="$modeLabel"
             badge-tone="primary"
         >
+            @if (! empty($canExportReport))
+                <x-slot:actions>
+                    <x-icon-btn icon="download" tone="primary" size="sm"
+                                :href="route('admin.privacy.export', ['format' => 'json'])"
+                                show-label>{{ __('Bericht (JSON)') }}</x-icon-btn>
+                    <x-icon-btn icon="table_view" tone="ghost" size="sm"
+                                :href="route('admin.privacy.export', ['format' => 'csv'])"
+                                show-label>{{ __('Bericht (CSV)') }}</x-icon-btn>
+                </x-slot:actions>
+            @endif
             {{ __('Übersicht über Datenkategorien, Aufbewahrung, aktive Sessions und API-Tokens dieser Organisation.') }}
         </x-page-toolbar>
     </x-slot:toolbar>

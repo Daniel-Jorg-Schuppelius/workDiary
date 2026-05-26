@@ -11,8 +11,7 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission;
-use App\Models\InvoiceTemplate;
-use App\Models\User;
+use App\Models\{InvoiceTemplate, User};
 
 class InvoiceTemplatePolicy {
     public function viewAny(User $user): bool {

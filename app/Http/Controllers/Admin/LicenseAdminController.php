@@ -12,15 +12,19 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, User};
-use App\Services\Licensing\{LicenseResult, LicenseService, LicenseStatus};
+use App\Models\{AuditLog, LicenseFlagOverride, Organization, User};
+use App\Services\Licensing\{FeatureFlagResolver, LicenseResult, LicenseService, LicenseStatus};
 use Carbon\CarbonImmutable;
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class LicenseAdminController extends Controller {
-    public function __construct(private readonly LicenseService $service) {}
+    public function __construct(
+        private readonly LicenseService $service,
+        private readonly FeatureFlagResolver $resolver,
+    ) {}
 
     public function index(Request $request): View {
         Gate::authorize(Permission::PlatformLicenseView->value);
@@ -38,7 +42,69 @@ class LicenseAdminController extends Controller {
             'expiresIn' => $this->expiresInDays($result),
             'isEnforced' => $this->service->isEnforced(),
             'canInstall' => $request->user()?->can(Permission::PlatformLicenseInstall->value) ?? false,
+            'canToggleFlag' => $request->user()?->can(Permission::PlatformLicenseInstall->value) ?? false,
         ]);
+    }
+
+    public function toggleFlag(Request $request, string $flag): RedirectResponse {
+        Gate::authorize(Permission::PlatformLicenseInstall->value);
+
+        /** @var User $user */
+        $user = $request->user();
+        $organization = $user->organization;
+        abort_if($organization === null, Response::HTTP_NOT_FOUND);
+
+        $result = $this->service->current($request->getHost());
+        $payload = $result->payload;
+        $licensedFlags = $payload !== null
+            ? array_map(static fn($v): string => (string) $v, $payload->features)
+            : [];
+
+        if (! in_array($flag, $licensedFlags, true)) {
+            return back()->withErrors([
+                'flag' => __('Nur lizenzierte Features können lokal deaktiviert werden.'),
+            ]);
+        }
+
+        $existing = LicenseFlagOverride::query()
+            ->where('organization_id', $organization->id)
+            ->where('flag', $flag)
+            ->first();
+
+        if ($existing !== null) {
+            $existing->delete();
+            $event = 'license.flagRestored';
+            $reason = (string) $existing->reason;
+        } else {
+            $reason = (string) $request->input('reason', '');
+            LicenseFlagOverride::query()->create([
+                'organization_id' => $organization->id,
+                'flag' => $flag,
+                'reason' => $reason !== '' ? $reason : null,
+                'disabled_at' => CarbonImmutable::now(),
+                'disabled_by_user_id' => $user->id,
+            ]);
+            $event = 'license.flagDisabled';
+        }
+
+        AuditLog::query()->create([
+            'organization_id' => $organization->id,
+            'user_id' => $user->id,
+            'event' => $event,
+            'auditable_type' => User::class,
+            'auditable_id' => $user->id,
+            'changes' => [
+                'flag' => $flag,
+                'reason' => $reason !== '' ? $reason : null,
+            ],
+        ]);
+
+        $this->resolver->flush();
+        $this->service->flush();
+
+        return back()->with('success', $event === 'license.flagDisabled'
+            ? __('Feature lokal deaktiviert.')
+            : __('Lokaler Override entfernt.'));
     }
 
     /**
@@ -83,19 +149,30 @@ class LicenseAdminController extends Controller {
         ];
     }
 
-    /** @return list<array{code:string, enabled:bool, source:string}> */
+    /** @return list<array{code:string, enabled:bool, source:string, overridden:bool}> */
     private function features(LicenseResult $result): array {
         $payload = $result->payload;
         if ($payload === null) {
             return [];
         }
 
+        $disabled = [];
+        if (\Illuminate\Support\Facades\Schema::hasTable('license_flag_overrides')) {
+            $disabled = LicenseFlagOverride::query()->pluck('flag')->all();
+        }
+
         $out = [];
-        foreach ($payload->features as $code => $enabled) {
+        foreach ($payload->features as $code) {
+            $code = (string) $code;
+            if ($code === '') {
+                continue;
+            }
+            $overridden = in_array($code, $disabled, true);
             $out[] = [
-                'code' => (string) $code,
-                'enabled' => (bool) $enabled,
-                'source' => 'license',
+                'code' => $code,
+                'enabled' => ! $overridden,
+                'source' => $overridden ? 'override' : 'license',
+                'overridden' => $overridden,
             ];
         }
         usort($out, static fn(array $a, array $b): int => $a['code'] <=> $b['code']);

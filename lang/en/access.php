@@ -194,6 +194,7 @@ return [
         'user.reset-password' => 'Reset password',
         'user.rates.manage' => 'Manage hourly rates',
         'user.flex.manage' => 'Manage flex eligibility',
+        'user.import' => 'Import users',
 
         'customer.viewAny' => 'List customers',
         'customer.view' => 'View customer',
@@ -211,6 +212,7 @@ return [
         'project.delete' => 'Delete project',
         'project.archive' => 'Archive project',
         'project.billing.manage' => 'Manage project billing rules',
+        'project.import' => 'Import projects',
         'task.manage' => 'Manage tasks',
         'milestone.manage' => 'Manage milestones',
 
@@ -276,6 +278,7 @@ return [
         'energy-log.manage' => 'Manage refuelling and charging',
 
         'material.manage' => 'Manage materials',
+        'material.import' => 'Import materials',
         'activity-category.manage' => 'Manage activity categories',
         'tag.manage' => 'Manage tags',
         'qualification.manage' => 'Manage qualifications',
@@ -283,6 +286,7 @@ return [
         'holiday.manage' => 'Manage holidays',
 
         'report.view' => 'View reports',
+        'import.viewReports' => 'View CSV import reports',
         'report.export' => 'Export reports',
         'audit-log.view' => 'View audit log',
         'attendance.viewAny' => 'View attendance',

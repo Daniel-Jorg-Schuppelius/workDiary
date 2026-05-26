@@ -21,8 +21,7 @@ use Illuminate\View\View;
 class BranchProfileController extends Controller {
     public function __construct(
         private readonly BranchProfileInstaller $installer,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View {
         $this->authorizeViewCatalog();

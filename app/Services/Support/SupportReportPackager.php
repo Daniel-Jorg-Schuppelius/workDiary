@@ -45,7 +45,7 @@ class SupportReportPackager {
         $zip->addFromString($entryName, $json);
 
         $passwordSet = false;
-        if ($password !== null && $password !== '' && method_exists($zip, 'setPassword') && method_exists($zip, 'setEncryptionName')) {
+        if ($password !== null && $password !== '') {
             $zip->setPassword($password);
             // AES-256, falls verfügbar; fällt sonst auf ZipCrypto zurück.
             $encryption = defined('ZipArchive::EM_AES_256') ? ZipArchive::EM_AES_256 : 0;

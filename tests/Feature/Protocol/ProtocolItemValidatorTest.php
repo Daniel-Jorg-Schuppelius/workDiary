@@ -42,8 +42,10 @@ class ProtocolItemValidatorTest extends TestCase {
 
     public function test_number_within_tolerance_is_ok(): void {
         $item = $this->itemOfType(ProtocolItemType::Number, [
-            'value' => 12.0, 'unit' => 'bar',
-            'tolerance_min' => 10, 'tolerance_max' => 14,
+            'value' => 12.0,
+            'unit' => 'bar',
+            'tolerance_min' => 10,
+            'tolerance_max' => 14,
         ]);
         $this->assertSame(ProtocolItemResult::Ok, $this->validator->deriveResult($item));
         $this->assertSame([], $this->validator->validate($item));
@@ -51,14 +53,17 @@ class ProtocolItemValidatorTest extends TestCase {
 
     public function test_number_out_of_tolerance_is_notok(): void {
         $item = $this->itemOfType(ProtocolItemType::Number, [
-            'value' => 20.0, 'tolerance_min' => 10, 'tolerance_max' => 14,
+            'value' => 20.0,
+            'tolerance_min' => 10,
+            'tolerance_max' => 14,
         ]);
         $this->assertSame(ProtocolItemResult::NotOk, $this->validator->deriveResult($item));
     }
 
     public function test_number_min_max_validation(): void {
         $item = $this->itemOfType(ProtocolItemType::Number, [
-            'value' => 5, 'min' => 10,
+            'value' => 5,
+            'min' => 10,
         ]);
         $errors = $this->validator->validate($item);
         $this->assertNotEmpty($errors);
@@ -79,7 +84,8 @@ class ProtocolItemValidatorTest extends TestCase {
 
     public function test_text_min_length(): void {
         $item = $this->itemOfType(ProtocolItemType::Text, [
-            'text' => 'hi', 'min_length' => 5,
+            'text' => 'hi',
+            'min_length' => 5,
         ]);
         $this->assertNotEmpty($this->validator->validate($item));
     }
@@ -113,6 +119,61 @@ class ProtocolItemValidatorTest extends TestCase {
 
     public function test_group_skips_validation(): void {
         $item = $this->itemOfType(ProtocolItemType::Group, null, required: true);
+        $this->assertSame([], $this->validator->validate($item));
+    }
+
+    public function test_range_within_tolerance_is_ok(): void {
+        $item = $this->itemOfType(ProtocolItemType::Range, [
+            'value' => 7.5,
+            'tolerance_min' => 5,
+            'tolerance_max' => 10,
+        ]);
+        $this->assertSame([], $this->validator->validate($item));
+        $this->assertSame(ProtocolItemResult::Ok, $this->validator->deriveResult($item));
+    }
+
+    public function test_range_out_of_tolerance_is_notok(): void {
+        $item = $this->itemOfType(ProtocolItemType::Range, [
+            'value' => 11,
+            'tolerance_min' => 5,
+            'tolerance_max' => 10,
+        ]);
+        $this->assertSame(ProtocolItemResult::NotOk, $this->validator->deriveResult($item));
+    }
+
+    public function test_datetime_accepts_iso_timestamp(): void {
+        $item = $this->itemOfType(ProtocolItemType::DateTime, [
+            'value' => '2026-05-26T08:30:00+02:00',
+        ]);
+        $this->assertSame([], $this->validator->validate($item));
+    }
+
+    public function test_datetime_rejects_garbage(): void {
+        $item = $this->itemOfType(ProtocolItemType::DateTime, ['value' => 'not-a-timestamp']);
+        $this->assertNotEmpty($this->validator->validate($item));
+    }
+
+    public function test_signature_requires_signature_id_int(): void {
+        // ohne required: leeres value gilt als "nicht ausgefuellt", validate liefert []
+        $unfilled = $this->itemOfType(ProtocolItemType::Signature, ['note' => 'x']);
+        $this->assertSame([], $this->validator->validate($unfilled));
+
+        $valid = $this->itemOfType(ProtocolItemType::Signature, ['signature_id' => 42]);
+        $this->assertSame([], $this->validator->validate($valid));
+    }
+
+    public function test_signature_required_unfilled_blocks(): void {
+        $item = $this->itemOfType(ProtocolItemType::Signature, null, required: true);
+        $this->assertNotEmpty($this->validator->validate($item));
+    }
+
+    public function test_procedure_step_passes_without_value(): void {
+        $item = $this->itemOfType(ProtocolItemType::ProcedureStep, ['done' => true]);
+        $this->assertSame([], $this->validator->validate($item));
+    }
+
+    public function test_signoff_internal_passes_without_value(): void {
+        $item = $this->itemOfType(ProtocolItemType::SignoffInternal, ['signed_by_user_id' => 1]);
         $this->assertSame([], $this->validator->validate($item));
     }
 

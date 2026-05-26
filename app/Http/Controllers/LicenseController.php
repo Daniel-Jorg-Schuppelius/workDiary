@@ -55,7 +55,7 @@ class LicenseController extends Controller {
             'user_id' => $user?->id,
             'event' => 'license.installed',
             'auditable_type' => User::class,
-            'auditable_id' => $user?->id ?? 0,
+            'auditable_id' => $user->id ?? 0,
             'changes' => [
                 'license_id_sha256' => $licenseHash,
                 'status' => $result->status->value,

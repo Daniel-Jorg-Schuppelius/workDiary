@@ -10,7 +10,7 @@
 
 namespace App\Services\Diagnostics;
 
-use App\Models\AuditLog;
+use App\Models\{AuditLog, BackupHeartbeat};
 use App\Services\Licensing\{LicenseService, LicenseStatus};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\{Cache, DB, File};
@@ -135,7 +135,7 @@ class DiagnosticsService {
             $hasFailedTable = DB::getSchemaBuilder()->hasTable('failed_jobs');
             if ($hasFailedTable) {
                 $failed = (int) DB::table('failed_jobs')->count();
-                /** @var object{failed_at?: string|null}|null $row */
+                /** @var object{failed_at: string|null}|null $row */
                 $row = DB::table('failed_jobs')->orderByDesc('failed_at')->first(['failed_at']);
                 $lastFailedAt = $row?->failed_at;
             }
@@ -280,32 +280,59 @@ class DiagnosticsService {
         $messages = [];
         $status = DiagnosticStatus::Ok;
         $lastBackupAt = null;
+        $manifestHash = null;
+        $sizeBytes = null;
+        $source = null;
 
+        // 1) Bevorzugt: dedizierte Heartbeat-Tabelle (MVP-046 §5).
         try {
-            $hasAudit = DB::getSchemaBuilder()->hasTable((new AuditLog())->getTable());
-            if ($hasAudit) {
-                /** @var AuditLog|null $last */
-                $last = AuditLog::query()
-                    ->whereIn('event', ['backup.completed', 'backup.succeeded'])
-                    ->orderByDesc('created_at')
-                    ->first();
-                $lastBackupAt = $last?->created_at;
+            if (DB::getSchemaBuilder()->hasTable((new BackupHeartbeat())->getTable())) {
+                /** @var BackupHeartbeat|null $last */
+                $last = BackupHeartbeat::query()->orderByDesc('occurred_at')->first();
+                if ($last !== null) {
+                    $lastBackupAt = $last->occurred_at;
+                    $manifestHash = $last->manifest_hash;
+                    $sizeBytes = $last->size_bytes;
+                    $source = $last->source;
+                }
             }
         } catch (Throwable) {
-            $lastBackupAt = null;
+            // Fallback unten greift.
         }
+
+        // 2) Fallback: Audit-Log (Backward-Compat).
+        if ($lastBackupAt === null) {
+            try {
+                $hasAudit = DB::getSchemaBuilder()->hasTable((new AuditLog())->getTable());
+                if ($hasAudit) {
+                    /** @var AuditLog|null $last */
+                    $last = AuditLog::query()
+                        ->whereIn('event', ['backup.completed', 'backup.succeeded', 'backup.heartbeatReceived'])
+                        ->orderByDesc('created_at')
+                        ->first();
+                    $lastBackupAt = $last?->created_at;
+                }
+            } catch (Throwable) {
+                $lastBackupAt = null;
+            }
+        }
+
+        /** @var array<string, int> $thresholds */
+        $thresholds = (array) config('backup.thresholds_hours', ['warn' => 26, 'critical' => 72]);
+        $warnHours = isset($thresholds['warn']) ? (int) $thresholds['warn'] : 26;
+        $criticalHours = isset($thresholds['critical']) ? (int) $thresholds['critical'] : 72;
 
         if ($lastBackupAt === null) {
             $status = DiagnosticStatus::Critical;
-            $messages[] = 'Kein erfolgreiches Backup im Audit-Log gefunden.';
+            $messages[] = 'Kein erfolgreicher Backup-Heartbeat gefunden.';
         } else {
             $ageHours = CarbonImmutable::parse($lastBackupAt)->diffInHours(CarbonImmutable::now(), true);
-            if ($ageHours > 72) {
+            if ($ageHours > $criticalHours) {
                 $status = DiagnosticStatus::Critical;
-                $messages[] = sprintf('Letztes Backup älter als 72 Stunden (%d h).', (int) $ageHours);
-            } elseif ($ageHours > 26) {
+                $messages[] = sprintf('Letztes Backup älter als %d Stunden (%d h).', $criticalHours, (int) $ageHours);
+            } elseif ($ageHours > $warnHours) {
                 $status = DiagnosticStatus::Warn;
-                $messages[] = sprintf('Letztes Backup älter als 26 Stunden (%d h).', (int) $ageHours);
+                $messages[] = sprintf('Letztes Backup älter als %d Stunden (%d h).', $warnHours, (int) $ageHours);
             }
         }
 
@@ -314,6 +341,9 @@ class DiagnosticsService {
             status: $status,
             metrics: [
                 'last_backup_at' => $lastBackupAt instanceof \DateTimeInterface ? $lastBackupAt->format(\DateTimeInterface::ATOM) : $lastBackupAt,
+                'manifest_hash' => $manifestHash,
+                'size_bytes' => $sizeBytes,
+                'source' => $source,
             ],
             messages: $messages,
             checkedAt: CarbonImmutable::now(),

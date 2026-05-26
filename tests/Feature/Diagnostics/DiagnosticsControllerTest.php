@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Diagnostics;
 
-use App\Models\{AuditLog, User};
+use App\Models\User;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;

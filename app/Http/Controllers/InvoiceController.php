@@ -12,7 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SaveInvoiceItemRequest;
 use App\Mail\InvoiceMail;
-use App\Models\{Customer, Expense, Invoice, InvoiceItem, InvoiceMailTemplate, Project};
+use App\Models\{Customer, Expense, ExternalReference, Invoice, InvoiceItem, InvoiceMailTemplate, Project};
 use App\Services\Expense\ExpenseInvoicingService;
 use App\Services\Invoicing\InvoiceGenerator;
 use App\Services\UI\DateRangeContext;
@@ -122,14 +122,34 @@ class InvoiceController extends Controller {
         Gate::authorize('view', $invoice);
         $invoice->load(['items', 'customer', 'project']);
 
-        $template = $invoice->customer?->invoice_template_id
+        // Hook: Wenn ein Plugin den PDF-Render übernehmen will (z. B. Lexoffice
+        // liefert das offizielle PDF einer gepushten Rechnung), redirected
+        // dieser Hook auf die Plugin-Route. So bleibt der Core entkoppelt.
+        $hooked = ExternalReference::query()
+            ->where('external_type', 'invoice')
+            ->where('referenceable_type', $invoice->getMorphClass())
+            ->where('referenceable_id', $invoice->getKey())
+            ->first();
+
+        if ($hooked !== null) {
+            $pluginRoute = 'invoices.' . $hooked->plugin_id . '.pdf';
+            if (\Illuminate\Support\Facades\Route::has($pluginRoute)) {
+                return redirect()->route($pluginRoute, $invoice);
+            }
+        }
+
+        $template = $invoice->customer->invoice_template_id
             ? \App\Models\InvoiceTemplate::find($invoice->customer->invoice_template_id)
             : \App\Models\InvoiceTemplate::query()
             ->where('organization_id', $invoice->organization_id)
             ->where('is_default', true)
             ->first();
 
-        return Pdf::loadView('invoices.pdf', ['invoice' => $invoice, 'template' => $template])
+        return Pdf::loadView('invoices.pdf', [
+            'invoice' => $invoice,
+            'template' => $template,
+            'orgLegal' => app(\App\Services\BrandingService::class)->legal(),
+        ])
             ->setPaper('a4')
             ->download('rechnung-' . $invoice->number . '.pdf');
     }

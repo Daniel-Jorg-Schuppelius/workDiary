@@ -1,0 +1,191 @@
+<?php
+/*
+ * Created on   : Tue May 26 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : facility.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequirementSeverity};
+
+return [
+    'code' => 'facility',
+    'label' => 'Facility Management und Hausmeisterdienste',
+    'version' => 1,
+    'classifications' => [
+        'entry_type' => [
+            ['code' => 'objektkontrolle', 'label' => 'Objektkontrolle'],
+            ['code' => 'maengelmeldung', 'label' => 'Mängelmeldung'],
+            ['code' => 'kleinreparatur', 'label' => 'Kleinreparatur'],
+            ['code' => 'wartungsrunde', 'label' => 'Wartungsrunde'],
+            ['code' => 'winterdienst', 'label' => 'Winterdienst'],
+            ['code' => 'zaehlerstand', 'label' => 'Zählerstand'],
+            ['code' => 'schluessel', 'label' => 'Schlüsselausgabe/-rückgabe'],
+            ['code' => 'notfall', 'label' => 'Notfall'],
+        ],
+        'activity' => [
+            ['code' => 'kontrollieren', 'label' => 'Kontrollieren'],
+            ['code' => 'reinigen', 'label' => 'Reinigen'],
+            ['code' => 'reparieren', 'label' => 'Reparieren'],
+            ['code' => 'dokumentieren', 'label' => 'Dokumentieren'],
+            ['code' => 'abschliessen', 'label' => 'Abschließen'],
+            ['code' => 'streuen', 'label' => 'Streuen'],
+            ['code' => 'ablesen', 'label' => 'Ablesen'],
+            ['code' => 'beauftragen', 'label' => 'Beauftragen'],
+            ['code' => 'nachhalten', 'label' => 'Nachhalten'],
+        ],
+        'defect_type' => [
+            ['code' => 'defekteBeleuchtung', 'label' => 'Defekte Beleuchtung'],
+            ['code' => 'wasserschaden', 'label' => 'Wasserschaden'],
+            ['code' => 'vandalismus', 'label' => 'Vandalismus'],
+            ['code' => 'schliessproblem', 'label' => 'Schließproblem'],
+            ['code' => 'brandschutzmangel', 'label' => 'Brandschutzmangel'],
+            ['code' => 'stolperstelle', 'label' => 'Stolperstelle'],
+            ['code' => 'verunreinigung', 'label' => 'Verunreinigung'],
+        ],
+        'root_cause' => [
+            ['code' => 'verschleiss', 'label' => 'Verschleiß'],
+            ['code' => 'nutzung', 'label' => 'Nutzung'],
+            ['code' => 'wetter', 'label' => 'Wetter'],
+            ['code' => 'fremdeinwirkung', 'label' => 'Fremdeinwirkung'],
+            ['code' => 'mangelndeWartung', 'label' => 'Mangelnde Wartung'],
+            ['code' => 'unbekannt', 'label' => 'Unbekannt'],
+        ],
+        'result' => [
+            ['code' => 'erledigt', 'label' => 'Erledigt'],
+            ['code' => 'offen', 'label' => 'Offen'],
+            ['code' => 'weitergeleitet', 'label' => 'Weitergeleitet'],
+            ['code' => 'nacharbeit', 'label' => 'Nacharbeit'],
+            ['code' => 'materialFehlt', 'label' => 'Material fehlt'],
+            ['code' => 'kundeInformiert', 'label' => 'Kunde informiert'],
+            ['code' => 'eskaliert', 'label' => 'Eskaliert'],
+        ],
+        'product_group' => [
+            ['code' => 'gebaeude', 'label' => 'Gebäude'],
+            ['code' => 'tuer', 'label' => 'Tür'],
+            ['code' => 'tor', 'label' => 'Tor'],
+            ['code' => 'beleuchtung', 'label' => 'Beleuchtung'],
+            ['code' => 'heizung', 'label' => 'Heizung'],
+            ['code' => 'aufzug', 'label' => 'Aufzug'],
+            ['code' => 'aussenanlage', 'label' => 'Außenanlage'],
+            ['code' => 'brandschutz', 'label' => 'Brandschutz'],
+            ['code' => 'schluessel', 'label' => 'Schlüssel'],
+            ['code' => 'zaehler', 'label' => 'Zähler'],
+        ],
+    ],
+    'classification_requirements' => [
+        [
+            'entry_type_code' => 'objektkontrolle',
+            'required_domain' => 'product_group',
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'severity' => ClassificationRequirementSeverity::Hard->value,
+            'min_count' => 1,
+        ],
+        [
+            'entry_type_code' => 'objektkontrolle',
+            'required_domain' => 'result',
+            'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+            'severity' => ClassificationRequirementSeverity::Hard->value,
+            'min_count' => 1,
+        ],
+        [
+            'entry_type_code' => 'maengelmeldung',
+            'required_domain' => 'defect_type',
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'severity' => ClassificationRequirementSeverity::Hard->value,
+            'min_count' => 1,
+        ],
+        [
+            'entry_type_code' => 'maengelmeldung',
+            'required_domain' => 'priority',
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'severity' => ClassificationRequirementSeverity::Hard->value,
+            'min_count' => 1,
+        ],
+        [
+            'entry_type_code' => 'maengelmeldung',
+            'required_domain' => 'root_cause',
+            'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+            'severity' => ClassificationRequirementSeverity::Soft->value,
+            'min_count' => 1,
+        ],
+        [
+            'entry_type_code' => 'kleinreparatur',
+            'required_domain' => 'product_group',
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'severity' => ClassificationRequirementSeverity::Hard->value,
+            'min_count' => 1,
+        ],
+        [
+            'entry_type_code' => 'schluessel',
+            'required_domain' => 'activity',
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'severity' => ClassificationRequirementSeverity::Hard->value,
+            'min_count' => 1,
+        ],
+        [
+            'entry_type_code' => 'winterdienst',
+            'required_domain' => 'product_group',
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'severity' => ClassificationRequirementSeverity::Hard->value,
+            'min_count' => 1,
+        ],
+        [
+            'entry_type_code' => 'winterdienst',
+            'required_domain' => 'result',
+            'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+            'severity' => ClassificationRequirementSeverity::Hard->value,
+            'min_count' => 1,
+        ],
+        [
+            'entry_type_code' => 'notfall',
+            'required_domain' => 'priority',
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'severity' => ClassificationRequirementSeverity::Hard->value,
+            'min_count' => 1,
+        ],
+    ],
+    'procedure_templates' => [
+        ['code' => 'FM_OBJEKTKONTROLLE'],
+        ['code' => 'FM_MAENGEL'],
+        ['code' => 'FM_KLEINREPARATUR'],
+        ['code' => 'FM_WINTERDIENST'],
+        ['code' => 'FM_SCHLUESSEL'],
+        ['code' => 'FM_ZAEHLERSTAND'],
+    ],
+    'protocol_templates' => [
+        ['code' => 'FM_OBJEKTBERICHT'],
+        ['code' => 'FM_MAENGELPROTOKOLL'],
+        ['code' => 'FM_SCHLUESSELNACHWEIS'],
+        ['code' => 'FM_WINTERDIENSTNACHWEIS'],
+        ['code' => 'FM_ZAEHLERABLESUNG'],
+        ['code' => 'FM_NOTFALLBERICHT'],
+    ],
+    'asset_categories' => [
+        'servicefahrzeug',
+        'werkzeugkoffer',
+        'leiter',
+        'schneefraese',
+        'streuwagen',
+        'schluesselkasten',
+        'zaehlerkamera',
+        'funkgeraet',
+    ],
+    'tags_seed' => [
+        '#objektkontrolle',
+        '#winterdienst',
+        '#schluessel',
+        '#mangel',
+        '#notfall',
+        '#brandschutz',
+        '#weitergeleitet',
+    ],
+    'maintenance_plans_seed' => [
+        ['code' => 'FM-LEITER-12M', 'label' => 'Leiterprüfung jährlich (DGUV)', 'category_code' => 'leiter', 'interval_kind' => 'months', 'interval_value' => 12, 'tolerance_days' => 14],
+        ['code' => 'FM-SCHNEEFRAESE-06M', 'label' => 'Schneefräse Saisonwartung', 'category_code' => 'schneefraese', 'interval_kind' => 'months', 'interval_value' => 6, 'tolerance_days' => 14],
+        ['code' => 'FM-STREUWAGEN-12M', 'label' => 'Streuwagen Jahreswartung', 'category_code' => 'streuwagen', 'interval_kind' => 'months', 'interval_value' => 12, 'tolerance_days' => 14],
+        ['code' => 'FM-FUNK-12M', 'label' => 'Funkgerät Funktionsprüfung', 'category_code' => 'funkgeraet', 'interval_kind' => 'months', 'interval_value' => 12, 'tolerance_days' => 7],
+    ],
+];

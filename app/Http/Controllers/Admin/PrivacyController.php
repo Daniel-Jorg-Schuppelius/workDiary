@@ -13,10 +13,11 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
-use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{DB, Gate, Schema};
+use App\Services\Privacy\PrivacyOverviewService;
+use Illuminate\Http\{RedirectResponse, Request, Response as HttpResponse};
+use Illuminate\Support\Facades\{DB, Gate};
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{Response, StreamedResponse};
 
 /**
  * MVP-005: Datenschutzseite für Org-Admins. Aggregiert Status,
@@ -28,6 +29,8 @@ use Symfony\Component\HttpFoundation\Response;
  * vorbereitet, aber Renderer folgt) und Integrationen-Detailansicht.
  */
 class PrivacyController extends Controller {
+    public function __construct(private readonly PrivacyOverviewService $overview) {}
+
     public function index(Request $request): View {
         Gate::authorize(Permission::PrivacyView->value);
 
@@ -36,74 +39,99 @@ class PrivacyController extends Controller {
         $organization = $user->organization;
         abort_if($organization === null, Response::HTTP_NOT_FOUND);
 
-        $memberIds = User::query()
-            ->where('organization_id', $organization->id)
-            ->pluck('id');
-
-        $sessions = collect();
-        if ($user->can(Permission::PrivacySessionsView->value) && Schema::hasTable('sessions')) {
-            $sessions = DB::table('sessions')
-                ->whereIn('user_id', $memberIds)
-                ->orderByDesc('last_activity')
-                ->limit(50)
-                ->get(['id', 'user_id', 'ip_address', 'user_agent', 'last_activity']);
-        }
-
-        $tokens = collect();
-        if ($user->can(Permission::PrivacyTokensView->value) && Schema::hasTable('personal_access_tokens')) {
-            $tokens = DB::table('personal_access_tokens')
-                ->where('tokenable_type', User::class)
-                ->whereIn('tokenable_id', $memberIds)
-                ->orderByDesc('created_at')
-                ->limit(50)
-                ->get(['id', 'tokenable_id', 'name', 'abilities', 'last_used_at', 'expires_at', 'created_at']);
-        }
-
-        // §3.6 Mandantenexporte: AuditLog-Events mit Präfix tenant.export.*
-        $exports = collect();
-        if ($user->can(Permission::PrivacyExportsView->value)) {
-            $exports = AuditLog::query()
-                ->where('organization_id', $organization->id)
-                ->where('event', 'like', 'tenant.export.%')
-                ->orderByDesc('created_at')
-                ->limit(20)
-                ->get(['id', 'user_id', 'event', 'changes', 'created_at']);
-        }
-
-        // §3.7 Supportzugriffe: AuditLog-Events mit Präfix support.*
-        // (z. B. support.access.granted/revoked, support.reportGenerated).
-        $supportAccesses = collect();
-        if ($user->can(Permission::PrivacySupportView->value)) {
-            $supportAccesses = AuditLog::query()
-                ->where('organization_id', $organization->id)
-                ->where('event', 'like', 'support.%')
-                ->orderByDesc('created_at')
-                ->limit(20)
-                ->get(['id', 'user_id', 'event', 'changes', 'created_at']);
-        }
-
-        $auditActorIds = $exports->pluck('user_id')
-            ->merge($supportAccesses->pluck('user_id'))
-            ->filter()
-            ->unique();
+        $data = $this->overview->forUser($user, $organization);
 
         return view('admin.privacy.index', [
-            'organization' => $organization,
-            'memberCount' => $memberIds->count(),
-            'sessions' => $sessions,
-            'tokens' => $tokens,
-            'sessionUsers' => User::query()->whereIn('id', $sessions->pluck('user_id')->filter()->unique())->get()->keyBy('id'),
-            'tokenUsers' => User::query()->whereIn('id', $tokens->pluck('tokenable_id')->filter()->unique())->get()->keyBy('id'),
-            'exports' => $exports,
-            'supportAccesses' => $supportAccesses,
-            'auditActors' => User::query()->whereIn('id', $auditActorIds)->get()->keyBy('id'),
+            'organization' => $data['organization'],
+            'memberCount' => $data['member_count'],
+            'sessions' => $data['sessions'],
+            'tokens' => $data['tokens'],
+            'sessionUsers' => $data['session_users'],
+            'tokenUsers' => $data['token_users'],
+            'exports' => $data['exports'],
+            'supportAccesses' => $data['support_accesses'],
+            'auditActors' => $data['audit_actors'],
             'categories' => (array) config('privacy.categories', []),
             'operatingMode' => (string) config('privacy.operating_mode', 'on_premise'),
             'dpaUrl' => config('privacy.dpa_document_url'),
-            'canRevokeSessions' => $user->can(Permission::PrivacySessionsRevoke->value),
-            'canRevokeTokens' => $user->can(Permission::PrivacyTokensRevoke->value),
-            'canViewExports' => $user->can(Permission::PrivacyExportsView->value),
-            'canViewSupport' => $user->can(Permission::PrivacySupportView->value),
+            'canRevokeSessions' => $data['can']['sessions_revoke'],
+            'canRevokeTokens' => $data['can']['tokens_revoke'],
+            'canViewExports' => $data['can']['exports_view'],
+            'canViewSupport' => $data['can']['support_view'],
+            'canExportReport' => $data['can']['report_export'],
+        ]);
+    }
+
+    public function export(Request $request): StreamedResponse|HttpResponse {
+        Gate::authorize(Permission::PrivacyReportExport->value);
+
+        /** @var User $user */
+        $user = $request->user();
+        $organization = $user->organization;
+        abort_if($organization === null, Response::HTTP_NOT_FOUND);
+
+        $format = strtolower((string) $request->query('format', 'json'));
+        if (! in_array($format, ['json', 'csv'], true)) {
+            abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Unsupported format.');
+        }
+
+        $data = $this->overview->forUser($user, $organization);
+        $payload = $this->overview->toExportPayload($data);
+
+        AuditLog::query()->create([
+            'organization_id' => $organization->id,
+            'user_id' => $user->id,
+            'event' => 'privacy.overviewExported',
+            'auditable_type' => User::class,
+            'auditable_id' => $user->id,
+            'changes' => [
+                'format' => $format,
+                'member_count' => $payload['member_count'],
+                'sections' => [
+                    'sessions' => count($payload['sessions']),
+                    'tokens' => count($payload['tokens']),
+                    'exports' => count($payload['exports']),
+                    'support_accesses' => count($payload['support_accesses']),
+                ],
+            ],
+        ]);
+
+        $stamp = now()->format('Ymd-His');
+        $base = sprintf('privacy-overview-%d-%s', $organization->id, $stamp);
+
+        if ($format === 'json') {
+            return new HttpResponse(
+                (string) json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                Response::HTTP_OK,
+                [
+                    'Content-Type' => 'application/json; charset=UTF-8',
+                    'Content-Disposition' => sprintf('attachment; filename="%s.json"', $base),
+                ],
+            );
+        }
+
+        return new StreamedResponse(function () use ($payload): void {
+            $out = fopen('php://output', 'w');
+            if ($out === false) {
+                return;
+            }
+            fputcsv($out, ['section', 'id', 'user_id', 'event', 'extra']);
+            foreach ($payload['sessions'] as $s) {
+                fputcsv($out, ['session', $s['id'], $s['user_id'], '', (string) $s['ip_address']]);
+            }
+            foreach ($payload['tokens'] as $t) {
+                fputcsv($out, ['token', (string) $t['id'], (string) $t['user_id'], '', (string) $t['name']]);
+            }
+            foreach ($payload['exports'] as $e) {
+                fputcsv($out, ['export', (string) $e['id'], (string) ($e['user_id'] ?? ''), $e['event'], (string) ($e['created_at'] ?? '')]);
+            }
+            foreach ($payload['support_accesses'] as $a) {
+                fputcsv($out, ['support', (string) $a['id'], (string) ($a['user_id'] ?? ''), $a['event'], (string) ($a['created_at'] ?? '')]);
+            }
+            fclose($out);
+        }, Response::HTTP_OK, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => sprintf('attachment; filename="%s.csv"', $base),
         ]);
     }
 

@@ -8,16 +8,16 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Http\Controllers\Plugins;
+namespace App\Plugins\Lexoffice\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
+use App\Models\{Customer, ExternalReference, User};
 use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Gate, Log};
+use Illuminate\Support\Facades\{Auth, Gate, Log};
 use Throwable;
 
 class LexofficeCustomerController extends Controller {
@@ -82,6 +82,53 @@ class LexofficeCustomerController extends Controller {
 
             return back()->with('error', __('Übertragung fehlgeschlagen: :msg', ['msg' => $e->getMessage()]));
         }
+    }
+
+    /**
+     * Push aller noch nicht synchronisierten Kunden zu Lexoffice (Bulk-Aktion
+     * aus der Kunden-Listenansicht).
+     */
+    public function bulkPush(): RedirectResponse {
+        Gate::authorize('viewAny', Customer::class);
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+        if (! $authUser?->canManageBilling()) {
+            abort(403);
+        }
+
+        $plugin = $this->plugin();
+        if ($plugin === null) {
+            return back()->with('error', __('Lexoffice-Plugin ist nicht aktiviert.'));
+        }
+
+        $alreadySyncedIds = ExternalReference::query()
+            ->where('plugin_id', LexofficePlugin::ID)
+            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
+            ->where('referenceable_type', (new Customer)->getMorphClass())
+            ->pluck('referenceable_id')
+            ->all();
+
+        /** @var \Illuminate\Database\Eloquent\Collection<int, Customer> $candidates */
+        $candidates = Customer::query()
+            ->whereNull('archived_at')
+            ->whereNotIn('id', $alreadySyncedIds)
+            ->get();
+
+        $ok = 0;
+        $fail = 0;
+        foreach ($candidates as $customer) {
+            try {
+                $plugin->pushContact($customer);
+                $ok++;
+            } catch (Throwable $e) {
+                $fail++;
+                report($e);
+            }
+        }
+
+        $msg = __('Lexoffice-Sync: :ok übertragen, :fail Fehler.', ['ok' => $ok, 'fail' => $fail]);
+
+        return back()->with($fail > 0 ? 'info' : 'success', $msg);
     }
 
     private function plugin(): ?LexofficePlugin {

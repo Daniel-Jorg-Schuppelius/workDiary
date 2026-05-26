@@ -24,11 +24,26 @@ use Throwable;
 class SupportReportBuilder {
     /** ENV-Schlüssel, deren Wert NIE im Bundle landen darf. Spec §2.3. */
     private const SENSITIVE_ENV_KEYS = [
-        'APP_KEY', 'APP_DEBUG_KEY', 'DB_PASSWORD', 'DB_USERNAME', 'DB_HOST', 'DB_URL',
-        'LEGACY_DB_PASSWORD', 'LEGACY_DB_USERNAME', 'LEGACY_DB_HOST', 'LEGACY_DB_URL',
-        'MAIL_PASSWORD', 'MAIL_USERNAME', 'MAIL_HOST', 'MAIL_FROM_ADDRESS',
-        'REDIS_PASSWORD', 'AWS_SECRET_ACCESS_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_BUCKET',
-        'LICENSE_KEY', 'LICENSE_PUBLIC_KEY',
+        'APP_KEY',
+        'APP_DEBUG_KEY',
+        'DB_PASSWORD',
+        'DB_USERNAME',
+        'DB_HOST',
+        'DB_URL',
+        'LEGACY_DB_PASSWORD',
+        'LEGACY_DB_USERNAME',
+        'LEGACY_DB_HOST',
+        'LEGACY_DB_URL',
+        'MAIL_PASSWORD',
+        'MAIL_USERNAME',
+        'MAIL_HOST',
+        'MAIL_FROM_ADDRESS',
+        'REDIS_PASSWORD',
+        'AWS_SECRET_ACCESS_KEY',
+        'AWS_ACCESS_KEY_ID',
+        'AWS_BUCKET',
+        'LICENSE_KEY',
+        'LICENSE_PUBLIC_KEY',
     ];
 
     public function __construct(
@@ -106,12 +121,12 @@ class SupportReportBuilder {
                 return [];
             }
 
-            return DB::table('migrations')
+            return array_values(DB::table('migrations')
                 ->orderBy('batch')
                 ->orderBy('name')
                 ->get(['name', 'batch'])
                 ->map(static fn($row): array => ['name' => (string) $row->name, 'batch' => (int) $row->batch])
-                ->all();
+                ->all());
         } catch (Throwable) {
             return [];
         }
@@ -132,8 +147,9 @@ class SupportReportBuilder {
             $name = $file->getBasename('.php');
             try {
                 $values = (array) config($name);
-                $out[$name] = $this->collectKeys($values);
-                sort($out[$name]);
+                $keys = $this->collectKeys($values);
+                sort($keys);
+                $out[$name] = $keys;
             } catch (Throwable) {
                 $out[$name] = [];
             }
@@ -143,7 +159,10 @@ class SupportReportBuilder {
         return $out;
     }
 
-    /** @param array<string, mixed> $values @return list<string> */
+    /**
+     * @param  array<string, mixed>  $values
+     * @return list<string>
+     */
     private function collectKeys(array $values, string $prefix = ''): array {
         $keys = [];
         foreach ($values as $key => $value) {
@@ -201,8 +220,8 @@ class SupportReportBuilder {
         }
 
         foreach ($tables as $table) {
-            $name = is_array($table) ? ($table['name'] ?? null) : (is_object($table) ? ($table->name ?? null) : (string) $table);
-            if (! is_string($name) || $name === '') {
+            $name = $table['name'];
+            if ($name === '') {
                 continue;
             }
             try {
@@ -228,7 +247,7 @@ class SupportReportBuilder {
                 ->limit($limit)
                 ->get(['id', 'connection', 'queue', 'exception', 'failed_at']);
 
-            return $rows->map(function ($row): array {
+            return array_values($rows->map(function ($row): array {
                 $exceptionText = (string) ($row->exception ?? '');
                 $firstLine = strtok($exceptionText, "\n") ?: '';
                 // Klasse extrahieren, KEINE Payloads aufnehmen.
@@ -245,7 +264,7 @@ class SupportReportBuilder {
                     'exception_message' => $this->logFilter->filter($firstLine),
                     'failed_at' => $row->failed_at ?? null,
                 ];
-            })->all();
+            })->all());
         } catch (Throwable) {
             return [];
         }
@@ -280,7 +299,7 @@ class SupportReportBuilder {
         }
 
         $since = CarbonImmutable::now()->subDay();
-        $rows = AuditLog::query()
+        $rows = DB::table((new AuditLog())->getTable())
             ->where('created_at', '>=', $since)
             ->selectRaw('event, COUNT(*) as cnt')
             ->groupBy('event')

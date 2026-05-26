@@ -15,6 +15,7 @@ use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\{AuditLog, Customer, DiaryEntry, EntryType, OpenIssue, Protocol, TimeEntry, User};
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
@@ -24,6 +25,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class EntryTypeAnalysisReportController extends Controller {
     use ResolvesGlobalDateRange;
+    use WritesReportCsv;
 
     public function index(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
@@ -37,28 +39,23 @@ class EntryTypeAnalysisReportController extends Controller {
 
         $rows = $this->buildRows($from, $to, $customerId, $userId, $entryTypeFilter, $statusFilter);
 
-        if ($request->query('export') === 'csv') {
-            $this->auditExport($request, 'entry-types-analysis', 'csv', [
-                'from' => $from->toDateString(),
-                'to' => $to->toDateString(),
-                'customer_id' => $customerId,
-                'user_id' => $userId,
-                'entry_type_id' => $entryTypeFilter,
-                'status' => $statusFilter,
-            ]);
+        $exportContext = [
+            'from' => $from->toDateString(),
+            'to' => $to->toDateString(),
+            'customer_id' => $customerId,
+            'user_id' => $userId,
+            'entry_type_id' => $entryTypeFilter,
+            'status' => $statusFilter,
+        ];
 
-            return $this->exportCsv($rows, $from->toDateString(), $to->toDateString());
+        if ($request->query('export') === 'csv') {
+            $this->auditExport($request, 'entry-types-analysis', 'csv', $exportContext);
+
+            return $this->exportCsv($rows, $from->toDateString(), $to->toDateString(), $exportContext);
         }
 
         if ($request->query('export') === 'pdf') {
-            $this->auditExport($request, 'entry-types-analysis', 'pdf', [
-                'from' => $from->toDateString(),
-                'to' => $to->toDateString(),
-                'customer_id' => $customerId,
-                'user_id' => $userId,
-                'entry_type_id' => $entryTypeFilter,
-                'status' => $statusFilter,
-            ]);
+            $this->auditExport($request, 'entry-types-analysis', 'pdf', $exportContext);
 
             return $this->exportPdf($rows, $range['label'], $from->toDateString(), $to->toDateString());
         }
@@ -256,9 +253,10 @@ class EntryTypeAnalysisReportController extends Controller {
      *   firstTimeRightShare:float,
      *   medianActualMinutes:float,
      *   p90ActualMinutes:float
-     * }>  $rows
+     * }>             $rows
+     * @param  array<string, mixed>  $filters
      */
-    private function exportCsv(array $rows, string $from, string $to): Response {
+    private function exportCsv(array $rows, string $from, string $to, array $filters): Response {
         $filename = sprintf('auftragstypanalyse_%s_%s.csv', $from, $to);
 
         $out = [];
@@ -298,22 +296,7 @@ class EntryTypeAnalysisReportController extends Controller {
             ];
         }
 
-        $csv = '';
-        foreach ($out as $csvRow) {
-            $csv .= implode(';', array_map(static function ($value): string {
-                $string = (string) $value;
-                if (str_contains($string, ';') || str_contains($string, '"') || str_contains($string, "\n")) {
-                    $string = '"' . str_replace('"', '""', $string) . '"';
-                }
-
-                return $string;
-            }, $csvRow)) . "\r\n";
-        }
-
-        return response("\xEF\xBB\xBF" . $csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
+        return $this->csvWithMetadata($out, $filename, 'entry-types-analysis', $filters);
     }
 
     /**
@@ -386,8 +369,7 @@ class EntryTypeAnalysisReportController extends Controller {
             return;
         }
 
-        $payload = json_encode($filters, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $filterHash = hash('sha256', $payload === false ? '' : $payload);
+        $filterHash = $this->reportFilterHashFull($filters);
 
         AuditLog::create([
             'organization_id' => $user->organization_id,

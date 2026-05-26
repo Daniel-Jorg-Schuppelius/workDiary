@@ -59,8 +59,10 @@ class BrandingController extends Controller {
 
             'branding.legal.vat_id' => ['nullable', 'string', 'max:60'],
             'branding.legal.tax_number' => ['nullable', 'string', 'max:60'],
-            'branding.legal.iban' => ['nullable', 'string', 'max:64'],
-            'branding.legal.bic' => ['nullable', 'string', 'max:20'],
+            'branding.legal.iban' => ['nullable', 'string', 'max:64', 'regex:/^[A-Z]{2}[0-9A-Z\s]{10,40}$/i'],
+            'branding.legal.bic' => ['nullable', 'string', 'max:20', 'regex:/^[A-Z0-9]{8}([A-Z0-9]{3})?$/i'],
+            'branding.legal.bank_name' => ['nullable', 'string', 'max:200'],
+            'branding.legal.account_holder' => ['nullable', 'string', 'max:200'],
             'branding.legal.register' => ['nullable', 'string', 'max:200'],
             'branding.legal.footer_text' => ['nullable', 'string', 'max:500'],
 
@@ -83,6 +85,13 @@ class BrandingController extends Controller {
             if (! isset($data['branding']['pdf'][$type]['logo'])) {
                 $data['branding']['pdf'][$type]['logo'] = 'light';
             }
+        }
+
+        // IBAN/BIC normalisieren: Leerzeichen entfernen, Großschreibung erzwingen.
+        foreach (['iban', 'bic'] as $field) {
+            $val = (string) ($data['branding']['legal'][$field] ?? '');
+            $val = (string) preg_replace('/\s+/', '', $val);
+            $data['branding']['legal'][$field] = $val !== '' ? strtoupper($val) : null;
         }
 
         $branding = $this->stripEmpty($data['branding']);

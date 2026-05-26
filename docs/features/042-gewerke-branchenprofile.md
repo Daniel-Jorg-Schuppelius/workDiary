@@ -67,6 +67,7 @@ Protokollen.
 - typische Risiken, Arbeitsschutz- und Sicherheitsanforderungen.
 - typische Dokumente, Zertifikate und Nachweise.
 - optionale Fachbegriffe und Feldbezeichnungen.
+- optionale raum- und objektbezogene Anforderungen pro Gewerk.
 
 ## Beispiele
 
@@ -89,6 +90,24 @@ Protokollen.
 - Change-Protokoll, Update, Rollback, Funktionstest.
 - Vier-Augen-Freigabe für kritische Änderungen.
 - sensible Zugangsdaten nicht im Klartext dokumentieren.
+- Kundenrechner, Drucker, Netzwerkdosen, Access Points und weitere IT-Assets
+  können Gebäude, Etage, Raum oder Arbeitsplatz zugeordnet werden.
+
+### Facility Management
+
+- Gebäude, Etagen, Räume und Außenbereiche als Objektkontext.
+- Objektkontrollen, Mängel, Betreiberpflichten, Schlüssel, Zählerstände und
+  Dienstleisterkoordination.
+- Raum- oder Bereichsanforderungen wie Brandschutzkontrolle,
+  Störungsmeldung, Wartungsrunde oder gesperrter Bereich.
+
+### Gebäudereinigung
+
+- Reinigungsbereiche, Raumgruppen und Sonderflächen.
+- Unterhaltsreinigung, Grundreinigung, Sonderreinigung, Qualitätskontrolle und
+  Reklamationen.
+- Raumbezogene Anforderungen wie besondere Reinigung, Hygienehinweis,
+  Zugangsbeschränkung, Materialbedarf oder Foto-/Abnahmepflicht.
 
 ### Bau und Ausbau
 
@@ -104,12 +123,17 @@ Protokollen.
 - Profil kann beim Onboarding gewählt und später angepasst werden.
 - Demo-Daten pro ausgewähltem Profil.
 - Profilbestandteile sind transparent und nicht fest im Code verdrahtet.
+- Profile können raum- und objektbezogene Anforderungen vorbelegen, damit
+  unterschiedliche Gewerke denselben Gebäudebereich fachlich unterschiedlich
+  nutzen können.
 
 ## Akzeptanzkriterien
 
 - Ein neuer Mandant kann mit einem passenden Branchenprofil starten.
 - Profile erzeugen strukturierte, auswertbare Daten statt Freitextlisten.
 - Profile können kundenspezifisch angepasst werden.
+- Profile können Anforderungen pro Gewerk, Objekt- oder Raumtyp definieren,
+  ohne die Kernmodelle pro Branche zu duplizieren.
 - Alte Daten bleiben nachvollziehbar, wenn ein Profil später geändert wird.
 - Branchenprofile verletzen nicht die einheitliche Bedienung des Produkts.
 

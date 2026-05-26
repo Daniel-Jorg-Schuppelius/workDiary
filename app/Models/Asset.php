@@ -117,4 +117,9 @@ class Asset extends Model {
 
         return $relation;
     }
+
+    /** @return HasMany<MaintenancePlan, $this> */
+    public function maintenancePlans(): HasMany {
+        return $this->hasMany(MaintenancePlan::class)->orderBy('next_due_on');
+    }
 }

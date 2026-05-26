@@ -12,11 +12,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SaveUserFilterPresetRequest;
 use App\Models\UserFilterPreset;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
 
 class UserFilterPresetController extends Controller {

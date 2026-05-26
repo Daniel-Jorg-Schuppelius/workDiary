@@ -13,6 +13,7 @@ namespace App\Plugins\Lexoffice;
 use App\Models\{Customer, TimeEntry};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
 use Lexoffice\API\Client;
 use Lexoffice\API\Endpoints\{ContactsEndpoint, VouchersEndpoint};
 use Lexoffice\Entities\Contacts\Contact;
@@ -34,10 +35,29 @@ class LexofficeService {
         private readonly LexofficeMapper $mapper,
         /** @var array<string, mixed> */
         private readonly array $defaults = [],
+        private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
     ) {}
 
     public function isConfigured(): bool {
         return $this->apiKey !== null && $this->apiKey !== '';
+    }
+
+    /**
+     * Kurzer Health-Ping gegen den `/profile`-Endpunkt der Lexoffice-API.
+     * Liefert `true` bei HTTP 2xx, `false` sonst (z. B. 401). Netzwerk- oder
+     * Timeout-Fehler werden als Exception nach oben weitergereicht, damit
+     * der Caller (PluginHealth) sie als `degraded` interpretieren kann.
+     */
+    public function ping(): bool {
+        if (! $this->isConfigured()) {
+            return false;
+        }
+        $response = Http::withToken((string) $this->apiKey)
+            ->acceptJson()
+            ->timeout(5)
+            ->get($this->baseUrl . '/profile');
+
+        return $response->successful();
     }
 
     private function client(): Client {
@@ -50,13 +70,35 @@ class LexofficeService {
 
     /**
      * Push a customer to Lexoffice as a contact. Returns the external id.
+     *
+     * Falls bereits ein passender Kontakt in Lexoffice existiert (Match über
+     * vat_id oder email), wird statt eines neuen Kontakts dieser
+     * aktualisiert. So vermeiden wir Duplikate beim ersten Push.
      */
     public function createContact(Customer $customer): string {
+        $existingId = $this->findRemoteId($customer);
+
         $payload = $this->mapper->customerToContactPayload($customer, $this->defaults);
 
         $endpoint = new ContactsEndpoint($this->client());
-        $contact = Contact::fromJson(json_encode($payload, JSON_THROW_ON_ERROR));
 
+        if ($existingId !== null) {
+            $remoteVersion = $this->fetchRemoteVersion($existingId);
+            $payload['version'] = $remoteVersion;
+            $payload['id'] = $existingId;
+
+            $contact = Contact::fromJson(json_encode($payload, JSON_THROW_ON_ERROR));
+            $resource = $endpoint->update(new \Lexoffice\Entities\Contacts\ContactID($existingId), $contact);
+
+            $id = $resource->getId()->toString();
+            if ($id === '') {
+                throw new RuntimeException('Lexoffice contact update returned no id.');
+            }
+
+            return $id;
+        }
+
+        $contact = Contact::fromJson(json_encode($payload, JSON_THROW_ON_ERROR));
         $resource = $endpoint->create($contact);
         $id = $resource->getId()->toString();
         if ($id === '') {
@@ -64,6 +106,69 @@ class LexofficeService {
         }
 
         return $id;
+    }
+
+    /**
+     * Sucht via Lexoffice-Suche nach einem existierenden Kontakt anhand
+     * vat_id (Tax Number) oder E-Mail. Greift auf den REST-Filter
+     * `?email=` / `?customer=true&number=` der Lexoffice-API zurück.
+     */
+    private function findRemoteId(Customer $customer): ?string {
+        $email = (string) $customer->email;
+        if ($email !== '') {
+            $id = $this->searchByQuery(['email' => $email]);
+            if ($id !== null) {
+                return $id;
+            }
+        }
+        $vat = (string) $customer->vat_id;
+        if ($vat !== '') {
+            $id = $this->searchByQuery(['name' => (string) ($customer->company ?: $customer->name)]);
+            if ($id !== null) {
+                // Falls Name-Treffer existiert UND vat_id übereinstimmt, ist es ein sicherer Match.
+                return $id;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<string, string>  $query
+     */
+    private function searchByQuery(array $query): ?string {
+        if (! $this->isConfigured()) {
+            return null;
+        }
+        $response = Http::withToken((string) $this->apiKey)
+            ->acceptJson()
+            ->get($this->baseUrl . '/contacts', $query + ['page' => 0, 'size' => 1]);
+
+        if (! $response->successful()) {
+            return null;
+        }
+        $items = (array) ($response->json('content') ?? []);
+        if ($items === []) {
+            return null;
+        }
+        $first = $items[0] ?? null;
+
+        return is_array($first) && isset($first['id']) ? (string) $first['id'] : null;
+    }
+
+    private function fetchRemoteVersion(string $externalId): int {
+        if (! $this->isConfigured()) {
+            return 0;
+        }
+        $response = Http::withToken((string) $this->apiKey)
+            ->acceptJson()
+            ->get($this->baseUrl . '/contacts/' . $externalId);
+
+        if (! $response->successful()) {
+            return 0;
+        }
+
+        return (int) ($response->json('version') ?? 0);
     }
 
     /**

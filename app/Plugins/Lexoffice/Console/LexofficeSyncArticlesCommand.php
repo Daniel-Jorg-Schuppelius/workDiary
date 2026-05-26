@@ -8,10 +8,10 @@
  * License Uri  : https://opensource.org/license/mit
  */
 
-namespace App\Console\Commands;
+namespace App\Plugins\Lexoffice\Console;
 
 use App\Models\Organization;
-use App\Plugins\Lexoffice\LexofficeArticleSync;
+use App\Plugins\Lexoffice\{LexofficeArticleSync, LexofficeConfig};
 use Illuminate\Console\Command;
 
 class LexofficeSyncArticlesCommand extends Command {
@@ -20,15 +20,6 @@ class LexofficeSyncArticlesCommand extends Command {
     protected $description = 'Synchronisiert Lexoffice-Artikel (Services/Produkte) in die lokale Tabelle `lexoffice_articles`.';
 
     public function handle(): int {
-        $apiKey = config('plugins.lexoffice.api_key');
-        if (! is_string($apiKey) || $apiKey === '') {
-            $this->error('LEXOFFICE_API_KEY ist nicht konfiguriert.');
-
-            return self::FAILURE;
-        }
-
-        $sync = new LexofficeArticleSync($apiKey);
-
         $orgId = $this->option('organization');
         $query = Organization::query();
         if ($orgId !== null && $orgId !== '') {
@@ -43,10 +34,16 @@ class LexofficeSyncArticlesCommand extends Command {
         }
 
         foreach ($organizations as $org) {
+            $config = LexofficeConfig::resolve($org->id);
+            if (! is_string($config['api_key']) || $config['api_key'] === '') {
+                $this->warn("Organisation #{$org->id} ({$org->name}): Lexoffice nicht konfiguriert — übersprungen.");
+
+                continue;
+            }
             $this->info("Sync Lexoffice-Artikel für Organisation #{$org->id} ({$org->name})...");
             try {
-                $result = $sync->sync($org);
-                $this->line("  created: {$result['created']}, updated: {$result['updated']}, archived: {$result['archived']}");
+                $result = (new LexofficeArticleSync($config['api_key'], $config['base_url']))->sync($org);
+                $this->line("  created: {$result['created']}, updated: {$result['updated']}, archived: {$result['archived']}, conflicts: {$result['conflicts']}");
             } catch (\Throwable $e) {
                 $this->error("  Fehler: {$e->getMessage()}");
             }

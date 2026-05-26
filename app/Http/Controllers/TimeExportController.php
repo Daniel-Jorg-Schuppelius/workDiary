@@ -1,0 +1,220 @@
+<?php
+/*
+ * Filename : TimeExportController.php
+ * License  : AGPL-3.0-or-later
+ */
+
+namespace App\Http\Controllers;
+
+use App\Enums\TimeExport\TimeExportStatus;
+use App\Models\{TimeExport, User};
+use App\Services\TimeExport\{TimeExportException, TimeExportService};
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth, Gate, Storage};
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+
+/**
+ * UI für MVP-019 (ApprovedTimeExporter).
+ *
+ * Liste, Anlage, Vorschau, Download, Bereitstellung und Ablehnung von
+ * Zeit-Exporten auf Basis genehmigter Monatsfreigaben.
+ */
+class TimeExportController extends Controller {
+    public function __construct(private readonly TimeExportService $service) {}
+
+    public function index(Request $request): View {
+        Gate::authorize('viewAny', TimeExport::class);
+        /** @var User $user */
+        $user = Auth::user();
+
+        $statusFilter = (string) $request->input('status', 'all');
+        $profileFilter = (string) $request->input('profile', 'all');
+        $yearFilter = $request->filled('year') ? (int) $request->input('year') : null;
+
+        $query = TimeExport::query()
+            ->where('organization_id', $user->organization_id)
+            ->with(['creator', 'deliveredBy', 'scopeUser'])
+            ->orderByDesc('created_at');
+
+        if ($statusFilter !== '' && $statusFilter !== 'all') {
+            $query->where('status', $statusFilter);
+        }
+        if ($profileFilter !== '' && $profileFilter !== 'all') {
+            $query->where('profile', $profileFilter);
+        }
+        if ($yearFilter !== null) {
+            $query->where('period_year', $yearFilter);
+        }
+
+        $exports = $query->paginate(25)->withQueryString();
+
+        return view('exports.index', [
+            'exports' => $exports,
+            'profiles' => $this->availableProfiles(),
+            'statuses' => TimeExportStatus::cases(),
+            'filters' => [
+                'status' => $statusFilter,
+                'profile' => $profileFilter,
+                'year' => $yearFilter,
+            ],
+        ]);
+    }
+
+    public function create(): View {
+        Gate::authorize('create', TimeExport::class);
+        /** @var User $user */
+        $user = Auth::user();
+
+        $now = now();
+
+        return view('exports.create', [
+            'profiles' => $this->availableProfiles(),
+            'defaultYear' => (int) $now->copy()->subMonthNoOverflow()->format('Y'),
+            'defaultMonth' => (int) $now->copy()->subMonthNoOverflow()->format('n'),
+            'teamUsers' => User::query()
+                ->where('organization_id', $user->organization_id)
+                ->orderBy('name')
+                ->get(['id', 'name']),
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse {
+        Gate::authorize('create', TimeExport::class);
+        /** @var User $user */
+        $user = Auth::user();
+
+        $profileKeys = array_keys($this->availableProfiles());
+
+        $data = $request->validate([
+            'year' => ['required', 'integer', 'min:2000', 'max:2999'],
+            'month' => ['required', 'integer', 'between:1,12'],
+            'profile' => ['required', 'string', 'in:' . implode(',', $profileKeys)],
+            'scope' => ['required', 'string', 'in:organization,user'],
+            'scope_user_id' => ['nullable', 'integer', 'exists:users,id'],
+        ]);
+
+        $org = $user->organization;
+        if ($org === null) {
+            abort(404);
+        }
+
+        /** @var 'organization'|'team'|'user' $scope */
+        $scope = (string) $data['scope'];
+
+        try {
+            $export = $this->service->prepare(
+                $org,
+                (int) $data['year'],
+                (int) $data['month'],
+                (string) $data['profile'],
+                $scope,
+                isset($data['scope_user_id']) ? (int) $data['scope_user_id'] : null,
+                null,
+                $user,
+            );
+
+            $export = $this->service->build($export, $user);
+        } catch (TimeExportException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+
+        return redirect()
+            ->route('exports.show', $export)
+            ->with('status', __('Export erstellt.'));
+    }
+
+    public function show(TimeExport $export): View {
+        Gate::authorize('view', $export);
+        $export->load(['lines.user', 'events.actor', 'creator', 'deliveredBy', 'scopeUser', 'supersededBy']);
+
+        return view('exports.show', [
+            'export' => $export,
+        ]);
+    }
+
+    public function download(TimeExport $export): BinaryFileResponse {
+        Gate::authorize('download', $export);
+        /** @var User $user */
+        $user = Auth::user();
+
+        $path = $export->file_path;
+        if (! is_string($path) || $path === '') {
+            abort(404);
+        }
+
+        $diskName = (string) config('exports.storage.disk', 'local');
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk($diskName);
+        if (! $disk->exists($path)) {
+            abort(404);
+        }
+
+        $this->service->recordDownload($export, $user);
+
+        $filename = sprintf(
+            '%s-%s.%s',
+            $export->profile,
+            $export->periodLabel(),
+            $export->file_format ?? 'csv',
+        );
+
+        return response()->download($disk->path($path), $filename);
+    }
+
+    public function deliver(Request $request, TimeExport $export): RedirectResponse {
+        Gate::authorize('deliver', $export);
+        /** @var User $user */
+        $user = Auth::user();
+
+        $data = $request->validate([
+            'note' => ['nullable', 'string', 'max:2000'],
+        ]);
+        $note = isset($data['note']) && trim((string) $data['note']) !== '' ? trim((string) $data['note']) : null;
+
+        try {
+            $this->service->markDelivered($export, $user, $note);
+        } catch (TimeExportException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('status', __('Export als ausgeliefert markiert.'));
+    }
+
+    public function reject(Request $request, TimeExport $export): RedirectResponse {
+        Gate::authorize('reject', $export);
+        /** @var User $user */
+        $user = Auth::user();
+
+        $data = $request->validate([
+            'note' => ['required', 'string', 'min:5', 'max:2000'],
+        ]);
+
+        try {
+            $this->service->reject($export, $user, (string) $data['note']);
+        } catch (TimeExportException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('status', __('Export abgelehnt.'));
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    private function availableProfiles(): array {
+        /** @var array<string,array<string,mixed>> $profiles */
+        $profiles = (array) config('exports.profiles', []);
+        $out = [];
+        foreach ($profiles as $key => $cfg) {
+            $driver = $cfg['driver'] ?? null;
+            if ($driver === null) {
+                continue;
+            }
+            $label = isset($cfg['label']) && is_string($cfg['label']) ? $cfg['label'] : (string) $key;
+            $out[(string) $key] = $label;
+        }
+
+        return $out;
+    }
+}

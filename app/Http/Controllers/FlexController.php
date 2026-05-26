@@ -23,8 +23,7 @@ use Illuminate\View\View;
 class FlexController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function __construct(protected FlexCalculator $calc, protected WeekViewService $weekService) {
-    }
+    public function __construct(protected FlexCalculator $calc, protected WeekViewService $weekService) {}
 
     public function index(Request $request): View|RedirectResponse {
         if ($redirect = $this->migrateLegacyYearMonth($request, 'flex.index')) {

@@ -20,6 +20,8 @@ final class LicensePayload {
         public readonly ?CarbonImmutable $expiresAt,
         public readonly ?string $domain,
         public readonly ?int $maxUsers,
+        public readonly ?int $maxOrgs,
+        public readonly ?int $storageQuotaGb,
         /** @var array<int,string> */
         public readonly array $features,
         public readonly string $licenseId,
@@ -34,6 +36,8 @@ final class LicensePayload {
             expiresAt: isset($data['expires_at']) ? CarbonImmutable::parse($data['expires_at']) : null,
             domain: isset($data['domain']) ? (string) $data['domain'] : null,
             maxUsers: isset($data['max_users']) ? (int) $data['max_users'] : null,
+            maxOrgs: isset($data['max_orgs']) ? (int) $data['max_orgs'] : null,
+            storageQuotaGb: isset($data['storage_quota_gb']) ? (int) $data['storage_quota_gb'] : null,
             features: array_values(array_map('strval', (array) ($data['features'] ?? []))),
             licenseId: (string) ($data['license_id'] ?? ''),
         );
@@ -49,6 +53,8 @@ final class LicensePayload {
             'expires_at' => $this->expiresAt?->toIso8601String(),
             'domain' => $this->domain,
             'max_users' => $this->maxUsers,
+            'max_orgs' => $this->maxOrgs,
+            'storage_quota_gb' => $this->storageQuotaGb,
             'features' => $this->features,
         ];
     }

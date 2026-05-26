@@ -161,6 +161,11 @@ class PermissionsSeeder extends Seeder {
                     // MVP-005: Datenschutzbericht als PDF/Export — die
                     // .view-Heuristik trifft hier nicht, daher explizit.
                     PermissionEnum::PrivacyReportExport->value,
+                    // MVP-016/017: Monats-/Korrektur-Lesezugriff — die
+                    // .view-Heuristik trifft auf `month.view.*`/`correction.view.*`
+                    // nicht, daher explizit.
+                    PermissionEnum::MonthViewOrganization->value,
+                    PermissionEnum::CorrectionViewOrganization->value,
                 ], true);
             }
         );
@@ -187,6 +192,17 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::TimesheetSign,
             PermissionEnum::TimesheetLock,
             PermissionEnum::TimesheetUnlock,
+            PermissionEnum::MonthViewTeam,
+            PermissionEnum::MonthApprove,
+            PermissionEnum::MonthReject,
+            PermissionEnum::MonthReopen,
+            PermissionEnum::MonthLock,
+            PermissionEnum::CorrectionViewTeam,
+            PermissionEnum::CorrectionApprove,
+            PermissionEnum::CorrectionReject,
+            PermissionEnum::ExportTimeCreate,
+            PermissionEnum::ExportTimeDeliver,
+            PermissionEnum::ExportTimeDelete,
             PermissionEnum::DiaryViewAny,
             PermissionEnum::DiaryCreate,
             PermissionEnum::DiaryCreateForOthers,
@@ -292,6 +308,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::TimesheetLock,
             PermissionEnum::TimesheetUnlock,
             PermissionEnum::TimesheetExport,
+            PermissionEnum::MonthViewOrganization,
+            PermissionEnum::CorrectionViewOrganization,
             PermissionEnum::InvoiceViewAny,
             PermissionEnum::InvoiceView,
             PermissionEnum::InvoiceCreate,
@@ -322,6 +340,11 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::TimesheetCreate,
             PermissionEnum::TimesheetUpdate,
             PermissionEnum::TimesheetSign,
+            PermissionEnum::MonthViewOwn,
+            PermissionEnum::MonthSubmitOwn,
+            PermissionEnum::CorrectionCreateOwn,
+            PermissionEnum::CorrectionSubmitOwn,
+            PermissionEnum::CorrectionWithdrawOwn,
             PermissionEnum::DiaryViewOwn,
             PermissionEnum::DiaryCreate,
             PermissionEnum::DiaryUpdate,
@@ -374,6 +397,11 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::TimesheetCreate,
             PermissionEnum::TimesheetUpdate,
             PermissionEnum::TimesheetSign,
+            PermissionEnum::MonthViewOwn,
+            PermissionEnum::MonthSubmitOwn,
+            PermissionEnum::CorrectionCreateOwn,
+            PermissionEnum::CorrectionSubmitOwn,
+            PermissionEnum::CorrectionWithdrawOwn,
             PermissionEnum::DiaryViewOwn,
             PermissionEnum::DiaryCreate,
             PermissionEnum::DiaryUpdate,

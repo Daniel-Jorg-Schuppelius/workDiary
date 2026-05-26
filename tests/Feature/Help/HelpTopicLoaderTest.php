@@ -32,7 +32,7 @@ class HelpTopicLoaderTest extends TestCase {
     }
 
     public function test_loader_parses_front_matter_and_body(): void {
-        File::put($this->tmpRoot . '/de/sample.start.md', <<<MD
+        File::put($this->tmpRoot . '/de/sample.start.md', <<<'MD'
 ---
 title: "Beispiel-Hilfe"
 version: 2

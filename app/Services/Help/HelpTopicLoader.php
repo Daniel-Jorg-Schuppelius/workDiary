@@ -209,6 +209,9 @@ class HelpTopicLoader {
 
             // Listen-Element (führendes "-" mit Einrückung)
             if (preg_match('/^\s+-\s*(.+?)\s*$/', $line, $m) && $currentListKey !== null) {
+                if (! isset($result[$currentListKey]) || ! is_array($result[$currentListKey])) {
+                    $result[$currentListKey] = [];
+                }
                 $result[$currentListKey][] = $this->unquote($m[1]);
                 continue;
             }

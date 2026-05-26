@@ -10,8 +10,8 @@
 
 namespace Tests\Feature\Diagnostics;
 
-use App\Models\AuditLog;
-use App\Services\Diagnostics\{DiagnosticsService, DiagnosticStatus};
+use App\Models\{AuditLog, BackupHeartbeat};
+use App\Services\Diagnostics\{DiagnosticStatus, DiagnosticsService};
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -87,26 +87,52 @@ class DiagnosticsServiceTest extends TestCase {
         $this->assertSame('array', $section->metrics['driver']);
     }
 
-    public function test_backup_section_critical_when_no_backup_audit(): void {
+    public function test_collect_returns_all_sections_with_overall_worst_status(): void {
+        Cache::put(DiagnosticsService::SCHEDULER_HEARTBEAT_KEY, CarbonImmutable::now()->subMinutes(10)->toIso8601String());
+
+        $service = app(DiagnosticsService::class);
+        $report = $service->collect();
+
+        $codes = array_map(static fn($s) => $s->code, $report->sections);
+        $this->assertSame(['version', 'license', 'queue', 'scheduler', 'mail', 'storage', 'backup'], $codes);
+        $this->assertSame(DiagnosticStatus::Critical, $report->overallStatus());
+    }
+
+    public function test_backup_section_critical_when_no_heartbeat_and_no_audit(): void {
+        BackupHeartbeat::query()->delete();
         AuditLog::query()->where('event', 'like', 'backup.%')->delete();
 
         $service = app(DiagnosticsService::class);
         $section = $service->checkBackup();
 
         $this->assertSame(DiagnosticStatus::Critical, $section->status);
+        $this->assertNull($section->metrics['last_backup_at']);
     }
 
-    public function test_backup_section_warn_when_last_backup_older_than_26h(): void {
-        $row = AuditLog::query()->create([
-            'organization_id' => $this->organization->id,
-            'user_id' => null,
-            'event' => 'backup.completed',
-            'auditable_type' => \App\Models\Organization::class,
-            'auditable_id' => $this->organization->id,
-            'changes' => [],
+    public function test_backup_section_ok_when_fresh_heartbeat_exists(): void {
+        BackupHeartbeat::query()->delete();
+        BackupHeartbeat::create([
+            'occurred_at' => CarbonImmutable::now()->subHours(2),
+            'size_bytes' => 12345,
+            'manifest_hash' => str_repeat('a', 64),
+            'source' => 'backup-host.example.org',
+            'ip' => '127.0.0.1',
         ]);
-        // created_at ist nicht fillable; explizit zurückdatieren.
-        $row->forceFill(['created_at' => CarbonImmutable::now()->subHours(30)])->saveQuietly();
+
+        $service = app(DiagnosticsService::class);
+        $section = $service->checkBackup();
+
+        $this->assertSame(DiagnosticStatus::Ok, $section->status);
+        $this->assertSame(12345, $section->metrics['size_bytes']);
+        $this->assertSame(str_repeat('a', 64), $section->metrics['manifest_hash']);
+        $this->assertSame('backup-host.example.org', $section->metrics['source']);
+    }
+
+    public function test_backup_section_warn_when_heartbeat_older_than_warn_threshold(): void {
+        BackupHeartbeat::query()->delete();
+        BackupHeartbeat::create([
+            'occurred_at' => CarbonImmutable::now()->subHours(30),
+        ]);
 
         $service = app(DiagnosticsService::class);
         $section = $service->checkBackup();
@@ -114,7 +140,22 @@ class DiagnosticsServiceTest extends TestCase {
         $this->assertSame(DiagnosticStatus::Warn, $section->status);
     }
 
-    public function test_backup_section_ok_when_recent_backup_exists(): void {
+    public function test_backup_section_critical_when_heartbeat_older_than_critical_threshold(): void {
+        BackupHeartbeat::query()->delete();
+        BackupHeartbeat::create([
+            'occurred_at' => CarbonImmutable::now()->subHours(80),
+        ]);
+
+        $service = app(DiagnosticsService::class);
+        $section = $service->checkBackup();
+
+        $this->assertSame(DiagnosticStatus::Critical, $section->status);
+    }
+
+    public function test_backup_section_falls_back_to_audit_log_when_no_heartbeat(): void {
+        BackupHeartbeat::query()->delete();
+        AuditLog::query()->where('event', 'like', 'backup.%')->delete();
+
         $row = AuditLog::query()->create([
             'organization_id' => $this->organization->id,
             'user_id' => null,
@@ -129,16 +170,5 @@ class DiagnosticsServiceTest extends TestCase {
         $section = $service->checkBackup();
 
         $this->assertSame(DiagnosticStatus::Ok, $section->status);
-    }
-
-    public function test_collect_returns_all_sections_with_overall_worst_status(): void {
-        Cache::put(DiagnosticsService::SCHEDULER_HEARTBEAT_KEY, CarbonImmutable::now()->subMinutes(10)->toIso8601String());
-
-        $service = app(DiagnosticsService::class);
-        $report = $service->collect();
-
-        $codes = array_map(static fn($s) => $s->code, $report->sections);
-        $this->assertSame(['version', 'license', 'queue', 'scheduler', 'mail', 'storage', 'backup'], $codes);
-        $this->assertSame(DiagnosticStatus::Critical, $report->overallStatus());
     }
 }

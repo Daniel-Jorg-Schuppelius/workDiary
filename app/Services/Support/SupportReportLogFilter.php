@@ -85,7 +85,7 @@ class SupportReportLogFilter {
     private function redactIpv6(string $line): string {
         // IPv6: nur greifen, wenn mindestens ein Hex-Buchstabe a–f vorkommt,
         // sonst kollidiert die Regel mit Uhrzeit-Strings wie "09:00:00".
-        return (string) preg_replace_callback(
+        return preg_replace_callback(
             '/\b(?:[a-fA-F0-9]{1,4}:){2,7}[a-fA-F0-9]{1,4}\b/',
             static function (array $m): string {
                 return preg_match('/[a-fA-F]/', $m[0]) === 1 ? '<redacted:ipv6>' : $m[0];
@@ -98,7 +98,7 @@ class SupportReportLogFilter {
         // Telefonnummern: ausschließlich Sequenzen mit "+" Präfix.
         // Reine Ziffernblöcke und Datums-/Zeit-Strings ohne "+" werden nicht
         // redagiert — sonst kollidiert der Filter mit Log-Timestamps und IDs.
-        return (string) preg_replace_callback(
+        return preg_replace_callback(
             '/(?<![A-Za-z0-9])\+\d[\d \-\/]{6,18}\d(?![A-Za-z0-9])/',
             static function (array $m): string {
                 $digits = preg_replace('/\D+/', '', $m[0]);
@@ -109,7 +109,7 @@ class SupportReportLogFilter {
     }
 
     private function surrogateEntityIds(string $line): string {
-        return (string) preg_replace_callback(
+        return preg_replace_callback(
             '/\b(user|customer|project|organization|diary|protocol|asset)_(\d+)\b/i',
             function (array $m): string {
                 $kind = strtolower($m[1]);

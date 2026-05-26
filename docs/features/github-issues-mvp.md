@@ -92,16 +92,16 @@ Definition of Done:
 | --- | --- | --- | --- |
 | MVP-030 | Kernklassifikationen definieren | `mvp`, `reporting` | [024](./024-klassifikationen-tags-datenqualitaet.md) |
 | MVP-031 | Kategorien pro Organisation pflegbar machen | `mvp`, `tenant`, `reporting` | [024](./024-klassifikationen-tags-datenqualitaet.md) |
-| MVP-032 | Pflichtklassifikationen pro Auftragstyp ermöglichen | `mvp`, `reporting` | [024](./024-klassifikationen-tags-datenqualitaet.md), [042](./042-gewerke-branchenprofile.md) |
-| MVP-033 | Branchenprofil IT-Service als erstes Referenzprofil anlegen | `mvp`, `feature` | [042](./042-gewerke-branchenprofile.md) |
-| MVP-034 | Branchenprofil Handwerk/Service allgemein als zweites Referenzprofil anlegen | `mvp`, `feature` | [042](./042-gewerke-branchenprofile.md) |
-| MVP-035 | Asset-/Objekt-Stammdaten minimal modellieren | `mvp`, `feature` | [009](./009-inventar-dienstmittel-assets.md), [027](./027-produkt-objektakte-lebenszyklus.md) |
+| MVP-032 | Pflichtklassifikationen pro Auftragstyp, Gewerk und Objekt-/Raumtyp ermöglichen | `mvp`, `reporting` | [024](./024-klassifikationen-tags-datenqualitaet.md), [042](./042-gewerke-branchenprofile.md) |
+| MVP-033 | Branchenprofil IT-Service inkl. Raumbezug für Kundenrechner und Netzwerkkomponenten anlegen | `mvp`, `feature` | [042](./042-gewerke-branchenprofile.md) |
+| MVP-034 | Branchenprofile Facility Management und Gebäudereinigung als Referenzprofile anlegen | `mvp`, `feature` | [042](./042-gewerke-branchenprofile.md) |
+| MVP-035 | Asset-/Objekt-Stammdaten inkl. Gebäude, Bereich und Raum minimal modellieren | `mvp`, `feature` | [009](./009-inventar-dienstmittel-assets.md), [027](./027-produkt-objektakte-lebenszyklus.md) |
 | MVP-036 | Asset/Objekt mit Auftrag, Protokoll, Material und Anhang verknüpfen | `mvp`, `feature` | [009](./009-inventar-dienstmittel-assets.md), [027](./027-produkt-objektakte-lebenszyklus.md) |
 | MVP-037 | Objekt-Timeline anzeigen | `mvp`, `feature`, `ux` | [027](./027-produkt-objektakte-lebenszyklus.md), [023](./023-suche-timeline-fallakte.md) |
 | MVP-038 | Defekt-/gesperrt-Status sichtbar machen | `mvp`, `feature` | [009](./009-inventar-dienstmittel-assets.md) |
 | MVP-039 | Kundenanalyse für Aufwand, Nacharbeit und offene Punkte erstellen | `mvp`, `reporting` | [002](./002-auswertungen-entscheidungsgrundlagen.md) |
-| MVP-040 | Auftragstypanalyse für Plan/Ist, Durchschnittsdauer und Nacharbeit erstellen | `mvp`, `reporting` | [002](./002-auswertungen-entscheidungsgrundlagen.md), [014](./014-nachkalkulation-wirtschaftlichkeit.md) |
-| MVP-041 | Produkt-/Objektanalyse für wiederkehrende Fehlerarten und offene Punkte erstellen | `mvp`, `reporting` | [002](./002-auswertungen-entscheidungsgrundlagen.md), [027](./027-produkt-objektakte-lebenszyklus.md) |
+| MVP-040 | Auftragstyp- und Gewerkeanalyse für Plan/Ist, Durchschnittsdauer und Nacharbeit erstellen | `mvp`, `reporting` | [002](./002-auswertungen-entscheidungsgrundlagen.md), [014](./014-nachkalkulation-wirtschaftlichkeit.md) |
+| MVP-041 | Produkt-/Objekt-/Raumanalyse für Fehlerarten, Sonderreinigungen und offene Punkte erstellen | `mvp`, `reporting` | [002](./002-auswertungen-entscheidungsgrundlagen.md), [027](./027-produkt-objektakte-lebenszyklus.md) |
 | MVP-042 | Drill-down von Kennzahl zu Aufträgen sicherstellen | `mvp`, `reporting`, `ux` | [002](./002-auswertungen-entscheidungsgrundlagen.md) |
 | MVP-043 | CSV/PDF-Export für MVP-Reports definieren | `mvp`, `reporting` | [002](./002-auswertungen-entscheidungsgrundlagen.md) |
 
@@ -109,6 +109,8 @@ Definition of Done:
 
 - Auswertungen basieren auf strukturierten Kategorien.
 - Ein Objekt oder Dienstmittel hat eine Historie.
+- Gebäude, Bereiche und Räume können als fachlicher Kontext für Gewerke,
+  Assets, Protokolle und Sonderanforderungen genutzt werden.
 - Jede Kennzahl ist bis zum Auftrag nachvollziehbar.
 
 ## Phase 4 - Betrieb und Onboarding

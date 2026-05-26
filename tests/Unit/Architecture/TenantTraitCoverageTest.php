@@ -10,7 +10,7 @@
 
 namespace Tests\Unit\Architecture;
 
-use App\Models\{Classification, GeocodeCache, HelpTopic, HelpView, OpenIssueEvent, Organization, OrganizationAuditLog, PerDiemRate, ProcedureBackupProof, ProcedureRunEvent, ProcedureStepDef, ProcedureStepRun, ProcedureTemplateVersion, ProtocolEvent, ProtocolItem, ProtocolItemPhoto, ProtocolSignature, ProtocolSignatureToken, User, UserBookmark, UserDashboardWidget, UserFilterPreset, UserGroup};
+use App\Models\{BackupHeartbeat, Classification, GeocodeCache, HelpTopic, HelpView, ImportRunError, MonthClosureEvent, OpenIssueEvent, Organization, OrganizationAuditLog, PerDiemRate, PluginError, PluginState, ProcedureBackupProof, ProcedureRunEvent, ProcedureStepDef, ProcedureStepRun, ProcedureTemplateVersion, ProtocolEvent, ProtocolItem, ProtocolItemPhoto, ProtocolSignature, ProtocolSignatureToken, TimeCorrectionItem, TimeExportEvent, TimeExportLine, User, UserBookmark, UserDashboardWidget, UserFilterPreset, UserGroup};
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Model;
 use PHPUnit\Framework\TestCase;
@@ -56,6 +56,14 @@ class TenantTraitCoverageTest extends TestCase {
         ProcedureRunEvent::class,
         ProcedureBackupProof::class,
         Classification::class,
+        // Child-Entitäten von mandantengebundenen Aggregaten — Mandantengrenze
+        // wird transitiv über das Parent-Modell (TimeExport, TimeCorrection,
+        // MonthClosure, ImportRun) durchgesetzt; eigene organization_id wäre redundant.
+        TimeExportLine::class,
+        TimeExportEvent::class,
+        TimeCorrectionItem::class,
+        MonthClosureEvent::class,
+        ImportRunError::class,
         // Globale Hilfe-Inhalte (HelpTopic) und anonyme Hilfe-Telemetrie (HelpView,
         // nullable organization_id) gehören bewusst nicht zur Mandantengrenze.
         HelpTopic::class,
@@ -66,6 +74,15 @@ class TenantTraitCoverageTest extends TestCase {
         UserBookmark::class,
         UserDashboardWidget::class,
         UserFilterPreset::class,
+        // System-weiter Backup-Heartbeat (MVP-046 §5): externer Backup-Job postet
+        // ohne Tenant-Kontext, gehört bewusst nicht zur Mandantengrenze.
+        BackupHeartbeat::class,
+        // Plugin-Lifecycle (Installation/Schema/Health) und Plugin-Fehlerinbox sind
+        // systemweit (instance-wide) — Plugins werden global installiert, per-Mandanten-
+        // Aktivierung erfolgt über PluginSetting. PluginState/PluginError dienen Admin-
+        // Inbox & Auto-Disable und gehören bewusst nicht zur Mandantengrenze.
+        PluginState::class,
+        PluginError::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {

@@ -14,6 +14,7 @@ use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\{AuditLog, Customer, DiaryEntry, OpenIssue, Project, Protocol, User};
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\{Request, Response};
@@ -22,6 +23,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class CustomerDrilldownReportController extends Controller {
     use ResolvesGlobalDateRange;
+    use WritesReportCsv;
 
     public function openIssues(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
@@ -99,7 +101,14 @@ class CustomerDrilldownReportController extends Controller {
                 'escalated' => $escalatedOnly,
             ]);
 
-            return $this->exportOpenIssuesCsv($issues, $customerId, $from->toDateString(), $to->toDateString(), $escalatedOnly);
+            return $this->exportOpenIssuesCsv($issues, $customerId, $from->toDateString(), $to->toDateString(), $escalatedOnly, [
+                'from' => $from->toDateString(),
+                'to' => $to->toDateString(),
+                'customer_id' => $customerId,
+                'project_id' => $projectId,
+                'user_id' => $userId,
+                'escalated' => $escalatedOnly,
+            ]);
         }
 
         if ($request->query('export') === 'pdf') {
@@ -184,7 +193,13 @@ class CustomerDrilldownReportController extends Controller {
                 'user_id' => $userId,
             ]);
 
-            return $this->exportProtocolsCsv($protocols, $customerId, $from->toDateString(), $to->toDateString());
+            return $this->exportProtocolsCsv($protocols, $customerId, $from->toDateString(), $to->toDateString(), [
+                'from' => $from->toDateString(),
+                'to' => $to->toDateString(),
+                'customer_id' => $customerId,
+                'project_id' => $projectId,
+                'user_id' => $userId,
+            ]);
         }
 
         if ($request->query('export') === 'pdf') {
@@ -225,7 +240,8 @@ class CustomerDrilldownReportController extends Controller {
     }
 
     /**
-     * @param  array<int, OpenIssue>  $issues
+     * @param  array<int, OpenIssue>    $issues
+     * @param  array<string, mixed>      $filters
      */
     private function exportOpenIssuesCsv(
         array $issues,
@@ -233,6 +249,7 @@ class CustomerDrilldownReportController extends Controller {
         string $from,
         string $to,
         bool $escalatedOnly,
+        array $filters,
     ): Response {
         $filename = sprintf(
             'kunden-drilldown-open-issues-%d-%s-%s%s.csv',
@@ -256,7 +273,7 @@ class CustomerDrilldownReportController extends Controller {
             ];
         }
 
-        return $this->csvResponse($out, $filename);
+        return $this->csvWithMetadata($out, $filename, 'customer-drilldown-open-issues', $filters);
     }
 
     /**
@@ -288,13 +305,15 @@ class CustomerDrilldownReportController extends Controller {
     }
 
     /**
-     * @param  array<int, Protocol>  $protocols
+     * @param  array<int, Protocol>    $protocols
+     * @param  array<string, mixed>    $filters
      */
     private function exportProtocolsCsv(
         array $protocols,
         int $customerId,
         string $from,
         string $to,
+        array $filters,
     ): Response {
         $filename = sprintf('kunden-drilldown-defektprotokolle-%d-%s-%s.csv', $customerId, $from, $to);
 
@@ -313,7 +332,7 @@ class CustomerDrilldownReportController extends Controller {
             ];
         }
 
-        return $this->csvResponse($out, $filename);
+        return $this->csvWithMetadata($out, $filename, 'customer-drilldown-protocols', $filters);
     }
 
     /**
@@ -337,28 +356,6 @@ class CustomerDrilldownReportController extends Controller {
     }
 
     /**
-     * @param  list<list<string|int|float>>  $rows
-     */
-    private function csvResponse(array $rows, string $filename): Response {
-        $csv = '';
-        foreach ($rows as $row) {
-            $csv .= implode(';', array_map(static function ($value): string {
-                $string = (string) $value;
-                if (str_contains($string, ';') || str_contains($string, '"') || str_contains($string, "\n")) {
-                    $string = '"' . str_replace('"', '""', $string) . '"';
-                }
-
-                return $string;
-            }, $row)) . "\r\n";
-        }
-
-        return response("\xEF\xBB\xBF" . $csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
-    }
-
-    /**
      * @param  array<string, mixed>  $filters
      */
     private function auditExport(Request $request, string $reportCode, string $format, array $filters): void {
@@ -367,8 +364,7 @@ class CustomerDrilldownReportController extends Controller {
             return;
         }
 
-        $payload = json_encode($filters, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $filterHash = hash('sha256', $payload === false ? '' : $payload);
+        $filterHash = $this->reportFilterHashFull($filters);
 
         AuditLog::create([
             'organization_id' => $user->organization_id,

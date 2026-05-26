@@ -7,10 +7,11 @@
     /** @var \App\Services\Licensing\LicenseResult $license */
     /** @var string $badgeTone */
     /** @var list<array{code:string, label:string, used:int|null, max:int|null, percent:int|null, status:string}> $limits */
-    /** @var list<array{code:string, enabled:bool, source:string}> $features */
+    /** @var list<array{code:string, enabled:bool, source:string, overridden:bool}> $features */
     /** @var int|null $expiresIn */
     /** @var bool $isEnforced */
     /** @var bool $canInstall */
+    /** @var bool $canToggleFlag */
     $payload = $license->payload;
     $statusLabel = match ($license->status->value) {
         'valid' => __('Gültig'),
@@ -149,6 +150,9 @@
                                 <th>{{ __('Code') }}</th>
                                 <th>{{ __('Status') }}</th>
                                 <th>{{ __('Quelle') }}</th>
+                                @if ($canToggleFlag)
+                                    <th class="text-right">{{ __('Aktion') }}</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -159,10 +163,20 @@
                                         @if ($feature['enabled'])
                                             <span class="badge badge-success badge-outline">{{ __('Aktiv') }}</span>
                                         @else
-                                            <span class="badge badge-ghost">{{ __('Aus') }}</span>
+                                            <span class="badge badge-warning badge-outline">{{ __('Lokal deaktiviert') }}</span>
                                         @endif
                                     </td>
                                     <td class="text-xs text-base-content/60">{{ $feature['source'] }}</td>
+                                    @if ($canToggleFlag)
+                                        <td class="text-right">
+                                            <form method="POST" action="{{ route('admin.license.flags.toggle', ['flag' => $feature['code']]) }}" class="inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm {{ $feature['overridden'] ? 'btn-success' : 'btn-warning' }} btn-outline">
+                                                    {{ $feature['overridden'] ? __('Reaktivieren') : __('Deaktivieren') }}
+                                                </button>
+                                            </form>
+                                        </td>
+                                    @endif
                                 </tr>
                             @endforeach
                         </tbody>

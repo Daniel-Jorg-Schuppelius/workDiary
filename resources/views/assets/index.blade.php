@@ -95,7 +95,7 @@
                     <td class="text-base-content/70">{{ $asset->location_text ?: '—' }}</td>
                     <td class="text-base-content/70">{{ $asset->customer?->name ?: '—' }}</td>
                     <td>
-                        <span class="badge badge-sm {{ $isBlocked ? 'badge-error' : 'badge-outline' }}">{{ $statusOptions[$assetStatusValue] ?? $assetStatusValue }}</span>
+                        <span class="badge {{ $isBlocked ? 'badge-error' : 'badge-outline' }} badge-sm">{{ $statusOptions[$assetStatusValue] ?? $assetStatusValue }}</span>
                     </td>
                     <td class="text-right">
                         <x-icon-btn icon="open_in_new" :href="route('assets.show', $asset)" :label="__('Details')" />

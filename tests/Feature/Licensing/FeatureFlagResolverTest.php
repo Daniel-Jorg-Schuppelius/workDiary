@@ -80,6 +80,8 @@ class FeatureFlagResolverTest extends TestCase {
                 expiresAt: CarbonImmutable::now()->addYear(),
                 domain: null,
                 maxUsers: 50,
+                maxOrgs: null,
+                storageQuotaGb: null,
                 features: $features,
                 licenseId: 'test-' . bin2hex(random_bytes(4)),
             )

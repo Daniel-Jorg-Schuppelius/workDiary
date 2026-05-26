@@ -11,9 +11,10 @@ Status: Aktiv (MVP-035, Issue #35) • Quellen:
 ## 1. Zweck
 
 Minimal-Modell für **Assets / Objekte**: Geräte, Maschinen, Anlagen,
-Werkzeuge, Fahrzeuge, Produkte beim Kunden. Eine Entität für beide
-Sichten („Inventar" und „Objektakte"); Unterschiede durch
-`asset_class` und `ownership`-Flags.
+Werkzeuge, Fahrzeuge, Produkte beim Kunden, Gebäude, Bereiche und Räume.
+Eine Entität für beide Sichten („Inventar", „Objektakte" und
+„Facility-Kontext"); Unterschiede durch `asset_class` und
+`ownership`-Flags.
 
 ## 2. Tabelle `assets`
 
@@ -32,6 +33,9 @@ CREATE TABLE assets (
     customer_id         BIGINT NULL,                     -- Eigentümer Kunde (Objektakte)
     owned_by            VARCHAR(20) NOT NULL,            -- org|customer|external
     location_text       VARCHAR(255) NULL,
+    building            VARCHAR(180) NULL,
+    floor               VARCHAR(80) NULL,
+    room                VARCHAR(120) NULL,
     location_lat        DECIMAL(10,7) NULL,
     location_lng        DECIMAL(10,7) NULL,
     status              VARCHAR(20) NOT NULL,            -- siehe §4
@@ -66,6 +70,9 @@ durch `AssetNumberGenerator` (org-Sequence). `serial_no` ist
 | `vehicle`      | Fahrzeuge                               |
 | `installation` | Festinstallation (Baugruppe, Verteiler) |
 | `software`     | Software-Asset (Lizenz, SaaS)           |
+| `building`     | Gebäude oder Liegenschaft               |
+| `area`         | Etage, Bereich oder Außenfläche         |
+| `room`         | Raum, Raumgruppe oder Arbeitsplatz      |
 | `other`        | Sonstige                                |
 
 ## 4. `status`
@@ -89,11 +96,18 @@ decommissioned`; `customer_id` darf bei `owned_by = org` leer sein,
 `location_lat/_lng` ist optional. Wenn vorhanden, Anzeige in Karte
 auf Asset-Seite (Folge-MVP). `location_text` ist Freitext oder vom
 Kunden-Standort übernommen (Snapshot, nicht synchronisiert).
+`building`, `floor` und `room` ergänzen den Standort für Facility-
+Management, Gebäudereinigung und IT-Service. Beispiele:
+`Haus A`, `2. OG`, `R 214` oder `Empfang`.
+
+Für das MVP reicht diese flache Standortstruktur. Ein späterer Asset-Tree kann
+Gebäude, Etagen, Räume, Arbeitsplätze und Geräte hierarchisch modellieren.
 
 ## 7. Custom-Felder
 
 `custom` JSON nimmt profilspezifische Werte auf (z. B. IP-Adresse für
-IT-Asset, kW-Leistung für HVAC). Schema-Definition pro Branchenprofil
+IT-Asset, Reinigungsfrequenz oder Hygienehinweis für Raum, kW-Leistung für
+HVAC). Schema-Definition pro Branchenprofil
 (`asset_custom_schema` in
 `database/data/branchprofiles/*.php`). Validator
 `AssetCustomFieldsValidator` prüft Pflichtfelder.
@@ -124,8 +138,10 @@ Felder, die als `internalOnly` markiert sind.
 2. `AssetStatusMachine` mit Tests pro erlaubtem/unerlaubtem Übergang.
 3. `owned_by`-Konsistenz erzwungen.
 4. Custom-Felder-Schema pro Branchenprofil validiert.
-5. Customer-Portal-Filter §8 in Policy-Test gedeckt.
-6. Audit-Events §9.
+5. Gebäude/Bereich/Raum kann für Facility Management,
+   Gebäudereinigung und IT-Service gespeichert und gefiltert werden.
+6. Customer-Portal-Filter §8 in Policy-Test gedeckt.
+7. Audit-Events §9.
 
 ## 11. Out-of-scope (MVP-035)
 

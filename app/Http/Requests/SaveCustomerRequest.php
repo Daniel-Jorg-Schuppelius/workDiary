@@ -54,6 +54,10 @@ class SaveCustomerRequest extends FormRequest {
             'internal_rate' => ['nullable', 'numeric', 'min:0', 'max:99999.99'],
             'comment' => ['nullable', 'string', 'max:5000'],
             'invoice_text' => ['nullable', 'string', 'max:5000'],
+            'bank_account_holder' => ['nullable', 'string', 'max:200'],
+            'bank_iban' => ['nullable', 'string', 'max:64', 'regex:/^[A-Z]{2}[0-9A-Z\s]{10,40}$/i'],
+            'bank_bic' => ['nullable', 'string', 'max:32', 'regex:/^[A-Z0-9]{8}([A-Z0-9]{3})?$/i'],
+            'bank_name' => ['nullable', 'string', 'max:200'],
             'billable' => ['sometimes', 'boolean'],
             'contact_persons' => ['nullable', 'array', 'max:20'],
             'contact_persons.*.name' => ['nullable', 'string', 'max:200'],
@@ -92,11 +96,18 @@ class SaveCustomerRequest extends FormRequest {
             $persons = [];
         }
 
+        // IBAN/BIC werden ohne Leerzeichen und in Großbuchstaben gespeichert,
+        // damit Vergleiche und Anzeige konsistent bleiben.
+        $iban = (string) preg_replace('/\s+/', '', (string) $this->input('bank_iban', ''));
+        $bic = (string) preg_replace('/\s+/', '', (string) $this->input('bank_bic', ''));
+
         $this->merge([
             'billable' => $this->boolean('billable'),
             'currency' => $this->string('currency')->upper()->value() ?: 'EUR',
             'country' => $this->string('country')->upper()->value() ?: null,
             'contact_persons' => $persons,
+            'bank_iban' => $iban !== '' ? strtoupper($iban) : null,
+            'bank_bic' => $bic !== '' ? strtoupper($bic) : null,
         ]);
     }
 }

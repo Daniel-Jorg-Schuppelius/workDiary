@@ -10,8 +10,7 @@
 
 namespace App\Policies;
 
-use App\Models\User;
-use App\Models\UserFilterPreset;
+use App\Models\{User, UserFilterPreset};
 
 class UserFilterPresetPolicy {
     public function view(User $user, UserFilterPreset $preset): bool {

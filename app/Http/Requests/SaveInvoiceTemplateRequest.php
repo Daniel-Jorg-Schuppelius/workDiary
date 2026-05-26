@@ -20,7 +20,8 @@ class SaveInvoiceTemplateRequest extends FormRequest {
 
     /** @return array<string, mixed> */
     public function rules(): array {
-        $templateId = $this->route('template')?->id;
+        $template = $this->route('template');
+        $templateId = is_object($template) ? ($template->id ?? null) : null;
         $orgId = $this->user()?->organization_id;
 
         return [

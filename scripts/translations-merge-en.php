@@ -52,11 +52,11 @@ foreach (array_slice($argv, 1) as $mapPath) {
 $originalKeys = array_keys(json_decode((string) file_get_contents($enFile), true));
 $ordered = [];
 foreach ($originalKeys as $k) {
-    if (array_key_exists($k, $en)) $ordered[$k] = $en[$k];
+    if (array_key_exists($k, $en)) { $ordered[$k] = $en[$k]; }
 }
 $newKeys = array_diff(array_keys($en), $originalKeys);
 sort($newKeys, SORT_NATURAL | SORT_FLAG_CASE);
-foreach ($newKeys as $k) $ordered[$k] = $en[$k];
+foreach ($newKeys as $k) { $ordered[$k] = $en[$k]; }
 $en = $ordered;
 
 file_put_contents(

@@ -23,8 +23,7 @@ use Illuminate\View\View;
 class ClassificationController extends Controller {
     public function __construct(
         private readonly ClassificationManager $manager,
-    ) {
-    }
+    ) {}
 
     public function index(): View {
         Gate::authorize('viewAny', Classification::class);

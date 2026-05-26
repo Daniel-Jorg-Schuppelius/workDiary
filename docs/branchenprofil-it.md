@@ -14,6 +14,8 @@ Erstes Referenzprofil: stellt für neue Organisationen eine sofort
 nutzbare Konfiguration für IT-Service / Managed Services bereit
 (Auftragstypen, Klassifikationen, Prozedurvorlagen, Protokoll-
 Vorlagen, Pflichtregeln, Asset-Kategorien, Beispiel-Tags).
+Kundenrechner, Drucker, Netzwerkkomponenten und Arbeitsplätze können einem
+Gebäude, einer Etage, einem Raum oder einem Arbeitsplatz zugeordnet werden.
 
 ## 2. Profilbaustein-Struktur
 
@@ -105,6 +107,14 @@ Mit Code-Präfix `IT_`:
 `workstation`, `notebook`, `printer`, `vm`, `saasAccount`,
 `monitor`, `phone`.
 
+Raumbezug im MVP:
+
+- Arbeitsplatz- und Raumangabe an Kundenrechnern, Druckern und Netzwerkdosen.
+- Netzwerkkomponenten wie Switch, Access Point oder Firewall können Raum,
+  Technikbereich oder Rack textuell referenzieren.
+- Protokolle für Geräteübergabe, Wartung und Change zeigen den Raumbezug,
+  damit Vor-Ort-Arbeiten nachvollziehbar bleiben.
+
 ## 8. Tags-Seed
 
 `#after-hours`, `#oncall`, `#critical-customer`, `#prod`, `#dev`,
@@ -136,6 +146,8 @@ Mit Code-Präfix `IT_`:
 4. Nach Install sind im Org-Kontext die Klassifikationen, Pflicht-
    regeln, Vorlagen und Asset-Kategorien aktiv.
 5. Onboarding-Wizard (MVP-048) listet das Profil mit Beschreibung.
+6. IT-Assets können Gebäude, Etage, Raum oder Arbeitsplatz speichern und danach
+   gefiltert werden.
 
 ## 12. Out-of-scope (MVP-033)
 

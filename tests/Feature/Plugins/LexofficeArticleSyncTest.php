@@ -114,4 +114,132 @@ class LexofficeArticleSyncTest extends TestCase {
         ]);
         $this->assertNotNull(LexofficeArticle::where('external_id', 'lex-2')->first()?->archived_at);
     }
+
+    public function test_push_creates_new_article_via_post_when_external_id_missing(): void {
+        Http::fake([
+            'https://api.lexoffice.io/v1/articles' => Http::response([
+                'id' => 'lex-new', 'version' => 1,
+            ], 201),
+        ]);
+
+        $article = LexofficeArticle::create([
+            'organization_id' => $this->organization->id,
+            'external_id' => '',
+            'name' => 'Neu erstellt',
+            'type' => 'service',
+            'unit_name' => 'Stunde',
+            'net_unit_price' => '90.00',
+            'currency' => 'EUR',
+            'vat_rate' => '19.00',
+            'is_dirty' => true,
+        ]);
+
+        (new \App\Plugins\Lexoffice\LexofficeArticleSync('test-key'))->push($article);
+
+        $article->refresh();
+        $this->assertSame('lex-new', $article->external_id);
+        $this->assertSame(1, $article->external_version);
+        $this->assertFalse($article->is_dirty);
+        $this->assertNotNull($article->last_pushed_at);
+    }
+
+    public function test_push_updates_existing_article_via_put_with_version(): void {
+        Http::fake([
+            'https://api.lexoffice.io/v1/articles/lex-7' => Http::response([
+                'id' => 'lex-7', 'version' => 3,
+            ], 200),
+        ]);
+
+        $article = LexofficeArticle::create([
+            'organization_id' => $this->organization->id,
+            'external_id' => 'lex-7',
+            'external_version' => 2,
+            'name' => 'Geändert',
+            'type' => 'service',
+            'currency' => 'EUR',
+            'is_dirty' => true,
+        ]);
+
+        (new \App\Plugins\Lexoffice\LexofficeArticleSync('test-key'))->push($article);
+
+        $article->refresh();
+        $this->assertSame(3, $article->external_version);
+        $this->assertFalse($article->is_dirty);
+
+        Http::assertSent(function ($request) {
+            return $request->method() === 'PUT'
+                && $request->url() === 'https://api.lexoffice.io/v1/articles/lex-7'
+                && ($request->data()['version'] ?? null) === 2;
+        });
+    }
+
+    public function test_manual_review_records_article_conflict_when_dirty_and_remote_diverged(): void {
+        $local = LexofficeArticle::create([
+            'organization_id' => $this->organization->id,
+            'external_id' => 'lex-8',
+            'external_version' => 1,
+            'name' => 'Lokal geändert',
+            'type' => 'service',
+            'currency' => 'EUR',
+            'net_unit_price' => '100.00',
+            'is_dirty' => true,
+        ]);
+
+        Http::fake([
+            'https://api.lexoffice.io/v1/articles*' => Http::response([
+                'content' => [[
+                    'id' => 'lex-8', 'version' => 2, 'title' => 'Remote geändert',
+                    'type' => 'service', 'price' => ['netPrice' => 120.00, 'currency' => 'EUR'],
+                ]],
+                'totalPages' => 1,
+            ], 200),
+        ]);
+
+        $sync = (new \App\Plugins\Lexoffice\LexofficeArticleSync('test-key'))
+            ->withPolicy(\App\Plugins\Lexoffice\LexofficeMatchPolicy::ManualReview);
+
+        $result = $sync->sync($this->organization);
+
+        $this->assertSame(1, $result['conflicts']);
+        $local->refresh();
+        $this->assertSame('Lokal geändert', $local->name, 'Local must remain untouched in manual_review');
+        $this->assertDatabaseHas('pending_external_conflicts', [
+            'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
+            'conflict_type' => 'article',
+            'referenceable_id' => $local->id,
+            'external_id' => 'lex-8',
+            'status' => \App\Models\PendingExternalConflict::STATUS_OPEN,
+        ]);
+    }
+
+    public function test_local_wins_keeps_dirty_article_unchanged_but_updates_version(): void {
+        $local = LexofficeArticle::create([
+            'organization_id' => $this->organization->id,
+            'external_id' => 'lex-9',
+            'external_version' => 1,
+            'name' => 'Lokal-Version',
+            'type' => 'service',
+            'currency' => 'EUR',
+            'is_dirty' => true,
+        ]);
+
+        Http::fake([
+            'https://api.lexoffice.io/v1/articles*' => Http::response([
+                'content' => [[
+                    'id' => 'lex-9', 'version' => 5, 'title' => 'Remote-Version',
+                    'type' => 'service', 'price' => ['netPrice' => 50.0, 'currency' => 'EUR'],
+                ]],
+                'totalPages' => 1,
+            ], 200),
+        ]);
+
+        $sync = (new \App\Plugins\Lexoffice\LexofficeArticleSync('test-key'))
+            ->withPolicy(\App\Plugins\Lexoffice\LexofficeMatchPolicy::LocalWins);
+
+        $sync->sync($this->organization);
+
+        $local->refresh();
+        $this->assertSame('Lokal-Version', $local->name);
+        $this->assertSame(5, $local->external_version);
+    }
 }

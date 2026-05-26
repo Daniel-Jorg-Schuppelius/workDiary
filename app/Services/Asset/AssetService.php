@@ -19,8 +19,7 @@ class AssetService {
     public function __construct(
         private readonly AssetNumberGenerator $numbers,
         private readonly AssetStatusMachine $statusMachine,
-    ) {
-    }
+    ) {}
 
     /** @param array<string, mixed> $payload */
     public function create(User $actor, array $payload): Asset {
