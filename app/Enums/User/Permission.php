@@ -282,6 +282,14 @@ enum Permission: string implements HasLabel {
     case AssetUpdate = 'asset.update';
     case AssetDecommission = 'asset.decommission';
     case AssetTransferOwnership = 'asset.transferOwnership';
+        // ── ServiceTicket-Workflow (FM-Tickets mit SLA) ───────
+    case ServiceTicketView = 'serviceTicket.view';
+    case ServiceTicketCreate = 'serviceTicket.create';
+    case ServiceTicketUpdate = 'serviceTicket.update';
+    case ServiceTicketAssign = 'serviceTicket.assign';
+    case ServiceTicketClose = 'serviceTicket.close';
+    case SlaContractView = 'slaContract.view';
+    case SlaContractManage = 'slaContract.manage';
         // ── Customer-Portal (Rolle `kunde`) ─────────────────────
     case CustomerPortalAccess = 'customerPortal.access';
     case CustomerPortalDiaryView = 'customerPortal.diary.view';
@@ -327,6 +335,8 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'work-schedule.'),
             str_starts_with($this->value, 'flex.') => PermissionGroup::WorkingTime,
             str_starts_with($this->value, 'openIssue.') => PermissionGroup::OpenIssues,
+            str_starts_with($this->value, 'serviceTicket.') => PermissionGroup::OpenIssues,
+            str_starts_with($this->value, 'slaContract.') => PermissionGroup::Customers,
             str_starts_with($this->value, 'protocol.') => PermissionGroup::Protocols,
             str_starts_with($this->value, 'procedure.') => PermissionGroup::Procedures,
             str_starts_with($this->value, 'customerPortal.') => PermissionGroup::CustomerPortal,

@@ -10,7 +10,7 @@
 
 namespace App\Services\Classification;
 
-use App\Models\{AuditLog, Classification, ClassificationRequirement, MaintenancePlanTemplate, Organization, Tag, User};
+use App\Models\{AuditLog, Classification, ClassificationRequirement, MaintenancePlanTemplate, Organization, SlaContract, Tag, User};
 use Illuminate\Support\Arr;
 
 /**
@@ -29,18 +29,21 @@ class BranchProfileInstaller {
             'classification_requirements' => 0,
             'tags' => 0,
             'maintenance_plan_templates' => 0,
+            'sla_contracts' => 0,
         ];
         $updated = [
             'classifications' => 0,
             'classification_requirements' => 0,
             'tags' => 0,
             'maintenance_plan_templates' => 0,
+            'sla_contracts' => 0,
         ];
         $skipped = [
             'classifications' => 0,
             'classification_requirements' => 0,
             'tags' => 0,
             'maintenance_plan_templates' => 0,
+            'sla_contracts' => 0,
         ];
 
         /** @var array<string, list<array<string, mixed>>> $classificationDomains */
@@ -199,6 +202,47 @@ class BranchProfileInstaller {
                 'code' => $code,
             ], $payload));
             $created['maintenance_plan_templates']++;
+        }
+
+        /** @var list<array<string, mixed>> $slaContracts */
+        $slaContracts = (array) Arr::get($profile, 'sla_contracts_seed', []);
+        foreach ($slaContracts as $row) {
+            $code = (string) ($row['code'] ?? '');
+            if ($code === '') {
+                continue;
+            }
+
+            $existing = SlaContract::query()
+                ->where('organization_id', $organization->id)
+                ->where('code', $code)
+                ->first();
+
+            $payload = [
+                'customer_id' => $row['customer_id'] ?? null,
+                'label' => (string) ($row['label'] ?? $code),
+                'priority_table' => (array) ($row['priority_table'] ?? []),
+                'business_hours' => $row['business_hours'] ?? null,
+                'escalation_chain' => $row['escalation_chain'] ?? null,
+                'is_default' => (bool) ($row['is_default'] ?? false),
+                'is_active' => (bool) ($row['is_active'] ?? true),
+            ];
+
+            if ($existing instanceof SlaContract) {
+                if ($force) {
+                    $existing->update($payload);
+                    $updated['sla_contracts']++;
+                } else {
+                    $skipped['sla_contracts']++;
+                }
+
+                continue;
+            }
+
+            SlaContract::query()->create(array_merge([
+                'organization_id' => $organization->id,
+                'code' => $code,
+            ], $payload));
+            $created['sla_contracts']++;
         }
 
         AuditLog::query()->create([

@@ -1,0 +1,62 @@
+<?php
+/*
+ * Created on   : Wed May 27 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : SlaContract.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Models;
+
+use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
+
+/**
+ * @property int $id
+ * @property int $organization_id
+ * @property int|null $customer_id
+ * @property string $code
+ * @property string $label
+ * @property array<string, array{reaction_minutes:int, resolution_minutes:int}> $priority_table
+ * @property array<int, array{from:string, to:string}>|null $business_hours
+ * @property array<int, array{after_minutes:int, notify:string}>|null $escalation_chain
+ * @property bool $is_default
+ * @property bool $is_active
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
+class SlaContract extends Model {
+    use Auditable, BelongsToOrganization;
+    /** @use HasFactory<\Database\Factories\SlaContractFactory> */
+    use HasFactory;
+
+    protected $fillable = [
+        'organization_id',
+        'customer_id',
+        'code',
+        'label',
+        'priority_table',
+        'business_hours',
+        'escalation_chain',
+        'is_default',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'priority_table' => 'array',
+        'business_hours' => 'array',
+        'escalation_chain' => 'array',
+        'is_default' => 'bool',
+        'is_active' => 'bool',
+    ];
+
+    /** @return BelongsTo<Customer, $this> */
+    public function customer(): BelongsTo {
+        return $this->belongsTo(Customer::class);
+    }
+}

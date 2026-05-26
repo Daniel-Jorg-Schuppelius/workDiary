@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatControl
 use App\Http\Controllers\Asset\MaintenancePlanController;
 use App\Http\Controllers\Auth\{LoginController, TenantRegistrationController};
 use App\Http\Controllers\Reporting\{AbsencesReportController, AssetAnalysisReportController, AttendanceReportController, AuditActivityReportController, BillingReportController, CoverageReportController, CustomerAnalysisReportController, CustomerProjectReportController, EntryTypeAnalysisReportController, EntryTypeDrilldownReportController, ExpenseReportController, FleetReportController, MaterialReportController, MonthByUserTeamReportController, MyMonthReportController, MyYearReportController, OnCallReportController, OperationsReportController, ProjectDetailsReportController, ProjectInactiveReportController, QualificationReportController, SicknessReportController, WeekByUserReportController, WorkBalanceReportController};
+use App\Http\Controllers\ServiceTicket\ServiceTicketController;
 use App\Http\Controllers\UI\DateRangeController;
 use Illuminate\Support\Facades\Route;
 
@@ -487,6 +488,14 @@ Route::middleware('auth')->group(function () {
         Route::post('assets/{asset}/maintenance-plans/{plan}/complete', [MaintenancePlanController::class, 'complete'])->name('assets.maintenance-plans.complete');
         Route::post('assets/{asset}/maintenance-plans/{plan}/toggle', [MaintenancePlanController::class, 'toggle'])->name('assets.maintenance-plans.toggle');
         Route::delete('assets/{asset}/maintenance-plans/{plan}', [MaintenancePlanController::class, 'destroy'])->name('assets.maintenance-plans.destroy');
+
+        Route::get('service-tickets', [ServiceTicketController::class, 'index'])->name('service-tickets.index');
+        Route::get('service-tickets/create', [ServiceTicketController::class, 'create'])->name('service-tickets.create');
+        Route::post('service-tickets', [ServiceTicketController::class, 'store'])->name('service-tickets.store');
+        Route::get('service-tickets/{ticket}', [ServiceTicketController::class, 'show'])->name('service-tickets.show');
+        Route::post('service-tickets/{ticket}/transition', [ServiceTicketController::class, 'transition'])->name('service-tickets.transition');
+        Route::post('service-tickets/{ticket}/assign', [ServiceTicketController::class, 'assign'])->name('service-tickets.assign');
+        Route::delete('service-tickets/{ticket}', [ServiceTicketController::class, 'destroy'])->name('service-tickets.destroy');
 
         Route::get('vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
         Route::get('vehicles/create', [VehicleController::class, 'create'])->name('vehicles.create');

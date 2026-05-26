@@ -188,4 +188,24 @@ return [
         ['code' => 'FM-STREUWAGEN-12M', 'label' => 'Streuwagen Jahreswartung', 'category_code' => 'streuwagen', 'interval_kind' => 'months', 'interval_value' => 12, 'tolerance_days' => 14],
         ['code' => 'FM-FUNK-12M', 'label' => 'Funkgerät Funktionsprüfung', 'category_code' => 'funkgeraet', 'interval_kind' => 'months', 'interval_value' => 12, 'tolerance_days' => 7],
     ],
+    'sla_contracts_seed' => [
+        [
+            'code' => 'SLA-FM-STANDARD',
+            'label' => 'FM-Standard-SLA',
+            'is_default' => true,
+            'priority_table' => [
+                'low'    => ['reaction_minutes' => 1440, 'resolution_minutes' => 10080],
+                'normal' => ['reaction_minutes' => 480,  'resolution_minutes' => 2880],
+                'high'   => ['reaction_minutes' => 120,  'resolution_minutes' => 1440],
+                'urgent' => ['reaction_minutes' => 30,   'resolution_minutes' => 240],
+            ],
+            'business_hours' => [
+                ['weekday' => 1, 'from' => '07:00', 'to' => '17:00'],
+                ['weekday' => 2, 'from' => '07:00', 'to' => '17:00'],
+                ['weekday' => 3, 'from' => '07:00', 'to' => '17:00'],
+                ['weekday' => 4, 'from' => '07:00', 'to' => '17:00'],
+                ['weekday' => 5, 'from' => '07:00', 'to' => '16:00'],
+            ],
+        ],
+    ],
 ];

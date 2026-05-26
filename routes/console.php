@@ -59,3 +59,8 @@ Schedule::command('maintenance:scan-due')
     ->dailyAt('05:30')
     ->withoutOverlapping()
     ->onOneServer();
+
+Schedule::command('tickets:scan-sla-breaches')
+    ->everyFiveMinutes()
+    ->withoutOverlapping()
+    ->onOneServer();
