@@ -1,14 +1,19 @@
 @php
-    $action = route('assets.store');
+    /** @var \App\Models\Asset $asset */
+    $isEdit = $asset->exists;
+    $action = $isEdit ? route('assets.update', $asset) : route('assets.store');
+    $method = $isEdit ? 'PUT' : 'POST';
+    $title = $isEdit ? __('Asset bearbeiten') : __('Asset anlegen');
 @endphp
 
 <x-modal
-    :title="__('Asset anlegen')"
+    :title="$title"
     :eyebrow="__('Objekte & Assets')"
     icon="precision_manufacturing"
     tone="primary"
+    size="lg"
     :action="$action"
-    method="POST"
+    :method="$method"
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Speichern')">
 
@@ -17,5 +22,12 @@
         'classOptions' => $classOptions,
         'statusOptions' => $statusOptions,
         'customers' => $customers,
+        'categoryOptions' => $categoryOptions,
+        'prefill' => $prefill,
+        'sites' => $sites ?? collect(),
+        'buildings' => $buildings ?? collect(),
+        'floors' => $floors ?? collect(),
+        'rooms' => $rooms ?? collect(),
     ])
 </x-modal>
+

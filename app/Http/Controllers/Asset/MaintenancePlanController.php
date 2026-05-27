@@ -18,8 +18,7 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 
 class MaintenancePlanController extends Controller {
-    public function __construct(private readonly MaintenancePlanService $plans) {
-    }
+    public function __construct(private readonly MaintenancePlanService $plans) {}
 
     public function store(Asset $asset, SaveMaintenancePlanRequest $request): RedirectResponse {
         Gate::authorize('update', $asset);

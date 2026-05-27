@@ -10,7 +10,7 @@
 
 namespace App\Services\Classification;
 
-use App\Models\{AuditLog, Classification, ClassificationRequirement, CleaningProfile, MaintenancePlanTemplate, Organization, SlaContract, Tag, User};
+use App\Models\{AuditLog, Classification, ClassificationRequirement, CleaningProfile, MaintenancePlanTemplate, Organization, SlaContract, Software, Tag, User};
 use Illuminate\Support\Arr;
 
 /**
@@ -31,6 +31,7 @@ class BranchProfileInstaller {
             'maintenance_plan_templates' => 0,
             'sla_contracts' => 0,
             'cleaning_profiles' => 0,
+            'software' => 0,
         ];
         $updated = [
             'classifications' => 0,
@@ -39,6 +40,7 @@ class BranchProfileInstaller {
             'maintenance_plan_templates' => 0,
             'sla_contracts' => 0,
             'cleaning_profiles' => 0,
+            'software' => 0,
         ];
         $skipped = [
             'classifications' => 0,
@@ -47,6 +49,7 @@ class BranchProfileInstaller {
             'maintenance_plan_templates' => 0,
             'sla_contracts' => 0,
             'cleaning_profiles' => 0,
+            'software' => 0,
         ];
 
         /** @var array<string, list<array<string, mixed>>> $classificationDomains */
@@ -286,6 +289,56 @@ class BranchProfileInstaller {
                 'created_by' => $actor?->id,
             ], $payload));
             $created['cleaning_profiles']++;
+        }
+
+        /** @var list<array<string, mixed>> $softwareSeed */
+        $softwareSeed = (array) Arr::get($profile, 'software_seed', []);
+        foreach ($softwareSeed as $row) {
+            $name = trim((string) ($row['name'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+            $vendor = isset($row['vendor']) ? trim((string) $row['vendor']) : null;
+            $vendor = $vendor === '' ? null : $vendor;
+
+            $existing = Software::query()
+                ->where('organization_id', $organization->id)
+                ->where('name', $name)
+                ->where(function ($q) use ($vendor) {
+                    if ($vendor === null) {
+                        $q->whereNull('vendor');
+                    } else {
+                        $q->where('vendor', $vendor);
+                    }
+                })
+                ->first();
+
+            $payload = [
+                'vendor' => $vendor,
+                'kind' => (string) ($row['kind'] ?? 'application'),
+                'license_type' => isset($row['license_type']) ? (string) $row['license_type'] : null,
+                'default_version' => isset($row['default_version']) ? (string) $row['default_version'] : null,
+                'notes' => isset($row['notes']) ? (string) $row['notes'] : null,
+                'is_active' => (bool) ($row['is_active'] ?? true),
+            ];
+
+            if ($existing instanceof Software) {
+                if ($force) {
+                    $existing->update($payload);
+                    $updated['software']++;
+                } else {
+                    $skipped['software']++;
+                }
+
+                continue;
+            }
+
+            Software::query()->create(array_merge([
+                'organization_id' => $organization->id,
+                'name' => $name,
+                'created_by' => $actor?->id,
+            ], $payload));
+            $created['software']++;
         }
 
         AuditLog::query()->create([

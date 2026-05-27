@@ -73,6 +73,215 @@
             </div>
         </x-card>
 
+        @php
+            $room = $asset->room;
+            $floor = $room?->floorRelation;
+            $building = $floor?->building;
+            $site = $building?->site;
+            $os = $asset->operatingSystem;
+            $installations = $asset->softwareInstallations;
+            $canEditAsset = auth()->user()?->can('update', $asset) ?? false;
+        @endphp
+
+        <x-card>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="text-base font-semibold">{{ __('Verortung') }}</h2>
+                @if ($canEditAsset)
+                    <x-icon-btn icon="edit" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('assets.edit', $asset)"
+                                show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                @endif
+            </div>
+            @if ($room || $site || $building || $floor)
+                <div class="mt-3 grid gap-2 text-sm md:grid-cols-5">
+                    <div>
+                        <div class="text-xs text-base-content/60">{{ __('Kunde') }}</div>
+                        <div>{{ $asset->customer?->name ?: '—' }}</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-base-content/60">{{ __('Standort') }}</div>
+                        <div>{{ $site?->name ?: '—' }}</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-base-content/60">{{ __('Gebäude') }}</div>
+                        <div>{{ $building?->name ?: '—' }}</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-base-content/60">{{ __('Etage') }}</div>
+                        <div>{{ $floor?->label ?: '—' }}</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-base-content/60">{{ __('Raum') }}</div>
+                        <div>
+                            @if ($room)
+                                <a class="link link-hover" href="{{ route('rooms.show', $room) }}">{{ $room->name }}</a>
+                            @else
+                                —
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @else
+                <p class="mt-3 text-sm text-base-content/60">{{ __('Keinem Raum zugeordnet.') }}</p>
+            @endif
+        </x-card>
+
+        <x-card>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="text-base font-semibold">{{ __('Betriebssystem') }}</h2>
+                @if ($canEditAsset)
+                    <details class="dropdown dropdown-end">
+                        <summary class="btn btn-sm btn-primary">
+                            <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                            {{ $os ? __('OS ersetzen') : __('OS zuweisen') }}
+                        </summary>
+                        <form method="POST"
+                              action="{{ $os ? route('assets.software-installations.update', [$asset, $os]) : route('assets.software-installations.store', $asset) }}"
+                              class="dropdown-content z-10 mt-2 w-96 rounded-box border border-base-300 bg-base-100 p-3 shadow-lg space-y-2">
+                            @csrf
+                            @if ($os) @method('PUT') @endif
+                            <input type="hidden" name="is_operating_system" value="1" />
+                            @unless ($os)
+                                <label class="form-control">
+                                    <span class="label-text text-xs">{{ __('Software') }}</span>
+                                    <select name="software_id" required class="select select-sm select-bordered">
+                                        @foreach ($softwareCatalog->where('kind', \App\Enums\Software\SoftwareKind::OperatingSystem) as $sw)
+                                            <option value="{{ $sw->id }}">{{ $sw->name }}@if ($sw->vendor) — {{ $sw->vendor }}@endif</option>
+                                        @endforeach
+                                    </select>
+                                </label>
+                            @endunless
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="form-control">
+                                    <span class="label-text text-xs">{{ __('Version') }}</span>
+                                    <input type="text" name="version" value="{{ $os?->version }}" class="input input-sm input-bordered">
+                                </label>
+                                <label class="form-control">
+                                    <span class="label-text text-xs">{{ __('Sitze') }}</span>
+                                    <input type="number" name="seats" min="1" value="{{ $os?->seats }}" class="input input-sm input-bordered">
+                                </label>
+                                <label class="form-control col-span-2">
+                                    <span class="label-text text-xs">{{ __('Lizenzschlüssel') }}</span>
+                                    <input type="text" name="license_key" value="{{ $os?->license_key }}" class="input input-sm input-bordered">
+                                </label>
+                                <label class="form-control">
+                                    <span class="label-text text-xs">{{ __('Installiert am') }}</span>
+                                    <input type="date" name="installed_on" value="{{ $os?->installed_on?->format('Y-m-d') }}" class="input input-sm input-bordered">
+                                </label>
+                                <label class="form-control">
+                                    <span class="label-text text-xs">{{ __('Läuft ab') }}</span>
+                                    <input type="date" name="expires_on" value="{{ $os?->expires_on?->format('Y-m-d') }}" class="input input-sm input-bordered">
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-primary w-full">{{ __('Speichern') }}</button>
+                        </form>
+                    </details>
+                @endif
+            </div>
+            @if ($os)
+                <div class="mt-3 grid gap-2 text-sm md:grid-cols-4">
+                    <div><div class="text-xs text-base-content/60">{{ __('Software') }}</div><div class="font-medium">{{ $os->software?->name }}</div></div>
+                    <div><div class="text-xs text-base-content/60">{{ __('Version') }}</div><div>{{ $os->version ?: '—' }}</div></div>
+                    <div><div class="text-xs text-base-content/60">{{ __('Sitze') }}</div><div>{{ $os->seats ?: '—' }}</div></div>
+                    <div><div class="text-xs text-base-content/60">{{ __('Läuft ab') }}</div><div>{{ $os->expires_on?->isoFormat('L') ?: '—' }}</div></div>
+                </div>
+            @else
+                <p class="mt-3 text-sm text-base-content/60">{{ __('Kein Betriebssystem hinterlegt.') }}</p>
+            @endif
+        </x-card>
+
+        <x-card>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="text-base font-semibold">{{ __('Installierte Software') }} ({{ $installations->where('is_operating_system', false)->count() }})</h2>
+                @if ($canEditAsset)
+                    <details class="dropdown dropdown-end">
+                        <summary class="btn btn-sm btn-primary">
+                            <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                            {{ __('Software zuweisen') }}
+                        </summary>
+                        <form method="POST" action="{{ route('assets.software-installations.store', $asset) }}"
+                              class="dropdown-content z-10 mt-2 w-96 rounded-box border border-base-300 bg-base-100 p-3 shadow-lg space-y-2">
+                            @csrf
+                            <label class="form-control">
+                                <span class="label-text text-xs">{{ __('Software') }}</span>
+                                <select name="software_id" required class="select select-sm select-bordered">
+                                    @foreach ($softwareCatalog->where('kind', '!=', \App\Enums\Software\SoftwareKind::OperatingSystem) as $sw)
+                                        <option value="{{ $sw->id }}">{{ $sw->name }}@if ($sw->vendor) — {{ $sw->vendor }}@endif</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="form-control">
+                                    <span class="label-text text-xs">{{ __('Version') }}</span>
+                                    <input type="text" name="version" class="input input-sm input-bordered">
+                                </label>
+                                <label class="form-control">
+                                    <span class="label-text text-xs">{{ __('Sitze') }}</span>
+                                    <input type="number" name="seats" min="1" class="input input-sm input-bordered">
+                                </label>
+                                <label class="form-control col-span-2">
+                                    <span class="label-text text-xs">{{ __('Lizenzschlüssel') }}</span>
+                                    <input type="text" name="license_key" class="input input-sm input-bordered">
+                                </label>
+                                <label class="form-control">
+                                    <span class="label-text text-xs">{{ __('Installiert am') }}</span>
+                                    <input type="date" name="installed_on" class="input input-sm input-bordered">
+                                </label>
+                                <label class="form-control">
+                                    <span class="label-text text-xs">{{ __('Läuft ab') }}</span>
+                                    <input type="date" name="expires_on" class="input input-sm input-bordered">
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-primary w-full">{{ __('Hinzufügen') }}</button>
+                        </form>
+                    </details>
+                @endif
+            </div>
+            @php $apps = $installations->where('is_operating_system', false); @endphp
+            @if ($apps->isEmpty())
+                <p class="mt-3 text-sm text-base-content/60">{{ __('Noch keine Software hinterlegt.') }}</p>
+            @else
+                <div class="mt-3 overflow-x-auto">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>{{ __('Name') }}</th>
+                                <th>{{ __('Version') }}</th>
+                                <th>{{ __('Sitze') }}</th>
+                                <th>{{ __('Installiert') }}</th>
+                                <th>{{ __('Läuft ab') }}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($apps as $inst)
+                                <tr class="hover">
+                                    <td class="font-medium">{{ $inst->software?->name }}<div class="text-xs text-base-content/60">{{ $inst->software?->vendor }}</div></td>
+                                    <td>{{ $inst->version ?: '—' }}</td>
+                                    <td>{{ $inst->seats ?: '—' }}</td>
+                                    <td>{{ $inst->installed_on?->isoFormat('L') ?: '—' }}</td>
+                                    <td>{{ $inst->expires_on?->isoFormat('L') ?: '—' }}</td>
+                                    <td class="text-right">
+                                        @if ($canEditAsset)
+                                            <form method="POST" action="{{ route('assets.software-installations.destroy', [$asset, $inst]) }}"
+                                                  data-confirm-dialog
+                                                  data-confirm-message="{{ __('Diese Software wirklich entfernen?') }}"
+                                                  data-confirm-label="{{ __('Entfernen') }}"
+                                                  class="inline">
+                                                @csrf @method('DELETE')
+                                                <x-icon-btn icon="delete" tone="error" size="sm" type="submit" />
+                                            </form>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </x-card>
+
         <x-card>
             <div class="flex flex-wrap items-center justify-between gap-2">
                 <h2 class="text-base font-semibold">{{ __('Wartungspläne') }} ({{ $maintenancePlans->count() }})</h2>

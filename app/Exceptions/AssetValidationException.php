@@ -21,6 +21,8 @@ class AssetValidationException extends RuntimeException {
 
     public const CODE_DECOMMISSION_DATE_REQUIRED = 'asset.decommissionDateRequired';
 
+    public const CODE_ROOM_CUSTOMER_MISMATCH = 'asset.roomCustomerMismatch';
+
     public function __construct(
         public readonly string $errorCode,
         string $message = '',
@@ -42,5 +44,9 @@ class AssetValidationException extends RuntimeException {
 
     public static function decommissionDateRequired(): self {
         return new self(self::CODE_DECOMMISSION_DATE_REQUIRED, 'decommissioned_on ist bei Status decommissioned erforderlich');
+    }
+
+    public static function roomCustomerMismatch(): self {
+        return new self(self::CODE_ROOM_CUSTOMER_MISMATCH, 'Der gewählte Raum gehört nicht zum gewählten Kunden.');
     }
 }

@@ -82,6 +82,7 @@
                             <th>{{ __('Reinigung') }}</th>
                             <th class="text-end">{{ __('Kapazität') }}</th>
                             <th class="text-end">{{ __('NGF (m²)') }}</th>
+                            <th class="text-end">{{ __('Geräte') }}</th>
                             <th></th>
                         </tr>
                     </x-slot:head>
@@ -99,7 +100,14 @@
                             <td>{{ $r->cleaningProfile?->label ?? '—' }}</td>
                             <td class="text-end">{{ $r->capacity ?? '—' }}</td>
                             <td class="text-end">{{ $r->net_area_m2 !== null ? number_format((float) $r->net_area_m2, 1, ',', '.') : '—' }}</td>
+                            <td class="text-end tabular-nums">{{ $r->assets_count ?? 0 }}</td>
                             <td class="text-right">
+                                @can('create', \App\Models\Asset::class)
+                                    <x-icon-btn icon="add" size="sm"
+                                                data-entry-modal-trigger
+                                                :href="route('assets.create', ['room' => $r->id])"
+                                                :label="__('Gerät zuordnen')" />
+                                @endcan
                                 <x-icon-btn icon="edit" size="sm"
                                             data-entry-modal-trigger
                                             :href="route('rooms.edit', $r)"

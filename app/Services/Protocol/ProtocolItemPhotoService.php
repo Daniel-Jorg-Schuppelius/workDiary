@@ -39,8 +39,7 @@ class ProtocolItemPhotoService {
         'image/heif',
     ];
 
-    public function __construct(private readonly ProtocolService $protocols) {
-    }
+    public function __construct(private readonly ProtocolService $protocols) {}
 
     /**
      * Bequemer Upload-Pfad: legt ein {@see Attachment} an und verbindet es

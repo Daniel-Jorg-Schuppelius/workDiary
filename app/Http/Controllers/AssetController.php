@@ -13,7 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\Asset\{AssetClass, AssetOwnership, AssetStatus};
 use App\Exceptions\AssetValidationException;
 use App\Http\Requests\SaveAssetRequest;
-use App\Models\{Asset, Attachment, Customer, DiaryEntry, MaintenancePlan, MaterialUsage, Protocol, User};
+use App\Models\{Asset, Attachment, Building, Customer, DiaryEntry, Floor, MaintenancePlan, MaterialUsage, Protocol, Room, Site, User};
 use App\Services\Asset\{AssetService, AssetStatusVisibilityService, AssetTimelineService};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
@@ -74,15 +74,23 @@ class AssetController extends Controller {
         ]);
     }
 
-    public function create(): View {
+    public function create(Request $request): View {
         Gate::authorize('create', Asset::class);
 
+        $prefill = $this->resolvePrefill($request);
+
         return view('assets._form_dialog', [
-            'asset' => new Asset(['status' => AssetStatus::Active->value]),
+            'asset' => new Asset([
+                'status' => AssetStatus::Active->value,
+                'customer_id' => $prefill['customer_id'],
+                'room_id' => $prefill['room_id'],
+            ]),
             'classOptions' => $this->assetClassOptions(),
             'statusOptions' => $this->assetStatusOptionsForCreate(),
             'customers' => $this->customerOptions(),
-        ]);
+            'categoryOptions' => $this->categoryOptions(),
+            'prefill' => $prefill,
+        ] + $this->facilityData());
     }
 
     public function store(SaveAssetRequest $request, AssetService $assetService): RedirectResponse {
@@ -109,6 +117,56 @@ class AssetController extends Controller {
         return redirect()->route('assets.index')->with('success', __('Asset angelegt.'));
     }
 
+    public function edit(Asset $asset): View {
+        Gate::authorize('update', $asset);
+
+        $room = $asset->room_id !== null
+            ? Room::query()->with('floorRelation.building.site')->find($asset->room_id)
+            : null;
+        $prefill = [
+            'customer_id' => $asset->customer_id,
+            'site_id' => $room?->floorRelation?->building?->site_id,
+            'building_id' => $room?->floorRelation?->building_id,
+            'floor_id' => $room?->floor_id,
+            'room_id' => $asset->room_id,
+        ];
+
+        return view('assets._form_dialog', [
+            'asset' => $asset,
+            'classOptions' => $this->assetClassOptions(),
+            'statusOptions' => $this->assetStatusOptions(),
+            'customers' => $this->customerOptions(),
+            'categoryOptions' => $this->categoryOptions(),
+            'prefill' => $prefill,
+        ] + $this->facilityData());
+    }
+
+    public function update(SaveAssetRequest $request, Asset $asset, AssetService $assetService): RedirectResponse {
+        Gate::authorize('update', $asset);
+        $user = $request->user();
+
+        if (! $user instanceof User) {
+            abort(403);
+        }
+
+        $payload = $request->validated();
+        $payload['owned_by'] = ($payload['customer_id'] ?? null) === null
+            ? AssetOwnership::Organization->value
+            : AssetOwnership::Customer->value;
+
+        try {
+            $assetService->update($asset, $user, $payload);
+        } catch (AssetValidationException $exception) {
+            return back()
+                ->withInput()
+                ->withErrors(['status' => __($exception->getMessage())]);
+        }
+
+        return redirect()
+            ->route('assets.show', $asset)
+            ->with('success', __('Asset aktualisiert.'));
+    }
+
     public function show(
         Asset $asset,
         Request $request,
@@ -122,7 +180,7 @@ class AssetController extends Controller {
             abort(403);
         }
 
-        $asset->load(['customer:id,name']);
+        $asset->load(['customer:id,name', 'room.floorRelation.building.site', 'softwareInstallations.software', 'operatingSystem.software']);
         $asset->loadCount(['diaryEntries', 'protocols', 'materialUsages', 'attachments']);
 
         $diaryEntries = $asset->diaryEntries()
@@ -190,6 +248,13 @@ class AssetController extends Controller {
             ->all();
         $canManageMaintenance = Gate::forUser($user)->allows('create', MaintenancePlan::class);
 
+        $orgId = (int) $user->organization_id;
+        $softwareCatalog = \App\Models\Software::query()
+            ->where('organization_id', $orgId)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'vendor', 'kind', 'default_version']);
+
         return view('assets.show', [
             'asset' => $asset,
             'classOptions' => $this->assetClassOptions(),
@@ -204,6 +269,7 @@ class AssetController extends Controller {
             'maintenancePlans' => $maintenancePlans,
             'intervalKindOptions' => $intervalKindOptions,
             'canManageMaintenance' => $canManageMaintenance,
+            'softwareCatalog' => $softwareCatalog,
             'visibleCounts' => [
                 'diary' => $diaryEntries->count(),
                 'protocols' => $protocols->count(),
@@ -304,6 +370,81 @@ class AssetController extends Controller {
             ->orderBy('name')
             ->pluck('name', 'id')
             ->all();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function categoryOptions(): array {
+        /** @var array<string, string> $pool */
+        $pool = (array) config('asset_categories', []);
+
+        return $pool;
+    }
+
+    /**
+     * Liefert die Sammlungen für den Facility-Picker.
+     *
+     * @return array{sites: \Illuminate\Support\Collection<int, Site>, buildings: \Illuminate\Support\Collection<int, Building>, floors: \Illuminate\Support\Collection<int, Floor>, rooms: \Illuminate\Support\Collection<int, Room>}
+     */
+    private function facilityData(): array {
+        return [
+            'sites' => Site::query()->orderBy('name')->get(['id', 'name', 'customer_id']),
+            'buildings' => Building::query()->orderBy('name')->get(['id', 'name', 'site_id']),
+            'floors' => Floor::query()->orderBy('level')->get(['id', 'label', 'level', 'building_id']),
+            'rooms' => Room::query()->orderBy('name')->get(['id', 'name', 'floor_id', 'customer_id']),
+        ];
+    }
+
+    /**
+     * Leitet die Picker-Vorbelegung (Customer/Site/Building/Floor/Room) aus den
+     * Query-Parametern ab. Akzeptiert ?room=, ?floor=, ?building=, ?site=
+     * oder ?customer=; höhere Ebenen werden aufgefüllt.
+     *
+     * @return array{customer_id: int|null, site_id: int|null, building_id: int|null, floor_id: int|null, room_id: int|null}
+     */
+    private function resolvePrefill(Request $request): array {
+        $roomId = $request->integer('room') ?: null;
+        $floorId = $request->integer('floor') ?: null;
+        $buildingId = $request->integer('building') ?: null;
+        $siteId = $request->integer('site') ?: null;
+        $customerId = $request->integer('customer') ?: null;
+
+        if ($roomId !== null) {
+            $room = Room::query()->with('floorRelation.building.site')->find($roomId);
+            if ($room !== null) {
+                $floorId ??= $room->floor_id;
+                $buildingId ??= $room->floorRelation?->building_id;
+                $siteId ??= $room->floorRelation?->building?->site_id;
+                $customerId ??= $room->customer_id ?? $room->floorRelation?->building?->site?->customer_id;
+            }
+        }
+        if ($floorId !== null) {
+            $floor = Floor::query()->with('building.site')->find($floorId);
+            if ($floor !== null) {
+                $buildingId ??= $floor->building_id;
+                $siteId ??= $floor->building?->site_id;
+                $customerId ??= $floor->building?->site?->customer_id;
+            }
+        }
+        if ($buildingId !== null && $siteId === null) {
+            $building = Building::query()->with('site')->find($buildingId);
+            if ($building !== null) {
+                $siteId = $building->site_id;
+                $customerId ??= $building->site?->customer_id;
+            }
+        }
+        if ($siteId !== null && $customerId === null) {
+            $customerId = Site::query()->whereKey($siteId)->value('customer_id');
+        }
+
+        return [
+            'customer_id' => $customerId,
+            'site_id' => $siteId,
+            'building_id' => $buildingId,
+            'floor_id' => $floorId,
+            'room_id' => $roomId,
+        ];
     }
 
     /**

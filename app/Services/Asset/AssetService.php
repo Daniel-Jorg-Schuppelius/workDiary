@@ -12,14 +12,15 @@ namespace App\Services\Asset;
 
 use App\Enums\Asset\{AssetHealth, AssetOwnership, AssetStatus};
 use App\Exceptions\AssetValidationException;
-use App\Models\{Asset, User};
+use App\Models\{Asset, Room, User};
 use Illuminate\Support\Carbon;
 
 class AssetService {
     public function __construct(
         private readonly AssetNumberGenerator $numbers,
         private readonly AssetStatusMachine $statusMachine,
-    ) {}
+    ) {
+    }
 
     /** @param array<string, mixed> $payload */
     public function create(User $actor, array $payload): Asset {
@@ -28,6 +29,10 @@ class AssetService {
 
         $this->validateOwnershipConsistency($ownedBy, $payload['customer_id'] ?? null);
         $this->validateDecommissionConsistency($status, $payload['decommissioned_on'] ?? null);
+        $this->validateRoomConsistency(
+            $payload['room_id'] ?? null,
+            $payload['customer_id'] ?? null,
+        );
 
         $asset = Asset::query()->create([
             'organization_id' => (int) $actor->organization_id,
@@ -40,6 +45,7 @@ class AssetService {
             'serial_no' => $payload['serial_no'] ?? null,
             'inventory_no' => $payload['inventory_no'] ?? null,
             'customer_id' => $payload['customer_id'] ?? null,
+            'room_id' => $payload['room_id'] ?? null,
             'owned_by' => $ownedBy->value,
             'location_text' => $payload['location_text'] ?? null,
             'location_lat' => $payload['location_lat'] ?? null,
@@ -76,14 +82,19 @@ class AssetService {
         $nextCustomer = array_key_exists('customer_id', $payload)
             ? ($payload['customer_id'] !== null ? (int) $payload['customer_id'] : null)
             : $asset->customer_id;
+        $nextRoom = array_key_exists('room_id', $payload)
+            ? ($payload['room_id'] !== null && $payload['room_id'] !== '' ? (int) $payload['room_id'] : null)
+            : $asset->room_id;
 
         $this->validateOwnershipConsistency($nextOwnedBy, $nextCustomer);
         $this->validateDecommissionConsistency($nextStatus, $payload['decommissioned_on'] ?? $asset->decommissioned_on);
+        $this->validateRoomConsistency($nextRoom, $nextCustomer);
 
         $asset->fill($payload);
         $asset->status = $nextStatus;
         $asset->owned_by = $nextOwnedBy;
         $asset->customer_id = $nextCustomer;
+        $asset->room_id = $nextRoom;
         $asset->save();
 
         if ($nextStatus !== $asset->getOriginal('status')) {
@@ -175,6 +186,25 @@ class AssetService {
     private function validateDecommissionConsistency(AssetStatus $status, mixed $decommissionDate): void {
         if ($status === AssetStatus::Decommissioned && empty($decommissionDate)) {
             throw AssetValidationException::decommissionDateRequired();
+        }
+    }
+
+    private function validateRoomConsistency(mixed $roomId, mixed $customerId): void {
+        if ($roomId === null || $roomId === '') {
+            return;
+        }
+
+        $room = Room::query()->find($roomId);
+        if (! $room instanceof Room) {
+            return;
+        }
+
+        if (
+            $room->customer_id !== null
+            && $customerId !== null && $customerId !== ''
+            && (int) $room->customer_id !== (int) $customerId
+        ) {
+            throw AssetValidationException::roomCustomerMismatch();
         }
     }
 

@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Classification;
 
-use App\Models\{AuditLog, Classification, ClassificationRequirement, Organization, Tag, User};
+use App\Models\{AuditLog, Classification, ClassificationRequirement, Organization, Software, Tag, User};
 use App\Services\Classification\BranchProfileInstaller;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -77,6 +77,24 @@ class BranchProfileInstallerTest extends TestCase {
 
         $classification->refresh();
         $this->assertSame('Incident', $classification->label);
+    }
+
+    public function test_install_it_profile_seeds_software_idempotent(): void {
+        $first = $this->installer->install($this->org, 'it', $this->actor);
+        $this->assertGreaterThan(0, $first['created']['software']);
+
+        $this->assertGreaterThan(0, Software::query()
+            ->where('organization_id', $this->org->id)
+            ->where('kind', 'operating_system')
+            ->count());
+        $this->assertGreaterThan(0, Software::query()
+            ->where('organization_id', $this->org->id)
+            ->where('kind', 'application')
+            ->count());
+
+        $second = $this->installer->install($this->org, 'it', $this->actor);
+        $this->assertSame(0, $second['created']['software']);
+        $this->assertGreaterThan(0, $second['skipped']['software']);
     }
 
     public function test_install_handwerk_profile_creates_expected_domain_entries(): void {

@@ -15,7 +15,7 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments};
 use Database\Factories\AssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne, MorphMany};
 use Illuminate\Support\Carbon;
 
 /**
@@ -128,5 +128,15 @@ class Asset extends Model {
     /** @return HasMany<MaintenancePlan, $this> */
     public function maintenancePlans(): HasMany {
         return $this->hasMany(MaintenancePlan::class)->orderBy('next_due_on');
+    }
+
+    /** @return HasMany<SoftwareInstallation, $this> */
+    public function softwareInstallations(): HasMany {
+        return $this->hasMany(SoftwareInstallation::class)->latest('id');
+    }
+
+    /** @return HasOne<SoftwareInstallation, $this> */
+    public function operatingSystem(): HasOne {
+        return $this->hasOne(SoftwareInstallation::class)->where('is_operating_system', true);
     }
 }

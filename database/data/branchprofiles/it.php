@@ -173,4 +173,17 @@ return [
         '#emergency-change',
         '#planned-change',
     ],
+    'software_seed' => [
+        // Betriebssysteme
+        ['name' => 'Windows 11 Pro', 'vendor' => 'Microsoft', 'kind' => 'operating_system', 'license_type' => 'oem', 'default_version' => '23H2'],
+        ['name' => 'Windows Server 2025', 'vendor' => 'Microsoft', 'kind' => 'operating_system', 'license_type' => 'perpetual', 'default_version' => '2025'],
+        ['name' => 'Ubuntu Server LTS', 'vendor' => 'Canonical', 'kind' => 'operating_system', 'license_type' => 'open_source', 'default_version' => '24.04'],
+        ['name' => 'macOS', 'vendor' => 'Apple', 'kind' => 'operating_system', 'license_type' => 'oem', 'default_version' => 'Sequoia'],
+        // Anwendungen
+        ['name' => 'Microsoft 365 Business Standard', 'vendor' => 'Microsoft', 'kind' => 'application', 'license_type' => 'subscription'],
+        ['name' => 'Adobe Acrobat Pro', 'vendor' => 'Adobe', 'kind' => 'application', 'license_type' => 'subscription'],
+        ['name' => 'Sophos Endpoint', 'vendor' => 'Sophos', 'kind' => 'application', 'license_type' => 'subscription'],
+        ['name' => 'Veeam Backup & Replication', 'vendor' => 'Veeam', 'kind' => 'application', 'license_type' => 'subscription'],
+        ['name' => 'Visual Studio Code', 'vendor' => 'Microsoft', 'kind' => 'application', 'license_type' => 'open_source'],
+    ],
 ];

@@ -62,6 +62,7 @@ class FloorController extends Controller {
         $floor->load(['building.site.customer']);
         $rooms = $floor->rooms()
             ->with(['customer', 'cleaningProfile'])
+            ->withCount('assets')
             ->orderBy('name')
             ->get();
 

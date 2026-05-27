@@ -21,8 +21,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class ServiceTicketController extends Controller {
-    public function __construct(private readonly ServiceTicketService $tickets) {
-    }
+    public function __construct(private readonly ServiceTicketService $tickets) {}
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', ServiceTicket::class);
