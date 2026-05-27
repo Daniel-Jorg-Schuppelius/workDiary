@@ -50,6 +50,16 @@ Schedule::command('plugin:healthcheck')
     ->withoutOverlapping()
     ->onOneServer();
 
+Schedule::command('remote:sync-sessions')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer();
+
+Schedule::command('toggl:import')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer();
+
 Schedule::command('workdiary:backup:check-restore')
     ->dailyAt('05:00')
     ->withoutOverlapping()

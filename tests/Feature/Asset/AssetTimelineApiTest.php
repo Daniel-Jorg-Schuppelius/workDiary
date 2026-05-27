@@ -35,6 +35,7 @@ class AssetTimelineApiTest extends TestCase {
             'customer_id' => null,
             'owned_by' => AssetOwnership::Organization->value,
         ]);
+        $asset->audit('asset.created', ['asset_no' => $asset->asset_no]);
 
         DiaryEntry::factory()->for($user)->create([
             'organization_id' => $this->organization->id,

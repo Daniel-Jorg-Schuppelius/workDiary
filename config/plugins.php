@@ -9,6 +9,8 @@
  */
 
 use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\RemoteSupport\RemoteSupportPlugin;
+use App\Plugins\Toggl\TogglPlugin;
 
 return [
     /*
@@ -24,6 +26,8 @@ return [
     */
     'classes' => [
         LexofficePlugin::class,
+        RemoteSupportPlugin::class,
+        TogglPlugin::class,
     ],
 
     /*
@@ -55,5 +59,51 @@ return [
         'match_policy' => env('LEXOFFICE_MATCH_POLICY', 'manual_review'),
         // Soll der Pull-Sync remote Kontakte ohne lokales Pendant lokal neu anlegen?
         'create_missing_local' => (bool) env('LEXOFFICE_CREATE_MISSING_LOCAL', false),
+    ],
+
+    /*
+    | Fernwartung (AnyDesk + TeamViewer). Verbindungs-Reports werden über die
+    | am Asset hinterlegte Geräte-ID dem Kunden-Standardprojekt als TimeEntry
+    | zugeordnet. ENV dient nur als Fallback für Konsolen-/Test-Kontexte.
+    */
+    'remote-support' => [
+        'enabled' => env('REMOTE_SUPPORT_ENABLED', false),
+        // Wie viele Tage rückwirkend pro Sync-Lauf abgefragt werden.
+        'sync_window_days' => (int) env('REMOTE_SUPPORT_SYNC_WINDOW_DAYS', 2),
+        // Importierte Sessions als abrechenbar markieren?
+        'default_billable' => (bool) env('REMOTE_SUPPORT_DEFAULT_BILLABLE', true),
+        // Benutzer, dem importierte Zeiten zugeordnet werden (sonst Org-Owner / erster Benutzer).
+        'default_user_id' => env('REMOTE_SUPPORT_DEFAULT_USER_ID'),
+
+        'anydesk' => [
+            'enabled' => env('ANYDESK_ENABLED', false),
+            'license_id' => env('ANYDESK_LICENSE_ID'),
+            'api_key' => env('ANYDESK_API_KEY'),
+            'base_url' => env('ANYDESK_BASE_URL', 'https://v1.api.anydesk.com'),
+        ],
+        'teamviewer' => [
+            'enabled' => env('TEAMVIEWER_ENABLED', false),
+            'api_key' => env('TEAMVIEWER_API_KEY'),
+            'base_url' => env('TEAMVIEWER_BASE_URL', 'https://webapi.teamviewer.com/api/v1'),
+        ],
+    ],
+
+    /*
+    | Toggl Track. Importiert Projekt-/Zeitdaten per API (v9) oder Detailed-Report-CSV.
+    | Toggl-Clients werden auf Kunden, Toggl-Projekte auf Projekte gematcht; nicht
+    | Zuordenbares landet in der Toggl-Inbox. ENV dient nur als Fallback.
+    */
+    'toggl' => [
+        'enabled' => env('TOGGL_ENABLED', false),
+        'api_token' => env('TOGGL_API_TOKEN'),
+        'base_url' => env('TOGGL_BASE_URL', 'https://api.track.toggl.com/api/v9'),
+        // Optionaler Workspace-Filter; leer = alle Workspaces des Tokens.
+        'workspace_id' => env('TOGGL_WORKSPACE_ID'),
+        // Wie viele Tage rückwirkend pro API-Lauf abgefragt werden.
+        'sync_window_days' => (int) env('TOGGL_SYNC_WINDOW_DAYS', 30),
+        // Wenn false, werden importierte Zeiten nie als abrechenbar markiert.
+        'default_billable' => (bool) env('TOGGL_DEFAULT_BILLABLE', true),
+        // Benutzer, dem importierte Zeiten zugeordnet werden (sonst Org-Owner / erster Benutzer).
+        'default_user_id' => env('TOGGL_DEFAULT_USER_ID'),
     ],
 ];

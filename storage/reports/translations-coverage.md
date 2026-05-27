@@ -1,10 +1,10 @@
 # Translations Coverage Report
 
-Generated: 2026-05-27T09:35:09+00:00
+Generated: 2026-05-27T16:42:45+00:00
 
 ## A — Used translation keys NOT defined in catalogs
 
-Missing: **412**
+Missing: **557**
 
 ### `(gelöscht)`
 - app/Plugins/Lexoffice/Resources/views/conflicts/index.blade.php:53
@@ -12,17 +12,26 @@ Missing: **412**
 ### `(unverändert — leer lassen)`
 - resources/views/admin/plugins/_field.blade.php:12
 
+### `0 = Erdgeschoss, negativ = Untergeschoss.`
+- resources/views/floors/_form_body.blade.php:26
+
+### `:count Verbindung(en) verworfen.`
+- app/Plugins/RemoteSupport/Http/Controllers/RemoteSupportPendingController.php:114
+
+### `:created neue, :skipped vorhandene, :unmatched ohne Gerät.`
+- app/Plugins/RemoteSupport/Http/Controllers/RemoteSupportAssetController.php:69
+
 ### `:entity — :file`
 - resources/views/admin/imports/show.blade.php:7
 
 ### `:plugin · :phase · :time`
 - resources/views/admin/plugin-errors/show.blade.php:7
 
-### `API-Basis-URL`
-- app/Plugins/Lexoffice/LexofficePlugin.php:123
-
 ### `API-Key`
 - app/Plugins/Lexoffice/LexofficePlugin.php:122
+
+### `API-Passwort der AnyDesk-Lizenz (Request-Signierung).`
+- app/Plugins/RemoteSupport/RemoteSupportPlugin.php:93
 
 ### `Abgenommen`
 - app/Enums/ServiceTicket/ServiceTicketStatus.php:30
@@ -36,8 +45,14 @@ Missing: **412**
 ### `Ablesezeitpunkt`
 - resources/views/meter-readings/create.blade.php:37
 
+### `Abonnement`
+- app/Enums/Software/SoftwareLicenseType.php:25
+
 ### `Abweichende Felder`
 - app/Plugins/Lexoffice/Resources/views/conflicts/index.blade.php:37
+
+### `Adresse & Lage`
+- resources/views/sites/show.blade.php:32
 
 ### `Akteur`
 - resources/views/admin/support/access-audit/index.blade.php:42
@@ -63,6 +78,9 @@ Missing: **412**
 
 ### `Aktuellen Monat öffnen`
 - resources/views/time-approval/month/index.blade.php:11
+
+### `Alle Arten`
+- resources/views/software/index.blade.php:29
 
 ### `Alle Assets`
 - app/Http/Controllers/Reporting/AssetDrilldownReportController.php:189
@@ -108,6 +126,9 @@ Missing: **412**
 - resources/views/admin/time-approval/correction/show.blade.php:35
 - app/Enums/TimeApproval/TimeCorrectionStatus.php:35
 
+### `Anlegen & zuordnen`
+- app/Plugins/RemoteSupport/Resources/views/pending/index.blade.php:87
+
 ### `Antrag abgelehnt.`
 - app/Http/Controllers/Admin/TimeCorrectionInboxController.php:96
 
@@ -137,6 +158,24 @@ Missing: **412**
 - resources/views/admin/time-approval/correction/show.blade.php:25
 - resources/views/time-approval/correction/show.blade.php:25
 
+### `Anwendung`
+- app/Enums/Software/SoftwareKind.php:24
+
+### `AnyDesk API-Basis-URL`
+- app/Plugins/RemoteSupport/RemoteSupportPlugin.php:94
+
+### `AnyDesk API-Passwort`
+- app/Plugins/RemoteSupport/RemoteSupportPlugin.php:93
+
+### `AnyDesk Lizenz-ID`
+- app/Plugins/RemoteSupport/RemoteSupportPlugin.php:92
+
+### `AnyDesk aktiv`
+- app/Plugins/RemoteSupport/RemoteSupportPlugin.php:91
+
+### `Art & Lizenz`
+- resources/views/software/_form_body.blade.php:25
+
 ### `Asset (Schlüssel)`
 - resources/views/key-handovers/create.blade.php:30
 
@@ -151,6 +190,12 @@ Missing: **412**
 
 ### `Asset / Zähler`
 - resources/views/meter-readings/index.blade.php:33
+
+### `Asset aktualisiert.`
+- app/Http/Controllers/AssetController.php:167
+
+### `Asset bearbeiten`
+- resources/views/assets/_form_dialog.blade.php:6
 
 ### `Asset-ID (optional)`
 - resources/views/service-tickets/create.blade.php:57
@@ -173,6 +218,13 @@ Missing: **412**
 ### `Außenfläche`
 - app/Enums/Facility/RoomUsageType.php:41
 
+### `BGF (m²)`
+- resources/views/sites/show.blade.php:29
+- resources/views/sites/show.blade.php:88
+- resources/views/floors/show.blade.php:51
+- resources/views/buildings/show.blade.php:33
+- resources/views/buildings/show.blade.php:79
+
 ### `Bank`
 - resources/views/admin/branding/edit.blade.php:109
 - resources/views/customers/_form_dialog.blade.php:185
@@ -182,6 +234,12 @@ Missing: **412**
 ### `Bankverbindung`
 - resources/views/customers/_form_dialog.blade.php:162
 - resources/views/customers/show.blade.php:137
+
+### `Baujahr`
+- resources/views/sites/show.blade.php:87
+- resources/views/buildings/index.blade.php:26
+- resources/views/buildings/_form_body.blade.php:45
+- resources/views/buildings/show.blade.php:47
 
 ### `Bearbeiter`
 - resources/views/service-tickets/index.blade.php:44
@@ -207,14 +265,28 @@ Missing: **412**
 ### `Bericht (JSON)`
 - resources/views/admin/privacy/index.blade.php:58
 
+### `Bestehendem Gerät zuordnen`
+- app/Plugins/RemoteSupport/Resources/views/pending/index.blade.php:54
+
 ### `Betriebsstunden`
-- app/Http/Controllers/AssetController.php:187
+- app/Http/Controllers/AssetController.php:245
+
+### `Betriebssystem`
+- resources/views/assets/show.blade.php:136
+- app/Enums/Software/SoftwareKind.php:23
 
 ### `Bezugsdatum`
 - resources/views/time-approval/correction/create.blade.php:26
 
 ### `Boot`
 - resources/views/admin/plugin-errors/index.blade.php:23
+
+### `Breitengrad`
+- resources/views/sites/_form_body.blade.php:77
+
+### `Bruttogrundfläche (m²)`
+- resources/views/floors/_form_body.blade.php:36
+- resources/views/buildings/_form_body.blade.php:38
 
 ### `Büro`
 - app/Enums/Facility/RoomUsageType.php:30
@@ -259,6 +331,18 @@ Missing: **412**
 ### `Der Quell-Tag liegt in einem gesperrten Monat — bitte erst :action.`
 - app/Services/TimeApproval/TimeCorrectionService.php:176
 
+### `Der gewählte Raum gehört nicht zum gewählten Kunden.`
+- app/Http/Requests/SaveAssetRequest.php:76
+
+### `Diese AnyDesk-/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weise jede ID einem bestehenden Gerät zu oder lege ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht.`
+- app/Plugins/RemoteSupport/Resources/views/pending/index.blade.php:11
+
+### `Diese Software wirklich entfernen?`
+- resources/views/assets/show.blade.php:275
+
+### `Diese Verbindungen verwerfen? Sie werden nicht gebucht.`
+- app/Plugins/RemoteSupport/Resources/views/pending/index.blade.php:38
+
 ### `Dieses Feld ist erforderlich.`
 - app/Http/Controllers/Admin/PluginController.php:109
 
@@ -272,6 +356,9 @@ Missing: **412**
 
 ### `Ebene`
 - resources/views/reports/assets.blade.php:17
+- resources/views/floors/index.blade.php:24
+- resources/views/floors/_form_body.blade.php:21
+- resources/views/buildings/show.blade.php:77
 
 ### `Eigene Monate prüfen und einreichen.`
 - resources/views/time-approval/month/index.blade.php:7
@@ -317,7 +404,7 @@ Missing: **412**
 - resources/views/exports/show.blade.php:71
 
 ### `Erste Fälligkeit`
-- resources/views/assets/show.blade.php:114
+- resources/views/assets/show.blade.php:329
 
 ### `Erstellen Sie aus genehmigten Monaten einen Export für die Lohnabrechnung.`
 - resources/views/exports/index.blade.php:56
@@ -383,6 +470,27 @@ Missing: **412**
 ### `Feld`
 - resources/views/admin/imports/show.blade.php:115
 
+### `Fernwartung`
+- app/Plugins/RemoteSupport/Resources/views/_panel.blade.php:10
+
+### `Fernwartung ist nicht konfiguriert.`
+- app/Plugins/RemoteSupport/Http/Controllers/RemoteSupportAssetController.php:62
+
+### `Fernwartung – Inbox`
+- app/Plugins/RemoteSupport/Resources/views/pending/index.blade.php:3
+
+### `Fernwartung – unzugeordnete Verbindungen`
+- app/Plugins/RemoteSupport/Resources/views/pending/index.blade.php:2
+
+### `Fernwartungs-Einstellungen`
+- app/Plugins/RemoteSupport/RemoteSupportPlugin.php:76
+
+### `Fernwartungssitzung`
+- app/Plugins/RemoteSupport/RemoteSupportService.php:218
+
+### `Firmware`
+- app/Enums/Software/SoftwareKind.php:25
+
 ### `Format pro Nummernkreis (Präfix, Jahr, Padding, Reset) für :org festlegen.`
 - resources/views/admin/number-formats/index.blade.php:16
 
@@ -391,6 +499,38 @@ Missing: **412**
 
 ### `Für den gewählten Zeitraum existieren keine Monatsfreigaben.`
 - app/Services/TimeExport/TimeExportService.php:71
+
+### `Gebäude aktualisiert.`
+- app/Http/Controllers/BuildingController.php:94
+
+### `Gebäude aller Standorte verwalten.`
+- resources/views/buildings/index.blade.php:9
+
+### `Gebäude am Standort :site.`
+- resources/views/buildings/index.blade.php:8
+- resources/views/buildings/show.blade.php:10
+
+### `Gebäude angelegt.`
+- app/Http/Controllers/BuildingController.php:54
+
+### `Gebäude anlegen`
+- resources/views/sites/show.blade.php:74
+- resources/views/buildings/index.blade.php:14
+
+### `Gebäude bearbeiten`
+- resources/views/buildings/_form_dialog.blade.php:9
+
+### `Gebäude gelöscht.`
+- app/Http/Controllers/BuildingController.php:101
+
+### `Gebäude löschen`
+- resources/views/buildings/_form_dialog.blade.php:27
+
+### `Gebäude ohne Standortbindung.`
+- resources/views/buildings/show.blade.php:11
+
+### `Gebäude wirklich löschen?`
+- resources/views/buildings/_form_dialog.blade.php:24
 
 ### `Gemeldet am`
 - resources/views/service-tickets/show.blade.php:57
@@ -403,6 +543,76 @@ Missing: **412**
 
 ### `Genehmigte Monatsfreigaben in einen Lohnabrechnungs-Export zusammenfassen.`
 - resources/views/exports/create.blade.php:7
+
+### `Geo`
+- resources/views/sites/show.blade.php:46
+
+### `Geo-Koordinaten`
+- resources/views/sites/_form_body.blade.php:75
+
+### `Gerät zuordnen`
+- resources/views/floors/show.blade.php:109
+
+### `Gerät „:name" angelegt. `
+- app/Plugins/RemoteSupport/Http/Controllers/RemoteSupportPendingController.php:101
+
+### `Geräte`
+- resources/views/floors/show.blade.php:85
+
+### `Geräte-ID`
+- app/Plugins/RemoteSupport/Resources/views/_panel.blade.php:48
+
+### `Geräte-ID entfernt.`
+- app/Plugins/RemoteSupport/Http/Controllers/RemoteSupportAssetController.php:49
+
+### `Geräte-ID gespeichert.`
+- app/Plugins/RemoteSupport/Http/Controllers/RemoteSupportAssetController.php:40
+
+### `Geschoss`
+- resources/views/components/facility-picker.blade.php:126
+
+### `Geschoss :level im Gebäude :building.`
+- resources/views/floors/show.blade.php:10
+
+### `Geschoss aktualisiert.`
+- app/Http/Controllers/FloorController.php:96
+
+### `Geschoss angelegt.`
+- app/Http/Controllers/FloorController.php:56
+
+### `Geschoss anlegen`
+- resources/views/floors/index.blade.php:14
+- resources/views/buildings/show.blade.php:65
+
+### `Geschoss bearbeiten`
+- resources/views/floors/_form_dialog.blade.php:9
+
+### `Geschoss gelöscht.`
+- app/Http/Controllers/FloorController.php:103
+
+### `Geschoss löschen`
+- resources/views/floors/_form_dialog.blade.php:27
+
+### `Geschoss ohne Gebäudebindung.`
+- resources/views/floors/show.blade.php:11
+
+### `Geschoss wirklich löschen?`
+- resources/views/floors/_form_dialog.blade.php:24
+
+### `Geschosse`
+- resources/views/layouts/app.blade.php:607
+- resources/views/sites/show.blade.php:27
+- resources/views/sites/show.blade.php:89
+- resources/views/floors/index.blade.php:3
+- resources/views/floors/index.blade.php:4
+- resources/views/buildings/show.blade.php:30
+- resources/views/buildings/show.blade.php:60
+
+### `Geschosse aller Gebäude verwalten.`
+- resources/views/floors/index.blade.php:9
+
+### `Geschosse im Gebäude :building.`
+- resources/views/floors/index.blade.php:8
 
 ### `Geschätzter Wert`
 - resources/views/meter-readings/create.blade.php:60
@@ -434,7 +644,10 @@ Missing: **412**
 - resources/views/admin/plugins/index.blade.php:160
 
 ### `Hersteller`
+- resources/views/software/index.blade.php:43
+- resources/views/software/_form_body.blade.php:16
 - resources/views/reports/assets.blade.php:43
+- resources/views/assets/_form_body.blade.php:55
 
 ### `Herunterladen`
 - resources/views/exports/index.blade.php:96
@@ -469,6 +682,9 @@ Missing: **412**
 ### `Import wurde verworfen.`
 - app/Http/Controllers/Admin/ImportController.php:153
 
+### `Importierte Sitzungen abrechenbar`
+- app/Plugins/RemoteSupport/RemoteSupportPlugin.php:88
+
 ### `In Vorbereitung`
 - app/Enums/TimeExport/TimeExportStatus.php:31
 
@@ -478,6 +694,22 @@ Missing: **412**
 
 ### `Inbox für Plugin-Fehler aus Boot, Runtime und Healthchecks.`
 - resources/views/admin/plugin-errors/index.blade.php:7
+
+### `Installation aktualisiert.`
+- app/Http/Controllers/SoftwareInstallationController.php:96
+
+### `Installationen`
+- resources/views/software/index.blade.php:46
+
+### `Installiert am`
+- resources/views/assets/show.blade.php:173
+- resources/views/assets/show.blade.php:234
+
+### `Installierte Software`
+- resources/views/assets/show.blade.php:202
+
+### `Inventarnummer`
+- resources/views/assets/_form_body.blade.php:50
 
 ### `Item :i: Feld :field fehlt.`
 - app/Services/TimeApproval/TimeCorrectionService.php:281
@@ -503,6 +735,18 @@ Missing: **412**
 ### `Jahres-Reset`
 - resources/views/admin/number-formats/index.blade.php:24
 
+### `Kapazität Σ`
+- resources/views/floors/show.blade.php:33
+
+### `Kauflizenz`
+- app/Enums/Software/SoftwareLicenseType.php:24
+
+### `Kein Betriebssystem hinterlegt.`
+- resources/views/assets/show.blade.php:194
+
+### `Kein Fernwartungs-Anbieter konfiguriert.`
+- app/Plugins/RemoteSupport/RemoteSupportPlugin.php:113
+
 ### `Kein SLA`
 - resources/views/service-tickets/show.blade.php:25
 
@@ -527,20 +771,31 @@ Missing: **412**
 ### `Keine Monate im Filter`
 - resources/views/admin/time-approval/month/index.blade.php:33
 
+### `Keine Organisation am Gerät hinterlegt.`
+- app/Plugins/RemoteSupport/Http/Controllers/RemoteSupportAssetController.php:57
+
 ### `Keine Plugins gefunden`
 - resources/views/admin/plugins/index.blade.php:49
 
 ### `Keine Summen verfügbar.`
 - resources/views/exports/show.blade.php:122
 
+### `Keine offenen Verbindungen. Alles zugeordnet.`
+- app/Plugins/RemoteSupport/Resources/views/pending/index.blade.php:17
+
 ### `Keine weiteren Aktionen verfügbar.`
 - resources/views/exports/show.blade.php:110
 
+### `Keinem Raum zugeordnet.`
+- resources/views/assets/show.blade.php:130
+
 ### `Kennzahlen`
 - resources/views/time-approval/month/show.blade.php:49
+- resources/views/rooms/_form_dialog.blade.php:95
+- resources/views/buildings/_form_body.blade.php:36
 
 ### `Kilometer`
-- app/Http/Controllers/AssetController.php:188
+- app/Http/Controllers/AssetController.php:246
 
 ### `Konfigurieren`
 - resources/views/admin/plugins/index.blade.php:120
@@ -586,6 +841,9 @@ Missing: **412**
 - resources/views/admin/time-approval/correction/index.blade.php:3
 - resources/views/admin/time-approval/correction/index.blade.php:4
 
+### `Kostenfrei`
+- app/Enums/Software/SoftwareLicenseType.php:28
+
 ### `Kostenstelle`
 - resources/views/exports/show.blade.php:155
 
@@ -601,11 +859,14 @@ Missing: **412**
 ### `Labor`
 - app/Enums/Facility/RoomUsageType.php:35
 
+### `Lage`
+- resources/views/floors/show.blade.php:36
+
 ### `Lager`
 - app/Enums/Facility/RoomUsageType.php:36
 
 ### `Letzte Ausführung`
-- resources/views/assets/show.blade.php:133
+- resources/views/assets/show.blade.php:348
 
 ### `Letzter Vorfall`
 - resources/views/reports/assets.blade.php:69
@@ -644,6 +905,15 @@ Missing: **412**
 ### `Lexoffice-Übertragung fehlgeschlagen: :msg`
 - app/Plugins/Lexoffice/Http/Controllers/LexofficeInvoiceController.php:53
 
+### `Liegenschaften`
+- resources/views/layouts/app.blade.php:602
+- resources/views/sites/_form_dialog.blade.php:10
+- resources/views/floors/_form_dialog.blade.php:10
+- resources/views/buildings/_form_dialog.blade.php:10
+
+### `Lizenztyp`
+- resources/views/software/_form_body.blade.php:35
+
 ### `Lohnart`
 - resources/views/exports/show.blade.php:127
 - resources/views/exports/show.blade.php:154
@@ -668,6 +938,15 @@ Missing: **412**
 
 ### `Lokaler Override entfernt.`
 - app/Http/Controllers/Admin/LicenseAdminController.php:107
+
+### `Längengrad`
+- resources/views/sites/_form_body.blade.php:84
+
+### `Läuft ab`
+- resources/views/assets/show.blade.php:177
+- resources/views/assets/show.blade.php:191
+- resources/views/assets/show.blade.php:238
+- resources/views/assets/show.blade.php:259
 
 ### `Lösung bis`
 - resources/views/service-tickets/index.blade.php:64
@@ -709,6 +988,7 @@ Missing: **412**
 
 ### `Modell`
 - resources/views/reports/assets.blade.php:62
+- resources/views/assets/_form_body.blade.php:60
 
 ### `Monat :period`
 - resources/views/time-approval/month/show.blade.php:3
@@ -749,6 +1029,16 @@ Missing: **412**
 - resources/views/time-approval/month/index.blade.php:3
 - resources/views/time-approval/month/index.blade.php:4
 
+### `NGF (m²)`
+- resources/views/floors/show.blade.php:32
+- resources/views/floors/show.blade.php:84
+
+### `NGF Räume (m²)`
+- resources/views/buildings/show.blade.php:34
+
+### `NGF Σ (m²)`
+- resources/views/buildings/show.blade.php:81
+
 ### `Nachher`
 - resources/views/admin/time-approval/correction/show.blade.php:64
 - resources/views/time-approval/correction/show.blade.php:59
@@ -760,11 +1050,26 @@ Missing: **412**
 - resources/views/admin/plugin-errors/index.blade.php:47
 - resources/views/admin/plugin-errors/show.blade.php:29
 
+### `Nettogrundfläche (m²)`
+- resources/views/rooms/_form_dialog.blade.php:117
+
 ### `Neu bearbeiten`
 - resources/views/time-approval/month/show.blade.php:34
 
 ### `Neu/Aktualisiert/Übersprungen/Fehler`
 - resources/views/admin/imports/index.blade.php:41
+
+### `Neuer Standort`
+- resources/views/sites/_form_dialog.blade.php:9
+
+### `Neues Gebäude`
+- resources/views/buildings/_form_dialog.blade.php:9
+
+### `Neues Gerät anlegen`
+- app/Plugins/RemoteSupport/Resources/views/pending/index.blade.php:71
+
+### `Neues Geschoss`
+- resources/views/floors/_form_dialog.blade.php:9
 
 ### `Neues Service- oder FM-Ticket erfassen.`
 - resources/views/service-tickets/create.blade.php:18
@@ -784,8 +1089,11 @@ Missing: **412**
 ### `Noch keine Monatsfreigaben`
 - resources/views/time-approval/month/index.blade.php:17
 
+### `Noch keine Software hinterlegt.`
+- resources/views/assets/show.blade.php:249
+
 ### `Noch keine Wartungspläne hinterlegt.`
-- resources/views/assets/show.blade.php:124
+- resources/views/assets/show.blade.php:339
 
 ### `Nummernkreis`
 - resources/views/admin/number-formats/index.blade.php:20
@@ -812,11 +1120,21 @@ Missing: **412**
 ### `Nur lizenzierte Features können lokal deaktiviert werden.`
 - app/Http/Controllers/Admin/LicenseAdminController.php:65
 
+### `Nutzung`
+- resources/views/rooms/_form_dialog.blade.php:72
+- resources/views/floors/show.blade.php:81
+
 ### `Nächste Fälligkeit`
-- resources/views/assets/show.blade.php:132
+- resources/views/assets/show.blade.php:347
 
 ### `Nächste Nummer`
 - resources/views/admin/number-formats/index.blade.php:26
+
+### `OS ersetzen`
+- resources/views/assets/show.blade.php:141
+
+### `OS zuweisen`
+- resources/views/assets/show.blade.php:141
 
 ### `Offene und entschiedene Korrekturanträge der Organisation.`
 - resources/views/admin/time-approval/correction/index.blade.php:7
@@ -827,6 +1145,9 @@ Missing: **412**
 
 ### `Ohne Produktgruppe`
 - app/Http/Controllers/Reporting/AssetAnalysisReportController.php:219
+
+### `Open Source`
+- app/Enums/Software/SoftwareLicenseType.php:29
 
 ### `Optionaler Vermerk`
 - resources/views/admin/time-approval/correction/show.blade.php:76
@@ -841,7 +1162,7 @@ Missing: **412**
 - resources/views/admin/time-approval/month/index.blade.php:34
 
 ### `Pausieren`
-- resources/views/assets/show.blade.php:180
+- resources/views/assets/show.blade.php:395
 
 ### `Periode`
 - resources/views/exports/index.blade.php:61
@@ -850,10 +1171,10 @@ Missing: **412**
 - resources/views/time-approval/month/index.blade.php:23
 
 ### `Plan anlegen`
-- resources/views/assets/show.blade.php:83
+- resources/views/assets/show.blade.php:298
 
 ### `Plan wirklich löschen?`
-- resources/views/assets/show.blade.php:185
+- resources/views/assets/show.blade.php:400
 
 ### `Plan/Ist Anwesenheit`
 - resources/views/reports/plan-ist/presence.blade.php:3
@@ -908,7 +1229,7 @@ Missing: **412**
 - resources/views/reports/assets.blade.php:20
 
 ### `Produktanalyse`
-- resources/views/layouts/app.blade.php:647
+- resources/views/layouts/app.blade.php:657
 - resources/views/reports/assets.blade.php:2
 - resources/views/reports/assets.blade.php:3
 
@@ -931,6 +1252,9 @@ Missing: **412**
 ### `Quell-Datensatz :id existiert nicht mehr.`
 - app/Services/TimeApproval/TimeCorrectionService.php:242
 
+### `Raum anlegen`
+- resources/views/floors/show.blade.php:68
+
 ### `Reaktion bis`
 - resources/views/service-tickets/show.blade.php:60
 
@@ -942,6 +1266,15 @@ Missing: **412**
 
 ### `Referenz (Ausweis-Nr., Vertrag …)`
 - resources/views/key-handovers/create.blade.php:53
+
+### `Reinigung`
+- resources/views/floors/show.blade.php:82
+
+### `Reinigung & Kennzahlen`
+- resources/views/rooms/_form_dialog.blade.php:95
+
+### `Reinigungsprofil`
+- resources/views/rooms/_form_dialog.blade.php:101
 
 ### `Reinraum`
 - app/Enums/Facility/RoomUsageType.php:32
@@ -1004,6 +1337,9 @@ Missing: **412**
 ### `Schlüsselvorgang erfasst.`
 - app/Http/Controllers/KeyHandover/KeyHandoverController.php:89
 
+### `Script-Token mit Connection-Report-Berechtigung.`
+- app/Plugins/RemoteSupport/RemoteSupportPlugin.php:97
+
 ### `Serverraum`
 - app/Enums/Facility/RoomUsageType.php:31
 
@@ -1020,8 +1356,48 @@ Missing: **412**
 ### `Setzen Sie den Statusfilter auf „Alle Status", um auch entschiedene Anträge zu sehen.`
 - resources/views/admin/time-approval/correction/index.blade.php:23
 
+### `Sitze`
+- resources/views/assets/show.blade.php:165
+- resources/views/assets/show.blade.php:190
+- resources/views/assets/show.blade.php:226
+- resources/views/assets/show.blade.php:257
+
 ### `Sobald Sie einen Monat öffnen, wird automatisch eine Freigabe als Entwurf angelegt.`
 - resources/views/time-approval/month/index.blade.php:18
+
+### `Software aktualisiert.`
+- app/Http/Controllers/SoftwareController.php:103
+
+### `Software angelegt.`
+- app/Http/Controllers/SoftwareController.php:83
+
+### `Software anlegen`
+- resources/views/software/index.blade.php:20
+- resources/views/software/_form_dialog.blade.php:9
+
+### `Software bearbeiten`
+- resources/views/software/_form_dialog.blade.php:9
+
+### `Software entfernt.`
+- app/Http/Controllers/SoftwareInstallationController.php:112
+
+### `Software gelöscht.`
+- app/Http/Controllers/SoftwareController.php:117
+
+### `Software hinzugefügt.`
+- app/Http/Controllers/SoftwareInstallationController.php:64
+
+### `Software wird noch genutzt und kann nicht gelöscht werden.`
+- app/Http/Controllers/SoftwareController.php:111
+
+### `Software wirklich löschen?`
+- resources/views/software/_form_dialog.blade.php:28
+
+### `Software zuweisen`
+- resources/views/assets/show.blade.php:207
+
+### `Software-Katalog (Betriebssysteme, Anwendungen, Lizenzen) verwalten.`
+- resources/views/software/index.blade.php:14
 
 ### `Soll-Arbeitszeit vs. tatsächlich gestempelte Anwesenheit.`
 - resources/views/reports/plan-ist/presence.blade.php:11
@@ -1032,6 +1408,9 @@ Missing: **412**
 ### `Speicherkontingent erreicht (:current/:max Bytes). Bitte Lizenz erweitern oder Speicher freigeben.`
 - app/Exceptions/LimitExceededException.php:42
 
+### `Speichert AnyDesk-/TeamViewer-IDs an Geräten und importiert Verbindungen als Zeiteinträge im Standardprojekt des Kunden.`
+- app/Plugins/RemoteSupport/RemoteSupportPlugin.php:50
+
 ### `Stacktrace`
 - resources/views/admin/plugin-errors/show.blade.php:51
 
@@ -1041,8 +1420,52 @@ Missing: **412**
 ### `Standard-USt %`
 - app/Plugins/Lexoffice/LexofficePlugin.php:126
 
+### `Standardversion`
+- resources/views/software/_form_body.blade.php:20
+
 ### `Standardwährung`
 - app/Plugins/Lexoffice/LexofficePlugin.php:124
+
+### `Standort (Freitext)`
+- resources/views/assets/_form_body.blade.php:70
+
+### `Standort aktualisiert.`
+- app/Http/Controllers/SiteController.php:110
+
+### `Standort angelegt.`
+- app/Http/Controllers/SiteController.php:54
+
+### `Standort anlegen`
+- resources/views/sites/index.blade.php:14
+
+### `Standort bearbeiten`
+- resources/views/sites/_form_dialog.blade.php:9
+
+### `Standort gelöscht.`
+- app/Http/Controllers/SiteController.php:117
+
+### `Standort löschen`
+- resources/views/sites/_form_dialog.blade.php:27
+
+### `Standort ohne Kundenbindung.`
+- resources/views/sites/show.blade.php:11
+
+### `Standort von :customer.`
+- resources/views/sites/show.blade.php:10
+
+### `Standort wirklich löschen?`
+- resources/views/sites/_form_dialog.blade.php:24
+
+### `Standorte`
+- resources/views/layouts/app.blade.php:605
+- resources/views/sites/index.blade.php:3
+- resources/views/sites/index.blade.php:4
+
+### `Standorte aller Kunden verwalten.`
+- resources/views/sites/index.blade.php:9
+
+### `Standorte für :customer.`
+- resources/views/sites/index.blade.php:8
 
 ### `Start P/I`
 - resources/views/reports/plan-ist/presence.blade.php:53
@@ -1082,6 +1505,15 @@ Missing: **412**
 ### `Target-Typ :type wird in MVP-017 nicht unterstützt.`
 - app/Services/TimeApproval/TimeCorrectionService.php:205
 
+### `TeamViewer API-Basis-URL`
+- app/Plugins/RemoteSupport/RemoteSupportPlugin.php:98
+
+### `TeamViewer Script-Token`
+- app/Plugins/RemoteSupport/RemoteSupportPlugin.php:97
+
+### `TeamViewer aktiv`
+- app/Plugins/RemoteSupport/RemoteSupportPlugin.php:96
+
 ### `Technikraum`
 - app/Enums/Facility/RoomUsageType.php:40
 
@@ -1093,7 +1525,7 @@ Missing: **412**
 - resources/views/service-tickets/show.blade.php:13
 
 ### `Ticket angelegt: :no`
-- app/Http/Controllers/ServiceTicket/ServiceTicketController.php:108
+- app/Http/Controllers/ServiceTicket/ServiceTicketController.php:107
 
 ### `Ticket anlegen`
 - resources/views/service-tickets/create.blade.php:12
@@ -1102,13 +1534,16 @@ Missing: **412**
 - resources/views/service-tickets/index.blade.php:21
 
 ### `Ticket gelöscht.`
-- app/Http/Controllers/ServiceTicket/ServiceTicketController.php:164
+- app/Http/Controllers/ServiceTicket/ServiceTicketController.php:163
 
 ### `Ticket-Status aktualisiert.`
-- app/Http/Controllers/ServiceTicket/ServiceTicketController.php:135
+- app/Http/Controllers/ServiceTicket/ServiceTicketController.php:134
 
 ### `Toleranz (Tage)`
-- resources/views/assets/show.blade.php:109
+- resources/views/assets/show.blade.php:324
+
+### `Treiber`
+- app/Enums/Software/SoftwareKind.php:26
 
 ### `Trenner nach Jahr`
 - resources/views/admin/number-formats/index.blade.php:59
@@ -1145,6 +1580,12 @@ Missing: **412**
 ### `User-ID`
 - resources/views/service-tickets/show.blade.php:96
 
+### `Verbindungen importieren`
+- app/Plugins/RemoteSupport/Resources/views/_panel.blade.php:23
+
+### `Verbindungen ohne zugeordnetes Gerät`
+- app/Plugins/RemoteSupport/Resources/views/pending/index.blade.php:9
+
 ### `Verbrauch`
 - resources/views/meter-readings/index.blade.php:35
 
@@ -1154,18 +1595,22 @@ Missing: **412**
 ### `Vermerk (optional)`
 - resources/views/exports/show.blade.php:87
 
+### `Verortung`
+- resources/views/rooms/_form_dialog.blade.php:83
+- resources/views/assets/_form_body.blade.php:75
+- resources/views/assets/show.blade.php:88
+
 ### `Version :ver`
 - resources/views/admin/plugins/_form_dialog.blade.php:26
 
 ### `Verwendungszweck`
 - resources/views/invoices/pdf.blade.php:123
 
-### `Verwerfen`
-- resources/views/admin/imports/show.blade.php:29
-- app/Plugins/Lexoffice/Resources/views/conflicts/index.blade.php:84
-
 ### `Verworfen`
 - app/Plugins/Lexoffice/Resources/views/conflicts/index.blade.php:20
+
+### `Volumenlizenz`
+- app/Enums/Software/SoftwareLicenseType.php:27
 
 ### `Vorgang erfassen`
 - resources/views/key-handovers/index.blade.php:21
@@ -1189,31 +1634,34 @@ Missing: **412**
 - app/Services/Asset/MaintenancePlanService.php:31
 
 ### `Wartung als erledigt vermerkt.`
-- app/Http/Controllers/Asset/MaintenancePlanController.php:69
+- app/Http/Controllers/Asset/MaintenancePlanController.php:68
 
 ### `Wartungsplan`
 - app/Enums/ServiceTicket/ServiceTicketSource.php:23
 
 ### `Wartungsplan aktualisiert.`
-- app/Http/Controllers/Asset/MaintenancePlanController.php:53
+- app/Http/Controllers/Asset/MaintenancePlanController.php:52
 
 ### `Wartungsplan angelegt.`
-- app/Http/Controllers/Asset/MaintenancePlanController.php:37
+- app/Http/Controllers/Asset/MaintenancePlanController.php:36
 
 ### `Wartungsplan gelöscht.`
-- app/Http/Controllers/Asset/MaintenancePlanController.php:102
+- app/Http/Controllers/Asset/MaintenancePlanController.php:101
 
 ### `Wartungsplan pausiert.`
-- app/Http/Controllers/Asset/MaintenancePlanController.php:83
+- app/Http/Controllers/Asset/MaintenancePlanController.php:82
 
 ### `Wartungsplan reaktiviert.`
-- app/Http/Controllers/Asset/MaintenancePlanController.php:86
+- app/Http/Controllers/Asset/MaintenancePlanController.php:85
 
 ### `Wartungspläne`
-- resources/views/assets/show.blade.php:78
+- resources/views/assets/show.blade.php:293
 
 ### `Wert`
-- resources/views/assets/show.blade.php:103
+- resources/views/assets/show.blade.php:318
+
+### `Wie viele Tage rückwirkend pro Lauf abgefragt werden.`
+- app/Plugins/RemoteSupport/RemoteSupportPlugin.php:87
 
 ### `Wieder öffnen`
 - resources/views/admin/time-approval/month/index.blade.php:96
@@ -1223,7 +1671,7 @@ Missing: **412**
 - app/Enums/TimeApproval/MonthClosureStatus.php:36
 
 ### `Wochen`
-- app/Http/Controllers/AssetController.php:185
+- app/Http/Controllers/AssetController.php:243
 
 ### `Zahlbar innerhalb :n Tagen.`
 - app/Plugins/Lexoffice/LexofficeInvoiceMapper.php:102
@@ -1254,6 +1702,9 @@ Missing: **412**
 ### `Ziel-Typ`
 - resources/views/time-approval/correction/create.blade.php:65
 
+### `Zuordnen`
+- app/Plugins/RemoteSupport/Resources/views/pending/index.blade.php:62
+
 ### `Zur Produktanalyse`
 - resources/views/reports/drilldown/asset-protocols.blade.php:21
 - resources/views/reports/drilldown/asset-open-issues.blade.php:24
@@ -1268,7 +1719,7 @@ Missing: **412**
 - resources/views/service-tickets/show.blade.php:92
 
 ### `Zuweisung aktualisiert.`
-- app/Http/Controllers/ServiceTicket/ServiceTicketController.php:154
+- app/Http/Controllers/ServiceTicket/ServiceTicketController.php:153
 
 ### `Zählerstand erfassen`
 - resources/views/meter-readings/create.blade.php:12
@@ -1297,7 +1748,7 @@ Missing: **412**
 - resources/views/admin/plugins/index.blade.php:167
 
 ### `fällig`
-- resources/views/assets/show.blade.php:164
+- resources/views/assets/show.blade.php:379
 
 ### `gerade eben`
 - resources/views/admin/plugins/index.blade.php:186
@@ -1314,18 +1765,28 @@ Missing: **412**
 ### `mit Anwesenheit`
 - resources/views/time-approval/month/show.blade.php:77
 
+### `m²`
+- resources/views/floors/index.blade.php:27
+- resources/views/buildings/index.blade.php:27
+
 ### `ok`
 - resources/views/admin/plugins/index.blade.php:79
 - resources/views/admin/plugins/index.blade.php:165
 
 ### `pausiert`
-- resources/views/assets/show.blade.php:162
+- resources/views/assets/show.blade.php:377
 
 ### `unbekannt`
 - resources/views/admin/plugins/index.blade.php:82
 
 ### `von`
 - resources/views/admin/support/access-audit/index.blade.php:19
+
+### `z. B. 123 456 789`
+- app/Plugins/RemoteSupport/Resources/views/_panel.blade.php:50
+
+### `z. B. PC Empfang`
+- app/Plugins/RemoteSupport/Resources/views/pending/index.blade.php:75
 
 ### `zuletzt :time geprüft`
 - resources/views/admin/plugins/_form_dialog.blade.php:54
@@ -1341,8 +1802,32 @@ Missing: **412**
 - resources/views/reports/plan-ist/presence.blade.php:35
 - resources/views/reports/plan-ist/presence.blade.php:52
 
+### `— Gerät wählen —`
+- app/Plugins/RemoteSupport/Resources/views/pending/index.blade.php:56
+
+### `— Kunde —`
+- app/Plugins/RemoteSupport/Resources/views/pending/index.blade.php:81
+
 ### `— bitte wählen —`
 - resources/views/exports/create.blade.php:62
+- resources/views/components/facility-picker.blade.php:106
+- resources/views/components/facility-picker.blade.php:117
+- resources/views/components/facility-picker.blade.php:129
+- resources/views/sites/_form_body.blade.php:13
+- resources/views/floors/_form_body.blade.php:13
+- resources/views/buildings/_form_body.blade.php:13
+
+### `— ohne Kategorie —`
+- resources/views/assets/_form_body.blade.php:42
+
+### `— ohne Kunde —`
+- resources/views/components/facility-picker.blade.php:93
+
+### `— ohne Profil —`
+- resources/views/rooms/_form_dialog.blade.php:104
+
+### `— ohne Raum —`
+- resources/views/components/facility-picker.blade.php:143
 
 ## B — Hardcoded German text in Blade views (outside __())
 

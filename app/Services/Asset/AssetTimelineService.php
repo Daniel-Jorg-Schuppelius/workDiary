@@ -20,7 +20,17 @@ class AssetTimelineService {
     public function build(Asset $asset, int $limit = 120): array {
         $events = [];
 
+        // Generische Trait-Events (created/updated/deleted) werden für Assets
+        // ausgeblendet, weil der AssetService für jeden Vorgang ein
+        // spezifischeres `asset.*`-Event schreibt und sonst Duplikate
+        // in der Timeline erscheinen.
+        $genericEvents = ['created', 'updated', 'deleted'];
+
         foreach ($asset->auditLogs()->limit($limit)->get() as $log) {
+            if (in_array($log->event, $genericEvents, true)) {
+                continue;
+            }
+
             $events[] = [
                 'kind' => 'asset.audit',
                 'occurred_at' => $this->toIso($log->created_at),

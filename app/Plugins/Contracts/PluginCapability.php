@@ -23,4 +23,7 @@ final class PluginCapability {
 
     /** Plugin can fetch payment status / reconcile data back. */
     public const PAYMENT_SYNC = 'payment_sync';
+
+    /** Plugin can import recorded times from an external system (e.g. remote sessions). */
+    public const TIME_IMPORT = 'time_import';
 }

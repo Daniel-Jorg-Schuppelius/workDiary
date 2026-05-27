@@ -115,7 +115,11 @@
                         <div class="text-xs text-base-content/60">{{ __('Raum') }}</div>
                         <div>
                             @if ($room)
-                                <a class="link link-hover" href="{{ route('rooms.show', $room) }}">{{ $room->name }}</a>
+                                @if ($floor)
+                                    <a class="link link-hover" href="{{ route('floors.show', $floor) }}">{{ $room->name }}</a>
+                                @else
+                                    {{ $room->name }}
+                                @endif
                             @else
                                 —
                             @endif
@@ -190,6 +194,8 @@
                 <p class="mt-3 text-sm text-base-content/60">{{ __('Kein Betriebssystem hinterlegt.') }}</p>
             @endif
         </x-card>
+
+        {!! app(\App\Plugins\PluginManager::class)->renderSlot('asset-show.aside', $asset) !!}
 
         <x-card>
             <div class="flex flex-wrap items-center justify-between gap-2">
