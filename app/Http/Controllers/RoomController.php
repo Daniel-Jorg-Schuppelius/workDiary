@@ -115,7 +115,7 @@ class RoomController extends Controller {
             'floors' => Floor::query()->orderBy('level')->get(['id', 'label', 'level', 'building_id']),
             'cleaningProfiles' => CleaningProfile::query()->orderBy('label')->get(['id', 'code', 'label']),
             'usageTypes' => collect(RoomUsageType::cases())->mapWithKeys(
-                fn (RoomUsageType $t): array => [$t->value => $t->label()],
+                fn(RoomUsageType $t): array => [$t->value => $t->label()],
             )->all(),
         ];
     }
