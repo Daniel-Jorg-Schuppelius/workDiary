@@ -70,11 +70,11 @@ class SiteController extends Controller {
         $roomsPerBuilding = $floorIds->isEmpty()
             ? collect()
             : Room::query()
-                ->selectRaw('floors.building_id as building_id, count(rooms.id) as rooms_count')
-                ->join('floors', 'floors.id', '=', 'rooms.floor_id')
-                ->whereIn('rooms.floor_id', $floorIds)
-                ->groupBy('floors.building_id')
-                ->pluck('rooms_count', 'building_id');
+            ->selectRaw('floors.building_id as building_id, count(rooms.id) as rooms_count')
+            ->join('floors', 'floors.id', '=', 'rooms.floor_id')
+            ->whereIn('rooms.floor_id', $floorIds)
+            ->groupBy('floors.building_id')
+            ->pluck('rooms_count', 'building_id');
 
         foreach ($buildings as $b) {
             $b->setAttribute('rooms_count', (int) ($roomsPerBuilding[$b->id] ?? 0));

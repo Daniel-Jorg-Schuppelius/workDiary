@@ -106,7 +106,7 @@ class FloorController extends Controller {
     private function validateFloor(Request $request, ?Floor $existing = null): array {
         $buildingId = (int) $request->input('building_id');
         $uniqueLevel = Rule::unique('floors', 'level')
-            ->where(fn ($q) => $q->where('building_id', $buildingId));
+            ->where(fn($q) => $q->where('building_id', $buildingId));
         if ($existing !== null) {
             $uniqueLevel = $uniqueLevel->ignore($existing->id);
         }
