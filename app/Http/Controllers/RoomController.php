@@ -38,11 +38,15 @@ class RoomController extends Controller {
         ]);
     }
 
-    public function create(): View {
+    public function create(Request $request): View {
         Gate::authorize('create', Room::class);
 
         return view('rooms._form_dialog', array_merge(
-            ['room' => null, 'isEdit' => false],
+            [
+                'room' => null,
+                'isEdit' => false,
+                'prefill' => $this->resolvePrefill($request),
+            ],
             $this->pickerData(),
         ));
     }
@@ -58,7 +62,7 @@ class RoomController extends Controller {
         Gate::authorize('update', $room);
 
         return view('rooms._form_dialog', array_merge(
-            ['room' => $room, 'isEdit' => true],
+            ['room' => $room, 'isEdit' => true, 'prefill' => []],
             $this->pickerData(),
         ));
     }
@@ -113,6 +117,47 @@ class RoomController extends Controller {
             'usageTypes' => collect(RoomUsageType::cases())->mapWithKeys(
                 fn (RoomUsageType $t): array => [$t->value => $t->label()],
             )->all(),
+        ];
+    }
+
+    /**
+     * Leitet die Picker-Vorbelegung (Customer/Site/Building/Floor) aus den
+     * Query-Parametern ab. Akzeptiert wahlweise ?floor=, ?building=, ?site=
+     * oder ?customer=; höhere Ebenen werden aus der Beziehung der niedrigsten
+     * gesetzten Ebene aufgefüllt.
+     *
+     * @return array{customer_id: int|null, site_id: int|null, building_id: int|null, floor_id: int|null}
+     */
+    private function resolvePrefill(Request $request): array {
+        $floorId = $request->integer('floor') ?: null;
+        $buildingId = $request->integer('building') ?: null;
+        $siteId = $request->integer('site') ?: null;
+        $customerId = $request->integer('customer') ?: null;
+
+        if ($floorId !== null) {
+            $floor = Floor::query()->with('building.site')->find($floorId);
+            if ($floor !== null) {
+                $buildingId ??= $floor->building_id;
+                $siteId ??= $floor->building?->site_id;
+                $customerId ??= $floor->building?->site?->customer_id;
+            }
+        }
+        if ($buildingId !== null && $siteId === null) {
+            $building = Building::query()->with('site')->find($buildingId);
+            if ($building !== null) {
+                $siteId = $building->site_id;
+                $customerId ??= $building->site?->customer_id;
+            }
+        }
+        if ($siteId !== null && $customerId === null) {
+            $customerId = Site::query()->whereKey($siteId)->value('customer_id');
+        }
+
+        return [
+            'customer_id' => $customerId,
+            'site_id'     => $siteId,
+            'building_id' => $buildingId,
+            'floor_id'    => $floorId,
         ];
     }
 }

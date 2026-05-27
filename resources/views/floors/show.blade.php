@@ -64,7 +64,7 @@
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
-                            :href="route('rooms.create')"
+                            :href="route('rooms.create', ['floor' => $floor->id])"
                             show-label>{{ __('Raum anlegen') }}</x-icon-btn>
             </x-slot:actions>
 

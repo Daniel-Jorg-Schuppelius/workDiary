@@ -15,11 +15,12 @@
     $floorRel = $room?->floorRelation;
     $buildingRel = $floorRel?->building;
     $siteRel = $buildingRel?->site;
+    $prefill ??= [];
     $pickerSelected = [
-        'customer_id' => $room?->customer_id,
-        'site_id'     => $siteRel?->id,
-        'building_id' => $buildingRel?->id,
-        'floor_id'    => $room?->floor_id,
+        'customer_id' => $room?->customer_id ?? ($prefill['customer_id'] ?? null),
+        'site_id'     => $siteRel?->id ?? ($prefill['site_id'] ?? null),
+        'building_id' => $buildingRel?->id ?? ($prefill['building_id'] ?? null),
+        'floor_id'    => $room?->floor_id ?? ($prefill['floor_id'] ?? null),
     ];
 @endphp
 
@@ -89,20 +90,30 @@
             require-floor />
     </x-form-group>
 
-    <x-form-group :legend="__('Reinigung & Kennzahlen')" icon="cleaning_services" tone="success" cols="2">
-        <div class="fieldset">
-            <label class="fieldset-label" for="room-cleaning-profile">{{ __('Reinigungsprofil') }}</label>
-            <select id="room-cleaning-profile" name="cleaning_profile_id"
-                    class="select select-bordered w-full @error('cleaning_profile_id') select-error @enderror">
-                <option value="">{{ __('— ohne Profil —') }}</option>
-                @foreach ($cleaningProfiles as $profile)
-                    <option value="{{ $profile->id }}" @selected((int) old('cleaning_profile_id', $room?->cleaning_profile_id) === (int) $profile->id)>{{ $profile->label }}@if ($profile->code) ({{ $profile->code }})@endif</option>
-                @endforeach
-            </select>
-            @error('cleaning_profile_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
+    @php
+        $hasCleaningProfiles = $cleaningProfiles->isNotEmpty();
+        $kennzahlenLegend = $hasCleaningProfiles ? __('Reinigung & Kennzahlen') : __('Kennzahlen');
+        $kennzahlenIcon = $hasCleaningProfiles ? 'cleaning_services' : 'straighten';
+    @endphp
+    <x-form-group :legend="$kennzahlenLegend" :icon="$kennzahlenIcon" tone="success" cols="2">
+        @if ($hasCleaningProfiles)
+            <div class="fieldset">
+                <label class="fieldset-label" for="room-cleaning-profile">{{ __('Reinigungsprofil') }}</label>
+                <select id="room-cleaning-profile" name="cleaning_profile_id"
+                        class="select select-bordered w-full @error('cleaning_profile_id') select-error @enderror">
+                    <option value="">{{ __('— ohne Profil —') }}</option>
+                    @foreach ($cleaningProfiles as $profile)
+                        <option value="{{ $profile->id }}" @selected((int) old('cleaning_profile_id', $room?->cleaning_profile_id) === (int) $profile->id)>{{ $profile->label }}@if ($profile->code) ({{ $profile->code }})@endif</option>
+                    @endforeach
+                </select>
+                @error('cleaning_profile_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
+            </div>
+        @elseif ($room?->cleaning_profile_id)
+            {{-- Bestehende Zuordnung beibehalten, falls Profile später entfernt wurden. --}}
+            <input type="hidden" name="cleaning_profile_id" value="{{ $room->cleaning_profile_id }}">
+        @endif
 
-        <div class="fieldset">
+        <div class="fieldset @unless ($hasCleaningProfiles) md:col-span-2 @endunless">
             <label class="fieldset-label" for="room-area">{{ __('Nettogrundfläche (m²)') }}</label>
             <input id="room-area" type="number" step="0.01" min="0" name="net_area_m2"
                    class="input input-bordered w-full @error('net_area_m2') input-error @enderror"
