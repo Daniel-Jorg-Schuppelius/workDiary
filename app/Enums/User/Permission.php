@@ -40,6 +40,7 @@ enum Permission: string implements HasLabel {
     case OrgOnboardingView = 'org.onboarding.view';
     case OrgOnboardingSkipStep = 'org.onboarding.skipStep';
     case OrgOnboardingDismissWidget = 'org.onboarding.dismissWidget';
+    case NumberFormatManage = 'organization.numberFormat.manage';
         // ── Plattform-Diagnose (MVP-044) ────────────────────────────
     case PlatformDiagnosticsView = 'platform.diagnostics.view';
     case PlatformDiagnosticsRunCheck = 'platform.diagnostics.runCheck';
@@ -290,6 +291,12 @@ enum Permission: string implements HasLabel {
     case ServiceTicketClose = 'serviceTicket.close';
     case SlaContractView = 'slaContract.view';
     case SlaContractManage = 'slaContract.manage';
+        // ── KeyHandover (Schlüsselverwaltung) ─────────────────
+    case KeyHandoverView = 'keyHandover.view';
+    case KeyHandoverRecord = 'keyHandover.record';
+        // ── MeterReading (Zählerstände) ───────────────────────
+    case MeterReadingView = 'meterReading.view';
+    case MeterReadingRecord = 'meterReading.record';
         // ── Customer-Portal (Rolle `kunde`) ─────────────────────
     case CustomerPortalAccess = 'customerPortal.access';
     case CustomerPortalDiaryView = 'customerPortal.diary.view';

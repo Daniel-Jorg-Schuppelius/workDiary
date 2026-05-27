@@ -12,6 +12,7 @@ namespace App\Console\Commands\Asset;
 
 use App\Models\MaintenancePlan;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 
 class MaintenanceDueScanCommand extends Command {
@@ -28,7 +29,8 @@ class MaintenanceDueScanCommand extends Command {
             ->where('is_active', true)
             ->whereNotNull('next_due_on')
             ->where('next_due_on', '<=', $reference->toDateString())
-            ->chunkById(200, function ($plans) use (&$due, $reference): void {
+            ->chunkById(200, function (Collection $plans) use (&$due, $reference): void {
+                /** @var Collection<int, MaintenancePlan> $plans */
                 foreach ($plans as $plan) {
                     if (! $plan->isDue($reference)) {
                         continue;

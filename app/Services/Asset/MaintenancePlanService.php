@@ -24,6 +24,8 @@ class MaintenancePlanService {
 
         $plan = new MaintenancePlan([
             'organization_id' => $asset->organization_id,
+            'subject_type' => Asset::class,
+            'subject_id' => $asset->id,
             'asset_id' => $asset->id,
             'code' => (string) ($payload['code'] ?? $this->generateCode($asset)),
             'label' => (string) ($payload['label'] ?? __('Wartung')),

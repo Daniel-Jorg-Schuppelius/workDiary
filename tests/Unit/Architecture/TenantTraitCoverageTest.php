@@ -10,7 +10,7 @@
 
 namespace Tests\Unit\Architecture;
 
-use App\Models\{BackupHeartbeat, Classification, GeocodeCache, HelpTopic, HelpView, ImportRunError, MonthClosureEvent, OpenIssueEvent, Organization, OrganizationAuditLog, PerDiemRate, PluginError, PluginState, ProcedureBackupProof, ProcedureRunEvent, ProcedureStepDef, ProcedureStepRun, ProcedureTemplateVersion, ProtocolEvent, ProtocolItem, ProtocolItemPhoto, ProtocolSignature, ProtocolSignatureToken, TimeCorrectionItem, TimeExportEvent, TimeExportLine, User, UserBookmark, UserDashboardWidget, UserFilterPreset, UserGroup};
+use App\Models\{BackupHeartbeat, Classification, GeocodeCache, HelpTopic, HelpView, ImportRunError, LicenseFlagOverride, MonthClosureEvent, OpenIssueEvent, Organization, OrganizationAuditLog, PerDiemRate, PluginError, PluginState, ProcedureBackupProof, ProcedureRunEvent, ProcedureStepDef, ProcedureStepRun, ProcedureTemplateVersion, ProtocolEvent, ProtocolItem, ProtocolItemPhoto, ProtocolSignature, ProtocolSignatureToken, TimeCorrectionItem, TimeExportEvent, TimeExportLine, User, UserBookmark, UserDashboardWidget, UserFilterPreset, UserGroup};
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Model;
 use PHPUnit\Framework\TestCase;
@@ -83,6 +83,11 @@ class TenantTraitCoverageTest extends TestCase {
         // Inbox & Auto-Disable und gehören bewusst nicht zur Mandantengrenze.
         PluginState::class,
         PluginError::class,
+        // Lizenz-Flag-Overrides (MVP-047 Option A): nullable organization_id —
+        // ein Eintrag ohne organization_id deaktiviert den Flag plattformweit.
+        // Eine globale Scope-Bindung via BelongsToOrganization würde genau
+        // diese Plattform-Einträge ausblenden.
+        LicenseFlagOverride::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {

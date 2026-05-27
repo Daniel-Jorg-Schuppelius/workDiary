@@ -283,7 +283,7 @@
         <ul class="divide-y divide-base-300 text-sm">
             @foreach ($auditLogs as $log)
                 <li class="flex items-center justify-between gap-2 py-2">
-                    <span><span class="badge badge-ghost badge-sm">{{ $log->event }}</span> {{ optional($log->user)->name ?? '—' }}</span>
+                    <span><span class="badge badge-ghost badge-sm">{{ $log->eventLabel() }}</span> {{ optional($log->user)->name ?? '—' }}</span>
                     <span class="text-base-content/60">{{ $log->created_at->format('d.m.Y H:i') }}</span>
                 </li>
             @endforeach

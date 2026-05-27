@@ -11,6 +11,9 @@
  * are treated as exact mirrors of EN, which is the intended baseline.
  *
  * Also compares JSON catalogs (lang/<locale>.json) against lang/en.json.
+ * Note: no lang/de.json exists — DE is the source language for JSON catalogs,
+ * so DE strings appear as JSON keys (e.g. __('Speichern')) and fall back to
+ * the key when no translation is registered.
  *
  * Usage: php scripts/translations-diff.php
  */
@@ -93,13 +96,13 @@ foreach (array_keys($allFiles) as $file) {
 }
 
 // --- JSON catalogs --------------------------------------------------------
+// JSON catalogs use DE strings as keys (e.g. {{ __('Speichern') }}). DE itself
+// therefore needs no JSON file (Laravel falls back to the key). EN/FR/IT must
+// each provide a translation file with the same key set as lang/en.json.
 $enJsonPath = $base . '/lang/en.json';
 if (is_file($enJsonPath)) {
     $en = array_keys(json_decode((string) file_get_contents($enJsonPath), true) ?? []);
-    foreach ($locales as $loc) {
-        if ($loc === 'en') {
-            continue;
-        }
+    foreach (['fr', 'it'] as $loc) {
         $path = $base . "/lang/$loc.json";
         if (! is_file($path)) {
             echo "[MISSING FILE] lang/$loc.json\n";
@@ -108,8 +111,7 @@ if (is_file($enJsonPath)) {
         }
         $other = array_keys(json_decode((string) file_get_contents($path), true) ?? []);
         $missing = array_values(array_diff($en, $other));
-        // de.json is intentionally a tiny enum-overrides file → skip missing report for de.
-        if ($loc !== 'de' && $missing) {
+        if ($missing) {
             echo "=== lang/$loc.json ===\n";
             echo "  missing in $loc (" . count($missing) . ") vs en.json:\n";
             foreach ($missing as $k) { echo "    - $k\n"; }

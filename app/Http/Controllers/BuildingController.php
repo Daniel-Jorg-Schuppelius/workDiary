@@ -1,0 +1,115 @@
+<?php
+/*
+ * Created on   : Wed May 27 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : BuildingController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Http\Controllers;
+
+use App\Models\{Building, Site};
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
+
+class BuildingController extends Controller {
+    public function index(Request $request): View {
+        Gate::authorize('viewAny', Building::class);
+
+        $siteId = $request->query('site');
+        $query = Building::query()
+            ->with('site.customer')
+            ->withCount('floors')
+            ->orderBy('name');
+        if ($siteId !== null && $siteId !== '') {
+            $query->where('site_id', (int) $siteId);
+        }
+        $buildings = $query->paginate(50)->withQueryString();
+        $site = $siteId !== null && $siteId !== ''
+            ? Site::query()->find((int) $siteId)
+            : null;
+
+        return view('buildings.index', [
+            'buildings' => $buildings,
+            'site' => $site,
+        ]);
+    }
+
+    public function create(): View {
+        Gate::authorize('create', Building::class);
+
+        return view('buildings._form_dialog', [
+            'building' => null,
+            'sites' => Site::query()->with('customer')->orderBy('name')->get(),
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse {
+        Gate::authorize('create', Building::class);
+        $building = Building::create($this->validateBuilding($request));
+
+        return redirect()->route('buildings.show', $building)->with('success', __('Gebäude angelegt.'));
+    }
+
+    public function show(Building $building): View {
+        Gate::authorize('view', $building);
+
+        $building->load(['site.customer']);
+        $floors = $building->floors()
+            ->withCount('rooms')
+            ->withSum('rooms as net_area_sum', 'net_area_m2')
+            ->orderBy('level')
+            ->get();
+
+        $kpis = [
+            'floors'     => $floors->count(),
+            'rooms'      => (int) $floors->sum('rooms_count'),
+            'gross_area' => (float) ($building->gross_area_m2 ?? $floors->sum('gross_area_m2')),
+            'net_area'   => (float) $floors->sum('net_area_sum'),
+        ];
+
+        return view('buildings.show', [
+            'building' => $building,
+            'floors' => $floors,
+            'kpis' => $kpis,
+        ]);
+    }
+
+    public function edit(Building $building): View {
+        Gate::authorize('update', $building);
+
+        return view('buildings._form_dialog', [
+            'building' => $building,
+            'sites' => Site::query()->with('customer')->orderBy('name')->get(),
+        ]);
+    }
+
+    public function update(Request $request, Building $building): RedirectResponse {
+        Gate::authorize('update', $building);
+        $building->update($this->validateBuilding($request));
+
+        return redirect()->route('buildings.show', $building)->with('success', __('Gebäude aktualisiert.'));
+    }
+
+    public function destroy(Building $building): RedirectResponse {
+        Gate::authorize('delete', $building);
+        $building->delete();
+
+        return redirect()->route('buildings.index')->with('success', __('Gebäude gelöscht.'));
+    }
+
+    /** @return array<string, mixed> */
+    private function validateBuilding(Request $request): array {
+        return $request->validate([
+            'site_id' => ['required', 'integer', 'exists:sites,id'],
+            'name' => ['required', 'string', 'max:160'],
+            'code' => ['nullable', 'string', 'max:32'],
+            'gross_area_m2' => ['nullable', 'numeric', 'min:0', 'max:9999999.99'],
+            'year_built' => ['nullable', 'integer', 'min:1800', 'max:2999'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+    }
+}

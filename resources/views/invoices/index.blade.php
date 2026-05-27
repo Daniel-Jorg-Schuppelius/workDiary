@@ -26,7 +26,7 @@
         <select name="status" class="select select-sm select-bordered w-40 shrink-0" aria-label="{{ __('Status') }}">
             <option value="">{{ __('Alle Status') }}</option>
             @foreach ($statuses as $s)
-                <option value="{{ $s }}" @selected(($filters['status'] ?? '') === $s)>{{ __($s) }}</option>
+                <option value="{{ $s }}" @selected(($filters['status'] ?? '') === $s)>{{ __("values.$s") }}</option>
             @endforeach
         </select>
     </x-filter-bar>
@@ -57,7 +57,7 @@
                     <td><a href="{{ route('invoices.show', $invoice) }}" class="link">{{ $invoice->number }}</a></td>
                     <td>{{ $invoice->customer->name ?? '-' }}</td>
                     <td>{{ optional($invoice->issued_on)->format('d.m.Y') ?? '-' }}</td>
-                    <td><span class="badge badge-outline">{{ __($invoice->status) }}</span></td>
+                    <td><span class="badge badge-outline">{{ __("values.{$invoice->status}") }}</span></td>
                     <td class="text-right">{{ number_format((float) $invoice->total, 2, ',', '.') }} {{ $invoice->currency }}</td>
                     <td>
                         <x-icon-btn icon="visibility"

@@ -75,6 +75,9 @@
         "i18n:check": "@php scripts/find-untranslated.php",
         "lang:check": "@php scripts/translations-diff.php",
         "lang:coverage": "@php scripts/translations-coverage.php",
+        "lang:sync-core": "@php scripts/sync-laravel-core-lang.php",
+        "lang:sync-core:write": "@php scripts/sync-laravel-core-lang.php --write",
+        "lang:sync-core:replace": "@php scripts/sync-laravel-core-lang.php --replace --write",
         "qa": [
             "@format",
             "@lint",

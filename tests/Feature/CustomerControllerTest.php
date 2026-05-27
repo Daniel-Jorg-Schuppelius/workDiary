@@ -88,6 +88,16 @@ class CustomerControllerTest extends TestCase {
     }
 
     public function test_store_increments_customer_number_per_org(): void {
+        // Greenfield: Kundennummern werden zentral über NumberSequenceService
+        // vergeben. Externes Anlegen mit fixer Nummer aktualisiert die
+        // Sequenz nicht — entweder per Factory die Sequenz vorsetzen oder
+        // (wie hier) explizit den last_value setzen.
+        \App\Models\NumberSequence::create([
+            'organization_id' => $this->organization->id,
+            'scope' => \App\Enums\Numbering\NumberScope::Customer->value,
+            'period' => null,
+            'last_value' => 7,
+        ]);
         Customer::factory()->create([
             'organization_id' => $this->organization->id,
             'created_by' => $this->user->id,

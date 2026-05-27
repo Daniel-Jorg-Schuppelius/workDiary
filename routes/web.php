@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\Access\{AccessHubController, MemberController as 
 use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatController, BranchProfileController, ClassificationController, ClassificationRequirementController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, SupportAccessAuditController, SupportReportController};
 use App\Http\Controllers\Asset\MaintenancePlanController;
 use App\Http\Controllers\Auth\{LoginController, TenantRegistrationController};
+use App\Http\Controllers\KeyHandover\KeyHandoverController;
+use App\Http\Controllers\MeterReading\MeterReadingController;
 use App\Http\Controllers\Reporting\{AbsencesReportController, AssetAnalysisReportController, AttendanceReportController, AuditActivityReportController, BillingReportController, CoverageReportController, CustomerAnalysisReportController, CustomerProjectReportController, EntryTypeAnalysisReportController, EntryTypeDrilldownReportController, ExpenseReportController, FleetReportController, MaterialReportController, MonthByUserTeamReportController, MyMonthReportController, MyYearReportController, OnCallReportController, OperationsReportController, ProjectDetailsReportController, ProjectInactiveReportController, QualificationReportController, SicknessReportController, WeekByUserReportController, WorkBalanceReportController};
 use App\Http\Controllers\ServiceTicket\ServiceTicketController;
 use App\Http\Controllers\UI\DateRangeController;
@@ -261,6 +263,11 @@ Route::middleware('auth')->group(function () {
             ->parameters(['event-categories' => 'category']);
         Route::resource('rooms', RoomController::class)->except('show');
 
+        // ── Liegenschaften (Standort → Gebäude → Geschoss) ──────────────────
+        Route::resource('sites', \App\Http\Controllers\SiteController::class);
+        Route::resource('buildings', \App\Http\Controllers\BuildingController::class);
+        Route::resource('floors', \App\Http\Controllers\FloorController::class);
+
         Route::get('calendar/events.ics', [IcsFeedController::class, 'personal'])->name('events.ics.personal');
 
         // ── Kunden (Kimai-style customers) ──────────────────────────────────────
@@ -497,6 +504,14 @@ Route::middleware('auth')->group(function () {
         Route::post('service-tickets/{ticket}/assign', [ServiceTicketController::class, 'assign'])->name('service-tickets.assign');
         Route::delete('service-tickets/{ticket}', [ServiceTicketController::class, 'destroy'])->name('service-tickets.destroy');
 
+        Route::get('key-handovers', [KeyHandoverController::class, 'index'])->name('key-handovers.index');
+        Route::get('key-handovers/create', [KeyHandoverController::class, 'create'])->name('key-handovers.create');
+        Route::post('key-handovers', [KeyHandoverController::class, 'store'])->name('key-handovers.store');
+
+        Route::get('meter-readings', [MeterReadingController::class, 'index'])->name('meter-readings.index');
+        Route::get('meter-readings/create', [MeterReadingController::class, 'create'])->name('meter-readings.create');
+        Route::post('meter-readings', [MeterReadingController::class, 'store'])->name('meter-readings.store');
+
         Route::get('vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
         Route::get('vehicles/create', [VehicleController::class, 'create'])->name('vehicles.create');
         Route::post('vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
@@ -682,6 +697,12 @@ Route::middleware('auth')->group(function () {
         // Kontakt, PDF-Konfig). Logo-Uploads laufen über AttachmentController.
         Route::get('admin/branding', [BrandingController::class, 'edit'])->name('admin.branding.edit');
         Route::put('admin/branding', [BrandingController::class, 'update'])->name('admin.branding.update');
+
+        // Konfigurierbare Nummernkreise (Tickets, Assets, Kunden, Rechnungen, Gutschriften).
+        Route::get('admin/number-formats', [\App\Http\Controllers\Admin\NumberFormatController::class, 'index'])
+            ->name('admin.number-formats.index');
+        Route::put('admin/number-formats', [\App\Http\Controllers\Admin\NumberFormatController::class, 'update'])
+            ->name('admin.number-formats.update');
 
         Route::resource('admin/entry-types', EntryTypeController::class)
             ->names('admin.entry-types')

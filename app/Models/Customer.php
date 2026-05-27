@@ -155,21 +155,21 @@ class Customer extends Model {
     }
 
     /**
-     * Berechnet die nächste freie Kundennummer im Schema "K-XXXX" für die Organisation.
+     * Berechnet die nächste freie Kundennummer für die Organisation
+     * über den zentralen {@see \App\Services\Numbering\NumberSequenceService}.
      */
     public static function nextNumberFor(?int $organizationId): string {
-        // TENANT-BYPASS: $organizationId wird explizit übergeben und unten als
-        // where-Filter gesetzt; Global Scope wird umgangen, damit auch Admin-
-        // oder Konsolen-Kontexte ohne currentOrganization-Bindung funktionieren.
-        $max = self::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organizationId)
-            ->where('number', 'like', 'K-%')
-            ->pluck('number')
-            ->map(static fn($n) => (int) preg_replace('/\D/', '', (string) $n))
-            ->max() ?? 0;
+        if ($organizationId === null) {
+            // Greenfield-Fallback: ohne Organisationskontext keine echte
+            // Mandanten-Sequenz möglich — sehr unwahrscheinlich (Test-Setup),
+            // wird hier deterministisch behandelt.
+            return 'K-0001';
+        }
 
-        return sprintf('K-%04d', $max + 1);
+        /** @var \App\Services\Numbering\NumberSequenceService $service */
+        $service = app(\App\Services\Numbering\NumberSequenceService::class);
+
+        return $service->next($organizationId, \App\Enums\Numbering\NumberScope::Customer);
     }
 
     /** @return BelongsTo<User, $this> */
@@ -180,6 +180,21 @@ class Customer extends Model {
     /** @return HasMany<Project, $this> */
     public function projects(): HasMany {
         return $this->hasMany(Project::class);
+    }
+
+    /** @return HasMany<Site, $this> */
+    public function sites(): HasMany {
+        return $this->hasMany(Site::class)->orderBy('name');
+    }
+
+    /** @return HasMany<Asset, $this> */
+    public function assets(): HasMany {
+        return $this->hasMany(Asset::class)->orderBy('name');
+    }
+
+    /** @return HasMany<Room, $this> */
+    public function rooms(): HasMany {
+        return $this->hasMany(Room::class)->orderBy('name');
     }
 
     public function defaultProject(): ?Project {

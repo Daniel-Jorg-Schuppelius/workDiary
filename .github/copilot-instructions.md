@@ -5,7 +5,7 @@ Diese Datei ist die normative Kurzreferenz für alle automatisierten Code-Änder
 ## Stack-Grundlagen
 
 - Laravel 13 / PHP 8.4 / CarbonImmutable.
-- Frontend: Tailwind v3 + DaisyUI v4 + Material Symbols Outlined (Font).
+- Frontend: Tailwind v4 + DaisyUI v5 + Material Symbols Outlined (Font).
 - Autorisierung: Spatie Permissions.
 - Tests: `composer test`; Statisch: `vendor/bin/phpstan analyse`; Linter: `vendor/bin/pint`.
 

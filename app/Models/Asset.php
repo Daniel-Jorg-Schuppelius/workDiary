@@ -30,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $serial_no
  * @property string|null $inventory_no
  * @property int|null $customer_id
+ * @property int|null $room_id
  * @property AssetOwnership $owned_by
  * @property string|null $location_text
  * @property string|null $location_lat
@@ -59,6 +60,7 @@ class Asset extends Model {
         'serial_no',
         'inventory_no',
         'customer_id',
+        'room_id',
         'owned_by',
         'location_text',
         'location_lat',
@@ -90,6 +92,11 @@ class Asset extends Model {
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
+    }
+
+    /** @return BelongsTo<Room, $this> */
+    public function room(): BelongsTo {
+        return $this->belongsTo(Room::class);
     }
 
     /** @return HasMany<DiaryEntry, $this> */

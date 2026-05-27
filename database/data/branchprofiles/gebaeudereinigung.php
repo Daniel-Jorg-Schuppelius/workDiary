@@ -164,4 +164,58 @@ return [
         '#reklamation',
         '#hygiene',
     ],
+    'cleaning_profiles_seed' => [
+        [
+            'code' => 'standard',
+            'label' => 'Standard-Unterhaltsreinigung',
+            'interval_days' => 7,
+            'requirements' => [
+                'glass' => false,
+                'disinfection' => false,
+                'hygiene_protocol' => false,
+                'ppe' => false,
+                'footwear_change' => false,
+                'gowning' => false,
+            ],
+        ],
+        [
+            'code' => 'glass_only',
+            'label' => 'Glasreinigung',
+            'interval_days' => 90,
+            'requirements' => [
+                'glass' => true,
+                'disinfection' => false,
+                'hygiene_protocol' => false,
+                'ppe' => true,
+                'footwear_change' => false,
+                'gowning' => false,
+            ],
+        ],
+        [
+            'code' => 'disinfection',
+            'label' => 'Desinfektionsreinigung',
+            'interval_days' => 1,
+            'requirements' => [
+                'glass' => false,
+                'disinfection' => true,
+                'hygiene_protocol' => true,
+                'ppe' => true,
+                'footwear_change' => false,
+                'gowning' => false,
+            ],
+        ],
+        [
+            'code' => 'cleanroom',
+            'label' => 'Reinraumreinigung',
+            'interval_days' => 1,
+            'requirements' => [
+                'glass' => false,
+                'disinfection' => true,
+                'hygiene_protocol' => true,
+                'ppe' => true,
+                'footwear_change' => true,
+                'gowning' => true,
+            ],
+        ],
+    ],
 ];

@@ -130,7 +130,7 @@
                             <td>
                                 <div class="flex flex-wrap gap-1">
                                     @foreach (($room->equipment ?? []) as $eq)
-                                        <span class="badge badge-ghost badge-sm">{{ __($eq) }}</span>
+                                        <span class="badge badge-ghost badge-sm">{{ __("values.$eq") }}</span>
                                     @endforeach
                                 </div>
                             </td>

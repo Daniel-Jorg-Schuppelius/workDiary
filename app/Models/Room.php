@@ -10,20 +10,26 @@
 
 namespace App\Models;
 
+use App\Enums\Facility\RoomUsageType;
 use App\Models\Concerns\{Auditable, BelongsToOrganization};
 use Database\Factories\RoomFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};
 use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int $organization_id
+ * @property int|null $floor_id
+ * @property int|null $customer_id
+ * @property int|null $cleaning_profile_id
  * @property string $name
  * @property string|null $code
  * @property string|null $building
  * @property string|null $floor
+ * @property RoomUsageType $usage_type
+ * @property string|null $net_area_m2
  * @property int|null $capacity
  * @property array<int, string>|null $equipment
  * @property string|null $color
@@ -43,10 +49,15 @@ class Room extends Model {
 
     protected $fillable = [
         'organization_id',
+        'floor_id',
+        'customer_id',
+        'cleaning_profile_id',
         'name',
         'code',
         'building',
         'floor',
+        'usage_type',
+        'net_area_m2',
         'capacity',
         'equipment',
         'color',
@@ -60,7 +71,28 @@ class Room extends Model {
     protected $casts = [
         'equipment' => 'array',
         'is_active' => 'boolean',
+        'usage_type' => RoomUsageType::class,
     ];
+
+    /** @return BelongsTo<Floor, $this> */
+    public function floorRelation(): BelongsTo {
+        return $this->belongsTo(Floor::class, 'floor_id');
+    }
+
+    /** @return BelongsTo<Customer, $this> */
+    public function customer(): BelongsTo {
+        return $this->belongsTo(Customer::class);
+    }
+
+    /** @return BelongsTo<CleaningProfile, $this> */
+    public function cleaningProfile(): BelongsTo {
+        return $this->belongsTo(CleaningProfile::class);
+    }
+
+    /** @return HasMany<Asset, $this> */
+    public function assets(): HasMany {
+        return $this->hasMany(Asset::class)->orderBy('name');
+    }
 
     /** @return BelongsToMany<Event, $this> */
     public function events(): BelongsToMany {

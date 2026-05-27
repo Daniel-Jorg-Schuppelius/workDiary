@@ -598,6 +598,16 @@
                                     ],
                                 ];
                                 $sidebarSections[] = [
+                                    'key'         => 'facility',
+                                    'label'       => __('Liegenschaften'),
+                                    'collapsible' => true,
+                                    'items'       => [
+                                        ['route' => 'sites.index',     'label' => __('Standorte'),  'icon' => 'location_on', 'modal' => false, 'matches' => ['sites.*']],
+                                        ['route' => 'buildings.index', 'label' => __('Gebäude'),    'icon' => 'apartment',   'modal' => false, 'matches' => ['buildings.*']],
+                                        ['route' => 'floors.index',    'label' => __('Geschosse'),  'icon' => 'layers',      'modal' => false, 'matches' => ['floors.*']],
+                                    ],
+                                ];
+                                $sidebarSections[] = [
                                     'key'         => 'sales',
                                     'label'       => __('Vertrieb & Abrechnung'),
                                     'collapsible' => true,

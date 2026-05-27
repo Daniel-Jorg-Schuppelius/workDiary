@@ -35,7 +35,7 @@ class LexofficeInvoiceMapper {
             'voucherDate' => $issuedOn->format('Y-m-d') . 'T00:00:00.000+01:00',
             'dueDate' => $dueOn->format('Y-m-d') . 'T00:00:00.000+01:00',
             'address' => $this->addressForCustomer($invoice->customer, $externalContactId),
-            'lineItems' => $invoice->items->map(fn(InvoiceItem $i) => $this->mapItem($i, $currency))->values()->all(),
+            'lineItems' => $invoice->items->map(fn(InvoiceItem $i) => $this->mapItem($i, $currency, (float) $invoice->tax_rate))->values()->all(),
             'totalPrice' => [
                 'currency' => $currency,
             ],
@@ -72,7 +72,7 @@ class LexofficeInvoiceMapper {
     /**
      * @return array<string, mixed>
      */
-    private function mapItem(InvoiceItem $item, string $currency): array {
+    private function mapItem(InvoiceItem $item, string $currency, float $taxRate): array {
         $type = $item->expense_id !== null ? 'custom' : 'service';
 
         return array_filter([
@@ -83,9 +83,9 @@ class LexofficeInvoiceMapper {
             'unitPrice' => [
                 'currency' => $currency,
                 'netAmount' => (float) $item->unit_price,
-                'taxRatePercentage' => (float) $item->invoice->tax_rate,
+                'taxRatePercentage' => $taxRate,
             ],
-        ], static fn($v) => $v !== null && $v !== '');
+        ], static fn($v) => $v !== '');
     }
 
     /**

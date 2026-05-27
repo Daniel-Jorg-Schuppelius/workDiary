@@ -10,40 +10,39 @@
 
 namespace App\Services\Invoicing;
 
+use App\Enums\Numbering\NumberScope;
 use App\Models\{Customer, Invoice, Project, TimeEntry};
+use App\Services\Numbering\NumberSequenceService;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Auth, DB};
 
 class InvoiceGenerator {
+    public function __construct(
+        private readonly NumberSequenceService $numberSequence,
+    ) {}
+
     /**
      * Liefert die nächste freie Rechnungsnummer für Jahr + Organisation.
      *
-     * MUSS innerhalb einer DB-Transaktion mit `lockForUpdate()` aufgerufen werden,
-     * damit parallele Generierungen nicht dieselbe Nummer vergeben
-     * (Rückwirkungs-Schutz für die unique-Constraint (organization_id, number)).
+     * Die Sequenz wird im {@see NumberSequenceService} per `lockForUpdate`
+     * gegen parallele Vergaben geschützt; der Aufrufer sollte trotzdem in
+     * einer Transaktion arbeiten, damit die Erzeugung des Invoice-Records
+     * mit der Nummer atomar bleibt.
      *
      * @param  string  $prefixLetter  'R' = Rechnung, 'G' = Gutschrift/Korrekturrechnung
      */
     public function nextNumber(?int $organizationId, ?CarbonInterface $when = null, string $prefixLetter = 'R'): string {
-        $when ??= Carbon::now();
-        $year = (int) $when->format('Y');
-        $prefix = sprintf('%s%d-', $prefixLetter, $year);
+        if ($organizationId === null) {
+            // Defensive: Nummern sind mandantengebunden, fallback bleibt stabil.
+            $when ??= Carbon::now();
 
-        /** @var string|null $last */
-        $last = Invoice::query()
-            ->where('organization_id', $organizationId)
-            ->where('number', 'like', $prefix . '%')
-            ->orderByDesc('number')
-            ->lockForUpdate()
-            ->value('number');
-
-        $seq = 1;
-        if ($last !== null && preg_match('/-(\d+)$/', $last, $m) === 1) {
-            $seq = ((int) $m[1]) + 1;
+            return sprintf('%s%d-%04d', $prefixLetter, (int) $when->format('Y'), 1);
         }
 
-        return $prefix . str_pad((string) $seq, 4, '0', STR_PAD_LEFT);
+        $scope = $prefixLetter === 'G' ? NumberScope::CreditNote : NumberScope::Invoice;
+
+        return $this->numberSequence->next($organizationId, $scope, $when);
     }
 
     /**

@@ -100,7 +100,7 @@ class PluginController extends Controller {
         $existing = $row->settings ?? [];
         $missing = [];
         foreach ($schema as $field) {
-            if (($field['type'] ?? '') !== 'password' || empty($field['required'])) {
+            if ($field['type'] !== 'password' || empty($field['required'])) {
                 continue;
             }
             $input = (string) $request->input('settings.' . $field['key'], '');

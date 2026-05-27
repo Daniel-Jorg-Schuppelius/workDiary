@@ -14,7 +14,7 @@
         <label class="fieldset-label">{{ __('Typ') }} *</label>
         <select name="energy_type" required class="select select-bordered w-full">
             @foreach ($types as $type)
-                <option value="{{ $type }}" @selected(old('energy_type', $log?->energy_type ?? 'fuel') === $type)>{{ __($type) }}</option>
+                <option value="{{ $type }}" @selected(old('energy_type', $log?->energy_type ?? 'fuel') === $type)>{{ __("values.$type") }}</option>
             @endforeach
         </select>
     </div>
@@ -23,7 +23,7 @@
         <select name="fuel_kind" class="select select-bordered w-full">
             <option value="">—</option>
             @foreach ($fuelKinds as $k)
-                <option value="{{ $k }}" @selected(old('fuel_kind', $log?->fuel_kind) === $k)>{{ __($k) }}</option>
+                <option value="{{ $k }}" @selected(old('fuel_kind', $log?->fuel_kind) === $k)>{{ __("values.$k") }}</option>
             @endforeach
         </select>
     </div>
@@ -32,7 +32,7 @@
         <select name="charger_type" class="select select-bordered w-full">
             <option value="">—</option>
             @foreach ($chargerTypes as $c)
-                <option value="{{ $c }}" @selected(old('charger_type', $log?->charger_type) === $c)>{{ __($c) }}</option>
+                <option value="{{ $c }}" @selected(old('charger_type', $log?->charger_type) === $c)>{{ __("values.$c") }}</option>
             @endforeach
         </select>
     </div>

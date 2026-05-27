@@ -39,7 +39,8 @@ class ProtocolItemPhotoService {
         'image/heif',
     ];
 
-    public function __construct(private readonly ProtocolService $protocols) {}
+    public function __construct(private readonly ProtocolService $protocols) {
+    }
 
     /**
      * Bequemer Upload-Pfad: legt ein {@see Attachment} an und verbindet es
@@ -205,15 +206,6 @@ class ProtocolItemPhotoService {
                 'order' => $orderedPhotoIds,
             ]);
         });
-    }
-
-    /**
-     * @deprecated Verwende {@see ProtocolItemValidator::missingPhotoPhases()}.
-     *
-     * @return list<string>
-     */
-    public function missingPhases(ProtocolItem $item): array {
-        return app(ProtocolItemValidator::class)->missingPhotoPhases($item);
     }
 
     /**

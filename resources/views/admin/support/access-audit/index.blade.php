@@ -54,7 +54,7 @@
                         @endif
                     </td>
                     <td class="text-xs">
-                        <pre class="whitespace-pre-wrap break-words text-base-content/70">{{ json_encode($entry->changes, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) }}</pre>
+                        <pre class="whitespace-pre-wrap wrap-break-word text-base-content/70">{{ json_encode($entry->changes, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) }}</pre>
                     </td>
                 </tr>
             @endforeach

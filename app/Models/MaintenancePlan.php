@@ -15,13 +15,15 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization};
 use Database\Factories\MaintenancePlanFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int $organization_id
- * @property int $asset_id
+ * @property string|null $subject_type
+ * @property int|null $subject_id
+ * @property int|null $asset_id
  * @property string $code
  * @property string $label
  * @property MaintenanceIntervalKind $interval_kind
@@ -41,6 +43,8 @@ class MaintenancePlan extends Model {
 
     protected $fillable = [
         'organization_id',
+        'subject_type',
+        'subject_id',
         'asset_id',
         'code',
         'label',
@@ -61,11 +65,25 @@ class MaintenancePlan extends Model {
         'is_active' => 'bool',
         'interval_value' => 'int',
         'tolerance_days' => 'int',
+        'subject_id' => 'int',
     ];
+
+    /** @return MorphTo<Model, $this> */
+    public function subject(): MorphTo {
+        return $this->morphTo();
+    }
 
     /** @return BelongsTo<Asset, $this> */
     public function asset(): BelongsTo {
         return $this->belongsTo(Asset::class);
+    }
+
+    public function subjectIsAsset(): bool {
+        return $this->subject_type === Asset::class;
+    }
+
+    public function subjectIsRoom(): bool {
+        return $this->subject_type === Room::class;
     }
 
     public function isDue(?Carbon $reference = null): bool {

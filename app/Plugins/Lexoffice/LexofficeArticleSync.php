@@ -32,7 +32,8 @@ class LexofficeArticleSync {
     public function __construct(
         private readonly ?string $apiKey,
         private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
-    ) {}
+    ) {
+    }
 
     public function withPolicy(LexofficeMatchPolicy $policy): self {
         $clone = clone $this;
@@ -151,7 +152,7 @@ class LexofficeArticleSync {
 
         $payload = $this->articleToPayload($article);
 
-        if ($article->external_id === '' || $article->external_id === null) {
+        if ($article->external_id === '') {
             $response = Http::withToken($this->apiKey)
                 ->acceptJson()
                 ->post($this->baseUrl . '/articles', $payload);
@@ -243,7 +244,7 @@ class LexofficeArticleSync {
                 'taxRate' => $article->vat_rate !== null ? (float) $article->vat_rate : null,
                 'leadingPrice' => 'NET',
             ], static fn($v) => $v !== null),
-        ], static fn($v) => $v !== null && $v !== '' && $v !== []);
+        ], static fn($v) => $v !== null && $v !== '');
     }
 
     /**

@@ -34,4 +34,13 @@ class MaintenancePlanFactory extends Factory {
             'notes' => null,
         ];
     }
+
+    public function configure(): static {
+        return $this->afterMaking(function (MaintenancePlan $plan): void {
+            if ($plan->asset_id !== null && $plan->subject_type === null) {
+                $plan->subject_type = Asset::class;
+                $plan->subject_id = $plan->asset_id;
+            }
+        });
+    }
 }

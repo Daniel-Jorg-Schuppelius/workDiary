@@ -109,7 +109,9 @@ class TimeExportServiceTest extends TestCase {
         $this->assertNotNull($built->payload_hash);
         $this->assertNotNull($built->file_path);
         $this->assertSame(1, $built->rows_count, 'Eine Zeile (work.normal) pro User.');
-        Storage::disk('local')->assertExists((string) $built->file_path);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $localDisk */
+        $localDisk = Storage::disk('local');
+        $localDisk->assertExists((string) $built->file_path);
 
         // Totals: 15 h für work.normal
         $totals = $built->totals;

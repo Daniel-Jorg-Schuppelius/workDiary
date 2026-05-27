@@ -10,9 +10,11 @@
 
 namespace App\Services\ServiceTicket;
 
+use App\Enums\Numbering\NumberScope;
 use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketSource, ServiceTicketStatus};
 use App\Exceptions\ServiceTicketException;
 use App\Models\{Organization, ServiceTicket, SlaContract, User};
+use App\Services\Numbering\NumberSequenceService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -20,6 +22,7 @@ class ServiceTicketService {
     public function __construct(
         private readonly TicketStatusMachine $statusMachine,
         private readonly SlaTimer $slaTimer,
+        private readonly NumberSequenceService $numberSequence,
     ) {}
 
     /** @param array<string, mixed> $payload */
@@ -31,7 +34,7 @@ class ServiceTicketService {
 
         $ticket = new ServiceTicket([
             'organization_id' => $organization->id,
-            'ticket_no' => (string) ($payload['ticket_no'] ?? $this->generateTicketNo($organization)),
+            'ticket_no' => (string) ($payload['ticket_no'] ?? $this->generateTicketNo($organization, $reportedAt)),
             'customer_id' => $customerId,
             'asset_id' => isset($payload['asset_id']) ? (int) $payload['asset_id'] : null,
             'project_id' => isset($payload['project_id']) ? (int) $payload['project_id'] : null,
@@ -167,24 +170,8 @@ class ServiceTicketService {
         }
     }
 
-    private function generateTicketNo(Organization $organization): string {
-        $year = Carbon::now()->format('Y');
-        $prefix = 'ST-' . $year . '-';
-        $lastNo = ServiceTicket::query()
-            ->where('organization_id', $organization->id)
-            ->where('ticket_no', 'like', $prefix . '%')
-            ->orderByDesc('ticket_no')
-            ->value('ticket_no');
-
-        $next = 1;
-        if (is_string($lastNo)) {
-            $tail = substr($lastNo, strlen($prefix));
-            if (ctype_digit($tail)) {
-                $next = (int) $tail + 1;
-            }
-        }
-
-        return $prefix . str_pad((string) $next, 5, '0', STR_PAD_LEFT);
+    private function generateTicketNo(Organization $organization, Carbon $reportedAt): string {
+        return $this->numberSequence->next($organization, NumberScope::ServiceTicket, $reportedAt);
     }
 
     private function parsePriority(string $value): ServiceTicketPriority {

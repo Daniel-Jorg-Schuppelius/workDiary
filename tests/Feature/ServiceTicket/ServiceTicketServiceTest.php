@@ -13,6 +13,7 @@ namespace Tests\Feature\ServiceTicket;
 use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketStatus};
 use App\Exceptions\ServiceTicketException;
 use App\Models\{Organization, SlaContract, User};
+use App\Services\Numbering\NumberSequenceService;
 use App\Services\ServiceTicket\{ServiceTicketService, SlaTimer, TicketStatusMachine};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -30,7 +31,7 @@ class ServiceTicketServiceTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
 
-        $this->service = new ServiceTicketService(new TicketStatusMachine, new SlaTimer);
+        $this->service = new ServiceTicketService(new TicketStatusMachine, new SlaTimer, new NumberSequenceService);
         $this->org = Organization::factory()->create();
         $this->actor = User::factory()->geschaeftsfuehrung()->create([
             'organization_id' => $this->org->id,

@@ -13,6 +13,7 @@ namespace App\Console\Commands\ServiceTicket;
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Models\ServiceTicket;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 
 class SlaBreachScanCommand extends Command {
@@ -43,7 +44,8 @@ class SlaBreachScanCommand extends Command {
                         ->whereNull('resolved_at');
                 });
             })
-            ->chunkById(200, function ($tickets) use ($now, &$reactionBreached, &$resolutionBreached): void {
+            ->chunkById(200, function (Collection $tickets) use ($now, &$reactionBreached, &$resolutionBreached): void {
+                /** @var Collection<int, ServiceTicket> $tickets */
                 foreach ($tickets as $ticket) {
                     $changed = false;
                     if (

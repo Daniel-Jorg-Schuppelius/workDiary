@@ -14,6 +14,7 @@ use App\Enums\Asset\{AssetClass, AssetOwnership, AssetStatus};
 use App\Exceptions\AssetValidationException;
 use App\Models\{Asset, AuditLog, Customer, Organization, User};
 use App\Services\Asset\{AssetNumberGenerator, AssetService, AssetStatusMachine};
+use App\Services\Numbering\NumberSequenceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -29,7 +30,7 @@ class AssetServiceTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
 
-        $this->service = new AssetService(new AssetNumberGenerator, new AssetStatusMachine);
+        $this->service = new AssetService(new AssetNumberGenerator(new NumberSequenceService), new AssetStatusMachine);
         $this->org = Organization::factory()->create();
         $this->actor = User::factory()->geschaeftsfuehrung()->create([
             'organization_id' => $this->org->id,

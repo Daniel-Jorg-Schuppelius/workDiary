@@ -6,7 +6,8 @@
  * 2-Pass-Check:
  *  A) Extrahiert alle in resources/ und app/ verwendeten Translation-Keys
  *     (__/trans/@lang/Lang::get) und meldet jeden Key, der weder in
- *     lang/de.json noch unter einem lang/de/*.php-Modul existiert.
+ *     lang/en.json (DE-Strings als JSON-Keys) noch unter einem
+ *     lang/de/*.php-Modul existiert.
  *  B) Sucht in resources/views/**.blade.php hartcodierte deutsche Strings
  *     außerhalb von __() (Heuristik: Umlaut ODER ≥ 2 Wörter mit Großbuchstaben).
  *
@@ -55,14 +56,14 @@ function flatten(array $arr, string $prefix = ''): array {
 
 // ---------- Build "defined keys" set ----------
 
+// JSON-Catalog: DE-Strings sind die Keys (Source-Convention). Wir lesen
+// lang/en.json — der Keyspace ist über alle Locales identisch.
 $definedJson = [];
-foreach (['lang/de.json', 'lang/en.json'] as $rel) {
-    $path = ROOT . '/' . $rel;
-    if (is_file($path)) {
-        $data = json_decode((string) file_get_contents($path), true);
-        if (is_array($data)) {
-            foreach (array_keys($data) as $k) { $definedJson[$k] = true; }
-        }
+$path = ROOT . '/lang/en.json';
+if (is_file($path)) {
+    $data = json_decode((string) file_get_contents($path), true);
+    if (is_array($data)) {
+        foreach (array_keys($data) as $k) { $definedJson[$k] = true; }
     }
 }
 
@@ -108,8 +109,10 @@ foreach ($lookDirs as $dir) {
             $key = (string) $cap[0];
             // unescape \\' \\" \\\\ -> ' " \
             $key = str_replace(['\\\'', '\\"', '\\\\'], ['\'', '"', '\\'], $key);
-            // skip dynamic concat: contains "$" or backslash escapes that suggest interpolation? best-effort
             if ($key === '' || str_contains($key, "\n")) { continue; }
+            // Skip dynamic keys with PHP/Blade interpolation ("values.$x", "values.{$obj->prop}").
+            // Statisch nicht auflösbar — Laufzeit-Validierung via Lang::has() bzw. Catalog liegt im Code.
+            if (preg_match('/[$\{]/', $key)) { continue; }
             $offset = (int) $m[0][$i][1];
             $line = substr_count(substr($content, 0, $offset), "\n") + 1;
             $rel = str_replace(ROOT . '/', '', $file->getPathname());

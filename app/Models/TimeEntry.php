@@ -51,23 +51,26 @@ class TimeEntry extends Model {
     /** @use HasFactory<TimeEntryFactory> */
     use HasFactory;
 
-    // High-level distribution category. When ACTIVITY_PROJECT, project_id
-    // must be set. Other values use activity_category_id for reporting.
     /**
-     * @deprecated use TimeEntryActivityType::label() (instance method)
-     *
      * Liefert ein lokalisiertes Label für einen activity_type-Wert.
+     * Akzeptiert sowohl Enum-Cases als auch String-Slugs (Backwards-Compat
+     * für Blade-Views, die Raw-Werte aus Aggregaten verarbeiten).
      */
-    public static function activityLabel(?string $type): string {
-        $type = (string) $type;
-        $enum = TimeEntryActivityType::tryFrom($type);
-        if ($enum !== null) {
-            return $enum->label();
+    public static function activityLabel(TimeEntryActivityType|string|null $type): string {
+        if ($type instanceof TimeEntryActivityType) {
+            return $type->label();
         }
+        $value = (string) $type;
+        if ($value === '') {
+            return (string) __('Unbekannt');
+        }
+        $enum = TimeEntryActivityType::tryFrom($value);
 
-        return $type === '' ? (string) __('Unbekannt') : ucfirst($type);
+        return $enum?->label() ?? ucfirst($value);
     }
 
+    // High-level distribution category. When ACTIVITY_PROJECT, project_id
+    // must be set. Other values use activity_category_id for reporting.
     protected $fillable = [
         'organization_id',
         'project_id',

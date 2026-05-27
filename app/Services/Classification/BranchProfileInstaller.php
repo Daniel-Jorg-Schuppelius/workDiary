@@ -10,7 +10,7 @@
 
 namespace App\Services\Classification;
 
-use App\Models\{AuditLog, Classification, ClassificationRequirement, MaintenancePlanTemplate, Organization, SlaContract, Tag, User};
+use App\Models\{AuditLog, Classification, ClassificationRequirement, CleaningProfile, MaintenancePlanTemplate, Organization, SlaContract, Tag, User};
 use Illuminate\Support\Arr;
 
 /**
@@ -30,6 +30,7 @@ class BranchProfileInstaller {
             'tags' => 0,
             'maintenance_plan_templates' => 0,
             'sla_contracts' => 0,
+            'cleaning_profiles' => 0,
         ];
         $updated = [
             'classifications' => 0,
@@ -37,6 +38,7 @@ class BranchProfileInstaller {
             'tags' => 0,
             'maintenance_plan_templates' => 0,
             'sla_contracts' => 0,
+            'cleaning_profiles' => 0,
         ];
         $skipped = [
             'classifications' => 0,
@@ -44,6 +46,7 @@ class BranchProfileInstaller {
             'tags' => 0,
             'maintenance_plan_templates' => 0,
             'sla_contracts' => 0,
+            'cleaning_profiles' => 0,
         ];
 
         /** @var array<string, list<array<string, mixed>>> $classificationDomains */
@@ -243,6 +246,46 @@ class BranchProfileInstaller {
                 'code' => $code,
             ], $payload));
             $created['sla_contracts']++;
+        }
+
+        /** @var list<array<string, mixed>> $cleaningProfiles */
+        $cleaningProfiles = (array) Arr::get($profile, 'cleaning_profiles_seed', []);
+        foreach ($cleaningProfiles as $row) {
+            $code = (string) ($row['code'] ?? '');
+            if ($code === '') {
+                continue;
+            }
+
+            $existing = CleaningProfile::query()
+                ->where('organization_id', $organization->id)
+                ->where('code', $code)
+                ->first();
+
+            $payload = [
+                'label' => (string) ($row['label'] ?? $code),
+                'interval_days' => isset($row['interval_days']) ? max(1, (int) $row['interval_days']) : null,
+                'requirements' => isset($row['requirements']) ? (array) $row['requirements'] : null,
+                'notes' => isset($row['notes']) ? (string) $row['notes'] : null,
+                'is_active' => (bool) ($row['is_active'] ?? true),
+            ];
+
+            if ($existing instanceof CleaningProfile) {
+                if ($force) {
+                    $existing->update($payload);
+                    $updated['cleaning_profiles']++;
+                } else {
+                    $skipped['cleaning_profiles']++;
+                }
+
+                continue;
+            }
+
+            CleaningProfile::query()->create(array_merge([
+                'organization_id' => $organization->id,
+                'code' => $code,
+                'created_by' => $actor?->id,
+            ], $payload));
+            $created['cleaning_profiles']++;
         }
 
         AuditLog::query()->create([

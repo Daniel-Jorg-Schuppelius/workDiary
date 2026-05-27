@@ -49,7 +49,7 @@
         @if (! empty($error->trace))
             <div>
                 <div class="text-xs uppercase text-base-content/60">{{ __('Stacktrace') }}</div>
-                <pre class="text-xs bg-base-200 rounded p-2 overflow-auto max-h-[600px]">{{ $error->trace }}</pre>
+                <pre class="text-xs bg-base-200 rounded p-2 overflow-auto max-h-150">{{ $error->trace }}</pre>
             </div>
         @endif
     </div>

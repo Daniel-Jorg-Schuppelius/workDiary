@@ -1,4 +1,4 @@
-{{-- Variablen: $room, $isEdit --}}
+{{-- Variablen: $room, $isEdit, $customers, $sites, $buildings, $floors, $cleaningProfiles, $usageTypes --}}
 @php
     /** @var \App\Models\Room|null $room */
     /** @var bool $isEdit */
@@ -10,6 +10,17 @@
 
     $equipment = old('equipment', $room?->equipment ?? []);
     $available = ['beamer', 'whiteboard', 'video_conf', 'flipchart', 'audio', 'wlan'];
+
+    // Verortung aus dem Raum + ggf. der Floor-Kette ableiten, damit der Picker vorbelegt ist.
+    $floorRel = $room?->floorRelation;
+    $buildingRel = $floorRel?->building;
+    $siteRel = $buildingRel?->site;
+    $pickerSelected = [
+        'customer_id' => $room?->customer_id,
+        'site_id'     => $siteRel?->id,
+        'building_id' => $buildingRel?->id,
+        'floor_id'    => $room?->floor_id,
+    ];
 @endphp
 
 <x-modal
@@ -43,31 +54,61 @@
         <div class="fieldset">
             <label class="fieldset-label" for="room-code">{{ __('Code') }}</label>
             <input id="room-code" type="text" name="code"
-                   class="input input-bordered w-full font-mono"
+                   class="input input-bordered w-full font-mono @error('code') input-error @enderror"
                    value="{{ old('code', $room?->code) }}">
+            @error('code')<p class="text-error text-sm">{{ $message }}</p>@enderror
         </div>
 
         <div class="fieldset">
             <label class="fieldset-label" for="room-capacity">{{ __('Kapazität') }}</label>
             <input id="room-capacity" type="number" min="1" name="capacity"
-                   class="input input-bordered w-full"
+                   class="input input-bordered w-full @error('capacity') input-error @enderror"
                    value="{{ old('capacity', $room?->capacity) }}">
+            @error('capacity')<p class="text-error text-sm">{{ $message }}</p>@enderror
         </div>
 
         <div class="fieldset">
-            <label class="fieldset-label" for="room-building">{{ __('Gebäude') }}</label>
-            <input id="room-building" type="text" name="building"
-                   class="input input-bordered w-full"
-                   value="{{ old('building', $room?->building) }}">
+            <label class="fieldset-label" for="room-usage">{{ __('Nutzung') }}</label>
+            <select id="room-usage" name="usage_type"
+                    class="select select-bordered w-full @error('usage_type') select-error @enderror">
+                @foreach ($usageTypes as $value => $label)
+                    <option value="{{ $value }}" @selected(old('usage_type', $room?->usage_type?->value ?? \App\Enums\Facility\RoomUsageType::Office->value) === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+            @error('usage_type')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+    </x-form-group>
+
+    <x-form-group :legend="__('Verortung')" icon="location_on" tone="info" cols="2">
+        <x-facility-picker
+            :customers="$customers"
+            :sites="$sites"
+            :buildings="$buildings"
+            :floors="$floors"
+            :selected="$pickerSelected"
+            require-floor />
+    </x-form-group>
+
+    <x-form-group :legend="__('Reinigung & Kennzahlen')" icon="cleaning_services" tone="success" cols="2">
+        <div class="fieldset">
+            <label class="fieldset-label" for="room-cleaning-profile">{{ __('Reinigungsprofil') }}</label>
+            <select id="room-cleaning-profile" name="cleaning_profile_id"
+                    class="select select-bordered w-full @error('cleaning_profile_id') select-error @enderror">
+                <option value="">{{ __('— ohne Profil —') }}</option>
+                @foreach ($cleaningProfiles as $profile)
+                    <option value="{{ $profile->id }}" @selected((int) old('cleaning_profile_id', $room?->cleaning_profile_id) === (int) $profile->id)>{{ $profile->label }}@if ($profile->code) ({{ $profile->code }})@endif</option>
+                @endforeach
+            </select>
+            @error('cleaning_profile_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
         </div>
 
         <div class="fieldset">
-            <label class="fieldset-label" for="room-floor">{{ __('Etage') }}</label>
-            <input id="room-floor" type="text" name="floor"
-                   class="input input-bordered w-full"
-                   value="{{ old('floor', $room?->floor) }}">
+            <label class="fieldset-label" for="room-area">{{ __('Nettogrundfläche (m²)') }}</label>
+            <input id="room-area" type="number" step="0.01" min="0" name="net_area_m2"
+                   class="input input-bordered w-full @error('net_area_m2') input-error @enderror"
+                   value="{{ old('net_area_m2', $room?->net_area_m2) }}">
+            @error('net_area_m2')<p class="text-error text-sm">{{ $message }}</p>@enderror
         </div>
-
     </x-form-group>
 
     <x-form-group :legend="__('Ausstattung')" icon="checklist" tone="ghost">
@@ -77,7 +118,7 @@
                     <input type="checkbox" name="equipment[]" value="{{ $eq }}"
                            class="checkbox checkbox-sm"
                            @checked(in_array($eq, (array) $equipment, true))>
-                    <span class="label-text">{{ __($eq) }}</span>
+                    <span class="label-text">{{ __("values.$eq") }}</span>
                 </label>
             @endforeach
         </div>

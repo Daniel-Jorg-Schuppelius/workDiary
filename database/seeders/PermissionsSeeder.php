@@ -173,6 +173,7 @@ class PermissionsSeeder extends Seeder {
         // Teamleitung: operative Führung (Personal, Zeit, Plan), ohne Finanzen.
         $teamleitung = [
             PermissionEnum::OrganizationView,
+            PermissionEnum::NumberFormatManage,
             PermissionEnum::UserViewAny,
             PermissionEnum::UserView,
             PermissionEnum::UserFlexManage,
@@ -245,6 +246,10 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ServiceTicketClose,
             PermissionEnum::SlaContractView,
             PermissionEnum::SlaContractManage,
+            PermissionEnum::KeyHandoverView,
+            PermissionEnum::KeyHandoverRecord,
+            PermissionEnum::MeterReadingView,
+            PermissionEnum::MeterReadingRecord,
             PermissionEnum::ProtocolViewAny,
             PermissionEnum::ProtocolView,
             PermissionEnum::ProtocolCreate,
