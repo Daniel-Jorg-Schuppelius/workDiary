@@ -90,7 +90,7 @@
                     $soft = "hsl({$hue} 70% 92%)";
                 @endphp
                 <a role="tab"
-                   href="{{ route('week.index', ['scope' => 'team', 'user' => $u->id]) }}"
+                   href="{{ route('week.index', ['scope' => 'team', 'user' => $u->sqid]) }}"
                    class="tab gap-2 {{ $isActive ? 'tab-active' : '' }}"
                    style="--tab-bg: {{ $soft }}; --tab-border-color: {{ $color }}; {{ $isActive ? 'color: ' . $color . ';' : '' }}">
                     <span class="inline-block h-2.5 w-2.5 rounded-full" style="background: {{ $color }};"></span>

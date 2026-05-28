@@ -17,7 +17,7 @@
 
 > {{ truncate($entry->content, 240) }}
 
-@component('mail::button', ['url' => route('diary.show', $entry->id)])
+@component('mail::button', ['url' => route('diary.show', $entry)])
 {{ __('Eintrag öffnen') }}
 @endcomponent
 

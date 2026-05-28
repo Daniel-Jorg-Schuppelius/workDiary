@@ -15,7 +15,8 @@ use App\Enums\User\UserRole;
 use App\Models\{Attachment, Comment, DiaryEntry, EmergencyAssignment, Timesheet, User};
 
 class PushNotifier {
-    public function __construct(protected WebPushService $webPush) {}
+    public function __construct(protected WebPushService $webPush) {
+    }
 
     public function newComment(Comment $comment): void {
         /** @var DiaryEntry|null $entry */
@@ -109,7 +110,7 @@ class PushNotifier {
         $this->webPush->sendToUser($owner, [
             'title' => __('Stundenzettel signiert'),
             'body' => $project->name . ' · ' . $timesheet->work_date->format('d.m.Y'),
-            'url' => route('projects.timesheets.show', [$timesheet->project_id, $timesheet->id]),
+            'url' => route('projects.timesheets.show', [$project, $timesheet]),
             'tag' => 'timesheet-' . $timesheet->id,
         ]);
     }

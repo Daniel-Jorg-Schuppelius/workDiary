@@ -22,11 +22,16 @@ class ProjectPolicy {
     }
 
     public function view(User $user, Project $project): bool {
-        return true;
+        $customer = $project->customer;
+        if ($customer === null) {
+            return $this->sharesOrganization($user, $project);
+        }
+
+        return $this->sharesOrganization($user, $customer);
     }
 
     public function create(User $user): bool {
-        return true;
+        return $user->canManageBilling() || $user->hasRole(\App\Enums\User\UserRole::User->value);
     }
 
     public function update(User $user, Project $project): bool {

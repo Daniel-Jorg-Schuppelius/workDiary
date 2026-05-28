@@ -11,6 +11,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\TimeEntry\TimeEntryActivityType;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\TimeEntry;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
@@ -20,6 +21,14 @@ use Illuminate\Validation\{Rule, Validator};
  * Validates a non-project (administrative / travel / training) TimeEntry.
  */
 class SaveAdminTimeEntryRequest extends FormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'activity_category_id' => \App\Models\ActivityCategory::class,
+        'attendance_id' => \App\Models\Attendance::class,
+    ];
+
     public function authorize(): bool {
         return true;
     }

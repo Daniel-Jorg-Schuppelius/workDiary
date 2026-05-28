@@ -20,7 +20,7 @@
             <span class="label label-text">{{ __('Vorlage') }}</span>
             <select name="template_id" class="select select-bordered w-full" required>
                 @foreach ($templates as $tpl)
-                    <option value="{{ $tpl->id }}" @selected($tpl->id === $defaultTemplateId)>
+                    <option value="{{ $tpl->sqid }}" @selected($tpl->id === $defaultTemplateId)>
                         {{ $tpl->name }}@if ($tpl->is_default) ({{ __('Standard') }})@endif
                     </option>
                 @endforeach

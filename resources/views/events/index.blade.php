@@ -66,7 +66,7 @@
                         onchange="this.form.submit()">
                     <option value="">{{ __('Alle') }}</option>
                     @foreach ($categories as $category)
-                        <option value="{{ $category->id }}" @selected((string) request('category_id') === (string) $category->id)>{{ $category->name }}</option>
+                        <option value="{{ $category->sqid }}" @selected(request('category_id') === $category->sqid)>{{ $category->name }}</option>
                     @endforeach
                 </select>
             </x-filter-field>

@@ -64,7 +64,7 @@
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
-                            :href="route('rooms.create', ['floor' => $floor->id])"
+                            :href="route('rooms.create', ['floor' => $floor->sqid])"
                             show-label>{{ __('Raum anlegen') }}</x-icon-btn>
             </x-slot:actions>
 
@@ -105,7 +105,7 @@
                                 @can('create', \App\Models\Asset::class)
                                     <x-icon-btn icon="add" size="sm"
                                                 data-entry-modal-trigger
-                                                :href="route('assets.create', ['room' => $r->id])"
+                                                :href="route('assets.create', ['room' => $r->sqid])"
                                                 :label="__('Gerät zuordnen')" />
                                 @endcan
                                 <x-icon-btn icon="edit" size="sm"

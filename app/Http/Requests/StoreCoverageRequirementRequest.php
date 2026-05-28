@@ -10,11 +10,19 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
 class StoreCoverageRequirementRequest extends FormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'shift_type_id' => \App\Models\ShiftType::class,
+    ];
+
     public function authorize(): bool {
         $user = Auth::user();
 

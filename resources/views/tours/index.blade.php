@@ -30,7 +30,7 @@
                     <select id="tours-user" name="user" class="select select-bordered select-sm">
                         <option value="all">{{ __('alle') }}</option>
                         @foreach ($selectableUsers as $u)
-                            <option value="{{ $u->id }}" @selected($targetUser?->id === $u->id)>{{ $u->name }}</option>
+                            <option value="{{ $u->sqid }}" @selected($targetUser?->sqid === $u->sqid)>{{ $u->name }}</option>
                         @endforeach
                     </select>
                 </x-filter-field>

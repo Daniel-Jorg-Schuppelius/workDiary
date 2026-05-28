@@ -23,7 +23,7 @@ class CustomerPolicy {
     }
 
     public function view(User $user, Customer $customer): bool {
-        return true;
+        return $this->sharesOrganization($user, $customer);
     }
 
     public function create(User $user): bool {

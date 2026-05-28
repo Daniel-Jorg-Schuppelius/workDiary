@@ -283,23 +283,32 @@ class RemoteSupportService {
      * @return \Illuminate\Support\Collection<int, object{provider: string, remote_id: string, count: int, minutes: int, first_seen: \Illuminate\Support\Carbon, last_seen: \Illuminate\Support\Carbon, note: ?string}>
      */
     public function openPendingGroups(Organization $organization): \Illuminate\Support\Collection {
-        return RemotePendingSession::query()
+        $groups = RemotePendingSession::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->where('status', RemotePendingSession::STATUS_OPEN)
             ->orderByDesc('ended_at')
             ->get()
             ->groupBy(fn(RemotePendingSession $s): string => $s->provider . '|' . $s->remote_id)
-            ->map(fn($group) => (object) [
-                'provider' => $group->first()->provider,
-                'remote_id' => $group->first()->remote_id,
-                'count' => $group->count(),
-                'minutes' => $group->sum(fn(RemotePendingSession $s): int => $s->minutes()),
-                'first_seen' => $group->min('started_at'),
-                'last_seen' => $group->max('ended_at'),
-                'note' => $group->first()->note,
-            ])
+            ->map(function ($group): object {
+                /** @var \Illuminate\Support\Collection<int, RemotePendingSession> $group */
+                $first = $group->first();
+                assert($first instanceof RemotePendingSession);
+
+                return (object) [
+                    'provider' => (string) $first->provider,
+                    'remote_id' => (string) $first->remote_id,
+                    'count' => (int) $group->count(),
+                    'minutes' => (int) $group->sum(fn(RemotePendingSession $s): int => $s->minutes()),
+                    'first_seen' => $group->min('started_at'),
+                    'last_seen' => $group->max('ended_at'),
+                    'note' => $first->note,
+                ];
+            })
             ->values();
+
+        /** @var \Illuminate\Support\Collection<int, object{provider: string, remote_id: string, count: int, minutes: int, first_seen: \Illuminate\Support\Carbon, last_seen: \Illuminate\Support\Carbon, note: string|null}> $groups */
+        return $groups;
     }
 
     /**
@@ -320,6 +329,7 @@ class RemoteSupportService {
         $created = 0;
         $skipped = 0;
 
+        /** @var \Illuminate\Database\Eloquent\Collection<int, RemotePendingSession> $pending */
         $pending = RemotePendingSession::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
@@ -328,6 +338,7 @@ class RemoteSupportService {
             ->where('remote_id', $remoteId)
             ->get();
 
+        /** @var RemotePendingSession $row */
         foreach ($pending as $row) {
             $session = new RemoteSession(
                 provider: $row->provider,

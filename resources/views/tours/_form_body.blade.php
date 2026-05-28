@@ -11,7 +11,7 @@
         <label class="fieldset-label">{{ __('Fahrer') }} *</label>
         <select name="user_id" required class="select select-bordered w-full">
             @foreach ($users as $u)
-                <option value="{{ $u->id }}" @selected((int) old('user_id') === (int) $u->id)>{{ $u->name }}</option>
+                <option value="{{ $u->sqid }}" @selected((string) old('user_id') === $u->sqid)>{{ $u->name }}</option>
             @endforeach
         </select>
     </div>
@@ -20,7 +20,7 @@
         <select name="vehicle_id" class="select select-bordered w-full">
             <option value="">—</option>
             @foreach ($vehicles as $v)
-                <option value="{{ $v->id }}">{{ $v->license_plate }} {{ $v->label }}</option>
+                <option value="{{ $v->sqid }}">{{ $v->license_plate }} {{ $v->label }}</option>
             @endforeach
         </select>
     </div>

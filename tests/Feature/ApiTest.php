@@ -65,7 +65,7 @@ class ApiTest extends TestCase {
         $other = User::factory()->user()->create(['organization_id' => $owner->organization_id]);
         $entry = DiaryEntry::factory()->for($owner)->create();
         Sanctum::actingAs($other);
-        $this->putJson('/api/diary/' . $entry->id, [
+        $this->putJson('/api/diary/' . $entry->getRouteKey(), [
             'content' => 'hack',
             'status' => 2,
         ])->assertForbidden();
@@ -75,9 +75,9 @@ class ApiTest extends TestCase {
         $user = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($user)->create(['is_archived' => false]);
         Sanctum::actingAs($user);
-        $this->postJson('/api/diary/' . $entry->id . '/archive')->assertOk();
+        $this->postJson('/api/diary/' . $entry->getRouteKey() . '/archive')->assertOk();
         $this->assertTrue($entry->fresh()->is_archived);
-        $this->postJson('/api/diary/' . $entry->id . '/restore')->assertOk();
+        $this->postJson('/api/diary/' . $entry->getRouteKey() . '/restore')->assertOk();
         $this->assertFalse($entry->fresh()->is_archived);
     }
 
@@ -85,7 +85,7 @@ class ApiTest extends TestCase {
         $user = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($user)->create();
         Sanctum::actingAs($user);
-        $this->postJson('/api/diary/' . $entry->id . '/comments', ['body' => 'Hi'])
+        $this->postJson('/api/diary/' . $entry->getRouteKey() . '/comments', ['body' => 'Hi'])
             ->assertCreated()
             ->assertJsonPath('data.body', 'Hi');
     }
@@ -102,11 +102,11 @@ class ApiTest extends TestCase {
 
         // Update/Delete nur Admin
         $tag = Tag::where('name', 'X')->first();
-        $this->putJson('/api/tags/' . $tag->id, ['name' => 'Y'])->assertForbidden();
+        $this->putJson('/api/tags/' . $tag->getRouteKey(), ['name' => 'Y'])->assertForbidden();
 
         Sanctum::actingAs($admin);
-        $this->putJson('/api/tags/' . $tag->id, ['name' => 'Y'])->assertOk();
-        $this->deleteJson('/api/tags/' . $tag->id)->assertOk();
+        $this->putJson('/api/tags/' . $tag->getRouteKey(), ['name' => 'Y'])->assertOk();
+        $this->deleteJson('/api/tags/' . $tag->getRouteKey())->assertOk();
     }
 
     public function test_dashboard_endpoint(): void {

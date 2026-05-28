@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\SiteFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -38,10 +38,12 @@ use Illuminate\Support\Carbon;
  */
 class Site extends Model {
     use Auditable;
-    use BelongsToOrganization;
 
+    use BelongsToOrganization;
     /** @use HasFactory<SiteFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

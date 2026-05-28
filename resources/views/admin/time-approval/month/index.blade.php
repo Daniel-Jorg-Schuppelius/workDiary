@@ -19,7 +19,7 @@
             <select name="user" class="select select-sm select-bordered w-48 shrink-0">
                 <option value="">{{ __('Alle Mitarbeitenden') }}</option>
                 @foreach ($teamUsers as $u)
-                    <option value="{{ $u->id }}" @selected($filters['user'] === $u->id)>{{ $u->name }}</option>
+                    <option value="{{ $u->sqid }}" @selected($filters['user'] === $u->id)>{{ $u->name }}</option>
                 @endforeach
             </select>
             <input type="number" name="year" min="2000" max="2999" value="{{ $filters['year'] }}"

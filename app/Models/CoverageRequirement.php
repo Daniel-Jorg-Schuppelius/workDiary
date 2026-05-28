@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Carbon\Carbon;
 use Database\Factories\CoverageRequirementFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -47,6 +47,8 @@ class CoverageRequirement extends Model {
 
     /** @use HasFactory<CoverageRequirementFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     public const WEEKDAY_SUNDAY = 0;
 

@@ -65,7 +65,7 @@ class AssetStatusVisibilityApiTest extends TestCase {
             'title' => 'Defektprotokoll',
         ])->create();
 
-        $response = $this->getJson(route('api.assets.status-visibility', ['asset' => $asset->id]));
+        $response = $this->getJson(route('api.assets.status-visibility', ['asset' => $asset]));
 
         $response->assertOk();
         $response->assertJsonPath('data.asset_id', $asset->id);

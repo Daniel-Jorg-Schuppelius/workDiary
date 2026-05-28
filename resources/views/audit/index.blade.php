@@ -36,7 +36,7 @@
                     <select id="audit-user" name="user_id" class="select select-bordered select-sm">
                         <option value="">{{ __('alle') }}</option>
                         @foreach ($users as $u)
-                            <option value="{{ $u->id }}" @selected((int) ($filters['user_id'] ?? 0) === $u->id)>{{ $u->name }}</option>
+                            <option value="{{ $u->sqid }}" @selected((string) ($filters['user_id'] ?? '') === $u->sqid)>{{ $u->name }}</option>
                         @endforeach
                     </select>
                 </x-filter-field>

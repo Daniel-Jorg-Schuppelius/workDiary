@@ -52,7 +52,7 @@
                         <select name="vehicle_id" class="select select-bordered select-sm">
                             <option value="">—</option>
                             @foreach ($vehicles as $v)
-                                <option value="{{ $v->id }}" @selected((int) $tour->vehicle_id === (int) $v->id)>{{ $v->license_plate }} {{ $v->label }}</option>
+                                <option value="{{ $v->sqid }}" @selected((int) $tour->vehicle_id === (int) $v->id)>{{ $v->license_plate }} {{ $v->label }}</option>
                             @endforeach
                         </select>
                     </label>

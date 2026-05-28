@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSqid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -31,6 +32,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Carbon\CarbonImmutable $updated_at
  */
 class LicenseFlagOverride extends Model {
+    use HasSqid;
+
     protected $fillable = [
         'organization_id',
         'flag',

@@ -151,7 +151,7 @@
                                     <span class="label-text text-xs">{{ __('Software') }}</span>
                                     <select name="software_id" required class="select select-sm select-bordered">
                                         @foreach ($softwareCatalog->where('kind', \App\Enums\Software\SoftwareKind::OperatingSystem) as $sw)
-                                            <option value="{{ $sw->id }}">{{ $sw->name }}@if ($sw->vendor) — {{ $sw->vendor }}@endif</option>
+                                            <option value="{{ $sw->sqid }}">{{ $sw->name }}@if ($sw->vendor) — {{ $sw->vendor }}@endif</option>
                                         @endforeach
                                     </select>
                                 </label>
@@ -213,7 +213,7 @@
                                 <span class="label-text text-xs">{{ __('Software') }}</span>
                                 <select name="software_id" required class="select select-sm select-bordered">
                                     @foreach ($softwareCatalog->where('kind', '!=', \App\Enums\Software\SoftwareKind::OperatingSystem) as $sw)
-                                        <option value="{{ $sw->id }}">{{ $sw->name }}@if ($sw->vendor) — {{ $sw->vendor }}@endif</option>
+                                        <option value="{{ $sw->sqid }}">{{ $sw->name }}@if ($sw->vendor) — {{ $sw->vendor }}@endif</option>
                                     @endforeach
                                 </select>
                             </label>

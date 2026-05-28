@@ -96,7 +96,7 @@
             <select name="assigned_user_id" class="select select-bordered w-full">
                 <option value="">—</option>
                 @foreach ($users as $u)
-                    <option value="{{ $u->id }}" @selected((int) old('assigned_user_id', $rule->assigned_user_id) === (int) $u->id)>{{ $u->name }}</option>
+                    <option value="{{ $u->sqid }}" @selected((string) old('assigned_user_id', sqid(\App\Models\User::class, $rule->assigned_user_id)) === $u->sqid)>{{ $u->name }}</option>
                 @endforeach
             </select>
         </div>

@@ -10,11 +10,19 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Customer;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class SaveCustomerRequest extends FormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'tag_ids' => \App\Models\Tag::class,
+    ];
+
     public function authorize(): bool {
         return true;
     }
@@ -65,7 +73,7 @@ class SaveCustomerRequest extends FormRequest {
             'contact_persons.*.phone' => ['nullable', 'string', 'max:64'],
             'contact_persons.*.primary' => ['nullable', 'boolean'],
             'tag_ids' => ['nullable', 'array'],
-            'tag_ids.*' => ['integer'],
+            'tag_ids.*' => ['integer', 'exists:tags,id'],
             'new_tags' => ['nullable', 'string', 'max:500'],
         ];
     }

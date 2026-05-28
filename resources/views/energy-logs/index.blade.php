@@ -23,7 +23,7 @@
                         <option value="">{{ __('— eigene —') }}</option>
                         <option value="all" @selected(request('user') === 'all')>{{ __('Alle') }}</option>
                         @foreach ($selectableUsers as $u)
-                            <option value="{{ $u->id }}" @selected((int) request('user') === (int) $u->id)>{{ $u->name }}</option>
+                            <option value="{{ $u->sqid }}" @selected((int) request('user') === (int) $u->id)>{{ $u->name }}</option>
                         @endforeach
                     </select>
                 </x-filter-field>
@@ -32,7 +32,7 @@
                 <select id="energy-vehicle" name="vehicle" class="select select-bordered select-sm" onchange="this.form.submit()">
                     <option value="">{{ __('Alle Fahrzeuge') }}</option>
                     @foreach ($vehicles as $v)
-                        <option value="{{ $v->id }}" @selected($selectedVehicleId === (int) $v->id)>{{ $v->displayName() }}</option>
+                        <option value="{{ $v->sqid }}" @selected((string) $selectedVehicleId === $v->sqid)>{{ $v->displayName() }}</option>
                     @endforeach
                 </select>
             </x-filter-field>

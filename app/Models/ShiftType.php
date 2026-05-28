@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Carbon\Carbon;
 use Database\Factories\ShiftTypeFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -32,10 +32,12 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};
  */
 class ShiftType extends Model {
     use Auditable;
-    use BelongsToOrganization;
 
+    use BelongsToOrganization;
     /** @use HasFactory<ShiftTypeFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

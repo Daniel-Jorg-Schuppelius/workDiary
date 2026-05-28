@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Import\{ImportEntity, ImportRunState};
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -43,7 +43,9 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  */
 class ImportRun extends Model {
     use Auditable;
+
     use BelongsToOrganization;
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

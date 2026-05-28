@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Tour\TourStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\TourFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -47,6 +47,8 @@ class Tour extends Model {
 
     /** @use HasFactory<TourFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

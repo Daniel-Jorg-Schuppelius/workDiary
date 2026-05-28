@@ -34,7 +34,8 @@ class TogglImportService {
 
     public const EXT_TYPE_ENTRY = 'entry';
 
-    public function __construct(private readonly TogglCsvParser $csvParser = new TogglCsvParser) {}
+    public function __construct(private readonly TogglCsvParser $csvParser = new TogglCsvParser) {
+    }
 
     /**
      * Holt die Zeiteinträge der Toggl-API im Fenster [$from, $to] und verarbeitet sie.
@@ -248,22 +249,31 @@ class TogglImportService {
      * @return \Illuminate\Support\Collection<int, object{client_name: ?string, project_name: ?string, count: int, minutes: int, first_seen: \Illuminate\Support\Carbon, last_seen: \Illuminate\Support\Carbon}>
      */
     public function openPendingGroups(Organization $organization): \Illuminate\Support\Collection {
-        return TogglPendingEntry::query()
+        $groups = TogglPendingEntry::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->where('status', TogglPendingEntry::STATUS_OPEN)
             ->orderByDesc('ended_at')
             ->get()
             ->groupBy(fn(TogglPendingEntry $e): string => ($e->client_name ?? '') . '|' . ($e->project_name ?? ''))
-            ->map(fn($group) => (object) [
-                'client_name' => $group->first()->client_name,
-                'project_name' => $group->first()->project_name,
-                'count' => $group->count(),
-                'minutes' => $group->sum(fn(TogglPendingEntry $e): int => $e->minutes()),
-                'first_seen' => $group->min('started_at'),
-                'last_seen' => $group->max('ended_at'),
-            ])
+            ->map(function ($group): object {
+                /** @var \Illuminate\Support\Collection<int, TogglPendingEntry> $group */
+                $first = $group->first();
+                assert($first instanceof TogglPendingEntry);
+
+                return (object) [
+                    'client_name' => $first->client_name,
+                    'project_name' => $first->project_name,
+                    'count' => (int) $group->count(),
+                    'minutes' => (int) $group->sum(fn(TogglPendingEntry $e): int => $e->minutes()),
+                    'first_seen' => $group->min('started_at'),
+                    'last_seen' => $group->max('ended_at'),
+                ];
+            })
             ->values();
+
+        /** @var \Illuminate\Support\Collection<int, object{client_name: string|null, project_name: string|null, count: int, minutes: int, first_seen: \Illuminate\Support\Carbon, last_seen: \Illuminate\Support\Carbon}> $groups */
+        return $groups;
     }
 
     /**

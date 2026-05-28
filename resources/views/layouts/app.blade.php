@@ -1057,7 +1057,7 @@
                                                     aria-label="{{ __('Aktive Organisation waehlen') }}"
                                                     title="{{ __('Aktive Organisation waehlen') }}">
                                                 @foreach ($_orgList as $_orgItem)
-                                                    <option value="{{ $_orgItem->id }}"
+                                                    <option value="{{ $_orgItem->sqid }}"
                                                             {{ $_activeOrgId === (int) $_orgItem->id ? 'selected' : '' }}>
                                                         {{ $_orgItem->name }}
                                                     </option>

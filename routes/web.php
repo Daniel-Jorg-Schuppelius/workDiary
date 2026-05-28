@@ -184,13 +184,11 @@ Route::middleware('auth')->group(function () {
 
         Route::post('attachments/{type}/{id}', [AttachmentController::class, 'store'])
             ->whereIn('type', ['diary', 'comment', 'shift', 'assignment', 'task', 'customer', 'organization', 'user', 'asset'])
-            ->whereNumber('id')
             ->name('attachments.store');
         Route::get('attachments/{attachment}/download', [AttachmentController::class, 'download'])->name('attachments.download');
         Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy'])->name('attachments.destroy');
         Route::delete('attachments/{type}/{id}/meta/{meta}', [AttachmentController::class, 'destroyMeta'])
             ->whereIn('type', ['organization', 'user'])
-            ->whereNumber('id')
             ->whereIn('meta', ['logo', 'logo_dark', 'avatar'])
             ->name('attachments.destroyMeta');
 

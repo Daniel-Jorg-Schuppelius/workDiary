@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\EventCategoryFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -35,10 +35,12 @@ use Illuminate\Support\Carbon;
  */
 class EventCategory extends Model {
     use Auditable;
-    use BelongsToOrganization;
 
+    use BelongsToOrganization;
     /** @use HasFactory<EventCategoryFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $table = 'event_categories';
 

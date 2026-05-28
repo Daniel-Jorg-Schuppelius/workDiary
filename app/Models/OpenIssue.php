@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use Database\Factories\OpenIssueFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
@@ -39,10 +39,12 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
  */
 class OpenIssue extends Model {
     use Auditable;
+
     use BelongsToOrganization;
     use HasAttachments;
     /** @use HasFactory<OpenIssueFactory> */
     use HasFactory;
+    use HasSqid;
 
     use SoftDeletes;
 

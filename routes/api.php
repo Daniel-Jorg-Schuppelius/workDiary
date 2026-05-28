@@ -32,7 +32,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('attachments/{type}/{id}', [AttachmentController::class, 'store'])
         ->whereIn('type', ['diary', 'comment', 'shift', 'assignment', 'asset'])
-        ->whereNumber('id')
         ->name('api.attachments.store');
     Route::get('attachments/{attachment}/download', [AttachmentController::class, 'download'])->name('api.attachments.download');
     Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy'])->name('api.attachments.destroy');
@@ -48,11 +47,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('dashboard', DashboardController::class)->name('api.dashboard');
 
     Route::get('assets/{asset}/timeline', AssetTimelineController::class)
-        ->whereNumber('asset')
         ->name('api.assets.timeline');
 
     Route::get('assets/{asset}/status-visibility', AssetStatusVisibilityController::class)
-        ->whereNumber('asset')
         ->name('api.assets.status-visibility');
 
     Route::get('push/vapid', [PushSubscriptionController::class, 'vapid'])->name('api.push.vapid');

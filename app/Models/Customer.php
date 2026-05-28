@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Project\ProjectStatus;
-use App\Models\Concerns\{BelongsToOrganization, HasAttachments, HasTags};
+use App\Models\Concerns\{BelongsToOrganization, HasAttachments, HasSqid, HasTags};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
@@ -59,6 +59,7 @@ class Customer extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
+    use HasSqid;
     use HasTags;
 
     protected $fillable = [

@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Asset\{AssetClass, MaintenanceIntervalKind};
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -32,6 +32,8 @@ use Illuminate\Support\Carbon;
  */
 class MaintenancePlanTemplate extends Model {
     use BelongsToOrganization;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

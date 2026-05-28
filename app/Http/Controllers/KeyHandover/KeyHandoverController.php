@@ -85,7 +85,7 @@ class KeyHandoverController extends Controller {
         $this->service->record($asset, $user, $data);
 
         return redirect()
-            ->route('key-handovers.index', ['asset' => $asset->id])
+            ->route('key-handovers.index', ['asset' => $asset->sqid])
             ->with('success', __('Schlüsselvorgang erfasst.'));
     }
 

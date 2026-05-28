@@ -26,7 +26,8 @@ class TeamViewerClient implements RemoteProvider {
     public function __construct(
         private readonly ?string $apiKey,
         private readonly string $baseUrl = 'https://webapi.teamviewer.com/api/v1',
-    ) {}
+    ) {
+    }
 
     public function id(): string {
         return self::ID;
@@ -61,7 +62,7 @@ class TeamViewerClient implements RemoteProvider {
                 'from_date' => $from->toIso8601String(),
                 'to_date' => $to->toIso8601String(),
             ];
-            if ($offset !== null && $offset !== '') {
+            if ($offset !== null) {
                 $query['offset_id'] = $offset;
             }
 

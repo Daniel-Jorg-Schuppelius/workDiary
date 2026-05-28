@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -51,6 +51,8 @@ class Timesheet extends Model {
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
+    use HasSqid;
 
     /** @param array<string, mixed> $attributes */
     public function __construct(array $attributes = []) {

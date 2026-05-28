@@ -100,7 +100,7 @@
                         @can('create', Task::class)
                             @if (! $task->parent_task_id)
                                 <li class="px-4 py-1.5 pl-12">
-                                    <a href="{{ route('projects.tasks.create', ['project' => $project, 'parent_id' => $task->id]) }}"
+                                    <a href="{{ route('projects.tasks.create', ['project' => $project, 'parent_id' => $task->sqid]) }}"
                                        data-entry-modal-trigger
                                        class="inline-flex items-center gap-1 text-xs text-base-content/40 hover:text-primary">
                                         <x-icon name="add" /> {{ __('Sub-Aufgabe') }}

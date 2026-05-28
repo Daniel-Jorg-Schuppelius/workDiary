@@ -77,7 +77,7 @@
             <select id="ev-category" name="category_id" class="select select-bordered w-full">
                 <option value="">—</option>
                 @foreach ($categories as $cat)
-                    <option value="{{ $cat->id }}" @selected(old('category_id', $event?->category_id) == $cat->id)>{{ $cat->name }}</option>
+                    <option value="{{ $cat->sqid }}" @selected((string) old('category_id', sqid(\App\Models\EventCategory::class, $event?->category_id)) === $cat->sqid)>{{ $cat->name }}</option>
                 @endforeach
             </select>
         </div>
@@ -175,7 +175,7 @@
             <select id="ev-resp" name="responsible_user_id" required class="select select-bordered w-full">
                 <option value="">—</option>
                 @foreach ($users as $u)
-                    <option value="{{ $u->id }}" @selected(old('responsible_user_id', $event?->responsible_user_id ?? auth()->id()) == $u->id)>{{ $u->name }}</option>
+                    <option value="{{ $u->sqid }}" @selected(old('responsible_user_id', $event?->responsible_user_id ?? auth()->id()) == $u->id)>{{ $u->name }}</option>
                 @endforeach
             </select>
         </div>
@@ -241,7 +241,7 @@
                                     class="select select-sm select-bordered w-full" required>
                                 <option value="">—</option>
                                 @foreach ($rooms as $room)
-                                    <option value="{{ $room->id }}">{{ $room->name }}</option>
+                                    <option value="{{ $room->sqid }}">{{ $room->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -306,7 +306,7 @@
                                     class="select select-sm select-bordered w-full" required>
                                 <option value="">—</option>
                                 @foreach ($users as $u)
-                                    <option value="{{ $u->id }}">{{ $u->name }}</option>
+                                    <option value="{{ $u->sqid }}">{{ $u->name }}</option>
                                 @endforeach
                             </select>
                         </div>

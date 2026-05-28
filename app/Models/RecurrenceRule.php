@@ -12,7 +12,7 @@ namespace App\Models;
 
 use App\Enums\Diary\{LocationMode, Priority};
 use App\Enums\Recurrence\RecurrenceFrequency;
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -47,6 +47,8 @@ class RecurrenceRule extends Model {
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
+    use HasSqid;
 
     /** @var list<string> */
     public const WEEKDAY_CODES = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];

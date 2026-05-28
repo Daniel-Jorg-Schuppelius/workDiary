@@ -11,12 +11,20 @@
 namespace App\Http\Requests;
 
 use App\Enums\TimeEntry\TimeEntryKind;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Timesheet;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\{Rule, Validator};
 
 class SaveTimesheetEntryRequest extends FormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'task_id' => \App\Models\Task::class,
+    ];
+
     public function authorize(): bool {
         return true;
     }

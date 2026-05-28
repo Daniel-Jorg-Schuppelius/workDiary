@@ -12,7 +12,7 @@ namespace App\Plugins\RemoteSupport\Http\Controllers;
 
 use App\Enums\Asset\{AssetClass, AssetOwnership};
 use App\Http\Controllers\Controller;
-use App\Models\{Asset, Customer, User};
+use App\Models\{Asset, Customer, Organization, User};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
 use App\Plugins\RemoteSupport\RemoteSupportService;
 use App\Services\Asset\AssetService;
@@ -31,7 +31,8 @@ use Illuminate\View\View;
 class RemoteSupportPendingController extends Controller {
     private const PROVIDERS = [AnyDeskClient::ID, TeamViewerClient::ID];
 
-    public function __construct(private readonly RemoteSupportService $service) {}
+    public function __construct(private readonly RemoteSupportService $service) {
+    }
 
     public function index(): View {
         $admin = $this->admin();
@@ -65,7 +66,7 @@ class RemoteSupportPendingController extends Controller {
         $asset = Asset::query()->whereKey($validated['asset_id'])->firstOrFail();
 
         $result = $this->service->assignPending(
-            $admin->organization,
+            $this->organization($admin),
             $validated['provider'],
             $validated['remote_id'],
             $asset,
@@ -92,7 +93,7 @@ class RemoteSupportPendingController extends Controller {
         ]);
 
         $result = $this->service->assignPending(
-            $admin->organization,
+            $this->organization($admin),
             $validated['provider'],
             $validated['remote_id'],
             $asset,
@@ -109,7 +110,7 @@ class RemoteSupportPendingController extends Controller {
             'remote_id' => ['required', 'string', 'max:191'],
         ]);
 
-        $count = $this->service->dismissPending($admin->organization, $validated['provider'], $validated['remote_id']);
+        $count = $this->service->dismissPending($this->organization($admin), $validated['provider'], $validated['remote_id']);
 
         return back()->with('status', __(':count Verbindung(en) verworfen.', ['count' => $count]));
     }
@@ -129,5 +130,12 @@ class RemoteSupportPendingController extends Controller {
         abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
 
         return $user;
+    }
+
+    private function organization(User $admin): Organization {
+        $org = $admin->organization;
+        abort_unless($org instanceof Organization, 422, 'Kein Organisationskontext.');
+
+        return $org;
     }
 }

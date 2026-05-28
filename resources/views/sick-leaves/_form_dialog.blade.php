@@ -73,7 +73,7 @@
             <select id="sick-follow" name="follow_up_for_id" class="select select-bordered w-full">
                 <option value="">{{ __('Bitte wählen …') }}</option>
                 @foreach ($previousLeaves as $prev)
-                    <option value="{{ $prev->id }}" @selected((int) old('follow_up_for_id', $sickLeave?->follow_up_for_id) === (int) $prev->id)>
+                    <option value="{{ $prev->sqid }}" @selected((string) old('follow_up_for_id', sqid(\App\Models\SickLeave::class, $sickLeave?->follow_up_for_id)) === $prev->sqid)>
                         {{ $prev->start_date->format('d.m.Y') }} – {{ $prev->end_date->format('d.m.Y') }}@if ($canAssignOthers) · {{ $prev->user?->name }} @endif
                     </option>
                 @endforeach

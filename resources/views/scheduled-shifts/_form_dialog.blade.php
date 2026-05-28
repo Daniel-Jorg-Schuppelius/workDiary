@@ -29,7 +29,7 @@
             <label class="fieldset-label">{{ __('Mitarbeiter') }} *</label>
             <select name="user_id" required class="select select-bordered w-full">
                 @foreach ($users as $u)
-                    <option value="{{ $u->id }}" @selected(old('user_id', $shift->user_id) == $u->id)>{{ $u->name }}</option>
+                    <option value="{{ $u->sqid }}" @selected((string) old('user_id', sqid(\App\Models\User::class, $shift->user_id)) === $u->sqid)>{{ $u->name }}</option>
                 @endforeach
             </select>
         </div>

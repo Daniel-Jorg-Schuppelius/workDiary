@@ -13,7 +13,7 @@ namespace App\Models;
 use App\Enums\User\UserRole;
 use App\Legacy\Models\LegacyUser;
 use App\Legacy\Support\LegacyRoleResolver;
-use App\Models\Concerns\HasAttachments;
+use App\Models\Concerns\{HasAttachments, HasSqid};
 use App\Services\Sickness\ContinuedPaymentService;
 use App\Support\Sickness\ContinuedPaymentStatus;
 use Carbon\CarbonInterface;
@@ -54,7 +54,7 @@ use Spatie\Permission\Traits\HasRoles;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasAttachments, HasFactory, HasRoles, Notifiable;
+    use HasApiTokens, HasAttachments, HasFactory, HasRoles, HasSqid, Notifiable;
 
     public function isAdmin(): bool {
         if ($this->hasRole(UserRole::Admin->value)) {

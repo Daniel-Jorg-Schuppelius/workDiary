@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Asset\MaintenanceIntervalKind;
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\MaintenancePlanFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -38,8 +38,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 class MaintenancePlan extends Model {
+    use Auditable;
+    use BelongsToOrganization;
     /** @use HasFactory<MaintenancePlanFactory> */
-    use Auditable, BelongsToOrganization, HasFactory;
+    use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

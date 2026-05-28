@@ -42,7 +42,7 @@
     </div>
 
     @can('create', Attachment::class)
-        <form method="POST" action="{{ route('attachments.store', ['type' => $parentType, 'id' => $parent->id]) }}" enctype="multipart/form-data" class="flex flex-wrap items-center gap-2">
+        <form method="POST" action="{{ route('attachments.store', ['type' => $parentType, 'id' => $parent->sqid]) }}" enctype="multipart/form-data" class="flex flex-wrap items-center gap-2">
             @csrf
             <input type="file" name="file" required class="file-input file-input-bordered file-input-sm flex-1 min-w-50 @error('file') file-input-error @enderror" />
             <x-icon-btn icon="upload" tone="primary" size="sm" type="submit" show-label>{{ __('Hochladen') }}</x-icon-btn>

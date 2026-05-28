@@ -11,11 +11,23 @@
 namespace App\Http\Requests;
 
 use App\Enums\Diary\{LocationMode, Mode, Priority};
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\EntryType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class SaveDiaryEntryRequest extends FormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'user_id' => \App\Models\User::class,
+        'entry_type_id' => \App\Models\EntryType::class,
+        'customer_id' => \App\Models\Customer::class,
+        'assigned_user_id' => \App\Models\User::class,
+        'tour_id' => \App\Models\Tour::class,
+    ];
+
     public function authorize(): bool {
         return true;
     }

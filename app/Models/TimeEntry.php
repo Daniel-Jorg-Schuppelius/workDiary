@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Services\RateCalculator;
 use Database\Factories\TimeEntryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -50,6 +50,8 @@ class TimeEntry extends Model {
 
     /** @use HasFactory<TimeEntryFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     /**
      * Liefert ein lokalisiertes Label für einen activity_type-Wert.

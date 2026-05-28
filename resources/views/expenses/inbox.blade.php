@@ -82,7 +82,7 @@
                         @if ($bulkEnabled)
                             <td>
                                 <input type="checkbox" class="checkbox checkbox-sm"
-                                       data-bulk-checkbox name="ids[]" value="{{ $expense->id }}"
+                                       data-bulk-checkbox name="ids[]" value="{{ $expense->sqid }}"
                                        aria-label="{{ __('Spese :id auswählen', ['id' => $expense->id]) }}">
                             </td>
                         @endif

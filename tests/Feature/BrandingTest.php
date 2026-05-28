@@ -146,7 +146,7 @@ class BrandingTest extends TestCase {
 
         $this->actingAs($admin)
             ->post(
-                route('attachments.store', ['type' => 'organization', 'id' => $org->id]),
+                route('attachments.store', ['type' => 'organization', 'id' => $org->sqid]),
                 ['file' => $file, 'meta_type' => Attachment::META_LOGO],
             )
             ->assertRedirect();
@@ -166,7 +166,7 @@ class BrandingTest extends TestCase {
         $second = UploadedFile::fake()->image('logo2.png', 200, 80);
 
         $this->actingAs($admin)
-            ->post(route('attachments.store', ['type' => 'organization', 'id' => $org->id]), [
+            ->post(route('attachments.store', ['type' => 'organization', 'id' => $org->sqid]), [
                 'file' => $first,
                 'meta_type' => Attachment::META_LOGO,
             ])->assertRedirect();
@@ -174,7 +174,7 @@ class BrandingTest extends TestCase {
         $firstAttachment = Attachment::query()->where('meta_type', Attachment::META_LOGO)->firstOrFail();
 
         $this->actingAs($admin)
-            ->post(route('attachments.store', ['type' => 'organization', 'id' => $org->id]), [
+            ->post(route('attachments.store', ['type' => 'organization', 'id' => $org->sqid]), [
                 'file' => $second,
                 'meta_type' => Attachment::META_LOGO,
             ])->assertRedirect();
@@ -197,7 +197,7 @@ class BrandingTest extends TestCase {
         $file = UploadedFile::fake()->image('logo.png', 200, 80);
 
         $this->actingAs($regular)
-            ->post(route('attachments.store', ['type' => 'organization', 'id' => $org->id]), [
+            ->post(route('attachments.store', ['type' => 'organization', 'id' => $org->sqid]), [
                 'file' => $file,
                 'meta_type' => Attachment::META_LOGO,
             ])
@@ -210,7 +210,7 @@ class BrandingTest extends TestCase {
         $file = UploadedFile::fake()->image('avatar.png', 120, 120);
 
         $this->actingAs($user)
-            ->post(route('attachments.store', ['type' => 'user', 'id' => $user->id]), [
+            ->post(route('attachments.store', ['type' => 'user', 'id' => $user->sqid]), [
                 'file' => $file,
                 'meta_type' => Attachment::META_AVATAR,
             ])
@@ -231,7 +231,7 @@ class BrandingTest extends TestCase {
         $file = UploadedFile::fake()->image('avatar.png', 120, 120);
 
         $this->actingAs($a)
-            ->post(route('attachments.store', ['type' => 'user', 'id' => $b->id]), [
+            ->post(route('attachments.store', ['type' => 'user', 'id' => $b->sqid]), [
                 'file' => $file,
                 'meta_type' => Attachment::META_AVATAR,
             ])
@@ -245,7 +245,7 @@ class BrandingTest extends TestCase {
         $svg = UploadedFile::fake()->createWithContent('logo.svg', '<svg></svg>');
 
         $this->actingAs($admin)
-            ->post(route('attachments.store', ['type' => 'organization', 'id' => $org->id]), [
+            ->post(route('attachments.store', ['type' => 'organization', 'id' => $org->sqid]), [
                 'file' => $svg,
                 'meta_type' => Attachment::META_LOGO,
             ])

@@ -52,6 +52,25 @@ class AppServiceProvider extends ServiceProvider {
         // BrandingService cached die Organisation pro Request → einmalig
         // pro Container-Lifecycle resolven.
         $this->app->singleton(BrandingService::class);
+
+        // Sqid-Encoder als Singleton: hält pro Modell-Klasse einen Sqids-
+        // Instanz-Cache mit deterministisch permutiertem Alphabet vor.
+        $this->app->singleton(\App\Services\SqidEncoder::class, function ($app): \App\Services\SqidEncoder {
+            /** @var array<string, mixed> $cfg */
+            $cfg = (array) $app['config']->get('sqids', []);
+            $salt = (string) ($cfg['salt'] ?? '');
+
+            if ($salt === '' && $app->environment('production')) {
+                throw new \RuntimeException('SQIDS_SALT must be set in production.');
+            }
+
+            return new \App\Services\SqidEncoder(
+                salt: $salt,
+                minLength: (int) ($cfg['min_length'] ?? 10),
+                alphabet: (string) ($cfg['alphabet'] ?? 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'),
+                blocklist: array_values((array) ($cfg['blocklist'] ?? [])),
+            );
+        });
         $this->app->singleton(ClassificationManager::class, function ($app): ClassificationManager {
             return new ClassificationManager($app->make(ClassificationResolver::class));
         });

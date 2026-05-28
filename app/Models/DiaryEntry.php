@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Diary\{LocationMode, Mode, Priority, Status};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasTags};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, HasTags};
 use Database\Factories\DiaryEntryFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -72,6 +72,7 @@ class DiaryEntry extends Model {
     /** @use HasFactory<DiaryEntryFactory> */
     use HasFactory;
 
+    use HasSqid;
     use HasTags;
 
     protected $fillable = [

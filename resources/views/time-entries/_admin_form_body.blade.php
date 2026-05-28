@@ -56,7 +56,7 @@
         {{ __('Tipp: Endet die Zeit nach Mitternacht? Einfach die kleinere Uhrzeit eintragen — der Folgetag wird automatisch ergänzt.') }}
     </p>
     @if ($openAttendance)
-        <input type="hidden" name="attendance_id" value="{{ $openAttendance->id }}">
+        <input type="hidden" name="attendance_id" value="{{ $openAttendance->sqid }}">
         <p class="text-xs text-base-content/60 md:col-span-2">
             {{ __('Wird mit Stempelung verknüpft (seit :time).', ['time' => $openAttendance->started_at?->format('H:i')]) }}
         </p>

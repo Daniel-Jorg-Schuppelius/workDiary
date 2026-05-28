@@ -11,11 +11,22 @@
 namespace App\Http\Requests;
 
 use App\Enums\Travel\TravelLogVehicle;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\{Rule, Validator};
 
 class SaveTravelLogRequest extends FormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'task_id' => \App\Models\Task::class,
+        'customer_id' => \App\Models\Customer::class,
+        'attendance_id' => \App\Models\Attendance::class,
+        'vehicle_id' => \App\Models\Vehicle::class,
+    ];
+
     public function authorize(): bool {
         return true;
     }

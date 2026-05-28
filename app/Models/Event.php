@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Event\{EventStatus, EventType, EventVisibility};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use Database\Factories\EventFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -56,6 +56,8 @@ class Event extends Model {
 
     /** @use HasFactory<EventFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

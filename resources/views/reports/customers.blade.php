@@ -45,7 +45,7 @@
             <select id="rep-user" name="user_id" class="select select-sm select-bordered">
                 <option value="">{{ __('Alle') }}</option>
                 @foreach($reportUsers as $reportUser)
-                    <option value="{{ $reportUser->id }}" @selected($userId === $reportUser->id)>{{ $reportUser->name }}</option>
+                    <option value="{{ $reportUser->sqid }}" @selected((string) $userId === $reportUser->sqid)>{{ $reportUser->name }}</option>
                 @endforeach
             </select>
         </x-filter-field>

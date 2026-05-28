@@ -11,13 +11,22 @@
 namespace App\Http\Requests;
 
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Http\Requests\Concerns\ChecksShiftCompliance;
+use App\Http\Requests\Concerns\{ChecksShiftCompliance, DecodesSqidInputs};
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\{Rule, Validator};
 
 class StoreScheduledShiftRequest extends FormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'user_id' => \App\Models\User::class,
+        'shift_type_id' => \App\Models\ShiftType::class,
+        'duty_plan_id' => \App\Models\DutyPlan::class,
+    ];
+
     use ChecksShiftCompliance;
 
     public function authorize(): bool {

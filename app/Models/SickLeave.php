@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Sickness\SickLeaveKind;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Services\HolidayService;
 use Carbon\{Carbon, CarbonInterface};
 use Database\Factories\SickLeaveFactory;
@@ -40,11 +40,13 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  */
 class SickLeave extends Model {
     use Auditable;
+
     use BelongsToOrganization;
     use HasAttachments;
-
     /** @use HasFactory<SickLeaveFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

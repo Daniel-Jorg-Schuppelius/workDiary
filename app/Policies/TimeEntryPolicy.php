@@ -23,7 +23,14 @@ class TimeEntryPolicy {
     }
 
     public function view(User $user, TimeEntry $entry): bool {
-        return true;
+        if ($this->owns($user, $entry, 'user_id')) {
+            return true;
+        }
+        if (! $this->sharesOrganization($user, $entry)) {
+            return false;
+        }
+
+        return $user->canManageBilling();
     }
 
     public function create(User $user): bool {

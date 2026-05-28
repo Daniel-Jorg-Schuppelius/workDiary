@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Facility\RoomUsageType;
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\RoomFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -42,10 +42,12 @@ use Illuminate\Support\Carbon;
  */
 class Room extends Model {
     use Auditable;
-    use BelongsToOrganization;
 
+    use BelongsToOrganization;
     /** @use HasFactory<RoomFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

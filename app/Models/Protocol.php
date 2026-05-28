@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Protocol\{ProtocolStatus, ProtocolType, ProtocolVisibility};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use Database\Factories\ProtocolFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -45,6 +45,8 @@ class Protocol extends Model {
 
     /** @use HasFactory<ProtocolFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

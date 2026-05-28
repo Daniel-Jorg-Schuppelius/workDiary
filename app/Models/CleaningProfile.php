@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\CleaningProfileFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -33,10 +33,12 @@ use Illuminate\Support\Carbon;
  */
 class CleaningProfile extends Model {
     use Auditable;
-    use BelongsToOrganization;
 
+    use BelongsToOrganization;
     /** @use HasFactory<CleaningProfileFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

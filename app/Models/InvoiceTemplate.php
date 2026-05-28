@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -26,6 +26,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class InvoiceTemplate extends Model {
     use BelongsToOrganization;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

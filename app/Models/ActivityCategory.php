@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Activity\ActivityCategoryType;
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Database\Factories\ActivityCategoryFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -39,6 +39,8 @@ class ActivityCategory extends Model {
 
     /** @use HasFactory<ActivityCategoryFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

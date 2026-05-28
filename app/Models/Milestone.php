@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Database\Factories\MilestoneFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -35,6 +35,8 @@ class Milestone extends Model {
 
     /** @use HasFactory<MilestoneFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

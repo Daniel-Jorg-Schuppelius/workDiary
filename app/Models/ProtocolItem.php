@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Protocol\{ProtocolItemResult, ProtocolItemType};
-use App\Models\Concerns\HasAttachments;
+use App\Models\Concerns\{HasAttachments, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
@@ -32,6 +32,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  */
 class ProtocolItem extends Model {
     use HasAttachments;
+
+    use HasSqid;
 
     protected $fillable = [
         'protocol_id',

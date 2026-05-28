@@ -61,7 +61,7 @@
                         <select name="scope_user_id" class="select select-sm select-bordered">
                             <option value="">{{ __('— bitte wählen —') }}</option>
                             @foreach ($teamUsers as $u)
-                                <option value="{{ $u->id }}" @selected((int) old('scope_user_id') === $u->id)>{{ $u->name }}</option>
+                                <option value="{{ $u->sqid }}" @selected((int) old('scope_user_id') === $u->id)>{{ $u->name }}</option>
                             @endforeach
                         </select>
                     </label>

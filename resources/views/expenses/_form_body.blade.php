@@ -12,11 +12,11 @@
         <select name="expense_category_id" class="select select-bordered w-full" data-expense-category>
             <option value="">—</option>
             @foreach ($categories as $cat)
-                <option value="{{ $cat->id }}"
+                <option value="{{ $cat->sqid }}"
                         data-tax-rate="{{ $cat->default_tax_rate }}"
                         data-billable-default="{{ $cat->default_billable ? '1' : '0' }}"
                         data-slug="{{ $cat->slug }}"
-                        @selected(old('expense_category_id', $expense?->expense_category_id) == $cat->id)>
+                        @selected((string) old('expense_category_id', sqid(\App\Models\EventCategory::class, $expense?->expense_category_id)) === $cat->sqid)>
                     {{ $cat->label }}
                 </option>
             @endforeach

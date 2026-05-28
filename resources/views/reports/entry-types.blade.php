@@ -22,7 +22,7 @@
             <select id="rep-customer" name="customer_id" class="select select-sm select-bordered">
                 <option value="">{{ __('Alle') }}</option>
                 @foreach($customers as $customer)
-                    <option value="{{ $customer->id }}" @selected($customerId === $customer->id)>{{ $customer->name }}</option>
+                    <option value="{{ $customer->sqid }}" @selected((string) $customerId === $customer->sqid)>{{ $customer->name }}</option>
                 @endforeach
             </select>
         </x-filter-field>
@@ -31,7 +31,7 @@
             <select id="rep-user" name="user_id" class="select select-sm select-bordered">
                 <option value="">{{ __('Alle') }}</option>
                 @foreach($reportUsers as $reportUser)
-                    <option value="{{ $reportUser->id }}" @selected($userId === $reportUser->id)>{{ $reportUser->name }}</option>
+                    <option value="{{ $reportUser->sqid }}" @selected((string) $userId === $reportUser->sqid)>{{ $reportUser->name }}</option>
                 @endforeach
             </select>
         </x-filter-field>
@@ -40,7 +40,7 @@
             <select id="rep-entry-type" name="entry_type_id" class="select select-sm select-bordered">
                 <option value="">{{ __('Alle') }}</option>
                 @foreach($entryTypes as $entryType)
-                    <option value="{{ $entryType->id }}" @selected($entryTypeFilter === $entryType->id)>{{ $entryType->label }}</option>
+                    <option value="{{ $entryType->sqid }}" @selected((string) $entryTypeFilter === $entryType->sqid)>{{ $entryType->label }}</option>
                 @endforeach
             </select>
         </x-filter-field>

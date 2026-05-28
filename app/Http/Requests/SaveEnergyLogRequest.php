@@ -10,11 +10,19 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\EnergyLog;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class SaveEnergyLogRequest extends FormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'vehicle_id' => \App\Models\Vehicle::class,
+    ];
+
     public function authorize(): bool {
         return true;
     }

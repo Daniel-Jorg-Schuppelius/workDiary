@@ -11,12 +11,21 @@
 namespace App\Http\Requests;
 
 use App\Enums\Sickness\SickLeaveKind;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\SickLeave;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class SaveSickLeaveRequest extends FormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'user_id' => \App\Models\User::class,
+        'follow_up_for_id' => \App\Models\SickLeave::class,
+    ];
+
     public function authorize(): bool {
         return true;
     }

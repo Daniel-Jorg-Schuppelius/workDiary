@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Expense\PerDiemTripStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\PerDiemTripFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -46,6 +46,7 @@ class PerDiemTrip extends Model {
     use BelongsToOrganization;
     /** @use HasFactory<PerDiemTripFactory> */
     use HasFactory;
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

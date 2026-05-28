@@ -11,10 +11,19 @@
 namespace App\Http\Requests;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketSource};
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
 class SaveServiceTicketRequest extends FormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'customer_id' => \App\Models\Customer::class,
+        'asset_id' => \App\Models\Asset::class,
+    ];
+
     public function authorize(): bool {
         return true;
     }

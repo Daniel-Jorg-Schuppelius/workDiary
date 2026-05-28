@@ -99,3 +99,22 @@ if (! function_exists('setting')) {
         return config($key, $default);
     }
 }
+
+if (! function_exists('sqid')) {
+    /**
+     * Encode a numeric primary key into a per-model Sqid.
+     *
+     * Returns the encoded string, or an empty string if the id is null/0.
+     * Use in Blade for preselected option values, e.g.:
+     *   <option value="{{ sqid(\App\Models\Customer::class, $entry?->customer_id) }}">
+     *
+     * @param  class-string  $modelClass
+     */
+    function sqid(string $modelClass, int|string|null $id): string {
+        if ($id === null || $id === '' || (int) $id <= 0) {
+            return '';
+        }
+
+        return app(\App\Services\SqidEncoder::class)->encode($modelClass, (int) $id);
+    }
+}

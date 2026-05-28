@@ -12,10 +12,20 @@ namespace App\Http\Requests;
 
 use App\Enums\Diary\{LocationMode, Priority};
 use App\Enums\Recurrence\RecurrenceFrequency;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class SaveRecurrenceRuleRequest extends FormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'customer_id' => \App\Models\Customer::class,
+        'entry_type_id' => \App\Models\EntryType::class,
+        'assigned_user_id' => \App\Models\User::class,
+    ];
+
     public function authorize(): bool {
         return true;
     }

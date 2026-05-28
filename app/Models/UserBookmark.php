@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSqid;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +26,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class UserBookmark extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'user_id',

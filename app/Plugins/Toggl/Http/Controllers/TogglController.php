@@ -11,7 +11,7 @@
 namespace App\Plugins\Toggl\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, Project, User};
+use App\Models\{Customer, Organization, Project, User};
 use App\Plugins\Toggl\{TogglConfig, TogglImportService};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -24,7 +24,8 @@ use Illuminate\View\View;
  * Projekt zuweisen oder verwerfen).
  */
 class TogglController extends Controller {
-    public function __construct(private readonly TogglImportService $service) {}
+    public function __construct(private readonly TogglImportService $service) {
+    }
 
     public function index(): View {
         $admin = $this->admin();
@@ -56,7 +57,7 @@ class TogglController extends Controller {
         $to = CarbonImmutable::now();
         $from = $to->subDays(max(1, (int) $config['sync_window_days']));
 
-        $result = $this->service->importFromApi($admin->organization, $config, $from, $to);
+        $result = $this->service->importFromApi($this->organization($admin), $config, $from, $to);
 
         return back()->with('status', $this->importMessage($result));
     }
@@ -71,7 +72,7 @@ class TogglController extends Controller {
         $content = (string) file_get_contents($request->file('csv')->getRealPath());
         $config = TogglConfig::resolve($admin->organization_id);
 
-        $result = $this->service->importFromCsv($admin->organization, $content, $config);
+        $result = $this->service->importFromCsv($this->organization($admin), $content, $config);
 
         return back()->with('status', $this->importMessage($result));
     }
@@ -90,7 +91,7 @@ class TogglController extends Controller {
         abort_unless($customer instanceof Customer, 422, __('Das gewählte Projekt hat keinen Kunden.'));
 
         $result = $this->service->assignPending(
-            $admin->organization,
+            $this->organization($admin),
             $validated['client_name'] ?? null,
             $validated['project_name'] ?? null,
             $customer,
@@ -109,7 +110,7 @@ class TogglController extends Controller {
         ]);
 
         $count = $this->service->dismissPending(
-            $admin->organization,
+            $this->organization($admin),
             $validated['client_name'] ?? null,
             $validated['project_name'] ?? null,
         );
@@ -129,5 +130,12 @@ class TogglController extends Controller {
         abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
 
         return $user;
+    }
+
+    private function organization(User $admin): Organization {
+        $org = $admin->organization;
+        abort_unless($org instanceof Organization, 422, 'Kein Organisationskontext.');
+
+        return $org;
     }
 }

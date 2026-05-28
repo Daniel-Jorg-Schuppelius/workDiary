@@ -49,7 +49,7 @@
                 @foreach ($users as $u)
                     @php
                         $isSelf = (int) $u->id === $selfId;
-                        $href = route('flex.index', $isSelf ? [] : ['user' => $u->id]);
+                        $href = route('flex.index', $isSelf ? [] : ['user' => $u->sqid]);
                         $isActive = (int) $user->id === (int) $u->id;
                     @endphp
                     <option value="{{ $href }}" {{ $isActive ? 'selected' : '' }}>

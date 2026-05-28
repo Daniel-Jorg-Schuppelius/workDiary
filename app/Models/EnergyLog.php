@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\EnergyLogFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -44,10 +44,12 @@ use Illuminate\Support\Carbon;
  */
 class EnergyLog extends Model {
     use Auditable;
-    use BelongsToOrganization;
 
+    use BelongsToOrganization;
     /** @use HasFactory<EnergyLogFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     public const TYPE_FUEL = 'fuel';
 

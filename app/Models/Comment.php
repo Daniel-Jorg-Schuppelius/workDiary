@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use Database\Factories\CommentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,6 +23,8 @@ class Comment extends Model {
 
     /** @use HasFactory<CommentFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = ['organization_id', 'commentable_type', 'commentable_id', 'user_id', 'body'];
 

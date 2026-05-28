@@ -21,7 +21,7 @@
                     <label class="fieldset-label">{{ __('Mitarbeiter') }}</label>
                     <select id="shift-dialog-user" name="user_id" class="select select-bordered w-full" required>
                         @foreach ($users as $u)
-                            <option value="{{ $u->id }}">{{ $u->name }}</option>
+                            <option value="{{ $u->sqid }}">{{ $u->name }}</option>
                         @endforeach
                     </select>
                 </div>

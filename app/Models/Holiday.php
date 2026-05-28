@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,6 +26,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Holiday extends Model {
     use BelongsToOrganization;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\Auditable;
+use App\Models\Concerns\{Auditable, HasSqid};
 use App\Models\Scopes\OrganizationScope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Model;
@@ -45,6 +45,7 @@ use Spatie\Permission\Traits\HasRoles;
 class UserGroup extends Model {
     use Auditable;
     use HasRoles;
+    use HasSqid;
 
     /**
      * Spatie's HasRoles ermittelt den Guard üblicherweise über den auth.providers-

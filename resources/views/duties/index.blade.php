@@ -80,7 +80,7 @@
                         <select id="duties-tag" name="tag" class="select select-bordered select-sm">
                             <option value="">—</option>
                             @foreach ($allTags as $tag)
-                                <option value="{{ $tag->id }}" @selected((int) ($filters['tag'] ?? 0) === $tag->id)>{{ $tag->name }}</option>
+                                <option value="{{ $tag->sqid }}" @selected((string) ($filters['tag'] ?? '') === $tag->sqid)>{{ $tag->name }}</option>
                             @endforeach
                         </select>
                     </x-filter-field>
@@ -90,7 +90,7 @@
                         <select id="duties-entry-type" name="entry_type" class="select select-bordered select-sm w-full">
                             <option value="">{{ __('Alle Typen') }}</option>
                             @foreach ($entryTypes as $type)
-                                <option value="{{ $type->id }}" @selected((int) ($filters['entry_type'] ?? 0) === (int) $type->id)>{{ $type->label }}</option>
+                                <option value="{{ $type->sqid }}" @selected((string) ($filters['entry_type'] ?? '') === $type->sqid)>{{ $type->label }}</option>
                             @endforeach
                         </select>
                     </x-filter-field>
@@ -105,7 +105,7 @@
                         <select id="duties-user" name="user_id" class="select select-bordered select-sm w-full">
                             <option value="">{{ __('Alle') }}</option>
                             @foreach ($users as $u)
-                                <option value="{{ $u->id }}" @selected((int) ($filters['user_id'] ?? 0) === $u->id)>{{ $u->name }}</option>
+                                <option value="{{ $u->sqid }}" @selected((string) ($filters['user_id'] ?? '') === $u->sqid)>{{ $u->name }}</option>
                             @endforeach
                         </select>
                     </x-filter-field>
@@ -134,7 +134,7 @@
                         <select id="duties-kuser" name="user_id" class="select select-bordered select-sm w-full">
                             <option value="">{{ __('Alle') }}</option>
                             @foreach ($users as $u)
-                                <option value="{{ $u->id }}" @selected((int) ($filters['user_id'] ?? 0) === $u->id)>{{ $u->name }}</option>
+                                <option value="{{ $u->sqid }}" @selected((string) ($filters['user_id'] ?? '') === $u->sqid)>{{ $u->name }}</option>
                             @endforeach
                         </select>
                     </x-filter-field>

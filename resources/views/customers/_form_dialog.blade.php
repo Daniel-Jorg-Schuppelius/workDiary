@@ -251,7 +251,7 @@
             @if ($allTags->isNotEmpty())
                 <select name="tag_ids[]" multiple size="4" class="select select-bordered w-full">
                     @foreach ($allTags as $tag)
-                        <option value="{{ $tag->id }}" @selected(in_array($tag->id, (array) $selectedTagIds))>{{ $tag->name }}</option>
+                        <option value="{{ $tag->sqid }}" @selected(in_array($tag->id, (array) $selectedTagIds))>{{ $tag->name }}</option>
                     @endforeach
                 </select>
             @endif

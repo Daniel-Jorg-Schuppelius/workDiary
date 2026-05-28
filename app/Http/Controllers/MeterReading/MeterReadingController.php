@@ -76,7 +76,7 @@ class MeterReadingController extends Controller {
         }
 
         return redirect()
-            ->route('meter-readings.index', ['asset' => $asset->id])
+            ->route('meter-readings.index', ['asset' => $asset->sqid])
             ->with('success', __('Zählerstand erfasst.'));
     }
 }

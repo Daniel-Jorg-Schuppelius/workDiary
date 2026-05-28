@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Vacation\{VacationStatus, VacationType};
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Services\HolidayService;
 use Carbon\{Carbon, CarbonInterface};
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -35,6 +35,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Vacation extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

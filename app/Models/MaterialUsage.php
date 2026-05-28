@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -34,6 +34,8 @@ class MaterialUsage extends Model {
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

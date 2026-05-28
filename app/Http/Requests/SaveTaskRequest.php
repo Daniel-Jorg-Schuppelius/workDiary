@@ -11,10 +11,19 @@
 namespace App\Http\Requests;
 
 use App\Enums\Task\{TaskPriority, TaskStatus};
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class SaveTaskRequest extends FormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'milestone_id' => \App\Models\Milestone::class,
+        'parent_task_id' => \App\Models\Task::class,
+    ];
+
     public function authorize(): bool {
         return true;
     }

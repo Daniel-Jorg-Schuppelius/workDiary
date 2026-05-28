@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Shift\{DutyPlanPeriodType, DutyPlanStatus};
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Carbon\Carbon;
 use Database\Factories\DutyPlanFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -30,6 +30,8 @@ class DutyPlan extends Model {
 
     /** @use HasFactory<DutyPlanFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

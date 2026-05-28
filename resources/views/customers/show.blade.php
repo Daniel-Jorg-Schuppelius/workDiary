@@ -268,7 +268,7 @@
             </ul>
         @endif
         @can('update', $customer)
-        <form method="POST" action="{{ route('attachments.store', ['type' => 'customer', 'id' => $customer->id]) }}" enctype="multipart/form-data" class="mt-3 flex items-center gap-2">
+        <form method="POST" action="{{ route('attachments.store', ['type' => 'customer', 'id' => $customer->sqid]) }}" enctype="multipart/form-data" class="mt-3 flex items-center gap-2">
             @csrf
             <input type="file" name="file" required class="file-input file-input-sm file-input-bordered">
             <x-icon-btn icon="upload" tone="primary" size="sm" type="submit" show-label>{{ __('Hochladen') }}</x-icon-btn>

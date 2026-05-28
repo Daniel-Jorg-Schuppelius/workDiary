@@ -35,7 +35,7 @@ class AttachmentsTest extends TestCase {
         $file = UploadedFile::fake()->create('manual.pdf', 80, 'application/pdf');
 
         $this->actingAs($owner)
-            ->post(route('attachments.store', ['type' => 'asset', 'id' => $asset->id]), ['file' => $file])
+            ->post(route('attachments.store', ['type' => 'asset', 'id' => $asset->sqid]), ['file' => $file])
             ->assertRedirect();
 
         $this->assertDatabaseHas('attachments', [
@@ -52,7 +52,7 @@ class AttachmentsTest extends TestCase {
         $file = UploadedFile::fake()->create('report.pdf', 100, 'application/pdf');
 
         $this->actingAs($owner)
-            ->post(route('attachments.store', ['type' => 'diary', 'id' => $entry->id]), ['file' => $file])
+            ->post(route('attachments.store', ['type' => 'diary', 'id' => $entry->sqid]), ['file' => $file])
             ->assertRedirect();
 
         $this->assertDatabaseHas('attachments', [
@@ -71,7 +71,7 @@ class AttachmentsTest extends TestCase {
         $file = UploadedFile::fake()->create('evil.php', 10, 'application/x-php');
 
         $this->actingAs($owner)
-            ->post(route('attachments.store', ['type' => 'diary', 'id' => $entry->id]), ['file' => $file])
+            ->post(route('attachments.store', ['type' => 'diary', 'id' => $entry->sqid]), ['file' => $file])
             ->assertSessionHasErrors('file');
 
         $this->assertSame(0, Attachment::count());
@@ -84,7 +84,7 @@ class AttachmentsTest extends TestCase {
         $file = UploadedFile::fake()->create('big.bin', 26 * 1024, 'application/octet-stream');
 
         $this->actingAs($owner)
-            ->post(route('attachments.store', ['type' => 'diary', 'id' => $entry->id]), ['file' => $file])
+            ->post(route('attachments.store', ['type' => 'diary', 'id' => $entry->sqid]), ['file' => $file])
             ->assertSessionHasErrors('file');
     }
 
@@ -93,7 +93,7 @@ class AttachmentsTest extends TestCase {
         $entry = DiaryEntry::factory()->for($owner)->create();
         $this->actingAs($owner)
             ->post(
-                route('attachments.store', ['type' => 'diary', 'id' => $entry->id]),
+                route('attachments.store', ['type' => 'diary', 'id' => $entry->sqid]),
                 ['file' => UploadedFile::fake()->create('a.txt', 1, 'text/plain')]
             );
 
@@ -103,7 +103,7 @@ class AttachmentsTest extends TestCase {
             ->get(route('attachments.download', $attachment))
             ->assertForbidden();
 
-        $url = URL::temporarySignedRoute('attachments.download', now()->addMinutes(5), ['attachment' => $attachment->id]);
+        $url = URL::temporarySignedRoute('attachments.download', now()->addMinutes(5), ['attachment' => $attachment]);
         $this->actingAs($owner)->get($url)->assertOk();
     }
 

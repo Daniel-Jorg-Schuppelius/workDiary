@@ -10,9 +10,18 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SavePerDiemTripRequest extends FormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'customer_id' => \App\Models\Customer::class,
+        'travel_log_id' => \App\Models\TravelLog::class,
+    ];
+
     public function authorize(): bool {
         return true;
     }

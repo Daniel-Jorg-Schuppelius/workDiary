@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketSource, ServiceTicketStatus};
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\ServiceTicketFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -49,8 +49,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 class ServiceTicket extends Model {
+    use Auditable;
+    use BelongsToOrganization;
     /** @use HasFactory<ServiceTicketFactory> */
-    use Auditable, BelongsToOrganization, HasFactory;
+    use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

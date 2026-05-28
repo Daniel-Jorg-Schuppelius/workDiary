@@ -11,12 +11,20 @@
 namespace App\Http\Requests;
 
 use App\Enums\Project\ProjectStatus;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Project;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class SaveProjectRequest extends FormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'customer_id' => \App\Models\Customer::class,
+    ];
+
     public function authorize(): bool {
         return true;
     }

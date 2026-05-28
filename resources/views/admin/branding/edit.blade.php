@@ -38,8 +38,8 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <x-file-upload
                     :label="__('Logo (helle Variante)')"
-                    :action="route('attachments.store', ['type' => 'organization', 'id' => $organization->id])"
-                    :delete-action="route('attachments.destroyMeta', ['type' => 'organization', 'id' => $organization->id, 'meta' => 'logo'])"
+                    :action="route('attachments.store', ['type' => 'organization', 'id' => $organization->sqid])"
+                    :delete-action="route('attachments.destroyMeta', ['type' => 'organization', 'id' => $organization->sqid, 'meta' => 'logo'])"
                     :current="$organization->logo()"
                     :meta="\App\Models\Attachment::META_LOGO"
                     :max-kb="$logoMaxKb"
@@ -47,8 +47,8 @@
                 />
                 <x-file-upload
                     :label="__('Logo (dunkle Variante, optional)')"
-                    :action="route('attachments.store', ['type' => 'organization', 'id' => $organization->id])"
-                    :delete-action="route('attachments.destroyMeta', ['type' => 'organization', 'id' => $organization->id, 'meta' => 'logo_dark'])"
+                    :action="route('attachments.store', ['type' => 'organization', 'id' => $organization->sqid])"
+                    :delete-action="route('attachments.destroyMeta', ['type' => 'organization', 'id' => $organization->sqid, 'meta' => 'logo_dark'])"
                     :current="$organization->logoDark()"
                     :meta="\App\Models\Attachment::META_LOGO_DARK"
                     :max-kb="$logoMaxKb"

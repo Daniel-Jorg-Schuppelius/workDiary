@@ -61,7 +61,7 @@
     @if ($diary->tags->isNotEmpty())
         <div class="mt-4 flex flex-wrap gap-2">
             @foreach ($diary->tags as $tag)
-                <a href="{{ route('diary.index', ['tag' => $tag->id]) }}"
+                <a href="{{ route('diary.index', ['tag' => $tag->sqid]) }}"
                     class="badge badge-outline"
                     @if ($tag->color) style="border-color: {{ $tag->color }}; color: {{ $tag->color }};" @endif>
                     #{{ $tag->name }}

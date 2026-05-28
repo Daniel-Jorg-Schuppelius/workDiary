@@ -63,7 +63,7 @@
                 class="select select-bordered w-full @error('user_id') select-error @enderror"
             >
                 @foreach ($assignableUsers as $u)
-                    <option value="{{ $u->id }}" @selected((int) $defaultUserId === (int) $u->id)>{{ $u->name }}</option>
+                    <option value="{{ $u->sqid }}" @selected((int) $defaultUserId === (int) $u->id)>{{ $u->name }}</option>
                 @endforeach
             </select>
             @error('user_id')
@@ -86,7 +86,7 @@
             >
                 <option value="0">{{ __('— ohne Typ —') }}</option>
                 @foreach ($entryTypes as $type)
-                    <option value="{{ $type->id }}" @selected((int) $defaultEntryTypeId === (int) $type->id)>
+                    <option value="{{ $type->sqid }}" @selected((int) $defaultEntryTypeId === (int) $type->id)>
                         {{ $type->label }}
                     </option>
                 @endforeach
@@ -284,7 +284,7 @@
             >
                 <option value="">—</option>
                 @foreach ($assignableUsers as $u)
-                    <option value="{{ $u->id }}" @selected((int) old('assigned_user_id', $entry?->assigned_user_id) === (int) $u->id)>{{ $u->name }}</option>
+                    <option value="{{ $u->sqid }}" @selected((string) old('assigned_user_id', sqid(\App\Models\User::class, $entry?->assigned_user_id)) === $u->sqid)>{{ $u->name }}</option>
                 @endforeach
             </select>
             @error('assigned_user_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
@@ -434,7 +434,7 @@
             <div class="flex flex-wrap gap-2 mb-3">
                 @foreach ($allTags as $tag)
                     <label class="cursor-pointer">
-                        <input type="checkbox" name="tag_ids[]" value="{{ $tag->id }}"
+                        <input type="checkbox" name="tag_ids[]" value="{{ $tag->sqid }}"
                             @checked(in_array((string) $tag->id, array_map('strval', (array) $currentTagIds), true))
                             class="peer sr-only">
                         <span class="badge badge-outline peer-checked:badge-primary peer-checked:text-primary-content"

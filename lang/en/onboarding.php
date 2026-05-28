@@ -41,55 +41,73 @@ return [
     ],
 
     'step' => [
-        'org.profile' => [
-            'title' => 'Complete organisation details',
-            'description' => 'Maintain name, timezone and local base settings of the organisation.',
-            'link' => 'Open organisation',
+        'org' => [
+            'profile' => [
+                'title' => 'Complete organisation details',
+                'description' => 'Maintain name, timezone and local base settings of the organisation.',
+                'link' => 'Open organisation',
+            ],
+            'branch_profile' => [
+                'title' => 'Choose branch profile',
+                'description' => 'Pick a branch profile so suitable defaults for classifications are available.',
+                'link' => 'Open branch profiles',
+            ],
         ],
-        'org.branch_profile' => [
-            'title' => 'Choose branch profile',
-            'description' => 'Pick a branch profile so suitable defaults for classifications are available.',
-            'link' => 'Open branch profiles',
+        'users' => [
+            'invite' => [
+                'title' => 'Invite first users',
+                'description' => 'Invite at least one additional active person into your organisation.',
+                'link' => 'Open members',
+            ],
         ],
-        'users.invite' => [
-            'title' => 'Invite first users',
-            'description' => 'Invite at least one additional active person into your organisation.',
-            'link' => 'Open members',
+        'roles' => [
+            'check' => [
+                'title' => 'Verify roles',
+                'description' => 'Ensure that at least one org-admin and one operator are assigned.',
+                'link' => 'Open access management',
+            ],
         ],
-        'roles.check' => [
-            'title' => 'Verify roles',
-            'description' => 'Ensure that at least one org-admin and one operator are assigned.',
-            'link' => 'Open access management',
+        'classification' => [
+            'check' => [
+                'title' => 'Verify classifications',
+                'description' => 'Confirm or override at least one classification domain for the organisation.',
+                'link' => 'Open classifications',
+            ],
         ],
-        'classification.check' => [
-            'title' => 'Verify classifications',
-            'description' => 'Confirm or override at least one classification domain for the organisation.',
-            'link' => 'Open classifications',
+        'customer' => [
+            'first' => [
+                'title' => 'Create first customer',
+                'description' => 'Add the first customer manually or via CSV import.',
+                'link' => 'Open customers',
+            ],
         ],
-        'customer.first' => [
-            'title' => 'Create first customer',
-            'description' => 'Add the first customer manually or via CSV import.',
-            'link' => 'Open customers',
+        'work' => [
+            'first' => [
+                'title' => 'First project or job',
+                'description' => 'Create a first project or start the first diary entry.',
+                'link' => 'Open projects',
+            ],
         ],
-        'work.first' => [
-            'title' => 'First project or job',
-            'description' => 'Create a first project or start the first diary entry.',
-            'link' => 'Open projects',
+        'time' => [
+            'first' => [
+                'title' => 'First time entry',
+                'description' => 'Capture at least one time entry to activate time tracking.',
+                'link' => 'Open time tracking',
+            ],
         ],
-        'time.first' => [
-            'title' => 'First time entry',
-            'description' => 'Capture at least one time entry to activate time tracking.',
-            'link' => 'Open time tracking',
+        'protocol' => [
+            'first_signed' => [
+                'title' => 'Sign first protocol',
+                'description' => 'Create a protocol and complete the signature.',
+                'link' => 'Open diary',
+            ],
         ],
-        'protocol.first_signed' => [
-            'title' => 'Sign first protocol',
-            'description' => 'Create a protocol and complete the signature.',
-            'link' => 'Open diary',
-        ],
-        'backup.heartbeat' => [
-            'title' => 'Backup heartbeat',
-            'description' => 'Configure the backup run so that successful heartbeats are written regularly.',
-            'link' => 'Open audit log',
+        'backup' => [
+            'heartbeat' => [
+                'title' => 'Backup heartbeat',
+                'description' => 'Configure the backup run so that successful heartbeats are written regularly.',
+                'link' => 'Open audit log',
+            ],
         ],
     ],
 ];

@@ -127,7 +127,7 @@
                                     $label .= ' · ' . $d->modeLabel();
                                 }
                             @endphp
-                            <option value="{{ $d->id }}" @selected(old('diary_entry_id', $entry?->diary_entry_id) == $d->id)>{{ $label }}</option>
+                            <option value="{{ $d->sqid }}" @selected((string) old('diary_entry_id', sqid(\App\Models\DiaryEntry::class, $entry?->diary_entry_id)) === $d->sqid)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>

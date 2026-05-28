@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSqid;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -25,6 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $source_updated_at
  */
 class HelpTopic extends Model {
+    use HasSqid;
+
     protected $table = 'help_topics';
 
     protected $fillable = [

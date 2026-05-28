@@ -16,4 +16,18 @@ trait ChecksOwnership {
     protected function owns(User $user, mixed $resource, string $column = 'user_id'): bool {
         return (int) $user->id === (int) data_get($resource, $column);
     }
+
+    /**
+     * Prüft, dass die Ressource zur selben Organisation gehört wie der
+     * aktuelle Nutzer. Ressourcen ohne `organization_id` (z. B. globale
+     * Stammdaten) gelten als zulässig.
+     */
+    protected function sharesOrganization(User $user, mixed $resource): bool {
+        $orgId = data_get($resource, 'organization_id');
+        if ($orgId === null) {
+            return true;
+        }
+
+        return (int) $orgId === (int) $user->organization_id;
+    }
 }

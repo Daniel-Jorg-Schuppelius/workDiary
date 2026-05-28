@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\ExpenseCategoryFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -35,9 +35,11 @@ use Illuminate\Support\Carbon;
  */
 class ExpenseCategory extends Model {
     use Auditable;
+
     use BelongsToOrganization;
     /** @use HasFactory<ExpenseCategoryFactory> */
     use HasFactory;
+    use HasSqid;
 
     public const SLUG_MEALS = 'meals';
 

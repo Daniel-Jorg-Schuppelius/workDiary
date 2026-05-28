@@ -84,7 +84,7 @@ class AssetTimelineApiTest extends TestCase {
             'size' => 20,
         ]);
 
-        $response = $this->getJson(route('api.assets.timeline', ['asset' => $asset->id, 'limit' => 50]));
+        $response = $this->getJson(route('api.assets.timeline', ['asset' => $asset, 'limit' => 50]));
 
         $response->assertOk()->assertJsonStructure([
             'data' => [

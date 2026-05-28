@@ -140,7 +140,7 @@
                                 <td class="text-right whitespace-nowrap">
                                     <x-icon-btn icon="edit_square" size="xs"
                                                 data-entry-modal-trigger
-                                                :href="route('admin.classifications.create', ['source' => $classification->id])"
+                                                :href="route('admin.classifications.create', ['source' => $classification->sqid])"
                                                 :title="__('Override anlegen')" />
                                     <form method="POST" action="{{ route('admin.classifications.deactivate-default', $classification) }}" class="inline">
                                         @csrf

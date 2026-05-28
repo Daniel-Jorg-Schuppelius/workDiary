@@ -71,10 +71,13 @@ class TogglCsvParser {
     private function readRows(string $content): array {
         $rows = [];
         $stream = fopen('php://temp', 'r+');
+        if ($stream === false) {
+            return [];
+        }
         fwrite($stream, $content);
         rewind($stream);
         while (($cells = fgetcsv($stream, 0, ',', '"', '\\')) !== false) {
-            if ($cells === [null] || $cells === []) {
+            if ($cells === [null]) {
                 continue;
             }
             $rows[] = array_map(static fn($c): string => (string) $c, $cells);

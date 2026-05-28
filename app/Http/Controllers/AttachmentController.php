@@ -20,7 +20,8 @@ use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AttachmentController extends Controller {
-    public function __construct(private readonly ImageMetaUploader $imageUploader) {}
+    public function __construct(private readonly ImageMetaUploader $imageUploader) {
+    }
 
     private const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 
@@ -67,7 +68,7 @@ class AttachmentController extends Controller {
         };
     }
 
-    public function store(Request $request, string $type, int $id): RedirectResponse {
+    public function store(Request $request, string $type, string $id): RedirectResponse {
         Gate::authorize('create', Attachment::class);
 
         $parent = $this->resolveParent($type, $id);
@@ -154,7 +155,7 @@ class AttachmentController extends Controller {
      * Wird vom <x-file-upload> "Entfernen"-Toggle genutzt, damit das
      * UI nicht die generische Attachment-ID-Route aufrufen muss.
      */
-    public function destroyMeta(string $type, int $id, string $meta): RedirectResponse {
+    public function destroyMeta(string $type, string $id, string $meta): RedirectResponse {
         if ($this->imageMetaLimitKb($meta) === null) {
             abort(404);
         }
@@ -224,16 +225,23 @@ class AttachmentController extends Controller {
      * Generate a temporary signed download URL (15 min).
      */
     public static function downloadUrl(Attachment $attachment): string {
-        return URL::temporarySignedRoute('attachments.download', now()->addMinutes(15), ['attachment' => $attachment->id]);
+        return URL::temporarySignedRoute('attachments.download', now()->addMinutes(15), ['attachment' => $attachment]);
     }
 
-    private function resolveParent(string $type, int $id): Model {
+    private function resolveParent(string $type, string $id): Model {
         $class = self::TYPE_MAP[$type] ?? null;
         if ($class === null) {
             abort(404);
         }
 
-        return $class::findOrFail($id);
+        /** @var Asset|Comment|Customer|DiaryEntry|EmergencyAssignment|OnCallShift|Organization|Task|User $instance */
+        $instance = new $class();
+        $resolved = $instance->resolveRouteBinding($id);
+        if (! $resolved instanceof Model) {
+            abort(404);
+        }
+
+        return $resolved;
     }
 
     /**

@@ -34,7 +34,7 @@
         <select name="shift_type_id" required class="select select-bordered w-full">
             <option value="">— {{ __('bitte wählen') }} —</option>
             @foreach ($shiftTypes as $st)
-                <option value="{{ $st->id }}" @selected((int) old('shift_type_id', $requirement?->shift_type_id) === $st->id)>
+                <option value="{{ $st->sqid }}" @selected((int) old('shift_type_id', $requirement?->shift_type_id) === $st->id)>
                     {{ $st->name }} ({{ $st->abbreviation }})
                 </option>
             @endforeach
@@ -88,7 +88,7 @@
                 @foreach ($qualifications as $q)
                     <label class="label cursor-pointer justify-start gap-2">
                         <input type="checkbox" name="required_qualification_ids[]"
-                               value="{{ $q->id }}"
+                               value="{{ $q->sqid }}"
                                class="checkbox checkbox-sm"
                                @checked(in_array($q->id, (array) $selectedQualIds, false))>
                         <span class="label-text">{{ $q->name }}</span>

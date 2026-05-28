@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 
@@ -28,10 +28,12 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Material extends Model {
     use Auditable;
-    use BelongsToOrganization;
 
+    use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
+    use HasSqid;
 
     /** @param array<string, mixed> $attributes */
     public function __construct(array $attributes = []) {

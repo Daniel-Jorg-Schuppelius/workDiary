@@ -166,7 +166,7 @@ class SickLeaveController extends Controller {
         return URL::temporarySignedRoute(
             'sick-leaves.attachments.download',
             now()->addMinutes(15),
-            ['sick_leave' => $sickLeave->id, 'attachment' => $attachment->id],
+            ['sick_leave' => $sickLeave, 'attachment' => $attachment],
         );
     }
 

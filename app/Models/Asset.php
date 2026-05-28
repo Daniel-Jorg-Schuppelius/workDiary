@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Asset\{AssetClass, AssetHealth, AssetOwnership, AssetStatus};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use Database\Factories\AssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -47,7 +47,7 @@ use Illuminate\Support\Carbon;
  */
 class Asset extends Model {
     /** @use HasFactory<AssetFactory> */
-    use Auditable, BelongsToOrganization, HasAttachments, HasFactory;
+    use Auditable, BelongsToOrganization, HasAttachments, HasFactory, HasSqid;
 
     protected $fillable = [
         'organization_id',

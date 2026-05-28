@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Diary\Priority;
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\EntryTypeFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -42,10 +42,12 @@ use Illuminate\Support\Carbon;
  */
 class EntryType extends Model {
     use Auditable;
-    use BelongsToOrganization;
 
+    use BelongsToOrganization;
     /** @use HasFactory<EntryTypeFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     public const SLUG_GENERAL = 'general';
 

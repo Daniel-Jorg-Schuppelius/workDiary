@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Carbon\Carbon;
 use Database\Factories\ScheduledShiftFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -36,10 +36,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ScheduledShift extends Model {
     use Auditable;
-    use BelongsToOrganization;
 
+    use BelongsToOrganization;
     /** @use HasFactory<ScheduledShiftFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

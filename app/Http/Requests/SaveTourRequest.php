@@ -11,6 +11,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\Tour\TourStatus;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Vehicle;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Validation\Validator;
@@ -18,6 +19,14 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class SaveTourRequest extends FormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'user_id' => \App\Models\User::class,
+        'vehicle_id' => \App\Models\Vehicle::class,
+    ];
+
     public function authorize(): bool {
         return true;
     }

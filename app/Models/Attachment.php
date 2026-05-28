@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\AttachmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -38,6 +38,8 @@ class Attachment extends Model {
 
     /** @use HasFactory<AttachmentFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     /** Spezialrollen-Diskriminator (siehe meta_type-Spalte). */
     public const META_LOGO = 'logo';

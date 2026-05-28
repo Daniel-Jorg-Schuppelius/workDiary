@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Services\Timekeeping\BreakRuleEvaluator;
 use Database\Factories\AttendanceFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -49,10 +49,12 @@ use Illuminate\Support\Carbon;
  */
 class Attendance extends Model {
     use Auditable;
-    use BelongsToOrganization;
 
+    use BelongsToOrganization;
     /** @use HasFactory<AttendanceFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

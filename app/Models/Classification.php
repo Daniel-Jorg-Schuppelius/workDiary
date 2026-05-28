@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Classification\ClassificationDomain;
-use App\Models\Concerns\Auditable;
+use App\Models\Concerns\{Auditable, HasSqid};
 use Database\Factories\ClassificationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -37,8 +37,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon $updated_at
  */
 class Classification extends Model {
+    use Auditable;
     /** @use HasFactory<ClassificationFactory> */
-    use Auditable, HasFactory;
+    use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

@@ -6,7 +6,7 @@
         <select name="vehicle_id" required class="select select-bordered w-full">
             <option value="">—</option>
             @foreach ($vehicles as $v)
-                <option value="{{ $v->id }}" @selected((int) old('vehicle_id', $log?->vehicle_id ?? $defaultVehicleId) === (int) $v->id)>{{ $v->displayName() }}</option>
+                <option value="{{ $v->sqid }}" @selected((int) old('vehicle_id', $log?->vehicle_id ?? $defaultVehicleId) === (int) $v->id)>{{ $v->displayName() }}</option>
             @endforeach
         </select>
     </div>

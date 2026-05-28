@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Software\{SoftwareKind, SoftwareLicenseType};
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\SoftwareFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -35,10 +35,12 @@ use Illuminate\Support\Carbon;
  */
 class Software extends Model {
     use Auditable;
-    use BelongsToOrganization;
 
+    use BelongsToOrganization;
     /** @use HasFactory<SoftwareFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $table = 'software';
 

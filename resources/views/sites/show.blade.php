@@ -23,7 +23,7 @@
 
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <x-kpi-tile :label="__('Gebäude')" :value="$kpis['buildings']" tone="primary"
-                        :href="route('buildings.index', ['site' => $site->id])" />
+                        :href="route('buildings.index', ['site' => $site->sqid])" />
             <x-kpi-tile :label="__('Geschosse')" :value="$kpis['floors']" tone="info" />
             <x-kpi-tile :label="__('Räume')" :value="$kpis['rooms']" tone="success" />
             <x-kpi-tile :label="__('BGF (m²)')" :value="$kpis['gross_area']" tone="secondary" format="decimal" />
@@ -70,7 +70,7 @@
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
-                            :href="route('buildings.create', ['site' => $site->id])"
+                            :href="route('buildings.create', ['site' => $site->sqid])"
                             show-label>{{ __('Gebäude anlegen') }}</x-icon-btn>
             </x-slot:actions>
 

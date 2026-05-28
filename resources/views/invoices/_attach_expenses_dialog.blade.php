@@ -37,7 +37,7 @@
                     @foreach ($expenses as $expense)
                         <tr>
                             <td>
-                                <input type="checkbox" name="expense_ids[]" value="{{ $expense->id }}"
+                                <input type="checkbox" name="expense_ids[]" value="{{ $expense->sqid }}"
                                        class="checkbox checkbox-sm" checked>
                             </td>
                             <td class="whitespace-nowrap">{{ $expense->date->format('d.m.Y') }}</td>

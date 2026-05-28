@@ -77,7 +77,7 @@
                 <select name="customer_id" class="select select-bordered w-full" x-ref="customerSelect" :disabled="hasParent">
                     <option value="">{{ __('— Kein Kunde —') }}</option>
                     @foreach ($customers as $customer)
-                        <option value="{{ $customer->id }}" @selected((int) old('customer_id', $project?->customer_id) === (int) $customer->id)>
+                        <option value="{{ $customer->sqid }}" @selected((string) old('customer_id', sqid(\App\Models\Customer::class, $project?->customer_id)) === $customer->sqid)>
                             {{ $customer->name }}
                         </option>
                     @endforeach

@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\VehicleFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -45,10 +45,12 @@ use Illuminate\Support\Carbon;
  */
 class Vehicle extends Model {
     use Auditable;
-    use BelongsToOrganization;
 
+    use BelongsToOrganization;
     /** @use HasFactory<VehicleFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

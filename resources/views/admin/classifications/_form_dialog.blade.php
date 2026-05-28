@@ -22,7 +22,7 @@
             <x-icon name="info" />
             <span>{{ __('Es wird ein organisationsspezifischer Override für den Plattform-Default :code angelegt.', ['code' => $sourceClassification->code]) }}</span>
         </div>
-        <input type="hidden" name="source_classification_id" value="{{ $sourceClassification->id }}" />
+        <input type="hidden" name="source_classification_id" value="{{ $sourceClassification->sqid }}" />
     @endif
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

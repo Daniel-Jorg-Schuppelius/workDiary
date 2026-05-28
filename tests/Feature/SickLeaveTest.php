@@ -154,8 +154,8 @@ class SickLeaveTest extends TestCase {
 
         // Unsigned access is forbidden.
         $this->get(route('sick-leaves.attachments.download', [
-            'sick_leave' => $sickLeave->id,
-            'attachment' => $attachment->id,
+            'sick_leave' => $sickLeave,
+            'attachment' => $attachment,
         ]))->assertForbidden();
 
         // Signed URL works.

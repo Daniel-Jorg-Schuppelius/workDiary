@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasTags};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, HasTags};
 use App\Models\Contracts\HasTimeWindow;
 use Carbon\Carbon;
 use Database\Factories\OnCallShiftFactory;
@@ -24,11 +24,13 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  */
 class OnCallShift extends Model implements HasTimeWindow {
     use Auditable;
+
     use BelongsToOrganization;
     use HasAttachments;
-
     /** @use HasFactory<OnCallShiftFactory> */
     use HasFactory;
+
+    use HasSqid;
 
     use HasTags;
 
