@@ -10,15 +10,27 @@
 
 namespace App\Http\Controllers\Asset;
 
+use App\Enums\Asset\MaintenanceIntervalKind;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveMaintenancePlanRequest;
 use App\Models\{Asset, MaintenancePlan, User};
 use App\Services\Asset\MaintenancePlanService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
 
 class MaintenancePlanController extends Controller {
     public function __construct(private readonly MaintenancePlanService $plans) {}
+
+    public function create(Asset $asset): View {
+        Gate::authorize('update', $asset);
+        Gate::authorize('create', MaintenancePlan::class);
+
+        return view('assets._maintenance_form_dialog', [
+            'asset' => $asset,
+            'intervalKindOptions' => $this->intervalKindOptions(),
+        ]);
+    }
 
     public function store(Asset $asset, SaveMaintenancePlanRequest $request): RedirectResponse {
         Gate::authorize('update', $asset);
@@ -105,5 +117,20 @@ class MaintenancePlanController extends Controller {
         if ($plan->asset_id !== $asset->id) {
             abort(404);
         }
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function intervalKindOptions(): array {
+        return collect(MaintenanceIntervalKind::cases())
+            ->mapWithKeys(fn(MaintenanceIntervalKind $k): array => [$k->value => match ($k) {
+                MaintenanceIntervalKind::Days => __('Tage'),
+                MaintenanceIntervalKind::Weeks => __('Wochen'),
+                MaintenanceIntervalKind::Months => __('Monate'),
+                MaintenanceIntervalKind::OperatingHours => __('Betriebsstunden'),
+                MaintenanceIntervalKind::Kilometers => __('Kilometer'),
+            }])
+            ->all();
     }
 }

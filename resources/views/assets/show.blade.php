@@ -7,19 +7,27 @@
     @php
         $assetClassValue = $asset->asset_class instanceof \BackedEnum ? $asset->asset_class->value : (string) $asset->asset_class;
         $assetStatusValue = $asset->status instanceof \BackedEnum ? $asset->status->value : (string) $asset->status;
+
+        $attentionLevel = (string) ($statusSummary['attention_level'] ?? 'normal');
+        $isBlocked = (bool) ($statusSummary['is_blocked'] ?? false);
+        $openIssueTotal = (int) ($statusSummary['open_issues']['total'] ?? 0);
+        $criticalIssueTotal = (int) ($statusSummary['open_issues']['critical'] ?? 0);
+        $defectProtocolTotal = (int) ($statusSummary['defect_protocols']['total'] ?? 0);
+        $linkedTotal = $visibleCounts['diary'] + $visibleCounts['protocols'] + $visibleCounts['material'] + $visibleCounts['attachments'];
     @endphp
 
     <x-page-shell>
+        {{-- ── Kopf ──────────────────────────────────────────────────────── --}}
         <x-card>
             <div class="flex flex-wrap items-start justify-between gap-3">
-                <div class="space-y-1">
-                    <h2 class="text-xl font-semibold">{{ $asset->name }}</h2>
+                <div class="space-y-2">
+                    <h2 class="font-['Space_Grotesk'] text-xl font-bold">{{ $asset->name }}</h2>
                     <div class="text-sm text-base-content/70">
                         {{ __('Asset-Nr.') }}: <span class="font-mono">{{ $asset->asset_no }}</span>
                     </div>
                     <div class="flex flex-wrap items-center gap-2 text-sm">
-                        <span class="badge badge-outline">{{ $classOptions[$assetClassValue] ?? $assetClassValue }}</span>
-                        <span class="badge badge-outline">{{ $statusOptions[$assetStatusValue] ?? $assetStatusValue }}</span>
+                        <x-status-badge tone="ghost" outline>{{ $classOptions[$assetClassValue] ?? $assetClassValue }}</x-status-badge>
+                        <x-status-badge :tone="$isBlocked ? 'error' : 'ghost'" :outline="! $isBlocked">{{ $statusOptions[$assetStatusValue] ?? $assetStatusValue }}</x-status-badge>
                         @if ($asset->serial_no)
                             <span class="text-base-content/70">{{ __('Seriennummer') }}: {{ $asset->serial_no }}</span>
                         @endif
@@ -36,40 +44,18 @@
                 </div>
             </div>
 
-            @php
-                $attentionLevel = (string) ($statusSummary['attention_level'] ?? 'normal');
-                $isBlocked = (bool) ($statusSummary['is_blocked'] ?? false);
-                $openIssueTotal = (int) ($statusSummary['open_issues']['total'] ?? 0);
-                $criticalIssueTotal = (int) ($statusSummary['open_issues']['critical'] ?? 0);
-                $defectProtocolTotal = (int) ($statusSummary['defect_protocols']['total'] ?? 0);
-            @endphp
-
             @if ($isBlocked || $openIssueTotal > 0 || $defectProtocolTotal > 0)
                 <div class="alert mt-4 {{ $attentionLevel === 'critical' ? 'alert-error' : 'alert-warning' }}">
-                    <div class="flex flex-wrap items-center gap-2 text-sm">
-                        <span class="font-semibold">{{ $isBlocked ? __('Asset gesperrt') : __('Asset unter Beobachtung') }}</span>
-                        <span class="badge badge-outline">{{ __('Offene Issues: :count', ['count' => $openIssueTotal]) }}</span>
-                        <span class="badge badge-outline">{{ __('Kritisch: :count', ['count' => $criticalIssueTotal]) }}</span>
-                        <span class="badge badge-outline">{{ __('Defektprotokolle: :count', ['count' => $defectProtocolTotal]) }}</span>
-                    </div>
+                    <x-icon :name="$isBlocked ? 'lock' : 'warning'" />
+                    <span class="font-semibold">{{ $isBlocked ? __('Asset gesperrt') : __('Asset unter Beobachtung') }}</span>
                 </div>
             @endif
 
-            <div class="mt-4 grid gap-3 md:grid-cols-3">
-                <div class="rounded-box border border-base-300 p-3">
-                    <div class="text-xs text-base-content/60">{{ __('Standort') }}</div>
-                    <div class="font-medium">{{ $asset->location_text ?: '—' }}</div>
-                </div>
-                <div class="rounded-box border border-base-300 p-3">
-                    <div class="text-xs text-base-content/60">{{ __('Kunde') }}</div>
-                    <div class="font-medium">{{ $asset->customer?->name ?: '—' }}</div>
-                </div>
-                <div class="rounded-box border border-base-300 p-3">
-                    <div class="text-xs text-base-content/60">{{ __('Verknüpfungen sichtbar') }}</div>
-                    <div class="font-medium">
-                        {{ $visibleCounts['diary'] + $visibleCounts['protocols'] + $visibleCounts['material'] + $visibleCounts['attachments'] }}
-                    </div>
-                </div>
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <x-kpi-tile :label="__('Offene Issues')" :value="$openIssueTotal" :tone="$openIssueTotal > 0 ? 'warning' : 'neutral'" />
+                <x-kpi-tile :label="__('Kritisch')" :value="$criticalIssueTotal" :tone="$criticalIssueTotal > 0 ? 'error' : 'neutral'" />
+                <x-kpi-tile :label="__('Defektprotokolle')" :value="$defectProtocolTotal" :tone="$defectProtocolTotal > 0 ? 'warning' : 'neutral'" />
+                <x-kpi-tile :label="__('Verknüpfungen sichtbar')" :value="$linkedTotal" tone="neutral" />
             </div>
         </x-card>
 
@@ -83,172 +69,107 @@
             $canEditAsset = auth()->user()?->can('update', $asset) ?? false;
         @endphp
 
-        <x-card>
-            <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="text-base font-semibold">{{ __('Verortung') }}</h2>
-                @if ($canEditAsset)
-                    <x-icon-btn icon="edit" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('assets.edit', $asset)"
-                                show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-                @endif
-            </div>
-            @if ($room || $site || $building || $floor)
-                <div class="mt-3 grid gap-2 text-sm md:grid-cols-5">
-                    <div>
-                        <div class="text-xs text-base-content/60">{{ __('Kunde') }}</div>
-                        <div>{{ $asset->customer?->name ?: '—' }}</div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-base-content/60">{{ __('Standort') }}</div>
-                        <div>{{ $site?->name ?: '—' }}</div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-base-content/60">{{ __('Gebäude') }}</div>
-                        <div>{{ $building?->name ?: '—' }}</div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-base-content/60">{{ __('Etage') }}</div>
-                        <div>{{ $floor?->label ?: '—' }}</div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-base-content/60">{{ __('Raum') }}</div>
+        {{-- ── Verortung + Betriebssystem (nebeneinander) ──────────────────── --}}
+        <div class="grid gap-4 md:grid-cols-2">
+            <x-card>
+                <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+                        <x-icon name="location_on" class="text-base-content/60" /> {{ __('Verortung') }}
+                    </h2>
+                    @if ($canEditAsset)
+                        <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('assets.edit', $asset)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                    @endif
+                </div>
+                @if ($room || $site || $building || $floor)
+                    <dl class="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
                         <div>
-                            @if ($room)
-                                @if ($floor)
-                                    <a class="link link-hover" href="{{ route('floors.show', $floor) }}">{{ $room->name }}</a>
-                                @else
-                                    {{ $room->name }}
-                                @endif
-                            @else
-                                —
-                            @endif
+                            <dt class="text-xs text-base-content/60">{{ __('Kunde') }}</dt>
+                            <dd>{{ $asset->customer?->name ?: '—' }}</dd>
                         </div>
-                    </div>
-                </div>
-            @else
-                <p class="mt-3 text-sm text-base-content/60">{{ __('Keinem Raum zugeordnet.') }}</p>
-            @endif
-        </x-card>
-
-        <x-card>
-            <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="text-base font-semibold">{{ __('Betriebssystem') }}</h2>
-                @if ($canEditAsset)
-                    <details class="dropdown dropdown-end">
-                        <summary class="btn btn-sm btn-primary">
-                            <span class="material-symbols-outlined" aria-hidden="true">add</span>
-                            {{ $os ? __('OS ersetzen') : __('OS zuweisen') }}
-                        </summary>
-                        <form method="POST"
-                              action="{{ $os ? route('assets.software-installations.update', [$asset, $os]) : route('assets.software-installations.store', $asset) }}"
-                              class="dropdown-content z-10 mt-2 w-96 rounded-box border border-base-300 bg-base-100 p-3 shadow-lg space-y-2">
-                            @csrf
-                            @if ($os) @method('PUT') @endif
-                            <input type="hidden" name="is_operating_system" value="1" />
-                            @unless ($os)
-                                <label class="form-control">
-                                    <span class="label-text text-xs">{{ __('Software') }}</span>
-                                    <select name="software_id" required class="select select-sm select-bordered">
-                                        @foreach ($softwareCatalog->where('kind', \App\Enums\Software\SoftwareKind::OperatingSystem) as $sw)
-                                            <option value="{{ $sw->sqid }}">{{ $sw->name }}@if ($sw->vendor) — {{ $sw->vendor }}@endif</option>
-                                        @endforeach
-                                    </select>
-                                </label>
-                            @endunless
-                            <div class="grid grid-cols-2 gap-2">
-                                <label class="form-control">
-                                    <span class="label-text text-xs">{{ __('Version') }}</span>
-                                    <input type="text" name="version" value="{{ $os?->version }}" class="input input-sm input-bordered">
-                                </label>
-                                <label class="form-control">
-                                    <span class="label-text text-xs">{{ __('Sitze') }}</span>
-                                    <input type="number" name="seats" min="1" value="{{ $os?->seats }}" class="input input-sm input-bordered">
-                                </label>
-                                <label class="form-control col-span-2">
-                                    <span class="label-text text-xs">{{ __('Lizenzschlüssel') }}</span>
-                                    <input type="text" name="license_key" value="{{ $os?->license_key }}" class="input input-sm input-bordered">
-                                </label>
-                                <label class="form-control">
-                                    <span class="label-text text-xs">{{ __('Installiert am') }}</span>
-                                    <input type="date" name="installed_on" value="{{ $os?->installed_on?->format('Y-m-d') }}" class="input input-sm input-bordered">
-                                </label>
-                                <label class="form-control">
-                                    <span class="label-text text-xs">{{ __('Läuft ab') }}</span>
-                                    <input type="date" name="expires_on" value="{{ $os?->expires_on?->format('Y-m-d') }}" class="input input-sm input-bordered">
-                                </label>
-                            </div>
-                            <button type="submit" class="btn btn-sm btn-primary w-full">{{ __('Speichern') }}</button>
-                        </form>
-                    </details>
+                        <div>
+                            <dt class="text-xs text-base-content/60">{{ __('Standort') }}</dt>
+                            <dd>{{ $site?->name ?: '—' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-base-content/60">{{ __('Gebäude') }}</dt>
+                            <dd>{{ $building?->name ?: '—' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-base-content/60">{{ __('Etage') }}</dt>
+                            <dd>{{ $floor?->label ?: '—' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-base-content/60">{{ __('Raum') }}</dt>
+                            <dd>
+                                @if ($room)
+                                    @if ($floor)
+                                        <a class="link link-hover" href="{{ route('floors.show', $floor) }}">{{ $room->name }}</a>
+                                    @else
+                                        {{ $room->name }}
+                                    @endif
+                                @else
+                                    —
+                                @endif
+                            </dd>
+                        </div>
+                    </dl>
+                @else
+                    <x-empty-state compact icon='<span class="material-symbols-outlined">location_off</span>'
+                                   :title="__('Keinem Raum zugeordnet')"
+                                   :message="__('Dieses Asset hat noch keine Verortung.')" />
                 @endif
-            </div>
-            @if ($os)
-                <div class="mt-3 grid gap-2 text-sm md:grid-cols-4">
-                    <div><div class="text-xs text-base-content/60">{{ __('Software') }}</div><div class="font-medium">{{ $os->software?->name }}</div></div>
-                    <div><div class="text-xs text-base-content/60">{{ __('Version') }}</div><div>{{ $os->version ?: '—' }}</div></div>
-                    <div><div class="text-xs text-base-content/60">{{ __('Sitze') }}</div><div>{{ $os->seats ?: '—' }}</div></div>
-                    <div><div class="text-xs text-base-content/60">{{ __('Läuft ab') }}</div><div>{{ $os->expires_on?->isoFormat('L') ?: '—' }}</div></div>
+            </x-card>
+
+            <x-card>
+                <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+                        <x-icon name="desktop_windows" class="text-base-content/60" /> {{ __('Betriebssystem') }}
+                    </h2>
+                    @if ($canEditAsset)
+                        <x-icon-btn icon="add" tone="primary" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('assets.software-installations.create', ['asset' => $asset, 'os' => 1])"
+                                    show-label>{{ $os ? __('OS ersetzen') : __('OS zuweisen') }}</x-icon-btn>
+                    @endif
                 </div>
-            @else
-                <p class="mt-3 text-sm text-base-content/60">{{ __('Kein Betriebssystem hinterlegt.') }}</p>
-            @endif
-        </x-card>
+                @if ($os)
+                    <dl class="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
+                        <div><dt class="text-xs text-base-content/60">{{ __('Software') }}</dt><dd class="font-medium">{{ $os->software?->name }}</dd></div>
+                        <div><dt class="text-xs text-base-content/60">{{ __('Version') }}</dt><dd>{{ $os->version ?: '—' }}</dd></div>
+                        <div><dt class="text-xs text-base-content/60">{{ __('Sitze') }}</dt><dd>{{ $os->seats ?: '—' }}</dd></div>
+                        <div><dt class="text-xs text-base-content/60">{{ __('Läuft ab') }}</dt><dd>{{ $os->expires_on?->isoFormat('L') ?: '—' }}</dd></div>
+                    </dl>
+                @else
+                    <x-empty-state compact icon='<span class="material-symbols-outlined">desktop_access_disabled</span>'
+                                   :title="__('Kein Betriebssystem')"
+                                   :message="__('Kein Betriebssystem hinterlegt.')" />
+                @endif
+            </x-card>
+        </div>
 
         {!! app(\App\Plugins\PluginManager::class)->renderSlot('asset-show.aside', $asset) !!}
 
+        {{-- ── Installierte Software ────────────────────────────────────────── --}}
         <x-card>
-            <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="text-base font-semibold">{{ __('Installierte Software') }} ({{ $installations->where('is_operating_system', false)->count() }})</h2>
+            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+                    <x-icon name="apps" class="text-base-content/60" /> {{ __('Installierte Software') }}
+                    <span class="font-normal text-base-content/50">({{ $installations->where('is_operating_system', false)->count() }})</span>
+                </h2>
                 @if ($canEditAsset)
-                    <details class="dropdown dropdown-end">
-                        <summary class="btn btn-sm btn-primary">
-                            <span class="material-symbols-outlined" aria-hidden="true">add</span>
-                            {{ __('Software zuweisen') }}
-                        </summary>
-                        <form method="POST" action="{{ route('assets.software-installations.store', $asset) }}"
-                              class="dropdown-content z-10 mt-2 w-96 rounded-box border border-base-300 bg-base-100 p-3 shadow-lg space-y-2">
-                            @csrf
-                            <label class="form-control">
-                                <span class="label-text text-xs">{{ __('Software') }}</span>
-                                <select name="software_id" required class="select select-sm select-bordered">
-                                    @foreach ($softwareCatalog->where('kind', '!=', \App\Enums\Software\SoftwareKind::OperatingSystem) as $sw)
-                                        <option value="{{ $sw->sqid }}">{{ $sw->name }}@if ($sw->vendor) — {{ $sw->vendor }}@endif</option>
-                                    @endforeach
-                                </select>
-                            </label>
-                            <div class="grid grid-cols-2 gap-2">
-                                <label class="form-control">
-                                    <span class="label-text text-xs">{{ __('Version') }}</span>
-                                    <input type="text" name="version" class="input input-sm input-bordered">
-                                </label>
-                                <label class="form-control">
-                                    <span class="label-text text-xs">{{ __('Sitze') }}</span>
-                                    <input type="number" name="seats" min="1" class="input input-sm input-bordered">
-                                </label>
-                                <label class="form-control col-span-2">
-                                    <span class="label-text text-xs">{{ __('Lizenzschlüssel') }}</span>
-                                    <input type="text" name="license_key" class="input input-sm input-bordered">
-                                </label>
-                                <label class="form-control">
-                                    <span class="label-text text-xs">{{ __('Installiert am') }}</span>
-                                    <input type="date" name="installed_on" class="input input-sm input-bordered">
-                                </label>
-                                <label class="form-control">
-                                    <span class="label-text text-xs">{{ __('Läuft ab') }}</span>
-                                    <input type="date" name="expires_on" class="input input-sm input-bordered">
-                                </label>
-                            </div>
-                            <button type="submit" class="btn btn-sm btn-primary w-full">{{ __('Hinzufügen') }}</button>
-                        </form>
-                    </details>
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('assets.software-installations.create', $asset)"
+                                show-label>{{ __('Software zuweisen') }}</x-icon-btn>
                 @endif
             </div>
             @php $apps = $installations->where('is_operating_system', false); @endphp
             @if ($apps->isEmpty())
-                <p class="mt-3 text-sm text-base-content/60">{{ __('Noch keine Software hinterlegt.') }}</p>
+                <x-empty-state compact icon='<span class="material-symbols-outlined">apps</span>'
+                               :title="__('Keine Software')"
+                               :message="__('Noch keine Software hinterlegt.')" />
             @else
-                <div class="mt-3 overflow-x-auto">
+                <div class="overflow-x-auto">
                     <table class="table table-sm">
                         <thead>
                             <tr>
@@ -288,57 +209,27 @@
             @endif
         </x-card>
 
+        {{-- ── Wartungspläne ────────────────────────────────────────────────── --}}
         <x-card>
-            <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="text-base font-semibold">{{ __('Wartungspläne') }} ({{ $maintenancePlans->count() }})</h2>
+            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+                    <x-icon name="event_repeat" class="text-base-content/60" /> {{ __('Wartungspläne') }}
+                    <span class="font-normal text-base-content/50">({{ $maintenancePlans->count() }})</span>
+                </h2>
                 @if ($canManageMaintenance)
-                    <details class="dropdown dropdown-end">
-                        <summary class="btn btn-sm btn-primary">
-                            <span class="material-symbols-outlined" aria-hidden="true">add</span>
-                            {{ __('Plan anlegen') }}
-                        </summary>
-                        <form method="POST" action="{{ route('assets.maintenance-plans.store', $asset) }}"
-                              class="dropdown-content z-10 mt-2 w-80 rounded-box border border-base-300 bg-base-100 p-3 shadow-lg space-y-2">
-                            @csrf
-                            <label class="form-control">
-                                <span class="label-text text-xs">{{ __('Bezeichnung') }}</span>
-                                <input type="text" name="label" required maxlength="180"
-                                       class="input input-sm input-bordered" />
-                            </label>
-                            <div class="grid grid-cols-2 gap-2">
-                                <label class="form-control">
-                                    <span class="label-text text-xs">{{ __('Intervall') }}</span>
-                                    <select name="interval_kind" class="select select-sm select-bordered">
-                                        @foreach ($intervalKindOptions as $value => $label)
-                                            <option value="{{ $value }}" @selected($value === 'months')>{{ $label }}</option>
-                                        @endforeach
-                                    </select>
-                                </label>
-                                <label class="form-control">
-                                    <span class="label-text text-xs">{{ __('Wert') }}</span>
-                                    <input type="number" name="interval_value" min="1" value="6"
-                                           class="input input-sm input-bordered" required />
-                                </label>
-                            </div>
-                            <label class="form-control">
-                                <span class="label-text text-xs">{{ __('Toleranz (Tage)') }}</span>
-                                <input type="number" name="tolerance_days" min="0" max="365" value="7"
-                                       class="input input-sm input-bordered" />
-                            </label>
-                            <label class="form-control">
-                                <span class="label-text text-xs">{{ __('Erste Fälligkeit') }}</span>
-                                <input type="date" name="next_due_on" class="input input-sm input-bordered" />
-                            </label>
-                            <button type="submit" class="btn btn-sm btn-primary w-full">{{ __('Anlegen') }}</button>
-                        </form>
-                    </details>
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('assets.maintenance-plans.create', $asset)"
+                                show-label>{{ __('Plan anlegen') }}</x-icon-btn>
                 @endif
             </div>
 
             @if ($maintenancePlans->isEmpty())
-                <p class="mt-3 text-sm text-base-content/70">{{ __('Noch keine Wartungspläne hinterlegt.') }}</p>
+                <x-empty-state compact icon='<span class="material-symbols-outlined">event_repeat</span>'
+                               :title="__('Keine Wartungspläne')"
+                               :message="__('Noch keine Wartungspläne hinterlegt.')" />
             @else
-                <div class="mt-3 overflow-x-auto">
+                <div class="overflow-x-auto">
                     <table class="table table-zebra">
                         <thead>
                             <tr>
@@ -374,11 +265,11 @@
                                     <td>{{ optional($plan->last_run_at)->format('d.m.Y H:i') ?: '—' }}</td>
                                     <td>
                                         @if (! $plan->is_active)
-                                            <span class="badge badge-ghost">{{ __('pausiert') }}</span>
+                                            <x-status-badge tone="ghost">{{ __('pausiert') }}</x-status-badge>
                                         @elseif ($isDue)
-                                            <span class="badge badge-error">{{ __('fällig') }}</span>
+                                            <x-status-badge tone="error">{{ __('fällig') }}</x-status-badge>
                                         @else
-                                            <span class="badge badge-success">{{ __('aktiv') }}</span>
+                                            <x-status-badge tone="success">{{ __('aktiv') }}</x-status-badge>
                                         @endif
                                     </td>
                                     <td class="text-end">
@@ -387,21 +278,23 @@
                                                 <form method="POST" action="{{ route('assets.maintenance-plans.complete', [$asset, $plan]) }}" class="join-item">
                                                     @csrf
                                                     <button type="submit" class="btn btn-xs btn-ghost" title="{{ __('Erledigt') }}">
-                                                        <span class="material-symbols-outlined">check</span>
+                                                        <x-icon name="check" />
                                                     </button>
                                                 </form>
                                                 <form method="POST" action="{{ route('assets.maintenance-plans.toggle', [$asset, $plan]) }}" class="join-item">
                                                     @csrf
                                                     <button type="submit" class="btn btn-xs btn-ghost" title="{{ $plan->is_active ? __('Pausieren') : __('Reaktivieren') }}">
-                                                        <span class="material-symbols-outlined">{{ $plan->is_active ? 'pause' : 'play_arrow' }}</span>
+                                                        <x-icon :name="$plan->is_active ? 'pause' : 'play_arrow'" />
                                                     </button>
                                                 </form>
                                                 <form method="POST" action="{{ route('assets.maintenance-plans.destroy', [$asset, $plan]) }}" class="join-item"
-                                                      onsubmit="return confirm('{{ __('Plan wirklich löschen?') }}');">
+                                                      data-confirm-dialog
+                                                      data-confirm-message="{{ __('Plan wirklich löschen?') }}"
+                                                      data-confirm-label="{{ __('Löschen') }}">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="btn btn-xs btn-ghost text-error" title="{{ __('Löschen') }}">
-                                                        <span class="material-symbols-outlined">delete</span>
+                                                        <x-icon name="delete" />
                                                     </button>
                                                 </form>
                                             </div>
@@ -415,10 +308,16 @@
             @endif
         </x-card>
 
+        {{-- ── Aufträge ─────────────────────────────────────────────────────── --}}
         <x-card>
-            <h2 class="mb-3 text-base font-semibold">{{ __('Aufträge') }} ({{ $visibleCounts['diary'] }})</h2>
+            <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+                <x-icon name="assignment" class="text-base-content/60" /> {{ __('Aufträge') }}
+                <span class="font-normal text-base-content/50">({{ $visibleCounts['diary'] }})</span>
+            </h2>
             @if ($diaryEntries->isEmpty())
-                <p class="text-sm text-base-content/70">{{ __('Keine verknüpften Aufträge sichtbar.') }}</p>
+                <x-empty-state compact icon='<span class="material-symbols-outlined">assignment</span>'
+                               :title="__('Keine Aufträge')"
+                               :message="__('Keine verknüpften Aufträge sichtbar.')" />
             @else
                 <div class="overflow-x-auto">
                     <table class="table table-zebra">
@@ -447,29 +346,16 @@
             @endif
         </x-card>
 
+        {{-- ── Protokolle ───────────────────────────────────────────────────── --}}
         <x-card>
-            <h2 class="mb-3 text-base font-semibold">{{ __('Timeline') }} ({{ $timelineEntries->count() }})</h2>
-            @if ($timelineEntries->isEmpty())
-                <p class="text-sm text-base-content/70">{{ __('Keine Timeline-Einträge vorhanden.') }}</p>
-            @else
-                <ul class="divide-y divide-base-300">
-                    @foreach ($timelineEntries as $event)
-                        <li class="flex items-start justify-between gap-3 py-3">
-                            <div class="space-y-1">
-                                <div class="text-sm font-semibold">{{ $event['title'] }}</div>
-                                <div class="text-sm text-base-content/80">{{ $event['detail'] }}</div>
-                            </div>
-                            <span class="shrink-0 text-xs text-base-content/60">{{ $event['occurred_at_formatted'] }}</span>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </x-card>
-
-        <x-card>
-            <h2 class="mb-3 text-base font-semibold">{{ __('Protokolle') }} ({{ $visibleCounts['protocols'] }})</h2>
+            <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+                <x-icon name="description" class="text-base-content/60" /> {{ __('Protokolle') }}
+                <span class="font-normal text-base-content/50">({{ $visibleCounts['protocols'] }})</span>
+            </h2>
             @if ($protocols->isEmpty())
-                <p class="text-sm text-base-content/70">{{ __('Keine verknüpften Protokolle sichtbar.') }}</p>
+                <x-empty-state compact icon='<span class="material-symbols-outlined">description</span>'
+                               :title="__('Keine Protokolle')"
+                               :message="__('Keine verknüpften Protokolle sichtbar.')" />
             @else
                 <div class="overflow-x-auto">
                     <table class="table table-zebra">
@@ -496,10 +382,16 @@
             @endif
         </x-card>
 
+        {{-- ── Materialeinsatz ──────────────────────────────────────────────── --}}
         <x-card>
-            <h2 class="mb-3 text-base font-semibold">{{ __('Materialeinsatz') }} ({{ $visibleCounts['material'] }})</h2>
+            <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+                <x-icon name="inventory_2" class="text-base-content/60" /> {{ __('Materialeinsatz') }}
+                <span class="font-normal text-base-content/50">({{ $visibleCounts['material'] }})</span>
+            </h2>
             @if ($materialUsages->isEmpty())
-                <p class="text-sm text-base-content/70">{{ __('Kein verknüpfter Materialeinsatz sichtbar.') }}</p>
+                <x-empty-state compact icon='<span class="material-symbols-outlined">inventory_2</span>'
+                               :title="__('Kein Materialeinsatz')"
+                               :message="__('Kein verknüpfter Materialeinsatz sichtbar.')" />
             @else
                 <div class="overflow-x-auto">
                     <table class="table table-zebra">
@@ -528,20 +420,54 @@
             @endif
         </x-card>
 
-        <x-card>
-            <h2 class="mb-3 text-base font-semibold">{{ __('Anhänge') }} ({{ $visibleCounts['attachments'] }})</h2>
-            @if ($attachments->isEmpty())
-                <p class="text-sm text-base-content/70">{{ __('Keine verknüpften Anhänge sichtbar.') }}</p>
-            @else
-                <ul class="divide-y divide-base-300 text-sm">
-                    @foreach ($attachments as $attachment)
-                        <li class="flex items-center justify-between gap-3 py-2">
-                            <a href="{{ route('attachments.download', $attachment) }}" class="link link-hover truncate">{{ $attachment->original_name }}</a>
-                            <span class="text-base-content/60">{{ $attachment->humanSize() }}</span>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </x-card>
+        {{-- ── Timeline + Anhänge (nebeneinander) ───────────────────────────── --}}
+        <div class="grid gap-4 md:grid-cols-2">
+            <x-card>
+                <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+                    <x-icon name="timeline" class="text-base-content/60" /> {{ __('Timeline') }}
+                    <span class="font-normal text-base-content/50">({{ $timelineEntries->count() }})</span>
+                </h2>
+                @if ($timelineEntries->isEmpty())
+                    <x-empty-state compact icon='<span class="material-symbols-outlined">timeline</span>'
+                                   :title="__('Keine Timeline-Einträge')"
+                                   :message="__('Keine Timeline-Einträge vorhanden.')" />
+                @else
+                    <ul class="divide-y divide-base-300">
+                        @foreach ($timelineEntries as $event)
+                            <li class="flex items-start justify-between gap-3 py-3">
+                                <div class="space-y-1">
+                                    <div class="text-sm font-semibold">{{ $event['title'] }}</div>
+                                    @if ($event['detail'] !== '')
+                                        <div class="text-sm text-base-content/80">{{ $event['detail'] }}</div>
+                                    @endif
+                                </div>
+                                <span class="shrink-0 text-xs text-base-content/60">{{ $event['occurred_at_formatted'] }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </x-card>
+
+            <x-card>
+                <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+                    <x-icon name="attach_file" class="text-base-content/60" /> {{ __('Anhänge') }}
+                    <span class="font-normal text-base-content/50">({{ $visibleCounts['attachments'] }})</span>
+                </h2>
+                @if ($attachments->isEmpty())
+                    <x-empty-state compact icon='<span class="material-symbols-outlined">attach_file</span>'
+                                   :title="__('Keine Anhänge')"
+                                   :message="__('Keine verknüpften Anhänge sichtbar.')" />
+                @else
+                    <ul class="divide-y divide-base-300 text-sm">
+                        @foreach ($attachments as $attachment)
+                            <li class="flex items-center justify-between gap-3 py-2">
+                                <a href="{{ route('attachments.download', $attachment) }}" class="link link-hover truncate">{{ $attachment->original_name }}</a>
+                                <span class="text-base-content/60">{{ $attachment->humanSize() }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </x-card>
+        </div>
     </x-page-shell>
 @endsection

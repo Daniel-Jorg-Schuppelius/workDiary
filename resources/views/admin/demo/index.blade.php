@@ -57,7 +57,11 @@
 
                 @can(\App\Enums\User\Permission::PlatformDemoReset->value)
                     <form method="POST" action="{{ route('admin.demo.reset') }}" class="contents"
-                          onsubmit="return confirm('{{ __('Wirklich alle Demo-Daten löschen und neu erzeugen?') }}');">
+                          data-confirm-dialog
+                          data-confirm-message="{{ __('Wirklich alle Demo-Daten löschen und neu erzeugen?') }}"
+                          data-confirm-icon="refresh"
+                          data-confirm-tone="warning"
+                          data-confirm-label="{{ __('Zurücksetzen') }}">
                         @csrf
                         <button type="submit"
                                 class="btn btn-warning w-full md:w-auto"

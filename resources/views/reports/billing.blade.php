@@ -40,26 +40,16 @@
     </x-slot:toolbar>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Ausgestellt + Bezahlt (Σ Brutto)') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $eur($totalIssuedPaid) }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Offene Forderungen') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $eur($aging['open_total']) }}</div>
-            <div class="mt-1 text-xs text-base-content/60 {{ $aging['buckets']['30_plus']['count'] > 0 ? 'text-error' : '' }}">
-                {{ $aging['buckets']['30_plus']['count'] }} {{ __('> 30 Tage') }}
-            </div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Unbillte Zeit') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $fmtMin($unbilled['minutes']) }}</div>
-            <div class="mt-1 text-xs text-base-content/60">{{ $unbilled['count'] }} {{ __('Einträge') }} · {{ $eur($unbilled['projected_revenue']) }}</div>
-        </div>
+        <x-kpi-tile :label="__('Ausgestellt + Bezahlt (Σ Brutto)')" :value="$eur($totalIssuedPaid)" />
+        <x-kpi-tile :label="__('Offene Forderungen')" :value="$eur($aging['open_total'])"
+                    :tone="$aging['buckets']['30_plus']['count'] > 0 ? 'error' : 'neutral'"
+                    :hint="$aging['buckets']['30_plus']['count'] . ' ' . __('> 30 Tage')" />
+        <x-kpi-tile :label="__('Unbillte Zeit')" :value="$fmtMin($unbilled['minutes'])"
+                    :hint="$unbilled['count'] . ' ' . __('Einträge') . ' · ' . $eur($unbilled['projected_revenue'])" />
     </div>
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Rechnungen nach Status') }}</h3>
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -79,9 +69,9 @@
                     </tr>
                 @endforeach
             </x-table>
-        </div>
+        </x-card>
 
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Aging – offene Posten') }}</h3>
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -106,10 +96,10 @@
                     </tr>
                 @endforeach
             </x-table>
-        </div>
+        </x-card>
     </div>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Top-Kunden (ausgestellt + bezahlt im Zeitraum)') }}</h3>
         @if (empty($perCustomer))
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">payments</span>' :title="__('Keine Rechnungen im Zeitraum.')" />
@@ -131,6 +121,6 @@
                 @endforeach
             </x-table>
         @endif
-    </div>
+    </x-card>
 </x-page-shell>
 @endsection

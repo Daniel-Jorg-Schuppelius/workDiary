@@ -31,6 +31,31 @@ class AssetSoftwareControllerTest extends TestCase {
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
     }
 
+    public function test_can_open_software_create_dialog(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+        $asset = Asset::factory()->create(['organization_id' => $this->organization->id]);
+        Software::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Katalog-App']);
+
+        $this->actingAs($user)
+            ->get(route('assets.software-installations.create', $asset))
+            ->assertOk()
+            ->assertSee('Software zuweisen')
+            ->assertSee('name="software_id"', false)
+            ->assertSee('Katalog-App');
+    }
+
+    public function test_can_open_operating_system_dialog(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+        $asset = Asset::factory()->create(['organization_id' => $this->organization->id]);
+        Software::factory()->operatingSystem()->create(['organization_id' => $this->organization->id, 'name' => 'Katalog-OS']);
+
+        $this->actingAs($user)
+            ->get(route('assets.software-installations.create', ['asset' => $asset, 'os' => 1]))
+            ->assertOk()
+            ->assertSee('Betriebssystem zuweisen')
+            ->assertSee('Katalog-OS');
+    }
+
     public function test_attach_application_to_asset(): void {
         $user = $this->userWithRole(UserRole::Teamleitung->value);
         $asset = Asset::factory()->create(['organization_id' => $this->organization->id]);

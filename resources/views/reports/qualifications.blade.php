@@ -36,20 +36,14 @@
     </x-slot:toolbar>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['users'] }}</div></div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Qualifikationen') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['qualifications'] }}</div></div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Zuweisungen') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['assignments'] }}</div></div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Laufen ab (≤30 T.)') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold {{ $totals['expiring'] > 0 ? 'text-warning' : '' }}">{{ $totals['expiring'] }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Abgelaufen') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold {{ $totals['expired'] > 0 ? 'text-error' : '' }}">{{ $totals['expired'] }}</div>
-        </div>
+        <x-kpi-tile :label="__('Mitarbeiter')" :value="$totals['users']" />
+        <x-kpi-tile :label="__('Qualifikationen')" :value="$totals['qualifications']" />
+        <x-kpi-tile :label="__('Zuweisungen')" :value="$totals['assignments']" />
+        <x-kpi-tile :label="__('Laufen ab (≤30 T.)')" :value="$totals['expiring']" :tone="$totals['expiring'] > 0 ? 'warning' : 'neutral'" />
+        <x-kpi-tile :label="__('Abgelaufen')" :value="$totals['expired']" :tone="$totals['expired'] > 0 ? 'error' : 'neutral'" />
     </div>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         @if ($users->isEmpty() || $qualifications->isEmpty())
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>' :title="__('Keine Qualifikations-Zuweisungen vorhanden.')" />
         @else
@@ -81,6 +75,6 @@
                 <span class="badge bg-base-200">{{ __('keine Zuweisung') }}</span>
             </div>
         @endif
-    </div>
+    </x-card>
 </x-page-shell>
 @endsection

@@ -52,6 +52,14 @@ class MaintenancePlanControllerTest extends TestCase {
         $this->actingAs($this->actor);
     }
 
+    public function test_can_open_plan_create_dialog(): void {
+        $this->get(route('assets.maintenance-plans.create', $this->asset))
+            ->assertOk()
+            ->assertSee('Wartungsplan anlegen')
+            ->assertSee('name="label"', false)
+            ->assertSee('name="interval_kind"', false);
+    }
+
     public function test_store_creates_plan(): void {
         $response = $this->post(route('assets.maintenance-plans.store', $this->asset), [
             'label' => 'Quartalswartung',

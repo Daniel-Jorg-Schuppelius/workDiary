@@ -37,32 +37,16 @@
         @endif
 
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            <div class="rounded-box border border-base-300 bg-base-100 p-3">
-                <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Soll') }}</div>
-                <div class="text-2xl font-semibold">{{ $fmt($period->targetMinutes) }} h</div>
-            </div>
-            <div class="rounded-box border border-base-300 bg-base-100 p-3">
-                <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Anwesenheit') }}</div>
-                <div class="text-2xl font-semibold">{{ $fmt($period->attendanceMinutes) }} h</div>
-            </div>
-            <div class="rounded-box border border-base-300 bg-base-100 p-3">
-                <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Erfasst') }}</div>
-                <div class="text-2xl font-semibold">{{ $fmt($period->trackedMinutes) }} h</div>
-            </div>
-            <div class="rounded-box border border-base-300 bg-base-100 p-3">
-                <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Unverteilt') }}</div>
-                <div class="text-2xl font-semibold">{{ $fmt($period->untrackedMinutes) }} h</div>
-            </div>
-            <div class="rounded-box border bg-base-100 p-3 {{ $period->balanceMinutes >= 0 ? 'border-success/40' : 'border-error/40' }}">
-                <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Saldo') }}</div>
-                <div class="text-2xl font-semibold {{ $period->balanceMinutes >= 0 ? 'text-success' : 'text-error' }}">
-                    {{ $fmt($period->balanceMinutes) }} h
-                </div>
-            </div>
+            <x-kpi-tile :label="__('Soll')" :value="$fmt($period->targetMinutes) . ' h'" />
+            <x-kpi-tile :label="__('Anwesenheit')" :value="$fmt($period->attendanceMinutes) . ' h'" />
+            <x-kpi-tile :label="__('Erfasst')" :value="$fmt($period->trackedMinutes) . ' h'" />
+            <x-kpi-tile :label="__('Unverteilt')" :value="$fmt($period->untrackedMinutes) . ' h'" />
+            <x-kpi-tile :label="__('Saldo')" :value="$fmt($period->balanceMinutes) . ' h'"
+                        :tone="$period->balanceMinutes >= 0 ? 'success' : 'error'" />
         </div>
 
         @if (! empty($period->byActivity))
-            <div class="rounded-box border border-base-300 bg-base-100 p-3">
+            <x-card>
                 <div class="mb-2 text-xs uppercase tracking-wider text-base-content/60">{{ __('Verteilung nach Tätigkeit') }}</div>
                 <div class="flex flex-wrap gap-2">
                     @foreach ($period->byActivity as $type => $minutes)
@@ -72,7 +56,7 @@
                         </span>
                     @endforeach
                 </div>
-            </div>
+            </x-card>
         @endif
 
         <x-table table-sort="client" :zebra="false">

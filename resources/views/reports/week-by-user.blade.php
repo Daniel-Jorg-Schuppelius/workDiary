@@ -60,7 +60,7 @@
         </div>
     @endif
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
             <h2 class="font-['Space_Grotesk'] text-lg font-semibold">{{ $weekLabel }}</h2>
             <div class="flex items-baseline gap-4">
@@ -115,6 +115,6 @@
                 @endforeach
             </x-table>
         @endif
-    </div>
+    </x-card>
 </x-page-shell>
 @endsection

@@ -50,7 +50,7 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         <div class="mb-3 text-xs text-base-content/60">{{ __('Zeitraum') }}: {{ $label }}</div>
 
         @if(empty($rows))
@@ -100,6 +100,6 @@
                 @endforeach
             </x-table>
         @endif
-    </div>
+    </x-card>
 </x-index-page>
 @endsection

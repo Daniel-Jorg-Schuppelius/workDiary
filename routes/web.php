@@ -423,10 +423,14 @@ Route::middleware('auth')->group(function () {
         Route::post('expenses/{expense}/cancel', [ExpenseController::class, 'cancel'])->name('expenses.cancel');
 
         // ── Offene Punkte (Snagging / Restpunkte) ──────────────────────────
+        Route::get('open-issues/create', [OpenIssueController::class, 'create'])->name('open-issues.create');
         Route::post('open-issues', [OpenIssueController::class, 'store'])->name('open-issues.store');
         Route::put('open-issues/{issue}', [OpenIssueController::class, 'update'])->name('open-issues.update');
         Route::delete('open-issues/{issue}', [OpenIssueController::class, 'destroy'])->name('open-issues.destroy');
         Route::put('open-issues/{issue}/assignee', [OpenIssueController::class, 'assign'])->name('open-issues.assign');
+        Route::get('open-issues/{issue}/transitions/{action}', [OpenIssueController::class, 'transitionForm'])
+            ->whereIn('action', ['block', 'complete', 'wontDo', 'reopen'])
+            ->name('open-issues.transition.form');
         Route::post('open-issues/{issue}/transitions/{action}', [OpenIssueController::class, 'transition'])
             ->whereIn('action', ['start', 'block', 'unblock', 'complete', 'wontDo', 'reopen'])
             ->name('open-issues.transition');
@@ -490,12 +494,14 @@ Route::middleware('auth')->group(function () {
         Route::post('assets/{asset}/unblock', [AssetController::class, 'unblock'])->name('assets.unblock');
         Route::get('assets/{asset}', [AssetController::class, 'show'])->name('assets.show');
 
+        Route::get('assets/{asset}/maintenance-plans/create', [MaintenancePlanController::class, 'create'])->name('assets.maintenance-plans.create');
         Route::post('assets/{asset}/maintenance-plans', [MaintenancePlanController::class, 'store'])->name('assets.maintenance-plans.store');
         Route::put('assets/{asset}/maintenance-plans/{plan}', [MaintenancePlanController::class, 'update'])->name('assets.maintenance-plans.update');
         Route::post('assets/{asset}/maintenance-plans/{plan}/complete', [MaintenancePlanController::class, 'complete'])->name('assets.maintenance-plans.complete');
         Route::post('assets/{asset}/maintenance-plans/{plan}/toggle', [MaintenancePlanController::class, 'toggle'])->name('assets.maintenance-plans.toggle');
         Route::delete('assets/{asset}/maintenance-plans/{plan}', [MaintenancePlanController::class, 'destroy'])->name('assets.maintenance-plans.destroy');
 
+        Route::get('assets/{asset}/software-installations/create', [SoftwareInstallationController::class, 'create'])->name('assets.software-installations.create');
         Route::post('assets/{asset}/software-installations', [SoftwareInstallationController::class, 'store'])->name('assets.software-installations.store');
         Route::put('assets/{asset}/software-installations/{installation}', [SoftwareInstallationController::class, 'update'])->name('assets.software-installations.update');
         Route::delete('assets/{asset}/software-installations/{installation}', [SoftwareInstallationController::class, 'destroy'])->name('assets.software-installations.destroy');

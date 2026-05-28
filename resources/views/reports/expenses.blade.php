@@ -28,25 +28,13 @@
     </x-filter-bar>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Summe (Brutto)') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ number_format($grandTotal, 2, ',', '.') }} €</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ count($totalsPerUser) }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Kategorien') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ count($totalsPerCategory) }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Monate') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ count($months) }}</div>
-        </div>
+        <x-kpi-tile :label="__('Summe (Brutto)')" :value="number_format($grandTotal, 2, ',', '.') . ' €'" />
+        <x-kpi-tile :label="__('Mitarbeiter')" :value="count($totalsPerUser)" />
+        <x-kpi-tile :label="__('Kategorien')" :value="count($totalsPerCategory)" />
+        <x-kpi-tile :label="__('Monate')" :value="count($months)" />
     </div>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs overflow-x-auto">
+    <x-card class="overflow-x-auto">
         @if (empty($rows))
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>'
                            :title="__('Keine Spesen im gewählten Zeitraum.')" />
@@ -98,10 +86,10 @@
                 </tfoot>
             </table>
         @endif
-    </div>
+    </x-card>
 
     @if (! empty($totalsPerCategory))
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h3 class="font-['Space_Grotesk'] text-lg font-semibold mb-3">{{ __('Top-Kategorien') }}</h3>
             <div class="grid gap-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 @php arsort($totalsPerCategory); @endphp
@@ -112,7 +100,7 @@
                     </div>
                 @endforeach
             </div>
-        </div>
+        </x-card>
     @endif
 
 </x-page-shell>

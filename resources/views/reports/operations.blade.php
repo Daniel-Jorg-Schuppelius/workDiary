@@ -57,31 +57,18 @@
     @endif
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Service-Aufträge') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $orders['total'] }}</div>
-            <div class="mt-1 text-xs text-base-content/60">{{ __('Abschluss') }}: {{ $pct($orders['completion_rate']) }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Servicezeit Σ') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $fmtMin($orders['service_minutes']) }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Tasks') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $tasks['total'] }}</div>
-            <div class="mt-1 text-xs text-base-content/60 {{ $tasks['overdue'] > 0 ? 'text-error' : '' }}">
-                {{ $tasks['overdue'] }} {{ __('überfällig') }} · {{ $pct($tasks['completion_rate']) }}
-            </div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Touren') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $tours['total'] }}</div>
-            <div class="mt-1 text-xs text-base-content/60">{{ $num($tours['planned_distance_km'], 1) }} km · {{ $fmtMin($tours['planned_minutes']) }}</div>
-        </div>
+        <x-kpi-tile :label="__('Service-Aufträge')" :value="$orders['total']"
+                    :hint="__('Abschluss') . ': ' . $pct($orders['completion_rate'])" />
+        <x-kpi-tile :label="__('Servicezeit Σ')" :value="$fmtMin($orders['service_minutes'])" />
+        <x-kpi-tile :label="__('Tasks')" :value="$tasks['total']"
+                    :tone="$tasks['overdue'] > 0 ? 'warning' : 'neutral'"
+                    :hint="$tasks['overdue'] . ' ' . __('überfällig') . ' · ' . $pct($tasks['completion_rate'])" />
+        <x-kpi-tile :label="__('Touren')" :value="$tours['total']"
+                    :hint="$num($tours['planned_distance_km'], 1) . ' km · ' . $fmtMin($tours['planned_minutes'])" />
     </div>
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Service-Aufträge – Status') }}</h3>
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -106,9 +93,9 @@
                     <tr><td>{{ $label($prioLabels, $p) }}</td><td class="text-right tabular-nums">{{ $c }}</td></tr>
                 @endforeach
             </x-table>
-        </div>
+        </x-card>
 
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Tasks – Status') }}</h3>
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -133,10 +120,10 @@
                     <tr><td>{{ $label($prioLabels, $p) }}</td><td class="text-right tabular-nums">{{ $c }}</td></tr>
                 @endforeach
             </x-table>
-        </div>
+        </x-card>
     </div>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Touren – pro Mitarbeiter') }}</h3>
         @if (empty($tours['per_user']))
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">engineering</span>' :title="__('Keine Touren im Zeitraum.')" />
@@ -168,6 +155,6 @@
                 @endforeach
             </x-table>
         @endif
-    </div>
+    </x-card>
 </x-page-shell>
 @endsection

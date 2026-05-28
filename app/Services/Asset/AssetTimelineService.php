@@ -26,7 +26,7 @@ class AssetTimelineService {
         // in der Timeline erscheinen.
         $genericEvents = ['created', 'updated', 'deleted'];
 
-        foreach ($asset->auditLogs()->limit($limit)->get() as $log) {
+        foreach ($asset->auditLogs()->with('user:id,name')->limit($limit)->get() as $log) {
             if (in_array($log->event, $genericEvents, true)) {
                 continue;
             }
@@ -38,6 +38,7 @@ class AssetTimelineService {
                     'id' => $log->id,
                     'event' => $log->event,
                     'user_id' => $log->user_id,
+                    'user_name' => $log->user?->name,
                 ],
             ];
         }

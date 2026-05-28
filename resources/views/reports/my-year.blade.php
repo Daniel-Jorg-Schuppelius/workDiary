@@ -51,7 +51,7 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         <div class="mb-3 flex flex-wrap items-center justify-end gap-2">
             <div class="flex items-baseline gap-2">
                 <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ __('Jahressumme') }}</span>
@@ -113,6 +113,6 @@
                 </table>
             </div>
         @endif
-    </div>
+    </x-card>
 </x-page-shell>
 @endsection

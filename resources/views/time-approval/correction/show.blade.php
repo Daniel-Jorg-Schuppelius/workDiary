@@ -74,7 +74,11 @@
             @endcan
             @can('withdraw', $request)
                 <form method="POST" action="{{ route('corrections.withdraw', $request) }}"
-                      onsubmit="return confirm('{{ __('Antrag wirklich zurückziehen?') }}');">
+                      data-confirm-dialog
+                      data-confirm-message="{{ __('Antrag wirklich zurückziehen?') }}"
+                      data-confirm-icon="undo"
+                      data-confirm-tone="warning"
+                      data-confirm-label="{{ __('Zurückziehen') }}">
                     @csrf
                     <button class="btn btn-sm btn-ghost" type="submit">
                         <span class="material-symbols-outlined">undo</span>{{ __('Zurückziehen') }}

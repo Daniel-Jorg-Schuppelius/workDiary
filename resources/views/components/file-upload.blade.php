@@ -96,7 +96,11 @@
 
             @if ($current && $deleteAction)
                 <form method="POST" action="{{ $deleteAction }}" class="wd-file-upload__delete"
-                      onsubmit="return confirm('{{ __('Bild wirklich entfernen?') }}');">
+                      data-confirm-dialog
+                      data-confirm-message="{{ __('Bild wirklich entfernen?') }}"
+                      data-confirm-icon="delete"
+                      data-confirm-tone="error"
+                      data-confirm-label="{{ __('Entfernen') }}">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-ghost btn-sm text-error">

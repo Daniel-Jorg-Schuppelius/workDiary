@@ -138,7 +138,7 @@ class AssetIndexControllerTest extends TestCase {
             ->get(route('assets.index'))
             ->assertOk()
             ->assertSeeInOrder(['AS-2026-0100', 'AS-2026-0200'])
-            ->assertSee('badge badge-error');
+            ->assertSee('badge-error');
     }
 
     public function test_teamleitung_can_create_asset_with_minimal_master_data(): void {

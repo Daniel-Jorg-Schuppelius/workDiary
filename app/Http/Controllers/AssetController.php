@@ -55,10 +55,23 @@ class AssetController extends Controller {
         $classOptions = $this->assetClassOptions();
         $statusOptions = $this->assetStatusOptions();
 
+        $statusCounts = Asset::query()
+            ->selectRaw('status, count(*) as aggregate')
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
+        $kpis = [
+            'total' => (int) $statusCounts->sum(),
+            'blocked' => (int) ($statusCounts[AssetStatus::Blocked->value] ?? 0),
+            'maintenance' => (int) ($statusCounts[AssetStatus::InMaintenance->value] ?? 0)
+                + (int) ($statusCounts[AssetStatus::InRepair->value] ?? 0),
+        ];
+
         return view('assets.index', [
             'assets' => $assets,
             'classOptions' => $classOptions,
             'statusOptions' => $statusOptions,
+            'kpis' => $kpis,
             'canCreate' => Gate::allows('create', Asset::class),
             'activeFilters' => [
                 'q' => $query,
@@ -248,13 +261,6 @@ class AssetController extends Controller {
             ->all();
         $canManageMaintenance = Gate::forUser($user)->allows('create', MaintenancePlan::class);
 
-        $orgId = (int) $user->organization_id;
-        $softwareCatalog = \App\Models\Software::query()
-            ->where('organization_id', $orgId)
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name', 'vendor', 'kind', 'default_version']);
-
         return view('assets.show', [
             'asset' => $asset,
             'classOptions' => $this->assetClassOptions(),
@@ -269,7 +275,6 @@ class AssetController extends Controller {
             'maintenancePlans' => $maintenancePlans,
             'intervalKindOptions' => $intervalKindOptions,
             'canManageMaintenance' => $canManageMaintenance,
-            'softwareCatalog' => $softwareCatalog,
             'visibleCounts' => [
                 'diary' => $diaryEntries->count(),
                 'protocols' => $protocols->count(),
@@ -319,7 +324,7 @@ class AssetController extends Controller {
             'protocol.linked' => (string) ($payload['title'] ?? ('#' . ((int) ($payload['id'] ?? 0)))),
             'material.linked' => (string) ($payload['description'] ?? ('#' . ((int) ($payload['id'] ?? 0)))),
             'attachment.linked' => (string) ($payload['name'] ?? ('#' . ((int) ($payload['id'] ?? 0)))),
-            'asset.audit' => $auditEvent !== '' ? $auditEvent : __('Audit-Log'),
+            'asset.audit' => $this->assetAuditDetail($payload),
             default => __('Unbekanntes Ereignis'),
         };
 
@@ -329,6 +334,15 @@ class AssetController extends Controller {
             'detail' => $detail,
             'occurred_at_formatted' => $this->formatTimelineDate($event['occurred_at'] ?? null),
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function assetAuditDetail(array $payload): string {
+        $name = trim((string) ($payload['user_name'] ?? ''));
+
+        return $name !== '' ? __('durch :name', ['name' => $name]) : '';
     }
 
     private function assetAuditTitle(string $auditEvent): string {

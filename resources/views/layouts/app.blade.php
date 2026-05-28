@@ -1484,6 +1484,7 @@
                     var notifyIcon = document.getElementById('action-notify-icon');
                     var notifyOk = document.getElementById('action-notify-ok');
                     var pendingForm = null;
+                    var pendingSubmitter = null;
                     var pendingResolve = null;
                     var pendingNotifyResolve = null;
 
@@ -1583,6 +1584,7 @@
                         }
                         return new Promise(function (resolve) {
                             pendingForm = null;
+                            pendingSubmitter = null;
                             pendingResolve = resolve;
                             openConfirm(typeof opts === 'string' ? { message: opts } : opts);
                         });
@@ -1621,6 +1623,7 @@
 
                             event.preventDefault();
                             pendingForm = form;
+                            pendingSubmitter = null;
                             pendingResolve = null;
 
                             openConfirm({
@@ -1647,9 +1650,11 @@
 
                             event.preventDefault();
                             pendingResolve = null;
+                            pendingSubmitter = null;
 
                             if (trigger.tagName === 'BUTTON' && (trigger.type === 'submit' || !trigger.type) && ownerForm) {
                                 pendingForm = ownerForm;
+                                pendingSubmitter = trigger;
                             } else if (trigger.tagName === 'A' && trigger.href) {
                                 pendingForm = null;
                                 pendingResolve = function (ok) {
@@ -1673,12 +1678,18 @@
 
                         confirmSubmit.addEventListener('click', function () {
                             var formToSubmit = pendingForm;
+                            var submitter = pendingSubmitter;
                             var resolver = pendingResolve;
                             pendingForm = null;
+                            pendingSubmitter = null;
                             pendingResolve = null;
                             confirmDialog.close();
                             if (formToSubmit) {
-                                formToSubmit.submit();
+                                if (submitter && typeof formToSubmit.requestSubmit === 'function') {
+                                    formToSubmit.requestSubmit(submitter);
+                                } else {
+                                    formToSubmit.submit();
+                                }
                             }
                             if (resolver) {
                                 resolver(true);
@@ -1688,6 +1699,7 @@
                         confirmDialog.addEventListener('close', function () {
                             var resolver = pendingResolve;
                             pendingForm = null;
+                            pendingSubmitter = null;
                             pendingResolve = null;
                             if (resolver) {
                                 resolver(false);

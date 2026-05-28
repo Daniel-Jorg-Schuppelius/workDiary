@@ -27,6 +27,12 @@
             </x-page-toolbar>
         </x-slot:toolbar>
 
+        <div class="grid gap-3 sm:grid-cols-3">
+            <x-kpi-tile :label="__('Assets gesamt')" :value="$kpis['total']" tone="neutral" />
+            <x-kpi-tile :label="__('In Wartung/Reparatur')" :value="$kpis['maintenance']" :tone="$kpis['maintenance'] > 0 ? 'warning' : 'neutral'" />
+            <x-kpi-tile :label="__('Gesperrt')" :value="$kpis['blocked']" :tone="$kpis['blocked'] > 0 ? 'error' : 'neutral'" />
+        </div>
+
         <x-filter-bar :action="route('assets.index')"
                       :reset="$hasActiveFilters ? route('assets.index') : null">
             <x-filter-field :label="__('Suche')" for="asset-q" class="flex-1 min-w-60">
@@ -87,7 +93,7 @@
                     <td class="font-mono text-xs">
                         <a href="{{ route('assets.show', $asset) }}" class="link link-hover">{{ $asset->asset_no }}</a>
                     </td>
-                    <td class="text-base-content/70">{{ $classOptions[$assetClassValue] ?? $assetClassValue }}</td>
+                    <td><x-status-badge tone="ghost" outline>{{ $classOptions[$assetClassValue] ?? $assetClassValue }}</x-status-badge></td>
                     <td>
                         <a href="{{ route('assets.show', $asset) }}" class="link link-hover font-medium">{{ $asset->name }}</a>
                     </td>
@@ -95,7 +101,7 @@
                     <td class="text-base-content/70">{{ $asset->location_text ?: '—' }}</td>
                     <td class="text-base-content/70">{{ $asset->customer?->name ?: '—' }}</td>
                     <td>
-                        <span class="badge {{ $isBlocked ? 'badge-error' : 'badge-outline' }} badge-sm">{{ $statusOptions[$assetStatusValue] ?? $assetStatusValue }}</span>
+                        <x-status-badge :tone="$isBlocked ? 'error' : 'ghost'" :outline="! $isBlocked">{{ $statusOptions[$assetStatusValue] ?? $assetStatusValue }}</x-status-badge>
                     </td>
                     <td class="text-right">
                         <x-icon-btn icon="open_in_new" :href="route('assets.show', $asset)" :label="__('Details')" />

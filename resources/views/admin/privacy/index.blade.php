@@ -173,7 +173,11 @@
                                     @if ($canRevokeSessions)
                                         <td class="text-right">
                                             <form method="POST" action="{{ route('admin.privacy.sessions.destroy', ['id' => $session->id]) }}"
-                                                  onsubmit="return confirm('{{ __('Session wirklich widerrufen?') }}');">
+                                                  data-confirm-dialog
+                                                  data-confirm-message="{{ __('Session wirklich widerrufen?') }}"
+                                                  data-confirm-icon="logout"
+                                                  data-confirm-tone="error"
+                                                  data-confirm-label="{{ __('Widerrufen') }}">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Widerrufen') }}</button>
@@ -224,7 +228,11 @@
                                     @if ($canRevokeTokens)
                                         <td class="text-right">
                                             <form method="POST" action="{{ route('admin.privacy.tokens.destroy', ['id' => $token->id]) }}"
-                                                  onsubmit="return confirm('{{ __('Token wirklich widerrufen?') }}');">
+                                                  data-confirm-dialog
+                                                  data-confirm-message="{{ __('Token wirklich widerrufen?') }}"
+                                                  data-confirm-icon="key_off"
+                                                  data-confirm-tone="error"
+                                                  data-confirm-label="{{ __('Widerrufen') }}">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Widerrufen') }}</button>

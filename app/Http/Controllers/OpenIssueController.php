@@ -17,6 +17,7 @@ use App\Services\OpenIssue\OpenIssueService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\View\View;
 use InvalidArgumentException;
 
 class OpenIssueController extends Controller {
@@ -35,6 +36,38 @@ class OpenIssueController extends Controller {
     public function __construct(
         private readonly OpenIssueService $service,
     ) {}
+
+    public function create(Request $request): View {
+        Gate::authorize('create', OpenIssue::class);
+
+        $subjectKind = (string) $request->query('subject_kind', '');
+        if (! array_key_exists($subjectKind, self::SUBJECT_MAP)) {
+            abort(404);
+        }
+
+        $subjectClass = self::SUBJECT_MAP[$subjectKind];
+        $subjectId = (int) $request->query('subject_id', 0);
+        if ($subjectId < 1 || $subjectClass::query()->whereKey($subjectId)->doesntExist()) {
+            abort(404);
+        }
+
+        return view('open-issues._form_dialog', [
+            'subjectKind' => $subjectKind,
+            'subjectId' => $subjectId,
+            'canPublishToCustomer' => Gate::allows('publishToCustomer', OpenIssue::class),
+            'canAssign' => Gate::allows('assign', OpenIssue::class),
+        ]);
+    }
+
+    public function transitionForm(OpenIssue $issue, string $action): View {
+        Gate::authorize('update', $issue);
+
+        return view('open-issues._transition_dialog', [
+            'issue' => $issue,
+            'action' => $action,
+            'requiresResolution' => $action === 'complete',
+        ]);
+    }
 
     public function store(Request $request): RedirectResponse {
         Gate::authorize('create', OpenIssue::class);

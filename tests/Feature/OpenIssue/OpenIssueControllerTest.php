@@ -42,6 +42,32 @@ class OpenIssueControllerTest extends TestCase {
         ]);
     }
 
+    public function test_can_open_create_dialog(): void {
+        $user = User::factory()->user()->create();
+        $entry = DiaryEntry::factory()->for($user)->create();
+
+        $this->actingAs($user)
+            ->get(route('open-issues.create', ['subject_kind' => 'diary', 'subject_id' => $entry->id]))
+            ->assertOk()
+            ->assertSee('name="subject_kind"', false)
+            ->assertSee('name="title"', false);
+    }
+
+    public function test_can_open_transition_dialog(): void {
+        $user = User::factory()->user()->create();
+        $entry = DiaryEntry::factory()->for($user)->create();
+        $issue = OpenIssue::factory()->for($entry, 'subject')->create([
+            'organization_id' => $entry->organization_id,
+            'created_by_user_id' => $user->id,
+            'status' => OpenIssueStatus::Open->value,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('open-issues.transition.form', ['issue' => $issue, 'action' => 'block']))
+            ->assertOk()
+            ->assertSee('name="reason"', false);
+    }
+
     public function test_guest_cannot_store(): void {
         $entry = DiaryEntry::factory()->for(User::factory()->user())->create();
 

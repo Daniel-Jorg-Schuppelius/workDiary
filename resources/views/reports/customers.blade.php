@@ -86,7 +86,7 @@
         </x-table>
     </div>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs mt-4">
+    <x-card class="mt-4">
         <div class="mb-3 text-xs text-base-content/60">{{ __('Zeitraum') }}: {{ $label }}</div>
 
         @if($rows->isEmpty())
@@ -153,6 +153,6 @@
                 @endforeach
             </x-table>
         @endif
-    </div>
+    </x-card>
 </x-page-shell>
 @endsection

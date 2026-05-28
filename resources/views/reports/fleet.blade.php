@@ -36,37 +36,15 @@
 
     {{-- KPI-Kacheln --}}
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Fahrzeuge') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['vehicles'] }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Σ km') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $km($totals['km']) }}</div>
-            <div class="mt-1 text-xs text-base-content/60">{{ $totals['trip_count'] }} {{ __('Fahrten') }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Tankungen / Ladungen') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['fuel_count'] }}</div>
-            <div class="mt-1 text-xs text-base-content/60">
-                @if ($totals['liters'] > 0){{ $num($totals['liters'], 1) }} L @endif
-                @if ($totals['kwh'] > 0)· {{ $num($totals['kwh'], 1) }} kWh @endif
-            </div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Energiekosten') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $money($totals['energy_cost']) }}</div>
-            <div class="mt-1 text-xs text-base-content/60">{{ __('Erstattung') }} {{ $money($totals['reimbursement']) }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Ø €/km') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">
-                {{ $totals['avg_cost_per_km'] !== null ? $num($totals['avg_cost_per_km'], 3) . ' €' : '–' }}
-            </div>
-        </div>
+        <x-kpi-tile :label="__('Fahrzeuge')" :value="$totals['vehicles']" />
+        <x-kpi-tile :label="__('Σ km')" :value="$km($totals['km'])" :hint="$totals['trip_count'] . ' ' . __('Fahrten')" />
+        <x-kpi-tile :label="__('Tankungen / Ladungen')" :value="$totals['fuel_count']"
+                    :hint="trim(($totals['liters'] > 0 ? $num($totals['liters'], 1) . ' L ' : '') . ($totals['kwh'] > 0 ? '· ' . $num($totals['kwh'], 1) . ' kWh' : ''))" />
+        <x-kpi-tile :label="__('Energiekosten')" :value="$money($totals['energy_cost'])" :hint="__('Erstattung') . ' ' . $money($totals['reimbursement'])" />
+        <x-kpi-tile :label="__('Ø €/km')" :value="$totals['avg_cost_per_km'] !== null ? $num($totals['avg_cost_per_km'], 3) . ' €' : '–'" />
     </div>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         @if (empty($rows))
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">directions_car</span>' :title="__('Keine Fahrzeug-Daten im gewählten Zeitraum.')" />
         @else
@@ -122,6 +100,6 @@
                 @endforeach
             </x-table>
         @endif
-    </div>
+    </x-card>
 </x-page-shell>
 @endsection

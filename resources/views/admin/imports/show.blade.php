@@ -22,7 +22,11 @@
 
         @if (in_array($run->state, [\App\Enums\Import\ImportRunState::AwaitingApproval, \App\Enums\Import\ImportRunState::Failed], true))
             <form method="POST" action="{{ route('admin.imports.destroy', $run) }}" class="inline"
-                  onsubmit="return confirm('{{ __('Import wirklich verwerfen?') }}')">
+                  data-confirm-dialog
+                  data-confirm-message="{{ __('Import wirklich verwerfen?') }}"
+                  data-confirm-icon="delete"
+                  data-confirm-tone="error"
+                  data-confirm-label="{{ __('Verwerfen') }}">
                 @csrf @method('DELETE')
                 <button type="submit" class="btn btn-error btn-sm btn-outline">
                     <span class="material-symbols-outlined" aria-hidden="true">delete</span>

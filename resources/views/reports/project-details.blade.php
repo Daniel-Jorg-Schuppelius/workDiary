@@ -47,7 +47,7 @@
     @if (! $project)
         <div class="alert">{{ __('Kein Projekt vorhanden.') }}</div>
     @else
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
                 <h2 class="font-['Space_Grotesk'] text-lg font-semibold">
                     {{ $project->name }}
@@ -117,7 +117,7 @@
                     @endforeach
                 </x-table>
             @endif
-        </div>
+        </x-card>
     @endif
 </x-page-shell>
 @endsection

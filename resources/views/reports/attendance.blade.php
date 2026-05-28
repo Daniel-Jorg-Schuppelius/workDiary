@@ -37,16 +37,14 @@
     @endif
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Soll') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $fmtMin($totals['target']) }}</div></div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Anwesend') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $fmtMin($totals['attendance']) }}</div></div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Gebucht') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $fmtMin($totals['time_entry']) }}</div></div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Saldo') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold {{ $totals['variance'] < 0 ? 'text-error' : ($totals['variance'] > 0 ? 'text-success' : '') }}">{{ $fmtMin($totals['variance']) }}</div>
-        </div>
+        <x-kpi-tile :label="__('Soll')" :value="$fmtMin($totals['target'])" />
+        <x-kpi-tile :label="__('Anwesend')" :value="$fmtMin($totals['attendance'])" />
+        <x-kpi-tile :label="__('Gebucht')" :value="$fmtMin($totals['time_entry'])" />
+        <x-kpi-tile :label="__('Saldo')" :value="$fmtMin($totals['variance'])"
+                    :tone="$totals['variance'] < 0 ? 'error' : ($totals['variance'] > 0 ? 'success' : 'neutral')" />
     </div>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         @if (empty($rows))
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">schedule</span>' :title="__('Keine Daten im Zeitraum.')" />
         @else
@@ -83,6 +81,6 @@
                 @endforeach
             </x-table>
         @endif
-    </div>
+    </x-card>
 </x-page-shell>
 @endsection

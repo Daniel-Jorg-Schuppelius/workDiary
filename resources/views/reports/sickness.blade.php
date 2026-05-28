@@ -20,32 +20,14 @@
     @endif
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['users'] }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Werktage krank') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['sick_workdays'] }}</div>
-            <div class="mt-1 text-xs text-base-content/60">{{ $totals['sick_calendar_days'] }} {{ __('Kalendertage') }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Krankheitsfälle') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['episodes'] }}</div>
-            <div class="mt-1 text-xs text-base-content/60">{{ $totals['follow_ups'] }} {{ __('Folge') }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Mit AU') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['with_au'] }}</div>
-            <div class="mt-1 text-xs text-base-content/60">/ {{ $totals['episodes'] }} {{ __('Fälle') }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Anspruch ausgeschöpft') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold {{ $totals['exhausted'] > 0 ? 'text-error' : '' }}">{{ $totals['exhausted'] }}</div>
-        </div>
+        <x-kpi-tile :label="__('Mitarbeiter')" :value="$totals['users']" />
+        <x-kpi-tile :label="__('Werktage krank')" :value="$totals['sick_workdays']" :hint="$totals['sick_calendar_days'] . ' ' . __('Kalendertage')" />
+        <x-kpi-tile :label="__('Krankheitsfälle')" :value="$totals['episodes']" :hint="$totals['follow_ups'] . ' ' . __('Folge')" />
+        <x-kpi-tile :label="__('Mit AU')" :value="$totals['with_au']" :hint="'/ ' . $totals['episodes'] . ' ' . __('Fälle')" />
+        <x-kpi-tile :label="__('Anspruch ausgeschöpft')" :value="$totals['exhausted']" :tone="$totals['exhausted'] > 0 ? 'error' : 'neutral'" />
     </div>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         @if (empty($rows))
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">sick</span>' :title="__('Keine Krankheitsdaten im gewählten Zeitraum.')" />
         @else
@@ -89,23 +71,23 @@
                         </td>
                         <td>
                             @if ($r['exhausted'])
-                                <span class="badge badge-sm badge-error">{{ __('Ausgeschöpft') }}</span>
+                                <x-status-badge tone="error">{{ __('Ausgeschöpft') }}</x-status-badge>
                                 @if ($r['exhaustion_date'])
                                     <div class="text-xs text-base-content/60">
                                         {{ \Carbon\Carbon::parse($r['exhaustion_date'])->format('d.m.Y') }}
                                     </div>
                                 @endif
                             @elseif ($r['used_days'] > 0)
-                                <span class="badge badge-sm badge-{{ $tone }}">{{ __(':n Tage frei', ['n' => $r['remaining_days']]) }}</span>
+                                <x-status-badge :tone="$tone">{{ __(':n Tage frei', ['n' => $r['remaining_days']]) }}</x-status-badge>
                             @else
-                                <span class="badge badge-sm badge-ghost">{{ __('OK') }}</span>
+                                <x-status-badge tone="ghost">{{ __('OK') }}</x-status-badge>
                             @endif
                         </td>
                     </tr>
                 @endforeach
             </x-table>
         @endif
-    </div>
+    </x-card>
 
 </x-page-shell>
 @endsection

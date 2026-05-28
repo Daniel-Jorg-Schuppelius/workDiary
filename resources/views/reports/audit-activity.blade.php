@@ -39,13 +39,13 @@
     </x-slot:toolbar>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Events Σ') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['total'] }}</div></div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Aktive Benutzer') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['users'] }}</div></div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs"><div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Entity-Typen') }}</div><div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['types'] }}</div></div>
+        <x-kpi-tile :label="__('Events Σ')" :value="$totals['total']" />
+        <x-kpi-tile :label="__('Aktive Benutzer')" :value="$totals['users']" />
+        <x-kpi-tile :label="__('Entity-Typen')" :value="$totals['types']" />
     </div>
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Nach Event') }}</h3>
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -60,9 +60,9 @@
                     <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">history</span>' :colspan="2" :title="__('Keine Daten')" compact />
                 @endforelse
             </x-table>
-        </div>
+        </x-card>
 
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Nach Entity-Typ (Top 20)') }}</h3>
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -77,9 +77,9 @@
                     <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">history</span>' :colspan="2" :title="__('Keine Daten')" compact />
                 @endforelse
             </x-table>
-        </div>
+        </x-card>
 
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Nach Benutzer (Top 20)') }}</h3>
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -94,10 +94,10 @@
                     <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">history</span>' :colspan="2" :title="__('Keine Daten')" compact />
                 @endforelse
             </x-table>
-        </div>
+        </x-card>
     </div>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Letzte 100 Events') }}</h3>
         @if ($recent->isEmpty())
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">history</span>' :title="__('Keine Events im Zeitraum.')" />
@@ -125,6 +125,6 @@
                 @endforeach
             </x-table>
         @endif
-    </div>
+    </x-card>
 </x-page-shell>
 @endsection

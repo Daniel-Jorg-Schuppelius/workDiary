@@ -17,7 +17,7 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
             <h2 class="font-['Space_Grotesk'] text-lg font-semibold">
                 {{ __('Keine Aktivität im Zeitraum') }}
@@ -65,13 +65,17 @@
 
                 <div class="mt-4 flex justify-end">
                     <button type="submit" class="btn btn-sm btn-warning gap-2"
-                            data-confirm-dialog="{{ __('Ausgewählte Projekte wirklich archivieren?') }}">
+                            data-confirm-dialog
+                            data-confirm-message="{{ __('Ausgewählte Projekte wirklich archivieren?') }}"
+                            data-confirm-icon="archive"
+                            data-confirm-tone="warning"
+                            data-confirm-label="{{ __('Archivieren') }}">
                         <span class="material-symbols-outlined" aria-hidden="true">archive</span>
                         {{ __('Ausgewählte archivieren') }}
                     </button>
                 </div>
             </form>
         @endif
-    </div>
+    </x-card>
 </x-page-shell>
 @endsection

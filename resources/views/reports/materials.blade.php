@@ -34,21 +34,12 @@
     @endif
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Materialien') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['materials'] }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Verwendungen') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['usage_count'] }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Netto Σ') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $eur($totals['line_total_net']) }}</div>
-        </div>
+        <x-kpi-tile :label="__('Materialien')" :value="$totals['materials']" />
+        <x-kpi-tile :label="__('Verwendungen')" :value="$totals['usage_count']" />
+        <x-kpi-tile :label="__('Netto Σ')" :value="$eur($totals['line_total_net'])" />
     </div>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Verbrauch pro Material') }}</h3>
         @if (empty($rows))
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>' :title="__('Im Zeitraum wurden keine Materialien verbucht.')" />
@@ -83,6 +74,6 @@
                 @endforeach
             </x-table>
         @endif
-    </div>
+    </x-card>
 </x-page-shell>
 @endsection

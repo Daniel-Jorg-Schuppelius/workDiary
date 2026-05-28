@@ -10,19 +10,52 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Software\SoftwareKind;
 use App\Exceptions\SoftwareInstallationException;
 use App\Models\{Asset, Software, SoftwareInstallation, User};
 use App\Services\Software\SoftwareInstallationService;
-use Illuminate\Http\{RedirectResponse, Request};
+use App\Services\SqidEncoder;
+use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
 
 class SoftwareInstallationController extends Controller {
     public function __construct(
         private readonly SoftwareInstallationService $installations,
-    ) {
+        private readonly SqidEncoder $sqids,
+    ) {}
+
+    public function create(Request $request, Asset $asset): View {
+        Gate::authorize('update', $asset);
+        $user = $request->user();
+
+        if (! $user instanceof User) {
+            abort(403);
+        }
+
+        $isOperatingSystem = $request->boolean('os');
+        $orgId = (int) $user->organization_id;
+
+        $catalog = Software::query()
+            ->where('organization_id', $orgId)
+            ->where('is_active', true)
+            ->when(
+                $isOperatingSystem,
+                fn($q) => $q->where('kind', SoftwareKind::OperatingSystem),
+                fn($q) => $q->where('kind', '!=', SoftwareKind::OperatingSystem),
+            )
+            ->orderBy('name')
+            ->get(['id', 'name', 'vendor', 'kind', 'default_version']);
+
+        return view('assets._software_form_dialog', [
+            'asset' => $asset,
+            'installation' => $isOperatingSystem ? $asset->operatingSystem : null,
+            'isOperatingSystem' => $isOperatingSystem,
+            'softwareCatalog' => $catalog,
+        ]);
     }
 
-    public function store(Request $request, Asset $asset): RedirectResponse {
+    public function store(Request $request, Asset $asset): RedirectResponse|JsonResponse {
         Gate::authorize('update', $asset);
         $user = $request->user();
 
@@ -31,6 +64,11 @@ class SoftwareInstallationController extends Controller {
         }
 
         $orgId = (int) $user->organization_id;
+
+        $softwareId = $request->input('software_id');
+        if (is_string($softwareId) && $softwareId !== '' && ! ctype_digit($softwareId)) {
+            $request->merge(['software_id' => $this->sqids->decode(Software::class, $softwareId)]);
+        }
 
         $validated = $request->validate([
             'software_id' => [
@@ -54,9 +92,7 @@ class SoftwareInstallationController extends Controller {
         try {
             $this->installations->attach($asset, $software, $user, $validated);
         } catch (SoftwareInstallationException $exception) {
-            return back()->withInput()->withErrors([
-                'software_id' => __($exception->getMessage()),
-            ]);
+            return $this->validationError($request, 'software_id', __($exception->getMessage()));
         }
 
         return redirect()
@@ -64,7 +100,7 @@ class SoftwareInstallationController extends Controller {
             ->with('success', __('Software hinzugefügt.'));
     }
 
-    public function update(Request $request, Asset $asset, SoftwareInstallation $installation): RedirectResponse {
+    public function update(Request $request, Asset $asset, SoftwareInstallation $installation): RedirectResponse|JsonResponse {
         Gate::authorize('update', $asset);
         $this->ensureOwnership($asset, $installation);
 
@@ -86,9 +122,7 @@ class SoftwareInstallationController extends Controller {
         try {
             $this->installations->update($installation, $user, $validated);
         } catch (SoftwareInstallationException $exception) {
-            return back()->withInput()->withErrors([
-                'is_operating_system' => __($exception->getMessage()),
-            ]);
+            return $this->validationError($request, 'is_operating_system', __($exception->getMessage()));
         }
 
         return redirect()
@@ -110,6 +144,14 @@ class SoftwareInstallationController extends Controller {
         return redirect()
             ->route('assets.show', $asset)
             ->with('success', __('Software entfernt.'));
+    }
+
+    private function validationError(Request $request, string $field, string $message): RedirectResponse|JsonResponse {
+        if ($request->expectsJson()) {
+            return response()->json(['errors' => [$field => [$message]]], 422);
+        }
+
+        return back()->withInput()->withErrors([$field => $message]);
     }
 
     private function ensureOwnership(Asset $asset, SoftwareInstallation $installation): void {

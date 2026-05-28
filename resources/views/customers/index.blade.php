@@ -93,10 +93,10 @@
                         <td>
                             <a class="link link-hover font-medium" href="{{ route('customers.show', $customer) }}">{{ $customer->name }}</a>
                             @if ($customer->isArchived())
-                                <span class="badge badge-ghost badge-xs ml-1">{{ __('archiviert') }}</span>
+                                <x-status-badge tone="ghost" size="xs" class="ml-1">{{ __('archiviert') }}</x-status-badge>
                             @endif
                             @if (! $customer->billable)
-                                <span class="badge badge-warning badge-xs ml-1">{{ __('nicht abrechenbar') }}</span>
+                                <x-status-badge tone="warning" size="xs" class="ml-1">{{ __('nicht abrechenbar') }}</x-status-badge>
                             @endif
                         </td>
                         <td class="text-base-content/70 tabular-nums">{{ $customer->number }}</td>

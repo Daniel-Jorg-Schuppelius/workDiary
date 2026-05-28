@@ -5,76 +5,71 @@
 @section('content')
 <x-page-shell>
     {{-- Header --}}
-    <div class="flex flex-wrap items-start justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <div class="min-w-0">
-            <div class="flex items-center gap-2">
-                <span class="inline-block h-3 w-3 rounded-full" style="background:{{ $customer->color ?: '#94a3b8' }}"></span>
-                <h1 class="font-['Space_Grotesk'] text-lg font-semibold truncate">{{ $customer->name }}</h1>
-                @if ($customer->isArchived())
-                    <span class="badge badge-ghost">{{ __('archiviert') }}</span>
+    <x-card>
+        <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                    <span class="inline-block h-3 w-3 rounded-full" style="background:{{ $customer->color ?: '#94a3b8' }}"></span>
+                    <h1 class="font-['Space_Grotesk'] text-lg font-semibold truncate">{{ $customer->name }}</h1>
+                    @if ($customer->isArchived())
+                        <x-status-badge tone="ghost">{{ __('archiviert') }}</x-status-badge>
+                    @endif
+                    @unless ($customer->billable)
+                        <x-status-badge tone="warning">{{ __('nicht abrechenbar') }}</x-status-badge>
+                    @endunless
+                </div>
+                <p class="mt-1 text-sm text-base-content/60">
+                    @if ($customer->company){{ $customer->company }} · @endif
+                    @if ($customer->number){{ __('Nr.') }} {{ $customer->number }} · @endif
+                    {{ $customer->currency }}
+                </p>
+                @if ($tags->isNotEmpty())
+                    <div class="mt-2 flex flex-wrap gap-1">
+                        @foreach ($tags as $tag)
+                            <span class="badge badge-sm" style="background:{{ $tag->color ?? '#e5e7eb' }};color:#000">{{ $tag->name }}</span>
+                        @endforeach
+                    </div>
                 @endif
             </div>
-            <p class="text-sm text-base-content/60">
-                @if ($customer->company){{ $customer->company }} · @endif
-                @if ($customer->number){{ __('Nr.') }} {{ $customer->number }} · @endif
-                {{ $customer->currency }}
-            </p>
-            @if ($tags->isNotEmpty())
-                <div class="mt-1 flex flex-wrap gap-1">
-                    @foreach ($tags as $tag)
-                        <span class="badge badge-sm" style="background:{{ $tag->color ?? '#e5e7eb' }};color:#000">{{ $tag->name }}</span>
-                    @endforeach
-                </div>
-            @endif
+            <div class="flex flex-wrap items-center gap-2">
+                <x-icon-btn icon="arrow_back" size="sm"
+                            :href="route('customers.index')"
+                            show-label>{{ __('Zurück') }}</x-icon-btn>
+                @can('update', $customer)
+                    @if ($customer->isArchived())
+                        <form method="POST" action="{{ route('customers.restore', $customer) }}" class="inline">
+                            @csrf
+                            <x-icon-btn icon="restore" size="sm" type="submit" show-label>{{ __('Wiederherstellen') }}</x-icon-btn>
+                        </form>
+                    @else
+                        <form method="POST" action="{{ route('customers.archive', $customer) }}" class="inline">
+                            @csrf
+                            <x-icon-btn icon="archive" size="sm" type="submit" show-label>{{ __('Archivieren') }}</x-icon-btn>
+                        </form>
+                    @endif
+                    <x-icon-btn icon="edit" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('customers.edit', $customer)"
+                                show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                @endcan
+            </div>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-            <x-icon-btn icon="arrow_back" size="sm"
-                        :href="route('customers.index')"
-                        show-label>{{ __('Zurück') }}</x-icon-btn>
-            @can('update', $customer)
-                @if ($customer->isArchived())
-                    <form method="POST" action="{{ route('customers.restore', $customer) }}" class="inline">
-                        @csrf
-                        <x-icon-btn icon="restore" size="sm" type="submit" show-label>{{ __('Wiederherstellen') }}</x-icon-btn>
-                    </form>
-                @else
-                    <form method="POST" action="{{ route('customers.archive', $customer) }}" class="inline">
-                        @csrf
-                        <x-icon-btn icon="archive" size="sm" type="submit" show-label>{{ __('Archivieren') }}</x-icon-btn>
-                    </form>
-                @endif
-                <x-icon-btn icon="edit" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('customers.edit', $customer)"
-                            show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-            @endcan
-        </div>
-    </div>
+    </x-card>
 
     {{-- KPI --}}
+    @php $timeFormatted = intdiv($totalMinutes, 60) . ':' . str_pad((string) ($totalMinutes % 60), 2, '0', STR_PAD_LEFT) . ' h'; @endphp
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs text-base-content/60">{{ __('Projekte') }}</div>
-            <div class="font-['Space_Grotesk'] text-2xl font-semibold">{{ $projects->count() }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs text-base-content/60">{{ __('Erfasste Zeit') }}</div>
-            <div class="font-['Space_Grotesk'] text-2xl font-semibold tabular-nums">
-                {{ intdiv($totalMinutes, 60) }}:{{ str_pad($totalMinutes % 60, 2, '0', STR_PAD_LEFT) }} h
-            </div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs text-base-content/60">{{ __('Umsatz (kalk.)') }}</div>
-            <div class="font-['Space_Grotesk'] text-2xl font-semibold tabular-nums">
-                {{ number_format($totalRate, 2, ',', '.') }} {{ $customer->currency }}
-            </div>
-        </div>
+        <x-kpi-tile :label="__('Projekte')" :value="$projects->count()" tone="neutral" />
+        <x-kpi-tile :label="__('Erfasste Zeit')" :value="$timeFormatted" tone="neutral" />
+        <x-kpi-tile :label="__('Umsatz (kalk.)')" :value="number_format($totalRate, 2, ',', '.') . ' ' . $customer->currency" tone="neutral" />
     </div>
 
     {{-- Stammdaten --}}
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-2">
-            <h2 class="font-semibold">{{ __('Kontakt') }}</h2>
+        <x-card>
+            <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+                <x-icon name="contacts" class="text-base-content/60" /> {{ __('Kontakt') }}
+            </h2>
             <dl class="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
                 @if ($customer->contact_name)<dt class="text-base-content/60">{{ __('Ansprechpartner') }}</dt><dd>{{ $customer->contact_name }}</dd>@endif
                 @if ($customer->email)<dt class="text-base-content/60">{{ __('E-Mail') }}</dt><dd><a class="link" href="mailto:{{ $customer->email }}">{{ $customer->email }}</a></dd>@endif
@@ -98,7 +93,7 @@
                         @foreach ($contactPersons as $cp)
                             <li class="py-2 flex flex-wrap items-center gap-x-3 gap-y-1">
                                 <span class="font-medium">{{ $cp['name'] ?? '' }}</span>
-                                @if (! empty($cp['primary']))<span class="badge badge-primary badge-xs">{{ __('Primär') }}</span>@endif
+                                @if (! empty($cp['primary']))<x-status-badge tone="primary" size="xs">{{ __('Primär') }}</x-status-badge>@endif
                                 @if (! empty($cp['email']))<a class="link link-hover" href="mailto:{{ $cp['email'] }}">{{ $cp['email'] }}</a>@endif
                                 @if (! empty($cp['phone']))<span class="text-base-content/70">{{ $cp['phone'] }}</span>@endif
                             </li>
@@ -106,10 +101,12 @@
                     </ul>
                 </div>
             @endif
-        </div>
+        </x-card>
 
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-2">
-            <h2 class="font-semibold">{{ __('Abrechnung') }}</h2>
+        <x-card>
+            <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+                <x-icon name="receipt_long" class="text-base-content/60" /> {{ __('Abrechnung') }}
+            </h2>
             <dl class="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
                 <dt class="text-base-content/60">{{ __('Abrechenbar') }}</dt>
                 <dd>{{ $customer->billable ? __('Ja') : __('Nein') }}</dd>
@@ -143,34 +140,39 @@
                     </dl>
                 </div>
             @endif
-        </div>
+        </x-card>
     </div>
 
     {{-- Projekte --}}
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <div class="mb-3 flex items-center justify-between">
-            <h2 class="font-semibold">{{ __('Projekte') }} ({{ $projects->count() }})</h2>
+    <x-card>
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+                <x-icon name="folder" class="text-base-content/60" /> {{ __('Projekte') }}
+                <span class="font-normal text-base-content/50">({{ $projects->count() }})</span>
+            </h2>
             @isset($defaultProject)
-                <a href="{{ route('projects.timesheets.create', $defaultProject) }}" data-entry-modal-trigger class="btn btn-sm btn-primary">
-                    <span class="material-symbols-outlined text-base">add</span>
-                    {{ __('Stundenzettel') }}
-                </a>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('projects.timesheets.create', $defaultProject)"
+                            show-label>{{ __('Stundenzettel') }}</x-icon-btn>
             @endisset
         </div>
 
         @isset($defaultProject)
-            <div class="mb-3 flex items-center justify-between rounded-box border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
+            <div class="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-box border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
                 <div class="flex items-center gap-2 min-w-0">
-                    <span class="material-symbols-outlined text-primary text-base">star</span>
+                    <x-icon name="star" class="text-primary" :filled="true" />
                     <a class="link link-hover truncate font-medium" href="{{ route('projects.show', $defaultProject) }}">{{ $defaultProject->name }}</a>
-                    <span class="badge badge-sm">{{ __('Standardprojekt') }}</span>
+                    <x-status-badge tone="ghost">{{ __('Standardprojekt') }}</x-status-badge>
                 </div>
                 <span class="text-xs text-base-content/60">{{ __('Auto-Bucket für Ad-hoc-/Notfalleinsätze') }}</span>
             </div>
         @endisset
 
         @if ($projects->isEmpty())
-            <p class="text-sm text-base-content/60">{{ __('Diesem Kunden sind noch keine Projekte zugeordnet.') }}</p>
+            <x-empty-state compact icon='<span class="material-symbols-outlined">folder_off</span>'
+                           :title="__('Keine Projekte')"
+                           :message="__('Diesem Kunden sind noch keine Projekte zugeordnet.')" />
         @else
             <ul class="divide-y divide-base-300">
                 @foreach ($projects as $project)
@@ -179,21 +181,23 @@
                             <span class="inline-block h-3 w-3 rounded-full" style="background:{{ $project->color ?: '#94a3b8' }}"></span>
                             <a class="link link-hover truncate" href="{{ route('projects.show', $project) }}">{{ $project->name }}</a>
                             @if ($project->is_default)
-                                <span class="material-symbols-outlined text-primary text-base" title="{{ __('Standardprojekt') }}">star</span>
+                                <x-icon name="star" class="text-primary" :filled="true" :title="__('Standardprojekt')" />
                             @endif
                         </div>
-                        <span class="badge badge-sm badge-{{ $project->statusTone() }}">{{ $project->statusLabel() }}</span>
+                        <x-status-badge :tone="$project->statusTone()">{{ $project->statusLabel() }}</x-status-badge>
                     </li>
                 @endforeach
             </ul>
         @endif
-    </div>
+    </x-card>
 
     {{-- Auswertung pro Kunde --}}
     @isset($statsTotal)
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs" x-data="{ tab: 'month' }">
-            <div class="mb-3 flex items-center justify-between">
-                <h2 class="font-semibold">{{ __('Auswertung') }}</h2>
+        <x-card x-data="{ tab: 'month' }">
+            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+                    <x-icon name="analytics" class="text-base-content/60" /> {{ __('Auswertung') }}
+                </h2>
                 <div role="tablist" class="tabs tabs-boxed tabs-sm">
                     <button role="tab" class="tab" :class="{ 'tab-active': tab === 'month' }" @click="tab = 'month'">{{ __('Aktueller Monat') }}</button>
                     <button role="tab" class="tab" :class="{ 'tab-active': tab === 'total' }" @click="tab = 'total'">{{ __('Gesamt') }}</button>
@@ -224,7 +228,7 @@
                                 <tr>
                                     <td>
                                         @if ($row['is_default'])
-                                            <span class="material-symbols-outlined text-primary text-sm align-middle">star</span>
+                                            <x-icon name="star" class="text-primary align-middle" :filled="true" size="1rem" />
                                         @endif
                                         {{ $row['name'] }}
                                     </td>
@@ -236,14 +240,19 @@
                     @endif
                 </div>
             @endforeach
-        </div>
+        </x-card>
     @endisset
 
     {{-- Anhänge --}}
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <h2 class="mb-3 font-semibold">{{ __('Anhänge') }} ({{ $attachments->count() }})</h2>
+    <x-card>
+        <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+            <x-icon name="attach_file" class="text-base-content/60" /> {{ __('Anhänge') }}
+            <span class="font-normal text-base-content/50">({{ $attachments->count() }})</span>
+        </h2>
         @if ($attachments->isEmpty())
-            <p class="text-sm text-base-content/60">{{ __('Keine Anhänge.') }}</p>
+            <x-empty-state compact icon='<span class="material-symbols-outlined">attach_file</span>'
+                           :title="__('Keine Anhänge')"
+                           :message="__('Keine Anhänge.')" />
         @else
             <ul class="divide-y divide-base-300 text-sm">
                 @foreach ($attachments as $att)
@@ -274,32 +283,39 @@
             <x-icon-btn icon="upload" tone="primary" size="sm" type="submit" show-label>{{ __('Hochladen') }}</x-icon-btn>
         </form>
         @endcan
-    </div>
+    </x-card>
 
     {{-- Verlauf --}}
     @if ($auditLogs->isNotEmpty())
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <h2 class="mb-3 font-semibold">{{ __('Verlauf') }}</h2>
+    <x-card>
+        <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+            <x-icon name="history" class="text-base-content/60" /> {{ __('Verlauf') }}
+        </h2>
         <ul class="divide-y divide-base-300 text-sm">
             @foreach ($auditLogs as $log)
                 <li class="flex items-center justify-between gap-2 py-2">
-                    <span><span class="badge badge-ghost badge-sm">{{ $log->eventLabel() }}</span> {{ optional($log->user)->name ?? '—' }}</span>
+                    <span class="flex items-center gap-2">
+                        <x-status-badge tone="ghost">{{ $log->eventLabel() }}</x-status-badge>
+                        {{ optional($log->user)->name ?? '—' }}
+                    </span>
                     <span class="text-base-content/60">{{ $log->created_at->format('d.m.Y H:i') }}</span>
                 </li>
             @endforeach
         </ul>
-    </div>
+    </x-card>
     @endif
 
     @if ($lexofficePlugin && $lexofficePlugin->isEnabled())
         @can('update', $customer)
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-4">
+        <x-card class="space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="font-semibold">{{ __('Lexoffice') }}</h2>
+                <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+                    <x-icon name="sync" class="text-base-content/60" /> {{ __('Lexoffice') }}
+                </h2>
                 @if ($lexofficeContactRef)
-                    <span class="badge badge-success badge-sm">{{ __('Kontakt verknüpft') }} · {{ Str::limit($lexofficeContactRef->external_id, 8, '…') }}</span>
+                    <x-status-badge tone="success">{{ __('Kontakt verknüpft') }} · {{ Str::limit($lexofficeContactRef->external_id, 8, '…') }}</x-status-badge>
                 @else
-                    <span class="badge badge-ghost badge-sm">{{ __('Noch nicht verknüpft') }}</span>
+                    <x-status-badge tone="ghost">{{ __('Noch nicht verknüpft') }}</x-status-badge>
                 @endif
             </div>
 
@@ -346,7 +362,7 @@
                     </ul>
                 </div>
             @endif
-        </div>
+        </x-card>
         @endcan
     @endif
 </x-page-shell>

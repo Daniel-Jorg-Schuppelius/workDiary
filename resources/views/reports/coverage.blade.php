@@ -22,37 +22,16 @@
     </x-slot:toolbar>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Schichttypen') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['shift_types'] }}</div>
-            <div class="mt-1 text-xs text-base-content/60">{{ $daySpan }} {{ __('Tage') }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Soll (Personentage)') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['required'] }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Ist (Personentage)') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['scheduled'] }}</div>
-            <div class="mt-1 text-xs text-base-content/60 {{ $totals['gap'] < 0 ? 'text-error' : ($totals['gap'] > 0 ? 'text-success' : '') }}">
-                {{ $totals['gap'] > 0 ? '+' : '' }}{{ $totals['gap'] }}
-            </div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Erfüllung') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">
-                {{ $totals['fill_rate'] !== null ? $pct($totals['fill_rate']) : '–' }}
-            </div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Tage mit Unterdeckung') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold {{ $totals['days_under'] > 0 ? 'text-error' : '' }}">
-                {{ $totals['days_under'] }}
-            </div>
-        </div>
+        <x-kpi-tile :label="__('Schichttypen')" :value="$totals['shift_types']" :hint="$daySpan . ' ' . __('Tage')" />
+        <x-kpi-tile :label="__('Soll (Personentage)')" :value="$totals['required']" />
+        <x-kpi-tile :label="__('Ist (Personentage)')" :value="$totals['scheduled']"
+                    :hint="($totals['gap'] > 0 ? '+' : '') . $totals['gap']" />
+        <x-kpi-tile :label="__('Erfüllung')" :value="$totals['fill_rate'] !== null ? $pct($totals['fill_rate']) : '–'" />
+        <x-kpi-tile :label="__('Tage mit Unterdeckung')" :value="$totals['days_under']"
+                    :tone="$totals['days_under'] > 0 ? 'error' : 'neutral'" />
     </div>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Pro Schichttyp') }}</h3>
         @if (empty($rows))
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">shield_person</span>' :title="__('Keine Soll-Vorgaben oder Plan-Einträge im gewählten Zeitraum.')" />
@@ -102,10 +81,10 @@
                 @endforeach
             </x-table>
         @endif
-    </div>
+    </x-card>
 
     @if (! empty($underfilled))
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-error/80">
                 {{ __('Tage mit Unterdeckung') }}
                 <span class="text-base-content/50">({{ count($underfilled) }})</span>
@@ -130,7 +109,7 @@
                     </tr>
                 @endforeach
             </x-table>
-        </div>
+        </x-card>
     @endif
 </x-page-shell>
 @endsection

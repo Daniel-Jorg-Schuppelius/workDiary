@@ -38,29 +38,13 @@
     @endif
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['users'] }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Bereitschaft') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $fmt($totals['shift_minutes']) }}</div>
-            <div class="mt-1 text-xs text-base-content/60">{{ $totals['shift_count'] }} {{ __('Schichten') }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Aktiv-Einsätze') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $fmt($totals['assignment_minutes']) }}</div>
-            <div class="mt-1 text-xs text-base-content/60">{{ $totals['assignment_count'] }} {{ __('Einsätze') }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Aktiv-Anteil') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">
-                {{ $totals['ratio'] !== null ? $pct($totals['ratio']) : '–' }}
-            </div>
-        </div>
+        <x-kpi-tile :label="__('Mitarbeiter')" :value="$totals['users']" />
+        <x-kpi-tile :label="__('Bereitschaft')" :value="$fmt($totals['shift_minutes'])" :hint="$totals['shift_count'] . ' ' . __('Schichten')" />
+        <x-kpi-tile :label="__('Aktiv-Einsätze')" :value="$fmt($totals['assignment_minutes'])" :hint="$totals['assignment_count'] . ' ' . __('Einsätze')" />
+        <x-kpi-tile :label="__('Aktiv-Anteil')" :value="$totals['ratio'] !== null ? $pct($totals['ratio']) : '–'" />
     </div>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         @if (empty($rows))
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">medical_services</span>' :title="__('Keine Bereitschaftszeiten im gewählten Zeitraum.')" />
         @else
@@ -97,6 +81,6 @@
                 @endforeach
             </x-table>
         @endif
-    </div>
+    </x-card>
 </x-page-shell>
 @endsection

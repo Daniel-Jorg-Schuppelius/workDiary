@@ -91,7 +91,11 @@
             @endcan
             @can('apply', $request)
                 <form method="POST" action="{{ route('admin.corrections.apply', $request) }}"
-                      onsubmit="return confirm('{{ __('Antrag jetzt anwenden?') }}');">
+                      data-confirm-dialog
+                      data-confirm-message="{{ __('Antrag jetzt anwenden?') }}"
+                      data-confirm-icon="play_arrow"
+                      data-confirm-tone="primary"
+                      data-confirm-label="{{ __('Anwenden') }}">
                     @csrf
                     <button class="btn btn-sm btn-primary" type="submit">
                         <span class="material-symbols-outlined">play_arrow</span>{{ __('Anwenden') }}

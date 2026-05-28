@@ -73,6 +73,30 @@ class CustomerControllerTest extends TestCase {
         $this->assertSame(1, $response->viewData('customers')->total());
     }
 
+    public function test_show_renders_customer_detail(): void {
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'created_by' => $this->user->id,
+            'name' => 'Detail Kunde',
+            'billable' => false,
+        ]);
+        Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'Projekt Alpha',
+            'status' => ProjectStatus::Active->value,
+        ]);
+
+        $this->actingAs($this->user)
+            ->get(route('customers.show', $customer))
+            ->assertOk()
+            ->assertSeeText('Detail Kunde')
+            ->assertSeeText('nicht abrechenbar')
+            ->assertSeeText('Kontakt')
+            ->assertSeeText('Abrechnung')
+            ->assertSeeText('Projekt Alpha');
+    }
+
     public function test_store_auto_assigns_customer_number(): void {
         $this->postAsAdmin('customers.store', [
             'name' => 'Neuer Kunde',

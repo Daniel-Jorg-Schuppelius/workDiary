@@ -42,7 +42,7 @@
         </x-filter-bar>
     @endif
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         <div class="mb-3 flex flex-wrap items-baseline justify-end gap-2">
             <div class="flex items-baseline gap-4">
                 <div class="flex items-baseline gap-2">
@@ -104,6 +104,6 @@
                 @endforeach
             </x-table>
         @endif
-    </div>
+    </x-card>
 </x-page-shell>
 @endsection

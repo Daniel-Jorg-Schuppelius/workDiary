@@ -37,32 +37,15 @@
     @endif
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['users'] }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Urlaub (Werktage)') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['vacation_days'] }}</div>
-            <div class="mt-1 text-xs text-base-content/60">{{ $totals['pending_days'] }} {{ __('ausstehend') }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Krank') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['sick_days'] }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Sonder / Unbezahlt') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold">{{ $totals['special_days'] }} / {{ $totals['unpaid_days'] }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Flex-Änderung Σ') }}</div>
-            <div class="mt-1 font-['Space_Grotesk'] text-3xl font-bold {{ $totals['flex_change_minutes'] < 0 ? 'text-error' : ($totals['flex_change_minutes'] > 0 ? 'text-success' : '') }}">
-                {{ $fmtMin($totals['flex_change_minutes']) }}
-            </div>
-        </div>
+        <x-kpi-tile :label="__('Mitarbeiter')" :value="$totals['users']" />
+        <x-kpi-tile :label="__('Urlaub (Werktage)')" :value="$totals['vacation_days']" :hint="$totals['pending_days'] . ' ' . __('ausstehend')" />
+        <x-kpi-tile :label="__('Krank')" :value="$totals['sick_days']" />
+        <x-kpi-tile :label="__('Sonder / Unbezahlt')" :value="$totals['special_days'] . ' / ' . $totals['unpaid_days']" />
+        <x-kpi-tile :label="__('Flex-Änderung Σ')" :value="$fmtMin($totals['flex_change_minutes'])"
+                    :tone="$totals['flex_change_minutes'] < 0 ? 'error' : ($totals['flex_change_minutes'] > 0 ? 'success' : 'neutral')" />
     </div>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         @if (empty($rows))
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">event_busy</span>' :title="__('Keine Abwesenheits- oder Flex-Daten im gewählten Zeitraum.')" />
         @else
@@ -109,6 +92,6 @@
                 @endforeach
             </x-table>
         @endif
-    </div>
+    </x-card>
 </x-page-shell>
 @endsection

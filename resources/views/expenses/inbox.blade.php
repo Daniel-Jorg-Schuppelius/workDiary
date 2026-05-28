@@ -41,13 +41,21 @@
                                 <button type="submit"
                                         formaction="{{ route('expense-approvals.bulk-approve') }}"
                                         class="btn btn-success btn-sm"
-                                        onclick="return confirm('{{ __('Alle ausgewählten Spesen genehmigen?') }}');">
+                                        data-confirm-dialog
+                                        data-confirm-message="{{ __('Alle ausgewählten Spesen genehmigen?') }}"
+                                        data-confirm-icon="check_circle"
+                                        data-confirm-tone="success"
+                                        data-confirm-label="{{ __('Genehmigen') }}">
                                     <x-icon name="check_circle" /> {{ __('Genehmigen') }}
                                 </button>
                                 <button type="submit"
                                         formaction="{{ route('expense-approvals.bulk-reject') }}"
                                         class="btn btn-error btn-sm"
-                                        onclick="return confirm('{{ __('Alle ausgewählten Spesen ablehnen?') }}');">
+                                        data-confirm-dialog
+                                        data-confirm-message="{{ __('Alle ausgewählten Spesen ablehnen?') }}"
+                                        data-confirm-icon="block"
+                                        data-confirm-tone="error"
+                                        data-confirm-label="{{ __('Ablehnen') }}">
                                     <x-icon name="block" /> {{ __('Ablehnen') }}
                                 </button>
                             </x-slot:actions>
