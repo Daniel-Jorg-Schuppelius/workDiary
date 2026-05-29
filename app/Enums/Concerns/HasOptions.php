@@ -20,6 +20,8 @@ use BackedEnum;
  * App\Enums\Contracts\HasLabel, options() returns value => label() pairs.
  *
  * @phpstan-require-implements BackedEnum
+ *
+ * @method static list<static> cases()
  */
 trait HasOptions {
     /**
@@ -42,12 +44,10 @@ trait HasOptions {
      * @return array<string|int, string>
      */
     public static function options(): array {
-        $out = [];
-        foreach (self::cases() as $case) {
-            $out[$case->value] = self::optionLabel($case);
-        }
-
-        return $out;
+        return array_combine(
+            self::values(),
+            array_map(self::optionLabel(...), self::cases()),
+        );
     }
 
     /**
@@ -62,11 +62,15 @@ trait HasOptions {
 
     public static function tryFromName(string $name): ?self {
         foreach (self::cases() as $case) {
-            if ($case->name === $name) {
+            if (self::caseName($case) === $name) {
                 return $case;
             }
         }
 
         return null;
+    }
+
+    private static function caseName(BackedEnum $case): string {
+        return $case->name;
     }
 }

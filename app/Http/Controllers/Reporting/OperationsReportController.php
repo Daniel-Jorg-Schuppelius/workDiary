@@ -100,10 +100,8 @@ class OperationsReportController extends Controller {
             DiaryStatus::Problem->value => 'problem',
         ];
         $byStatus = array_fill_keys(array_values($statusMap), 0);
-        $byPriority = [];
-        foreach (Priority::cases() as $prioCase) {
-            $byPriority[$prioCase->value] = 0;
-        }
+        /** @var array<string, int> $byPriority */
+        $byPriority = array_fill_keys(Priority::values(), 0);
         $minutes = 0;
         foreach ($rows as $r) {
             $label = $statusMap[$r->status->value];
