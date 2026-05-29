@@ -35,10 +35,10 @@
                 @forelse ($tags as $tag)
                     <tr class="hover">
                         <td>
-                            <span class="badge badge-outline"
-                                  @if ($tag->color) style="border-color: {{ $tag->color }}; color: {{ $tag->color }};" @endif>
+                            <x-status-badge size="md" outline
+                                  :style="$tag->color ? 'border-color: '.$tag->color.'; color: '.$tag->color.';' : null">
                                 #{{ $tag->name }}
-                            </span>
+                            </x-status-badge>
                         </td>
                         <td class="text-right tabular-nums">{{ $tag->diary_entries_count }}</td>
                         <td class="text-right tabular-nums">{{ $tag->shifts_count }}</td>

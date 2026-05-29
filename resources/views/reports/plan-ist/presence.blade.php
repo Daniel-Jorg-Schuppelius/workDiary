@@ -73,7 +73,7 @@
                     </td>
                     <td>
                         @foreach ($r['warnings'] as $w)
-                            <span class="badge badge-warning badge-xs">{{ $w }}</span>
+                            <x-status-badge tone="warning" size="xs">{{ $w }}</x-status-badge>
                         @endforeach
                     </td>
                 </tr>

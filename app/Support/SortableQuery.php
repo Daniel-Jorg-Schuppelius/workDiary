@@ -41,14 +41,15 @@ final class SortableQuery {
         string $dirParam = 'dir',
     ): array {
         $rawSort = (string) $request->query($sortParam, '');
-        $rawDir = strtolower((string) $request->query($dirParam, $defaultDir));
-        $dir = in_array($rawDir, ['asc', 'desc'], true) ? $rawDir : $defaultDir;
+        $normalizedDefault = strtolower($defaultDir) === 'asc' ? 'asc' : 'desc';
+        $rawDir = strtolower((string) $request->query($dirParam, $normalizedDefault));
+        $dir = $rawDir === 'asc' ? 'asc' : ($rawDir === 'desc' ? 'desc' : $normalizedDefault);
 
         if ($rawSort !== '' && array_key_exists($rawSort, $allowed)) {
             $key = $rawSort;
         } else {
             $key = $defaultKey;
-            $dir = $defaultDir;
+            $dir = $normalizedDefault;
         }
 
         $column = $allowed[$key] ?? $allowed[$defaultKey];

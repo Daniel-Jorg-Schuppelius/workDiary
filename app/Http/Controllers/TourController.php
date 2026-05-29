@@ -16,7 +16,8 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveTourRequest;
 use App\Models\{DiaryEntry, Tour, User, Vehicle};
 use App\Services\Routing\TourService;
-use App\Support\SortableQuery;
+use App\Support\{Setting, SortableQuery};
+use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -58,7 +59,7 @@ class TourController extends Controller {
             'status' => 'status',
         ], 'tour_date', 'desc');
 
-        $tours = $query->paginate((int) setting('pagination.tours', 25))->withQueryString();
+        $tours = $query->paginate((int) Setting::get('pagination.tours', 25))->withQueryString();
 
         return view('tours.index', [
             'tours' => $tours,
@@ -293,7 +294,7 @@ class TourController extends Controller {
             return null;
         }
 
-        $requestedId = sqid_decode(User::class, $raw);
+        $requestedId = Sqid::decode(User::class, $raw);
         if ($requestedId === null || $requestedId === (int) $authUser->id) {
             return $authUser;
         }

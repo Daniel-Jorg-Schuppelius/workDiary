@@ -16,7 +16,7 @@ use App\Models\Contracts\HasTimeWindow;
 use App\Models\{DiaryEntry, EmergencyAssignment, EntryType, OnCallShift, SickLeave, Tag, User, Vacation};
 use App\Services\HolidayService;
 use App\Services\UI\DateRangeContext;
-use App\Support\SortableQuery;
+use App\Support\{SortableQuery, Sqid};
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -73,7 +73,7 @@ class DutyController extends Controller {
         $sicknessStatus = null;
         if ($tab === 'krank') {
             $statusUserId = $isAdmin
-                ? sqid_decode(User::class, $request->query('user_id'))
+                ? Sqid::decode(User::class, $request->query('user_id'))
                 : (int) $authUser->id;
             if ($statusUserId !== null) {
                 $sicknessStatusUser = User::find($statusUserId);
@@ -141,12 +141,12 @@ class DutyController extends Controller {
             $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $q) . '%';
             $diaryQuery->where(fn($w) => $w->where('content', 'like', $like)->orWhere('response', 'like', $like));
         }
-        $tagId = sqid_decode(Tag::class, $request->query('tag')) ?? 0;
+        $tagId = Sqid::decode(Tag::class, $request->query('tag')) ?? 0;
         if ($tagId > 0) {
             $diaryQuery->whereHas('tags', fn($tq) => $tq->where('tags.id', $tagId));
         }
 
-        $entryTypeId = sqid_decode(EntryType::class, $request->query('entry_type')) ?? 0;
+        $entryTypeId = Sqid::decode(EntryType::class, $request->query('entry_type')) ?? 0;
         if ($entryTypeId > 0) {
             $diaryQuery->where('entry_type_id', $entryTypeId);
         }
@@ -180,7 +180,7 @@ class DutyController extends Controller {
 
         if (! $isAdmin) {
             $vacationQuery->where('user_id', $authUser->id);
-        } elseif (($uid = sqid_decode(User::class, $request->query('user_id'))) !== null) {
+        } elseif (($uid = Sqid::decode(User::class, $request->query('user_id'))) !== null) {
             $vacationQuery->where('user_id', $uid);
         }
         if ($request->filled('vtype')) {
@@ -221,7 +221,7 @@ class DutyController extends Controller {
 
         if (! $isAdmin) {
             $q->where('user_id', $authUser->id);
-        } elseif (($uid = sqid_decode(User::class, $request->query('user_id'))) !== null) {
+        } elseif (($uid = Sqid::decode(User::class, $request->query('user_id'))) !== null) {
             $q->where('user_id', $uid);
         }
         if ($request->filled('kkind')) {

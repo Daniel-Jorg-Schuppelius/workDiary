@@ -4,18 +4,18 @@
         <h2 class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ __('Stempeluhr') }}</h2>
         <div class="flex flex-wrap items-center justify-end gap-1.5">
             @if ($current)
-                <span class="badge badge-success badge-sm">{{ __('Offen') }}</span>
-                <span class="badge badge-outline badge-sm">
+                <x-status-badge tone="success" size="sm">{{ __('Offen') }}</x-status-badge>
+                <x-status-badge size="sm" outline>
                     {{ __('Eingestempelt seit :time', ['time' => $current->started_at?->format('H:i')]) }}
-                </span>
+                </x-status-badge>
                 @if ($current->break_minutes_total > 0)
-                    <span class="badge badge-ghost badge-sm">
+                    <x-status-badge tone="ghost" size="sm">
                         {{ __(':min Min. Pause', ['min' => $current->break_minutes_total]) }}
-                    </span>
+                    </x-status-badge>
                 @endif
             @else
-                <span class="badge badge-ghost badge-sm">{{ __('Geschlossen') }}</span>
-                <span class="badge badge-outline badge-sm">{{ __('Nicht eingestempelt.') }}</span>
+                <x-status-badge tone="ghost" size="sm">{{ __('Geschlossen') }}</x-status-badge>
+                <x-status-badge size="sm" outline>{{ __('Nicht eingestempelt.') }}</x-status-badge>
             @endif
         </div>
     </div>

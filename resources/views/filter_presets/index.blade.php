@@ -26,7 +26,7 @@
                     <tbody>
                         @foreach ($presets as $preset)
                             <tr>
-                                <td><span class="badge badge-outline">{{ $preset->scope }}</span></td>
+                                <td><x-status-badge size="md" outline>{{ $preset->scope }}</x-status-badge></td>
                                 <td>{{ $preset->name }}</td>
                                 <td>
                                     @if ($preset->is_default)

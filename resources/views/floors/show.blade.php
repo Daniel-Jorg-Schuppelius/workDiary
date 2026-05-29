@@ -94,7 +94,7 @@
                             </td>
                             <td>
                                 @if ($r->usage_type)
-                                    <span class="badge badge-ghost badge-sm">{{ $r->usage_type->label() }}</span>
+                                    <x-status-badge tone="ghost" size="sm">{{ $r->usage_type->label() }}</x-status-badge>
                                 @endif
                             </td>
                             <td>{{ $r->cleaningProfile?->label ?? '—' }}</td>

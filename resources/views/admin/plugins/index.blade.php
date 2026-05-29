@@ -89,16 +89,16 @@
                     <td class="tabular-nums text-xs text-base-content/70">
                         {{ $state?->installed_version ?? '—' }}
                         @if ($state && $state->installed_version !== null && $state->installed_version !== $plugin->schemaVersion())
-                            <span class="badge badge-warning badge-sm ml-1" title="{{ __('Upgrade verfügbar') }}">→ {{ $plugin->schemaVersion() }}</span>
+                            <x-status-badge tone="warning" size="sm" class="ml-1" title="{{ __('Upgrade verfügbar') }}">→ {{ $plugin->schemaVersion() }}</x-status-badge>
                         @endif
                     </td>
                     <td>
                         @if ($isAutoDisabled)
-                            <span class="badge badge-error badge-sm" title="{{ $state->disabled_reason }}">{{ __('auto-deaktiviert') }}</span>
+                            <x-status-badge tone="error" size="sm" title="{{ $state->disabled_reason }}">{{ __('auto-deaktiviert') }}</x-status-badge>
                         @elseif ($isEnabled)
-                            <span class="badge badge-success badge-sm">{{ __('aktiv') }}</span>
+                            <x-status-badge tone="success" size="sm">{{ __('aktiv') }}</x-status-badge>
                         @else
-                            <span class="badge badge-ghost badge-sm">{{ __('inaktiv') }}</span>
+                            <x-status-badge tone="ghost" size="sm">{{ __('inaktiv') }}</x-status-badge>
                         @endif
                     </td>
                     <td>
@@ -110,7 +110,7 @@
                     <td>
                         <div class="flex flex-wrap gap-1">
                             @foreach ($plugin->capabilities() as $cap)
-                                <span class="badge badge-outline badge-sm">{{ $cap }}</span>
+                                <x-status-badge size="sm" outline>{{ $cap }}</x-status-badge>
                             @endforeach
                         </div>
                     </td>

@@ -40,9 +40,9 @@
                     <td>{{ trim(($site->address_zip ?? '').' '.($site->address_city ?? '')) }}</td>
                     <td class="text-end">
                         @if ($site->is_active)
-                            <span class="badge badge-success badge-sm">{{ __('aktiv') }}</span>
+                            <x-status-badge tone="success" size="sm">{{ __('aktiv') }}</x-status-badge>
                         @else
-                            <span class="badge badge-ghost badge-sm">{{ __('inaktiv') }}</span>
+                            <x-status-badge tone="ghost" size="sm">{{ __('inaktiv') }}</x-status-badge>
                         @endif
                     </td>
                     <td class="text-right">

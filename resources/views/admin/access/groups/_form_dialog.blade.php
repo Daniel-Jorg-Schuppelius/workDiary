@@ -48,7 +48,7 @@
                                @checked(in_array($role->id, $assignedRoles, true)) />
                         <span class="font-mono text-sm">{{ $role->name }}</span>
                         @if ($role->getAttribute(config('permission.column_names.team_foreign_key', 'team_id')) === null)
-                            <span class="badge badge-xs badge-ghost">{{ __('access.badge.global') }}</span>
+                            <x-status-badge tone="ghost" size="xs">{{ __('access.badge.global') }}</x-status-badge>
                         @endif
                     </label>
                 @empty

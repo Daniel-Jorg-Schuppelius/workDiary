@@ -25,15 +25,15 @@
                     <div class="min-w-0 flex-1">
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="text-sm font-medium">{{ $rule->name }}</span>
-                            <span class="badge badge-xs badge-outline">{{ $rule->frequencyLabel() }}</span>
+                            <x-status-badge size="xs" outline>{{ $rule->frequencyLabel() }}</x-status-badge>
                             @if ($rule->interval > 1)
-                                <span class="badge badge-xs badge-ghost">{{ __('alle :n', ['n' => $rule->interval]) }}</span>
+                                <x-status-badge tone="ghost" size="xs">{{ __('alle :n', ['n' => $rule->interval]) }}</x-status-badge>
                             @endif
                             @if ($rule->byweekday)
-                                <span class="badge badge-xs badge-ghost">{{ $rule->byweekday }}</span>
+                                <x-status-badge tone="ghost" size="xs">{{ $rule->byweekday }}</x-status-badge>
                             @endif
                             @if (! $rule->is_active)
-                                <span class="badge badge-xs badge-warning">{{ __('Inaktiv') }}</span>
+                                <x-status-badge tone="warning" size="xs">{{ __('Inaktiv') }}</x-status-badge>
                             @endif
                         </div>
                         <div class="mt-1 text-xs text-base-content/60">

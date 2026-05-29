@@ -302,7 +302,7 @@
                                 <li class="flex items-center justify-between gap-2">
                                     <span>{{ $h['date']->isoFormat('dd, DD.MM.YYYY') }}</span>
                                     <span class="text-base-content/70">{{ $h['name'] }}</span>
-                                    <span class="badge badge-xs badge-ghost">+{{ $h['daysAway'] }}d</span>
+                                    <x-status-badge tone="ghost" size="xs">+{{ $h['daysAway'] }}d</x-status-badge>
                                 </li>
                             @endforeach
                         </ul>
@@ -315,7 +315,7 @@
                 <div class="flex flex-none items-center justify-between border-b border-base-300 bg-base-200/60 px-3 py-2">
                     <div class="flex items-center gap-2">
                         <span class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Offene Meldungen') }}</span>
-                        <span class="badge badge-xs badge-ghost">{{ $openIssues->count() }}</span>
+                        <x-status-badge tone="ghost" size="xs">{{ $openIssues->count() }}</x-status-badge>
                     </div>
                     <a href="{{ route('legacy.diary.index', ['status' => '2']) }}" class="link link-hover text-xs">{{ __('Alle anzeigen') }}</a>
                 </div>
@@ -353,7 +353,7 @@
                                     <td class="max-w-md" title="{{ $issue->inhalt ?? '' }}">
                                         <a href="{{ route('legacy.diary.show', $issue) }}" data-entry-modal-trigger class="block link link-hover">
                                             <span class="block text-[0.7rem] text-base-content/50">{{ optional($issue->author)->uname ?? '–' }}</span>
-                                            <span class="line-clamp-2">{{ truncate($issue->inhalt ?? '', 100) }}</span>
+                                            <span class="line-clamp-2">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($issue->inhalt ?? '', 100) }}</span>
                                         </a>
                                     </td>
                                     <td class="whitespace-nowrap">

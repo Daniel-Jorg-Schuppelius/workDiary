@@ -14,12 +14,12 @@
             ])>{{ $diary->statusLabel() }}</span>
             <span class="text-sm text-base-content/70">{{ optional($diary->user)->name ?? '—' }}</span>
             @if ($diary->is_archived)
-                <span class="badge badge-neutral">{{ __('Archiviert') }}{{ $diary->archived_at ? ' · ' . $diary->archived_at->format('d.m.Y') : '' }}</span>
+                <x-status-badge tone="neutral">{{ __('Archiviert') }}{{ $diary->archived_at ? ' · ' . $diary->archived_at->format('d.m.Y') : '' }}</x-status-badge>
             @endif
             @if ($diary->legacy_id)
-                <span class="badge badge-outline badge-warning">
+                <x-status-badge tone="warning" outline>
                     Legacy #{{ $diary->legacy_id }}
-                </span>
+                </x-status-badge>
             @endif
         </div>
         <div class="flex flex-wrap gap-2">
@@ -109,12 +109,12 @@
         <div class="grid gap-4 md:grid-cols-2">
             <div>
                 <p class="mb-2 text-xs text-base-content/60">Inhalt (original)</p>
-                <p class="text-sm leading-relaxed whitespace-pre-wrap text-base-content/80">{{ truncate($legacyEntry->inhalt, 400) }}</p>
+                <p class="text-sm leading-relaxed whitespace-pre-wrap text-base-content/80">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($legacyEntry->inhalt, 400) }}</p>
             </div>
             @if ($legacyEntry->antwort)
                 <div>
                     <p class="mb-2 text-xs text-base-content/60">Antwort (original)</p>
-                    <p class="text-sm leading-relaxed whitespace-pre-wrap text-base-content/80">{{ truncate($legacyEntry->antwort, 400) }}</p>
+                    <p class="text-sm leading-relaxed whitespace-pre-wrap text-base-content/80">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($legacyEntry->antwort, 400) }}</p>
                 </div>
             @endif
         </div>

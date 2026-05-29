@@ -57,7 +57,7 @@
             <p class="mt-3 text-xs text-base-content/60">
                 {{ __('Bitte wenden Sie sich an Ihre Administration, damit Ihr Konto einer Organisation zugewiesen wird.') }}
             </p>
-            <div class="mt-6 flex flex-wrap justify-center gap-2">
+            <x-button-group center class="mt-6">
                 <a href="{{ url()->previous() }}" class="btn btn-ghost btn-sm gap-1">
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">arrow_back</span>
                     {{ __('Zurück') }}
@@ -66,7 +66,7 @@
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">home</span>
                     {{ __('Zur Startseite') }}
                 </a>
-            </div>
+            </x-button-group>
             @if (config('app.debug') && ! empty($modelShortName))
                 <details class="mt-6 text-left text-xs">
                     <summary class="cursor-pointer text-base-content/60">{{ __('Technische Details') }}</summary>

@@ -72,9 +72,9 @@
                             <span class="text-xs text-base-content/60 ml-1">({{ $trip->days->count() }} {{ __('Tage') }})</span>
                         </td>
                         <td>
-                            <span class="badge badge-{{ $trip->status->tone() }} badge-sm">
+                            <x-status-badge :tone="$trip->status->tone()" size="sm">
                                 {{ $trip->status->label() }}
-                            </span>
+                            </x-status-badge>
                         </td>
                         <td class="text-right whitespace-nowrap">
                             <x-icon-btn icon="visibility"

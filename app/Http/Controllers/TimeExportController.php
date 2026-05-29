@@ -9,6 +9,7 @@ namespace App\Http\Controllers;
 use App\Enums\TimeExport\TimeExportStatus;
 use App\Models\{TimeExport, User};
 use App\Services\TimeExport\{TimeExportException, TimeExportService};
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\View\View;
@@ -21,7 +22,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * Zeit-Exporten auf Basis genehmigter Monatsfreigaben.
  */
 class TimeExportController extends Controller {
-    public function __construct(private readonly TimeExportService $service) {}
+    public function __construct(private readonly TimeExportService $service) {
+    }
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', TimeExport::class);
@@ -87,7 +89,7 @@ class TimeExportController extends Controller {
         $profileKeys = array_keys($this->availableProfiles());
 
         $request->merge([
-            'scope_user_id' => sqid_decode(\App\Models\User::class, $request->input('scope_user_id')),
+            'scope_user_id' => Sqid::decode(\App\Models\User::class, $request->input('scope_user_id')),
         ]);
 
         $data = $request->validate([

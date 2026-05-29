@@ -22,7 +22,7 @@
                     <div class="rounded-box border border-base-300 p-3">
                         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                             <div>
-                                <span class="badge badge-neutral">{{ ucfirst($group->provider) }}</span>
+                                <x-status-badge tone="neutral" size="md">{{ ucfirst($group->provider) }}</x-status-badge>
                                 <span class="ml-2 font-mono text-base font-semibold">{{ $group->remote_id }}</span>
                                 <span class="ml-2 text-sm text-base-content/60">
                                     {{ trans_choice(':count Sitzung|:count Sitzungen', $group->count, ['count' => $group->count]) }},

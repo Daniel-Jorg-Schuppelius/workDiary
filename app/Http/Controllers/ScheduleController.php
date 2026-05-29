@@ -18,6 +18,7 @@ use App\Models\{Organization, ScheduledShift, ShiftType, User};
 use App\Services\Compliance\ShiftComplianceService;
 use App\Services\HolidayService;
 use App\Services\Schedule\OpenSlotService;
+use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{JsonResponse, Request};
@@ -31,7 +32,7 @@ class ScheduleController extends Controller {
         /** @var User $auth */
         $auth = Auth::user();
 
-        $userFilter = sqid_decode(User::class, $request->query('user')) ?? 0;
+        $userFilter = Sqid::decode(User::class, $request->query('user')) ?? 0;
 
         $range = $this->globalDateRange();
         $rangeFrom = $range['from'];
@@ -129,7 +130,7 @@ class ScheduleController extends Controller {
     // ── JSON-API for Alpine.js ───────────────────────────────────────────────
 
     public function apiIndex(Request $request): JsonResponse {
-        $userFilter = sqid_decode(User::class, $request->query('user')) ?? 0;
+        $userFilter = Sqid::decode(User::class, $request->query('user')) ?? 0;
 
         $range = $this->globalDateRange();
         $from = $range['from'];

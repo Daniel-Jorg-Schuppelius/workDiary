@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', truncate($entry->inhalt ?? '', 60) . ' — ' . config('app.name', 'WorkDiary'))
+@section('title', \CommonToolkit\Helper\Data\StringHelper::truncate($entry->inhalt ?? '', 60) . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Eintrag') . ' #' . $entry->id)
 
 @section('content')

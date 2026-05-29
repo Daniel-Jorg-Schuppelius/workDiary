@@ -19,10 +19,10 @@
                 <div class="collapse-title font-medium flex items-center gap-2">
                     <x-icon :name="$groupEnum->icon()" />
                     {{ $groupEnum->label() }}
-                    <span class="badge badge-ghost badge-sm ml-auto">
+                    <x-status-badge tone="ghost" size="sm" class="ml-auto">
                         {{ collect($items)->filter(fn($p) => isset($assignedSet[$p->value]))->count() }}
                         / {{ count($items) }}
-                    </span>
+                    </x-status-badge>
                 </div>
                 <div class="collapse-content">
                     <div class="flex gap-2 mb-2">

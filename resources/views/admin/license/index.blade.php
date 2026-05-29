@@ -161,9 +161,9 @@
                                     <td class="font-mono text-xs">{{ $feature['code'] }}</td>
                                     <td>
                                         @if ($feature['enabled'])
-                                            <span class="badge badge-success badge-outline">{{ __('Aktiv') }}</span>
+                                            <x-status-badge tone="success" size="md" outline>{{ __('Aktiv') }}</x-status-badge>
                                         @else
-                                            <span class="badge badge-warning badge-outline">{{ __('Lokal deaktiviert') }}</span>
+                                            <x-status-badge tone="warning" size="md" outline>{{ __('Lokal deaktiviert') }}</x-status-badge>
                                         @endif
                                     </td>
                                     <td class="text-xs text-base-content/60">{{ $feature['source'] }}</td>

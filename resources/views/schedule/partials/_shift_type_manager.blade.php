@@ -33,9 +33,9 @@
                             <td id="type-start-{{ $t->id }}">{{ $t->default_start_time ?? '–' }}</td>
                             <td id="type-end-{{ $t->id }}">{{ $t->default_end_time ?? '–' }}</td>
                             <td>
-                                <span class="badge badge-sm {{ $t->is_active ? 'badge-success' : 'badge-ghost' }}">
+                                <x-status-badge size="sm" :tone="$t->is_active ? 'success' : 'ghost'">
                                     {{ $t->is_active ? __('ja') : __('nein') }}
-                                </span>
+                                </x-status-badge>
                             </td>
                             <td class="text-right">
                                 <x-icon-btn icon="edit" type="button"

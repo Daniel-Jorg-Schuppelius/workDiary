@@ -11,6 +11,7 @@
 namespace Tests\Feature;
 
 use App\Models\Organization;
+use App\Support\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -20,7 +21,7 @@ class OrganizationSettingsTest extends TestCase {
     public function test_setting_helper_falls_back_to_config_when_no_org_bound(): void {
         $this->assertSame(
             (int) config('pagination.timesheets'),
-            (int) setting('pagination.timesheets', 0),
+            (int) Setting::get('pagination.timesheets', 0),
         );
     }
 
@@ -34,12 +35,12 @@ class OrganizationSettingsTest extends TestCase {
 
         $this->app->instance('currentOrganization', $org);
 
-        $this->assertSame(7, (int) setting('pagination.timesheets'));
-        $this->assertSame('7.00', setting('invoicing.default_tax_rate'));
+        $this->assertSame(7, (int) Setting::get('pagination.timesheets'));
+        $this->assertSame('7.00', Setting::get('invoicing.default_tax_rate'));
         // missing keys still fall back to config / default
         $this->assertSame(
             (int) config('pagination.customers'),
-            (int) setting('pagination.customers', 0),
+            (int) Setting::get('pagination.customers', 0),
         );
     }
 
@@ -61,6 +62,6 @@ class OrganizationSettingsTest extends TestCase {
     }
 
     public function test_setting_returns_default_for_unknown_key(): void {
-        $this->assertSame('fallback', setting('non_existent.key', 'fallback'));
+        $this->assertSame('fallback', Setting::get('non_existent.key', 'fallback'));
     }
 }

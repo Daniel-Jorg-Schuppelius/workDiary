@@ -63,11 +63,11 @@
                         <td class="text-right">
                             {{ number_format((float) $log->distance_km, 2, ',', '.') }}
                             @if ($log->round_trip)
-                                <span class="badge badge-ghost badge-xs ml-1">{{ __('hin/rück') }}</span>
+                                <x-status-badge tone="ghost" size="xs" class="ml-1">{{ __('hin/rück') }}</x-status-badge>
                             @endif
                         </td>
                         <td>
-                            <span class="badge badge-ghost badge-sm">{{ $log->vehicle->label() }}</span>
+                            <x-status-badge tone="ghost" size="sm">{{ $log->vehicle->label() }}</x-status-badge>
                         </td>
                         <td class="text-right">
                             {{ number_format((float) $log->reimbursement_total, 2, ',', '.') }} €

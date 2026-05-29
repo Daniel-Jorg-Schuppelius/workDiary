@@ -6,10 +6,10 @@
 <x-index-page :subtitle="__('Defekte, offene Punkte und Aufwand je Asset, Produktgruppe oder Modell.')">
     <x-slot:actions>
         <x-icon-btn icon="download" tone="outline" size="sm"
-                    :href="route('reports.assets', array_filter(['customer_id' => sqid(\App\Models\Customer::class, $customerId), 'category_code' => $categoryCode, 'manufacturer' => $manufacturer, 'group_by' => $groupBy, 'export' => 'csv']))"
+                    :href="route('reports.assets', array_filter(['customer_id' => \App\Support\Sqid::encode(\App\Models\Customer::class, $customerId), 'category_code' => $categoryCode, 'manufacturer' => $manufacturer, 'group_by' => $groupBy, 'export' => 'csv']))"
                     show-label>CSV</x-icon-btn>
         <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                    :href="route('reports.assets', array_filter(['customer_id' => sqid(\App\Models\Customer::class, $customerId), 'category_code' => $categoryCode, 'manufacturer' => $manufacturer, 'group_by' => $groupBy, 'export' => 'pdf']))"
+                    :href="route('reports.assets', array_filter(['customer_id' => \App\Support\Sqid::encode(\App\Models\Customer::class, $customerId), 'category_code' => $categoryCode, 'manufacturer' => $manufacturer, 'group_by' => $groupBy, 'export' => 'pdf']))"
                     show-label>PDF</x-icon-btn>
     </x-slot:actions>
 
@@ -26,7 +26,7 @@
             <select id="rep-customer" name="customer_id" class="select select-sm select-bordered">
                 <option value="">{{ __('Alle') }}</option>
                 @foreach($customers as $customer)
-                    <option value="{{ $customer->sqid }}" @selected(sqid(\App\Models\Customer::class, $customerId) === $customer->sqid)>{{ $customer->name }}</option>
+                    <option value="{{ $customer->sqid }}" @selected(\App\Support\Sqid::encode(\App\Models\Customer::class, $customerId) === $customer->sqid)>{{ $customer->name }}</option>
                 @endforeach
             </select>
         </x-filter-field>

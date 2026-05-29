@@ -12,6 +12,7 @@ namespace Tests\Feature;
 
 use App\Enums\Vacation\{VacationStatus, VacationType};
 use App\Models\{DutyPlan, EmergencyAssignment, OnCallShift, Organization, ScheduledShift, ShiftType, User, Vacation};
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -81,7 +82,7 @@ class PrintLayoutsTest extends TestCase {
 
         $res->assertOk()
             ->assertDontSee($ctx['user']->name)
-            ->assertSee(printable_initials($ctx['user']->name));
+            ->assertSee(StringHelper::printableInitials($ctx['user']->name));
     }
 
     public function test_admin_can_print_week_layout_a4(): void {

@@ -244,7 +244,7 @@ class LegacyDashboardService {
         $query->with('mitarbeiter:id,uname');
 
         if ($sort !== null && isset(self::SORTABLE_DUTY[$sort])) {
-            $query->orderBy(self::SORTABLE_DUTY[$sort], $dir);
+            $query->orderBy(self::SORTABLE_DUTY[$sort], $dir === 'asc' ? 'asc' : 'desc');
             if (self::SORTABLE_DUTY[$sort] !== 'user') {
                 $query->orderBy('user');
             }
@@ -274,7 +274,7 @@ class LegacyDashboardService {
         $query = Vacation::query()->with('user:id,name');
 
         if ($sort !== null && isset(self::SORTABLE_VACATION[$sort])) {
-            $query->orderBy(self::SORTABLE_VACATION[$sort], $dir);
+            $query->orderBy(self::SORTABLE_VACATION[$sort], $dir === 'asc' ? 'asc' : 'desc');
         } else {
             $query->orderByDesc('start_date');
         }

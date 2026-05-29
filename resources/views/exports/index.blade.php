@@ -81,7 +81,7 @@
                             {{ __('Organisation') }}
                         @endif
                     </td>
-                    <td><span class="badge badge-{{ $tone($e->status) }} badge-sm">{{ $e->status->label() }}</span></td>
+                    <td><x-status-badge :tone="$tone($e->status)" size="sm">{{ $e->status->label() }}</x-status-badge></td>
                     <td class="text-right tabular-nums">{{ $e->rows_count }}</td>
                     <td class="text-xs tabular-nums">{{ $e->created_at?->format('d.m.Y H:i') }}</td>
                     <td class="text-xs">{{ $e->creator?->name }}</td>

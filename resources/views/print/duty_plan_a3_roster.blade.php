@@ -63,7 +63,7 @@
             @foreach ($users as $u)
                 <tr>
                     <td>
-                        <strong>{{ $anonymous ? printable_initials($u->name) : $u->name }}</strong>
+                        <strong>{{ $anonymous ? \CommonToolkit\Helper\Data\StringHelper::printableInitials($u->name) : $u->name }}</strong>
                     </td>
                     @foreach ($dates as $d)
                         @php

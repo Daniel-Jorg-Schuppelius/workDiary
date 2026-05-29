@@ -73,7 +73,7 @@
                         </td>
                         <td class="text-right">{{ number_format((float) $tour->planned_distance_km, 2, ',', '.') }}</td>
                         <td class="text-right">{{ $tour->planned_duration_minutes }}</td>
-                        <td><span class="badge badge-ghost badge-sm">{{ $tour->status?->label() }}</span></td>
+                        <td><x-status-badge tone="ghost" size="sm">{{ $tour->status?->label() }}</x-status-badge></td>
                         <td class="text-right">
                             <x-icon-btn icon="edit"
                                         :href="route('tours.edit', $tour)"

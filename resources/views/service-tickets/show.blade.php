@@ -39,8 +39,8 @@
         <div class="flex flex-wrap items-center gap-3">
             <span class="font-mono text-sm">{{ $ticket->ticket_no }}</span>
             <span class="badge">{{ $ticket->priority->label() }}</span>
-            <span class="badge badge-outline">{{ $ticket->status->label() }}</span>
-            <span class="badge badge-ghost">{{ $ticket->source->label() }}</span>
+            <x-status-badge size="md" outline>{{ $ticket->status->label() }}</x-status-badge>
+            <x-status-badge tone="ghost" size="md">{{ $ticket->source->label() }}</x-status-badge>
             <span class="ml-auto {{ $slaPill[0] }} font-medium">
                 <span class="material-symbols-outlined align-middle text-[16px]">timer</span>
                 {{ $slaPill[1] }}

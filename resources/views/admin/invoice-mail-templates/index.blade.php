@@ -36,7 +36,7 @@
                 <td>{{ $tpl->organization_id === null ? __('Global') : __('Organisation') }}</td>
                 <td>
                     @if ($tpl->is_default)
-                        <span class="badge badge-success">{{ __('Ja') }}</span>
+                        <x-status-badge tone="success" size="md">{{ __('Ja') }}</x-status-badge>
                     @endif
                 </td>
                 <td class="text-right">

@@ -35,7 +35,7 @@
             <div class="card-body space-y-3">
                 <h3 class="card-title">{{ __('access.title.assigned_roles') }}</h3>
                 @forelse ($group->roles as $role)
-                    <span class="badge badge-outline">{{ $role->name }}</span>
+                    <x-status-badge size="md" outline>{{ $role->name }}</x-status-badge>
                 @empty
                     <p class="text-sm text-base-content/60">{{ __('access.empty.assigned_roles') }}</p>
                 @endforelse
@@ -46,7 +46,7 @@
                 @else
                     <div class="flex flex-wrap gap-1">
                         @foreach ($group->permissions as $permission)
-                            <span class="badge badge-sm badge-ghost font-mono">{{ $permission->name }}</span>
+                            <x-status-badge tone="ghost" size="sm" class="font-mono">{{ $permission->name }}</x-status-badge>
                         @endforeach
                     </div>
                 @endif

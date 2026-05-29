@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SaveActivityCategoryRequest;
 use App\Models\ActivityCategory;
+use App\Support\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -23,7 +24,7 @@ class ActivityCategoryController extends Controller {
         $categories = ActivityCategory::query()
             ->orderBy('sort_order')
             ->orderBy('label')
-            ->paginate((int) setting('pagination.activity_categories', 50))
+            ->paginate((int) Setting::get('pagination.activity_categories', 50))
             ->withQueryString();
 
         return view('activity-categories.index', compact('categories'));

@@ -101,7 +101,7 @@
         {{-- Kopfzeile mit Modus-Badge, Tabs + Cross-Links --}}
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-3">
-                <span class="badge badge-neutral">{{ __('Archiv') }}</span>
+                <x-status-badge tone="neutral" size="md">{{ __('Archiv') }}</x-status-badge>
                 <div role="tablist" class="tabs tabs-box">
                     @foreach ($tabs as $key => $info)
                         <a role="tab"
@@ -301,7 +301,7 @@
                             <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->bis?->format('d.m.Y H:i') ?? '—' }}</td>
                             <td class="text-sm">
                                 <a href="{{ route('legacy.archive.show', $entry) }}" data-entry-modal-trigger class="link link-hover">
-                                    {{ truncate($entry->inhalt ?? '', 160) }}
+                                    {{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->inhalt ?? '', 160) }}
                                 </a>
                             </td>
                         </tr>

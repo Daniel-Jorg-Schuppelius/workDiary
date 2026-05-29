@@ -63,9 +63,9 @@
                         @endif
                     </td>
                     <td>
-                        <span class="badge badge-sm {{ $h->direction->value === 'out' ? 'badge-warning' : 'badge-success' }}">
+                        <x-status-badge size="sm" :tone="$h->direction->value === 'out' ? 'warning' : 'success'">
                             {{ $h->direction->label() }}
-                        </span>
+                        </x-status-badge>
                     </td>
                     <td>
                         <div class="font-medium">{{ $h->person_name }}</div>

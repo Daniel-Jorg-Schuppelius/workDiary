@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', truncate($diary->content, 60) . ' — WorkDiary')
+@section('title', \CommonToolkit\Helper\Data\StringHelper::truncate($diary->content, 60) . ' — WorkDiary')
 @section('nav-title', __('Eintrag') . ' #' . $diary->id)
 
 @section('content')

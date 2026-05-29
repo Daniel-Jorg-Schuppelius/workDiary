@@ -19,7 +19,7 @@
         {{-- Kopfzeile: Status-Badge + Tabs + Archiv-Link --}}
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-3">
-                <span class="badge badge-primary">{{ __('Aktiv') }}</span>
+                <x-status-badge tone="primary" size="md">{{ __('Aktiv') }}</x-status-badge>
                 <div role="tablist" class="tabs tabs-box flex-none">
                 @foreach ($tabs as $key => $info)
                     <a role="tab"
@@ -193,8 +193,8 @@
                                     </td>
                                     <td class="text-center"><span class="badge badge-sm {{ $badgeClass }}">{{ $entry->statusLabel() }}</span></td>
                                     <td>{{ optional($entry->author)->uname ?? __('Unbekannt') }}</td>
-                                    <td class="max-w-md truncate" title="{{ $entry->inhalt ?? '' }}">{{ truncate($entry->inhalt ?? '', 120) }}</td>
-                                    <td class="max-w-xs truncate" title="{{ $entry->antwort ?? '' }}">{{ truncate($entry->antwort ?? '', 80) }}</td>
+                                    <td class="max-w-md truncate" title="{{ $entry->inhalt ?? '' }}">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->inhalt ?? '', 120) }}</td>
+                                    <td class="max-w-xs truncate" title="{{ $entry->antwort ?? '' }}">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->antwort ?? '', 80) }}</td>
                                     <td>{{ $entry->von?->format('d.m.Y H:i') ?? '-' }}</td>
                                     <td>{{ $entry->bis?->format('d.m.Y H:i') ?? '-' }}</td>
                                     <td class="whitespace-nowrap text-right">

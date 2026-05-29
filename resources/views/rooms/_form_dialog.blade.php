@@ -103,7 +103,7 @@
                         class="select select-bordered w-full @error('cleaning_profile_id') select-error @enderror">
                     <option value="">{{ __('— ohne Profil —') }}</option>
                     @foreach ($cleaningProfiles as $profile)
-                        <option value="{{ $profile->sqid }}" @selected((string) old('cleaning_profile_id', sqid(\App\Models\CleaningProfile::class, $room?->cleaning_profile_id)) === $profile->sqid)>{{ $profile->label }}@if ($profile->code) ({{ $profile->code }})@endif</option>
+                        <option value="{{ $profile->sqid }}" @selected((string) old('cleaning_profile_id', \App\Support\Sqid::encode(\App\Models\CleaningProfile::class, $room?->cleaning_profile_id)) === $profile->sqid)>{{ $profile->label }}@if ($profile->code) ({{ $profile->code }})@endif</option>
                     @endforeach
                 </select>
                 @error('cleaning_profile_id')<p class="text-error text-sm">{{ $message }}</p>@enderror

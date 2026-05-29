@@ -17,10 +17,10 @@
         <x-page-toolbar :subtitle="__('Aufwand, Nacharbeit und Nicht-Abrechenbares je Kunde.')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.customers', array_filter(['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'project_id' => $projectId, 'user_id' => sqid(\App\Models\User::class, $userId), 'export' => 'csv']))"
+                            :href="route('reports.customers', array_filter(['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'project_id' => $projectId, 'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId), 'export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.customers', array_filter(['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'project_id' => $projectId, 'user_id' => sqid(\App\Models\User::class, $userId), 'export' => 'pdf']))"
+                            :href="route('reports.customers', array_filter(['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'project_id' => $projectId, 'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId), 'export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
                 <x-help-button topic="reports.customer-analysis" />
             </x-slot:actions>
@@ -45,7 +45,7 @@
             <select id="rep-user" name="user_id" class="select select-sm select-bordered">
                 <option value="">{{ __('Alle') }}</option>
                 @foreach($reportUsers as $reportUser)
-                    <option value="{{ $reportUser->sqid }}" @selected(sqid(\App\Models\User::class, $userId) === $reportUser->sqid)>{{ $reportUser->name }}</option>
+                    <option value="{{ $reportUser->sqid }}" @selected(\App\Support\Sqid::encode(\App\Models\User::class, $userId) === $reportUser->sqid)>{{ $reportUser->name }}</option>
                 @endforeach
             </select>
         </x-filter-field>
@@ -111,10 +111,10 @@
                 @foreach($rows as $row)
                     @php
                         $drilldownBase = [
-                            'customer' => sqid(\App\Models\Customer::class, $row['customerId']),
+                            'customer' => \App\Support\Sqid::encode(\App\Models\Customer::class, $row['customerId']),
                             'from' => $from->toDateString(),
                             'to' => $to->toDateString(),
-                            'project' => sqid(\App\Models\Project::class, $projectId),
+                            'project' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId),
                             'user' => $userId,
                         ];
                         $reportDrilldownBase = array_filter([

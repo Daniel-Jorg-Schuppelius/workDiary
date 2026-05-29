@@ -57,7 +57,7 @@
         <tbody>
             @foreach ($shifts as $shift)
                 <tr>
-                    <td><strong>{{ $anonymous ? printable_initials($shift->user?->name) : ($shift->user?->name ?? '—') }}</strong></td>
+                    <td><strong>{{ $anonymous ? \CommonToolkit\Helper\Data\StringHelper::printableInitials($shift->user?->name) : ($shift->user?->name ?? '—') }}</strong></td>
                     <td>
                         @if ($shift->shiftType)
                             <span class="badge" style="background:{{ $shift->shiftType->color }};">{{ $shift->shiftType->abbreviation }}</span>
@@ -82,7 +82,7 @@
                 $end   = $toMinutes($shift->resolvedEndTime());
                 $color = $shift->shiftType?->color ?? '#6b7280';
                 $abbr  = $shift->shiftType?->abbreviation ?? '?';
-                $name  = $anonymous ? printable_initials($shift->user?->name) : ($shift->user?->name ?? '—');
+                $name  = $anonymous ? \CommonToolkit\Helper\Data\StringHelper::printableInitials($shift->user?->name) : ($shift->user?->name ?? '—');
                 $hasTimes = $start !== null && $end !== null && $end > $start;
                 if ($hasTimes) {
                     $left  = ($start / 1440) * 100;
@@ -90,7 +90,7 @@
                 }
             @endphp
             <div class="timeline-row">
-                <div class="timeline-name">{{ truncate($name, 18) }}</div>
+                <div class="timeline-name">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($name, 18) }}</div>
                 <div class="timeline-bar">
                     @if ($hasTimes)
                         <div class="block" style="left: {{ $left }}%; width: {{ $width }}%; background: {{ $color }};">

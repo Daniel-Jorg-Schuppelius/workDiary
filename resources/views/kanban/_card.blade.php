@@ -9,7 +9,7 @@
             <span class="font-medium">{{ $entry->user->name }}</span>
         @endif
     </div>
-    <p class="mt-1 line-clamp-3 text-sm text-base-content">{{ truncate($entry->content, 140) }}</p>
+    <p class="mt-1 line-clamp-3 text-sm text-base-content">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content, 140) }}</p>
     @if ($entry->tags->isNotEmpty())
         <div class="mt-1 flex flex-wrap gap-1">
             @foreach ($entry->tags as $tag)

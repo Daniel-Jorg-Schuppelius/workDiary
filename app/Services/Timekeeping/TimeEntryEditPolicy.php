@@ -11,6 +11,7 @@
 namespace App\Services\Timekeeping;
 
 use App\Models\TimeEntry;
+use App\Support\Setting;
 use Carbon\{CarbonImmutable, CarbonInterface};
 
 /**
@@ -35,7 +36,7 @@ class TimeEntryEditPolicy {
     public const REASON_EXPORTED = 'exported';
 
     public function windowDays(): int {
-        $setting = setting('timesheet.edit_window_days');
+        $setting = Setting::get('timesheet.edit_window_days');
         if ($setting !== null && $setting !== '') {
             return max(0, (int) $setting);
         }

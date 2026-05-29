@@ -17,6 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\{AuditLog, Customer, DiaryEntry, EntryType, OpenIssue, Protocol, TimeEntry, User};
+use App\Support\Sqid;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{Request, Response};
@@ -32,9 +33,9 @@ class EntryTypeAnalysisReportController extends Controller {
         $from = $range['from']->startOfDay();
         $to = $range['to']->endOfDay();
 
-        $customerId = sqid_decode(Customer::class, $request->query('customer_id'));
-        $userId = sqid_decode(User::class, $request->query('user_id'));
-        $entryTypeFilter = sqid_decode(EntryType::class, $request->query('entry_type_id'));
+        $customerId = Sqid::decode(Customer::class, $request->query('customer_id'));
+        $userId = Sqid::decode(User::class, $request->query('user_id'));
+        $entryTypeFilter = Sqid::decode(EntryType::class, $request->query('entry_type_id'));
         $statusFilter = $request->filled('status') ? (int) $request->integer('status') : null;
 
         $rows = $this->buildRows($from, $to, $customerId, $userId, $entryTypeFilter, $statusFilter);

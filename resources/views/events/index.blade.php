@@ -112,7 +112,7 @@
                                 <div class="text-xs opacity-70">{{ $event->topic }}</div>
                             @endif
                             @if ($event->is_mandatory)
-                                <span class="badge badge-warning badge-sm ml-1">{{ __('Pflicht') }}</span>
+                                <x-status-badge tone="warning" size="sm" class="ml-1">{{ __('Pflicht') }}</x-status-badge>
                             @endif
                         </td>
                         <td>{{ $event->event_type?->label() }}</td>
@@ -130,7 +130,7 @@
                         <td>
                             <div class="flex flex-wrap gap-1">
                                 @foreach ($event->rooms as $room)
-                                    <span class="badge badge-ghost badge-sm">{{ $room->name }}</span>
+                                    <x-status-badge tone="ghost" size="sm">{{ $room->name }}</x-status-badge>
                                 @endforeach
                             </div>
                         </td>

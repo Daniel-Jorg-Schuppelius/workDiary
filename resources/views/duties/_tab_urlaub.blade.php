@@ -34,10 +34,10 @@ use App\Enums\Vacation\VacationStatus;
                     </td>
                     <td class="tabular-nums">{{ $days }}</td>
                     <td>
-                        <span class="badge badge-sm badge-ghost">{{ $v->typeLabel() }}</span>
+                        <x-status-badge tone="ghost" size="sm">{{ $v->typeLabel() }}</x-status-badge>
                     </td>
                     <td>
-                        <span class="badge badge-sm badge-{{ $v->statusTone() }}">{{ $v->statusLabel() }}</span>
+                        <x-status-badge size="sm" :tone="$v->statusTone()">{{ $v->statusLabel() }}</x-status-badge>
                         @if ($v->reject_reason)
                             <span class="tooltip tooltip-right" data-tip="{{ $v->reject_reason }}">
                                 <x-icon name="info" class="text-error" />

@@ -84,7 +84,7 @@
                 <select name="assigned_to" class="select select-bordered w-full">
                     <option value="">{{ __('Nicht zugewiesen') }}</option>
                     @foreach ($users as $u)
-                        <option value="{{ $u->sqid }}" @selected((string) old('assigned_to', sqid(\App\Models\User::class, $task?->assigned_to)) === $u->sqid)>{{ $u->name }}</option>
+                        <option value="{{ $u->sqid }}" @selected((string) old('assigned_to', \App\Support\Sqid::encode(\App\Models\User::class, $task?->assigned_to)) === $u->sqid)>{{ $u->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -142,7 +142,7 @@
                         <select name="milestone_id" class="select select-bordered w-full">
                             <option value="">{{ __('Kein Milestone') }}</option>
                             @foreach ($milestones as $ms)
-                                <option value="{{ $ms->sqid }}" @selected((string) old('milestone_id', sqid(\App\Models\Milestone::class, $task?->milestone_id)) === $ms->sqid)>{{ $ms->title }}</option>
+                                <option value="{{ $ms->sqid }}" @selected((string) old('milestone_id', \App\Support\Sqid::encode(\App\Models\Milestone::class, $task?->milestone_id)) === $ms->sqid)>{{ $ms->title }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -155,7 +155,7 @@
                             <option value="">{{ __('Keine') }}</option>
                             @foreach ($parentTasks as $pt)
                                 <option value="{{ $pt->sqid }}"
-                                    @selected((string) old('parent_task_id', sqid(\App\Models\Task::class, $task?->parent_task_id ?? $preselectedParentId)) === $pt->sqid)>
+                                    @selected((string) old('parent_task_id', \App\Support\Sqid::encode(\App\Models\Task::class, $task?->parent_task_id ?? $preselectedParentId)) === $pt->sqid)>
                                     {{ $pt->title }}
                                 </option>
                             @endforeach

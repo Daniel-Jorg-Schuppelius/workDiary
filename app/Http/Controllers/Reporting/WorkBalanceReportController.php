@@ -14,6 +14,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\Reporting\WorkBalanceCalculator;
+use App\Support\Sqid;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
@@ -84,7 +85,7 @@ class WorkBalanceReportController extends Controller {
             return $authUser;
         }
 
-        $requestedId = sqid_decode(User::class, $request->query('user'));
+        $requestedId = Sqid::decode(User::class, $request->query('user'));
         if ($requestedId === null || $requestedId === (int) $authUser->id) {
             return $authUser;
         }

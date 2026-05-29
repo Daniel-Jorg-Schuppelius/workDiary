@@ -13,6 +13,7 @@ namespace App\Services\Invoicing;
 use App\Enums\Numbering\NumberScope;
 use App\Models\{Customer, Invoice, Project, TimeEntry};
 use App\Services\Numbering\NumberSequenceService;
+use App\Support\Setting;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Auth, DB};
@@ -20,7 +21,8 @@ use Illuminate\Support\Facades\{Auth, DB};
 class InvoiceGenerator {
     public function __construct(
         private readonly NumberSequenceService $numberSequence,
-    ) {}
+    ) {
+    }
 
     /**
      * Liefert die nächste freie Rechnungsnummer für Jahr + Organisation.
@@ -59,8 +61,8 @@ class InvoiceGenerator {
                 'project_id' => $project?->id,
                 'number' => $this->nextNumber($customer->organization_id),
                 'status' => Invoice::STATUS_DRAFT,
-                'currency' => $customer->currency ?: (string) setting('invoicing.default_currency', 'EUR'),
-                'tax_rate' => (string) setting('invoicing.default_tax_rate', '19.00'),
+                'currency' => $customer->currency ?: (string) Setting::get('invoicing.default_currency', 'EUR'),
+                'tax_rate' => (string) Setting::get('invoicing.default_tax_rate', '19.00'),
                 'created_by' => Auth::id(),
             ]);
 

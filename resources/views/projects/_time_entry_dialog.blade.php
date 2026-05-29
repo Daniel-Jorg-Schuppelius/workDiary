@@ -109,7 +109,7 @@
                     <select name="task_id" class="select select-bordered w-full">
                         <option value="">{{ __('Keine Aufgabe') }}</option>
                         @foreach ($tasks as $t)
-                            <option value="{{ $t->sqid }}" @selected((string) old('task_id', sqid(\App\Models\Task::class, $entry?->task_id)) === $t->sqid)>{{ $t->title }}</option>
+                            <option value="{{ $t->sqid }}" @selected((string) old('task_id', \App\Support\Sqid::encode(\App\Models\Task::class, $entry?->task_id)) === $t->sqid)>{{ $t->title }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -127,7 +127,7 @@
                                     $label .= ' · ' . $d->modeLabel();
                                 }
                             @endphp
-                            <option value="{{ $d->sqid }}" @selected((string) old('diary_entry_id', sqid(\App\Models\DiaryEntry::class, $entry?->diary_entry_id)) === $d->sqid)>{{ $label }}</option>
+                            <option value="{{ $d->sqid }}" @selected((string) old('diary_entry_id', \App\Support\Sqid::encode(\App\Models\DiaryEntry::class, $entry?->diary_entry_id)) === $d->sqid)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>

@@ -41,9 +41,9 @@
                             </td>
                             <td>
                                 @if ($type->is_active)
-                                    <span class="badge badge-success badge-sm">{{ __('Aktiv') }}</span>
+                                    <x-status-badge tone="success" size="sm">{{ __('Aktiv') }}</x-status-badge>
                                 @else
-                                    <span class="badge badge-ghost badge-sm">{{ __('Inaktiv') }}</span>
+                                    <x-status-badge tone="ghost" size="sm">{{ __('Inaktiv') }}</x-status-badge>
                                 @endif
                             </td>
                             <td class="text-right">{{ $type->scheduled_shifts_count }}</td>

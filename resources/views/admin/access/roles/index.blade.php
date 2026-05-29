@@ -31,7 +31,7 @@
                     <td class="font-mono text-sm">
                         {{ $role->name }}
                         @if (in_array($role->name, $systemRoleNames, true))
-                            <span class="badge badge-xs badge-info ml-2">{{ __('access.badge.system') }}</span>
+                            <x-status-badge tone="info" size="xs" class="ml-2">{{ __('access.badge.system') }}</x-status-badge>
                         @endif
                     </td>
                     <td>{{ $role->permissions_count }}</td>

@@ -34,7 +34,7 @@
         <select name="shift_type_id" required class="select select-bordered w-full">
             <option value="">— {{ __('bitte wählen') }} —</option>
             @foreach ($shiftTypes as $st)
-                <option value="{{ $st->sqid }}" @selected((string) old('shift_type_id', sqid(\App\Models\ShiftType::class, $requirement?->shift_type_id)) === $st->sqid)>
+                <option value="{{ $st->sqid }}" @selected((string) old('shift_type_id', \App\Support\Sqid::encode(\App\Models\ShiftType::class, $requirement?->shift_type_id)) === $st->sqid)>
                     {{ $st->name }} ({{ $st->abbreviation }})
                 </option>
             @endforeach

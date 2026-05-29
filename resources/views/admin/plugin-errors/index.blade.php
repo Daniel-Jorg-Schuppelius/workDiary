@@ -54,15 +54,15 @@
                     <td class="text-xs text-base-content/70 whitespace-nowrap">{{ $err->occurred_at->format('Y-m-d H:i:s') }}</td>
                     <td><code class="text-xs">{{ $err->plugin_id }}</code></td>
                     <td>
-                        <span class="badge badge-outline badge-sm">{{ $err->phase }}</span>
+                        <x-status-badge size="sm" outline>{{ $err->phase }}</x-status-badge>
                     </td>
                     <td class="text-xs">{{ class_basename((string) $err->exception_class) }}</td>
                     <td class="text-sm max-w-md truncate" title="{{ $err->message }}">{{ $err->message }}</td>
                     <td>
                         @if ($err->isAcknowledged())
-                            <span class="badge badge-ghost badge-sm">{{ __('bestätigt') }}</span>
+                            <x-status-badge tone="ghost" size="sm">{{ __('bestätigt') }}</x-status-badge>
                         @else
-                            <span class="badge badge-error badge-sm">{{ __('offen') }}</span>
+                            <x-status-badge tone="error" size="sm">{{ __('offen') }}</x-status-badge>
                         @endif
                     </td>
                     <td class="text-right">

@@ -15,7 +15,7 @@
 ])
 
 @php
-    $dayAbbr       = weekdayAbbr('de');
+    $dayAbbr       = array_map(fn (\CommonToolkit\Enums\Weekday $d) => $d->getShortName('de'), [\CommonToolkit\Enums\Weekday::MONDAY, \CommonToolkit\Enums\Weekday::TUESDAY, \CommonToolkit\Enums\Weekday::WEDNESDAY, \CommonToolkit\Enums\Weekday::THURSDAY, \CommonToolkit\Enums\Weekday::FRIDAY, \CommonToolkit\Enums\Weekday::SATURDAY, \CommonToolkit\Enums\Weekday::SUNDAY]);
     $tableMinWidth = 'calc(4.5rem + ' . count($users) . ' * 6rem + 4.5rem)';
     $selectedWeek  ??= $monday->format('o-\WW');
 @endphp
@@ -104,9 +104,9 @@
                                     @if ($entryRoute)
                                         <a href="{{ route($entryRoute, [$entry, 'week_date' => $selectedWeek]) }}"
                                            class="font-normal hover:underline"
-                                           title="{{ e($entry->inhalt ?? '') }}">{{ truncate($entry->inhalt ?? '', 10, '') }}</a>
+                                           title="{{ e($entry->inhalt ?? '') }}">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->inhalt ?? '', 10, '') }}</a>
                                     @else
-                                        <span title="{{ e($entry->inhalt ?? '') }}">{{ truncate($entry->inhalt ?? '', 10, '') }}</span>
+                                        <span title="{{ e($entry->inhalt ?? '') }}">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->inhalt ?? '', 10, '') }}</span>
                                     @endif
                                 @else
                                     &nbsp;

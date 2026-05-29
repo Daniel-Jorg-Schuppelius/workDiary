@@ -51,14 +51,14 @@
                         {{ $plan->from_date->format('d.m.Y') }} – {{ $plan->to_date->format('d.m.Y') }}
                     </td>
                     <td>
-                        <span class="badge badge-sm badge-outline">{{ $plan->period_type->label() }}</span>
+                        <x-status-badge size="sm" outline>{{ $plan->period_type->label() }}</x-status-badge>
                     </td>
                     <td class="text-center">{{ $plan->shifts_count }}</td>
                     <td>
                         @if ($plan->isPublished())
-                            <span class="badge badge-success badge-sm">{{ __('duty_plan.status.published') }}</span>
+                            <x-status-badge tone="success" size="sm">{{ __('duty_plan.status.published') }}</x-status-badge>
                         @else
-                            <span class="badge badge-ghost badge-sm">{{ __('duty_plan.status.draft') }}</span>
+                            <x-status-badge tone="ghost" size="sm">{{ __('duty_plan.status.draft') }}</x-status-badge>
                         @endif
                     </td>
                     <td class="text-right">

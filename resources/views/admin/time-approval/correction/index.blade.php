@@ -39,7 +39,7 @@
                         <td>{{ $r->user?->name }}</td>
                         <td>{{ $r->requestedBy?->name }}</td>
                         <td>
-                            <span class="badge badge-{{ $r->status->tone() }} badge-sm">{{ $r->status->label() }}</span>
+                            <x-status-badge :tone="$r->status->tone()" size="sm">{{ $r->status->label() }}</x-status-badge>
                         </td>
                         <td class="text-right tabular-nums">{{ $r->items->count() }}</td>
                         <td class="text-right">

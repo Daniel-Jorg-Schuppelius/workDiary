@@ -13,6 +13,7 @@ namespace App\Services;
 use App\Enums\Diary\Status;
 use App\Enums\User\UserRole;
 use App\Models\{Attachment, Comment, DiaryEntry, EmergencyAssignment, Timesheet, User};
+use App\Support\Setting;
 
 class PushNotifier {
     public function __construct(protected WebPushService $webPush) {
@@ -32,7 +33,7 @@ class PushNotifier {
         }
         $this->webPush->sendToUser($owner, [
             'title' => __('Neuer Kommentar'),
-            'body' => mb_substr((string) $comment->body, 0, (int) setting('notifications.push.body_truncate', 120)),
+            'body' => mb_substr((string) $comment->body, 0, (int) Setting::get('notifications.push.body_truncate', 120)),
             'url' => route('diary.show', $entry),
             'tag' => 'comment-' . $entry->id,
         ]);
@@ -90,7 +91,7 @@ class PushNotifier {
             ->get();
         $payload = [
             'title' => __('Problem-Eintrag'),
-            'body' => mb_substr((string) $entry->content, 0, (int) setting('notifications.push.body_truncate', 120)),
+            'body' => mb_substr((string) $entry->content, 0, (int) Setting::get('notifications.push.body_truncate', 120)),
             'url' => route('diary.show', $entry),
             'tag' => 'problem-' . $entry->id,
         ];

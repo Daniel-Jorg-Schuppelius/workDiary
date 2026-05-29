@@ -16,6 +16,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\{AuditLog, Customer, DiaryEntry, OpenIssue, Project, Protocol, TimeEntry, User};
+use App\Support\Sqid;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{Request, Response};
@@ -33,7 +34,7 @@ class CustomerAnalysisReportController extends Controller {
 
         $minMinutes = max(0, (int) $request->integer('min_minutes', 0));
         $projectId = $request->filled('project_id') ? (int) $request->integer('project_id') : null;
-        $userId = sqid_decode(User::class, $request->query('user_id'));
+        $userId = Sqid::decode(User::class, $request->query('user_id'));
 
         $rows = collect($this->buildRows($from, $to, $projectId, $userId))
             ->filter(static fn(array $row): bool => $row['totalMinutes'] >= $minMinutes)

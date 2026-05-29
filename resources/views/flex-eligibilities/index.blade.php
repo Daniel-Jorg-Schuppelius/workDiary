@@ -13,15 +13,15 @@
             </x-slot:title>
             <x-slot:actions>
                 @if ($isCurrentlyEligible)
-                    <span class="badge badge-success gap-2">
+                    <x-status-badge tone="success" size="md" class="gap-2">
                         <x-icon name="schedule" />
                         {{ __('flex.eligibility.current.active') }}
-                    </span>
+                    </x-status-badge>
                 @else
-                    <span class="badge badge-ghost gap-2">
+                    <x-status-badge tone="ghost" size="md" class="gap-2">
                         <x-icon name="schedule_off" />
                         {{ __('flex.eligibility.current.inactive') }}
-                    </span>
+                    </x-status-badge>
                 @endif
             </x-slot:actions>
         </x-page-toolbar>
@@ -71,7 +71,7 @@
                     @if ($period->valid_to)
                         {{ $period->valid_to->format('d.m.Y') }}
                     @else
-                        <span class="badge badge-ghost badge-sm">{{ __('flex.eligibility.table.open') }}</span>
+                        <x-status-badge tone="ghost" size="sm">{{ __('flex.eligibility.table.open') }}</x-status-badge>
                     @endif
                 </td>
                 <td class="text-sm text-base-content/70">{{ $period->note }}</td>

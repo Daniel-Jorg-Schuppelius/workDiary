@@ -47,7 +47,7 @@
                 {{ __('Aufgaben') }}
                 @php $openCount = ($taskStats->get('open') ?? 0) + ($taskStats->get('in_progress') ?? 0); @endphp
                 @if ($openCount > 0)
-                    <span class="badge badge-xs badge-primary ml-1">{{ $openCount }}</span>
+                    <x-status-badge tone="primary" size="xs" class="ml-1">{{ $openCount }}</x-status-badge>
                 @endif
             </button>
             <button role="tab" @click="setTab('time')" :class="{ 'tab-active': tab === 'time' }" class="tab">
@@ -59,13 +59,13 @@
             <button role="tab" @click="setTab('diary')" :class="{ 'tab-active': tab === 'diary' }" class="tab">
                 {{ __('Aufträge') }}
                 @if ($entries->isNotEmpty())
-                    <span class="badge badge-xs badge-ghost ml-1">{{ $entries->count() }}</span>
+                    <x-status-badge tone="ghost" size="xs" class="ml-1">{{ $entries->count() }}</x-status-badge>
                 @endif
             </button>
             <button role="tab" @click="setTab('recurrence')" :class="{ 'tab-active': tab === 'recurrence' }" class="tab">
                 {{ __('Wiederkehr') }}
                 @if ($recurrenceRules->isNotEmpty())
-                    <span class="badge badge-xs badge-ghost ml-1">{{ $recurrenceRules->count() }}</span>
+                    <x-status-badge tone="ghost" size="xs" class="ml-1">{{ $recurrenceRules->count() }}</x-status-badge>
                 @endif
             </button>
             @if (auth()->user()?->canManageBilling())

@@ -77,7 +77,7 @@
             <select id="ev-category" name="category_id" class="select select-bordered w-full">
                 <option value="">—</option>
                 @foreach ($categories as $cat)
-                    <option value="{{ $cat->sqid }}" @selected((string) old('category_id', sqid(\App\Models\EventCategory::class, $event?->category_id)) === $cat->sqid)>{{ $cat->name }}</option>
+                    <option value="{{ $cat->sqid }}" @selected((string) old('category_id', \App\Support\Sqid::encode(\App\Models\EventCategory::class, $event?->category_id)) === $cat->sqid)>{{ $cat->name }}</option>
                 @endforeach
             </select>
         </div>

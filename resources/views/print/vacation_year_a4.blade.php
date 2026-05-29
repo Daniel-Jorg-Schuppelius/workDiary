@@ -67,7 +67,7 @@
             <tbody>
                 @foreach ($users as $u)
                     <tr>
-                        <td>{{ $anonymous ? printable_initials($u->name) : truncate($u->name, 22) }}</td>
+                        <td>{{ $anonymous ? \CommonToolkit\Helper\Data\StringHelper::printableInitials($u->name) : \CommonToolkit\Helper\Data\StringHelper::truncate($u->name, 22) }}</td>
                         @for ($d = 1; $d <= $daysInMonth; $d++)
                             @php
                                 $cur    = $monthStart->day($d);

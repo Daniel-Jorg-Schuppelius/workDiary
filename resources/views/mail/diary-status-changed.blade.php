@@ -15,7 +15,7 @@
 - **{{ __('Vorher') }}:** {{ $statusName($oldStatus) }}
 - **{{ __('Jetzt') }}:** {{ $statusName($newStatus) }}
 
-> {{ truncate($entry->content, 240) }}
+> {{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content, 240) }}
 
 @component('mail::button', ['url' => route('diary.show', $entry)])
 {{ __('Eintrag öffnen') }}

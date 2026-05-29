@@ -4,7 +4,7 @@
 <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
     <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
         <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Aufträge') }}</span>
-        <a href="{{ route('diary.index', ['project' => sqid(\App\Models\Project::class, $project->id)]) }}"
+        <a href="{{ route('diary.index', ['project' => \App\Support\Sqid::encode(\App\Models\Project::class, $project->id)]) }}"
            class="btn btn-sm btn-ghost">{{ __('In der Arbeitsliste öffnen') }}</a>
     </header>
     <ul class="divide-y divide-base-300">
@@ -27,18 +27,18 @@
                         @endif
                         <span>{{ $entry->user->name ?? '—' }}</span>
                         @if ($entry->mode && $entry->mode !== \App\Enums\Diary\Mode::Fixed)
-                            <span class="badge badge-xs badge-outline">{{ $entry->modeLabel() }}</span>
+                            <x-status-badge size="xs" outline>{{ $entry->modeLabel() }}</x-status-badge>
                         @endif
                         @if (! $primary)
-                            <span class="badge badge-xs badge-ghost" title="{{ __('Auftrag bucht nur Stunden auf dieses Projekt') }}">
+                            <x-status-badge tone="ghost" size="xs" title="{{ __('Auftrag bucht nur Stunden auf dieses Projekt') }}">
                                 {{ __('via Zeiteinträge') }}
-                            </span>
+                            </x-status-badge>
                         @endif
                         @foreach ($entry->tags as $tag)
                             <span class="badge badge-xs" style="background:{{ $tag->color ?? '#94a3b8' }};color:#fff">{{ $tag->name }}</span>
                         @endforeach
                     </div>
-                    <div class="line-clamp-2 text-sm">{{ truncate($entry->content, 200) }}</div>
+                    <div class="line-clamp-2 text-sm">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content, 200) }}</div>
                 </a>
             </li>
         @empty

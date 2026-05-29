@@ -15,7 +15,7 @@ use App\Http\Requests\SaveTimesheetRequest;
 use App\Models\{Customer, Project, Timesheet, User};
 use App\Services\Material\MaterialProviderRegistry;
 use App\Services\UI\DateRangeContext;
-use App\Support\SortableQuery;
+use App\Support\{Setting, SortableQuery};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -57,7 +57,7 @@ class TimesheetController extends Controller {
         ], 'work_date', 'desc');
 
         return view('timesheets.index', [
-            'timesheets' => $query->paginate((int) setting('pagination.timesheets', 20))->withQueryString(),
+            'timesheets' => $query->paginate((int) Setting::get('pagination.timesheets', 20))->withQueryString(),
             'scope' => $scope,
             'isAdmin' => $isAdmin,
             'sort' => $sort,

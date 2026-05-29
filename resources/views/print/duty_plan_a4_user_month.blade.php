@@ -127,7 +127,7 @@
 </table>
 
 <div class="footer">
-    <span>{{ $org ?? '' }} · {{ $anonymous ? printable_initials($user->name) : $user->name }}</span>
+    <span>{{ $org ?? '' }} · {{ $anonymous ? \CommonToolkit\Helper\Data\StringHelper::printableInitials($user->name) : $user->name }}</span>
     <span>{{ now()->format('d.m.Y H:i') }} · {{ __('Summe') }} {{ $totalHours }} h</span>
 </div>
 @endsection

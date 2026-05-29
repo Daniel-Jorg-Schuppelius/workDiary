@@ -51,9 +51,9 @@
                     <dt class="text-base-content/60">{{ __('Status') }}</dt>
                     <dd>
                         @if ($site->is_active)
-                            <span class="badge badge-success badge-sm">{{ __('aktiv') }}</span>
+                            <x-status-badge tone="success" size="sm">{{ __('aktiv') }}</x-status-badge>
                         @else
-                            <span class="badge badge-ghost badge-sm">{{ __('inaktiv') }}</span>
+                            <x-status-badge tone="ghost" size="sm">{{ __('inaktiv') }}</x-status-badge>
                         @endif
                     </dd>
                 </div>

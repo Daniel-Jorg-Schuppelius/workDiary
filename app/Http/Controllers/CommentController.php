@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{Comment, DiaryEntry, TimeEntry};
+use App\Support\Setting;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
@@ -50,7 +51,7 @@ class CommentController extends Controller {
 
     private function validateBody(Request $request): string {
         return $request->validate([
-            'body' => ['required', 'string', 'max:' . (int) setting('validation.comment.body_max', 5000)],
+            'body' => ['required', 'string', 'max:' . (int) Setting::get('validation.comment.body_max', 5000)],
         ])['body'];
     }
 

@@ -76,7 +76,7 @@
         <select name="customer_id" class="select select-bordered w-full">
             <option value="">—</option>
             @foreach ($customers as $c)
-                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', sqid(\App\Models\Customer::class, $trip?->customer_id)) === $c->sqid)>{{ $c->name }}</option>
+                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $trip?->customer_id)) === $c->sqid)>{{ $c->name }}</option>
             @endforeach
         </select>
     </div>
@@ -85,7 +85,7 @@
         <select name="travel_log_id" class="select select-bordered w-full">
             <option value="">—</option>
             @foreach ($travelLogs as $tl)
-                <option value="{{ $tl->sqid }}" @selected((string) old('travel_log_id', sqid(\App\Models\TravelLog::class, $trip?->travel_log_id)) === $tl->sqid)>
+                <option value="{{ $tl->sqid }}" @selected((string) old('travel_log_id', \App\Support\Sqid::encode(\App\Models\TravelLog::class, $trip?->travel_log_id)) === $tl->sqid)>
                     {{ $tl->started_at?->format('d.m.Y') }} · {{ $tl->from_address ?: '?' }} → {{ $tl->to_address ?: '?' }}
                 </option>
             @endforeach

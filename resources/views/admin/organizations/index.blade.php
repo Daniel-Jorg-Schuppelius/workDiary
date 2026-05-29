@@ -52,16 +52,16 @@
                     </td>
                     <td class="font-mono text-sm text-base-content/60">{{ $org->slug }}</td>
                     <td>
-                        <span class="badge badge-sm {{ $org->plan === 'enterprise' ? 'badge-primary' : ($org->plan === 'pro' ? 'badge-secondary' : 'badge-ghost') }}">
+                        <x-status-badge size="sm" :tone="$org->plan === 'enterprise' ? 'primary' : ($org->plan === 'pro' ? 'secondary' : 'ghost')">
                             {{ $org->plan }}
-                        </span>
+                        </x-status-badge>
                     </td>
                     <td class="text-center">{{ $org->users_count }}</td>
                     <td class="text-center">
                         @if ($org->is_active)
-                            <span class="badge badge-success badge-sm">{{ __('Ja') }}</span>
+                            <x-status-badge tone="success" size="sm">{{ __('Ja') }}</x-status-badge>
                         @else
-                            <span class="badge badge-error badge-sm">{{ __('Nein') }}</span>
+                            <x-status-badge tone="error" size="sm">{{ __('Nein') }}</x-status-badge>
                         @endif
                     </td>
                     <td class="text-sm text-base-content/60">{{ $org->created_at?->toDateString() }}</td>

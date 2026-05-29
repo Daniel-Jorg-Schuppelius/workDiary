@@ -93,7 +93,7 @@
                         <span class="badge badge-sm">{{ $ticket->priority->label() }}</span>
                     </td>
                     <td>
-                        <span class="badge badge-outline badge-sm">{{ $ticket->status->label() }}</span>
+                        <x-status-badge size="sm" outline>{{ $ticket->status->label() }}</x-status-badge>
                     </td>
                     <td class="text-base-content/70">{{ $ticket->assignedTo?->name ?: '—' }}</td>
                     <td class="{{ $dueClass }}">

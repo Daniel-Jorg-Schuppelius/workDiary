@@ -222,7 +222,7 @@ use App\Enums\Vacation\VacationType;
                             <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->start_at?->format('d.m.Y H:i') ?? '—' }}</td>
                             <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->end_at?->format('d.m.Y H:i') ?? '—' }}</td>
                             <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->archived_at?->format('d.m.Y') ?? '—' }}</td>
-                            <td class="text-sm">{{ truncate($entry->content ?? '', 160) }}</td>
+                            <td class="text-sm">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content ?? '', 160) }}</td>
                         </tr>
                     @empty
                         <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">menu_book</span>' :colspan="6" :title="__('Keine Einträge')" compact />

@@ -9,7 +9,7 @@
     /* @var \Carbon\Carbon $monday */
     /* @var \Carbon\Carbon $sunday */
     $weekStart = $monday ?? now()->startOfWeek(\App\Support\WeekDay::MONDAY);
-    $dayAbbr = weekdayAbbr('de');
+    $dayAbbr = array_map(fn (\CommonToolkit\Enums\Weekday $d) => $d->getShortName('de'), [\CommonToolkit\Enums\Weekday::MONDAY, \CommonToolkit\Enums\Weekday::TUESDAY, \CommonToolkit\Enums\Weekday::WEDNESDAY, \CommonToolkit\Enums\Weekday::THURSDAY, \CommonToolkit\Enums\Weekday::FRIDAY, \CommonToolkit\Enums\Weekday::SATURDAY, \CommonToolkit\Enums\Weekday::SUNDAY]);
     $days    = collect(range(0, 6))->map(fn ($i) => $weekStart->copy()->addDays($i));
     $hours   = range(7, 20);
     $legacyUsers = collect($users ?? []);
@@ -18,7 +18,7 @@
 {{-- Toolbar --}}
 <div class="flex-none flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
     <div class="flex flex-wrap items-center gap-2">
-        <span class="badge badge-neutral mr-1">{{ __('Archiv') }}</span>
+        <x-status-badge tone="neutral" size="md" class="mr-1">{{ __('Archiv') }}</x-status-badge>
 
         <a href="{{ route('legacy.archive.week', ['week' => $weekOffset - 1]) }}"
            class="btn btn-sm btn-ghost" title="{{ __('1 Woche zurück') }}">«</a>
@@ -89,7 +89,7 @@
                 <tr>
                     <th class="{{ $dayTh }} sticky top-0 left-0 z-20" @if ($isHoliday) title="{{ $holidayName }}" @endif>
                         <div>{{ $day->format('d.m.y') }}</div>
-                            <div class="holiday-name text-[0.65rem] font-medium leading-tight">{{ $isHoliday ? truncate($holidayName, 16, '') : strtoupper((string) $dayAbbr[$dayIndex]) }}</div>
+                            <div class="holiday-name text-[0.65rem] font-medium leading-tight">{{ $isHoliday ? \CommonToolkit\Helper\Data\StringHelper::truncate($holidayName, 16, '') : strtoupper((string) $dayAbbr[$dayIndex]) }}</div>
                     </th>
                     @foreach ($legacyUsers as $legacyUser)
                         @php
@@ -153,7 +153,7 @@
                                     else                   $sClass = $bg ? 'lo'  : 'log';
                                 }
                             @endphp
-                            <td class="{{ $cClass }}">@if ($entry)<a href="{{ route('legacy.archive.show', [$entry, 'week_date' => ($selectedWeek ?? $monday->format('o-\\WW'))]) }}" data-entry-modal-trigger class="font-normal hover:underline" title="{{ e($entry->inhalt ?? '') }}">{{ truncate($entry->inhalt ?? '', 10, '') }}</a>@else&nbsp;@endif</td>
+                            <td class="{{ $cClass }}">@if ($entry)<a href="{{ route('legacy.archive.show', [$entry, 'week_date' => ($selectedWeek ?? $monday->format('o-\\WW'))]) }}" data-entry-modal-trigger class="font-normal hover:underline" title="{{ e($entry->inhalt ?? '') }}">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->inhalt ?? '', 10, '') }}</a>@else&nbsp;@endif</td>
                             <td class="{{ $sClass }} status-col">&nbsp;</td>
                         @endforeach
 

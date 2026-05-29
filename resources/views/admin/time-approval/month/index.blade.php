@@ -56,7 +56,7 @@
                     <tr>
                         <td class="font-medium">{{ $c->user?->name }}</td>
                         <td class="tabular-nums">{{ $c->periodLabel() }}</td>
-                        <td><span class="badge badge-{{ $c->status->tone() }} badge-sm">{{ $c->status->label() }}</span></td>
+                        <td><x-status-badge :tone="$c->status->tone()" size="sm">{{ $c->status->label() }}</x-status-badge></td>
                         <td class="text-right tabular-nums">{{ $c->days_open }}</td>
                         <td class="text-right tabular-nums">{{ $c->warnings_count }}</td>
                         <td class="text-xs tabular-nums">{{ $c->submitted_at?->format('d.m.Y H:i') }}</td>

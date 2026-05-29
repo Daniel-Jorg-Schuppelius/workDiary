@@ -26,7 +26,7 @@
                 <div class="flex flex-wrap items-center gap-2 text-sm">
                     <x-status-badge :status="$event->status?->value" :label="$event->status?->label()" />
                     @if ($event->is_mandatory)
-                        <span class="badge badge-warning">{{ __('Pflicht') }}</span>
+                        <x-status-badge tone="warning">{{ __('Pflicht') }}</x-status-badge>
                     @endif
                     @if ($event->category)
                         <span class="badge" style="background:{{ $event->category->color ?? '#999' }};color:#fff">{{ $event->category->name }}</span>

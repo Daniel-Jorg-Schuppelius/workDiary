@@ -22,7 +22,7 @@
                     :value="$doneTasks"
                     tone="success" />
         <x-kpi-tile :label="__('Nächster Milestone')"
-                    :value="$nextMilestone ? truncate($nextMilestone->title, 28) : __('—')"
+                    :value="$nextMilestone ? \CommonToolkit\Helper\Data\StringHelper::truncate($nextMilestone->title, 28) : __('—')"
                     :hint="$nextMilestone?->due_date?->format('d.m.Y') ?: ($nextMilestone ? __('kein Datum') : null)"
                     format="text" />
     </div>
@@ -105,7 +105,7 @@
     <x-card padding="p-0">
         <header class="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Letzte Aufträge') }}</span>
-            <a href="{{ route('diary.index', ['project' => sqid(\App\Models\Project::class, $project->id)]) }}"
+            <a href="{{ route('diary.index', ['project' => \App\Support\Sqid::encode(\App\Models\Project::class, $project->id)]) }}"
                class="text-xs text-primary hover:underline">{{ __('Alle in der Arbeitsliste') }}</a>
         </header>
         @if ($entries->isEmpty())
@@ -134,10 +134,10 @@
                                 @endif
                                 <span>{{ $entry->user->name ?? '—' }}</span>
                                 @if ($entry->mode && $entry->mode !== \App\Enums\Diary\Mode::Fixed)
-                                    <span class="badge badge-xs badge-outline">{{ $entry->modeLabel() }}</span>
+                                    <x-status-badge size="xs" outline>{{ $entry->modeLabel() }}</x-status-badge>
                                 @endif
                             </div>
-                            <div class="line-clamp-2 text-sm">{{ truncate($entry->content, 150) }}</div>
+                            <div class="line-clamp-2 text-sm">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content, 150) }}</div>
                         </a>
                     </li>
                 @endforeach

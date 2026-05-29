@@ -22,14 +22,14 @@
                                     'badge-success' => $issue->status->value === 'done',
                                     'badge-ghost' => in_array($issue->status->value, ['wontDo', 'reopened'], true),
                                 ])>{{ $issue->status->label() }}</span>
-                                <span class="badge badge-sm badge-outline">{{ $issue->severity->label() }}</span>
+                                <x-status-badge size="sm" outline>{{ $issue->severity->label() }}</x-status-badge>
                                 @if ($issue->category)
-                                    <span class="badge badge-sm badge-ghost">{{ $issue->category }}</span>
+                                    <x-status-badge tone="ghost" size="sm">{{ $issue->category }}</x-status-badge>
                                 @endif
                                 @if ($issue->due_at)
-                                    <span class="badge badge-sm badge-ghost">
+                                    <x-status-badge tone="ghost" size="sm">
                                         {{ __('open-issue.field.due_at') }}: {{ $issue->due_at->format('d.m.Y') }}
-                                    </span>
+                                    </x-status-badge>
                                 @endif
                             </div>
                             <p class="font-semibold text-base-content">{{ $issue->title }}</p>

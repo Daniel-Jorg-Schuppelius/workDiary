@@ -38,17 +38,17 @@
                 <td>
                     <div class="flex flex-wrap gap-1">
                         @foreach ($member->roles as $role)
-                            <span class="badge badge-sm badge-outline">{{ $role->name }}</span>
+                            <x-status-badge size="sm" outline>{{ $role->name }}</x-status-badge>
                         @endforeach
                     </div>
                 </td>
                 <td>
                     <div class="flex flex-wrap gap-1">
                         @foreach ($member->userGroups as $group)
-                            <span class="badge badge-sm badge-ghost"
-                                  @if ($group->color) style="border-color: {{ $group->color }}" @endif>
+                            <x-status-badge tone="ghost" size="sm"
+                                  :style="$group->color ? 'border-color: '.$group->color : null">
                                 {{ $group->name }}
-                            </span>
+                            </x-status-badge>
                         @endforeach
                     </div>
                 </td>

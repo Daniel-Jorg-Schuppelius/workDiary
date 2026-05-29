@@ -18,7 +18,7 @@
     // Map Parent-Projekt-ID → Kunden-Sqid (das Kunden-Select nutzt Sqid als Wert,
     // daher muss die Auto-Befüllung ebenfalls den Sqid setzen, nicht die int-ID).
     $parentCustomerSqids = $parentOptions->mapWithKeys(fn($p) => [
-        (string) $p->id => $p->customer_id ? sqid(\App\Models\Customer::class, $p->customer_id) : '',
+        (string) $p->id => $p->customer_id ? \App\Support\Sqid::encode(\App\Models\Customer::class, $p->customer_id) : '',
     ]);
 @endphp
 
@@ -82,7 +82,7 @@
                 <select name="customer_id" class="select select-bordered w-full" x-ref="customerSelect" :disabled="hasParent">
                     <option value="">{{ __('— Kein Kunde —') }}</option>
                     @foreach ($customers as $customer)
-                        <option value="{{ $customer->sqid }}" @selected((string) old('customer_id', sqid(\App\Models\Customer::class, $project?->customer_id)) === $customer->sqid)>
+                        <option value="{{ $customer->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $project?->customer_id)) === $customer->sqid)>
                             {{ $customer->name }}
                         </option>
                     @endforeach

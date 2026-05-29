@@ -84,7 +84,7 @@
         @if ($hasActiveFilters)
             <span class="text-sm font-medium">{{ __('Aktive Filter') }}</span>
             @foreach ($activeFilterChips as $chip)
-                <span class="badge badge-outline badge-sm">{{ $chip }}</span>
+                <x-status-badge size="sm" outline>{{ $chip }}</x-status-badge>
             @endforeach
         @endif
     </div>

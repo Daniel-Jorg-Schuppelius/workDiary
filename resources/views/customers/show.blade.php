@@ -70,12 +70,12 @@
             <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
                 <x-icon name="contacts" class="text-base-content/60" /> {{ __('Kontakt') }}
             </h2>
-            <dl class="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
-                @if ($customer->contact_name)<dt class="text-base-content/60">{{ __('Ansprechpartner') }}</dt><dd>{{ $customer->contact_name }}</dd>@endif
-                @if ($customer->email)<dt class="text-base-content/60">{{ __('E-Mail') }}</dt><dd><a class="link" href="mailto:{{ $customer->email }}">{{ $customer->email }}</a></dd>@endif
-                @if ($customer->phone)<dt class="text-base-content/60">{{ __('Telefon') }}</dt><dd>{{ $customer->phone }}</dd>@endif
-                @if ($customer->mobile)<dt class="text-base-content/60">{{ __('Mobil') }}</dt><dd>{{ $customer->mobile }}</dd>@endif
-                @if ($customer->homepage)<dt class="text-base-content/60">{{ __('Homepage') }}</dt><dd><a class="link" href="{{ $customer->homepage }}" target="_blank" rel="noopener">{{ $customer->homepage }}</a></dd>@endif
+            <x-detail-grid>
+                <x-detail-grid.row :label="__('Ansprechpartner')" :value="$customer->contact_name" />
+                <x-detail-grid.row :label="__('E-Mail')">@if ($customer->email)<a class="link" href="mailto:{{ $customer->email }}">{{ $customer->email }}</a>@endif</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Telefon')" :value="$customer->phone" />
+                <x-detail-grid.row :label="__('Mobil')" :value="$customer->mobile" />
+                <x-detail-grid.row :label="__('Homepage')">@if ($customer->homepage)<a class="link" href="{{ $customer->homepage }}" target="_blank" rel="noopener">{{ $customer->homepage }}</a>@endif</x-detail-grid.row>
                 @if ($customer->address_street || $customer->address_zip || $customer->address_city)
                     <dt class="text-base-content/60">{{ __('Adresse') }}</dt>
                     <dd class="whitespace-pre-line">{!! e($customer->address_street) !!}@if($customer->address_street)
@@ -83,8 +83,8 @@
                 @elseif ($customer->address)
                     <dt class="text-base-content/60">{{ __('Adresse') }}</dt><dd class="whitespace-pre-line">{{ $customer->address }}</dd>
                 @endif
-                @if ($customer->country)<dt class="text-base-content/60">{{ __('Land') }}</dt><dd>{{ $customer->country }}</dd>@endif
-            </dl>
+                <x-detail-grid.row :label="__('Land')" :value="$customer->country" />
+            </x-detail-grid>
             @php $contactPersons = is_array($customer->contact_persons) ? array_values(array_filter($customer->contact_persons, fn($r) => is_array($r) && trim((string)($r['name'] ?? '')) !== '')) : []; @endphp
             @if ($contactPersons !== [])
                 <div class="pt-3">
@@ -107,21 +107,18 @@
             <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
                 <x-icon name="receipt_long" class="text-base-content/60" /> {{ __('Abrechnung') }}
             </h2>
-            <dl class="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
-                <dt class="text-base-content/60">{{ __('Abrechenbar') }}</dt>
-                <dd>{{ $customer->billable ? __('Ja') : __('Nein') }}</dd>
-                @if ($customer->vat_id)<dt class="text-base-content/60">{{ __('USt-IdNr.') }}</dt><dd>{{ $customer->vat_id }}</dd>@endif
-                <dt class="text-base-content/60">{{ __('Währung') }}</dt><dd>{{ $customer->currency }}</dd>
-                @if ($customer->timezone)<dt class="text-base-content/60">{{ __('Zeitzone') }}</dt><dd>{{ $customer->timezone }}</dd>@endif
+            <x-detail-grid>
+                <x-detail-grid.row :label="__('Abrechenbar')" :value="$customer->billable ? __('Ja') : __('Nein')" />
+                <x-detail-grid.row :label="__('USt-IdNr.')" :value="$customer->vat_id" />
+                <x-detail-grid.row :label="__('Währung')" :value="$customer->currency" />
+                <x-detail-grid.row :label="__('Zeitzone')" :value="$customer->timezone" />
                 @if ($customer->hourly_rate !== null)
-                    <dt class="text-base-content/60">{{ __('Stundensatz') }}</dt>
-                    <dd>{{ number_format((float) $customer->hourly_rate, 2, ',', '.') }} {{ $customer->currency }}</dd>
+                    <x-detail-grid.row :label="__('Stundensatz')" :value="number_format((float) $customer->hourly_rate, 2, ',', '.').' '.$customer->currency" />
                 @endif
                 @if ($customer->internal_rate !== null)
-                    <dt class="text-base-content/60">{{ __('Interner Satz') }}</dt>
-                    <dd>{{ number_format((float) $customer->internal_rate, 2, ',', '.') }} {{ $customer->currency }}</dd>
+                    <x-detail-grid.row :label="__('Interner Satz')" :value="number_format((float) $customer->internal_rate, 2, ',', '.').' '.$customer->currency" />
                 @endif
-            </dl>
+            </x-detail-grid>
             @if ($customer->invoice_text)
                 <div class="pt-2 text-sm">
                     <div class="text-base-content/60">{{ __('Rechnungstext') }}</div>
@@ -132,12 +129,12 @@
             @if ($bank['has_any'])
                 <div class="pt-3 border-t border-base-300">
                     <h3 class="mb-1 text-sm font-semibold">{{ __('Bankverbindung') }}</h3>
-                    <dl class="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
-                        @if ($bank['holder'])<dt class="text-base-content/60">{{ __('Kontoinhaber') }}</dt><dd>{{ $bank['holder'] }}</dd>@endif
-                        @if ($bank['iban'])<dt class="text-base-content/60">{{ __('IBAN') }}</dt><dd class="tabular-nums">{{ $bank['iban'] }}</dd>@endif
-                        @if ($bank['bic'])<dt class="text-base-content/60">{{ __('BIC') }}</dt><dd>{{ $bank['bic'] }}</dd>@endif
-                        @if ($bank['bank'])<dt class="text-base-content/60">{{ __('Bank') }}</dt><dd>{{ $bank['bank'] }}</dd>@endif
-                    </dl>
+                    <x-detail-grid>
+                        <x-detail-grid.row :label="__('Kontoinhaber')" :value="$bank['holder']" />
+                        <x-detail-grid.row :label="__('IBAN')" :value="$bank['iban']" class="tabular-nums" />
+                        <x-detail-grid.row :label="__('BIC')" :value="$bank['bic']" />
+                        <x-detail-grid.row :label="__('Bank')" :value="$bank['bank']" />
+                    </x-detail-grid>
                 </div>
             @endif
         </x-card>

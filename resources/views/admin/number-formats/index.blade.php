@@ -36,7 +36,7 @@
                     <td class="font-medium">
                         {{ $row['scope']->label() }}
                         @unless ($row['persisted'])
-                            <span class="badge badge-ghost badge-sm ml-1">{{ __('Default') }}</span>
+                            <x-status-badge tone="ghost" size="sm" class="ml-1">{{ __('Default') }}</x-status-badge>
                         @endunless
                     </td>
                     <td class="flex gap-1">

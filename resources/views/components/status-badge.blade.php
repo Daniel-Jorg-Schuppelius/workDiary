@@ -3,6 +3,7 @@
     'size' => 'sm',
     'label' => null,
     'outline' => false,
+    'icon' => null,
 ])
 
 @php
@@ -13,10 +14,19 @@
     $classes = trim(implode(' ', array_filter([
         'badge',
         'badge-'.$size,
-        $outline ? 'badge-outline' : 'badge-'.$tone,
+        'badge-'.$tone,
+        $outline ? 'badge-outline' : null,
     ])));
+    $iconIsSymbol = is_string($icon) && $icon !== '' && preg_match('/^[a-z0-9_]+$/', $icon) === 1;
 @endphp
 
 <span {{ $attributes->merge(['class' => $classes]) }}>
+    @if ($icon)
+        @if ($iconIsSymbol)
+            <x-icon :name="$icon" size="1em" />
+        @else
+            {!! $icon !!}
+        @endif
+    @endif
     {{ $label ?? $slot }}
 </span>

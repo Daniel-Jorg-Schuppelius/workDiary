@@ -39,7 +39,7 @@
             @if (! $indent && $task->subTasks->isNotEmpty())
                 <span>{{ $task->subTasks->where('status', \App\Enums\Task\TaskStatus::Done)->count() }}/{{ $task->subTasks->count() }} {{ __('Sub') }}</span>
             @endif
-            <span class="badge badge-xs badge-{{ $task->statusTone() }}">{{ $task->statusLabel() }}</span>
+            <x-status-badge size="xs" :tone="$task->statusTone()">{{ $task->statusLabel() }}</x-status-badge>
         </div>
     </div>
 

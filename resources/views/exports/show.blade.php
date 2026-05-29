@@ -44,7 +44,7 @@
                     <dt class="text-base-content/70">{{ __('Profil') }}</dt>
                     <dd>{{ $export->profile }}</dd>
                     <dt class="text-base-content/70">{{ __('Status') }}</dt>
-                    <dd><span class="badge badge-{{ $tone }} badge-sm">{{ $export->status->label() }}</span></dd>
+                    <dd><x-status-badge :tone="$tone" size="sm">{{ $export->status->label() }}</x-status-badge></dd>
                     <dt class="text-base-content/70">{{ __('Scope') }}</dt>
                     <dd>
                         @if ($export->scope === 'user')

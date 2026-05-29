@@ -13,7 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\Attendance\AttendanceStatus;
 use App\Models\{Attendance, User};
 use App\Services\Attendance\AttendanceClockService;
-use App\Support\SortableQuery;
+use App\Support\{Setting, SortableQuery};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -22,7 +22,8 @@ use Illuminate\View\View;
 use RuntimeException;
 
 class AttendanceController extends Controller {
-    public function __construct(protected AttendanceClockService $clock) {}
+    public function __construct(protected AttendanceClockService $clock) {
+    }
 
     /**
      * Lists attendances for the authenticated user (current month by default).
@@ -80,8 +81,8 @@ class AttendanceController extends Controller {
         $data = $request->validate([
             'lat' => ['nullable', 'numeric', 'between:-90,90'],
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
-            'device' => ['nullable', 'string', 'max:' . (int) setting('validation.attendance.device_max', 64)],
-            'note' => ['nullable', 'string', 'max:' . (int) setting('validation.attendance.note_max', 1000)],
+            'device' => ['nullable', 'string', 'max:' . (int) Setting::get('validation.attendance.device_max', 64)],
+            'note' => ['nullable', 'string', 'max:' . (int) Setting::get('validation.attendance.note_max', 1000)],
         ]);
 
         /** @var User $user */
@@ -102,9 +103,9 @@ class AttendanceController extends Controller {
         $data = $request->validate([
             'lat' => ['nullable', 'numeric', 'between:-90,90'],
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
-            'device' => ['nullable', 'string', 'max:' . (int) setting('validation.attendance.device_max', 64)],
-            'note' => ['nullable', 'string', 'max:' . (int) setting('validation.attendance.note_max', 1000)],
-            'break_minutes' => ['nullable', 'integer', 'min:0', 'max:' . (int) setting('validation.attendance.break_minutes_max', 600)],
+            'device' => ['nullable', 'string', 'max:' . (int) Setting::get('validation.attendance.device_max', 64)],
+            'note' => ['nullable', 'string', 'max:' . (int) Setting::get('validation.attendance.note_max', 1000)],
+            'break_minutes' => ['nullable', 'integer', 'min:0', 'max:' . (int) Setting::get('validation.attendance.break_minutes_max', 600)],
         ]);
 
         /** @var User $user */
@@ -122,7 +123,7 @@ class AttendanceController extends Controller {
         Gate::authorize('create', Attendance::class);
 
         $data = $request->validate([
-            'minutes' => ['required', 'integer', 'min:1', 'max:' . (int) setting('validation.attendance.break_minutes_max', 600)],
+            'minutes' => ['required', 'integer', 'min:1', 'max:' . (int) Setting::get('validation.attendance.break_minutes_max', 600)],
         ]);
 
         /** @var User $user */
@@ -148,8 +149,8 @@ class AttendanceController extends Controller {
         $data = $request->validate([
             'started_at' => ['required', 'date'],
             'ended_at' => ['nullable', 'date', 'after:started_at'],
-            'break_minutes_manual' => ['nullable', 'integer', 'min:0', 'max:' . (int) setting('validation.attendance.break_minutes_max', 600)],
-            'note' => ['nullable', 'string', 'max:' . (int) setting('validation.attendance.note_max', 1000)],
+            'break_minutes_manual' => ['nullable', 'integer', 'min:0', 'max:' . (int) Setting::get('validation.attendance.break_minutes_max', 600)],
+            'note' => ['nullable', 'string', 'max:' . (int) Setting::get('validation.attendance.note_max', 1000)],
             'status' => ['nullable', Rule::enum(AttendanceStatus::class)],
         ]);
 

@@ -12,7 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Models\{Organization, User};
 use App\Services\OrganizationLifecycleService;
-use App\Support\SortableQuery;
+use App\Support\{Setting, SortableQuery};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\View\View;
@@ -50,7 +50,7 @@ class OrganizationController extends Controller {
             'users' => 'users_count',
         ], 'name', 'asc');
 
-        $organizations = $query->paginate((int) setting('pagination.organizations', 25))->withQueryString();
+        $organizations = $query->paginate((int) Setting::get('pagination.organizations', 25))->withQueryString();
 
         return view('admin.organizations.index', compact('organizations', 'sort', 'dir'));
     }

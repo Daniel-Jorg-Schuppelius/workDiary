@@ -16,6 +16,7 @@ use App\Enums\Protocol\ProtocolType;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Reporting\{CustomerAnalysisReportController, CustomerDrilldownReportController};
 use App\Models\{AuditLog, Customer, DiaryEntry, OpenIssue, Project, Protocol, TimeEntry, User};
+use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
@@ -129,10 +130,10 @@ class CustomersReportTest extends TestCase {
         $response->assertSee('60', false);
         $response->assertSee('1', false);
         $response->assertSee(route('diary.index', [
-            'customer' => sqid(\App\Models\Customer::class, $this->customer->id),
+            'customer' => Sqid::encode(\App\Models\Customer::class, $this->customer->id),
             'from' => now()->subDays(30)->toDateString(),
             'to' => now()->toDateString(),
-            'project' => sqid(\App\Models\Project::class, null),
+            'project' => Sqid::encode(\App\Models\Project::class, null),
             'user' => null,
         ]));
         $response->assertSee(route('reports.customers.drilldown.protocols', [
@@ -178,7 +179,7 @@ class CustomersReportTest extends TestCase {
             'created_at' => now()->subDays(2),
         ]);
 
-        $response = $this->getWithDateRange('diary.index', ['customer' => sqid(\App\Models\Customer::class, $this->customer->id)]);
+        $response = $this->getWithDateRange('diary.index', ['customer' => Sqid::encode(\App\Models\Customer::class, $this->customer->id)]);
 
         $response->assertOk();
         $response->assertSeeText('Passender Auftrag mit relevanten Details');

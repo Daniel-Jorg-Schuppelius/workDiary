@@ -76,7 +76,7 @@
         <select name="customer_id" class="select select-bordered w-full">
             <option value="">—</option>
             @foreach ($customers as $c)
-                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', sqid(\App\Models\Customer::class, $log?->customer_id)) === $c->sqid)>{{ $c->name }}</option>
+                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $log?->customer_id)) === $c->sqid)>{{ $c->name }}</option>
             @endforeach
         </select>
     </div>

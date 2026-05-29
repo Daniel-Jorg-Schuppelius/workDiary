@@ -32,7 +32,9 @@ class SaveCustomerRequest extends FormRequest {
     public function rules(): array {
         /** @var Customer|null $customer */
         $customer = $this->route('customer');
-        $organizationId = $customer?->organization_id ?? $this->currentOrganizationId();
+        $organizationId = $customer instanceof Customer
+            ? $customer->organization_id
+            : $this->currentOrganizationId();
 
         return [
             'name' => ['required', 'string', 'max:200'],

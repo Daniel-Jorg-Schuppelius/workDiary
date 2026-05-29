@@ -125,7 +125,7 @@
                     </div>
                     <p class="text-base leading-relaxed text-base-content">
                         @php
-                            $snippet = truncate($entry->content, 240);
+                            $snippet = \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content, 240);
                             $needle = trim((string) ($filters['q'] ?? ''));
                         @endphp
                         @if ($needle !== '')

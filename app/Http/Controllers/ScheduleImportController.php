@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\{ScheduledShift, ShiftType, User};
+use App\Support\Setting;
 use Carbon\Carbon;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
@@ -39,7 +40,7 @@ class ScheduleImportController extends Controller {
         }
 
         $request->validate([
-            'file' => ['required', 'file', 'mimes:csv,txt,xlsx,xls', 'max:' . (int) setting('uploads.csv_import_kb', 10240)],
+            'file' => ['required', 'file', 'mimes:csv,txt,xlsx,xls', 'max:' . (int) Setting::get('uploads.csv_import_kb', 10240)],
         ]);
 
         $file = $request->file('file');

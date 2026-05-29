@@ -57,7 +57,7 @@
                     <td><a href="{{ route('invoices.show', $invoice) }}" class="link">{{ $invoice->number }}</a></td>
                     <td>{{ $invoice->customer->name ?? '-' }}</td>
                     <td>{{ optional($invoice->issued_on)->format('d.m.Y') ?? '-' }}</td>
-                    <td><span class="badge badge-outline">{{ __("values.{$invoice->status}") }}</span></td>
+                    <td><x-status-badge size="md" outline>{{ __("values.{$invoice->status}") }}</x-status-badge></td>
                     <td class="text-right">{{ number_format((float) $invoice->total, 2, ',', '.') }} {{ $invoice->currency }}</td>
                     <td>
                         <x-icon-btn icon="visibility"

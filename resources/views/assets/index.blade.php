@@ -65,7 +65,7 @@
             <div class="flex flex-wrap items-center gap-2 px-1 text-sm text-base-content/70">
                 <span>{{ trans_choice(':count Ergebnis|:count Ergebnisse', $assets->total(), ['count' => $assets->total()]) }}</span>
                 @foreach ($activeFilterChips as $chip)
-                    <span class="badge badge-outline badge-sm">{{ $chip }}</span>
+                    <x-status-badge size="sm" outline>{{ $chip }}</x-status-badge>
                 @endforeach
             </div>
         @endif

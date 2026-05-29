@@ -14,7 +14,7 @@ use App\Enums\Diary\{Priority, Status as DiaryStatus};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveEntryTypeRequest;
 use App\Models\EntryType;
-use App\Support\SortableQuery;
+use App\Support\{Setting, SortableQuery};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -33,7 +33,7 @@ class EntryTypeController extends Controller {
             'entries' => 'diary_entries_count',
         ], 'sort', 'asc');
 
-        $entryTypes = $query->paginate((int) setting('pagination.entry_types', 25))->withQueryString();
+        $entryTypes = $query->paginate((int) Setting::get('pagination.entry_types', 25))->withQueryString();
 
         return view('admin.entry-types.index', compact('entryTypes', 'sort', 'dir'));
     }

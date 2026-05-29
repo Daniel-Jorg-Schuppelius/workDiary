@@ -15,6 +15,7 @@ use App\Enums\User\Permission as P;
 use App\Http\Controllers\Controller;
 use App\Models\{MonthClosure, User};
 use App\Services\TimeApproval\{MonthClosureService, MonthClosureWorkflowException};
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -27,7 +28,8 @@ use Illuminate\View\View;
  * approve/reject/reopen/lock zur Verfügung.
  */
 class MonthApprovalInboxController extends Controller {
-    public function __construct(private readonly MonthClosureService $service) {}
+    public function __construct(private readonly MonthClosureService $service) {
+    }
 
     public function index(Request $request): View {
         /** @var User $admin */
@@ -44,7 +46,7 @@ class MonthApprovalInboxController extends Controller {
         );
 
         $statusFilter = (string) $request->input('status', 'submitted');
-        $userFilter = sqid_decode(User::class, $request->input('user'));
+        $userFilter = Sqid::decode(User::class, $request->input('user'));
         $yearFilter = $request->filled('year') ? (int) $request->input('year') : null;
 
         $query = MonthClosure::query()

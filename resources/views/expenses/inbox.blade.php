@@ -121,13 +121,13 @@
                         <td class="text-right whitespace-nowrap">
                             {{ number_format((float) $expense->amount_gross, 2, ',', '.') }} {{ $expense->currency }}
                             @if ($expense->billable)
-                                <span class="badge badge-ghost badge-xs ml-1">{{ __('weiterberechnet') }}</span>
+                                <x-status-badge tone="ghost" size="xs" class="ml-1">{{ __('weiterberechnet') }}</x-status-badge>
                             @endif
                         </td>
                         <td>
-                            <span class="badge badge-{{ $expense->status->tone() }} badge-sm">
+                            <x-status-badge :tone="$expense->status->tone()" size="sm">
                                 {{ $expense->status->label() }}
-                            </span>
+                            </x-status-badge>
                             @if ($expense->status === \App\Enums\Expense\ExpenseStatus::Rejected && $expense->reject_reason)
                                 <div class="text-xs text-error mt-1">{{ $expense->reject_reason }}</div>
                             @endif

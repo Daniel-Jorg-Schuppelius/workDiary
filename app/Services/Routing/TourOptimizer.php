@@ -10,6 +10,8 @@
 
 namespace App\Services\Routing;
 
+use App\Support\Setting;
+
 /**
  * Nearest-Neighbor + 2-opt tour optimizer.
  *
@@ -143,7 +145,7 @@ class TourOptimizer {
         $bestDist = $this->totalDistance($best, $matrix, $hasStart, $hasEnd, $n);
         $size = count($best);
 
-        $maxIter = (int) setting('routing.tour_optimizer.iterations', self::MAX_TWO_OPT_ITERATIONS);
+        $maxIter = (int) Setting::get('routing.tour_optimizer.iterations', self::MAX_TWO_OPT_ITERATIONS);
         for ($iter = 0; $iter < $maxIter; $iter++) {
             $improved = false;
             for ($i = 0; $i < $size - 1; $i++) {

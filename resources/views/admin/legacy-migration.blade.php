@@ -7,9 +7,9 @@
 <div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
     <div class="flex justify-end">
         @if ($writeEnabled)
-            <span class="badge badge-warning">{{ __('Legacy-Schreibzugriff aktiv') }}</span>
+            <x-status-badge tone="warning">{{ __('Legacy-Schreibzugriff aktiv') }}</x-status-badge>
         @else
-            <span class="badge badge-success">{{ __('Legacy read-only') }}</span>
+            <x-status-badge tone="success">{{ __('Legacy read-only') }}</x-status-badge>
         @endif
     </div>
 
@@ -37,7 +37,7 @@
                             <td class="text-right">{{ number_format($row['imported'], 0, ',', '.') }}</td>
                             <td class="text-right">
                                 @if ($remaining === 0)
-                                    <span class="badge badge-success badge-sm">{{ __('Vollständig') }}</span>
+                                    <x-status-badge tone="success" size="sm">{{ __('Vollständig') }}</x-status-badge>
                                 @else
                                     <span class="text-warning">{{ number_format($remaining, 0, ',', '.') }}</span>
                                 @endif

@@ -14,13 +14,14 @@ use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
 use App\Http\Requests\SaveVehicleRequest;
 use App\Models\{User, Vehicle};
 use App\Services\Fleet\VehicleService;
-use App\Support\SortableQuery;
+use App\Support\{Setting, SortableQuery};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class VehicleController extends Controller {
-    public function __construct(private readonly VehicleService $service) {}
+    public function __construct(private readonly VehicleService $service) {
+    }
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Vehicle::class);
@@ -42,7 +43,7 @@ class VehicleController extends Controller {
         ], 'label', 'asc');
 
         return view('vehicles.index', [
-            'vehicles' => $query->paginate((int) setting('pagination.vehicles', 25))->withQueryString(),
+            'vehicles' => $query->paginate((int) Setting::get('pagination.vehicles', 25))->withQueryString(),
             'showArchived' => $showArchived,
             'sort' => $sort,
             'dir' => $dir,

@@ -149,7 +149,7 @@ class LegacyArchiveController extends Controller {
                 $appliedSort = $rawSort;
                 $appliedDir = $sortDir;
             } else {
-                $q->orderBy($defaultColumn, $defaultDir);
+                $q->orderBy($defaultColumn, $defaultDir === 'asc' ? 'asc' : 'desc');
                 // Default-Spalte als Sort-Key zurückführen für die View.
                 $appliedSort = (string) (array_search($defaultColumn, $map, true) ?: 'bis');
                 $appliedDir = $defaultDir;

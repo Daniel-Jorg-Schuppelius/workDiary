@@ -95,7 +95,7 @@
                                     @endforeach
                                     <td class="text-xs">
                                         @foreach ($entry['issues'] ?? [] as $iss)
-                                            <div><span class="badge badge-xs badge-error">{{ $iss['code'] }}</span> {{ $iss['field'] }}: {{ $iss['message'] }}</div>
+                                            <div><x-status-badge tone="error" size="xs">{{ $iss['code'] }}</x-status-badge> {{ $iss['field'] }}: {{ $iss['message'] }}</div>
                                         @endforeach
                                     </td>
                                 </tr>
@@ -125,7 +125,7 @@
                         <tr>
                             <td class="font-mono text-xs">{{ $err->row_number }}</td>
                             <td class="font-mono text-xs">{{ $err->field }}</td>
-                            <td><span class="badge badge-xs badge-error">{{ $err->code->value }}</span></td>
+                            <td><x-status-badge tone="error" size="xs">{{ $err->code->value }}</x-status-badge></td>
                             <td class="text-sm">{{ $err->message }}</td>
                         </tr>
                     @endforeach

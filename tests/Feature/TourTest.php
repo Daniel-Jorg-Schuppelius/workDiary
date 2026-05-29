@@ -15,6 +15,7 @@ use App\Enums\Tour\TourStatus;
 use App\Enums\Travel\TravelLogVehicle;
 use App\Models\{DiaryEntry, Tour, User};
 use App\Services\Routing\TourService;
+use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Database\Seeders\EntryTypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -172,7 +173,7 @@ class TourTest extends TestCase {
         ]);
 
         $this->actingAs($admin)
-            ->get(route('tours.index', ['user' => sqid(User::class, $worker->id), 'from' => CarbonImmutable::today()->toDateString(), 'to' => CarbonImmutable::today()->toDateString()]))
+            ->get(route('tours.index', ['user' => Sqid::encode(User::class, $worker->id), 'from' => CarbonImmutable::today()->toDateString(), 'to' => CarbonImmutable::today()->toDateString()]))
             ->assertOk()
             ->assertSee('Wochentour');
     }

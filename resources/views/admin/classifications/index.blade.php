@@ -76,9 +76,9 @@
                                            max="100000" />
                                 </td>
                                 <td>
-                                    <span class="badge badge-xs {{ $classification->active ? 'badge-success' : 'badge-ghost' }}">
+                                    <x-status-badge size="xs" :tone="$classification->active ? 'success' : 'ghost'">
                                         {{ $classification->active ? __('Aktiv') : __('Inaktiv') }}
-                                    </span>
+                                    </x-status-badge>
                                 </td>
                                 <td class="text-right whitespace-nowrap">
                                     <x-icon-btn icon="edit" size="xs"
@@ -130,9 +130,9 @@
                                 <td>
                                     @if ($override)
                                         <div class="font-medium">{{ $override->label }}</div>
-                                        <span class="badge badge-xs {{ $override->active ? 'badge-info' : 'badge-warning' }}">
+                                        <x-status-badge size="xs" :tone="$override->active ? 'info' : 'warning'">
                                             {{ $override->active ? __('Override') : __('Deaktiviert') }}
-                                        </span>
+                                        </x-status-badge>
                                     @else
                                         <span class="text-sm text-base-content/60">{{ __('Kein Override') }}</span>
                                     @endif

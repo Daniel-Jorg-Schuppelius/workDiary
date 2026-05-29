@@ -53,7 +53,7 @@
                             @endif
                         </td>
                         <td>
-                            <span class="badge badge-sm {{ $a->isOpen() ? 'badge-success' : 'badge-ghost' }}">{{ $a->statusLabel() }}</span>
+                            <x-status-badge size="sm" :tone="$a->isOpen() ? 'success' : 'ghost'">{{ $a->statusLabel() }}</x-status-badge>
                         </td>
                         <td class="text-xs text-base-content/60">{{ $a->sourceLabel() }}</td>
                     </tr>

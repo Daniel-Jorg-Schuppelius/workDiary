@@ -109,7 +109,7 @@
                                 </td>
                                 <td class="text-sm text-base-content/80">{{ $project->customer?->name ?? '—' }}</td>
                                 <td>
-                                    <span class="badge badge-sm badge-{{ $project->statusTone() }}">{{ $project->statusLabel() }}</span>
+                                    <x-status-badge size="sm" :tone="$project->statusTone()">{{ $project->statusLabel() }}</x-status-badge>
                                 </td>
                                 <td class="text-right tabular-nums">{{ $cOpen }}</td>
                                 <td class="text-right tabular-nums {{ $cAlert > 0 ? 'text-error font-semibold' : '' }}">{{ $cAlert }}</td>

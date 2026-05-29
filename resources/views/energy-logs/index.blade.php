@@ -81,10 +81,10 @@
                         <td>
                             <span class="badge badge-sm">{{ __($log->energy_type) }}</span>
                             @if ($log->fuel_kind)
-                                <span class="badge badge-ghost badge-sm">{{ __($log->fuel_kind) }}</span>
+                                <x-status-badge tone="ghost" size="sm">{{ __($log->fuel_kind) }}</x-status-badge>
                             @endif
                             @if ($log->charger_type)
-                                <span class="badge badge-ghost badge-sm">{{ __($log->charger_type) }}</span>
+                                <x-status-badge tone="ghost" size="sm">{{ __($log->charger_type) }}</x-status-badge>
                             @endif
                         </td>
                         <td class="text-right">{{ number_format((float) $log->quantity, 2, ',', '.') }} {{ $log->unit === 'kwh' ? 'kWh' : 'l' }}</td>

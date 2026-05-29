@@ -19,7 +19,7 @@ use BackedEnum;
  * Requires the using enum to be a BackedEnum. If the enum implements
  * App\Enums\Contracts\HasLabel, options() returns value => label() pairs.
  *
- * @method static list<static&BackedEnum> cases()
+ * @phpstan-require-implements BackedEnum
  */
 trait HasOptions {
     /**
@@ -44,13 +44,20 @@ trait HasOptions {
     public static function options(): array {
         $out = [];
         foreach (self::cases() as $case) {
-            // Trait is intentionally usable on enums without HasLabel.
-            // @phpstan-ignore-next-line instanceof.alwaysTrue
-            $label = $case instanceof HasLabel ? $case->label() : $case->name;
-            $out[$case->value] = $label;
+            $out[$case->value] = self::optionLabel($case);
         }
 
         return $out;
+    }
+
+    /**
+     * Resolve the human-readable label for a single case.
+     *
+     * Typed against BackedEnum on purpose so the HasLabel check stays
+     * meaningful for enums that do and do not implement the contract.
+     */
+    private static function optionLabel(BackedEnum $case): string {
+        return $case instanceof HasLabel ? $case->label() : $case->name;
     }
 
     public static function tryFromName(string $name): ?self {

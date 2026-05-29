@@ -16,6 +16,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\{Asset, AuditLog, Customer, DiaryEntry, OpenIssue, Protocol, User};
+use App\Support\Sqid;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{Request, Response};
@@ -38,7 +39,7 @@ class AssetAnalysisReportController extends Controller {
         $from = $range['from']->startOfDay();
         $to = $range['to']->endOfDay();
 
-        $customerId = sqid_decode(Customer::class, $request->query('customer_id'));
+        $customerId = Sqid::decode(Customer::class, $request->query('customer_id'));
         $categoryCode = $request->filled('category_code') ? (string) $request->string('category_code') : null;
         $manufacturer = $request->filled('manufacturer') ? (string) $request->string('manufacturer') : null;
         $groupBy = (string) $request->string('group_by', 'asset');

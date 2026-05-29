@@ -72,7 +72,7 @@
                             <td><a href="{{ route('diary.show', $s) }}" class="link">{{ $s->title }}</a></td>
                             <td>{{ $s->customer?->name }}</td>
                             <td>{{ $s->address_city }}</td>
-                            <td><span class="badge badge-ghost badge-xs">{{ $s->statusLabel() }}</span></td>
+                            <td><x-status-badge tone="ghost" size="xs">{{ $s->statusLabel() }}</x-status-badge></td>
                         </tr>
                     @empty
                         <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">route</span>' :colspan="5" :title="__('Keine Stopps zugewiesen.')" compact />

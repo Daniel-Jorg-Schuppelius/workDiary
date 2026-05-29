@@ -17,7 +17,7 @@
                 <h3 class="card-title flex items-center gap-2">
                     <x-icon :name="$groupEnum->icon()" />
                     {{ $groupEnum->label() }}
-                    <span class="badge badge-ghost badge-sm">{{ count($items) }}</span>
+                    <x-status-badge tone="ghost" size="sm">{{ count($items) }}</x-status-badge>
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-1 mt-2">
                     @foreach ($items as $permission)

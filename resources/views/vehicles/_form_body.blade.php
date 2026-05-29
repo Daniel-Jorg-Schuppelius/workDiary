@@ -50,7 +50,7 @@
         <select name="default_user_id" class="select select-bordered w-full">
             <option value="">{{ __('— frei verfügbar —') }}</option>
             @foreach ($users as $u)
-                <option value="{{ $u->sqid }}" @selected((string) old('default_user_id', sqid(\App\Models\User::class, $vehicle?->default_user_id)) === $u->sqid)>{{ $u->name }}</option>
+                <option value="{{ $u->sqid }}" @selected((string) old('default_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $vehicle?->default_user_id)) === $u->sqid)>{{ $u->name }}</option>
             @endforeach
         </select>
     </div>

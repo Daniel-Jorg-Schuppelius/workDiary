@@ -52,7 +52,7 @@
                     <td class="font-medium">
                         {{ $software->name }}
                         @if (! $software->is_active)
-                            <span class="badge badge-ghost badge-xs ml-1">{{ __('inaktiv') }}</span>
+                            <x-status-badge tone="ghost" size="xs" class="ml-1">{{ __('inaktiv') }}</x-status-badge>
                         @endif
                         @if ($software->default_version)
                             <div class="text-xs text-base-content/60">{{ $software->default_version }}</div>

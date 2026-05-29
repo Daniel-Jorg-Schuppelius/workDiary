@@ -16,6 +16,7 @@ use App\Enums\Vacation\VacationStatus;
 use App\Models\{DutyPlan, EmergencyAssignment, OnCallShift, ScheduledShift, ShiftType, User, Vacation};
 use App\Services\HolidayService;
 use Carbon\{CarbonImmutable, CarbonPeriod};
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -29,7 +30,8 @@ use Illuminate\View\View;
  * Anonymisation: append `?anonymous=1` to any route to display only initials.
  */
 class PrintController extends Controller {
-    public function __construct(private readonly HolidayService $holidays) {}
+    public function __construct(private readonly HolidayService $holidays) {
+    }
 
     /**
      * A3 querformat — Monats-Aushang: alle Mitarbeiter × alle Tage des Plans.
@@ -175,7 +177,7 @@ class PrintController extends Controller {
         return view('print.duty_plan_a4_user_month', [
             'pageSize' => 'A4 portrait',
             'pageMargin' => '10mm',
-            'title' => __('Monatsplan') . ' — ' . ($request->boolean('anonymous') ? printable_initials($user->name) : $user->name),
+            'title' => __('Monatsplan') . ' — ' . ($request->boolean('anonymous') ? StringHelper::printableInitials($user->name) : $user->name),
             'user' => $user,
             'month' => $month,
             'end' => $end,

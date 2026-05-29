@@ -16,7 +16,7 @@
                 </div>
                 <p class="text-base leading-relaxed text-base-content">
                     @php
-                        $snippet = truncate($entry->content, 240);
+                        $snippet = \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content, 240);
                         $needle  = trim((string) ($filters['q'] ?? ''));
                     @endphp
                     @if ($needle !== '')
@@ -28,8 +28,8 @@
                 @if ($entry->tags->isNotEmpty())
                     <div class="mt-2 flex flex-wrap gap-1">
                         @foreach ($entry->tags as $tag)
-                            <span class="badge badge-outline badge-sm"
-                                  @if ($tag->color) style="border-color:{{ $tag->color }};color:{{ $tag->color }};" @endif>#{{ $tag->name }}</span>
+                            <x-status-badge size="sm" outline
+                                  :style="$tag->color ? 'border-color:'.$tag->color.';color:'.$tag->color.';' : null">#{{ $tag->name }}</x-status-badge>
                         @endforeach
                     </div>
                 @endif

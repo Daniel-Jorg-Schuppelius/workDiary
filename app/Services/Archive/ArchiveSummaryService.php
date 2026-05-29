@@ -14,7 +14,7 @@ namespace App\Services\Archive;
 
 use App\Enums\Vacation\VacationStatus;
 use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift, User, Vacation};
-use App\Support\SortableQuery;
+use App\Support\{SortableQuery, Sqid};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
@@ -46,7 +46,7 @@ class ArchiveSummaryService {
             foreach ($queries as $q) {
                 $q->where('user_id', $currentUser->id);
             }
-        } elseif (($uid = sqid_decode(User::class, $request->query('user_id'))) !== null) {
+        } elseif (($uid = Sqid::decode(User::class, $request->query('user_id'))) !== null) {
             foreach ($queries as $q) {
                 $q->where('user_id', $uid);
             }

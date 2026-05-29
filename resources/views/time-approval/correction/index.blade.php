@@ -43,7 +43,7 @@
                         <td class="font-medium">{{ optional($r->scope_date)->format('d.m.Y') }}</td>
                         <td>{{ $r->user?->name }}</td>
                         <td>
-                            <span class="badge badge-{{ $r->status->tone() }} badge-sm">{{ $r->status->label() }}</span>
+                            <x-status-badge :tone="$r->status->tone()" size="sm">{{ $r->status->label() }}</x-status-badge>
                         </td>
                         <td class="text-right tabular-nums">{{ $r->items->count() }}</td>
                         <td class="text-right">

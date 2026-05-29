@@ -43,7 +43,7 @@
                             <p class="text-sm text-base-content/60 font-mono">{{ $profile['code'] }} · v{{ $profile['version'] }}</p>
                         </div>
                         @if (in_array($profile['code'], $installedCodes, true))
-                            <span class="badge badge-info badge-sm">{{ __('Bereits installiert') }}</span>
+                            <x-status-badge tone="info" size="sm">{{ __('Bereits installiert') }}</x-status-badge>
                         @endif
                     </div>
 

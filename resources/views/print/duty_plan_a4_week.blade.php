@@ -45,7 +45,7 @@
                         <div class="small">{{ $carbon->translatedFormat('l') }}</div>
                         <div>{{ $carbon->format('d.m.') }}</div>
                         @if ($hName)
-                            <div class="small muted">{{ truncate($hName, 18) }}</div>
+                            <div class="small muted">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($hName, 18) }}</div>
                         @endif
                     </th>
                 @endforeach
@@ -54,7 +54,7 @@
         <tbody>
             @foreach ($users as $u)
                 <tr>
-                    <td><strong>{{ $anonymous ? printable_initials($u->name) : $u->name }}</strong></td>
+                    <td><strong>{{ $anonymous ? \CommonToolkit\Helper\Data\StringHelper::printableInitials($u->name) : $u->name }}</strong></td>
                     @foreach ($dates as $d)
                         @php
                             $carbon = \Carbon\CarbonImmutable::parse($d);

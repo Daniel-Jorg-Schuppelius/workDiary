@@ -67,7 +67,7 @@
                         <td>{{ $ts->project?->name }}</td>
                         <td>{{ $ts->user?->name }}</td>
                         <td class="text-right tabular-nums">{{ $h }}:{{ str_pad((string)$m,2,'0',STR_PAD_LEFT) }} h</td>
-                        <td><span class="badge badge-sm badge-{{ $ts->statusTone() }}">{{ $ts->statusLabel() }}</span></td>
+                        <td><x-status-badge size="sm" :tone="$ts->statusTone()">{{ $ts->statusLabel() }}</x-status-badge></td>
                         <td class="text-right">
                             <x-icon-btn icon="open_in_new"
                                         :href="route('projects.timesheets.show', [$ts->project, $ts])"

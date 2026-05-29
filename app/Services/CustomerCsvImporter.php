@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Customer;
-use App\Support\Toolkit\{CsvFacade, NumberFacade, StringFacade};
+use App\Support\Toolkit\CsvFacade;
 use CommonToolkit\Enums\CountryCode;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{Auth, DB};
 use Throwable;
@@ -163,7 +164,7 @@ class CustomerCsvImporter {
     private function mapHeaders(array $headerRow): array {
         $out = [];
         foreach ($headerRow as $i => $h) {
-            $key = StringFacade::isNullOrEmpty($h) ? '' : mb_strtolower(trim($h));
+            $key = StringHelper::isNullOrEmpty($h) ? '' : mb_strtolower(trim($h));
             $out[$i] = self::HEADER_MAP[$key] ?? null;
         }
 
@@ -173,7 +174,7 @@ class CustomerCsvImporter {
     private function castValue(string $col, string $val): mixed {
         return match ($col) {
             'billable' => in_array(mb_strtolower($val), ['1', 'ja', 'yes', 'true', 'wahr'], true),
-            'hourly_rate', 'internal_rate' => NumberFacade::parseDecimal($val, CountryCode::Germany),
+            'hourly_rate', 'internal_rate' => trim($val) === '' ? 0.0 : NumberHelper::normalizeDecimal(trim($val), CountryCode::Germany),
             'country', 'currency' => mb_strtoupper($val),
             default => $val,
         };

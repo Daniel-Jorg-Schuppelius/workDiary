@@ -64,9 +64,9 @@
                                         class="{{ $step['done'] ? 'text-success' : 'text-base-content/50' }}" />
                                 <h3 class="font-['Space_Grotesk'] text-base font-semibold text-base-content">{{ $step['title'] }}</h3>
                                 @if ($step['required'])
-                                    <span class="badge badge-sm badge-primary badge-outline">{{ __('onboarding.page.badge_required') }}</span>
+                                    <x-status-badge tone="primary" size="sm" outline>{{ __('onboarding.page.badge_required') }}</x-status-badge>
                                 @else
-                                    <span class="badge badge-sm badge-ghost">{{ __('onboarding.page.badge_recommended') }}</span>
+                                    <x-status-badge tone="ghost" size="sm">{{ __('onboarding.page.badge_recommended') }}</x-status-badge>
                                 @endif
                             </div>
                             @if (! empty($step['description']))

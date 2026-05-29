@@ -15,6 +15,7 @@ use App\Exceptions\ClassificationValidationException;
 use App\Http\Controllers\Controller;
 use App\Models\{Classification, Organization};
 use App\Services\Classification\ClassificationManager;
+use App\Support\Setting;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -23,7 +24,8 @@ use Illuminate\View\View;
 class ClassificationController extends Controller {
     public function __construct(
         private readonly ClassificationManager $manager,
-    ) {}
+    ) {
+    }
 
     public function index(): View {
         Gate::authorize('viewAny', Classification::class);
@@ -155,7 +157,7 @@ class ClassificationController extends Controller {
         Gate::authorize('create', Classification::class);
 
         $request->validate([
-            'file' => ['required', 'file', 'mimetypes:text/csv,text/plain,application/csv,application/vnd.ms-excel', 'max:' . (int) setting('uploads.csv_import_kb', 10240)],
+            'file' => ['required', 'file', 'mimetypes:text/csv,text/plain,application/csv,application/vnd.ms-excel', 'max:' . (int) Setting::get('uploads.csv_import_kb', 10240)],
         ]);
 
         $file = $request->file('file');

@@ -29,7 +29,7 @@
                                @checked(in_array($role->id, $assignedRoles, true)) />
                         <span class="font-mono text-sm">{{ $role->name }}</span>
                         @if ($role->getAttribute(config('permission.column_names.team_foreign_key', 'team_id')) === null)
-                            <span class="badge badge-xs badge-ghost">{{ __('access.badge.global') }}</span>
+                            <x-status-badge tone="ghost" size="xs">{{ __('access.badge.global') }}</x-status-badge>
                         @endif
                     </label>
                 @empty
@@ -65,7 +65,7 @@
             <h3 class="card-title text-base flex items-center gap-2">
                 <x-icon name="lock_open" />
                 {{ __('access.title.effective_permissions') }}
-                <span class="badge badge-ghost badge-sm">{{ $effectivePermissions->count() }}</span>
+                <x-status-badge tone="ghost" size="sm">{{ $effectivePermissions->count() }}</x-status-badge>
             </h3>
             <p class="text-xs text-base-content/60">{{ __('access.hint.effective_permissions') }}</p>
             @if ($effectivePermissions->isEmpty())
@@ -73,7 +73,7 @@
             @else
                 <div class="flex flex-wrap gap-1 max-h-40 overflow-y-auto">
                     @foreach ($effectivePermissions as $permission)
-                        <span class="badge badge-sm badge-ghost font-mono">{{ $permission }}</span>
+                        <x-status-badge tone="ghost" size="sm" class="font-mono">{{ $permission }}</x-status-badge>
                     @endforeach
                 </div>
             @endif

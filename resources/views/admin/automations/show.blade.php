@@ -11,12 +11,12 @@
         <div class="card-body space-y-2">
             <h2 class="card-title">{{ $rule->name }}</h2>
             <div class="flex flex-wrap gap-2 text-sm">
-                <span class="badge badge-ghost">{{ __('Trigger') }}: {{ $rule->trigger_event }}</span>
-                <span class="badge badge-ghost">{{ __('Priorität') }}: {{ $rule->priority }}</span>
+                <x-status-badge tone="ghost">{{ __('Trigger') }}: {{ $rule->trigger_event }}</x-status-badge>
+                <x-status-badge tone="ghost">{{ __('Priorität') }}: {{ $rule->priority }}</x-status-badge>
                 @if ($rule->is_active)
-                    <span class="badge badge-success">{{ __('Aktiv') }}</span>
+                    <x-status-badge tone="success">{{ __('Aktiv') }}</x-status-badge>
                 @else
-                    <span class="badge badge-error">{{ __('Inaktiv') }}</span>
+                    <x-status-badge tone="error">{{ __('Inaktiv') }}</x-status-badge>
                 @endif
             </div>
             <div>

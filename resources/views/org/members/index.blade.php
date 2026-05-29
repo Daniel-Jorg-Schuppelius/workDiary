@@ -39,7 +39,7 @@
                         <td class="text-sm text-base-content/70">{{ $member->email }}</td>
                         <td>
                             @foreach ($member->roles as $role)
-                                <span class="badge badge-sm badge-outline">{{ $role->name }}</span>
+                                <x-status-badge size="sm" outline>{{ $role->name }}</x-status-badge>
                             @endforeach
                         </td>
                         <td class="text-right">

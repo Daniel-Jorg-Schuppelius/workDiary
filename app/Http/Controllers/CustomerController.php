@@ -16,6 +16,7 @@ use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
 use App\Services\{CustomerCsvImporter, CustomerStatsService};
+use App\Support\Setting;
 // HINWEIS: Lexoffice-Push-Logik ist in das Plugin verlagert
 // (App\Plugins\Lexoffice\Http\Controllers\LexofficeCustomerController).
 // Die Imports oben werden nur noch für die Show-View (Anzeige der bisherigen
@@ -48,7 +49,7 @@ class CustomerController extends Controller {
             })
             ->withCount('projects')
             ->orderBy($sort, $dir)
-            ->paginate((int) setting('pagination.customers', 25))
+            ->paginate((int) Setting::get('pagination.customers', 25))
             ->withQueryString();
 
         return view('customers.index', [
@@ -311,7 +312,7 @@ class CustomerController extends Controller {
         }
 
         $request->validate([
-            'file' => ['required', 'file', 'mimetypes:text/csv,text/plain,application/csv,application/vnd.ms-excel', 'max:' . (int) setting('uploads.csv_import_kb', 10240)],
+            'file' => ['required', 'file', 'mimetypes:text/csv,text/plain,application/csv,application/vnd.ms-excel', 'max:' . (int) Setting::get('uploads.csv_import_kb', 10240)],
         ]);
 
         $file = $request->file('file');

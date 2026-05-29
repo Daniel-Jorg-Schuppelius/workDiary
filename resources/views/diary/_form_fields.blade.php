@@ -63,7 +63,7 @@
                 class="select select-bordered w-full @error('user_id') select-error @enderror"
             >
                 @foreach ($assignableUsers as $u)
-                    <option value="{{ $u->sqid }}" @selected((string) old('user_id', sqid(\App\Models\User::class, $defaultUserId)) === $u->sqid)>{{ $u->name }}</option>
+                    <option value="{{ $u->sqid }}" @selected((string) old('user_id', \App\Support\Sqid::encode(\App\Models\User::class, $defaultUserId)) === $u->sqid)>{{ $u->name }}</option>
                 @endforeach
             </select>
             @error('user_id')
@@ -86,7 +86,7 @@
             >
                 <option value="0">{{ __('— ohne Typ —') }}</option>
                 @foreach ($entryTypes as $type)
-                    <option value="{{ $type->sqid }}" @selected((string) old('entry_type_id', sqid(\App\Models\EntryType::class, $defaultEntryTypeId)) === $type->sqid)>
+                    <option value="{{ $type->sqid }}" @selected((string) old('entry_type_id', \App\Support\Sqid::encode(\App\Models\EntryType::class, $defaultEntryTypeId)) === $type->sqid)>
                         {{ $type->label }}
                     </option>
                 @endforeach
@@ -267,7 +267,7 @@
             >
                 <option value="">—</option>
                 @foreach ($customerOptions as $c)
-                    <option value="{{ $c->sqid }}" @selected((string) old('customer_id', sqid(\App\Models\Customer::class, $entry?->customer_id)) === $c->sqid)>
+                    <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $entry?->customer_id)) === $c->sqid)>
                         {{ $c->name }}@if ($c->company) — {{ $c->company }}@endif
                     </option>
                 @endforeach
@@ -284,7 +284,7 @@
             >
                 <option value="">—</option>
                 @foreach ($assignableUsers as $u)
-                    <option value="{{ $u->sqid }}" @selected((string) old('assigned_user_id', sqid(\App\Models\User::class, $entry?->assigned_user_id)) === $u->sqid)>{{ $u->name }}</option>
+                    <option value="{{ $u->sqid }}" @selected((string) old('assigned_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $entry?->assigned_user_id)) === $u->sqid)>{{ $u->name }}</option>
                 @endforeach
             </select>
             @error('assigned_user_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
@@ -409,7 +409,7 @@
             <select id="tour_id" name="tour_id" class="select select-bordered w-full @error('tour_id') select-error @enderror">
                 <option value="">—</option>
                 @foreach ($tourOptions as $t)
-                    <option value="{{ $t->sqid }}" @selected((string) old('tour_id', sqid(\App\Models\Tour::class, $entry?->tour_id)) === $t->sqid)>
+                    <option value="{{ $t->sqid }}" @selected((string) old('tour_id', \App\Support\Sqid::encode(\App\Models\Tour::class, $entry?->tour_id)) === $t->sqid)>
                         {{ optional($t->tour_date)->format('Y-m-d') }} · {{ $t->name ?? '#'.$t->id }}
                     </option>
                 @endforeach

@@ -54,7 +54,7 @@
                             @if ($rule->applies_to_kind)
                                 <span class="badge">{{ $rule->applies_to_kind }}</span>
                             @else
-                                <span class="badge badge-ghost">{{ __('Alle (Fallback)') }}</span>
+                                <x-status-badge tone="ghost">{{ __('Alle (Fallback)') }}</x-status-badge>
                             @endif
                         </td>
                         <td>

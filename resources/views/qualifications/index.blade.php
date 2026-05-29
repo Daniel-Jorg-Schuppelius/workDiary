@@ -38,9 +38,9 @@
                     <td class="text-center">{{ $qual->users_count }}</td>
                     <td class="text-center">
                         @if ($qual->is_active)
-                            <span class="badge badge-success badge-sm">{{ __('Ja') }}</span>
+                            <x-status-badge tone="success" size="sm">{{ __('Ja') }}</x-status-badge>
                         @else
-                            <span class="badge badge-ghost badge-sm">{{ __('Nein') }}</span>
+                            <x-status-badge tone="ghost" size="sm">{{ __('Nein') }}</x-status-badge>
                         @endif
                     </td>
                     <td class="text-right">

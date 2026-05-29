@@ -41,7 +41,7 @@
         <tbody>
             @foreach ($shifts as $s)
                 <tr>
-                    <td><strong>{{ $anonymous ? printable_initials($s->user?->name) : ($s->user?->name ?? '—') }}</strong></td>
+                    <td><strong>{{ $anonymous ? \CommonToolkit\Helper\Data\StringHelper::printableInitials($s->user?->name) : ($s->user?->name ?? '—') }}</strong></td>
                     <td>{{ $s->start_at?->format('d.m.Y H:i') }}</td>
                     <td>{{ $s->end_at?->format('d.m.Y H:i') }}</td>
                     <td>{{ $s->note }}</td>
@@ -73,7 +73,7 @@
         <tbody>
             @foreach ($assignments as $a)
                 <tr>
-                    <td><strong>{{ $anonymous ? printable_initials($a->user?->name) : ($a->user?->name ?? '—') }}</strong></td>
+                    <td><strong>{{ $anonymous ? \CommonToolkit\Helper\Data\StringHelper::printableInitials($a->user?->name) : ($a->user?->name ?? '—') }}</strong></td>
                     <td>{{ $a->start_at?->format('d.m.Y H:i') }}</td>
                     <td>{{ $a->end_at?->format('d.m.Y H:i') }}</td>
                     <td>{{ $a->reason }}</td>

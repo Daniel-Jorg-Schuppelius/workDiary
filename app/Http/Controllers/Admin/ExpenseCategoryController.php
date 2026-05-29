@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveExpenseCategoryRequest;
 use App\Models\ExpenseCategory;
-use App\Support\SortableQuery;
+use App\Support\{Setting, SortableQuery};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -33,7 +33,7 @@ class ExpenseCategoryController extends Controller {
             'expenses' => 'expenses_count',
         ], 'sort', 'asc');
 
-        $categories = $query->paginate((int) setting('pagination.expense_categories', 25))->withQueryString();
+        $categories = $query->paginate((int) Setting::get('pagination.expense_categories', 25))->withQueryString();
 
         return view('admin.expense-categories.index', compact('categories', 'sort', 'dir'));
     }

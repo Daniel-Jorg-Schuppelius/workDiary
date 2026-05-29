@@ -52,7 +52,7 @@
                         <select name="vehicle_id" class="select select-bordered select-sm">
                             <option value="">—</option>
                             @foreach ($vehicles as $v)
-                                <option value="{{ $v->sqid }}" @selected((string) old('vehicle_id', sqid(\App\Models\Vehicle::class, $tour->vehicle_id)) === $v->sqid)>{{ $v->license_plate }} {{ $v->label }}</option>
+                                <option value="{{ $v->sqid }}" @selected((string) old('vehicle_id', \App\Support\Sqid::encode(\App\Models\Vehicle::class, $tour->vehicle_id)) === $v->sqid)>{{ $v->license_plate }} {{ $v->label }}</option>
                             @endforeach
                         </select>
                     </label>
@@ -111,7 +111,7 @@
                                 <input type="number" min="1" name="order_ids[]" value="{{ $s->id }}"
                                        data-position="{{ $s->tour_position }}"
                                        class="hidden">
-                                <span class="badge badge-primary badge-sm">{{ $s->tour_position ?? '?' }}</span>
+                                <x-status-badge tone="primary" size="sm">{{ $s->tour_position ?? '?' }}</x-status-badge>
                                 <div class="flex-1">
                                     <div class="font-medium text-sm">{{ $s->title }}</div>
                                     <div class="text-xs text-base-content/60">{{ $s->customer?->name }} · {{ $s->address_city }}</div>
@@ -179,9 +179,9 @@
                                             <div class="flex-1">
                                                 <div class="flex flex-wrap items-center gap-2 text-sm">
                                                     <span>{{ $a->title ?: \Illuminate\Support\Str::limit((string) $a->content, 50) }}</span>
-                                                    <span class="badge badge-xs badge-outline">{{ $a->modeLabel() }}</span>
+                                                    <x-status-badge size="xs" outline>{{ $a->modeLabel() }}</x-status-badge>
                                                     @if ($a->location_mode === \App\Enums\Diary\LocationMode::Remote)
-                                                        <span class="badge badge-xs badge-ghost">{{ __('Remote') }}</span>
+                                                        <x-status-badge tone="ghost" size="xs">{{ __('Remote') }}</x-status-badge>
                                                     @endif
                                                 </div>
                                                 <div class="text-xs text-base-content/60">

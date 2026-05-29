@@ -80,7 +80,7 @@
                         @auth
                             <div class="mt-4 inline-flex items-center gap-2 rounded-full border border-base-300 bg-base-200 px-3 py-1.5 text-xs uppercase tracking-[0.24em] text-base-content/80">
                                 <span>{{ __('Aktiver Modus') }}</span>
-                                <span class="badge badge-sm {{ $currentMode === 'legacy' ? 'badge-warning' : 'badge-primary' }}">{{ $currentMode === 'legacy' ? __('Legacy') : __('Neu') }}</span>
+                                <x-status-badge size="sm" :tone="$currentMode === 'legacy' ? 'warning' : 'primary'">{{ $currentMode === 'legacy' ? __('Legacy') : __('Neu') }}</x-status-badge>
                             </div>
                         @endauth
                         <div class="mt-5 flex flex-wrap gap-3">
@@ -173,7 +173,7 @@
                                             ])>{{ $entry->statusLabel() }}</span>
                                             <span class="text-sm text-base-content/70">{{ optional($entry->author)->uname ?? __('Unbekannt') }}</span>
                                         </div>
-                                        <p class="mt-3 text-base-content">{{ truncate($entry->inhalt ?? 'Ohne Beschreibung', 180) }}</p>
+                                        <p class="mt-3 text-base-content">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->inhalt ?? 'Ohne Beschreibung', 180) }}</p>
                                         <div class="mt-2 text-sm text-base-content/70">{{ __('Von') }} {{ optional($entry->von)?->format('d.m.Y H:i') ?? __('offen') }} · {{ __('Bis') }} {{ optional($entry->bis)?->format('d.m.Y H:i') ?? __('offen') }}</div>
                                     </article>
                                 @empty
@@ -208,7 +208,7 @@
                                                 ])>{{ $entry->statusLabel() }}</span>
                                                 <span class="text-sm text-base-content/70">{{ optional($entry->author)->uname ?? __('Unbekannt') }}</span>
                                             </div>
-                                            <p class="mt-3 text-lg font-semibold text-base-content">{{ truncate($entry->inhalt ?? 'Ohne Beschreibung', 140) }}</p>
+                                            <p class="mt-3 text-lg font-semibold text-base-content">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->inhalt ?? 'Ohne Beschreibung', 140) }}</p>
                                             <div class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-base-content/70">
                                                 <span>{{ __('Von') }} {{ optional($entry->von)?->format('d.m.Y H:i') ?? __('offen') }}</span>
                                                 <span>{{ __('Bis') }} {{ optional($entry->bis)?->format('d.m.Y H:i') ?? __('offen') }}</span>
@@ -216,7 +216,7 @@
                                             </div>
                                         </div>
                                         <div class="rounded-box border border-base-300 bg-base-200 px-4 py-3 text-sm text-base-content/70 md:max-w-56">
-                                            {{ truncate($entry->antwort ?: 'Noch keine Rückmeldung im Altsystem.', 110) }}
+                                            {{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->antwort ?: 'Noch keine Rückmeldung im Altsystem.', 110) }}
                                         </div>
                                     </article>
                                 @empty
@@ -261,7 +261,7 @@
                         <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
                             <div class="flex items-center justify-between gap-4">
                                 <p class="font-['Space_Grotesk'] text-2xl font-bold text-base-content">{{ __('Team') }}</p>
-                                <span class="badge badge-ghost">{{ $team->count() }} sichtbar</span>
+                                <x-status-badge tone="ghost" size="md">{{ $team->count() }} sichtbar</x-status-badge>
                             </div>
                             <div class="mt-5 space-y-3">
                                 @forelse ($team as $member)

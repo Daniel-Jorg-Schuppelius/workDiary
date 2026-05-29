@@ -11,7 +11,7 @@
 namespace App\Services\Calendar;
 
 use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift, User};
-use App\Support\WeekDay;
+use App\Support\{Setting, WeekDay};
 use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -169,7 +169,7 @@ class WeekViewService {
         $dayStart = $day->startOfDay();
         $dayEnd = $day->addDay()->startOfDay();
 
-        $slotMinutes = (int) setting('ui.calendar.slot_minutes', 30);
+        $slotMinutes = (int) Setting::get('ui.calendar.slot_minutes', 30);
         $effectiveStart = $start->lessThan($dayStart) ? $dayStart : $start;
         $effectiveEnd = $end === null
             ? $effectiveStart->addMinutes($slotMinutes)
@@ -209,7 +209,7 @@ class WeekViewService {
             $items[] = [
                 'entry' => $entry,
                 'startMin' => $start->lessThan($day->startOfDay()) ? 0 : $start->diffInMinutes($day->startOfDay(), true),
-                'endMin' => ($end ?? $start->addMinutes((int) setting('ui.calendar.slot_minutes', 30)))->diffInMinutes($day->startOfDay(), true),
+                'endMin' => ($end ?? $start->addMinutes((int) Setting::get('ui.calendar.slot_minutes', 30)))->diffInMinutes($day->startOfDay(), true),
                 'top' => $p['top'],
                 'height' => $p['height'],
             ];

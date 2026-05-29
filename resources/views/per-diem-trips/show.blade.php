@@ -8,7 +8,7 @@
         <x-slot:toolbar>
             <x-page-toolbar :title="$trip->location . ' · ' . $trip->started_at->format('d.m.Y')">
                 <x-slot:actions>
-                    <span class="badge badge-{{ $trip->status->tone() }}">{{ $trip->status->label() }}</span>
+                    <x-status-badge :tone="$trip->status->tone()">{{ $trip->status->label() }}</x-status-badge>
                     <x-icon-btn icon="picture_as_pdf" tone="ghost" size="sm"
                                 :href="route('per-diem-trips.pdf', $trip)"
                                 show-label>{{ __('PDF') }}</x-icon-btn>
@@ -61,7 +61,7 @@
             <p class="mt-2 text-xs text-base-content/60">
                 {{ $trip->started_at->format('d.m.Y H:i') }} – {{ $trip->ended_at->format('d.m.Y H:i') }}
                 @if ($trip->accommodation_provided)
-                    · <span class="badge badge-ghost badge-xs">{{ __('Übernachtung gestellt') }}</span>
+                    · <x-status-badge tone="ghost" size="xs">{{ __('Übernachtung gestellt') }}</x-status-badge>
                 @endif
             </p>
         </x-card>
@@ -85,7 +85,7 @@
                     @php($fid = 'pd-day-form-' . $day->id)
                     <tr>
                         <td class="whitespace-nowrap">{{ $day->date->format('d.m.Y') }}</td>
-                        <td><span class="badge badge-ghost badge-sm">{{ $day->kind->label() }}</span></td>
+                        <td><x-status-badge tone="ghost" size="sm">{{ $day->kind->label() }}</x-status-badge></td>
                         <td class="text-right whitespace-nowrap">{{ number_format((float) $day->base_amount, 2, ',', '.') }} €</td>
                         <td class="text-center">
                             <input type="hidden" name="meal_breakfast" value="0" form="{{ $fid }}">

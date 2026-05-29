@@ -55,7 +55,7 @@
                 <span>{{ $day['label'] }}</span>
                 @if ($day['isHoliday'])
                     <span class="mt-0.5 max-w-full truncate text-[0.6rem] text-warning" title="{{ $day['holidayName'] }}">
-                        {{ truncate($day['holidayName'], 14) }}
+                        {{ \CommonToolkit\Helper\Data\StringHelper::truncate($day['holidayName'], 14) }}
                     </span>
                 @endif
             </div>
@@ -69,7 +69,7 @@
 
             {{-- User label --}}
             <div class="sticky left-0 z-10 flex w-36 shrink-0 items-center border-r border-base-300 bg-base-100 px-3 py-2 text-sm font-medium">
-                <span class="truncate" title="{{ $rowUser->name }}">{{ truncate($rowUser->name, 18) }}</span>
+                <span class="truncate" title="{{ $rowUser->name }}">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($rowUser->name, 18) }}</span>
             </div>
 
             {{-- Day cells --}}

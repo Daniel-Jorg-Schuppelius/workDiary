@@ -56,15 +56,15 @@
                         <td>
                             <div class="flex flex-wrap gap-1">
                                 @foreach (($cat->reminder_offsets ?? []) as $off)
-                                    <span class="badge badge-ghost badge-sm font-mono">{{ $off }}</span>
+                                    <x-status-badge tone="ghost" size="sm" class="font-mono">{{ $off }}</x-status-badge>
                                 @endforeach
                             </div>
                         </td>
                         <td>
                             @if ($cat->is_active)
-                                <span class="badge badge-success badge-sm">{{ __('Aktiv') }}</span>
+                                <x-status-badge tone="success" size="sm">{{ __('Aktiv') }}</x-status-badge>
                             @else
-                                <span class="badge badge-ghost badge-sm">{{ __('Inaktiv') }}</span>
+                                <x-status-badge tone="ghost" size="sm">{{ __('Inaktiv') }}</x-status-badge>
                             @endif
                         </td>
                         <td class="text-right whitespace-nowrap">

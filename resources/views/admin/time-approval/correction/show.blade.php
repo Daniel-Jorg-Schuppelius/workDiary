@@ -20,7 +20,7 @@
         <div class="card bg-base-200">
             <div class="card-body space-y-2">
                 <div class="flex items-center gap-3 flex-wrap">
-                    <span class="badge badge-{{ $request->status->tone() }}">{{ $request->status->label() }}</span>
+                    <x-status-badge :tone="$request->status->tone()" size="md">{{ $request->status->label() }}</x-status-badge>
                     <span class="text-sm text-base-content/70">
                         {{ __('Antragsteller:in') }}: {{ $request->requestedBy?->name }}
                     </span>

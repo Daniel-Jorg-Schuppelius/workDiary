@@ -12,7 +12,7 @@
                 <div class="flex items-baseline justify-between gap-2">
                     <h3 class="text-sm font-semibold text-base-content/80">
                         {{ __('Lohnfortzahlung :name', ['name' => $sicknessStatusUser->name]) }}
-                        <span class="badge badge-sm badge-ghost ml-1">§ 3 EntgFG</span>
+                        <x-status-badge tone="ghost" size="sm" class="ml-1">§ 3 EntgFG</x-status-badge>
                     </h3>
                     <span class="text-xs text-base-content/60">
                         {{ __(':weeks Wochen Anspruch', ['weeks' => $entWeeks]) }}
@@ -83,9 +83,9 @@
                 </td>
                 <td class="tabular-nums">{{ $days }}</td>
                 <td>
-                    <span class="badge badge-sm @if ($s->kind === \App\Enums\Sickness\SickLeaveKind::FollowUp) badge-info @else badge-ghost @endif">
+                    <x-status-badge size="sm" :tone="$s->kind === \App\Enums\Sickness\SickLeaveKind::FollowUp ? 'info' : 'ghost'">
                         {{ $s->kindLabel() }}
-                    </span>
+                    </x-status-badge>
                 </td>
                 <td>
                     @if ($s->attachments->isNotEmpty())
@@ -104,9 +104,9 @@
                 </td>
                 <td>
                     @if ($s->isCancelled())
-                        <span class="badge badge-sm badge-error">{{ __('Storniert') }}</span>
+                        <x-status-badge tone="error" size="sm">{{ __('Storniert') }}</x-status-badge>
                     @else
-                        <span class="badge badge-sm badge-success">{{ __('Gemeldet') }}</span>
+                        <x-status-badge tone="success" size="sm">{{ __('Gemeldet') }}</x-status-badge>
                     @endif
                     @if ($s->kasse_notified_at)
                         <span class="tooltip tooltip-right ml-1" data-tip="{{ __('Krankenkasse informiert am :date', ['date' => $s->kasse_notified_at->format('d.m.Y')]) }}">

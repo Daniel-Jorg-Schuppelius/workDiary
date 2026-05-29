@@ -35,14 +35,14 @@
                 <td><code class="text-xs">{{ $rule->trigger_event }}</code></td>
                 <td class="text-xs">
                     @foreach ((array) $rule->actions as $a)
-                        <span class="badge badge-ghost badge-sm">{{ $a['type'] ?? '?' }}</span>
+                        <x-status-badge tone="ghost" size="sm">{{ $a['type'] ?? '?' }}</x-status-badge>
                     @endforeach
                 </td>
                 <td class="text-center">
                     @if ($rule->is_active)
-                        <span class="badge badge-success badge-sm">{{ __('Ja') }}</span>
+                        <x-status-badge tone="success" size="sm">{{ __('Ja') }}</x-status-badge>
                     @else
-                        <span class="badge badge-ghost badge-sm">{{ __('Nein') }}</span>
+                        <x-status-badge tone="ghost" size="sm">{{ __('Nein') }}</x-status-badge>
                     @endif
                 </td>
                 <td class="text-right">

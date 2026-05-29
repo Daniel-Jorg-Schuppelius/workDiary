@@ -14,6 +14,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Models\{Attendance, Project, TimeEntry, User};
 use App\Services\Reporting\WorkBalanceCalculator;
+use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -217,7 +218,7 @@ class WorkBalanceReportTest extends TestCase {
 
         $this->actingAs($admin);
         $response = $this->get(route('reports.work-balance', [
-            'user' => sqid(User::class, $other->id),
+            'user' => Sqid::encode(User::class, $other->id),
             'from' => '2026-05-01',
             'to' => '2026-05-31',
         ]));
@@ -231,14 +232,14 @@ class WorkBalanceReportTest extends TestCase {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
 
         $this->actingAs($this->user); // regular user
-        $response = $this->get(route('reports.work-balance', ['user' => sqid(User::class, $other->id)]));
+        $response = $this->get(route('reports.work-balance', ['user' => Sqid::encode(User::class, $other->id)]));
 
         $response->assertForbidden();
     }
 
     public function test_non_admin_passing_own_user_id_is_allowed(): void {
         $this->actingAs($this->user);
-        $response = $this->get(route('reports.work-balance', ['user' => sqid(User::class, $this->user->id)]));
+        $response = $this->get(route('reports.work-balance', ['user' => Sqid::encode(User::class, $this->user->id)]));
 
         $response->assertOk();
         $this->assertSame((int) $this->user->id, (int) $response->viewData('user')->id);

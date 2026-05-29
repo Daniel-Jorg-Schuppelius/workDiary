@@ -15,13 +15,15 @@ use App\Enums\User\Permission;
 use App\Enums\Vacation\VacationStatus;
 use App\Models\{Attachment, Comment, DiaryEntry, EmergencyAssignment, Expense, OnCallShift, OpenIssue, PerDiemTrip, ScheduledShift, User, Vacation};
 use App\Services\Onboarding\OnboardingChecklistResolver;
+use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
 class DashboardService {
     public function __construct(
         private readonly OnboardingChecklistResolver $onboardingResolver,
-    ) {}
+    ) {
+    }
 
     /** @return array<string, mixed> */
     public function summarize(User $user, ?CarbonImmutable $now = null): array {
@@ -95,7 +97,7 @@ class DashboardService {
             ->orderBy('start_at')
             ->get();
 
-        $recentLimit = (int) setting('ui.dashboard.recent_limit', 5);
+        $recentLimit = (int) Setting::get('ui.dashboard.recent_limit', 5);
 
         $recentEntries = DiaryEntry::query()
             ->where('user_id', $user->id)
