@@ -52,12 +52,25 @@ class EnsureNewSystemAccess {
 
         // Harte Modus-Trennung: ist der User berechtigt für beide Bereiche,
         // aber gerade im Legacy-Modus, darf er KEINE neue-Bereich-Seite per
-        // Direkt-URL öffnen. Statt 403 redirecten wir auf die Legacy-Startseite
-        // mit Hinweis, damit der Tab-Wechsel im UI bewusst erfolgt.
+        // Direkt-URL öffnen. Die Trennung greift rein anhand des Modus.
+        // Default ist 'legacy' – identisch zu Layout (app.blade.php) und
+        // HomeController, damit ein noch nicht gesetzter work_mode nicht
+        // versehentlich als "neuer Modus" interpretiert wird.
         $legacyConfigured = filled(config('database.connections.legacy.database'));
-        $workMode = $request->hasSession() ? $request->session()->get('work_mode') : null;
+        $workMode = $request->hasSession() ? $request->session()->get('work_mode', 'legacy') : null;
 
-        if ($workMode === 'legacy' && $user->canAccessLegacy() && $legacyConfigured) {
+        if ($workMode === 'legacy' && $user->canAccessLegacy()) {
+            // Ohne konfigurierte Legacy-DB existiert kein Legacy-Bereich, in
+            // den wir umleiten könnten – der Legacy-Modus ist dann ein
+            // ungültiger Zustand. Wir normalisieren ihn auf "new" und lassen
+            // den Request durch (ein Redirect würde hier endlos schleifen,
+            // da die Startseite new-fähige User wieder ins neue System leitet).
+            if (! $legacyConfigured) {
+                $request->session()->put('work_mode', 'new');
+
+                return $next($request);
+            }
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'message' => __('Sie sind aktuell im Legacy-Modus. Bitte wechseln Sie zuerst in den neuen Modus.'),

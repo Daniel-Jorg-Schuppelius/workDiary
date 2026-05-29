@@ -46,16 +46,23 @@ Route::post('/locale/{locale}', [LocaleController::class, 'switch'])->name('loca
 Route::get('calendar/public.ics', [IcsFeedController::class, 'public'])->name('events.ics.public');
 
 // Tokenisierter persönlicher Schedule-Feed (Urlaube + Schichten).
+// Throttle als Brute-Force-/Abuse-Schutz (Feed wird von Kalender-Clients gepollt).
 Route::get('calendar/feed/{token}.ics', [IcsFeedController::class, 'personalSchedule'])
+    ->middleware('throttle:120,1')
     ->name('calendar.feed.personal');
 
 // Öffentlicher Stundenzettel-Sign-Link (Magic-Token)
-Route::get('sign/timesheet/{token}', [PublicSignatureController::class, 'show'])->name('timesheets.public-sign');
-Route::post('sign/timesheet/{token}', [PublicSignatureController::class, 'store'])->name('timesheets.public-sign.submit');
+Route::get('sign/timesheet/{token}', [PublicSignatureController::class, 'show'])
+    ->middleware('throttle:30,1')
+    ->name('timesheets.public-sign');
+Route::post('sign/timesheet/{token}', [PublicSignatureController::class, 'store'])
+    ->middleware('throttle:6,1')
+    ->name('timesheets.public-sign.submit');
 Route::get('sign/timesheet/thanks', [PublicSignatureController::class, 'thanks'])->name('timesheets.public-thanks');
 
 // Öffentlicher Protokoll-Signaturlink (MVP-022 §3.3)
 Route::get('sign/protocol/{token}', [PublicProtocolSignatureController::class, 'show'])
+    ->middleware('throttle:30,1')
     ->name('protocols.public-sign');
 Route::post('sign/protocol/{token}', [PublicProtocolSignatureController::class, 'store'])
     ->middleware('throttle:6,1')
