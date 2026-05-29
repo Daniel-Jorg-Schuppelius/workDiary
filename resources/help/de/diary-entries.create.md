@@ -8,7 +8,7 @@ related:
     - reports.entry-type-analysis
 ---
 
-Ein neuer Tagebuch-/Auftragseintrag entsteht über **„Neuer Eintrag"** in
+Ein neuer Auftragseintrag entsteht über **„Neuer Eintrag"** in
 der Topbar oder per Schnellaktion auf dem Dashboard.
 
 Erfasse beim Anlegen:

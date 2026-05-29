@@ -27,6 +27,44 @@ window.facilityPicker = function (cfg) {
             // Initial konsistent halten: falls die Initialwerte nicht mehr in die
             // gefilterte Liste passen, leeren wir die nachgelagerten Selects.
             this.syncFromCurrent();
+            this.autoSelectSingles();
+        },
+
+        // Bleibt auf einer Ebene nach der Filterung genau eine Option übrig,
+        // wird sie automatisch gewählt — kaskadierend von oben nach unten,
+        // sodass eindeutige Ketten (z. B. Kunde mit nur einem Standort/Gebäude)
+        // direkt durchgereicht werden. Nur greifen, wenn die übergeordnete Ebene
+        // gesetzt ist (echte Eingrenzung), damit nichts „voreilig" gewählt wird.
+        autoSelectSingles() {
+            if (
+                this.customer_id != null &&
+                this.site_id == null &&
+                this.filteredSites.length === 1
+            ) {
+                this.site_id = this.filteredSites[0].id;
+            }
+            if (
+                this.site_id != null &&
+                this.building_id == null &&
+                this.filteredBuildings.length === 1
+            ) {
+                this.building_id = this.filteredBuildings[0].id;
+            }
+            if (
+                this.building_id != null &&
+                this.floor_id == null &&
+                this.filteredFloors.length === 1
+            ) {
+                this.floor_id = this.filteredFloors[0].id;
+            }
+            if (
+                this.withRoom &&
+                this.floor_id != null &&
+                this.room_id == null &&
+                this.filteredRooms.length === 1
+            ) {
+                this.room_id = this.filteredRooms[0].id;
+            }
         },
 
         get filteredSites() {
@@ -131,6 +169,7 @@ window.facilityPicker = function (cfg) {
                     this.room_id = null;
                 }
             }
+            this.autoSelectSingles();
         },
 
         onSiteChange() {
@@ -144,6 +183,7 @@ window.facilityPicker = function (cfg) {
                     this.room_id = null;
                 }
             }
+            this.autoSelectSingles();
         },
 
         onBuildingChange() {
@@ -156,6 +196,7 @@ window.facilityPicker = function (cfg) {
                     this.room_id = null;
                 }
             }
+            this.autoSelectSingles();
         },
 
         onFloorChange() {
@@ -165,6 +206,7 @@ window.facilityPicker = function (cfg) {
                     this.room_id = null;
                 }
             }
+            this.autoSelectSingles();
         },
     };
 };

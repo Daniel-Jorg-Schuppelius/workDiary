@@ -15,7 +15,7 @@
 <x-page-shell>
     {{-- Toolbar --}}
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Offene Tagebuch-Einträge nach Status visualisieren.')">
+        <x-page-toolbar :subtitle="__('Offene Auftragsbuch-Einträge nach Status visualisieren.')">
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger

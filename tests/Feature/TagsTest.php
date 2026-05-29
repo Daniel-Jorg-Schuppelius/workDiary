@@ -90,7 +90,7 @@ class TagsTest extends TestCase {
         $matching->tags()->attach($tag);
 
         $this->actingAs($user)
-            ->get(route('diary.index', ['tag' => $tag->id]))
+            ->get(route('diary.index', ['tag' => $tag->sqid]))
             ->assertOk()
             ->assertSee('Treffer Tag')
             ->assertDontSee('Ohne Tag');

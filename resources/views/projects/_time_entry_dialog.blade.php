@@ -109,7 +109,7 @@
                     <select name="task_id" class="select select-bordered w-full">
                         <option value="">{{ __('Keine Aufgabe') }}</option>
                         @foreach ($tasks as $t)
-                            <option value="{{ $t->id }}" @selected(old('task_id', $entry?->task_id) == $t->id)>{{ $t->title }}</option>
+                            <option value="{{ $t->sqid }}" @selected((string) old('task_id', sqid(\App\Models\Task::class, $entry?->task_id)) === $t->sqid)>{{ $t->title }}</option>
                         @endforeach
                     </select>
                 </div>

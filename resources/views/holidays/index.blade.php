@@ -51,14 +51,14 @@
                     <td>
                         @if ($isCustom)
                             @if (($row['custom']->recurrence_type ?? 'fixed') === 'relative')
-                                <span class="badge badge-sm badge-warning">{{ $row['custom']->recurrenceLabel() }}</span>
+                                <x-status-badge tone="warning">{{ $row['custom']->recurrenceLabel() }}</x-status-badge>
                             @elseif ($row['custom']->is_recurring)
-                                <span class="badge badge-sm badge-info">{{ __('Eigen · jährlich') }}</span>
+                                <x-status-badge tone="info">{{ __('Eigen · jährlich') }}</x-status-badge>
                             @else
-                                <span class="badge badge-sm badge-info">{{ __('Eigen') }}</span>
+                                <x-status-badge tone="info">{{ __('Eigen') }}</x-status-badge>
                             @endif
                         @else
-                            <span class="badge badge-sm badge-ghost">{{ __('Standard') }}</span>
+                            <x-status-badge tone="ghost">{{ __('Standard') }}</x-status-badge>
                         @endif
                     </td>
                     <td class="whitespace-nowrap text-right">
@@ -105,11 +105,11 @@
                     <td>{{ $holiday->name }}</td>
                     <td>
                         @if (($holiday->recurrence_type ?? 'fixed') === 'relative')
-                            <span class="badge badge-sm badge-warning" title="{{ $holiday->recurrenceLabel() }}">{{ $holiday->recurrenceLabel() }}</span>
+                            <x-status-badge tone="warning" title="{{ $holiday->recurrenceLabel() }}">{{ $holiday->recurrenceLabel() }}</x-status-badge>
                         @elseif ($holiday->is_recurring)
-                            <span class="badge badge-sm badge-info">{{ __('Jährl.') }} · {{ optional($holiday->date)->format('d.m.') }}</span>
+                            <x-status-badge tone="info">{{ __('Jährl.') }} · {{ optional($holiday->date)->format('d.m.') }}</x-status-badge>
                         @else
-                            <span class="badge badge-sm">{{ __('Einmalig') }}</span>
+                            <x-status-badge tone="ghost">{{ __('Einmalig') }}</x-status-badge>
                         @endif
                     </td>
                     <td class="text-right whitespace-nowrap">

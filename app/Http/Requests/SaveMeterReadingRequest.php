@@ -10,17 +10,9 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Requests\Concerns\DecodesSqidInputs;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SaveMeterReadingRequest extends FormRequest {
-    use DecodesSqidInputs;
-
-    /** @var array<string, class-string> */
-    protected array $sqidFields = [
-        'asset_id' => \App\Models\Asset::class,
-    ];
-
     public function authorize(): bool {
         return true;
     }

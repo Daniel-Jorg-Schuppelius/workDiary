@@ -55,7 +55,7 @@ class ArchiveController extends Controller {
 
         $result = $service->run();
 
-        return back()->with('success', __('Archivierung abgeschlossen: :total Datensätze (Tagebuch :diary, Bereitschaft :shifts, Notdienst :assignments).', [
+        return back()->with('success', __('Archivierung abgeschlossen: :total Datensätze (Auftragsbuch :diary, Bereitschaft :shifts, Notdienst :assignments).', [
             'total' => $result['total'],
             'diary' => $result['diary'],
             'shifts' => $result['shifts'],

@@ -10,7 +10,7 @@
                 <span class="material-symbols-outlined">menu_book</span>
                 <span class="text-2xl font-semibold">{{ $stats['diary'] }}</span>
             </div>
-            <div class="mt-2 text-sm">{{ __('Tagebuch-Einträge') }}</div>
+            <div class="mt-2 text-sm">{{ __('Auftragsbuch-Einträge') }}</div>
         </a>
         <a href="{{ route('customer.time-entries.index') }}" class="bg-base-100 border border-base-300 rounded p-4 hover:border-primary">
             <div class="flex items-center justify-between">

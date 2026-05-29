@@ -8,7 +8,7 @@ related:
     - protocols.create
 ---
 
-Tippe auf den Auftragstitel in der Tagebuch-Liste, um die Detailansicht
+Tippe auf den Auftragstitel in der Auftragsbuch-Liste, um die Detailansicht
 (Fallakte) zu öffnen. Direkt-Bearbeitung erfolgt über die einzelnen
 Sektionen (Kommentare, Anhänge, Zeiten, Protokolle).
 

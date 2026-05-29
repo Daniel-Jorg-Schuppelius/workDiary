@@ -292,8 +292,8 @@ class TourController extends Controller {
             return null;
         }
 
-        $requestedId = (int) $raw;
-        if ($requestedId === (int) $authUser->id) {
+        $requestedId = sqid_decode(User::class, $raw);
+        if ($requestedId === null || $requestedId === (int) $authUser->id) {
             return $authUser;
         }
         if (! $authUser->isAdmin()) {

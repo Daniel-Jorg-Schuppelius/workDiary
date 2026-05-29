@@ -11,20 +11,11 @@
 namespace App\Http\Requests;
 
 use App\Enums\Asset\{AssetClass, AssetStatus};
-use App\Http\Requests\Concerns\DecodesSqidInputs;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
 class SaveAssetRequest extends FormRequest {
-    use DecodesSqidInputs;
-
-    /** @var array<string, class-string> */
-    protected array $sqidFields = [
-        'customer_id' => \App\Models\Customer::class,
-        'room_id' => \App\Models\Room::class,
-    ];
-
     public function authorize(): bool {
         return true;
     }

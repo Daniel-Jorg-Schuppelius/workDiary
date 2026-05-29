@@ -38,7 +38,7 @@
             <select name="shift_type_id" class="select select-bordered w-full">
                 <option value="">—</option>
                 @foreach ($types as $t)
-                    <option value="{{ $t->id }}" @selected(old('shift_type_id', $shift->shift_type_id) == $t->id)>{{ $t->name }} ({{ $t->abbreviation }})</option>
+                    <option value="{{ $t->sqid }}" @selected((string) old('shift_type_id', sqid(\App\Models\ShiftType::class, $shift->shift_type_id)) === $t->sqid)>{{ $t->name }} ({{ $t->abbreviation }})</option>
                 @endforeach
             </select>
         </div>

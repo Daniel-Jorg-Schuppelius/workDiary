@@ -46,7 +46,7 @@
             <select name="entry_type_id" class="select select-bordered w-full">
                 <option value="">—</option>
                 @foreach ($entryTypes as $t)
-                    <option value="{{ $t->id }}" @selected((int) old('entry_type_id', $rule->entry_type_id) === (int) $t->id)>{{ $t->label }}</option>
+                    <option value="{{ $t->sqid }}" @selected((string) old('entry_type_id', sqid(\App\Models\EntryType::class, $rule->entry_type_id)) === $t->sqid)>{{ $t->label }}</option>
                 @endforeach
             </select>
         </div>
@@ -87,7 +87,7 @@
             <select name="customer_id" class="select select-bordered w-full">
                 <option value="">—</option>
                 @foreach ($customers as $c)
-                    <option value="{{ $c->id }}" @selected((int) old('customer_id', $rule->customer_id) === (int) $c->id)>{{ $c->name }}</option>
+                    <option value="{{ $c->sqid }}" @selected((string) old('customer_id', sqid(\App\Models\Customer::class, $rule->customer_id)) === $c->sqid)>{{ $c->name }}</option>
                 @endforeach
             </select>
         </div>

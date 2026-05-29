@@ -25,7 +25,7 @@
         </x-slot:actions>
     </x-page-toolbar>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         @if ($issues->isEmpty())
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">error_outline</span>' :title="__('Keine offenen Punkte für diesen Drilldown gefunden.')" />
         @else
@@ -44,8 +44,8 @@
                     <tr>
                         <td>#{{ $issue->subject_id }}</td>
                         <td class="font-medium">{{ $issue->title }}</td>
-                        <td><span class="badge badge-sm badge-outline">{{ $issue->status->label() }}</span></td>
-                        <td><span class="badge badge-sm badge-outline">{{ $issue->severity->label() }}</span></td>
+                        <td><x-status-badge tone="ghost" outline>{{ $issue->status->label() }}</x-status-badge></td>
+                        <td><x-status-badge tone="ghost" outline>{{ $issue->severity->label() }}</x-status-badge></td>
                         <td>{{ $issue->due_at?->format('d.m.Y') ?? '—' }}</td>
                         <td>{{ $issue->assignee?->name ?? '—' }}</td>
                     </tr>
@@ -56,6 +56,6 @@
                 <div class="mt-4">{{ $issues->links('pagination::simple-tailwind') }}</div>
             @endif
         @endif
-    </div>
+    </x-card>
 </x-page-shell>
 @endsection

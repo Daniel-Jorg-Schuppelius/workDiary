@@ -435,6 +435,76 @@ document.addEventListener("click", (event) => {
         bindRangeLinks(document);
     }
 
+    // Abhängige Dropdowns: ein "Kind"-Select (z. B. Projekt) mit
+    // `data-depends-on="<name des Eltern-Selects>"` (z. B. "customer_id") wird
+    // nach dem Eltern-Wert (Kunde) gefiltert. Jede Kind-<option> trägt
+    // `data-parent="<eltern-wert>"` (z. B. die customer_id des Projekts).
+    //  - Eltern-Wechsel  → Kind-Optionen filtern; bleibt genau eine übrig, wird
+    //                      sie automatisch gewählt; ungültige Auswahl wird geleert.
+    //  - Kind-Wechsel    → setzt den (eindeutigen) Eltern-Wert aus data-parent.
+    // Leeres data-parent = "passt zu jedem Elternwert" (z. B. Org-Projekt).
+    const bindDependentSelects = (root) => {
+        if (!root) return;
+        root.querySelectorAll("select[data-depends-on]").forEach((child) => {
+            if (child.dataset.dependentBound === "1") return;
+            const scope = child.closest("form") || root;
+            const parent = scope.querySelector(
+                `select[name="${child.dataset.dependsOn}"]`,
+            );
+            if (!parent) return;
+            child.dataset.dependentBound = "1";
+
+            const apply = (autoSelectSingle) => {
+                const pv = parent.value;
+                const visible = [];
+                child.querySelectorAll("option").forEach((opt) => {
+                    if (opt.value === "") {
+                        opt.hidden = false;
+                        opt.disabled = false;
+                        return;
+                    }
+                    const ov = opt.dataset.parent ?? "";
+                    const match = pv === "" || ov === "" || ov === pv;
+                    opt.hidden = !match;
+                    opt.disabled = !match;
+                    if (match) visible.push(opt);
+                });
+                const sel = child.selectedOptions[0];
+                if (child.value && sel && sel.hidden) {
+                    child.value = "";
+                }
+                if (
+                    autoSelectSingle &&
+                    !child.value &&
+                    pv !== "" &&
+                    visible.length === 1
+                ) {
+                    child.value = visible[0].value;
+                }
+            };
+
+            parent.addEventListener("change", () => apply(true));
+
+            child.addEventListener("change", () => {
+                const opt = child.selectedOptions[0];
+                const ov = opt && opt.dataset ? opt.dataset.parent : "";
+                if (ov && parent.value !== ov) {
+                    parent.value = ov;
+                    parent.dispatchEvent(new Event("change", { bubbles: true }));
+                }
+            });
+
+            apply(true);
+        });
+    };
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () =>
+            bindDependentSelects(document),
+        );
+    } else {
+        bindDependentSelects(document);
+    }
+
     const initDynamicFields = (root) => {
         if (!root) return;
         if (typeof window.__initFlatpickr === "function") {
@@ -447,6 +517,7 @@ document.addEventListener("click", (event) => {
         root.querySelectorAll("select[data-recurrence-select]").forEach(
             applyRecurrenceToggle,
         );
+        bindDependentSelects(root);
         // Inline-<script>-Tags aus AJAX-Inhalten führt der Browser nicht aus.
         // Stattdessen binden wir hier die Listener für bekannte Form-Bausteine.
         bindRangeLinks(root);

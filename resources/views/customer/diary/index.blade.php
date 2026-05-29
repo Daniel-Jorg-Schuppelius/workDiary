@@ -1,7 +1,7 @@
 @extends('customer.layout')
 
 @section('content')
-    <h1 class="text-2xl font-semibold mb-4">{{ __('Tagebuch') }}</h1>
+    <h1 class="text-2xl font-semibold mb-4">{{ __('Auftragsbuch') }}</h1>
     @if ($entries->isEmpty())
         <div class="bg-base-100 border border-base-300 rounded p-6 text-center text-base-content/60">
             {{ __('Keine Einträge vorhanden.') }}

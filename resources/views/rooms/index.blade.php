@@ -130,15 +130,15 @@
                             <td>
                                 <div class="flex flex-wrap gap-1">
                                     @foreach (($room->equipment ?? []) as $eq)
-                                        <span class="badge badge-ghost badge-sm">{{ __("values.$eq") }}</span>
+                                        <x-status-badge tone="ghost">{{ __("values.$eq") }}</x-status-badge>
                                     @endforeach
                                 </div>
                             </td>
                             <td>
                                 @if ($room->is_active)
-                                    <span class="badge badge-success badge-sm">{{ __('Aktiv') }}</span>
+                                    <x-status-badge tone="success">{{ __('Aktiv') }}</x-status-badge>
                                 @else
-                                    <span class="badge badge-ghost badge-sm">{{ __('Inaktiv') }}</span>
+                                    <x-status-badge tone="ghost">{{ __('Inaktiv') }}</x-status-badge>
                                 @endif
                             </td>
                             <td class="text-right whitespace-nowrap">

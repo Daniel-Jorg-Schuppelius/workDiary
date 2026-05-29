@@ -35,7 +35,7 @@
         <select name="activity_category_id" class="select select-bordered w-full">
             <option value="">— {{ __('keine Kategorie') }} —</option>
             @foreach ($categories as $c)
-                <option value="{{ $c->id }}" @selected(old('activity_category_id', $entry?->activity_category_id) == $c->id)>
+                <option value="{{ $c->sqid }}" @selected((string) old('activity_category_id', sqid(\App\Models\ActivityCategory::class, $entry?->activity_category_id)) === $c->sqid)>
                     {{ $c->label }} ({{ $c->activity_type->label() }})
                 </option>
             @endforeach

@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', __('Tagebuch') . ' — ' . config('app.name', 'WorkDiary'))
+@section('title', __('Auftragsbuch') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Alle Einträge'))
 
 @section('content')
 <x-page-shell overflow="clip">
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Tagebuch-Einträge erfassen, kommentieren und auswerten.')" />
+        <x-page-toolbar :subtitle="__('Auftragsbuch-Einträge erfassen, kommentieren und auswerten.')" />
     </x-slot:toolbar>
     {{-- Filter-Leiste --}}
     <x-filter-bar :action="route('diary.index')" :reset="array_filter($filters) ? route('diary.index') : null">
@@ -111,15 +111,15 @@
                             'badge-ghost' => $entry->statusTone() === 'neutral',
                         ])>{{ $entry->statusLabel() }}</span>
                         @if ($entry->mode && $entry->mode !== \App\Enums\Diary\Mode::Fixed)
-                            <span class="badge badge-sm badge-outline">{{ $entry->modeLabel() }}</span>
+                            <x-status-badge tone="ghost" outline>{{ $entry->modeLabel() }}</x-status-badge>
                         @endif
                         @if ($entry->location_mode === \App\Enums\Diary\LocationMode::Remote)
-                            <span class="badge badge-sm badge-outline">{{ __('Remote') }}</span>
+                            <x-status-badge tone="ghost" outline>{{ __('Remote') }}</x-status-badge>
                         @elseif ($entry->location_mode === \App\Enums\Diary\LocationMode::Hybrid)
-                            <span class="badge badge-sm badge-outline">{{ __('Hybrid') }}</span>
+                            <x-status-badge tone="ghost" outline>{{ __('Hybrid') }}</x-status-badge>
                         @endif
                         @if ($entry->is_archived)
-                            <span class="badge badge-sm badge-neutral">{{ __('Archiviert') }}</span>
+                            <x-status-badge tone="neutral">{{ __('Archiviert') }}</x-status-badge>
                         @endif
                         <span class="text-sm text-base-content/70">{{ optional($entry->user)->name ?? '—' }}</span>
                     </div>

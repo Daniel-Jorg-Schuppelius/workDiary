@@ -37,15 +37,15 @@
                 @forelse ($tasks as $task)
                     <tr class="hover">
                         <td class="font-semibold">{{ $task->title }}</td>
-                        <td><span class="badge badge-sm badge-{{ $task->statusTone() }}">{{ $task->statusLabel() }}</span></td>
-                        <td><span class="badge badge-sm badge-{{ $task->priorityTone() }}">{{ $task->priorityLabel() }}</span></td>
+                        <td><x-status-badge :tone="$task->statusTone()">{{ $task->statusLabel() }}</x-status-badge></td>
+                        <td><x-status-badge :tone="$task->priorityTone()">{{ $task->priorityLabel() }}</x-status-badge></td>
                         <td class="text-right tabular-nums">{{ $task->hourly_rate ?? '–' }}</td>
                         <td class="text-right tabular-nums">{{ $task->time_budget ?? '–' }}</td>
                         <td class="text-center">
                             @if ($task->billable)
-                                <span class="badge badge-sm badge-info">{{ __('Ja') }}</span>
+                                <x-status-badge tone="info">{{ __('Ja') }}</x-status-badge>
                             @else
-                                <span class="badge badge-sm badge-ghost">{{ __('Nein') }}</span>
+                                <x-status-badge tone="ghost">{{ __('Nein') }}</x-status-badge>
                             @endif
                         </td>
                         <td class="text-right">

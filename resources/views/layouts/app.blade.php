@@ -442,7 +442,7 @@
                             <span class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary transition group-hover:opacity-80 shrink-0">{{ $_brandName }}</span>
                         @endif
                         <span class="text-base-content/40">/</span>
-                        <span class="font-['Space_Grotesk'] font-semibold text-base-content truncate">@yield('nav-title', __('Tagebuch'))</span>
+                        <span class="font-['Space_Grotesk'] font-semibold text-base-content truncate">@yield('nav-title', __('Auftragsbuch'))</span>
                     </a>
                 </div>
                 @if ($_useGrid)

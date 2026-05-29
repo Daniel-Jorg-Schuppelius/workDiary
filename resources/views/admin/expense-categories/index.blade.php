@@ -58,16 +58,16 @@
                 <td class="text-right tabular-nums">{{ number_format((float) $cat->default_tax_rate, 2, ',', '.') }} %</td>
                 <td>
                     <div class="flex flex-wrap gap-1">
-                        @if ($cat->default_billable) <span class="badge badge-xs badge-info">{{ __('Berechenbar') }}</span> @endif
-                        @if ($cat->requires_receipt) <span class="badge badge-xs badge-warning">{{ __('Belegpflicht') }}</span> @endif
+                        @if ($cat->default_billable) <x-status-badge size="xs" tone="info">{{ __('Berechenbar') }}</x-status-badge> @endif
+                        @if ($cat->requires_receipt) <x-status-badge size="xs" tone="warning">{{ __('Belegpflicht') }}</x-status-badge> @endif
                     </div>
                 </td>
                 <td class="text-center">{{ $cat->expenses_count ?? 0 }}</td>
                 <td class="text-center">
                     @if ($cat->is_active)
-                        <span class="badge badge-success badge-sm">{{ __('Ja') }}</span>
+                        <x-status-badge tone="success">{{ __('Ja') }}</x-status-badge>
                     @else
-                        <span class="badge badge-error badge-sm">{{ __('Nein') }}</span>
+                        <x-status-badge tone="error">{{ __('Nein') }}</x-status-badge>
                     @endif
                 </td>
                 <td class="text-right">

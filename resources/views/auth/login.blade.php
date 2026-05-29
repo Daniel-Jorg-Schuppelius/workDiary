@@ -75,7 +75,7 @@
                     @endif
                     <h1 class="mt-2 font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content">{{ __('Anmelden') }}</h1>
                 </a>
-                <p class="mt-3 text-sm text-base-content/70">{{ __('Benutzerdaten aus dem bestehenden Tagebuch-System.') }}</p>
+                <p class="mt-3 text-sm text-base-content/70">{{ __('Benutzerdaten aus dem bestehenden Auftragsbuch-System.') }}</p>
             </div>
 
             <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs">

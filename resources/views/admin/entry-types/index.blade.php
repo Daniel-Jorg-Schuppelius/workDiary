@@ -21,7 +21,7 @@
         <div>
             <h3 class="font-semibold">{{ __('Was sind Eintragstypen?') }}</h3>
             <div class="text-sm">
-                {{ __('Eintragstypen kategorisieren Einträge im Tagebuch (z. B. „Einsatz“, „Termin“, „Notiz“) und steuern, welche Felder beim Anlegen sichtbar bzw. verpflichtend sind – etwa ob ein Kunde, eine Adresse, ein Zeitfenster oder eine Tour zugeordnet werden muss. Zusätzlich legen sie Standardwerte (Status, Priorität, Servicedauer) sowie Symbol und Farbe für die Darstellung in Listen und Kalenderansichten fest.') }}
+                {{ __('Eintragstypen kategorisieren Einträge im Auftragsbuch (z. B. „Einsatz“, „Termin“, „Notiz“) und steuern, welche Felder beim Anlegen sichtbar bzw. verpflichtend sind – etwa ob ein Kunde, eine Adresse, ein Zeitfenster oder eine Tour zugeordnet werden muss. Zusätzlich legen sie Standardwerte (Status, Priorität, Servicedauer) sowie Symbol und Farbe für die Darstellung in Listen und Kalenderansichten fest.') }}
             </div>
         </div>
     </div>
@@ -56,20 +56,20 @@
                     <td class="font-mono text-sm text-base-content/60">{{ $type->slug }}</td>
                     <td>
                         <div class="flex flex-wrap gap-1">
-                            @if ($type->requires_customer) <span class="badge badge-xs badge-info">{{ __('Kunde') }}</span> @endif
-                            @if ($type->requires_schedule) <span class="badge badge-xs badge-info">{{ __('Termin') }}</span> @endif
-                            @if ($type->requires_address) <span class="badge badge-xs badge-info">{{ __('Adresse') }}</span> @endif
-                            @if ($type->requires_tour) <span class="badge badge-xs badge-info">{{ __('Tour') }}</span> @endif
-                            @if ($type->allow_priority) <span class="badge badge-xs badge-ghost">{{ __('Priorität') }}</span> @endif
-                            @if ($type->allow_tour && ! $type->requires_tour) <span class="badge badge-xs badge-ghost">{{ __('Tour opt.') }}</span> @endif
+                            @if ($type->requires_customer) <x-status-badge size="xs" tone="info">{{ __('Kunde') }}</x-status-badge> @endif
+                            @if ($type->requires_schedule) <x-status-badge size="xs" tone="info">{{ __('Termin') }}</x-status-badge> @endif
+                            @if ($type->requires_address) <x-status-badge size="xs" tone="info">{{ __('Adresse') }}</x-status-badge> @endif
+                            @if ($type->requires_tour) <x-status-badge size="xs" tone="info">{{ __('Tour') }}</x-status-badge> @endif
+                            @if ($type->allow_priority) <x-status-badge size="xs" tone="ghost">{{ __('Priorität') }}</x-status-badge> @endif
+                            @if ($type->allow_tour && ! $type->requires_tour) <x-status-badge size="xs" tone="ghost">{{ __('Tour opt.') }}</x-status-badge> @endif
                         </div>
                     </td>
                     <td class="text-center">{{ $type->diary_entries_count ?? 0 }}</td>
                     <td class="text-center">
                         @if ($type->is_active)
-                            <span class="badge badge-success badge-sm">{{ __('Ja') }}</span>
+                            <x-status-badge tone="success">{{ __('Ja') }}</x-status-badge>
                         @else
-                            <span class="badge badge-error badge-sm">{{ __('Nein') }}</span>
+                            <x-status-badge tone="error">{{ __('Nein') }}</x-status-badge>
                         @endif
                     </td>
                     <td class="text-right">

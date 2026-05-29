@@ -325,7 +325,7 @@ use App\Enums\Vacation\VacationType;
                 <form method="POST" action="{{ route('archive.run') }}" class="px-4 pb-4 pt-2">
                     @csrf
                     <p class="mb-3 text-sm text-base-content/70">
-                        {{ __('Archiviert alle erledigten Tagebucheinträge und abgelaufenen Dienste, die älter als :days Tage sind.', ['days' => config('archive.threshold_days', 30)]) }}
+                        {{ __('Archiviert alle erledigten Auftragsbucheinträge und abgelaufenen Dienste, die älter als :days Tage sind.', ['days' => config('archive.threshold_days', 30)]) }}
                     </p>
                     <button type="submit" class="btn btn-warning btn-sm"
                             data-confirm-dialog

@@ -22,7 +22,7 @@
         </x-slot:actions>
     </x-page-toolbar>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         @if ($protocols->isEmpty())
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">fact_check</span>' :title="__('Keine Defektprotokolle für diesen Drilldown gefunden.')" />
         @else
@@ -39,7 +39,7 @@
                 @foreach ($protocols as $protocol)
                     <tr>
                         <td class="font-medium">{{ $protocol->title }}</td>
-                        <td><span class="badge badge-sm badge-outline">{{ $protocol->status->label() }}</span></td>
+                        <td><x-status-badge tone="ghost" outline>{{ $protocol->status->label() }}</x-status-badge></td>
                         <td>{{ $protocol->occurred_at?->format('d.m.Y H:i') ?? '—' }}</td>
                         <td>{{ $protocol->creator?->name ?? '—' }}</td>
                         <td>
@@ -53,6 +53,6 @@
                 <div class="mt-4">{{ $protocols->links('pagination::simple-tailwind') }}</div>
             @endif
         @endif
-    </div>
+    </x-card>
 </x-page-shell>
 @endsection

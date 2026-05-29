@@ -18,7 +18,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Bereitschaft, Notdienst und Tagebucheinträge im Überblick.')">
+        <x-page-toolbar :subtitle="__('Bereitschaft, Notdienst und Auftragsbucheinträge im Überblick.')">
             <x-slot:actions>
                 <x-icon-btn icon="view_week" tone="secondary" size="sm"
                             :href="route('week.index')"

@@ -82,7 +82,7 @@ class CalendarEventService {
         foreach ($entries as $entry) {
             $events[] = [
                 'id' => 'entry-' . $entry->id,
-                'title' => $entry->title ?: __('Tagebucheintrag'),
+                'title' => $entry->title ?: __('Auftragsbucheintrag'),
                 'start' => $entry->start_at?->toIso8601String() ?? '',
                 'end' => $entry->end_at?->toIso8601String(),
                 'color' => '#16a34a',

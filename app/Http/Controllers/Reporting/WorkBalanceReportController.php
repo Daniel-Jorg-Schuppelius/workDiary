@@ -83,8 +83,8 @@ class WorkBalanceReportController extends Controller {
             return $authUser;
         }
 
-        $requestedId = (int) $request->integer('user');
-        if ($requestedId === (int) $authUser->id) {
+        $requestedId = sqid_decode(User::class, $request->query('user'));
+        if ($requestedId === null || $requestedId === (int) $authUser->id) {
             return $authUser;
         }
 

@@ -155,7 +155,7 @@
                             <option value="">{{ __('Keine') }}</option>
                             @foreach ($parentTasks as $pt)
                                 <option value="{{ $pt->sqid }}"
-                                    @selected(old('parent_task_id', $task?->parent_task_id ?? $preselectedParentId) == $pt->id)>
+                                    @selected((string) old('parent_task_id', sqid(\App\Models\Task::class, $task?->parent_task_id ?? $preselectedParentId)) === $pt->sqid)>
                                     {{ $pt->title }}
                                 </option>
                             @endforeach

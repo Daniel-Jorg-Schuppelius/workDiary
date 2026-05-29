@@ -46,8 +46,7 @@ class ArchiveSummaryService {
             foreach ($queries as $q) {
                 $q->where('user_id', $currentUser->id);
             }
-        } elseif ($request->filled('user_id')) {
-            $uid = (int) $request->user_id;
+        } elseif (($uid = sqid_decode(User::class, $request->query('user_id'))) !== null) {
             foreach ($queries as $q) {
                 $q->where('user_id', $uid);
             }

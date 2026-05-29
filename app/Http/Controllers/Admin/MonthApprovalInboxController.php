@@ -44,7 +44,7 @@ class MonthApprovalInboxController extends Controller {
         );
 
         $statusFilter = (string) $request->input('status', 'submitted');
-        $userFilter = $request->filled('user') ? (int) $request->input('user') : null;
+        $userFilter = sqid_decode(User::class, $request->input('user'));
         $yearFilter = $request->filled('year') ? (int) $request->input('year') : null;
 
         $query = MonthClosure::query()

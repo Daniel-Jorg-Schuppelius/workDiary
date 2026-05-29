@@ -10,7 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{DiaryEntry, User};
+use App\Models\{Customer, DiaryEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -19,6 +19,26 @@ class DiaryWebRoutesTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+    }
+
+    public function test_store_persists_customer_supplied_as_sqid(): void {
+        $user = User::factory()->user()->create();
+        $customer = Customer::factory()->create(['organization_id' => $user->organization_id]);
+
+        $this->actingAs($user)
+            ->post(route('diary.store'), [
+                'content' => 'Auftrag mit Kunde',
+                'status' => 2,
+                'start_at' => '2030-01-15 09:00:00',
+                'end_at' => '2030-01-15 10:00:00',
+                'customer_id' => $customer->sqid,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('diary_entries', [
+            'content' => 'Auftrag mit Kunde',
+            'customer_id' => $customer->id,
+        ]);
     }
 
     public function test_owner_can_view_and_edit_own_entry(): void {

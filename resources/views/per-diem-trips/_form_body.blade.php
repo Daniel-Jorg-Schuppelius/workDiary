@@ -64,10 +64,10 @@
 <x-form-group :legend="__('Zuordnung')" icon="link" tone="success" cols="2">
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Projekt') }}</label>
-        <select name="project_id" class="select select-bordered w-full">
+        <select name="project_id" class="select select-bordered w-full" data-depends-on="customer_id">
             <option value="">—</option>
             @foreach ($projects as $p)
-                <option value="{{ $p->id }}" @selected(old('project_id', $trip?->project_id) == $p->id)>{{ $p->name }}</option>
+                <option value="{{ $p->id }}" data-parent="{{ $p->customer_id }}" @selected(old('project_id', $trip?->project_id) == $p->id)>{{ $p->name }}</option>
             @endforeach
         </select>
     </div>
@@ -76,7 +76,7 @@
         <select name="customer_id" class="select select-bordered w-full">
             <option value="">—</option>
             @foreach ($customers as $c)
-                <option value="{{ $c->id }}" @selected(old('customer_id', $trip?->customer_id) == $c->id)>{{ $c->name }}</option>
+                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', sqid(\App\Models\Customer::class, $trip?->customer_id)) === $c->sqid)>{{ $c->name }}</option>
             @endforeach
         </select>
     </div>

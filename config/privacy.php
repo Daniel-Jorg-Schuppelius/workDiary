@@ -50,7 +50,7 @@ return [
         ],
         [
             'code' => 'diary',
-            'label' => 'Tagebuch',
+            'label' => 'Auftragsbuch',
             'models' => ['DiaryEntry', 'Comment'],
             'sensitivity' => 'medium',
             'retention' => '5 Jahre (konfigurierbar)',

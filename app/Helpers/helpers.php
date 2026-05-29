@@ -118,3 +118,22 @@ if (! function_exists('sqid')) {
         return app(\App\Services\SqidEncoder::class)->encode($modelClass, (int) $id);
     }
 }
+
+if (! function_exists('sqid_decode')) {
+    /**
+     * Decode a per-model Sqid from a request/filter value back to its numeric PK.
+     *
+     * Returns null for empty/malformed input. Use for opaque query-parameter
+     * filters in controllers, e.g.:
+     *   $customerId = sqid_decode(\App\Models\Customer::class, $request->query('customer'));
+     *
+     * @param  class-string  $modelClass
+     */
+    function sqid_decode(string $modelClass, int|string|null $value): ?int {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return app(\App\Services\SqidEncoder::class)->decode($modelClass, (string) $value);
+    }
+}

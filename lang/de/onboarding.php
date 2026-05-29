@@ -84,7 +84,7 @@ return [
         'work' => [
             'first' => [
                 'title' => 'Erstes Projekt oder Auftrag',
-                'description' => 'Erzeuge ein erstes Projekt oder starte den ersten Auftrag im Tagebuch.',
+                'description' => 'Erzeuge ein erstes Projekt oder starte den ersten Auftrag im Auftragsbuch.',
                 'link' => 'Projekte öffnen',
             ],
         ],
@@ -99,7 +99,7 @@ return [
             'first_signed' => [
                 'title' => 'Erstes Protokoll signieren',
                 'description' => 'Erstelle ein Protokoll und schließe die Signatur ab.',
-                'link' => 'Tagebuch öffnen',
+                'link' => 'Auftragsbuch öffnen',
             ],
         ],
         'backup' => [

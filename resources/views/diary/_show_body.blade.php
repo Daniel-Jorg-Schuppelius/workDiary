@@ -86,6 +86,12 @@
             <p class="mb-1 text-xs text-base-content/60">{{ __('Bis') }}</p>
             <p class="text-base-content">{{ $diary->end_at?->format('d.m.Y H:i') ?? '—' }}</p>
         </div>
+        @if ($diary->customer)
+            <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
+                <p class="mb-1 text-xs text-base-content/60">{{ __('Kunde') }}</p>
+                <p class="text-base-content">{{ $diary->customer->name }}@if ($diary->customer->company) — {{ $diary->customer->company }}@endif</p>
+            </div>
+        @endif
         <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
             <p class="mb-1 text-xs text-base-content/60">{{ __('Erstellt') }}</p>
             <p class="text-base-content">{{ $diary->created_at->format('d.m.Y H:i') }}</p>

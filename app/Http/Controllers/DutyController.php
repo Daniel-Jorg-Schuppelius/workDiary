@@ -73,7 +73,7 @@ class DutyController extends Controller {
         $sicknessStatus = null;
         if ($tab === 'krank') {
             $statusUserId = $isAdmin
-                ? ($request->filled('user_id') ? (int) $request->user_id : null)
+                ? sqid_decode(User::class, $request->query('user_id'))
                 : (int) $authUser->id;
             if ($statusUserId !== null) {
                 $sicknessStatusUser = User::find($statusUserId);
@@ -141,12 +141,12 @@ class DutyController extends Controller {
             $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $q) . '%';
             $diaryQuery->where(fn($w) => $w->where('content', 'like', $like)->orWhere('response', 'like', $like));
         }
-        $tagId = $request->integer('tag');
+        $tagId = sqid_decode(Tag::class, $request->query('tag')) ?? 0;
         if ($tagId > 0) {
             $diaryQuery->whereHas('tags', fn($tq) => $tq->where('tags.id', $tagId));
         }
 
-        $entryTypeId = $request->integer('entry_type');
+        $entryTypeId = sqid_decode(EntryType::class, $request->query('entry_type')) ?? 0;
         if ($entryTypeId > 0) {
             $diaryQuery->where('entry_type_id', $entryTypeId);
         }
@@ -180,8 +180,8 @@ class DutyController extends Controller {
 
         if (! $isAdmin) {
             $vacationQuery->where('user_id', $authUser->id);
-        } elseif ($request->filled('user_id')) {
-            $vacationQuery->where('user_id', (int) $request->user_id);
+        } elseif (($uid = sqid_decode(User::class, $request->query('user_id'))) !== null) {
+            $vacationQuery->where('user_id', $uid);
         }
         if ($request->filled('vtype')) {
             $vacationQuery->where('type', $request->vtype);
@@ -221,8 +221,8 @@ class DutyController extends Controller {
 
         if (! $isAdmin) {
             $q->where('user_id', $authUser->id);
-        } elseif ($request->filled('user_id')) {
-            $q->where('user_id', (int) $request->user_id);
+        } elseif (($uid = sqid_decode(User::class, $request->query('user_id'))) !== null) {
+            $q->where('user_id', $uid);
         }
         if ($request->filled('kkind')) {
             $q->where('kind', $request->kkind);

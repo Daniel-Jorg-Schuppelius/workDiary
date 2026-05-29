@@ -131,7 +131,7 @@
                             <article class="rounded-[1.75rem] border border-base-300 bg-base-100 p-5 shadow-xs">
                                 <p class="badge badge-ghost badge-sm">{{ __('Einträge') }}</p>
                                 <p class="mt-3 font-['Space_Grotesk'] text-4xl font-bold text-base-content">{{ number_format($stats['entries_total'], 0, ',', '.') }}</p>
-                                <p class="mt-2 text-sm text-base-content/70">{{ __('Gesamtbestand im Legacy-Tagebuch') }}</p>
+                                <p class="mt-2 text-sm text-base-content/70">{{ __('Gesamtbestand im Legacy-Auftragsbuch') }}</p>
                             </article>
                             <article class="rounded-[1.75rem] border border-base-300 bg-base-100 p-5 shadow-xs">
                                 <p class="badge badge-warning badge-sm">{{ __('Offen') }}</p>

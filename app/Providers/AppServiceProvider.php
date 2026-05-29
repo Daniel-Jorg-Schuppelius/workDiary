@@ -402,13 +402,11 @@ class AppServiceProvider extends ServiceProvider {
         /** @var \App\Dashboard\WidgetRegistry $registry */
         $registry = $this->app->make(\App\Dashboard\WidgetRegistry::class);
 
-        $registry->register($this->app->make(\App\Dashboard\Widgets\PersonalKpisWidget::class));
-        $registry->register($this->app->make(\App\Dashboard\Widgets\TeamKpisWidget::class));
-        $registry->register($this->app->make(\App\Dashboard\Widgets\FinanceWidget::class));
-        $registry->register($this->app->make(\App\Dashboard\Widgets\VacationFlexWidget::class));
-        $registry->register($this->app->make(\App\Dashboard\Widgets\UpcomingShiftsWidget::class));
-        $registry->register($this->app->make(\App\Dashboard\Widgets\RecentEmergenciesWidget::class));
-        $registry->register($this->app->make(\App\Dashboard\Widgets\OnboardingWidget::class));
+        // Personal-KPIs, Team-KPIs, Finance, Urlaub/Flex, Schichten, Notdienste und
+        // Onboarding werden bereits fest im Tab-Dashboard (dashboard/index.blade.php)
+        // gerendert und sind daher hier NICHT als konfigurierbare Widgets registriert
+        // (sonst doppelte Anzeige). Die Klassen bleiben für eine spätere Reaktivierung
+        // erhalten. Der Widget-Loop bleibt für nicht-überlappende Widgets (z. B. Lesezeichen).
         $registry->register($this->app->make(\App\Dashboard\Widgets\BookmarksWidget::class));
     }
 }

@@ -15,6 +15,11 @@
         ->orderBy('name')
         ->get(['id', 'name', 'customer_id']);
     $initialParentCustomer = $project?->parent?->customer_id;
+    // Map Parent-Projekt-ID → Kunden-Sqid (das Kunden-Select nutzt Sqid als Wert,
+    // daher muss die Auto-Befüllung ebenfalls den Sqid setzen, nicht die int-ID).
+    $parentCustomerSqids = $parentOptions->mapWithKeys(fn($p) => [
+        (string) $p->id => $p->customer_id ? sqid(\App\Models\Customer::class, $p->customer_id) : '',
+    ]);
 @endphp
 
 <x-modal
@@ -30,7 +35,7 @@
     :submit-label="$project ? __('Speichern') : __('Anlegen')">
     <div x-data="{
               parentId: @js((string) old('parent_id', $project?->parent_id ?? '')),
-              parentCustomers: @js($parentOptions->pluck('customer_id', 'id')),
+              parentCustomers: @js($parentCustomerSqids),
               get hasParent() { return this.parentId !== '' && this.parentId !== null; },
               get parentCustomerId() { return this.hasParent ? (this.parentCustomers[this.parentId] ?? '') : ''; },
           }"

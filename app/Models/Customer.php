@@ -170,7 +170,24 @@ class Customer extends Model {
         /** @var \App\Services\Numbering\NumberSequenceService $service */
         $service = app(\App\Services\Numbering\NumberSequenceService::class);
 
-        return $service->next($organizationId, \App\Enums\Numbering\NumberScope::Customer);
+        $maxAttempts = static::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->count() + 1;
+
+        for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
+            $number = $service->next($organizationId, \App\Enums\Numbering\NumberScope::Customer);
+
+            if (! static::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $organizationId)
+                ->where('number', $number)
+                ->exists()) {
+                return $number;
+            }
+        }
+
+        throw new \RuntimeException('No free customer number could be generated.');
     }
 
     /** @return BelongsTo<User, $this> */

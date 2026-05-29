@@ -105,7 +105,7 @@
     <x-card padding="p-0">
         <header class="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Letzte Aufträge') }}</span>
-            <a href="{{ route('diary.index', ['project' => $project->id]) }}"
+            <a href="{{ route('diary.index', ['project' => sqid(\App\Models\Project::class, $project->id)]) }}"
                class="text-xs text-primary hover:underline">{{ __('Alle in der Arbeitsliste') }}</a>
         </header>
         @if ($entries->isEmpty())

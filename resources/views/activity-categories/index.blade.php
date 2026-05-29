@@ -56,27 +56,27 @@
                             @endif
                         </td>
                         <td>
-                            <span class="badge badge-sm badge-ghost">{{ $cat->activity_type->label() }}</span>
+                            <x-status-badge tone="ghost">{{ $cat->activity_type->label() }}</x-status-badge>
                         </td>
                         <td class="text-center">
                             @if ($cat->counts_as_work)
-                                <span class="badge badge-sm badge-success">{{ __('Ja') }}</span>
+                                <x-status-badge tone="success">{{ __('Ja') }}</x-status-badge>
                             @else
-                                <span class="badge badge-sm badge-ghost">{{ __('Nein') }}</span>
+                                <x-status-badge tone="ghost">{{ __('Nein') }}</x-status-badge>
                             @endif
                         </td>
                         <td class="text-center">
                             @if ($cat->billable_default)
-                                <span class="badge badge-sm badge-info">{{ __('Ja') }}</span>
+                                <x-status-badge tone="info">{{ __('Ja') }}</x-status-badge>
                             @else
-                                <span class="badge badge-sm badge-ghost">{{ __('Nein') }}</span>
+                                <x-status-badge tone="ghost">{{ __('Nein') }}</x-status-badge>
                             @endif
                         </td>
                         <td>
                             @if ($cat->active)
-                                <span class="badge badge-sm badge-success">{{ __('Aktiv') }}</span>
+                                <x-status-badge tone="success">{{ __('Aktiv') }}</x-status-badge>
                             @else
-                                <span class="badge badge-sm badge-ghost">{{ __('Inaktiv') }}</span>
+                                <x-status-badge tone="ghost">{{ __('Inaktiv') }}</x-status-badge>
                             @endif
                         </td>
                         <td class="text-right whitespace-nowrap">

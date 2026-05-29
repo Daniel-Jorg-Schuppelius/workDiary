@@ -28,7 +28,6 @@ class DashboardCustomizationTest extends TestCase {
         $response = $this->actingAs($user)->get(route('dashboard.customize'));
 
         $response->assertOk();
-        $response->assertSee(__('Persönliche Kennzahlen'));
         $response->assertSee(__('Lesezeichen'));
     }
 
@@ -38,19 +37,16 @@ class DashboardCustomizationTest extends TestCase {
 
         $response = $this->actingAs($user)->post(route('dashboard.customize.save'), [
             'widgets' => [
-                ['key' => 'bookmarks', 'hidden' => '0'],
-                ['key' => 'personal-kpis', 'hidden' => '1'],
+                ['key' => 'bookmarks', 'hidden' => '1'],
             ],
         ]);
 
         $response->assertRedirect(route('dashboard.customize'));
 
         $rows = UserDashboardWidget::where('user_id', $user->id)->orderBy('sort_order')->get();
-        $this->assertCount(2, $rows);
+        $this->assertCount(1, $rows);
         $this->assertSame('bookmarks', $rows[0]->widget_key);
-        $this->assertFalse($rows[0]->hidden);
-        $this->assertSame('personal-kpis', $rows[1]->widget_key);
-        $this->assertTrue($rows[1]->hidden);
+        $this->assertTrue($rows[0]->hidden);
     }
 
     public function test_save_ignores_unknown_widget_keys(): void {

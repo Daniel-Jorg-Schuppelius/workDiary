@@ -217,7 +217,7 @@ class WorkBalanceReportTest extends TestCase {
 
         $this->actingAs($admin);
         $response = $this->get(route('reports.work-balance', [
-            'user' => $other->id,
+            'user' => sqid(User::class, $other->id),
             'from' => '2026-05-01',
             'to' => '2026-05-31',
         ]));
@@ -231,14 +231,14 @@ class WorkBalanceReportTest extends TestCase {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
 
         $this->actingAs($this->user); // regular user
-        $response = $this->get(route('reports.work-balance', ['user' => $other->id]));
+        $response = $this->get(route('reports.work-balance', ['user' => sqid(User::class, $other->id)]));
 
         $response->assertForbidden();
     }
 
     public function test_non_admin_passing_own_user_id_is_allowed(): void {
         $this->actingAs($this->user);
-        $response = $this->get(route('reports.work-balance', ['user' => $this->user->id]));
+        $response = $this->get(route('reports.work-balance', ['user' => sqid(User::class, $this->user->id)]));
 
         $response->assertOk();
         $this->assertSame((int) $this->user->id, (int) $response->viewData('user')->id);

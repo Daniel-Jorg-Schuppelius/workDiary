@@ -15,7 +15,7 @@
             <select name="material_id" class="select select-bordered w-full">
                 <option value="">— {{ __('frei') }} —</option>
                 @foreach ($materials as $m)
-                    <option value="{{ $m->id }}"
+                    <option value="{{ $m->sqid }}" @selected((string) old('material_id') === $m->sqid)
                             data-unit="{{ $m->unit }}"
                             data-price="{{ $m->default_unit_price }}"
                             data-tax="{{ $m->tax_rate }}"

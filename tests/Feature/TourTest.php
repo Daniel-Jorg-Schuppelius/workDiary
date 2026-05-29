@@ -172,7 +172,7 @@ class TourTest extends TestCase {
         ]);
 
         $this->actingAs($admin)
-            ->get(route('tours.index', ['user' => $worker->id, 'from' => CarbonImmutable::today()->toDateString(), 'to' => CarbonImmutable::today()->toDateString()]))
+            ->get(route('tours.index', ['user' => sqid(User::class, $worker->id), 'from' => CarbonImmutable::today()->toDateString(), 'to' => CarbonImmutable::today()->toDateString()]))
             ->assertOk()
             ->assertSee('Wochentour');
     }

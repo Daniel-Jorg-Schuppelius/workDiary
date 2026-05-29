@@ -134,6 +134,61 @@ class CustomerControllerTest extends TestCase {
         $this->assertDatabaseHas('customers', ['name' => 'Folgekunde', 'number' => 'K-0008']);
     }
 
+    public function test_store_skips_existing_customer_number_when_sequence_is_new(): void {
+        Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'created_by' => $this->user->id,
+            'number' => 'K-0001',
+        ]);
+
+        $this->postAsAdmin('customers.store', ['name' => 'Folgekunde', 'currency' => 'EUR'])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('customers', [
+            'name' => 'Folgekunde',
+            'number' => 'K-0002',
+            'organization_id' => $this->organization->id,
+        ]);
+    }
+
+    public function test_store_skips_more_than_one_hundred_existing_customer_numbers_when_sequence_is_new(): void {
+        for ($i = 1; $i <= 125; $i++) {
+            Customer::factory()->create([
+                'organization_id' => $this->organization->id,
+                'created_by' => $this->user->id,
+                'number' => 'K-' . str_pad((string) $i, 4, '0', STR_PAD_LEFT),
+            ]);
+        }
+
+        $this->postAsAdmin('customers.store', ['name' => 'Folgekunde', 'currency' => 'EUR'])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('customers', [
+            'name' => 'Folgekunde',
+            'number' => 'K-0126',
+            'organization_id' => $this->organization->id,
+        ]);
+    }
+
+    public function test_store_rejects_duplicate_customer_number_in_current_org(): void {
+        Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'created_by' => $this->user->id,
+            'number' => 'K-0001',
+        ]);
+
+        $this->postAsAdmin('customers.store', [
+            'name' => 'Doppelter Kunde',
+            'number' => 'K-0001',
+            'currency' => 'EUR',
+        ])->assertSessionHasErrors('number');
+
+        $this->assertDatabaseMissing('customers', [
+            'name' => 'Doppelter Kunde',
+            'number' => 'K-0001',
+        ]);
+    }
+
     public function test_store_persists_contact_persons(): void {
         $this->postAsAdmin('customers.store', [
             'name' => 'Mit Kontakten',

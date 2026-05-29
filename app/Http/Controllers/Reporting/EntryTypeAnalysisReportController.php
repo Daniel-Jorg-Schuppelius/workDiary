@@ -32,9 +32,9 @@ class EntryTypeAnalysisReportController extends Controller {
         $from = $range['from']->startOfDay();
         $to = $range['to']->endOfDay();
 
-        $customerId = $request->filled('customer_id') ? (int) $request->integer('customer_id') : null;
-        $userId = $request->filled('user_id') ? (int) $request->integer('user_id') : null;
-        $entryTypeFilter = $request->filled('entry_type_id') ? (int) $request->integer('entry_type_id') : null;
+        $customerId = sqid_decode(Customer::class, $request->query('customer_id'));
+        $userId = sqid_decode(User::class, $request->query('user_id'));
+        $entryTypeFilter = sqid_decode(EntryType::class, $request->query('entry_type_id'));
         $statusFilter = $request->filled('status') ? (int) $request->integer('status') : null;
 
         $rows = $this->buildRows($from, $to, $customerId, $userId, $entryTypeFilter, $statusFilter);

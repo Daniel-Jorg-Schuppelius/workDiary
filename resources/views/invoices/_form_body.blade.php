@@ -12,10 +12,10 @@
     </div>
     <div class="fieldset md:col-span-2">
         <label class="fieldset-label">{{ __('Projekt (optional)') }}</label>
-        <select name="project_id" class="select select-bordered w-full">
+        <select name="project_id" class="select select-bordered w-full" data-depends-on="customer_id">
             <option value="">{{ __('alle Projekte des Kunden') }}</option>
             @foreach ($projects as $p)
-                <option value="{{ $p->id }}" @selected(old('project_id') == $p->id)>{{ $p->name }}</option>
+                <option value="{{ $p->id }}" data-parent="{{ $p->customer_id }}" @selected(old('project_id') == $p->id)>{{ $p->name }}</option>
             @endforeach
         </select>
     </div>

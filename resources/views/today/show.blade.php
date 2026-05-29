@@ -103,7 +103,7 @@
             @include('attendances._panel', ['current' => $current])
         </section>
 
-        <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card as="section">
             <div class="flex flex-wrap items-center justify-between gap-2">
                 <h2 class="font-['Space_Grotesk'] text-sm font-semibold uppercase tracking-widest text-base-content/60">{{ __('Tagesfortschritt') }}</h2>
                 <span class="text-xs text-base-content/60">
@@ -120,10 +120,10 @@
                       :value="progress"
                       max="100"
                       value="{{ $progress }}"></progress>
-        </section>
+        </x-card>
 
         @if ($byActivity->isNotEmpty())
-            <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <x-card as="section">
                 <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Aufteilung nach Tätigkeit') }}</h2>
                 <ul class="mt-2 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ($byActivity as $key => $info)
@@ -133,10 +133,10 @@
                         </li>
                     @endforeach
                 </ul>
-            </section>
+            </x-card>
         @endif
 
-        <section class="overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
+        <x-card as="section" padding="p-0" class="overflow-hidden">
             <header class="flex items-center justify-between gap-2 border-b border-base-300 p-3">
                 <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Stempelungen') }}</h2>
                 <span class="text-xs text-base-content/60">{{ $attendances->count() }}</span>
@@ -157,7 +157,7 @@
                         <td class="tabular-nums">{{ optional($a->ended_at)->format('H:i') ?? '—' }}</td>
                         <td class="text-right tabular-nums">{{ $a->break_minutes_total }}</td>
                         <td class="text-right tabular-nums" data-sort-value="{{ (int) ($a->duration_minutes ?? 0) }}">{{ $fmt((int) ($a->duration_minutes ?? 0)) }}</td>
-                        <td><span class="badge badge-sm {{ $a->isOpen() ? 'badge-success' : 'badge-ghost' }}">{{ $a->statusLabel() }}</span></td>
+                        <td><x-status-badge :tone="$a->isOpen() ? 'success' : 'ghost'">{{ $a->statusLabel() }}</x-status-badge></td>
                     </tr>
                 @empty
                     <x-table.empty :colspan="5"
@@ -166,9 +166,9 @@
                                    :message="__('Für diesen Tag ist noch keine Stempelung erfasst.')" />
                 @endforelse
             </x-table>
-        </section>
+        </x-card>
 
-        <section class="overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
+        <x-card as="section" padding="p-0" class="overflow-hidden">
             <header class="flex items-center justify-between gap-2 border-b border-base-300 p-3">
                 <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Zeiteinträge') }}</h2>
                 <span class="text-xs text-base-content/60">{{ $entries->count() }}</span>
@@ -192,7 +192,7 @@
                             @endif
                         </td>
                         <td>
-                            <span class="badge badge-sm badge-ghost">{{ $e->activity_type?->label() ?? '—' }}</span>
+                            <x-status-badge tone="ghost">{{ $e->activity_type?->label() ?? '—' }}</x-status-badge>
                         </td>
                         <td class="text-sm">
                             @if ($e->project)
@@ -213,6 +213,6 @@
                                    :message="__('Für diesen Tag wurden noch keine Zeiteinträge erfasst.')" />
                 @endforelse
             </x-table>
-        </section>
+        </x-card>
     </x-page-shell>
 @endsection

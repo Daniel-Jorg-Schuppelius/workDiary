@@ -244,14 +244,14 @@
 
         @php
             $allTags = $allTags ?? collect();
-            $selectedTagIds = old('tag_ids', $customer?->tags?->pluck('id')->all() ?? []);
+            $selectedTagIds = old('tag_ids', $customer?->tags?->map(fn ($t) => $t->sqid)->all() ?? []);
         @endphp
         <div>
             <label class="label"><span class="label-text">{{ __('Tags') }}</span></label>
             @if ($allTags->isNotEmpty())
                 <select name="tag_ids[]" multiple size="4" class="select select-bordered w-full">
                     @foreach ($allTags as $tag)
-                        <option value="{{ $tag->sqid }}" @selected(in_array($tag->id, (array) $selectedTagIds))>{{ $tag->name }}</option>
+                        <option value="{{ $tag->sqid }}" @selected(in_array($tag->sqid, (array) $selectedTagIds, true))>{{ $tag->name }}</option>
                     @endforeach
                 </select>
             @endif

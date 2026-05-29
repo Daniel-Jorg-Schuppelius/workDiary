@@ -5,7 +5,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Tags zur Klassifikation von Tagebuch-Einträgen verwalten.')">
+        <x-page-toolbar :subtitle="__('Tags zur Klassifikation von Auftragsbuch-Einträgen verwalten.')">
             <x-slot:actions>
                 @can('create', App\Models\Tag::class)
                     <x-icon-btn icon="add" tone="primary" size="sm"
@@ -26,7 +26,7 @@
             <x-slot:head>
                 <tr>
                     <x-table.th sort="name" default>{{ __('Tag') }}</x-table.th>
-                    <x-table.th sort="diary" align="right">{{ __('Tagebuch') }}</x-table.th>
+                    <x-table.th sort="diary" align="right">{{ __('Auftragsbuch') }}</x-table.th>
                     <x-table.th sort="shifts" align="right">{{ __('Bereitschaft') }}</x-table.th>
                     <x-table.th sort="assignments" align="right">{{ __('Notdienst') }}</x-table.th>
                     <th class="w-32 text-right">{{ __('Aktion') }}</th>

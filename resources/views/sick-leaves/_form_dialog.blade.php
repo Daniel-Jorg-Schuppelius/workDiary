@@ -6,7 +6,7 @@
     $action   = $isEdit ? route('sick-leaves.update', $sickLeave) : route('sick-leaves.store');
     $dialogUrl = ($isEdit ? route('sick-leaves.edit', $sickLeave) : route('sick-leaves.create')) . '?dialog=1';
 
-    $selectedUser = (int) old('user_id', $sickLeave?->user_id ?? auth()->id());
+    $selectedUserSqid = (string) old('user_id', sqid(\App\Models\User::class, $sickLeave?->user_id ?? auth()->id()));
     $kindOptions  = \App\Enums\Sickness\SickLeaveKind::options();
     $currentKind  = old('kind', $sickLeave?->kind?->value ?? \App\Enums\Sickness\SickLeaveKind::Initial->value);
     $auThreshold = (int) config('sickness.attachment_required_from_day', 4);
@@ -51,7 +51,7 @@
                 <label class="fieldset-label" for="sick-user">{{ __('Mitarbeiter') }}</label>
                 <select id="sick-user" name="user_id" class="select select-bordered w-full">
                     @foreach ($assignableUsers as $u)
-                        <option value="{{ $u['id'] ?? $u->id }}" @selected($selectedUser === (int) ($u['id'] ?? $u->id))>{{ $u['name'] ?? $u->name }}</option>
+                        <option value="{{ sqid(\App\Models\User::class, $u['id'] ?? $u->id) }}" @selected($selectedUserSqid === sqid(\App\Models\User::class, $u['id'] ?? $u->id))>{{ $u['name'] ?? $u->name }}</option>
                     @endforeach
                 </select>
             </div>

@@ -39,7 +39,7 @@
         @php
             $selfId = (int) ($authUser->id ?? 0);
         @endphp
-        <div class="flex flex-wrap items-center gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card class="flex flex-wrap items-center gap-3">
             <label for="flex-user-select" class="text-sm font-medium text-base-content/70">
                 {{ __('Mitarbeiter') }}
             </label>
@@ -57,7 +57,7 @@
                     </option>
                 @endforeach
             </select>
-        </div>
+        </x-card>
     @endif
 
     {{-- Monats-Tabs (nur bei >1 Monat im Zeitraum) --}}
@@ -80,21 +80,12 @@
     @endif
 
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs">
-            <div class="text-2xl font-bold">{{ $fmt($summary['target']) }}</div>
-            <div class="text-xs text-base-content/60">{{ __('Soll') }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs">
-            <div class="text-2xl font-bold">{{ $fmt($summary['actual']) }}</div>
-            <div class="text-xs text-base-content/60">{{ __('Ist') }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs">
-            <div class="text-2xl font-bold {{ $summary['balance'] < 0 ? 'text-error' : 'text-success' }}">{{ $fmt($summary['balance']) }}</div>
-            <div class="text-xs text-base-content/60">{{ __('Saldo') }}</div>
-        </div>
+        <x-kpi-tile :label="__('Soll')" :value="$fmt($summary['target'])" />
+        <x-kpi-tile :label="__('Ist')" :value="$fmt($summary['actual'])" />
+        <x-kpi-tile :label="__('Saldo')" :value="$fmt($summary['balance'])" :tone="$summary['balance'] < 0 ? 'error' : 'success'" />
     </div>
 
-    <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+    <x-card padding="p-0">
         <x-table table-sort="client" bare size="xs">
             <x-slot:head>
                 <tr>
@@ -128,6 +119,6 @@
                 </tr>
             @endforeach
         </x-table>
-    </div>
+    </x-card>
 </x-page-shell>
 @endsection

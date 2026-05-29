@@ -86,6 +86,10 @@ class TimeExportController extends Controller {
 
         $profileKeys = array_keys($this->availableProfiles());
 
+        $request->merge([
+            'scope_user_id' => sqid_decode(\App\Models\User::class, $request->input('scope_user_id')),
+        ]);
+
         $data = $request->validate([
             'year' => ['required', 'integer', 'min:2000', 'max:2999'],
             'month' => ['required', 'integer', 'between:1,12'],

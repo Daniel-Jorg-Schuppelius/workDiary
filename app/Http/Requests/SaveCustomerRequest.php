@@ -11,8 +11,9 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\Customer;
+use App\Models\{Customer, Organization};
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class SaveCustomerRequest extends FormRequest {
@@ -31,6 +32,7 @@ class SaveCustomerRequest extends FormRequest {
     public function rules(): array {
         /** @var Customer|null $customer */
         $customer = $this->route('customer');
+        $organizationId = $customer?->organization_id ?? $this->currentOrganizationId();
 
         return [
             'name' => ['required', 'string', 'max:200'],
@@ -39,7 +41,7 @@ class SaveCustomerRequest extends FormRequest {
                 'string',
                 'max:64',
                 Rule::unique('customers', 'number')
-                    ->where(fn($q) => $q->where('organization_id', $customer?->organization_id))
+                    ->where(fn($q) => $q->where('organization_id', $organizationId))
                     ->ignore($customer?->id),
             ],
             'company' => ['nullable', 'string', 'max:200'],
@@ -76,6 +78,19 @@ class SaveCustomerRequest extends FormRequest {
             'tag_ids.*' => ['integer', 'exists:tags,id'],
             'new_tags' => ['nullable', 'string', 'max:500'],
         ];
+    }
+
+    private function currentOrganizationId(): ?int {
+        if (app()->bound('currentOrganization')) {
+            $organization = app('currentOrganization');
+            if ($organization instanceof Organization) {
+                return (int) $organization->id;
+            }
+        }
+
+        $user = Auth::user();
+
+        return $user?->organization_id !== null ? (int) $user->organization_id : null;
     }
 
     protected function prepareForValidation(): void {

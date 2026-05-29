@@ -29,7 +29,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (['users' => __('Benutzer'), 'diary' => __('Tagebuch'), 'shifts' => __('Bereitschaften'), 'assignments' => __('Notdienste')] as $key => $label)
+                    @foreach (['users' => __('Benutzer'), 'diary' => __('Auftragsbuch'), 'shifts' => __('Bereitschaften'), 'assignments' => __('Notdienste')] as $key => $label)
                         @php $row = $stats[$key]; $remaining = max(0, $row['legacy'] - $row['imported']); @endphp
                         <tr>
                             <td class="font-medium">{{ $label }}</td>

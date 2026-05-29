@@ -14,8 +14,9 @@ use App\Enums\Diary\{LocationMode, Mode};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveDiaryEntryRequest;
 use App\Legacy\Models\LegacyDiaryEntry;
-use App\Models\{Customer, DiaryEntry, EntryType, Tag, Tour, User};
+use App\Models\{Customer, DiaryEntry, EntryType, Project, Tag, Tour, User};
 use App\Services\Archive\ArchiveService;
+use App\Services\SqidEncoder;
 use App\Services\UI\DateRangeContext;
 use App\Support\LookupCache;
 use Carbon\CarbonImmutable;
@@ -27,6 +28,8 @@ use Illuminate\View\View;
 
 class DiaryController extends Controller {
     use ResolvesGlobalDateRange;
+
+    public function __construct(private readonly SqidEncoder $sqids) {}
 
     public function index(Request $request): View|RedirectResponse {
         // Backward-Compat: alte Bookmarks mit ?from=&to= setzen den globalen
@@ -128,8 +131,8 @@ class DiaryController extends Controller {
             $query->where('user_id', Auth::id());
         }
 
-        $customerId = $request->integer('customer');
-        if ($customerId > 0) {
+        $customerId = $this->sqids->decode(Customer::class, (string) $request->query('customer', ''));
+        if ($customerId !== null) {
             $query->where('customer_id', $customerId);
         }
 
@@ -138,18 +141,18 @@ class DiaryController extends Controller {
             $query->where('is_archived', false);
         }
 
-        $tagId = $request->integer('tag');
-        if ($tagId > 0) {
+        $tagId = $this->sqids->decode(Tag::class, (string) $request->query('tag', ''));
+        if ($tagId !== null) {
             $query->whereHas('tags', fn($q) => $q->where('tags.id', $tagId));
         }
 
-        $entryTypeId = $request->integer('entry_type');
-        if ($entryTypeId > 0) {
+        $entryTypeId = $this->sqids->decode(EntryType::class, (string) $request->query('entry_type', ''));
+        if ($entryTypeId !== null) {
             $query->where('entry_type_id', $entryTypeId);
         }
 
-        $projectId = $request->integer('project');
-        if ($projectId > 0) {
+        $projectId = $this->sqids->decode(Project::class, (string) $request->query('project', ''));
+        if ($projectId !== null) {
             $query->where('project_id', $projectId);
         }
 

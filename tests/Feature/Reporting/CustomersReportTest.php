@@ -129,10 +129,10 @@ class CustomersReportTest extends TestCase {
         $response->assertSee('60', false);
         $response->assertSee('1', false);
         $response->assertSee(route('diary.index', [
-            'customer' => $this->customer->id,
+            'customer' => sqid(\App\Models\Customer::class, $this->customer->id),
             'from' => now()->subDays(30)->toDateString(),
             'to' => now()->toDateString(),
-            'project' => null,
+            'project' => sqid(\App\Models\Project::class, null),
             'user' => null,
         ]));
         $response->assertSee(route('reports.customers.drilldown.protocols', [
@@ -178,7 +178,7 @@ class CustomersReportTest extends TestCase {
             'created_at' => now()->subDays(2),
         ]);
 
-        $response = $this->getWithDateRange('diary.index', ['customer' => $this->customer->id]);
+        $response = $this->getWithDateRange('diary.index', ['customer' => sqid(\App\Models\Customer::class, $this->customer->id)]);
 
         $response->assertOk();
         $response->assertSeeText('Passender Auftrag mit relevanten Details');

@@ -4,7 +4,7 @@
 <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
     <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
         <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Aufträge') }}</span>
-        <a href="{{ route('diary.index', ['project' => $project->id]) }}"
+        <a href="{{ route('diary.index', ['project' => sqid(\App\Models\Project::class, $project->id)]) }}"
            class="btn btn-sm btn-ghost">{{ __('In der Arbeitsliste öffnen') }}</a>
     </header>
     <ul class="divide-y divide-base-300">

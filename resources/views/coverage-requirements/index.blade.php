@@ -57,13 +57,13 @@
                         </td>
                         <td class="text-sm">
                             @if ($req->specific_date)
-                                <span class="badge badge-sm badge-warning">{{ __('Konkretes Datum') }}</span>
+                                <x-status-badge tone="warning">{{ __('Konkretes Datum') }}</x-status-badge>
                                 {{ $req->specific_date->format('d.m.Y') }}
                             @elseif ($req->weekday !== null)
-                                <span class="badge badge-sm badge-info">{{ __('Wochentag') }}</span>
+                                <x-status-badge tone="info">{{ __('Wochentag') }}</x-status-badge>
                                 {{ $weekdayLabels[$req->weekday] ?? $req->weekday }}
                             @else
-                                <span class="badge badge-sm badge-ghost">{{ __('Immer') }}</span>
+                                <x-status-badge tone="ghost">{{ __('Immer') }}</x-status-badge>
                             @endif
                         </td>
                         <td class="text-center font-semibold">{{ $req->min_staff }}</td>

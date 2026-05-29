@@ -249,6 +249,6 @@ class DashboardTest extends TestCase {
         $response = $this->actingAs($user)->get(route('dashboard'));
         $response->assertOk();
         $response->assertSee('Kritischer Mangel');
-        $response->assertSee('badge-outline badge-error', false);
+        $response->assertSee('badge-error', false);
     }
 }

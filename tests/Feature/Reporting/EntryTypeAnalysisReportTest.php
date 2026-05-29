@@ -141,7 +141,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $response->assertSee(route('diary.index', [
             'from' => now()->subDays(30)->toDateString(),
             'to' => now()->toDateString(),
-            'entry_type' => $this->entryType->id,
+            'entry_type' => sqid(\App\Models\EntryType::class, $this->entryType->id),
         ]));
         $response->assertSee(route('reports.entry-types.drilldown.protocols', [
             'entry_type_id' => $this->entryType->id,
@@ -188,7 +188,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $this->createEntryTypeWorkTimeEntry($entry);
 
         $this->getWithDateRange('reports.entry-types', [
-            'entry_type_id' => $this->entryType->id,
+            'entry_type_id' => sqid(\App\Models\EntryType::class, $this->entryType->id),
             'export' => 'pdf',
         ])->assertOk();
 
@@ -209,7 +209,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $this->createEntryTypeWorkTimeEntry($entry);
 
         $this->getWithDateRange('reports.entry-types', [
-            'entry_type_id' => $this->entryType->id,
+            'entry_type_id' => sqid(\App\Models\EntryType::class, $this->entryType->id),
             'export' => 'csv',
         ])->assertOk();
 

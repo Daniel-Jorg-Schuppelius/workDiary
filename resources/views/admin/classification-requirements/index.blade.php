@@ -114,19 +114,19 @@
                     <td>{{ $domainLabels[$requirement->required_domain] ?? $requirement->required_domain }}</td>
                     <td>{{ $phaseLabels[$requirement->enforce_phase->value] ?? $requirement->enforce_phase->value }}</td>
                     <td>
-                        <span class="badge badge-xs {{ $requirement->severity->value === 'hard' ? 'badge-error' : 'badge-warning' }}">
+                        <x-status-badge size="xs" :tone="$requirement->severity->value === 'hard' ? 'error' : 'warning'">
                             {{ $severityLabels[$requirement->severity->value] ?? $requirement->severity->value }}
-                        </span>
+                        </x-status-badge>
                     </td>
                     <td>{{ $requirement->min_count }}@if ($requirement->max_count !== null) - {{ $requirement->max_count }}@endif</td>
                     <td>
-                        <span class="badge badge-xs {{ $requirement->allow_multi ? 'badge-info' : 'badge-ghost' }}">
+                        <x-status-badge size="xs" :tone="$requirement->allow_multi ? 'info' : 'ghost'">
                             {{ $requirement->allow_multi ? __('Ja') : __('Nein') }}
-                        </span>
+                        </x-status-badge>
                     </td>
                     <td>
                         @if ($requirement->max_count !== null)
-                            <span class="badge badge-xs badge-outline">{{ __('Begrenzt') }}</span>
+                            <x-status-badge size="xs" tone="ghost" outline>{{ __('Begrenzt') }}</x-status-badge>
                         @else
                             <span class="text-base-content/50">{{ __('Offen') }}</span>
                         @endif

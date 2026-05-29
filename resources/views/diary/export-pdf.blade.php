@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
-    <title>{{ __('Tagebuch-Export') }}</title>
+    <title>{{ __('Auftragsbuch-Export') }}</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; color: #111; margin: 24px; }
         h1 { font-size: 18px; margin: 0 0 4px; }
@@ -28,7 +28,7 @@
         <button class="btn" onclick="window.print()">{{ __('Drucken / Als PDF speichern') }}</button>
     </div>
 
-    <h1>{{ __('Tagebuch-Export') }}</h1>
+    <h1>{{ __('Auftragsbuch-Export') }}</h1>
     <div class="meta">
         {{ __('Erstellt am') }} {{ $generatedAt->format('d.m.Y H:i') }} —
         {{ count($entries) }} {{ __('Einträge') }}

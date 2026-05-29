@@ -22,7 +22,7 @@ class DiaryStatusChangedMail extends Mailable {
     public function __construct(public DiaryEntry $entry, public ?int $oldStatus, public int $newStatus) {}
 
     public function envelope(): Envelope {
-        return new Envelope(subject: __('Status geändert: Tagebuch-Eintrag #:id', ['id' => $this->entry->id]));
+        return new Envelope(subject: __('Status geändert: Auftragsbuch-Eintrag #:id', ['id' => $this->entry->id]));
     }
 
     public function content(): Content {

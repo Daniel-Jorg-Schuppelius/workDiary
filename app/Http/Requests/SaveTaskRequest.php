@@ -22,6 +22,7 @@ class SaveTaskRequest extends FormRequest {
     protected array $sqidFields = [
         'milestone_id' => \App\Models\Milestone::class,
         'parent_task_id' => \App\Models\Task::class,
+        'assigned_to' => \App\Models\User::class,
     ];
 
     public function authorize(): bool {

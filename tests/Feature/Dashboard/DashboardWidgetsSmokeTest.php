@@ -44,27 +44,11 @@ class DashboardWidgetsSmokeTest extends TestCase {
             $rendered[] = $widget->key();
         }
 
-        $this->assertContains('personal-kpis', $rendered);
-        $this->assertContains('team-kpis', $rendered);
-        $this->assertContains('finance', $rendered);
-        $this->assertContains('vacation-flex', $rendered);
-        $this->assertContains('upcoming-shifts', $rendered);
-        $this->assertContains('recent-emergencies', $rendered);
+        // KPIs, Finance, Schichten, Notdienste, Team & Onboarding sind fest ins
+        // Tab-Dashboard gewandert und nicht mehr als konfigurierbare Widgets registriert.
+        // Der Widget-Loop bedient nur noch nicht-überlappende Widgets (Lesezeichen).
         $this->assertContains('bookmarks', $rendered);
-    }
-
-    #[Test]
-    public function team_widget_not_available_for_regular_user(): void {
-        $user = User::factory()->user()->create([
-            'organization_id' => $this->organization->id,
-        ]);
-
-        /** @var WidgetRegistry $registry */
-        $registry = app(WidgetRegistry::class);
-
-        $keys = $registry->availableFor($user)->map(fn($w) => $w->key())->all();
-
-        $this->assertNotContains('team-kpis', $keys);
-        $this->assertContains('personal-kpis', $keys);
+        $this->assertNotContains('personal-kpis', $rendered);
+        $this->assertNotContains('finance', $rendered);
     }
 }

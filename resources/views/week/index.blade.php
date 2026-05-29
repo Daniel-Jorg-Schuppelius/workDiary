@@ -230,12 +230,12 @@
 </script>
 
 {{-- Outlook-Style: Klick in den Tageskalender → Kontextmenü mit zeitlich
-     passender Anlage von Tagebucheintrag / Bereitschaft / Notdienst. --}}
+     passender Anlage von Auftragsbucheintrag / Bereitschaft / Notdienst. --}}
 <div id="wd-week-create-menu"
      class="fixed z-50 hidden min-w-44 rounded-box border border-base-300 bg-base-100 p-1 text-sm shadow-xl"
      role="menu" aria-label="{{ __('Neu anlegen') }}">
     <div class="px-3 py-1 text-[0.65rem] uppercase tracking-wider text-base-content/60" data-wd-menu-label></div>
-    <a href="#" class="block rounded-md px-3 py-2 hover:bg-base-200" data-wd-menu-kind="diary" data-entry-modal-trigger>{{ __('Tagebucheintrag') }}</a>
+    <a href="#" class="block rounded-md px-3 py-2 hover:bg-base-200" data-wd-menu-kind="diary" data-entry-modal-trigger>{{ __('Auftragsbucheintrag') }}</a>
     <a href="#" class="block rounded-md px-3 py-2 hover:bg-base-200" data-wd-menu-kind="shift" data-entry-modal-trigger>{{ __('Bereitschaft') }}</a>
     <a href="#" class="block rounded-md px-3 py-2 hover:bg-base-200" data-wd-menu-kind="assignment" data-entry-modal-trigger>{{ __('Notdienst') }}</a>
 </div>

@@ -11,19 +11,10 @@
 namespace App\Http\Requests;
 
 use App\Enums\KeyHandover\KeyHandoverDirection;
-use App\Http\Requests\Concerns\DecodesSqidInputs;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
 class SaveKeyHandoverRequest extends FormRequest {
-    use DecodesSqidInputs;
-
-    /** @var array<string, class-string> */
-    protected array $sqidFields = [
-        'asset_id' => \App\Models\Asset::class,
-        'customer_id' => \App\Models\Customer::class,
-    ];
-
     public function authorize(): bool {
         return true;
     }
