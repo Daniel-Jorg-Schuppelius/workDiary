@@ -40,7 +40,7 @@ class PublicTokenRouteThrottleTest extends TestCase {
         $this->assertNotNull($route, "Route '$routeName' nicht gefunden.");
 
         $hasThrottle = collect($route->gatherMiddleware())
-            ->contains(fn (string $m): bool => str_starts_with($m, 'throttle'));
+            ->contains(fn(string $m): bool => str_starts_with($m, 'throttle'));
 
         $this->assertTrue(
             $hasThrottle,
