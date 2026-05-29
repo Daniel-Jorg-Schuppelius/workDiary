@@ -32,7 +32,8 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 class WorkBalanceReportController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function __construct(protected WorkBalanceCalculator $calc) {}
+    public function __construct(protected WorkBalanceCalculator $calc) {
+    }
 
     public function index(Request $request): View|SymfonyResponse {
         /** @var User $authUser */

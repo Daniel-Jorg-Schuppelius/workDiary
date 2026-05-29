@@ -29,7 +29,8 @@ use Illuminate\View\View;
 class DiaryController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function __construct(private readonly SqidEncoder $sqids) {}
+    public function __construct(private readonly SqidEncoder $sqids) {
+    }
 
     public function index(Request $request): View|RedirectResponse {
         // Backward-Compat: alte Bookmarks mit ?from=&to= setzen den globalen

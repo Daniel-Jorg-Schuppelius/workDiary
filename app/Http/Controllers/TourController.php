@@ -28,7 +28,8 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 class TourController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function __construct(private readonly TourService $tours) {}
+    public function __construct(private readonly TourService $tours) {
+    }
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Tour::class);
