@@ -19,6 +19,7 @@ use App\Services\Archive\ArchiveService;
 use App\Services\SqidEncoder;
 use App\Services\UI\DateRangeContext;
 use App\Support\LookupCache;
+use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -29,8 +30,7 @@ use Illuminate\View\View;
 class DiaryController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function __construct(private readonly SqidEncoder $sqids) {
-    }
+    public function __construct(private readonly SqidEncoder $sqids) {}
 
     public function index(Request $request): View|RedirectResponse {
         // Backward-Compat: alte Bookmarks mit ?from=&to= setzen den globalen
@@ -201,6 +201,7 @@ class DiaryController extends Controller {
             'isDialog' => true,
             'allTags' => $this->allTags(),
             'selectedTagIds' => [],
+            'recentTagIds' => $this->recentTagIds((int) $auth->id),
             'canCreateForOthers' => $canCreateForOthers,
             'assignableUsers' => $canCreateForOthers ? LookupCache::userDropdown() : collect(),
             'prefillStartAt' => $prefillDate,
@@ -274,7 +275,8 @@ class DiaryController extends Controller {
             'isEdit' => true,
             'isDialog' => true,
             'allTags' => $this->allTags(),
-            'selectedTagIds' => $diary->tags->pluck('id')->all(),
+            'selectedTagIds' => $diary->tags->map(fn(Tag $t) => $t->sqid)->all(),
+            'recentTagIds' => $this->recentTagIds((int) $auth->id),
             'canCreateForOthers' => $canCreateForOthers,
             'assignableUsers' => $canCreateForOthers ? LookupCache::userDropdown() : collect(),
         ] + $this->entryTypeFormData());
@@ -309,7 +311,14 @@ class DiaryController extends Controller {
             return [];
         }
 
-        return collect($raw)->filter(fn($v) => is_numeric($v))->map(fn($v) => (int) $v)->all();
+        // tag_ids kommen als opake Sqids aus dem Formular; rohe numerische IDs
+        // werden als Backward-Compat-Fallback weiterhin akzeptiert.
+        return collect($raw)
+            ->map(fn($v) => is_scalar($v) ? Sqid::decodeOrNumeric(Tag::class, (string) $v) : null)
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /** @return array<string> */
@@ -345,6 +354,32 @@ class DiaryController extends Controller {
     /** @return Collection<int, Tag> */
     private function allTags(): Collection {
         return LookupCache::tagOptions();
+    }
+
+    /**
+     * Zuletzt vom Nutzer vergebene Tags (für die Schnellauswahl im Formular).
+     * Die Pivot `taggables` hat keine Timestamps, daher wird die Reihenfolge
+     * über die jüngsten Diary-Einträge des Nutzers abgeleitet.
+     *
+     * @return array<string> Opake Tag-Sqids (passend zum Formular-Tag-Picker).
+     */
+    private function recentTagIds(int $userId, int $limit = 8): array {
+        return Tag::query()
+            ->select('tags.id')
+            ->join('taggables', 'taggables.tag_id', '=', 'tags.id')
+            ->join('diary_entries', function ($join): void {
+                $join->on('diary_entries.id', '=', 'taggables.taggable_id')
+                    ->where('taggables.taggable_type', '=', (new DiaryEntry())->getMorphClass());
+            })
+            ->where('diary_entries.user_id', $userId)
+            ->orderByDesc('diary_entries.id')
+            ->pluck('tags.id')
+            ->map(fn($id) => (int) $id)
+            ->unique()
+            ->take($limit)
+            ->map(fn(int $id) => $this->sqids->encode(Tag::class, $id))
+            ->values()
+            ->all();
     }
 
     /**

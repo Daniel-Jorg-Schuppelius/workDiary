@@ -32,7 +32,7 @@ class ApiTest extends TestCase {
         Sanctum::actingAs($user);
         $this->getJson('/api/me')
             ->assertOk()
-            ->assertJsonPath('data.id', $user->id)
+            ->assertJsonPath('data.id', $user->sqid)
             ->assertJsonPath('meta.roles.0', UserRole::User->value);
     }
 

@@ -17,10 +17,10 @@
         <x-page-toolbar :subtitle="__('Aufwand, Nacharbeit und Nicht-Abrechenbares je Kunde.')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.customers', array_filter(['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'project_id' => $projectId, 'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId), 'export' => 'csv']))"
+                            :href="route('reports.customers', array_filter(['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId), 'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId), 'export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.customers', array_filter(['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'project_id' => $projectId, 'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId), 'export' => 'pdf']))"
+                            :href="route('reports.customers', array_filter(['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId), 'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId), 'export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
                 <x-help-button topic="reports.customer-analysis" />
             </x-slot:actions>
@@ -36,7 +36,7 @@
             <select id="rep-project" name="project_id" class="select select-sm select-bordered">
                 <option value="">{{ __('Alle') }}</option>
                 @foreach($projects as $project)
-                    <option value="{{ $project->id }}" @selected($projectId === $project->id)>{{ $project->name }}</option>
+                    <option value="{{ $project->sqid }}" @selected(\App\Support\Sqid::encode(\App\Models\Project::class, $projectId) === $project->sqid)>{{ $project->name }}</option>
                 @endforeach
             </select>
         </x-filter-field>
@@ -115,12 +115,12 @@
                             'from' => $from->toDateString(),
                             'to' => $to->toDateString(),
                             'project' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId),
-                            'user' => $userId,
+                            'user' => \App\Support\Sqid::encode(\App\Models\User::class, $userId),
                         ];
                         $reportDrilldownBase = array_filter([
-                            'customer_id' => $row['customerId'],
-                            'project_id' => $projectId,
-                            'user_id' => $userId,
+                            'customer_id' => \App\Support\Sqid::encode(\App\Models\Customer::class, $row['customerId']),
+                            'project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId),
+                            'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId),
                         ]);
                     @endphp
                     <tr>

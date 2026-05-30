@@ -53,7 +53,7 @@
         <select name="on_call_shift_id" class="select select-bordered w-full">
             <option value="">{{ __('— keine —') }}</option>
             @foreach ($shiftOptions as $s)
-                <option value="{{ $s->id }}" @selected($selectedShift === (int) $s->id)>
+                <option value="{{ $s->sqid }}" @selected((string) old('on_call_shift_id', \App\Support\Sqid::encode(\App\Models\OnCallShift::class, $selectedShift)) === $s->sqid)>
                     {{ $s->user?->name }} · {{ $s->start_at?->format('d.m.Y H:i') }} – {{ $s->end_at?->format('d.m.Y H:i') }}
                 </option>
             @endforeach

@@ -50,7 +50,7 @@
                     @foreach ($projects as $project)
                         <tr>
                             <td>
-                                <input type="checkbox" class="checkbox checkbox-xs" name="project_ids[]" value="{{ $project->id }}">
+                                <input type="checkbox" class="checkbox checkbox-xs" name="project_ids[]" value="{{ \App\Support\Sqid::encode(\App\Models\Project::class, $project->id) }}">
                             </td>
                             <td class="font-medium">{{ $project->name }}</td>
                             <td>{{ $project->customer?->name }}</td>

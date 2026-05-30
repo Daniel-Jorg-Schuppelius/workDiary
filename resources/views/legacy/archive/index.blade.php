@@ -135,7 +135,8 @@
                         <select name="user" class="select select-bordered select-sm w-full">
                             <option value="">{{ __('Alle') }}</option>
                             @foreach ($legacyUsers as $legacyUser)
-                                <option value="{{ $legacyUser->id }}" @selected(($filters['user'] ?? '') == $legacyUser->id)>{{ $legacyUser->uname }}</option>
+                                @php($legacySqid = \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $legacyUser->id))
+                                <option value="{{ $legacySqid }}" @selected((string) ($filters['user'] ?? '') === $legacySqid)>{{ $legacyUser->uname }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -412,7 +413,7 @@
                             <select name="user" class="select select-bordered select-sm">
                                 <option value="">{{ __('Alle') }}</option>
                                 @foreach ($legacyUsers as $legacyUser)
-                                    <option value="{{ $legacyUser->id }}">{{ $legacyUser->uname }}</option>
+                                    <option value="{{ \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $legacyUser->id) }}">{{ $legacyUser->uname }}</option>
                                 @endforeach
                             </select>
                         </div>

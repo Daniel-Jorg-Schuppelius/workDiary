@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueVisibility};
 use App\Exceptions\InvalidOpenIssueTransitionException;
 use App\Models\{Customer, DiaryEntry, OpenIssue, Project, User};
+use App\Support\Sqid;
 use App\Services\OpenIssue\OpenIssueService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -35,7 +36,8 @@ class OpenIssueController extends Controller {
 
     public function __construct(
         private readonly OpenIssueService $service,
-    ) {}
+    ) {
+    }
 
     public function create(Request $request): View {
         Gate::authorize('create', OpenIssue::class);
@@ -46,14 +48,18 @@ class OpenIssueController extends Controller {
         }
 
         $subjectClass = self::SUBJECT_MAP[$subjectKind];
-        $subjectId = (int) $request->query('subject_id', 0);
+        $rawSubjectId = (string) $request->query('subject_id', '');
+        $subjectId = Sqid::decode($subjectClass, $rawSubjectId);
+        if ($subjectId === null && is_numeric($rawSubjectId)) {
+            $subjectId = (int) $rawSubjectId;
+        }
         if ($subjectId < 1 || $subjectClass::query()->whereKey($subjectId)->doesntExist()) {
             abort(404);
         }
 
         return view('open-issues._form_dialog', [
             'subjectKind' => $subjectKind,
-            'subjectId' => $subjectId,
+            'subjectId' => Sqid::encode($subjectClass, $subjectId),
             'canPublishToCustomer' => Gate::allows('publishToCustomer', OpenIssue::class),
             'canAssign' => Gate::allows('assign', OpenIssue::class),
         ]);
@@ -74,7 +80,7 @@ class OpenIssueController extends Controller {
 
         $data = $request->validate([
             'subject_kind' => ['required', 'string', 'in:' . implode(',', array_keys(self::SUBJECT_MAP))],
-            'subject_id' => ['required', 'integer', 'min:1'],
+            'subject_id' => ['required', 'string'],
             'title' => ['required', 'string', 'max:180'],
             'description' => ['nullable', 'string', 'max:10000'],
             'category' => ['nullable', 'string', 'max:40'],
@@ -93,8 +99,15 @@ class OpenIssueController extends Controller {
         }
 
         $subjectClass = self::SUBJECT_MAP[$data['subject_kind']];
+        $decodedSubjectId = Sqid::decode($subjectClass, (string) $data['subject_id']);
+        if ($decodedSubjectId === null && is_numeric((string) $data['subject_id'])) {
+            $decodedSubjectId = (int) $data['subject_id'];
+        }
+        if ($decodedSubjectId === null || $decodedSubjectId < 1) {
+            abort(404);
+        }
         /** @var Model|null $subject */
-        $subject = $subjectClass::query()->find((int) $data['subject_id']);
+        $subject = $subjectClass::query()->find($decodedSubjectId);
         if ($subject === null) {
             abort(404);
         }

@@ -100,7 +100,7 @@ class TaskApiTest extends TestCase {
 
         Sanctum::actingAs($this->owner);
 
-        $this->getJson(route('api.tasks.index', ['project' => $this->project->id, 'per_page' => 2]))
+        $this->getJson(route('api.tasks.index', ['project' => $this->project->sqid, 'per_page' => 2]))
             ->assertOk()
             ->assertJsonCount(2, 'data')
             ->assertJsonPath('meta.per_page', 2)

@@ -16,6 +16,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\{AuditLog, Customer, DiaryEntry, OpenIssue, Project, Protocol, User};
+use App\Support\Sqid;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
@@ -30,9 +31,25 @@ class CustomerDrilldownReportController extends Controller {
         $from = $range['from']->startOfDay();
         $to = $range['to']->endOfDay();
 
-        $customerId = (int) $request->integer('customer_id');
-        $projectId = $request->filled('project_id') ? (int) $request->integer('project_id') : null;
-        $userId = $request->filled('user_id') ? (int) $request->integer('user_id') : null;
+        $rawCustomerId = $request->query('customer_id');
+        $customerId = Sqid::decode(Customer::class, $rawCustomerId);
+        if ($customerId === null && is_numeric($rawCustomerId)) {
+            $customerId = (int) $rawCustomerId;
+        }
+        $customerId ??= 0;
+
+        $rawProjectId = $request->query('project_id');
+        $projectId = Sqid::decode(Project::class, $rawProjectId);
+        if ($projectId === null && is_numeric($rawProjectId)) {
+            $projectId = (int) $rawProjectId;
+        }
+
+        $rawUserId = $request->query('user_id');
+        $userId = Sqid::decode(User::class, $rawUserId);
+        if ($userId === null && is_numeric($rawUserId)) {
+            $userId = (int) $rawUserId;
+        }
+
         $escalatedOnly = $request->boolean('escalated');
 
         $customer = $customerId > 0
@@ -156,9 +173,24 @@ class CustomerDrilldownReportController extends Controller {
         $from = $range['from']->startOfDay();
         $to = $range['to']->endOfDay();
 
-        $customerId = (int) $request->integer('customer_id');
-        $projectId = $request->filled('project_id') ? (int) $request->integer('project_id') : null;
-        $userId = $request->filled('user_id') ? (int) $request->integer('user_id') : null;
+        $rawCustomerId = $request->query('customer_id');
+        $customerId = Sqid::decode(Customer::class, $rawCustomerId);
+        if ($customerId === null && is_numeric($rawCustomerId)) {
+            $customerId = (int) $rawCustomerId;
+        }
+        $customerId ??= 0;
+
+        $rawProjectId = $request->query('project_id');
+        $projectId = Sqid::decode(Project::class, $rawProjectId);
+        if ($projectId === null && is_numeric($rawProjectId)) {
+            $projectId = (int) $rawProjectId;
+        }
+
+        $rawUserId = $request->query('user_id');
+        $userId = Sqid::decode(User::class, $rawUserId);
+        if ($userId === null && is_numeric($rawUserId)) {
+            $userId = (int) $rawUserId;
+        }
 
         $customer = $customerId > 0
             ? Customer::query()->find($customerId)

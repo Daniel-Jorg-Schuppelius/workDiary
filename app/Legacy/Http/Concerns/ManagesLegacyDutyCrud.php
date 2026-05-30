@@ -10,7 +10,9 @@
 
 namespace App\Legacy\Http\Concerns;
 
+use App\Legacy\Models\LegacyUser;
 use App\Legacy\Support\LegacyRoleResolver;
+use App\Support\Sqid;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -25,11 +27,16 @@ trait ManagesLegacyDutyCrud {
     private function legacyDutyIndexData(Request $request, Builder $query): array {
         $legacyUserId = LegacyRoleResolver::resolveLegacyUserId(Auth::user());
         $isAdmin = LegacyRoleResolver::isAdmin(Auth::user());
+        $rawFilterUser = $request->query('user');
+        $filterUserId = Sqid::decode(LegacyUser::class, $rawFilterUser);
+        if ($filterUserId === null && is_numeric($rawFilterUser)) {
+            $filterUserId = (int) $rawFilterUser;
+        }
 
         if (! $isAdmin && $legacyUserId > 3) {
             $query->where('user', $legacyUserId);
-        } elseif ($request->filled('user')) {
-            $query->where('user', (int) $request->user);
+        } elseif ($filterUserId !== null) {
+            $query->where('user', $filterUserId);
         }
 
         if ($request->filled('from')) {

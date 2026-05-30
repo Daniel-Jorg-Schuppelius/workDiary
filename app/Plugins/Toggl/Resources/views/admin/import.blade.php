@@ -94,7 +94,7 @@
                                     <select name="project_id" required class="select select-sm select-bordered">
                                         <option value="">{{ __('— Projekt wählen —') }}</option>
                                         @foreach ($projects as $project)
-                                            <option value="{{ $project->id }}">
+                                            <option value="{{ $project->sqid }}">
                                                 {{ $project->name }} ({{ $customerName[$project->customer_id] ?? '—' }})
                                             </option>
                                         @endforeach

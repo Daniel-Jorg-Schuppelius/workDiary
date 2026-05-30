@@ -28,7 +28,9 @@
                 <select id="vac-user" name="user_id" class="select select-bordered select-sm" onchange="this.form.submit()">
                     <option value="">{{ __('Alle Mitarbeiter') }}</option>
                     @foreach ($users as $u)
-                        <option value="{{ $u['id'] ?? $u->id }}" @selected((string) ($filters['user_id'] ?? '') === (string) ($u['id'] ?? $u->id))>{{ $u['name'] ?? $u->name }}</option>
+                        @php($uid = (int) ($u['id'] ?? $u->id))
+                        @php($usqid = \App\Support\Sqid::encode(\App\Models\User::class, $uid))
+                        <option value="{{ $usqid }}" @selected((string) ($filters['user_id'] ?? '') === $usqid)>{{ $u['name'] ?? $u->name }}</option>
                     @endforeach
                 </select>
             </x-filter-field>

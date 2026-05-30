@@ -11,8 +11,10 @@
 use App\Http\Controllers\Api\{AssetStatusVisibilityController, AssetTimelineController, AttachmentController, AttendanceController, CommentController, CustomerController, DashboardController, DiaryController, EmergencyAssignmentController, FlexController, MaterialController, MeController, OnCallShiftController, ProjectController, PushSubscriptionController, StopwatchController, TagController, TaskController, TimesheetController, TimesheetEntryController, TimesheetMaterialController};
 use Illuminate\Support\Facades\Route;
 
-// Siehe routes/web.php: Projekt-Bindung akzeptiert ID oder "<kunde>/<projekt>".
-Route::pattern('project', '[0-9]+|[a-z0-9-]+/[a-z0-9-]+');
+// Siehe routes/web.php: Projekt-Bindung akzeptiert ID/Sqid oder
+// "<kunde>/<projekt>". [A-Za-z0-9]+ setzt ein alphanumerisches Sqid-Alphabet
+// voraus (abgesichert via SqidRoutePatternTest).
+Route::pattern('project', '[A-Za-z0-9]+|[a-z0-9-]+/[a-z0-9-]+');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('me', MeController::class)->name('api.me');

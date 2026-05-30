@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\Facility\RoomUsageType;
 use App\Models\{Building, CleaningProfile, Customer, Floor, Room, Site};
 use App\Services\Event\RoomBookingService;
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -129,10 +130,15 @@ class RoomController extends Controller {
      * @return array{customer_id: int|null, site_id: int|null, building_id: int|null, floor_id: int|null}
      */
     private function resolvePrefill(Request $request): array {
-        $floorId = $request->integer('floor') ?: null;
-        $buildingId = $request->integer('building') ?: null;
-        $siteId = $request->integer('site') ?: null;
-        $customerId = $request->integer('customer') ?: null;
+        $rawFloor = (string) $request->query('floor', '');
+        $rawBuilding = (string) $request->query('building', '');
+        $rawSite = (string) $request->query('site', '');
+        $rawCustomer = (string) $request->query('customer', '');
+
+        $floorId = Sqid::decodeOrNumeric(Floor::class, $rawFloor);
+        $buildingId = Sqid::decodeOrNumeric(Building::class, $rawBuilding);
+        $siteId = Sqid::decodeOrNumeric(Site::class, $rawSite);
+        $customerId = Sqid::decodeOrNumeric(Customer::class, $rawCustomer);
 
         if ($floorId !== null) {
             $floor = Floor::query()->with('building.site')->find($floorId);

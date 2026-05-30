@@ -6,7 +6,7 @@
         <select name="customer_id" required class="select select-bordered w-full">
             <option value="">{{ __('-- bitte wählen --') }}</option>
             @foreach ($customers as $c)
-                <option value="{{ $c->id }}" @selected(old('customer_id') == $c->id)>{{ $c->name }}</option>
+                <option value="{{ $c->sqid }}" @selected((string) old('customer_id') === $c->sqid)>{{ $c->name }}</option>
             @endforeach
         </select>
     </div>
@@ -15,7 +15,7 @@
         <select name="project_id" class="select select-bordered w-full" data-depends-on="customer_id">
             <option value="">{{ __('alle Projekte des Kunden') }}</option>
             @foreach ($projects as $p)
-                <option value="{{ $p->id }}" data-parent="{{ $p->customer_id }}" @selected(old('project_id') == $p->id)>{{ $p->name }}</option>
+                <option value="{{ $p->sqid }}" data-parent="{{ \App\Support\Sqid::encode(\App\Models\Customer::class, $p->customer_id) }}" @selected((string) old('project_id') === $p->sqid)>{{ $p->name }}</option>
             @endforeach
         </select>
     </div>

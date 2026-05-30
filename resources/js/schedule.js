@@ -168,7 +168,7 @@ function openShiftDialog({
     const status = isEdit ? (shift?.status ?? "") : "";
     const isAdmin = !!_cfg?.isAdmin;
     const isOwner =
-        isEdit && Number(shift?.user_id) === Number(_cfg?.currentUserId ?? 0);
+        isEdit && String(shift?.user_id ?? "") === String(_cfg?.currentUserId ?? "");
     const showPublish = isEdit && isAdmin && status === "draft";
     const showConfirm = isEdit && isOwner && status === "published";
     document

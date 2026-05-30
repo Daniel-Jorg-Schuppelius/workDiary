@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{Customer, Floor, Room, Site};
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -19,17 +20,18 @@ class SiteController extends Controller {
     public function index(Request $request): View {
         Gate::authorize('viewAny', Site::class);
 
-        $customerId = $request->query('customer');
+        $rawCustomer = (string) $request->query('customer', '');
+        $customerId = Sqid::decodeOrNumeric(Customer::class, $rawCustomer);
         $query = Site::query()
             ->with('customer')
             ->withCount('buildings')
             ->orderBy('name');
-        if ($customerId !== null && $customerId !== '') {
-            $query->where('customer_id', (int) $customerId);
+        if ($customerId !== null) {
+            $query->where('customer_id', $customerId);
         }
         $sites = $query->paginate(50)->withQueryString();
-        $customer = $customerId !== null && $customerId !== ''
-            ? Customer::query()->find((int) $customerId)
+        $customer = $customerId !== null
+            ? Customer::query()->find($customerId)
             : null;
 
         return view('sites.index', [
@@ -119,6 +121,16 @@ class SiteController extends Controller {
 
     /** @return array<string, mixed> */
     private function validateSite(Request $request): array {
+        $rawCustomerId = $request->input('customer_id');
+        $customerId = \App\Support\Sqid::decode(\App\Models\Customer::class, $rawCustomerId);
+        if ($customerId === null && is_numeric($rawCustomerId)) {
+            $customerId = (int) $rawCustomerId;
+        }
+
+        $request->merge([
+            'customer_id' => $customerId,
+        ]);
+
         $data = $request->validate([
             'customer_id' => ['required', 'integer', 'exists:customers,id'],
             'name' => ['required', 'string', 'max:160'],

@@ -12,7 +12,7 @@
         <select name="site_id" required class="select select-bordered w-full @error('site_id') select-error @enderror">
             <option value="">{{ __('— bitte wählen —') }}</option>
             @foreach ($sites as $s)
-                <option value="{{ $s->id }}" @selected((int) old('site_id', $building?->site_id ?? request('site')) === (int) $s->id)>{{ $s->name }}@if ($s->customer) — {{ $s->customer->name }}@endif</option>
+                <option value="{{ $s->sqid }}" @selected((string) old('site_id', \App\Support\Sqid::encode(\App\Models\Site::class, $building?->site_id ?? \App\Support\Sqid::decode(\App\Models\Site::class, request('site'))) ) === $s->sqid)>{{ $s->name }}@if ($s->customer) — {{ $s->customer->name }}@endif</option>
             @endforeach
         </select>
         @error('site_id')<p class="text-error text-sm">{{ $message }}</p>@enderror

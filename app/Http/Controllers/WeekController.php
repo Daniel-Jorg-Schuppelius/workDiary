@@ -46,10 +46,10 @@ class WeekController extends Controller {
         }
 
         $teamScope = $request->query('scope') === 'team';
-        $filterUserId = $teamScope ? (int) $request->query('user', 0) : 0;
-        if ($filterUserId <= 0) {
-            $filterUserId = null;
-        }
+        $rawFilterUser = $teamScope ? (string) $request->query('user', '') : '';
+        $filterUserId = $teamScope
+            ? \App\Support\Sqid::decodeOrNumeric(User::class, $rawFilterUser)
+            : null;
 
         /** @var User $authUser */
         $authUser = Auth::user();

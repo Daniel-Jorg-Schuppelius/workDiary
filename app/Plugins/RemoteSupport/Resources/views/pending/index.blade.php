@@ -55,7 +55,7 @@
                                     <select name="asset_id" required class="select select-sm select-bordered">
                                         <option value="">{{ __('— Gerät wählen —') }}</option>
                                         @foreach ($assets as $asset)
-                                            <option value="{{ $asset->id }}">{{ $asset->name ?: $asset->asset_no }} ({{ $asset->asset_no }})</option>
+                                            <option value="{{ $asset->sqid }}">{{ $asset->name ?: $asset->asset_no }} ({{ $asset->asset_no }})</option>
                                         @endforeach
                                     </select>
                                 </label>
@@ -80,7 +80,7 @@
                                         <select name="customer_id" required class="select select-sm select-bordered">
                                             <option value="">{{ __('— Kunde —') }}</option>
                                             @foreach ($customers as $customer)
-                                                <option value="{{ $customer->id }}">{{ $customer->company ?: $customer->name }}</option>
+                                                <option value="{{ $customer->sqid }}">{{ $customer->company ?: $customer->name }}</option>
                                             @endforeach
                                         </select>
                                     </label>

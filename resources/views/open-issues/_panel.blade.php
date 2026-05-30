@@ -16,7 +16,7 @@
         @if ($canCreate)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
-                        :href="route('open-issues.create', ['subject_kind' => $subjectKind, 'subject_id' => $subject->id])"
+                        :href="route('open-issues.create', ['subject_kind' => $subjectKind, 'subject_id' => \App\Support\Sqid::encode(get_class($subject), (int) $subject->id)])"
                         show-label>{{ __('open-issue.action.create') }}</x-icon-btn>
         @endif
     </div>

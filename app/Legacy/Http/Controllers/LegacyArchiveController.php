@@ -13,10 +13,11 @@ namespace App\Legacy\Http\Controllers;
 use App\Enums\Vacation\VacationStatus;
 use App\Http\Controllers\Controller;
 use App\Legacy\Http\Concerns\RequiresLegacyAdmin;
-use App\Legacy\Models\{LegacyArchiveDiaryEntry, LegacyArchiveNotdienst, LegacyArchiveOnCall};
+use App\Legacy\Models\{LegacyArchiveDiaryEntry, LegacyArchiveNotdienst, LegacyArchiveOnCall, LegacyUser};
 use App\Legacy\Services\{LegacyArchiveService, LegacyWeekCalendarService};
 use App\Legacy\Support\LegacyRoleResolver;
 use App\Models\{User, Vacation};
+use App\Support\Sqid;
 use App\Services\HolidayService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request, Response};
@@ -190,12 +191,18 @@ class LegacyArchiveController extends Controller {
             $vacationQuery->where('status', $request->vstatus);
         }
 
+        $rawFilterUser = $request->query('user');
+        $filterUserId = Sqid::decode(LegacyUser::class, $rawFilterUser);
+        if ($filterUserId === null && is_numeric($rawFilterUser)) {
+            $filterUserId = (int) $rawFilterUser;
+        }
+
         if (! $canViewAll && $legacyUserId > 0) {
             $diaryQuery->where('user', $legacyUserId);
             $onCallQuery->where('user', $legacyUserId);
             $notdienstQuery->where('user', $legacyUserId);
-        } elseif ($canViewAll && $request->filled('user')) {
-            $targetUser = (int) $request->user;
+        } elseif ($canViewAll && $filterUserId !== null) {
+            $targetUser = $filterUserId;
             $diaryQuery->where('user', $targetUser);
             $onCallQuery->where('user', $targetUser);
             $notdienstQuery->where('user', $targetUser);
@@ -311,6 +318,13 @@ class LegacyArchiveController extends Controller {
 
     public function run(Request $request, LegacyArchiveService $service): RedirectResponse {
         $this->ensureAdmin();
+
+        $rawUser = $request->input('user');
+        $targetUser = Sqid::decode(LegacyUser::class, $rawUser);
+        if ($targetUser === null && is_numeric($rawUser)) {
+            $targetUser = (int) $rawUser;
+        }
+        $request->merge(['user' => $targetUser]);
 
         $data = $request->validate([
             'months' => ['required', 'integer', 'in:3,6,9,12'],

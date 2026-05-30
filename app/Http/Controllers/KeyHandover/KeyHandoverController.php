@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveKeyHandoverRequest;
 use App\Models\{Asset, KeyHandover, User};
 use App\Services\KeyHandover\KeyHandoverService;
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -26,7 +27,8 @@ class KeyHandoverController extends Controller {
         Gate::authorize('viewAny', KeyHandover::class);
 
         $q = trim($request->string('q')->toString());
-        $assetFilter = $request->integer('asset');
+        $rawAsset = (string) $request->query('asset', '');
+        $assetFilter = Sqid::decodeOrNumeric(Asset::class, $rawAsset, 0);
         $directionFilter = $request->string('direction')->toString();
 
         $query = KeyHandover::query()
@@ -53,7 +55,7 @@ class KeyHandoverController extends Controller {
             'directionOptions' => $this->directionOptions(),
             'filters' => [
                 'q' => $q,
-                'asset' => $assetFilter,
+                'asset' => $assetFilter > 0 ? Sqid::encode(Asset::class, $assetFilter) : null,
                 'direction' => $directionFilter,
             ],
             'canCreate' => Gate::allows('create', KeyHandover::class),
@@ -63,7 +65,8 @@ class KeyHandoverController extends Controller {
     public function create(Request $request): View {
         Gate::authorize('create', KeyHandover::class);
 
-        $assetId = $request->integer('asset');
+        $rawAsset = (string) $request->query('asset', '');
+        $assetId = Sqid::decodeOrNumeric(Asset::class, $rawAsset, 0);
 
         return view('key-handovers.create', [
             'directionOptions' => $this->directionOptions(),

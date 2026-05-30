@@ -16,6 +16,7 @@ use App\Http\Requests\SaveTimesheetRequest;
 use App\Http\Resources\TimesheetResource;
 use App\Models\{Project, Timesheet};
 use App\Services\Timesheet\{PdfRenderer, SignatureService};
+use App\Support\Sqid;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -27,7 +28,7 @@ class TimesheetController extends Controller {
         if (! ($request->user()?->isAdmin())) {
             $query->forUser((int) Auth::id());
         }
-        if ($projectId = $request->integer('project')) {
+        if ($projectId = Sqid::decode(Project::class, $request->query('project'))) {
             $query->where('project_id', $projectId);
         }
 

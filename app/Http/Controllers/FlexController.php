@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Services\Calendar\WeekViewService;
 use App\Services\Flextime\FlexCalculator;
 use App\Services\UI\DateRangeContext;
+use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +24,8 @@ use Illuminate\View\View;
 class FlexController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function __construct(protected FlexCalculator $calc, protected WeekViewService $weekService) {}
+    public function __construct(protected FlexCalculator $calc, protected WeekViewService $weekService) {
+    }
 
     public function index(Request $request): View|RedirectResponse {
         if ($redirect = $this->migrateLegacyYearMonth($request, 'flex.index')) {
@@ -34,8 +36,9 @@ class FlexController extends Controller {
         $authUser = Auth::user();
         $canSeeOthers = $authUser->canViewOthersFlex();
 
-        // Admins/Buchhaltung dürfen via ?user=… die Gleitzeit eines anderen Users sehen.
-        $targetId = (int) ($request->input('user') ?? $authUser->id);
+        // Admins/Buchhaltung dürfen via ?user=… (Sqid) die Gleitzeit eines anderen Users sehen.
+        $rawTarget = (string) $request->input('user', '');
+        $targetId = Sqid::decodeOrNumeric(User::class, $rawTarget, (int) $authUser->id);
         $user = ($canSeeOthers && $targetId !== (int) $authUser->id)
             ? User::findOrFail($targetId)
             : $authUser;

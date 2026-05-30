@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveProjectRequest;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
+use App\Support\Sqid;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -36,7 +37,7 @@ class ProjectController extends Controller {
     public function index(Request $request): AnonymousResourceCollection {
         Gate::authorize('viewAny', Project::class);
         $query = Project::query();
-        if ($customerId = $request->integer('customer')) {
+        if ($customerId = Sqid::decode(\App\Models\Customer::class, $request->query('customer'))) {
             $query->where('customer_id', $customerId);
         }
         if ($status = $request->string('status')->toString()) {

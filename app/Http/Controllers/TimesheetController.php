@@ -41,7 +41,9 @@ class TimesheetController extends Controller {
             $query->forUser($userId);
         }
 
-        if ($projectId = $request->integer('project')) {
+        $rawProject = (string) $request->query('project', '');
+        $projectId = \App\Support\Sqid::decodeOrNumeric(Project::class, $rawProject);
+        if ($projectId) {
             $query->where('project_id', $projectId);
         }
         if ($status = $request->string('status')->toString()) {
@@ -60,6 +62,7 @@ class TimesheetController extends Controller {
             'timesheets' => $query->paginate((int) Setting::get('pagination.timesheets', 20))->withQueryString(),
             'scope' => $scope,
             'isAdmin' => $isAdmin,
+            'selectedProjectSqid' => $projectId ? \App\Support\Sqid::encode(Project::class, $projectId) : null,
             'sort' => $sort,
             'dir' => $dir,
         ]);
@@ -111,6 +114,23 @@ class TimesheetController extends Controller {
      */
     public function storeQuick(Request $request): RedirectResponse {
         Gate::authorize('create', Timesheet::class);
+
+        $rawCustomerId = $request->input('customer_id');
+        $customerId = \App\Support\Sqid::decode(\App\Models\Customer::class, $rawCustomerId);
+        if ($customerId === null && is_numeric($rawCustomerId)) {
+            $customerId = (int) $rawCustomerId;
+        }
+
+        $rawProjectId = $request->input('project_id');
+        $projectId = \App\Support\Sqid::decode(\App\Models\Project::class, $rawProjectId);
+        if ($projectId === null && is_numeric($rawProjectId)) {
+            $projectId = (int) $rawProjectId;
+        }
+
+        $request->merge([
+            'customer_id' => $customerId,
+            'project_id' => $projectId,
+        ]);
 
         $data = $request->validate([
             'customer_id' => ['required', 'integer', 'exists:customers,id'],

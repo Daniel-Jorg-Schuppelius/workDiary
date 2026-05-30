@@ -13,6 +13,7 @@ namespace App\Plugins\Toggl\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, Organization, Project, User};
 use App\Plugins\Toggl\{TogglConfig, TogglImportService};
+use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -79,6 +80,16 @@ class TogglController extends Controller {
 
     public function assign(Request $request): RedirectResponse {
         $admin = $this->admin();
+
+        $rawProjectId = $request->input('project_id');
+        $projectId = Sqid::decode(Project::class, $rawProjectId);
+        if ($projectId === null && is_numeric($rawProjectId)) {
+            $projectId = (int) $rawProjectId;
+        }
+
+        $request->merge([
+            'project_id' => $projectId,
+        ]);
 
         $validated = $request->validate([
             'client_name' => ['nullable', 'string', 'max:191'],

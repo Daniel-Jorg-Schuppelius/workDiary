@@ -111,9 +111,22 @@ class AssetUpdateControllerTest extends TestCase {
         ]);
 
         $this->actingAs($user)
-            ->get(route('assets.create', ['room' => $room->id]))
+            ->get(route('assets.create', ['room' => $room->sqid]))
             ->assertOk()
             ->assertSee('Serverraum 42');
+    }
+
+    public function test_create_prefills_room_from_numeric_query_fallback(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+        $room = Room::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Serverraum 99',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('assets.create', ['room' => (string) $room->id]))
+            ->assertOk()
+            ->assertSee('Serverraum 99');
     }
 
     private function userWithRole(string $role): User {

@@ -16,6 +16,7 @@ use App\Models\{Asset, Customer, Organization, User};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
 use App\Plugins\RemoteSupport\RemoteSupportService;
 use App\Services\Asset\AssetService;
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -57,6 +58,16 @@ class RemoteSupportPendingController extends Controller {
     public function assignExisting(Request $request): RedirectResponse {
         $admin = $this->admin();
 
+        $rawAssetId = $request->input('asset_id');
+        $assetId = Sqid::decode(Asset::class, $rawAssetId);
+        if ($assetId === null && is_numeric($rawAssetId)) {
+            $assetId = (int) $rawAssetId;
+        }
+
+        $request->merge([
+            'asset_id' => $assetId,
+        ]);
+
         $validated = $request->validate([
             'provider' => ['required', 'string', 'in:' . implode(',', self::PROVIDERS)],
             'remote_id' => ['required', 'string', 'max:191'],
@@ -77,6 +88,16 @@ class RemoteSupportPendingController extends Controller {
 
     public function assignNew(Request $request, AssetService $assets): RedirectResponse {
         $admin = $this->admin();
+
+        $rawCustomerId = $request->input('customer_id');
+        $customerId = Sqid::decode(Customer::class, $rawCustomerId);
+        if ($customerId === null && is_numeric($rawCustomerId)) {
+            $customerId = (int) $rawCustomerId;
+        }
+
+        $request->merge([
+            'customer_id' => $customerId,
+        ]);
 
         $validated = $request->validate([
             'provider' => ['required', 'string', 'in:' . implode(',', self::PROVIDERS)],

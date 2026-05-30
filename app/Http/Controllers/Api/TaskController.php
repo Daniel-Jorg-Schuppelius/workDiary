@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveTaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\{Project, Task};
+use App\Support\Sqid;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -35,13 +36,13 @@ class TaskController extends Controller {
     public function index(Request $request): AnonymousResourceCollection {
         Gate::authorize('viewAny', Task::class);
         $query = Task::query();
-        if ($projectId = $request->integer('project')) {
+        if ($projectId = Sqid::decode(Project::class, $request->query('project'))) {
             $query->where('project_id', $projectId);
         }
         if ($status = $request->string('status')->toString()) {
             $query->where('status', $status);
         }
-        if ($assignedTo = $request->integer('assigned_to')) {
+        if ($assignedTo = Sqid::decode(\App\Models\User::class, $request->query('assigned_to'))) {
             $query->where('assigned_to', $assignedTo);
         }
 

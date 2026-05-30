@@ -23,7 +23,7 @@ class MaterialResource extends JsonResource {
     /** @return array<string, mixed> */
     public function toArray(Request $request): array {
         return [
-            'id' => $this->id,
+            'id' => $this->sqid,
             'sku' => $this->sku,
             'name' => $this->name,
             'unit' => $this->unit,

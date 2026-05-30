@@ -67,7 +67,7 @@
                 @php
                     $params = ['activeMonth' => $m['key']];
                     if ($canSeeOthers && (int) $user->id !== (int) ($authUser->id ?? 0)) {
-                        $params['user'] = $user->id;
+                        $params['user'] = $user->sqid;
                     }
                 @endphp
                 <a role="tab"

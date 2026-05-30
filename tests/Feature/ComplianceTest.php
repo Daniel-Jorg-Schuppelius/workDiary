@@ -44,7 +44,7 @@ class ComplianceTest extends TestCase {
 
     private function payload(User $u, array $overrides = []): array {
         return array_replace([
-            'user_id' => $u->id,
+            'user_id' => $u->sqid,
             'date' => '2026-06-01',
             'start_time' => '08:00',
             'end_time' => '12:00',
@@ -290,7 +290,7 @@ class ComplianceTest extends TestCase {
         CoverageRequirement::create([
             'organization_id' => $this->organization->id,
             'duty_plan_id' => $plan->id,
-            'shift_type_id' => $type->id,
+            'shift_type_id' => $type->sqid,
             'weekday' => null,
             'specific_date' => '2026-06-01',
             'min_staff' => 1,
@@ -301,7 +301,7 @@ class ComplianceTest extends TestCase {
 
         $res = $this->actingAs($admin)
             ->postJson(route('schedule.shifts.store'), $this->payload($u, [
-                'shift_type_id' => $type->id,
+                'shift_type_id' => $type->sqid,
                 'duty_plan_id' => $plan->id,
             ]))
             ->assertCreated();

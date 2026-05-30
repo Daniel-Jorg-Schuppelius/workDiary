@@ -83,7 +83,8 @@
                             <select name="user" class="select select-bordered select-sm w-full">
                                 <option value="">{{ __('Alle') }}</option>
                                 @foreach ($users as $u)
-                                    <option value="{{ $u->id }}" @selected((int) ($filters['user'] ?? 0) === (int) $u->id)>{{ $u->uname }}</option>
+                                    @php($legacySqid = \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $u->id))
+                                    <option value="{{ $legacySqid }}" @selected((string) ($filters['user'] ?? '') === $legacySqid)>{{ $u->uname }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -279,7 +280,8 @@
                                 @php /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Legacy\Models\LegacyUser> $users */ @endphp
                                 @foreach ($users as $u)
                                     @php /** @var \App\Legacy\Models\LegacyUser $u */ @endphp
-                                    <option value="{{ $u->id }}" @selected(($filters['user'] ?? '') == $u->id)>{{ $u->uname }}</option>
+                                    @php($legacySqid = \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $u->id))
+                                    <option value="{{ $legacySqid }}" @selected((string) ($filters['user'] ?? '') === $legacySqid)>{{ $u->uname }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -362,7 +364,8 @@
                                 @php /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Legacy\Models\LegacyUser> $users */ @endphp
                                 @foreach ($users as $u)
                                     @php /** @var \App\Legacy\Models\LegacyUser $u */ @endphp
-                                    <option value="{{ $u->id }}" @selected(($filters['user'] ?? '') == $u->id)>{{ $u->uname }}</option>
+                                    @php($legacySqid = \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $u->id))
+                                    <option value="{{ $legacySqid }}" @selected((string) ($filters['user'] ?? '') === $legacySqid)>{{ $u->uname }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -443,7 +446,7 @@
                                 <option value="">{{ __('Alle') }}</option>
                                 @foreach ($vacationUsers ?? [] as $u)
                                     @php /** @var \App\Models\User $u */ @endphp
-                                    <option value="{{ $u->id }}" @selected((int) ($filters['user_id'] ?? 0) === $u->id)>{{ $u->name }}</option>
+                                    <option value="{{ $u->sqid }}" @selected((string) ($filters['user_id'] ?? '') === $u->sqid)>{{ $u->name }}</option>
                                 @endforeach
                             </select>
                         </div>

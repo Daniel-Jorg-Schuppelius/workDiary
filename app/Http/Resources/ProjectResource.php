@@ -10,7 +10,8 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Project;
+use App\Models\{Customer, Project};
+use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -23,14 +24,14 @@ class ProjectResource extends JsonResource {
     /** @return array<string, mixed> */
     public function toArray(Request $request): array {
         return [
-            'id' => $this->id,
+            'id' => $this->sqid,
             'name' => $this->name,
             'number' => $this->number,
             'description' => $this->description,
             'color' => $this->color,
             'status' => $this->status,
-            'customer_id' => $this->customer_id,
-            'parent_id' => $this->parent_id,
+            'customer_id' => Sqid::encodeOrNull(Customer::class, $this->customer_id),
+            'parent_id' => Sqid::encodeOrNull(Project::class, $this->parent_id),
             'starts_on' => optional($this->starts_on)->toDateString(),
             'ends_on' => optional($this->ends_on)->toDateString(),
             'hourly_rate' => $this->hourly_rate,

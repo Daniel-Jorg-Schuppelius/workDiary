@@ -23,7 +23,7 @@ class TagResource extends JsonResource {
     /** @return array<string, mixed> */
     public function toArray(Request $request): array {
         return [
-            'id' => $this->id,
+            'id' => $this->sqid,
             'name' => $this->name,
             'slug' => $this->slug,
             'color' => $this->color,

@@ -10,7 +10,8 @@
 
 namespace App\Http\Resources;
 
-use App\Models\ScheduledShift;
+use App\Models\{ScheduledShift, ShiftType, User};
+use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -23,14 +24,15 @@ class ScheduledShiftResource extends JsonResource {
     /** @return array<string, mixed> */
     public function toArray(Request $request): array {
         return [
-            'id' => $this->id,
-            'user_id' => $this->user_id,
+            'id' => $this->sqid,
+            'user_id' => Sqid::encodeOrNull(User::class, $this->user_id),
             'user_name' => $this->whenLoaded('user', fn() => $this->user?->name),
+            'shift_type_id' => Sqid::encodeOrNull(ShiftType::class, $this->shift_type_id),
             'shift_type' => $this->whenLoaded('shiftType', function () {
                 $type = $this->shiftType;
 
                 return $type !== null ? [
-                    'id' => $type->id,
+                    'id' => Sqid::encodeOrNull(ShiftType::class, $type->id),
                     'name' => $type->name,
                     'abbreviation' => $type->abbreviation,
                     'color' => $type->color,

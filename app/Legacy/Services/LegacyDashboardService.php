@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace App\Legacy\Services;
 
 use App\Enums\Vacation\VacationStatus;
-use App\Legacy\Models\{LegacyDiaryEntry, LegacyNotdienst, LegacyOnCall};
+use App\Legacy\Models\{LegacyDiaryEntry, LegacyNotdienst, LegacyOnCall, LegacyUser};
 use App\Legacy\Support\LegacyRoleResolver;
 use App\Models\{User, Vacation};
+use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
@@ -170,6 +171,12 @@ class LegacyDashboardService {
             ->with('author:id,uname')
             ->orderBy($sortColumn, $dir);
 
+        $rawFilterUser = $request->query('user');
+        $filterUserId = Sqid::decode(LegacyUser::class, $rawFilterUser);
+        if ($filterUserId === null && is_numeric($rawFilterUser)) {
+            $filterUserId = (int) $rawFilterUser;
+        }
+
         if ($request->filled('status') && $request->status !== 'all') {
             $query->where('gelesen', (int) $request->status);
         }
@@ -193,8 +200,8 @@ class LegacyDashboardService {
         // darf nach beliebigem Legacy-User filtern. Normale User sehen nur eigene Einträge.
         if (! $canViewAll && $legacyUserId > 0) {
             $query->where('user', $legacyUserId);
-        } elseif ($canViewAll && $request->filled('user')) {
-            $query->where('user', (int) $request->user);
+        } elseif ($canViewAll && $filterUserId !== null) {
+            $query->where('user', $filterUserId);
         }
 
         return [$query, $sort, $dir];
@@ -205,10 +212,17 @@ class LegacyDashboardService {
      */
     private function diaryCounts(Request $request, bool $canViewAll, int $legacyUserId): array {
         $query = LegacyDiaryEntry::query();
+
+        $rawFilterUser = $request->query('user');
+        $filterUserId = Sqid::decode(LegacyUser::class, $rawFilterUser);
+        if ($filterUserId === null && is_numeric($rawFilterUser)) {
+            $filterUserId = (int) $rawFilterUser;
+        }
+
         if (! $canViewAll && $legacyUserId > 0) {
             $query->where('user', $legacyUserId);
-        } elseif ($canViewAll && $request->filled('user')) {
-            $query->where('user', (int) $request->user);
+        } elseif ($canViewAll && $filterUserId !== null) {
+            $query->where('user', $filterUserId);
         }
 
         $authUser = $request->user();
@@ -243,6 +257,12 @@ class LegacyDashboardService {
     private function buildLegacyDutyQuery(Builder $query, Request $request, bool $canViewAll, int $legacyUserId, ?string $sort = null, string $dir = 'desc'): Builder {
         $query->with('mitarbeiter:id,uname');
 
+        $rawFilterUser = $request->query('user');
+        $filterUserId = Sqid::decode(LegacyUser::class, $rawFilterUser);
+        if ($filterUserId === null && is_numeric($rawFilterUser)) {
+            $filterUserId = (int) $rawFilterUser;
+        }
+
         if ($sort !== null && isset(self::SORTABLE_DUTY[$sort])) {
             $query->orderBy(self::SORTABLE_DUTY[$sort], $dir === 'asc' ? 'asc' : 'desc');
             if (self::SORTABLE_DUTY[$sort] !== 'user') {
@@ -254,8 +274,8 @@ class LegacyDashboardService {
 
         if (! $canViewAll && $legacyUserId > 0) {
             $query->where('user', $legacyUserId);
-        } elseif ($canViewAll && $request->filled('user')) {
-            $query->where('user', (int) $request->user);
+        } elseif ($canViewAll && $filterUserId !== null) {
+            $query->where('user', $filterUserId);
         }
         if ($request->filled('from')) {
             $query->whereDate('von', '>=', $request->from);
@@ -273,6 +293,12 @@ class LegacyDashboardService {
     private function buildVacationQuery(Request $request, User $currentUser, bool $canViewAll, ?string $sort = null, string $dir = 'desc'): Builder {
         $query = Vacation::query()->with('user:id,name');
 
+        $rawVacationUserId = $request->query('user_id');
+        $vacationUserId = Sqid::decode(User::class, $rawVacationUserId);
+        if ($vacationUserId === null && is_numeric($rawVacationUserId)) {
+            $vacationUserId = (int) $rawVacationUserId;
+        }
+
         if ($sort !== null && isset(self::SORTABLE_VACATION[$sort])) {
             $query->orderBy(self::SORTABLE_VACATION[$sort], $dir === 'asc' ? 'asc' : 'desc');
         } else {
@@ -281,8 +307,8 @@ class LegacyDashboardService {
 
         if (! $canViewAll) {
             $query->where('user_id', $currentUser->id);
-        } elseif ($request->filled('user_id')) {
-            $query->where('user_id', (int) $request->user_id);
+        } elseif ($vacationUserId !== null) {
+            $query->where('user_id', $vacationUserId);
         } elseif ($request->boolean('mine')) {
             $query->where('user_id', $currentUser->id);
         }

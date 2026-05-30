@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{Building, Floor};
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -20,18 +21,19 @@ class FloorController extends Controller {
     public function index(Request $request): View {
         Gate::authorize('viewAny', Floor::class);
 
-        $buildingId = $request->query('building');
+        $rawBuilding = (string) $request->query('building', '');
+        $buildingId = Sqid::decodeOrNumeric(Building::class, $rawBuilding);
         $query = Floor::query()
             ->with('building.site')
             ->withCount('rooms')
             ->orderBy('building_id')
             ->orderBy('level');
-        if ($buildingId !== null && $buildingId !== '') {
-            $query->where('building_id', (int) $buildingId);
+        if ($buildingId !== null) {
+            $query->where('building_id', $buildingId);
         }
         $floors = $query->paginate(100)->withQueryString();
-        $building = $buildingId !== null && $buildingId !== ''
-            ? Building::query()->find((int) $buildingId)
+        $building = $buildingId !== null
+            ? Building::query()->find($buildingId)
             : null;
 
         return view('floors.index', [
@@ -105,6 +107,16 @@ class FloorController extends Controller {
 
     /** @return array<string, mixed> */
     private function validateFloor(Request $request, ?Floor $existing = null): array {
+        $rawBuildingId = $request->input('building_id');
+        $buildingId = \App\Support\Sqid::decode(\App\Models\Building::class, $rawBuildingId);
+        if ($buildingId === null && is_numeric($rawBuildingId)) {
+            $buildingId = (int) $rawBuildingId;
+        }
+
+        $request->merge([
+            'building_id' => $buildingId,
+        ]);
+
         $buildingId = (int) $request->input('building_id');
         $uniqueLevel = Rule::unique('floors', 'level')
             ->where(fn($q) => $q->where('building_id', $buildingId));

@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{Building, Site};
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -19,17 +20,18 @@ class BuildingController extends Controller {
     public function index(Request $request): View {
         Gate::authorize('viewAny', Building::class);
 
-        $siteId = $request->query('site');
+        $rawSite = (string) $request->query('site', '');
+        $siteId = Sqid::decodeOrNumeric(Site::class, $rawSite);
         $query = Building::query()
             ->with('site.customer')
             ->withCount('floors')
             ->orderBy('name');
-        if ($siteId !== null && $siteId !== '') {
-            $query->where('site_id', (int) $siteId);
+        if ($siteId !== null) {
+            $query->where('site_id', $siteId);
         }
         $buildings = $query->paginate(50)->withQueryString();
-        $site = $siteId !== null && $siteId !== ''
-            ? Site::query()->find((int) $siteId)
+        $site = $siteId !== null
+            ? Site::query()->find($siteId)
             : null;
 
         return view('buildings.index', [
@@ -103,6 +105,16 @@ class BuildingController extends Controller {
 
     /** @return array<string, mixed> */
     private function validateBuilding(Request $request): array {
+        $rawSiteId = $request->input('site_id');
+        $siteId = \App\Support\Sqid::decode(\App\Models\Site::class, $rawSiteId);
+        if ($siteId === null && is_numeric($rawSiteId)) {
+            $siteId = (int) $rawSiteId;
+        }
+
+        $request->merge([
+            'site_id' => $siteId,
+        ]);
+
         return $request->validate([
             'site_id' => ['required', 'integer', 'exists:sites,id'],
             'name' => ['required', 'string', 'max:160'],

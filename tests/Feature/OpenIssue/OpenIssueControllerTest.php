@@ -12,6 +12,7 @@ namespace Tests\Feature\OpenIssue;
 
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueStatus, OpenIssueVisibility};
 use App\Models\{DiaryEntry, OpenIssue, User};
+use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -26,7 +27,7 @@ class OpenIssueControllerTest extends TestCase {
             ->from(route('diary.show', $entry))
             ->post(route('open-issues.store'), [
                 'subject_kind' => 'diary',
-                'subject_id' => $entry->id,
+                'subject_id' => Sqid::encode(DiaryEntry::class, $entry->id),
                 'title' => 'Leitung verlegen',
                 'severity' => OpenIssueSeverity::Medium->value,
             ])
@@ -47,7 +48,7 @@ class OpenIssueControllerTest extends TestCase {
         $entry = DiaryEntry::factory()->for($user)->create();
 
         $this->actingAs($user)
-            ->get(route('open-issues.create', ['subject_kind' => 'diary', 'subject_id' => $entry->id]))
+            ->get(route('open-issues.create', ['subject_kind' => 'diary', 'subject_id' => Sqid::encode(DiaryEntry::class, $entry->id)]))
             ->assertOk()
             ->assertSee('name="subject_kind"', false)
             ->assertSee('name="title"', false);
@@ -73,7 +74,7 @@ class OpenIssueControllerTest extends TestCase {
 
         $this->post(route('open-issues.store'), [
             'subject_kind' => 'diary',
-            'subject_id' => $entry->id,
+            'subject_id' => Sqid::encode(DiaryEntry::class, $entry->id),
             'title' => 'X',
         ])->assertRedirect(route('login'));
     }
@@ -86,7 +87,7 @@ class OpenIssueControllerTest extends TestCase {
 
         $this->from(route('diary.show', $entry))->post(route('open-issues.store'), [
             'subject_kind' => 'diary',
-            'subject_id' => $entry->id,
+            'subject_id' => Sqid::encode(DiaryEntry::class, $entry->id),
             'title' => 'Lifecycle',
         ])->assertRedirect();
 
@@ -195,7 +196,7 @@ class OpenIssueControllerTest extends TestCase {
             ->from(route('diary.show', $entry))
             ->post(route('open-issues.store'), [
                 'subject_kind' => 'diary',
-                'subject_id' => $entry->id,
+                'subject_id' => Sqid::encode(DiaryEntry::class, $entry->id),
                 'title' => 'Customer-sichtbar',
                 'visibility' => OpenIssueVisibility::Customer->value,
             ])

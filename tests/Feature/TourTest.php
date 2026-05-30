@@ -178,6 +178,26 @@ class TourTest extends TestCase {
             ->assertSee('Wochentour');
     }
 
+    public function test_admin_can_list_other_users_tours_with_numeric_user_fallback(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $worker = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        Tour::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $worker->id,
+            'tour_date' => CarbonImmutable::today()->toDateString(),
+            'name' => 'Numerische Wochentour',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('tours.index', [
+                'user' => (string) $worker->id,
+                'from' => CarbonImmutable::today()->toDateString(),
+                'to' => CarbonImmutable::today()->toDateString(),
+            ]))
+            ->assertOk()
+            ->assertSee('Numerische Wochentour');
+    }
+
     public function test_assigning_flex_order_promotes_it_to_fixed_with_tour_date(): void {
         $driver = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         /** @var TourService $service */

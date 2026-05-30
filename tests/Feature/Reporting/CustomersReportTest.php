@@ -137,10 +137,10 @@ class CustomersReportTest extends TestCase {
             'user' => null,
         ]));
         $response->assertSee(route('reports.customers.drilldown.protocols', [
-            'customer_id' => $this->customer->id,
+            'customer_id' => Sqid::encode(\App\Models\Customer::class, $this->customer->id),
         ]), false);
         $response->assertSee(route('reports.customers.drilldown.open-issues', [
-            'customer_id' => $this->customer->id,
+            'customer_id' => Sqid::encode(\App\Models\Customer::class, $this->customer->id),
             'escalated' => 1,
         ]));
     }

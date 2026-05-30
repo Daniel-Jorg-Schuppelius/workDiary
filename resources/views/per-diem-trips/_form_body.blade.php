@@ -67,7 +67,7 @@
         <select name="project_id" class="select select-bordered w-full" data-depends-on="customer_id">
             <option value="">—</option>
             @foreach ($projects as $p)
-                <option value="{{ $p->id }}" data-parent="{{ $p->customer_id }}" @selected(old('project_id', $trip?->project_id) == $p->id)>{{ $p->name }}</option>
+                <option value="{{ $p->sqid }}" data-parent="{{ \App\Support\Sqid::encode(\App\Models\Customer::class, $p->customer_id) }}" @selected((string) old('project_id', \App\Support\Sqid::encode(\App\Models\Project::class, $trip?->project_id)) === $p->sqid)>{{ $p->name }}</option>
             @endforeach
         </select>
     </div>

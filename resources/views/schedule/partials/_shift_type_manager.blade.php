@@ -24,14 +24,14 @@
                 </thead>
                 <tbody id="shift-type-table-body">
                     @forelse ($shiftTypes as $t)
-                        <tr data-type-row="{{ $t->id }}">
+                        <tr data-type-row="{{ $t->sqid }}">
                             <td>
                                 <span class="inline-block h-4 w-4 rounded" style="{{ $t->badgeStyle() }}"></span>
                             </td>
-                            <td class="font-mono font-bold" id="type-abbr-{{ $t->id }}">{{ $t->abbreviation }}</td>
-                            <td id="type-name-{{ $t->id }}">{{ $t->name }}</td>
-                            <td id="type-start-{{ $t->id }}">{{ $t->default_start_time ?? '–' }}</td>
-                            <td id="type-end-{{ $t->id }}">{{ $t->default_end_time ?? '–' }}</td>
+                            <td class="font-mono font-bold" id="type-abbr-{{ $t->sqid }}">{{ $t->abbreviation }}</td>
+                            <td id="type-name-{{ $t->sqid }}">{{ $t->name }}</td>
+                            <td id="type-start-{{ $t->sqid }}">{{ $t->default_start_time ?? '–' }}</td>
+                            <td id="type-end-{{ $t->sqid }}">{{ $t->default_end_time ?? '–' }}</td>
                             <td>
                                 <x-status-badge size="sm" :tone="$t->is_active ? 'success' : 'ghost'">
                                     {{ $t->is_active ? __('ja') : __('nein') }}
@@ -39,10 +39,18 @@
                             </td>
                             <td class="text-right">
                                 <x-icon-btn icon="edit" type="button"
-                                            onclick="shiftTypeOpenEdit({{ $t->id }}, {{ json_encode($t) }})"
+                                            onclick='shiftTypeOpenEdit(@js($t->sqid), @js([
+                                                'id' => $t->sqid,
+                                                'name' => $t->name,
+                                                'abbreviation' => $t->abbreviation,
+                                                'color' => $t->color,
+                                                'default_start_time' => $t->default_start_time,
+                                                'default_end_time' => $t->default_end_time,
+                                                'is_active' => (bool) $t->is_active,
+                                            ]))'
                                             :label="__('Bearbeiten')" />
                                 <x-icon-btn icon="delete" tone="error" type="button"
-                                            onclick="shiftTypeDelete({{ $t->id }})"
+                                            onclick='shiftTypeDelete(@js($t->sqid))'
                                             :label="__('Löschen')" />
                             </td>
                         </tr>

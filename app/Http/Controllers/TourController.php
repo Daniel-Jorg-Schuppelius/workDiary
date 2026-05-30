@@ -294,7 +294,7 @@ class TourController extends Controller {
             return null;
         }
 
-        $requestedId = Sqid::decode(User::class, $raw);
+        $requestedId = Sqid::decodeOrNumeric(User::class, $raw);
         if ($requestedId === null || $requestedId === (int) $authUser->id) {
             return $authUser;
         }

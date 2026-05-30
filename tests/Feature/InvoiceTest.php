@@ -81,6 +81,42 @@ class InvoiceTest extends TestCase {
         $this->assertSame('214.20', $invoice->total);
     }
 
+    public function test_index_accepts_numeric_customer_filter_fallback(): void {
+        $otherCustomer = Customer::create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Other GmbH',
+            'currency' => 'EUR',
+            'hourly_rate' => '80.00',
+            'created_by' => $this->admin->id,
+        ]);
+
+        $invoiceA = Invoice::create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'number' => 'R2030-0101',
+            'status' => Invoice::STATUS_DRAFT,
+            'currency' => 'EUR',
+            'tax_rate' => '19.00',
+            'created_by' => $this->admin->id,
+        ]);
+        Invoice::create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $otherCustomer->id,
+            'number' => 'R2030-0102',
+            'status' => Invoice::STATUS_DRAFT,
+            'currency' => 'EUR',
+            'tax_rate' => '19.00',
+            'created_by' => $this->admin->id,
+        ]);
+
+        $this->getAsAdmin('invoices.index', ['customer' => (string) $this->customer->id])
+            ->assertOk()
+            ->assertViewHas('invoices', static function ($invoices) use ($invoiceA): bool {
+                $items = $invoices->items();
+                return count($items) === 1 && (int) $items[0]->id === (int) $invoiceA->id;
+            });
+    }
+
     public function test_issue_and_pay_workflow(): void {
         $invoice = Invoice::create([
             'organization_id' => $this->organization->id,

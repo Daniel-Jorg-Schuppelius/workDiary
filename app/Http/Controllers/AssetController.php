@@ -15,6 +15,7 @@ use App\Exceptions\AssetValidationException;
 use App\Http\Requests\SaveAssetRequest;
 use App\Models\{Asset, Attachment, Building, Customer, DiaryEntry, Floor, MaintenancePlan, MaterialUsage, Protocol, Room, Site, User};
 use App\Services\Asset\{AssetService, AssetStatusVisibilityService, AssetTimelineService};
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -418,11 +419,17 @@ class AssetController extends Controller {
      * @return array{customer_id: int|null, site_id: int|null, building_id: int|null, floor_id: int|null, room_id: int|null}
      */
     private function resolvePrefill(Request $request): array {
-        $roomId = $request->integer('room') ?: null;
-        $floorId = $request->integer('floor') ?: null;
-        $buildingId = $request->integer('building') ?: null;
-        $siteId = $request->integer('site') ?: null;
-        $customerId = $request->integer('customer') ?: null;
+        $rawRoom = (string) $request->query('room', '');
+        $rawFloor = (string) $request->query('floor', '');
+        $rawBuilding = (string) $request->query('building', '');
+        $rawSite = (string) $request->query('site', '');
+        $rawCustomer = (string) $request->query('customer', '');
+
+        $roomId = Sqid::decodeOrNumeric(Room::class, $rawRoom);
+        $floorId = Sqid::decodeOrNumeric(Floor::class, $rawFloor);
+        $buildingId = Sqid::decodeOrNumeric(Building::class, $rawBuilding);
+        $siteId = Sqid::decodeOrNumeric(Site::class, $rawSite);
+        $customerId = Sqid::decodeOrNumeric(Customer::class, $rawCustomer);
 
         if ($roomId !== null) {
             $room = Room::query()->with('floorRelation.building.site')->find($roomId);

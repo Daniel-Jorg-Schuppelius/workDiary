@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Project, TimeEntry, User};
+use App\Support\Sqid;
 use App\Support\{CsvNumber, XlsxExport};
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -40,7 +41,12 @@ class ProjectDetailsReportController extends Controller {
 
         $year = (int) $this->globalDateRange()['from']->year;
         $year = max(2000, min(2100, $year));
-        $projectId = $request->integer('project_id');
+        $rawProjectId = $request->query('project_id');
+        $projectId = Sqid::decode(Project::class, $rawProjectId);
+        if ($projectId === null && is_numeric($rawProjectId)) {
+            $projectId = (int) $rawProjectId;
+        }
+        $projectId ??= 0;
 
         $projects = $this->loadAccessibleProjects($isAdmin, $userId);
 

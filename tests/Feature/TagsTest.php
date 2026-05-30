@@ -81,6 +81,27 @@ class TagsTest extends TestCase {
         $this->assertSame(3, Tag::count());
     }
 
+    public function test_diary_store_accepts_sqid_tag_ids(): void {
+        // Das Formular (tag-picker) sendet opake Sqids als tag_ids — diese
+        // müssen serverseitig zur korrekten Tag-Verknüpfung dekodiert werden.
+        $user = User::factory()->user()->create();
+        $existing = Tag::create(['name' => 'Telefon', 'organization_id' => $user->organization_id]);
+
+        $this->actingAs($user)
+            ->post(route('diary.store'), [
+                'content' => 'Mit Sqid-Tags gespeichert',
+                'status' => 2,
+                'start_at' => '2030-01-15 09:00:00',
+                'end_at' => '2030-01-15 10:00:00',
+                'tag_ids' => [$existing->sqid],
+            ])
+            ->assertRedirect();
+
+        $entry = DiaryEntry::latest('id')->first();
+        $this->assertNotNull($entry);
+        $this->assertSame([$existing->id], $entry->tags()->pluck('tags.id')->all());
+    }
+
     public function test_diary_index_filters_by_tag(): void {
         $user = User::factory()->user()->create();
         $tag = Tag::create(['name' => 'Filterbar', 'organization_id' => $user->organization_id]);

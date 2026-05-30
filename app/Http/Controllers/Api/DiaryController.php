@@ -12,8 +12,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DiaryEntryResource;
-use App\Models\{DiaryEntry, User};
+use App\Models\{DiaryEntry, Tag, User};
 use App\Services\Archive\ArchiveService;
+use App\Support\Sqid;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -56,7 +57,7 @@ class DiaryController extends Controller {
         /** @var DiaryEntry $entry */
         $entry = $user->diaryEntries()->create($data);
         if ($request->filled('tag_ids')) {
-            $entry->syncTagsFromInput((array) $request->input('tag_ids'), []);
+            $entry->syncTagsFromInput($this->decodeTagIds($request->input('tag_ids')), []);
         }
 
         return (new DiaryEntryResource($entry->fresh(['user', 'tags']) ?? $entry))->response()->setStatusCode(201);
@@ -67,7 +68,7 @@ class DiaryController extends Controller {
         $data = $this->validateData($request);
         $diary->update($data);
         if ($request->has('tag_ids')) {
-            $diary->syncTagsFromInput((array) $request->input('tag_ids'), []);
+            $diary->syncTagsFromInput($this->decodeTagIds($request->input('tag_ids')), []);
         }
 
         return new DiaryEntryResource($diary->fresh(['user', 'tags']) ?? $diary);
@@ -103,5 +104,21 @@ class DiaryController extends Controller {
             'start_at' => ['nullable', 'date'],
             'end_at' => ['nullable', 'date', 'after_or_equal:start_at'],
         ]);
+    }
+
+    /**
+     * Dekodiert eingehende `tag_ids` (opake Sqids) zu numerischen PKs für
+     * {@see \App\Models\Concerns\HasTags::syncTagsFromInput()}. Rohe
+     * numerische IDs werden als Backward-Compat-Fallback weiterhin akzeptiert.
+     *
+     * @return array<int>
+     */
+    private function decodeTagIds(mixed $raw): array {
+        return collect((array) $raw)
+            ->map(fn($v) => is_scalar($v) ? Sqid::decodeOrNumeric(Tag::class, (string) $v) : null)
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 }

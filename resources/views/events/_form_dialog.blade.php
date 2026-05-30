@@ -25,7 +25,7 @@
     $endVal   = old('ended_at',   $event?->ended_at?->format('Y-m-d\TH:i')   ?? $prefillEnd);
 
     $roomItems = old('rooms', $event?->rooms->map(fn ($r) => [
-        'room_id' => $r->id,
+        'room_id' => $r->sqid,
         'started_at' => optional($r->pivot->started_at)->format('Y-m-d\TH:i'),
         'ended_at'   => optional($r->pivot->ended_at)->format('Y-m-d\TH:i'),
         'setup_minutes_before'   => $r->pivot->setup_minutes_before,
@@ -33,7 +33,7 @@
     ])->all() ?? []);
 
     $participantItems = old('participants', $event?->participants->map(fn ($p) => [
-        'user_id' => $p->id,
+        'user_id' => $p->sqid,
         'role'    => $p->pivot->role,
     ])->all() ?? []);
 @endphp
@@ -175,7 +175,7 @@
             <select id="ev-resp" name="responsible_user_id" required class="select select-bordered w-full">
                 <option value="">—</option>
                 @foreach ($users as $u)
-                    <option value="{{ $u->sqid }}" @selected(old('responsible_user_id', $event?->responsible_user_id ?? auth()->id()) == $u->id)>{{ $u->name }}</option>
+                    <option value="{{ $u->sqid }}" @selected((string) old('responsible_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $event?->responsible_user_id ?? auth()->id())) === $u->sqid)>{{ $u->name }}</option>
                 @endforeach
             </select>
         </div>
@@ -185,7 +185,7 @@
             <select id="ev-customer" name="customer_id" class="select select-bordered w-full">
                 <option value="">—</option>
                 @foreach ($customers as $c)
-                    <option value="{{ $c->id }}" @selected(old('customer_id', $event?->customer_id) == $c->id)>{{ $c->name }}</option>
+                    <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $event?->customer_id)) === $c->sqid)>{{ $c->name }}</option>
                 @endforeach
             </select>
         </div>

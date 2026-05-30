@@ -10,9 +10,21 @@
 
 namespace App\Legacy\Http\Requests;
 
+use App\Legacy\Models\LegacyUser;
+use App\Support\Sqid;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SaveLegacyDiaryEntryRequest extends FormRequest {
+    protected function prepareForValidation(): void {
+        $rawUser = $this->input('user');
+        $userId = Sqid::decode(LegacyUser::class, $rawUser);
+        if ($userId === null && is_numeric($rawUser)) {
+            $userId = (int) $rawUser;
+        }
+
+        $this->merge(['user' => $userId]);
+    }
+
     public function authorize(): bool {
         return true;
     }

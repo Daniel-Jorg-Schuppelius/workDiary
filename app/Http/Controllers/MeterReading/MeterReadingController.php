@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveMeterReadingRequest;
 use App\Models\{Asset, MeterReading, User};
 use App\Services\MeterReading\MeterReadingService;
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -25,7 +26,8 @@ class MeterReadingController extends Controller {
     public function index(Request $request): View {
         Gate::authorize('viewAny', MeterReading::class);
 
-        $assetFilter = $request->integer('asset');
+        $rawAsset = (string) $request->query('asset', '');
+        $assetFilter = Sqid::decodeOrNumeric(Asset::class, $rawAsset, 0);
 
         $query = MeterReading::query()
             ->with(['asset:id,name,asset_no', 'readBy:id,name'])
@@ -40,7 +42,7 @@ class MeterReadingController extends Controller {
         return view('meter-readings.index', [
             'readings' => $readings,
             'filters' => [
-                'asset' => $assetFilter,
+                'asset' => $assetFilter > 0 ? Sqid::encode(Asset::class, $assetFilter) : null,
             ],
             'canCreate' => Gate::allows('create', MeterReading::class),
         ]);
@@ -49,7 +51,8 @@ class MeterReadingController extends Controller {
     public function create(Request $request): View {
         Gate::authorize('create', MeterReading::class);
 
-        $assetId = $request->integer('asset');
+        $rawAsset = (string) $request->query('asset', '');
+        $assetId = Sqid::decodeOrNumeric(Asset::class, $rawAsset, 0);
 
         return view('meter-readings.create', [
             'presetAssetId' => $assetId > 0 ? $assetId : null,

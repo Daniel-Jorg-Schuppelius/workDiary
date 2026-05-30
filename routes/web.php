@@ -20,10 +20,16 @@ use App\Http\Controllers\ServiceTicket\ServiceTicketController;
 use App\Http\Controllers\UI\DateRangeController;
 use Illuminate\Support\Facades\Route;
 
-// Projekt-Bindung: erlaubt numerische ID (Backward-Compat) ODER die
-// zusammengesetzte URL "<kunde-slug>/<projekt-slug>" (Sentinel "intern"
-// für Projekte ohne Kunden). Siehe Project::getRouteKey().
-Route::pattern('project', '[0-9]+|[a-z0-9-]+/[a-z0-9-]+');
+// Projekt-Bindung: erlaubt numerische ID (Backward-Compat) bzw. opake Sqid
+// ODER die zusammengesetzte URL "<kunde-slug>/<projekt-slug>" (Sentinel
+// "intern" für Projekte ohne Kunden). Siehe Project::getRouteKey().
+//
+// ACHTUNG: Das erste Alternativ-Segment [A-Za-z0-9]+ deckt sowohl numerische
+// IDs als auch Sqids ab und ist damit an ein rein alphanumerisches Sqid-
+// Alphabet gekoppelt (config/sqids.php). Wird SQIDS_ALPHABET auf Zeichen
+// außerhalb [A-Za-z0-9] gesetzt, matchen Projekt-Sqids dieses Pattern nicht
+// mehr → 404. Der Test SqidRoutePatternTest sichert diese Annahme ab.
+Route::pattern('project', '[A-Za-z0-9]+|[a-z0-9-]+/[a-z0-9-]+');
 
 // Lizenz-Aktivierung (umgeht EnsureValidLicense via bypass_paths)
 Route::get('/license', [LicenseController::class, 'show'])->name('license.show');

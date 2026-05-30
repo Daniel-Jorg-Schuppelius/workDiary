@@ -26,7 +26,7 @@
                     </select>
                 </div>
             @else
-                <input type="hidden" id="shift-dialog-user" name="user_id" value="{{ auth()->id() }}">
+                <input type="hidden" id="shift-dialog-user" name="user_id" value="{{ auth()->user()?->sqid }}">
             @endif
 
             <div class="fieldset">
@@ -42,7 +42,7 @@
                 <select id="shift-dialog-type" name="shift_type_id" class="select select-bordered w-full">
                     <option value="">— {{ __('kein Typ') }} —</option>
                     @foreach ($shiftTypes as $t)
-                        <option value="{{ $t->id }}" style="color:{{ $t->color }}">{{ $t->name }} ({{ $t->abbreviation }})</option>
+                        <option value="{{ $t->sqid }}" style="color:{{ $t->color }}">{{ $t->name }} ({{ $t->abbreviation }})</option>
                     @endforeach
                 </select>
             </div>

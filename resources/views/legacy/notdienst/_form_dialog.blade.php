@@ -23,7 +23,7 @@
         <label for="user" class="fieldset-label">{{ __('Mitarbeiter') }}</label>
         <select id="user" name="user" class="select select-bordered w-full @error('user') select-error @enderror">
             @foreach ($users as $legacyUser)
-                <option value="{{ $legacyUser->id }}" @selected((int) old('user', $item?->user) === (int) $legacyUser->id)>{{ $legacyUser->uname }}</option>
+                <option value="{{ \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $legacyUser->id) }}" @selected((string) old('user', \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $item?->user)) === \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $legacyUser->id))>{{ $legacyUser->uname }}</option>
             @endforeach
         </select>
         @error('user')<p class="text-error text-sm">{{ $message }}</p>@enderror

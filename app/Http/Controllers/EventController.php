@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{Customer, Event, EventCategory, Room, User};
 use App\Services\Event\EventService;
 use App\Support\LookupCache;
+use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -27,7 +28,8 @@ class EventController extends Controller {
 
     public function __construct(
         private readonly EventService $events,
-    ) {}
+    ) {
+    }
 
     // ── Index / Calendar ────────────────────────────────────────────────────
 
@@ -36,13 +38,19 @@ class EventController extends Controller {
         /** @var User $auth */
         $auth = Auth::user();
 
+        $rawCategoryId = $request->query('category_id');
+        $categoryId = Sqid::decode(EventCategory::class, $rawCategoryId);
+        if ($categoryId === null && is_numeric($rawCategoryId)) {
+            $categoryId = (int) $rawCategoryId;
+        }
+
         $view = $request->query('view', 'list');
         $filters = [
             'q' => trim((string) $request->query('q', '')),
             'event_type' => $request->query('event_type'),
             'status' => $request->query('status'),
             'visibility' => $request->query('visibility'),
-            'category_id' => $request->query('category_id'),
+            'category_id' => $categoryId,
             'from' => $request->query('from'),
             'to' => $request->query('to'),
             'only_mandatory' => $request->boolean('only_mandatory'),
@@ -204,6 +212,31 @@ class EventController extends Controller {
     private function validateEvent(Request $request): array {
         /** @var User $auth */
         $auth = Auth::user();
+
+        $rawCategoryId = $request->input('category_id');
+        $categoryId = Sqid::decode(EventCategory::class, $rawCategoryId);
+        if ($categoryId === null && is_numeric($rawCategoryId)) {
+            $categoryId = (int) $rawCategoryId;
+        }
+
+        $rawResponsibleUserId = $request->input('responsible_user_id');
+        $responsibleUserId = Sqid::decode(User::class, $rawResponsibleUserId);
+        if ($responsibleUserId === null && is_numeric($rawResponsibleUserId)) {
+            $responsibleUserId = (int) $rawResponsibleUserId;
+        }
+
+        $rawCustomerId = $request->input('customer_id');
+        $customerId = Sqid::decode(Customer::class, $rawCustomerId);
+        if ($customerId === null && is_numeric($rawCustomerId)) {
+            $customerId = (int) $rawCustomerId;
+        }
+
+        $request->merge([
+            'category_id' => $categoryId,
+            'responsible_user_id' => $responsibleUserId,
+            'customer_id' => $customerId,
+        ]);
+
         $data = $request->validate([
             'title' => ['required', 'string', 'max:200'],
             'description' => ['nullable', 'string', 'max:5000'],
@@ -247,8 +280,17 @@ class EventController extends Controller {
             if (empty($row['room_id'])) {
                 continue;
             }
+
+            $roomId = Sqid::decode(Room::class, $row['room_id']);
+            if ($roomId === null && is_numeric($row['room_id'])) {
+                $roomId = (int) $row['room_id'];
+            }
+            if ($roomId === null) {
+                continue;
+            }
+
             $entry = [
-                'room_id' => (int) $row['room_id'],
+                'room_id' => $roomId,
                 'setup_minutes_before' => (int) ($row['setup_minutes_before'] ?? 0),
                 'teardown_minutes_after' => (int) ($row['teardown_minutes_after'] ?? 0),
             ];
@@ -272,8 +314,17 @@ class EventController extends Controller {
             if (empty($row['user_id'])) {
                 continue;
             }
+
+            $participantUserId = Sqid::decode(User::class, $row['user_id']);
+            if ($participantUserId === null && is_numeric($row['user_id'])) {
+                $participantUserId = (int) $row['user_id'];
+            }
+            if ($participantUserId === null) {
+                continue;
+            }
+
             $out[] = [
-                'user_id' => (int) $row['user_id'],
+                'user_id' => $participantUserId,
                 'role' => $row['role'] ?? ParticipantRole::Attendee->value,
                 'status' => $row['status'] ?? ParticipantStatus::Invited->value,
             ];

@@ -11,6 +11,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Comment;
+use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -22,10 +23,17 @@ class CommentResource extends JsonResource {
 
     /** @return array<string, mixed> */
     public function toArray(Request $request): array {
+        $commentableId = null;
+        if (is_string($this->commentable_type) && class_exists($this->commentable_type)) {
+            /** @var class-string $commentableType */
+            $commentableType = $this->commentable_type;
+            $commentableId = Sqid::encodeOrNull($commentableType, $this->commentable_id);
+        }
+
         return [
-            'id' => $this->id,
+            'id' => $this->sqid,
             'commentable_type' => $this->commentable_type,
-            'commentable_id' => $this->commentable_id,
+            'commentable_id' => $commentableId,
             'user' => new UserResource($this->whenLoaded('user')),
             'body' => $this->body,
             'created_at' => optional($this->created_at)->toIso8601String(),

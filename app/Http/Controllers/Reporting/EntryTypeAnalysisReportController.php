@@ -33,9 +33,24 @@ class EntryTypeAnalysisReportController extends Controller {
         $from = $range['from']->startOfDay();
         $to = $range['to']->endOfDay();
 
-        $customerId = Sqid::decode(Customer::class, $request->query('customer_id'));
-        $userId = Sqid::decode(User::class, $request->query('user_id'));
-        $entryTypeFilter = Sqid::decode(EntryType::class, $request->query('entry_type_id'));
+        $rawCustomerId = $request->query('customer_id');
+        $rawUserId = $request->query('user_id');
+        $rawEntryTypeId = $request->query('entry_type_id');
+
+        $customerId = Sqid::decode(Customer::class, $rawCustomerId);
+        if ($customerId === null && is_numeric($rawCustomerId)) {
+            $customerId = (int) $rawCustomerId;
+        }
+
+        $userId = Sqid::decode(User::class, $rawUserId);
+        if ($userId === null && is_numeric($rawUserId)) {
+            $userId = (int) $rawUserId;
+        }
+
+        $entryTypeFilter = Sqid::decode(EntryType::class, $rawEntryTypeId);
+        if ($entryTypeFilter === null && is_numeric($rawEntryTypeId)) {
+            $entryTypeFilter = (int) $rawEntryTypeId;
+        }
         $statusFilter = $request->filled('status') ? (int) $request->integer('status') : null;
 
         $rows = $this->buildRows($from, $to, $customerId, $userId, $entryTypeFilter, $statusFilter);

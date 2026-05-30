@@ -43,6 +43,21 @@ final class Sqid {
     }
 
     /**
+     * Wie {@see encode()}, gibt aber für null/0-Werte null statt eines leeren
+     * Strings zurück. Gedacht für JSON-Resources, in denen nullable Foreign-Keys
+     * als `null` (statt '') serialisiert werden sollen.
+     *
+     * @param  class-string  $modelClass
+     */
+    public static function encodeOrNull(string $modelClass, int|string|null $id): ?string {
+        if ($id === null || $id === '' || (int) $id <= 0) {
+            return null;
+        }
+
+        return app(SqidEncoder::class)->encode($modelClass, (int) $id);
+    }
+
+    /**
      * Dekodiert eine modell-spezifische Sqid zurück zum numerischen Primärschlüssel.
      *
      * Gibt null für leere/fehlerhafte Eingaben zurück.
@@ -55,5 +70,36 @@ final class Sqid {
         }
 
         return app(SqidEncoder::class)->decode($modelClass, (string) $value);
+    }
+
+    /**
+     * Dekodiert eine Sqid und akzeptiert als Backward-Compat-Fallback auch
+     * rohe numerische IDs (alte Bookmarks/Links/API-Clients vor der Sqid-
+     * Umstellung). Reihenfolge: erst Sqid-Decoding, dann numerischer Fallback.
+     *
+     * Nicht-positive oder ungültige Eingaben ergeben `$default` (Standard null).
+     * Aufrufer mit Sentinel-Semantik übergeben `$default = 0`, Aufrufer mit
+     * "fällt auf den eigenen Account zurück" die jeweilige User-ID.
+     *
+     * Hinweis: Der numerische Fallback hält Filter-Parameter (nicht das harte
+     * Route-Binding via {@see \App\Models\Concerns\HasSqid}) bewusst
+     * enumerierbar — Zugriffsschutz erfolgt separat über die jeweilige Query
+     * bzw. Berechtigungsprüfung, nicht über die Opazität der ID.
+     *
+     * @param  class-string  $modelClass
+     */
+    public static function decodeOrNumeric(string $modelClass, int|string|null $value, ?int $default = null): ?int {
+        $raw = $value === null ? '' : (string) $value;
+
+        $id = self::decode($modelClass, $raw);
+        if ($id === null && is_numeric($raw)) {
+            $id = (int) $raw;
+        }
+
+        if ($id === null || $id <= 0) {
+            return $default;
+        }
+
+        return $id;
     }
 }

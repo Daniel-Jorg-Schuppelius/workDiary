@@ -122,7 +122,7 @@ class EnergyLogTest extends TestCase {
 
     public function test_non_admin_cannot_view_other_users_logs(): void {
         $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
-        $this->getAsUser('energy-logs.index', ['user' => $other->id])->assertForbidden();
+        $this->getAsUser('energy-logs.index', ['user' => $other->sqid])->assertForbidden();
     }
 
     public function test_admin_can_view_all_users_logs(): void {
@@ -136,6 +136,48 @@ class EnergyLogTest extends TestCase {
         ]);
 
         $this->getAsAdmin('energy-logs.index', ['user' => 'all'])->assertOk();
+    }
+
+    public function test_admin_can_view_other_users_logs_with_numeric_user_fallback(): void {
+        $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        EnergyLog::factory()->create([
+            'organization_id' => $this->organization->id,
+            'vehicle_id' => $this->vehicle->id,
+            'user_id' => $other->id,
+            'started_at' => CarbonImmutable::today(),
+            'ended_at' => CarbonImmutable::today()->addMinutes(5),
+        ]);
+
+        $this->getAsAdmin('energy-logs.index', ['user' => (string) $other->id])
+            ->assertOk()
+            ->assertSee($other->name);
+    }
+
+    public function test_vehicle_filter_accepts_numeric_fallback(): void {
+        $otherVehicle = Vehicle::factory()->create(['organization_id' => $this->organization->id]);
+
+        EnergyLog::factory()->create([
+            'organization_id' => $this->organization->id,
+            'vehicle_id' => $this->vehicle->id,
+            'user_id' => $this->admin->id,
+            'started_at' => CarbonImmutable::today(),
+            'ended_at' => CarbonImmutable::today()->addMinutes(5),
+        ]);
+        EnergyLog::factory()->create([
+            'organization_id' => $this->organization->id,
+            'vehicle_id' => $otherVehicle->id,
+            'user_id' => $this->admin->id,
+            'started_at' => CarbonImmutable::today(),
+            'ended_at' => CarbonImmutable::today()->addMinutes(5),
+        ]);
+
+        $this->getAsAdmin('energy-logs.index', ['vehicle' => (string) $otherVehicle->id])
+            ->assertOk()
+            ->assertViewHas('logs', static function ($logs) use ($otherVehicle): bool {
+                $items = $logs->items();
+                return count($items) === 1
+                    && (int) $items[0]->vehicle_id === (int) $otherVehicle->id;
+            });
     }
 
     private function getAsUser(string $routeName, mixed $parameters = []): TestResponse {

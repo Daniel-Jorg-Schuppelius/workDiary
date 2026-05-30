@@ -13,6 +13,7 @@ namespace Tests\Feature\Reporting;
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Project, TimeEntry, User};
+use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
@@ -90,7 +91,7 @@ class ProjectInactiveReportTest extends TestCase {
         $response = $this->actingAs($this->admin)
             ->withSession($this->dateRangeYear(2030))
             ->post(route('reports.project-inactive.archive'), [
-                'project_ids' => [$this->inactive->id],
+                'project_ids' => [Sqid::encode(Project::class, $this->inactive->id)],
             ]);
         $response->assertRedirect(route('reports.project-inactive'));
 

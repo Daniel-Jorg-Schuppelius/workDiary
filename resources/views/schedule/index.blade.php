@@ -72,8 +72,8 @@
             @foreach ($months as $m)
                 @php
                     $tabParams = ['activeMonth' => $m['key']];
-                    if ($userFilter) {
-                        $tabParams['user'] = $userFilter;
+                    if (! empty($userFilterSqid)) {
+                        $tabParams['user'] = $userFilterSqid;
                     }
                     if (in_array($view, ['week', 'month'], true)) {
                         $tabParams['view'] = $view;
@@ -109,10 +109,27 @@
     @include('schedule.partials._shift_type_manager')
 @endif
 
+@php
+    $scheduleShiftTypes = $shiftTypes->values()->map(fn ($type) => [
+        'id' => $type->sqid,
+        'name' => $type->name,
+        'abbreviation' => $type->abbreviation,
+        'color' => $type->color,
+        'default_start_time' => $type->default_start_time,
+        'default_end_time' => $type->default_end_time,
+        'is_active' => (bool) $type->is_active,
+    ]);
+
+    $scheduleUsers = $users->values()->map(fn ($user) => [
+        'id' => $user->sqid,
+        'name' => $user->name,
+    ]);
+@endphp
+
 <script>
 window.__scheduleConfig = {
     isAdmin: {{ $isAdmin ? 'true' : 'false' }},
-    currentUserId: {{ (int) auth()->id() }},
+    currentUserId: @json(auth()->user()?->sqid),
     csrf: @json(csrf_token()),
     routes: {
         shiftsStore:   @json(route('schedule.shifts.store')),
@@ -124,8 +141,8 @@ window.__scheduleConfig = {
         typesUpdate:   @json(url('schedule/types')),
         typesDestroy:  @json(url('schedule/types')),
     },
-    shiftTypes: @json($shiftTypes->values()),
-    users: @json($users->values()),
+    shiftTypes: @json($scheduleShiftTypes),
+    users: @json($scheduleUsers),
 };
 </script>
 @vite('resources/js/schedule.js')

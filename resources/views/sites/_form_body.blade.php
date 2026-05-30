@@ -11,7 +11,7 @@
         <select name="customer_id" required class="select select-bordered w-full @error('customer_id') select-error @enderror">
             <option value="">{{ __('— bitte wählen —') }}</option>
             @foreach ($customers as $c)
-                <option value="{{ $c->id }}" @selected((int) old('customer_id', $site?->customer_id ?? request('customer')) === (int) $c->id)>{{ $c->name }}</option>
+                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $site?->customer_id ?? \App\Support\Sqid::decode(\App\Models\Customer::class, request('customer'))) ) === $c->sqid)>{{ $c->name }}</option>
             @endforeach
         </select>
     </x-input-field>

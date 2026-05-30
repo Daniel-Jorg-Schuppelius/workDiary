@@ -10,7 +10,8 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Timesheet;
+use App\Models\{Project, Timesheet};
+use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,8 +20,8 @@ class TimesheetResource extends JsonResource {
     /** @return array<string, mixed> */
     public function toArray(Request $request): array {
         return [
-            'id' => $this->id,
-            'project_id' => $this->project_id,
+            'id' => $this->sqid,
+            'project_id' => Sqid::encodeOrNull(Project::class, $this->project_id),
             'user' => new UserResource($this->whenLoaded('user')),
             'work_date' => optional($this->work_date)->toDateString(),
             'status' => $this->status,

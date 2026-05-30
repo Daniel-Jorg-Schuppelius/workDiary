@@ -23,7 +23,7 @@ class DiaryEntryResource extends JsonResource {
     /** @return array<string, mixed> */
     public function toArray(Request $request): array {
         return [
-            'id' => $this->id,
+            'id' => $this->sqid,
             'user' => new UserResource($this->whenLoaded('user')),
             'content' => $this->content,
             'response' => $this->response,

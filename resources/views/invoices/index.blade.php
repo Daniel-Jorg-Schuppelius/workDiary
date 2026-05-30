@@ -20,7 +20,7 @@
         <select name="customer" class="select select-sm select-bordered w-48 shrink-0" aria-label="{{ __('Kunde') }}">
             <option value="">{{ __('Alle Kunden') }}</option>
             @foreach ($customers as $c)
-                <option value="{{ $c->id }}" @selected((int) ($filters['customer'] ?? 0) === (int) $c->id)>{{ $c->name }}</option>
+                <option value="{{ $c->sqid }}" @selected((int) ($filters['customer'] ?? 0) === (int) $c->id)>{{ $c->name }}</option>
             @endforeach
         </select>
         <select name="status" class="select select-sm select-bordered w-40 shrink-0" aria-label="{{ __('Status') }}">

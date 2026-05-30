@@ -73,7 +73,7 @@ class DutyController extends Controller {
         $sicknessStatus = null;
         if ($tab === 'krank') {
             $statusUserId = $isAdmin
-                ? Sqid::decode(User::class, $request->query('user_id'))
+                ? Sqid::decodeOrNumeric(User::class, $request->query('user_id'))
                 : (int) $authUser->id;
             if ($statusUserId !== null) {
                 $sicknessStatusUser = User::find($statusUserId);
@@ -86,6 +86,18 @@ class DutyController extends Controller {
         $allTags = Tag::orderBy('name')->get(['id', 'name', 'color']);
         $users = $isAdmin ? User::query()->orderBy('name')->get(['id', 'name']) : collect();
         $filters = $request->only('status', 'mine', 'q', 'tag', 'vtype', 'vstatus', 'user_id', 'entry_type', 'kkind', 'kstatus');
+        if (! empty($filters['tag']) && is_numeric((string) $filters['tag'])) {
+            $tagId = (int) $filters['tag'];
+            $filters['tag'] = $tagId > 0 ? Sqid::encode(Tag::class, $tagId) : null;
+        }
+        if (! empty($filters['entry_type']) && is_numeric((string) $filters['entry_type'])) {
+            $entryTypeId = (int) $filters['entry_type'];
+            $filters['entry_type'] = $entryTypeId > 0 ? Sqid::encode(EntryType::class, $entryTypeId) : null;
+        }
+        if (! empty($filters['user_id']) && is_numeric((string) $filters['user_id'])) {
+            $userId = (int) $filters['user_id'];
+            $filters['user_id'] = $userId > 0 ? Sqid::encode(User::class, $userId) : null;
+        }
         $filters['from'] = $rangeFrom;
         $filters['to'] = $rangeTo;
 
@@ -141,12 +153,14 @@ class DutyController extends Controller {
             $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $q) . '%';
             $diaryQuery->where(fn($w) => $w->where('content', 'like', $like)->orWhere('response', 'like', $like));
         }
-        $tagId = Sqid::decode(Tag::class, $request->query('tag')) ?? 0;
+        $rawTag = (string) $request->query('tag', '');
+        $tagId = Sqid::decodeOrNumeric(Tag::class, $rawTag, 0);
         if ($tagId > 0) {
             $diaryQuery->whereHas('tags', fn($tq) => $tq->where('tags.id', $tagId));
         }
 
-        $entryTypeId = Sqid::decode(EntryType::class, $request->query('entry_type')) ?? 0;
+        $rawEntryType = (string) $request->query('entry_type', '');
+        $entryTypeId = Sqid::decodeOrNumeric(EntryType::class, $rawEntryType, 0);
         if ($entryTypeId > 0) {
             $diaryQuery->where('entry_type_id', $entryTypeId);
         }
@@ -180,7 +194,7 @@ class DutyController extends Controller {
 
         if (! $isAdmin) {
             $vacationQuery->where('user_id', $authUser->id);
-        } elseif (($uid = Sqid::decode(User::class, $request->query('user_id'))) !== null) {
+        } elseif (($uid = Sqid::decodeOrNumeric(User::class, $request->query('user_id'))) !== null) {
             $vacationQuery->where('user_id', $uid);
         }
         if ($request->filled('vtype')) {
@@ -221,7 +235,7 @@ class DutyController extends Controller {
 
         if (! $isAdmin) {
             $q->where('user_id', $authUser->id);
-        } elseif (($uid = Sqid::decode(User::class, $request->query('user_id'))) !== null) {
+        } elseif (($uid = Sqid::decodeOrNumeric(User::class, $request->query('user_id'))) !== null) {
             $q->where('user_id', $uid);
         }
         if ($request->filled('kkind')) {

@@ -90,10 +90,10 @@
                      @if ($isAdmin)
                          data-schedule-cell
                          data-date="{{ $day['date'] }}"
-                         data-user-id="{{ $rowUser->id }}"
-                         onclick="scheduleCellClick(event, '{{ $day['date'] }}', {{ $rowUser->id }})"
+                         data-user-id="{{ $rowUser->sqid }}"
+                         onclick='scheduleCellClick(event, @js($day['date']), @js($rowUser->sqid))'
                          ondragover="event.preventDefault()"
-                         ondrop="scheduleDropCell(event, '{{ $day['date'] }}', {{ $rowUser->id }})"
+                         ondrop='scheduleDropCell(event, @js($day['date']), @js($rowUser->sqid))'
                      @endif>
 
                     {{-- Shift badges --}}
@@ -101,14 +101,24 @@
                         @php
                             $compl = $complianceByShift[$shift->id] ?? null;
                             $complTitle = $compl ? "\n⚠ ".implode("\n⚠ ", $compl['messages']) : '';
+                            $shiftPayload = [
+                                'id' => $shift->sqid,
+                                'user_id' => $shift->user?->sqid,
+                                'date' => $shift->date?->toDateString(),
+                                'shift_type_id' => $shift->shiftType?->sqid,
+                                'start_time' => $shift->resolvedStartTime(),
+                                'end_time' => $shift->resolvedEndTime(),
+                                'note' => $shift->note,
+                                'status' => $shift->status,
+                            ];
                         @endphp
                         <div class="schedule-shift-badge mb-0.5 flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-semibold leading-tight shadow-xs
                                     @if ($isAdmin) cursor-pointer hover:opacity-80 @endif"
                              style="background:{{ $shift->shiftType?->color ?? '#6b7280' }};color:#fff;"
                              @if ($isAdmin)
                                  draggable="true"
-                                 ondragstart="scheduleDragStart(event, {{ $shift->id }})"
-                                 onclick="event.stopPropagation(); scheduleOpenEditDialog({{ $shift->id }}, {{ json_encode($shift) }})"
+                                 ondragstart='scheduleDragStart(event, @js($shift->sqid))'
+                                 onclick='event.stopPropagation(); scheduleOpenEditDialog(@js($shift->sqid), @js($shiftPayload))'
                              @endif
                              title="{{ $shift->shiftType?->name ?? __('Schicht') }}{{ $shift->resolvedStartTime() ? ': '.$shift->resolvedStartTime() : '' }}{{ $shift->resolvedEndTime() ? '–'.$shift->resolvedEndTime() : '' }}{{ $shift->note ? ' · '.$shift->note : '' }}{{ $complTitle }}">
                             <span>{{ $shift->shiftType?->abbreviation ?? '?' }}</span>

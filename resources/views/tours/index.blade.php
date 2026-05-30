@@ -45,7 +45,9 @@
                      :sort-params="array_filter([
                          'from' => $from->toDateString(),
                          'to' => $to->toDateString(),
-                         'user' => request('user'),
+                         'user' => request('user') === 'all'
+                             ? 'all'
+                             : (request()->filled('user') ? $targetUser?->sqid : null),
                          'status' => $selectedStatus,
                      ], fn ($v) => $v !== null && $v !== '')"
                      bare>

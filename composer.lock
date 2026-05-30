@@ -1131,16 +1131,16 @@
         },
         {
             "name": "dschuppelius/php-common-toolkit",
-            "version": "v1.8.2",
+            "version": "v1.8.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DSchuppelius/php-common-toolkit.git",
-                "reference": "e0af89c137ca9f4d51e6b9e110d7c6d8e9c1f8a2"
+                "reference": "caa2930b5cda2e9e7fd85f5d954cbfd60621bf77"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/e0af89c137ca9f4d51e6b9e110d7c6d8e9c1f8a2",
-                "reference": "e0af89c137ca9f4d51e6b9e110d7c6d8e9c1f8a2",
+                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/caa2930b5cda2e9e7fd85f5d954cbfd60621bf77",
+                "reference": "caa2930b5cda2e9e7fd85f5d954cbfd60621bf77",
                 "shasum": ""
             },
             "require": {
@@ -1174,9 +1174,9 @@
             "description": "Project description.",
             "support": {
                 "issues": "https://github.com/DSchuppelius/php-common-toolkit/issues",
-                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.8.2"
+                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.8.3"
             },
-            "time": "2026-05-29T11:43:52+00:00"
+            "time": "2026-05-30T08:56:04+00:00"
         },
         {
             "name": "dschuppelius/php-config-toolkit",
@@ -1679,16 +1679,16 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "2.10.3",
+            "version": "2.10.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "7c1472269227dc6f18930bd903d7a88fe6c52130"
+                "reference": "d2a1a094e396da8957e797489fddaf860c340cfc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/7c1472269227dc6f18930bd903d7a88fe6c52130",
-                "reference": "7c1472269227dc6f18930bd903d7a88fe6c52130",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/d2a1a094e396da8957e797489fddaf860c340cfc",
+                "reference": "d2a1a094e396da8957e797489fddaf860c340cfc",
                 "shasum": ""
             },
             "require": {
@@ -1776,7 +1776,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/psr7/issues",
-                "source": "https://github.com/guzzle/psr7/tree/2.10.3"
+                "source": "https://github.com/guzzle/psr7/tree/2.10.4"
             },
             "funding": [
                 {
@@ -1792,7 +1792,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-27T11:48:20+00:00"
+            "time": "2026-05-29T12:59:07+00:00"
         },
         {
             "name": "guzzlehttp/uri-template",

@@ -19,13 +19,13 @@
             <x-slot:actions>
                 @if ($project)
                     <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.project-details', ['project_id' => $projectId, 'export' => 'csv'])"
+                                :href="route('reports.project-details', ['project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId), 'export' => 'csv'])"
                                 show-label>CSV</x-icon-btn>
                     <x-icon-btn icon="table_chart" tone="outline" size="sm"
-                                :href="route('reports.project-details', ['project_id' => $projectId, 'export' => 'xlsx'])"
+                                :href="route('reports.project-details', ['project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId), 'export' => 'xlsx'])"
                                 show-label>XLSX</x-icon-btn>
                     <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                                :href="route('reports.project-details', ['project_id' => $projectId, 'export' => 'pdf'])"
+                                :href="route('reports.project-details', ['project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId), 'export' => 'pdf'])"
                                 show-label>PDF</x-icon-btn>
                 @endif
             </x-slot:actions>
@@ -36,7 +36,7 @@
         <x-filter-field :label="__('Projekt')" for="rep-project">
             <select id="rep-project" name="project_id" class="select select-sm select-bordered" onchange="this.form.submit()">
                 @foreach ($projects as $p)
-                    <option value="{{ $p->id }}" @selected($projectId === (int) $p->id)>
+                    <option value="{{ $p->sqid }}" @selected(\App\Support\Sqid::encode(\App\Models\Project::class, $projectId) === $p->sqid)>
                         {{ $p->name }}@if ($p->customer) — {{ $p->customer->name }}@endif
                     </option>
                 @endforeach

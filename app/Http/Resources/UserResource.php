@@ -19,7 +19,7 @@ class UserResource extends JsonResource {
     /** @return array<string, mixed> */
     public function toArray(Request $request): array {
         return [
-            'id' => $this->id,
+            'id' => $this->sqid,
             'name' => $this->name,
             'email' => $this->when($request->user()?->isAdmin() || $request->user()?->id === $this->id, $this->email),
         ];

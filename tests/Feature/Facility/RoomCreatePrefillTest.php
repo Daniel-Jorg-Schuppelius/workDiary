@@ -39,7 +39,7 @@ class RoomCreatePrefillTest extends TestCase {
         [$customer, $site, $building, $floor] = $this->makeChain();
 
         $response = $this->actingAs($this->user)
-            ->get(route('rooms.create', ['floor' => $floor->id]));
+            ->get(route('rooms.create', ['floor' => $floor->sqid]));
 
         $response->assertOk();
         $response->assertViewHas('prefill', [
@@ -54,7 +54,22 @@ class RoomCreatePrefillTest extends TestCase {
         [$customer, $site, $building] = $this->makeChain();
 
         $response = $this->actingAs($this->user)
-            ->get(route('rooms.create', ['building' => $building->id]));
+            ->get(route('rooms.create', ['building' => $building->sqid]));
+
+        $response->assertOk();
+        $response->assertViewHas('prefill', [
+            'customer_id' => $customer->id,
+            'site_id'     => $site->id,
+            'building_id' => $building->id,
+            'floor_id'    => null,
+        ]);
+    }
+
+    public function test_create_prefills_chain_from_numeric_building_query_fallback(): void {
+        [$customer, $site, $building] = $this->makeChain();
+
+        $response = $this->actingAs($this->user)
+            ->get(route('rooms.create', ['building' => (string) $building->id]));
 
         $response->assertOk();
         $response->assertViewHas('prefill', [

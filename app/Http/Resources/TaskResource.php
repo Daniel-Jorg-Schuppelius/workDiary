@@ -10,7 +10,8 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Task;
+use App\Models\{Milestone, Project, Task, User};
+use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -23,15 +24,15 @@ class TaskResource extends JsonResource {
     /** @return array<string, mixed> */
     public function toArray(Request $request): array {
         return [
-            'id' => $this->id,
-            'project_id' => $this->project_id,
-            'milestone_id' => $this->milestone_id,
-            'parent_task_id' => $this->parent_task_id,
+            'id' => $this->sqid,
+            'project_id' => Sqid::encodeOrNull(Project::class, $this->project_id),
+            'milestone_id' => Sqid::encodeOrNull(Milestone::class, $this->milestone_id),
+            'parent_task_id' => Sqid::encodeOrNull(Task::class, $this->parent_task_id),
             'title' => $this->title,
             'description' => $this->description,
             'status' => $this->status,
             'priority' => $this->priority,
-            'assigned_to' => $this->assigned_to,
+            'assigned_to' => Sqid::encodeOrNull(User::class, $this->assigned_to),
             'due_date' => optional($this->due_date)->toDateString(),
             'position' => $this->position,
             'is_global' => (bool) $this->is_global,

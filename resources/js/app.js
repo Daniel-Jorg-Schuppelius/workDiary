@@ -12,6 +12,7 @@ import "./bulk-selection.js";
 import "./global-search.js";
 import "./help-drawer.js";
 import "./facility-picker.js";
+import "./tag-picker.js";
 
 // PWA: Service Worker registrieren + Install-Button binden.
 if (typeof window !== "undefined") {

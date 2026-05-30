@@ -42,7 +42,7 @@ class CustomerApiTest extends TestCase {
 
         $this->getJson(route('api.customers.show', $customer))
             ->assertOk()
-            ->assertJsonPath('data.id', $customer->id);
+            ->assertJsonPath('data.id', $customer->sqid);
 
         $this->putJson(route('api.customers.update', $customer), [
             'name' => 'ACME AG',

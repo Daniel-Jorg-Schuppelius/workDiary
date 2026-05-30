@@ -15,6 +15,8 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Mail\TimesheetSignedMail;
 use App\Models\{Material, Project, Timesheet, User};
+use App\Support\Sqid;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Mail, Storage};
 use Tests\Concerns\WithOrganization;
@@ -173,6 +175,44 @@ class TimesheetTest extends TestCase {
         $ts->forceFill(['magic_token' => 'old', 'magic_expires_at' => now()->subDay()])->save();
 
         $this->get(route('timesheets.public-sign', 'old'))->assertStatus(410);
+    }
+
+    public function test_index_accepts_numeric_project_filter_fallback(): void {
+        $today = CarbonImmutable::today()->toDateString();
+
+        $otherProject = Project::create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Anderes Projekt',
+            'status' => ProjectStatus::Active->value,
+            'created_by' => $this->admin->id,
+        ]);
+
+        $tsA = Timesheet::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->admin->id,
+            'work_date' => $today,
+            'status' => TimesheetStatus::Draft->value,
+        ]);
+        Timesheet::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $otherProject->id,
+            'user_id' => $this->admin->id,
+            'work_date' => $today,
+            'status' => TimesheetStatus::Draft->value,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('timesheets.index', [
+                'scope' => 'team',
+                'project' => (string) $this->project->id,
+            ]))
+            ->assertOk()
+            ->assertViewHas('timesheets', static function ($timesheets) use ($tsA): bool {
+                $items = $timesheets->items();
+                return count($items) === 1 && (int) $items[0]->id === (int) $tsA->id;
+            })
+            ->assertViewHas('selectedProjectSqid', Sqid::encode(Project::class, $this->project->id));
     }
 
     private function makeTimesheet(array $attrs = []): Timesheet {

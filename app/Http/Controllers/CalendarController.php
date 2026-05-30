@@ -10,7 +10,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Services\Calendar\CalendarEventService;
+use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +24,7 @@ class CalendarController extends Controller {
     }
 
     public function events(Request $request, CalendarEventService $service): JsonResponse {
+        /** @var User|null $user */
         $user = Auth::user();
         abort_if($user === null, 401);
 
@@ -33,7 +36,8 @@ class CalendarController extends Controller {
             : CarbonImmutable::now()->endOfMonth();
 
         $teamScope = $request->boolean('team') && $user->isAdmin();
-        $filterUserId = $request->integer('user') ?: null;
+        $rawFilterUser = (string) $request->query('user', '');
+        $filterUserId = Sqid::decodeOrNumeric(User::class, $rawFilterUser);
 
         $events = $service->events($start, $end, $user, $teamScope, $filterUserId);
 

@@ -11,6 +11,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Attachment;
+use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -22,10 +23,17 @@ class AttachmentResource extends JsonResource {
 
     /** @return array<string, mixed> */
     public function toArray(Request $request): array {
+        $attachableId = null;
+        if (class_exists($this->attachable_type)) {
+            /** @var class-string $attachableType */
+            $attachableType = $this->attachable_type;
+            $attachableId = Sqid::encodeOrNull($attachableType, $this->attachable_id);
+        }
+
         return [
-            'id' => $this->id,
+            'id' => $this->sqid,
             'attachable_type' => class_basename($this->attachable_type),
-            'attachable_id' => $this->attachable_id,
+            'attachable_id' => $attachableId,
             'original_name' => $this->original_name,
             'mime' => $this->mime,
             'size' => $this->size,

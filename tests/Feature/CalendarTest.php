@@ -11,6 +11,7 @@
 namespace Tests\Feature;
 
 use App\Models\{OnCallShift, User};
+use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -64,5 +65,69 @@ class CalendarTest extends TestCase {
 
     public function test_events_endpoint_requires_auth(): void {
         $this->getJson(route('calendar.events'))->assertStatus(401);
+    }
+
+    public function test_events_endpoint_team_scope_filters_by_sqid_user(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $workerA = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $workerB = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+
+        $start = now()->startOfWeek()->addDay()->setTime(8, 0);
+        $end = (clone $start)->addHours(4);
+
+        OnCallShift::create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $workerA->id,
+            'start_at' => $start,
+            'end_at' => $end,
+        ]);
+        OnCallShift::create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $workerB->id,
+            'start_at' => $start,
+            'end_at' => $end,
+        ]);
+
+        $res = $this->actingAs($admin)->getJson(route('calendar.events', [
+            'start' => $start->copy()->subDays(7)->toIso8601String(),
+            'end' => $start->copy()->addDays(7)->toIso8601String(),
+            'team' => 1,
+            'user' => Sqid::encode(User::class, $workerB->id),
+        ]));
+
+        $res->assertOk()->assertJsonCount(1);
+        $this->assertStringContainsString($workerB->name, (string) $res->json('0.title'));
+    }
+
+    public function test_events_endpoint_team_scope_accepts_numeric_user_fallback(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $workerA = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $workerB = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+
+        $start = now()->startOfWeek()->addDay()->setTime(8, 0);
+        $end = (clone $start)->addHours(4);
+
+        OnCallShift::create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $workerA->id,
+            'start_at' => $start,
+            'end_at' => $end,
+        ]);
+        OnCallShift::create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $workerB->id,
+            'start_at' => $start,
+            'end_at' => $end,
+        ]);
+
+        $res = $this->actingAs($admin)->getJson(route('calendar.events', [
+            'start' => $start->copy()->subDays(7)->toIso8601String(),
+            'end' => $start->copy()->addDays(7)->toIso8601String(),
+            'team' => 1,
+            'user' => (string) $workerA->id,
+        ]));
+
+        $res->assertOk()->assertJsonCount(1);
+        $this->assertStringContainsString($workerA->name, (string) $res->json('0.title'));
     }
 }

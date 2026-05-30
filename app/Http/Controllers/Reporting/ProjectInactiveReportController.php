@@ -14,6 +14,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, Project, TimeEntry, User};
+use App\Support\Sqid;
 use App\Support\XlsxExport;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
@@ -65,9 +66,17 @@ class ProjectInactiveReportController extends Controller {
     public function archive(Request $request): RedirectResponse {
         Gate::authorize('viewAny', Project::class);
 
+        /** @var array<int|string> $rawIds */
+        $rawIds = (array) $request->input('project_ids', []);
         /** @var array<int> $ids */
-        $ids = (array) $request->input('project_ids', []);
-        $ids = array_values(array_filter(array_map('intval', $ids), static fn(int $id): bool => $id > 0));
+        $ids = [];
+        foreach ($rawIds as $rawId) {
+            $id = Sqid::decodeOrNumeric(Project::class, (string) $rawId);
+            if ($id !== null) {
+                $ids[] = $id;
+            }
+        }
+        $ids = array_values(array_unique($ids));
 
         if (count($ids) === 0) {
             return redirect()->route('reports.project-inactive')

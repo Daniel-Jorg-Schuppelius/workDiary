@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\TimeEntryResource;
 use App\Models\{Project, Timesheet};
 use App\Services\Timesheet\Stopwatch;
+use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -29,6 +30,12 @@ class StopwatchController extends Controller {
     }
 
     public function start(Request $request): TimeEntryResource {
+        $request->merge([
+            'project_id' => Sqid::decode(Project::class, $request->input('project_id')),
+            'task_id' => Sqid::decode(\App\Models\Task::class, $request->input('task_id')),
+            'timesheet_id' => Sqid::decode(Timesheet::class, $request->input('timesheet_id')),
+        ]);
+
         $data = $request->validate([
             'project_id' => ['required', 'integer', 'exists:projects,id'],
             'task_id' => ['nullable', 'integer', 'exists:tasks,id'],

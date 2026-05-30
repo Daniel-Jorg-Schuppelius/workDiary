@@ -47,7 +47,11 @@
                  :route="route('timesheets.index')"
                  :current-sort="$sort ?? null"
                  :current-dir="$dir ?? 'desc'"
-                 :sort-params="request()->only('scope', 'project', 'status')">
+                 :sort-params="array_filter([
+                     'scope' => request('scope'),
+                     'project' => $selectedProjectSqid ?? null,
+                     'status' => request('status'),
+                 ], fn ($v) => $v !== null && $v !== '')">
             <x-slot:head>
                 <tr>
                     <x-table.th sort="work_date" default>{{ __('Datum') }}</x-table.th>
@@ -100,7 +104,7 @@
                 <select name="customer_id" required class="select select-bordered w-full">
                     <option value="">{{ __('Kunde wählen…') }}</option>
                     @foreach (\App\Models\Customer::query()->whereNull('archived_at')->orderBy('name')->get(['id','name']) as $c)
-                        <option value="{{ $c->id }}">{{ $c->name }}</option>
+                        <option value="{{ $c->sqid }}">{{ $c->name }}</option>
                     @endforeach
                 </select>
                 <p class="text-xs text-base-content/60">{{ __('Ohne Projektwahl landet der Stundenzettel im Standardprojekt des Kunden (z. B. Wartung).') }}</p>

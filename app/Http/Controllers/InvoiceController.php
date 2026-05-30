@@ -27,7 +27,8 @@ class InvoiceController extends Controller {
     public function index(Request $request): View {
         Gate::authorize('viewAny', Invoice::class);
 
-        $customerId = $request->integer('customer') ?: null;
+        $rawCustomer = (string) $request->query('customer', '');
+        $customerId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer::class, $rawCustomer);
         $status = $request->string('status')->toString();
         $statusFilter = in_array($status, Invoice::STATUSES, true) ? $status : '';
 
@@ -63,6 +64,24 @@ class InvoiceController extends Controller {
 
     public function store(Request $request, InvoiceGenerator $gen): RedirectResponse {
         Gate::authorize('create', Invoice::class);
+
+        $rawCustomerId = $request->input('customer_id');
+        $customerId = \App\Support\Sqid::decode(\App\Models\Customer::class, $rawCustomerId);
+        if ($customerId === null && is_numeric($rawCustomerId)) {
+            $customerId = (int) $rawCustomerId;
+        }
+
+        $rawProjectId = $request->input('project_id');
+        $projectId = \App\Support\Sqid::decode(\App\Models\Project::class, $rawProjectId);
+        if ($projectId === null && is_numeric($rawProjectId)) {
+            $projectId = (int) $rawProjectId;
+        }
+
+        $request->merge([
+            'customer_id' => $customerId,
+            'project_id' => $projectId,
+        ]);
+
         $data = $request->validate([
             'customer_id' => ['required', 'integer', 'exists:customers,id'],
             'project_id' => ['nullable', 'integer', 'exists:projects,id'],

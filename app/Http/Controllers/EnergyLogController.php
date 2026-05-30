@@ -14,6 +14,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveEnergyLogRequest;
 use App\Models\{EnergyLog, User, Vehicle};
 use App\Services\Fleet\EnergyLogService;
+use App\Support\Sqid;
 use App\Support\SortableQuery;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
@@ -25,7 +26,8 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 class EnergyLogController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function __construct(private readonly EnergyLogService $service) {}
+    public function __construct(private readonly EnergyLogService $service) {
+    }
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', EnergyLog::class);
@@ -43,8 +45,11 @@ class EnergyLogController extends Controller {
             $query->where('user_id', $target->id);
         }
 
-        if ($request->filled('vehicle')) {
-            $query->where('vehicle_id', (int) $request->integer('vehicle'));
+        $rawVehicle = (string) $request->query('vehicle', '');
+        $vehicleId = Sqid::decodeOrNumeric(Vehicle::class, $rawVehicle);
+        $selectedVehicleSqid = $vehicleId !== null ? Sqid::encode(Vehicle::class, $vehicleId) : null;
+        if ($vehicleId !== null) {
+            $query->where('vehicle_id', $vehicleId);
         }
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [
@@ -63,8 +68,8 @@ class EnergyLogController extends Controller {
         if ($target !== null) {
             $totalsBase->where('user_id', $target->id);
         }
-        if ($request->filled('vehicle')) {
-            $totalsBase->where('vehicle_id', (int) $request->integer('vehicle'));
+        if ($vehicleId !== null) {
+            $totalsBase->where('vehicle_id', $vehicleId);
         }
 
         $totals = [
@@ -80,7 +85,7 @@ class EnergyLogController extends Controller {
             'to' => $to,
             'totals' => $totals,
             'vehicles' => $this->vehiclesForUser($auth),
-            'selectedVehicleId' => $request->filled('vehicle') ? (int) $request->integer('vehicle') : null,
+            'selectedVehicleSqid' => $selectedVehicleSqid,
             'targetUser' => $target,
             'selectableUsers' => $auth->isAdmin() ? $this->loadSelectableUsers() : null,
             'sort' => $sort,
@@ -100,7 +105,7 @@ class EnergyLogController extends Controller {
             'types' => EnergyLog::TYPES,
             'fuelKinds' => EnergyLog::FUEL_KINDS,
             'chargerTypes' => EnergyLog::CHARGER_TYPES,
-            'defaultVehicleId' => $request->filled('vehicle') ? (int) $request->integer('vehicle') : null,
+            'defaultVehicleId' => Sqid::decodeOrNumeric(Vehicle::class, $request->query('vehicle')),
         ]);
     }
 
@@ -188,8 +193,8 @@ class EnergyLogController extends Controller {
             return null;
         }
 
-        $requestedId = (int) $raw;
-        if ($requestedId === (int) $authUser->id) {
+        $requestedId = Sqid::decodeOrNumeric(User::class, $raw);
+        if ($requestedId === null || $requestedId === (int) $authUser->id) {
             return $authUser;
         }
 

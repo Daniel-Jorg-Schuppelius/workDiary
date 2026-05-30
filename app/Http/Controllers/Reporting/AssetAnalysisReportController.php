@@ -39,7 +39,11 @@ class AssetAnalysisReportController extends Controller {
         $from = $range['from']->startOfDay();
         $to = $range['to']->endOfDay();
 
-        $customerId = Sqid::decode(Customer::class, $request->query('customer_id'));
+        $rawCustomerId = $request->query('customer_id');
+        $customerId = Sqid::decode(Customer::class, $rawCustomerId);
+        if ($customerId === null && is_numeric($rawCustomerId)) {
+            $customerId = (int) $rawCustomerId;
+        }
         $categoryCode = $request->filled('category_code') ? (string) $request->string('category_code') : null;
         $manufacturer = $request->filled('manufacturer') ? (string) $request->string('manufacturer') : null;
         $groupBy = (string) $request->string('group_by', 'asset');

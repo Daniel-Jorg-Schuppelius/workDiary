@@ -32,7 +32,8 @@ class ScheduleController extends Controller {
         /** @var User $auth */
         $auth = Auth::user();
 
-        $userFilter = Sqid::decode(User::class, $request->query('user')) ?? 0;
+        $rawUserFilter = (string) $request->query('user', '');
+        $userFilter = Sqid::decodeOrNumeric(User::class, $rawUserFilter, 0);
 
         $range = $this->globalDateRange();
         $rangeFrom = $range['from'];
@@ -81,6 +82,7 @@ class ScheduleController extends Controller {
             'shiftTypes' => ShiftType::active()->orderBy('name')->get(),
             'users' => User::orderBy('name')->get(),
             'userFilter' => $userFilter,
+            'userFilterSqid' => $userFilter > 0 ? Sqid::encode(User::class, $userFilter) : null,
             'holidays' => $holidays,
             'isAdmin' => $auth->isAdmin(),
             'complianceByShift' => $complianceByShift,
@@ -130,7 +132,8 @@ class ScheduleController extends Controller {
     // ── JSON-API for Alpine.js ───────────────────────────────────────────────
 
     public function apiIndex(Request $request): JsonResponse {
-        $userFilter = Sqid::decode(User::class, $request->query('user')) ?? 0;
+        $rawUserFilter = (string) $request->query('user', '');
+        $userFilter = Sqid::decodeOrNumeric(User::class, $rawUserFilter, 0);
 
         $range = $this->globalDateRange();
         $from = $range['from'];

@@ -23,7 +23,7 @@ class OnCallShiftResource extends JsonResource {
     /** @return array<string, mixed> */
     public function toArray(Request $request): array {
         return [
-            'id' => $this->id,
+            'id' => $this->sqid,
             'user' => new UserResource($this->whenLoaded('user')),
             'start_at' => optional($this->start_at)->toIso8601String(),
             'end_at' => optional($this->end_at)->toIso8601String(),

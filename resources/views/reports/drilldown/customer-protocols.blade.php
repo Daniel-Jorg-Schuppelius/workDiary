@@ -11,13 +11,13 @@
         </x-slot:subtitle>
         <x-slot:actions>
             <x-icon-btn icon="download" tone="outline" size="sm"
-                        :href="route('reports.customers.drilldown.protocols', array_filter(['customer_id' => $customerId, 'project_id' => $projectId, 'user_id' => $userId, 'export' => 'csv']))"
+                        :href="route('reports.customers.drilldown.protocols', array_filter(['customer_id' => \App\Support\Sqid::encode(\App\Models\Customer::class, $customerId), 'project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId), 'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId), 'export' => 'csv']))"
                         show-label>CSV</x-icon-btn>
             <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                        :href="route('reports.customers.drilldown.protocols', array_filter(['customer_id' => $customerId, 'project_id' => $projectId, 'user_id' => $userId, 'export' => 'pdf']))"
+                        :href="route('reports.customers.drilldown.protocols', array_filter(['customer_id' => \App\Support\Sqid::encode(\App\Models\Customer::class, $customerId), 'project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId), 'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId), 'export' => 'pdf']))"
                         show-label>PDF</x-icon-btn>
             <x-icon-btn icon="arrow_back" tone="outline" size="sm"
-                        :href="route('reports.customers', array_filter(['project_id' => $projectId, 'user_id' => $userId]))"
+                        :href="route('reports.customers', array_filter(['project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId), 'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId)]))"
                         show-label>{{ __('Zur Kundenanalyse') }}</x-icon-btn>
         </x-slot:actions>
     </x-page-toolbar>

@@ -12,7 +12,7 @@
         <select name="building_id" required class="select select-bordered w-full @error('building_id') select-error @enderror">
             <option value="">{{ __('— bitte wählen —') }}</option>
             @foreach ($buildings as $b)
-                <option value="{{ $b->sqid }}" @selected((int) old('building_id', $floor?->building_id ?? request('building')) === (int) $b->id)>{{ $b->name }}@if ($b->site) — {{ $b->site->name }}@endif</option>
+                <option value="{{ $b->sqid }}" @selected((string) old('building_id', \App\Support\Sqid::encode(\App\Models\Building::class, $floor?->building_id ?? \App\Support\Sqid::decode(\App\Models\Building::class, request('building'))) ) === $b->sqid)>{{ $b->name }}@if ($b->site) — {{ $b->site->name }}@endif</option>
             @endforeach
         </select>
         @error('building_id')<p class="text-error text-sm">{{ $message }}</p>@enderror

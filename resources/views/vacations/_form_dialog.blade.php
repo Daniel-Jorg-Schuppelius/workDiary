@@ -5,7 +5,7 @@
     $action   = $isEdit ? route('vacations.update', $vacation) : route('vacations.store');
     $dialogUrl = ($isEdit ? route('vacations.edit', $vacation) : route('vacations.create')) . '?dialog=1';
 
-    $selectedUser = (int) old('user_id', $vacation?->user_id ?? auth()->id());
+    $selectedUser = (string) old('user_id', \App\Support\Sqid::encode(\App\Models\User::class, $vacation?->user_id ?? auth()->id()));
     $typeOptions  = \App\Enums\Vacation\VacationType::options();
     $defaultType  = \App\Enums\Vacation\VacationType::Vacation->value;
 @endphp
@@ -30,7 +30,9 @@
                     <label class="fieldset-label" for="vac-user">{{ __('Mitarbeiter') }}</label>
                     <select id="vac-user" name="user_id" class="select select-bordered w-full">
                         @foreach ($assignableUsers as $u)
-                            <option value="{{ $u['id'] ?? $u->id }}" @selected($selectedUser === (int) ($u['id'] ?? $u->id))>{{ $u['name'] ?? $u->name }}</option>
+                            @php($uid = (int) ($u['id'] ?? $u->id))
+                            @php($usqid = \App\Support\Sqid::encode(\App\Models\User::class, $uid))
+                            <option value="{{ $usqid }}" @selected($selectedUser === $usqid)>{{ $u['name'] ?? $u->name }}</option>
                         @endforeach
                     </select>
                 </div>

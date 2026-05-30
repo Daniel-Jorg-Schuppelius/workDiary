@@ -10,7 +10,8 @@
 
 namespace App\Http\Resources;
 
-use App\Models\TimeEntry;
+use App\Models\{Task, TimeEntry};
+use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -23,14 +24,14 @@ class TimeEntryResource extends JsonResource {
     /** @return array<string, mixed> */
     public function toArray(Request $request): array {
         return [
-            'id' => $this->id,
+            'id' => $this->sqid,
             'date' => optional($this->date)->toDateString(),
             'started_at' => optional($this->started_at)->toIso8601String(),
             'ended_at' => optional($this->ended_at)->toIso8601String(),
             'minutes' => (int) $this->minutes,
             'break_minutes' => (int) $this->break_minutes,
             'kind' => $this->kind->value,
-            'task_id' => $this->task_id,
+            'task_id' => Sqid::encodeOrNull(Task::class, $this->task_id),
             'description' => $this->description,
             'created_at' => optional($this->created_at)->toIso8601String(),
             'updated_at' => optional($this->updated_at)->toIso8601String(),

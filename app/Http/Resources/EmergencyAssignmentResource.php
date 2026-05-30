@@ -10,7 +10,8 @@
 
 namespace App\Http\Resources;
 
-use App\Models\EmergencyAssignment;
+use App\Models\{EmergencyAssignment, OnCallShift};
+use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -23,9 +24,9 @@ class EmergencyAssignmentResource extends JsonResource {
     /** @return array<string, mixed> */
     public function toArray(Request $request): array {
         return [
-            'id' => $this->id,
+            'id' => $this->sqid,
             'user' => new UserResource($this->whenLoaded('user')),
-            'on_call_shift_id' => $this->on_call_shift_id,
+            'on_call_shift_id' => Sqid::encodeOrNull(OnCallShift::class, $this->on_call_shift_id),
             'start_at' => optional($this->start_at)->toIso8601String(),
             'end_at' => optional($this->end_at)->toIso8601String(),
             'reason' => $this->reason,

@@ -12,7 +12,7 @@ namespace App\Models;
 
 use App\Enums\Diary\{LocationMode, Status as DiaryStatus};
 use App\Enums\Project\ProjectStatus;
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -52,6 +52,7 @@ class Project extends Model {
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',
@@ -130,6 +131,15 @@ class Project extends Model {
         return 'slug';
     }
 
+    /**
+     * Project nutzt Slug-Routing, daher liefert {@see getRouteKey()} den
+     * zusammengesetzten Slug. Der `->sqid`-Accessor muss aber die echte,
+     * opake Sqid liefern (API/JSON), nicht den Slug.
+     */
+    public function getSqidAttribute(): string {
+        return app(\App\Services\SqidEncoder::class)->encode(static::class, (int) $this->getKey());
+    }
+
     public function getRouteKey(): string {
         $customerSlug = $this->customer?->slug ?: 'intern';
 
@@ -159,6 +169,16 @@ class Project extends Model {
             }
 
             return $query->first();
+        }
+
+        // Opake Sqid (API/JSON) — vor dem reinen Slug-Fallback versuchen.
+        // Kollision Sqid↔Slug ist praktisch ausgeschlossen: Der decode()
+        // verlangt einen exakten Roundtrip gegen das modell-spezifische
+        // Alphabet (min_length 10), den ein menschenlesbarer Slug nicht
+        // zufällig erfüllt. Schlägt das Decoding fehl, greift der Slug-Pfad.
+        $sqidId = app(\App\Services\SqidEncoder::class)->decode(static::class, $value);
+        if ($sqidId !== null) {
+            return $this->newQuery()->whereKey($sqidId)->first();
         }
 
         return $this->newQuery()->where($field ?? 'slug', $value)->first();

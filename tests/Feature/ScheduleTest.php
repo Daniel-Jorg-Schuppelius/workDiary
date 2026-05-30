@@ -47,6 +47,16 @@ class ScheduleTest extends TestCase {
             ->assertViewHas('view', 'month');
     }
 
+    public function test_schedule_index_accepts_numeric_user_filter_fallback(): void {
+        $admin = User::factory()->admin()->create();
+        $worker = User::factory()->user()->create(['organization_id' => $admin->organization_id]);
+
+        $this->actingAs($admin)
+            ->get(route('schedule.index', ['user' => (string) $worker->id]))
+            ->assertOk()
+            ->assertViewHas('userFilter', $worker->id);
+    }
+
     // ── CRUD (admin only) ────────────────────────────────────────────────────
 
     public function test_regular_user_cannot_create_shift(): void {
@@ -55,7 +65,7 @@ class ScheduleTest extends TestCase {
 
         $this->actingAs($user)
             ->postJson(route('schedule.shifts.store'), [
-                'user_id' => $target->id,
+                'user_id' => $target->sqid,
                 'date' => now()->toDateString(),
             ])
             ->assertForbidden();
@@ -67,12 +77,12 @@ class ScheduleTest extends TestCase {
 
         $this->actingAs($admin)
             ->postJson(route('schedule.shifts.store'), [
-                'user_id' => $target->id,
+                'user_id' => $target->sqid,
                 'date' => now()->toDateString(),
                 'status' => 'draft',
             ])
             ->assertCreated()
-            ->assertJsonPath('user_id', $target->id);
+            ->assertJsonPath('user_id', $target->sqid);
     }
 
     public function test_admin_can_update_shift(): void {

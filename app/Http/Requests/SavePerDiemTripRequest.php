@@ -18,6 +18,7 @@ class SavePerDiemTripRequest extends FormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
+        'project_id' => \App\Models\Project::class,
         'customer_id' => \App\Models\Customer::class,
         'travel_log_id' => \App\Models\TravelLog::class,
     ];

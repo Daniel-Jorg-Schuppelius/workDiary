@@ -23,6 +23,7 @@ class SaveProjectRequest extends FormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'customer_id' => \App\Models\Customer::class,
+        'parent_id' => \App\Models\Project::class,
     ];
 
     public function authorize(): bool {

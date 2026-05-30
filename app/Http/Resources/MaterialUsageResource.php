@@ -10,7 +10,8 @@
 
 namespace App\Http\Resources;
 
-use App\Models\MaterialUsage;
+use App\Models\{Material, MaterialUsage};
+use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -23,8 +24,8 @@ class MaterialUsageResource extends JsonResource {
     /** @return array<string, mixed> */
     public function toArray(Request $request): array {
         return [
-            'id' => $this->id,
-            'material_id' => $this->material_id,
+            'id' => $this->sqid,
+            'material_id' => Sqid::encodeOrNull(Material::class, $this->material_id),
             'description' => $this->description,
             'quantity' => (string) $this->quantity,
             'unit' => $this->unit,

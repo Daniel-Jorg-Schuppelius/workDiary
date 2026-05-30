@@ -6,6 +6,7 @@ namespace Tests\Feature\Api;
 
 use App\Enums\Project\ProjectStatus;
 use App\Models\{Project, User};
+use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\WithOrganization;
@@ -38,7 +39,8 @@ class ProjectApiTest extends TestCase {
             'status' => ProjectStatus::Active->value,
         ])->assertCreated()->assertJsonPath('data.name', 'Webshop');
 
-        $id = (int) $response->json('data.id');
+        $id = (string) $response->json('data.id');
+        $this->assertSame($response->json('data.id'), Sqid::encode(Project::class, Project::firstOrFail()->id));
 
         $this->getJson(route('api.projects.show', $id))
             ->assertOk()

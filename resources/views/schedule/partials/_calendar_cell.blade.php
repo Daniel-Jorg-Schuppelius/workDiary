@@ -50,8 +50,8 @@
      @if ($cellClickable)
          data-schedule-cell
          data-date="{{ $dateKey }}"
-         data-user-id="{{ auth()->id() }}"
-         onclick="scheduleCellClick(event, '{{ $dateKey }}', {{ auth()->id() }})"
+         data-user-id="{{ auth()->user()?->sqid }}"
+         onclick='scheduleCellClick(event, @js($dateKey), @js(auth()->user()?->sqid))'
          ondragover="event.preventDefault()"
          ondrop="scheduleDropCell(event, '{{ $dateKey }}', null)"
      @endif>
@@ -77,14 +77,24 @@
         @php
             $compl = $complianceByShift[$shift->id] ?? null;
             $complTitle = $compl ? "\n⚠ ".implode("\n⚠ ", $compl['messages']) : '';
+            $shiftPayload = [
+                'id' => $shift->sqid,
+                'user_id' => $shift->user?->sqid,
+                'date' => $shift->date?->toDateString(),
+                'shift_type_id' => $shift->shiftType?->sqid,
+                'start_time' => $shift->resolvedStartTime(),
+                'end_time' => $shift->resolvedEndTime(),
+                'note' => $shift->note,
+                'status' => $shift->status,
+            ];
         @endphp
         <div class="schedule-shift-badge mb-0.5 flex items-center gap-1 truncate rounded px-1.5 py-0.5 text-[0.65rem] font-semibold leading-tight shadow-xs
                     @if ($isAdmin ?? false) cursor-pointer hover:opacity-80 @endif"
              style="background:{{ $shift->shiftType?->color ?? '#6b7280' }};color:#fff;"
              @if ($isAdmin ?? false)
                  draggable="true"
-                 ondragstart="scheduleDragStart(event, {{ $shift->id }})"
-                 onclick="event.stopPropagation(); scheduleOpenEditDialog({{ $shift->id }}, {{ json_encode($shift) }})"
+                 ondragstart='scheduleDragStart(event, @js($shift->sqid))'
+                 onclick='event.stopPropagation(); scheduleOpenEditDialog(@js($shift->sqid), @js($shiftPayload))'
              @endif
              title="{{ $shift->shiftType?->name ?? __('Schicht') }}{{ $shift->resolvedStartTime() ? ': '.$shift->resolvedStartTime() : '' }}{{ $shift->note ? ' · '.$shift->note : '' }}{{ $complTitle }}">
             {{ $shift->shiftType?->abbreviation ?? '?' }}

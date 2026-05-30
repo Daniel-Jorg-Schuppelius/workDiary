@@ -68,7 +68,7 @@
                 <select name="parent_id" class="select select-bordered w-full" x-model="parentId">
                     <option value="">{{ __('— Top-Level (kein Parent) —') }}</option>
                     @foreach ($parentOptions as $opt)
-                        <option value="{{ $opt->id }}" @selected((int) old('parent_id', $project?->parent_id) === (int) $opt->id)>
+                        <option value="{{ $opt->sqid }}" @selected((string) old('parent_id', \App\Support\Sqid::encode(\App\Models\Project::class, $project?->parent_id)) === $opt->sqid)>
                             {{ $opt->name }}
                         </option>
                     @endforeach

@@ -4,7 +4,7 @@
         <label for="user" class="mb-2 block text-sm font-medium text-base-content">{{ __('Mitarbeiter') }}</label>
         <select id="user" name="user" class="select select-bordered select-sm w-full @error('user') ring-2 ring-error/30 @enderror">
             @foreach (($users ?? collect()) as $user)
-                <option value="{{ $user->id }}" @selected((int) old('user', $entry?->user) === (int) $user->id)>{{ $user->uname }}</option>
+                <option value="{{ \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $user->id) }}" @selected((string) old('user', \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $entry?->user)) === \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $user->id))>{{ $user->uname }}</option>
             @endforeach
         </select>
         @error('user')
