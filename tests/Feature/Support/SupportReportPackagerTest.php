@@ -11,6 +11,8 @@
 namespace Tests\Feature\Support;
 
 use App\Services\Support\SupportReportPackager;
+use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 use ZipArchive;
@@ -42,7 +44,7 @@ class SupportReportPackagerTest extends TestCase {
         $this->assertFalse($result['password_set']);
 
         // Hash bestätigt Inhalt der Datei.
-        $this->assertSame($result['sha256'], hash_file('sha256', $target));
+        $this->assertSame($result['sha256'], ToolkitFile::hash($target));
     }
 
     public function test_package_zip_contains_support_report_json(): void {
@@ -58,7 +60,7 @@ class SupportReportPackagerTest extends TestCase {
         $zip->close();
 
         $this->assertIsString($json);
-        $decoded = json_decode($json, true);
+        $decoded = JsonHelper::decode($json);
         $this->assertSame('world', $decoded['hello']);
     }
 

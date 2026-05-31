@@ -26,8 +26,7 @@ class TeamViewerClient implements RemoteProvider {
     public function __construct(
         private readonly ?string $apiKey,
         private readonly string $baseUrl = 'https://webapi.teamviewer.com/api/v1',
-    ) {
-    }
+    ) {}
 
     public function id(): string {
         return self::ID;

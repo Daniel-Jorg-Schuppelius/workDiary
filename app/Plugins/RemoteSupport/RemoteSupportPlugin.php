@@ -10,7 +10,6 @@
 
 namespace App\Plugins\RemoteSupport;
 
-use App\Enums\Asset\AssetClass;
 use App\Models\{Asset, Organization, PluginSetting};
 use App\Plugins\Contracts\{Plugin, PluginCapability};
 use App\Plugins\{PluginDefaults, PluginHealth};
@@ -131,8 +130,9 @@ class RemoteSupportPlugin implements Plugin {
     }
 
     /**
-     * Rendert das Fernwartungs-Panel in der Asset-Detailansicht — nur für Geräte
-     * und nur, wenn das Plugin aktiv ist.
+     * Rendert das Fernwartungs-Panel in der Asset-Detailansicht — nur, wenn das
+     * Plugin aktiv ist und das Gerät eine fernwartbare Unterkategorie hat
+     * (Arbeitsplatz, Server, Notebook).
      */
     public function renderActions(string $slot, mixed $context = null): ?string {
         if (! $this->isEnabled()) {
@@ -141,7 +141,7 @@ class RemoteSupportPlugin implements Plugin {
         if ($slot !== 'asset-show.aside' || ! $context instanceof Asset) {
             return null;
         }
-        if ($context->asset_class !== AssetClass::Device) {
+        if (! in_array($context->category_code, RemoteSupportService::REMOTE_CATEGORY_CODES, true)) {
             return null;
         }
 

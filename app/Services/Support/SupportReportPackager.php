@@ -10,7 +10,9 @@
 
 namespace App\Services\Support;
 
-use Illuminate\Support\Facades\File;
+use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
+use CommonToolkit\Helper\FileSystem\Folder as ToolkitFolder;
 use RuntimeException;
 use ZipArchive;
 
@@ -24,15 +26,12 @@ class SupportReportPackager {
      * @return array{path:string, sha256:string, bytes:int, password_set:bool, json_bytes:int}
      */
     public function package(array $bundle, ?string $password = null, ?string $targetPath = null): array {
-        $json = json_encode($bundle, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
-        if ($json === false) {
-            throw new RuntimeException('Konnte Supportbericht nicht serialisieren.');
-        }
+        $json = JsonHelper::encode($bundle, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 
         $targetPath ??= storage_path('app/support/' . $this->defaultFilename($bundle));
         $dir = dirname($targetPath);
-        if (! File::isDirectory($dir)) {
-            File::makeDirectory($dir, 0755, true);
+        if (! ToolkitFolder::exists($dir)) {
+            ToolkitFolder::create($dir, 0755, true);
         }
 
         $zip = new ZipArchive();
@@ -57,8 +56,8 @@ class SupportReportPackager {
 
         $zip->close();
 
-        $bytes = (int) (File::size($targetPath) ?: 0);
-        $sha256 = (string) hash_file('sha256', $targetPath);
+        $bytes = ToolkitFile::size($targetPath);
+        $sha256 = ToolkitFile::hash($targetPath);
 
         return [
             'path' => $targetPath,
@@ -78,10 +77,10 @@ class SupportReportPackager {
     public function preview(array $bundle): array {
         $sections = [];
         foreach ($bundle as $key => $value) {
-            $serialized = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $serialized = JsonHelper::encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             $sections[] = [
                 'key' => (string) $key,
-                'kb' => (int) ceil(strlen((string) $serialized) / 1024),
+                'kb' => (int) ceil(strlen($serialized) / 1024),
             ];
         }
 

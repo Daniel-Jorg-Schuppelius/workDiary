@@ -14,6 +14,7 @@ use App\Enums\Classification\{ClassificationDomain, ClassificationRequirementPha
 use App\Http\Controllers\Controller;
 use App\Models\{ClassificationRequirement, Organization};
 use App\Services\Classification\ClassificationResolver;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -190,7 +191,7 @@ class ClassificationRequirementController extends Controller {
             'phaseLabels' => $this->phaseLabels(),
             'severityLabels' => $this->severityLabels(),
             'onlyIfJsonText' => $classificationRequirement->only_if_json !== null
-                ? json_encode($classificationRequirement->only_if_json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+                ? JsonHelper::encode($classificationRequirement->only_if_json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
                 : null,
         ]);
     }
@@ -292,7 +293,11 @@ class ClassificationRequirementController extends Controller {
             return null;
         }
 
-        $decoded = json_decode($json, true);
+        try {
+            $decoded = JsonHelper::decode($json);
+        } catch (\InvalidArgumentException) {
+            return back()->withInput()->withErrors(['only_if_json' => __('Bedingung muss valides JSON sein.')])->throwResponse();
+        }
         if (! is_array($decoded)) {
             return back()->withInput()->withErrors(['only_if_json' => __('Bedingung muss valides JSON sein.')])->throwResponse();
         }

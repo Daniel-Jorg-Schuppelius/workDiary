@@ -70,7 +70,8 @@
         </div>
 
         {{-- ══ TAB: AUFTRÄGE ══════════════════════════════════════════════════ --}}
-        @if ($tab === 'auftraege')
+        @switch($tab)
+        @case('auftraege')
             <form method="GET" action="{{ route('legacy.diary.index') }}" class="flex-none rounded-box border border-base-300 bg-base-100 p-4 shadow-xs md:p-5">
                 <input type="hidden" name="tab" value="auftraege">
                 <input type="hidden" name="sort" value="{{ $currentSort }}">
@@ -83,7 +84,9 @@
                             <select name="user" class="select select-bordered select-sm w-full">
                                 <option value="">{{ __('Alle') }}</option>
                                 @foreach ($users as $u)
-                                    @php($legacySqid = \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $u->id))
+                                    @php
+                                        $legacySqid = \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $u->id);
+                                    @endphp
                                     <option value="{{ $legacySqid }}" @selected((string) ($filters['user'] ?? '') === $legacySqid)>{{ $u->uname }}</option>
                                 @endforeach
                             </select>
@@ -268,7 +271,8 @@
             @endif
 
         {{-- ══ TAB: BEREITSCHAFT ══════════════════════════════════════════════ --}}
-        @elseif ($tab === 'bereitschaft')
+        @break
+        @case('bereitschaft')
             <form method="GET" action="{{ route('legacy.diary.index') }}" class="flex-none rounded-box border border-base-300 bg-base-100 p-4 shadow-xs md:p-5">
                 <input type="hidden" name="tab" value="bereitschaft">
                 <div class="flex flex-wrap items-end gap-3">
@@ -280,7 +284,9 @@
                                 @php /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Legacy\Models\LegacyUser> $users */ @endphp
                                 @foreach ($users as $u)
                                     @php /** @var \App\Legacy\Models\LegacyUser $u */ @endphp
-                                    @php($legacySqid = \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $u->id))
+                                    @php
+                                        $legacySqid = \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $u->id);
+                                    @endphp
                                     <option value="{{ $legacySqid }}" @selected((string) ($filters['user'] ?? '') === $legacySqid)>{{ $u->uname }}</option>
                                 @endforeach
                             </select>
@@ -352,7 +358,8 @@
             @endif
 
         {{-- ══ TAB: NOTDIENST ═════════════════════════════════════════════════ --}}
-        @elseif ($tab === 'notdienst')
+        @break
+        @case('notdienst')
             <form method="GET" action="{{ route('legacy.diary.index') }}" class="flex-none rounded-box border border-base-300 bg-base-100 p-4 shadow-xs md:p-5">
                 <input type="hidden" name="tab" value="notdienst">
                 <div class="flex flex-wrap items-end gap-3">
@@ -364,7 +371,9 @@
                                 @php /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Legacy\Models\LegacyUser> $users */ @endphp
                                 @foreach ($users as $u)
                                     @php /** @var \App\Legacy\Models\LegacyUser $u */ @endphp
-                                    @php($legacySqid = \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $u->id))
+                                    @php
+                                        $legacySqid = \App\Support\Sqid::encode(\App\Legacy\Models\LegacyUser::class, $u->id);
+                                    @endphp
                                     <option value="{{ $legacySqid }}" @selected((string) ($filters['user'] ?? '') === $legacySqid)>{{ $u->uname }}</option>
                                 @endforeach
                             </select>
@@ -435,7 +444,8 @@
                 </div>
             @endif
         {{-- ══ TAB: URLAUB ════════════════════════════════════════════════════ --}}
-        @elseif ($tab === 'urlaub')
+        @break
+        @case('urlaub')
             <form method="GET" action="{{ route('legacy.diary.index') }}" class="flex-none rounded-box border border-base-300 bg-base-100 p-4 shadow-xs md:p-5">
                 <input type="hidden" name="tab" value="urlaub">
                 <div class="flex flex-wrap items-end gap-3">
@@ -572,7 +582,8 @@
                     @endif
                 </div>
             @endif
-        @endif
+        @break
+        @endswitch
 
     </div>
 @endsection

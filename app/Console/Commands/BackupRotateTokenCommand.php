@@ -11,8 +11,10 @@
 namespace App\Console\Commands;
 
 use App\Models\AuditLog;
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use Throwable;
 
 /**
  * Rotiert den Bearer-Token für POST /admin/backup/heartbeat (MVP-046 §5).
@@ -37,7 +39,7 @@ class BackupRotateTokenCommand extends Command {
             return self::FAILURE;
         }
 
-        $contents = (string) file_get_contents($envPath);
+        $contents = ToolkitFile::read($envPath);
         $replacement = 'BACKUP_HEARTBEAT_TOKEN=' . $token;
 
         if (preg_match('/^BACKUP_HEARTBEAT_TOKEN=.*$/m', $contents) === 1) {
@@ -49,7 +51,9 @@ class BackupRotateTokenCommand extends Command {
             $contents .= $replacement . "\n";
         }
 
-        if (file_put_contents($envPath, $contents) === false) {
+        try {
+            ToolkitFile::write($envPath, $contents);
+        } catch (Throwable) {
             $this->error('Konnte .env nicht schreiben: ' . $envPath);
 
             return self::FAILURE;

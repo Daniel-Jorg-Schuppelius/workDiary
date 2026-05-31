@@ -32,8 +32,7 @@ use Illuminate\View\View;
 class RemoteSupportPendingController extends Controller {
     private const PROVIDERS = [AnyDeskClient::ID, TeamViewerClient::ID];
 
-    public function __construct(private readonly RemoteSupportService $service) {
-    }
+    public function __construct(private readonly RemoteSupportService $service) {}
 
     public function index(): View {
         $admin = $this->admin();
@@ -41,17 +40,22 @@ class RemoteSupportPendingController extends Controller {
         $organization = $admin->organization;
         $groups = $organization !== null ? $this->service->openPendingGroups($organization) : collect();
 
+        // Nur fernwartbare Geräte (Arbeitsplatz/Server/Notebook) können eine ID tragen.
         $assets = Asset::query()
-            ->where('asset_class', AssetClass::Device->value)
+            ->whereIn('category_code', RemoteSupportService::REMOTE_CATEGORY_CODES)
             ->orderBy('name')
-            ->get(['id', 'name', 'asset_no', 'customer_id']);
+            ->get(['id', 'name', 'asset_no', 'customer_id', 'category_code']);
 
         $customers = Customer::query()->orderBy('name')->get(['id', 'name', 'company']);
+
+        $pool = (array) config('asset_categories', []);
+        $categories = array_intersect_key($pool, array_flip(RemoteSupportService::REMOTE_CATEGORY_CODES));
 
         return view('remote-support::pending.index', [
             'groups' => $groups,
             'assets' => $assets,
             'customers' => $customers,
+            'categories' => $categories,
         ]);
     }
 
@@ -104,10 +108,12 @@ class RemoteSupportPendingController extends Controller {
             'remote_id' => ['required', 'string', 'max:191'],
             'name' => ['required', 'string', 'max:191'],
             'customer_id' => ['required', 'integer'],
+            'category_code' => ['required', 'string', 'in:' . implode(',', RemoteSupportService::REMOTE_CATEGORY_CODES)],
         ]);
 
         $asset = $assets->create($admin, [
             'asset_class' => AssetClass::Device->value,
+            'category_code' => $validated['category_code'],
             'name' => $validated['name'],
             'owned_by' => AssetOwnership::Customer->value,
             'customer_id' => $validated['customer_id'],

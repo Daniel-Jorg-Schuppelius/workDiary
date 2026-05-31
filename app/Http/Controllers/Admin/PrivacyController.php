@@ -14,6 +14,8 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
 use App\Services\Privacy\PrivacyOverviewService;
+use App\Support\Toolkit\CsvFacade;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request, Response as HttpResponse};
 use Illuminate\Support\Facades\{DB, Gate};
 use Illuminate\View\View;
@@ -101,7 +103,7 @@ class PrivacyController extends Controller {
 
         if ($format === 'json') {
             return new HttpResponse(
-                (string) json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
                 Response::HTTP_OK,
                 [
                     'Content-Type' => 'application/json; charset=UTF-8',
@@ -115,18 +117,18 @@ class PrivacyController extends Controller {
             if ($out === false) {
                 return;
             }
-            fputcsv($out, ['section', 'id', 'user_id', 'event', 'extra']);
+            fwrite($out, CsvFacade::line(['section', 'id', 'user_id', 'event', 'extra'], ',') . "\r\n");
             foreach ($payload['sessions'] as $s) {
-                fputcsv($out, ['session', $s['id'], $s['user_id'], '', (string) $s['ip_address']]);
+                fwrite($out, CsvFacade::line(['session', $s['id'], $s['user_id'], '', (string) $s['ip_address']], ',') . "\r\n");
             }
             foreach ($payload['tokens'] as $t) {
-                fputcsv($out, ['token', (string) $t['id'], (string) $t['user_id'], '', (string) $t['name']]);
+                fwrite($out, CsvFacade::line(['token', (string) $t['id'], (string) $t['user_id'], '', (string) $t['name']], ',') . "\r\n");
             }
             foreach ($payload['exports'] as $e) {
-                fputcsv($out, ['export', (string) $e['id'], (string) ($e['user_id'] ?? ''), $e['event'], (string) ($e['created_at'] ?? '')]);
+                fwrite($out, CsvFacade::line(['export', (string) $e['id'], (string) ($e['user_id'] ?? ''), $e['event'], (string) ($e['created_at'] ?? '')], ',') . "\r\n");
             }
             foreach ($payload['support_accesses'] as $a) {
-                fputcsv($out, ['support', (string) $a['id'], (string) ($a['user_id'] ?? ''), $a['event'], (string) ($a['created_at'] ?? '')]);
+                fwrite($out, CsvFacade::line(['support', (string) $a['id'], (string) ($a['user_id'] ?? ''), $a['event'], (string) ($a['created_at'] ?? '')], ',') . "\r\n");
             }
             fclose($out);
         }, Response::HTTP_OK, [

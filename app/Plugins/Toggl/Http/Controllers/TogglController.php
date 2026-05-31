@@ -15,6 +15,7 @@ use App\Models\{Customer, Organization, Project, User};
 use App\Plugins\Toggl\{TogglConfig, TogglImportService};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -70,7 +71,7 @@ class TogglController extends Controller {
             'csv' => ['required', 'file', 'mimes:csv,txt', 'max:20480'],
         ]);
 
-        $content = (string) file_get_contents($request->file('csv')->getRealPath());
+        $content = ToolkitFile::read((string) $request->file('csv')->getRealPath());
         $config = TogglConfig::resolve($admin->organization_id);
 
         $result = $this->service->importFromCsv($this->organization($admin), $content, $config);

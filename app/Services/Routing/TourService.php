@@ -16,6 +16,7 @@ use App\Enums\Travel\TravelLogVehicle;
 use App\Models\{DiaryEntry, Tour, TravelLog, User};
 use App\Services\Travel\TravelLogService;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -202,7 +203,7 @@ class TourService {
                     $route = $this->router->route($coordPairs);
                     $distanceMeters = (int) round($route->distanceMeters);
                     $durationSeconds = $route->durationSeconds;
-                    $geometry = $route->geometry !== [] ? json_encode($route->geometry, JSON_THROW_ON_ERROR) : null;
+                    $geometry = $route->geometry !== [] ? JsonHelper::encode($route->geometry) : null;
                 }
             } catch (RoutingException) {
                 // Offline / OSRM down → keep haversine fallback.

@@ -50,6 +50,14 @@ interface EntitySpec {
     public function headerAliases(): array;
 
     /**
+     * Vorverarbeitung des kompletten Roh-Dateiinhalts vor dem Parsen, z. B. um
+     * eine Excel-`sep=`-Hinweiszeile oder ein BOM zu entfernen. Standard:
+     * unverändert. Wird vom {@see CsvPreflightAnalyzer} einmal beim Upload
+     * angewandt; die bereinigte Fassung wird gespeichert und vom Job gelesen.
+     */
+    public function preprocessRaw(string $raw): string;
+
+    /**
      * Normalisiert eine Zeile (Trim, Type-Coercion, Defaults) ohne Persistenz.
      *
      * @param  array<string, string>  $row

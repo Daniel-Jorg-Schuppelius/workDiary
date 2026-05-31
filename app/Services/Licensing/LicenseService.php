@@ -12,6 +12,8 @@ namespace App\Services\Licensing;
 
 use App\Models\AuditLog;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
@@ -116,9 +118,13 @@ class LicenseService {
             return LicenseResult::fail(LicenseStatus::BadSignature, 'Signatur ungültig.');
         }
 
-        $decoded = json_decode($payloadJson, true);
-        if (! is_array($decoded)) {
+        try {
+            $decoded = JsonHelper::decode($payloadJson);
+        } catch (\InvalidArgumentException) {
             return LicenseResult::fail(LicenseStatus::Malformed, 'Lizenz-Payload ist kein gültiges JSON.');
+        }
+        if (! is_array($decoded)) {
+            return LicenseResult::fail(LicenseStatus::Malformed, 'Lizenz-Payload ist kein JSON-Objekt.');
         }
 
         $payload = LicensePayload::fromArray($decoded);
@@ -264,8 +270,8 @@ class LicenseService {
                     'Lizenz-Integrität verletzt: Datei fehlt (' . $relativePath . ').'
                 );
             }
-            $actual = hash_file('sha256', $path);
-            if (! is_string($actual) || ! hash_equals((string) $expectedHash, $actual)) {
+            $actual = ToolkitFile::hash($path);
+            if (! hash_equals((string) $expectedHash, $actual)) {
                 return LicenseResult::fail(
                     LicenseStatus::Tampered,
                     'Lizenz-Integrität verletzt: ' . $relativePath . ' wurde verändert.'

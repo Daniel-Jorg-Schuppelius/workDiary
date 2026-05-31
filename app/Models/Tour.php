@@ -12,6 +12,7 @@ namespace App\Models;
 
 use App\Enums\Tour\TourStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use CommonToolkit\Helper\Data\JsonHelper;
 use Database\Factories\TourFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -129,8 +130,12 @@ class Tour extends Model {
         if ($this->route_geometry === null || $this->route_geometry === '') {
             return null;
         }
-        $decoded = json_decode($this->route_geometry, true);
+        try {
+            $decoded = JsonHelper::decode($this->route_geometry);
 
-        return is_array($decoded) ? $decoded : null;
+            return is_array($decoded) ? $decoded : null;
+        } catch (\InvalidArgumentException) {
+            return null;
+        }
     }
 }

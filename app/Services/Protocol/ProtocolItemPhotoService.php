@@ -12,6 +12,7 @@ namespace App\Services\Protocol;
 
 use App\Enums\Protocol\{ProtocolEventType, ProtocolItemPhotoPhase};
 use App\Models\{Attachment, Protocol, ProtocolItem, ProtocolItemPhoto, User};
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\{DB, Storage};
@@ -220,7 +221,7 @@ class ProtocolItemPhotoService {
                 return [];
             }
             $absolute = $disk->path($attachment->path);
-            if (! is_readable($absolute)) {
+            if (! ToolkitFile::isReadable($absolute)) {
                 return [];
             }
             $exif = @exif_read_data($absolute);

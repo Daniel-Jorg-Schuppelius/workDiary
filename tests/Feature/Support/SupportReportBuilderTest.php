@@ -12,6 +12,7 @@ namespace Tests\Feature\Support;
 
 use App\Models\{AuditLog, Customer, User};
 use App\Services\Support\SupportReportBuilder;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -54,9 +55,7 @@ class SupportReportBuilderTest extends TestCase {
         ]);
 
         $bundle = app(SupportReportBuilder::class)->build();
-        $serialized = json_encode($bundle);
-
-        $this->assertIsString($serialized);
+        $serialized = JsonHelper::encode($bundle);
         $this->assertStringNotContainsString($customer->name, $serialized);
         $this->assertStringNotContainsString($admin->email, $serialized);
     }
@@ -67,9 +66,7 @@ class SupportReportBuilderTest extends TestCase {
         putenv('LICENSE_KEY=' . $secret);
 
         $bundle = app(SupportReportBuilder::class)->build();
-        $serialized = json_encode($bundle);
-
-        $this->assertIsString($serialized);
+        $serialized = JsonHelper::encode($bundle);
         $this->assertStringNotContainsString($secret, $serialized);
 
         // ENV-Schlüsselname darf gelistet werden, aber als <redacted>.

@@ -33,6 +33,15 @@ class RemoteSupportService {
     public const EXT_TYPE_SESSION = 'session';
 
     /**
+     * Asset-Unterkategorien (category_code), die eine Fernwartungs-ID tragen
+     * können. Nur für diese Geräte wird das Panel angeboten und nur ihnen lassen
+     * sich offene Verbindungen zuweisen.
+     *
+     * @var list<string>
+     */
+    public const REMOTE_CATEGORY_CODES = ['workstation', 'server', 'notebook'];
+
+    /**
      * Hinterlegt die Geräte-ID eines Anbieters am Asset (Upsert).
      */
     public function setRemoteId(Asset $asset, string $provider, string $remoteId): void {
@@ -108,6 +117,30 @@ class RemoteSupportService {
      * @return array{created: int, skipped: int, unmatched: int}
      */
     public function import(Organization $organization, array $config, CarbonImmutable $from, CarbonImmutable $to): array {
+        $sessions = [];
+        foreach ($this->providersFor($config) as $provider) {
+            if (! $provider->isConfigured()) {
+                continue;
+            }
+
+            foreach ($provider->fetchSessions($from, $to) as $session) {
+                $sessions[] = $session;
+            }
+        }
+
+        return $this->importSessions($organization, $config, $sessions);
+    }
+
+    /**
+     * Verarbeitet eine Menge bereits normalisierter Sitzungen (Provider-API oder
+     * CSV-Import): ordnet jede über die Geräte-ID einem Asset zu und legt je neuer
+     * Sitzung einen TimeEntry an; unbekannte IDs wandern in die Pending-Inbox.
+     *
+     * @param  array<string, mixed>  $config  Ergebnis von {@see RemoteSupportConfig::resolve()}
+     * @param  iterable<RemoteSession>  $sessions
+     * @return array{created: int, skipped: int, unmatched: int}
+     */
+    public function importSessions(Organization $organization, array $config, iterable $sessions): array {
         $created = 0;
         $skipped = 0;
         $unmatched = 0;
@@ -118,32 +151,40 @@ class RemoteSupportService {
             return ['created' => 0, 'skipped' => 0, 'unmatched' => 0];
         }
 
-        foreach ($this->providersFor($config) as $provider) {
-            if (! $provider->isConfigured()) {
-                continue;
-            }
-
-            foreach ($provider->fetchSessions($from, $to) as $session) {
-                $asset = $this->matchAsset($organization, $provider->id(), $session->remoteId);
-                if ($asset === null) {
-                    $this->recordPending($organization, $session);
-                    $unmatched++;
-
-                    continue;
-                }
-
-                if ($this->sessionAlreadyImported($organization, $session)) {
-                    $skipped++;
-
-                    continue;
-                }
-
-                $this->createTimeEntry($organization, $asset, $session, $userId, (bool) $config['default_billable']);
-                $created++;
-            }
+        foreach ($sessions as $session) {
+            match ($this->bookSession($organization, $config, $session, $userId)) {
+                'created' => $created++,
+                'unmatched' => $unmatched++,
+                default => $skipped++,
+            };
         }
 
         return ['created' => $created, 'skipped' => $skipped, 'unmatched' => $unmatched];
+    }
+
+    /**
+     * Verarbeitet genau eine Sitzung (für den zeilenweisen Wizard-Import):
+     * matcht das Asset über die Geräte-ID und legt einen TimeEntry an, schiebt
+     * unbekannte IDs in die Pending-Inbox oder überspringt bereits importierte.
+     *
+     * @param  array<string, mixed>  $config  Ergebnis von {@see RemoteSupportConfig::resolve()}
+     * @return 'created'|'skipped'|'unmatched'
+     */
+    public function bookSession(Organization $organization, array $config, RemoteSession $session, int $userId): string {
+        $asset = $this->matchAsset($organization, $session->provider, $session->remoteId);
+        if ($asset === null) {
+            $this->recordPending($organization, $session);
+
+            return 'unmatched';
+        }
+
+        if ($this->sessionAlreadyImported($organization, $session)) {
+            return 'skipped';
+        }
+
+        $this->createTimeEntry($organization, $asset, $session, $userId, (bool) $config['default_billable']);
+
+        return 'created';
     }
 
     private function matchAsset(Organization $organization, string $provider, string $remoteId): ?Asset {
@@ -178,7 +219,7 @@ class RemoteSupportService {
      * Bestimmt den Benutzer, dem importierte Zeiten zugeordnet werden:
      * konfigurierte default_user_id (in der Org) → Org-Owner → erster Org-Benutzer.
      */
-    private function resolveBookingUserId(Organization $organization, ?int $defaultUserId): ?int {
+    public function resolveBookingUserId(Organization $organization, ?int $defaultUserId): ?int {
         if ($defaultUserId !== null) {
             $user = User::query()
                 ->withoutGlobalScopes()

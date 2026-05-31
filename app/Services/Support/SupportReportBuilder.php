@@ -13,6 +13,7 @@ namespace App\Services\Support;
 use App\Models\AuditLog;
 use App\Services\Diagnostics\DiagnosticsService;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Support\Facades\{DB, File};
 use Throwable;
 
@@ -181,12 +182,12 @@ class SupportReportBuilder {
     /** @return list<string> */
     private function envKeys(): array {
         $envFile = base_path('.env');
-        if (! File::isFile($envFile)) {
+        if (! ToolkitFile::exists($envFile)) {
             return [];
         }
 
         $keys = [];
-        foreach (explode("\n", (string) File::get($envFile)) as $line) {
+        foreach (explode("\n", ToolkitFile::read($envFile)) as $line) {
             $line = trim($line);
             if ($line === '' || str_starts_with($line, '#')) {
                 continue;
@@ -315,11 +316,11 @@ class SupportReportBuilder {
     }
 
     private function fileHash(string $path): ?string {
-        if (! File::isFile($path)) {
+        if (! ToolkitFile::exists($path)) {
             return null;
         }
         try {
-            return hash_file('sha256', $path) ?: null;
+            return ToolkitFile::hash($path);
         } catch (Throwable) {
             return null;
         }

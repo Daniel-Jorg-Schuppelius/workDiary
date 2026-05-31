@@ -18,6 +18,8 @@
 
 namespace App\Services\Licensing;
 
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
+
 final class LicenseSeal {
     /** @var array{public_key: string, files: array<string, string>, sealed_at: string}|null */
     private static ?array $cache = null;
@@ -58,7 +60,7 @@ final class LicenseSeal {
         }
 
         $path = self::path();
-        if (is_file($path)) {
+        if (ToolkitFile::exists($path)) {
             /** @var mixed $loaded */
             $loaded = require $path;
             if (

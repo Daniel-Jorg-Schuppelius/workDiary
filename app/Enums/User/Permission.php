@@ -196,6 +196,7 @@ enum Permission: string implements HasLabel {
         // ── Stammdaten / Listen ────────────────────────────────────────────
     case MaterialManage = 'material.manage';
     case MaterialImport = 'material.import';
+    case RemoteSessionImport = 'remote-session.import';
     case ActivityCategoryManage = 'activity-category.manage';
     case TagManage = 'tag.manage';
     case QualificationManage = 'qualification.manage';

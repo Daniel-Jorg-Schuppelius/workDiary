@@ -11,6 +11,7 @@
 namespace App\Console\Commands\License;
 
 use App\Services\Licensing\LicenseService;
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Console\Command;
 
 class InstallCommand extends Command {
@@ -49,8 +50,8 @@ class InstallCommand extends Command {
             return null;
         }
 
-        if (is_file($arg) && is_readable($arg)) {
-            return trim((string) file_get_contents($arg));
+        if (ToolkitFile::isReadable($arg)) {
+            return trim(ToolkitFile::read($arg));
         }
 
         return trim($arg);

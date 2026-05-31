@@ -11,6 +11,7 @@
 namespace App\Services;
 
 use App\Models\{PushSubscription, User};
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Facades\Log;
 use Minishlink\WebPush\{Subscription, WebPush};
 
@@ -35,7 +36,7 @@ class WebPushService {
             return 0;
         }
 
-        $body = json_encode($payload) ?: null;
+        $body = JsonHelper::encode($payload);
         $sent = 0;
 
         foreach ($subscriptions as $sub) {

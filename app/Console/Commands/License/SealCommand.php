@@ -12,6 +12,8 @@ namespace App\Console\Commands\License;
 
 use App\Services\Licensing\LicenseSeal;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
+use CommonToolkit\Helper\FileSystem\Folder as ToolkitFolder;
 use Illuminate\Console\Command;
 
 class SealCommand extends Command {
@@ -43,10 +45,14 @@ class SealCommand extends Command {
         $sealPath = LicenseSeal::path();
 
         if ($this->option('unseal')) {
-            if (is_file($sealPath) && ! @unlink($sealPath)) {
-                $this->error('Seal-Datei konnte nicht entfernt werden: ' . $sealPath);
+            if (ToolkitFile::exists($sealPath)) {
+                try {
+                    ToolkitFile::delete($sealPath);
+                } catch (\Throwable) {
+                    $this->error('Seal-Datei konnte nicht entfernt werden: ' . $sealPath);
 
-                return self::FAILURE;
+                    return self::FAILURE;
+                }
             }
             LicenseSeal::flushCache();
             $this->info('Seal entfernt: ' . $sealPath);
@@ -64,18 +70,12 @@ class SealCommand extends Command {
         $hashes = [];
         foreach (self::SEALED_FILES as $relative) {
             $absolute = base_path($relative);
-            if (! is_file($absolute)) {
+            if (! ToolkitFile::exists($absolute)) {
                 $this->error('Datei nicht gefunden: ' . $relative);
 
                 return self::FAILURE;
             }
-            $hash = hash_file('sha256', $absolute);
-            if (! is_string($hash)) {
-                $this->error('Hash-Berechnung fehlgeschlagen für: ' . $relative);
-
-                return self::FAILURE;
-            }
-            $hashes[$relative] = $hash;
+            $hashes[$relative] = ToolkitFile::hash($absolute);
         }
 
         $sealedAt = CarbonImmutable::now()->toIso8601String();
@@ -95,8 +95,8 @@ class SealCommand extends Command {
      */
     private function writeSeal(string $path, string $publicKey, array $hashes, string $sealedAt): void {
         $directory = dirname($path);
-        if (! is_dir($directory) && ! @mkdir($directory, 0700, true) && ! is_dir($directory)) {
-            throw new \RuntimeException('Seal-Verzeichnis konnte nicht angelegt werden: ' . $directory);
+        if (! ToolkitFolder::exists($directory)) {
+            ToolkitFolder::create($directory, 0700, true);
         }
 
         $payload = [
@@ -109,7 +109,7 @@ class SealCommand extends Command {
             . "// Generiert durch `php artisan license:seal`. Nicht manuell bearbeiten.\n\n"
             . 'return ' . var_export($payload, true) . ";\n";
 
-        file_put_contents($path, $content);
+        ToolkitFile::write($path, $content);
         @chmod($path, 0600);
     }
 }

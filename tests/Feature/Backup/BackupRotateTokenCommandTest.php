@@ -11,6 +11,7 @@
 namespace Tests\Feature\Backup;
 
 use App\Models\AuditLog;
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -23,7 +24,7 @@ class BackupRotateTokenCommandTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->envPath = sys_get_temp_dir() . '/workdiary-rotate-' . uniqid() . '.env';
-        file_put_contents($this->envPath, "APP_KEY=base64:dGVzdA==\n");
+        ToolkitFile::write($this->envPath, "APP_KEY=base64:dGVzdA==\n");
         $this->app->useEnvironmentPath(dirname($this->envPath));
         $this->app->loadEnvironmentFrom(basename($this->envPath));
     }
@@ -40,7 +41,7 @@ class BackupRotateTokenCommandTest extends TestCase {
 
         $this->assertSame(0, $exit);
 
-        $contents = (string) file_get_contents($this->envPath);
+        $contents = ToolkitFile::read($this->envPath);
         $this->assertMatchesRegularExpression('/^BACKUP_HEARTBEAT_TOKEN=[A-Za-z0-9]{64}$/m', $contents);
         $this->assertStringContainsString('APP_KEY=base64:dGVzdA==', $contents);
 
@@ -52,14 +53,14 @@ class BackupRotateTokenCommandTest extends TestCase {
     }
 
     public function test_command_replaces_existing_token_line(): void {
-        file_put_contents(
+        ToolkitFile::write(
             $this->envPath,
             "APP_KEY=base64:dGVzdA==\nBACKUP_HEARTBEAT_TOKEN=OLD-TOKEN\nDB_NAME=foo\n"
         );
 
         $this->artisan('workdiary:backup:rotate-token')->assertExitCode(0);
 
-        $contents = (string) file_get_contents($this->envPath);
+        $contents = ToolkitFile::read($this->envPath);
         $this->assertStringNotContainsString('OLD-TOKEN', $contents);
         $this->assertStringContainsString('DB_NAME=foo', $contents);
         $this->assertMatchesRegularExpression('/^BACKUP_HEARTBEAT_TOKEN=[A-Za-z0-9]{64}$/m', $contents);
@@ -68,7 +69,7 @@ class BackupRotateTokenCommandTest extends TestCase {
     public function test_command_honors_custom_length_option(): void {
         $this->artisan('workdiary:backup:rotate-token', ['--length' => 96])->assertExitCode(0);
 
-        $contents = (string) file_get_contents($this->envPath);
+        $contents = ToolkitFile::read($this->envPath);
         $this->assertMatchesRegularExpression('/^BACKUP_HEARTBEAT_TOKEN=[A-Za-z0-9]{96}$/m', $contents);
     }
 }

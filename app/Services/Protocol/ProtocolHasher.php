@@ -11,6 +11,7 @@
 namespace App\Services\Protocol;
 
 use App\Models\Protocol;
+use CommonToolkit\Helper\Data\JsonHelper;
 
 /**
  * Reproduzierbarer Inhalts-Hash eines Protokolls (MVP-022 §4).
@@ -79,11 +80,11 @@ class ProtocolHasher {
             ksort($value);
             $parts = [];
             foreach ($value as $k => $v) {
-                $parts[] = json_encode((string) $k, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ':' . $this->encodeCanonical($v);
+                $parts[] = JsonHelper::encode((string) $k, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ':' . $this->encodeCanonical($v);
             }
             return '{' . implode(',', $parts) . '}';
         }
-        return (string) json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        return JsonHelper::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     /**

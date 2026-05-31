@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\{AutomationRule, AutomationRuleRun, User};
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -119,8 +120,8 @@ class AutomationRuleController extends Controller {
 
     private function decodeJson(string $raw): mixed {
         try {
-            return json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
-        } catch (\JsonException) {
+            return JsonHelper::decode($raw);
+        } catch (\InvalidArgumentException) {
             return null;
         }
     }

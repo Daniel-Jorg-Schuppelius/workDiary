@@ -17,6 +17,7 @@ use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
 use App\Services\{CustomerCsvImporter, CustomerStatsService};
 use App\Support\Setting;
+use App\Support\Toolkit\CsvFacade;
 // HINWEIS: Lexoffice-Push-Logik ist in das Plugin verlagert
 // (App\Plugins\Lexoffice\Http\Controllers\LexofficeCustomerController).
 // Die Imports oben werden nur noch für die Show-View (Anzeige der bisherigen
@@ -238,7 +239,7 @@ class CustomerController extends Controller {
             }
             // UTF-8 BOM für Excel
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, [
+            fwrite($out, CsvFacade::line([
                 'Nummer',
                 'Name',
                 'Firma',
@@ -254,12 +255,12 @@ class CustomerController extends Controller {
                 'Abrechenbar',
                 'Archiviert',
                 'Angelegt',
-            ], ';');
+            ], ';') . "\r\n");
 
             $query->chunk(500, function ($chunk) use ($out): void {
                 /** @var Collection<int, Customer> $chunk */
                 foreach ($chunk as $c) {
-                    fputcsv($out, [
+                    fwrite($out, CsvFacade::line([
                         $c->number,
                         $c->name,
                         $c->company,
@@ -275,7 +276,7 @@ class CustomerController extends Controller {
                         $c->billable ? 'ja' : 'nein',
                         $c->archived_at?->format('Y-m-d') ?? '',
                         $c->created_at?->format('Y-m-d') ?? '',
-                    ], ';');
+                    ], ';') . "\r\n");
                 }
             });
 

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api;
 
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
@@ -22,7 +23,7 @@ class OpenApiDocsTest extends TestCase {
         $response->assertOk();
         $body = $response->getContent();
         $this->assertNotFalse($body);
-        $data = json_decode($body, true);
+        $data = JsonHelper::decode($body);
         $this->assertIsArray($data);
         $this->assertArrayHasKey('openapi', $data);
         $this->assertArrayHasKey('paths', $data);

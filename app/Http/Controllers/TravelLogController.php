@@ -16,6 +16,7 @@ use App\Http\Requests\SaveTravelLogRequest;
 use App\Models\{Customer, Project, TravelLog, User};
 use App\Services\Travel\TravelLogService;
 use App\Support\SortableQuery;
+use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -40,7 +41,8 @@ class TravelLogController extends Controller {
 
         $query = TravelLog::query()
             ->where('user_id', Auth::id())
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereDate('date', '>=', $from->toDateString())
+                ->whereDate('date', '<=', $to->toDateString())
             ->when($vehicleValue, fn ($q) => $q->where('vehicle', $vehicleValue));
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [
@@ -58,12 +60,14 @@ class TravelLogController extends Controller {
         $totals = [
             'distance_km' => (float) TravelLog::query()
                 ->where('user_id', Auth::id())
-                ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+                ->whereDate('date', '>=', $from->toDateString())
+                ->whereDate('date', '<=', $to->toDateString())
                 ->when($vehicleValue, fn ($q) => $q->where('vehicle', $vehicleValue))
                 ->sum('distance_km'),
             'reimbursement' => (float) TravelLog::query()
                 ->where('user_id', Auth::id())
-                ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+                ->whereDate('date', '>=', $from->toDateString())
+                ->whereDate('date', '<=', $to->toDateString())
                 ->when($vehicleValue, fn ($q) => $q->where('vehicle', $vehicleValue))
                 ->sum('reimbursement_total'),
         ];
@@ -149,7 +153,8 @@ class TravelLogController extends Controller {
         $logs = TravelLog::query()
             ->with(['project:id,name,slug,customer_id', 'customer:id,name,slug'])
             ->where('user_id', Auth::id())
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereDate('date', '>=', $from->toDateString())
+                ->whereDate('date', '<=', $to->toDateString())
             ->orderBy('date')
             ->get();
 
@@ -158,7 +163,7 @@ class TravelLogController extends Controller {
             if ($out === false) {
                 return;
             }
-            fputcsv($out, [
+            fwrite($out, CsvFacade::line([
                 'Datum',
                 'Von',
                 'Nach',
@@ -171,9 +176,9 @@ class TravelLogController extends Controller {
                 'Kunde',
                 'Zweck',
                 'Dauer min',
-            ], ';');
+            ], ';') . "\r\n");
             foreach ($logs as $log) {
-                fputcsv($out, [
+                fwrite($out, CsvFacade::line([
                     $log->date?->format('Y-m-d'),
                     (string) $log->from_address,
                     (string) $log->to_address,
@@ -186,7 +191,7 @@ class TravelLogController extends Controller {
                     $log->customer->name ?? '',
                     (string) $log->purpose,
                     (int) $log->duration_minutes,
-                ], ';');
+                ], ';') . "\r\n");
             }
             fclose($out);
         }, $filename, [

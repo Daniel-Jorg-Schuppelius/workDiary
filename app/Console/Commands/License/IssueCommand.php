@@ -12,6 +12,8 @@ namespace App\Console\Commands\License;
 
 use App\Services\Licensing\LicenseService;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Console\Command;
 
 class IssueCommand extends Command {
@@ -62,12 +64,7 @@ class IssueCommand extends Command {
             'features' => array_values(array_filter((array) $this->option('features'))),
         ];
 
-        $json = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        if ($json === false) {
-            $this->error('Payload-Serialisierung fehlgeschlagen.');
-
-            return self::FAILURE;
-        }
+        $json = JsonHelper::encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         $signature = sodium_crypto_sign_detached($json, $privateKey);
         $licenseKey = LicenseService::b64Encode($json) . '.' . LicenseService::b64Encode($signature);
@@ -77,7 +74,7 @@ class IssueCommand extends Command {
 
         $out = $this->option('out');
         if (is_string($out) && $out !== '') {
-            file_put_contents($out, $licenseKey);
+            ToolkitFile::write($out, $licenseKey);
             @chmod($out, 0600);
             $this->info('Geschrieben nach: ' . $out);
         }

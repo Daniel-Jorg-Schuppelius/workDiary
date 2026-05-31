@@ -502,6 +502,7 @@
                                     $adminNavItems[]  = ['route' => 'admin.expense-categories.index',  'label' => __('Spesenkategorien'), 'icon' => 'receipt_long',     'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.per-diem-rates.index',      'label' => __('Verpflegungspauschalen'), 'icon' => 'restaurant_menu',  'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.automations.index',         'label' => __('Automatisierungen'), 'icon' => 'bolt',             'modal' => false];
+                                    $adminNavItems[]  = ['route' => 'admin.imports.index',             'label' => __('Importe'),          'icon' => 'upload_file',      'modal' => false];
                                 }
                                 if (! $isLegacyMode && \Illuminate\Support\Facades\Gate::allows('manage-access')) {
                                     $adminNavItems[] = ['route' => 'admin.access.index',             'label' => __('access.title.hub'), 'icon' => 'admin_panel_settings', 'modal' => false];

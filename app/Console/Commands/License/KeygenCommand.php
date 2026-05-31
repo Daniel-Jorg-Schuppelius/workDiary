@@ -11,6 +11,7 @@
 namespace App\Console\Commands\License;
 
 use App\Services\Licensing\LicenseService;
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Console\Command;
 
 class KeygenCommand extends Command {
@@ -34,7 +35,7 @@ class KeygenCommand extends Command {
         $out = $this->option('out');
         if (is_string($out) && $out !== '') {
             $payload = "LICENSE_PUBLIC_KEY={$publicB64}\nLICENSE_PRIVATE_KEY={$secretB64}\n";
-            file_put_contents($out, $payload);
+            ToolkitFile::write($out, $payload);
             @chmod($out, 0600);
             $this->info('Keys geschrieben nach: ' . $out);
         }

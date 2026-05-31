@@ -16,6 +16,7 @@ use App\Models\Customer;
 use App\Support\Toolkit\CsvFacade;
 use CommonToolkit\Enums\CountryCode;
 use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{Auth, DB};
 use Throwable;
@@ -83,7 +84,7 @@ class CustomerCsvImporter {
      */
     public function import(UploadedFile $file, ?int $organizationId): array {
         $path = $file->getRealPath();
-        if ($path === false || ! is_readable($path)) {
+        if ($path === false || ! ToolkitFile::isReadable($path)) {
             return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => [(string) __('errors.csv.unreadable')]];
         }
 

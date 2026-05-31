@@ -235,6 +235,31 @@ class RemoteSupportSyncTest extends TestCase {
         ]);
     }
 
+    public function test_panel_renders_only_for_remote_capable_categories(): void {
+        config(['plugins.remote-support.enabled' => true]);
+        $plugin = new RemoteSupportPlugin;
+
+        $notebook = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'category_code' => 'notebook',
+        ]);
+        $printer = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'category_code' => 'printer',
+        ]);
+        $uncategorized = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'category_code' => null,
+        ]);
+
+        $this->assertNotNull($plugin->renderActions('asset-show.aside', $notebook));
+        $this->assertNull($plugin->renderActions('asset-show.aside', $printer));
+        $this->assertNull($plugin->renderActions('asset-show.aside', $uncategorized));
+    }
+
     public function test_dismiss_pending_marks_group_dismissed(): void {
         RemotePendingSession::query()->create([
             'organization_id' => $this->organization->id,

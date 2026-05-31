@@ -8,6 +8,7 @@ return [
         'projects' => 'Projects',
         'users' => 'Users',
         'materials' => 'Materials',
+        'remote_sessions' => 'Remote support sessions',
     ],
 
     'state' => [
@@ -45,12 +46,16 @@ return [
             'currency' => 'Currency code must be 3 uppercase letters (ISO 4217).',
             'enum' => 'Value is not a valid status.',
             'parse' => 'File could not be parsed: :reason',
+            'date' => 'Not a valid date (expected e.g. "28.05.2026, 09:42:09").',
         ],
         'outOfRange' => [
             'rowLimit' => 'Row limit (:max) exceeded — remainder ignored.',
         ],
         'fkMissing' => [
             'customer' => 'No customer with number :number found.',
+        ],
+        'persist' => [
+            'noBookingUser' => 'No bookable user found in the organisation.',
         ],
     ],
 ];

@@ -11,6 +11,7 @@
 namespace App\Plugins\Toggl\Sources;
 
 use App\Models\TogglPendingEntry;
+use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;
 
 /**
@@ -69,22 +70,13 @@ class TogglCsvParser {
      * @return array<int, array<int, string>>
      */
     private function readRows(string $content): array {
-        $rows = [];
-        $stream = fopen('php://temp', 'r+');
-        if ($stream === false) {
+        try {
+            // Toolkit-Parser inkl. Kopfzeile (parse() trennt den Header selbst ab).
+            return CsvFacade::parseRows($content, ',');
+        } catch (\Throwable) {
+            // Leere/unlesbare Datei → keine Zeilen (wie zuvor bei < 2 Zeilen).
             return [];
         }
-        fwrite($stream, $content);
-        rewind($stream);
-        while (($cells = fgetcsv($stream, 0, ',', '"', '\\')) !== false) {
-            if ($cells === [null]) {
-                continue;
-            }
-            $rows[] = array_map(static fn($c): string => (string) $c, $cells);
-        }
-        fclose($stream);
-
-        return $rows;
     }
 
     /**

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Support\Toolkit;
 
 use App\Support\Toolkit\CsvFacade;
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -22,7 +23,7 @@ final class CsvFacadeTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->tmpFile = tempnam(sys_get_temp_dir(), 'csv_facade_test_');
-        file_put_contents($this->tmpFile, "name;email;number\nAlice;alice@example.com;K-001\nBob;bob@example.com;K-002\n");
+        ToolkitFile::write($this->tmpFile, "name;email;number\nAlice;alice@example.com;K-001\nBob;bob@example.com;K-002\n");
     }
 
     protected function tearDown(): void {

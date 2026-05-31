@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{Classification, Organization};
 use App\Services\Classification\ClassificationManager;
 use App\Support\Setting;
+use App\Support\Toolkit\CsvFacade;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -24,8 +25,7 @@ use Illuminate\View\View;
 class ClassificationController extends Controller {
     public function __construct(
         private readonly ClassificationManager $manager,
-    ) {
-    }
+    ) {}
 
     public function index(): View {
         Gate::authorize('viewAny', Classification::class);
@@ -355,100 +355,62 @@ class ClassificationController extends Controller {
             throw ClassificationValidationException::importInvalid(0, 'CSV-Datei konnte nicht gelesen werden.');
         }
 
-        $handle = fopen($path, 'rb');
-        if ($handle === false) {
-            throw ClassificationValidationException::importInvalid(0, 'CSV-Datei konnte nicht geöffnet werden.');
+        // Delimiter-Erkennung und Zeilen-Parsing über das gemeinsame CSV-Toolkit.
+        try {
+            $delimiter = CsvFacade::detectDelimiter($path);
+        } catch (\Throwable) {
+            throw ClassificationValidationException::importInvalid(1, 'CSV-Datei ist leer.');
         }
 
-        try {
-            $firstLine = fgets($handle);
-            if (! is_string($firstLine)) {
-                throw ClassificationValidationException::importInvalid(1, 'CSV-Datei ist leer.');
+        $headers = array_map(
+            fn(string $header): string => $this->normalizeHeader($header),
+            CsvFacade::readHeader($path, $delimiter),
+        );
+
+        foreach (['domain', 'code', 'label'] as $requiredHeader) {
+            if (! in_array($requiredHeader, $headers, true)) {
+                throw ClassificationValidationException::importInvalid(1, "Pflichtspalte '{$requiredHeader}' fehlt.");
             }
+        }
 
-            $delimiter = $this->detectDelimiter($firstLine);
-            $headers = array_map(
-                fn(string $header): string => $this->normalizeHeader($header),
-                $this->parseCsvLine($firstLine, $delimiter),
-            );
+        $rows = [];
+        foreach (CsvFacade::streamRows($path, $delimiter) as $dataLine) {
+            $fields = $dataLine->getFields();
 
-            foreach (['domain', 'code', 'label'] as $requiredHeader) {
-                if (! in_array($requiredHeader, $headers, true)) {
-                    throw ClassificationValidationException::importInvalid(1, "Pflichtspalte '{$requiredHeader}' fehlt.");
-                }
-            }
-
-            $rows = [];
-            $lineNumber = 1;
-            while (($line = fgetcsv($handle, 0, $delimiter)) !== false) {
-                $lineNumber++;
-
-                if (count($line) === 1 && $line[0] === null) {
+            $row = [];
+            foreach ($headers as $index => $header) {
+                if ($header === '') {
                     continue;
                 }
 
-                $row = [];
-                foreach ($headers as $index => $header) {
-                    if ($header === '') {
-                        continue;
-                    }
-
-                    $value = isset($line[$index]) ? trim((string) $line[$index]) : null;
-                    $row[$header] = $value === '' ? null : $value;
-                }
-
-                if ($row === [] || $this->isEmptyImportRow($row)) {
-                    continue;
-                }
-
-                $importRow = [
-                    'domain' => (string) ($row['domain'] ?? ''),
-                    'code' => (string) ($row['code'] ?? ''),
-                    'label' => (string) ($row['label'] ?? ''),
-                ];
-
-                if (array_key_exists('sort_order', $row)) {
-                    $importRow['sort_order'] = $row['sort_order'];
-                }
-                if (array_key_exists('color_hex', $row)) {
-                    $importRow['color_hex'] = $row['color_hex'];
-                }
-                if (array_key_exists('icon', $row)) {
-                    $importRow['icon'] = $row['icon'];
-                }
-
-                $rows[] = $importRow;
+                $value = isset($fields[$index]) ? trim((string) $fields[$index]->getValue()) : null;
+                $row[$header] = $value === '' ? null : $value;
             }
-        } finally {
-            fclose($handle);
+
+            if ($row === [] || $this->isEmptyImportRow($row)) {
+                continue;
+            }
+
+            $importRow = [
+                'domain' => (string) ($row['domain'] ?? ''),
+                'code' => (string) ($row['code'] ?? ''),
+                'label' => (string) ($row['label'] ?? ''),
+            ];
+
+            if (array_key_exists('sort_order', $row)) {
+                $importRow['sort_order'] = $row['sort_order'];
+            }
+            if (array_key_exists('color_hex', $row)) {
+                $importRow['color_hex'] = $row['color_hex'];
+            }
+            if (array_key_exists('icon', $row)) {
+                $importRow['icon'] = $row['icon'];
+            }
+
+            $rows[] = $importRow;
         }
 
         return $rows;
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function parseCsvLine(string $line, string $delimiter): array {
-        $parsed = str_getcsv(rtrim($line, "\r\n"), $delimiter);
-
-        return array_map(static fn($value): string => is_string($value) ? $value : '', $parsed);
-    }
-
-    private function detectDelimiter(string $line): string {
-        $delimiters = [';', ',', "\t"];
-        $best = ';';
-        $bestCount = 0;
-
-        foreach ($delimiters as $delimiter) {
-            $count = count(str_getcsv($line, $delimiter));
-            if ($count > $bestCount) {
-                $best = $delimiter;
-                $bestCount = $count;
-            }
-        }
-
-        return $best;
     }
 
     private function normalizeHeader(string $header): string {

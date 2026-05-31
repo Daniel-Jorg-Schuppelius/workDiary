@@ -279,6 +279,7 @@ return [
 
         'material.manage' => 'Material-Stamm verwalten',
         'material.import' => 'Material importieren',
+        'remote-session.import' => 'Fernwartungs-Sitzungen importieren',
         'activity-category.manage' => 'Tätigkeitskategorien verwalten',
         'tag.manage' => 'Tags verwalten',
         'qualification.manage' => 'Qualifikationen verwalten',

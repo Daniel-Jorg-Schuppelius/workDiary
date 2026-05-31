@@ -279,6 +279,7 @@ return [
 
         'material.manage' => 'Manage materials',
         'material.import' => 'Import materials',
+        'remote-session.import' => 'Import remote support sessions',
         'activity-category.manage' => 'Manage activity categories',
         'tag.manage' => 'Manage tags',
         'qualification.manage' => 'Manage qualifications',

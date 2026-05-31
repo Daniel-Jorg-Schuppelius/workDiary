@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\{ScheduledShift, ShiftType, User};
 use App\Support\Setting;
+use App\Support\Toolkit\CsvFacade;
 use Carbon\Carbon;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
@@ -181,14 +182,10 @@ class ScheduleImportController extends Controller {
      */
     private function parseCsv(string $path): array {
         $rows = [];
-        if (($handle = fopen($path, 'r')) !== false) {
-            while (($line = fgetcsv($handle, 0, ';')) !== false) {
-                if ($line === [null]) {
-                    continue;
-                }
-                $rows[] = array_map('strval', $line);
-            }
-            fclose($handle);
+        // Toolkit-Parser inkl. Header-Zeile (hasHeader: false) — der Aufrufer
+        // verarbeitet die Kopfzeile selbst, wie beim Spreadsheet-Pfad.
+        foreach (CsvFacade::streamRows($path, ';', hasHeader: false) as $line) {
+            $rows[] = array_map(static fn($field): string => (string) $field->getValue(), $line->getFields());
         }
 
         return $rows;

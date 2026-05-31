@@ -15,6 +15,7 @@ namespace App\Services\Import;
 use App\Enums\Import\{ImportEntity, ImportErrorCode, ImportRunState};
 use App\Models\{ImportRun, ImportRunError, Organization, User};
 use App\Support\Toolkit\CsvFacade;
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Storage};
 use Throwable;
@@ -60,7 +61,16 @@ class CsvPreflightAnalyzer {
             throw new \RuntimeException('Konnte Import-Datei nicht speichern.');
         }
         $absolutePath = Storage::disk(self::DISK)->path($stored);
-        $hash = (string) hash_file('sha256', $absolutePath);
+        $hash = ToolkitFile::hash($absolutePath);
+
+        // Entitätsspezifische Vorverarbeitung des Roh-Inhalts (z. B. Excel-`sep=`-
+        // Vorzeile entfernen). Nur bei tatsächlicher Änderung neu schreiben, damit
+        // der Default-Pfad (keine Vorverarbeitung) das gestreamte File unberührt lässt.
+        $raw = ToolkitFile::read($absolutePath);
+        $processed = $spec->preprocessRaw($raw);
+        if ($processed !== $raw) {
+            Storage::disk(self::DISK)->put($stored, $processed);
+        }
 
         $run = new ImportRun([
             'organization_id' => $organization->id,

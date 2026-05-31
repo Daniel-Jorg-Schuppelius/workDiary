@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Tests\TestCase;
 
 final class PwaAssetsTest extends TestCase {
@@ -17,7 +19,7 @@ final class PwaAssetsTest extends TestCase {
         $path = public_path('manifest.webmanifest');
         $this->assertFileExists($path);
 
-        $json = json_decode((string) file_get_contents($path), true);
+        $json = JsonHelper::decode(ToolkitFile::read($path));
         $this->assertIsArray($json);
         $this->assertSame('workDiary', $json['name'] ?? null);
         $this->assertSame('standalone', $json['display'] ?? null);
@@ -29,7 +31,7 @@ final class PwaAssetsTest extends TestCase {
         $path = public_path('sw.js');
         $this->assertFileExists($path);
 
-        $code = (string) file_get_contents($path);
+        $code = ToolkitFile::read($path);
         // Push-Handler bleiben erhalten.
         $this->assertStringContainsString("addEventListener(\"push\"", $code);
         $this->assertStringContainsString("notificationclick", $code);
@@ -41,7 +43,7 @@ final class PwaAssetsTest extends TestCase {
     public function test_offline_fallback_page_exists(): void {
         $path = public_path('offline.html');
         $this->assertFileExists($path);
-        $html = (string) file_get_contents($path);
+        $html = ToolkitFile::read($path);
         $this->assertStringContainsString('Du bist offline', $html);
         $this->assertStringContainsString('manifest.webmanifest', $html);
     }

@@ -8,6 +8,7 @@ return [
         'projects' => 'Projekte',
         'users' => 'Benutzer',
         'materials' => 'Material',
+        'remote_sessions' => 'Fernwartungs-Sitzungen',
     ],
 
     'state' => [
@@ -45,12 +46,16 @@ return [
             'currency' => 'Währungscode muss aus 3 Großbuchstaben bestehen (ISO 4217).',
             'enum' => 'Wert ist kein gültiger Status.',
             'parse' => 'Datei konnte nicht gelesen werden: :reason',
+            'date' => 'Kein gültiges Datum (erwartet z. B. „28.05.2026, 09:42:09").',
         ],
         'outOfRange' => [
             'rowLimit' => 'Maximale Zeilenanzahl (:max) überschritten — Rest wurde ignoriert.',
         ],
         'fkMissing' => [
             'customer' => 'Kein Kunde mit Nummer :number gefunden.',
+        ],
+        'persist' => [
+            'noBookingUser' => 'Kein buchbarer Benutzer in der Organisation gefunden.',
         ],
     ],
 ];

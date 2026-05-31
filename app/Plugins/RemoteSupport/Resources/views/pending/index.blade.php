@@ -12,6 +12,18 @@
             </p>
         </div>
 
+        {{-- Der AnyDesk-CSV-Export wird zentral im Import-Wizard eingelesen. --}}
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200/50 p-3">
+            <span class="text-sm text-base-content/70">
+                <span class="material-symbols-outlined align-middle" aria-hidden="true">upload_file</span>
+                {{ __('AnyDesk-Sitzungen werden im zentralen Import-Wizard eingelesen.') }}
+            </span>
+            <a href="{{ route('admin.imports.create', ['entity' => \App\Enums\Import\ImportEntity::RemoteSessions->value]) }}"
+               class="btn btn-sm btn-primary">
+                {{ __('Sitzungen importieren') }}
+            </a>
+        </div>
+
         @if ($groups->isEmpty())
             <p class="rounded-box border border-base-300 p-6 text-center text-sm text-base-content/60">
                 {{ __('Keine offenen Verbindungen. Alles zugeordnet.') }}
@@ -69,11 +81,19 @@
                                 <input type="hidden" name="provider" value="{{ $group->provider }}">
                                 <input type="hidden" name="remote_id" value="{{ $group->remote_id }}">
                                 <span class="label-text text-xs">{{ __('Neues Gerät anlegen') }}</span>
-                                <div class="flex items-end gap-2">
+                                <div class="flex flex-wrap items-end gap-2">
                                     <label class="form-control flex-1">
                                         <span class="label-text text-xs">{{ __('Name') }}</span>
                                         <input type="text" name="name" required placeholder="{{ __('z. B. PC Empfang') }}"
                                                class="input input-sm input-bordered">
+                                    </label>
+                                    <label class="form-control flex-1">
+                                        <span class="label-text text-xs">{{ __('Kategorie') }}</span>
+                                        <select name="category_code" required class="select select-sm select-bordered">
+                                            @foreach ($categories as $code => $label)
+                                                <option value="{{ $code }}" @selected($code === 'workstation')>{{ __($label) }}</option>
+                                            @endforeach
+                                        </select>
                                     </label>
                                     <label class="form-control flex-1">
                                         <span class="label-text text-xs">{{ __('Kunde') }}</span>

@@ -10,7 +10,9 @@
 
 namespace App\Http\Controllers\Reporting\Concerns;
 
+use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\Response;
 
 /**
@@ -46,22 +48,7 @@ trait WritesReportCsv {
         }
 
         foreach ($rows as $row) {
-            $csv .= implode($delimiter, array_map(
-                static function ($value) use ($delimiter): string {
-                    $string = $value === null ? '' : (string) $value;
-                    if (
-                        str_contains($string, $delimiter)
-                        || str_contains($string, '"')
-                        || str_contains($string, "\n")
-                        || str_contains($string, "\r")
-                    ) {
-                        $string = '"' . str_replace('"', '""', $string) . '"';
-                    }
-
-                    return $string;
-                },
-                $row,
-            )) . "\r\n";
+            $csv .= CsvFacade::line($row, $delimiter) . "\r\n";
         }
 
         return response("\xEF\xBB\xBF" . $csv, 200, [
@@ -86,9 +73,9 @@ trait WritesReportCsv {
      */
     protected function reportFilterHashFull(array $filters): string {
         $normalized = $this->normalizeForHash($filters);
-        $payload = json_encode($normalized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $payload = JsonHelper::encode($normalized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-        return hash('sha256', $payload === false ? '' : $payload);
+        return hash('sha256', $payload);
     }
 
     /**

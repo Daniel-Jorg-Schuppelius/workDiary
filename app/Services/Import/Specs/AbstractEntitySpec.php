@@ -19,6 +19,14 @@ use App\Services\Import\{EntitySpec, ValidationIssue};
  * Basisklasse mit gemeinsamen Validierungs-Helfern für CSV-Import-Spezifikationen.
  */
 abstract class AbstractEntitySpec implements EntitySpec {
+    /**
+     * Standard-Vorverarbeitung: keine. Spezifikationen mit anbieterspezifischen
+     * Datei-Eigenheiten (z. B. Excel-`sep=`-Vorzeile) überschreiben dies.
+     */
+    public function preprocessRaw(string $raw): string {
+        return $raw;
+    }
+
     protected function trimmedString(mixed $value): ?string {
         if ($value === null) {
             return null;

@@ -12,6 +12,8 @@ namespace App\Services;
 
 use App\Http\Controllers\OrganizationSwitchController;
 use App\Models\{Organization, OrganizationAuditLog, User};
+use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\{DB, Log, Schema, Storage};
 use RuntimeException;
@@ -146,7 +148,7 @@ class OrganizationLifecycleService {
             if ($count === 0) {
                 continue;
             }
-            $ndjson = $rows->map(fn($row) => json_encode($row, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
+            $ndjson = $rows->map(fn($row) => JsonHelper::encode($row, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
                 ->implode("\n");
             $zip->addFromString('data/' . $table . '.jsonl', $ndjson);
             $manifest['tables'][$table] = $count;
@@ -156,7 +158,7 @@ class OrganizationLifecycleService {
         //    organization_id-Spalte).
         $zip->addFromString(
             'data/_organization.json',
-            (string) json_encode($org->toArray(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
+            JsonHelper::encode($org->toArray(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
         );
 
         // 3) Dateien aus bekannten orgspezifischen Storage-Pfaden.
@@ -186,17 +188,17 @@ class OrganizationLifecycleService {
 
         $zip->addFromString(
             'manifest.json',
-            (string) json_encode($manifest, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
+            JsonHelper::encode($manifest, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
         );
         $zip->close();
 
-        $hash = is_file($zipAbsPath) ? (string) hash_file('sha256', $zipAbsPath) : null;
+        $hash = ToolkitFile::exists($zipAbsPath) ? ToolkitFile::hash($zipAbsPath) : null;
 
         $this->log($org, OrganizationAuditLog::ACTION_EXPORT, $actor, [
             'file' => $zipRelPath,
             'tables' => $manifest['tables'],
             'files' => $manifest['files'],
-            'bytes' => is_file($zipAbsPath) ? filesize($zipAbsPath) : null,
+            'bytes' => ToolkitFile::exists($zipAbsPath) ? ToolkitFile::size($zipAbsPath) : null,
         ], $hash);
 
         return $zipRelPath;

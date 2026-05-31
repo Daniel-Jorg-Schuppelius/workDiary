@@ -11,6 +11,7 @@
 namespace Tests\Unit\Support;
 
 use App\Support\XlsxExport;
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PHPUnit\Framework\TestCase;
 
@@ -35,7 +36,7 @@ final class XlsxExportTest extends TestCase {
 
         $tmp = tempnam(sys_get_temp_dir(), 'xlsx_');
         $this->assertIsString($tmp);
-        file_put_contents($tmp, $body);
+        ToolkitFile::write($tmp, $body);
 
         $book = IOFactory::load($tmp);
         $sheet = $book->getActiveSheet();

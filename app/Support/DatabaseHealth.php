@@ -10,6 +10,7 @@
 
 namespace App\Support;
 
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use PDOException;
 use Throwable;
 
@@ -59,7 +60,11 @@ final class DatabaseHealth {
             @mkdir($dir, 0775, true);
         }
 
-        @file_put_contents($path, (string) time());
+        try {
+            ToolkitFile::write($path, (string) time());
+        } catch (Throwable) {
+            // Best-effort Marker: DB-Ausfallpfade dürfen nicht durch Dateifehler kippen.
+        }
     }
 
     public static function reset(?string $connection = null): void {

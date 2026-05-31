@@ -12,6 +12,7 @@ namespace App\Plugins\Lexoffice;
 
 use App\Models\{Customer, TimeEntry};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Lexoffice\API\Client;
@@ -87,7 +88,7 @@ class LexofficeService {
             $payload['version'] = $remoteVersion;
             $payload['id'] = $existingId;
 
-            $contact = Contact::fromJson(json_encode($payload, JSON_THROW_ON_ERROR));
+            $contact = Contact::fromJson(JsonHelper::encode($payload));
             $resource = $endpoint->update(new \Lexoffice\Entities\Contacts\ContactID($existingId), $contact);
 
             $id = $resource->getId()->toString();
@@ -98,7 +99,7 @@ class LexofficeService {
             return $id;
         }
 
-        $contact = Contact::fromJson(json_encode($payload, JSON_THROW_ON_ERROR));
+        $contact = Contact::fromJson(JsonHelper::encode($payload));
         $resource = $endpoint->create($contact);
         $id = $resource->getId()->toString();
         if ($id === '') {
@@ -189,7 +190,7 @@ class LexofficeService {
         $payload = $this->mapper->timeEntriesToVoucherPayload($customer, $entries, $from, $to, $defaults);
 
         $endpoint = new VouchersEndpoint($this->client());
-        $voucher = Voucher::fromJson(json_encode($payload, JSON_THROW_ON_ERROR));
+        $voucher = Voucher::fromJson(JsonHelper::encode($payload));
 
         $resource = $endpoint->create($voucher);
         $id = $resource->getId()->toString();

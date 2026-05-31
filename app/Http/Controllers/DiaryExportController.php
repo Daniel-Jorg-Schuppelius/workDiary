@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DiaryEntry;
 use App\Services\UI\DateRangeContext;
+use App\Support\Toolkit\CsvFacade;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -29,7 +30,7 @@ class DiaryExportController extends Controller {
             assert($out !== false);
             // BOM für Excel-UTF8
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, [
+            fwrite($out, CsvFacade::line([
                 __('ID'),
                 __('Status'),
                 __('Mitarbeiter'),
@@ -40,12 +41,12 @@ class DiaryExportController extends Controller {
                 __('Tags'),
                 __('Archiviert'),
                 __('Erstellt'),
-            ], ';');
+            ], ';') . "\r\n");
 
             $query->chunk(500, function ($rows) use ($out) {
                 foreach ($rows as $entry) {
                     /** @var DiaryEntry $entry */
-                    fputcsv($out, [
+                    fwrite($out, CsvFacade::line([
                         $entry->id,
                         $this->csvSafe($entry->statusLabel()),
                         $this->csvSafe(optional($entry->user)->name ?? ''),
@@ -56,7 +57,7 @@ class DiaryExportController extends Controller {
                         $this->csvSafe($entry->tags->pluck('name')->implode(', ')),
                         $entry->is_archived ? '1' : '0',
                         optional($entry->created_at)->format('Y-m-d H:i') ?? '',
-                    ], ';');
+                    ], ';') . "\r\n");
                 }
             });
 

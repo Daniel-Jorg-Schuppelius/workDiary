@@ -12,6 +12,7 @@ namespace Tests\Feature\Privacy;
 
 use App\Models\{AuditLog, User};
 use App\Services\Privacy\PrivacyOverviewService;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -55,7 +56,7 @@ class PrivacyExportTest extends TestCase {
         $this->assertStringContainsString('attachment;', (string) $response->headers->get('Content-Disposition'));
         $this->assertStringContainsString('.json', (string) $response->headers->get('Content-Disposition'));
 
-        $payload = json_decode((string) $response->getContent(), true);
+        $payload = JsonHelper::decode((string) $response->getContent());
         $this->assertIsArray($payload);
         $this->assertSame($admin->organization_id, $payload['organization']['id']);
         $this->assertArrayHasKey('sessions', $payload);

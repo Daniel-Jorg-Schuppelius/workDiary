@@ -12,6 +12,7 @@ namespace App\Console\Commands;
 
 use App\Models\{AuditLog, BackupHeartbeat};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -141,7 +142,7 @@ class BackupCheckRestoreCommand extends Command {
         }
 
         if ((bool) $this->option('json')) {
-            $this->line((string) json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+            $this->line(JsonHelper::encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
         } else {
             $this->line(sprintf('Backup-Check-Status: %s', $status));
             foreach ($messages as $msg) {

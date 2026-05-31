@@ -13,6 +13,7 @@ namespace Tests\Feature;
 use App\Enums\Project\ProjectStatus;
 use App\Models\{Customer, ExternalReference, Project, User};
 use App\Plugins\Lexoffice\LexofficePlugin;
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Database\Eloquent\Relations\{MorphMany, MorphToMany};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -372,7 +373,7 @@ class CustomerControllerTest extends TestCase {
             . ";Ohne Nummer wird ggf. neu;;;\n";
 
         $tmp = tempnam(sys_get_temp_dir(), 'csv');
-        file_put_contents($tmp, $csv);
+        ToolkitFile::write($tmp, $csv);
         $upload = new UploadedFile($tmp, 'customers.csv', 'text/csv', null, true);
 
         $response = $this->postAsAdmin('customers.import', ['file' => $upload]);
@@ -385,7 +386,7 @@ class CustomerControllerTest extends TestCase {
     public function test_csv_import_requires_billing_permission(): void {
         $csv = "Nummer;Name\nK-0001;Foo\n";
         $tmp = tempnam(sys_get_temp_dir(), 'csv');
-        file_put_contents($tmp, $csv);
+        ToolkitFile::write($tmp, $csv);
         $upload = new UploadedFile($tmp, 'customers.csv', 'text/csv', null, true);
 
         $this->actingAs($this->user)

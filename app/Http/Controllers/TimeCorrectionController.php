@@ -14,6 +14,7 @@ use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Models\{Attendance, TimeCorrectionRequest, TimeEntry, User};
 use App\Services\TimeApproval\{TimeCorrectionService, TimeCorrectionWorkflowException};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -165,8 +166,12 @@ class TimeCorrectionController extends Controller {
         if ($raw === null || trim($raw) === '') {
             return null;
         }
-        $decoded = json_decode($raw, true);
+        try {
+            $decoded = JsonHelper::decode($raw);
 
-        return is_array($decoded) ? $decoded : null;
+            return is_array($decoded) ? $decoded : null;
+        } catch (\InvalidArgumentException) {
+            return null;
+        }
     }
 }

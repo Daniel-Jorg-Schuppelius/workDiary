@@ -16,6 +16,7 @@ use App\Http\Requests\SaveExpenseRequest;
 use App\Models\{Customer, Expense, ExpenseCategory, Project, User};
 use App\Services\Expense\ExpenseService;
 use App\Support\SortableQuery;
+use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -203,7 +204,7 @@ class ExpenseController extends Controller {
             }
             // UTF-8 BOM für Excel-Kompatibilität
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, [
+            fwrite($out, CsvFacade::line([
                 'Datum',
                 'Mitarbeiter',
                 'Kategorie',
@@ -222,9 +223,9 @@ class ExpenseController extends Controller {
                 'Erstattet am',
                 'Erstattungsreferenz',
                 'Beschreibung',
-            ], ';');
+            ], ';') . "\r\n");
             foreach ($expenses as $expense) {
-                fputcsv($out, [
+                fwrite($out, CsvFacade::line([
                     $expense->date->format('Y-m-d'),
                     $expense->user->name ?? '',
                     $expense->category->label ?? '',
@@ -243,7 +244,7 @@ class ExpenseController extends Controller {
                     $expense->reimbursed_at?->format('Y-m-d'),
                     (string) $expense->reimbursement_reference,
                     (string) $expense->description,
-                ], ';');
+                ], ';') . "\r\n");
             }
             fclose($out);
         }, $filename, [
