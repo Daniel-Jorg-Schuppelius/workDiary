@@ -33,7 +33,7 @@ class ScheduleController extends Controller {
         $auth = Auth::user();
 
         $rawUserFilter = (string) $request->query('user', '');
-        $userFilter = Sqid::decodeOrNumeric(User::class, $rawUserFilter, 0);
+        $userFilter = (int) (Sqid::decodeOrNumeric(User::class, $rawUserFilter, 0) ?? 0);;
 
         $range = $this->globalDateRange();
         $rangeFrom = $range['from'];
@@ -95,14 +95,14 @@ class ScheduleController extends Controller {
     /**
      * @return Collection<int, ScheduledShift>
      */
-    private function loadShifts(CarbonImmutable $from, CarbonImmutable $to, int $userFilter): Collection {
+    private function loadShifts(CarbonImmutable $from, CarbonImmutable $to, ?int $userFilter): Collection {
         $query = ScheduledShift::query()
             ->with(['user:id,name', 'shiftType'])
             ->forDateRange($from, $to)
             ->orderBy('date')
             ->orderBy('start_time');
 
-        if ($userFilter > 0) {
+        if ($userFilter !== null && $userFilter > 0) {
             $query->forUser($userFilter);
         }
 
@@ -133,7 +133,7 @@ class ScheduleController extends Controller {
 
     public function apiIndex(Request $request): JsonResponse {
         $rawUserFilter = (string) $request->query('user', '');
-        $userFilter = Sqid::decodeOrNumeric(User::class, $rawUserFilter, 0);
+        $userFilter = (int) (Sqid::decodeOrNumeric(User::class, $rawUserFilter, 0) ?? 0);
 
         $range = $this->globalDateRange();
         $from = $range['from'];
