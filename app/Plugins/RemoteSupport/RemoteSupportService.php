@@ -303,6 +303,26 @@ class RemoteSupportService {
             ->first();
 
         if ($existing !== null) {
+            // Bestehende offene Sessions mit nachgelieferten Feldern (Alias, fehlender
+            // Kommentar) anreichern; bereits zugewiesene/verworfene bleiben unberührt.
+            if ($existing->status === RemotePendingSession::STATUS_OPEN) {
+                $dirty = false;
+
+                if ($session->alias !== null && $session->alias !== '' && $existing->alias !== $session->alias) {
+                    $existing->alias = $session->alias;
+                    $dirty = true;
+                }
+
+                if (($existing->note === null || $existing->note === '') && $session->note !== null && $session->note !== '') {
+                    $existing->note = $session->note;
+                    $dirty = true;
+                }
+
+                if ($dirty) {
+                    $existing->save();
+                }
+            }
+
             return;
         }
 
@@ -310,6 +330,7 @@ class RemoteSupportService {
             'organization_id' => $organization->id,
             'provider' => $session->provider,
             'remote_id' => $session->remoteId,
+            'alias' => $session->alias,
             'session_id' => $session->sessionId,
             'started_at' => $session->startedAt,
             'ended_at' => $session->endedAt,
@@ -321,7 +342,7 @@ class RemoteSupportService {
     /**
      * Offene Pending-Sessions der Organisation, gruppiert nach Provider + Geräte-ID.
      *
-     * @return \Illuminate\Support\Collection<int, object{provider: string, remote_id: string, count: int, minutes: int, first_seen: \Illuminate\Support\Carbon, last_seen: \Illuminate\Support\Carbon, note: ?string}>
+     * @return \Illuminate\Support\Collection<int, object{provider: string, remote_id: string, alias: ?string, count: int, minutes: int, first_seen: \Illuminate\Support\Carbon, last_seen: \Illuminate\Support\Carbon, note: ?string, notes: array<int, string>}>
      */
     public function openPendingGroups(Organization $organization): \Illuminate\Support\Collection {
         $groups = RemotePendingSession::query()
@@ -339,16 +360,24 @@ class RemoteSupportService {
                 return (object) [
                     'provider' => (string) $first->provider,
                     'remote_id' => (string) $first->remote_id,
+                    'alias' => $group->pluck('alias')->first(fn($a): bool => $a !== null && $a !== ''),
                     'count' => (int) $group->count(),
                     'minutes' => (int) $group->sum(fn(RemotePendingSession $s): int => $s->minutes()),
                     'first_seen' => $group->min('started_at'),
                     'last_seen' => $group->max('ended_at'),
                     'note' => $first->note,
+                    'notes' => $group
+                        ->pluck('note')
+                        ->filter(fn($n): bool => $n !== null && trim((string) $n) !== '')
+                        ->map(fn($n): string => trim((string) $n))
+                        ->unique()
+                        ->values()
+                        ->all(),
                 ];
             })
             ->values();
 
-        /** @var \Illuminate\Support\Collection<int, object{provider: string, remote_id: string, count: int, minutes: int, first_seen: \Illuminate\Support\Carbon, last_seen: \Illuminate\Support\Carbon, note: string|null}> $groups */
+        /** @var \Illuminate\Support\Collection<int, object{provider: string, remote_id: string, alias: string|null, count: int, minutes: int, first_seen: \Illuminate\Support\Carbon, last_seen: \Illuminate\Support\Carbon, note: string|null, notes: array<int, string>}> $groups */
         return $groups;
     }
 

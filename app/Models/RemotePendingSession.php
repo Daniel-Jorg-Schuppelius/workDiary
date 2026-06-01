@@ -25,6 +25,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $organization_id
  * @property string $provider
  * @property string $remote_id
+ * @property string|null $alias
  * @property string $session_id
  * @property Carbon $started_at
  * @property Carbon $ended_at
@@ -50,6 +51,7 @@ class RemotePendingSession extends Model {
         'organization_id',
         'provider',
         'remote_id',
+        'alias',
         'session_id',
         'started_at',
         'ended_at',

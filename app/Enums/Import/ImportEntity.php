@@ -23,6 +23,7 @@ enum ImportEntity: string implements HasLabel {
     case Projects = 'projects';
     case Users = 'users';
     case Materials = 'materials';
+    case ScheduledShifts = 'scheduled_shifts';
     case RemoteSessions = 'remote_sessions';
 
     public function label(): string {
@@ -35,6 +36,7 @@ enum ImportEntity: string implements HasLabel {
             self::Projects => 'project.import',
             self::Users => 'user.import',
             self::Materials => 'material.import',
+            self::ScheduledShifts => 'schedule.import',
             self::RemoteSessions => 'remote-session.import',
         };
     }

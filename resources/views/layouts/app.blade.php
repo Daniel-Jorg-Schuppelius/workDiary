@@ -502,7 +502,17 @@
                                     $adminNavItems[]  = ['route' => 'admin.expense-categories.index',  'label' => __('Spesenkategorien'), 'icon' => 'receipt_long',     'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.per-diem-rates.index',      'label' => __('Verpflegungspauschalen'), 'icon' => 'restaurant_menu',  'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.automations.index',         'label' => __('Automatisierungen'), 'icon' => 'bolt',             'modal' => false];
-                                    $adminNavItems[]  = ['route' => 'admin.imports.index',             'label' => __('Importe'),          'icon' => 'upload_file',      'modal' => false];
+                                    $adminNavItems[]  = ['route' => 'admin.data.index',                'label' => __('Datentransfer'),    'icon' => 'sync_alt',         'modal' => false];
+                                    if (\Illuminate\Support\Facades\Route::has('admin.remote-support.pending.index')) {
+                                        $_rsOrg = $_authUser?->organization;
+                                        $_rsPending = $_rsOrg !== null
+                                            ? \App\Models\RemotePendingSession::query()
+                                                ->where('organization_id', $_rsOrg->id)
+                                                ->where('status', \App\Models\RemotePendingSession::STATUS_OPEN)
+                                                ->count()
+                                            : 0;
+                                        $adminNavItems[] = ['route' => 'admin.remote-support.pending.index', 'label' => __('Fernwartung – Inbox'), 'icon' => 'inbox', 'modal' => false, 'badge' => $_rsPending];
+                                    }
                                 }
                                 if (! $isLegacyMode && \Illuminate\Support\Facades\Gate::allows('manage-access')) {
                                     $adminNavItems[] = ['route' => 'admin.access.index',             'label' => __('access.title.hub'), 'icon' => 'admin_panel_settings', 'modal' => false];
@@ -537,7 +547,7 @@
                             }
                             $userNavItems[] = ['route' => 'profile.api-tokens.index', 'label' => __('API-Tokens'), 'modal' => false];
 
-                            $isAdminActive  = collect($adminNavItems)->contains(fn ($i) => request()->routeIs($i['route'])) || request()->routeIs('admin.access.*');
+                            $isAdminActive  = collect($adminNavItems)->contains(fn ($i) => request()->routeIs($i['route'])) || request()->routeIs('admin.access.*') || request()->routeIs('admin.imports.*') || request()->routeIs('admin.data.*') || request()->routeIs('admin.remote-support.*');
                             $isManageActive = collect($manageNavItems)->contains(fn ($i) => request()->routeIs($i['route']));
                             $isUserActive = collect($userNavItems)->contains(fn ($i) => request()->routeIs($i['route']));
 
@@ -745,11 +755,22 @@
                             @if (! empty($adminNavItems))
                                 @foreach ($adminNavItems as $item)
                                     @php $active = request()->routeIs($item['route']); @endphp
-                                    <x-icon-btn :icon="$item['icon'] ?? 'tune'"
-                                                :tone="$active ? 'primary' : 'ghost'"
-                                                size="sm"
-                                                :label="$item['label']"
-                                                :href="route($item['route'])" />
+                                    @if (! empty($item['badge']))
+                                        <div class="indicator">
+                                            <span class="indicator-item badge badge-xs badge-warning">{{ $item['badge'] > 99 ? '99+' : $item['badge'] }}</span>
+                                            <x-icon-btn :icon="$item['icon'] ?? 'tune'"
+                                                        :tone="$active ? 'primary' : 'ghost'"
+                                                        size="sm"
+                                                        :label="$item['label']"
+                                                        :href="route($item['route'])" />
+                                        </div>
+                                    @else
+                                        <x-icon-btn :icon="$item['icon'] ?? 'tune'"
+                                                    :tone="$active ? 'primary' : 'ghost'"
+                                                    size="sm"
+                                                    :label="$item['label']"
+                                                    :href="route($item['route'])" />
+                                    @endif
                                 @endforeach
                             @endif
 
@@ -778,13 +799,53 @@
                                            aria-label="{{ __('Verwaltung') }}">
                                         <x-icon name="manage_accounts" class="text-[1.1rem]" />
                                     </label>
-                                    <ul tabindex="0" class="dropdown-content menu z-50 w-[min(15rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
-                                        @foreach ($manageNavItems as $item)
+                                    <ul tabindex="0" class="dropdown-content menu z-50 w-[min(22rem,calc(100vw-1rem))]! rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                        @php
+                                            // Gruppierung der Verwaltungs-Einträge in aufklappbare Ordner.
+                                            $manageGroups = [
+                                                ['label' => __('Personal'), 'icon' => 'group', 'routes' => ['org.members.index', 'legacy.users.index', 'qualifications.index']],
+                                                ['label' => __('Planung'), 'icon' => 'event', 'routes' => ['holidays.index', 'shift-types.index', 'rooms.index', 'event-categories.index']],
+                                                ['label' => __('Kataloge'), 'icon' => 'category', 'routes' => ['materials.index', 'tags.index', 'activity-categories.index']],
+                                            ];
+                                            $manageByRoute = collect($manageNavItems)->keyBy('route');
+                                            $manageGrouped = collect();
+                                            foreach ($manageGroups as $g) {
+                                                $items = collect($g['routes'])->map(fn ($r) => $manageByRoute->get($r))->filter()->values();
+                                                if ($items->isNotEmpty()) {
+                                                    $manageGrouped->push(['label' => $g['label'], 'icon' => $g['icon'], 'items' => $items]);
+                                                }
+                                            }
+                                            $manageGroupedRoutes = $manageGrouped->flatMap(fn ($g) => $g['items']->pluck('route'))->all();
+                                            $manageUngrouped = collect($manageNavItems)->reject(fn ($i) => in_array($i['route'], $manageGroupedRoutes, true))->values();
+                                        @endphp
+                                        @foreach ($manageGrouped as $group)
+                                            @php $groupActive = $group['items']->contains(fn ($i) => request()->routeIs($i['route'])); @endphp
+                                            <li class="w-full">
+                                                <details @if ($groupActive) open @endif>
+                                                    <summary class="flex! w-full items-center gap-3 {{ $groupActive ? 'menu-active' : '' }}">
+                                                        <x-icon :name="$group['icon']" class="text-[1.1rem] shrink-0" />
+                                                        <span class="min-w-0 flex-1 truncate">{{ $group['label'] }}</span>
+                                                    </summary>
+                                                    <ul>
+                                                        @foreach ($group['items'] as $item)
+                                                            @php $active = request()->routeIs($item['route']); @endphp
+                                                            <li class="w-full">
+                                                                <a href="{{ route($item['route']) }}" class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}">
+                                                                    <x-icon :name="$item['icon'] ?? 'tune'" class="text-[1.1rem] shrink-0" />
+                                                                    <span class="min-w-0 flex-1 truncate">{{ $item['label'] }}</span>
+                                                                </a>
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                </details>
+                                            </li>
+                                        @endforeach
+                                        @foreach ($manageUngrouped as $item)
                                             @php $active = request()->routeIs($item['route']); @endphp
-                                            <li>
-                                                <a href="{{ route($item['route']) }}" class="flex items-center gap-3 {{ $active ? 'menu-active' : '' }}">
-                                                    <x-icon :name="$item['icon'] ?? 'tune'" class="text-[1.1rem]" />
-                                                    <span class="truncate">{{ $item['label'] }}</span>
+                                            <li class="w-full">
+                                                <a href="{{ route($item['route']) }}" class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}">
+                                                    <x-icon :name="$item['icon'] ?? 'tune'" class="text-[1.1rem] shrink-0" />
+                                                    <span class="min-w-0 flex-1 truncate">{{ $item['label'] }}</span>
                                                 </a>
                                             </li>
                                         @endforeach
@@ -800,13 +861,65 @@
                                            aria-label="{{ __('System') }}">
                                         <x-icon name="settings" class="text-[1.1rem]" />
                                     </label>
-                                    <ul tabindex="0" class="dropdown-content menu z-50 w-[min(15rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
-                                        @foreach ($adminNavItems as $item)
+                                    <ul tabindex="0" class="dropdown-content menu z-50 w-[min(22rem,calc(100vw-1rem))]! rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                        @php
+                                            // Gruppierung der System-Einträge in aufklappbare Ordner.
+                                            $adminGroups = [
+                                                ['label' => __('Stammdaten'), 'icon' => 'inventory_2', 'routes' => ['admin.organizations.index', 'admin.branding.edit', 'admin.entry-types.index', 'admin.classifications.index', 'admin.classification-requirements.index', 'admin.branch-profiles.index', 'admin.expense-categories.index', 'admin.per-diem-rates.index']],
+                                                ['label' => __('Daten & Schnittstellen'), 'icon' => 'sync_alt', 'routes' => ['admin.automations.index', 'admin.data.index', 'admin.remote-support.pending.index']],
+                                                ['label' => __('System'), 'icon' => 'settings', 'routes' => ['admin.access.index', 'audit.index', 'admin.plugins.index', 'admin.plugin-errors.index', 'admin.legacy-migration.index']],
+                                            ];
+                                            $adminByRoute = collect($adminNavItems)->keyBy('route');
+                                            $adminGrouped = collect();
+                                            foreach ($adminGroups as $g) {
+                                                $items = collect($g['routes'])->map(fn ($r) => $adminByRoute->get($r))->filter()->values();
+                                                if ($items->isNotEmpty()) {
+                                                    $adminGrouped->push(['label' => $g['label'], 'icon' => $g['icon'], 'items' => $items]);
+                                                }
+                                            }
+                                            $groupedRoutes = $adminGrouped->flatMap(fn ($g) => $g['items']->pluck('route'))->all();
+                                            $adminUngrouped = collect($adminNavItems)->reject(fn ($i) => in_array($i['route'], $groupedRoutes, true))->values();
+                                        @endphp
+                                        @foreach ($adminGrouped as $group)
+                                            @php
+                                                $groupActive = $group['items']->contains(fn ($i) => request()->routeIs($i['route']));
+                                                $groupBadge = $group['items']->sum(fn ($i) => $i['badge'] ?? 0);
+                                            @endphp
+                                            <li class="w-full">
+                                                <details @if ($groupActive) open @endif>
+                                                    <summary class="flex! w-full items-center gap-3 {{ $groupActive ? 'menu-active' : '' }}">
+                                                        <x-icon :name="$group['icon']" class="text-[1.1rem] shrink-0" />
+                                                        <span class="min-w-0 flex-1 truncate">{{ $group['label'] }}</span>
+                                                        @if ($groupBadge > 0)
+                                                            <span class="badge badge-sm badge-warning shrink-0">{{ $groupBadge > 99 ? '99+' : $groupBadge }}</span>
+                                                        @endif
+                                                    </summary>
+                                                    <ul>
+                                                        @foreach ($group['items'] as $item)
+                                                            @php $active = request()->routeIs($item['route']); @endphp
+                                                            <li class="w-full">
+                                                                <a href="{{ route($item['route']) }}" class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}">
+                                                                    <x-icon :name="$item['icon'] ?? 'tune'" class="text-[1.1rem] shrink-0" />
+                                                                    <span class="min-w-0 flex-1 truncate">{{ $item['label'] }}</span>
+                                                                    @if (! empty($item['badge']))
+                                                                        <span class="badge badge-sm badge-warning shrink-0">{{ $item['badge'] > 99 ? '99+' : $item['badge'] }}</span>
+                                                                    @endif
+                                                                </a>
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                </details>
+                                            </li>
+                                        @endforeach
+                                        @foreach ($adminUngrouped as $item)
                                             @php $active = request()->routeIs($item['route']); @endphp
-                                            <li>
-                                                <a href="{{ route($item['route']) }}" class="flex items-center gap-3 {{ $active ? 'menu-active' : '' }}">
-                                                    <x-icon :name="$item['icon'] ?? 'tune'" class="text-[1.1rem]" />
-                                                    <span class="truncate">{{ $item['label'] }}</span>
+                                            <li class="w-full">
+                                                <a href="{{ route($item['route']) }}" class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}">
+                                                    <x-icon :name="$item['icon'] ?? 'tune'" class="text-[1.1rem] shrink-0" />
+                                                    <span class="min-w-0 flex-1 truncate">{{ $item['label'] }}</span>
+                                                    @if (! empty($item['badge']))
+                                                        <span class="badge badge-sm badge-warning shrink-0">{{ $item['badge'] > 99 ? '99+' : $item['badge'] }}</span>
+                                                    @endif
                                                 </a>
                                             </li>
                                         @endforeach

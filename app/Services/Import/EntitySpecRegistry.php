@@ -14,7 +14,7 @@ namespace App\Services\Import;
 
 use App\Enums\Import\ImportEntity;
 use App\Plugins\RemoteSupport\Import\RemoteSessionSpec;
-use App\Services\Import\Specs\{CustomerSpec, MaterialSpec, ProjectSpec, UserSpec};
+use App\Services\Import\Specs\{CustomerSpec, MaterialSpec, ProjectSpec, ScheduledShiftSpec, UserSpec};
 use InvalidArgumentException;
 
 /**
@@ -26,8 +26,10 @@ class EntitySpecRegistry {
         private readonly ProjectSpec $projects,
         private readonly UserSpec $users,
         private readonly MaterialSpec $materials,
+        private readonly ScheduledShiftSpec $scheduledShifts,
         private readonly RemoteSessionSpec $remoteSessions,
-    ) {}
+    ) {
+    }
 
     public function for(ImportEntity $entity): EntitySpec {
         return match ($entity) {
@@ -35,6 +37,7 @@ class EntitySpecRegistry {
             ImportEntity::Projects => $this->projects,
             ImportEntity::Users => $this->users,
             ImportEntity::Materials => $this->materials,
+            ImportEntity::ScheduledShifts => $this->scheduledShifts,
             ImportEntity::RemoteSessions => $this->remoteSessions,
         };
     }

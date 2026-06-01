@@ -757,6 +757,13 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/imports/{import}/confirm', [ImportController::class, 'confirm'])->name('admin.imports.confirm');
         Route::delete('admin/imports/{import}', [ImportController::class, 'destroy'])->name('admin.imports.destroy');
         Route::get('admin/imports/{import}/errors.csv', [ImportController::class, 'downloadErrors'])->name('admin.imports.errors');
+
+        // Datentransfer — zentraler Im-/Export-Bereich
+        Route::get('admin/data', [\App\Http\Controllers\Admin\DataTransferController::class, 'index'])->name('admin.data.index');
+        Route::get('admin/data/history', [\App\Http\Controllers\Admin\DataTransferController::class, 'history'])->name('admin.data.history');
+        Route::post('admin/data/export', [\App\Http\Controllers\Admin\DataTransferController::class, 'export'])->name('admin.data.export');
+        Route::get('admin/data/{export}/download', [\App\Http\Controllers\Admin\DataTransferController::class, 'download'])->name('admin.data.download');
+        Route::delete('admin/data/{export}', [\App\Http\Controllers\Admin\DataTransferController::class, 'destroy'])->name('admin.data.destroy');
         Route::get('admin/branch-profiles', [BranchProfileController::class, 'index'])
             ->name('admin.branch-profiles.index');
         Route::post('admin/branch-profiles/{profile}', [BranchProfileController::class, 'install'])

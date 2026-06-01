@@ -43,14 +43,15 @@ class RemoteSessionSpec extends AbstractEntitySpec {
     /** @var array<int, int|null> Org-ID → buchbarer Benutzer */
     private array $userCache = [];
 
-    public function __construct(private readonly RemoteSupportService $service) {}
+    public function __construct(private readonly RemoteSupportService $service) {
+    }
 
     public function entity(): ImportEntity {
         return ImportEntity::RemoteSessions;
     }
 
     public function columns(): array {
-        return ['session_id', 'remote_id', 'start', 'end', 'note'];
+        return ['session_id', 'remote_id', 'alias', 'start', 'end', 'note'];
     }
 
     public function requiredColumns(): array {
@@ -65,6 +66,9 @@ class RemoteSessionSpec extends AbstractEntitySpec {
             'Session ID' => 'session_id',
             'Nach ID' => 'remote_id',
             'To ID' => 'remote_id',
+            'Alias' => 'alias',
+            'Nach Alias' => 'alias',
+            'To Alias' => 'alias',
             'Beginn' => 'start',
             'Start' => 'start',
             'Startzeit' => 'start',
@@ -89,6 +93,7 @@ class RemoteSessionSpec extends AbstractEntitySpec {
         return [
             'session_id' => $this->trimmedString($row['session_id'] ?? null),
             'remote_id' => $this->trimmedString($row['remote_id'] ?? null),
+            'alias' => $this->trimmedString($row['alias'] ?? null),
             'note' => $this->trimmedString($row['note'] ?? null),
             'started_at' => $this->parseDate($row['start'] ?? null),
             'ended_at' => $this->parseDate($row['end'] ?? null),
@@ -129,6 +134,10 @@ class RemoteSessionSpec extends AbstractEntitySpec {
             $sessionId = $remoteId . '|' . $start->getTimestamp();
         }
 
+        $alias = isset($row['alias']) && $row['alias'] !== '' && $row['alias'] !== $remoteId
+            ? (string) $row['alias']
+            : null;
+
         $session = new RemoteSession(
             provider: AnyDeskClient::ID,
             sessionId: $sessionId,
@@ -136,6 +145,7 @@ class RemoteSessionSpec extends AbstractEntitySpec {
             startedAt: $start,
             endedAt: $end,
             note: $row['note'] !== null && $row['note'] !== '' ? (string) $row['note'] : null,
+            alias: $alias,
         );
 
         $outcome = $this->service->bookSession($organization, $this->config($organization), $session, $userId);

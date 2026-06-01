@@ -40,7 +40,7 @@
         @if ($isAdmin)
             <x-slot:extra>
                 <x-icon-btn icon="tune" size="sm" type="button" id="btn-open-type-manager" show-label>{{ __('Schichttypen') }}</x-icon-btn>
-                <x-icon-btn icon="upload" size="sm" :href="route('schedule.import')" show-label>{{ __('Import') }}</x-icon-btn>
+                <x-icon-btn icon="upload" size="sm" :href="route('admin.imports.create', ['entity' => 'scheduled_shifts'])" show-label>{{ __('Import') }}</x-icon-btn>
                 <div class="dropdown dropdown-end">
                     <label tabindex="0" class="btn btn-sm btn-ghost gap-1">
                         <x-icon name="print" /><span>{{ __('Drucken') }}</span>

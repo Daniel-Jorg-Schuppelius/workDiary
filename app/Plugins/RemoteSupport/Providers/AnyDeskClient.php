@@ -28,7 +28,8 @@ class AnyDeskClient implements RemoteProvider {
         private readonly ?string $licenseId,
         private readonly ?string $apiPassword,
         private readonly string $baseUrl = 'https://v1.api.anydesk.com',
-    ) {}
+    ) {
+    }
 
     public function id(): string {
         return self::ID;
@@ -96,6 +97,11 @@ class AnyDeskClient implements RemoteProvider {
             return null;
         }
 
+        // Der Alias ist der Klartext-Name des Geräts und lässt oft auf den
+        // Rechnernamen schließen — nur übernehmen, wenn er sich von der ID unterscheidet.
+        $alias = trim((string) ($to['alias'] ?? ''));
+        $alias = ($alias !== '' && $alias !== $remoteId) ? $alias : null;
+
         $note = isset($record['comment']) ? trim((string) $record['comment']) : null;
 
         return new RemoteSession(
@@ -105,6 +111,7 @@ class AnyDeskClient implements RemoteProvider {
             startedAt: CarbonImmutable::createFromTimestampUTC((int) $start),
             endedAt: CarbonImmutable::createFromTimestampUTC((int) $end),
             note: $note !== '' ? $note : null,
+            alias: $alias,
         );
     }
 

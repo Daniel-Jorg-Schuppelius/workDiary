@@ -20,7 +20,7 @@
                             show-label>{{ __('CSV-Export') }}</x-icon-btn>
                 @if (auth()->user()?->canManageBilling())
                     <x-icon-btn icon="upload" size="sm"
-                                :href="route('customers.import.form')"
+                                :href="route('admin.imports.create', ['entity' => 'customers'])"
                                 show-label>{{ __('CSV-Import') }}</x-icon-btn>
                     <form method="POST" action="{{ route('customers.lexoffice.push-all') }}"
                           data-confirm-dialog

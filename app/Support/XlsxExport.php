@@ -30,46 +30,7 @@ final class XlsxExport {
      */
     public static function streamFromArray(string $filename, array $headers, iterable $rows): StreamedResponse {
         $callback = static function () use ($headers, $rows): void {
-            $book = new Spreadsheet;
-            $sheet = $book->getActiveSheet();
-
-            $col = 1;
-            foreach ($headers as $label) {
-                $letter = Coordinate::stringFromColumnIndex($col);
-                $coord = $letter . '1';
-                $sheet->setCellValue($coord, (string) $label);
-                $sheet->getStyle($coord)->getFont()->setBold(true);
-                $col++;
-            }
-
-            $rowNum = 2;
-            foreach ($rows as $rowData) {
-                $col = 1;
-                foreach ($rowData as $value) {
-                    $letter = Coordinate::stringFromColumnIndex($col);
-                    $coord = $letter . $rowNum;
-                    $cell = $sheet->getCell($coord);
-                    if (is_int($value) || is_float($value)) {
-                        $cell->setValueExplicit($value, DataType::TYPE_NUMERIC);
-                        if (is_float($value)) {
-                            $sheet->getStyle($coord)
-                                ->getNumberFormat()
-                                ->setFormatCode('#,##0.00');
-                        }
-                    } else {
-                        $cell->setValueExplicit((string) ($value ?? ''), DataType::TYPE_STRING);
-                    }
-                    $col++;
-                }
-                $rowNum++;
-            }
-
-            $lastCol = max(1, count($headers));
-            for ($i = 1; $i <= $lastCol; $i++) {
-                $letter = Coordinate::stringFromColumnIndex($i);
-                $sheet->getColumnDimension($letter)->setAutoSize(true);
-            }
-
+            $book = self::build($headers, $rows);
             $writer = new Xlsx($book);
             $writer->save('php://output');
             $book->disconnectWorksheets();
@@ -81,5 +42,69 @@ final class XlsxExport {
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
             'Cache-Control' => 'no-store, no-cache',
         ]);
+    }
+
+    /**
+     * Schreibt die XLSX-Datei auf einen absoluten Dateipfad (z. B. für die
+     * persistente Ablage eines Export-Laufs). Das Zielverzeichnis muss
+     * existieren.
+     *
+     * @param  list<string>  $headers
+     * @param  iterable<int, list<int|float|string|null>>  $rows
+     */
+    public static function saveToPath(string $absolutePath, array $headers, iterable $rows): void {
+        $book = self::build($headers, $rows);
+        $writer = new Xlsx($book);
+        $writer->save($absolutePath);
+        $book->disconnectWorksheets();
+        unset($book);
+    }
+
+    /**
+     * @param  list<string>  $headers
+     * @param  iterable<int, list<int|float|string|null>>  $rows
+     */
+    private static function build(array $headers, iterable $rows): Spreadsheet {
+        $book = new Spreadsheet;
+        $sheet = $book->getActiveSheet();
+
+        $col = 1;
+        foreach ($headers as $label) {
+            $letter = Coordinate::stringFromColumnIndex($col);
+            $coord = $letter . '1';
+            $sheet->setCellValue($coord, (string) $label);
+            $sheet->getStyle($coord)->getFont()->setBold(true);
+            $col++;
+        }
+
+        $rowNum = 2;
+        foreach ($rows as $rowData) {
+            $col = 1;
+            foreach ($rowData as $value) {
+                $letter = Coordinate::stringFromColumnIndex($col);
+                $coord = $letter . $rowNum;
+                $cell = $sheet->getCell($coord);
+                if (is_int($value) || is_float($value)) {
+                    $cell->setValueExplicit($value, DataType::TYPE_NUMERIC);
+                    if (is_float($value)) {
+                        $sheet->getStyle($coord)
+                            ->getNumberFormat()
+                            ->setFormatCode('#,##0.00');
+                    }
+                } else {
+                    $cell->setValueExplicit((string) ($value ?? ''), DataType::TYPE_STRING);
+                }
+                $col++;
+            }
+            $rowNum++;
+        }
+
+        $lastCol = max(1, count($headers));
+        for ($i = 1; $i <= $lastCol; $i++) {
+            $letter = Coordinate::stringFromColumnIndex($i);
+            $sheet->getColumnDimension($letter)->setAutoSize(true);
+        }
+
+        return $book;
     }
 }

@@ -8,6 +8,8 @@ return [
         'projects' => 'Projekte',
         'users' => 'Benutzer',
         'materials' => 'Material',
+        'scheduled_shifts' => 'Schichtpläne',
+        'tours' => 'Touren',
         'remote_sessions' => 'Fernwartungs-Sitzungen',
     ],
 
@@ -47,12 +49,15 @@ return [
             'enum' => 'Wert ist kein gültiger Status.',
             'parse' => 'Datei konnte nicht gelesen werden: :reason',
             'date' => 'Kein gültiges Datum (erwartet z. B. „28.05.2026, 09:42:09").',
+            'time' => 'Keine gültige Uhrzeit (erwartet HH:MM).',
+            'status' => 'Wert ist kein gültiger Status.',
         ],
         'outOfRange' => [
             'rowLimit' => 'Maximale Zeilenanzahl (:max) überschritten — Rest wurde ignoriert.',
         ],
         'fkMissing' => [
             'customer' => 'Kein Kunde mit Nummer :number gefunden.',
+            'user' => 'Kein Benutzer mit E-Mail :value gefunden.',
         ],
         'persist' => [
             'noBookingUser' => 'Kein buchbarer Benutzer in der Organisation gefunden.',

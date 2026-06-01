@@ -70,6 +70,22 @@
         </div></div>
     </div>
 
+    {{-- Hinweis: Fernwartungs-Sitzungen ohne Geräte-Zuordnung landen in der Inbox --}}
+    @if ($run->entity === \App\Enums\Import\ImportEntity::RemoteSessions
+        && $run->rows_skipped > 0
+        && \Illuminate\Support\Facades\Route::has('admin.remote-support.pending.index'))
+        <div class="alert alert-info">
+            <span class="material-symbols-outlined" aria-hidden="true">inbox</span>
+            <span>
+                {{ __(':n Sitzungen konnten keinem Gerät zugeordnet werden und liegen in der Fernwartungs-Inbox. Ordne die Geräte-IDs einem Asset zu, um sie als Zeiteinträge zu buchen.', ['n' => $run->rows_skipped]) }}
+            </span>
+            <a href="{{ route('admin.remote-support.pending.index') }}" class="btn btn-sm btn-primary">
+                <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                {{ __('Zur Inbox') }}
+            </a>
+        </div>
+    @endif
+
     {{-- Vorschau --}}
     @if (! empty($run->preview))
         <div class="card bg-base-100 shadow-sm">

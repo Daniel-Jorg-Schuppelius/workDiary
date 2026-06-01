@@ -8,6 +8,8 @@ return [
         'projects' => 'Projects',
         'users' => 'Users',
         'materials' => 'Materials',
+        'scheduled_shifts' => 'Shift schedules',
+        'tours' => 'Tours',
         'remote_sessions' => 'Remote support sessions',
     ],
 
@@ -47,12 +49,15 @@ return [
             'enum' => 'Value is not a valid status.',
             'parse' => 'File could not be parsed: :reason',
             'date' => 'Not a valid date (expected e.g. "28.05.2026, 09:42:09").',
+            'time' => 'Not a valid time (expected HH:MM).',
+            'status' => 'Value is not a valid status.',
         ],
         'outOfRange' => [
             'rowLimit' => 'Row limit (:max) exceeded — remainder ignored.',
         ],
         'fkMissing' => [
             'customer' => 'No customer with number :number found.',
+            'user' => 'No user with email :value found.',
         ],
         'persist' => [
             'noBookingUser' => 'No bookable user found in the organisation.',
