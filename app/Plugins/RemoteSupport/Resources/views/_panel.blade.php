@@ -55,4 +55,19 @@
             </div>
         @endforeach
     </div>
+
+    {{-- Mehrkundengerät: Sitzungen einzeln je Kunde zuordnen statt automatisch buchen. --}}
+    <form method="POST" action="{{ route('assets.remote-support.shared', $asset) }}" class="mt-3">
+        @csrf
+        <label class="flex cursor-pointer items-start gap-3 rounded-box border border-base-300 p-3">
+            <input type="checkbox" name="shared_remote" value="1" class="toggle toggle-sm toggle-primary mt-0.5"
+                   @checked($asset->shared_remote) onchange="this.form.submit()">
+            <span>
+                <span class="font-medium">{{ __('Mehrkundengerät') }}</span>
+                <span class="block text-xs text-base-content/60">
+                    {{ __('Dieser Rechner wird für mehrere Kunden genutzt. Sitzungen werden nicht automatisch gebucht, sondern in der Inbox je Sitzung einem Kunden zugeordnet.') }}
+                </span>
+            </span>
+        </label>
+    </form>
 </x-card>

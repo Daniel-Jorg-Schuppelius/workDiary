@@ -472,8 +472,10 @@
                                     ['route' => 'schedule.index',           'label' => __('Schichtplan'),    'icon' => 'schedule',         'modal' => false, 'matches' => ['schedule.*']],
                                     ['route' => 'timesheets.index',         'label' => __('Stundenzettel'),  'icon' => 'description',      'modal' => false, 'matches' => ['timesheets.*', 'projects.timesheets.*']],
                                     ['route' => 'customers.index',          'label' => __('Kunden'),         'icon' => 'badge',            'modal' => false, 'matches' => ['customers.*']],
+                                    ['route' => 'suppliers.index',          'label' => __('Lieferanten'),    'icon' => 'local_shipping',   'modal' => false, 'matches' => ['suppliers.*']],
                                     ['route' => 'projects.index',           'label' => __('Projekte'),       'icon' => 'folder_special',   'modal' => false, 'matches' => ['projects.*']],
-                                    ['route' => 'invoices.index',           'label' => __('Rechnungen'),     'icon' => 'receipt_long',     'modal' => false, 'matches' => ['invoices.*']],
+                                    ['route' => 'invoices.index',           'label' => __('Rechnungen & Belege'), 'icon' => 'receipt_long',     'modal' => false, 'matches' => ['invoices.*', 'lexoffice.vouchers.*']],
+                                    ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
                                     ['route' => 'events.index',             'label' => __('Veranstaltungen'),'icon' => 'event',            'modal' => false, 'matches' => ['events.*']],
                                     ['route' => 'flex.index',               'label' => __('Gleitzeit'),      'icon' => 'hourglass_top',    'modal' => false, 'matches' => ['flex.*']],
                                     ['route' => 'archive.index',            'label' => __('Archiv'),         'icon' => 'inventory_2',      'modal' => false, 'matches' => ['archive.*']],
@@ -624,8 +626,10 @@
                                     'collapsible' => true,
                                     'items'       => [
                                         ['route' => 'customers.index', 'label' => __('Kunden'),         'icon' => 'badge',           'modal' => false, 'matches' => ['customers.*']],
+                                        ['route' => 'suppliers.index', 'label' => __('Lieferanten'),    'icon' => 'local_shipping',  'modal' => false, 'matches' => ['suppliers.*']],
                                         ['route' => 'projects.index',  'label' => __('Projekte'),       'icon' => 'folder_special',  'modal' => false, 'matches' => ['projects.*']],
-                                        ['route' => 'invoices.index',  'label' => __('Rechnungen'),     'icon' => 'request_quote',   'modal' => false, 'matches' => ['invoices.*']],
+                                        ['route' => 'invoices.index',  'label' => __('Rechnungen & Belege'), 'icon' => 'request_quote',   'modal' => false, 'matches' => ['invoices.*', 'lexoffice.vouchers.*']],
+                                        ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
                                         ['route' => 'events.index',    'label' => __('Veranstaltungen'),'icon' => 'event',           'modal' => false, 'matches' => ['events.*']],
                                     ],
                                 ];

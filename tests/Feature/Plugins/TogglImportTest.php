@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Customer, PluginSetting, Project, TimeEntry, TogglPendingEntry, User};
+use App\Models\{Customer, ExternalReference, PluginSetting, Project, TimeEntry, TogglPendingEntry, User};
 use App\Plugins\Toggl\{TogglConfig, TogglImportService, TogglPlugin};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,12 +22,16 @@ class TogglImportTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
+    private User $admin;
+
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
 
         $owner = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->organization->forceFill(['owner_id' => $owner->id])->save();
+
+        $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
     }
 
     private function service(): TogglImportService {
@@ -251,5 +255,146 @@ class TogglImportTest extends TestCase {
                 endedAt: CarbonImmutable::now(),
             ),
         ));
+    }
+
+    public function test_suggest_customer_and_project_return_close_matches(): void {
+        $project = $this->customerWithProject('Acme GmbH', 'Webseite Relaunch');
+
+        // Leicht abweichende Toggl-Schreibweise → Fuzzy-Vorschlag greift.
+        $customer = $this->service()->suggestCustomer($this->organization, 'Acme Gmbh');
+        $this->assertNotNull($customer);
+        $this->assertSame($project->customer_id, $customer->id);
+
+        $suggested = $this->service()->suggestProject($this->organization, $customer, 'Webseite-Relaunch');
+        $this->assertNotNull($suggested);
+        $this->assertSame($project->id, $suggested->id);
+
+        // Komplett fremder Name → kein Vorschlag.
+        $this->assertNull($this->service()->suggestCustomer($this->organization, 'Völlig anderer Laden'));
+    }
+
+    public function test_assign_creates_new_customer_and_project_when_requested(): void {
+        TogglPendingEntry::query()->create([
+            'organization_id' => $this->organization->id,
+            'source' => TogglPendingEntry::SOURCE_CSV,
+            'entry_key' => 'csv:new',
+            'client_name' => 'Neukunde AG',
+            'project_name' => 'Migration',
+            'description' => 'Setup',
+            'started_at' => CarbonImmutable::parse('2026-05-26 09:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-05-26 10:30:00'),
+            'billable' => true,
+            'status' => TogglPendingEntry::STATUS_OPEN,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.toggl.pending.assign'), [
+                'client_name' => 'Neukunde AG',
+                'project_name' => 'Migration',
+                'customer_mode' => 'new',
+                'new_customer_name' => 'Neukunde AG',
+                'project_mode' => 'new',
+                'new_project_name' => 'Migration',
+            ])
+            ->assertRedirect();
+
+        $customer = Customer::query()->where('name', 'Neukunde AG')->first();
+        $this->assertNotNull($customer);
+
+        $project = Project::query()->where('name', 'Migration')->where('customer_id', $customer->id)->first();
+        $this->assertNotNull($project);
+
+        $entry = TimeEntry::query()->where('project_id', $project->id)->first();
+        $this->assertNotNull($entry);
+        $this->assertSame(90, $entry->minutes);
+
+        // Referenzen gemerkt → künftiger Import matcht automatisch.
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_CLIENT,
+            'external_id' => 'Neukunde AG',
+            'referenceable_id' => $customer->id,
+        ]);
+        $this->assertDatabaseHas('toggl_pending_entries', [
+            'entry_key' => 'csv:new',
+            'status' => TogglPendingEntry::STATUS_IMPORTED,
+        ]);
+    }
+
+    public function test_assign_to_existing_customer_with_new_project(): void {
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Bestand GmbH',
+        ]);
+
+        TogglPendingEntry::query()->create([
+            'organization_id' => $this->organization->id,
+            'source' => TogglPendingEntry::SOURCE_CSV,
+            'entry_key' => 'csv:exist',
+            'client_name' => 'Bestand GmbH',
+            'project_name' => 'Support 2026',
+            'started_at' => CarbonImmutable::parse('2026-05-26 09:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-05-26 10:00:00'),
+            'billable' => false,
+            'status' => TogglPendingEntry::STATUS_OPEN,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.toggl.pending.assign'), [
+                'client_name' => 'Bestand GmbH',
+                'project_name' => 'Support 2026',
+                'customer_mode' => 'existing',
+                'customer_id' => $customer->sqid,
+                'project_mode' => 'new',
+                'new_project_name' => 'Support 2026',
+            ])
+            ->assertRedirect();
+
+        $project = Project::query()->where('name', 'Support 2026')->where('customer_id', $customer->id)->first();
+        $this->assertNotNull($project);
+        $this->assertSame(1, TimeEntry::query()->where('project_id', $project->id)->count());
+    }
+
+    public function test_update_and_delete_mapping(): void {
+        $beta = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Beta']);
+        $gamma = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Gamma']);
+
+        $ref = ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_CLIENT,
+            'referenceable_type' => $beta->getMorphClass(),
+            'referenceable_id' => $beta->id,
+            'external_id' => 'Beta Client',
+            'synced_at' => now(),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.toggl.mappings.update', $ref->id), ['target_id' => $gamma->sqid])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('external_references', [
+            'id' => $ref->id,
+            'referenceable_id' => $gamma->id,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.toggl.mappings.delete', $ref->id))
+            ->assertRedirect();
+
+        $this->assertDatabaseMissing('external_references', ['id' => $ref->id]);
+    }
+
+    public function test_non_admin_cannot_assign(): void {
+        $user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($user)
+            ->post(route('admin.toggl.pending.assign'), [
+                'customer_mode' => 'new',
+                'new_customer_name' => 'X',
+                'project_mode' => 'new',
+                'new_project_name' => 'Y',
+            ])
+            ->assertForbidden();
     }
 }

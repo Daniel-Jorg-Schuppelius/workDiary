@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Models\{Customer, ExternalReference, TimeEntry};
+use App\Models\{Customer, ExternalReference, Supplier, TimeEntry};
 use App\Plugins\Contracts\{ContactSyncer, Plugin, PluginCapability, TimeExporter};
 use App\Plugins\{PluginDefaults, PluginHealth};
 use Carbon\CarbonImmutable;
@@ -39,7 +39,8 @@ class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
 
     public function __construct(
         private readonly LexofficeService $service,
-    ) {}
+    ) {
+    }
 
     public function id(): string {
         return self::ID;
@@ -130,6 +131,7 @@ class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
                 'manual_review' => __('Manuelle Prüfung'),
             ], 'default' => 'manual_review'],
             ['key' => 'create_missing_local', 'label' => __('Fehlende Kunden aus Lexoffice neu anlegen'), 'type' => 'boolean', 'default' => false],
+            ['key' => 'number_authority', 'label' => __('Nummernkreise von Lexoffice führen lassen (Kunde, Lieferant, Rechnung, Gutschrift)'), 'type' => 'boolean', 'default' => false],
         ];
     }
 
@@ -145,6 +147,31 @@ class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
             ],
             [
                 'organization_id' => $customer->organization_id,
+                'external_id' => $externalId,
+                'synced_at' => now(),
+            ],
+        );
+
+        return $externalId;
+    }
+
+    /**
+     * Pusht einen Lieferanten als Lexoffice-Kontakt (role=vendor) und legt
+     * die ExternalReference an. Gegenstück zu {@see pushContact()} für
+     * {@see Supplier}, ohne den ContactSyncer-Vertrag zu erweitern.
+     */
+    public function pushSupplierContact(Supplier $supplier): string {
+        $externalId = $this->service->createContact($supplier);
+
+        ExternalReference::updateOrCreate(
+            [
+                'plugin_id' => self::ID,
+                'external_type' => self::EXT_TYPE_CONTACT,
+                'referenceable_type' => $supplier->getMorphClass(),
+                'referenceable_id' => $supplier->getKey(),
+            ],
+            [
+                'organization_id' => $supplier->organization_id,
                 'external_id' => $externalId,
                 'synced_at' => now(),
             ],

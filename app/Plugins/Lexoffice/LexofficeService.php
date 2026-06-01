@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Models\{Customer, TimeEntry};
+use App\Models\{Customer, Supplier, TimeEntry};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Collection;
@@ -37,7 +37,8 @@ class LexofficeService {
         /** @var array<string, mixed> */
         private readonly array $defaults = [],
         private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
-    ) {}
+    ) {
+    }
 
     public function isConfigured(): bool {
         return $this->apiKey !== null && $this->apiKey !== '';
@@ -76,10 +77,12 @@ class LexofficeService {
      * vat_id oder email), wird statt eines neuen Kontakts dieser
      * aktualisiert. So vermeiden wir Duplikate beim ersten Push.
      */
-    public function createContact(Customer $customer): string {
+    public function createContact(Customer|Supplier $customer): string {
         $existingId = $this->findRemoteId($customer);
 
-        $payload = $this->mapper->customerToContactPayload($customer, $this->defaults);
+        $payload = $customer instanceof Supplier
+            ? $this->mapper->supplierToContactPayload($customer, $this->defaults)
+            : $this->mapper->customerToContactPayload($customer, $this->defaults);
 
         $endpoint = new ContactsEndpoint($this->client());
 
@@ -114,7 +117,7 @@ class LexofficeService {
      * vat_id (Tax Number) oder E-Mail. Greift auf den REST-Filter
      * `?email=` / `?customer=true&number=` der Lexoffice-API zurück.
      */
-    private function findRemoteId(Customer $customer): ?string {
+    private function findRemoteId(Customer|Supplier $customer): ?string {
         $email = (string) $customer->email;
         if ($email !== '') {
             $id = $this->searchByQuery(['email' => $email]);

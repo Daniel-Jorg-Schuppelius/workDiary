@@ -34,6 +34,13 @@ class TogglImportService {
 
     public const EXT_TYPE_ENTRY = 'entry';
 
+    /**
+     * Ähnlichkeitsschwelle (0..1), ab der ein Toggl-Name in der Inbox als
+     * Vorschlag für einen bestehenden Kunden/Projekt vorausgewählt wird.
+     * Bewusst hoch: Vorschläge dürfen nie automatisch buchen, nur vorbelegen.
+     */
+    public const SUGGEST_THRESHOLD = 0.82;
+
     public function __construct(private readonly TogglCsvParser $csvParser = new TogglCsvParser) {
     }
 
@@ -165,6 +172,91 @@ class TogglImportService {
         }
 
         return $query->first();
+    }
+
+    /**
+     * Fuzzy-Vorschlag: bester bestehender Kunde zum Toggl-Client-Namen (über
+     * Name/Firma, normalisiert) — nur für die Inbox-Vorauswahl. Liefert null,
+     * wenn kein Kandidat die {@see SUGGEST_THRESHOLD} erreicht.
+     */
+    public function suggestCustomer(Organization $organization, ?string $clientName): ?Customer {
+        $needle = $this->normalize($clientName);
+        if ($needle === '') {
+            return null;
+        }
+
+        $best = null;
+        $bestScore = 0.0;
+
+        $customers = Customer::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereNull('archived_at')
+            ->get();
+
+        foreach ($customers as $customer) {
+            $score = max(
+                $this->similarity($needle, $this->normalize($customer->name)),
+                $this->similarity($needle, $this->normalize($customer->company)),
+            );
+            if ($score > $bestScore) {
+                $bestScore = $score;
+                $best = $customer;
+            }
+        }
+
+        return $bestScore >= self::SUGGEST_THRESHOLD ? $best : null;
+    }
+
+    /**
+     * Fuzzy-Vorschlag: bestes bestehendes Projekt zum Toggl-Projektnamen,
+     * optional auf den (vorgeschlagenen) Kunden eingeschränkt. Nur Vorauswahl.
+     */
+    public function suggestProject(Organization $organization, ?Customer $customer, ?string $projectName): ?Project {
+        $needle = $this->normalize($projectName);
+        if ($needle === '') {
+            return null;
+        }
+
+        $query = Project::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereNull('archived_at');
+
+        if ($customer !== null) {
+            $query->where('customer_id', $customer->id);
+        }
+
+        $best = null;
+        $bestScore = 0.0;
+
+        foreach ($query->get() as $project) {
+            $score = $this->similarity($needle, $this->normalize($project->name));
+            if ($score > $bestScore) {
+                $bestScore = $score;
+                $best = $project;
+            }
+        }
+
+        return $bestScore >= self::SUGGEST_THRESHOLD ? $best : null;
+    }
+
+    /**
+     * Alle gemerkten Client-/Projekt-Zuordnungen der Organisation (für die
+     * Mapping-Verwaltung), inkl. aufgelöstem Ziel.
+     *
+     * @return \Illuminate\Support\Collection<int, ExternalReference>
+     */
+    public function mappings(Organization $organization): \Illuminate\Support\Collection {
+        return ExternalReference::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('plugin_id', TogglPlugin::ID)
+            ->whereIn('external_type', [self::EXT_TYPE_CLIENT, self::EXT_TYPE_PROJECT])
+            ->with('referenceable')
+            ->orderBy('external_type')
+            ->orderBy('external_id')
+            ->get();
     }
 
     private function alreadyImported(Organization $organization, string $entryKey): bool {
@@ -412,5 +504,26 @@ class TogglImportService {
     /** Stabiler Schlüssel für die Projekt-Reference (Client + Projektname, case-insensitiv). */
     private function projectKey(?string $clientName, ?string $projectName): string {
         return mb_strtolower(trim((string) $clientName) . '|' . trim((string) $projectName));
+    }
+
+    /** Normalisiert einen Namen für den Vergleich (lowercase, getrimmt, kollabierte Leerzeichen). */
+    private function normalize(?string $value): string {
+        $value = mb_strtolower(trim((string) $value));
+
+        return (string) preg_replace('/\s+/', ' ', $value);
+    }
+
+    /** Ähnlichkeit zweier (bereits normalisierter) Strings als 0..1-Score. */
+    private function similarity(string $a, string $b): float {
+        if ($a === '' || $b === '') {
+            return 0.0;
+        }
+        if ($a === $b) {
+            return 1.0;
+        }
+
+        similar_text($a, $b, $percent);
+
+        return $percent / 100;
     }
 }

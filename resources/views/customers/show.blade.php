@@ -188,6 +188,34 @@
         @endif
     </x-card>
 
+    {{-- Fremdkunden (Endkunden dieser Firma) --}}
+    @php($foreignCustomers = $customer->foreignCustomers()->whereNull('archived_at')->withCount('projects')->get())
+    <x-card>
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 class="flex items-center gap-2 font-semibold">
+                <x-icon name="groups" class="text-base-content/60" /> {{ __('Fremdkunden') }}
+                <span class="font-normal text-base-content/50">({{ $foreignCustomers->count() }})</span>
+            </h2>
+            @can('create', App\Models\ForeignCustomer::class)
+                <x-icon-btn icon="add" size="xs" data-entry-modal-trigger
+                            :href="route('foreign-customers.create', ['customer' => $customer->sqid])"
+                            show-label>{{ __('Fremdkunde anlegen') }}</x-icon-btn>
+            @endcan
+        </div>
+        @if ($foreignCustomers->isEmpty())
+            <p class="text-sm text-base-content/60">{{ __('Keine Fremdkunden. Endkunden dieser Firma hier erfassen, um Zeiten/Abrechnung pro Endkunde zu trennen.') }}</p>
+        @else
+            <ul class="divide-y divide-base-200">
+                @foreach ($foreignCustomers as $fc)
+                    <li class="flex items-center justify-between py-1.5 text-sm">
+                        <a class="link link-hover" href="{{ route('foreign-customers.show', $fc) }}">{{ $fc->name }}</a>
+                        <span class="text-base-content/50 tabular-nums">{{ trans_choice(':count Projekt|:count Projekte', $fc->projects_count, ['count' => $fc->projects_count]) }}</span>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </x-card>
+
     {{-- Auswertung pro Kunde --}}
     @isset($statsTotal)
         <x-card x-data="{ tab: 'month' }">
@@ -316,44 +344,51 @@
                 @endif
             </div>
 
-            <div class="grid gap-4 md:grid-cols-2">
-                <form method="POST" action="{{ route('customers.lexoffice.contact', $customer) }}" class="space-y-2">
+            <div class="grid gap-3 md:grid-cols-2">
+                <form method="POST" action="{{ route('customers.lexoffice.contact', $customer) }}"
+                      class="flex h-full flex-col gap-3 rounded-box border border-base-300 bg-base-200/40 p-3">
                     @csrf
-                    <div class="text-sm text-base-content/70">
-                        {{ __('Kunde als Kontakt in Lexoffice anlegen oder aktualisieren.') }}
+                    <div class="flex items-center gap-2 text-sm font-semibold">
+                        <x-icon name="contacts" class="text-base-content/60" /> {{ __('Kontakt') }}
                     </div>
-                    <button class="btn btn-sm btn-primary">
-                        {{ $lexofficeContactRef ? __('Kontakt aktualisieren') : __('Kontakt anlegen') }}
-                    </button>
+                    <p class="text-sm text-base-content/70">
+                        {{ __('Kunde als Kontakt in Lexoffice anlegen oder aktualisieren.') }}
+                    </p>
+                    <div class="mt-auto pt-1">
+                        <x-icon-btn icon="person_add" tone="primary" size="sm" type="submit" show-label>
+                            {{ $lexofficeContactRef ? __('Kontakt aktualisieren') : __('Kontakt anlegen') }}
+                        </x-icon-btn>
+                    </div>
                 </form>
 
-                <form method="POST" action="{{ route('customers.lexoffice.time-export', $customer) }}" class="space-y-2">
+                <form method="POST" action="{{ route('customers.lexoffice.time-export', $customer) }}"
+                      class="flex h-full flex-col gap-3 rounded-box border border-base-300 bg-base-200/40 p-3">
                     @csrf
-                    <div class="text-sm text-base-content/70">
+                    <div class="flex items-center gap-2 text-sm font-semibold">
+                        <x-icon name="receipt_long" class="text-base-content/60" /> {{ __('Zeiten als Beleg') }}
+                    </div>
+                    <p class="text-sm text-base-content/70">
                         {{ __('Abrechenbare, noch nicht übertragene Zeiten als Beleg übertragen.') }}
+                    </p>
+                    <x-date-range
+                        :from="now()->startOfMonth()->toDateString()"
+                        :to="now()->endOfMonth()->toDateString()"
+                        :required="true"
+                    />
+                    <div class="mt-auto pt-1">
+                        <x-icon-btn icon="sync" tone="primary" size="sm" type="submit" show-label>{{ __('Zeiten übertragen') }}</x-icon-btn>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <label class="form-control">
-                            <span class="label-text text-xs">{{ __('Von') }}</span>
-                            <input type="date" name="from" value="{{ now()->startOfMonth()->toDateString() }}" required class="input input-sm input-bordered">
-                        </label>
-                        <label class="form-control">
-                            <span class="label-text text-xs">{{ __('Bis') }}</span>
-                            <input type="date" name="to" value="{{ now()->endOfMonth()->toDateString() }}" required class="input input-sm input-bordered">
-                        </label>
-                    </div>
-                    <x-icon-btn icon="sync" tone="primary" size="sm" type="submit" show-label>{{ __('Zeiten übertragen') }}</x-icon-btn>
                 </form>
             </div>
 
             @if ($lexofficeVouchers->isNotEmpty())
-                <div>
-                    <h3 class="mb-1 text-sm font-semibold">{{ __('Letzte Belege') }}</h3>
+                <div class="border-t border-base-300 pt-3">
+                    <h3 class="mb-2 text-sm font-semibold">{{ __('Letzte Belege') }}</h3>
                     <ul class="divide-y divide-base-300 text-sm">
                         @foreach ($lexofficeVouchers as $ref)
-                            <li class="flex items-center justify-between py-1">
-                                <code class="text-xs">{{ $ref->external_id }}</code>
-                                <span class="text-base-content/60">{{ optional($ref->synced_at)->format('d.m.Y H:i') }}</span>
+                            <li class="flex items-center justify-between gap-2 py-1.5">
+                                <code class="text-xs text-base-content/80">{{ $ref->external_id }}</code>
+                                <span class="text-xs text-base-content/60">{{ optional($ref->synced_at)->format('d.m.Y H:i') }}</span>
                             </li>
                         @endforeach
                     </ul>
@@ -361,6 +396,65 @@
             @endif
         </x-card>
         @endcan
+    @endif
+
+    @if ($lexofficePlugin && $lexofficePlugin->isEnabled() && $lexofficeVoucherCache->isNotEmpty())
+        @php
+            $lexofficeValueLabel = static function (?string $value, string $empty = '–'): string {
+                if ($value === null || $value === '') {
+                    return $empty;
+                }
+
+                $key = 'values.' . $value;
+                $label = __($key);
+
+                return $label === $key ? $value : $label;
+            };
+        @endphp
+        <x-card class="space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+                    <x-icon name="receipt_long" class="text-base-content/60" /> {{ __('Lexoffice-Belege') }}
+                </h2>
+                <span class="text-sm text-base-content/60">
+                    {{ __('Summe') }}:
+                    <span class="font-semibold">{{ number_format((float) $lexofficeVoucherCache->sum('total_amount'), 2, ',', '.') }}&nbsp;&euro;</span>
+                </span>
+            </div>
+            <x-table>
+                <x-slot:head>
+                    <th>{{ __('Nummer') }}</th>
+                    <th>{{ __('Datum') }}</th>
+                    <th>{{ __('Typ') }}</th>
+                    <th>{{ __('Status') }}</th>
+                    <th class="text-right">{{ __('Betrag') }}</th>
+                </x-slot:head>
+                @foreach ($lexofficeVoucherCache as $voucher)
+                    <tr>
+                        <td class="font-mono text-xs">{{ $voucher->voucher_number ?? '–' }}</td>
+                        <td>{{ optional($voucher->voucher_date)->format('d.m.Y') ?? '–' }}</td>
+                        <td>{{ $lexofficeValueLabel($voucher->voucher_type) }}</td>
+                        <td>
+                            <x-status-badge :tone="match ($voucher->voucher_status) {
+                                'paid' => 'success',
+                                'paidoff' => 'success',
+                                'accepted' => 'success',
+                                'transferred' => 'success',
+                                'open' => 'warning',
+                                'sent' => 'info',
+                                'overdue' => 'error',
+                                'rejected' => 'error',
+                                'checked' => 'success',
+                                'unchecked' => 'warning',
+                                'voided' => 'ghost',
+                                default => 'neutral',
+                            }">{{ $lexofficeValueLabel($voucher->voucher_status) }}</x-status-badge>
+                        </td>
+                        <td class="text-right tabular-nums">{{ number_format((float) $voucher->total_amount, 2, ',', '.') }}&nbsp;{{ $voucher->currency }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
+        </x-card>
     @endif
 </x-page-shell>
 @endsection

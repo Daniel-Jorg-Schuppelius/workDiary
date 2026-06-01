@@ -280,4 +280,143 @@ class RemoteSupportSyncTest extends TestCase {
             'status' => RemotePendingSession::STATUS_DISMISSED,
         ]);
     }
+
+    public function test_shared_remote_asset_records_pending_instead_of_booking(): void {
+        $config = $this->enableTeamViewer();
+
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'customer_id' => $customer->id,
+            'shared_remote' => true,
+        ]);
+        $this->service()->setRemoteId($asset, TeamViewerClient::ID, '555');
+
+        $this->fakeConnections([[
+            'id' => 'tv-shared-1',
+            'deviceid' => '555',
+            'start_date' => CarbonImmutable::parse('2026-05-26 09:00:00')->toIso8601String(),
+            'end_date' => CarbonImmutable::parse('2026-05-26 09:30:00')->toIso8601String(),
+        ]]);
+
+        $result = $this->service()->import(
+            $this->organization,
+            $config,
+            CarbonImmutable::parse('2026-05-25'),
+            CarbonImmutable::parse('2026-05-27'),
+        );
+
+        $this->assertSame(0, $result['created']);
+        $this->assertSame(1, $result['pending']);
+        $this->assertSame(0, TimeEntry::query()->count());
+
+        $this->assertDatabaseHas('remote_pending_sessions', [
+            'organization_id' => $this->organization->id,
+            'asset_id' => $asset->id,
+            'session_id' => 'tv-shared-1',
+            'status' => RemotePendingSession::STATUS_OPEN,
+        ]);
+    }
+
+    public function test_assign_shared_session_books_to_chosen_customer_default_project(): void {
+        $this->enableTeamViewer();
+
+        $sharedCustomer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'customer_id' => $sharedCustomer->id,
+            'shared_remote' => true,
+        ]);
+
+        $target = Customer::factory()->create(['organization_id' => $this->organization->id]);
+
+        $row = RemotePendingSession::query()->create([
+            'organization_id' => $this->organization->id,
+            'asset_id' => $asset->id,
+            'provider' => 'teamviewer',
+            'remote_id' => '555',
+            'session_id' => 'tv-shared-1',
+            'started_at' => CarbonImmutable::parse('2026-05-26 09:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-05-26 09:40:00'),
+            'status' => RemotePendingSession::STATUS_OPEN,
+        ]);
+
+        $result = $this->service()->assignSharedSessions($this->organization, collect([$row]), $target);
+
+        $this->assertSame(1, $result['created']);
+
+        $project = $target->defaultProject();
+        $this->assertNotNull($project);
+        $entry = TimeEntry::query()->where('project_id', $project->id)->first();
+        $this->assertNotNull($entry);
+        $this->assertSame(40, $entry->minutes);
+
+        $this->assertDatabaseHas('remote_pending_sessions', [
+            'id' => $row->id,
+            'status' => RemotePendingSession::STATUS_IMPORTED,
+            'time_entry_id' => $entry->id,
+        ]);
+    }
+
+    public function test_assign_shared_session_uses_explicit_project_when_given(): void {
+        $this->enableTeamViewer();
+
+        $sharedCustomer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'customer_id' => $sharedCustomer->id,
+            'shared_remote' => true,
+        ]);
+
+        $target = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        /** @var \App\Models\Project $project */
+        $project = $target->projects()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Sonderprojekt',
+            'status' => \App\Enums\Project\ProjectStatus::Active->value,
+        ]);
+
+        $row = RemotePendingSession::query()->create([
+            'organization_id' => $this->organization->id,
+            'asset_id' => $asset->id,
+            'provider' => 'teamviewer',
+            'remote_id' => '555',
+            'session_id' => 'tv-shared-2',
+            'started_at' => CarbonImmutable::parse('2026-05-26 11:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-05-26 11:15:00'),
+            'status' => RemotePendingSession::STATUS_OPEN,
+        ]);
+
+        $result = $this->service()->assignSharedSessions($this->organization, collect([$row]), $target, $project);
+
+        $this->assertSame(1, $result['created']);
+        $entry = TimeEntry::query()->where('project_id', $project->id)->first();
+        $this->assertNotNull($entry);
+        $this->assertSame(15, $entry->minutes);
+    }
+
+    public function test_open_shared_sessions_excluded_from_unknown_groups(): void {
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'shared_remote' => true,
+        ]);
+
+        RemotePendingSession::query()->create([
+            'organization_id' => $this->organization->id,
+            'asset_id' => $asset->id,
+            'provider' => 'teamviewer',
+            'remote_id' => '555',
+            'session_id' => 'tv-shared-1',
+            'started_at' => CarbonImmutable::parse('2026-05-26 09:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-05-26 09:30:00'),
+            'status' => RemotePendingSession::STATUS_OPEN,
+        ]);
+
+        $this->assertTrue($this->service()->openPendingGroups($this->organization)->isEmpty());
+        $this->assertSame(1, $this->service()->openSharedSessions($this->organization)->count());
+    }
 }

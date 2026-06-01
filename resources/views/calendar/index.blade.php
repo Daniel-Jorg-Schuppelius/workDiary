@@ -16,16 +16,12 @@
 @endpush
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Bereitschaft, Notdienst und Auftragsbucheinträge im Überblick.')">
-            <x-slot:actions>
-                <x-icon-btn icon="view_week" tone="secondary" size="sm"
-                            :href="route('week.index')"
-                            show-label>{{ __('Wochenansicht') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page :subtitle="__('Bereitschaft, Notdienst und Auftragsbucheinträge im Überblick.')">
+    <x-slot:actions>
+        <x-icon-btn icon="view_week" tone="secondary" size="sm"
+                    :href="route('week.index')"
+                    show-label>{{ __('Wochenansicht') }}</x-icon-btn>
+    </x-slot:actions>
 
     <x-card>
         <div
@@ -35,5 +31,5 @@
             data-view="timeGridWeek"
         ></div>
     </x-card>
-</x-page-shell>
+</x-index-page>
 @endsection

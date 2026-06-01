@@ -2,6 +2,8 @@
 
 @section('title', __('Zeit-Exporte'))
 @section('nav-title', __('Zeit-Exporte'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @php
     use App\Enums\TimeExport\TimeExportStatus;
@@ -15,7 +17,7 @@
 @endphp
 
 @section('content')
-<x-index-page :subtitle="__('Genehmigte Monate als Lohnabrechnungs-Export bereitstellen.')">
+<x-index-page overflow="clip" :subtitle="__('Genehmigte Monate als Lohnabrechnungs-Export bereitstellen.')">
     <x-slot:actions>
         @can('create', App\Models\TimeExport::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
@@ -55,7 +57,7 @@
             :title="__('Noch keine Exporte vorhanden')"
             :message="__('Erstellen Sie aus genehmigten Monaten einen Export für die Lohnabrechnung.')" />
     @else
-        <x-table>
+        <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
                     <th>{{ __('Periode') }}</th>
@@ -101,7 +103,7 @@
             @endforeach
         </x-table>
 
-        <div class="mt-4">{{ $exports->links() }}</div>
+        <x-pagination :paginator="$exports" />
     @endif
 </x-index-page>
 @endsection

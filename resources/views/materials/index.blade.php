@@ -1,11 +1,10 @@
 @extends('layouts.app')
 @section('title', __('Materialien'))
 @section('nav-title', __('Materialien'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Materialien und Verbrauchsmittel verwalten.')" />
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="__('Materialien und Verbrauchsmittel verwalten.')">
     <x-filter-bar :action="route('materials.index')" :reset="$q !== '' ? route('materials.index') : null">
         <x-filter-field :label="__('Suche')" for="mat-q" class="flex-1 min-w-60">
             <input id="mat-q" type="search" name="q" value="{{ $q }}" placeholder="{{ __('Suche…') }}"
@@ -21,13 +20,13 @@
         </x-slot:extra>
     </x-filter-bar>
 
-    <x-card padding="p-0">
+    <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
         <x-table table-sort="server"
                  :route="route('materials.index')"
                  :current-sort="$sort ?? null"
                  :current-dir="$dir ?? 'asc'"
                  :sort-params="['q' => $q]"
-                 bare>
+                 bare scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
                     <x-table.th sort="sku">SKU</x-table.th>
@@ -71,9 +70,7 @@
                 <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>' :colspan="7" :title="__('Noch keine Materialien')" compact />
             @endforelse
         </x-table>
-        @if ($materials->hasPages())
-            <div class="border-t border-base-300 px-4 py-3">{{ $materials->links() }}</div>
-        @endif
+        <x-pagination :paginator="$materials" :framed="false" />
     </x-card>
-</x-page-shell>
+</x-index-page>
 @endsection

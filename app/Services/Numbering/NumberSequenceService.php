@@ -13,7 +13,7 @@ namespace App\Services\Numbering;
 use App\Enums\Numbering\NumberScope;
 use App\Models\{NumberFormat, NumberSequence, Organization};
 use Carbon\CarbonInterface;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -27,8 +27,20 @@ use Illuminate\Support\Facades\DB;
  * `(organization_id, <number-spalte>)` der Ziel-Tabelle geschützt.
  */
 class NumberSequenceService {
+    public function __construct(
+        private readonly NumberAuthority $authority = new NumberAuthority(),
+    ) {
+    }
+
     public function next(Organization|int $organization, NumberScope $scope, ?CarbonInterface $when = null): string {
         $orgId = $organization instanceof Organization ? (int) $organization->id : (int) $organization;
+
+        // Bei externer Hoheit (z. B. Lexoffice) vergibt workDiary nur eine
+        // Entwurfsnummer; die offizielle Nummer kommt später per Sync/Push.
+        if ($this->authority->isExternal($orgId, $scope)) {
+            return $this->draftNumber();
+        }
+
         $when ??= Carbon::now();
         $format = $this->resolveFormat($orgId, $scope);
         $period = $format->reset_per_year ? $when->format('Y') : null;
@@ -44,6 +56,11 @@ class NumberSequenceService {
 
     public function peekNext(Organization|int $organization, NumberScope $scope, ?CarbonInterface $when = null): string {
         $orgId = $organization instanceof Organization ? (int) $organization->id : (int) $organization;
+
+        if ($this->authority->isExternal($orgId, $scope)) {
+            return $this->draftNumber();
+        }
+
         $when ??= Carbon::now();
         $format = $this->resolveFormat($orgId, $scope);
         $period = $format->reset_per_year ? $when->format('Y') : null;
@@ -180,5 +197,13 @@ class NumberSequenceService {
             'reset_per_year' => true,
             'starts_at' => 0,
         ];
+    }
+
+    /**
+     * Erzeugt eine eindeutige Entwurfsnummer für Scopes unter externer Hoheit.
+     * Wird später durch die offizielle Nummer des Buchhaltungssystems ersetzt.
+     */
+    private function draftNumber(): string {
+        return 'ENTWURF-' . strtoupper(Str::random(8));
     }
 }

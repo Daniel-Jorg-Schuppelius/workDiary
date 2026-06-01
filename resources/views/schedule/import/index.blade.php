@@ -3,14 +3,10 @@
 @section('nav-title', __('Schichtplan Import'))
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Externe Schichtplan-Dateien importieren und Mitarbeiter zuordnen.')">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm" :href="route('schedule.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page :subtitle="__('Externe Schichtplan-Dateien importieren und Mitarbeiter zuordnen.')">
+    <x-slot:actions>
+        <x-icon-btn icon="arrow_back" size="sm" :href="route('schedule.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
+    </x-slot:actions>
 
     @if (session('error'))
         <div class="alert alert-error">{{ session('error') }}</div>
@@ -58,5 +54,5 @@
         </ul>
     </div>
 
-</x-page-shell>
+</x-index-page>
 @endsection

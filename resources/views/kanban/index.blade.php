@@ -12,18 +12,14 @@
     ];
     $activeTab = $teamScope ? 'team' : 'mine';
 @endphp
-<x-page-shell>
+<x-index-page :subtitle="__('Offene Auftragsbuch-Einträge nach Status visualisieren.')">
     {{-- Toolbar --}}
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Offene Auftragsbuch-Einträge nach Status visualisieren.')">
-            <x-slot:actions>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('diary.create')"
-                            show-label>{{ __('Eintrag') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+    <x-slot:actions>
+        <x-icon-btn icon="add" tone="primary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('diary.create')"
+                    show-label>{{ __('Eintrag') }}</x-icon-btn>
+    </x-slot:actions>
 
     {{-- Tabs --}}
     @include('duties._tab_strip', ['tabs' => $tabs, 'tab' => $activeTab])
@@ -58,7 +54,7 @@
             </section>
         @endforeach
     </div>
-</x-page-shell>
+</x-index-page>
 
 <script>
 (function () {

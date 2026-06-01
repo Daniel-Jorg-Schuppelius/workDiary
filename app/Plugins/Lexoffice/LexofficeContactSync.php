@@ -10,23 +10,33 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Models\{Customer, ExternalReference, Organization, PendingExternalConflict};
+use App\Models\{ContactAddress, Customer, ExternalReference, Organization, PendingExternalConflict, Supplier};
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 /**
- * Pull-Sync für Lexoffice-Kontakte. Verbindet existierende workDiary-Kunden
+ * Pull-Sync für Lexoffice-Kontakte. Verbindet existierende workDiary-Datensätze
  * mit ihren Lexoffice-Pendants über mehrere Match-Strategien und entscheidet
  * anhand der konfigurierten {@see LexofficeMatchPolicy}, wie mit
  * Daten-Konflikten umzugehen ist.
  *
+ * Rollen-bewusst: Lexoffice-Kontakte tragen `roles.customer` und/oder
+ * `roles.vendor`. Kunden-Rollen werden auf {@see Customer}, Lieferanten-Rollen
+ * auf {@see Supplier} gemappt. Ein Kontakt mit beiden Rollen erzeugt zwei
+ * ExternalReference-Zeilen mit identischer external_id, aber unterschiedlichem
+ * referenceable_type.
+ *
  * Verwendet bewusst HTTP direkt statt SDK, weil wir mit dem Roh-JSON arbeiten
- * (Konflikt-Vergleich Feld für Feld) — die SDK-Klassen liefern hier keinen
- * Mehrwert, ihre fromJson()-Logik ist eher hinderlich.
+ * (Konflikt-Vergleich Feld für Feld).
  */
 class LexofficeContactSync {
+    /** @var array<string, int> */
+    private array $counters = [];
+
     /**
-     * @return array{matched: int, linked: int, created: int, conflicts: int, updated: int}
+     * @param  'both'|'customers'|'suppliers'  $only
+     * @return array{matched: int, linked: int, created: int, conflicts: int, updated: int, ambiguous: int, supplier_matched: int, supplier_linked: int, supplier_created: int, supplier_conflicts: int, supplier_updated: int}
      */
     public function sync(
         Organization $organization,
@@ -34,16 +44,25 @@ class LexofficeContactSync {
         ?string $apiKey,
         string $baseUrl = 'https://api.lexoffice.io/v1',
         bool $createMissingLocal = false,
+        string $only = 'both',
     ): array {
         if ($apiKey === null || $apiKey === '') {
             throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
         }
 
-        $matched = 0;
-        $linked = 0;
-        $created = 0;
-        $conflicts = 0;
-        $updated = 0;
+        $this->counters = [
+            'matched' => 0,
+            'linked' => 0,
+            'created' => 0,
+            'conflicts' => 0,
+            'updated' => 0,
+            'ambiguous' => 0,
+            'supplier_matched' => 0,
+            'supplier_linked' => 0,
+            'supplier_created' => 0,
+            'supplier_conflicts' => 0,
+            'supplier_updated' => 0,
+        ];
 
         $page = 0;
         $pageSize = 100;
@@ -68,70 +87,8 @@ class LexofficeContactSync {
                 if (! is_array($remote) || empty($remote['id'])) {
                     continue;
                 }
-                $externalId = (string) $remote['id'];
-
-                $existingRef = ExternalReference::query()
-                    ->where('organization_id', $organization->id)
-                    ->where('plugin_id', LexofficePlugin::ID)
-                    ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
-                    ->where('external_id', $externalId)
-                    ->first();
-
-                if ($existingRef instanceof ExternalReference) {
-                    /** @var Customer|null $customer */
-                    $customer = Customer::query()->find($existingRef->referenceable_id);
-                    if ($customer === null) {
-                        continue;
-                    }
-                    $matched++;
-                    if ($this->applyRemote($customer, $remote, $policy, $externalId)) {
-                        $updated++;
-                    } elseif ($policy === LexofficeMatchPolicy::ManualReview && $this->hasConflict($customer, $remote)) {
-                        $this->recordConflict($customer, $remote, $externalId, $organization);
-                        $conflicts++;
-                    }
-
-                    continue;
-                }
-
-                $match = $this->findLocalMatch($organization, $remote);
-                if ($match instanceof Customer) {
-                    ExternalReference::create([
-                        'organization_id' => $organization->id,
-                        'plugin_id' => LexofficePlugin::ID,
-                        'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
-                        'referenceable_type' => $match->getMorphClass(),
-                        'referenceable_id' => $match->getKey(),
-                        'external_id' => $externalId,
-                        'payload' => $remote,
-                        'synced_at' => now(),
-                    ]);
-                    $linked++;
-                    if ($this->applyRemote($match, $remote, $policy, $externalId)) {
-                        $updated++;
-                    } elseif ($policy === LexofficeMatchPolicy::ManualReview && $this->hasConflict($match, $remote)) {
-                        $this->recordConflict($match, $remote, $externalId, $organization);
-                        $conflicts++;
-                    }
-
-                    continue;
-                }
-
-                if ($createMissingLocal) {
-                    $new = $this->createFromRemote($organization, $remote);
-                    if ($new instanceof Customer) {
-                        ExternalReference::create([
-                            'organization_id' => $organization->id,
-                            'plugin_id' => LexofficePlugin::ID,
-                            'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
-                            'referenceable_type' => $new->getMorphClass(),
-                            'referenceable_id' => $new->getKey(),
-                            'external_id' => $externalId,
-                            'payload' => $remote,
-                            'synced_at' => now(),
-                        ]);
-                        $created++;
-                    }
+                foreach ($this->kindsFor($remote, $only) as $kind) {
+                    $this->processKind($kind, $organization, $remote, $policy, $createMissingLocal);
                 }
             }
 
@@ -139,63 +96,185 @@ class LexofficeContactSync {
             $page++;
         } while ($page < $totalPages);
 
-        return [
-            'matched' => $matched,
-            'linked' => $linked,
-            'created' => $created,
-            'conflicts' => $conflicts,
-            'updated' => $updated,
-        ];
+        /** @var array{matched: int, linked: int, created: int, conflicts: int, updated: int, ambiguous: int, supplier_matched: int, supplier_linked: int, supplier_created: int, supplier_conflicts: int, supplier_updated: int} $result */
+        $result = $this->counters;
+
+        return $result;
     }
 
     /**
-     * Versucht über vat_id → email → company+postcode → name einen lokalen Kunden zu finden.
+     * Ermittelt, für welche Rollen (customer/vendor) ein Remote-Kontakt
+     * verarbeitet werden soll — unter Berücksichtigung des `$only`-Filters.
      *
      * @param  array<string, mixed>  $remote
+     * @return array<int, 'customer'|'vendor'>
      */
-    private function findLocalMatch(Organization $organization, array $remote): ?Customer {
+    private function kindsFor(array $remote, string $only): array {
+        $roles = (array) data_get($remote, 'roles', []);
+        $hasCustomer = array_key_exists('customer', $roles);
+        $hasVendor = array_key_exists('vendor', $roles);
+
+        // Legacy-Fallback: Kontakte ohne Rollen werden als Kunde behandelt.
+        if (! $hasCustomer && ! $hasVendor) {
+            $hasCustomer = true;
+        }
+
+        $kinds = [];
+        if ($hasCustomer && $only !== 'suppliers') {
+            $kinds[] = 'customer';
+        }
+        if ($hasVendor && $only !== 'customers') {
+            $kinds[] = 'vendor';
+        }
+
+        return $kinds;
+    }
+
+    /**
+     * @param  'customer'|'vendor'  $kind
+     * @param  array<string, mixed>  $remote
+     */
+    private function processKind(string $kind, Organization $organization, array $remote, LexofficeMatchPolicy $policy, bool $createMissingLocal): void {
+        $modelClass = $kind === 'vendor' ? Supplier::class : Customer::class;
+        $morphClass = (new $modelClass)->getMorphClass();
+        $externalId = (string) $remote['id'];
+
+        $existingRef = ExternalReference::query()
+            ->where('organization_id', $organization->id)
+            ->where('plugin_id', LexofficePlugin::ID)
+            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
+            ->where('referenceable_type', $morphClass)
+            ->where('external_id', $externalId)
+            ->first();
+
+        if ($existingRef instanceof ExternalReference) {
+            /** @var Customer|Supplier|null $record */
+            $record = $modelClass::query()->find($existingRef->referenceable_id);
+            if ($record === null) {
+                return;
+            }
+            $this->bump($kind, 'matched');
+            if ($this->applyRemote($record, $remote, $policy, $externalId)) {
+                $this->bump($kind, 'updated');
+            } elseif ($policy === LexofficeMatchPolicy::ManualReview && $this->hasConflict($record, $remote)) {
+                $this->recordConflict($record, $remote, $externalId, $organization);
+                $this->bump($kind, 'conflicts');
+            }
+
+            return;
+        }
+
+        $match = $this->findLocalMatch($modelClass, $organization, $remote);
+        if ($match instanceof Model) {
+            // Phase-C-Schutz: Zwei verschiedene Remote-Kontakte können denselben
+            // lokalen Datensatz matchen. Existiert bereits eine Contact-Ref mit
+            // ANDERER external_id, würde ein zweiter Insert extref_unique verletzen.
+            if ($this->hasConflictingRef($match, $morphClass, $externalId)) {
+                $this->bump($kind, 'ambiguous');
+
+                return;
+            }
+
+            ExternalReference::create([
+                'organization_id' => $organization->id,
+                'plugin_id' => LexofficePlugin::ID,
+                'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+                'referenceable_type' => $morphClass,
+                'referenceable_id' => $match->getKey(),
+                'external_id' => $externalId,
+                'payload' => $remote,
+                'synced_at' => now(),
+            ]);
+            $this->bump($kind, 'linked');
+            if ($this->applyRemote($match, $remote, $policy, $externalId)) {
+                $this->bump($kind, 'updated');
+            } elseif ($policy === LexofficeMatchPolicy::ManualReview && $this->hasConflict($match, $remote)) {
+                $this->recordConflict($match, $remote, $externalId, $organization);
+                $this->bump($kind, 'conflicts');
+            }
+
+            return;
+        }
+
+        if ($createMissingLocal) {
+            $new = $this->createFromRemote($kind, $organization, $remote);
+            if ($new instanceof Model) {
+                ExternalReference::create([
+                    'organization_id' => $organization->id,
+                    'plugin_id' => LexofficePlugin::ID,
+                    'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+                    'referenceable_type' => $morphClass,
+                    'referenceable_id' => $new->getKey(),
+                    'external_id' => $externalId,
+                    'payload' => $remote,
+                    'synced_at' => now(),
+                ]);
+                $this->bump($kind, 'created');
+            }
+        }
+    }
+
+    /**
+     * Prüft, ob der lokale Datensatz bereits eine Lexoffice-Contact-Ref mit
+     * einer ABWEICHENDEN external_id besitzt (Mehrdeutigkeit).
+     */
+    private function hasConflictingRef(Model $record, string $morphClass, string $externalId): bool {
+        return ExternalReference::query()
+            ->where('plugin_id', LexofficePlugin::ID)
+            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
+            ->where('referenceable_type', $morphClass)
+            ->where('referenceable_id', $record->getKey())
+            ->where('external_id', '!=', $externalId)
+            ->exists();
+    }
+
+    /**
+     * Versucht über vat_id → email → company+postcode → name einen lokalen
+     * Datensatz (Customer oder Supplier) zu finden.
+     *
+     * @param  class-string<Customer|Supplier>  $modelClass
+     * @param  array<string, mixed>  $remote
+     */
+    private function findLocalMatch(string $modelClass, Organization $organization, array $remote): ?Model {
         $vatId = $this->extractVatId($remote);
         $email = $this->extractEmail($remote);
         $company = (string) data_get($remote, 'company.name', '');
         $personName = trim(((string) data_get($remote, 'person.firstName', '')) . ' ' . ((string) data_get($remote, 'person.lastName', '')));
         $zip = (string) data_get($remote, 'addresses.billing.0.zip', '');
 
-        $query = Customer::query()->where('organization_id', $organization->id);
+        $base = fn() => $modelClass::query()->where('organization_id', $organization->id);
 
         if ($vatId !== '') {
-            $byVat = (clone $query)->where('vat_id', $vatId)->first();
-            if ($byVat instanceof Customer) {
+            $byVat = $base()->where('vat_id', $vatId)->first();
+            if ($byVat instanceof Model) {
                 return $byVat;
             }
         }
 
         if ($email !== '') {
-            $byEmail = (clone $query)->where('email', $email)->first();
-            if ($byEmail instanceof Customer) {
+            $byEmail = $base()->where('email', $email)->first();
+            if ($byEmail instanceof Model) {
                 return $byEmail;
             }
         }
 
         if ($company !== '' && $zip !== '') {
-            $byCompany = (clone $query)
-                ->where('company', $company)
-                ->where('address_zip', $zip)
-                ->first();
-            if ($byCompany instanceof Customer) {
+            $byCompany = $base()->where('company', $company)->where('address_zip', $zip)->first();
+            if ($byCompany instanceof Model) {
                 return $byCompany;
             }
         }
 
         if ($company !== '') {
-            $byCompany = (clone $query)->where('company', $company)->first();
-            if ($byCompany instanceof Customer) {
+            $byCompany = $base()->where('company', $company)->first();
+            if ($byCompany instanceof Model) {
                 return $byCompany;
             }
         }
 
         if ($personName !== '') {
-            $byName = (clone $query)->where('name', $personName)->first();
-            if ($byName instanceof Customer) {
+            $byName = $base()->where('name', $personName)->first();
+            if ($byName instanceof Model) {
                 return $byName;
             }
         }
@@ -204,9 +283,10 @@ class LexofficeContactSync {
     }
 
     /**
+     * @param  'customer'|'vendor'  $kind
      * @param  array<string, mixed>  $remote
      */
-    private function createFromRemote(Organization $organization, array $remote): ?Customer {
+    private function createFromRemote(string $kind, Organization $organization, array $remote): ?Model {
         $isCompany = ! empty(data_get($remote, 'company.name'));
         $name = $isCompany
             ? (string) data_get($remote, 'company.name')
@@ -216,81 +296,217 @@ class LexofficeContactSync {
             return null;
         }
 
-        return Customer::create([
+        $attributes = [
             'organization_id' => $organization->id,
             'name' => $name,
             'company' => $isCompany ? $name : null,
             'vat_id' => $this->extractVatId($remote) ?: null,
+            'tax_number' => $this->extractTaxNumber($remote) ?: null,
             'email' => $this->extractEmail($remote) ?: null,
             'phone' => (string) data_get($remote, 'phoneNumbers.business.0', '') ?: null,
+            'mobile' => (string) data_get($remote, 'phoneNumbers.mobile.0', '') ?: null,
+            'fax' => (string) data_get($remote, 'phoneNumbers.fax.0', '') ?: null,
+            'comment' => (string) data_get($remote, 'note', '') ?: null,
             'address_street' => (string) data_get($remote, 'addresses.billing.0.street', '') ?: null,
             'address_zip' => (string) data_get($remote, 'addresses.billing.0.zip', '') ?: null,
             'address_city' => (string) data_get($remote, 'addresses.billing.0.city', '') ?: null,
             'country' => (string) data_get($remote, 'addresses.billing.0.countryCode', 'DE'),
             'currency' => 'EUR',
-            'billable' => true,
-        ]);
+        ];
+
+        $contactNumber = $this->extractContactNumber($remote);
+        if ($kind === 'vendor') {
+            if ($contactNumber !== '') {
+                $attributes['vendor_number'] = $contactNumber;
+            }
+            $supplier = Supplier::create($attributes);
+            $this->syncAddresses($supplier, $remote);
+            $this->syncContactPersons($supplier, $remote);
+
+            return $supplier;
+        }
+
+        if ($contactNumber !== '') {
+            $attributes['lexoffice_contact_number'] = $contactNumber;
+        }
+        $attributes['billable'] = true;
+
+        $customer = Customer::create($attributes);
+        $this->syncAddresses($customer, $remote);
+        $this->syncContactPersons($customer, $remote);
+
+        return $customer;
     }
 
     /**
-     * Wendet Remote-Felder gemäß Policy auf den lokalen Kunden an.
+     * Wendet Remote-Felder gemäß Policy auf den lokalen Datensatz an.
      *
      * @param  array<string, mixed>  $remote
      */
-    private function applyRemote(Customer $customer, array $remote, LexofficeMatchPolicy $policy, string $externalId): bool {
+    private function applyRemote(Model $record, array $remote, LexofficeMatchPolicy $policy, string $externalId): bool {
+        // Die offizielle Lexoffice-Kontaktnummer ist nicht nutzergepflegt und
+        // wird daher unabhängig von der Policy immer in das passende Feld
+        // übernommen (Customer: lexoffice_contact_number, Supplier: vendor_number).
+        $changed = $this->applyContactNumber($record, $remote);
+
         if ($policy === LexofficeMatchPolicy::LocalWins || $policy === LexofficeMatchPolicy::ManualReview) {
-            // Nur Snapshot in ExternalReference aktualisieren, keine Customer-Felder anfassen.
-            ExternalReference::query()
-                ->where('organization_id', $customer->organization_id)
-                ->where('plugin_id', LexofficePlugin::ID)
-                ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
-                ->where('external_id', $externalId)
-                ->update([
-                    'payload' => $remote,
-                    'synced_at' => now(),
-                ]);
+            if ($changed) {
+                $record->save();
+            }
+            $this->touchSnapshot($record, $remote, $externalId);
 
             return false;
         }
 
         $changes = $this->buildChangesFromRemote($remote);
-        if ($changes === []) {
+        if ($changes !== []) {
+            $record->fill($changes);
+            $changed = true;
+        }
+        if ($changed) {
+            $record->save();
+        }
+        $this->syncAddresses($record, $remote);
+        $this->syncContactPersons($record, $remote);
+        $this->touchSnapshot($record, $remote, $externalId);
+
+        return $changed || $changes !== [];
+    }
+
+    /**
+     * Übernimmt die Lexoffice-Kontaktnummer in das rollenpassende Feld.
+     *
+     * @param  array<string, mixed>  $remote
+     */
+    private function applyContactNumber(Model $record, array $remote): bool {
+        $number = $this->extractContactNumber($remote);
+        if ($number === '') {
             return false;
         }
+        $column = $record instanceof Supplier ? 'vendor_number' : 'lexoffice_contact_number';
+        $changed = false;
+        if ((string) $record->getAttribute($column) !== $number) {
+            $record->setAttribute($column, $number);
+            $changed = true;
+        }
 
-        $customer->fill($changes)->save();
+        // Ist Lexoffice für die Nummer führend, ersetzt die offizielle Nummer
+        // die lokale Entwurfsnummer.
+        if (
+            (string) $record->getAttribute('number_source') === 'lexoffice'
+            && (string) $record->getAttribute('number') !== $number
+        ) {
+            $record->setAttribute('number', $number);
+            $changed = true;
+        }
 
+        return $changed;
+    }
+
+    /**
+     * Spiegelt die Lexoffice-Adressen (billing/shipping) in contact_addresses.
+     *
+     * @param  array<string, mixed>  $remote
+     */
+    private function syncAddresses(Model $record, array $remote): void {
+        if (! ($record instanceof Customer) && ! ($record instanceof Supplier)) {
+            return;
+        }
+        $orgId = $record->getAttribute('organization_id');
+
+        foreach ([ContactAddress::KIND_BILLING, ContactAddress::KIND_SHIPPING] as $kind) {
+            $list = (array) data_get($remote, 'addresses.' . $kind, []);
+            foreach (array_values($list) as $i => $addr) {
+                if (! is_array($addr)) {
+                    continue;
+                }
+                $record->addresses()->updateOrCreate(
+                    ['kind' => $kind, 'external_id' => $kind . '-' . $i],
+                    [
+                        'organization_id' => $orgId,
+                        'supplement' => $addr['supplement'] ?? null,
+                        'street' => $addr['street'] ?? null,
+                        'zip' => $addr['zip'] ?? null,
+                        'city' => $addr['city'] ?? null,
+                        'country_code' => $addr['countryCode'] ?? null,
+                        'is_primary' => $i === 0 && $kind === ContactAddress::KIND_BILLING,
+                    ],
+                );
+            }
+        }
+    }
+
+    /**
+     * Übernimmt die Lexoffice-Ansprechpartner in das contact_persons-JSON.
+     *
+     * @param  array<string, mixed>  $remote
+     */
+    private function syncContactPersons(Model $record, array $remote): void {
+        if (! ($record instanceof Customer) && ! ($record instanceof Supplier)) {
+            return;
+        }
+        $persons = (array) data_get($remote, 'company.contactPersons', []);
+        if ($persons === []) {
+            return;
+        }
+
+        $list = [];
+        foreach ($persons as $p) {
+            if (! is_array($p)) {
+                continue;
+            }
+            $name = trim(((string) ($p['firstName'] ?? '')) . ' ' . ((string) ($p['lastName'] ?? '')));
+            if ($name === '') {
+                continue;
+            }
+            $list[] = array_filter([
+                'name' => $name,
+                'email' => $p['emailAddress'] ?? null,
+                'phone' => $p['phoneNumber'] ?? null,
+                'primary' => (bool) ($p['primary'] ?? false),
+            ], static fn($v) => $v !== null && $v !== '');
+        }
+
+        if ($list !== []) {
+            $record->contact_persons = $list;
+            $record->save();
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $remote
+     */
+    private function touchSnapshot(Model $record, array $remote, string $externalId): void {
         ExternalReference::query()
-            ->where('organization_id', $customer->organization_id)
+            ->where('organization_id', $record->getAttribute('organization_id'))
             ->where('plugin_id', LexofficePlugin::ID)
             ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
+            ->where('referenceable_type', $record->getMorphClass())
             ->where('external_id', $externalId)
             ->update([
                 'payload' => $remote,
                 'synced_at' => now(),
             ]);
-
-        return true;
     }
 
     /**
      * @param  array<string, mixed>  $remote
      */
-    private function hasConflict(Customer $customer, array $remote): bool {
-        return $this->diffFields($customer, $remote) !== [];
+    private function hasConflict(Model $record, array $remote): bool {
+        return $this->diffFields($record, $remote) !== [];
     }
 
     /**
-     * Liste der Felder, in denen sich lokaler Kunde und Remote-Snapshot unterscheiden.
+     * Liste der Felder, in denen sich lokaler Datensatz und Remote-Snapshot unterscheiden.
      *
      * @param  array<string, mixed>  $remote
      * @return array<int, string>
      */
-    private function diffFields(Customer $customer, array $remote): array {
+    private function diffFields(Model $record, array $remote): array {
         $remoteVals = $this->buildChangesFromRemote($remote);
         $diff = [];
         foreach ($remoteVals as $field => $value) {
-            $local = (string) ($customer->{$field} ?? '');
+            $local = (string) ($record->getAttribute($field) ?? '');
             if ($local !== (string) $value) {
                 $diff[] = $field;
             }
@@ -302,8 +518,8 @@ class LexofficeContactSync {
     /**
      * @param  array<string, mixed>  $remote
      */
-    private function recordConflict(Customer $customer, array $remote, string $externalId, Organization $organization): void {
-        $diff = $this->diffFields($customer, $remote);
+    private function recordConflict(Model $record, array $remote, string $externalId, Organization $organization): void {
+        $diff = $this->diffFields($record, $remote);
         if ($diff === []) {
             return;
         }
@@ -312,14 +528,14 @@ class LexofficeContactSync {
             [
                 'plugin_id' => LexofficePlugin::ID,
                 'conflict_type' => LexofficePlugin::EXT_TYPE_CONTACT,
-                'referenceable_type' => $customer->getMorphClass(),
-                'referenceable_id' => $customer->getKey(),
+                'referenceable_type' => $record->getMorphClass(),
+                'referenceable_id' => $record->getKey(),
                 'external_id' => $externalId,
                 'status' => PendingExternalConflict::STATUS_OPEN,
             ],
             [
                 'organization_id' => $organization->id,
-                'local_snapshot' => $customer->only(array_keys($this->buildChangesFromRemote($remote))),
+                'local_snapshot' => $record->only(array_keys($this->buildChangesFromRemote($remote))),
                 'remote_snapshot' => $remote,
                 'diff_fields' => $diff,
             ],
@@ -342,8 +558,12 @@ class LexofficeContactSync {
             'name' => $name !== '' ? $name : null,
             'company' => $isCompany ? (string) data_get($remote, 'company.name') : null,
             'vat_id' => $this->extractVatId($remote) ?: null,
+            'tax_number' => $this->extractTaxNumber($remote) ?: null,
             'email' => $this->extractEmail($remote) ?: null,
             'phone' => (string) data_get($remote, 'phoneNumbers.business.0', '') ?: null,
+            'mobile' => (string) data_get($remote, 'phoneNumbers.mobile.0', '') ?: null,
+            'fax' => (string) data_get($remote, 'phoneNumbers.fax.0', '') ?: null,
+            'comment' => (string) data_get($remote, 'note', '') ?: null,
             'address_street' => (string) data_get($remote, 'addresses.billing.0.street', '') ?: null,
             'address_zip' => (string) data_get($remote, 'addresses.billing.0.zip', '') ?: null,
             'address_city' => (string) data_get($remote, 'addresses.billing.0.city', '') ?: null,
@@ -366,11 +586,47 @@ class LexofficeContactSync {
     }
 
     /**
+     * Steuernummer (getrennt von der USt-IdNr.).
+     *
+     * @param  array<string, mixed>  $remote
+     */
+    private function extractTaxNumber(array $remote): string {
+        return (string) data_get($remote, 'company.taxNumber', '');
+    }
+
+    /**
+     * Offizielle Lexoffice-Kontaktnummer (customer- oder vendor-Rolle).
+     *
+     * @param  array<string, mixed>  $remote
+     */
+    private function extractContactNumber(array $remote): string {
+        $customer = (string) data_get($remote, 'roles.customer.number', '');
+        if ($customer !== '') {
+            return $customer;
+        }
+
+        return (string) data_get($remote, 'roles.vendor.number', '');
+    }
+
+    /**
      * @param  array<string, mixed>  $remote
      */
     private function extractEmail(array $remote): string {
         $mails = (array) data_get($remote, 'emailAddresses.business', []);
 
         return (string) ($mails[0] ?? data_get($remote, 'emailAddresses.private.0', ''));
+    }
+
+    /**
+     * Inkrementiert den passenden Zähler je nach Rolle.
+     */
+    private function bump(string $kind, string $metric): void {
+        if ($metric === 'ambiguous') {
+            $this->counters['ambiguous']++;
+
+            return;
+        }
+        $key = $kind === 'vendor' ? 'supplier_' . $metric : $metric;
+        $this->counters[$key] = ($this->counters[$key] ?? 0) + 1;
     }
 }

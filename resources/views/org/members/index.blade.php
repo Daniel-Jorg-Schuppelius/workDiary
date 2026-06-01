@@ -1,18 +1,16 @@
 @extends('layouts.app')
 @section('title', __('Mitarbeiter'))
 @section('nav-title', __('Mitarbeiter'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Mitarbeiter des Mandanten verwalten.')">
-            <x-slot:actions>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('org.members.create')"
-                            show-label>{{ __('Mitarbeiter anlegen') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="__('Mitarbeiter des Mandanten verwalten.')">
+    <x-slot:actions>
+        <x-icon-btn icon="add" tone="primary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('org.members.create')"
+                    show-label>{{ __('Mitarbeiter anlegen') }}</x-icon-btn>
+    </x-slot:actions>
 
     @if ($members->isEmpty())
         <x-empty-state framed
@@ -21,7 +19,7 @@
             :message="__('Lege das erste Teammitglied an.')"
         />
     @else
-        <x-table table-sort="server"
+        <x-table scroll="flex" :pinRows="true" table-sort="server"
                  :route="route('org.members.index')"
                  :current-sort="$sort ?? null"
                  :current-dir="$dir ?? 'asc'">
@@ -65,9 +63,7 @@
                     </tr>
                 @endforeach
         </x-table>
-        @if ($members->hasPages())
-            <div>{{ $members->links() }}</div>
-        @endif
+        <x-pagination :paginator="$members" />
     @endif
-</x-page-shell>
+</x-index-page>
 @endsection

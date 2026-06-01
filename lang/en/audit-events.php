@@ -30,6 +30,16 @@ return [
     'backup' => [
         'completed'                 => 'Backup completed',
     ],
+
+    // import
+    'import' => [
+        'confirmed'                 => 'Import confirmed',
+        'started'                   => 'Import started',
+        'finished'                  => 'Import finished',
+        'partial'                   => 'Import partially finished',
+        'preflightFailed'           => 'Import preflight failed',
+    ],
+
     'diagnostics' => [
         'viewed'                    => 'Diagnostics viewed',
         'testTriggered'             => 'Diagnostics test triggered',

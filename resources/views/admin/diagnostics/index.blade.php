@@ -38,27 +38,23 @@
 @endphp
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar
-            :subtitle="__('Erzeugt: :at', ['at' => $report->generatedAt->translatedFormat('d.m.Y H:i:s')])"
-            :badge="$statusToLabel[$report->overallStatus()->value] ?? null"
-            :badge-tone="match ($report->overallStatus()->value) {
-                'ok' => 'success', 'warn' => 'warning', 'critical' => 'error', default => 'ghost',
-            }"
-        >
-            <x-slot:actions>
-                <a href="{{ route('admin.diagnostics.json') }}" class="btn btn-sm btn-ghost">{{ __('JSON') }}</a>
-                @can(\App\Enums\User\Permission::PlatformDiagnosticsRunCheck->value)
-                    <form method="POST" action="{{ route('admin.diagnostics.test-mail') }}"
-                          onsubmit="event.preventDefault(); fetch(this.action, {method:'POST', headers:{'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept':'application/json'}, credentials:'same-origin'}).then(r=>r.json()).then(p=>alert(p.ok ? 'Mail abgesetzt.' : 'Fehler: ' + (p.error || '?'))).catch(()=>alert('Fehler beim Senden.'));">
-                        @csrf
-                        <button type="submit" class="btn btn-sm btn-outline">{{ __('Test-Mail senden') }}</button>
-                    </form>
-                @endcan
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page
+    :subtitle="__('Erzeugt: :at', ['at' => $report->generatedAt->translatedFormat('d.m.Y H:i:s')])"
+    :badge="$statusToLabel[$report->overallStatus()->value] ?? null"
+    :badge-tone="match ($report->overallStatus()->value) {
+        'ok' => 'success', 'warn' => 'warning', 'critical' => 'error', default => 'ghost',
+    }"
+>
+    <x-slot:actions>
+        <a href="{{ route('admin.diagnostics.json') }}" class="btn btn-sm btn-ghost">{{ __('JSON') }}</a>
+        @can(\App\Enums\User\Permission::PlatformDiagnosticsRunCheck->value)
+            <form method="POST" action="{{ route('admin.diagnostics.test-mail') }}"
+                  onsubmit="event.preventDefault(); fetch(this.action, {method:'POST', headers:{'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept':'application/json'}, credentials:'same-origin'}).then(r=>r.json()).then(p=>alert(p.ok ? 'Mail abgesetzt.' : 'Fehler: ' + (p.error || '?'))).catch(()=>alert('Fehler beim Senden.'));">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline">{{ __('Test-Mail senden') }}</button>
+            </form>
+        @endcan
+    </x-slot:actions>
 
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         @foreach ($report->sections as $section)
@@ -118,5 +114,5 @@
             </article>
         @endforeach
     </div>
-</x-page-shell>
+</x-index-page>
 @endsection

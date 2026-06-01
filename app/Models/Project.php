@@ -57,6 +57,7 @@ class Project extends Model {
     protected $fillable = [
         'organization_id',
         'customer_id',
+        'foreign_customer_id',
         'parent_id',
         'name',
         'slug',
@@ -288,6 +289,11 @@ class Project extends Model {
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
+    }
+
+    /** @return BelongsTo<ForeignCustomer, $this> */
+    public function foreignCustomer(): BelongsTo {
+        return $this->belongsTo(ForeignCustomer::class);
     }
 
     /** @return BelongsTo<Project, $this> */

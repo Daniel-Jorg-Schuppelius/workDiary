@@ -50,6 +50,15 @@ return [
             'reset_per_year' => false,
             'starts_at' => 0,
         ],
+        'supplier' => [
+            'prefix' => 'L',
+            'prefix_separator' => '-',
+            'include_year' => false,
+            'year_separator' => '-',
+            'padding' => 4,
+            'reset_per_year' => false,
+            'starts_at' => 0,
+        ],
         'invoice' => [
             'prefix' => 'R',
             'prefix_separator' => '',

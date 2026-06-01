@@ -11,21 +11,19 @@
 
 @section('title', __('Objekte & Assets'))
 @section('nav-title', __('Objekte & Assets'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-    <x-page-shell>
-        <x-slot:toolbar>
-            <x-page-toolbar :subtitle="__('Objekte, Geräte und Anlagen des Mandanten verwalten.')">
-                <x-slot:actions>
-                    @if ($canCreate)
-                        <x-icon-btn icon="add" tone="primary" size="sm"
-                                    data-entry-modal-trigger
-                                    :href="route('assets.create')"
-                                    show-label>{{ __('Asset anlegen') }}</x-icon-btn>
-                    @endif
-                </x-slot:actions>
-            </x-page-toolbar>
-        </x-slot:toolbar>
+    <x-index-page overflow="clip" :subtitle="__('Objekte, Geräte und Anlagen des Mandanten verwalten.')">
+        <x-slot:actions>
+            @if ($canCreate)
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('assets.create')"
+                            show-label>{{ __('Asset anlegen') }}</x-icon-btn>
+            @endif
+        </x-slot:actions>
 
         <div class="grid gap-3 sm:grid-cols-3">
             <x-kpi-tile :label="__('Assets gesamt')" :value="$kpis['total']" tone="neutral" />
@@ -70,7 +68,7 @@
             </div>
         @endif
 
-        <x-table table-sort="client">
+        <x-table scroll="flex" :pinRows="true" table-sort="client">
             <x-slot:head>
                 <tr>
                     <x-table.th sort type="string">{{ __('Asset-Nr.') }}</x-table.th>
@@ -114,10 +112,6 @@
             @endforelse
         </x-table>
 
-        @if ($assets->hasPages())
-            <div class="px-1">
-                {{ $assets->links() }}
-            </div>
-        @endif
-    </x-page-shell>
+        <x-pagination :paginator="$assets" />
+    </x-index-page>
 @endsection

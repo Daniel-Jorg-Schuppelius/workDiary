@@ -6,6 +6,27 @@ return [
     'issued'       => 'Issued',
     'paid'         => 'Paid',
     'cancelled'    => 'Cancelled',
+    'voided'       => 'Cancelled',
+    'accepted'     => 'Accepted',
+    'sent'         => 'Sent',
+    'overdue'      => 'Overdue',
+    'unchecked'    => 'Unchecked',
+    'checked'      => 'Checked',
+    'transferred'  => 'Transferred',
+    'paidoff'      => 'Paid off',
+
+    // Lexoffice voucher types
+    'invoice'                => 'Invoice',
+    'salesinvoice'           => 'Sales invoice',
+    'purchaseinvoice'        => 'Purchase invoice',
+    'creditnote'             => 'Credit note',
+    'salescreditnote'        => 'Sales credit note',
+    'purchasecreditnote'     => 'Purchase credit note',
+    'quotation'              => 'Quotation',
+    'orderconfirmation'      => 'Order confirmation',
+    'deliverynote'           => 'Delivery note',
+    'downpaymentinvoice'     => 'Down payment invoice',
+    'downpaymentdeduction'   => 'Down payment deduction',
 
     // ServiceTicket status
     'open'         => 'Open',

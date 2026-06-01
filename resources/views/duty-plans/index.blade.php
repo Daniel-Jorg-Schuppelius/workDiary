@@ -1,20 +1,18 @@
 @extends('layouts.app')
 @section('title', __('Dienstpläne'))
 @section('nav-title', __('Dienstpläne'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Dienstpläne des Mandanten verwalten.')">
-            <x-slot:actions>
-                @can('create', \App\Models\DutyPlan::class)
-                    <x-icon-btn icon="add" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('duty-plans.create')"
-                                show-label>{{ __('Dienstplan anlegen') }}</x-icon-btn>
-                @endcan
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="__('Dienstpläne des Mandanten verwalten.')">
+    <x-slot:actions>
+        @can('create', \App\Models\DutyPlan::class)
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('duty-plans.create')"
+                        show-label>{{ __('Dienstplan anlegen') }}</x-icon-btn>
+        @endcan
+    </x-slot:actions>
 
     <x-filter-bar :action="route('duty-plans.index')" :reset="route('duty-plans.index')">
         <x-filter-field :label="__('Status')" for="dp-status">
@@ -27,7 +25,7 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <x-table table-sort="server"
+    <x-table scroll="flex" :pinRows="true" table-sort="server"
              :route="route('duty-plans.index')"
              :current-sort="$sort ?? null"
              :current-dir="$dir ?? 'desc'"
@@ -88,8 +86,6 @@
                 <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>' :colspan="6" :title="__('Noch keine Dienstpläne vorhanden')" compact />
             @endforelse
     </x-table>
-    @if ($plans->hasPages())
-        <div>{{ $plans->links() }}</div>
-    @endif
-</x-page-shell>
+    <x-pagination :paginator="$plans" />
+</x-index-page>
 @endsection

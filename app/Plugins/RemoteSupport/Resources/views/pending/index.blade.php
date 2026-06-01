@@ -3,26 +3,20 @@
 @section('nav-title', __('Fernwartung – Inbox'))
 
 @section('content')
-<x-page-shell>
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <div class="mb-3">
-            <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Verbindungen ohne zugeordnetes Gerät') }}</h1>
-            <p class="text-sm text-base-content/60">
-                {{ __('Diese AnyDesk-/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weise jede ID einem bestehenden Gerät zu oder lege ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht.') }}
-            </p>
-        </div>
+<x-index-page :subtitle="__('Diese AnyDesk-/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weise jede ID einem bestehenden Gerät zu oder lege ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht.')">
+    <x-slot:actions>
+        <a href="{{ route('admin.imports.create', ['entity' => \App\Enums\Import\ImportEntity::RemoteSessions->value]) }}"
+           class="btn btn-sm btn-primary">
+            {{ __('Sitzungen importieren') }}
+        </a>
+    </x-slot:actions>
 
-        {{-- Der AnyDesk-CSV-Export wird zentral im Import-Wizard eingelesen. --}}
-        <div class="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200/50 p-3">
-            <span class="text-sm text-base-content/70">
-                <span class="material-symbols-outlined align-middle" aria-hidden="true">upload_file</span>
-                {{ __('AnyDesk-Sitzungen werden im zentralen Import-Wizard eingelesen.') }}
-            </span>
-            <a href="{{ route('admin.imports.create', ['entity' => \App\Enums\Import\ImportEntity::RemoteSessions->value]) }}"
-               class="btn btn-sm btn-primary">
-                {{ __('Sitzungen importieren') }}
-            </a>
-        </div>
+    <x-slot:note>
+        <span class="material-symbols-outlined align-middle" aria-hidden="true">upload_file</span>
+        {{ __('AnyDesk-Sitzungen werden im zentralen Import-Wizard eingelesen.') }}
+    </x-slot:note>
+
+    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
 
         @if ($groups->isEmpty())
             <p class="rounded-box border border-base-300 p-6 text-center text-sm text-base-content/60">
@@ -137,5 +131,112 @@
             </div>
         @endif
     </div>
-</x-page-shell>
+
+    @if (! $shared->isEmpty())
+        <div class="mt-4 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="mb-3">
+                <h2 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Mehrkundengeräte – Sitzungen zuordnen') }}</h2>
+                <p class="text-sm text-base-content/60">
+                    {{ __('Diese Rechner werden für mehrere Kunden genutzt. Markiere die Sitzungen, wähle den Kunden (und optional ein Projekt) und buche sie gesammelt.') }}
+                </p>
+            </div>
+
+            <div class="space-y-4">
+                @foreach ($shared as $device)
+                    @php $assetName = $device->asset->name ?: $device->asset->asset_no; @endphp
+                    <form method="POST" action="{{ route('admin.remote-support.pending.assign-shared') }}"
+                          class="rounded-box border border-base-300 p-3"
+                          x-data="{
+                              customer: '',
+                              projectMap: @js($projectMap),
+                              get projects() { return this.projectMap[this.customer] ?? []; },
+                              allChecked: false,
+                              toggleAll() {
+                                  this.$refs.list.querySelectorAll('input[type=checkbox][name=&quot;pending_ids[]&quot;]')
+                                      .forEach(cb => cb.checked = this.allChecked);
+                              },
+                          }">
+                        @csrf
+
+                        <div class="mb-2 flex flex-wrap items-center gap-2">
+                            <span class="material-symbols-outlined align-middle text-base-content/70" aria-hidden="true">computer</span>
+                            <span class="font-semibold">{{ $assetName }}</span>
+                            <x-status-badge tone="neutral" size="sm">{{ $device->asset->asset_no }}</x-status-badge>
+                            <span class="text-sm text-base-content/60">
+                                {{ trans_choice(':count Sitzung|:count Sitzungen', $device->sessions->count(), ['count' => $device->sessions->count()]) }}
+                            </span>
+                        </div>
+
+                        <div class="overflow-x-auto" x-ref="list">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th class="w-8">
+                                            <input type="checkbox" class="checkbox checkbox-sm"
+                                                   x-model="allChecked" @change="toggleAll()"
+                                                   aria-label="{{ __('Alle auswählen') }}">
+                                        </th>
+                                        <th>{{ __('Zeitraum') }}</th>
+                                        <th class="text-right">{{ __('Min.') }}</th>
+                                        <th>{{ __('Provider') }}</th>
+                                        <th>{{ __('Notiz') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($device->sessions as $session)
+                                        <tr>
+                                            <td>
+                                                <input type="checkbox" name="pending_ids[]" value="{{ $session->sqid }}"
+                                                       class="checkbox checkbox-sm"
+                                                       aria-label="{{ __('Sitzung auswählen') }}">
+                                            </td>
+                                            <td class="whitespace-nowrap text-sm">
+                                                {{ \Illuminate\Support\Carbon::parse($session->started_at)->isoFormat('L HH:mm') }}
+                                                – {{ \Illuminate\Support\Carbon::parse($session->ended_at)->isoFormat('HH:mm') }}
+                                            </td>
+                                            <td class="text-right text-sm">{{ $session->minutes() }}</td>
+                                            <td class="text-sm">{{ ucfirst($session->provider) }}</td>
+                                            <td class="text-sm text-base-content/70">{{ $session->note }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-3 flex flex-wrap items-end gap-2">
+                            <label class="flex w-48 flex-col gap-1">
+                                <span class="label-text text-xs">{{ __('Kunde') }}</span>
+                                <select name="customer_id" required x-model="customer" class="select select-sm select-bordered w-full">
+                                    <option value="">{{ __('— Kunde —') }}</option>
+                                    @foreach ($customers as $customer)
+                                        <option value="{{ $customer->sqid }}">{{ $customer->company ?: $customer->name }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label class="flex w-48 flex-col gap-1">
+                                <span class="label-text text-xs">{{ __('Projekt') }}</span>
+                                <select name="project_id" class="select select-sm select-bordered w-full" :disabled="! customer">
+                                    <option value="">{{ __('— Standardprojekt —') }}</option>
+                                    <template x-for="p in projects" :key="p.id">
+                                        <option :value="p.id" x-text="p.name"></option>
+                                    </template>
+                                </select>
+                            </label>
+                            <button type="submit" class="btn btn-sm btn-primary ml-auto">
+                                <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">schedule</span>{{ __('Markierte buchen') }}
+                            </button>
+                            <button type="submit" formaction="{{ route('admin.remote-support.pending.dismiss-session') }}"
+                                    class="btn btn-sm btn-ghost text-error"
+                                    formnovalidate
+                                    data-confirm-dialog
+                                    data-confirm-message="{{ __('Markierte Sitzungen verwerfen? Sie werden nicht gebucht.') }}">
+                                <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">delete</span>{{ __('Markierte verwerfen') }}
+                            </button>
+                        </div>
+                    </form>
+                @endforeach
+            </div>
+        </div>
+    @endif
+</x-index-page>
 @endsection

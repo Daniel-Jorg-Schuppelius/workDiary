@@ -2,23 +2,21 @@
 
 @section('title', __('access.title.members'))
 @section('nav-title', __('access.title.members'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Mitgliedschaften und Rollen-Zuweisungen pro Organisation verwalten.')">
-            <x-slot:actions>
-                <form method="GET" action="{{ route('admin.access.members.index') }}" class="join">
-                    <input type="text" name="q" value="{{ $search ?? '' }}"
-                           placeholder="{{ __('access.placeholder.search_members') }}"
-                           class="input input-sm input-bordered join-item" />
-                    <button class="btn btn-sm join-item">{{ __('access.action.search') }}</button>
-                </form>
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="__('Mitgliedschaften und Rollen-Zuweisungen pro Organisation verwalten.')">
+    <x-slot:actions>
+        <form method="GET" action="{{ route('admin.access.members.index') }}" class="join">
+            <input type="text" name="q" value="{{ $search ?? '' }}"
+                   placeholder="{{ __('access.placeholder.search_members') }}"
+                   class="input input-sm input-bordered join-item" />
+            <button class="btn btn-sm join-item">{{ __('access.action.search') }}</button>
+        </form>
+    </x-slot:actions>
 
-    <x-table table-sort="server"
+    <x-table scroll="flex" :pinRows="true" table-sort="server"
              :route="route('admin.access.members.index')"
              :current-sort="$sort ?? null"
              :current-dir="$dir ?? 'asc'">
@@ -66,6 +64,6 @@
         @endforelse
     </x-table>
 
-    {{ $members->links() }}
-</x-page-shell>
+    <x-pagination :paginator="$members" />
+</x-index-page>
 @endsection

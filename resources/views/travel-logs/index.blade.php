@@ -2,22 +2,20 @@
 
 @section('title', __('Fahrtenbuch'))
 @section('nav-title', __('Fahrtenbuch'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-    <x-page-shell>
-        <x-slot:toolbar>
-            <x-page-toolbar :subtitle="__('Dienstfahrten und Kilometerstände erfassen.')">
-                <x-slot:actions>
-                    <x-icon-btn icon="download" size="sm"
-                                :href="route('travel-logs.export', array_merge(request()->query(), ['from' => $from->toDateString(), 'to' => $to->toDateString()]))"
-                                show-label>{{ __('CSV-Export') }}</x-icon-btn>
-                    <x-icon-btn icon="add" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('travel-logs.create')"
-                                show-label>{{ __('Neue Fahrt') }}</x-icon-btn>
-                </x-slot:actions>
-            </x-page-toolbar>
-        </x-slot:toolbar>
+    <x-index-page overflow="clip" :subtitle="__('Dienstfahrten und Kilometerstände erfassen.')">
+        <x-slot:actions>
+            <x-icon-btn icon="download" size="sm"
+                        :href="route('travel-logs.export', array_merge(request()->query(), ['from' => $from->toDateString(), 'to' => $to->toDateString()]))"
+                        show-label>{{ __('CSV-Export') }}</x-icon-btn>
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('travel-logs.create')"
+                        show-label>{{ __('Neue Fahrt') }}</x-icon-btn>
+        </x-slot:actions>
 
         <x-filter-bar :action="route('travel-logs.index')" :reset="route('travel-logs.index')">
             <x-filter-field :label="__('Fahrzeug')" for="tl-vehicle">
@@ -36,13 +34,13 @@
             <x-kpi-tile :label="__('Erstattung')" :value="number_format($totals['reimbursement'], 2, ',', '.') . ' €'" />
         </div>
 
-        <x-card padding="p-0">
+        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
             <x-table table-sort="server"
                      :route="route('travel-logs.index')"
                      :current-sort="$sort ?? null"
                      :current-dir="$dir ?? 'desc'"
                      :sort-params="['from' => $from->toDateString(), 'to' => $to->toDateString()]"
-                     bare>
+                     bare scroll="flex" :pinRows="true">
                 <x-slot:head>
                     <tr>
                         <x-table.th sort="date" default>{{ __('Datum') }}</x-table.th>
@@ -101,8 +99,6 @@
             </x-table>
         </x-card>
 
-        @if ($logs->hasPages())
-            {{ $logs->links() }}
-        @endif
-    </x-page-shell>
+        <x-pagination :paginator="$logs" />
+    </x-index-page>
 @endsection

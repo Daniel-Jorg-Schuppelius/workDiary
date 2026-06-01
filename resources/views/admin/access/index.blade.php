@@ -4,10 +4,7 @@
 @section('nav-title', __('access.title.hub'))
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$organization ? __('Rollen, Gruppen, Mitglieder und Berechtigungen für :org verwalten.', ['org' => $organization->name]) : __('Zugriffssteuerung & Berechtigungen.')" />
-    </x-slot:toolbar>
+<x-index-page :subtitle="$organization ? __('Rollen, Gruppen, Mitglieder und Berechtigungen für :org verwalten.', ['org' => $organization->name]) : __('Zugriffssteuerung & Berechtigungen.')">
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <a href="{{ route('admin.access.roles.index') }}" class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
@@ -60,5 +57,5 @@
         <x-icon name="info" />
         <span>{{ __('access.hint.hub') }}</span>
     </div>
-</x-page-shell>
+</x-index-page>
 @endsection

@@ -2,9 +2,11 @@
 
 @section('title', __('flex.eligibility.title', ['name' => $member->name]))
 @section('nav-title', __('flex.eligibility.nav_title'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-page-shell>
+<x-page-shell overflow="clip">
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Berechtigungen für Gleitzeit-Sonderregeln je Mitarbeiter pflegen.')">
             <x-slot:title>
@@ -55,7 +57,7 @@
         </div>
     </div>
 
-    <x-table>
+    <x-table scroll="flex" :pinRows="true">
         <x-slot:head>
             <tr>
                 <th>{{ __('flex.eligibility.table.valid_from') }}</th>

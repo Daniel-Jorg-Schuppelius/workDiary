@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,6 +23,7 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property int|null $organization_id
+ * @property int|null $asset_id
  * @property string $provider
  * @property string $remote_id
  * @property string|null $alias
@@ -41,6 +42,8 @@ class RemotePendingSession extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
+    use HasSqid;
+
     public const STATUS_OPEN = 'open';
 
     public const STATUS_IMPORTED = 'imported';
@@ -49,6 +52,7 @@ class RemotePendingSession extends Model {
 
     protected $fillable = [
         'organization_id',
+        'asset_id',
         'provider',
         'remote_id',
         'alias',
@@ -74,6 +78,11 @@ class RemotePendingSession extends Model {
         $seconds = (int) $this->started_at->diffInSeconds($this->ended_at, absolute: true);
 
         return $seconds <= 0 ? 0 : max(1, (int) round($seconds / 60));
+    }
+
+    /** @return BelongsTo<Asset, $this> */
+    public function asset(): BelongsTo {
+        return $this->belongsTo(Asset::class);
     }
 
     /** @return BelongsTo<TimeEntry, $this> */

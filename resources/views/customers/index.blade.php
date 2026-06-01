@@ -1,6 +1,8 @@
 @extends('layouts.app')
 @section('title', __('Kunden') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Kunden'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @php
     /** @var \Illuminate\Pagination\LengthAwarePaginator $customers */
@@ -11,37 +13,33 @@
 @endphp
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Kunden des Mandanten verwalten.')">
-            <x-slot:actions>
-                <x-icon-btn icon="download" size="sm"
-                            :href="route('customers.export', array_filter(['status' => $status, 'q' => $search]))"
-                            show-label>{{ __('CSV-Export') }}</x-icon-btn>
-                @if (auth()->user()?->canManageBilling())
-                    <x-icon-btn icon="upload" size="sm"
-                                :href="route('admin.imports.create', ['entity' => 'customers'])"
-                                show-label>{{ __('CSV-Import') }}</x-icon-btn>
-                    <form method="POST" action="{{ route('customers.lexoffice.push-all') }}"
-                          data-confirm-dialog
-                          data-confirm-message="{{ __('Alle nicht synchronisierten Kunden zu Lexoffice übertragen?') }}"
-                          data-confirm-icon="sync"
-                          data-confirm-tone="info"
-                          data-confirm-label="{{ __('Synchronisieren') }}">
-                        @csrf
-                        <x-icon-btn icon="sync" type="submit" size="sm"
-                                    show-label>{{ __('Lexoffice: alle pushen') }}</x-icon-btn>
-                    </form>
-                @endif
-                @can('create', App\Models\Customer::class)
-                    <x-icon-btn icon="add" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('customers.create')"
-                                show-label>{{ __('Kunde anlegen') }}</x-icon-btn>
-                @endcan
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="__('Kunden des Mandanten verwalten.')">
+    <x-slot:actions>
+        <x-icon-btn icon="download" size="sm"
+                    :href="route('customers.export', array_filter(['status' => $status, 'q' => $search]))"
+                    show-label>{{ __('CSV-Export') }}</x-icon-btn>
+        @if (auth()->user()?->canManageBilling())
+            <x-icon-btn icon="upload" size="sm"
+                        :href="route('admin.imports.create', ['entity' => 'customers'])"
+                        show-label>{{ __('CSV-Import') }}</x-icon-btn>
+            <form method="POST" action="{{ route('customers.lexoffice.push-all') }}"
+                  data-confirm-dialog
+                  data-confirm-message="{{ __('Alle nicht synchronisierten Kunden zu Lexoffice übertragen?') }}"
+                  data-confirm-icon="sync"
+                  data-confirm-tone="info"
+                  data-confirm-label="{{ __('Synchronisieren') }}">
+                @csrf
+                <x-icon-btn icon="sync" type="submit" size="sm"
+                            show-label>{{ __('Lexoffice: alle pushen') }}</x-icon-btn>
+            </form>
+        @endif
+        @can('create', App\Models\Customer::class)
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('customers.create')"
+                        show-label>{{ __('Kunde anlegen') }}</x-icon-btn>
+        @endcan
+    </x-slot:actions>
 
     <x-filter-bar :action="route('customers.index')" :reset="$search !== '' ? route('customers.index', ['status' => $status]) : null">
         <input type="hidden" name="status" value="{{ $status }}">
@@ -64,13 +62,13 @@
     @if ($customers->total() === 0)
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">business</span>' :title="$search !== '' ? __('Keine Kunden für „:q“ gefunden.', ['q' => $search]) : __('Noch keine Kunden in dieser Ansicht')" />
     @else
-        <x-card padding="p-0">
+        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
             <x-table table-sort="server"
                      :route="route('customers.index')"
                      :current-sort="$sort"
                      :current-dir="$dir"
                      :sort-params="['status' => $status, 'q' => $search]"
-                     bare>
+                     bare scroll="flex" :pinRows="true">
                 <x-slot:head>
                     <tr>
                         <th></th>
@@ -126,11 +124,7 @@
             </x-table>
         </x-card>
 
-        @if ($customers->hasPages())
-            <div class="px-1">
-                {{ $customers->links() }}
-            </div>
-        @endif
+        <x-pagination :paginator="$customers" />
     @endif
-</x-page-shell>
+</x-index-page>
 @endsection

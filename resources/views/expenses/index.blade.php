@@ -2,22 +2,20 @@
 
 @section('title', __('Spesen & Auslagen'))
 @section('nav-title', __('Spesen & Auslagen'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-    <x-page-shell>
-        <x-slot:toolbar>
-            <x-page-toolbar :subtitle="__('Belege & Auslagen erfassen, prüfen und freigeben.')">
-                <x-slot:actions>
-                    <x-icon-btn icon="download" tone="ghost" size="sm"
-                                :href="route('expenses.export', ['status' => $statusFilter])"
-                                show-label>{{ __('CSV-Export') }}</x-icon-btn>
-                    <x-icon-btn icon="add" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('expenses.create')"
-                                show-label>{{ __('Neue Spese') }}</x-icon-btn>
-                </x-slot:actions>
-            </x-page-toolbar>
-        </x-slot:toolbar>
+    <x-index-page overflow="clip" :subtitle="__('Belege & Auslagen erfassen, prüfen und freigeben.')">
+        <x-slot:actions>
+            <x-icon-btn icon="download" tone="ghost" size="sm"
+                        :href="route('expenses.export', ['status' => $statusFilter])"
+                        show-label>{{ __('CSV-Export') }}</x-icon-btn>
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('expenses.create')"
+                        show-label>{{ __('Neue Spese') }}</x-icon-btn>
+        </x-slot:actions>
 
         <x-filter-bar :action="route('expenses.index')" :reset="route('expenses.index')">
             <x-filter-field :label="__('Status')" for="exp-status">
@@ -47,13 +45,13 @@
                         :tone="$totals['pending'] > 0 ? 'warning' : 'ghost'" />
         </div>
 
-        <x-card padding="p-0">
+        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
             <x-table table-sort="server"
                      :route="route('expenses.index')"
                      :current-sort="$sort ?? null"
                      :current-dir="$dir ?? 'desc'"
                      :sort-params="['status' => $statusFilter]"
-                     bare>
+                     bare scroll="flex" :pinRows="true">
                 <x-slot:head>
                     <tr>
                         <x-table.th sort="date" default>{{ __('Datum') }}</x-table.th>
@@ -126,8 +124,6 @@
             </x-table>
         </x-card>
 
-        @if ($expenses->hasPages())
-            {{ $expenses->links() }}
-        @endif
-    </x-page-shell>
+        <x-pagination :paginator="$expenses" />
+    </x-index-page>
 @endsection

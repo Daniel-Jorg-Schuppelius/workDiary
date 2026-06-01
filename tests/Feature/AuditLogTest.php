@@ -82,6 +82,6 @@ class AuditLogTest extends TestCase {
         $this->actingAs($admin)
             ->get(route('audit.index', ['event' => 'created', 'type' => 'comment']))
             ->assertOk()
-            ->assertSee('Comment');
+            ->assertSee(__('entity-types.Comment'));
     }
 }

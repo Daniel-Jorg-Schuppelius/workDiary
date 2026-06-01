@@ -21,6 +21,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $organization_id
  * @property int $customer_id
  * @property int|null $project_id
+ * @property int|null $foreign_customer_id
  * @property string $number
  * @property string $status
  * @property string $type
@@ -78,6 +79,7 @@ class Invoice extends Model {
         'organization_id',
         'customer_id',
         'project_id',
+        'foreign_customer_id',
         'number',
         'status',
         'type',
@@ -121,6 +123,11 @@ class Invoice extends Model {
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
+    }
+
+    /** @return BelongsTo<ForeignCustomer, $this> */
+    public function foreignCustomer(): BelongsTo {
+        return $this->belongsTo(ForeignCustomer::class);
     }
 
     /** @return HasMany<InvoiceItem, $this> */

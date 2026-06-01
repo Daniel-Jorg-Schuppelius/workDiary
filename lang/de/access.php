@@ -204,6 +204,26 @@ return [
         'customer.export' => 'Kunden exportieren',
         'customer.import' => 'Kunden importieren',
         'customer.lexoffice.sync' => 'Kunden mit Lexoffice synchronisieren',
+        'foreignCustomer.viewAny' => 'Fremdkunden auflisten',
+        'foreignCustomer.view' => 'Fremdkunde ansehen',
+        'foreignCustomer.create' => 'Fremdkunde anlegen',
+        'foreignCustomer.update' => 'Fremdkunde bearbeiten',
+        'foreignCustomer.delete' => 'Fremdkunde löschen',
+        'foreignCustomer.promote' => 'Fremdkunde zu Kunde befördern',
+
+        'supplier.viewAny' => 'Lieferanten auflisten',
+        'supplier.view' => 'Lieferant ansehen',
+        'supplier.create' => 'Lieferant anlegen',
+        'supplier.update' => 'Lieferant bearbeiten',
+        'supplier.delete' => 'Lieferant löschen',
+        'supplier.export' => 'Lieferanten exportieren',
+        'supplier.import' => 'Lieferanten importieren',
+        'supplier.lexoffice.sync' => 'Lieferanten mit Lexoffice synchronisieren',
+
+        'article.viewAny' => 'Produkte & Leistungen auflisten',
+        'article.lexoffice.sync' => 'Produkte & Leistungen mit Lexoffice synchronisieren',
+
+        'voucher.viewAny' => 'Belege auflisten',
 
         'project.viewAny' => 'Projekte auflisten',
         'project.view' => 'Projekt ansehen',

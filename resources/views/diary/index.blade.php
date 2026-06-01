@@ -3,10 +3,7 @@
 @section('nav-title', __('Alle Einträge'))
 
 @section('content')
-<x-page-shell overflow="clip">
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Auftragsbuch-Einträge erfassen, kommentieren und auswerten.')" />
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="__('Auftragsbuch-Einträge erfassen, kommentieren und auswerten.')">
     {{-- Filter-Leiste --}}
     <x-filter-bar :action="route('diary.index')" :reset="array_filter($filters) ? route('diary.index') : null">
         <x-filter-field :label="__('Suche')" for="diary-q" class="flex-1 min-w-60">
@@ -201,5 +198,5 @@
             {{ $entries->links('pagination::simple-tailwind') }}
         </div>
     @endif
-</x-page-shell>
+</x-index-page>
 @endsection

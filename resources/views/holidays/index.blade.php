@@ -4,17 +4,13 @@
 
 @section('content')
 
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Gesetzliche und eigene Feiertage des Mandanten verwalten.')">
-            <x-slot:actions>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('holidays.create')"
-                            show-label>{{ __('Eigener Feiertag') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page :subtitle="__('Gesetzliche und eigene Feiertage des Mandanten verwalten.')">
+    <x-slot:actions>
+        <x-icon-btn icon="add" tone="primary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('holidays.create')"
+                    show-label>{{ __('Eigener Feiertag') }}</x-icon-btn>
+    </x-slot:actions>
 
     {{-- Tabs: Jahresübersicht | Eigene Feiertage --}}
     <div role="tablist" class="tabs tabs-box">
@@ -133,7 +129,7 @@
             @endforelse
         </x-table>
     </div>
-</x-page-shell>
+</x-index-page>
 
 <script>
     (function () {

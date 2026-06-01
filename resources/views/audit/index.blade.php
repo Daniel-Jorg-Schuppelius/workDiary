@@ -1,6 +1,8 @@
 @extends('layouts.app')
 @section('title', __('Audit-Log') . ' — WorkDiary')
 @section('nav-title', __('Audit-Log'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
     @php
@@ -10,17 +12,14 @@
         /** @var array<string, string> $types */
         /** @var array<string, string> $filters */
     @endphp
-    <x-page-shell>
-        <x-slot:toolbar>
-            <x-page-toolbar :subtitle="__('Prüfprotokoll über Änderungen und Aktionen im System.')" />
-        </x-slot:toolbar>
+    <x-index-page overflow="clip" :subtitle="__('Prüfprotokoll über Änderungen und Aktionen im System.')">
 
         <x-filter-bar :action="route('audit.index')" :reset="route('audit.index')">
                 <x-filter-field :label="__('Aktion')" for="audit-event">
                     <select id="audit-event" name="event" class="select select-bordered select-sm">
                         <option value="">{{ __('alle') }}</option>
                         @foreach ($events as $ev)
-                            <option value="{{ $ev }}" @selected(($filters['event'] ?? '') === $ev)>{{ $ev }}</option>
+                            <option value="{{ $ev }}" @selected(($filters['event'] ?? '') === $ev)>{{ (new \App\Models\AuditLog(['event' => $ev]))->eventLabel() }}</option>
                         @endforeach
                     </select>
                 </x-filter-field>
@@ -28,7 +27,7 @@
                     <select id="audit-type" name="type" class="select select-bordered select-sm">
                         <option value="">{{ __('alle') }}</option>
                         @foreach ($types as $key => $class)
-                            <option value="{{ $key }}" @selected(($filters['type'] ?? '') === $key)>{{ $key }}</option>
+                            <option value="{{ $key }}" @selected(($filters['type'] ?? '') === $key)>{{ __('entity-types.' . class_basename($class)) }}</option>
                         @endforeach
                     </select>
                 </x-filter-field>
@@ -64,7 +63,7 @@
                             <td class="whitespace-nowrap text-xs">{{ $log->created_at->format('d.m.Y H:i:s') }}</td>
                             <td class="text-xs">{{ optional($log->user)->name ?? '—' }}</td>
                             <td><span class="badge badge-sm">{{ $log->eventLabel() }}</span></td>
-                            <td class="text-xs">{{ class_basename($log->auditable_type) }}</td>
+                            <td class="text-xs">{{ $log->auditableTypeLabel() }}</td>
                             <td class="text-xs">#{{ $log->auditable_id }}</td>
                             <td class="max-w-md">
                                 @if ($log->changes)
@@ -81,8 +80,6 @@
                     @endforelse
         </x-table>
 
-        @if ($logs->hasPages())
-            <div class="flex-none">{{ $logs->links() }}</div>
-        @endif
-    </x-page-shell>
+        <x-pagination :paginator="$logs" />
+    </x-index-page>
 @endsection

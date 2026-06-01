@@ -15,6 +15,8 @@
     $monthName = \DateTime::createFromFormat('!m', (string)$month)->format('F');
 @endphp
 @section('nav-title', __('Gleitzeit-Konto') . ' – ' . $monthName . ' ' . $year)
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 @section('content')
 @php
     $fmt = function (int $min): string {
@@ -31,10 +33,7 @@
         return $sign . intdiv($abs, 60) . ':' . str_pad((string)($abs % 60), 2, '0', STR_PAD_LEFT) . ' h';
     };
 @endphp
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Gleitzeitkonto: Buchungen und Saldo des gewählten Monats.')" />
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="__('Gleitzeitkonto: Buchungen und Saldo des gewählten Monats.')">
     @if($canSeeOthers && $users->isNotEmpty())
         @php
             $selfId = (int) ($authUser->id ?? 0);
@@ -85,8 +84,8 @@
         <x-kpi-tile :label="__('Saldo')" :value="$fmt($summary['balance'])" :tone="$summary['balance'] < 0 ? 'error' : 'success'" />
     </div>
 
-    <x-card padding="p-0">
-        <x-table table-sort="client" bare size="xs">
+    <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
+        <x-table table-sort="client" bare scroll="flex" :pinRows="true" size="xs">
             <x-slot:head>
                 <tr>
                     <x-table.th sort type="date">{{ __('Tag') }}</x-table.th>
@@ -120,5 +119,5 @@
             @endforeach
         </x-table>
     </x-card>
-</x-page-shell>
+</x-index-page>
 @endsection

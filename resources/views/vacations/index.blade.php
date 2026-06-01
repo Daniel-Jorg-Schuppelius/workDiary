@@ -10,9 +10,11 @@
 @endphp
 
 @section('nav-title', __('Urlaub'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-page-shell>
+<x-index-page overflow="clip" :subtitle="__('Urlaubsanträge, Genehmigungen und Resturlaub im Überblick.')">
 
     {{-- KPI-Tiles --}}
     <div class="grid grid-cols-1 gap-3 flex-none sm:grid-cols-3">
@@ -156,9 +158,7 @@
     </x-table>
 
     {{-- Pagination --}}
-    @if ($vacations->hasPages())
-        <div class="flex-none">{{ $vacations->links() }}</div>
-    @endif
+    <x-pagination :paginator="$vacations" />
 
-</x-page-shell>
+</x-index-page>
 @endsection

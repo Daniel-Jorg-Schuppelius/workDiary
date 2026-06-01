@@ -49,16 +49,12 @@
             );
     @endphp
 
-    <x-page-shell overflow="clip">
-        <x-slot:toolbar>
-            <x-page-toolbar :badge="__('Archiv')" badge-tone="neutral">
-                <x-slot:actions>
-                    <x-icon-btn icon="arrow_back" size="sm"
-                                :href="route('duties.index', ['tab' => match($tab) { 'diary' => 'diary', 'urlaub' => 'urlaub', default => $tab }])"
-                                show-label>{{ __('Aktive Arbeitsliste') }}</x-icon-btn>
-                </x-slot:actions>
-            </x-page-toolbar>
-        </x-slot:toolbar>
+    <x-index-page overflow="clip" :badge="__('Archiv')" badge-tone="neutral">
+        <x-slot:actions>
+            <x-icon-btn icon="arrow_back" size="sm"
+                        :href="route('duties.index', ['tab' => match($tab) { 'diary' => 'diary', 'urlaub' => 'urlaub', default => $tab }])"
+                        show-label>{{ __('Aktive Arbeitsliste') }}</x-icon-btn>
+        </x-slot:actions>
 
         {{-- Filter --}}
         <x-filter-bar :action="route('archive.index')" :reset="! empty($tabFilters) ? route('archive.index', ['tab' => $tab]) : null">
@@ -334,5 +330,5 @@ use App\Enums\Vacation\VacationType;
             </details>
         @endif
 
-    </x-page-shell>
+    </x-index-page>
 @endsection

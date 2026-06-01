@@ -1,45 +1,22 @@
 @extends('layouts.app')
 @section('title', __('Projekte') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Projekte'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
 @php
     $statusOptions = ['' => __('Alle')] + \App\Enums\Project\ProjectStatus::options();
-
-    // Hierarchische, flache Liste: Parents (oder Waisen) in bestehender Reihenfolge,
-    // direkt darauffolgend ihre Kinder (max. 2 sichtbare Einrückungs-Ebenen).
-    $byId = $projects->keyBy('id');
-    $childrenByParent = $projects->groupBy(fn ($p) => $p->parent_id);
-
-    $rows = collect();
-    $emit = function ($project, int $depth) use (&$emit, $childrenByParent, &$rows) {
-        $rows->push(['project' => $project, 'depth' => min($depth, 2)]);
-        foreach ($childrenByParent->get($project->id, collect()) as $child) {
-            $emit($child, $depth + 1);
-        }
-    };
-
-    foreach ($projects as $project) {
-        // Top-Level: kein Parent ODER Parent nicht im gefilterten Set (Waisen-Anzeige)
-        $isRoot = $project->parent_id === null || ! $byId->has($project->parent_id);
-        if ($isRoot) {
-            $emit($project, 0);
-        }
-    }
 @endphp
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Projekte und ihre Zuordnungen verwalten.')">
-            <x-slot:actions>
-                @can('create', App\Models\Project::class)
-                    <x-icon-btn icon="add" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('projects.create')"
-                                show-label>{{ __('Projekt anlegen') }}</x-icon-btn>
-                @endcan
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="__('Projekte und ihre Zuordnungen verwalten.')">
+    <x-slot:actions>
+        @can('create', App\Models\Project::class)
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('projects.create')"
+                        show-label>{{ __('Projekt anlegen') }}</x-icon-btn>
+        @endcan
+    </x-slot:actions>
 
     <x-filter-bar :action="route('projects.index')" method="GET" :reset="route('projects.index')">
         <div class="join">
@@ -50,11 +27,11 @@
         </div>
     </x-filter-bar>
 
-    @if ($projects->isEmpty())
+    @if ($rows->isEmpty())
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">folder_open</span>' :title="__('Noch keine Projekte angelegt')" />
     @else
-        <x-card padding="p-0">
-            <x-table bare>
+        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
+            <x-table bare scroll="flex" :pinRows="true">
                 <x-slot:head>
                     <tr>
                         <th>{{ __('Projekt') }}</th>
@@ -132,6 +109,8 @@
                         @endforeach
             </x-table>
         </x-card>
+
+        <x-pagination :paginator="$projects" />
     @endif
-</x-page-shell>
+</x-index-page>
 @endsection

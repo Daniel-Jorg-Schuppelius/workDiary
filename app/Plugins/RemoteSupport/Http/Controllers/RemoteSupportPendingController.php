@@ -11,8 +11,9 @@
 namespace App\Plugins\RemoteSupport\Http\Controllers;
 
 use App\Enums\Asset\{AssetClass, AssetOwnership};
+use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Controller;
-use App\Models\{Asset, Customer, Organization, User};
+use App\Models\{Asset, Customer, Organization, Project, RemotePendingSession, User};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
 use App\Plugins\RemoteSupport\RemoteSupportService;
 use App\Services\Asset\AssetService;
@@ -39,6 +40,7 @@ class RemoteSupportPendingController extends Controller {
 
         $organization = $admin->organization;
         $groups = $organization !== null ? $this->service->openPendingGroups($organization) : collect();
+        $shared = $organization !== null ? $this->service->openSharedSessions($organization) : collect();
 
         // Nur fernwartbare Geräte (Arbeitsplatz/Server/Notebook) können eine ID tragen.
         $assets = Asset::query()
@@ -48,13 +50,34 @@ class RemoteSupportPendingController extends Controller {
 
         $customers = Customer::query()->orderBy('name')->get(['id', 'name', 'company']);
 
+        // Kunde (Sqid) → aktive Projekte (Sqid + Name) für die abhängige Projektauswahl.
+        $projectMap = Project::query()
+            ->where('status', ProjectStatus::Active->value)
+            ->whereNotNull('customer_id')
+            ->orderBy('name')
+            ->get(['id', 'name', 'customer_id'])
+            ->groupBy(fn (Project $p): int => (int) $p->customer_id)
+            ->mapWithKeys(function ($projects, int $customerId): array {
+                /** @var \Illuminate\Support\Collection<int, Project> $projects */
+                $customer = Customer::query()->find($customerId);
+                $key = $customer instanceof Customer ? $customer->sqid : (string) $customerId;
+
+                return [$key => $projects->map(fn (Project $p): array => [
+                    'id' => $p->sqid,
+                    'name' => $p->name,
+                ])->values()->all()];
+            })
+            ->all();
+
         $pool = (array) config('asset_categories', []);
         $categories = array_intersect_key($pool, array_flip(RemoteSupportService::REMOTE_CATEGORY_CODES));
 
         return view('remote-support::pending.index', [
             'groups' => $groups,
+            'shared' => $shared,
             'assets' => $assets,
             'customers' => $customers,
+            'projectMap' => $projectMap,
             'categories' => $categories,
         ]);
     }
@@ -129,6 +152,63 @@ class RemoteSupportPendingController extends Controller {
         return back()->with('status', __('Gerät „:name" angelegt. ', ['name' => $asset->name]) . $this->resultMessage($result));
     }
 
+    /**
+     * Bucht markierte Sitzungen eines Mehrkundengeräts auf einen Kunden (optional
+     * konkretes Projekt). Mehrere Sitzungen werden per Checkbox gemeinsam zugewiesen.
+     */
+    public function assignShared(Request $request): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $customerId = Sqid::decodeOrNumeric(Customer::class, $request->input('customer_id'));
+        $projectId = Sqid::decodeOrNumeric(Project::class, $request->input('project_id'));
+
+        $request->merge(['customer_id' => $customerId, 'project_id' => $projectId]);
+
+        $validated = $request->validate([
+            'customer_id' => ['required', 'integer'],
+            'project_id' => ['nullable', 'integer'],
+            'pending_ids' => ['required', 'array', 'min:1'],
+            'pending_ids.*' => ['string'],
+        ]);
+
+        $customer = Customer::query()->whereKey($validated['customer_id'])->firstOrFail();
+
+        $project = null;
+        if (($validated['project_id'] ?? null) !== null) {
+            $project = Project::query()
+                ->whereKey($validated['project_id'])
+                ->where('customer_id', $customer->id)
+                ->first();
+            abort_if($project === null, 422, 'Projekt gehört nicht zum gewählten Kunden.');
+        }
+
+        $rows = $this->pendingRowsFromInput($organization, $validated['pending_ids']);
+        if ($rows->isEmpty()) {
+            return back()->with('error', __('Keine gültigen Sitzungen ausgewählt.'));
+        }
+
+        $result = $this->service->assignSharedSessions($organization, $rows, $customer, $project);
+
+        return back()->with('status', $this->resultMessage($result));
+    }
+
+    /** Verwirft markierte Sitzungen eines Mehrkundengeräts. */
+    public function dismissSession(Request $request): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $validated = $request->validate([
+            'pending_ids' => ['required', 'array', 'min:1'],
+            'pending_ids.*' => ['string'],
+        ]);
+
+        $rows = $this->pendingRowsFromInput($organization, $validated['pending_ids']);
+        $count = $this->service->dismissSessions($rows);
+
+        return back()->with('status', __(':count Sitzung(en) verworfen.', ['count' => $count]));
+    }
+
     public function dismiss(Request $request): RedirectResponse {
         $admin = $this->admin();
 
@@ -140,6 +220,33 @@ class RemoteSupportPendingController extends Controller {
         $count = $this->service->dismissPending($this->organization($admin), $validated['provider'], $validated['remote_id']);
 
         return back()->with('status', __(':count Verbindung(en) verworfen.', ['count' => $count]));
+    }
+
+    /**
+     * Lädt offene Pending-Sitzungen eines Mehrkundengeräts aus den übergebenen
+     * Sqids (org-scoped, nur asset-gebundene offene Sitzungen).
+     *
+     * @param  array<int, string>  $pendingIds
+     * @return \Illuminate\Support\Collection<int, RemotePendingSession>
+     */
+    private function pendingRowsFromInput(Organization $organization, array $pendingIds): \Illuminate\Support\Collection {
+        $ids = collect($pendingIds)
+            ->map(fn (string $v): ?int => Sqid::decodeOrNumeric(RemotePendingSession::class, $v))
+            ->filter(fn (?int $id): bool => $id !== null)
+            ->values()
+            ->all();
+
+        if ($ids === []) {
+            return collect();
+        }
+
+        return RemotePendingSession::query()
+            ->where('organization_id', $organization->id)
+            ->where('status', RemotePendingSession::STATUS_OPEN)
+            ->whereNotNull('asset_id')
+            ->whereIn('id', $ids)
+            ->with('asset')
+            ->get();
     }
 
     /** @param array{created: int, skipped: int} $result */

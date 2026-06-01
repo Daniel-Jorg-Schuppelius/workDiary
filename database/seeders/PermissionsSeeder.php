@@ -310,6 +310,23 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::CustomerExport,
             PermissionEnum::CustomerImport,
             PermissionEnum::CustomerLexofficeSync,
+            PermissionEnum::ForeignCustomerViewAny,
+            PermissionEnum::ForeignCustomerView,
+            PermissionEnum::ForeignCustomerCreate,
+            PermissionEnum::ForeignCustomerUpdate,
+            PermissionEnum::ForeignCustomerDelete,
+            PermissionEnum::ForeignCustomerPromote,
+            PermissionEnum::SupplierViewAny,
+            PermissionEnum::SupplierView,
+            PermissionEnum::SupplierCreate,
+            PermissionEnum::SupplierUpdate,
+            PermissionEnum::SupplierDelete,
+            PermissionEnum::SupplierExport,
+            PermissionEnum::SupplierImport,
+            PermissionEnum::SupplierLexofficeSync,
+            PermissionEnum::ArticleViewAny,
+            PermissionEnum::ArticleLexofficeSync,
+            PermissionEnum::VoucherViewAny,
             PermissionEnum::ProjectViewAny,
             PermissionEnum::ProjectView,
             PermissionEnum::ProjectManageBilling,
@@ -514,15 +531,21 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::CustomerPortalOpenIssueView,
         ];
 
+        // Lese-Rollen, die Kunden sehen, sehen auch deren Fremdkunden.
+        $foreignCustomerRead = [
+            PermissionEnum::ForeignCustomerViewAny,
+            PermissionEnum::ForeignCustomerView,
+        ];
+
         return [
             UserRole::Admin->value => $all,
             UserRole::Geschaeftsfuehrung->value => $geschaeftsfuehrung,
-            UserRole::Teamleitung->value => $teamleitung,
+            UserRole::Teamleitung->value => [...$teamleitung, ...$foreignCustomerRead],
             UserRole::Buchhaltung->value => $buchhaltung,
-            UserRole::User->value => $user,
-            UserRole::Aussendienst->value => $aussendienst,
-            UserRole::Callcenter->value => $callcenter,
-            UserRole::Support->value => $support,
+            UserRole::User->value => [...$user, ...$foreignCustomerRead],
+            UserRole::Aussendienst->value => [...$aussendienst, ...$foreignCustomerRead],
+            UserRole::Callcenter->value => [...$callcenter, ...$foreignCustomerRead],
+            UserRole::Support->value => [...$support, ...$foreignCustomerRead],
             UserRole::Kunde->value => $kunde,
         ];
     }

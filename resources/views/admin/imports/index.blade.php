@@ -2,9 +2,11 @@
 
 @section('title', __('CSV-Imports'))
 @section('nav-title', __('CSV-Imports'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page :subtitle="__('CSV-Imports für :org verwalten — Vorprüfung, Bestätigung & Verlauf.', ['org' => $organization->name])">
+<x-index-page overflow="clip" :subtitle="__('CSV-Imports für :org verwalten — Vorprüfung, Bestätigung & Verlauf.', ['org' => $organization->name])">
     <x-slot:actions>
         <x-icon-btn icon="add" tone="primary" size="sm"
                     :href="route('admin.imports.create')"
@@ -30,7 +32,7 @@
         <x-empty-state framed
             icon='<span class="material-symbols-outlined" aria-hidden="true">cloud_upload</span>' />
     @else
-        <x-table>
+        <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
                     <th>{{ __('ID') }}</th>
@@ -58,7 +60,7 @@
                 </tr>
             @endforeach
         </x-table>
-        <div class="mt-4">{{ $runs->links() }}</div>
+        <x-pagination :paginator="$runs" />
     @endif
 </x-index-page>
 @endsection

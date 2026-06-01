@@ -55,7 +55,7 @@
                     $mp = (int) $entry['minutes'] % 60;
                 @endphp
                 <tr class="project-row">
-                    <td>{{ $entry['project']->name }}</td>
+                    <td>{{ $entry['project']->name }}@if ($entry['project']->foreignCustomer) · {{ $entry['project']->foreignCustomer->name }}@endif</td>
                     <td>{{ $entry['project']->number }}</td>
                     <td class="right">{{ $hp }}:{{ str_pad((string) $mp, 2, '0', STR_PAD_LEFT) }}</td>
                     <td class="right">{{ number_format((float) $entry['rate'], 2, ',', '.') }} €</td>

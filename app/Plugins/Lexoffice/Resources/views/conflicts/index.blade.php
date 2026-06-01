@@ -3,25 +3,20 @@
 @section('nav-title', __('Lexoffice-Konflikte'))
 
 @section('content')
-<x-page-shell>
+<x-index-page :subtitle="__('Im Modus „Manuelle Prüfung“ landen abweichende Remote-Datensätze hier. Pro Konflikt entscheidest du, ob die lokalen oder die Lexoffice-Werte gewinnen.')">
+    <x-slot:actions>
+        <form method="GET" action="{{ route('admin.lexoffice.conflicts.index') }}" class="flex items-center gap-2">
+            <select name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
+                <option value="open"            @selected($filters['status'] === 'open')>{{ __('Offen') }}</option>
+                <option value="resolved_local"  @selected($filters['status'] === 'resolved_local')>{{ __('Lokal gewählt') }}</option>
+                <option value="resolved_remote" @selected($filters['status'] === 'resolved_remote')>{{ __('Remote gewählt') }}</option>
+                <option value="dismissed"       @selected($filters['status'] === 'dismissed')>{{ __('Verworfen') }}</option>
+                <option value="all"             @selected($filters['status'] === 'all')>{{ __('Alle') }}</option>
+            </select>
+        </form>
+    </x-slot:actions>
+
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <div>
-                <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Lexoffice-Sync-Konflikte') }}</h1>
-                <p class="text-sm text-base-content/60">
-                    {{ __('Im Modus "Manuelle Prüfung" landen abweichende Remote-Datensätze hier. Pro Konflikt entscheidest du, ob die lokalen oder die Lexoffice-Werte gewinnen.') }}
-                </p>
-            </div>
-            <form method="GET" action="{{ route('admin.lexoffice.conflicts.index') }}" class="flex items-center gap-2">
-                <select name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
-                    <option value="open"            @selected($filters['status'] === 'open')>{{ __('Offen') }}</option>
-                    <option value="resolved_local"  @selected($filters['status'] === 'resolved_local')>{{ __('Lokal gewählt') }}</option>
-                    <option value="resolved_remote" @selected($filters['status'] === 'resolved_remote')>{{ __('Remote gewählt') }}</option>
-                    <option value="dismissed"       @selected($filters['status'] === 'dismissed')>{{ __('Verworfen') }}</option>
-                    <option value="all"             @selected($filters['status'] === 'all')>{{ __('Alle') }}</option>
-                </select>
-            </form>
-        </div>
 
         @if ($conflicts->isEmpty())
             <p class="rounded-box border border-base-300 p-6 text-center text-sm text-base-content/60">
@@ -114,5 +109,5 @@
             <div class="mt-3">{{ $conflicts->links() }}</div>
         @endif
     </div>
-</x-page-shell>
+</x-index-page>
 @endsection

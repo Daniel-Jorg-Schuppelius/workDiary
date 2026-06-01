@@ -2,9 +2,11 @@
 
 @section('title', __('Geschosse'))
 @section('nav-title', __('Geschosse'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page :subtitle="$building
+<x-index-page overflow="clip" :subtitle="$building
     ? __('Geschosse im Gebäude :building.', ['building' => $building->name])
     : __('Geschosse aller Gebäude verwalten.')">
     <x-slot:actions>
@@ -18,7 +20,7 @@
         <x-empty-state framed
             icon='<span class="material-symbols-outlined" aria-hidden="true">layers</span>' />
     @else
-        <x-table>
+        <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
                     <th class="text-end">{{ __('Ebene') }}</th>
@@ -45,7 +47,7 @@
                 </tr>
             @endforeach
         </x-table>
-        <div class="mt-4">{{ $floors->links() }}</div>
+        <x-pagination :paginator="$floors" />
     @endif
 </x-index-page>
 @endsection

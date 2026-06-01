@@ -2,25 +2,23 @@
 
 @section('title', __('Verpflegungspauschalen'))
 @section('nav-title', __('Verpflegungspauschalen'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Pauschalensätze für Verpflegungs- und Übernachtungskosten verwalten.')">
-            <x-slot:actions>
-                <form method="GET" action="{{ route('admin.per-diem-rates.index') }}" class="inline-flex items-center gap-2">
-                    <input type="text" name="country" maxlength="2" placeholder="DE"
-                           value="{{ $country ?? '' }}"
-                           class="input input-bordered input-sm w-20 uppercase">
-                    <button type="submit" class="btn btn-ghost btn-sm">{{ __('Filtern') }}</button>
-                </form>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('admin.per-diem-rates.create')"
-                            show-label>{{ __('Pauschalensatz anlegen') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="__('Pauschalensätze für Verpflegungs- und Übernachtungskosten verwalten.')">
+    <x-slot:actions>
+        <form method="GET" action="{{ route('admin.per-diem-rates.index') }}" class="inline-flex items-center gap-2">
+            <input type="text" name="country" maxlength="2" placeholder="DE"
+                   value="{{ $country ?? '' }}"
+                   class="input input-bordered input-sm w-20 uppercase">
+            <button type="submit" class="btn btn-ghost btn-sm">{{ __('Filtern') }}</button>
+        </form>
+        <x-icon-btn icon="add" tone="primary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('admin.per-diem-rates.create')"
+                    show-label>{{ __('Pauschalensatz anlegen') }}</x-icon-btn>
+    </x-slot:actions>
 
     <div role="alert" class="alert alert-info alert-soft">
         <x-icon name="info" />
@@ -32,7 +30,7 @@
         </div>
     </div>
 
-    <x-table table-sort="server"
+    <x-table scroll="flex" :pinRows="true" table-sort="server"
              :route="route('admin.per-diem-rates.index')"
              :current-sort="$sort ?? null"
              :current-dir="$dir ?? 'desc'">
@@ -82,8 +80,6 @@
         @endforelse
     </x-table>
 
-    @if ($rates->hasPages())
-        <div>{{ $rates->links() }}</div>
-    @endif
-</x-page-shell>
+    <x-pagination :paginator="$rates" />
+</x-index-page>
 @endsection

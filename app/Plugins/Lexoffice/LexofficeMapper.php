@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Models\{Customer, TimeEntry};
+use App\Models\{Customer, Supplier, TimeEntry};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -30,65 +30,119 @@ class LexofficeMapper {
      * @return array<string, mixed>
      */
     public function customerToContactPayload(Customer $customer, array $defaults = []): array {
-        $isCompany = (bool) ($customer->company || $customer->vat_id);
+        return $this->contactPayload($customer, 'customer', $defaults);
+    }
+
+    /**
+     * @param  array<string, mixed>  $defaults
+     * @return array<string, mixed>
+     */
+    public function supplierToContactPayload(Supplier $supplier, array $defaults = []): array {
+        return $this->contactPayload($supplier, 'vendor', $defaults);
+    }
+
+    /**
+     * Baut den gemeinsamen Lexoffice-Contact-Payload für Kunden (role=customer)
+     * und Lieferanten (role=vendor).
+     *
+     * @param  'customer'|'vendor'  $role
+     * @param  array<string, mixed>  $defaults
+     * @return array<string, mixed>
+     */
+    private function contactPayload(Customer|Supplier $contact, string $role, array $defaults = []): array {
+        $isCompany = (bool) ($contact->company || $contact->vat_id);
+        $country = $contact->country ?: ($defaults['country'] ?? 'DE');
 
         $billingAddress = [];
-        $hasStructured = $customer->address_street || $customer->address_zip || $customer->address_city;
+        $hasStructured = $contact->address_street || $contact->address_zip || $contact->address_city;
         if ($hasStructured) {
             $billingAddress = array_filter([
-                'street' => $customer->address_street,
-                'zip' => $customer->address_zip,
-                'city' => $customer->address_city,
-                'countryCode' => $customer->country ?: ($defaults['country'] ?? 'DE'),
+                'street' => $contact->address_street,
+                'zip' => $contact->address_zip,
+                'city' => $contact->address_city,
+                'countryCode' => $country,
             ]);
-        } elseif ($customer->address) {
+        } elseif ($contact->address) {
             $billingAddress = [
-                'street' => $customer->address,
-                'countryCode' => $customer->country ?: ($defaults['country'] ?? 'DE'),
+                'street' => $contact->address,
+                'countryCode' => $country,
             ];
         }
 
         $payload = [
             'version' => 0,
             'roles' => [
-                'customer' => (object) [],
+                $role => (object) [],
             ],
-            'note' => $customer->comment ?: null,
+            'note' => $contact->comment ?: null,
         ];
 
         if ($isCompany) {
-            $contactPersons = $this->buildContactPersons($customer);
+            $contactPersons = $this->buildContactPersons($contact);
             $payload['company'] = array_filter([
-                'name' => $customer->company ?: $customer->name,
-                'taxNumber' => $customer->vat_id,
-                'vatRegistrationId' => $customer->vat_id,
+                'name' => $contact->company ?: $contact->name,
+                'taxNumber' => $contact->tax_number ?: null,
+                'vatRegistrationId' => $contact->vat_id ?: null,
                 'contactPersons' => $contactPersons !== [] ? $contactPersons : null,
             ]);
         } else {
-            $parts = preg_split('/\s+/', trim((string) $customer->name), 2) ?: [];
+            $parts = preg_split('/\s+/', trim((string) $contact->name), 2) ?: [];
             $payload['person'] = array_filter([
                 'firstName' => $parts[0] ?? null,
-                'lastName' => $parts[1] ?? ($parts[0] ?? $customer->name),
+                'lastName' => $parts[1] ?? ($parts[0] ?? $contact->name),
             ]);
         }
 
-        if ($billingAddress) {
-            $payload['addresses'] = [
-                'billing' => [$billingAddress],
-            ];
+        $addresses = $this->buildAddresses($contact, $billingAddress, $country);
+        if ($addresses !== []) {
+            $payload['addresses'] = $addresses;
         }
 
-        if ($customer->email || $customer->phone || $customer->mobile) {
-            $payload['emailAddresses'] = $customer->email
-                ? ['business' => [$customer->email]]
+        if ($contact->email || $contact->phone || $contact->mobile || $contact->fax) {
+            $payload['emailAddresses'] = $contact->email
+                ? ['business' => [$contact->email]]
                 : null;
             $payload['phoneNumbers'] = array_filter([
-                'business' => $customer->phone ? [$customer->phone] : null,
-                'mobile' => $customer->mobile ? [$customer->mobile] : null,
+                'business' => $contact->phone ? [$contact->phone] : null,
+                'mobile' => $contact->mobile ? [$contact->mobile] : null,
+                'fax' => $contact->fax ? [$contact->fax] : null,
             ]);
         }
 
         return array_filter($payload, static fn($v) => $v !== null && $v !== []);
+    }
+
+    /**
+     * Baut die addresses-Struktur (billing + optionale shipping-Adressen aus
+     * der contact_addresses-Relation).
+     *
+     * @param  array<string, mixed>  $billingAddress
+     * @return array<string, mixed>
+     */
+    private function buildAddresses(Customer|Supplier $contact, array $billingAddress, string $defaultCountry): array {
+        $addresses = [];
+        if ($billingAddress !== []) {
+            $addresses['billing'] = [$billingAddress];
+        }
+
+        $shipping = [];
+        foreach ($contact->addresses()->where('kind', \App\Models\ContactAddress::KIND_SHIPPING)->get() as $addr) {
+            $entry = array_filter([
+                'supplement' => $addr->supplement,
+                'street' => $addr->street,
+                'zip' => $addr->zip,
+                'city' => $addr->city,
+                'countryCode' => $addr->country_code ?: $defaultCountry,
+            ]);
+            if ($entry !== []) {
+                $shipping[] = $entry;
+            }
+        }
+        if ($shipping !== []) {
+            $addresses['shipping'] = $shipping;
+        }
+
+        return $addresses;
     }
 
     /**
@@ -97,7 +151,7 @@ class LexofficeMapper {
      *
      * @return array<int, array<string, mixed>>
      */
-    private function buildContactPersons(Customer $customer): array {
+    private function buildContactPersons(Customer|Supplier $customer): array {
         $persons = $customer->contact_persons ?? [];
         $list = [];
 

@@ -2,9 +2,11 @@
 
 @section('title', __('Plugin-Fehler'))
 @section('nav-title', __('Plugin-Fehler'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page :subtitle="__('Inbox für Plugin-Fehler aus Boot, Runtime und Healthchecks.')">
+<x-index-page overflow="clip" :subtitle="__('Inbox für Plugin-Fehler aus Boot, Runtime und Healthchecks.')">
     <x-slot:actions>
         <x-icon-btn icon="extension" tone="ghost" size="sm"
                     :href="route('admin.plugins.index')"
@@ -37,7 +39,7 @@
             :title="__('Keine Fehler')"
             :message="__('Aktuell sind keine Plugin-Fehler verzeichnet.')" />
     @else
-        <x-table>
+        <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
                     <x-table.th>{{ __('Zeitpunkt') }}</x-table.th>
@@ -84,9 +86,7 @@
             @endforeach
         </x-table>
 
-        <div class="mt-4">
-            {{ $errors->links() }}
-        </div>
+        <x-pagination :paginator="$errors" />
     @endif
 </x-index-page>
 @endsection

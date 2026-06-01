@@ -1,6 +1,8 @@
 @extends('layouts.app')
 @section('title', __('Stempelungen') . ' — WorkDiary')
 @section('nav-title', __('Stempelungen'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
     @php
@@ -10,24 +12,20 @@
         /** @var \Carbon\CarbonInterface $to */
     @endphp
 
-    <x-page-shell>
-        <x-slot:toolbar>
-            <x-page-toolbar :subtitle="__('Stempelungen und Anwesenheiten der Mitarbeiter einsehen.')">
-                <x-slot:actions>
-                    <x-icon-btn icon="today" size="sm"
-                                :href="route('today.show')"
-                                show-label>{{ __('Heute-Übersicht') }}</x-icon-btn>
-                </x-slot:actions>
-            </x-page-toolbar>
-        </x-slot:toolbar>
+    <x-index-page overflow="clip" :subtitle="__('Stempelungen und Anwesenheiten der Mitarbeiter einsehen.')">
+        <x-slot:actions>
+            <x-icon-btn icon="today" size="sm"
+                        :href="route('today.show')"
+                        show-label>{{ __('Heute-Übersicht') }}</x-icon-btn>
+        </x-slot:actions>
 
-        <x-card padding="p-0">
+        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
             <x-table table-sort="server"
                      :route="route('attendance.index')"
                      :current-sort="$sort ?? null"
                      :current-dir="$dir ?? 'desc'"
                      :sort-params="['from' => $from->toDateString(), 'to' => $to->toDateString()]"
-                     bare>
+                     bare scroll="flex" :pinRows="true">
                 <x-slot:head>
                     <tr>
                         <x-table.th sort="date">{{ __('Datum') }}</x-table.th>
@@ -61,9 +59,7 @@
                     <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">schedule</span>' :colspan="7" :title="__('Keine Stempelungen im Zeitraum')" compact />
                 @endforelse
             </x-table>
-            @if ($attendances->hasPages())
-                <div class="p-3">{{ $attendances->links() }}</div>
-            @endif
+            <x-pagination :paginator="$attendances" :framed="false" />
         </x-card>
-    </x-page-shell>
+    </x-index-page>
 @endsection

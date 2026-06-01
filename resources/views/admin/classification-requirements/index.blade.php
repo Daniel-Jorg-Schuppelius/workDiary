@@ -2,9 +2,11 @@
 
 @section('title', __('Pflichtregeln'))
 @section('nav-title', __('Pflichtregeln'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page :subtitle="__('Pflichtklassifikationen pro Auftragstyp für :org verwalten.', ['org' => $organization->name])">
+<x-index-page overflow="clip" :subtitle="__('Pflichtklassifikationen pro Auftragstyp für :org verwalten.', ['org' => $organization->name])">
     <x-slot:actions>
         <x-icon-btn icon="add" tone="primary" size="sm"
                     data-entry-modal-trigger
@@ -93,7 +95,7 @@
         <x-empty-state framed
             icon='<span class="material-symbols-outlined" aria-hidden="true">rule</span>' />
     @else
-        <x-table>
+        <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
                     <th>{{ __('Auftragstyp') }}</th>

@@ -43,8 +43,7 @@ class RemoteSessionSpec extends AbstractEntitySpec {
     /** @var array<int, int|null> Org-ID → buchbarer Benutzer */
     private array $userCache = [];
 
-    public function __construct(private readonly RemoteSupportService $service) {
-    }
+    public function __construct(private readonly RemoteSupportService $service) {}
 
     public function entity(): ImportEntity {
         return ImportEntity::RemoteSessions;

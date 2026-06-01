@@ -2,6 +2,8 @@
 
 @section('title', __('Software'))
 @section('nav-title', __('Software'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @php
     /** @var \Illuminate\Pagination\LengthAwarePaginator $softwareItems */
@@ -11,7 +13,7 @@
 @endphp
 
 @section('content')
-<x-index-page :subtitle="__('Software-Katalog (Betriebssysteme, Anwendungen, Lizenzen) verwalten.')">
+<x-index-page overflow="clip" :subtitle="__('Software-Katalog (Betriebssysteme, Anwendungen, Lizenzen) verwalten.')">
     <x-slot:actions>
         @if ($canCreate ?? false)
             <x-icon-btn icon="add" tone="primary" size="sm"
@@ -36,7 +38,7 @@
     @if ($softwareItems->total() === 0)
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">apps</span>' />
     @else
-        <x-table>
+        <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
                     <th>{{ __('Name') }}</th>
@@ -73,9 +75,7 @@
             @endforeach
         </x-table>
 
-        <div class="mt-4">
-            {{ $softwareItems->links() }}
-        </div>
+        <x-pagination :paginator="$softwareItems" />
     @endif
 </x-index-page>
 @endsection

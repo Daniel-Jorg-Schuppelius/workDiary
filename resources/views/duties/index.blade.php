@@ -14,10 +14,8 @@
         $tabFilters = array_filter($filters ?? [], fn($v) => $v !== null && $v !== '');
     @endphp
 
-    <x-page-shell overflow="clip">
-
-        <x-page-toolbar :badge="__('Aktiv')" badge-tone="primary">
-            <x-slot:actions>
+    <x-index-page overflow="clip" :badge="__('Aktiv')" badge-tone="primary">
+        <x-slot:actions>
                 @if ($tab !== 'urlaub' && $tab !== 'krank')
                     <x-icon-btn icon="inventory_2" size="sm"
                                 :href="route('archive.index', ['tab' => $tab === 'diary' ? 'diary' : $tab])"
@@ -55,7 +53,6 @@
                     @endcan
                 @endif
             </x-slot:actions>
-        </x-page-toolbar>
 
         {{-- Filter --}}
         <x-filter-bar :action="route('duties.index')" :reset="! empty($tabFilters) ? route('duties.index', ['tab' => $tab]) : null">
@@ -227,6 +224,6 @@
                 @break
         @endswitch
 
-    </x-page-shell>
+    </x-index-page>
 @endsection
 

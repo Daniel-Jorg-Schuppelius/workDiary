@@ -4,17 +4,13 @@
 @section('nav-title', __('access.title.roles'))
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Organisations- und Plattform-Rollen für :org verwalten.', ['org' => $organization->name])">
-            <x-slot:actions>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('admin.access.roles.create')"
-                            show-label>{{ __('access.action.role_new') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page :subtitle="__('Organisations- und Plattform-Rollen für :org verwalten.', ['org' => $organization->name])">
+    <x-slot:actions>
+        <x-icon-btn icon="add" tone="primary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('admin.access.roles.create')"
+                    show-label>{{ __('access.action.role_new') }}</x-icon-btn>
+    </x-slot:actions>
 
     <section class="space-y-3">
         <h2 class="text-lg font-semibold">{{ __('access.title.org_roles', ['org' => $organization->name]) }}</h2>
@@ -76,5 +72,5 @@
             </x-table>
         </section>
     @endif
-</x-page-shell>
+</x-index-page>
 @endsection

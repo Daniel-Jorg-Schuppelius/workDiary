@@ -1,27 +1,25 @@
 @extends('layouts.app')
 @section('title', __('Globale Aufgaben'))
 @section('nav-title', __('Globale Aufgaben'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @php
     /** @var \Illuminate\Pagination\LengthAwarePaginator<int, \App\Models\Task> $tasks */
 @endphp
 
 @section('content')
-    <x-page-shell>
-        <x-slot:toolbar>
-            <x-page-toolbar :subtitle="__('Wiederverwendbare Tätigkeiten ohne Projektbezug.')">
-                <x-slot:actions>
-                    @can('create', App\Models\Task::class)
-                        <x-icon-btn icon="add" tone="primary" size="sm"
-                                    data-entry-modal-trigger
-                                    :href="route('tasks.global.create').'?dialog=1'"
-                                    show-label>{{ __('Neue Aufgabe') }}</x-icon-btn>
-                    @endcan
-                </x-slot:actions>
-            </x-page-toolbar>
-        </x-slot:toolbar>
+    <x-index-page overflow="clip" :subtitle="__('Wiederverwendbare Tätigkeiten ohne Projektbezug.')">
+        <x-slot:actions>
+            @can('create', App\Models\Task::class)
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('tasks.global.create').'?dialog=1'"
+                            show-label>{{ __('Neue Aufgabe') }}</x-icon-btn>
+            @endcan
+        </x-slot:actions>
 
-        <x-table :zebra="true">
+        <x-table scroll="flex" :pinRows="true" :zebra="true">
             <thead class="bg-base-200">
                 <tr>
                     <th>{{ __('Titel') }}</th>
@@ -75,6 +73,6 @@
             </tbody>
         </x-table>
 
-        {{ $tasks->links() }}
-    </x-page-shell>
+        <x-pagination :paginator="$tasks" />
+    </x-index-page>
 @endsection

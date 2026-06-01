@@ -2,20 +2,13 @@
 
 @section('title', __('Automatisierungen'))
 @section('nav-title', __('Automatisierungen'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-page-shell>
-    <div role="alert" class="alert alert-info alert-soft">
-        <x-icon name="bolt" />
-        <div>
-            <h3 class="font-semibold">{{ __('Workflow-Automatisierung') }}</h3>
-            <div class="text-sm">
-                {{ __('Regeln werten bei festgelegten Ereignissen Bedingungen aus und führen Aktionen automatisch aus (z. B. Kleinbetragsspesen genehmigen). Jede Auswertung wird im Audit-Log protokolliert.') }}
-            </div>
-        </div>
-    </div>
+<x-index-page overflow="clip" :subtitle="__('Regeln werten bei festgelegten Ereignissen Bedingungen aus und führen Aktionen automatisch aus (z. B. Kleinbetragsspesen genehmigen). Jede Auswertung wird im Audit-Log protokolliert.')">
 
-    <x-table>
+    <x-table scroll="flex" :pinRows="true">
         <x-slot:head>
             <tr>
                 <th class="w-16">{{ __('Prio') }}</th>
@@ -93,5 +86,5 @@
             </form>
         </div>
     </details>
-</x-page-shell>
+</x-index-page>
 @endsection

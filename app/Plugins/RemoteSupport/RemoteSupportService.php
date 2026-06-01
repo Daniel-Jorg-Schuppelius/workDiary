@@ -11,7 +11,7 @@
 namespace App\Plugins\RemoteSupport;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Asset, ExternalReference, Organization, RemotePendingSession, TimeEntry, User};
+use App\Models\{Asset, Customer, ExternalReference, Organization, Project, RemotePendingSession, TimeEntry, User};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, RemoteProvider, RemoteSession, TeamViewerClient};
 use Carbon\CarbonImmutable;
 
@@ -114,7 +114,7 @@ class RemoteSupportService {
      * im Fenster [$from, $to] ab und legt je neuer Session einen TimeEntry an.
      *
      * @param  array<string, mixed>  $config  Ergebnis von {@see RemoteSupportConfig::resolve()}
-     * @return array{created: int, skipped: int, unmatched: int}
+     * @return array{created: int, skipped: int, unmatched: int, pending: int}
      */
     public function import(Organization $organization, array $config, CarbonImmutable $from, CarbonImmutable $to): array {
         $sessions = [];
@@ -138,28 +138,30 @@ class RemoteSupportService {
      *
      * @param  array<string, mixed>  $config  Ergebnis von {@see RemoteSupportConfig::resolve()}
      * @param  iterable<RemoteSession>  $sessions
-     * @return array{created: int, skipped: int, unmatched: int}
+     * @return array{created: int, skipped: int, unmatched: int, pending: int}
      */
     public function importSessions(Organization $organization, array $config, iterable $sessions): array {
         $created = 0;
         $skipped = 0;
         $unmatched = 0;
+        $pending = 0;
 
         $userId = $this->resolveBookingUserId($organization, $config['default_user_id'] ?? null);
         if ($userId === null) {
             // Ohne buchbaren Benutzer lässt sich keine Zeit erfassen.
-            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0];
+            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'pending' => 0];
         }
 
         foreach ($sessions as $session) {
             match ($this->bookSession($organization, $config, $session, $userId)) {
                 'created' => $created++,
                 'unmatched' => $unmatched++,
+                'pending' => $pending++,
                 default => $skipped++,
             };
         }
 
-        return ['created' => $created, 'skipped' => $skipped, 'unmatched' => $unmatched];
+        return ['created' => $created, 'skipped' => $skipped, 'unmatched' => $unmatched, 'pending' => $pending];
     }
 
     /**
@@ -168,7 +170,7 @@ class RemoteSupportService {
      * unbekannte IDs in die Pending-Inbox oder überspringt bereits importierte.
      *
      * @param  array<string, mixed>  $config  Ergebnis von {@see RemoteSupportConfig::resolve()}
-     * @return 'created'|'skipped'|'unmatched'
+     * @return 'created'|'skipped'|'unmatched'|'pending'
      */
     public function bookSession(Organization $organization, array $config, RemoteSession $session, int $userId): string {
         $asset = $this->matchAsset($organization, $session->provider, $session->remoteId);
@@ -180,6 +182,14 @@ class RemoteSupportService {
 
         if ($this->sessionAlreadyImported($organization, $session)) {
             return 'skipped';
+        }
+
+        // Mehrkundengeräte werden nicht automatisch gebucht: Die Sitzung wandert
+        // in die Inbox und wird dort je Sitzung einem Kunden zugeordnet.
+        if ($asset->shared_remote) {
+            $this->recordPending($organization, $session, $asset->id);
+
+            return 'pending';
         }
 
         $this->createTimeEntry($organization, $asset, $session, $userId, (bool) $config['default_billable']);
@@ -244,9 +254,10 @@ class RemoteSupportService {
         return $first !== null ? (int) $first->id : null;
     }
 
-    private function createTimeEntry(Organization $organization, Asset $asset, RemoteSession $session, int $userId, bool $billable): ?TimeEntry {
-        $customer = $asset->customer;
-        $project = $customer?->defaultProjectOrCreate();
+    private function createTimeEntry(Organization $organization, Asset $asset, RemoteSession $session, int $userId, bool $billable, ?Project $project = null): ?TimeEntry {
+        // Bei Mehrkundengeräten wird das Zielprojekt explizit übergeben; sonst
+        // greift das Standardprojekt des Asset-Kunden.
+        $project ??= $asset->customer?->defaultProjectOrCreate();
         if ($project === null) {
             // Ohne Kunde/Projekt kann keine projektbezogene Zeit gebucht werden.
             return null;
@@ -293,8 +304,9 @@ class RemoteSupportService {
     /**
      * Legt eine unbekannte Verbindung als offene Pending-Session ab (Dedupe über
      * provider+session_id). Bereits zugewiesene/verworfene Einträge bleiben unberührt.
+     * Ist $assetId gesetzt, gehört die Sitzung zu einem bekannten Mehrkundengerät.
      */
-    private function recordPending(Organization $organization, RemoteSession $session): void {
+    private function recordPending(Organization $organization, RemoteSession $session, ?int $assetId = null): void {
         $existing = RemotePendingSession::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
@@ -318,6 +330,11 @@ class RemoteSupportService {
                     $dirty = true;
                 }
 
+                if ($assetId !== null && $existing->asset_id !== $assetId) {
+                    $existing->asset_id = $assetId;
+                    $dirty = true;
+                }
+
                 if ($dirty) {
                     $existing->save();
                 }
@@ -328,6 +345,7 @@ class RemoteSupportService {
 
         RemotePendingSession::query()->create([
             'organization_id' => $organization->id,
+            'asset_id' => $assetId,
             'provider' => $session->provider,
             'remote_id' => $session->remoteId,
             'alias' => $session->alias,
@@ -349,6 +367,7 @@ class RemoteSupportService {
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->where('status', RemotePendingSession::STATUS_OPEN)
+            ->whereNull('asset_id')
             ->orderByDesc('ended_at')
             ->get()
             ->groupBy(fn(RemotePendingSession $s): string => $s->provider . '|' . $s->remote_id)
@@ -454,6 +473,138 @@ class RemoteSupportService {
                 'status' => RemotePendingSession::STATUS_DISMISSED,
                 'resolved_at' => now(),
             ]);
+    }
+
+    /**
+     * Offene Sitzungen von Mehrkundengeräten (asset_id gesetzt), gruppiert je
+     * Gerät. Jede Sitzung wird einzeln zur Zuordnung an einen Kunden angeboten.
+     *
+     * @return \Illuminate\Support\Collection<int, object{asset: Asset, sessions: \Illuminate\Support\Collection<int, RemotePendingSession>}>
+     */
+    public function openSharedSessions(Organization $organization): \Illuminate\Support\Collection {
+        /** @var \Illuminate\Database\Eloquent\Collection<int, RemotePendingSession> $rows */
+        $rows = RemotePendingSession::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('status', RemotePendingSession::STATUS_OPEN)
+            ->whereNotNull('asset_id')
+            ->with('asset')
+            ->orderByDesc('started_at')
+            ->get();
+
+        $groups = $rows
+            ->filter(fn(RemotePendingSession $s): bool => $s->asset instanceof Asset)
+            ->groupBy(fn(RemotePendingSession $s): int => (int) $s->asset_id)
+            ->map(function ($sessions): object {
+                /** @var \Illuminate\Support\Collection<int, RemotePendingSession> $sessions */
+                $first = $sessions->first();
+                assert($first instanceof RemotePendingSession);
+                $asset = $first->asset;
+                assert($asset instanceof Asset);
+
+                return (object) [
+                    'asset' => $asset,
+                    'sessions' => $sessions->values(),
+                ];
+            })
+            ->values();
+
+        /** @var \Illuminate\Support\Collection<int, object{asset: Asset, sessions: \Illuminate\Support\Collection<int, RemotePendingSession>}> $groups */
+        return $groups;
+    }
+
+    /**
+     * Bucht mehrere markierte Sitzungen eines Mehrkundengeräts gesammelt auf einen
+     * Kunden (optional konkretes Projekt). Bereits importierte werden übersprungen.
+     *
+     * @param  iterable<RemotePendingSession>  $rows
+     * @return array{created: int, skipped: int}
+     */
+    public function assignSharedSessions(Organization $organization, iterable $rows, Customer $customer, ?Project $project = null, ?int $userId = null): array {
+        $userId ??= $this->resolveBookingUserId($organization, RemoteSupportConfig::resolve($organization->id)['default_user_id'] ?? null);
+        if ($userId === null) {
+            return ['created' => 0, 'skipped' => 0];
+        }
+
+        $created = 0;
+        $skipped = 0;
+
+        foreach ($rows as $row) {
+            if ($this->assignSharedSession($organization, $row, $customer, $project, $userId)) {
+                $created++;
+            } else {
+                $skipped++;
+            }
+        }
+
+        return ['created' => $created, 'skipped' => $skipped];
+    }
+
+    /**
+     * Bucht genau eine Sitzung eines Mehrkundengeräts auf einen Kunden. Liefert
+     * false, wenn die Sitzung bereits importiert war (dann nur als imported
+     * markiert). Ohne übergebenes Projekt greift das Standardprojekt des Kunden.
+     */
+    public function assignSharedSession(Organization $organization, RemotePendingSession $row, Customer $customer, ?Project $project = null, ?int $userId = null): bool {
+        $asset = $row->asset;
+        if (! $asset instanceof Asset) {
+            return false;
+        }
+
+        $project ??= $customer->defaultProjectOrCreate();
+        $userId ??= $this->resolveBookingUserId($organization, RemoteSupportConfig::resolve($organization->id)['default_user_id'] ?? null);
+        if ($userId === null) {
+            return false;
+        }
+
+        $session = new RemoteSession(
+            provider: $row->provider,
+            sessionId: $row->session_id,
+            remoteId: $row->remote_id,
+            startedAt: CarbonImmutable::parse($row->started_at),
+            endedAt: CarbonImmutable::parse($row->ended_at),
+            note: $row->note,
+        );
+
+        if ($this->sessionAlreadyImported($organization, $session)) {
+            $row->update([
+                'status' => RemotePendingSession::STATUS_IMPORTED,
+                'resolved_at' => now(),
+            ]);
+
+            return false;
+        }
+
+        $config = RemoteSupportConfig::resolve($organization->id);
+        $entry = $this->createTimeEntry($organization, $asset, $session, $userId, (bool) $config['default_billable'], $project);
+        $row->update([
+            'status' => RemotePendingSession::STATUS_IMPORTED,
+            'time_entry_id' => $entry?->id,
+            'resolved_at' => now(),
+        ]);
+
+        return true;
+    }
+
+    /**
+     * Verwirft eine einzelne offene Pending-Sitzung (für Mehrkundengeräte).
+     *
+     * @param  iterable<RemotePendingSession>  $rows
+     */
+    public function dismissSessions(iterable $rows): int {
+        $count = 0;
+        foreach ($rows as $row) {
+            if ($row->status !== RemotePendingSession::STATUS_OPEN) {
+                continue;
+            }
+            $row->update([
+                'status' => RemotePendingSession::STATUS_DISMISSED,
+                'resolved_at' => now(),
+            ]);
+            $count++;
+        }
+
+        return $count;
     }
 
     private function sessionKey(RemoteSession $session): string {

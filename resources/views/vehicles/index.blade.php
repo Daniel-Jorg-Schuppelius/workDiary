@@ -2,19 +2,17 @@
 
 @section('title', __('Fuhrpark'))
 @section('nav-title', __('Fuhrpark'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-    <x-page-shell>
-        <x-slot:toolbar>
-            <x-page-toolbar :subtitle="__('Fahrzeuge des Fuhrparks verwalten.')">
-                <x-slot:actions>
-                    <x-icon-btn icon="add" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('vehicles.create')"
-                                show-label>{{ __('Neues Fahrzeug') }}</x-icon-btn>
-                </x-slot:actions>
-            </x-page-toolbar>
-        </x-slot:toolbar>
+    <x-index-page overflow="clip" :subtitle="__('Fahrzeuge des Fuhrparks verwalten.')">
+        <x-slot:actions>
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('vehicles.create')"
+                        show-label>{{ __('Neues Fahrzeug') }}</x-icon-btn>
+        </x-slot:actions>
         <x-filter-bar :action="route('vehicles.index')" submit-label="{{ __('Anwenden') }}">
             <x-filter-field :label="__('Ansicht')" for="veh-archived">
                 <select id="veh-archived" name="archived" class="select select-sm select-bordered" onchange="this.form.submit()">
@@ -24,13 +22,13 @@
             </x-filter-field>
         </x-filter-bar>
 
-        <x-card padding="p-0">
+        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
             <x-table table-sort="server"
                      :route="route('vehicles.index')"
                      :current-sort="$sort ?? null"
                      :current-dir="$dir ?? 'asc'"
                      :sort-params="array_filter(['archived' => $showArchived ? 1 : null], fn ($v) => $v !== null)"
-                     bare>
+                     bare scroll="flex" :pinRows="true">
                 <x-slot:head>
                     <tr>
                         <x-table.th sort="license_plate">{{ __('Kennzeichen') }}</x-table.th>
@@ -85,8 +83,6 @@
             </x-table>
         </x-card>
 
-        @if ($vehicles->hasPages())
-            {{ $vehicles->links() }}
-        @endif
-    </x-page-shell>
+        <x-pagination :paginator="$vehicles" />
+    </x-index-page>
 @endsection

@@ -2,6 +2,8 @@
 
 @section('title', __('Supportzugriffe'))
 @section('nav-title', __('Supportzugriffe'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @php
     /** @var \App\Models\Organization $organization */
@@ -12,7 +14,7 @@
 @endphp
 
 @section('content')
-<x-index-page :subtitle="__('Audit-Spur aller Supportzugriffe (support.*) für :org.', ['org' => $organization->name])">
+<x-index-page overflow="clip" :subtitle="__('Audit-Spur aller Supportzugriffe (support.*) für :org.', ['org' => $organization->name])">
     <x-filter-bar :action="route('admin.support.access-audit.index')" :reset="route('admin.support.access-audit.index')">
         <input type="date" name="from" value="{{ $filters['from'] ?? '' }}"
                class="input input-sm input-bordered w-40 shrink-0"
@@ -35,7 +37,7 @@
         <x-empty-state framed
             icon='<span class="material-symbols-outlined" aria-hidden="true">policy</span>' />
     @else
-        <x-table>
+        <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
                 <th>{{ __('Zeitpunkt') }}</th>
                 <th>{{ __('Ereignis') }}</th>
@@ -60,7 +62,7 @@
             @endforeach
         </x-table>
 
-        <div class="mt-4">{{ $entries->links() }}</div>
+        <x-pagination :paginator="$entries" />
     @endif
 </x-index-page>
 @endsection

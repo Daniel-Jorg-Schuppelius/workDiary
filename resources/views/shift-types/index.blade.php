@@ -1,21 +1,19 @@
 @extends('layouts.app')
 @section('title', __('Schichttypen'))
 @section('nav-title', __('Schichttypen'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-    <x-page-shell>
-        <x-slot:toolbar>
-            <x-page-toolbar :subtitle="__('Schichttypen für Dienstpläne und Stempelungen verwalten.')">
-                <x-slot:actions>
-                    <x-icon-btn icon="add" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('shift-types.create')"
-                                show-label>{{ __('Neuer Schichttyp') }}</x-icon-btn>
-                </x-slot:actions>
-            </x-page-toolbar>
-        </x-slot:toolbar>
+    <x-index-page overflow="clip" :subtitle="__('Schichttypen für Dienstpläne und Stempelungen verwalten.')">
+        <x-slot:actions>
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('shift-types.create')"
+                        show-label>{{ __('Neuer Schichttyp') }}</x-icon-btn>
+        </x-slot:actions>
 
-        <x-table :pinRows="true" :zebra="true">
+        <x-table scroll="flex" :pinRows="true" :zebra="true">
                 <thead class="bg-base-200">
                     <tr>
                         <th data-sort data-sort-default="asc">{{ __('Name') }}</th>
@@ -66,5 +64,5 @@
                     @endforelse
                 </tbody>
         </x-table>
-    </x-page-shell>
+    </x-index-page>
 @endsection

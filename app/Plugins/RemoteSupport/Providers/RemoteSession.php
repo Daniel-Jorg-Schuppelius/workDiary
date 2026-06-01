@@ -32,8 +32,7 @@ final class RemoteSession {
         public readonly ?string $note = null,
         /** Optionaler Klartext-Alias des Geräts (z. B. AnyDesk-Aliasname) — hilft beim Erkennen des Rechnernamens. */
         public readonly ?string $alias = null,
-    ) {
-    }
+    ) {}
 
     /** Verbindungsdauer in Minuten (mind. 1, falls > 0 Sekunden). */
     public function minutes(): int {

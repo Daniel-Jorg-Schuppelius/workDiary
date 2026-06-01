@@ -43,7 +43,9 @@ class CustomerProjectReportController extends Controller {
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
 
-        $byProject = $this->aggregateByProject($from, $to, $scope, $userId);
+        $foreignCustomerId = \App\Support\Sqid::decode(\App\Models\ForeignCustomer::class, (string) $request->string('foreign_customer')->toString());
+
+        $byProject = $this->aggregateByProject($from, $to, $scope, $userId, $foreignCustomerId);
         $bucket = $this->bucketByCustomer($byProject);
         $this->sortBuckets($bucket);
 
@@ -83,12 +85,15 @@ class CustomerProjectReportController extends Controller {
     /**
      * @return array<int, array{minutes: int, rate: float}>
      */
-    private function aggregateByProject(string $from, string $to, string $scope, int $userId): array {
+    private function aggregateByProject(string $from, string $to, string $scope, int $userId, ?int $foreignCustomerId = null): array {
         $query = TimeEntry::query()
             ->whereBetween('date', [$from, $to])
             ->select('project_id', 'minutes', 'rate', 'user_id');
         if ($scope === 'mine') {
             $query->where('user_id', $userId);
+        }
+        if ($foreignCustomerId !== null) {
+            $query->whereHas('project', fn($q) => $q->where('foreign_customer_id', $foreignCustomerId));
         }
 
         $byProject = [];
@@ -109,7 +114,7 @@ class CustomerProjectReportController extends Controller {
      * @return array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}>
      */
     private function bucketByCustomer(array $byProject): array {
-        $projects = Project::with('customer')
+        $projects = Project::with(['customer', 'foreignCustomer'])
             ->whereIn('id', array_keys($byProject))
             ->get()
             ->keyBy('id');
@@ -166,8 +171,10 @@ class CustomerProjectReportController extends Controller {
         foreach ($bucket as $row) {
             $customerName = $row['customer'] instanceof Customer ? $row['customer']->name : '(Ohne Kunde)';
             foreach ($row['projects'] as $entry) {
+                $foreign = $entry['project']->foreignCustomer;
                 $rows[] = [
                     $customerName,
+                    $foreign instanceof \App\Models\ForeignCustomer ? (string) $foreign->name : '',
                     (string) $entry['project']->name,
                     (string) ($entry['project']->number ?? ''),
                     (int) $entry['minutes'],
@@ -175,7 +182,7 @@ class CustomerProjectReportController extends Controller {
                 ];
             }
         }
-        $rows[] = ['Gesamt', '', '', $totalMinutes, (float) $totalRate];
+        $rows[] = ['Gesamt', '', '', '', $totalMinutes, (float) $totalRate];
 
         return $rows;
     }
@@ -185,7 +192,7 @@ class CustomerProjectReportController extends Controller {
      */
     private function exportCsv(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to): Response {
         $filename = sprintf('kunden-projekte_%s_%s.csv', $from, $to);
-        $rows = [['Kunde', 'Projekt', 'Projektnummer', 'Minuten', 'Erloes']];
+        $rows = [['Kunde', 'Endkunde', 'Projekt', 'Projektnummer', 'Minuten', 'Erloes']];
         foreach ($this->buildRows($bucket, $totalMinutes, $totalRate) as $row) {
             $rows[] = array_map(static fn($v) => is_float($v) ? CsvNumber::decimal($v) : $v, $row);
         }
@@ -213,7 +220,7 @@ class CustomerProjectReportController extends Controller {
      */
     private function exportXlsx(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to): SymfonyResponse {
         $filename = sprintf('kunden-projekte_%s_%s.xlsx', $from, $to);
-        $headers = ['Kunde', 'Projekt', 'Projektnummer', 'Minuten', 'Erloes'];
+        $headers = ['Kunde', 'Endkunde', 'Projekt', 'Projektnummer', 'Minuten', 'Erloes'];
 
         return XlsxExport::streamFromArray($filename, $headers, $this->buildRows($bucket, $totalMinutes, $totalRate));
     }

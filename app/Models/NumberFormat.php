@@ -21,6 +21,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $organization_id
  * @property NumberScope $scope
+ * @property string $source
  * @property string $prefix
  * @property string $prefix_separator
  * @property bool $include_year
@@ -38,6 +39,7 @@ class NumberFormat extends Model {
     protected $fillable = [
         'organization_id',
         'scope',
+        'source',
         'prefix',
         'prefix_separator',
         'include_year',

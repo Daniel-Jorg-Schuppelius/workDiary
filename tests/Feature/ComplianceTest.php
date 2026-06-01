@@ -290,7 +290,7 @@ class ComplianceTest extends TestCase {
         CoverageRequirement::create([
             'organization_id' => $this->organization->id,
             'duty_plan_id' => $plan->id,
-            'shift_type_id' => $type->sqid,
+            'shift_type_id' => $type->id,
             'weekday' => null,
             'specific_date' => '2026-06-01',
             'min_staff' => 1,

@@ -2,19 +2,19 @@
 
 @section('title', __('Rechnungen'))
 @section('nav-title', __('Rechnungen'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Rechnungen erstellen, versenden und nachverfolgen.')">
-            <x-slot:actions>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('invoices.create')"
-                            show-label>{{ __('Neue Rechnung') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="__('Rechnungen erstellen, versenden und nachverfolgen.')">
+    <x-slot:actions>
+        <x-icon-btn icon="add" tone="primary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('invoices.create')"
+                    show-label>{{ __('Neue Rechnung') }}</x-icon-btn>
+    </x-slot:actions>
+
+    @include('billing._tabs')
 
     <x-filter-bar :action="route('invoices.index')" :reset="route('invoices.index')">
         <select name="customer" class="select select-sm select-bordered w-48 shrink-0" aria-label="{{ __('Kunde') }}">
@@ -35,13 +35,13 @@
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
 
-    <x-card padding="p-0">
+    <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
         <x-table table-sort="server"
                  :route="route('invoices.index')"
                  :current-sort="$sort ?? null"
                  :current-dir="$dir ?? 'desc'"
                  :sort-params="[]"
-                 bare>
+                 bare scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
                     <x-table.th sort="number">{{ __('Nummer') }}</x-table.th>
@@ -71,8 +71,6 @@
         </x-table>
     </x-card>
 
-    @if ($invoices->hasPages())
-        {{ $invoices->links() }}
-    @endif
-</x-page-shell>
+    <x-pagination :paginator="$invoices" />
+</x-index-page>
 @endsection

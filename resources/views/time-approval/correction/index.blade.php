@@ -2,9 +2,11 @@
 
 @section('title', __('Meine Korrekturanträge'))
 @section('nav-title', __('Meine Korrekturanträge'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-    <x-index-page :subtitle="__('Korrekturen an Zeitbuchungen / Anwesenheiten beantragen und verfolgen.')">
+    <x-index-page overflow="clip" :subtitle="__('Korrekturen an Zeitbuchungen / Anwesenheiten beantragen und verfolgen.')">
         <x-slot:actions>
             <x-icon-btn icon="add" tone="primary" size="sm"
                         :href="route('corrections.create')"
@@ -28,7 +30,7 @@
                 :title="__('Keine Korrekturanträge')"
                 :message="__('Stellen Sie einen Antrag, um einen Tag in einem gesperrten Monat anzupassen.')" />
         @else
-            <x-table>
+            <x-table scroll="flex" :pinRows="true">
                 <x-slot:head>
                     <tr>
                         <th>{{ __('Bezug') }}</th>
@@ -54,7 +56,7 @@
                     </tr>
                 @endforeach
             </x-table>
-            <div class="mt-3">{{ $requests->links() }}</div>
+            <x-pagination :paginator="$requests" />
         @endif
     </x-index-page>
 @endsection

@@ -11,7 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
-use App\Models\{Attachment, AuditLog, Comment, DiaryEntry, EmergencyAssignment, OnCallShift};
+use App\Models\{Attachment, AuditLog, Comment, Customer, DiaryEntry, EmergencyAssignment, ImportRun, NumberSequence, OnCallShift, Supplier};
 use App\Services\UI\DateRangeContext;
 use App\Support\{LookupCache, SortableQuery};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -27,6 +27,10 @@ class AuditLogController extends Controller {
         'shift' => OnCallShift::class,
         'assignment' => EmergencyAssignment::class,
         'attachment' => Attachment::class,
+        'customer' => Customer::class,
+        'supplier' => Supplier::class,
+        'import_run' => ImportRun::class,
+        'number_sequence' => NumberSequence::class,
     ];
 
     public function index(Request $request): View|RedirectResponse {
@@ -81,7 +85,7 @@ class AuditLogController extends Controller {
         return view('audit.index', [
             'logs' => $logs,
             'users' => LookupCache::userDropdown(),
-            'events' => ['created', 'updated', 'deleted'],
+            'events' => ['created', 'updated', 'deleted', 'archived', 'restored', 'import.confirmed', 'import.started', 'import.finished', 'import.partial', 'import.preflightFailed'],
             'types' => self::TYPE_MAP,
             'filters' => $filters,
             'sort' => $sort,

@@ -2,21 +2,19 @@
 
 @section('title', __('access.title.groups'))
 @section('nav-title', __('access.title.groups'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Gruppen für Berechtigungs-Bündelung verwalten.')">
-            <x-slot:actions>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('admin.access.groups.create')"
-                            show-label>{{ __('access.action.group_new') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="__('Gruppen für Berechtigungs-Bündelung verwalten.')">
+    <x-slot:actions>
+        <x-icon-btn icon="add" tone="primary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('admin.access.groups.create')"
+                    show-label>{{ __('access.action.group_new') }}</x-icon-btn>
+    </x-slot:actions>
 
-    <x-table>
+    <x-table scroll="flex" :pinRows="true">
         <x-slot:head>
             <tr>
                 <th>{{ __('access.field.group_name') }}</th>
@@ -64,6 +62,6 @@
         @endforelse
     </x-table>
 
-    {{ $groups->links() }}
-</x-page-shell>
+    <x-pagination :paginator="$groups" />
+</x-index-page>
 @endsection

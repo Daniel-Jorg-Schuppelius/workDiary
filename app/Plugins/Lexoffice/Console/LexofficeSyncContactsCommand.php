@@ -11,18 +11,19 @@
 namespace App\Plugins\Lexoffice\Console;
 
 use App\Models\Organization;
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeContactSync, LexofficeMatchPolicy};
+use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeContactSync, LexofficeMatchPolicy, LexofficeNumberAuthority};
 use Illuminate\Console\Command;
 
 class LexofficeSyncContactsCommand extends Command {
     protected $signature = 'lexoffice:sync-contacts
         {--organization= : ID einer einzelnen Organisation, sonst alle}
         {--policy= : Override für die Match-Policy (lexoffice_wins|local_wins|manual_review)}
-        {--create-missing : Lokale Kunden für Remote-Kontakte ohne Match neu anlegen}';
+        {--only=both : Welche Rollen synchronisiert werden (both|customers|suppliers)}
+        {--create-missing : Lokale Kunden/Lieferanten für Remote-Kontakte ohne Match neu anlegen}';
 
-    protected $description = 'Pull-Sync der Lexoffice-Kontakte: matcht remote Kontakte auf lokale Kunden und führt je nach Policy Updates oder Konflikt-Einträge durch.';
+    protected $description = 'Pull-Sync der Lexoffice-Kontakte: matcht remote Kontakte rollen-bewusst auf lokale Kunden (customer) bzw. Lieferanten (vendor) und führt je nach Policy Updates oder Konflikt-Einträge durch.';
 
-    public function handle(LexofficeContactSync $sync): int {
+    public function handle(LexofficeContactSync $sync, LexofficeNumberAuthority $numberAuthority): int {
         $orgId = $this->option('organization');
         $query = Organization::query();
         if ($orgId !== null && $orgId !== '') {
@@ -47,11 +48,20 @@ class LexofficeSyncContactsCommand extends Command {
             $policyValue = (string) ($this->option('policy') ?: $config['match_policy']);
             $policy = LexofficeMatchPolicy::fromSetting($policyValue);
             $createMissing = (bool) $this->option('create-missing') || $config['create_missing_local'];
+            $only = (string) ($this->option('only') ?: 'both');
+            if (! in_array($only, ['both', 'customers', 'suppliers'], true)) {
+                $only = 'both';
+            }
 
-            $this->info("Sync Lexoffice-Kontakte für Organisation #{$org->id} ({$org->name}) [policy={$policy->value}]...");
+            // Nummernkreis-Hoheit gemäß Plugin-Einstellung an die Org übertragen.
+            $numberAuthority->apply($org, (bool) $config['number_authority']);
+
+            $this->info("Sync Lexoffice-Kontakte für Organisation #{$org->id} ({$org->name}) [policy={$policy->value}, only={$only}]...");
             try {
-                $result = $sync->sync($org, $policy, $config['api_key'], $config['base_url'], $createMissing);
-                $this->line("  matched: {$result['matched']}, linked: {$result['linked']}, created: {$result['created']}, conflicts: {$result['conflicts']}, updated: {$result['updated']}");
+                $result = $sync->sync($org, $policy, $config['api_key'], $config['base_url'], $createMissing, $only);
+                $this->line("  Kunden    — matched: {$result['matched']}, linked: {$result['linked']}, created: {$result['created']}, conflicts: {$result['conflicts']}, updated: {$result['updated']}");
+                $this->line("  Lieferanten — matched: {$result['supplier_matched']}, linked: {$result['supplier_linked']}, created: {$result['supplier_created']}, conflicts: {$result['supplier_conflicts']}, updated: {$result['supplier_updated']}");
+                $this->line("  ambiguous (übersprungen): {$result['ambiguous']}");
             } catch (\Throwable $e) {
                 $this->error("  Fehler: {$e->getMessage()}");
             }

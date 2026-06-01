@@ -2,13 +2,15 @@
 
 @section('title', __('Inbox Monatsfreigaben'))
 @section('nav-title', __('Inbox Monatsfreigaben'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @php
     use App\Enums\TimeApproval\MonthClosureStatus;
 @endphp
 
 @section('content')
-    <x-index-page :subtitle="__('Eingereichte und entschiedene Monate der Organisation.')">
+    <x-index-page overflow="clip" :subtitle="__('Eingereichte und entschiedene Monate der Organisation.')">
         <x-filter-bar :action="route('admin.month-approval.index')" :reset="route('admin.month-approval.index')">
             <select name="status" class="select select-sm select-bordered w-40 shrink-0">
                 <option value="all" @selected($filters['status'] === 'all')>{{ __('Alle Status') }}</option>
@@ -40,7 +42,7 @@
                 <div role="alert" class="alert alert-success"><span>{{ session('status') }}</span></div>
             @endif
 
-            <x-table>
+            <x-table scroll="flex" :pinRows="true">
                 <x-slot:head>
                     <tr>
                         <th>{{ __('Mitarbeitende:r') }}</th>
@@ -125,7 +127,7 @@
                 @endforeach
             </x-table>
 
-            <div>{{ $closures->links() }}</div>
+            <x-pagination :paginator="$closures" />
         @endif
     </x-index-page>
 @endsection

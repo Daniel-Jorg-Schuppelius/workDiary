@@ -44,26 +44,22 @@
 @endphp
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar
-            :subtitle="$organization->name"
-            :badge="$modeLabel"
-            badge-tone="primary"
-        >
-            @if (! empty($canExportReport))
-                <x-slot:actions>
-                    <x-icon-btn icon="download" tone="primary" size="sm"
-                                :href="route('admin.privacy.export', ['format' => 'json'])"
-                                show-label>{{ __('Bericht (JSON)') }}</x-icon-btn>
-                    <x-icon-btn icon="table_view" tone="ghost" size="sm"
-                                :href="route('admin.privacy.export', ['format' => 'csv'])"
-                                show-label>{{ __('Bericht (CSV)') }}</x-icon-btn>
-                </x-slot:actions>
-            @endif
-            {{ __('Übersicht über Datenkategorien, Aufbewahrung, aktive Sessions und API-Tokens dieser Organisation.') }}
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page
+    :subtitle="$organization->name"
+    :badge="$modeLabel"
+    badge-tone="primary"
+>
+    @if (! empty($canExportReport))
+        <x-slot:actions>
+            <x-icon-btn icon="download" tone="primary" size="sm"
+                        :href="route('admin.privacy.export', ['format' => 'json'])"
+                        show-label>{{ __('Bericht (JSON)') }}</x-icon-btn>
+            <x-icon-btn icon="table_view" tone="ghost" size="sm"
+                        :href="route('admin.privacy.export', ['format' => 'csv'])"
+                        show-label>{{ __('Bericht (CSV)') }}</x-icon-btn>
+        </x-slot:actions>
+    @endif
+    <x-slot:note>{{ __('Übersicht über Datenkategorien, Aufbewahrung, aktive Sessions und API-Tokens dieser Organisation.') }}</x-slot:note>
 
     {{-- §3.1 Kopfbereich: Status --}}
     <article class="card border border-base-300 bg-base-100 shadow-sm">
@@ -359,5 +355,5 @@
             </ul>
         </div>
     </article>
-</x-page-shell>
+</x-index-page>
 @endsection

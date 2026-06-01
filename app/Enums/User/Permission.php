@@ -88,6 +88,31 @@ enum Permission: string implements HasLabel {
     case CustomerImport = 'customer.import';
     case CustomerLexofficeSync = 'customer.lexoffice.sync';
 
+        // ── Fremdkunden (Endkunden) ────────────────────────────────────────
+    case ForeignCustomerViewAny = 'foreignCustomer.viewAny';
+    case ForeignCustomerView = 'foreignCustomer.view';
+    case ForeignCustomerCreate = 'foreignCustomer.create';
+    case ForeignCustomerUpdate = 'foreignCustomer.update';
+    case ForeignCustomerDelete = 'foreignCustomer.delete';
+    case ForeignCustomerPromote = 'foreignCustomer.promote';
+
+        // ── Lieferanten ────────────────────────────────────────────────────
+    case SupplierViewAny = 'supplier.viewAny';
+    case SupplierView = 'supplier.view';
+    case SupplierCreate = 'supplier.create';
+    case SupplierUpdate = 'supplier.update';
+    case SupplierDelete = 'supplier.delete';
+    case SupplierExport = 'supplier.export';
+    case SupplierImport = 'supplier.import';
+    case SupplierLexofficeSync = 'supplier.lexoffice.sync';
+
+        // ── Produkte & Leistungen (Lexoffice-Artikel) ──────────────────────
+    case ArticleViewAny = 'article.viewAny';
+    case ArticleLexofficeSync = 'article.lexoffice.sync';
+
+        // ── Belege (Lexoffice-Vouchers) ────────────────────────────────────
+    case VoucherViewAny = 'voucher.viewAny';
+
         // ── Projekte / Aufgaben / Meilensteine ─────────────────────────────
     case ProjectViewAny = 'project.viewAny';
     case ProjectView = 'project.view';
@@ -321,10 +346,14 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'organization.'), str_starts_with($this->value, 'branding.'), str_starts_with($this->value, 'org.onboarding.'), str_starts_with($this->value, 'privacy.') => PermissionGroup::Organization,
             str_starts_with($this->value, 'user.') => PermissionGroup::Members,
             str_starts_with($this->value, 'customer.') => PermissionGroup::Customers,
+            str_starts_with($this->value, 'foreignCustomer.') => PermissionGroup::Customers,
+            str_starts_with($this->value, 'supplier.') => PermissionGroup::Customers,
             str_starts_with($this->value, 'project.'), str_starts_with($this->value, 'task.'), str_starts_with($this->value, 'milestone.') => PermissionGroup::Projects,
             str_starts_with($this->value, 'timeEntry.') => PermissionGroup::TimeEntries,
             str_starts_with($this->value, 'timesheet.') => PermissionGroup::Timesheets,
             str_starts_with($this->value, 'invoice.') => PermissionGroup::Invoicing,
+            str_starts_with($this->value, 'article.') => PermissionGroup::Invoicing,
+            str_starts_with($this->value, 'voucher.') => PermissionGroup::Invoicing,
             str_starts_with($this->value, 'diary.') => PermissionGroup::Diary,
             str_starts_with($this->value, 'dutyPlan.'),
             str_starts_with($this->value, 'shift.'),

@@ -2,9 +2,11 @@
 
 @section('title', __('Datentransfer'))
 @section('nav-title', __('Datentransfer'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page :subtitle="__('Daten von :org als CSV oder Excel exportieren — gleiche Spalten wie der Import (Round-Trip).', ['org' => $organization->name])">
+<x-index-page overflow="clip" :subtitle="__('Daten von :org als CSV oder Excel exportieren — gleiche Spalten wie der Import (Round-Trip).', ['org' => $organization->name])">
     <x-slot:actions>
         <x-icon-btn icon="upload_file" tone="primary" size="sm"
                     :href="route('admin.imports.create')"
@@ -86,7 +88,7 @@
             :title="__('Noch keine Exporte vorhanden')"
             :message="__('Erstelle oben einen Export, um ihn hier wiederzufinden.')" />
     @else
-        <x-table>
+        <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
                     <th>{{ __('Entität') }}</th>

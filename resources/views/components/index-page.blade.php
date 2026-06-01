@@ -1,4 +1,5 @@
 @props([
+    'title'    => null,
     'subtitle' => null,
     'badge'    => null,
     'badgeTone' => 'primary',
@@ -17,6 +18,7 @@
     Pflicht: kein eigener Titel im Body (Seitentitel kommt aus @section('nav-title')).
 
     Props (Toolbar):
+      - title     : optionaler Titel in der Toolbar (i. d. R. via @section('nav-title'))
       - subtitle  : kurze Seitenbeschreibung (Pflicht im Standard)
       - badge     : optionaler Status-/Kontext-Badge
       - badgeTone : Tone für Badge (primary|success|warning|error|info)
@@ -28,6 +30,7 @@
 
     Slots:
       - actions (named) : rechte Toolbar-Aktionen (z. B. x-icon-btn „Anlegen")
+      - note (named)    : optionaler Beschreibungstext unter dem Subtitle in der Toolbar
       - default         : Karten/Inhalt (Filter-Card, Tabellen, Empty-States …)
 
     Beispiel (ohne Filter):
@@ -49,10 +52,11 @@
 
 <x-page-shell :gap="$gap" :overflow="$overflow" :height="$height">
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$subtitle" :badge="$badge" :badgeTone="$badgeTone">
+        <x-page-toolbar :title="$title" :subtitle="$subtitle" :badge="$badge" :badgeTone="$badgeTone">
             @isset($actions)
                 <x-slot:actions>{{ $actions }}</x-slot:actions>
             @endisset
+            @isset($note){{ $note }}@endisset
         </x-page-toolbar>
     </x-slot:toolbar>
 

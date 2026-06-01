@@ -96,6 +96,9 @@
                                 @if ($entry['project']->number)
                                     <span class="ml-1 text-xs text-base-content/50">#{{ $entry['project']->number }}</span>
                                 @endif
+                                @if ($entry['project']->foreignCustomer)
+                                    <span class="ml-1 text-xs text-base-content/50">· {{ $entry['project']->foreignCustomer->name }}</span>
+                                @endif
                             </td>
                             <td class="text-right tabular-nums">{{ $fmt($entry['minutes']) }}</td>
                             <td class="text-right tabular-nums">{{ $money($entry['rate']) }}</td>

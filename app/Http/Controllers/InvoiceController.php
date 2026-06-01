@@ -54,12 +54,13 @@ class InvoiceController extends Controller {
     public function create(Request $request): View {
         Gate::authorize('create', Invoice::class);
         $customers = Customer::query()->orderBy('name')->get();
-        $projects = Project::query()->orderBy('name')->get();
+        $projects = Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']);
+        $foreignCustomers = \App\Models\ForeignCustomer::query()->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'company', 'customer_id']);
         $globalRange = app(DateRangeContext::class)->current();
         $defaultFrom = $globalRange['from']->toDateString();
         $defaultTo = $globalRange['to']->toDateString();
 
-        return view('invoices._form_dialog', compact('customers', 'projects', 'defaultFrom', 'defaultTo'));
+        return view('invoices._form_dialog', compact('customers', 'projects', 'foreignCustomers', 'defaultFrom', 'defaultTo'));
     }
 
     public function store(Request $request, InvoiceGenerator $gen): RedirectResponse {
@@ -77,14 +78,22 @@ class InvoiceController extends Controller {
             $projectId = (int) $rawProjectId;
         }
 
+        $rawForeignId = $request->input('foreign_customer_id');
+        $foreignCustomerId = \App\Support\Sqid::decode(\App\Models\ForeignCustomer::class, $rawForeignId);
+        if ($foreignCustomerId === null && is_numeric($rawForeignId)) {
+            $foreignCustomerId = (int) $rawForeignId;
+        }
+
         $request->merge([
             'customer_id' => $customerId,
             'project_id' => $projectId,
+            'foreign_customer_id' => $foreignCustomerId,
         ]);
 
         $data = $request->validate([
             'customer_id' => ['required', 'integer', 'exists:customers,id'],
             'project_id' => ['nullable', 'integer', 'exists:projects,id'],
+            'foreign_customer_id' => ['nullable', 'integer', 'exists:foreign_customers,id'],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
         ]);
@@ -93,11 +102,13 @@ class InvoiceController extends Controller {
         $customer = Customer::query()->findOrFail($data['customer_id']);
         /** @var Project|null $project */
         $project = isset($data['project_id']) ? Project::query()->find($data['project_id']) : null;
+        /** @var \App\Models\ForeignCustomer|null $foreignCustomer */
+        $foreignCustomer = isset($data['foreign_customer_id']) ? \App\Models\ForeignCustomer::query()->find($data['foreign_customer_id']) : null;
 
         $invoice = $gen->fromTimeEntries($customer, $project, [
             'from' => $data['from'] ?? null,
             'to' => $data['to'] ?? null,
-        ]);
+        ], $foreignCustomer);
 
         return redirect()->route('invoices.show', $invoice)->with('status', __('Rechnungsentwurf erstellt.'));
     }

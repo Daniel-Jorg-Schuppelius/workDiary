@@ -1,20 +1,18 @@
 @extends('layouts.app')
 @section('title', __('Stundenzettel'))
 @section('nav-title', __('Stundenzettel'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Stundenzettel verwalten und signieren lassen.')">
-            <x-slot:actions>
-                @can('create', \App\Models\Timesheet::class)
-                    <x-icon-btn icon="add" tone="primary" size="sm" type="button"
-                                onclick="document.getElementById('quick-timesheet-dialog').showModal()"
-                                show-label>{{ __('Stundenzettel anlegen') }}</x-icon-btn>
-                @endcan
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="__('Stundenzettel verwalten und signieren lassen.')">
+    <x-slot:actions>
+        @can('create', \App\Models\Timesheet::class)
+            <x-icon-btn icon="add" tone="primary" size="sm" type="button"
+                        onclick="document.getElementById('quick-timesheet-dialog').showModal()"
+                        show-label>{{ __('Stundenzettel anlegen') }}</x-icon-btn>
+        @endcan
+    </x-slot:actions>
 
     {{-- Filter --}}
     <x-filter-bar :action="route('timesheets.index')" :reset="route('timesheets.index')">
@@ -43,7 +41,7 @@
             :message="__('Lege den ersten Stundenzettel über den Button oben rechts an.')"
         />
     @else
-        <x-table table-sort="server"
+        <x-table scroll="flex" :pinRows="true" table-sort="server"
                  :route="route('timesheets.index')"
                  :current-sort="$sort ?? null"
                  :current-dir="$dir ?? 'desc'"
@@ -80,11 +78,9 @@
                     </tr>
                 @endforeach
         </x-table>
-        @if ($timesheets->hasPages())
-            <div>{{ $timesheets->links() }}</div>
-        @endif
+        <x-pagination :paginator="$timesheets" />
     @endif
-</x-page-shell>
+</x-index-page>
 
 @can('create', \App\Models\Timesheet::class)
     <x-modal id="quick-timesheet-dialog"

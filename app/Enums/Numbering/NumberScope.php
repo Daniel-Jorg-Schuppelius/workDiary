@@ -14,6 +14,7 @@ enum NumberScope: string {
     case ServiceTicket = 'service_ticket';
     case Asset = 'asset';
     case Customer = 'customer';
+    case Supplier = 'supplier';
     case Invoice = 'invoice';
     case CreditNote = 'credit_note';
 
@@ -22,8 +23,20 @@ enum NumberScope: string {
             self::ServiceTicket => __('Service-Ticket'),
             self::Asset => __('Asset'),
             self::Customer => __('Kunde'),
+            self::Supplier => __('Lieferant'),
             self::Invoice => __('Rechnung'),
             self::CreditNote => __('Gutschrift'),
+        };
+    }
+
+    /**
+     * Buchhaltungsrelevante Nummernkreise, deren Hoheit an ein externes
+     * Buchhaltungssystem (z. B. Lexoffice) delegiert werden kann.
+     */
+    public function isAccountingRelevant(): bool {
+        return match ($this) {
+            self::Customer, self::Supplier, self::Invoice, self::CreditNote => true,
+            self::ServiceTicket, self::Asset => false,
         };
     }
 }

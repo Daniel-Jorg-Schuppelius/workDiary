@@ -123,9 +123,11 @@ class AssetDrilldownReportTest extends TestCase {
             'created_by_user_id' => $this->user->id,
         ]);
 
-        $response = $this->actingAs($this->user)->get(route('reports.assets.drilldown.protocols', [
-            'asset_id' => $this->asset->id,
-        ]));
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subMonth()->startOfMonth(), now()->endOfMonth()))
+            ->get(route('reports.assets.drilldown.protocols', [
+                'asset_id' => $this->asset->id,
+            ]));
         $response->assertOk();
         $response->assertSee('Lager defekt');
     }

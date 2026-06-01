@@ -11,9 +11,11 @@
 
 @section('title', __('Service-Tickets'))
 @section('nav-title', __('Service-Tickets'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page :subtitle="__('Service- & FM-Tickets mit SLA-Übersicht.')">
+<x-index-page overflow="clip" :subtitle="__('Service- & FM-Tickets mit SLA-Übersicht.')">
     <x-slot:actions>
         @if ($canCreate)
             <x-icon-btn icon="add" tone="primary" size="sm"
@@ -52,7 +54,7 @@
         <x-empty-state framed
             icon='<span class="material-symbols-outlined" aria-hidden="true">support_agent</span>' />
     @else
-        <x-table>
+        <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
                     <th>{{ __('Ticket') }}</th>
@@ -106,9 +108,7 @@
             @endforeach
         </x-table>
 
-        @if ($tickets->hasPages())
-            <div class="px-1">{{ $tickets->links() }}</div>
-        @endif
+        <x-pagination :paginator="$tickets" />
     @endif
 </x-index-page>
 @endsection

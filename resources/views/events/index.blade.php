@@ -1,6 +1,8 @@
 @extends('layouts.app')
 @section('title', __('Veranstaltungen'))
 @section('nav-title', __('Veranstaltungen'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @php
     use App\Enums\Event\EventStatus;
@@ -13,21 +15,17 @@
 @endphp
 
 @section('content')
-    <x-page-shell>
-        <x-slot:toolbar>
-            <x-page-toolbar :subtitle="__('Veranstaltungen und Termine planen und verwalten.')">
-                <x-slot:actions>
-                    <x-icon-btn icon="calendar_month" tone="ghost" size="sm" :href="route('events.calendar')" show-label>
-                        {{ __('Kalender') }}
-                    </x-icon-btn>
-                    @can('create', App\Models\Event::class)
-                        <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger :href="route('events.create').'?dialog=1'" show-label>
-                            {{ __('Neue Veranstaltung') }}
-                        </x-icon-btn>
-                    @endcan
-                </x-slot:actions>
-            </x-page-toolbar>
-        </x-slot:toolbar>
+    <x-index-page overflow="clip" :subtitle="__('Veranstaltungen und Termine planen und verwalten.')">
+        <x-slot:actions>
+            <x-icon-btn icon="calendar_month" tone="ghost" size="sm" :href="route('events.calendar')" show-label>
+                {{ __('Kalender') }}
+            </x-icon-btn>
+            @can('create', App\Models\Event::class)
+                <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger :href="route('events.create').'?dialog=1'" show-label>
+                    {{ __('Neue Veranstaltung') }}
+                </x-icon-btn>
+            @endcan
+        </x-slot:actions>
         <x-filter-bar :action="route('events.index')" :reset="route('events.index')">
             <x-filter-field :label="__('Suche')" for="ev-q" class="flex-1 min-w-60">
                 <input id="ev-q" type="search" name="q" value="{{ request('q') }}"
@@ -175,8 +173,6 @@
             </tbody>
         </x-table>
 
-        @if ($events->hasPages())
-            <div class="flex-none">{{ $events->links() }}</div>
-        @endif
-    </x-page-shell>
+        <x-pagination :paginator="$events" />
+    </x-index-page>
 @endsection

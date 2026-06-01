@@ -11,7 +11,7 @@
 namespace App\Services\Invoicing;
 
 use App\Enums\Numbering\NumberScope;
-use App\Models\{Customer, Invoice, Project, TimeEntry};
+use App\Models\{Customer, ForeignCustomer, Invoice, Project, TimeEntry};
 use App\Services\Numbering\NumberSequenceService;
 use App\Support\Setting;
 use Carbon\CarbonInterface;
@@ -49,27 +49,36 @@ class InvoiceGenerator {
 
     /**
      * Generate a draft invoice from billable, not-yet-exported time entries
-     * for the given customer (and optionally project) within a date range.
+     * for the given customer (and optionally project / foreign customer)
+     * within a date range.
      *
      * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $range
      */
-    public function fromTimeEntries(Customer $customer, ?Project $project, array $range = []): Invoice {
-        return DB::transaction(function () use ($customer, $project, $range): Invoice {
+    public function fromTimeEntries(Customer $customer, ?Project $project, array $range = [], ?ForeignCustomer $foreignCustomer = null): Invoice {
+        return DB::transaction(function () use ($customer, $project, $range, $foreignCustomer): Invoice {
+            $notes = null;
+            if ($foreignCustomer !== null) {
+                $notes = (string) __('Endkunde: :name', ['name' => $foreignCustomer->company ?: $foreignCustomer->name]);
+            }
+
             $invoice = Invoice::create([
                 'organization_id' => $customer->organization_id,
                 'customer_id' => $customer->id,
                 'project_id' => $project?->id,
+                'foreign_customer_id' => $foreignCustomer?->id,
                 'number' => $this->nextNumber($customer->organization_id),
                 'status' => Invoice::STATUS_DRAFT,
                 'currency' => $customer->currency ?: (string) Setting::get('invoicing.default_currency', 'EUR'),
                 'tax_rate' => (string) Setting::get('invoicing.default_tax_rate', '19.00'),
+                'notes' => $notes,
                 'created_by' => Auth::id(),
             ]);
 
             $query = TimeEntry::query()
                 ->where('billable', true)
                 ->where('exported', false)
-                ->whereHas('project', fn($q) => $q->where('customer_id', $customer->id));
+                ->whereHas('project', fn($q) => $q->where('customer_id', $customer->id)
+                    ->when($foreignCustomer !== null, fn($q) => $q->where('foreign_customer_id', $foreignCustomer?->id)));
 
             if ($project !== null) {
                 $query->where('project_id', $project->id);

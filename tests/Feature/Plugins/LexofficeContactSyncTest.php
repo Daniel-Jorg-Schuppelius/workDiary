@@ -79,7 +79,10 @@ class LexofficeContactSyncTest extends TestCase {
             'company' => ['name' => 'Neue Firma GmbH', 'vatRegistrationId' => 'DE999'],
             'emailAddresses' => ['business' => ['new@example.test']],
             'addresses' => ['billing' => [[
-                'street' => 'Hauptstr. 1', 'zip' => '12345', 'city' => 'Berlin', 'countryCode' => 'DE',
+                'street' => 'Hauptstr. 1',
+                'zip' => '12345',
+                'city' => 'Berlin',
+                'countryCode' => 'DE',
             ]]],
         ]]);
 
@@ -140,7 +143,10 @@ class LexofficeContactSyncTest extends TestCase {
             'company' => ['name' => 'Brandneu UG', 'vatRegistrationId' => 'DE777'],
             'emailAddresses' => ['business' => ['hello@brandneu.test']],
             'addresses' => ['billing' => [[
-                'street' => 'Neue Str. 5', 'zip' => '20095', 'city' => 'Hamburg', 'countryCode' => 'DE',
+                'street' => 'Neue Str. 5',
+                'zip' => '20095',
+                'city' => 'Hamburg',
+                'countryCode' => 'DE',
             ]]],
         ]]);
 
@@ -192,5 +198,93 @@ class LexofficeContactSyncTest extends TestCase {
         $this->assertSame(1, $result['matched']);
         $this->assertSame(0, $result['linked']);
         $this->assertSame(0, $result['created']);
+    }
+
+    public function test_lexoffice_wins_imports_extended_contact_fields(): void {
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Detailfirma',
+            'company' => 'Detailfirma',
+            'vat_id' => 'DE424242',
+            'tax_number' => null,
+            'mobile' => null,
+            'fax' => null,
+        ]);
+
+        $this->fakeContacts([[
+            'id' => 'lex-detail',
+            'company' => [
+                'name' => 'Detailfirma',
+                'vatRegistrationId' => 'DE424242',
+                'taxNumber' => '21/815/00815',
+            ],
+            'roles' => ['customer' => ['number' => 10042]],
+            'note' => 'Wichtiger Kunde',
+            'emailAddresses' => ['business' => ['info@detail.test']],
+            'phoneNumbers' => [
+                'mobile' => ['+49 170 999'],
+                'fax' => ['+49 30 999'],
+            ],
+            'addresses' => [
+                'billing' => [[
+                    'street' => 'Rechnung 1',
+                    'zip' => '10115',
+                    'city' => 'Berlin',
+                    'countryCode' => 'DE',
+                ]],
+                'shipping' => [[
+                    'street' => 'Lieferung 9',
+                    'zip' => '20095',
+                    'city' => 'Hamburg',
+                    'countryCode' => 'DE',
+                ]],
+            ],
+        ]]);
+
+        (new LexofficeContactSync)->sync(
+            $this->organization,
+            LexofficeMatchPolicy::LexofficeWins,
+            'test-key',
+        );
+
+        $customer->refresh();
+        $this->assertSame('21/815/00815', $customer->tax_number);
+        $this->assertSame('+49 170 999', $customer->mobile);
+        $this->assertSame('+49 30 999', $customer->fax);
+        $this->assertSame('Wichtiger Kunde', $customer->comment);
+        $this->assertSame('10042', (string) $customer->lexoffice_contact_number);
+
+        $this->assertDatabaseHas('contact_addresses', [
+            'addressable_id' => $customer->id,
+            'kind' => 'shipping',
+            'city' => 'Hamburg',
+        ]);
+    }
+
+    public function test_official_number_overwrites_local_draft_number(): void {
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Entwurfskunde',
+            'company' => 'Entwurfskunde',
+            'vat_id' => 'DE606060',
+            'number' => 'ENTWURF-ABCD1234',
+            'number_source' => 'lexoffice',
+        ]);
+
+        $this->fakeContacts([[
+            'id' => 'lex-draft',
+            'company' => ['name' => 'Entwurfskunde', 'vatRegistrationId' => 'DE606060'],
+            'roles' => ['customer' => ['number' => 20055]],
+        ]]);
+
+        (new LexofficeContactSync)->sync(
+            $this->organization,
+            LexofficeMatchPolicy::LocalWins,
+            'test-key',
+        );
+
+        $customer->refresh();
+        $this->assertSame('20055', (string) $customer->lexoffice_contact_number);
+        $this->assertSame('20055', (string) $customer->number);
     }
 }

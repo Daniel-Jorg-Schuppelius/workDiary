@@ -1,8 +1,9 @@
 @extends('layouts.app')
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-    <x-page-shell>
-        <x-page-toolbar :subtitle="__('Gespeicherte Filter pro Ansicht.')" />
+    <x-index-page overflow="clip" :subtitle="__('Gespeicherte Filter pro Ansicht.')">
 
         @if (session('status'))
             <div class="alert alert-success">{{ session('status') }}</div>
@@ -13,8 +14,8 @@
                 icon='<span class="material-symbols-outlined" aria-hidden="true">filter_alt</span>'
                 :title="__('Noch keine Filter-Presets gespeichert.')" />
         @else
-            <x-card padding="p-0">
-                <x-table zebra>
+            <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
+                <x-table zebra bare scroll="flex" :pinRows="true">
                     <thead>
                         <tr>
                             <th>{{ __('Bereich') }}</th>
@@ -48,5 +49,5 @@
                 </x-table>
             </x-card>
         @endif
-    </x-page-shell>
+    </x-index-page>
 @endsection

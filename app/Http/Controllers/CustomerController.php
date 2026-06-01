@@ -11,7 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SaveCustomerRequest;
-use App\Models\{AuditLog, Customer, ExternalReference, Tag, TimeEntry, User};
+use App\Models\{AuditLog, Customer, ExternalReference, LexofficeVoucher, Tag, TimeEntry, User};
 use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
@@ -113,6 +113,14 @@ class CustomerController extends Controller {
             'lexofficePlugin' => $lexoffice,
             'lexofficeContactRef' => $lexofficeContactRef,
             'lexofficeVouchers' => $lexofficeVouchers,
+            'lexofficeVoucherCache' => $lexoffice
+                ? LexofficeVoucher::query()
+                ->where('customer_id', $customer->getKey())
+                ->where('archived', false)
+                ->orderByDesc('voucher_date')
+                ->limit(25)
+                ->get()
+                : collect(),
             'attachments' => $customer->attachments()->get(),
             'tags' => $customer->tags()->get(),
             'auditLogs' => AuditLog::query()

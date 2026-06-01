@@ -28,26 +28,23 @@
 @endphp
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar
-            :subtitle="$payload?->licensee ?? __('Keine aktive Lizenz')"
-            :badge="$statusLabel"
-            :badge-tone="$badgeTone"
-        >
-            @unless ($isEnforced)
-                <span class="text-xs text-base-content/60">{{ __('Lizenzprüfung ist in dieser Umgebung deaktiviert (Dev/Test).') }}</span>
-            @endunless
-
-            <x-slot:actions>
-                @if ($canInstall)
-                    <a href="{{ route('license.show') }}" class="btn btn-sm btn-primary">
-                        {{ __('Lizenz installieren / aktualisieren') }}
-                    </a>
-                @endif
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page
+    :subtitle="$payload?->licensee ?? __('Keine aktive Lizenz')"
+    :badge="$statusLabel"
+    :badge-tone="$badgeTone"
+>
+    <x-slot:note>
+        @unless ($isEnforced)
+            <span class="text-xs text-base-content/60">{{ __('Lizenzprüfung ist in dieser Umgebung deaktiviert (Dev/Test).') }}</span>
+        @endunless
+    </x-slot:note>
+    <x-slot:actions>
+        @if ($canInstall)
+            <a href="{{ route('license.show') }}" class="btn btn-sm btn-primary">
+                {{ __('Lizenz installieren / aktualisieren') }}
+            </a>
+        @endif
+    </x-slot:actions>
 
     <article class="card border border-base-300 bg-base-100 shadow-sm">
         <div class="card-body gap-3">
@@ -185,5 +182,5 @@
             @endif
         </div>
     </article>
-</x-page-shell>
+</x-index-page>
 @endsection

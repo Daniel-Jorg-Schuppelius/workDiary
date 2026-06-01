@@ -2,19 +2,17 @@
 
 @section('title', __('Touren'))
 @section('nav-title', __('Touren'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-    <x-page-shell>
-        <x-slot:toolbar>
-            <x-page-toolbar :subtitle="__('Touren und Routen für Außendienst-Einsätze erfassen.')">
-                <x-slot:actions>
-                    <x-icon-btn icon="add" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('tours.create')"
-                                show-label>{{ __('Neue Tour') }}</x-icon-btn>
-                </x-slot:actions>
-            </x-page-toolbar>
-        </x-slot:toolbar>
+    <x-index-page overflow="clip" :subtitle="__('Touren und Routen für Außendienst-Einsätze erfassen.')">
+        <x-slot:actions>
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('tours.create')"
+                        show-label>{{ __('Neue Tour') }}</x-icon-btn>
+        </x-slot:actions>
 
         @include('tours._view-tabs')
 
@@ -39,7 +37,7 @@
             @endif
         </x-filter-bar>
 
-        <x-card padding="p-0">
+        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
             <x-table table-sort="server"
                      :route="route('tours.index')"
                      :current-sort="$sort ?? null"
@@ -52,7 +50,7 @@
                              : (request()->filled('user') ? $targetUser?->sqid : null),
                          'status' => $selectedStatus,
                      ], fn ($v) => $v !== null && $v !== '')"
-                     bare>
+                     bare scroll="flex" :pinRows="true">
                 <x-slot:head>
                     <tr>
                         <x-table.th sort="tour_date" default>{{ __('Datum') }}</x-table.th>
@@ -97,8 +95,6 @@
             </x-table>
         </x-card>
 
-        @if ($tours->hasPages())
-            {{ $tours->links() }}
-        @endif
-    </x-page-shell>
+        <x-pagination :paginator="$tours" />
+    </x-index-page>
 @endsection

@@ -90,6 +90,19 @@
 }
 
 @layer components {
+    /* Volle-Höhe-Tabellenkarten (scroll="flex"): Wenn die Tabelle leer ist
+       (nur die Empty-State-Zeile <tr data-sort-ignore>), soll die Karte NICHT
+       die volle Resthöhe füllen, sondern auf Inhaltshöhe schrumpfen – damit
+       sie optisch mit gefüllten Tabellen anderer Seiten gleichzieht.
+       Greift für beide Muster: Tabelle direkt mit scroll="flex" (Wrapper hat
+       flex-1) UND Tabelle in einer <x-card>+bare (Karte hat flex-1).
+       !important nötig: die `flex-1`-Utility liegt in @layer utilities und
+       gewinnt sonst gegen diese @layer components-Regel. */
+    .flex-1:has(tbody > tr[data-sort-ignore]:only-child),
+    .wd-card:has(tbody > tr[data-sort-ignore]:only-child) {
+        flex: none !important;
+    }
+
     /* Wochenkalender-Tabelle */
     .week-table {
         width: 100%;

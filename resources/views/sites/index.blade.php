@@ -2,9 +2,11 @@
 
 @section('title', __('Standorte'))
 @section('nav-title', __('Standorte'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page :subtitle="$customer
+<x-index-page overflow="clip" :subtitle="$customer
     ? __('Standorte für :customer.', ['customer' => $customer->name])
     : __('Standorte aller Kunden verwalten.')">
     <x-slot:actions>
@@ -18,7 +20,7 @@
         <x-empty-state framed
             icon='<span class="material-symbols-outlined" aria-hidden="true">location_on</span>' />
     @else
-        <x-table>
+        <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
                     <th>{{ __('Name') }}</th>
@@ -54,7 +56,7 @@
                 </tr>
             @endforeach
         </x-table>
-        <div class="mt-4">{{ $sites->links() }}</div>
+        <x-pagination :paginator="$sites" />
     @endif
 </x-index-page>
 @endsection

@@ -23,7 +23,7 @@ use App\Models\{Organization, PluginSetting};
  */
 class LexofficeConfig {
     /**
-     * @return array{api_key: ?string, base_url: string, defaults: array<string, mixed>, match_policy: string, create_missing_local: bool, enabled: bool}
+     * @return array{api_key: ?string, base_url: string, defaults: array<string, mixed>, match_policy: string, create_missing_local: bool, number_authority: bool, enabled: bool}
      */
     public static function resolve(?int $organizationId = null): array {
         $apiKey = null;
@@ -35,6 +35,7 @@ class LexofficeConfig {
         ];
         $matchPolicy = (string) config('plugins.lexoffice.match_policy', 'manual_review');
         $createMissing = (bool) config('plugins.lexoffice.create_missing_local', false);
+        $numberAuthority = (bool) config('plugins.lexoffice.number_authority', false);
         $enabled = (bool) config('plugins.lexoffice.enabled', false);
 
         $organizationId ??= self::boundOrganizationId();
@@ -70,6 +71,9 @@ class LexofficeConfig {
                 if (isset($settings['create_missing_local'])) {
                     $createMissing = (bool) $settings['create_missing_local'];
                 }
+                if (isset($settings['number_authority'])) {
+                    $numberAuthority = (bool) $settings['number_authority'];
+                }
             }
         }
 
@@ -86,6 +90,7 @@ class LexofficeConfig {
             'defaults' => $defaults,
             'match_policy' => $matchPolicy,
             'create_missing_local' => $createMissing,
+            'number_authority' => $numberAuthority,
             'enabled' => $enabled,
         ];
     }

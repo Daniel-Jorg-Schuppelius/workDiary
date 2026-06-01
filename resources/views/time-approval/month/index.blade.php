@@ -2,9 +2,11 @@
 
 @section('title', __('Monatsfreigaben'))
 @section('nav-title', __('Monatsfreigaben'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-    <x-index-page :subtitle="__('Eigene Monate prüfen und einreichen.')">
+    <x-index-page overflow="clip" :subtitle="__('Eigene Monate prüfen und einreichen.')">
         <x-slot:actions>
             <x-icon-btn icon="calendar_month" tone="primary" size="sm"
                         :href="route('month-approval.show', ['year' => $defaultYear, 'month' => $defaultMonth])"
@@ -17,7 +19,7 @@
                 :title="__('Noch keine Monatsfreigaben')"
                 :message="__('Sobald Sie einen Monat öffnen, wird automatisch eine Freigabe als Entwurf angelegt.')" />
         @else
-            <x-table>
+            <x-table scroll="flex" :pinRows="true">
                 <x-slot:head>
                     <tr>
                         <th>{{ __('Periode') }}</th>

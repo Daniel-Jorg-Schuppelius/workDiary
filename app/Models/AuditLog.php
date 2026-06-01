@@ -44,13 +44,17 @@ class AuditLog extends Model {
     }
 
     public function eventLabel(): string {
-        return match ($this->event) {
-            'created' => __('Angelegt'),
-            'updated' => __('Geändert'),
-            'deleted' => __('Gelöscht'),
-            'archived' => __('Archiviert'),
-            'restored' => __('Wiederhergestellt'),
-            default => $this->event,
-        };
+        $key = 'audit-events.' . $this->event;
+        $label = __($key);
+
+        return $label === $key ? $this->event : $label;
+    }
+
+    public function auditableTypeLabel(): string {
+        $type = class_basename($this->auditable_type);
+        $key = 'entity-types.' . $type;
+        $label = __($key);
+
+        return $label === $key ? $type : $label;
     }
 }

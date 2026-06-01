@@ -19,6 +19,16 @@
             @endforeach
         </select>
     </div>
+    <div class="fieldset md:col-span-2">
+        <label class="fieldset-label">{{ __('Fremdkunde / Endkunde (optional)') }}</label>
+        <select name="foreign_customer_id" class="select select-bordered w-full" data-depends-on="customer_id">
+            <option value="">{{ __('alle Endkunden') }}</option>
+            @foreach (($foreignCustomers ?? collect()) as $fc)
+                <option value="{{ $fc->sqid }}" data-parent="{{ \App\Support\Sqid::encode(\App\Models\Customer::class, $fc->customer_id) }}" @selected((string) old('foreign_customer_id') === $fc->sqid)>{{ $fc->company ?: $fc->name }}</option>
+            @endforeach
+        </select>
+        <p class="mt-1 text-xs text-base-content/60">{{ __('Nur Zeiten dieses Endkunden abrechnen.') }}</p>
+    </div>
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Von') }}</label>
         <input type="date" name="from" value="{{ old('from', $defaultFrom ?? '') }}" class="input input-bordered w-full">

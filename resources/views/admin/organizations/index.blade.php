@@ -2,6 +2,8 @@
 
 @section('title', __('Organisationen'))
 @section('nav-title', __('Organisationen'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
 @php
@@ -9,19 +11,15 @@
     $orgLifecycle = app(\App\Services\OrganizationLifecycleService::class);
     $cooldownHours = $orgLifecycle->cooldownHours();
 @endphp
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Mandanten der Plattform verwalten und konfigurieren.')">
-            <x-slot:actions>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('admin.organizations.create')"
-                            show-label>{{ __('Organisation anlegen') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="__('Mandanten der Plattform verwalten und konfigurieren.')">
+    <x-slot:actions>
+        <x-icon-btn icon="add" tone="primary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('admin.organizations.create')"
+                    show-label>{{ __('Organisation anlegen') }}</x-icon-btn>
+    </x-slot:actions>
 
-    <x-table table-sort="server"
+    <x-table scroll="flex" :pinRows="true" table-sort="server"
              :route="route('admin.organizations.index')"
              :current-sort="$sort ?? null"
              :current-dir="$dir ?? 'asc'">
@@ -159,8 +157,6 @@
             @endforelse
     </x-table>
 
-    @if ($organizations->hasPages())
-        <div>{{ $organizations->links() }}</div>
-    @endif
-</x-page-shell>
+    <x-pagination :paginator="$organizations" />
+</x-index-page>
 @endsection

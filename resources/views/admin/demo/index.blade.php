@@ -10,16 +10,12 @@
 @endphp
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar
-            :subtitle="$organization->name"
-            :badge="$alreadySeeded ? __('Aktiv') : __('Nicht aktiv')"
-            :badge-tone="$alreadySeeded ? 'warning' : 'ghost'"
-        >
-            {{ __('Beispieldaten zum Vorführen, Testen und Onboarden. Erzeugt Kunden, Projekte, einen vollständigen Beispielauftrag und Hintergrund-Aufträge der letzten 60 Tage.') }}
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page
+    :subtitle="$organization->name"
+    :badge="$alreadySeeded ? __('Aktiv') : __('Nicht aktiv')"
+    :badge-tone="$alreadySeeded ? 'warning' : 'ghost'"
+>
+    <x-slot:note>{{ __('Beispieldaten zum Vorführen, Testen und Onboarden. Erzeugt Kunden, Projekte, einen vollständigen Beispielauftrag und Hintergrund-Aufträge der letzten 60 Tage.') }}</x-slot:note>
 
     @if ($errors->any())
         <div class="alert alert-error">
@@ -93,5 +89,5 @@
             </ul>
         </div>
     </article>
-</x-page-shell>
+</x-index-page>
 @endsection

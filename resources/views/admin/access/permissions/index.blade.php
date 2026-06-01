@@ -4,11 +4,7 @@
 @section('nav-title', __('access.title.permissions'))
 
 @section('content')
-<x-page-shell>
-    <div class="alert">
-        <x-icon name="lock" />
-        <span>{{ __('access.hint.permissions_readonly') }}</span>
-    </div>
+<x-index-page :subtitle="__('access.hint.permissions_readonly')">
 
     @foreach ($grouped as $groupKey => $items)
         @php($groupEnum = \App\Enums\User\PermissionGroup::from($groupKey))
@@ -30,5 +26,5 @@
             </div>
         </div>
     @endforeach
-</x-page-shell>
+</x-index-page>
 @endsection

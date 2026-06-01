@@ -1,22 +1,20 @@
 @extends('layouts.app')
 @section('title', __('Qualifikationen'))
 @section('nav-title', __('Qualifikationen'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Qualifikationen und Zertifikate der Mitarbeiter verwalten.')">
-            <x-slot:actions>
-                @can('create', \App\Models\Qualification::class)
-                    <x-icon-btn icon="add" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('qualifications.create')"
-                                show-label>{{ __('Qualifikation anlegen') }}</x-icon-btn>
-                @endcan
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="__('Qualifikationen und Zertifikate der Mitarbeiter verwalten.')">
+    <x-slot:actions>
+        @can('create', \App\Models\Qualification::class)
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('qualifications.create')"
+                        show-label>{{ __('Qualifikation anlegen') }}</x-icon-btn>
+        @endcan
+    </x-slot:actions>
 
-    <x-table table-sort="server"
+    <x-table scroll="flex" :pinRows="true" table-sort="server"
              :route="route('qualifications.index')"
              :current-sort="$sort ?? null"
              :current-dir="$dir ?? 'asc'">
@@ -67,8 +65,6 @@
                 <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>' :colspan="6" :title="__('Noch keine Qualifikationen vorhanden')" compact />
             @endforelse
     </x-table>
-    @if ($qualifications->hasPages())
-        <div>{{ $qualifications->links() }}</div>
-    @endif
-</x-page-shell>
+    <x-pagination :paginator="$qualifications" />
+</x-index-page>
 @endsection

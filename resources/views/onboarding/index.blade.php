@@ -4,35 +4,30 @@
 @section('nav-title', __('onboarding.page.title'))
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar
-            :title="__('onboarding.page.heading')"
-            :subtitle="$organization->name"
-            :badge="sprintf('%d/%d', (int) $checklist['required_done'], (int) $checklist['required_total'])"
-            badge-tone="primary"
-        >
-            {{ __('onboarding.page.progress_summary', [
-                'done' => $checklist['required_done'],
-                'total' => $checklist['required_total'],
-                'percent' => $checklist['progress_percent'],
-            ]) }}
-
-            <x-slot:actions>
-                <x-help-button topic="onboarding.checklist" />
-                @if (empty($widgetDismissedAt))
-                    <form method="POST" action="{{ route('onboarding.widget.dismiss') }}">
-                        @csrf
-                        <button type="submit" class="btn btn-sm btn-ghost text-base-content/70">{{ __('onboarding.widget.dismiss') }}</button>
-                    </form>
-                @else
-                    <span class="text-xs text-base-content/60">
-                        {{ __('onboarding.widget.dismissed_at', ['date' => $widgetDismissedAt]) }}
-                    </span>
-                @endif
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page
+    :title="__('onboarding.page.heading')"
+    :subtitle="$organization->name"
+    :badge="sprintf('%d/%d', (int) $checklist['required_done'], (int) $checklist['required_total'])"
+    badge-tone="primary"
+>
+    <x-slot:note>{{ __('onboarding.page.progress_summary', [
+        'done' => $checklist['required_done'],
+        'total' => $checklist['required_total'],
+        'percent' => $checklist['progress_percent'],
+    ]) }}</x-slot:note>
+    <x-slot:actions>
+        <x-help-button topic="onboarding.checklist" />
+        @if (empty($widgetDismissedAt))
+            <form method="POST" action="{{ route('onboarding.widget.dismiss') }}">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-ghost text-base-content/70">{{ __('onboarding.widget.dismiss') }}</button>
+            </form>
+        @else
+            <span class="text-xs text-base-content/60">
+                {{ __('onboarding.widget.dismissed_at', ['date' => $widgetDismissedAt]) }}
+            </span>
+        @endif
+    </x-slot:actions>
 
     <div class="card border border-base-300 bg-base-100 shadow-sm">
         <div class="card-body gap-3">
@@ -108,5 +103,5 @@
             </article>
         @endforeach
     </div>
-</x-page-shell>
+</x-index-page>
 @endsection

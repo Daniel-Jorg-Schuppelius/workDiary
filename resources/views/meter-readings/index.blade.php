@@ -11,9 +11,11 @@
 
 @section('title', __('Zählerstände'))
 @section('nav-title', __('Zählerstände'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page :subtitle="__('Erfasste Zählerstände & Verbrauchswerte.')">
+<x-index-page overflow="clip" :subtitle="__('Erfasste Zählerstände & Verbrauchswerte.')">
     <x-slot:actions>
         @if ($canCreate)
             <x-icon-btn icon="add" tone="primary" size="sm"
@@ -26,7 +28,7 @@
         <x-empty-state framed
             icon='<span class="material-symbols-outlined" aria-hidden="true">speed</span>' />
     @else
-        <x-table>
+        <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
                     <th>{{ __('Ablesezeit') }}</th>
@@ -57,9 +59,7 @@
             @endforeach
         </x-table>
 
-        @if ($readings->hasPages())
-            <div class="px-1">{{ $readings->links() }}</div>
-        @endif
+        <x-pagination :paginator="$readings" />
     @endif
 </x-index-page>
 @endsection

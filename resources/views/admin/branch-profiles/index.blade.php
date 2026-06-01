@@ -4,10 +4,7 @@
 @section('nav-title', __('Branchenprofile'))
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Vorlagen für :org: Klassifikationen, Pflichtregeln und Tags in einem Schritt installieren.', ['org' => $organization->name])" />
-    </x-slot:toolbar>
+<x-index-page :subtitle="__('Vorlagen für :org: Klassifikationen, Pflichtregeln und Tags in einem Schritt installieren.', ['org' => $organization->name])">
 
     <x-filter-bar :action="route('admin.branch-profiles.index')" :reset="route('admin.branch-profiles.index')">
         <x-filter-field :label="__('Suche')" for="branch-profile-q" class="min-w-64 flex-1">
@@ -82,5 +79,5 @@
             @endforeach
         </div>
     @endif
-</x-page-shell>
+</x-index-page>
 @endsection

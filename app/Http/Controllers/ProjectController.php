@@ -14,6 +14,8 @@ use App\Enums\Project\ProjectStatus;
 use App\Http\Requests\SaveProjectRequest;
 use App\Models\{DiaryEntry, Project, RecurrenceRule};
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Pagination\{LengthAwarePaginator, Paginator};
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
 
@@ -33,7 +35,41 @@ class ProjectController extends Controller {
             ->with(['parent:id,name', 'customer:id,name,slug'])
             ->get();
 
-        $projectIds = $projects->pluck('id')->all();
+        // Hierarchische, flache Zeilenliste aufbauen: Wurzel-Projekte (oder Waisen,
+        // deren Parent nicht im gefilterten Set liegt) gefolgt von ihren Kindern.
+        $byId = $projects->keyBy('id');
+        $childrenByParent = $projects->groupBy(fn(Project $p): int => $p->parent_id ?? 0);
+
+        $roots = $projects
+            ->filter(fn(Project $p) => $p->parent_id === null || ! $byId->has($p->parent_id))
+            ->values();
+
+        // Pagination auf Ebene der Wurzel-Projekte, damit Bäume nicht zerschnitten werden.
+        $perPage = 25;
+        $page = Paginator::resolveCurrentPage();
+        $pageRoots = $roots->forPage($page, $perPage);
+
+        $rows = collect();
+        $emit = function (Project $project, int $depth) use (&$emit, $childrenByParent, $rows): void {
+            $rows->push(['project' => $project, 'depth' => min($depth, 2)]);
+            foreach ($childrenByParent->get($project->id, collect()) as $child) {
+                $emit($child, $depth + 1);
+            }
+        };
+        foreach ($pageRoots as $root) {
+            $emit($root, 0);
+        }
+
+        $projectsPaginator = new LengthAwarePaginator(
+            $pageRoots->values(),
+            $roots->count(),
+            $perPage,
+            $page,
+            ['path' => Paginator::resolveCurrentPath(), 'query' => $request->query()]
+        );
+
+        // Aggregationen nur für die tatsächlich sichtbaren Projekte berechnen.
+        $projectIds = $rows->pluck('project.id')->all();
 
         // Einzel-Query für alle Aggregationen (statt 3 separater Queries)
         $aggr = DiaryEntry::query()
@@ -45,11 +81,12 @@ class ProjectController extends Controller {
 
         // View-kompatible Strukturen aus einer einzigen Query ableiten
         $stats = $aggr;
-        $lastEntries = $aggr->map(fn($rows) => $rows->max('last_at'));
-        $userCounts = $aggr->map(fn($rows) => $rows->max('user_cnt'));
+        $lastEntries = $aggr->map(fn(Collection $rows) => $rows->max('last_at'));
+        $userCounts = $aggr->map(fn(Collection $rows) => $rows->max('user_cnt'));
 
         return view('projects.index', [
-            'projects' => $projects,
+            'rows' => $rows,
+            'projects' => $projectsPaginator,
             'stats' => $stats,
             'lastEntries' => $lastEntries,
             'userCounts' => $userCounts,

@@ -4,21 +4,17 @@
 @section('nav-title', __('Klassifikationen'))
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Plattform-Defaults vergleichen und organisationsspezifische Werte pflegen für :org.', ['org' => $organization->name])">
-            <x-slot:actions>
-                <x-icon-btn icon="upload" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('admin.classifications.import.form')"
-                            show-label>{{ __('CSV-Import') }}</x-icon-btn>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('admin.classifications.create')"
-                            show-label>{{ __('Klassifikation anlegen') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page :subtitle="__('Plattform-Defaults vergleichen und organisationsspezifische Werte pflegen für :org.', ['org' => $organization->name])">
+    <x-slot:actions>
+        <x-icon-btn icon="upload" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('admin.classifications.import.form')"
+                    show-label>{{ __('CSV-Import') }}</x-icon-btn>
+        <x-icon-btn icon="add" tone="primary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('admin.classifications.create')"
+                    show-label>{{ __('Klassifikation anlegen') }}</x-icon-btn>
+    </x-slot:actions>
 
     @foreach ($domains as $domain)
         @php
@@ -160,5 +156,5 @@
             </div>
         </section>
     @endforeach
-</x-page-shell>
+</x-index-page>
 @endsection

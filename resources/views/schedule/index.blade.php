@@ -20,9 +20,7 @@
     /** @var bool $isAdmin */
 @endphp
 
-<x-page-shell overflow="clip">    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Personalplanung und Schichtzuweisung des Mandanten.')" />
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="__('Personalplanung und Schichtzuweisung des Mandanten.')">
     {{-- ── Filter & Toolbar ────────────────────────────────────────────── --}}
     <x-filter-bar :action="route('schedule.index')" class="bg-base-100!">
         {{-- User filter --}}
@@ -99,7 +97,7 @@
         </div>
     @endif
 
-</x-page-shell>
+</x-index-page>
 
 {{-- ── Shift dialog ─────────────────────────────────────────────────────── --}}
 @include('schedule.partials._shift_dialog')

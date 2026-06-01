@@ -2,19 +2,17 @@
 
 @section('title', __('Eintragstypen'))
 @section('nav-title', __('Eintragstypen'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Auftragstypen und ihre Pflichtklassifikationen pro Mandant verwalten.')">
-            <x-slot:actions>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('admin.entry-types.create')"
-                            show-label>{{ __('Eintragstyp anlegen') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="__('Auftragstypen und ihre Pflichtklassifikationen pro Mandant verwalten.')">
+    <x-slot:actions>
+        <x-icon-btn icon="add" tone="primary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('admin.entry-types.create')"
+                    show-label>{{ __('Eintragstyp anlegen') }}</x-icon-btn>
+    </x-slot:actions>
 
     <div role="alert" class="alert alert-info alert-soft">
         <x-icon name="info" />
@@ -26,7 +24,7 @@
         </div>
     </div>
 
-    <x-table table-sort="server"
+    <x-table scroll="flex" :pinRows="true" table-sort="server"
              :route="route('admin.entry-types.index')"
              :current-sort="$sort ?? null"
              :current-dir="$dir ?? 'asc'">
@@ -93,8 +91,6 @@
             @endforelse
     </x-table>
 
-    @if ($entryTypes->hasPages())
-        <div>{{ $entryTypes->links() }}</div>
-    @endif
-</x-page-shell>
+    <x-pagination :paginator="$entryTypes" />
+</x-index-page>
 @endsection

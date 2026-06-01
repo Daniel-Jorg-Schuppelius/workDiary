@@ -17,6 +17,27 @@ return [
     'issued'       => 'Gestellt',
     'paid'         => 'Bezahlt',
     'cancelled'    => 'Storniert',
+    'voided'       => 'Storniert',
+    'accepted'     => 'Angenommen',
+    'sent'         => 'Gesendet',
+    'overdue'      => 'Überfällig',
+    'unchecked'    => 'Ungeprüft',
+    'checked'      => 'Geprüft',
+    'transferred'  => 'Übertragen',
+    'paidoff'      => 'Bezahlt',
+
+    // Lexoffice voucher types
+    'invoice'                => 'Rechnung',
+    'salesinvoice'           => 'Rechnung',
+    'purchaseinvoice'        => 'Eingangsrechnung',
+    'creditnote'             => 'Gutschrift',
+    'salescreditnote'        => 'Gutschrift',
+    'purchasecreditnote'     => 'Eingangsgutschrift',
+    'quotation'              => 'Angebot',
+    'orderconfirmation'      => 'Auftragsbestätigung',
+    'deliverynote'           => 'Lieferschein',
+    'downpaymentinvoice'     => 'Abschlagsrechnung',
+    'downpaymentdeduction'   => 'Abschlagsverrechnung',
 
     // ServiceTicket status
     'open'         => 'Offen',

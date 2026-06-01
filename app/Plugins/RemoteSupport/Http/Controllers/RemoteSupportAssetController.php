@@ -49,6 +49,21 @@ class RemoteSupportAssetController extends Controller {
         return back()->with('status', __('Geräte-ID entfernt.'));
     }
 
+    /**
+     * Schaltet die Mehrkundengerät-Markierung am Asset um. Sitzungen solcher
+     * Geräte werden nicht automatisch gebucht, sondern in der Inbox je Sitzung
+     * einem Kunden zugeordnet.
+     */
+    public function toggleShared(Request $request, Asset $asset): RedirectResponse {
+        Gate::authorize('update', $asset);
+
+        $asset->update(['shared_remote' => $request->boolean('shared_remote')]);
+
+        return back()->with('status', $asset->shared_remote
+            ? __('Gerät als Mehrkundengerät markiert. Sitzungen werden künftig je Sitzung zugeordnet.')
+            : __('Mehrkundengerät-Markierung entfernt.'));
+    }
+
     public function sync(Asset $asset): RedirectResponse {
         Gate::authorize('update', $asset);
 
@@ -66,10 +81,11 @@ class RemoteSupportAssetController extends Controller {
         $from = $to->subDays(max(1, (int) $config['sync_window_days']));
         $result = $this->service->import($organization, $config, $from, $to);
 
-        return back()->with('status', __(':created neue, :skipped vorhandene, :unmatched ohne Gerät.', [
+        return back()->with('status', __(':created neue, :skipped vorhandene, :unmatched ohne Gerät, :pending zur Zuordnung.', [
             'created' => $result['created'],
             'skipped' => $result['skipped'],
             'unmatched' => $result['unmatched'],
+            'pending' => $result['pending'],
         ]));
     }
 }

@@ -1,23 +1,21 @@
 @extends('layouts.app')
 @section('title', __('Soll-Besetzung') . ' – ' . $dutyPlan->title)
 @section('nav-title', __('Soll-Besetzung'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$dutyPlan->title . ' · ' . $dutyPlan->from_date->format('d.m.Y') . ' – ' . $dutyPlan->to_date->format('d.m.Y')">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm"
-                            :href="route('duty-plans.show', $dutyPlan)"
-                            show-label>{{ __('Zurück') }}</x-icon-btn>
-                @can('create', \App\Models\CoverageRequirement::class)
-                    <x-icon-btn icon="add" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('duty-plans.coverage.create', $dutyPlan)"
-                                show-label>{{ __('Anforderung hinzufügen') }}</x-icon-btn>
-                @endcan
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="$dutyPlan->title . ' · ' . $dutyPlan->from_date->format('d.m.Y') . ' – ' . $dutyPlan->to_date->format('d.m.Y')">
+    <x-slot:actions>
+        <x-icon-btn icon="arrow_back" size="sm"
+                    :href="route('duty-plans.show', $dutyPlan)"
+                    show-label>{{ __('Zurück') }}</x-icon-btn>
+        @can('create', \App\Models\CoverageRequirement::class)
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('duty-plans.coverage.create', $dutyPlan)"
+                        show-label>{{ __('Anforderung hinzufügen') }}</x-icon-btn>
+        @endcan
+    </x-slot:actions>
 
     @if ($requirements->isEmpty())
         <x-empty-state framed
@@ -25,7 +23,7 @@
             :title="__('Noch keine Soll-Besetzungen für diesen Dienstplan definiert.')"
             :message="__('Hinweis: Ohne Anforderungen gilt die Mindestbesetzung des Dienstplans:') . ' ' . $dutyPlan->min_staff" />
     @else
-        <x-table table-sort="client">
+        <x-table scroll="flex" :pinRows="true" table-sort="client">
             <x-slot:head>
                 <tr>
                     <x-table.th sort type="string">{{ __('Schichttyp') }}</x-table.th>
@@ -99,5 +97,5 @@
                 @endforeach
         </x-table>
     @endif
-</x-page-shell>
+</x-index-page>
 @endsection

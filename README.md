@@ -45,7 +45,9 @@ Die Produkt-Roadmap liegt unter [`docs/features`](docs/features/README.md).
 - Composer
 - Node.js mit npm
 - SQLite fuer lokale Entwicklung oder eine externe Datenbank
-- `fileinfo` fuer sichere Upload-Pruefungen
+- PHP-Erweiterungen: `ctype`, `curl`, `dom`, `fileinfo`, `filter`, `hash`,
+  `mbstring`, `openssl`, `pdo`, `tokenizer`, `xml` und passend zur Datenbank
+  z. B. `pdo_mysql` oder `pdo_sqlite`
 
 Optionale Integrationen benoetigen eigene Zugangsdaten, z. B. Legacy-DB,
 Lexoffice, Push/VAPID, Mail, Remote-Support-Provider oder Toggl.
@@ -78,6 +80,102 @@ Migrationen aus und baut die Assets:
 
 ```bash
 composer setup
+```
+
+## Installation auf einem Webspace
+
+Der Dokumentenstamm der Domain muss auf das Verzeichnis `public/` zeigen. Wenn
+der Hoster keinen direkten Webroot auf `public/` erlaubt, sollte das Projekt
+nicht in ein oeffentlich erreichbares Verzeichnis gelegt werden; alternativ muss
+der Hoster eine passende Weiterleitung oder ein Unterverzeichnis als Webroot
+konfigurieren koennen.
+
+Empfohlener Ablauf per SSH:
+
+```bash
+git clone <repository-url> workdiary
+cd workdiary
+cp .env.example .env
+```
+
+Danach in `.env` mindestens diese Werte fuer den Webspace setzen:
+
+```dotenv
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://example.com
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=
+DB_USERNAME=
+DB_PASSWORD=
+MAIL_MAILER=smtp
+MAIL_HOST=
+MAIL_PORT=587
+MAIL_USERNAME=
+MAIL_PASSWORD=
+MAIL_FROM_ADDRESS=
+```
+
+Anschliessend die Installationsroutine starten:
+
+```bash
+bash scripts/install-webspace.sh --url=https://example.com
+```
+
+Die Routine fuehrt die typischen Deployment-Schritte aus:
+
+- Production-Defaults in `.env` setzen.
+- Composer-Abhaengigkeiten ohne Dev-Pakete installieren.
+- `APP_KEY` erzeugen, falls noch keiner vorhanden ist.
+- Frontend-Assets mit npm bauen.
+- Schreibrechte fuer `storage/` und `bootstrap/cache/` vorbereiten.
+- `storage:link`, Datenbank-Migrationen und Laravel-Caches ausfuehren.
+- Queue-Worker per `queue:restart` neu anstossen.
+
+Wenn der Webspace kein Node.js bereitstellt, die Assets lokal oder in CI bauen
+und mit hochladen:
+
+```bash
+npm ci
+npm run build
+bash scripts/install-webspace.sh --url=https://example.com --skip-assets
+```
+
+Wenn Composer auf dem Webspace ebenfalls nicht verfuegbar ist, `vendor/` lokal
+mit PHP 8.3-kompatibler Umgebung bauen und hochladen:
+
+```bash
+composer install --no-dev --prefer-dist --optimize-autoloader
+npm ci
+npm run build
+```
+
+Auf dem Webspace danach nur noch die Server-Schritte ausfuehren:
+
+```bash
+bash scripts/install-webspace.sh --url=https://example.com --skip-composer --skip-assets
+```
+
+Fuer den laufenden Betrieb muss ein Cronjob fuer den Scheduler eingerichtet
+werden:
+
+```cron
+* * * * * cd /pfad/zum/workdiary && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Queues laufen produktiv am besten als dauerhafter Prozess:
+
+```bash
+php artisan queue:work --tries=3
+```
+
+Wenn der Hoster keinen dauerhaften Worker erlaubt, kann fuer kleine
+Installationen alternativ ein regelmaessiger Cronjob genutzt werden:
+
+```cron
+* * * * * cd /pfad/zum/workdiary && php artisan queue:work --stop-when-empty --tries=3 >> /dev/null 2>&1
 ```
 
 ## Wichtige Konfiguration

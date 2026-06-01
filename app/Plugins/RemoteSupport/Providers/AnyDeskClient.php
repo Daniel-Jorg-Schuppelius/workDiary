@@ -28,8 +28,7 @@ class AnyDeskClient implements RemoteProvider {
         private readonly ?string $licenseId,
         private readonly ?string $apiPassword,
         private readonly string $baseUrl = 'https://v1.api.anydesk.com',
-    ) {
-    }
+    ) {}
 
     public function id(): string {
         return self::ID;

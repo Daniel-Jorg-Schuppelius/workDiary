@@ -2,9 +2,11 @@
 
 @section('title', __('Korrekturen-Inbox'))
 @section('nav-title', __('Korrekturen-Inbox'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-    <x-index-page :subtitle="__('Offene und entschiedene Korrekturanträge der Organisation.')">
+    <x-index-page overflow="clip" :subtitle="__('Offene und entschiedene Korrekturanträge der Organisation.')">
         <x-filter-bar :action="route('admin.corrections.index')" :reset="route('admin.corrections.index')">
             <select name="status" class="select select-sm select-bordered w-40 shrink-0">
                 <option value="all" @selected(($filters['status'] ?? '') === 'all')>{{ __('Alle Status') }}</option>
@@ -22,7 +24,7 @@
                 :title="__('Keine Korrekturanträge im Filter')"
                 :message="__('Setzen Sie den Statusfilter auf „Alle Status", um auch entschiedene Anträge zu sehen.')" />
         @else
-            <x-table>
+            <x-table scroll="flex" :pinRows="true">
                 <x-slot:head>
                     <tr>
                         <th>{{ __('Bezug') }}</th>
@@ -50,7 +52,7 @@
                     </tr>
                 @endforeach
             </x-table>
-            <div class="mt-3">{{ $requests->links() }}</div>
+            <x-pagination :paginator="$requests" />
         @endif
     </x-index-page>
 @endsection

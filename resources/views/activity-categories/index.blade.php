@@ -1,27 +1,25 @@
 @extends('layouts.app')
 @section('title', __('Tätigkeiten'))
 @section('nav-title', __('Tätigkeiten'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @php
     /** @var \Illuminate\Pagination\LengthAwarePaginator $categories */
 @endphp
 
 @section('content')
-    <x-page-shell>
-        <x-slot:toolbar>
-            <x-page-toolbar :subtitle="__('Verwaltet die Kategorien für nicht-projektgebundene Arbeitszeit.')">
-                <x-slot:actions>
-                    @can('create', App\Models\ActivityCategory::class)
-                        <x-icon-btn icon="add" tone="primary" size="sm"
-                                    data-entry-modal-trigger
-                                    :href="route('activity-categories.create').'?dialog=1'"
-                                    show-label>{{ __('Neue Tätigkeit') }}</x-icon-btn>
-                    @endcan
-                </x-slot:actions>
-            </x-page-toolbar>
-        </x-slot:toolbar>
+    <x-index-page overflow="clip" :subtitle="__('Verwaltet die Kategorien für nicht-projektgebundene Arbeitszeit.')">
+        <x-slot:actions>
+            @can('create', App\Models\ActivityCategory::class)
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('activity-categories.create').'?dialog=1'"
+                            show-label>{{ __('Neue Tätigkeit') }}</x-icon-btn>
+            @endcan
+        </x-slot:actions>
 
-        <x-table :pinRows="true" :zebra="true">
+        <x-table scroll="flex" :pinRows="true" :zebra="true">
             <thead class="bg-base-200">
                 <tr>
                     <th data-sort data-sort-default="asc" data-sort-type="number" class="w-16 text-right">{{ __('#') }}</th>
@@ -106,8 +104,6 @@
             </tbody>
         </x-table>
 
-        @if ($categories->hasPages())
-            <div class="flex-none">{{ $categories->links() }}</div>
-        @endif
-    </x-page-shell>
+        <x-pagination :paginator="$categories" />
+    </x-index-page>
 @endsection

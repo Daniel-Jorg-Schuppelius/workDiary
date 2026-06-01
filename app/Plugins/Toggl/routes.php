@@ -22,4 +22,11 @@ Route::middleware(['web', 'auth'])->group(function (): void {
     Route::post('admin/toggl/import-csv', [TogglController::class, 'uploadCsv'])->name('admin.toggl.import-csv');
     Route::post('admin/toggl/pending/assign', [TogglController::class, 'assign'])->name('admin.toggl.pending.assign');
     Route::post('admin/toggl/pending/dismiss', [TogglController::class, 'dismiss'])->name('admin.toggl.pending.dismiss');
+
+    Route::get('admin/toggl/mappings', [TogglController::class, 'mappings'])->name('admin.toggl.mappings.index');
+    Route::post('admin/toggl/mappings/{reference}', [TogglController::class, 'updateMapping'])->name('admin.toggl.mappings.update');
+    Route::post('admin/toggl/mappings/{reference}/delete', [TogglController::class, 'deleteMapping'])->name('admin.toggl.mappings.delete');
+
+    Route::get('admin/toggl/import-export', [TogglController::class, 'importExport'])->name('admin.toggl.import-export');
+    Route::post('admin/toggl/import-export', [TogglController::class, 'runImportExport'])->name('admin.toggl.import-export.run');
 });

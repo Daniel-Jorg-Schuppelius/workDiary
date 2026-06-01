@@ -21,6 +21,8 @@ Route::middleware(['web', 'auth'])->group(function (): void {
         ->name('assets.remote-support.id');
     Route::delete('assets/{asset}/remote-support/{provider}', [RemoteSupportAssetController::class, 'forgetId'])
         ->name('assets.remote-support.forget');
+    Route::post('assets/{asset}/remote-support/shared', [RemoteSupportAssetController::class, 'toggleShared'])
+        ->name('assets.remote-support.shared');
     Route::post('assets/{asset}/remote-support/sync', [RemoteSupportAssetController::class, 'sync'])
         ->name('assets.remote-support.sync');
 
@@ -31,6 +33,10 @@ Route::middleware(['web', 'auth'])->group(function (): void {
         ->name('admin.remote-support.pending.assign-existing');
     Route::post('admin/remote-support/pending/assign-new', [RemoteSupportPendingController::class, 'assignNew'])
         ->name('admin.remote-support.pending.assign-new');
+    Route::post('admin/remote-support/pending/assign-shared', [RemoteSupportPendingController::class, 'assignShared'])
+        ->name('admin.remote-support.pending.assign-shared');
+    Route::post('admin/remote-support/pending/dismiss-session', [RemoteSupportPendingController::class, 'dismissSession'])
+        ->name('admin.remote-support.pending.dismiss-session');
     Route::post('admin/remote-support/pending/dismiss', [RemoteSupportPendingController::class, 'dismiss'])
         ->name('admin.remote-support.pending.dismiss');
 });

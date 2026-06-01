@@ -30,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $serial_no
  * @property string|null $inventory_no
  * @property int|null $customer_id
+ * @property bool $shared_remote
  * @property int|null $room_id
  * @property AssetOwnership $owned_by
  * @property string|null $location_text
@@ -60,6 +61,7 @@ class Asset extends Model {
         'serial_no',
         'inventory_no',
         'customer_id',
+        'shared_remote',
         'room_id',
         'owned_by',
         'location_text',
@@ -78,6 +80,7 @@ class Asset extends Model {
 
     protected $casts = [
         'asset_class' => AssetClass::class,
+        'shared_remote' => 'boolean',
         'owned_by' => AssetOwnership::class,
         'status' => AssetStatus::class,
         'health' => AssetHealth::class,

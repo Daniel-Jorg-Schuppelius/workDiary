@@ -10,8 +10,10 @@
 
 namespace App\Models;
 
+use App\Enums\Numbering\NumberScope;
 use App\Enums\Project\ProjectStatus;
 use App\Models\Concerns\{BelongsToOrganization, HasAttachments, HasSqid, HasTags};
+use App\Services\Numbering\NumberAuthority;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
@@ -23,8 +25,11 @@ use Illuminate\Support\{Carbon, Str};
  * @property string $name
  * @property string|null $slug
  * @property string|null $number
+ * @property string|null $lexoffice_contact_number
+ * @property string $number_source
  * @property string|null $company
  * @property string|null $vat_id
+ * @property string|null $tax_number
  * @property string|null $contact_name
  * @property array<int, array{name?: string, email?: string, phone?: string, primary?: bool}>|null $contact_persons
  * @property string|null $email
@@ -67,8 +72,11 @@ class Customer extends Model {
         'name',
         'slug',
         'number',
+        'lexoffice_contact_number',
+        'number_source',
         'company',
         'vat_id',
+        'tax_number',
         'contact_name',
         'contact_persons',
         'email',
@@ -114,7 +122,11 @@ class Customer extends Model {
     protected static function booted(): void {
         static::creating(function (self $customer): void {
             if ($customer->number === null || $customer->number === '') {
+                $external = app(NumberAuthority::class)->isExternal($customer->organization_id, NumberScope::Customer);
                 $customer->number = self::nextNumberFor($customer->organization_id);
+                if ((string) $customer->number_source === '') {
+                    $customer->number_source = $external ? 'lexoffice' : 'local';
+                }
             }
         });
 
@@ -176,7 +188,7 @@ class Customer extends Model {
             ->count() + 1;
 
         for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
-            $number = $service->next($organizationId, \App\Enums\Numbering\NumberScope::Customer);
+            $number = $service->next($organizationId, NumberScope::Customer);
 
             if (! static::query()
                 ->withoutGlobalScopes()
@@ -195,9 +207,34 @@ class Customer extends Model {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** @return MorphMany<ContactAddress, $this> */
+    public function addresses(): MorphMany {
+        return $this->morphMany(ContactAddress::class, 'addressable');
+    }
+
+    /** @return MorphMany<ContactBankAccount, $this> */
+    public function bankAccounts(): MorphMany {
+        return $this->morphMany(ContactBankAccount::class, 'accountable');
+    }
+
+    public function primaryAddress(): ?ContactAddress {
+        return $this->addresses()->where('is_primary', true)->first()
+            ?? $this->addresses()->first();
+    }
+
+    public function primaryBankAccount(): ?ContactBankAccount {
+        return $this->bankAccounts()->where('is_primary', true)->first()
+            ?? $this->bankAccounts()->first();
+    }
+
     /** @return HasMany<Project, $this> */
     public function projects(): HasMany {
         return $this->hasMany(Project::class);
+    }
+
+    /** @return HasMany<ForeignCustomer, $this> */
+    public function foreignCustomers(): HasMany {
+        return $this->hasMany(ForeignCustomer::class)->orderBy('name');
     }
 
     /** @return HasMany<Site, $this> */

@@ -204,6 +204,26 @@ return [
         'customer.export' => 'Export customers',
         'customer.import' => 'Import customers',
         'customer.lexoffice.sync' => 'Sync customers with Lexoffice',
+        'foreignCustomer.viewAny' => 'List foreign customers',
+        'foreignCustomer.view' => 'View foreign customer',
+        'foreignCustomer.create' => 'Create foreign customer',
+        'foreignCustomer.update' => 'Edit foreign customer',
+        'foreignCustomer.delete' => 'Delete foreign customer',
+        'foreignCustomer.promote' => 'Promote foreign customer to customer',
+
+        'supplier.viewAny' => 'List suppliers',
+        'supplier.view' => 'View supplier',
+        'supplier.create' => 'Create supplier',
+        'supplier.update' => 'Edit supplier',
+        'supplier.delete' => 'Delete supplier',
+        'supplier.export' => 'Export suppliers',
+        'supplier.import' => 'Import suppliers',
+        'supplier.lexoffice.sync' => 'Sync suppliers with Lexoffice',
+
+        'article.viewAny' => 'List products & services',
+        'article.lexoffice.sync' => 'Sync products & services with Lexoffice',
+
+        'voucher.viewAny' => 'List vouchers',
 
         'project.viewAny' => 'List projects',
         'project.view' => 'View project',

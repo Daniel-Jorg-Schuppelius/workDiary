@@ -248,15 +248,7 @@
         @endphp
         <div>
             <label class="label"><span class="label-text">{{ __('Tags') }}</span></label>
-            @if ($allTags->isNotEmpty())
-                <select name="tag_ids[]" multiple size="4" class="select select-bordered w-full">
-                    @foreach ($allTags as $tag)
-                        <option value="{{ $tag->sqid }}" @selected(in_array($tag->sqid, (array) $selectedTagIds, true))>{{ $tag->name }}</option>
-                    @endforeach
-                </select>
-            @endif
-            <input type="text" name="new_tags" value="{{ old('new_tags', '') }}" placeholder="{{ __('Neue Tags (kommagetrennt)') }}"
-                   maxlength="500" class="input input-bordered w-full mt-2">
+            <x-tag-picker :tags="$allTags" :selected="$selectedTagIds" />
         </div>
 </x-modal>
 

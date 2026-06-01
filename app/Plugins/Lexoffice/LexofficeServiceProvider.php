@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Plugins\Lexoffice\Console\{LexofficeSyncArticlesCommand, LexofficeSyncContactsCommand};
+use App\Plugins\Lexoffice\Console\{LexofficeSyncArticlesCommand, LexofficeSyncContactsCommand, LexofficeSyncVouchersCommand};
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -61,6 +61,7 @@ class LexofficeServiceProvider extends ServiceProvider {
             $this->commands([
                 LexofficeSyncArticlesCommand::class,
                 LexofficeSyncContactsCommand::class,
+                LexofficeSyncVouchersCommand::class,
             ]);
         }
     }

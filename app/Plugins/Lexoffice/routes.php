@@ -9,7 +9,7 @@
  */
 
 use App\Plugins\Lexoffice\Http\Controllers\Admin\LexofficeConflictInboxController;
-use App\Plugins\Lexoffice\Http\Controllers\{LexofficeCustomerController, LexofficeInvoiceController};
+use App\Plugins\Lexoffice\Http\Controllers\{LexofficeArticleController, LexofficeCustomerController, LexofficeInvoiceController, LexofficeVoucherController};
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -33,6 +33,22 @@ Route::middleware(['web', 'auth'])->group(function (): void {
         ->name('invoices.lexoffice.publish');
     Route::get('invoices/{invoice}/lexoffice/pdf', [LexofficeInvoiceController::class, 'pdf'])
         ->name('invoices.lexoffice.pdf');
+
+    // Produkte & Leistungen (Lexoffice-Artikel)
+    Route::get('lexoffice-articles', [LexofficeArticleController::class, 'index'])
+        ->name('lexoffice.articles.index');
+    Route::post('lexoffice-articles/sync', [LexofficeArticleController::class, 'sync'])
+        ->name('lexoffice.articles.sync');
+    Route::get('lexoffice-articles/{article}', [LexofficeArticleController::class, 'show'])
+        ->name('lexoffice.articles.show');
+
+    // Belege (Lexoffice-Vouchers)
+    Route::get('lexoffice-vouchers', [LexofficeVoucherController::class, 'index'])
+        ->name('lexoffice.vouchers.index');
+    Route::get('lexoffice-vouchers/{voucher}/preview', [LexofficeVoucherController::class, 'preview'])
+        ->name('lexoffice.vouchers.preview');
+    Route::get('lexoffice-vouchers/{voucher}/file', [LexofficeVoucherController::class, 'file'])
+        ->name('lexoffice.vouchers.file');
 
     // Konflikt-Inbox
     Route::get('admin/lexoffice/conflicts', [LexofficeConflictInboxController::class, 'index'])

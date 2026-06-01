@@ -11,9 +11,11 @@
 
 @section('title', __('Schlüsselverwaltung'))
 @section('nav-title', __('Schlüsselverwaltung'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page :subtitle="__('Schlüssel-Ausgaben & Rückgaben des Mandanten.')">
+<x-index-page overflow="clip" :subtitle="__('Schlüssel-Ausgaben & Rückgaben des Mandanten.')">
     <x-slot:actions>
         @if ($canCreate)
             <x-icon-btn icon="add" tone="primary" size="sm"
@@ -41,7 +43,7 @@
         <x-empty-state framed
             icon='<span class="material-symbols-outlined" aria-hidden="true">key</span>' />
     @else
-        <x-table>
+        <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
                     <th>{{ __('Zeitpunkt') }}</th>
@@ -79,9 +81,7 @@
             @endforeach
         </x-table>
 
-        @if ($handovers->hasPages())
-            <div class="px-1">{{ $handovers->links() }}</div>
-        @endif
+        <x-pagination :paginator="$handovers" />
     @endif
 </x-index-page>
 @endsection

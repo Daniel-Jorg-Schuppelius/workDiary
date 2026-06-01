@@ -10,25 +10,23 @@
 
 @section('title', __('Rechnungsvorlagen'))
 @section('nav-title', __('Rechnungsvorlagen'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('PDF-Layouts pro Mandant verwalten.')">
-            <x-slot:actions>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            :href="route('invoice-templates.create')"
-                            show-label>{{ __('Neue Vorlage') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="__('PDF-Layouts pro Mandant verwalten.')">
+    <x-slot:actions>
+        <x-icon-btn icon="add" tone="primary" size="sm"
+                    :href="route('invoice-templates.create')"
+                    show-label>{{ __('Neue Vorlage') }}</x-icon-btn>
+    </x-slot:actions>
 
     @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
 
-    <x-card padding="p-0">
-        <x-table zebra>
+    <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
+        <x-table zebra bare scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
                     <th>{{ __('Name') }}</th>
@@ -73,5 +71,5 @@
             @endforelse
         </x-table>
     </x-card>
-</x-page-shell>
+</x-index-page>
 @endsection

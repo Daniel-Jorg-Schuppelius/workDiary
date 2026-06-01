@@ -2,12 +2,11 @@
 
 @section('title', __('Spesen-Genehmigung'))
 @section('nav-title', __('Spesen-Genehmigung'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-    <x-page-shell>
-        <x-slot:toolbar>
-            <x-page-toolbar :subtitle="__('Eingereichte Spesen prüfen, genehmigen oder ablehnen.')" />
-        </x-slot:toolbar>
+    <x-index-page overflow="clip" :subtitle="__('Eingereichte Spesen prüfen, genehmigen oder ablehnen.')">
 
         <x-filter-bar :action="route('expense-approvals.inbox')" :reset="route('expense-approvals.inbox')">
             <x-filter-field :label="__('Status')" for="inbox-status">
@@ -31,11 +30,12 @@
 
         @php($bulkEnabled = $statusEnum === \App\Enums\Expense\ExpenseStatus::Pending && $expenses->isNotEmpty())
 
-        <x-card padding="p-0">
+        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
             @if ($bulkEnabled)
-                <form method="POST" action="{{ route('expense-approvals.bulk-approve') }}" data-bulk-form>
+                <form method="POST" action="{{ route('expense-approvals.bulk-approve') }}" data-bulk-form
+                      class="min-h-0 flex-1 flex flex-col overflow-hidden">
                     @csrf
-                    <div class="px-3 pt-3">
+                    <div class="px-3 pt-3 flex-none">
                         <x-bulk-toolbar :label="__(':n Spesen ausgewählt')">
                             <x-slot:actions>
                                 <button type="submit"
@@ -67,7 +67,7 @@
                      :current-sort="$sort ?? null"
                      :current-dir="$dir ?? 'asc'"
                      :sort-params="['status' => $statusEnum->value]"
-                     bare>
+                     bare scroll="flex" :pinRows="true">
                 <x-slot:head>
                     <tr>
                         @if ($bulkEnabled)
@@ -173,5 +173,5 @@
         @if ($expenses->hasPages())
             {{ $expenses->links() }}
         @endif
-    </x-page-shell>
+    </x-index-page>
 @endsection

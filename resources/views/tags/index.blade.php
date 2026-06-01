@@ -1,21 +1,19 @@
 @extends('layouts.app')
 @section('title', __('Tags') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Tags'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Tags zur Klassifikation von Auftragsbuch-Einträgen verwalten.')">
-            <x-slot:actions>
-                @can('create', App\Models\Tag::class)
-                    <x-icon-btn icon="add" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('tags.create')"
-                                show-label>{{ __('Neuer Tag') }}</x-icon-btn>
-                @endcan
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
+<x-index-page overflow="clip" :subtitle="__('Tags zur Klassifikation von Auftragsbuch-Einträgen verwalten.')">
+    <x-slot:actions>
+        @can('create', App\Models\Tag::class)
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('tags.create')"
+                        show-label>{{ __('Neuer Tag') }}</x-icon-btn>
+        @endcan
+    </x-slot:actions>
 
     {{-- Tag-Liste --}}
     <x-table :pinRows="true" scroll="flex"
@@ -67,8 +65,6 @@
                 @endforelse
     </x-table>
 
-    @if ($tags->hasPages())
-        <div class="flex-none">{{ $tags->links() }}</div>
-    @endif
-</x-page-shell>
+    <x-pagination :paginator="$tags" />
+</x-index-page>
 @endsection

@@ -2,9 +2,11 @@
 
 @section('title', __('Plugins'))
 @section('nav-title', __('Plugins'))
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page :subtitle="__('Plugins verwalten — aktivieren, konfigurieren, Status & Healthchecks prüfen.')">
+<x-index-page overflow="clip" :subtitle="__('Plugins verwalten — aktivieren, konfigurieren, Status & Healthchecks prüfen.')">
     <x-slot:actions>
         <x-icon-btn icon="bug_report" tone="ghost" size="sm"
                     :href="route('admin.plugin-errors.index')"
@@ -49,7 +51,7 @@
             :title="__('Keine Plugins gefunden')"
             :message="__('Plugin-Klassen werden in config/plugins.php deklariert.')" />
     @else
-        <x-table>
+        <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
                     <x-table.th>{{ __('Name') }}</x-table.th>
