@@ -104,14 +104,13 @@
 
                 <fieldset class="rounded-box border border-base-300 p-3">
                     <legend class="px-1 text-sm font-medium">{{ __('Stopps') }}</legend>
-                    <p class="mb-2 text-xs text-base-content/60">{{ __('Reihenfolge per Nummer festlegen. „Optimieren" sortiert automatisch.') }}</p>
+                    <p class="mb-2 text-xs text-base-content/60">{{ __('Per Drag & Drop sortieren. „Optimieren" sortiert automatisch.') }}</p>
                     <ol class="space-y-1" data-stop-list>
                         @foreach ($stops as $s)
-                            <li class="flex items-center gap-2 rounded-box border border-base-200 p-2">
-                                <input type="number" min="1" name="order_ids[]" value="{{ $s->id }}"
-                                       data-position="{{ $s->tour_position }}"
-                                       class="hidden">
-                                <x-status-badge tone="primary" size="sm">{{ $s->tour_position ?? '?' }}</x-status-badge>
+                            <li class="flex items-center gap-2 rounded-box border border-base-200 p-2" draggable="true" data-stop-item>
+                                <span class="material-symbols-outlined cursor-grab text-base-content/40 select-none" aria-hidden="true" data-stop-handle>drag_indicator</span>
+                                <input type="hidden" name="order_ids[]" value="{{ $s->id }}">
+                                <x-status-badge tone="primary" size="sm" data-stop-pos>{{ $s->tour_position ?? '?' }}</x-status-badge>
                                 <div class="flex-1">
                                     <div class="font-medium text-sm">{{ $s->title }}</div>
                                     <div class="text-xs text-base-content/60">{{ $s->customer?->name }} · {{ $s->address_city }}</div>
@@ -208,3 +207,48 @@
         </div>
     </x-page-shell>
 @endsection
+
+@push('scripts')
+    <script>
+        (function () {
+            const list = document.querySelector('[data-stop-list]');
+            if (!list) {
+                return;
+            }
+            let dragged = null;
+
+            const renumber = () => {
+                list.querySelectorAll('[data-stop-item]').forEach((li, i) => {
+                    const badge = li.querySelector('[data-stop-pos]');
+                    if (badge) {
+                        badge.textContent = String(i + 1);
+                    }
+                });
+            };
+
+            list.querySelectorAll('[data-stop-item]').forEach((li) => {
+                li.addEventListener('dragstart', (e) => {
+                    dragged = li;
+                    li.classList.add('opacity-50');
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+                li.addEventListener('dragend', () => {
+                    if (dragged) {
+                        dragged.classList.remove('opacity-50');
+                    }
+                    dragged = null;
+                    renumber();
+                });
+                li.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (!dragged || dragged === li) {
+                        return;
+                    }
+                    const rect = li.getBoundingClientRect();
+                    const after = (e.clientY - rect.top) / rect.height > 0.5;
+                    list.insertBefore(dragged, after ? li.nextSibling : li);
+                });
+            });
+        })();
+    </script>
+@endpush

@@ -10,6 +10,7 @@
         'validation' => ['icon' => 'rule', 'tone' => 'error', 'label' => __('settings.tabs.validation')],
         'notifications' => ['icon' => 'notifications', 'tone' => 'primary', 'label' => __('settings.tabs.notifications')],
         'ui' => ['icon' => 'tune', 'tone' => 'ghost', 'label' => __('settings.tabs.ui')],
+        'routing' => ['icon' => 'route', 'tone' => 'info', 'label' => __('settings.tabs.routing')],
     ];
 @endphp
 
@@ -129,5 +130,73 @@
                 @endforeach
             </x-form-group>
         @endforeach
+    </div>
+
+    {{-- ROUTING --}}
+    <div x-show="tab === 'routing'" x-cloak class="space-y-4">
+        <x-form-group :legend="__('settings.routing.nominatim.heading')" :icon="$tabs['routing']['icon']" :tone="$tabs['routing']['tone']" cols="2" compact>
+            <div class="fieldset md:col-span-2">
+                <label class="fieldset-label">{{ __('settings.routing.nominatim.base_url') }}</label>
+                <input type="text" name="settings[routing][nominatim][base_url]"
+                       value="{{ old('settings.routing.nominatim.base_url', data_get($stored, 'routing.nominatim.base_url', '')) }}"
+                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('routing.nominatim.base_url')]) }}"
+                       class="input input-bordered w-full" inputmode="url">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.routing.nominatim.email') }}</label>
+                <input type="email" name="settings[routing][nominatim][email]"
+                       value="{{ old('settings.routing.nominatim.email', data_get($stored, 'routing.nominatim.email', '')) }}"
+                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('routing.nominatim.email')]) }}"
+                       class="input input-bordered w-full">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.routing.nominatim.rate_limit_per_sec') }}</label>
+                <input type="number" min="1" max="50" name="settings[routing][nominatim][rate_limit_per_sec]"
+                       value="{{ old('settings.routing.nominatim.rate_limit_per_sec', data_get($stored, 'routing.nominatim.rate_limit_per_sec', '')) }}"
+                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('routing.nominatim.rate_limit_per_sec')]) }}"
+                       class="input input-bordered w-full">
+            </div>
+        </x-form-group>
+
+        <x-form-group :legend="__('settings.routing.osrm.heading')" :icon="$tabs['routing']['icon']" :tone="$tabs['routing']['tone']" cols="2" compact>
+            <div class="fieldset md:col-span-2">
+                <label class="fieldset-label">{{ __('settings.routing.osrm.base_url') }}</label>
+                <input type="text" name="settings[routing][osrm][base_url]"
+                       value="{{ old('settings.routing.osrm.base_url', data_get($stored, 'routing.osrm.base_url', '')) }}"
+                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('routing.osrm.base_url')]) }}"
+                       class="input input-bordered w-full" inputmode="url">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.routing.osrm.profile') }}</label>
+                <input type="text" maxlength="32" name="settings[routing][osrm][profile]"
+                       value="{{ old('settings.routing.osrm.profile', data_get($stored, 'routing.osrm.profile', '')) }}"
+                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('routing.osrm.profile')]) }}"
+                       class="input input-bordered w-full">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.routing.osrm.timeout') }}</label>
+                <input type="number" min="1" max="120" name="settings[routing][osrm][timeout]"
+                       value="{{ old('settings.routing.osrm.timeout', data_get($stored, 'routing.osrm.timeout', '')) }}"
+                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('routing.osrm.timeout')]) }}"
+                       class="input input-bordered w-full">
+            </div>
+        </x-form-group>
+
+        <x-form-group :legend="__('settings.routing.tiles.heading')" :icon="$tabs['routing']['icon']" :tone="$tabs['routing']['tone']" cols="2" compact>
+            <div class="fieldset md:col-span-2">
+                <label class="fieldset-label">{{ __('settings.routing.tiles.url') }}</label>
+                <input type="text" name="settings[routing][tiles][url]"
+                       value="{{ old('settings.routing.tiles.url', data_get($stored, 'routing.tiles.url', '')) }}"
+                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('routing.tiles.url')]) }}"
+                       class="input input-bordered w-full" inputmode="url">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.routing.tiles.max_zoom') }}</label>
+                <input type="number" min="1" max="22" name="settings[routing][tiles][max_zoom]"
+                       value="{{ old('settings.routing.tiles.max_zoom', data_get($stored, 'routing.tiles.max_zoom', '')) }}"
+                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('routing.tiles.max_zoom')]) }}"
+                       class="input input-bordered w-full">
+            </div>
+        </x-form-group>
     </div>
 </x-form-group>

@@ -43,6 +43,12 @@ class SecurityHeaders {
             ? ''
             : ' http://127.0.0.1:5173 http://localhost:5173 ws://127.0.0.1:5173 ws://localhost:5173';
 
+        // Kartenkacheln werden clientseitig als <img> vom (ggf. self-hosted)
+        // Tile-Server geladen. Dessen Origin muss explizit in img-src stehen,
+        // sonst blockiert der Browser die Tiles und die Karte bleibt grau.
+        $tileOrigin = $this->originFromUrl(\App\Support\Setting::get('routing.tiles.url'));
+        $imgHosts = $tileOrigin !== '' ? ' ' . $tileOrigin : '';
+
         $directives = [
             "default-src 'self'",
             // Tailwind/daisyUI sind kompiliert; inline Styles für Alpine x-bind/Color-Tokens noch erlaubt.
@@ -50,7 +56,7 @@ class SecurityHeaders {
             "style-src 'self' 'unsafe-inline'" . $viteDev,
             // Inline-Scripts in Auth-/Legacy-Views vorhanden; bis Refactor kompatibel halten.
             "script-src 'self' 'unsafe-inline' 'unsafe-eval'" . $viteDev,
-            "img-src 'self' data: blob:",
+            "img-src 'self' data: blob:" . $imgHosts,
             // Webfonts werden im Production-Build aus /build/assets/ geladen.
             // Im Dev-Modus liefert Vite die Fonts unter $viteDev aus
             // (node_modules/@fontsource/… und node_modules/material-symbols/…),
@@ -69,5 +75,32 @@ class SecurityHeaders {
         ];
 
         return implode('; ', $directives);
+    }
+
+    /**
+     * Reduziert eine (ggf. Platzhalter enthaltende) URL auf ihre CSP-Origin
+     * scheme://host[:port]. Leerstring, wenn keine gültige http(s)-Origin.
+     */
+    private function originFromUrl(mixed $url): string {
+        if (! is_string($url) || $url === '') {
+            return '';
+        }
+
+        $parts = parse_url($url);
+        if ($parts === false || empty($parts['scheme']) || empty($parts['host'])) {
+            return '';
+        }
+
+        $scheme = strtolower((string) $parts['scheme']);
+        if (! in_array($scheme, ['http', 'https'], true)) {
+            return '';
+        }
+
+        $origin = $scheme . '://' . $parts['host'];
+        if (! empty($parts['port'])) {
+            $origin .= ':' . $parts['port'];
+        }
+
+        return $origin;
     }
 }

@@ -40,9 +40,9 @@
         --wd-dialog-max-h: 68vh;
         /* Dialog-Breiten erweitert: vorher 36/48/64rem; Formulare wirkten
            zu eng (zwei-spaltige Layouts und lange Listen brachen früh um). */
-        --wd-dialog-w-compact: 44rem;   /* ~704px */
-        --wd-dialog-w-standard: 60rem;  /* ~960px */
-        --wd-dialog-w-wide: 80rem;      /* ~1280px */
+        --wd-dialog-w-compact: 44rem; /* ~704px */
+        --wd-dialog-w-standard: 60rem; /* ~960px */
+        --wd-dialog-w-wide: 80rem; /* ~1280px */
     }
 
     body {

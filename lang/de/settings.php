@@ -19,6 +19,7 @@ return [
         'validation' => 'Eingabe-Limits',
         'notifications' => 'Benachrichtigungen',
         'ui' => 'Oberfläche',
+        'routing' => 'Routing & Karten',
     ],
     'hint' => 'Leer lassen, um den systemweiten Standardwert zu nutzen.',
     'pagination' => [
@@ -96,4 +97,23 @@ return [
     ],
     'reset' => 'Auf Standard zurücksetzen',
     'placeholder_default' => 'Standard :value',
+    'routing' => [
+        'nominatim' => [
+            'heading' => 'Nominatim (Geocoding)',
+            'base_url' => 'Basis-URL',
+            'email' => 'Kontakt-E-Mail',
+            'rate_limit_per_sec' => 'Anfragen pro Sekunde',
+        ],
+        'osrm' => [
+            'heading' => 'OSRM (Routing)',
+            'base_url' => 'Basis-URL',
+            'profile' => 'Profil (z. B. driving)',
+            'timeout' => 'Timeout (Sekunden)',
+        ],
+        'tiles' => [
+            'heading' => 'Kartenkacheln',
+            'url' => 'Tile-URL-Vorlage',
+            'max_zoom' => 'Maximaler Zoom',
+        ],
+    ],
 ];

@@ -570,7 +570,7 @@
                                         ['route' => 'schedule.index',   'label' => __('Schichtplan'),   'icon' => 'schedule',        'modal' => false, 'matches' => ['schedule.*']],
                                         ['route' => 'timesheets.index', 'label' => __('Stundenzettel'), 'icon' => 'description',     'modal' => false, 'matches' => ['timesheets.*', 'projects.timesheets.*']],
                                         ['route' => 'flex.index',       'label' => __('Gleitzeit'),     'icon' => 'hourglass_top',   'modal' => false, 'matches' => ['flex.*']],
-                                        ['route' => 'tours.index',      'label' => __('Touren'),        'icon' => 'route',           'modal' => false, 'matches' => ['tours.*']],
+                                        ['route' => 'tours.index',      'label' => __('Touren'),        'icon' => 'route',           'modal' => false, 'matches' => ['tours.index', 'tours.map', 'tours.create', 'tours.show', 'tours.edit']],
                                     ],
                                 ];
                                 $sidebarSections[] = [

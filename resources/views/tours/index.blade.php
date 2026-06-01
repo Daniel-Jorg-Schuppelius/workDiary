@@ -16,6 +16,8 @@
             </x-page-toolbar>
         </x-slot:toolbar>
 
+        @include('tours._view-tabs')
+
         <x-filter-bar :action="route('tours.index')" :reset="route('tours.index')">
             <x-filter-field :label="__('Status')" for="tours-status">
                 <select id="tours-status" name="status" class="select select-bordered select-sm">

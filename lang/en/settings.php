@@ -16,6 +16,7 @@ return [
         'validation' => 'Input limits',
         'notifications' => 'Notifications',
         'ui' => 'Interface',
+        'routing' => 'Routing & maps',
     ],
     'hint' => 'Leave empty to use the system default.',
     'pagination' => [
@@ -93,4 +94,23 @@ return [
     ],
     'reset' => 'Reset to default',
     'placeholder_default' => 'Default :value',
+    'routing' => [
+        'nominatim' => [
+            'heading' => 'Nominatim (geocoding)',
+            'base_url' => 'Base URL',
+            'email' => 'Contact email',
+            'rate_limit_per_sec' => 'Requests per second',
+        ],
+        'osrm' => [
+            'heading' => 'OSRM (routing)',
+            'base_url' => 'Base URL',
+            'profile' => 'Profile (e.g. driving)',
+            'timeout' => 'Timeout (seconds)',
+        ],
+        'tiles' => [
+            'heading' => 'Map tiles',
+            'url' => 'Tile URL template',
+            'max_zoom' => 'Maximum zoom',
+        ],
+    ],
 ];

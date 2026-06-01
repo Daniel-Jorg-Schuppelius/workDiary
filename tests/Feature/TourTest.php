@@ -19,7 +19,7 @@ use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Database\Seeders\EntryTypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\{Config, Http};
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -247,5 +247,94 @@ class TourTest extends TestCase {
         $this->assertSame(Mode::Fixed, $order->mode);
         $this->assertSame('2026-06-02 14:30:00', $order->start_at?->toDateTimeString());
         $this->assertSame('2026-06-02 15:30:00', $order->end_at?->toDateTimeString());
+    }
+
+    public function test_recalculate_uses_osrm_table_and_persists_geometry(): void {
+        Http::fake([
+            '*/table/*' => Http::response([
+                'code' => 'Ok',
+                'distances' => [
+                    [0, 1000, 2000, 500, 500],
+                    [1000, 0, 1000, 1500, 1500],
+                    [2000, 1000, 0, 2500, 2500],
+                    [500, 1500, 2500, 0, 0],
+                    [500, 1500, 2500, 0, 0],
+                ],
+            ]),
+            '*/route/*' => Http::response([
+                'code' => 'Ok',
+                'routes' => [[
+                    'distance' => 4200.0,
+                    'duration' => 600.0,
+                    'geometry' => ['type' => 'LineString', 'coordinates' => [[13.0, 52.5], [13.4, 52.5]]],
+                    'legs' => [],
+                ]],
+            ]),
+        ]);
+
+        $driver = User::factory()->user()->create([
+            'organization_id' => $this->organization->id,
+            'home_lat' => 52.5,
+            'home_lng' => 13.0,
+            'home_address' => 'Start',
+        ]);
+        /** @var TourService $service */
+        $service = app(TourService::class);
+        $tour = $service->createDraft($driver, CarbonImmutable::parse('2026-06-01'));
+
+        $a = DiaryEntry::factory()->service()->create([
+            'organization_id' => $this->organization->id,
+            'scheduled_for' => '2026-06-01',
+            'address_lat' => 52.5,
+            'address_lng' => 13.1,
+        ]);
+        $b = DiaryEntry::factory()->service()->create([
+            'organization_id' => $this->organization->id,
+            'scheduled_for' => '2026-06-01',
+            'address_lat' => 52.5,
+            'address_lng' => 13.2,
+        ]);
+        $c = DiaryEntry::factory()->service()->create([
+            'organization_id' => $this->organization->id,
+            'scheduled_for' => '2026-06-01',
+            'address_lat' => 52.5,
+            'address_lng' => 13.3,
+        ]);
+        $service->assignOrders($tour, [$a->id, $b->id, $c->id]);
+
+        $result = $service->recalculate($tour->fresh());
+
+        Http::assertSent(fn($request) => str_contains($request->url(), '/table/v1/'));
+        $this->assertNotNull($tour->fresh()->route_geometry);
+        $this->assertCount(3, $result['order']);
+    }
+
+    public function test_map_page_renders_for_admin(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        Tour::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $admin->id,
+            'tour_date' => CarbonImmutable::today()->toDateString(),
+            'name' => 'Kartentour',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('tours.map', [
+                'from' => CarbonImmutable::today()->toDateString(),
+                'to' => CarbonImmutable::today()->toDateString(),
+            ]))
+            ->assertOk()
+            ->assertSee('data-map', false);
+    }
+
+    public function test_routing_setting_override_resolves_from_organization(): void {
+        $this->organization->forceFill([
+            'settings' => ['routing' => ['osrm' => ['base_url' => 'http://osrm.internal:5000']]],
+        ])->save();
+        app()->instance('currentOrganization', $this->organization->fresh());
+
+        $this->assertSame('http://osrm.internal:5000', \App\Support\Setting::get('routing.osrm.base_url'));
+        // Falls keine Org-Override existiert, greift der config()-Default.
+        $this->assertSame(config('routing.osrm.profile'), \App\Support\Setting::get('routing.osrm.profile'));
     }
 }

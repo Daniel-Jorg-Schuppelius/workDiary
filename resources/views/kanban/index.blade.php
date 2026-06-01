@@ -1,8 +1,8 @@
 @extends('layouts.app')
 @section('title', __('Kanban') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Kanban'))
-@section('wrapper-height-class', 'h-[calc(100dvh_-_var(--app-header-h))] overflow-clip')
-@section('main-class', 'min-h-0 overflow-clip flex flex-col')
+@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
 @php

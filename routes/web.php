@@ -488,6 +488,7 @@ Route::middleware('auth')->group(function () {
         // ── Touren ─────────────────────────────────────────────────────────
         Route::get('tours', [TourController::class, 'index'])->name('tours.index');
         Route::get('tours/create', [TourController::class, 'create'])->name('tours.create');
+        Route::get('tours/map', [TourController::class, 'map'])->name('tours.map');
         Route::post('tours', [TourController::class, 'store'])->name('tours.store');
         Route::get('tours/{tour}', [TourController::class, 'show'])->name('tours.show');
         Route::get('tours/{tour}/edit', [TourController::class, 'edit'])->name('tours.edit');

@@ -33,7 +33,8 @@ class TourService {
         private readonly TourOptimizer $optimizer,
         private readonly OsrmRouter $router,
         private readonly TravelLogService $travelLogs,
-    ) {}
+    ) {
+    }
 
     /**
      * @param  list<int>  $orderIds  service-order IDs in the desired initial order
@@ -171,7 +172,7 @@ class TourService {
                 return ['order' => [], 'distance_km' => 0.0, 'duration_minutes' => 0];
             }
 
-            $matrix = $this->optimizer->haversineMatrix($coords, $start, $end);
+            $matrix = $this->buildMatrix($coords, $start, $end);
             $result = $this->optimizer->optimize($coords, $matrix, $start !== null, $end !== null);
 
             // Persist optimal stop order.
@@ -227,6 +228,37 @@ class TourService {
                 'duration_minutes' => $tour->planned_duration_minutes,
             ];
         });
+    }
+
+    /**
+     * Builds the optimizer distance matrix. Tries OSRM's `/table` service for
+     * real road distances; on failure falls back to the haversine matrix so
+     * planning stays available offline. The index layout (0..N-1 stops,
+     * N=start, N+1=end) is identical for both sources.
+     *
+     * @param  array<int, Coordinate>  $coords  ordered stop coordinates
+     * @return array<int, array<int, float>>
+     */
+    private function buildMatrix(array $coords, ?Coordinate $start, ?Coordinate $end): array {
+        $points = $coords;
+        if ($start !== null) {
+            $points[] = $start;
+        }
+        if ($end !== null) {
+            $points[] = $end;
+        }
+
+        if (count($points) >= 2) {
+            try {
+                $coordPairs = array_map(static fn(Coordinate $c) => [$c->lng, $c->lat], $points);
+
+                return $this->router->table($coordPairs);
+            } catch (RoutingException) {
+                // OSRM down / offline → fall through to haversine.
+            }
+        }
+
+        return $this->optimizer->haversineMatrix($coords, $start, $end);
     }
 
     public function plan(Tour $tour): Tour {

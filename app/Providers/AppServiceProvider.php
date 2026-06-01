@@ -26,6 +26,7 @@ use App\Services\Reminders\ReminderService;
 use App\Services\Routing\{NominatimGeocoder, OsrmRouter};
 use App\Services\Timesheet\Stopwatch;
 use App\Services\UI\DateRangeContext;
+use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -35,18 +36,24 @@ use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider {
     public function register(): void {
-        $this->app->singleton(NominatimGeocoder::class, function ($app): NominatimGeocoder {
-            /** @var array<string, mixed> $cfg */
-            $cfg = (array) $app['config']->get('routing.nominatim', []);
-
-            return new NominatimGeocoder($cfg);
+        // Org-bewusst: scoped statt singleton, damit Settings-UI-Overrides pro
+        // Mandant greifen. Setting::get() fällt automatisch auf config() zurück.
+        $this->app->scoped(NominatimGeocoder::class, function (): NominatimGeocoder {
+            return new NominatimGeocoder([
+                'base_url' => Setting::get('routing.nominatim.base_url'),
+                'user_agent' => Setting::get('routing.nominatim.user_agent'),
+                'email' => Setting::get('routing.nominatim.email'),
+                'rate_limit_per_sec' => (int) Setting::get('routing.nominatim.rate_limit_per_sec', 1),
+                'timeout' => (int) Setting::get('routing.nominatim.timeout', 8),
+            ]);
         });
 
-        $this->app->singleton(OsrmRouter::class, function ($app): OsrmRouter {
-            /** @var array<string, mixed> $cfg */
-            $cfg = (array) $app['config']->get('routing.osrm', []);
-
-            return new OsrmRouter($cfg);
+        $this->app->scoped(OsrmRouter::class, function (): OsrmRouter {
+            return new OsrmRouter([
+                'base_url' => Setting::get('routing.osrm.base_url'),
+                'profile' => Setting::get('routing.osrm.profile'),
+                'timeout' => (int) Setting::get('routing.osrm.timeout', 10),
+            ]);
         });
 
         // BrandingService cached die Organisation pro Request → einmalig

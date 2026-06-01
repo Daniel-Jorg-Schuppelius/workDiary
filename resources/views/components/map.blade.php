@@ -15,6 +15,8 @@
 @props([
     'markers' => [],
     'route' => null,
+    'routes' => [],
+    'layers' => [],
     'center' => null,
     'zoom' => 13,
     'height' => '320px',
@@ -25,18 +27,23 @@
     $mapId = $id ?: 'wd-map-' . \Illuminate\Support\Str::random(6);
     $config = [
         'tiles' => [
-            'url' => config('routing.tiles.url'),
-            'attribution' => config('routing.tiles.attribution'),
-            'maxZoom' => (int) config('routing.tiles.max_zoom', 19),
+            'url' => \App\Support\Setting::get('routing.tiles.url'),
+            'attribution' => \App\Support\Setting::get('routing.tiles.attribution'),
+            'maxZoom' => (int) \App\Support\Setting::get('routing.tiles.max_zoom', 19),
         ],
         'center' => $center,
         'zoom' => (int) $zoom,
-        'markers' => array_values(array_map(static fn ($m) => [
+        'markers' => array_values(array_map(static fn ($m) => array_filter([
             'lat' => (float) ($m['lat'] ?? $m[0] ?? 0),
             'lng' => (float) ($m['lng'] ?? $m[1] ?? 0),
             'label' => $m['label'] ?? null,
-        ], $markers ?? [])),
+            'layer' => $m['layer'] ?? null,
+            'color' => $m['color'] ?? null,
+            'popup' => $m['popup'] ?? null,
+        ], static fn ($v) => $v !== null), $markers ?? [])),
         'route' => $route,
+        'routes' => array_values($routes ?? []),
+        'layers' => array_values($layers ?? []),
     ];
 @endphp
 
@@ -45,7 +52,7 @@
     data-map
     data-config="{{ json_encode($config, JSON_THROW_ON_ERROR) }}"
     style="height: {{ $height }};"
-    {{ $attributes->merge(['class' => 'rounded-box border border-base-300 overflow-hidden']) }}
+    {{ $attributes->merge(['class' => 'rounded-box border border-base-300 overflow-hidden relative z-0 isolate']) }}
 ></div>
 
 @once

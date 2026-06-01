@@ -132,6 +132,18 @@ class OrganizationController extends Controller {
             'settings.ui' => ['sometimes', 'array'],
             'settings.ui.*' => ['sometimes', 'array'],
             'settings.ui.*.*' => ['nullable', 'integer', 'min:1', 'max:1000'],
+            'settings.routing' => ['sometimes', 'array'],
+            'settings.routing.nominatim' => ['sometimes', 'array'],
+            'settings.routing.nominatim.base_url' => ['nullable', 'string', 'url', 'max:255'],
+            'settings.routing.nominatim.email' => ['nullable', 'string', 'email', 'max:255'],
+            'settings.routing.nominatim.rate_limit_per_sec' => ['nullable', 'integer', 'min:1', 'max:50'],
+            'settings.routing.osrm' => ['sometimes', 'array'],
+            'settings.routing.osrm.base_url' => ['nullable', 'string', 'url', 'max:255'],
+            'settings.routing.osrm.profile' => ['nullable', 'string', 'max:32'],
+            'settings.routing.osrm.timeout' => ['nullable', 'integer', 'min:1', 'max:120'],
+            'settings.routing.tiles' => ['sometimes', 'array'],
+            'settings.routing.tiles.url' => ['nullable', 'string', 'max:255'],
+            'settings.routing.tiles.max_zoom' => ['nullable', 'integer', 'min:1', 'max:22'],
         ]);
 
         $data['is_active'] = $request->boolean('is_active', true);

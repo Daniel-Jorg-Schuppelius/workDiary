@@ -14,7 +14,7 @@ use App\Enums\Diary\{Mode, Status as DiaryStatus};
 use App\Enums\Tour\TourStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveTourRequest;
-use App\Models\{DiaryEntry, Tour, User, Vehicle};
+use App\Models\{Customer, DiaryEntry, Site, Tour, User, Vehicle};
 use App\Services\Routing\TourService;
 use App\Support\{Setting, SortableQuery};
 use App\Support\Sqid;
@@ -262,6 +262,139 @@ class TourController extends Controller {
 
         return redirect()->route('tours.show', $tour)
             ->with('success', __(':count Fahrten erzeugt.', ['count' => count($logs)]));
+    }
+
+    /**
+     * Übersichtskarte: alle Touren eines Zeitraums (farbige Routen + Stopps),
+     * offene Aufträge mit Koordinaten sowie zuschaltbare Stammdaten-Layer
+     * (Kunden, Standorte, Fahrer-Zuhause).
+     */
+    public function map(Request $request): View {
+        Gate::authorize('viewAny', Tour::class);
+
+        /** @var User $auth */
+        $auth = Auth::user();
+        $target = $this->resolveTargetUser($request, $auth);
+        [$from, $to] = $this->resolveRange($request);
+
+        // Farbpalette für Touren (zyklisch).
+        $palette = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#65a30d'];
+
+        $tourQuery = Tour::query()
+            ->with(['user:id,name', 'orderedStops:id,tour_id,tour_position,title,address_lat,address_lng,address_city'])
+            ->whereBetween('tour_date', [$from->toDateTimeString(), $to->toDateTimeString()]);
+        if ($target !== null) {
+            $tourQuery->where('user_id', $target->id);
+        }
+        if ($request->filled('status')) {
+            $tourQuery->where('status', (string) $request->query('status'));
+        }
+        /** @var Collection<int, Tour> $tours */
+        $tours = $tourQuery->orderBy('tour_date')->get();
+
+        $routes = [];
+        $markers = [];
+        foreach ($tours as $i => $tour) {
+            $color = $palette[$i % count($palette)];
+            $label = ($tour->name ?? ('#' . $tour->id)) . ' · ' . ($tour->user->name ?? '');
+
+            $geometry = $tour->geometryArray();
+            if ($geometry !== null) {
+                $routes[] = ['geometry' => $geometry, 'color' => $color, 'label' => $label, 'layer' => 'tours'];
+            }
+
+            if ($tour->start_lat !== null && $tour->start_lng !== null) {
+                $markers[] = [
+                    'lat' => (float) $tour->start_lat,
+                    'lng' => (float) $tour->start_lng,
+                    'label' => __('Start') . ' · ' . $label,
+                    'layer' => 'tours',
+                    'color' => $color,
+                ];
+            }
+            foreach ($tour->orderedStops as $pos => $stop) {
+                if ($stop->address_lat === null || $stop->address_lng === null) {
+                    continue;
+                }
+                $markers[] = [
+                    'lat' => (float) $stop->address_lat,
+                    'lng' => (float) $stop->address_lng,
+                    'label' => ($stop->tour_position ?? ($pos + 1)) . '. ' . $stop->title,
+                    'popup' => $label . '<br>' . e((string) $stop->title) . '<br>' . e((string) $stop->address_city),
+                    'layer' => 'tours',
+                    'color' => $color,
+                ];
+            }
+        }
+
+        // Offene, nicht zugewiesene Aufträge mit Koordinaten.
+        $openQuery = DiaryEntry::query()
+            ->whereNull('tour_id')
+            ->whereNotNull('address_lat')
+            ->whereNotNull('address_lng')
+            ->whereIn('status', [DiaryStatus::Open->value, DiaryStatus::Problem->value])
+            ->where('is_archived', false)
+            ->whereBetween('scheduled_for', [$from->toDateString(), $to->toDateString()]);
+        foreach ($openQuery->limit(500)->get(['id', 'title', 'address_lat', 'address_lng', 'address_city']) as $entry) {
+            $markers[] = [
+                'lat' => (float) $entry->address_lat,
+                'lng' => (float) $entry->address_lng,
+                'label' => $entry->title,
+                'layer' => 'open',
+                'color' => '#f59e0b',
+                'popup' => __('Offener Auftrag') . '<br>' . e((string) $entry->title),
+            ];
+        }
+
+        // Stammdaten-Layer (zuschaltbar).
+        foreach (Customer::query()->whereNotNull('address_lat')->whereNotNull('address_lng')->get(['id', 'name', 'address_lat', 'address_lng']) as $customer) {
+            $markers[] = [
+                'lat' => (float) $customer->address_lat,
+                'lng' => (float) $customer->address_lng,
+                'label' => $customer->name,
+                'layer' => 'customers',
+                'color' => '#0d9488',
+            ];
+        }
+        foreach (Site::query()->whereNotNull('geo_lat')->whereNotNull('geo_lng')->get(['id', 'name', 'geo_lat', 'geo_lng']) as $site) {
+            $markers[] = [
+                'lat' => (float) $site->geo_lat,
+                'lng' => (float) $site->geo_lng,
+                'label' => $site->name,
+                'layer' => 'sites',
+                'color' => '#9333ea',
+            ];
+        }
+        foreach (User::query()->whereNotNull('home_lat')->whereNotNull('home_lng')->get(['id', 'name', 'home_lat', 'home_lng']) as $driver) {
+            $markers[] = [
+                'lat' => (float) $driver->home_lat,
+                'lng' => (float) $driver->home_lng,
+                'label' => __('Zuhause') . ' · ' . $driver->name,
+                'layer' => 'drivers',
+                'color' => '#475569',
+            ];
+        }
+
+        $layers = [
+            ['key' => 'tours', 'label' => __('Touren'), 'color' => '#2563eb'],
+            ['key' => 'open', 'label' => __('Offene Aufträge'), 'color' => '#f59e0b'],
+            ['key' => 'customers', 'label' => __('Kunden'), 'color' => '#0d9488'],
+            ['key' => 'sites', 'label' => __('Standorte'), 'color' => '#9333ea'],
+            ['key' => 'drivers', 'label' => __('Fahrer (Zuhause)'), 'color' => '#475569'],
+        ];
+
+        return view('tours.map', [
+            'from' => $from,
+            'to' => $to,
+            'targetUser' => $target,
+            'selectableUsers' => $auth->isAdmin() ? $this->loadSelectableUsers() : null,
+            'statuses' => TourStatus::options(),
+            'selectedStatus' => $request->query('status'),
+            'markers' => $markers,
+            'routes' => $routes,
+            'layers' => $layers,
+            'tourCount' => $tours->count(),
+        ]);
     }
 
     /**
