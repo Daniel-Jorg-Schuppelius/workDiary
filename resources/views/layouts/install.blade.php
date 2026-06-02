@@ -44,7 +44,7 @@
     @endif
 </head>
 <body class="min-h-screen bg-base-200">
-    <div class="mx-auto max-w-3xl px-4 py-10">
+    <div class="mx-auto max-w-5xl px-4 py-10">
         <header class="mb-8 text-center">
             <h1 class="text-2xl font-bold">{{ config('app.name', 'WorkDiary') }} — {{ __('Installation') }}</h1>
             <p class="mt-1 text-sm text-base-content/70">{{ __('Richten Sie Ihre Anwendung in wenigen Schritten ein.') }}</p>
@@ -63,9 +63,11 @@
             $currentIndex = array_search($step ?? 'requirements', $steps ?? [], true);
         @endphp
 
-        <ul class="steps steps-vertical w-full sm:steps-horizontal mb-8">
+        <ul class="steps steps-vertical w-full sm:steps-horizontal mb-8 text-xs sm:text-sm">
             @foreach (($steps ?? []) as $i => $key)
-                <li class="step {{ $i <= $currentIndex ? 'step-primary' : '' }}">{{ $labels[$key] ?? $key }}</li>
+                <li class="step {{ $i <= $currentIndex ? 'step-primary' : '' }}" data-content="{{ $i + 1 }}">
+                    <span class="px-1 whitespace-nowrap">{{ $labels[$key] ?? $key }}</span>
+                </li>
             @endforeach
         </ul>
 
