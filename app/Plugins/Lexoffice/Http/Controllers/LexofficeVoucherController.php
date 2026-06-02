@@ -97,7 +97,40 @@ class LexofficeVoucherController extends Controller {
             'sort' => $sort,
             'dir' => $dir,
             'rangeLabel' => $range['label'],
+            'canSync' => $user->can(Permission::VoucherLexofficeSync->value),
         ]);
+    }
+
+    /**
+     * Stößt den Pull-Sync der Lexoffice-Belege für die aktuelle Organisation an
+     * ({@see \App\Plugins\Lexoffice\LexofficeVoucherSync}). Manueller Gegenpart
+     * zum geplanten `lexoffice:sync-vouchers`.
+     */
+    public function sync(): \Illuminate\Http\RedirectResponse {
+        $user = $this->user();
+        abort_unless($user->can(Permission::VoucherLexofficeSync->value), 403);
+
+        $config = LexofficeConfig::resolve($user->organization_id);
+        if (! is_string($config['api_key']) || $config['api_key'] === '') {
+            return back()->with('error', __('Lexoffice ist für diese Organisation nicht konfiguriert.'));
+        }
+
+        $organization = $user->organization;
+        if ($organization === null) {
+            return back()->with('error', __('Keine Organisation zugeordnet.'));
+        }
+
+        try {
+            $result = (new \App\Plugins\Lexoffice\LexofficeVoucherSync($config['api_key'], $config['base_url']))->sync($organization);
+
+            return back()->with('success', __('Sync abgeschlossen: :created neu, :updated aktualisiert, :archived archiviert.', [
+                'created' => $result['created'],
+                'updated' => $result['updated'],
+                'archived' => $result['archived'],
+            ]));
+        } catch (\Throwable $e) {
+            return back()->with('error', __('Sync fehlgeschlagen: :msg', ['msg' => $e->getMessage()]));
+        }
     }
 
     /**

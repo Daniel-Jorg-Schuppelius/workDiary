@@ -45,6 +45,8 @@ Route::middleware(['web', 'auth'])->group(function (): void {
     // Belege (Lexoffice-Vouchers)
     Route::get('lexoffice-vouchers', [LexofficeVoucherController::class, 'index'])
         ->name('lexoffice.vouchers.index');
+    Route::post('lexoffice-vouchers/sync', [LexofficeVoucherController::class, 'sync'])
+        ->name('lexoffice.vouchers.sync');
     Route::get('lexoffice-vouchers/{voucher}/preview', [LexofficeVoucherController::class, 'preview'])
         ->name('lexoffice.vouchers.preview');
     Route::get('lexoffice-vouchers/{voucher}/file', [LexofficeVoucherController::class, 'file'])

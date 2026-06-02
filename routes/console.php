@@ -74,3 +74,21 @@ Schedule::command('tickets:scan-sla-breaches')
     ->everyFiveMinutes()
     ->withoutOverlapping()
     ->onOneServer();
+
+// Lexoffice-Plugin: Pull-Sync der gecachten Kontakte, Artikel und Belege.
+// Greift nur, wenn das Plugin aktiv und je Organisation ein API-Key gesetzt
+// ist; nicht konfigurierte Organisationen werden in den Commands übersprungen.
+Schedule::command('lexoffice:sync-contacts')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer();
+
+Schedule::command('lexoffice:sync-articles')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer();
+
+Schedule::command('lexoffice:sync-vouchers')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer();

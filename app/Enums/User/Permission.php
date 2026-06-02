@@ -112,6 +112,7 @@ enum Permission: string implements HasLabel {
 
         // ── Belege (Lexoffice-Vouchers) ────────────────────────────────────
     case VoucherViewAny = 'voucher.viewAny';
+    case VoucherLexofficeSync = 'voucher.lexoffice.sync';
 
         // ── Projekte / Aufgaben / Meilensteine ─────────────────────────────
     case ProjectViewAny = 'project.viewAny';

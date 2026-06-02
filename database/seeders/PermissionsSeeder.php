@@ -327,6 +327,7 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ArticleViewAny,
             PermissionEnum::ArticleLexofficeSync,
             PermissionEnum::VoucherViewAny,
+            PermissionEnum::VoucherLexofficeSync,
             PermissionEnum::ProjectViewAny,
             PermissionEnum::ProjectView,
             PermissionEnum::ProjectManageBilling,

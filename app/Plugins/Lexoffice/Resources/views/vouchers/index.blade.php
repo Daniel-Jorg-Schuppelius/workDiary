@@ -48,6 +48,15 @@
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Aus Lexoffice synchronisierte Belege im Zeitraum :range — über den Datumsfilter im Header anpassbar.', ['range' => $rangeLabel ?? ''])">
+    @if ($canSync ?? false)
+        <x-slot:actions>
+            <form method="POST" action="{{ route('lexoffice.vouchers.sync') }}">
+                @csrf
+                <x-icon-btn icon="sync" tone="primary" size="sm" type="submit"
+                            show-label>{{ __('Synchronisieren') }}</x-icon-btn>
+            </form>
+        </x-slot:actions>
+    @endif
 
     @include('billing._tabs')
 
