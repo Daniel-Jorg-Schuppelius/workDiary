@@ -89,6 +89,12 @@ das Repository auszuchecken und Abhaengigkeiten zu installieren – `APP_KEY`,
 Datenbank, Migrationen sowie der erste Mandant und Admin-Benutzer werden vom
 Installer erzeugt.
 
+> **Wichtig:** Es wird PHP 8.4 oder neuer benoetigt. Mit aelteren Versionen
+> (z. B. PHP 8.2/8.3) bricht `composer install` ab, weil Abhaengigkeiten wie
+> Symfony 8 und `simshaun/recurr` mindestens PHP 8.4 verlangen. Bei vielen
+> Hostern laesst sich die PHP-Version im Hosting-Panel oder per `.htaccess`
+> umstellen.
+
 ```bash
 git clone <repository-url> workdiary
 cd workdiary

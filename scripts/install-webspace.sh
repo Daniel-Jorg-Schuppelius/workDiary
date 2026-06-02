@@ -72,6 +72,19 @@ require_command() {
     fi
 }
 
+require_php_version() {
+    local min_major=8
+    local min_minor=4
+    local current
+    current="$(php -r 'echo PHP_VERSION;')"
+
+    if ! php -r 'exit(version_compare(PHP_VERSION, "8.4.0", ">=") ? 0 : 1);'; then
+        echo "PHP ${min_major}.${min_minor} oder neuer wird benoetigt, gefunden: ${current}." >&2
+        echo "Bitte auf dem Webspace ein PHP-${min_major}.${min_minor}-CLI auswaehlen (z. B. ueber das Hosting-Panel)." >&2
+        exit 1
+    fi
+}
+
 env_get() {
     local key="$1"
     local line
@@ -101,6 +114,7 @@ env_set() {
 
 log "Pruefe Umgebung"
 require_command php
+require_php_version
 
 if [[ "$SKIP_COMPOSER" -eq 0 ]]; then
     require_command composer
@@ -155,6 +169,10 @@ fi
 
 log "Bereite beschreibbare Verzeichnisse vor"
 mkdir -p storage/app storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
+# Stale kompilierte Views/Caches entfernen (koennen einem anderen Benutzer gehoeren
+# und sonst tempnam-/Permission-Fehler beim Rendern ausloesen).
+find storage/framework/views -maxdepth 1 -type f -name '*.php' -delete 2>/dev/null || true
+find bootstrap/cache -maxdepth 1 -type f -name '*.php' -delete 2>/dev/null || true
 chmod -R ug+rwX storage bootstrap/cache
 
 log "Erzeuge Storage-Link"
