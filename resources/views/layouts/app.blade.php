@@ -483,7 +483,12 @@
 
                             $manageNavItems = [];
                             $adminNavItems  = [];
-                            if ($isLegacyAdmin) {
+                            // Admin-/Verwaltungs-Menü: sowohl Legacy-Admins (ID ≤ 3 bzw.
+                            // Namens-Fallback) als auch echte App-Admins (Spatie-Rolle
+                            // Admin) erhalten Zugriff. Sonst sieht ein frisch angelegter
+                            // Admin ohne Legacy-ID die Verwaltung nicht.
+                            $isAppAdmin = $isLegacyAdmin || $_isGlobalAdmin;
+                            if ($isAppAdmin) {
                                 if ($isLegacyMode) {
                                     $manageNavItems[] = ['route' => 'legacy.users.index', 'label' => __('Mitarbeiter'), 'icon' => 'group', 'modal' => false];
                                 }
