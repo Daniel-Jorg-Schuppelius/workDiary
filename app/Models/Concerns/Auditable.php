@@ -61,7 +61,7 @@ trait Auditable {
     /** @param array<string, mixed> $changes */
     public function audit(string $event, array $changes = []): AuditLog {
         return AuditLog::create([
-            'user_id' => Auth::id(),
+            'user_id' => $this->resolveAuditUserId(),
             'organization_id' => $this->resolveAuditOrganizationId($event),
             'event' => $event,
             'auditable_type' => static::class,
@@ -70,6 +70,19 @@ trait Auditable {
             'ip' => Request::ip(),
             'user_agent' => substr((string) Request::userAgent(), 0, 255),
         ]);
+    }
+
+    /**
+     * Ermittelt die user_id für den AuditLog-Eintrag. Bewusst über
+     * Auth::user() (nicht Auth::id()): Auth::id() liest nur die Session und
+     * kann auf einen Benutzer zeigen, der gar nicht (mehr) existiert – etwa
+     * eine veraltete Session nach `migrate:fresh` oder während des Installers.
+     * Ein solcher Insert würde sonst den FK-Constraint auf users.id verletzen.
+     */
+    protected function resolveAuditUserId(): ?int {
+        $user = Auth::user();
+
+        return $user instanceof User ? (int) $user->getKey() : null;
     }
 
     /**

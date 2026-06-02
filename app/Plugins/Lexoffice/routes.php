@@ -39,8 +39,8 @@ Route::middleware(['web', 'auth'])->group(function (): void {
         ->name('lexoffice.articles.index');
     Route::post('lexoffice-articles/sync', [LexofficeArticleController::class, 'sync'])
         ->name('lexoffice.articles.sync');
-    Route::get('lexoffice-articles/{article}', [LexofficeArticleController::class, 'show'])
-        ->name('lexoffice.articles.show');
+    Route::get('lexoffice-articles/{article}/details', [LexofficeArticleController::class, 'details'])
+        ->name('lexoffice.articles.details');
 
     // Belege (Lexoffice-Vouchers)
     Route::get('lexoffice-vouchers', [LexofficeVoucherController::class, 'index'])

@@ -414,6 +414,12 @@ class InstallationManager {
         // damit der Admin garantiert in der konfigurierten Datenbank landet.
         $this->applyConfiguredDatabaseToRuntime();
 
+        // Spatie-Permission-Cache während der Anlage auf den array-Store legen.
+        // Sonst schreibt die Cache-Invalidierung (assignRole) in die SQLite
+        // `cache`-Tabelle, während diese Transaktion bereits einen Write-Lock
+        // hält – das führt zu „database is locked“.
+        $this->usePermissionArrayCache();
+
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         return DB::transaction(function () use ($data): User {
@@ -456,6 +462,8 @@ class InstallationManager {
      */
     public function resetAdminPassword(string $email, string $password): User {
         $this->applyConfiguredDatabaseToRuntime();
+
+        $this->usePermissionArrayCache();
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
@@ -549,6 +557,18 @@ class InstallationManager {
     }
 
     // ── Interne Helfer ───────────────────────────────────────────────────
+
+    /**
+     * Schaltet den Spatie-Permission-Cache auf den flüchtigen array-Store um.
+     * Verhindert, dass Cache-Invalidierungen während einer offenen DB-Trans-
+     * aktion in die (gleiche) SQLite-Datenbank schreiben und dort auf einen
+     * Write-Lock laufen („database is locked“). Der frische Registrar wird neu
+     * aus dem Container aufgelöst, damit die geänderte Store-Konfiguration greift.
+     */
+    private function usePermissionArrayCache(): void {
+        Config::set('permission.cache.store', 'array');
+        app()->forgetInstance(PermissionRegistrar::class);
+    }
 
     /** @return list<string> */
     private function driverExtensions(?string $driver): array {

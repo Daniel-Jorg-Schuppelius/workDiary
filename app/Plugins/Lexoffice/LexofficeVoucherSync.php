@@ -33,7 +33,8 @@ class LexofficeVoucherSync {
     public function __construct(
         private readonly ?string $apiKey,
         private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
-    ) {}
+    ) {
+    }
 
     /**
      * @return array{contacts: int, created: int, updated: int, archived: int}
@@ -193,7 +194,7 @@ class LexofficeVoucherSync {
             }
 
             if (! $response->successful()) {
-                throw new RuntimeException('Lexoffice voucherlist request failed: ' . $response->status() . ' ' . $response->body());
+                throw LexofficeApiException::fromResponse($response, __('Belege'), __('Belegliste filtern und abrufen'));
             }
 
             return $response;

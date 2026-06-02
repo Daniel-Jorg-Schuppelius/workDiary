@@ -73,12 +73,16 @@ class LexofficeArticleController extends Controller {
         ]);
     }
 
-    public function show(LexofficeArticle $article): View {
+    /**
+     * Rendert den Dialog-Inhalt (eingebettete Modal-Partial) mit den
+     * Stammdaten eines Artikels. Wird per data-entry-modal-trigger nachgeladen.
+     */
+    public function details(LexofficeArticle $article): View {
         $user = $this->user();
         abort_unless($user->can(Permission::ArticleViewAny->value), 403);
         abort_unless($article->organization_id === $user->organization_id, 403);
 
-        return view('lexoffice::articles.show', [
+        return view('lexoffice::articles._details', [
             'article' => $article,
         ]);
     }

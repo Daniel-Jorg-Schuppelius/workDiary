@@ -32,7 +32,8 @@ class LexofficeArticleSync {
     public function __construct(
         private readonly ?string $apiKey,
         private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
-    ) {}
+    ) {
+    }
 
     public function withPolicy(LexofficeMatchPolicy $policy): self {
         $clone = clone $this;
@@ -65,7 +66,7 @@ class LexofficeArticleSync {
                 ]);
 
             if (! $response->successful()) {
-                throw new RuntimeException('Lexoffice articles request failed: ' . $response->status() . ' ' . $response->body());
+                throw LexofficeApiException::fromResponse($response, __('Artikel'), __('Artikel abrufen'));
             }
 
             /** @var array<string, mixed> $body */
@@ -216,12 +217,16 @@ class LexofficeArticleSync {
             'external_version' => isset($item['version']) ? (int) $item['version'] : null,
             'name' => (string) ($item['title'] ?? $item['name'] ?? ''),
             'article_number' => isset($item['articleNumber']) ? (string) $item['articleNumber'] : null,
+            'gtin' => isset($item['gtin']) ? (string) $item['gtin'] : null,
             'description' => isset($item['description']) ? (string) $item['description'] : null,
+            'note' => isset($item['note']) ? (string) $item['note'] : null,
             'type' => (string) ($item['type'] ?? 'service'),
             'unit_name' => isset($item['unitName']) ? (string) $item['unitName'] : null,
             'net_unit_price' => isset($price['netPrice']) ? (string) $price['netPrice'] : null,
+            'gross_unit_price' => isset($price['grossPrice']) ? (string) $price['grossPrice'] : null,
             'currency' => (string) ($price['currency'] ?? 'EUR'),
             'vat_rate' => isset($price['taxRate']) ? (string) $price['taxRate'] : null,
+            'leading_price' => isset($price['leadingPrice']) ? (string) $price['leadingPrice'] : null,
             'synced_at' => now(),
             'archived_at' => null,
         ];
@@ -236,12 +241,15 @@ class LexofficeArticleSync {
             'description' => $article->description,
             'type' => $article->type ?: 'service',
             'articleNumber' => $article->article_number,
+            'gtin' => $article->gtin,
+            'note' => $article->note,
             'unitName' => $article->unit_name,
             'price' => array_filter([
                 'netPrice' => $article->net_unit_price !== null ? (float) $article->net_unit_price : null,
+                'grossPrice' => $article->gross_unit_price !== null ? (float) $article->gross_unit_price : null,
                 'currency' => $article->currency ?: 'EUR',
                 'taxRate' => $article->vat_rate !== null ? (float) $article->vat_rate : null,
-                'leadingPrice' => 'NET',
+                'leadingPrice' => $article->leading_price ?: 'NET',
             ], static fn($v) => $v !== null),
         ], static fn($v) => $v !== null && $v !== '');
     }
@@ -251,7 +259,7 @@ class LexofficeArticleSync {
      * @return array<int, string>
      */
     private function diffArticle(LexofficeArticle $local, array $remote): array {
-        $fields = ['name', 'article_number', 'description', 'type', 'unit_name', 'net_unit_price', 'currency', 'vat_rate'];
+        $fields = ['name', 'article_number', 'gtin', 'description', 'note', 'type', 'unit_name', 'net_unit_price', 'gross_unit_price', 'currency', 'vat_rate', 'leading_price'];
         $diff = [];
         foreach ($fields as $f) {
             $a = (string) ($local->{$f} ?? '');

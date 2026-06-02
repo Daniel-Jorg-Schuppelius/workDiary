@@ -76,7 +76,8 @@
                 @foreach ($articles as $article)
                     <tr class="hover">
                         <td>
-                            <a class="link link-hover font-medium" href="{{ route('lexoffice.articles.show', $article) }}">{{ $article->name }}</a>
+                            <a class="link link-hover font-medium" href="{{ route('lexoffice.articles.details', $article) }}"
+                               data-entry-modal-trigger>{{ $article->name }}</a>
                         </td>
                         <td class="text-base-content/70 tabular-nums">{{ $article->article_number }}</td>
                         <td>

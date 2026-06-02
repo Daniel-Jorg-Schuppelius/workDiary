@@ -76,7 +76,7 @@ class LexofficeContactSync {
                 ]);
 
             if (! $response->successful()) {
-                throw new RuntimeException('Lexoffice contacts request failed: ' . $response->status() . ' ' . $response->body());
+                throw LexofficeApiException::fromResponse($response, __('Kontakte'), __('Kontakte abrufen'));
             }
 
             /** @var array<string, mixed> $body */

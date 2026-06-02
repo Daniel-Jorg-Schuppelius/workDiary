@@ -1,22 +1,16 @@
-@extends('layouts.app')
-@section('title', $article->name . ' — ' . __('Produkt / Leistung'))
-@section('nav-title', __('Produkte & Leistungen'))
+{{--
+    Dialog-Inhalt (eingebettete Modal-Partial) mit den Stammdaten eines
+    Lexoffice-Artikels (Produkt/Leistung). Wird per data-entry-modal-trigger
+    nachgeladen. Rein lesend — Pflege erfolgt in Lexoffice.
+--}}
+<x-modal
+    :title="$article->name"
+    :eyebrow="__('Produkt / Leistung')"
+    icon="inventory_2"
+    size="wide">
 
-@section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$article->name">
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm"
-                            :href="route('lexoffice.articles.index')"
-                            show-label>{{ __('Zurück') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
-    </x-slot:toolbar>
-
-    <x-card>
-        <div class="mb-4 flex flex-wrap items-center gap-2">
-            <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ $article->name }}</h1>
+    <div class="space-y-4">
+        <div class="flex flex-wrap items-center gap-2">
             <x-status-badge :tone="$article->type === 'SERVICE' ? 'info' : 'neutral'" size="xs">
                 {{ $article->type === 'SERVICE' ? __('Leistung') : __('Produkt') }}
             </x-status-badge>
@@ -103,6 +97,11 @@
                 <dd>{{ optional($article->synced_at)->format('d.m.Y H:i') ?: '—' }}</dd>
             </div>
         </dl>
-    </x-card>
-</x-page-shell>
-@endsection
+    </div>
+
+    <x-slot:actions>
+        <button type="button" class="btn btn-ghost gap-2" data-entry-modal-close>
+            <x-icon name="close" /> {{ __('Schließen') }}
+        </button>
+    </x-slot:actions>
+</x-modal>
