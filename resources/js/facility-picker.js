@@ -5,6 +5,7 @@
 window.facilityPicker = function (cfg) {
     const data = cfg?.data ?? {
         customers: [],
+        foreignCustomers: [],
         sites: [],
         buildings: [],
         floors: [],
@@ -16,8 +17,10 @@ window.facilityPicker = function (cfg) {
     return {
         data,
         withRoom: !!cfg?.withRoom,
+        withForeignCustomer: !!cfg?.withForeignCustomer,
 
         customer_id: initial.customer_id ?? null,
+        foreign_customer_id: initial.foreign_customer_id ?? null,
         site_id: initial.site_id ?? null,
         building_id: initial.building_id ?? null,
         floor_id: initial.floor_id ?? null,
@@ -72,6 +75,13 @@ window.facilityPicker = function (cfg) {
             return this.data.sites.filter(
                 (s) =>
                     s.customer_id == null || s.customer_id === this.customer_id,
+            );
+        },
+
+        get filteredForeignCustomers() {
+            if (this.customer_id == null) return [];
+            return (this.data.foreignCustomers ?? []).filter(
+                (fc) => fc.customer_id === this.customer_id,
             );
         },
 
@@ -155,6 +165,15 @@ window.facilityPicker = function (cfg) {
         },
 
         onCustomerChange() {
+            // Wenn Fremdkunde nicht mehr zum Kunden passt, zurücksetzen.
+            if (this.foreign_customer_id != null) {
+                const fc = (this.data.foreignCustomers ?? []).find(
+                    (f) => f.id === this.foreign_customer_id,
+                );
+                if (!fc || fc.customer_id !== this.customer_id) {
+                    this.foreign_customer_id = null;
+                }
+            }
             // Wenn Site nicht mehr zum Kunden passt, zurücksetzen.
             if (this.site_id != null) {
                 const site = this.data.sites.find((s) => s.id === this.site_id);

@@ -84,7 +84,18 @@
                                         </div>
                                     @endif
                                 </td>
-                                <td class="text-sm text-base-content/80">{{ $project->customer?->name ?? '—' }}</td>
+                                <td class="text-sm text-base-content/80">
+                                    <div class="flex items-center gap-2">
+                                        <span>{{ $project->customer?->name ?? '—' }}</span>
+                                        @if ($project->foreignCustomer)
+                                            <span class="badge badge-sm badge-outline gap-1"
+                                                  title="{{ __('Fremdkunde') }}">
+                                                <span class="material-symbols-outlined text-[14px]" aria-hidden="true">handshake</span>
+                                                {{ $project->foreignCustomer->name }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </td>
                                 <td>
                                     <x-status-badge size="sm" :tone="$project->statusTone()">{{ $project->statusLabel() }}</x-status-badge>
                                 </td>

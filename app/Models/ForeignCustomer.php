@@ -87,6 +87,11 @@ class ForeignCustomer extends Model {
         return $this->hasMany(Project::class)->orderBy('name');
     }
 
+    /** @return HasMany<Asset, $this> */
+    public function assets(): HasMany {
+        return $this->hasMany(Asset::class)->orderBy('name');
+    }
+
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by');

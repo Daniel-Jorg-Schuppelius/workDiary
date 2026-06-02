@@ -12,7 +12,7 @@ namespace App\Http\Requests;
 
 use App\Enums\Project\ProjectStatus;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\Project;
+use App\Models\{Customer, ForeignCustomer, Project};
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -22,8 +22,9 @@ class SaveProjectRequest extends FormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'customer_id' => \App\Models\Customer::class,
-        'parent_id' => \App\Models\Project::class,
+        'customer_id' => Customer::class,
+        'foreign_customer_id' => ForeignCustomer::class,
+        'parent_id' => Project::class,
     ];
 
     public function authorize(): bool {
@@ -35,8 +36,10 @@ class SaveProjectRequest extends FormRequest {
         /** @var Project|null $project */
         $project = $this->route('project');
 
-        $customerId = $this->input('customer_id', $project?->customer_id);
-        $customerId = $customerId === '' ? null : $customerId;
+        // Dekodierte Werte (Sqid → int) verwenden, damit der Vergleich mit dem
+        // ebenfalls dekodierten foreign_customer_id konsistent ist.
+        $customerId = $this->validationData()['customer_id'] ?? $project?->customer_id;
+        $customerId = ($customerId === '' || $customerId === null) ? null : (int) $customerId;
 
         return [
             'name' => [
@@ -54,6 +57,28 @@ class SaveProjectRequest extends FormRequest {
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
             'is_default' => ['sometimes', 'boolean'],
             'customer_id' => ['nullable', 'integer', Rule::exists('customers', 'id')],
+            'foreign_customer_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('foreign_customers', 'id'),
+                function (string $attribute, mixed $value, Closure $fail) use ($customerId): void {
+                    if ($value === null || $value === '') {
+                        return;
+                    }
+                    if ($customerId === null) {
+                        $fail(__('Ein Fremdkunde kann nur einem Projekt mit Kunde zugeordnet werden.'));
+
+                        return;
+                    }
+                    $foreignCustomer = ForeignCustomer::query()->find((int) $value);
+                    if ($foreignCustomer === null) {
+                        return;
+                    }
+                    if ((int) $foreignCustomer->customer_id !== (int) $customerId) {
+                        $fail(__('Der gewählte Fremdkunde gehört nicht zum gewählten Kunden.'));
+                    }
+                },
+            ],
             'parent_id' => [
                 'nullable',
                 'integer',

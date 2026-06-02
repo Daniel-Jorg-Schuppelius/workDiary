@@ -204,6 +204,7 @@ class Project extends Model {
                 }
                 // Sub-Projekte erben den Customer vom Parent.
                 $project->customer_id = $parent->customer_id;
+                $project->foreign_customer_id = $parent->foreign_customer_id;
                 // Sub-Projekte dürfen kein Standardprojekt sein.
                 $project->is_default = false;
             }

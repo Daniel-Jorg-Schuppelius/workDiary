@@ -1,12 +1,13 @@
 @php
     /** @var \App\Models\Asset $asset */
     /** @var array<int|string, string> $customers */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\ForeignCustomer> $foreignCustomers */
     /** @var array<string, string> $classOptions */
     /** @var array<string, string> $statusOptions */
     /** @var array<string, string> $categoryOptions */
-    /** @var array{customer_id:?int, site_id:?int, building_id:?int, floor_id:?int, room_id:?int} $prefill */
+    /** @var array{customer_id:?int, foreign_customer_id:?int, site_id:?int, building_id:?int, floor_id:?int, room_id:?int} $prefill */
     $asset = $asset ?? new \App\Models\Asset();
-    $prefill = $prefill ?? ['customer_id' => null, 'site_id' => null, 'building_id' => null, 'floor_id' => null, 'room_id' => null];
+    $prefill = $prefill ?? ['customer_id' => null, 'foreign_customer_id' => null, 'site_id' => null, 'building_id' => null, 'floor_id' => null, 'room_id' => null];
     $pickerCustomers = collect($customers)
         ->map(fn ($name, $id) => (object) ['id' => (int) $id, 'name' => (string) $name])
         ->values();
@@ -75,7 +76,9 @@
 <x-form-group :legend="__('Verortung')" icon="location_on" tone="info" cols="2">
     <x-facility-picker
         with-room
+        with-foreign-customer
         :customers="$pickerCustomers"
+        :foreign-customers="$foreignCustomers ?? collect()"
         :sites="$sites ?? collect()"
         :buildings="$buildings ?? collect()"
         :floors="$floors ?? collect()"

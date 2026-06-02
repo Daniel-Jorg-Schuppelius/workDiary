@@ -19,8 +19,7 @@ class AssetService {
     public function __construct(
         private readonly AssetNumberGenerator $numbers,
         private readonly AssetStatusMachine $statusMachine,
-    ) {
-    }
+    ) {}
 
     /** @param array<string, mixed> $payload */
     public function create(User $actor, array $payload): Asset {
@@ -45,6 +44,7 @@ class AssetService {
             'serial_no' => $payload['serial_no'] ?? null,
             'inventory_no' => $payload['inventory_no'] ?? null,
             'customer_id' => $payload['customer_id'] ?? null,
+            'foreign_customer_id' => $payload['foreign_customer_id'] ?? null,
             'room_id' => $payload['room_id'] ?? null,
             'owned_by' => $ownedBy->value,
             'location_text' => $payload['location_text'] ?? null,
@@ -82,6 +82,13 @@ class AssetService {
         $nextCustomer = array_key_exists('customer_id', $payload)
             ? ($payload['customer_id'] !== null ? (int) $payload['customer_id'] : null)
             : $asset->customer_id;
+        $nextForeignCustomer = array_key_exists('foreign_customer_id', $payload)
+            ? ($payload['foreign_customer_id'] !== null && $payload['foreign_customer_id'] !== '' ? (int) $payload['foreign_customer_id'] : null)
+            : $asset->foreign_customer_id;
+        // Ohne Kunde kann kein Fremdkunde bestehen bleiben.
+        if ($nextCustomer === null) {
+            $nextForeignCustomer = null;
+        }
         $nextRoom = array_key_exists('room_id', $payload)
             ? ($payload['room_id'] !== null && $payload['room_id'] !== '' ? (int) $payload['room_id'] : null)
             : $asset->room_id;
@@ -94,6 +101,7 @@ class AssetService {
         $asset->status = $nextStatus;
         $asset->owned_by = $nextOwnedBy;
         $asset->customer_id = $nextCustomer;
+        $asset->foreign_customer_id = $nextForeignCustomer;
         $asset->room_id = $nextRoom;
         $asset->save();
 

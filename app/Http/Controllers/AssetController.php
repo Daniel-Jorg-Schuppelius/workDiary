@@ -13,7 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\Asset\{AssetClass, AssetOwnership, AssetStatus};
 use App\Exceptions\AssetValidationException;
 use App\Http\Requests\SaveAssetRequest;
-use App\Models\{Asset, Attachment, Building, Customer, DiaryEntry, Floor, MaintenancePlan, MaterialUsage, Protocol, Room, Site, User};
+use App\Models\{Asset, Attachment, Building, Customer, DiaryEntry, Floor, ForeignCustomer, MaintenancePlan, MaterialUsage, Protocol, Room, Site, User};
 use App\Services\Asset\{AssetService, AssetStatusVisibilityService, AssetTimelineService};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -102,6 +102,7 @@ class AssetController extends Controller {
             'classOptions' => $this->assetClassOptions(),
             'statusOptions' => $this->assetStatusOptionsForCreate(),
             'customers' => $this->customerOptions(),
+            'foreignCustomers' => $this->foreignCustomerOptions(),
             'categoryOptions' => $this->categoryOptions(),
             'prefill' => $prefill,
         ] + $this->facilityData());
@@ -139,6 +140,7 @@ class AssetController extends Controller {
             : null;
         $prefill = [
             'customer_id' => $asset->customer_id,
+            'foreign_customer_id' => $asset->foreign_customer_id,
             'site_id' => $room?->floorRelation?->building?->site_id,
             'building_id' => $room?->floorRelation?->building_id,
             'floor_id' => $room?->floor_id,
@@ -150,6 +152,7 @@ class AssetController extends Controller {
             'classOptions' => $this->assetClassOptions(),
             'statusOptions' => $this->assetStatusOptions(),
             'customers' => $this->customerOptions(),
+            'foreignCustomers' => $this->foreignCustomerOptions(),
             'categoryOptions' => $this->categoryOptions(),
             'prefill' => $prefill,
         ] + $this->facilityData());
@@ -388,6 +391,16 @@ class AssetController extends Controller {
     }
 
     /**
+     * @return \Illuminate\Support\Collection<int, ForeignCustomer>
+     */
+    private function foreignCustomerOptions(): \Illuminate\Support\Collection {
+        return ForeignCustomer::query()
+            ->whereNull('archived_at')
+            ->orderBy('name')
+            ->get(['id', 'name', 'customer_id']);
+    }
+
+    /**
      * @return array<string, string>
      */
     private function categoryOptions(): array {
@@ -416,7 +429,7 @@ class AssetController extends Controller {
      * Query-Parametern ab. Akzeptiert ?room=, ?floor=, ?building=, ?site=
      * oder ?customer=; höhere Ebenen werden aufgefüllt.
      *
-     * @return array{customer_id: int|null, site_id: int|null, building_id: int|null, floor_id: int|null, room_id: int|null}
+     * @return array{customer_id: int|null, foreign_customer_id: int|null, site_id: int|null, building_id: int|null, floor_id: int|null, room_id: int|null}
      */
     private function resolvePrefill(Request $request): array {
         $rawRoom = (string) $request->query('room', '');
@@ -461,6 +474,7 @@ class AssetController extends Controller {
 
         return [
             'customer_id' => $customerId,
+            'foreign_customer_id' => null,
             'site_id' => $siteId,
             'building_id' => $buildingId,
             'floor_id' => $floorId,

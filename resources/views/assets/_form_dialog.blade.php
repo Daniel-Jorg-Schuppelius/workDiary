@@ -22,6 +22,7 @@
         'classOptions' => $classOptions,
         'statusOptions' => $statusOptions,
         'customers' => $customers,
+        'foreignCustomers' => $foreignCustomers ?? collect(),
         'categoryOptions' => $categoryOptions,
         'prefill' => $prefill,
         'sites' => $sites ?? collect(),

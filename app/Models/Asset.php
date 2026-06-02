@@ -30,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $serial_no
  * @property string|null $inventory_no
  * @property int|null $customer_id
+ * @property int|null $foreign_customer_id
  * @property bool $shared_remote
  * @property int|null $room_id
  * @property AssetOwnership $owned_by
@@ -61,6 +62,7 @@ class Asset extends Model {
         'serial_no',
         'inventory_no',
         'customer_id',
+        'foreign_customer_id',
         'shared_remote',
         'room_id',
         'owned_by',
@@ -95,6 +97,11 @@ class Asset extends Model {
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
+    }
+
+    /** @return BelongsTo<ForeignCustomer, $this> */
+    public function foreignCustomer(): BelongsTo {
+        return $this->belongsTo(ForeignCustomer::class);
     }
 
     /** @return BelongsTo<Room, $this> */

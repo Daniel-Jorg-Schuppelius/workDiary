@@ -42,6 +42,13 @@ class SaveAssetRequest extends FormRequest {
                     fn($query) => $query->where('organization_id', $orgId)
                 ),
             ],
+            'foreign_customer_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('foreign_customers', 'id')->where(
+                    fn($query) => $query->where('organization_id', $orgId)
+                ),
+            ],
             'room_id' => [
                 'nullable',
                 'integer',
@@ -56,6 +63,28 @@ class SaveAssetRequest extends FormRequest {
     public function withValidator(\Illuminate\Validation\Validator $validator): void {
         $validator->after(function ($validator): void {
             $customerId = $this->input('customer_id');
+            $foreignCustomerId = $this->input('foreign_customer_id');
+
+            if ($foreignCustomerId !== null && $foreignCustomerId !== '') {
+                if ($customerId === null || $customerId === '') {
+                    $validator->errors()->add(
+                        'foreign_customer_id',
+                        __('Ein Fremdkunde kann nur einem Asset mit Kunde zugeordnet werden.')
+                    );
+                } else {
+                    $foreignCustomer = \App\Models\ForeignCustomer::query()->find($foreignCustomerId);
+                    if (
+                        $foreignCustomer instanceof \App\Models\ForeignCustomer
+                        && (int) $foreignCustomer->customer_id !== (int) $customerId
+                    ) {
+                        $validator->errors()->add(
+                            'foreign_customer_id',
+                            __('Der gewählte Fremdkunde gehört nicht zum gewählten Kunden.')
+                        );
+                    }
+                }
+            }
+
             $roomId = $this->input('room_id');
             if ($roomId === null || $roomId === '') {
                 return;

@@ -35,10 +35,14 @@
     'floorName' => 'floor_id',
     'roomName' => 'room_id',
     'customerName' => 'customer_id',
+    'withForeignCustomer' => false,
+    'foreignCustomers' => null,
+    'foreignCustomerName' => 'foreign_customer_id',
 ])
 
 @php
     $selectedCustomerId = old($customerName, $selected['customer_id'] ?? null);
+    $selectedForeignCustomerId = old($foreignCustomerName, $selected['foreign_customer_id'] ?? null);
     $selectedSiteId     = old('_picker_site_id', $selected['site_id'] ?? null);
     $selectedBuildingId = old('_picker_building_id', $selected['building_id'] ?? null);
     $selectedFloorId    = old($floorName, $selected['floor_id'] ?? null);
@@ -46,6 +50,11 @@
 
     $pickerData = [
         'customers' => $customers->map(fn ($c) => ['id' => (int) $c->id, 'name' => (string) $c->name])->values(),
+        'foreignCustomers' => ($foreignCustomers ?? collect())->map(fn ($fc) => [
+            'id' => (int) $fc->id,
+            'name' => (string) $fc->name,
+            'customer_id' => $fc->customer_id !== null ? (int) $fc->customer_id : null,
+        ])->values(),
         'sites'     => $sites->map(fn ($s) => [
             'id' => (int) $s->id,
             'name' => (string) $s->name,
@@ -76,12 +85,14 @@
         data: {{ Js::from($pickerData) }},
         initial: {
             customer_id: @js($selectedCustomerId !== null && $selectedCustomerId !== '' ? (int) $selectedCustomerId : null),
+            foreign_customer_id: @js($selectedForeignCustomerId !== null && $selectedForeignCustomerId !== '' ? (int) $selectedForeignCustomerId : null),
             site_id:     @js($selectedSiteId     !== null && $selectedSiteId     !== '' ? (int) $selectedSiteId     : null),
             building_id: @js($selectedBuildingId !== null && $selectedBuildingId !== '' ? (int) $selectedBuildingId : null),
             floor_id:    @js($selectedFloorId    !== null && $selectedFloorId    !== '' ? (int) $selectedFloorId    : null),
             room_id:     @js($selectedRoomId     !== null && $selectedRoomId     !== '' ? (int) $selectedRoomId     : null),
         },
         withRoom: @js((bool) $withRoom),
+        withForeignCustomer: @js((bool) $withForeignCustomer),
     })"
     class="contents"
 >
@@ -97,6 +108,20 @@
             </select>
             @error($customerName)<p class="text-error text-sm">{{ $message }}</p>@enderror
         </div>
+
+        @if ($withForeignCustomer)
+            <div class="fieldset" x-show="customer_id != null && filteredForeignCustomers.length > 0" x-cloak>
+                <label class="fieldset-label">{{ __('Fremdkunde') }}</label>
+                <select name="{{ $foreignCustomerName }}" x-model.number="foreign_customer_id"
+                        class="select select-bordered w-full @error($foreignCustomerName) select-error @enderror">
+                    <option :value="null">{{ __('— ohne Fremdkunde —') }}</option>
+                    <template x-for="fc in filteredForeignCustomers" :key="fc.id">
+                        <option :value="fc.id" x-text="fc.name" :selected="fc.id === foreign_customer_id"></option>
+                    </template>
+                </select>
+                @error($foreignCustomerName)<p class="text-error text-sm">{{ $message }}</p>@enderror
+            </div>
+        @endif
     @endif
 
     <div class="fieldset">
