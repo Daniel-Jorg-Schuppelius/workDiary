@@ -24,7 +24,7 @@ return new class extends Migration {
             $table->foreignId('organization_id')->nullable()->constrained('organizations')->nullOnDelete();
             $table->string('plugin_id', 64);
             $table->string('conflict_type', 64); // contact | article | invoice ...
-            $table->morphs('referenceable'); // lokales Model, das mit Remote-Daten kollidiert
+            $table->morphs('referenceable', 'pec_referenceable_idx'); // lokales Model, das mit Remote-Daten kollidiert
             $table->string('external_id')->nullable();
             $table->json('local_snapshot');
             $table->json('remote_snapshot');
@@ -34,7 +34,7 @@ return new class extends Migration {
             $table->timestamp('resolved_at')->nullable();
             $table->timestamps();
 
-            $table->index(['organization_id', 'plugin_id', 'status']);
+            $table->index(['organization_id', 'plugin_id', 'status'], 'pec_org_plugin_status_idx');
             $table->index(['plugin_id', 'external_id']);
         });
     }
