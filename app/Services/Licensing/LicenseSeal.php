@@ -60,9 +60,14 @@ final class LicenseSeal {
         }
 
         $path = self::path();
-        if (ToolkitFile::exists($path)) {
+        // Existenz allein genügt nicht: Ist die Datei vorhanden, aber nicht
+        // lesbar (falsche Dateirechte auf dem Server), würde `require` eine
+        // ErrorException werfen und die gesamte App mit einem 500 lahmlegen.
+        // In diesem Fall fallen wir bewusst auf den unversiegelten Zustand
+        // (env-Konfiguration) zurück.
+        if (ToolkitFile::exists($path) && is_readable($path)) {
             /** @var mixed $loaded */
-            $loaded = require $path;
+            $loaded = self::requireSeal($path);
             if (
                 is_array($loaded)
                 && isset($loaded['public_key'], $loaded['files'], $loaded['sealed_at'])
@@ -86,5 +91,17 @@ final class LicenseSeal {
         }
 
         return self::$cache = ['public_key' => '', 'files' => [], 'sealed_at' => ''];
+    }
+
+    /**
+     * Lädt die Seal-Datei und fängt Lese-/Parse-Fehler ab, damit ein
+     * beschädigtes oder nicht lesbares File nicht den Request abbricht.
+     */
+    private static function requireSeal(string $path): mixed {
+        try {
+            return require $path;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

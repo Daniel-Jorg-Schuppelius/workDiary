@@ -27,7 +27,8 @@ class LicenseService {
     public function __construct(
         private readonly Filesystem $files,
         private readonly CacheRepository $cache,
-    ) {}
+    ) {
+    }
 
     public function isEnforced(): bool {
         return (bool) config('license.enforce', true);
@@ -52,7 +53,7 @@ class LicenseService {
         $this->recordStatusTransition($result);
 
         if ($ttl > 0) {
-            $this->safeCacheCall(fn () => $this->cache->put(self::CACHE_KEY . ':' . ($host ?? '_'), $result, $ttl));
+            $this->safeCacheCall(fn() => $this->cache->put(self::CACHE_KEY . ':' . ($host ?? '_'), $result, $ttl));
         }
 
         return $result;

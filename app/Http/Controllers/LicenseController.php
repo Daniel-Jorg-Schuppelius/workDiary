@@ -17,7 +17,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class LicenseController extends Controller {
-    public function __construct(private readonly LicenseService $service) {}
+    public function __construct(private readonly LicenseService $service) {
+    }
 
     public function show(Request $request): View {
         $result = $this->service->current($request->getHost());
