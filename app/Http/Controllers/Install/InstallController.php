@@ -116,6 +116,7 @@ class InstallController extends Controller {
             'database' => ['required', 'string', 'max:255'],
             'username' => ['nullable', 'string', 'max:255'],
             'password' => ['nullable', 'string', 'max:255'],
+            'fresh' => ['nullable', 'boolean'],
         ]);
 
         $config = [
@@ -135,7 +136,7 @@ class InstallController extends Controller {
 
         try {
             $this->installer->configureDatabase($config);
-            $this->installer->runMigrations();
+            $this->installer->runMigrations((bool) ($data['fresh'] ?? false));
             $this->installer->seedRolesAndPermissions();
         } catch (Throwable $e) {
             return back()->withInput()->withErrors([

@@ -270,8 +270,33 @@ class InstallationManager {
         $this->applyDatabaseToRuntime($config);
     }
 
-    public function runMigrations(): void {
+    public function runMigrations(bool $fresh = false): void {
+        // Migrationen (insbesondere migrate:fresh über viele Tabellen) können auf
+        // langsamen Shared-Hostings länger dauern als das Standard-PHP-Limit.
+        $this->extendExecutionTime();
+
+        if ($fresh) {
+            // Verwirft alle vorhandenen Tabellen und migriert von Grund auf neu.
+            // Nützlich, wenn eine frühere Migration abgebrochen wurde und Tabellen
+            // ohne passenden Migrations-Eintrag zurückblieben.
+            Artisan::call('migrate:fresh', ['--force' => true]);
+
+            return;
+        }
+
         Artisan::call('migrate', ['--force' => true]);
+    }
+
+    /**
+     * Hebt das Zeit- und Speicherlimit für langlaufende Installationsschritte
+     * an, soweit die Hosting-Umgebung das zulässt (ignoriert Fehler still).
+     */
+    private function extendExecutionTime(int $seconds = 300): void {
+        if (function_exists('set_time_limit')) {
+            @set_time_limit($seconds);
+        }
+
+        @ini_set('max_execution_time', (string) $seconds);
     }
 
     /**
@@ -279,6 +304,8 @@ class InstallationManager {
      * DatabaseSeeder).
      */
     public function seedRolesAndPermissions(): void {
+        $this->extendExecutionTime();
+
         Artisan::call('db:seed', [
             '--class' => \Database\Seeders\PermissionsSeeder::class,
             '--force' => true,

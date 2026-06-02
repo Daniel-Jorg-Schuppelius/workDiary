@@ -61,6 +61,14 @@
          "database"-Feld an den Controller geht. --}}
     <input type="hidden" name="database" id="database" value="{{ old('database', $values['driver'] === 'sqlite' ? $values['database_sqlite'] : $values['database_server']) }}">
 
+    <fieldset class="fieldset">
+        <label class="label cursor-pointer justify-start gap-3">
+            <input type="checkbox" name="fresh" value="1" class="checkbox checkbox-sm" @checked(old('fresh'))>
+            <span class="fieldset-label">{{ __('Datenbank vor der Migration leeren (alle vorhandenen Tabellen werden verworfen)') }}</span>
+        </label>
+        <p class="fieldset-label text-warning">{{ __('Nur aktivieren, wenn die Datenbank leer sein soll oder eine frühere Migration abgebrochen wurde.') }}</p>
+    </fieldset>
+
     <div class="card-actions justify-between pt-2">
         <a href="{{ route('install.application') }}" class="btn btn-sm btn-ghost">{{ __('Zurück') }}</a>
         <button type="submit" class="btn btn-sm btn-primary">
