@@ -139,6 +139,9 @@ class TravelChargeService {
      */
     private function chargeForTour(Tour $tour, Customer $customer, array $config): ?TravelCharge {
         $date = $tour->tour_date;
+        if ($date === null) {
+            return null;
+        }
         $dateLabel = $date->format('d.m.Y');
 
         if ($config['mode'] === 'flat') {
@@ -186,7 +189,7 @@ class TravelChargeService {
     private function tourKm(Tour $tour, Customer $customer): float {
         $logged = (float) TravelLog::query()
             ->where('customer_id', $customer->id)
-            ->whereDate('date', $tour->tour_date->toDateString())
+            ->whereDate('date', $tour->tour_date?->toDateString())
             ->sum('distance_km');
 
         if ($logged > 0) {

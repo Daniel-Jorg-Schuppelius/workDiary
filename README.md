@@ -82,6 +82,42 @@ Migrationen aus und baut die Assets:
 composer setup
 ```
 
+## Gefuehrte Installation (Web-Installer)
+
+Fuer eine frische Installation steht ein gefuehrter Assistent bereit. Es genuegt
+das Repository auszuchecken und Abhaengigkeiten zu installieren – `APP_KEY`,
+Datenbank, Migrationen sowie der erste Mandant und Admin-Benutzer werden vom
+Installer erzeugt.
+
+```bash
+git clone <repository-url> workdiary
+cd workdiary
+composer install
+npm ci && npm run build
+```
+
+Anschliessend die Domain auf `public/` zeigen lassen und im Browser `/install`
+oeffnen. Der Assistent fuehrt durch folgende Schritte:
+
+1. Systemvoraussetzungen (PHP-Version, Erweiterungen, Schreibrechte).
+2. Anwendung (Name, URL, Umgebung) inkl. automatischer `APP_KEY`-Erzeugung.
+3. Datenbank (SQLite, MySQL oder PostgreSQL) inkl. Verbindungstest und
+   Migrationen.
+4. Erster Mandant und Administrator-Konto.
+5. Mail/SMTP.
+6. Optionale Integrationen (Lexoffice, Web-Push/VAPID).
+
+Nach Abschluss wird die Sperrdatei `storage/installed` angelegt; der Installer
+ist danach automatisch deaktiviert und `/install` liefert `404`. Solange diese
+Datei fehlt, leitet die Anwendung alle Aufrufe auf den Assistenten um. Ein
+vorhandener `APP_KEY` wird niemals ueberschrieben.
+
+Alternativ laeuft derselbe Ablauf interaktiv auf der Kommandozeile:
+
+```bash
+php artisan app:install
+```
+
 ## Installation auf einem Webspace
 
 Der Dokumentenstamm der Domain muss auf das Verzeichnis `public/` zeigen. Wenn

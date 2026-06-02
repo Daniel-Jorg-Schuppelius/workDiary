@@ -22,6 +22,7 @@ use App\Services\Attendance\AttendanceClockService;
 use App\Services\BrandingService;
 use App\Services\Classification\{ClassificationManager, ClassificationResolver};
 use App\Services\I18n\JsTranslationProvider;
+use App\Services\Install\{EnvWriter, InstallationManager};
 use App\Services\Reminders\ReminderService;
 use App\Services\Routing\{NominatimGeocoder, OsrmRouter};
 use App\Services\Timesheet\Stopwatch;
@@ -29,6 +30,7 @@ use App\Services\UI\DateRangeContext;
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Event as EventFacade, Gate, RateLimiter, View};
 use Illuminate\Support\ServiceProvider;
@@ -36,6 +38,14 @@ use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider {
     public function register(): void {
+        // Web-Installer: EnvWriter/InstallationManager mit Default-Pfaden binden,
+        // damit Middleware und Controller sie auflösen können. Tests können diese
+        // Bindings auf temporäre Pfade umbiegen.
+        $this->app->singleton(EnvWriter::class, static fn(): EnvWriter => EnvWriter::forApp());
+        $this->app->singleton(InstallationManager::class, function (Application $app): InstallationManager {
+            return new InstallationManager($app->make(EnvWriter::class));
+        });
+
         // Org-bewusst: scoped statt singleton, damit Settings-UI-Overrides pro
         // Mandant greifen. Setting::get() fällt automatisch auf config() zurück.
         $this->app->scoped(NominatimGeocoder::class, function (): NominatimGeocoder {

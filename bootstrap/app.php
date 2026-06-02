@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Middleware\{EnsureNewSystemAccess, EnsureValidLicense, ForcePasswordChange, HandleDatabaseUnavailable, RequiresFeature, SecurityHeaders, SetLocale, SetOrganizationContext};
+use App\Http\Middleware\{EnsureNewSystemAccess, EnsureValidLicense, ForcePasswordChange, HandleDatabaseUnavailable, PrepareInstaller, RedirectIfNotInstalled, RequiresFeature, SecurityHeaders, SetLocale, SetOrganizationContext};
 use App\Legacy\Http\Middleware\{EnsureLegacyAccess, EnsureLegacyCallcenterAuthenticated, EnsureLegacyWriteAllowed};
 use App\Support\DatabaseHealth;
 use Illuminate\Database\QueryException;
@@ -25,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
         then: function (): void {
+            Route::middleware('web')->group(__DIR__ . '/../routes/install.php');
             Route::middleware('web')->group(__DIR__ . '/../routes/customer.php');
             Route::middleware('web')->group(__DIR__ . '/../routes/legacy.php');
         },
@@ -33,10 +34,15 @@ return Application::configure(basePath: dirname(__DIR__))
         // Muss zuerst laufen, damit DB-Ausfälle in StartSession (SESSION_DRIVER=database)
         // und nachgelagerten Middlewares sauber als 503 zurückgegeben werden, ohne dass
         // beim Response-Unwind erneut DB-Schreibversuche stattfinden.
+        // PrepareInstaller läuft noch davor: auf einem frischen Clone (ohne APP_KEY)
+        // stellt es Schlüssel sowie datei-basierte Session/Cache bereit, bevor
+        // EncryptCookies/StartSession greifen.
         $middleware->web(prepend: [
+            PrepareInstaller::class,
             HandleDatabaseUnavailable::class,
         ]);
         $middleware->web(append: [
+            RedirectIfNotInstalled::class,
             EnsureValidLicense::class,
             SecurityHeaders::class,
             SetLocale::class,

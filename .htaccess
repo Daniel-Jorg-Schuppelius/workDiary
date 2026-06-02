@@ -1,5 +1,10 @@
 <IfModule mod_rewrite.c>
+    Options -Indexes
     RewriteEngine On
+
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+    RewriteRule ^(app|bootstrap|config|database|docs|lang|resources|routes|scripts|storage|tests|vendor)(/|$) - [F,L]
+    RewriteRule ^(artisan|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|phpstan(-baseline)?\.neon|pint\.json|vite\.config\.js)$ - [F,L]
 
     RewriteCond %{THE_REQUEST} \s/+public/([^\s?]*) [NC]
     RewriteRule ^public/(.*)$ /$1 [L,R=301]
@@ -7,3 +12,7 @@
     RewriteCond %{REQUEST_URI} !^/public/
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
+
+<FilesMatch "^(?:\.|\.env|composer\.(?:json|lock)|package(?:-lock)?\.json|phpunit\.xml|phpstan(?:-baseline)?\.neon|pint\.json|vite\.config\.js|artisan)$">
+    Require all denied
+</FilesMatch>

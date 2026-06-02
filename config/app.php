@@ -25,6 +25,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Installations-Status
+    |--------------------------------------------------------------------------
+    |
+    | Übersteuert die Erkennung des Web-Installers. null = automatisch anhand
+    | der Lock-Datei storage/installed entscheiden. true/false erzwingt den
+    | Zustand (z. B. in Tests via APP_INSTALLED=true).
+    |
+    */
+
+    'installed' => env('APP_INSTALLED', null),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |

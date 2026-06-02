@@ -47,6 +47,8 @@ return [
     'bypass_paths' => [
         'license',
         'license/*',
+        'install',
+        'install/*',
         'up',
         'login',
         'logout',
