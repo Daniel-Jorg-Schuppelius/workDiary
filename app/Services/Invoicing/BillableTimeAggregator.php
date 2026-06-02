@@ -38,7 +38,7 @@ class BillableTimeAggregator {
         /** @var Collection<int, BillingBlock> $blocks */
         $blocks = new Collection;
 
-        $grouped = $entries->groupBy(fn(TimeEntry $e): string => ($e->project_id ?? 0) . '|' . ($e->kind?->value ?? ''));
+        $grouped = $entries->groupBy(fn(TimeEntry $e): string => $e->project_id . '|' . $e->kind->value);
 
         foreach ($grouped as $group) {
             /** @var TimeEntry $first */
@@ -47,9 +47,13 @@ class BillableTimeAggregator {
             $increment = $project?->effectiveBillingIncrement() ?? 1;
             $gap = $project?->effectiveBillingGroupingGap() ?? 0;
 
-            [$timed, $untimed] = $group->partition(
+            $partition = $group->partition(
                 fn(TimeEntry $e): bool => $e->started_at !== null && $e->ended_at !== null
             );
+            /** @var Collection<int, TimeEntry> $timed */
+            $timed = $partition->get(0, new Collection);
+            /** @var Collection<int, TimeEntry> $untimed */
+            $untimed = $partition->get(1, new Collection);
 
             foreach ($this->buildTimedBlocks($timed->values(), $gap) as $chunk) {
                 $blocks->push($this->makeBlock($chunk, $project, $increment, bridged: true, gap: $gap));
@@ -80,7 +84,7 @@ class BillableTimeAggregator {
      * @return list<Collection<int, TimeEntry>>
      */
     private function buildTimedBlocks(Collection $timed, int $gap): array {
-        $sorted = $timed->sortBy(fn(TimeEntry $e): int => $e->started_at->getTimestamp())->values();
+        $sorted = $timed->sortBy(fn(TimeEntry $e): int => $e->started_at?->getTimestamp() ?? 0)->values();
 
         /** @var list<Collection<int, TimeEntry>> $blocks */
         $blocks = [];
@@ -93,7 +97,9 @@ class BillableTimeAggregator {
             if ($current === null) {
                 $current = new Collection([$entry]);
             } else {
-                $gapMinutes = (int) $prev->ended_at->diffInMinutes($entry->started_at, false);
+                $gapMinutes = $prev !== null && $prev->ended_at !== null && $entry->started_at !== null
+                    ? (int) $prev->ended_at->diffInMinutes($entry->started_at, false)
+                    : PHP_INT_MAX;
                 if ($gap > 0 && $gapMinutes >= 0 && $gapMinutes <= $gap) {
                     $current->push($entry);
                 } else {
@@ -124,13 +130,13 @@ class BillableTimeAggregator {
         $lastEnd = null;
         $bridgedGaps = 0;
         if ($bridged) {
-            $ordered = $chunk->sortBy(fn(TimeEntry $e): int => $e->started_at->getTimestamp())->values();
-            $firstStart = $ordered->first()->started_at?->copy();
-            $lastEnd = $ordered->last()->ended_at?->copy();
+            $ordered = $chunk->sortBy(fn(TimeEntry $e): int => $e->started_at?->getTimestamp() ?? 0)->values();
+            $firstStart = $ordered->first()?->started_at?->copy();
+            $lastEnd = $ordered->last()?->ended_at?->copy();
 
             $prev = null;
             foreach ($ordered as $e) {
-                if ($prev !== null) {
+                if ($prev !== null && $prev->ended_at !== null && $e->started_at !== null) {
                     $g = (int) $prev->ended_at->diffInMinutes($e->started_at, false);
                     if ($g > 0 && $g <= $gap) {
                         $bridgedGaps += $g;
@@ -151,7 +157,7 @@ class BillableTimeAggregator {
         return new BillingBlock(
             project: $project,
             kind: $firstEntry->kind,
-            entryIds: $chunk->map(fn(TimeEntry $e): int => (int) $e->id)->all(),
+            entryIds: array_values($chunk->map(fn(TimeEntry $e): int => (int) $e->id)->all()),
             primaryEntryId: (int) $firstEntry->id,
             workedMinutes: $workedMinutes,
             rawMinutes: $rawMinutes,
