@@ -86,7 +86,35 @@ class SealCommand extends Command {
         $this->line('  Hashes: ' . count($hashes) . ' Datei(en)');
         $this->line('  Sealed at: ' . $sealedAt);
 
+        $this->warnAboutFilePermissions($sealPath);
+
         return self::SUCCESS;
+    }
+
+    /**
+     * Weist deutlich darauf hin, dass die Seal-Datei mit den Rechten des
+     * ausführenden Nutzers (z. B. root bei `sudo`) angelegt wird. Ist sie für
+     * den Webserver-Nutzer nicht lesbar, schlägt jeder Request mit „Permission
+     * denied" fehl (LicenseSeal::data() fällt dann auf env zurück).
+     */
+    private function warnAboutFilePermissions(string $path): void {
+        $owner = function_exists('fileowner') ? @fileowner($path) : false;
+        $ownerName = is_int($owner) && function_exists('posix_getpwuid')
+            ? (posix_getpwuid($owner)['name'] ?? (string) $owner)
+            : ($owner === false ? 'unbekannt' : (string) $owner);
+
+        $perms = @fileperms($path);
+        $mode = is_int($perms) ? substr(sprintf('%o', $perms), -4) : '----';
+
+        $this->newLine();
+        $this->warn('Hinweis zu Dateirechten:');
+        $this->line('  Eigentümer: ' . $ownerName . '   Modus: ' . $mode);
+        $this->line('  Die Seal-Datei wurde mit den Rechten des ausführenden Nutzers angelegt.');
+        $this->line('  Wird der Befehl als root (z. B. via sudo) ausgeführt, gehört die Datei root');
+        $this->line('  und ist für den Webserver-Nutzer oft NICHT lesbar -> 500 "Permission denied".');
+        $this->line('  Stelle sicher, dass der Webserver-Nutzer die Datei lesen kann, z. B.:');
+        $this->line('    chown <webuser>:<webgroup> ' . $path);
+        $this->line('    chmod 640 ' . $path);
     }
 
     /**
