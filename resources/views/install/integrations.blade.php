@@ -17,6 +17,14 @@
 
     <div class="divider text-xs">{{ __('Web-Push (VAPID)') }}</div>
 
+    <div class="flex items-center justify-between gap-2">
+        <p class="text-xs text-base-content/60">{{ __('Schlüsselpaar für Browser-Push. Kann automatisch erzeugt werden.') }}</p>
+        <button type="button" id="vapid-generate" class="btn btn-sm btn-outline">
+            <span class="material-symbols-outlined" aria-hidden="true">key</span>
+            {{ __('Schlüssel generieren') }}
+        </button>
+    </div>
+
     <fieldset class="fieldset">
         <label class="fieldset-label" for="vapid_subject">{{ __('VAPID Subject') }}</label>
         <input type="text" name="vapid_subject" id="vapid_subject" value="{{ old('vapid_subject', $values['vapid_subject']) }}"
@@ -44,4 +52,46 @@
         </button>
     </div>
 </form>
+
+<script>
+    (function () {
+        const btn = document.getElementById('vapid-generate');
+        if (! btn) {
+            return;
+        }
+        const pub = document.getElementById('vapid_public_key');
+        const priv = document.getElementById('vapid_private_key');
+        const subject = document.getElementById('vapid_subject');
+        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+
+        btn.addEventListener('click', async function () {
+            btn.disabled = true;
+            const original = btn.innerHTML;
+            btn.textContent = @json(__('Generiere …'));
+            try {
+                const res = await fetch(@json(route('install.integrations.vapid')), {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json',
+                    },
+                });
+                if (! res.ok) {
+                    throw new Error('HTTP ' + res.status);
+                }
+                const data = await res.json();
+                pub.value = data.publicKey ?? '';
+                priv.value = data.privateKey ?? '';
+                if (subject && ! subject.value.trim()) {
+                    subject.value = 'mailto:admin@' + window.location.hostname;
+                }
+            } catch (e) {
+                alert(@json(__('Schlüssel konnten nicht erzeugt werden. Bitte erneut versuchen.')));
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = original;
+            }
+        });
+    })();
+</script>
 @endsection

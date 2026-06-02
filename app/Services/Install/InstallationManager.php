@@ -15,6 +15,7 @@ use App\Models\{Organization, User};
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\{Artisan, Config, DB, Hash};
 use Illuminate\Support\Str;
+use Minishlink\WebPush\VAPID;
 use PDO;
 use RuntimeException;
 use Spatie\Permission\Models\Role;
@@ -408,6 +409,20 @@ class InstallationManager {
         if ($values !== []) {
             $this->env->setMany($values);
         }
+    }
+
+    /**
+     * Erzeugt ein neues VAPID-Schlüsselpaar für Web-Push. Die Schlüssel werden
+     * NICHT persistiert – das übernimmt der Integrations-Schritt, sobald der
+     * Anwender das Formular absendet.
+     *
+     * @return array{publicKey: string, privateKey: string}
+     */
+    public function generateVapidKeys(): array {
+        /** @var array{publicKey: string, privateKey: string} $keys */
+        $keys = VAPID::createVapidKeys();
+
+        return $keys;
     }
 
     // ── Interne Helfer ───────────────────────────────────────────────────

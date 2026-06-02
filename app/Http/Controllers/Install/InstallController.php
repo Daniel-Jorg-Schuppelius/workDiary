@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Install;
 
 use App\Http\Controllers\Controller;
 use App\Services\Install\InstallationManager;
-use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
@@ -27,8 +27,7 @@ class InstallController extends Controller {
     /** Reihenfolge der Wizard-Schritte für die Fortschrittsanzeige. */
     private const STEPS = ['requirements', 'application', 'database', 'admin', 'mail', 'integrations', 'finish'];
 
-    public function __construct(private readonly InstallationManager $installer) {
-    }
+    public function __construct(private readonly InstallationManager $installer) {}
 
     // ── Schritt 1: Voraussetzungen ───────────────────────────────────────
 
@@ -243,6 +242,15 @@ class InstallController extends Controller {
         $this->installer->configureIntegrations($data);
 
         return redirect()->route('install.finish');
+    }
+
+    /**
+     * Erzeugt per AJAX ein frisches VAPID-Schlüsselpaar für den
+     * Integrations-Schritt (Web-Push). Persistiert nichts – die Werte werden
+     * erst beim Absenden des Formulars gespeichert.
+     */
+    public function generateVapidKeys(): JsonResponse {
+        return response()->json($this->installer->generateVapidKeys());
     }
 
     // ── Schritt 7: Abschluss ─────────────────────────────────────────────

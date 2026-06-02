@@ -39,6 +39,7 @@ Route::middleware(RedirectIfInstalled::class)
 
         Route::get('/integrations', [InstallController::class, 'integrations'])->name('integrations');
         Route::post('/integrations', [InstallController::class, 'storeIntegrations'])->name('integrations.store');
+        Route::post('/integrations/vapid-keys', [InstallController::class, 'generateVapidKeys'])->name('integrations.vapid');
 
         Route::get('/finish', [InstallController::class, 'finish'])->name('finish');
         Route::post('/finish', [InstallController::class, 'complete'])->name('complete');
