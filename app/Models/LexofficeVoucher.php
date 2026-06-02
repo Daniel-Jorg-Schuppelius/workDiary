@@ -10,8 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToOrganization;
-use App\Models\Concerns\HasSqid;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;

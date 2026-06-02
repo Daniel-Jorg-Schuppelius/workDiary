@@ -39,8 +39,7 @@ class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
 
     public function __construct(
         private readonly LexofficeService $service,
-    ) {
-    }
+    ) {}
 
     public function id(): string {
         return self::ID;

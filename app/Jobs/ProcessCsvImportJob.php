@@ -44,8 +44,7 @@ class ProcessCsvImportJob implements ShouldQueue {
     public int $tries = 1;
     public const CHUNK = 500;
 
-    public function __construct(public readonly int $importRunId) {
-    }
+    public function __construct(public readonly int $importRunId) {}
 
     public function handle(EntitySpecRegistry $registry): void {
         $run = ImportRun::query()->find($this->importRunId);

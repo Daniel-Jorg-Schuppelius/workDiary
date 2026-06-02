@@ -33,7 +33,7 @@ class ScheduleController extends Controller {
         $auth = Auth::user();
 
         $rawUserFilter = (string) $request->query('user', '');
-        $userFilter = (int) (Sqid::decodeOrNumeric(User::class, $rawUserFilter, 0) ?? 0);;
+        $userFilter = (int) (Sqid::decodeOrNumeric(User::class, $rawUserFilter, 0) ?? 0);
 
         $range = $this->globalDateRange();
         $rangeFrom = $range['from'];

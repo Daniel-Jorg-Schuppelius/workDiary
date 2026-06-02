@@ -28,6 +28,8 @@ use Illuminate\View\View;
  * approve/reject/reopen/lock zur Verfügung.
  */
 class MonthApprovalInboxController extends Controller {
+    private const ALLOWED_SORTS = ['period_year', 'status', 'days_open', 'warnings_count', 'submitted_at'];
+
     public function __construct(private readonly MonthClosureService $service) {
     }
 
@@ -49,10 +51,15 @@ class MonthApprovalInboxController extends Controller {
         $userFilter = Sqid::decode(User::class, $request->input('user'));
         $yearFilter = $request->filled('year') ? (int) $request->input('year') : null;
 
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'period_year';
+        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
+
         $query = MonthClosure::query()
             ->where('organization_id', $admin->organization_id)
             ->with('user')
-            ->orderByDesc('period_year')
+            ->orderBy($sort, $dir)
             ->orderByDesc('period_month')
             ->orderBy('user_id');
 
@@ -82,6 +89,8 @@ class MonthApprovalInboxController extends Controller {
                 'year' => $yearFilter,
             ],
             'statuses' => MonthClosureStatus::cases(),
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 

@@ -24,16 +24,29 @@ use Spatie\Permission\Models\{Permission, Role};
  * bündelt Mitglieder und vererbt diesen Rollen sowie direkte Permissions.
  */
 class UserGroupController extends Controller {
-    public function index(): View {
+    private const ALLOWED_SORTS = ['name', 'slug', 'members_count', 'description'];
+
+    public function index(Request $request): View {
         Gate::authorize('viewAny', UserGroup::class);
+
+        $search = $request->string('q')->toString();
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'name';
+        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
 
         $groups = UserGroup::query()
             ->withCount('members')
-            ->orderBy('name')
+            ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
+                $w->where('name', 'like', "%{$search}%")
+                    ->orWhere('slug', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            }))
+            ->orderBy($sort, $dir)
             ->paginate(25)
             ->withQueryString();
 
-        return view('admin.access.groups.index', compact('groups'));
+        return view('admin.access.groups.index', compact('groups', 'search', 'sort', 'dir'));
     }
 
     public function create(): View {

@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : qualifications.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('title', __('Qualifikationen'))
 @section('nav-title', __('Qualifikationsmatrix'))
@@ -47,10 +56,10 @@
         @if ($users->isEmpty() || $qualifications->isEmpty())
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>' :title="__('Keine Qualifikations-Zuweisungen vorhanden.')" />
         @else
-            <x-table bare>
+            <x-table bare table-sort="client">
                 <x-slot:head>
                     <tr>
-                        <th class="sticky left-0 bg-base-100">{{ __('Mitarbeiter') }}</th>
+                        <x-table.th sort type="string" class="sticky left-0 bg-base-100">{{ __('Mitarbeiter') }}</x-table.th>
                         @foreach ($qualifications as $q)
                             <th class="text-center align-bottom" title="{{ $q->name }}">
                                 <span class="block text-xs font-semibold">{{ $q->abbreviation ?? $q->name }}</span>

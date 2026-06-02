@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Automatisierungen'))
@@ -8,14 +17,14 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Regeln werten bei festgelegten Ereignissen Bedingungen aus und führen Aktionen automatisch aus (z. B. Kleinbetragsspesen genehmigen). Jede Auswertung wird im Audit-Log protokolliert.')">
 
-    <x-table scroll="flex" :pinRows="true">
+    <x-table scroll="flex" :pinRows="true" table-sort="client">
         <x-slot:head>
             <tr>
-                <th class="w-16">{{ __('Prio') }}</th>
-                <th>{{ __('Name') }}</th>
-                <th>{{ __('Trigger') }}</th>
+                <x-table.th sort type="number" class="w-16" default="asc">{{ __('Prio') }}</x-table.th>
+                <x-table.th sort type="string">{{ __('Name') }}</x-table.th>
+                <x-table.th sort type="string">{{ __('Trigger') }}</x-table.th>
                 <th>{{ __('Aktion(en)') }}</th>
-                <th class="text-center">{{ __('Aktiv') }}</th>
+                <x-table.th sort type="string" align="center">{{ __('Aktiv') }}</x-table.th>
                 <th></th>
             </tr>
         </x-slot:head>

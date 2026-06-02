@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('title', __('Belege') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Belege'))
@@ -71,15 +80,17 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <x-table scroll="flex" :pinRows="true">
+    <x-table scroll="flex" :pinRows="true" table-sort="server"
+             :route="route('lexoffice.vouchers.index')" :current-sort="$sort" :current-dir="$dir"
+             :sort-params="array_filter(['q' => $q ?: null, 'type' => $type ?: null, 'party' => $party ?: null, 'status' => $status !== 'active' ? $status : null])">
         <x-slot:head>
             <tr>
-                <th>{{ __('Nummer') }}</th>
-                <th>{{ __('Datum') }}</th>
-                <th>{{ __('Typ') }}</th>
+                <x-table.th sort="voucher_number">{{ __('Nummer') }}</x-table.th>
+                <x-table.th sort="voucher_date">{{ __('Datum') }}</x-table.th>
+                <x-table.th sort="voucher_type">{{ __('Typ') }}</x-table.th>
                 <th>{{ __('Zuordnung') }}</th>
-                <th>{{ __('Status') }}</th>
-                <th class="text-right">{{ __('Betrag') }}</th>
+                <x-table.th sort="voucher_status">{{ __('Status') }}</x-table.th>
+                <x-table.th sort="total_amount" align="right">{{ __('Betrag') }}</x-table.th>
                 <th class="text-right">{{ __('Beleg') }}</th>
             </tr>
         </x-slot:head>

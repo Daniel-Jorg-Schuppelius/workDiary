@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('title', __('Tätigkeiten'))
 @section('nav-title', __('Tätigkeiten'))
@@ -19,20 +28,27 @@
             @endcan
         </x-slot:actions>
 
-        <x-table scroll="flex" :pinRows="true" :zebra="true">
-            <thead class="bg-base-200">
+        <x-filter-bar :action="route('activity-categories.index')" method="GET" :reset="route('activity-categories.index')">
+            <input type="text" name="q" value="{{ $search ?? '' }}"
+                   class="input input-sm input-bordered w-48 shrink-0"
+                   placeholder="{{ __('Suche') }}" aria-label="{{ __('Suche') }}" />
+        </x-filter-bar>
+
+        <x-table scroll="flex" :pinRows="true" :zebra="true" table-sort="server"
+                 :route="route('activity-categories.index')" :current-sort="$sort" :current-dir="$dir"
+                 :sort-params="array_filter(['q' => $search ?: null])">
+            <x-slot:head>
                 <tr>
-                    <th data-sort data-sort-default="asc" data-sort-type="number" class="w-16 text-right">{{ __('#') }}</th>
-                    <th data-sort>{{ __('Schlüssel') }}</th>
-                    <th data-sort>{{ __('Bezeichnung') }}</th>
-                    <th data-sort>{{ __('Typ') }}</th>
-                    <th data-sort class="text-center">{{ __('Arbeit') }}</th>
-                    <th data-sort class="text-center">{{ __('Abrechenbar') }}</th>
-                    <th data-sort>{{ __('Status') }}</th>
+                    <x-table.th sort="sort_order" align="right" class="w-16">{{ __('#') }}</x-table.th>
+                    <x-table.th sort="key">{{ __('Schlüssel') }}</x-table.th>
+                    <x-table.th sort="label">{{ __('Bezeichnung') }}</x-table.th>
+                    <x-table.th sort="activity_type">{{ __('Typ') }}</x-table.th>
+                    <x-table.th sort="counts_as_work" align="center">{{ __('Arbeit') }}</x-table.th>
+                    <x-table.th sort="billable_default" align="center">{{ __('Abrechenbar') }}</x-table.th>
+                    <x-table.th sort="active">{{ __('Status') }}</x-table.th>
                     <th class="w-32 text-right">{{ __('Aktion') }}</th>
                 </tr>
-            </thead>
-            <tbody>
+            </x-slot:head>
                 @forelse ($categories as $cat)
                     <tr class="hover">
                         <td class="text-right tabular-nums">{{ $cat->sort_order }}</td>
@@ -101,7 +117,6 @@
                         icon='<span class="material-symbols-outlined" aria-hidden="true">category</span>'
                         :title="__('Noch keine Tätigkeiten angelegt')" compact />
                 @endforelse
-            </tbody>
         </x-table>
 
         <x-pagination :paginator="$categories" />

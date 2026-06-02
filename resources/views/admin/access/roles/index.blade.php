@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('access.title.roles'))
@@ -14,11 +23,11 @@
 
     <section class="space-y-3">
         <h2 class="text-lg font-semibold">{{ __('access.title.org_roles', ['org' => $organization->name]) }}</h2>
-        <x-table>
+        <x-table table-sort="client">
             <x-slot:head>
                 <tr>
-                    <th>{{ __('access.field.role_name') }}</th>
-                    <th>{{ __('access.field.permission_count') }}</th>
+                    <x-table.th sort type="string">{{ __('access.field.role_name') }}</x-table.th>
+                    <x-table.th sort type="number">{{ __('access.field.permission_count') }}</x-table.th>
                     <th></th>
                 </tr>
             </x-slot:head>
@@ -56,11 +65,11 @@
         <section class="space-y-3">
             <h2 class="text-lg font-semibold">{{ __('access.title.global_roles') }}</h2>
             <p class="text-sm text-base-content/60">{{ __('access.hint.global_roles') }}</p>
-            <x-table>
+            <x-table table-sort="client">
                 <x-slot:head>
                     <tr>
-                        <th>{{ __('access.field.role_name') }}</th>
-                        <th>{{ __('access.field.permission_count') }}</th>
+                        <x-table.th sort type="string">{{ __('access.field.role_name') }}</x-table.th>
+                        <x-table.th sort type="number">{{ __('access.field.permission_count') }}</x-table.th>
                     </tr>
                 </x-slot:head>
                 @foreach ($globalRoles as $role)

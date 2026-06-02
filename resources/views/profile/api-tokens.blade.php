@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : api-tokens.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('API-Tokens'))
@@ -26,12 +35,12 @@
         </div>
     </form>
 
-    <x-table>
+    <x-table table-sort="client">
         <x-slot:head>
             <tr>
-                <th>{{ __('Name') }}</th>
-                <th>{{ __('Erstellt') }}</th>
-                <th>{{ __('Zuletzt benutzt') }}</th>
+                <x-table.th sort type="string">{{ __('Name') }}</x-table.th>
+                <x-table.th sort type="date">{{ __('Erstellt') }}</x-table.th>
+                <x-table.th sort type="date">{{ __('Zuletzt benutzt') }}</x-table.th>
                 <th></th>
             </tr>
         </x-slot:head>
@@ -39,8 +48,8 @@
         @forelse ($tokens as $token)
             <tr>
                 <td>{{ $token->name }}</td>
-                <td>{{ optional($token->created_at)->format('d.m.Y H:i') }}</td>
-                <td>{{ $token->last_used_at ? $token->last_used_at->diffForHumans() : '—' }}</td>
+                <td data-sort-value="{{ optional($token->created_at)->format('Y-m-d H:i:s') }}">{{ optional($token->created_at)->format('d.m.Y H:i') }}</td>
+                <td data-sort-value="{{ optional($token->last_used_at)->format('Y-m-d H:i:s') }}">{{ $token->last_used_at ? $token->last_used_at->diffForHumans() : '—' }}</td>
                 <td class="text-right">
                     <form method="POST" action="{{ route('profile.api-tokens.destroy', $token->id) }}" class="inline"
                           data-confirm-dialog

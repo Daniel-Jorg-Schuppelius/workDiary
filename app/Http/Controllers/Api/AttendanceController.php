@@ -19,8 +19,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use RuntimeException;
 
 class AttendanceController extends Controller {
-    public function __construct(protected AttendanceClockService $clock) {
-    }
+    public function __construct(protected AttendanceClockService $clock) {}
 
     public function current(): JsonResponse {
         $user = Auth::user();

@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : customers.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('title', __('Kundenanalyse'))
 @section('nav-title', __('Kundenanalyse'))
@@ -52,9 +61,9 @@
     </x-filter-bar>
 
     <div class="grid gap-4 lg:grid-cols-3">
-        <x-table bare>
+        <x-table bare table-sort="client">
             <x-slot:head>
-                <tr><th>{{ __('Top 5 Aufwand') }}</th><th class="text-right">{{ __('Min.') }}</th></tr>
+                <tr><x-table.th sort type="string">{{ __('Top 5 Aufwand') }}</x-table.th><x-table.th sort type="number" align="right">{{ __('Min.') }}</x-table.th></tr>
             </x-slot:head>
             @forelse($topByMinutes as $row)
                 <tr><td>{{ $row['customerName'] }}</td><td class="text-right tabular-nums">{{ $row['totalMinutes'] }}</td></tr>
@@ -63,9 +72,9 @@
             @endforelse
         </x-table>
 
-        <x-table bare>
+        <x-table bare table-sort="client">
             <x-slot:head>
-                <tr><th>{{ __('Top 5 Nacharbeit') }}</th><th class="text-right">{{ __('Einträge') }}</th></tr>
+                <tr><x-table.th sort type="string">{{ __('Top 5 Nacharbeit') }}</x-table.th><x-table.th sort type="number" align="right">{{ __('Einträge') }}</x-table.th></tr>
             </x-slot:head>
             @forelse($topByRework as $row)
                 <tr><td>{{ $row['customerName'] }}</td><td class="text-right tabular-nums">{{ $row['reworkEntryCount'] }}</td></tr>
@@ -74,9 +83,9 @@
             @endforelse
         </x-table>
 
-        <x-table bare>
+        <x-table bare table-sort="client">
             <x-slot:head>
-                <tr><th>{{ __('Top 5 nicht abrechenbar') }}</th><th class="text-right">{{ __('Min.') }}</th></tr>
+                <tr><x-table.th sort type="string">{{ __('Top 5 nicht abrechenbar') }}</x-table.th><x-table.th sort type="number" align="right">{{ __('Min.') }}</x-table.th></tr>
             </x-slot:head>
             @forelse($topByNonBillable as $row)
                 <tr><td>{{ $row['customerName'] }}</td><td class="text-right tabular-nums">{{ $row['nonBillableMinutes'] }}</td></tr>
@@ -92,20 +101,20 @@
         @if($rows->isEmpty())
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">analytics</span>' :title="__('Keine Kundendaten im gewählten Zeitraum.')" />
         @else
-            <x-table bare>
+            <x-table bare table-sort="client">
                 <x-slot:head>
                     <tr>
-                        <th>{{ __('Kunde') }}</th>
-                        <th class="text-right">{{ __('Aufträge') }}</th>
-                        <th class="text-right">{{ __('Gesamt') }}</th>
-                        <th class="text-right">{{ __('Abrechenbar') }}</th>
-                        <th class="text-right">{{ __('Nicht abrechenbar') }}</th>
-                        <th class="text-right">{{ __('Anteil %') }}</th>
-                        <th class="text-right">{{ __('Nacharbeit') }}</th>
-                        <th class="text-right">{{ __('Offene Punkte') }}</th>
-                        <th class="text-right">{{ __('Eskaliert') }}</th>
-                        <th class="text-right">{{ __('Ø Min./Auftrag') }}</th>
-                        <th class="text-right">{{ __('Trend 30d') }}</th>
+                        <x-table.th sort type="string">{{ __('Kunde') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Aufträge') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Gesamt') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Abrechenbar') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Nicht abrechenbar') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Anteil %') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Nacharbeit') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Offene Punkte') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Eskaliert') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Ø Min./Auftrag') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Trend 30d') }}</x-table.th>
                     </tr>
                 </x-slot:head>
                 @foreach($rows as $row)

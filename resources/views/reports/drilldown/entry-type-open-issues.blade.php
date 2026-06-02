@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : entry-type-open-issues.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('title', __('Drilldown: Offene Punkte (Auftragstyp)'))
 @section('nav-title', __('Drilldown: Offene Punkte (Auftragstyp)'))
@@ -29,14 +38,14 @@
         @if ($issues->isEmpty())
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">error_outline</span>' :title="__('Keine offenen Punkte für diesen Drilldown gefunden.')" />
         @else
-            <x-table bare>
+            <x-table bare table-sort="client">
                 <x-slot:head>
                     <tr>
-                        <th>{{ __('Titel') }}</th>
-                        <th>{{ __('Status') }}</th>
-                        <th>{{ __('Severity') }}</th>
-                        <th>{{ __('Fällig') }}</th>
-                        <th>{{ __('Zugewiesen') }}</th>
+                        <x-table.th sort type="string">{{ __('Titel') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Severity') }}</x-table.th>
+                        <x-table.th sort type="date">{{ __('Fällig') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Zugewiesen') }}</x-table.th>
                     </tr>
                 </x-slot:head>
                 @foreach ($issues as $issue)

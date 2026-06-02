@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : show.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Reise :location', ['location' => $trip->location]))
@@ -67,26 +76,26 @@
         </x-card>
 
         <x-card :title="__('Tage & Mahlzeitenkürzung')" icon="restaurant_menu" padding="p-0">
-            <x-table bare>
+            <x-table bare table-sort="client">
                 <x-slot:head>
                     <tr>
-                        <x-table.th>{{ __('Datum') }}</x-table.th>
-                        <x-table.th>{{ __('Art') }}</x-table.th>
-                        <x-table.th align="right">{{ __('Basis') }}</x-table.th>
+                        <x-table.th sort type="date" default="asc">{{ __('Datum') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Art') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Basis') }}</x-table.th>
                         <x-table.th align="center">{{ __('Frühstück') }}</x-table.th>
                         <x-table.th align="center">{{ __('Mittag') }}</x-table.th>
                         <x-table.th align="center">{{ __('Abend') }}</x-table.th>
-                        <x-table.th align="right">{{ __('Kürzung') }}</x-table.th>
-                        <x-table.th align="right">{{ __('Auszahlung') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Kürzung') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Auszahlung') }}</x-table.th>
                         <th></th>
                     </tr>
                 </x-slot:head>
                 @foreach ($trip->days as $day)
                     @php($fid = 'pd-day-form-' . $day->id)
                     <tr>
-                        <td class="whitespace-nowrap">{{ $day->date->format('d.m.Y') }}</td>
+                        <td class="whitespace-nowrap" data-sort-value="{{ $day->date->format('Y-m-d') }}">{{ $day->date->format('d.m.Y') }}</td>
                         <td><x-status-badge tone="ghost" size="sm">{{ $day->kind->label() }}</x-status-badge></td>
-                        <td class="text-right whitespace-nowrap">{{ number_format((float) $day->base_amount, 2, ',', '.') }} €</td>
+                        <td class="text-right whitespace-nowrap" data-sort-value="{{ $day->base_amount }}">{{ number_format((float) $day->base_amount, 2, ',', '.') }} €</td>
                         <td class="text-center">
                             <input type="hidden" name="meal_breakfast" value="0" form="{{ $fid }}">
                             <input type="checkbox" name="meal_breakfast" value="1" form="{{ $fid }}"
@@ -108,14 +117,14 @@
                                    @checked($day->meal_dinner)
                                    @cannot('update', $trip) disabled @endcannot>
                         </td>
-                        <td class="text-right whitespace-nowrap text-warning">
+                        <td class="text-right whitespace-nowrap text-warning" data-sort-value="{{ $day->deductions_total }}">
                             @if ((float) $day->deductions_total > 0)
                                 − {{ number_format((float) $day->deductions_total, 2, ',', '.') }} €
                             @else
                                 —
                             @endif
                         </td>
-                        <td class="text-right whitespace-nowrap font-semibold">{{ number_format((float) $day->amount, 2, ',', '.') }} €</td>
+                        <td class="text-right whitespace-nowrap font-semibold" data-sort-value="{{ $day->amount }}">{{ number_format((float) $day->amount, 2, ',', '.') }} €</td>
                         <td class="text-right whitespace-nowrap">
                             @can('update', $trip)
                                 <button type="submit" form="{{ $fid }}" class="btn btn-primary btn-sm">

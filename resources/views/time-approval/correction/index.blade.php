@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Meine Korrekturanträge'))
@@ -30,12 +39,14 @@
                 :title="__('Keine Korrekturanträge')"
                 :message="__('Stellen Sie einen Antrag, um einen Tag in einem gesperrten Monat anzupassen.')" />
         @else
-            <x-table scroll="flex" :pinRows="true">
+            <x-table scroll="flex" :pinRows="true" table-sort="server"
+                     :route="route('corrections.index')" :current-sort="$sort" :current-dir="$dir"
+                     :sort-params="array_filter(['status' => $filters['status'] ?: null])">
                 <x-slot:head>
                     <tr>
-                        <th>{{ __('Bezug') }}</th>
+                        <x-table.th sort="scope_date">{{ __('Bezug') }}</x-table.th>
                         <th>{{ __('Mitarbeiter:in') }}</th>
-                        <th>{{ __('Status') }}</th>
+                        <x-table.th sort="status">{{ __('Status') }}</x-table.th>
                         <th class="text-right">{{ __('Items') }}</th>
                         <th class="text-right">{{ __('Aktion') }}</th>
                     </tr>

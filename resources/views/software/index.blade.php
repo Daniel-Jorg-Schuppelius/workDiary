@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Software'))
@@ -38,14 +47,19 @@
     @if ($softwareItems->total() === 0)
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">apps</span>' />
     @else
-        <x-table scroll="flex" :pinRows="true">
+        <x-table table-sort="server"
+                 :route="route('software.index')"
+                 :current-sort="$sort"
+                 :current-dir="$dir"
+                 :sort-params="array_filter(['q' => $activeFilters['q'], 'kind' => $activeFilters['kind'] === 'all' ? null : $activeFilters['kind']])"
+                 scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
-                    <th>{{ __('Name') }}</th>
-                    <th>{{ __('Hersteller') }}</th>
-                    <th>{{ __('Art') }}</th>
-                    <th>{{ __('Lizenz') }}</th>
-                    <th class="text-right">{{ __('Installationen') }}</th>
+                    <x-table.th sort="name" default>{{ __('Name') }}</x-table.th>
+                    <x-table.th sort="vendor">{{ __('Hersteller') }}</x-table.th>
+                    <x-table.th sort="kind">{{ __('Art') }}</x-table.th>
+                    <x-table.th sort="license_type">{{ __('Lizenz') }}</x-table.th>
+                    <x-table.th sort="installations_count" align="right">{{ __('Installationen') }}</x-table.th>
                     <th class="text-right"></th>
                 </tr>
             </x-slot:head>

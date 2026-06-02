@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : show.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('access.title.group_show', ['name' => $group->name]))
@@ -66,12 +75,12 @@
                 @endif
             </div>
 
-            <x-table>
+            <x-table table-sort="client">
                 <x-slot:head>
                     <tr>
-                        <th>{{ __('access.field.member') }}</th>
-                        <th>{{ __('access.field.email') }}</th>
-                        <th>{{ __('access.field.joined_at') }}</th>
+                        <x-table.th sort type="string">{{ __('access.field.member') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('access.field.email') }}</x-table.th>
+                        <x-table.th sort type="date">{{ __('access.field.joined_at') }}</x-table.th>
                         <th></th>
                     </tr>
                 </x-slot:head>
@@ -79,7 +88,7 @@
                     <tr>
                         <td>{{ $member->name }}</td>
                         <td class="text-sm text-base-content/70">{{ $member->email }}</td>
-                        <td class="text-sm">{{ optional($member->pivot->joined_at)->format('d.m.Y') }}</td>
+                        <td class="text-sm" @if ($member->pivot->joined_at) data-sort-value="{{ \Carbon\Carbon::parse($member->pivot->joined_at)->format('Y-m-d') }}" @endif>{{ optional($member->pivot->joined_at)->format('d.m.Y') }}</td>
                         <td class="text-right">
                             <form method="POST" action="{{ route('admin.access.groups.members.detach', [$group, $member]) }}" class="inline">
                                 @csrf @method('DELETE')

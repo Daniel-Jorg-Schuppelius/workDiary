@@ -13,8 +13,8 @@ namespace App\Http\Controllers;
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueVisibility};
 use App\Exceptions\InvalidOpenIssueTransitionException;
 use App\Models\{Customer, DiaryEntry, OpenIssue, Project, User};
-use App\Support\Sqid;
 use App\Services\OpenIssue\OpenIssueService;
+use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -36,8 +36,7 @@ class OpenIssueController extends Controller {
 
     public function __construct(
         private readonly OpenIssueService $service,
-    ) {
-    }
+    ) {}
 
     public function create(Request $request): View {
         Gate::authorize('create', OpenIssue::class);

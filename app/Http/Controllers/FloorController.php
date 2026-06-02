@@ -18,16 +18,28 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class FloorController extends Controller {
+    private const ALLOWED_SORTS = ['level', 'label', 'gross_area_m2'];
+
     public function index(Request $request): View {
         Gate::authorize('viewAny', Floor::class);
 
         $rawBuilding = (string) $request->query('building', '');
         $buildingId = Sqid::decodeOrNumeric(Building::class, $rawBuilding);
+        $search = $request->string('q')->toString();
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'level';
+        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+
         $query = Floor::query()
             ->with('building.site')
             ->withCount('rooms')
-            ->orderBy('building_id')
-            ->orderBy('level');
+            ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
+                $w->where('label', 'like', "%{$search}%")
+                    ->orWhere('notes', 'like', "%{$search}%")
+                    ->orWhereHas('building', fn($b) => $b->where('name', 'like', "%{$search}%"));
+            }))
+            ->orderBy($sort, $dir);
         if ($buildingId !== null) {
             $query->where('building_id', $buildingId);
         }
@@ -39,6 +51,9 @@ class FloorController extends Controller {
         return view('floors.index', [
             'floors' => $floors,
             'building' => $building,
+            'search' => $search,
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 

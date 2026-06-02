@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Monatsfreigaben'))
@@ -19,19 +28,19 @@
                 :title="__('Noch keine Monatsfreigaben')"
                 :message="__('Sobald Sie einen Monat öffnen, wird automatisch eine Freigabe als Entwurf angelegt.')" />
         @else
-            <x-table scroll="flex" :pinRows="true">
+            <x-table scroll="flex" :pinRows="true" table-sort="client">
                 <x-slot:head>
                     <tr>
-                        <th>{{ __('Periode') }}</th>
-                        <th>{{ __('Status') }}</th>
-                        <th class="text-right">{{ __('Tage offen') }}</th>
-                        <th class="text-right">{{ __('Warnungen') }}</th>
+                        <x-table.th sort type="number">{{ __('Periode') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Tage offen') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Warnungen') }}</x-table.th>
                         <th class="text-right">{{ __('Aktion') }}</th>
                     </tr>
                 </x-slot:head>
                 @foreach ($closures as $c)
                     <tr>
-                        <td class="font-medium">{{ $c->periodLabel() }}</td>
+                        <td class="font-medium" data-sort-value="{{ $c->period_year * 100 + $c->period_month }}">{{ $c->periodLabel() }}</td>
                         <td>
                             <x-status-badge :tone="$c->status->tone()" size="sm">{{ $c->status->label() }}</x-status-badge>
                         </td>

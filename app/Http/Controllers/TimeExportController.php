@@ -1,5 +1,13 @@
 <?php
 /*
+ * Created on   : Tue Jun 02 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : TimeExportController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+/*
  * Filename : TimeExportController.php
  * License  : AGPL-3.0-or-later
  */
@@ -22,6 +30,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * Zeit-Exporten auf Basis genehmigter Monatsfreigaben.
  */
 class TimeExportController extends Controller {
+    private const ALLOWED_SORTS = ['period_year', 'profile', 'status', 'rows_count', 'created_at'];
+
     public function __construct(private readonly TimeExportService $service) {
     }
 
@@ -33,11 +43,16 @@ class TimeExportController extends Controller {
         $statusFilter = (string) $request->input('status', 'all');
         $profileFilter = (string) $request->input('profile', 'all');
         $yearFilter = $request->filled('year') ? (int) $request->input('year') : null;
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'created_at';
+        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
 
         $query = TimeExport::query()
             ->where('organization_id', $user->organization_id)
             ->with(['creator', 'deliveredBy', 'scopeUser'])
-            ->orderByDesc('created_at');
+            ->orderBy($sort, $dir)
+            ->when($sort === 'period_year', fn($q) => $q->orderBy('period_month', $dir));
 
         if ($statusFilter !== '' && $statusFilter !== 'all') {
             $query->where('status', $statusFilter);
@@ -60,6 +75,8 @@ class TimeExportController extends Controller {
                 'profile' => $profileFilter,
                 'year' => $yearFilter,
             ],
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 

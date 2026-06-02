@@ -32,8 +32,7 @@ class DataTransferController extends Controller {
     public function __construct(
         private readonly ExportSpecRegistry $registry,
         private readonly ExportRunner $runner,
-    ) {
-    }
+    ) {}
 
     /** Export-Tab: Formular + jüngste Export-Läufe. */
     public function index(Request $request): View {

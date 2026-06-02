@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : entry-types.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('title', __('Auftragstypanalyse'))
 @section('nav-title', __('Auftragstypanalyse'))
@@ -61,22 +70,22 @@
         @if(empty($rows))
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">analytics</span>' :title="__('Keine Auftragsdaten im gewählten Zeitraum.')" />
         @else
-            <x-table bare>
+            <x-table bare table-sort="client">
                 <x-slot:head>
                     <tr>
-                        <th>{{ __('Auftragstyp') }}</th>
-                        <th class="text-right">{{ __('Aufträge') }}</th>
-                        <th class="text-right">{{ __('Ø Plan (Min.)') }}</th>
-                        <th class="text-right">{{ __('Ø Ist (Min.)') }}</th>
-                        <th class="text-right">{{ __('Plan/Ist') }}</th>
-                        <th class="text-right">{{ __('Überzug') }}</th>
-                        <th class="text-right">{{ __('Überzug %') }}</th>
-                        <th class="text-right">{{ __('Nacharbeit') }}</th>
-                        <th class="text-right">{{ __('Nacharbeit %') }}</th>
-                        <th class="text-right">{{ __('Escalation %') }}</th>
-                        <th class="text-right">{{ __('First-Time-Right %') }}</th>
-                        <th class="text-right">{{ __('Median Ist') }}</th>
-                        <th class="text-right">{{ __('P90 Ist') }}</th>
+                        <x-table.th sort type="string" default="asc">{{ __('Auftragstyp') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Aufträge') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Ø Plan (Min.)') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Ø Ist (Min.)') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Plan/Ist') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Überzug') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Überzug %') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Nacharbeit') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Nacharbeit %') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Escalation %') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('First-Time-Right %') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Median Ist') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('P90 Ist') }}</x-table.th>
                     </tr>
                 </x-slot:head>
                 @foreach($rows as $row)

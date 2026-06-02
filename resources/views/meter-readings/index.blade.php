@@ -28,14 +28,25 @@
         <x-empty-state framed
             icon='<span class="material-symbols-outlined" aria-hidden="true">speed</span>' />
     @else
-        <x-table scroll="flex" :pinRows="true">
+        <x-filter-bar :action="route('meter-readings.index')" method="GET" :reset="route('meter-readings.index')">
+            @if (!empty($filters['asset']))
+                <input type="hidden" name="asset" value="{{ $filters['asset'] }}" />
+            @endif
+            <input type="text" name="q" value="{{ $search ?? '' }}"
+                   class="input input-sm input-bordered w-48 shrink-0"
+                   placeholder="{{ __('Suche') }}" aria-label="{{ __('Suche') }}" />
+        </x-filter-bar>
+
+        <x-table scroll="flex" :pinRows="true" table-sort="server"
+                 :route="route('meter-readings.index')" :current-sort="$sort" :current-dir="$dir"
+                 :sort-params="array_filter(['asset' => $filters['asset'] ?? null, 'q' => $search ?: null])">
             <x-slot:head>
                 <tr>
-                    <th>{{ __('Ablesezeit') }}</th>
+                    <x-table.th sort="read_at">{{ __('Ablesezeit') }}</x-table.th>
                     <th>{{ __('Asset / Zähler') }}</th>
-                    <th class="text-right">{{ __('Stand') }}</th>
-                    <th class="text-right">{{ __('Verbrauch') }}</th>
-                    <th>{{ __('Einheit') }}</th>
+                    <x-table.th sort="value" align="right">{{ __('Stand') }}</x-table.th>
+                    <x-table.th sort="consumption" align="right">{{ __('Verbrauch') }}</x-table.th>
+                    <x-table.th sort="unit">{{ __('Einheit') }}</x-table.th>
                     <th>{{ __('Erfasst von') }}</th>
                 </tr>
             </x-slot:head>

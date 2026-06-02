@@ -22,12 +22,18 @@ class ShiftTypeController extends Controller {
     public function index(Request $request): View {
         Gate::authorize('viewAny', ShiftType::class);
 
+        $search = $request->string('q')->toString();
+
         $types = ShiftType::query()
             ->withCount('scheduledShifts')
+            ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
+                $w->where('name', 'like', "%{$search}%")
+                    ->orWhere('abbreviation', 'like', "%{$search}%");
+            }))
             ->orderBy('name')
             ->get();
 
-        return view('shift-types.index', compact('types'));
+        return view('shift-types.index', compact('types', 'search'));
     }
 
     public function create(): View {

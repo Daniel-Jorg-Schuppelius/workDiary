@@ -205,12 +205,12 @@ class LexofficeMapper {
 
         // Taktung & Zusammenfassung anwenden: liefert Blöcke je (Projekt, kind).
         if ($entries instanceof \Illuminate\Database\Eloquent\Collection) {
-            $entries->loadMissing(['project.parent', 'project.customer']);
+            $entries->loadMissing(['project.parent', 'project.customer', 'project.foreignCustomer']);
         }
         $blocks = app(\App\Services\Invoicing\BillableTimeAggregator::class)->aggregate($entries);
 
         $items = $blocks
-            ->groupBy(fn(\App\Services\Invoicing\BillingBlock $b) => ($b->project?->id ?? 0) . '|' . ($b->kind?->value ?? ''))
+            ->groupBy(fn(\App\Services\Invoicing\BillingBlock $b) => ($b->project->id ?? 0) . '|' . ($b->kind->value ?? ''))
             ->map(function (Collection $group) use ($vatRate, $from, $to) {
                 /** @var \App\Services\Invoicing\BillingBlock $first */
                 $first = $group->first();
@@ -232,7 +232,12 @@ class LexofficeMapper {
                 $netAmount = $rule?->net_unit_price !== null ? (float) $rule->net_unit_price : $unitPrice;
 
                 $kindSuffix = $kind !== null ? ' [' . $kind->value . ']' : '';
-                $name = sprintf('%s%s (%s – %s)', $projectName, $kindSuffix, $from->format('d.m.Y'), $to->format('d.m.Y'));
+                // Endkunde (Fremdkunde) mit in die Buchungszeile übernehmen.
+                $endkunde = $project?->foreignCustomer;
+                $prefix = $endkunde !== null
+                    ? (string) __('Endkunde :name', ['name' => trim((string) ($endkunde->company ?: $endkunde->name))]) . ' · '
+                    : '';
+                $name = sprintf('%s%s%s (%s – %s)', $prefix, $projectName, $kindSuffix, $from->format('d.m.Y'), $to->format('d.m.Y'));
 
                 $item = [
                     'type' => $type,

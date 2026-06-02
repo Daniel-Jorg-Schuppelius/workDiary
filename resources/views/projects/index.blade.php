@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('title', __('Projekte') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Projekte'))
@@ -19,9 +28,12 @@
     </x-slot:actions>
 
     <x-filter-bar :action="route('projects.index')" method="GET" :reset="route('projects.index')">
+        <input type="text" name="q" value="{{ $search ?? '' }}"
+               class="input input-sm input-bordered w-48 shrink-0"
+               placeholder="{{ __('Suche') }}" aria-label="{{ __('Suche') }}" />
         <div class="join">
             @foreach ($statusOptions as $value => $label)
-                <a href="{{ route('projects.index', $value === '' ? [] : ['status' => $value]) }}"
+                <a href="{{ route('projects.index', array_filter(['status' => $value === '' ? null : $value, 'q' => $search ?: null])) }}"
                    class="join-item btn btn-sm {{ $statusFilter === $value ? 'btn-primary' : 'btn-ghost' }}">{{ $label }}</a>
             @endforeach
         </div>
@@ -31,18 +43,18 @@
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">folder_open</span>' :title="__('Noch keine Projekte angelegt')" />
     @else
         <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-            <x-table bare scroll="flex" :pinRows="true">
+            <x-table bare scroll="flex" :pinRows="true" table-sort="client">
                 <x-slot:head>
                     <tr>
-                        <th>{{ __('Projekt') }}</th>
-                        <th>{{ __('Kunde') }}</th>
-                        <th>{{ __('Status') }}</th>
-                        <th class="text-right">{{ __('Offen') }}</th>
-                        <th class="text-right">{{ __('Problem') }}</th>
-                        <th class="text-right">{{ __('Bestätigt') }}</th>
-                        <th class="text-right">{{ __('Erledigt') }}</th>
-                        <th class="text-right">{{ __('Mitarb.') }}</th>
-                        <th>{{ __('Letzte Aktivität') }}</th>
+                        <x-table.th sort type="string" default="asc">{{ __('Projekt') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Kunde') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Offen') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Problem') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Bestätigt') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Erledigt') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Mitarb.') }}</x-table.th>
+                        <x-table.th sort type="date">{{ __('Letzte Aktivität') }}</x-table.th>
                         <th class="text-right"></th>
                     </tr>
                 </x-slot:head>
@@ -104,7 +116,7 @@
                                 <td class="text-right tabular-nums">{{ $cProgress }}</td>
                                 <td class="text-right tabular-nums text-base-content/60">{{ $cDone }}</td>
                                 <td class="text-right tabular-nums">{{ $users }}</td>
-                                <td class="text-xs text-base-content/60">
+                                <td class="text-xs text-base-content/60" data-sort-value="{{ $last ? \Carbon\CarbonImmutable::parse($last)->format('Y-m-d H:i:s') : '' }}">
                                     @if ($last)
                                         {{ \Carbon\CarbonImmutable::parse($last)->diffForHumans() }}
                                     @else

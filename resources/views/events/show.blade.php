@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : show.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('title', $event->title)
 @section('nav-title', $event->title)
@@ -111,23 +120,22 @@
                     <span class="text-sm opacity-70">{{ $event->participants->count() }}{{ $event->max_participants ? ' / '.$event->max_participants : '' }}</span>
                 </div>
 
-                <x-table size="sm" :zebra="true">
-                    <thead class="bg-base-200">
+                <x-table size="sm" :zebra="true" table-sort="client">
+                    <x-slot:head>
                         <tr>
-                            <th data-sort data-sort-default="asc">{{ __('Name') }}</th>
-                            <th data-sort>{{ __('Rolle') }}</th>
-                            <th data-sort>{{ __('Status') }}</th>
-                            <th data-sort>{{ __('Zertifikat bis') }}</th>
+                            <x-table.th sort type="string" default="asc">{{ __('Name') }}</x-table.th>
+                            <x-table.th sort type="string">{{ __('Rolle') }}</x-table.th>
+                            <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
+                            <x-table.th sort type="date">{{ __('Zertifikat bis') }}</x-table.th>
                             <th class="w-32 text-right">{{ __('Aktion') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                    </x-slot:head>
                         @forelse ($event->participants as $p)
                             <tr class="hover">
                                 <td class="font-semibold">{{ $p->name }}</td>
                                 <td>{{ $p->pivot->role }}</td>
                                 <td><x-status-badge :status="$p->pivot->status" :label="$p->pivot->status" /></td>
-                                <td>
+                                <td @if ($p->pivot->certificate_expires_at) data-sort-value="{{ \Carbon\Carbon::parse($p->pivot->certificate_expires_at)->format('Y-m-d') }}" @endif>
                                     @if ($p->pivot->certificate_expires_at)
                                         {{ \Carbon\Carbon::parse($p->pivot->certificate_expires_at)->isoFormat('LL') }}
                                     @else — @endif
@@ -156,7 +164,6 @@
                                 icon='<span class="material-symbols-outlined" aria-hidden="true">group</span>'
                                 :title="__('Noch keine Teilnehmer')" compact />
                         @endforelse
-                    </tbody>
                 </x-table>
             </div>
         </div>

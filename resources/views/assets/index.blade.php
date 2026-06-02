@@ -68,16 +68,20 @@
             </div>
         @endif
 
-        <x-table scroll="flex" :pinRows="true" table-sort="client">
+        <x-table scroll="flex" :pinRows="true" table-sort="server"
+                 :route="route('assets.index')"
+                 :current-sort="$sort"
+                 :current-dir="$dir"
+                 :sort-params="array_filter(['q' => $activeFilters['q'], 'class' => $activeFilters['class'] === 'all' ? null : $activeFilters['class'], 'status' => $activeFilters['status'] === 'all' ? null : $activeFilters['status']])">
             <x-slot:head>
                 <tr>
-                    <x-table.th sort type="string">{{ __('Asset-Nr.') }}</x-table.th>
-                    <x-table.th sort type="string">{{ __('Typ') }}</x-table.th>
-                    <x-table.th sort type="string" default>{{ __('Name') }}</x-table.th>
-                    <x-table.th sort type="string">{{ __('Seriennummer') }}</x-table.th>
-                    <x-table.th sort type="string">{{ __('Standort') }}</x-table.th>
-                    <x-table.th sort type="string">{{ __('Kunde') }}</x-table.th>
-                    <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
+                    <x-table.th sort="asset_no">{{ __('Asset-Nr.') }}</x-table.th>
+                    <x-table.th sort="asset_class">{{ __('Typ') }}</x-table.th>
+                    <x-table.th sort="name" default>{{ __('Name') }}</x-table.th>
+                    <x-table.th sort="serial_no">{{ __('Seriennummer') }}</x-table.th>
+                    <x-table.th sort="location_text">{{ __('Standort') }}</x-table.th>
+                    <th>{{ __('Kunde') }}</th>
+                    <x-table.th sort="status">{{ __('Status') }}</x-table.th>
                     <th></th>
                 </tr>
             </x-slot:head>

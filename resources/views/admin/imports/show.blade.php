@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : show.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Import #:id', ['id' => $run->id]))
@@ -128,13 +137,13 @@
         <div class="card bg-base-100 shadow-sm">
             <div class="card-body">
                 <h3 class="font-semibold">{{ __('Fehler (:n)', ['n' => $errors->total()]) }}</h3>
-                <x-table>
+                <x-table table-sort="client">
                     <x-slot:head>
                         <tr>
-                            <th>{{ __('Zeile') }}</th>
-                            <th>{{ __('Feld') }}</th>
-                            <th>{{ __('Code') }}</th>
-                            <th>{{ __('Meldung') }}</th>
+                            <x-table.th sort type="number">{{ __('Zeile') }}</x-table.th>
+                            <x-table.th sort type="string">{{ __('Feld') }}</x-table.th>
+                            <x-table.th sort type="string">{{ __('Code') }}</x-table.th>
+                            <x-table.th sort type="string">{{ __('Meldung') }}</x-table.th>
                         </tr>
                     </x-slot:head>
                     @foreach ($errors as $err)

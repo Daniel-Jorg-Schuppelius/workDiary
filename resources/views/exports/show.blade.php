@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : show.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Export :id', ['id' => $export->id]))
@@ -121,18 +130,18 @@
             @if (empty($totals))
                 <p class="text-sm text-base-content/60">{{ __('Keine Summen verfügbar.') }}</p>
             @else
-                <x-table>
+                <x-table table-sort="client">
                     <x-slot:head>
                         <tr>
-                            <th>{{ __('Lohnart') }}</th>
-                            <th class="text-right">{{ __('Menge') }}</th>
-                            <th>{{ __('Einheit') }}</th>
+                            <x-table.th sort type="string" default="asc">{{ __('Lohnart') }}</x-table.th>
+                            <x-table.th sort type="number" align="right">{{ __('Menge') }}</x-table.th>
+                            <x-table.th sort type="string">{{ __('Einheit') }}</x-table.th>
                         </tr>
                     </x-slot:head>
                     @foreach ($totals as $wageType => $info)
                         <tr>
                             <td>{{ $wageType }}</td>
-                            <td class="text-right tabular-nums">{{ number_format((float) ($info['quantity'] ?? 0), 4, ',', '.') }}</td>
+                            <td class="text-right tabular-nums" data-sort-value="{{ $info['quantity'] ?? 0 }}">{{ number_format((float) ($info['quantity'] ?? 0), 4, ',', '.') }}</td>
                             <td>{{ $info['unit'] ?? '' }}</td>
                         </tr>
                     @endforeach
@@ -147,15 +156,15 @@
             @if ($export->lines->isEmpty())
                 <x-table.empty :colspan="6" icon="receipt_long" />
             @else
-                <x-table>
+                <x-table table-sort="client">
                     <x-slot:head>
                         <tr>
-                            <th>{{ __('Mitarbeiter:in') }}</th>
-                            <th>{{ __('Lohnart') }}</th>
-                            <th>{{ __('Kostenstelle') }}</th>
-                            <th class="text-right">{{ __('Menge') }}</th>
-                            <th>{{ __('Einheit') }}</th>
-                            <th>{{ __('Zeitraum') }}</th>
+                            <x-table.th sort type="string" default="asc">{{ __('Mitarbeiter:in') }}</x-table.th>
+                            <x-table.th sort type="string">{{ __('Lohnart') }}</x-table.th>
+                            <x-table.th sort type="string">{{ __('Kostenstelle') }}</x-table.th>
+                            <x-table.th sort type="number" align="right">{{ __('Menge') }}</x-table.th>
+                            <x-table.th sort type="string">{{ __('Einheit') }}</x-table.th>
+                            <x-table.th sort type="date">{{ __('Zeitraum') }}</x-table.th>
                         </tr>
                     </x-slot:head>
                     @foreach ($export->lines as $line)
@@ -163,9 +172,9 @@
                             <td>{{ $line->user?->name }}</td>
                             <td>{{ $line->wage_type }}</td>
                             <td>{{ $line->cost_center ?? '—' }}</td>
-                            <td class="text-right tabular-nums">{{ number_format((float) $line->quantity, 4, ',', '.') }}</td>
+                            <td class="text-right tabular-nums" data-sort-value="{{ $line->quantity }}">{{ number_format((float) $line->quantity, 4, ',', '.') }}</td>
                             <td>{{ $line->unit }}</td>
-                            <td class="text-xs tabular-nums">
+                            <td class="text-xs tabular-nums" data-sort-value="{{ $line->period_start?->format('Y-m-d') ?? '' }}">
                                 {{ $line->period_start?->format('d.m.Y') }} – {{ $line->period_end?->format('d.m.Y') }}
                             </td>
                         </tr>

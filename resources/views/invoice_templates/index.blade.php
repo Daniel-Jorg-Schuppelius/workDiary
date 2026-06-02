@@ -25,14 +25,20 @@
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
 
+    <x-filter-bar :action="route('invoice-templates.index')" :reset="route('invoice-templates.index')">
+        <input type="text" name="q" value="{{ $search ?? '' }}"
+               class="input input-sm input-bordered w-48 shrink-0"
+               placeholder="{{ __('Suche') }}" aria-label="{{ __('Suche') }}" />
+    </x-filter-bar>
+
     <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-        <x-table zebra bare scroll="flex" :pinRows="true">
+        <x-table zebra bare scroll="flex" :pinRows="true" table-sort="client">
             <x-slot:head>
                 <tr>
-                    <th>{{ __('Name') }}</th>
-                    <th>{{ __('Slug') }}</th>
+                    <x-table.th sort type="string">{{ __('Name') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Slug') }}</x-table.th>
                     <th>{{ __('Akzent') }}</th>
-                    <th>{{ __('Standard') }}</th>
+                    <x-table.th sort type="number">{{ __('Standard') }}</x-table.th>
                     <th class="text-right">{{ __('Aktionen') }}</th>
                 </tr>
             </x-slot:head>
@@ -48,7 +54,7 @@
                             <span class="text-muted">—</span>
                         @endif
                     </td>
-                    <td>
+                    <td data-sort-value="{{ $template->is_default ? 1 : 0 }}">
                         @if ($template->is_default)
                             <x-icon name="check_circle" class="text-success" />
                         @endif

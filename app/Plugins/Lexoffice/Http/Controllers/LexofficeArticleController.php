@@ -27,6 +27,8 @@ use Throwable;
  * Lexoffice, der Pull-Sync ({@see LexofficeArticleSync}) hält den Cache aktuell.
  */
 class LexofficeArticleController extends Controller {
+    private const ALLOWED_SORTS = ['name', 'article_number', 'type', 'unit_name', 'net_unit_price', 'vat_rate', 'archived_at'];
+
     public function index(Request $request): View {
         $user = $this->user();
         abort_unless($user->can(Permission::ArticleViewAny->value), 403);
@@ -35,9 +37,14 @@ class LexofficeArticleController extends Controller {
         $type = (string) $request->input('type', '');
         $status = (string) $request->input('status', 'active');
 
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'name';
+        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+
         $query = LexofficeArticle::query()
             ->where('organization_id', $user->organization_id)
-            ->orderBy('name');
+            ->orderBy($sort, $dir);
 
         if ($search !== '') {
             $query->where(function (Builder $q) use ($search): void {
@@ -60,6 +67,8 @@ class LexofficeArticleController extends Controller {
         return view('lexoffice::articles.index', [
             'articles' => $query->paginate(25)->withQueryString(),
             'filters' => ['q' => $search, 'type' => $type, 'status' => $status],
+            'sort' => $sort,
+            'dir' => $dir,
             'canSync' => $user->can(Permission::ArticleLexofficeSync->value),
         ]);
     }

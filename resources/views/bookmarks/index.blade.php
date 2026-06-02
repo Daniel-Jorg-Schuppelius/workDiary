@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('title', __('Lesezeichen'))
 @section('nav-title', __('Lesezeichen'))
@@ -17,16 +26,22 @@
                         show-label>{{ __('Neues Lesezeichen') }}</x-icon-btn>
         </x-slot:actions>
 
-        <x-table scroll="flex" :pinRows="true" :zebra="true">
-            <thead class="bg-base-200">
+        <x-filter-bar :action="route('bookmarks.index')" :reset="route('bookmarks.index')">
+            <input type="text" name="q" value="{{ $search ?? '' }}"
+                   class="input input-sm input-bordered w-48 shrink-0"
+                   placeholder="{{ __('Suche') }}" aria-label="{{ __('Suche') }}" />
+        </x-filter-bar>
+
+        <x-table scroll="flex" :pinRows="true" :zebra="true" table-sort="client">
+            <x-slot:head>
                 <tr>
-                    <th class="w-16 text-right">{{ __('#') }}</th>
+                    <x-table.th sort type="number" align="right" class="w-16">{{ __('#') }}</x-table.th>
                     <th class="w-12"></th>
-                    <th>{{ __('Bezeichnung') }}</th>
-                    <th>{{ __('URL') }}</th>
+                    <x-table.th sort type="string">{{ __('Bezeichnung') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('URL') }}</x-table.th>
                     <th class="w-32 text-right">{{ __('Aktion') }}</th>
                 </tr>
-            </thead>
+            </x-slot:head>
             <tbody>
                 @forelse ($bookmarks as $bookmark)
                     <tr class="hover">

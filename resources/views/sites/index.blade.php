@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Standorte'))
@@ -20,13 +29,18 @@
         <x-empty-state framed
             icon='<span class="material-symbols-outlined" aria-hidden="true">location_on</span>' />
     @else
-        <x-table scroll="flex" :pinRows="true">
+        <x-table table-sort="server"
+                 :route="route('sites.index')"
+                 :current-sort="$sort"
+                 :current-dir="$dir"
+                 :sort-params="array_filter(['customer' => request()->query('customer')])"
+                 scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
-                    <th>{{ __('Name') }}</th>
+                    <x-table.th sort="name" default>{{ __('Name') }}</x-table.th>
                     <th>{{ __('Kunde') }}</th>
-                    <th>{{ __('Ort') }}</th>
-                    <th class="text-end">{{ __('Aktiv') }}</th>
+                    <x-table.th sort="address_city">{{ __('Ort') }}</x-table.th>
+                    <x-table.th sort="is_active" align="right">{{ __('Aktiv') }}</x-table.th>
                     <th></th>
                 </tr>
             </x-slot:head>

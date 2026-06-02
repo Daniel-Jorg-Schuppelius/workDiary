@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : show.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', $floor->label)
@@ -74,15 +83,15 @@
                         icon='<span class="material-symbols-outlined" aria-hidden="true">meeting_room</span>' />
                 </div>
             @else
-                <x-table bare>
+                <x-table bare table-sort="client">
                     <x-slot:head>
                         <tr>
-                            <th>{{ __('Name') }}</th>
-                            <th>{{ __('Nutzung') }}</th>
-                            <th>{{ __('Reinigung') }}</th>
-                            <th class="text-end">{{ __('Kapazität') }}</th>
-                            <th class="text-end">{{ __('NGF (m²)') }}</th>
-                            <th class="text-end">{{ __('Geräte') }}</th>
+                            <x-table.th sort type="string">{{ __('Name') }}</x-table.th>
+                            <x-table.th sort type="string">{{ __('Nutzung') }}</x-table.th>
+                            <x-table.th sort type="string">{{ __('Reinigung') }}</x-table.th>
+                            <x-table.th sort type="number" class="text-end">{{ __('Kapazität') }}</x-table.th>
+                            <x-table.th sort type="number" class="text-end">{{ __('NGF (m²)') }}</x-table.th>
+                            <x-table.th sort type="number" class="text-end">{{ __('Geräte') }}</x-table.th>
                             <th></th>
                         </tr>
                     </x-slot:head>
@@ -99,7 +108,7 @@
                             </td>
                             <td>{{ $r->cleaningProfile?->label ?? '—' }}</td>
                             <td class="text-end">{{ $r->capacity ?? '—' }}</td>
-                            <td class="text-end">{{ $r->net_area_m2 !== null ? number_format((float) $r->net_area_m2, 1, ',', '.') : '—' }}</td>
+                            <td class="text-end" data-sort-value="{{ $r->net_area_m2 !== null ? (float) $r->net_area_m2 : -1 }}">{{ $r->net_area_m2 !== null ? number_format((float) $r->net_area_m2, 1, ',', '.') : '—' }}</td>
                             <td class="text-end tabular-nums">{{ $r->assets_count ?? 0 }}</td>
                             <td class="text-right">
                                 @can('create', \App\Models\Asset::class)

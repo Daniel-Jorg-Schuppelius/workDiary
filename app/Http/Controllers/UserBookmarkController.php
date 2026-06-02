@@ -17,11 +17,17 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 
 class UserBookmarkController extends Controller {
-    public function index(): View {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', UserBookmark::class);
-        $bookmarks = Auth::user()?->bookmarks()->get() ?? collect();
+        $search = $request->string('q')->toString();
+        $bookmarks = Auth::user()?->bookmarks()
+            ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
+                $w->where('label', 'like', "%{$search}%")
+                    ->orWhere('url', 'like', "%{$search}%");
+            }))
+            ->get() ?? collect();
 
-        return view('bookmarks.index', compact('bookmarks'));
+        return view('bookmarks.index', compact('bookmarks', 'search'));
     }
 
     public function create(Request $request): View {

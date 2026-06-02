@@ -29,7 +29,10 @@ use Illuminate\Support\Facades\{Auth, Storage};
  * (Vorschau + Fehler) → confirm (Dispatch Job) → show (Status).
  */
 class ImportController extends Controller {
-    public function __construct(private readonly CsvPreflightAnalyzer $analyzer) {}
+    private const ALLOWED_SORTS = ['id', 'entity', 'input_filename', 'state', 'rows_total', 'created_at'];
+
+    public function __construct(private readonly CsvPreflightAnalyzer $analyzer) {
+    }
 
     public function index(Request $request): View {
         $organization = $this->currentOrganization();
@@ -39,11 +42,16 @@ class ImportController extends Controller {
             'state' => $request->string('state')->toString(),
         ];
 
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'id';
+        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
+
         $runs = ImportRun::query()
             ->where('organization_id', $organization->id)
             ->when($filters['entity'] !== '', fn($q) => $q->where('entity', $filters['entity']))
             ->when($filters['state'] !== '', fn($q) => $q->where('state', $filters['state']))
-            ->orderByDesc('id')
+            ->orderBy($sort, $dir)
             ->paginate(25)
             ->withQueryString();
 
@@ -53,6 +61,8 @@ class ImportController extends Controller {
             'entities' => ImportEntity::cases(),
             'states' => ImportRunState::cases(),
             'organization' => $organization,
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 

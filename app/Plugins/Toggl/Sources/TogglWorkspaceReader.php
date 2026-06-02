@@ -24,8 +24,7 @@ namespace App\Plugins\Toggl\Sources;
  * als normalisierte {@see TogglEntry}-DTOs (über den {@see TogglCsvParser}).
  */
 class TogglWorkspaceReader {
-    public function __construct(private readonly TogglCsvParser $csvParser = new TogglCsvParser) {
-    }
+    public function __construct(private readonly TogglCsvParser $csvParser = new TogglCsvParser) {}
 
     /**
      * Unterordner des Basis-Pfads, die wie ein Workspace-Export aussehen (enthalten projects.json).

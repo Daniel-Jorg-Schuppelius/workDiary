@@ -16,10 +16,10 @@
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Format pro Nummernkreis (Präfix, Jahr, Padding, Reset) für :org festlegen.', ['org' => $organization->name])">
-    <x-table scroll="flex" :pinRows="true">
+    <x-table scroll="flex" :pinRows="true" table-sort="client">
         <x-slot:head>
             <tr>
-                <th>{{ __('Nummernkreis') }}</th>
+                <x-table.th sort type="string">{{ __('Nummernkreis') }}</x-table.th>
                 <th>{{ __('Präfix') }}</th>
                 <th class="text-center">{{ __('Jahr') }}</th>
                 <th class="text-center">{{ __('Padding') }}</th>
@@ -35,7 +35,7 @@
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="scope" value="{{ $row['scope']->value }}" />
-                    <td class="font-medium">
+                    <td class="font-medium" data-sort-value="{{ $row['scope']->label() }}">
                         {{ $row['scope']->label() }}
                         @unless ($row['persisted'])
                             <x-status-badge tone="ghost" size="sm" class="ml-1">{{ __('Default') }}</x-status-badge>

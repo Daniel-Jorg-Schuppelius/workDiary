@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('title', __('Räume'))
 @section('nav-title', __('Räume'))
@@ -99,19 +108,27 @@
                 </div>
             </div>
         @else
-            <x-table scroll="flex" :pinRows="true" :zebra="true">
-                <thead class="bg-base-200">
+            <x-filter-bar :action="route('rooms.index')" method="GET" :reset="route('rooms.index')">
+                <input type="hidden" name="view" value="list" />
+                <input type="text" name="q" value="{{ $search ?? '' }}"
+                       class="input input-sm input-bordered w-48 shrink-0"
+                       placeholder="{{ __('Suche') }}" aria-label="{{ __('Suche') }}" />
+            </x-filter-bar>
+
+            <x-table scroll="flex" :pinRows="true" :zebra="true" table-sort="server"
+                     :route="route('rooms.index')" :current-sort="$sort" :current-dir="$dir"
+                     :sort-params="['view' => 'list', 'q' => $search ?: null]">
+                <x-slot:head>
                     <tr>
-                        <th data-sort data-sort-default="asc">{{ __('Name') }}</th>
-                        <th data-sort>{{ __('Code') }}</th>
-                        <th data-sort>{{ __('Gebäude / Etage') }}</th>
-                        <th class="text-right" data-sort data-sort-type="number">{{ __('Kapazität') }}</th>
+                        <x-table.th sort="name">{{ __('Name') }}</x-table.th>
+                        <x-table.th sort="code">{{ __('Code') }}</x-table.th>
+                        <th>{{ __('Gebäude / Etage') }}</th>
+                        <x-table.th sort="capacity" align="right">{{ __('Kapazität') }}</x-table.th>
                         <th>{{ __('Ausstattung') }}</th>
-                        <th data-sort>{{ __('Status') }}</th>
+                        <x-table.th sort="is_active">{{ __('Status') }}</x-table.th>
                         <th class="w-32 text-right">{{ __('Aktion') }}</th>
                     </tr>
-                </thead>
-                <tbody>
+                </x-slot:head>
                     @forelse ($rooms as $room)
                         <tr class="hover">
                             <td>
@@ -162,7 +179,6 @@
                             icon='<span class="material-symbols-outlined" aria-hidden="true">meeting_room</span>'
                             :title="__('Noch keine Räume angelegt')" compact />
                     @endforelse
-                </tbody>
             </x-table>
 
             <x-pagination :paginator="$rooms" />

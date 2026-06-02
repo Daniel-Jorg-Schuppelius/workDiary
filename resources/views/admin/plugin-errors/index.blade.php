@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Plugin-Fehler'))
@@ -39,15 +48,17 @@
             :title="__('Keine Fehler')"
             :message="__('Aktuell sind keine Plugin-Fehler verzeichnet.')" />
     @else
-        <x-table scroll="flex" :pinRows="true">
+        <x-table scroll="flex" :pinRows="true" table-sort="server"
+                 :route="route('admin.plugin-errors.index')" :current-sort="$sort" :current-dir="$dir"
+                 :sort-params="array_filter(['plugin' => $filters['plugin'] ?: null, 'phase' => $filters['phase'] ?: null, 'status' => $filters['status'] ?: null])">
             <x-slot:head>
                 <tr>
-                    <x-table.th>{{ __('Zeitpunkt') }}</x-table.th>
-                    <x-table.th>{{ __('Plugin') }}</x-table.th>
-                    <x-table.th>{{ __('Phase') }}</x-table.th>
-                    <x-table.th>{{ __('Exception') }}</x-table.th>
-                    <x-table.th>{{ __('Nachricht') }}</x-table.th>
-                    <x-table.th>{{ __('Status') }}</x-table.th>
+                    <x-table.th sort="occurred_at">{{ __('Zeitpunkt') }}</x-table.th>
+                    <x-table.th sort="plugin_id">{{ __('Plugin') }}</x-table.th>
+                    <x-table.th sort="phase">{{ __('Phase') }}</x-table.th>
+                    <x-table.th sort="exception_class">{{ __('Exception') }}</x-table.th>
+                    <x-table.th sort="message">{{ __('Nachricht') }}</x-table.th>
+                    <x-table.th sort="acknowledged_at">{{ __('Status') }}</x-table.th>
                     <x-table.th class="text-right">{{ __('Aktion') }}</x-table.th>
                 </tr>
             </x-slot:head>

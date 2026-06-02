@@ -34,8 +34,7 @@ class ExportSpecRegistry {
         private readonly MaterialExportSpec $materials,
         private readonly ScheduledShiftExportSpec $scheduledShifts,
         private readonly TourExportSpec $tours,
-    ) {
-    }
+    ) {}
 
     public function for(ExportEntity $entity): ExportSpec {
         return match ($entity) {

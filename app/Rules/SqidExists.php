@@ -30,8 +30,7 @@ final readonly class SqidExists implements ValidationRule {
     public function __construct(
         private string $modelClass,
         private ?string $column = null,
-    ) {
-    }
+    ) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void {
         if ($value === null || $value === '') {

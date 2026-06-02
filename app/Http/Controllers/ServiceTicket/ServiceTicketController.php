@@ -21,7 +21,10 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class ServiceTicketController extends Controller {
-    public function __construct(private readonly ServiceTicketService $tickets) {}
+    private const ALLOWED_SORTS = ['ticket_no', 'title', 'priority', 'status', 'resolution_due_at', 'reported_at'];
+
+    public function __construct(private readonly ServiceTicketService $tickets) {
+    }
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', ServiceTicket::class);
@@ -30,10 +33,14 @@ class ServiceTicketController extends Controller {
         $statusFilter = $request->string('status')->toString();
         $priorityFilter = $request->string('priority')->toString();
         $assigneeFilter = $request->string('assignee')->toString();
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'reported_at';
+        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
 
         $query = ServiceTicket::query()
             ->with(['customer:id,name', 'asset:id,name,asset_no', 'assignedTo:id,name'])
-            ->latest('reported_at');
+            ->orderBy($sort, $dir);
 
         if ($q !== '') {
             $query->where(function ($builder) use ($q): void {
@@ -66,6 +73,8 @@ class ServiceTicketController extends Controller {
                 'assignee' => $assigneeFilter,
             ],
             'canCreate' => Gate::allows('create', ServiceTicket::class),
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 

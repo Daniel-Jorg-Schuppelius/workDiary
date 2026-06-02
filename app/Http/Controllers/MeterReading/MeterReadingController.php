@@ -21,7 +21,10 @@ use Illuminate\View\View;
 use InvalidArgumentException;
 
 class MeterReadingController extends Controller {
-    public function __construct(private readonly MeterReadingService $service) {}
+    private const ALLOWED_SORTS = ['read_at', 'value', 'consumption', 'unit'];
+
+    public function __construct(private readonly MeterReadingService $service) {
+    }
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', MeterReading::class);
@@ -29,9 +32,20 @@ class MeterReadingController extends Controller {
         $rawAsset = (string) $request->query('asset', '');
         $assetFilter = Sqid::decodeOrNumeric(Asset::class, $rawAsset, 0);
 
+        $search = $request->string('q')->toString();
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'read_at';
+        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
+
         $query = MeterReading::query()
             ->with(['asset:id,name,asset_no', 'readBy:id,name'])
-            ->latest('read_at');
+            ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
+                $w->where('unit', 'like', "%{$search}%")
+                    ->orWhereHas('asset', fn($a) => $a->where('name', 'like', "%{$search}%")->orWhere('asset_no', 'like', "%{$search}%"))
+                    ->orWhereHas('readBy', fn($u) => $u->where('name', 'like', "%{$search}%"));
+            }))
+            ->orderBy($sort, $dir);
 
         if ($assetFilter > 0) {
             $query->where('asset_id', $assetFilter);
@@ -45,6 +59,9 @@ class MeterReadingController extends Controller {
                 'asset' => $assetFilter > 0 ? Sqid::encode(Asset::class, $assetFilter) : null,
             ],
             'canCreate' => Gate::allows('create', MeterReading::class),
+            'search' => $search,
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 

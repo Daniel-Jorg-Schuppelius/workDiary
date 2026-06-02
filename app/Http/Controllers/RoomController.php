@@ -20,13 +20,30 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class RoomController extends Controller {
+    private const ALLOWED_SORTS = ['name', 'code', 'capacity', 'is_active'];
+
     public function index(Request $request, RoomBookingService $bookings): View {
         Gate::authorize('viewAny', Room::class);
 
         $view = $request->query('view', 'list');
         $day = $request->query('day') ? Carbon::parse((string) $request->query('day')) : Carbon::today();
 
-        $rooms = Room::query()->orderBy('name')->paginate(50)->withQueryString();
+        $search = $request->string('q')->toString();
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'name';
+        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+
+        $rooms = Room::query()
+            ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
+                $w->where('name', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('building', 'like', "%{$search}%")
+                    ->orWhere('floor', 'like', "%{$search}%");
+            }))
+            ->orderBy($sort, $dir)
+            ->paginate(50)
+            ->withQueryString();
         $grid = $view === 'grid' ? $bookings->gridForDay($day) : [];
         $gridRooms = $view === 'grid' ? Room::query()->active()->orderBy('name')->get() : collect();
 
@@ -36,6 +53,9 @@ class RoomController extends Controller {
             'day' => $day,
             'grid' => $grid,
             'gridRooms' => $gridRooms,
+            'search' => $search,
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 

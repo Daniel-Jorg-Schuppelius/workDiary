@@ -18,15 +18,21 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class SoftwareController extends Controller {
+    private const ALLOWED_SORTS = ['name', 'vendor', 'kind', 'license_type', 'installations_count'];
+
     public function index(Request $request): View {
         Gate::authorize('viewAny', Software::class);
 
         $query = trim($request->string('q')->toString());
         $kindFilter = $this->normalizeKind($request->string('kind')->toString());
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'name';
+        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
 
         $softwareQuery = Software::query()
             ->withCount('installations')
-            ->orderBy('name');
+            ->orderBy($sort, $dir);
 
         if ($query !== '') {
             $softwareQuery->where(function ($builder) use ($query): void {
@@ -48,6 +54,8 @@ class SoftwareController extends Controller {
                 'q' => $query,
                 'kind' => $kindFilter ?? 'all',
             ],
+            'sort' => $sort,
+            'dir' => $dir,
             'canCreate' => Gate::allows('create', Software::class),
         ]);
     }

@@ -43,15 +43,17 @@
         <x-empty-state framed
             icon='<span class="material-symbols-outlined" aria-hidden="true">key</span>' />
     @else
-        <x-table scroll="flex" :pinRows="true">
+        <x-table scroll="flex" :pinRows="true" table-sort="server"
+                 :route="route('key-handovers.index')" :current-sort="$sort" :current-dir="$dir"
+                 :sort-params="array_filter(['q' => $filters['q'] ?: null, 'direction' => $filters['direction'] ?: null, 'asset' => $filters['asset'] ?? null])">
             <x-slot:head>
                 <tr>
-                    <th>{{ __('Zeitpunkt') }}</th>
+                    <x-table.th sort="occurred_at">{{ __('Zeitpunkt') }}</x-table.th>
                     <th>{{ __('Asset / Schlüssel') }}</th>
-                    <th>{{ __('Richtung') }}</th>
-                    <th>{{ __('Person') }}</th>
+                    <x-table.th sort="direction">{{ __('Richtung') }}</x-table.th>
+                    <x-table.th sort="person_name">{{ __('Person') }}</x-table.th>
                     <th>{{ __('Erfasst von') }}</th>
-                    <th>{{ __('Rückgabe bis') }}</th>
+                    <x-table.th sort="expected_return_at">{{ __('Rückgabe bis') }}</x-table.th>
                 </tr>
             </x-slot:head>
             @foreach ($handovers as $h)

@@ -27,6 +27,8 @@ use Symfony\Component\HttpFoundation\Response;
  * Berechtigung). Filter: Datumsbereich, Event-Typ, Akteur.
  */
 class SupportAccessAuditController extends Controller {
+    private const ALLOWED_SORTS = ['created_at', 'event'];
+
     public function index(Request $request): View {
         Gate::authorize(Permission::PrivacySupportView->value);
 
@@ -45,6 +47,11 @@ class SupportAccessAuditController extends Controller {
         $from = $this->parseDate($filters['from']);
         $to = $this->parseDate($filters['to']);
 
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'created_at';
+        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
+
         $query = AuditLog::query()
             ->where('organization_id', $organization->id)
             ->where('event', 'like', 'support.%');
@@ -62,7 +69,7 @@ class SupportAccessAuditController extends Controller {
             $query->where('user_id', (int) $filters['actor']);
         }
 
-        $entries = $query->orderByDesc('created_at')->paginate(50)->withQueryString();
+        $entries = $query->orderBy($sort, $dir)->paginate(50)->withQueryString();
 
         $actorIds = collect($entries->items())->pluck('user_id')->filter()->unique();
         $actors = User::query()->whereIn('id', $actorIds)->get()->keyBy('id');
@@ -81,6 +88,8 @@ class SupportAccessAuditController extends Controller {
             'actors' => $actors,
             'filters' => $filters,
             'eventOptions' => $eventOptions,
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 

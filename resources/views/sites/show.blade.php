@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : show.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', $site->name)
@@ -80,14 +89,14 @@
                         icon='<span class="material-symbols-outlined" aria-hidden="true">apartment</span>' />
                 </div>
             @else
-                <x-table bare>
+                <x-table bare table-sort="client">
                     <x-slot:head>
                         <tr>
-                            <th>{{ __('Name') }}</th>
-                            <th class="text-end">{{ __('Baujahr') }}</th>
-                            <th class="text-end">{{ __('BGF (m²)') }}</th>
-                            <th class="text-end">{{ __('Geschosse') }}</th>
-                            <th class="text-end">{{ __('Räume') }}</th>
+                            <x-table.th sort type="string" default="asc">{{ __('Name') }}</x-table.th>
+                            <x-table.th sort type="number" align="right">{{ __('Baujahr') }}</x-table.th>
+                            <x-table.th sort type="number" align="right">{{ __('BGF (m²)') }}</x-table.th>
+                            <x-table.th sort type="number" align="right">{{ __('Geschosse') }}</x-table.th>
+                            <x-table.th sort type="number" align="right">{{ __('Räume') }}</x-table.th>
                             <th></th>
                         </tr>
                     </x-slot:head>
@@ -98,7 +107,7 @@
                                 @if ($b->code)<span class="text-base-content/60 ms-1">({{ $b->code }})</span>@endif
                             </td>
                             <td class="text-end">{{ $b->year_built ?? '—' }}</td>
-                            <td class="text-end">{{ $b->gross_area_m2 !== null ? number_format((float) $b->gross_area_m2, 1, ',', '.') : '—' }}</td>
+                            <td class="text-end" data-sort-value="{{ $b->gross_area_m2 ?? '' }}">{{ $b->gross_area_m2 !== null ? number_format((float) $b->gross_area_m2, 1, ',', '.') : '—' }}</td>
                             <td class="text-end">{{ $b->floors_count }}</td>
                             <td class="text-end">{{ $b->rooms_count }}</td>
                             <td class="text-right">

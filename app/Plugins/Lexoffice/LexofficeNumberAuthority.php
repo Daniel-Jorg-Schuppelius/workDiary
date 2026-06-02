@@ -25,8 +25,7 @@ use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
 class LexofficeNumberAuthority {
     public function __construct(
         private readonly NumberSequenceService $numbers = new NumberSequenceService(),
-    ) {
-    }
+    ) {}
 
     /**
      * Setzt für alle buchhaltungsrelevanten Scopes die Hoheit der Organisation.

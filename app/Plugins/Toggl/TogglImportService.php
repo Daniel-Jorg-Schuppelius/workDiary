@@ -41,8 +41,7 @@ class TogglImportService {
      */
     public const SUGGEST_THRESHOLD = 0.82;
 
-    public function __construct(private readonly TogglCsvParser $csvParser = new TogglCsvParser) {
-    }
+    public function __construct(private readonly TogglCsvParser $csvParser = new TogglCsvParser) {}
 
     /**
      * Holt die Zeiteinträge der Toggl-API im Fenster [$from, $to] und verarbeitet sie.

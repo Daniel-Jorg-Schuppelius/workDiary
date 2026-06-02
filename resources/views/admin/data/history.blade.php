@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : history.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Datentransfer-Verlauf'))
@@ -19,15 +28,15 @@
             icon='<span class="material-symbols-outlined" aria-hidden="true">upload_file</span>'
             :title="__('Noch keine Importe vorhanden')" />
     @else
-        <x-table>
+        <x-table table-sort="client">
             <x-slot:head>
                 <tr>
-                    <th>{{ __('ID') }}</th>
-                    <th>{{ __('Entität') }}</th>
-                    <th>{{ __('Datei') }}</th>
-                    <th>{{ __('Status') }}</th>
+                    <x-table.th sort type="number">{{ __('ID') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Entität') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Datei') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
                     <th class="text-right">{{ __('Neu/Aktualisiert/Übersprungen/Fehler') }}</th>
-                    <th>{{ __('Erstellt') }}</th>
+                    <x-table.th sort type="date" default="desc">{{ __('Erstellt') }}</x-table.th>
                     <th></th>
                 </tr>
             </x-slot:head>
@@ -38,7 +47,7 @@
                     <td class="font-mono text-xs">{{ $run->input_filename }}</td>
                     <td><span class="badge badge-sm">{{ $run->state->label() }}</span></td>
                     <td class="text-right tabular-nums">{{ $run->rows_created }} / {{ $run->rows_updated }} / {{ $run->rows_skipped }} / {{ $run->rows_failed }}</td>
-                    <td class="text-sm">{{ optional($run->created_at)->format('Y-m-d H:i') }}</td>
+                    <td class="text-sm" data-sort-value="{{ optional($run->created_at)->format('Y-m-d H:i') ?? '' }}">{{ optional($run->created_at)->format('Y-m-d H:i') }}</td>
                     <td><x-icon-btn icon="visibility" size="sm" :href="route('admin.imports.show', $run)" /></td>
                 </tr>
             @endforeach
@@ -51,15 +60,15 @@
             icon='<span class="material-symbols-outlined" aria-hidden="true">download</span>'
             :title="__('Noch keine Exporte vorhanden')" />
     @else
-        <x-table>
+        <x-table table-sort="client">
             <x-slot:head>
                 <tr>
-                    <th>{{ __('ID') }}</th>
-                    <th>{{ __('Entität') }}</th>
-                    <th>{{ __('Format') }}</th>
-                    <th>{{ __('Status') }}</th>
-                    <th class="text-right">{{ __('Zeilen') }}</th>
-                    <th>{{ __('Erstellt') }}</th>
+                    <x-table.th sort type="number">{{ __('ID') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Entität') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Format') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
+                    <x-table.th sort type="number" align="right">{{ __('Zeilen') }}</x-table.th>
+                    <x-table.th sort type="date" default="desc">{{ __('Erstellt') }}</x-table.th>
                     <th></th>
                 </tr>
             </x-slot:head>
@@ -70,7 +79,7 @@
                     <td><span class="badge badge-sm badge-ghost uppercase">{{ $run->format->value }}</span></td>
                     <td><span class="badge badge-sm">{{ $run->state->label() }}</span></td>
                     <td class="text-right tabular-nums">{{ $run->rows_total }}</td>
-                    <td class="text-sm">{{ optional($run->created_at)->format('Y-m-d H:i') }}</td>
+                    <td class="text-sm" data-sort-value="{{ optional($run->created_at)->format('Y-m-d H:i') ?? '' }}">{{ optional($run->created_at)->format('Y-m-d H:i') }}</td>
                     <td>
                         @if ($run->state->canDownload())
                             <x-icon-btn icon="download" size="sm" :href="route('admin.data.download', $run)" />

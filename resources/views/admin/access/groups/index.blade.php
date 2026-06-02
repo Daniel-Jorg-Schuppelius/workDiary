@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('access.title.groups'))
@@ -14,13 +23,21 @@
                     show-label>{{ __('access.action.group_new') }}</x-icon-btn>
     </x-slot:actions>
 
-    <x-table scroll="flex" :pinRows="true">
+    <x-filter-bar :action="route('admin.access.groups.index')" :reset="route('admin.access.groups.index')">
+        <input type="text" name="q" value="{{ $search ?? '' }}"
+               class="input input-sm input-bordered w-48 shrink-0"
+               placeholder="{{ __('Suche') }}" aria-label="{{ __('Suche') }}" />
+    </x-filter-bar>
+
+    <x-table scroll="flex" :pinRows="true" table-sort="server"
+             :route="route('admin.access.groups.index')" :current-sort="$sort" :current-dir="$dir"
+             :sort-params="array_filter(['q' => $search ?: null])">
         <x-slot:head>
             <tr>
-                <th>{{ __('access.field.group_name') }}</th>
-                <th>{{ __('access.field.group_slug') }}</th>
-                <th>{{ __('access.field.member_count') }}</th>
-                <th>{{ __('access.field.description') }}</th>
+                <x-table.th sort="name">{{ __('access.field.group_name') }}</x-table.th>
+                <x-table.th sort="slug">{{ __('access.field.group_slug') }}</x-table.th>
+                <x-table.th sort="members_count">{{ __('access.field.member_count') }}</x-table.th>
+                <x-table.th sort="description">{{ __('access.field.description') }}</x-table.th>
                 <th></th>
             </tr>
         </x-slot:head>

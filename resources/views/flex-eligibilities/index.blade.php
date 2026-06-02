@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('flex.eligibility.title', ['name' => $member->name]))
@@ -57,19 +66,19 @@
         </div>
     </div>
 
-    <x-table scroll="flex" :pinRows="true">
+    <x-table scroll="flex" :pinRows="true" table-sort="client">
         <x-slot:head>
             <tr>
-                <th>{{ __('flex.eligibility.table.valid_from') }}</th>
-                <th>{{ __('flex.eligibility.table.valid_to') }}</th>
-                <th>{{ __('flex.eligibility.table.note') }}</th>
+                <x-table.th sort type="date" default="desc">{{ __('flex.eligibility.table.valid_from') }}</x-table.th>
+                <x-table.th sort type="date">{{ __('flex.eligibility.table.valid_to') }}</x-table.th>
+                <x-table.th sort type="string">{{ __('flex.eligibility.table.note') }}</x-table.th>
                 <th class="text-right">{{ __('flex.eligibility.table.actions') }}</th>
             </tr>
         </x-slot:head>
         @forelse ($periods as $period)
             <tr>
-                <td>{{ $period->valid_from->format('d.m.Y') }}</td>
-                <td>
+                <td data-sort-value="{{ $period->valid_from->format('Y-m-d') }}">{{ $period->valid_from->format('d.m.Y') }}</td>
+                <td data-sort-value="{{ $period->valid_to?->format('Y-m-d') ?? '9999-12-31' }}">
                     @if ($period->valid_to)
                         {{ $period->valid_to->format('d.m.Y') }}
                     @else

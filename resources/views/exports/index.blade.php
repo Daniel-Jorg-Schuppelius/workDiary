@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Zeit-Exporte'))
@@ -57,15 +66,20 @@
             :title="__('Noch keine Exporte vorhanden')"
             :message="__('Erstellen Sie aus genehmigten Monaten einen Export für die Lohnabrechnung.')" />
     @else
-        <x-table scroll="flex" :pinRows="true">
+        <x-table table-sort="server"
+                 :route="route('exports.index')"
+                 :current-sort="$sort"
+                 :current-dir="$dir"
+                 :sort-params="array_filter(['status' => $filters['status'] === 'all' ? null : $filters['status'], 'profile' => $filters['profile'] === 'all' ? null : $filters['profile'], 'year' => $filters['year']])"
+                 scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
-                    <th>{{ __('Periode') }}</th>
-                    <th>{{ __('Profil') }}</th>
+                    <x-table.th sort="period_year" default>{{ __('Periode') }}</x-table.th>
+                    <x-table.th sort="profile">{{ __('Profil') }}</x-table.th>
                     <th>{{ __('Scope') }}</th>
-                    <th>{{ __('Status') }}</th>
-                    <th class="text-right">{{ __('Zeilen') }}</th>
-                    <th>{{ __('Erstellt') }}</th>
+                    <x-table.th sort="status">{{ __('Status') }}</x-table.th>
+                    <x-table.th sort="rows_count" align="right">{{ __('Zeilen') }}</x-table.th>
+                    <x-table.th sort="created_at">{{ __('Erstellt') }}</x-table.th>
                     <th>{{ __('Ersteller:in') }}</th>
                     <th class="text-right">{{ __('Aktionen') }}</th>
                 </tr>

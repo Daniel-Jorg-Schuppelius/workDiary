@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Rechnungs-Mail-Templates'))
@@ -17,13 +26,19 @@
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
 
-    <x-table scroll="flex" :pinRows="true">
+    <x-filter-bar :action="route('admin.invoice-mail-templates.index')" :reset="route('admin.invoice-mail-templates.index')">
+        <input type="text" name="q" value="{{ $search ?? '' }}"
+               class="input input-sm input-bordered w-48 shrink-0"
+               placeholder="{{ __('Suche') }}" aria-label="{{ __('Suche') }}" />
+    </x-filter-bar>
+
+    <x-table scroll="flex" :pinRows="true" table-sort="client">
         <x-slot:head>
             <tr>
-                <th>{{ __('Name') }}</th>
-                <th>{{ __('Betreff') }}</th>
-                <th>{{ __('Scope') }}</th>
-                <th>{{ __('Standard') }}</th>
+                <x-table.th sort type="string">{{ __('Name') }}</x-table.th>
+                <x-table.th sort type="string">{{ __('Betreff') }}</x-table.th>
+                <x-table.th sort type="string">{{ __('Scope') }}</x-table.th>
+                <x-table.th sort type="number">{{ __('Standard') }}</x-table.th>
                 <th></th>
             </tr>
         </x-slot:head>
@@ -32,7 +47,7 @@
                 <td>{{ $tpl->name }}</td>
                 <td class="text-sm">{{ $tpl->subject }}</td>
                 <td>{{ $tpl->organization_id === null ? __('Global') : __('Organisation') }}</td>
-                <td>
+                <td data-sort-value="{{ $tpl->is_default ? 1 : 0 }}">
                     @if ($tpl->is_default)
                         <x-status-badge tone="success" size="md">{{ __('Ja') }}</x-status-badge>
                     @endif

@@ -21,7 +21,10 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class KeyHandoverController extends Controller {
-    public function __construct(private readonly KeyHandoverService $service) {}
+    private const ALLOWED_SORTS = ['occurred_at', 'direction', 'person_name', 'expected_return_at'];
+
+    public function __construct(private readonly KeyHandoverService $service) {
+    }
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', KeyHandover::class);
@@ -30,10 +33,14 @@ class KeyHandoverController extends Controller {
         $rawAsset = (string) $request->query('asset', '');
         $assetFilter = Sqid::decodeOrNumeric(Asset::class, $rawAsset, 0);
         $directionFilter = $request->string('direction')->toString();
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'occurred_at';
+        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
 
         $query = KeyHandover::query()
             ->with(['asset:id,name,asset_no', 'handedBy:id,name', 'returnedTo:id,name', 'customer:id,name'])
-            ->latest('occurred_at');
+            ->orderBy($sort, $dir);
 
         if ($q !== '') {
             $query->where(function ($builder) use ($q): void {
@@ -59,6 +66,8 @@ class KeyHandoverController extends Controller {
                 'direction' => $directionFilter,
             ],
             'canCreate' => Gate::allows('create', KeyHandover::class),
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 

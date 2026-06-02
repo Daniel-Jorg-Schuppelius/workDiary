@@ -11,8 +11,7 @@
 namespace App\Services\Support;
 
 use CommonToolkit\Helper\Data\JsonHelper;
-use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
-use CommonToolkit\Helper\FileSystem\Folder as ToolkitFolder;
+use CommonToolkit\Helper\FileSystem\{File as ToolkitFile, Folder as ToolkitFolder};
 use RuntimeException;
 use ZipArchive;
 

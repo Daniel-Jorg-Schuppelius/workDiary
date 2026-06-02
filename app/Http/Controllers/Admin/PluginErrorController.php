@@ -26,10 +26,17 @@ use Illuminate\View\View;
  *  - POST admin/plugins/{plugin}/reset-errors         → failure_count + disabled_reason zurücksetzen
  */
 class PluginErrorController extends Controller {
+    private const ALLOWED_SORTS = ['occurred_at', 'plugin_id', 'phase', 'exception_class', 'message', 'acknowledged_at'];
+
     public function index(Request $request, PluginManager $manager): View {
         $this->ensureAdmin($request);
 
-        $query = PluginError::query()->orderByDesc('occurred_at');
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'occurred_at';
+        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
+
+        $query = PluginError::query()->orderBy($sort, $dir);
 
         $filters = [
             'plugin' => (string) $request->string('plugin'),
@@ -54,6 +61,8 @@ class PluginErrorController extends Controller {
             'filters' => $filters,
             'plugins' => $manager->all(),
             'states' => PluginState::all()->keyBy('plugin_id'),
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 

@@ -322,6 +322,37 @@ class InvoiceTest extends TestCase {
         return $tour;
     }
 
+    public function test_foreign_customer_appears_in_booking_line(): void {
+        $foreign = \App\Models\ForeignCustomer::create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'name' => 'Thieme',
+        ]);
+        $this->project->update(['foreign_customer_id' => $foreign->id]);
+
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->admin->id,
+            'date' => '2030-04-01',
+            'minutes' => 60,
+            'kind' => TimeEntryKind::Work->value,
+            'billable' => true,
+            'hourly_rate' => '90.00',
+        ]);
+
+        // Ohne Endkunden-Filter ("alle Endkunden") — der Endkunde muss dennoch
+        // je Buchungszeile auftauchen.
+        $this->postAsAdmin('invoices.store', [
+            'customer_id' => $this->customer->id,
+            'project_id' => $this->project->id,
+            'content' => 'service',
+        ])->assertRedirect();
+
+        $invoice = Invoice::firstOrFail()->load('items');
+        $this->assertStringContainsString('Endkunde Thieme', (string) $invoice->items()->first()->description);
+    }
+
     public function test_index_accepts_numeric_customer_filter_fallback(): void {
         $otherCustomer = Customer::create([
             'organization_id' => $this->organization->id,

@@ -22,8 +22,7 @@ use Illuminate\View\View;
 use RuntimeException;
 
 class AttendanceController extends Controller {
-    public function __construct(protected AttendanceClockService $clock) {
-    }
+    public function __construct(protected AttendanceClockService $clock) {}
 
     /**
      * Lists attendances for the authenticated user (current month by default).

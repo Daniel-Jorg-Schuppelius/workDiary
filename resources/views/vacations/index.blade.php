@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @php
@@ -65,21 +74,20 @@
         </x-slot:extra>
     </x-filter-bar>
 
-    <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm">
-                <thead class="bg-base-200">
+    <x-table table-sort="client" scroll="flex" :pinRows="true" :zebra="true" size="sm">
+                <x-slot:head>
                     <tr>
                         @if ($isAdmin)
-                            <th>{{ __('Mitarbeiter') }}</th>
+                            <x-table.th sort type="string">{{ __('Mitarbeiter') }}</x-table.th>
                         @endif
-                        <th>{{ __('Zeitraum') }}</th>
-                        <th>{{ __('Tage') }}</th>
-                        <th>{{ __('Typ') }}</th>
-                        <th>{{ __('Status') }}</th>
+                        <x-table.th sort type="date" default="desc">{{ __('Zeitraum') }}</x-table.th>
+                        <x-table.th sort type="number">{{ __('Tage') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Typ') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
                         <th>{{ __('Notiz') }}</th>
                         <th class="w-px"></th>
                     </tr>
-                </thead>
-                <tbody>
+                </x-slot:head>
                     @forelse ($vacations as $v)
                         @php
                             $days = $v->workingDays($holidayService);
@@ -88,7 +96,7 @@
                             @if ($isAdmin)
                                 <td class="font-medium">{{ $v->user?->name ?? '–' }}</td>
                             @endif
-                            <td class="whitespace-nowrap">
+                            <td class="whitespace-nowrap" data-sort-value="{{ $v->start_date->format('Y-m-d') }}">
                                 {{ $v->start_date->format('d.m.Y') }}
                                 @if ($v->start_date->ne($v->end_date))
                                     – {{ $v->end_date->format('d.m.Y') }}
@@ -154,7 +162,6 @@
                     @empty
                         <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">beach_access</span>' :colspan="$isAdmin ? 7 : 6" :title="__('Keine Einträge gefunden')" compact />
                     @endforelse
-                </tbody>
     </x-table>
 
     {{-- Pagination --}}

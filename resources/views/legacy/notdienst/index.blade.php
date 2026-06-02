@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('title', __('Notdienst') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Notdienst'))
@@ -55,17 +64,16 @@
         @endforeach
     </div>
 
-    <x-table size="xs" :pin-rows="true" scroll="flex">
-                <thead class="bg-base-200">
+    <x-table size="xs" :pin-rows="true" scroll="flex" table-sort="client">
+                <x-slot:head>
                 <tr>
-                    <th class="w-16 text-center">ID</th>
-                    <th>{{ __('Mitarbeiter') }}</th>
-                    <th class="w-32 text-center">{{ __('Von') }}</th>
-                    <th class="w-32 text-center">{{ __('Bis') }}</th>
+                    <x-table.th sort type="number" class="w-16 text-center">ID</x-table.th>
+                    <x-table.th sort type="string">{{ __('Mitarbeiter') }}</x-table.th>
+                    <x-table.th sort type="date" class="w-32 text-center">{{ __('Von') }}</x-table.th>
+                    <x-table.th sort type="date" class="w-32 text-center">{{ __('Bis') }}</x-table.th>
                     <th class="w-32 text-right">{{ __('Aktion') }}</th>
                 </tr>
-            </thead>
-            <tbody>
+            </x-slot:head>
                 @forelse ($items as $item)
                     <tr class="hover">
                         <td class="text-center">{{ $item->id }}</td>
@@ -94,7 +102,6 @@
                 @empty
                     <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">medical_services</span>' :colspan="5" :title="__('Keine Notdienst-Einträge gefunden')" compact />
                 @endforelse
-            </tbody>
     </x-table>
 
     @if ($items->hasPages())

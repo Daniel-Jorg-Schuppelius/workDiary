@@ -26,7 +26,10 @@ use Illuminate\View\View;
  * und stellt approve/reject/apply zur Verfügung.
  */
 class TimeCorrectionInboxController extends Controller {
-    public function __construct(private readonly TimeCorrectionService $service) {}
+    private const ALLOWED_SORTS = ['scope_date', 'status'];
+
+    public function __construct(private readonly TimeCorrectionService $service) {
+    }
 
     public function index(Request $request): View {
         /** @var User $admin */
@@ -43,10 +46,15 @@ class TimeCorrectionInboxController extends Controller {
 
         $statusFilter = (string) $request->input('status', 'submitted');
 
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'scope_date';
+        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
+
         $query = TimeCorrectionRequest::query()
             ->where('organization_id', $admin->organization_id)
             ->with(['user', 'requestedBy', 'items'])
-            ->orderByDesc('scope_date')
+            ->orderBy($sort, $dir)
             ->orderByDesc('id');
 
         if ($statusFilter !== '' && $statusFilter !== 'all') {
@@ -59,6 +67,8 @@ class TimeCorrectionInboxController extends Controller {
             'requests' => $requests,
             'filters' => ['status' => $statusFilter],
             'statuses' => TimeCorrectionStatus::cases(),
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 

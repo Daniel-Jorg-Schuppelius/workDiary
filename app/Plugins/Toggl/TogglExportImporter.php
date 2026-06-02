@@ -62,8 +62,7 @@ class TogglExportImporter {
 
     private ?User $defaultUser = null;
 
-    public function __construct(private readonly TogglWorkspaceReader $reader = new TogglWorkspaceReader) {
-    }
+    public function __construct(private readonly TogglWorkspaceReader $reader = new TogglWorkspaceReader) {}
 
     /**
      * @param  array<string, array{mode: string, customer_name?: ?string}>  $workspaceModes  Ordnername → Konfiguration

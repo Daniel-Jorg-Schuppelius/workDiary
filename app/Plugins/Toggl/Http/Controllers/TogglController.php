@@ -13,8 +13,8 @@ namespace App\Plugins\Toggl\Http\Controllers;
 use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, ExternalReference, Organization, Project, User};
-use App\Plugins\Toggl\{TogglConfig, TogglExportImporter, TogglImportService, TogglPlugin};
 use App\Plugins\Toggl\Sources\TogglWorkspaceReader;
+use App\Plugins\Toggl\{TogglConfig, TogglExportImporter, TogglImportService, TogglPlugin};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
@@ -32,8 +32,7 @@ class TogglController extends Controller {
     public function __construct(
         private readonly TogglImportService $service,
         private readonly TogglExportImporter $exportImporter = new TogglExportImporter,
-    ) {
-    }
+    ) {}
 
     public function index(): View {
         $admin = $this->admin();

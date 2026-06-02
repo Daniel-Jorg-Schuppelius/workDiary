@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Plugins'))
@@ -51,15 +60,15 @@
             :title="__('Keine Plugins gefunden')"
             :message="__('Plugin-Klassen werden in config/plugins.php deklariert.')" />
     @else
-        <x-table scroll="flex" :pinRows="true">
+        <x-table scroll="flex" :pinRows="true" table-sort="client">
             <x-slot:head>
                 <tr>
-                    <x-table.th>{{ __('Name') }}</x-table.th>
-                    <x-table.th>{{ __('ID') }}</x-table.th>
-                    <x-table.th>{{ __('Version') }}</x-table.th>
-                    <x-table.th>{{ __('Schema') }}</x-table.th>
-                    <x-table.th>{{ __('Status') }}</x-table.th>
-                    <x-table.th>{{ __('Health') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Name') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('ID') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Version') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Schema') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Health') }}</x-table.th>
                     <x-table.th>{{ __('Capabilities') }}</x-table.th>
                     <x-table.th class="text-right">{{ __('Aktion') }}</x-table.th>
                 </tr>

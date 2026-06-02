@@ -22,17 +22,23 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class AssetController extends Controller {
+    private const ALLOWED_SORTS = ['asset_no', 'asset_class', 'name', 'serial_no', 'location_text', 'status'];
+
     public function index(Request $request): View {
         Gate::authorize('viewAny', Asset::class);
 
         $query = trim($request->string('q')->toString());
         $classFilter = $this->normalizeAssetClass($request->string('class')->toString());
         $statusFilter = $this->normalizeAssetStatus($request->string('status')->toString());
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'name';
+        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
 
         $assetsQuery = Asset::query()
             ->with(['customer:id,name'])
             ->orderByRaw("case when status = ? then 1 else 0 end asc", [AssetStatus::Blocked->value])
-            ->latest('updated_at');
+            ->orderBy($sort, $dir);
 
         if ($query !== '') {
             $assetsQuery->where(function ($builder) use ($query): void {
@@ -79,6 +85,8 @@ class AssetController extends Controller {
                 'class' => $classFilter ?? 'all',
                 'status' => $statusFilter ?? 'all',
             ],
+            'sort' => $sort,
+            'dir' => $dir,
             'activeFilterChips' => array_values(array_filter([
                 $query !== '' ? __('Suche: :value', ['value' => $query]) : null,
                 $classFilter !== null ? __('Typ: :value', ['value' => $classOptions[$classFilter] ?? $classFilter]) : null,

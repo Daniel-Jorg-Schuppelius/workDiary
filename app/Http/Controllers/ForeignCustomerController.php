@@ -12,8 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SaveForeignCustomerRequest;
 use App\Models\{AuditLog, Customer, ForeignCustomer, Project};
-use App\Support\Setting;
-use App\Support\Sqid;
+use App\Support\{Setting, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;

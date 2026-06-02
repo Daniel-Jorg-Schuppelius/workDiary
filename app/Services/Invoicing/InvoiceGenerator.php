@@ -21,8 +21,7 @@ use Illuminate\Support\Facades\{Auth, DB};
 class InvoiceGenerator {
     public function __construct(
         private readonly NumberSequenceService $numberSequence,
-    ) {
-    }
+    ) {}
 
     /**
      * Liefert die nächste freie Rechnungsnummer für Jahr + Organisation.
@@ -91,7 +90,7 @@ class InvoiceGenerator {
             }
 
             $entries = $query
-                ->with(['project.parent', 'project.customer'])
+                ->with(['project.parent', 'project.customer', 'project.foreignCustomer'])
                 ->orderBy('date')
                 ->get();
 
@@ -112,7 +111,10 @@ class InvoiceGenerator {
                 $rate = $block->hourlyRate()
                     ?? (float) ($primary?->hourly_rate ?: $customer->hourly_rate ?: 0);
 
-                $description = $this->describeBlock($block, $primary);
+                $description = $this->bookingLine(
+                    $this->describeBlock($block, $primary),
+                    $block->project?->foreignCustomer,
+                );
 
                 $serviceDate = $block->firstStart?->toDateString() ?? optional($primary?->date)->toDateString();
 
@@ -187,7 +189,11 @@ class InvoiceGenerator {
                         $q->where('work_date', '<=', Carbon::parse($range['to'])->toDateString());
                     }
                 })
-                ->with('timesheet:id,work_date')
+                ->with([
+                    'timesheet:id,work_date,project_id',
+                    'timesheet.project:id,name,foreign_customer_id',
+                    'timesheet.project.foreignCustomer:id,name,company',
+                ])
                 ->get();
 
             $position = 0;
@@ -196,10 +202,12 @@ class InvoiceGenerator {
                     continue;
                 }
 
+                $materialDesc = trim((string) $usage->description) ?: (string) __('Material');
+
                 $invoice->items()->create([
                     'material_usage_id' => $usage->id,
                     'service_date' => optional($usage->timesheet?->work_date)->toDateString(),
-                    'description' => trim((string) $usage->description) ?: (string) __('Material'),
+                    'description' => $this->bookingLine($materialDesc, $usage->timesheet?->project?->foreignCustomer),
                     'quantity' => (string) $usage->quantity,
                     'unit' => $usage->unit ?: (string) __('invoicing.unit_piece'),
                     'unit_price' => (string) ($usage->unit_price ?? '0'),
@@ -244,7 +252,7 @@ class InvoiceGenerator {
             $invoice->items()->create([
                 'tour_id' => $charge->tour->id,
                 'service_date' => $charge->date->toDateString(),
-                'description' => $charge->description,
+                'description' => $this->bookingLine($charge->description, $foreignCustomer),
                 'quantity' => (string) $charge->quantity,
                 'unit' => $charge->unit,
                 'unit_price' => (string) $charge->unitPrice,
@@ -254,6 +262,24 @@ class InvoiceGenerator {
             $charge->tour->travel_billed = true;
             $charge->tour->saveQuietly();
         }
+    }
+
+    /**
+     * Stellt der Buchungszeile (Positionsbeschreibung) den abgerechneten
+     * Endkunden (Fremdkunden) voran, sofern vorhanden. So ist auf der Rechnung
+     * je Position erkennbar, für welchen Endkunden abgerechnet wird — auch wenn
+     * eine Rechnung mehrere Endkunden des Kunden zusammenfasst.
+     */
+    private function bookingLine(string $description, ?ForeignCustomer $foreignCustomer): string {
+        if ($foreignCustomer === null) {
+            return $description;
+        }
+        $name = trim((string) ($foreignCustomer->company ?: $foreignCustomer->name));
+        if ($name === '') {
+            return $description;
+        }
+
+        return (string) __('Endkunde :name', ['name' => $name]) . ' · ' . $description;
     }
 
     /**

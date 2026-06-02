@@ -30,8 +30,7 @@ use Illuminate\View\View;
  * Anonymisation: append `?anonymous=1` to any route to display only initials.
  */
 class PrintController extends Controller {
-    public function __construct(private readonly HolidayService $holidays) {
-    }
+    public function __construct(private readonly HolidayService $holidays) {}
 
     /**
      * A3 querformat — Monats-Aushang: alle Mitarbeiter × alle Tage des Plans.

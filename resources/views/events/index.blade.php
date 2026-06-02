@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('title', __('Veranstaltungen'))
 @section('nav-title', __('Veranstaltungen'))
@@ -85,20 +94,22 @@
             <x-kpi-tile :label="__('Gesamt')"            :value="$counts['total']     ?? 0" tone="neutral" />
         </div>
 
-        <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm">
-            <thead class="bg-base-200">
+        <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm" table-sort="server"
+                 :route="route('events.index')" :current-sort="$sort" :current-dir="$dir"
+                 :sort-params="request()->except(['sort', 'dir', 'page'])">
+            <x-slot:head>
                 <tr>
-                    <th data-sort data-sort-default="asc">{{ __('Titel') }}</th>
-                    <th data-sort>{{ __('Typ') }}</th>
-                    <th data-sort>{{ __('Kategorie') }}</th>
-                    <th data-sort>{{ __('Termin') }}</th>
+                    <x-table.th sort="title">{{ __('Titel') }}</x-table.th>
+                    <x-table.th sort="event_type">{{ __('Typ') }}</x-table.th>
+                    <th>{{ __('Kategorie') }}</th>
+                    <x-table.th sort="started_at">{{ __('Termin') }}</x-table.th>
                     <th>{{ __('Räume') }}</th>
-                    <th data-sort>{{ __('Verantwortlich') }}</th>
-                    <th class="text-right" data-sort data-sort-type="number">{{ __('Teilnehmer') }}</th>
-                    <th data-sort>{{ __('Status') }}</th>
+                    <th>{{ __('Verantwortlich') }}</th>
+                    <th class="text-right">{{ __('Teilnehmer') }}</th>
+                    <x-table.th sort="status">{{ __('Status') }}</x-table.th>
                     <th class="w-32 text-right">{{ __('Aktion') }}</th>
                 </tr>
-            </thead>
+            </x-slot:head>
             <tbody>
                 @forelse ($events as $event)
                     <tr class="hover">

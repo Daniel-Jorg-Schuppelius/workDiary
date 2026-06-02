@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Geschosse'))
@@ -20,13 +29,24 @@
         <x-empty-state framed
             icon='<span class="material-symbols-outlined" aria-hidden="true">layers</span>' />
     @else
-        <x-table scroll="flex" :pinRows="true">
+        <x-filter-bar :action="route('floors.index')" method="GET" :reset="route('floors.index')">
+            @if ($building)
+                <input type="hidden" name="building" value="{{ request()->query('building') }}" />
+            @endif
+            <input type="text" name="q" value="{{ $search ?? '' }}"
+                   class="input input-sm input-bordered w-48 shrink-0"
+                   placeholder="{{ __('Suche') }}" aria-label="{{ __('Suche') }}" />
+        </x-filter-bar>
+
+        <x-table scroll="flex" :pinRows="true" table-sort="server"
+                 :route="route('floors.index')" :current-sort="$sort" :current-dir="$dir"
+                 :sort-params="array_filter(['building' => request()->query('building'), 'q' => $search ?: null])">
             <x-slot:head>
                 <tr>
-                    <th class="text-end">{{ __('Ebene') }}</th>
-                    <th>{{ __('Bezeichnung') }}</th>
+                    <x-table.th sort="level" align="right">{{ __('Ebene') }}</x-table.th>
+                    <x-table.th sort="label">{{ __('Bezeichnung') }}</x-table.th>
                     <th>{{ __('Gebäude') }}</th>
-                    <th class="text-end">{{ __('m²') }}</th>
+                    <x-table.th sort="gross_area_m2" align="right">{{ __('m²') }}</x-table.th>
                     <th></th>
                 </tr>
             </x-slot:head>

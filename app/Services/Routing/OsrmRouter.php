@@ -22,8 +22,7 @@ class OsrmRouter {
     public function __construct(
         /** @var array<string, mixed> */
         private array $config,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<int, array{0: float, 1: float}>  $coordinates  ordered [lng, lat] pairs

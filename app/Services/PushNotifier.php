@@ -16,8 +16,7 @@ use App\Models\{Attachment, Comment, DiaryEntry, EmergencyAssignment, Timesheet,
 use App\Support\Setting;
 
 class PushNotifier {
-    public function __construct(protected WebPushService $webPush) {
-    }
+    public function __construct(protected WebPushService $webPush) {}
 
     public function newComment(Comment $comment): void {
         /** @var DiaryEntry|null $entry */

@@ -29,8 +29,7 @@ use Illuminate\Support\Facades\DB;
 class NumberSequenceService {
     public function __construct(
         private readonly NumberAuthority $authority = new NumberAuthority(),
-    ) {
-    }
+    ) {}
 
     public function next(Organization|int $organization, NumberScope $scope, ?CarbonInterface $when = null): string {
         $orgId = $organization instanceof Organization ? (int) $organization->id : (int) $organization;

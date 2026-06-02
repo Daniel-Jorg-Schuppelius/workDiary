@@ -18,16 +18,28 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class ActivityCategoryController extends Controller {
-    public function index(): View {
+    private const ALLOWED_SORTS = ['sort_order', 'key', 'label', 'activity_type', 'counts_as_work', 'billable_default', 'active'];
+
+    public function index(\Illuminate\Http\Request $request): View {
         Gate::authorize('viewAny', ActivityCategory::class);
 
+        $search = $request->string('q')->toString();
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'sort_order';
+        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+
         $categories = ActivityCategory::query()
-            ->orderBy('sort_order')
-            ->orderBy('label')
+            ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
+                $w->where('key', 'like', "%{$search}%")
+                    ->orWhere('label', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            }))
+            ->orderBy($sort, $dir)
             ->paginate((int) Setting::get('pagination.activity_categories', 50))
             ->withQueryString();
 
-        return view('activity-categories.index', compact('categories'));
+        return view('activity-categories.index', compact('categories', 'search', 'sort', 'dir'));
     }
 
     public function create(): View {

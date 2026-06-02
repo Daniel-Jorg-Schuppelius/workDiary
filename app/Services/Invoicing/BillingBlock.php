@@ -39,8 +39,7 @@ final class BillingBlock {
         public readonly ?Carbon $firstStart,
         public readonly ?Carbon $lastEnd,
         public readonly ?string $description,
-    ) {
-    }
+    ) {}
 
     public function billedHours(): float {
         return round($this->billedMinutes / 60.0, 2);

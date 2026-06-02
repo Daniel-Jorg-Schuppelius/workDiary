@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : entry-type-protocols.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('title', __('Drilldown: Defektprotokolle (Auftragstyp)'))
 @section('nav-title', __('Drilldown: Defektprotokolle (Auftragstyp)'))
@@ -26,14 +35,14 @@
         @if ($protocols->isEmpty())
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">fact_check</span>' :title="__('Keine Defektprotokolle für diesen Drilldown gefunden.')" />
         @else
-            <x-table bare>
+            <x-table bare table-sort="client">
                 <x-slot:head>
                     <tr>
-                        <th>{{ __('Titel') }}</th>
-                        <th>{{ __('Status') }}</th>
-                        <th>{{ __('Zeitpunkt') }}</th>
-                        <th>{{ __('Erstellt von') }}</th>
-                        <th>{{ __('Auftrag') }}</th>
+                        <x-table.th sort type="string">{{ __('Titel') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
+                        <x-table.th sort type="date">{{ __('Zeitpunkt') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Erstellt von') }}</x-table.th>
+                        <x-table.th sort type="number">{{ __('Auftrag') }}</x-table.th>
                     </tr>
                 </x-slot:head>
                 @foreach ($protocols as $protocol)

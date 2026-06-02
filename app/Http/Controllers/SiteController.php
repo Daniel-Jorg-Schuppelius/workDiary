@@ -17,15 +17,21 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class SiteController extends Controller {
+    private const ALLOWED_SORTS = ['name', 'address_city', 'is_active'];
+
     public function index(Request $request): View {
         Gate::authorize('viewAny', Site::class);
 
         $rawCustomer = (string) $request->query('customer', '');
         $customerId = Sqid::decodeOrNumeric(Customer::class, $rawCustomer);
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'name';
+        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
         $query = Site::query()
             ->with('customer')
             ->withCount('buildings')
-            ->orderBy('name');
+            ->orderBy($sort, $dir);
         if ($customerId !== null) {
             $query->where('customer_id', $customerId);
         }
@@ -37,6 +43,8 @@ class SiteController extends Controller {
         return view('sites.index', [
             'sites' => $sites,
             'customer' => $customer,
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 

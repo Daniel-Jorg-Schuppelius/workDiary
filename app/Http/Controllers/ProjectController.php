@@ -24,9 +24,16 @@ class ProjectController extends Controller {
         Gate::authorize('viewAny', Project::class);
 
         $statusFilter = $request->string('status')->toString();
+        $search = $request->string('q')->toString();
         $query = Project::query();
         if (in_array($statusFilter, ProjectStatus::values(), true)) {
             $query->where('status', $statusFilter);
+        }
+        if ($search !== '') {
+            $query->where(function ($q) use ($search): void {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhereHas('customer', fn($c) => $c->where('name', 'like', "%{$search}%"));
+            });
         }
 
         $projects = $query->orderByRaw("CASE status WHEN 'active' THEN 0 WHEN 'paused' THEN 1 ELSE 2 END")
@@ -91,6 +98,7 @@ class ProjectController extends Controller {
             'lastEntries' => $lastEntries,
             'userCounts' => $userCounts,
             'statusFilter' => $statusFilter,
+            'search' => $search,
         ]);
     }
 

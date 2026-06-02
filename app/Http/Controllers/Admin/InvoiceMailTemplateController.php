@@ -17,9 +17,14 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB};
 
 class InvoiceMailTemplateController extends Controller {
-    public function index(): View {
+    public function index(Request $request): View {
         $this->authorizeBilling();
+        $search = $request->string('q')->toString();
         $templates = InvoiceMailTemplate::query()
+            ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
+                $w->where('name', 'like', "%{$search}%")
+                    ->orWhere('subject', 'like', "%{$search}%");
+            }))
             ->orderByDesc('is_default')
             ->orderBy('name')
             ->get();
@@ -27,6 +32,7 @@ class InvoiceMailTemplateController extends Controller {
         return view('admin.invoice-mail-templates.index', [
             'templates' => $templates,
             'variables' => InvoiceMailTemplate::availableVariables(),
+            'search' => $search,
         ]);
     }
 

@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('CSV-Imports'))
@@ -32,16 +41,18 @@
         <x-empty-state framed
             icon='<span class="material-symbols-outlined" aria-hidden="true">cloud_upload</span>' />
     @else
-        <x-table scroll="flex" :pinRows="true">
+        <x-table scroll="flex" :pinRows="true" table-sort="server"
+                 :route="route('admin.imports.index')" :current-sort="$sort" :current-dir="$dir"
+                 :sort-params="array_filter(['entity' => $filters['entity'] ?: null, 'state' => $filters['state'] ?: null])">
             <x-slot:head>
                 <tr>
-                    <th>{{ __('ID') }}</th>
-                    <th>{{ __('Entität') }}</th>
-                    <th>{{ __('Datei') }}</th>
-                    <th>{{ __('Status') }}</th>
-                    <th class="text-right">{{ __('Zeilen') }}</th>
+                    <x-table.th sort="id">{{ __('ID') }}</x-table.th>
+                    <x-table.th sort="entity">{{ __('Entität') }}</x-table.th>
+                    <x-table.th sort="input_filename">{{ __('Datei') }}</x-table.th>
+                    <x-table.th sort="state">{{ __('Status') }}</x-table.th>
+                    <x-table.th sort="rows_total" align="right">{{ __('Zeilen') }}</x-table.th>
                     <th class="text-right">{{ __('Neu/Aktualisiert/Übersprungen/Fehler') }}</th>
-                    <th>{{ __('Erstellt') }}</th>
+                    <x-table.th sort="created_at">{{ __('Erstellt') }}</x-table.th>
                     <th></th>
                 </tr>
             </x-slot:head>

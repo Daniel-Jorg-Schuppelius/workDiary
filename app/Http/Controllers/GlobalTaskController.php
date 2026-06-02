@@ -1,4 +1,12 @@
 <?php
+/*
+ * Created on   : Tue Jun 02 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : GlobalTaskController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
 
 declare(strict_types=1);
 
@@ -11,18 +19,30 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class GlobalTaskController extends Controller {
+    private const ALLOWED_SORTS = ['title', 'status', 'priority', 'hourly_rate', 'time_budget', 'billable'];
+
     public function index(Request $request): View {
         Gate::authorize('viewAny', Task::class);
 
         $user = $request->user();
+        $search = $request->string('q')->toString();
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'title';
+        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+
         $tasks = Task::query()
             ->where('is_global', true)
             ->when($user?->organization_id, fn($q, $orgId) => $q->where('organization_id', $orgId))
-            ->orderBy('position')
-            ->orderBy('title')
-            ->paginate(50);
+            ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
+                $w->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            }))
+            ->orderBy($sort, $dir)
+            ->paginate(50)
+            ->withQueryString();
 
-        return view('tasks.global.index', ['tasks' => $tasks]);
+        return view('tasks.global.index', compact('tasks', 'search', 'sort', 'dir'));
     }
 
     public function create(Request $request): View {

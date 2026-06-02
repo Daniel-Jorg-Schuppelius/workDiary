@@ -17,8 +17,8 @@ use App\Legacy\Models\{LegacyArchiveDiaryEntry, LegacyArchiveNotdienst, LegacyAr
 use App\Legacy\Services\{LegacyArchiveService, LegacyWeekCalendarService};
 use App\Legacy\Support\LegacyRoleResolver;
 use App\Models\{User, Vacation};
-use App\Support\Sqid;
 use App\Services\HolidayService;
+use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Auth;

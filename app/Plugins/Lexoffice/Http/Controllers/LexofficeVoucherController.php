@@ -32,6 +32,8 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class LexofficeVoucherController extends Controller {
     use ResolvesGlobalDateRange;
 
+    private const ALLOWED_SORTS = ['voucher_number', 'voucher_date', 'voucher_type', 'voucher_status', 'total_amount'];
+
     public function index(Request $request): View {
         $user = $this->user();
         abort_unless($user->can(Permission::VoucherViewAny->value), 403);
@@ -45,11 +47,16 @@ class LexofficeVoucherController extends Controller {
         $from = $range['from']->startOfDay();
         $to = $range['to']->endOfDay();
 
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'voucher_date';
+        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
+
         $query = LexofficeVoucher::query()
             ->where('organization_id', $user->organization_id)
             ->whereBetween('voucher_date', [$from, $to])
             ->with(['customer:id,name', 'supplier:id,name'])
-            ->orderByDesc('voucher_date')
+            ->orderBy($sort, $dir)
             ->orderByDesc('id');
 
         if ($search !== '') {
@@ -87,6 +94,8 @@ class LexofficeVoucherController extends Controller {
             'vouchers' => $query->paginate(30)->withQueryString(),
             'types' => $types,
             'filters' => ['q' => $search, 'type' => $type, 'party' => $party, 'status' => $status],
+            'sort' => $sort,
+            'dir' => $dir,
             'rangeLabel' => $range['label'],
         ]);
     }

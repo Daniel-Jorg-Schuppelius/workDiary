@@ -17,15 +17,29 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class BuildingController extends Controller {
+    private const ALLOWED_SORTS = ['name', 'code', 'year_built', 'gross_area_m2'];
+
     public function index(Request $request): View {
         Gate::authorize('viewAny', Building::class);
 
         $rawSite = (string) $request->query('site', '');
         $siteId = Sqid::decodeOrNumeric(Site::class, $rawSite);
+        $search = $request->string('q')->toString();
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'name';
+        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+
         $query = Building::query()
             ->with('site.customer')
             ->withCount('floors')
-            ->orderBy('name');
+            ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
+                $w->where('name', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('notes', 'like', "%{$search}%")
+                    ->orWhereHas('site', fn($s) => $s->where('name', 'like', "%{$search}%"));
+            }))
+            ->orderBy($sort, $dir);
         if ($siteId !== null) {
             $query->where('site_id', $siteId);
         }
@@ -37,6 +51,9 @@ class BuildingController extends Controller {
         return view('buildings.index', [
             'buildings' => $buildings,
             'site' => $site,
+            'search' => $search,
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 

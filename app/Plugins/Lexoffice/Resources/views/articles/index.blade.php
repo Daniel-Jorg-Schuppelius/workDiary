@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('title', __('Produkte & Leistungen') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Produkte & Leistungen'))
@@ -50,16 +59,18 @@
             :title="$q !== '' ? __('Keine Treffer für „:q“.', ['q' => $q]) : __('Noch keine Produkte oder Leistungen synchronisiert')" />
     @else
         <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-            <x-table bare scroll="flex" :pinRows="true">
+            <x-table bare scroll="flex" :pinRows="true" table-sort="server"
+                     :route="route('lexoffice.articles.index')" :current-sort="$sort" :current-dir="$dir"
+                     :sort-params="array_filter(['q' => $q ?: null, 'type' => $type ?: null, 'status' => $status !== 'active' ? $status : null])">
                 <x-slot:head>
                     <tr>
-                        <th>{{ __('Name') }}</th>
-                        <th>{{ __('Artikelnr.') }}</th>
-                        <th>{{ __('Typ') }}</th>
-                        <th>{{ __('Einheit') }}</th>
-                        <th class="text-right">{{ __('Netto-Preis') }}</th>
-                        <th class="text-right">{{ __('USt') }}</th>
-                        <th>{{ __('Status') }}</th>
+                        <x-table.th sort="name">{{ __('Name') }}</x-table.th>
+                        <x-table.th sort="article_number">{{ __('Artikelnr.') }}</x-table.th>
+                        <x-table.th sort="type">{{ __('Typ') }}</x-table.th>
+                        <x-table.th sort="unit_name">{{ __('Einheit') }}</x-table.th>
+                        <x-table.th sort="net_unit_price" align="right">{{ __('Netto-Preis') }}</x-table.th>
+                        <x-table.th sort="vat_rate" align="right">{{ __('USt') }}</x-table.th>
+                        <x-table.th sort="archived_at">{{ __('Status') }}</x-table.th>
                     </tr>
                 </x-slot:head>
                 @foreach ($articles as $article)

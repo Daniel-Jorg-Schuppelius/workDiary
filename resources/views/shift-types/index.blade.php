@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('title', __('Schichttypen'))
 @section('nav-title', __('Schichttypen'))
@@ -13,18 +22,23 @@
                         show-label>{{ __('Neuer Schichttyp') }}</x-icon-btn>
         </x-slot:actions>
 
-        <x-table scroll="flex" :pinRows="true" :zebra="true">
-                <thead class="bg-base-200">
+        <x-filter-bar :action="route('shift-types.index')" method="GET" :reset="route('shift-types.index')">
+            <input type="text" name="q" value="{{ $search ?? '' }}"
+                   class="input input-sm input-bordered w-48 shrink-0"
+                   placeholder="{{ __('Suche') }}" aria-label="{{ __('Suche') }}" />
+        </x-filter-bar>
+
+        <x-table scroll="flex" :pinRows="true" :zebra="true" table-sort="client">
+                <x-slot:head>
                     <tr>
-                        <th data-sort data-sort-default="asc">{{ __('Name') }}</th>
-                        <th data-sort>{{ __('Kürzel') }}</th>
-                        <th data-sort>{{ __('Standardzeit') }}</th>
-                        <th data-sort>{{ __('Status') }}</th>
-                        <th class="text-right" data-sort data-sort-type="number">{{ __('Verwendet') }}</th>
+                        <x-table.th sort type="string" default="asc">{{ __('Name') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Kürzel') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Standardzeit') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Verwendet') }}</x-table.th>
                         <th class="w-32 text-right">{{ __('Aktion') }}</th>
                     </tr>
-                </thead>
-                <tbody>
+                </x-slot:head>
                     @forelse ($types as $type)
                         <tr class="hover">
                             <td class="flex items-center gap-2">
@@ -62,7 +76,6 @@
                     @empty
                         <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">work_history</span>' :colspan="6" :title="__('Keine Einträge')" compact />
                     @endforelse
-                </tbody>
         </x-table>
     </x-index-page>
 @endsection

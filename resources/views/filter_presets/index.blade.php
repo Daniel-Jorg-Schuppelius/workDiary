@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
@@ -15,16 +24,15 @@
                 :title="__('Noch keine Filter-Presets gespeichert.')" />
         @else
             <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-                <x-table zebra bare scroll="flex" :pinRows="true">
-                    <thead>
+                <x-table zebra bare scroll="flex" :pinRows="true" table-sort="client">
+                    <x-slot:head>
                         <tr>
-                            <th>{{ __('Bereich') }}</th>
-                            <th>{{ __('Name') }}</th>
-                            <th>{{ __('Standard') }}</th>
+                            <x-table.th sort type="string">{{ __('Bereich') }}</x-table.th>
+                            <x-table.th sort type="string">{{ __('Name') }}</x-table.th>
+                            <x-table.th sort type="string">{{ __('Standard') }}</x-table.th>
                             <th class="text-right">{{ __('Aktionen') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                    </x-slot:head>
                         @foreach ($presets as $preset)
                             <tr>
                                 <td><x-status-badge size="md" outline>{{ $preset->scope }}</x-status-badge></td>
@@ -45,7 +53,6 @@
                                 </td>
                             </tr>
                         @endforeach
-                    </tbody>
                 </x-table>
             </x-card>
         @endif

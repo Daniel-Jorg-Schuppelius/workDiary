@@ -26,8 +26,7 @@ final class TravelCharge {
         public readonly string $unit,
         public readonly float $unitPrice,
         public readonly string $description,
-    ) {
-    }
+    ) {}
 
     public function amount(): float {
         return round($this->quantity * $this->unitPrice, 2);

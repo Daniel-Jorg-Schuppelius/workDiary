@@ -12,8 +12,7 @@ namespace App\Console\Commands\License;
 
 use App\Services\Licensing\LicenseSeal;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
-use CommonToolkit\Helper\FileSystem\Folder as ToolkitFolder;
+use CommonToolkit\Helper\FileSystem\{File as ToolkitFile, Folder as ToolkitFolder};
 use Illuminate\Console\Command;
 
 class SealCommand extends Command {

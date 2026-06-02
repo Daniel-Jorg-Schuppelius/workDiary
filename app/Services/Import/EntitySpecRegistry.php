@@ -28,8 +28,7 @@ class EntitySpecRegistry {
         private readonly MaterialSpec $materials,
         private readonly ScheduledShiftSpec $scheduledShifts,
         private readonly RemoteSessionSpec $remoteSessions,
-    ) {
-    }
+    ) {}
 
     public function for(ImportEntity $entity): EntitySpec {
         return match ($entity) {

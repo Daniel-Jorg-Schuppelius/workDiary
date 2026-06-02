@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : show.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', $building->name)
@@ -71,14 +80,14 @@
                         icon='<span class="material-symbols-outlined" aria-hidden="true">layers</span>' />
                 </div>
             @else
-                <x-table bare>
+                <x-table bare table-sort="client">
                     <x-slot:head>
                         <tr>
-                            <th class="text-end">{{ __('Ebene') }}</th>
-                            <th>{{ __('Bezeichnung') }}</th>
-                            <th class="text-end">{{ __('BGF (m²)') }}</th>
-                            <th class="text-end">{{ __('Räume') }}</th>
-                            <th class="text-end">{{ __('NGF Σ (m²)') }}</th>
+                            <x-table.th sort type="number" class="text-end">{{ __('Ebene') }}</x-table.th>
+                            <x-table.th sort type="string">{{ __('Bezeichnung') }}</x-table.th>
+                            <x-table.th sort type="number" class="text-end">{{ __('BGF (m²)') }}</x-table.th>
+                            <x-table.th sort type="number" class="text-end">{{ __('Räume') }}</x-table.th>
+                            <x-table.th sort type="number" class="text-end">{{ __('NGF Σ (m²)') }}</x-table.th>
                             <th></th>
                         </tr>
                     </x-slot:head>
@@ -86,9 +95,9 @@
                         <tr>
                             <td class="text-end font-mono">{{ $f->level }}</td>
                             <td><a class="link link-hover" href="{{ route('floors.show', $f) }}">{{ $f->label }}</a></td>
-                            <td class="text-end">{{ $f->gross_area_m2 !== null ? number_format((float) $f->gross_area_m2, 1, ',', '.') : '—' }}</td>
+                            <td class="text-end" data-sort-value="{{ $f->gross_area_m2 !== null ? (float) $f->gross_area_m2 : -1 }}">{{ $f->gross_area_m2 !== null ? number_format((float) $f->gross_area_m2, 1, ',', '.') : '—' }}</td>
                             <td class="text-end">{{ $f->rooms_count }}</td>
-                            <td class="text-end">{{ $f->net_area_sum !== null ? number_format((float) $f->net_area_sum, 1, ',', '.') : '—' }}</td>
+                            <td class="text-end" data-sort-value="{{ $f->net_area_sum !== null ? (float) $f->net_area_sum : -1 }}">{{ $f->net_area_sum !== null ? number_format((float) $f->net_area_sum, 1, ',', '.') : '—' }}</td>
                             <td class="text-right">
                                 <x-icon-btn icon="edit" size="sm"
                                             data-entry-modal-trigger

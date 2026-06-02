@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('title', __('Veranstaltungs-Kategorien'))
 @section('nav-title', __('Veranstaltungs-Kategorien'))
@@ -19,20 +28,23 @@
             @endcan
         </x-slot:actions>
 
-        <x-table scroll="flex" :pinRows="true" :zebra="true">
-            <thead class="bg-base-200">
+        <x-table table-sort="server"
+                 :route="route('event-categories.index')"
+                 :current-sort="$sort"
+                 :current-dir="$dir"
+                 scroll="flex" :pinRows="true" :zebra="true">
+            <x-slot:head>
                 <tr>
-                    <th data-sort data-sort-default="asc">{{ __('Name') }}</th>
+                    <x-table.th sort="name" default>{{ __('Name') }}</x-table.th>
                     <th>{{ __('Beschreibung') }}</th>
-                    <th data-sort>{{ __('Zertifikat') }}</th>
-                    <th class="text-right" data-sort data-sort-type="number">{{ __('Gültig (Monate)') }}</th>
+                    <x-table.th sort="requires_certificate">{{ __('Zertifikat') }}</x-table.th>
+                    <x-table.th sort="certificate_valid_months" align="right">{{ __('Gültig (Monate)') }}</x-table.th>
                     <th>{{ __('Reminder (Min.)') }}</th>
-                    <th data-sort>{{ __('Status') }}</th>
+                    <x-table.th sort="is_active">{{ __('Status') }}</x-table.th>
                     <th class="w-32 text-right">{{ __('Aktion') }}</th>
                 </tr>
-            </thead>
-            <tbody>
-                @forelse ($categories as $cat)
+            </x-slot:head>
+            @forelse ($categories as $cat)
                     <tr class="hover">
                         <td>
                             <div class="flex items-center gap-2 font-semibold">
@@ -88,7 +100,6 @@
                         icon='<span class="material-symbols-outlined" aria-hidden="true">category</span>'
                         :title="__('Noch keine Kategorien angelegt')" compact />
                 @endforelse
-            </tbody>
         </x-table>
 
         <x-pagination :paginator="$categories" />

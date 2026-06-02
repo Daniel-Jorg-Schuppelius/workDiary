@@ -20,8 +20,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class VehicleController extends Controller {
-    public function __construct(private readonly VehicleService $service) {
-    }
+    public function __construct(private readonly VehicleService $service) {}
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Vehicle::class);

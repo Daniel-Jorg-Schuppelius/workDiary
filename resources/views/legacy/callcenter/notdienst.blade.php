@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : notdienst.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('title', __('Zentrale') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Zentrale'))
@@ -321,12 +330,12 @@
                 </div>
                 <div class="min-h-0 flex-1 overflow-auto">
                     @if ($openIssues->isNotEmpty())
-                        <x-table size="xs" :pin-rows="true">
+                        <x-table size="xs" :pin-rows="true" table-sort="client">
                             <x-slot:head>
                                 <tr class="bg-base-200">
-                                    <th class="w-20 text-center">{{ __('Status') }}</th>
-                                    <th>{{ __('Inhalt') }}</th>
-                                    <th class="w-24 whitespace-nowrap">{{ __('Bis') }}</th>
+                                    <x-table.th sort type="string" class="w-20 text-center">{{ __('Status') }}</x-table.th>
+                                    <x-table.th sort type="string">{{ __('Inhalt') }}</x-table.th>
+                                    <x-table.th sort type="date" class="w-24 whitespace-nowrap">{{ __('Bis') }}</x-table.th>
                                 </tr>
                             </x-slot:head>
                             @foreach ($openIssues as $issue)
@@ -356,7 +365,7 @@
                                             <span class="line-clamp-2">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($issue->inhalt ?? '', 100) }}</span>
                                         </a>
                                     </td>
-                                    <td class="whitespace-nowrap">
+                                    <td class="whitespace-nowrap" @if ($bisDate) data-sort-value="{{ $bisDate->format('Y-m-d') }}" @endif>
                                         @if ($bisDate)
                                             <div>{{ $bisDate->format('d.m.Y') }}</div>
                                             @if ($isDueToday)

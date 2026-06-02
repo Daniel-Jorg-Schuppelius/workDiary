@@ -17,11 +17,17 @@ use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class EventCategoryController extends Controller {
-    public function index(): View {
-        Gate::authorize('viewAny', EventCategory::class);
-        $categories = EventCategory::query()->orderBy('name')->paginate(50);
+    private const ALLOWED_SORTS = ['name', 'requires_certificate', 'certificate_valid_months', 'is_active'];
 
-        return view('event-categories.index', compact('categories'));
+    public function index(Request $request): View {
+        Gate::authorize('viewAny', EventCategory::class);
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'name';
+        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+        $categories = EventCategory::query()->orderBy($sort, $dir)->paginate(50)->withQueryString();
+
+        return view('event-categories.index', compact('categories', 'sort', 'dir'));
     }
 
     public function create(): View {

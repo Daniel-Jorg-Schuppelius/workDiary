@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : show.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 @section('title', $customer->name . ' — ' . __('Kunde'))
 @section('nav-title', $customer->name)
@@ -426,18 +435,18 @@
                     <span class="font-semibold">{{ number_format((float) $lexofficeVoucherCache->sum('total_amount'), 2, ',', '.') }}&nbsp;&euro;</span>
                 </span>
             </div>
-            <x-table>
+            <x-table table-sort="client">
                 <x-slot:head>
-                    <th>{{ __('Nummer') }}</th>
-                    <th>{{ __('Datum') }}</th>
-                    <th>{{ __('Typ') }}</th>
-                    <th>{{ __('Status') }}</th>
-                    <th class="text-right">{{ __('Betrag') }}</th>
+                    <x-table.th sort type="string">{{ __('Nummer') }}</x-table.th>
+                    <x-table.th sort type="date" default="desc">{{ __('Datum') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Typ') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
+                    <x-table.th sort type="number" align="right">{{ __('Betrag') }}</x-table.th>
                 </x-slot:head>
                 @foreach ($lexofficeVoucherCache as $voucher)
                     <tr>
                         <td class="font-mono text-xs">{{ $voucher->voucher_number ?? '–' }}</td>
-                        <td>{{ optional($voucher->voucher_date)->format('d.m.Y') ?? '–' }}</td>
+                        <td data-sort-value="{{ optional($voucher->voucher_date)->format('Y-m-d') ?? '' }}">{{ optional($voucher->voucher_date)->format('d.m.Y') ?? '–' }}</td>
                         <td>{{ $lexofficeValueLabel($voucher->voucher_type) }}</td>
                         <td>
                             <x-status-badge :tone="match ($voucher->voucher_status) {
@@ -455,7 +464,7 @@
                                 default => 'neutral',
                             }">{{ $lexofficeValueLabel($voucher->voucher_status) }}</x-status-badge>
                         </td>
-                        <td class="text-right tabular-nums">{{ number_format((float) $voucher->total_amount, 2, ',', '.') }}&nbsp;{{ $voucher->currency }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ $voucher->total_amount }}">{{ number_format((float) $voucher->total_amount, 2, ',', '.') }}&nbsp;{{ $voucher->currency }}</td>
                     </tr>
                 @endforeach
             </x-table>

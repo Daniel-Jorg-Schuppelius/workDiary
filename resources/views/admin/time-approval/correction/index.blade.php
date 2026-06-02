@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Korrekturen-Inbox'))
@@ -24,13 +33,15 @@
                 :title="__('Keine Korrekturanträge im Filter')"
                 :message="__('Setzen Sie den Statusfilter auf „Alle Status", um auch entschiedene Anträge zu sehen.')" />
         @else
-            <x-table scroll="flex" :pinRows="true">
+            <x-table scroll="flex" :pinRows="true" table-sort="server"
+                     :route="route('admin.corrections.index')" :current-sort="$sort" :current-dir="$dir"
+                     :sort-params="request()->except(['sort', 'dir', 'page'])">
                 <x-slot:head>
                     <tr>
-                        <th>{{ __('Bezug') }}</th>
+                        <x-table.th sort="scope_date">{{ __('Bezug') }}</x-table.th>
                         <th>{{ __('Mitarbeiter:in') }}</th>
                         <th>{{ __('Antragsteller:in') }}</th>
-                        <th>{{ __('Status') }}</th>
+                        <x-table.th sort="status">{{ __('Status') }}</x-table.th>
                         <th class="text-right">{{ __('Items') }}</th>
                         <th class="text-right">{{ __('Aktion') }}</th>
                     </tr>

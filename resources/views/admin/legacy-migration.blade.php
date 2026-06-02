@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : legacy-migration.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Legacy-Migration'))
@@ -18,24 +27,23 @@
             <span>{{ __('Legacy-Datenbank nicht erreichbar oder nicht konfiguriert.') }}</span>
         </div>
     @else
-        <x-table>
-                <thead>
+        <x-table table-sort="client">
+                <x-slot:head>
                     <tr>
-                        <th>{{ __('Datentyp') }}</th>
-                        <th class="text-right">{{ __('Legacy gesamt') }}</th>
-                        <th class="text-right">{{ __('Bereits importiert') }}</th>
-                        <th class="text-right">{{ __('Verbleibend') }}</th>
+                        <x-table.th sort type="string" default="asc">{{ __('Datentyp') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Legacy gesamt') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Bereits importiert') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Verbleibend') }}</x-table.th>
                         <th class="text-right">{{ __('Aktion') }}</th>
                     </tr>
-                </thead>
-                <tbody>
+                </x-slot:head>
                     @foreach (['users' => __('Benutzer'), 'diary' => __('Auftragsbuch'), 'shifts' => __('Bereitschaften'), 'assignments' => __('Notdienste')] as $key => $label)
                         @php $row = $stats[$key]; $remaining = max(0, $row['legacy'] - $row['imported']); @endphp
                         <tr>
                             <td class="font-medium">{{ $label }}</td>
                             <td class="text-right">{{ number_format($row['legacy'], 0, ',', '.') }}</td>
                             <td class="text-right">{{ number_format($row['imported'], 0, ',', '.') }}</td>
-                            <td class="text-right">
+                            <td class="text-right" data-sort-value="{{ $remaining }}">
                                 @if ($remaining === 0)
                                     <x-status-badge tone="success" size="sm">{{ __('Vollständig') }}</x-status-badge>
                                 @else
@@ -51,7 +59,6 @@
                             </td>
                         </tr>
                     @endforeach
-                </tbody>
         </x-table>
 
         <form method="POST" action="{{ route('admin.legacy-migration.run') }}" class="inline">

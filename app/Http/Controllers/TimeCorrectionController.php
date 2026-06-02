@@ -27,7 +27,10 @@ use Illuminate\View\View;
  * {@see Admin\TimeCorrectionInboxController}.
  */
 class TimeCorrectionController extends Controller {
-    public function __construct(private readonly TimeCorrectionService $service) {}
+    private const ALLOWED_SORTS = ['scope_date', 'status'];
+
+    public function __construct(private readonly TimeCorrectionService $service) {
+    }
 
     public function index(Request $request): View {
         /** @var User $user */
@@ -36,13 +39,18 @@ class TimeCorrectionController extends Controller {
 
         $statusFilter = (string) $request->input('status', '');
 
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'scope_date';
+        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
+
         $query = TimeCorrectionRequest::query()
             ->where('organization_id', $user->organization_id)
             ->where(function ($q) use ($user) {
                 $q->where('user_id', $user->id)->orWhere('requested_by_user_id', $user->id);
             })
             ->with(['user', 'items'])
-            ->orderByDesc('scope_date')
+            ->orderBy($sort, $dir)
             ->orderByDesc('id');
 
         if ($statusFilter !== '' && $statusFilter !== 'all') {
@@ -55,6 +63,8 @@ class TimeCorrectionController extends Controller {
             'requests' => $requests,
             'filters' => ['status' => $statusFilter],
             'statuses' => TimeCorrectionStatus::cases(),
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 

@@ -54,16 +54,18 @@
         <x-empty-state framed
             icon='<span class="material-symbols-outlined" aria-hidden="true">support_agent</span>' />
     @else
-        <x-table scroll="flex" :pinRows="true">
+        <x-table scroll="flex" :pinRows="true" table-sort="server"
+                 :route="route('service-tickets.index')" :current-sort="$sort" :current-dir="$dir"
+                 :sort-params="array_filter(['q' => $filters['q'] ?: null, 'status' => $filters['status'] ?: null, 'priority' => $filters['priority'] ?: null, 'assignee' => $filters['assignee'] ?: null])">
             <x-slot:head>
                 <tr>
-                    <th>{{ __('Ticket') }}</th>
-                    <th>{{ __('Titel') }}</th>
+                    <x-table.th sort="ticket_no">{{ __('Ticket') }}</x-table.th>
+                    <x-table.th sort="title">{{ __('Titel') }}</x-table.th>
                     <th>{{ __('Asset / Kunde') }}</th>
-                    <th>{{ __('Priorität') }}</th>
-                    <th>{{ __('Status') }}</th>
+                    <x-table.th sort="priority">{{ __('Priorität') }}</x-table.th>
+                    <x-table.th sort="status">{{ __('Status') }}</x-table.th>
                     <th>{{ __('Bearbeiter') }}</th>
-                    <th>{{ __('Lösung bis') }}</th>
+                    <x-table.th sort="resolution_due_at">{{ __('Lösung bis') }}</x-table.th>
                     <th></th>
                 </tr>
             </x-slot:head>

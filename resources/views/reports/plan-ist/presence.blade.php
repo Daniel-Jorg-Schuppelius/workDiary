@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : presence.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Plan/Ist Anwesenheit'))
@@ -43,26 +52,26 @@
             </div>
         </div>
 
-        <x-table>
+        <x-table table-sort="client">
             <x-slot:head>
                 <tr>
-                    <th>{{ __('Datum') }}</th>
-                    <th class="text-right">{{ __('Plan') }}</th>
-                    <th class="text-right">{{ __('Ist') }}</th>
-                    <th class="text-right">{{ __('Δ') }}</th>
+                    <x-table.th sort type="date" default="asc">{{ __('Datum') }}</x-table.th>
+                    <x-table.th sort type="duration" align="right">{{ __('Plan') }}</x-table.th>
+                    <x-table.th sort type="duration" align="right">{{ __('Ist') }}</x-table.th>
+                    <x-table.th sort type="duration" align="right">{{ __('Δ') }}</x-table.th>
                     <th>{{ __('Start P/I') }}</th>
                     <th>{{ __('Warnungen') }}</th>
                 </tr>
             </x-slot:head>
             @foreach ($rows as $r)
                 <tr>
-                    <td class="font-medium">{{ \Carbon\CarbonImmutable::parse($r['date'])->format('D d.m.') }}</td>
-                    <td class="text-right tabular-nums">
+                    <td class="font-medium" data-sort-value="{{ \Carbon\CarbonImmutable::parse($r['date'])->format('Y-m-d') }}">{{ \Carbon\CarbonImmutable::parse($r['date'])->format('D d.m.') }}</td>
+                    <td class="text-right tabular-nums" data-sort-value="{{ $r['no_plan'] ? '' : $r['plan_minutes'] }}">
                         @if ($r['no_plan'])<span class="text-base-content/40">—</span>
                         @else{{ $fmt($r['plan_minutes']) }}@endif
                     </td>
-                    <td class="text-right tabular-nums">{{ $fmt($r['actual_minutes']) }}</td>
-                    <td class="text-right tabular-nums {{ $r['delta_minutes'] < 0 ? 'text-error' : '' }}">
+                    <td class="text-right tabular-nums" data-sort-value="{{ $r['actual_minutes'] }}">{{ $fmt($r['actual_minutes']) }}</td>
+                    <td class="text-right tabular-nums {{ $r['delta_minutes'] < 0 ? 'text-error' : '' }}" data-sort-value="{{ $r['delta_minutes'] }}">
                         {{ $fmt($r['delta_minutes']) }}
                     </td>
                     <td class="text-xs">

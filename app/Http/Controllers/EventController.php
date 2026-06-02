@@ -14,8 +14,7 @@ use App\Enums\Event\{EventStatus, EventType, EventVisibility, ParticipantRole, P
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{Customer, Event, EventCategory, Room, User};
 use App\Services\Event\EventService;
-use App\Support\LookupCache;
-use App\Support\Sqid;
+use App\Support\{LookupCache, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -25,6 +24,8 @@ use RuntimeException;
 
 class EventController extends Controller {
     use ResolvesGlobalDateRange;
+
+    private const ALLOWED_SORTS = ['title', 'event_type', 'started_at', 'status'];
 
     public function __construct(
         private readonly EventService $events,
@@ -37,6 +38,11 @@ class EventController extends Controller {
         Gate::authorize('viewAny', Event::class);
         /** @var User $auth */
         $auth = Auth::user();
+
+        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
+            ? $request->string('sort')->toString()
+            : 'started_at';
+        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
 
         $rawCategoryId = $request->query('category_id');
         $categoryId = Sqid::decode(EventCategory::class, $rawCategoryId);
@@ -69,7 +75,7 @@ class EventController extends Controller {
             ->when($filters['from'], fn($q) => $q->where('ended_at', '>=', $filters['from']))
             ->when($filters['to'], fn($q) => $q->where('started_at', '<=', $filters['to']))
             ->when($filters['only_mandatory'], fn($q) => $q->where('is_mandatory', true))
-            ->orderBy('started_at');
+            ->orderBy($sort, $dir);
 
         $events = $query->paginate(25)->withQueryString();
 
@@ -86,6 +92,8 @@ class EventController extends Controller {
             'filters' => $filters,
             'auth' => $auth,
             'view' => $view,
+            'sort' => $sort,
+            'dir' => $dir,
             'categories' => EventCategory::query()->active()->orderBy('name')->get(),
             'types' => EventType::options(),
             'statuses' => EventStatus::options(),

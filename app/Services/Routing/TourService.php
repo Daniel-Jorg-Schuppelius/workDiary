@@ -33,8 +33,7 @@ class TourService {
         private readonly TourOptimizer $optimizer,
         private readonly OsrmRouter $router,
         private readonly TravelLogService $travelLogs,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  list<int>  $orderIds  service-order IDs in the desired initial order

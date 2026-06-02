@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Inbox Monatsfreigaben'))
@@ -42,15 +51,17 @@
                 <div role="alert" class="alert alert-success"><span>{{ session('status') }}</span></div>
             @endif
 
-            <x-table scroll="flex" :pinRows="true">
+            <x-table scroll="flex" :pinRows="true" table-sort="server"
+                     :route="route('admin.month-approval.index')" :current-sort="$sort" :current-dir="$dir"
+                     :sort-params="request()->except(['sort', 'dir', 'page'])">
                 <x-slot:head>
                     <tr>
                         <th>{{ __('Mitarbeitende:r') }}</th>
-                        <th>{{ __('Periode') }}</th>
-                        <th>{{ __('Status') }}</th>
-                        <th class="text-right">{{ __('Tage offen') }}</th>
-                        <th class="text-right">{{ __('Warnungen') }}</th>
-                        <th>{{ __('Eingereicht') }}</th>
+                        <x-table.th sort="period_year">{{ __('Periode') }}</x-table.th>
+                        <x-table.th sort="status">{{ __('Status') }}</x-table.th>
+                        <x-table.th sort="days_open" align="right">{{ __('Tage offen') }}</x-table.th>
+                        <x-table.th sort="warnings_count" align="right">{{ __('Warnungen') }}</x-table.th>
+                        <x-table.th sort="submitted_at">{{ __('Eingereicht') }}</x-table.th>
                         <th class="text-right">{{ __('Aktionen') }}</th>
                     </tr>
                 </x-slot:head>

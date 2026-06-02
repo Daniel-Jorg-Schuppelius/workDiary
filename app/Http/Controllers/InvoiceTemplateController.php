@@ -12,19 +12,26 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SaveInvoiceTemplateRequest;
 use App\Models\InvoiceTemplate;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
 
 class InvoiceTemplateController extends Controller {
-    public function index(): View {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', InvoiceTemplate::class);
+
+        $search = $request->string('q')->toString();
 
         return view('invoice_templates.index', [
             'templates' => InvoiceTemplate::query()
+                ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
+                    $w->where('name', 'like', "%{$search}%")
+                        ->orWhere('slug', 'like', "%{$search}%");
+                }))
                 ->orderByDesc('is_default')
                 ->orderBy('name')
                 ->get(),
+            'search' => $search,
         ]);
     }
 

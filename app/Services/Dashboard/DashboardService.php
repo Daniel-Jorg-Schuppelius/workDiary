@@ -22,8 +22,7 @@ use Illuminate\Support\Collection;
 class DashboardService {
     public function __construct(
         private readonly OnboardingChecklistResolver $onboardingResolver,
-    ) {
-    }
+    ) {}
 
     /** @return array<string, mixed> */
     public function summarize(User $user, ?CarbonImmutable $now = null): array {

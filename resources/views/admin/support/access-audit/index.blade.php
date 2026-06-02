@@ -1,3 +1,12 @@
+{{--
+  Created on   : Tue Jun 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+
 @extends('layouts.app')
 
 @section('title', __('Supportzugriffe'))
@@ -37,10 +46,12 @@
         <x-empty-state framed
             icon='<span class="material-symbols-outlined" aria-hidden="true">policy</span>' />
     @else
-        <x-table scroll="flex" :pinRows="true">
+        <x-table scroll="flex" :pinRows="true" table-sort="server"
+                 :route="route('admin.support.access-audit.index')" :current-sort="$sort" :current-dir="$dir"
+                 :sort-params="array_filter(['from' => $filters['from'] ?: null, 'to' => $filters['to'] ?: null, 'event' => $filters['event'] ?: null, 'actor' => $filters['actor'] ?: null])">
             <x-slot:head>
-                <th>{{ __('Zeitpunkt') }}</th>
-                <th>{{ __('Ereignis') }}</th>
+                <x-table.th sort="created_at">{{ __('Zeitpunkt') }}</x-table.th>
+                <x-table.th sort="event">{{ __('Ereignis') }}</x-table.th>
                 <th>{{ __('Akteur') }}</th>
                 <th>{{ __('Details') }}</th>
             </x-slot:head>
