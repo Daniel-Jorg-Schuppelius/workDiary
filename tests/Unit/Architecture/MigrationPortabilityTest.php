@@ -82,7 +82,7 @@ class MigrationPortabilityTest extends TestCase {
             [],
             array_values(array_unique($violations)),
             "Foreign Keys verweisen auf noch nicht erstellte Tabellen (MySQL errno 150).\n"
-            . "Verschiebe die referenzierte CREATE-Migration vor die referenzierende.\n"
+                . "Verschiebe die referenzierte CREATE-Migration vor die referenzierende.\n"
         );
     }
 
@@ -108,7 +108,7 @@ class MigrationPortabilityTest extends TestCase {
                 // index([...]) / unique([...]) ohne expliziten Namen.
                 if (preg_match_all('/->\s*(index|unique)\(\s*\[([^\]]*)\]\s*\)/', $body, $im, PREG_SET_ORDER)) {
                     foreach ($im as $m) {
-                        $cols = array_filter(array_map(static fn ($c) => trim($c, " '\"\t"), explode(',', $m[2])));
+                        $cols = array_filter(array_map(static fn($c) => trim($c, " '\"\t"), explode(',', $m[2])));
                         $suffix = $m[1] === 'unique' ? 'unique' : 'index';
                         $name = $table . '_' . implode('_', $cols) . '_' . $suffix;
                         if (strlen($name) > self::IDENTIFIER_LIMIT) {
@@ -134,7 +134,7 @@ class MigrationPortabilityTest extends TestCase {
             [],
             array_values(array_unique($violations)),
             "Auto-generierte Identifier überschreiten 64 Zeichen (MySQL Fehler 1059).\n"
-            . "Vergib einen expliziten kurzen Namen, z. B. index([...], 'kurz_idx') bzw. morphs('x', 'kurz_idx').\n"
+                . "Vergib einen expliziten kurzen Namen, z. B. index([...], 'kurz_idx') bzw. morphs('x', 'kurz_idx').\n"
         );
     }
 }
