@@ -81,6 +81,247 @@ class InvoiceTest extends TestCase {
         $this->assertSame('214.20', $invoice->total);
     }
 
+    public function test_billing_increment_and_grouping_consolidate_entries(): void {
+        $this->project->update([
+            'billing_increment_minutes' => 15,
+            'billing_grouping_gap_minutes' => 15,
+        ]);
+
+        // 10:00–10:30 (30 Min) + Lücke 10 + 10:40–11:00 (20 Min) ⇒ ein Block,
+        // 60 Min gearbeitet+überbrückt ⇒ aufgerundet 60 Min = 1,0 h.
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->admin->id,
+            'started_at' => '2030-04-01 10:00',
+            'ended_at' => '2030-04-01 10:30',
+            'kind' => TimeEntryKind::Work->value,
+            'billable' => true,
+            'hourly_rate' => '90.00',
+        ]);
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->admin->id,
+            'started_at' => '2030-04-01 10:40',
+            'ended_at' => '2030-04-01 11:00',
+            'kind' => TimeEntryKind::Work->value,
+            'billable' => true,
+            'hourly_rate' => '90.00',
+        ]);
+
+        $this->postAsAdmin('invoices.store', [
+            'customer_id' => $this->customer->id,
+            'project_id' => $this->project->id,
+        ])->assertRedirect();
+
+        $invoice = Invoice::firstOrFail();
+        $this->assertSame(1, $invoice->items()->count());
+
+        /** @var \App\Models\InvoiceItem $item */
+        $item = $invoice->items()->first();
+        $this->assertSame('1.00', $item->quantity);
+        $this->assertSame('90.00', $item->unit_price);
+        $this->assertSame('90.00', $item->amount);
+        $this->assertSame(2, $item->timeEntries()->count());
+        $this->assertSame('90.00', $invoice->subtotal);
+    }
+
+    public function test_single_service_date_is_set_and_not_a_period(): void {
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->admin->id,
+            'date' => '2030-04-01',
+            'minutes' => 120,
+            'kind' => TimeEntryKind::Work->value,
+            'billable' => true,
+            'hourly_rate' => '90.00',
+        ]);
+
+        $this->postAsAdmin('invoices.store', [
+            'customer_id' => $this->customer->id,
+            'project_id' => $this->project->id,
+        ])->assertRedirect();
+
+        $invoice = Invoice::firstOrFail()->load('items');
+        $this->assertFalse($invoice->hasServicePeriod());
+        $this->assertSame('2030-04-01', $invoice->serviceDateSingle()?->toDateString());
+        $this->assertSame('2030-04-01', $invoice->items()->first()->service_date?->toDateString());
+    }
+
+    public function test_multiple_days_form_a_service_period_with_per_item_dates(): void {
+        foreach (['2030-04-01', '2030-04-03'] as $day) {
+            TimeEntry::create([
+                'organization_id' => $this->organization->id,
+                'project_id' => $this->project->id,
+                'user_id' => $this->admin->id,
+                'date' => $day,
+                'minutes' => 60,
+                'kind' => TimeEntryKind::Work->value,
+                'billable' => true,
+                'hourly_rate' => '90.00',
+            ]);
+        }
+
+        $this->postAsAdmin('invoices.store', [
+            'customer_id' => $this->customer->id,
+            'project_id' => $this->project->id,
+        ])->assertRedirect();
+
+        $invoice = Invoice::firstOrFail()->load('items');
+        $this->assertTrue($invoice->hasServicePeriod());
+        $this->assertNull($invoice->serviceDateSingle());
+        $this->assertSame('2030-04-01', $invoice->serviceDateFrom()?->toDateString());
+        $this->assertSame('2030-04-03', $invoice->serviceDateTo()?->toDateString());
+        $this->assertSame(2, $invoice->items()->whereNotNull('service_date')->count());
+    }
+
+    public function test_material_is_billed_as_separate_invoice_with_delivery_dates(): void {
+        $sheet = \App\Models\Timesheet::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->admin->id,
+            'kind' => \App\Enums\Timesheet\TimesheetKind::Project->value,
+            'work_date' => '2030-05-10',
+            'status' => \App\Enums\Timesheet\TimesheetStatus::Draft->value,
+        ]);
+        \App\Models\MaterialUsage::create([
+            'organization_id' => $this->organization->id,
+            'timesheet_id' => $sheet->id,
+            'description' => 'Kabel',
+            'quantity' => '3.000',
+            'unit' => 'Stk',
+            'unit_price' => '10.0000',
+        ]);
+
+        $this->postAsAdmin('invoices.store', [
+            'customer_id' => $this->customer->id,
+            'project_id' => $this->project->id,
+            'content' => 'material',
+        ])->assertRedirect();
+
+        $invoice = Invoice::firstOrFail()->load('items');
+        $this->assertSame(Invoice::CATEGORY_MATERIAL, $invoice->category);
+        $this->assertTrue($invoice->isMaterial());
+        $this->assertSame(__('Lieferdatum'), $invoice->dateLabelSingle());
+        $this->assertSame(1, $invoice->items()->count());
+
+        /** @var \App\Models\InvoiceItem $item */
+        $item = $invoice->items()->first();
+        $this->assertSame('2030-05-10', $item->service_date?->toDateString());
+        $this->assertSame('30.00', $item->amount);
+        $this->assertSame('2030-05-10', $invoice->serviceDateSingle()?->toDateString());
+
+        // Material ist als abgerechnet markiert ⇒ keine Doppelberechnung.
+        $this->assertTrue(\App\Models\MaterialUsage::firstOrFail()->billed);
+
+        // Zweiter Lauf liefert eine leere Materialrechnung (nichts Offenes mehr).
+        $this->postAsAdmin('invoices.store', [
+            'customer_id' => $this->customer->id,
+            'project_id' => $this->project->id,
+            'content' => 'material',
+        ])->assertRedirect();
+        $this->assertSame(0, Invoice::query()->latest('id')->first()?->items()->count());
+    }
+
+    public function test_travel_charge_added_to_service_invoice_and_not_doubled(): void {
+        config()->set('travel.enabled', true);
+        config()->set('travel.mode', 'flat');
+        config()->set('travel.flat_amount', 20);
+
+        $this->tourToCustomer('2030-04-01');
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->admin->id,
+            'date' => '2030-04-01',
+            'minutes' => 60,
+            'kind' => TimeEntryKind::Work->value,
+            'billable' => true,
+            'hourly_rate' => '90.00',
+        ]);
+
+        $this->postAsAdmin('invoices.store', [
+            'customer_id' => $this->customer->id,
+            'project_id' => $this->project->id,
+            'content' => 'service',
+        ])->assertRedirect();
+
+        $invoice = Invoice::firstOrFail()->load('items');
+        $travel = $invoice->items->firstWhere('tour_id', '!=', null);
+        $this->assertNotNull($travel);
+        $this->assertSame('20.00', $travel->amount);
+        $this->assertStringContainsString('Anfahrt', $travel->description);
+        $this->assertTrue(\App\Models\Tour::firstOrFail()->travel_billed);
+
+        // Zweite Generierung berechnet die Anfahrt nicht erneut.
+        $this->postAsAdmin('invoices.store', [
+            'customer_id' => $this->customer->id,
+            'project_id' => $this->project->id,
+            'content' => 'service',
+        ])->assertRedirect();
+        $second = Invoice::query()->latest('id')->first()?->load('items');
+        $this->assertNull($second?->items->firstWhere('tour_id', '!=', null));
+    }
+
+    public function test_pure_material_day_puts_travel_on_material_invoice(): void {
+        config()->set('travel.enabled', true);
+        config()->set('travel.mode', 'flat');
+        config()->set('travel.flat_amount', 15);
+
+        $this->tourToCustomer('2030-05-10'); // keine Zeiteinträge an dem Tag
+        $sheet = \App\Models\Timesheet::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->admin->id,
+            'kind' => \App\Enums\Timesheet\TimesheetKind::Project->value,
+            'work_date' => '2030-05-10',
+            'status' => \App\Enums\Timesheet\TimesheetStatus::Draft->value,
+        ]);
+        \App\Models\MaterialUsage::create([
+            'organization_id' => $this->organization->id,
+            'timesheet_id' => $sheet->id,
+            'description' => 'Kabel',
+            'quantity' => '1.000',
+            'unit' => 'Stk',
+            'unit_price' => '10.0000',
+        ]);
+
+        $this->postAsAdmin('invoices.store', [
+            'customer_id' => $this->customer->id,
+            'project_id' => $this->project->id,
+            'content' => 'material',
+        ])->assertRedirect();
+
+        $invoice = Invoice::firstOrFail()->load('items');
+        $travel = $invoice->items->firstWhere('tour_id', '!=', null);
+        $this->assertNotNull($travel);
+        $this->assertSame('15.00', $travel->amount);
+        $this->assertTrue(\App\Models\Tour::firstOrFail()->travel_billed);
+    }
+
+    private function tourToCustomer(string $date): \App\Models\Tour {
+        $tour = \App\Models\Tour::create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->admin->id,
+            'tour_date' => $date,
+            'status' => \App\Enums\Tour\TourStatus::Completed->value,
+            'planned_distance_km' => '0',
+            'planned_duration_minutes' => 0,
+        ]);
+        \App\Models\DiaryEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->admin->id,
+            'customer_id' => $this->customer->id,
+            'project_id' => $this->project->id,
+            'tour_id' => $tour->id,
+            'tour_position' => 1,
+        ]);
+
+        return $tour;
+    }
+
     public function test_index_accepts_numeric_customer_filter_fallback(): void {
         $otherCustomer = Customer::create([
             'organization_id' => $this->organization->id,

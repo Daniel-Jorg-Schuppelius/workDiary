@@ -203,26 +203,35 @@ class LexofficeMapper {
         $vatRate = (float) ($defaults['default_vat_rate'] ?? 19.0);
         $currency = $customer->currency ?: ($defaults['default_currency'] ?? 'EUR');
 
-        $items = $entries
-            ->groupBy(fn(TimeEntry $e) => ($e->project_id ?? 0) . '|' . $e->kind->value)
+        // Taktung & Zusammenfassung anwenden: liefert Blöcke je (Projekt, kind).
+        if ($entries instanceof \Illuminate\Database\Eloquent\Collection) {
+            $entries->loadMissing(['project.parent', 'project.customer']);
+        }
+        $blocks = app(\App\Services\Invoicing\BillableTimeAggregator::class)->aggregate($entries);
+
+        $items = $blocks
+            ->groupBy(fn(\App\Services\Invoicing\BillingBlock $b) => ($b->project?->id ?? 0) . '|' . ($b->kind?->value ?? ''))
             ->map(function (Collection $group) use ($vatRate, $from, $to) {
-                /** @var TimeEntry $first */
+                /** @var \App\Services\Invoicing\BillingBlock $first */
                 $first = $group->first();
                 $project = $first->project;
                 $kind = $first->kind;
                 $projectName = $project !== null ? $project->name : (string) __('Leistung');
-                $hours = round($group->sum('minutes') / 60.0, 2);
-                $revenue = round((float) $group->sum('rate'), 2);
-                $unitPrice = $hours > 0 ? round($revenue / $hours, 2) : 0.0;
+                $hours = round((float) $group->sum(fn(\App\Services\Invoicing\BillingBlock $b) => $b->billedHours()), 2);
+                $revenue = round((float) $group->sum(fn(\App\Services\Invoicing\BillingBlock $b) => $b->revenue), 2);
+                // Stundensatz aus der gearbeiteten Zeit (ohne Lücken), damit die
+                // Taktung über die aufgerundeten $hours den Betrag erhöht.
+                $workedHours = (float) $group->sum(fn(\App\Services\Invoicing\BillingBlock $b) => $b->workedMinutes) / 60.0;
+                $unitPrice = $workedHours > 0 ? round($revenue / $workedHours, 2) : 0.0;
 
-                $rule = $project?->resolveBillingRule($kind->value);
+                $rule = $project?->resolveBillingRule($kind?->value);
 
                 $type = $rule?->item_type ?: 'service';
                 $unitName = $rule?->unit_name ?: 'Stunde';
                 $taxRate = $rule?->vat_rate !== null ? (float) $rule->vat_rate : $vatRate;
                 $netAmount = $rule?->net_unit_price !== null ? (float) $rule->net_unit_price : $unitPrice;
 
-                $kindSuffix = ' [' . $kind->value . ']';
+                $kindSuffix = $kind !== null ? ' [' . $kind->value . ']' : '';
                 $name = sprintf('%s%s (%s – %s)', $projectName, $kindSuffix, $from->format('d.m.Y'), $to->format('d.m.Y'));
 
                 $item = [

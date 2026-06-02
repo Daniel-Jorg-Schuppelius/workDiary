@@ -21,6 +21,7 @@ class SaveInvoiceItemRequest extends FormRequest {
     public function rules(): array {
         return [
             'description' => ['required', 'string', 'max:1000'],
+            'service_date' => ['nullable', 'date'],
             'quantity' => ['required', 'numeric', 'min:0'],
             'unit' => ['nullable', 'string', 'max:32'],
             'unit_price' => ['required', 'numeric', 'min:0'],

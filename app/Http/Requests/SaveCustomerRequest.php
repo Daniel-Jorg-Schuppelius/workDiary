@@ -79,6 +79,12 @@ class SaveCustomerRequest extends FormRequest {
             'tag_ids' => ['nullable', 'array'],
             'tag_ids.*' => ['integer', 'exists:tags,id'],
             'new_tags' => ['nullable', 'string', 'max:500'],
+            // Anfahrt-Übersteuerung; leere Felder = global erben.
+            'travel_settings' => ['nullable', 'array'],
+            'travel_settings.mode' => ['nullable', 'in:flat,km'],
+            'travel_settings.flat_amount' => ['nullable', 'numeric', 'min:0'],
+            'travel_settings.rate_per_km' => ['nullable', 'numeric', 'min:0'],
+            'travel_settings.km_source' => ['nullable', 'in:company,tour'],
         ];
     }
 
@@ -126,6 +132,14 @@ class SaveCustomerRequest extends FormRequest {
         $iban = (string) preg_replace('/\s+/', '', (string) $this->input('bank_iban', ''));
         $bic = (string) preg_replace('/\s+/', '', (string) $this->input('bank_bic', ''));
 
+        // Anfahrt-Übersteuerung: leere Werte entfernen, komplett leer ⇒ null (erben).
+        $travel = $this->input('travel_settings', []);
+        if (is_array($travel)) {
+            $travel = array_filter($travel, static fn($v): bool => $v !== null && $v !== '');
+        } else {
+            $travel = [];
+        }
+
         $this->merge([
             'billable' => $this->boolean('billable'),
             'currency' => $this->string('currency')->upper()->value() ?: 'EUR',
@@ -133,6 +147,7 @@ class SaveCustomerRequest extends FormRequest {
             'contact_persons' => $persons,
             'bank_iban' => $iban !== '' ? strtoupper($iban) : null,
             'bank_bic' => $bic !== '' ? strtoupper($bic) : null,
+            'travel_settings' => $travel === [] ? null : $travel,
         ]);
     }
 }

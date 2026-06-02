@@ -84,6 +84,7 @@ class ExpenseInvoicingService {
 
                 $invoice->items()->create([
                     'expense_id' => $expense->id,
+                    'service_date' => $expense->date?->toDateString(),
                     'description' => $description,
                     'quantity' => '1.00',
                     'unit' => (string) __('invoicing.unit_piece'),

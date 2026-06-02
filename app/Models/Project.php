@@ -78,6 +78,8 @@ class Project extends Model {
         'time_budget',
         'budget',
         'budget_type',
+        'billing_increment_minutes',
+        'billing_grouping_gap_minutes',
         'billable',
         'global_activities',
     ];
@@ -91,6 +93,8 @@ class Project extends Model {
         'internal_rate' => 'decimal:2',
         'budget' => 'decimal:2',
         'time_budget' => 'integer',
+        'billing_increment_minutes' => 'integer',
+        'billing_grouping_gap_minutes' => 'integer',
         'billable' => 'boolean',
         'global_activities' => 'boolean',
         'is_default' => 'boolean',
@@ -367,6 +371,38 @@ class Project extends Model {
         }
 
         return (bool) ($this->customer->billable ?? true);
+    }
+
+    /**
+     * Abrechnungs-Taktung in Minuten mit Vererbung:
+     * eigener Wert > Parent (rekursiv) > Kunde > 1 (minutengenau).
+     */
+    public function effectiveBillingIncrement(): int {
+        if ($this->billing_increment_minutes !== null) {
+            return max(1, (int) $this->billing_increment_minutes);
+        }
+        if ($this->parent !== null) {
+            return $this->parent->effectiveBillingIncrement();
+        }
+        $customerValue = $this->customer?->billing_increment_minutes;
+
+        return $customerValue !== null ? max(1, (int) $customerValue) : 1;
+    }
+
+    /**
+     * Max. Lücke (Minuten), bis zu der Einträge zusammengefasst werden, mit
+     * Vererbung: eigener Wert > Parent (rekursiv) > Kunde > 0 (keine Zusammenfassung).
+     */
+    public function effectiveBillingGroupingGap(): int {
+        if ($this->billing_grouping_gap_minutes !== null) {
+            return max(0, (int) $this->billing_grouping_gap_minutes);
+        }
+        if ($this->parent !== null) {
+            return $this->parent->effectiveBillingGroupingGap();
+        }
+        $customerValue = $this->customer?->billing_grouping_gap_minutes;
+
+        return $customerValue !== null ? max(0, (int) $customerValue) : 0;
     }
 
     /** @return HasMany<ProjectBillingRule, $this> */

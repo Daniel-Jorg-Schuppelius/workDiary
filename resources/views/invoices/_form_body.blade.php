@@ -29,6 +29,14 @@
         </select>
         <p class="mt-1 text-xs text-base-content/60">{{ __('Nur Zeiten dieses Endkunden abrechnen.') }}</p>
     </div>
+    <div class="fieldset md:col-span-2">
+        <label class="fieldset-label">{{ __('Inhalt') }}</label>
+        <select name="content" class="select select-bordered w-full">
+            <option value="service" @selected(old('content', 'service') === 'service')>{{ __('Leistung (Zeit) — Leistungsdatum') }}</option>
+            <option value="material" @selected(old('content') === 'material')>{{ __('Material — Lieferdatum') }}</option>
+        </select>
+        <p class="mt-1 text-xs text-base-content/60">{{ __('Material wird getrennt als eigene Rechnung mit Lieferdatum/-zeitraum erstellt.') }}</p>
+    </div>
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Von') }}</label>
         <input type="date" name="from" value="{{ old('from', $defaultFrom ?? '') }}" class="input input-bordered w-full">

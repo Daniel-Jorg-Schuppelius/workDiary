@@ -25,6 +25,7 @@ use Illuminate\Support\Carbon;
  * @property string $number
  * @property string $status
  * @property string $type
+ * @property string $category
  * @property int|null $parent_invoice_id
  * @property Carbon|null $issued_on
  * @property Carbon|null $due_on
@@ -69,6 +70,13 @@ class Invoice extends Model {
 
     public const TYPE_CREDIT_NOTE = 'credit_note';
 
+    public const CATEGORY_SERVICE = 'service';
+
+    public const CATEGORY_MATERIAL = 'material';
+
+    /** @var array<int, string> */
+    public const CATEGORIES = [self::CATEGORY_SERVICE, self::CATEGORY_MATERIAL];
+
     /** @var array<int, string> */
     public const STATUSES = [self::STATUS_DRAFT, self::STATUS_ISSUED, self::STATUS_PAID, self::STATUS_CANCELLED];
 
@@ -83,6 +91,7 @@ class Invoice extends Model {
         'number',
         'status',
         'type',
+        'category',
         'parent_invoice_id',
         'issued_on',
         'due_on',
@@ -161,6 +170,23 @@ class Invoice extends Model {
         return $this->type === self::TYPE_CREDIT_NOTE;
     }
 
+    public function isMaterial(): bool {
+        return $this->category === self::CATEGORY_MATERIAL;
+    }
+
+    /**
+     * Beschriftung der Datumsangabe je nach Kategorie: Leistung ⇒ "Leistungsdatum",
+     * Material ⇒ "Lieferdatum". {@see hasServicePeriod()} unterscheidet zwischen
+     * Einzeldatum und Zeitraum.
+     */
+    public function dateLabelSingle(): string {
+        return $this->isMaterial() ? (string) __('Lieferdatum') : (string) __('Leistungsdatum');
+    }
+
+    public function dateLabelPeriod(): string {
+        return $this->isMaterial() ? (string) __('Lieferzeitraum') : (string) __('Leistungszeitraum');
+    }
+
     public function isCancelled(): bool {
         return $this->status === self::STATUS_CANCELLED;
     }
@@ -219,5 +245,43 @@ class Invoice extends Model {
     /** Display-Label für PDF/Show (deutsch). */
     public function documentLabel(): string {
         return $this->isCreditNote() ? __('Gutschrift') : __('Rechnung');
+    }
+
+    /**
+     * Sortierte, eindeutige Leistungsdaten der Positionen (§14 UStG).
+     *
+     * @return \Illuminate\Support\Collection<int, Carbon>
+     */
+    public function serviceDates(): \Illuminate\Support\Collection {
+        return $this->items
+            ->map(fn(InvoiceItem $i): ?Carbon => $i->service_date)
+            ->filter()
+            ->unique(fn(Carbon $d): string => $d->toDateString())
+            ->sortBy(fn(Carbon $d): string => $d->toDateString())
+            ->values();
+    }
+
+    public function serviceDateFrom(): ?Carbon {
+        return $this->serviceDates()->first();
+    }
+
+    public function serviceDateTo(): ?Carbon {
+        return $this->serviceDates()->last();
+    }
+
+    /**
+     * True, wenn sich die Leistung über mehr als einen Tag erstreckt
+     * (⇒ Leistungszeitraum im Kopf, Leistungsdatum je Position).
+     */
+    public function hasServicePeriod(): bool {
+        return $this->serviceDates()->count() > 1;
+    }
+
+    /**
+     * Das einzige Leistungsdatum, wenn die ganze Rechnung an einem Tag erbracht
+     * wurde (⇒ Datum nur im Kopf nötig, nicht je Position). Sonst null.
+     */
+    public function serviceDateSingle(): ?Carbon {
+        return $this->hasServicePeriod() ? null : $this->serviceDateFrom();
     }
 }

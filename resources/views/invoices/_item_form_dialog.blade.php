@@ -27,6 +27,13 @@
             </label>
         </div>
         <label class="form-control w-full">
+            <span class="label-text">{{ __('Leistungsdatum') }}</span>
+            <input type="date" name="service_date"
+                   class="input input-bordered w-full"
+                   value="{{ old('service_date', optional($item->service_date ?? null)->format('Y-m-d')) }}">
+            <span class="label-text-alt text-base-content/60">{{ __('Bei mehreren Tagen Pflicht je Position.') }}</span>
+        </label>
+        <label class="form-control w-full">
             <span class="label-text">{{ __('Menge') }}</span>
             <input type="number" name="quantity" required min="0" step="0.01"
                    class="input input-bordered w-full"

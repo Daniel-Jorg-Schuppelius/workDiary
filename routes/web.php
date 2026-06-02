@@ -362,6 +362,7 @@ Route::middleware('auth')->group(function () {
         Route::get('time-entries/create', [TimeEntryController::class, 'pick'])->name('time-entries.create');
         Route::resource('projects.time-entries', TimeEntryController::class)->except(['index', 'show']);
         Route::resource('projects.billing-rules', ProjectBillingRuleController::class)->except(['index', 'show', 'edit']);
+        Route::patch('projects/{project}/billing-settings', [ProjectBillingRuleController::class, 'updateSettings'])->name('projects.billing-settings.update');
 
         Route::resource('projects.recurrence-rules', ProjectRecurrenceRuleController::class)
             ->except(['index', 'show']);

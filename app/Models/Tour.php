@@ -36,6 +36,7 @@ use Illuminate\Support\Carbon;
  * @property int $planned_duration_minutes
  * @property string|null $route_geometry
  * @property TourStatus $status
+ * @property bool $travel_billed
  * @property string|null $notes
  * @property int|null $created_by
  * @property int|null $updated_by
@@ -67,6 +68,7 @@ class Tour extends Model {
         'planned_duration_minutes',
         'route_geometry',
         'status',
+        'travel_billed',
         'notes',
         'created_by',
         'updated_by',
@@ -82,6 +84,7 @@ class Tour extends Model {
         'planned_distance_km' => 'decimal:2',
         'planned_duration_minutes' => 'integer',
         'status' => TourStatus::class,
+        'travel_billed' => 'boolean',
     ];
 
     /** @return BelongsTo<User, $this> */

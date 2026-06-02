@@ -14,7 +14,66 @@
         }
         $cursor = $cursor->parent;
     }
+
+    $increment = $project?->billing_increment_minutes;
+    $gap = $project?->billing_grouping_gap_minutes;
+    $effectiveIncrement = $project?->effectiveBillingIncrement() ?? 1;
+    $effectiveGap = $project?->effectiveBillingGroupingGap() ?? 0;
+    $presetIncrements = [1 => __('Jede angefangene Minute'), 15 => __('Viertelstunde'), 30 => __('Halbe Stunde'), 60 => __('Stunde')];
+    $isPreset = $increment === null || array_key_exists((int) $increment, $presetIncrements);
 @endphp
+
+@if ($project)
+<div class="card bg-base-100 shadow mb-4" x-data="{ inc: '{{ $increment === null ? '' : ($isPreset ? (int) $increment : 'custom') }}' }">
+    <div class="card-body space-y-4">
+        <h2 class="card-title">{{ __('Taktung & Zusammenfassung') }}</h2>
+        <p class="text-sm opacity-70">
+            {{ __('Abrechenbare Zeit wird auf die Taktung aufgerundet (jede angefangene Einheit zählt voll). Liegen Einträge desselben Projekts höchstens die eingestellte Lücke auseinander, werden sie zu einem Block zusammengefasst und gemeinsam einmal aufgerundet.') }}
+        </p>
+
+        <form method="POST" action="{{ route('projects.billing-settings.update', $project) }}" class="space-y-4">
+            @csrf
+            @method('PATCH')
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="fieldset">
+                    <label class="fieldset-label">{{ __('Taktung') }}</label>
+                    <select class="select select-bordered w-full" x-model="inc"
+                            x-bind:name="inc === 'custom' ? 'billing_increment_select' : 'billing_increment_minutes'">
+                        <option value="">{{ __('Erben (aktuell: :min Min)', ['min' => $effectiveIncrement]) }}</option>
+                        @foreach ($presetIncrements as $min => $label)
+                            <option value="{{ $min }}" @selected($isPreset && (int) $increment === $min)>{{ $label }} ({{ $min }} Min)</option>
+                        @endforeach
+                        <option value="custom" @selected(!$isPreset)>{{ __('Eigener Wert…') }}</option>
+                    </select>
+                    <input type="number" name="billing_increment_minutes_custom" min="1" max="1440" step="1"
+                           value="{{ $isPreset ? '' : (int) $increment }}"
+                           x-show="inc === 'custom'" x-cloak
+                           placeholder="{{ __('Minuten') }}"
+                           class="input input-bordered w-full mt-2"
+                           x-bind:name="inc === 'custom' ? 'billing_increment_minutes' : 'billing_increment_minutes_custom'">
+                </div>
+
+                <div class="fieldset">
+                    <label class="fieldset-label">{{ __('Max. Lücke zum Zusammenfassen (Min)') }}</label>
+                    <input type="number" name="billing_grouping_gap_minutes" min="0" max="1440" step="1"
+                           value="{{ $gap === null ? '' : (int) $gap }}"
+                           placeholder="{{ __('Erben (aktuell: :min)', ['min' => $effectiveGap]) }}"
+                           class="input input-bordered w-full">
+                    <p class="text-xs opacity-60 mt-1">{{ __('0 = keine Zusammenfassung. Leer = erben.') }}</p>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <span class="material-symbols-outlined" aria-hidden="true">save</span>
+                    <span>{{ __('Taktung speichern') }}</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+@endif
 
 <div class="card bg-base-100 shadow">
     <div class="card-body space-y-4">

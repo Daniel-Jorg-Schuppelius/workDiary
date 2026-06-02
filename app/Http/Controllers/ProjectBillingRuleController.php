@@ -11,7 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Http\Requests\SaveProjectBillingRuleRequest;
+use App\Http\Requests\{SaveProjectBillingRuleRequest, SaveProjectBillingSettingsRequest};
 use App\Models\{LexofficeArticle, Project, ProjectBillingRule};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
@@ -64,6 +64,16 @@ class ProjectBillingRuleController extends Controller {
         return redirect()
             ->route('projects.show', $project)
             ->with('success', __('Abrechnungs-Regel aktualisiert.'));
+    }
+
+    public function updateSettings(Project $project, SaveProjectBillingSettingsRequest $request): RedirectResponse {
+        $this->ensureBillingManager($request);
+
+        $project->update($request->validated());
+
+        return redirect()
+            ->route('projects.show', $project)
+            ->with('success', __('Abrechnungs-Taktung gespeichert.'));
     }
 
     public function destroy(Project $project, ProjectBillingRule $billingRule): RedirectResponse {

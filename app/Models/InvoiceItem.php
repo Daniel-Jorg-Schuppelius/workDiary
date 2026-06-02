@@ -13,7 +13,7 @@ namespace App\Models;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
 
 /**
  * @property int $id
@@ -21,6 +21,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $invoice_id
  * @property int|null $time_entry_id
  * @property int|null $expense_id
+ * @property int|null $material_usage_id
+ * @property int|null $tour_id
+ * @property \Illuminate\Support\Carbon|null $service_date
  * @property string $description
  * @property string $quantity
  * @property string $unit
@@ -41,6 +44,9 @@ class InvoiceItem extends Model {
         'invoice_id',
         'time_entry_id',
         'expense_id',
+        'material_usage_id',
+        'tour_id',
+        'service_date',
         'description',
         'quantity',
         'unit',
@@ -51,6 +57,7 @@ class InvoiceItem extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'service_date' => 'date',
         'quantity' => 'decimal:2',
         'unit_price' => 'decimal:2',
         'amount' => 'decimal:2',
@@ -86,8 +93,30 @@ class InvoiceItem extends Model {
         return $this->belongsTo(TimeEntry::class);
     }
 
+    /**
+     * Alle Zeiteinträge, die diese (ggf. durch Taktung/Zusammenfassung
+     * gebündelte) Position abbildet. Die Einzel-FK {@see timeEntry()} verweist
+     * weiterhin auf den ersten Eintrag des Blocks.
+     *
+     * @return BelongsToMany<TimeEntry, $this>
+     */
+    public function timeEntries(): BelongsToMany {
+        return $this->belongsToMany(TimeEntry::class, 'invoice_item_time_entries')
+            ->withTimestamps();
+    }
+
     /** @return BelongsTo<Expense, $this> */
     public function expense(): BelongsTo {
         return $this->belongsTo(Expense::class);
+    }
+
+    /** @return BelongsTo<MaterialUsage, $this> */
+    public function materialUsage(): BelongsTo {
+        return $this->belongsTo(MaterialUsage::class);
+    }
+
+    /** @return BelongsTo<Tour, $this> */
+    public function tour(): BelongsTo {
+        return $this->belongsTo(Tour::class);
     }
 }

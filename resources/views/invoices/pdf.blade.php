@@ -65,14 +65,22 @@
         <strong>{{ $invoice->number }}</strong><br>
         {{ __('Datum') }}: {{ optional($invoice->issued_on ?? $invoice->created_at)->format('d.m.Y') }}<br>
         @if ($invoice->due_on) {{ __('Fällig') }}: {{ $invoice->due_on->format('d.m.Y') }}<br> @endif
+        @if ($invoice->hasServicePeriod())
+            {{ $invoice->dateLabelPeriod() }}: {{ $invoice->serviceDateFrom()->format('d.m.Y') }} – {{ $invoice->serviceDateTo()->format('d.m.Y') }}<br>
+        @elseif ($invoice->serviceDateSingle())
+            {{ $invoice->dateLabelSingle() }}: {{ $invoice->serviceDateSingle()->format('d.m.Y') }}<br>
+        @endif
     </div>
 </div>
+
+@php $showServiceDates = $invoice->hasServicePeriod(); @endphp
 
 <table>
     <thead>
         <tr>
             <th>#</th>
             <th>{{ __('Beschreibung') }}</th>
+            @if ($showServiceDates)<th>{{ $invoice->dateLabelSingle() }}</th>@endif
             <th class="num">{{ __('Menge') }}</th>
             <th class="num">{{ __('Einzelpreis') }}</th>
             <th class="num">{{ __('Betrag') }}</th>
@@ -83,16 +91,18 @@
         <tr>
             <td>{{ $item->position }}</td>
             <td>{{ $item->description }}</td>
+            @if ($showServiceDates)<td>{{ optional($item->service_date)->format('d.m.Y') ?: '—' }}</td>@endif
             <td class="num">{{ number_format((float) $item->quantity, 2, ',', '.') }} {{ $item->unit }}</td>
             <td class="num">{{ number_format((float) $item->unit_price, 2, ',', '.') }} {{ $invoice->currency }}</td>
             <td class="num">{{ number_format((float) $item->amount, 2, ',', '.') }} {{ $invoice->currency }}</td>
         </tr>
     @endforeach
     </tbody>
+    @php $footColspan = $showServiceDates ? 5 : 4; @endphp
     <tfoot>
-        <tr><td colspan="4" class="num">{{ __('Zwischensumme') }}</td><td class="num">{{ number_format((float) $invoice->subtotal, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
-        <tr><td colspan="4" class="num">{{ __('USt.') }} {{ rtrim(rtrim((string) $invoice->tax_rate, '0'), '.') }}%</td><td class="num">{{ number_format((float) $invoice->tax_amount, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
-        <tr><td colspan="4" class="num">{{ __('Gesamt') }}</td><td class="num">{{ number_format((float) $invoice->total, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
+        <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Zwischensumme') }}</td><td class="num">{{ number_format((float) $invoice->subtotal, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
+        <tr><td colspan="{{ $footColspan }}" class="num">{{ __('USt.') }} {{ rtrim(rtrim((string) $invoice->tax_rate, '0'), '.') }}%</td><td class="num">{{ number_format((float) $invoice->tax_amount, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
+        <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Gesamt') }}</td><td class="num">{{ number_format((float) $invoice->total, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
     </tfoot>
 </table>
 

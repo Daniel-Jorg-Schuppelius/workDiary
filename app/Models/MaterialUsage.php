@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $unit_price
  * @property string|null $tax_rate
  * @property string $line_total_net
+ * @property bool $billed
  */
 class MaterialUsage extends Model {
     use Auditable;
@@ -48,6 +49,7 @@ class MaterialUsage extends Model {
         'unit_price',
         'tax_rate',
         'line_total_net',
+        'billed',
     ];
 
     /** @var array<string, string> */
@@ -56,6 +58,7 @@ class MaterialUsage extends Model {
         'unit_price' => 'decimal:4',
         'tax_rate' => 'decimal:2',
         'line_total_net' => 'decimal:2',
+        'billed' => 'boolean',
     ];
 
     protected static function booted(): void {

@@ -159,6 +159,37 @@
             </div>
         </x-form-group>
 
+        @php $ts = (array) old('travel_settings', $customer?->travel_settings ?? []); @endphp
+        <x-form-group :legend="__('Anfahrt (Übersteuerung)')" icon="local_shipping" tone="ghost" cols="2"
+                      :description="__('Leer = globale Einstellung erben.')">
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Modus') }}</label>
+                <select name="travel_settings[mode]" class="select select-bordered w-full">
+                    <option value="">{{ __('— erben —') }}</option>
+                    <option value="flat" @selected(($ts['mode'] ?? '') === 'flat')>{{ __('Pauschale') }}</option>
+                    <option value="km" @selected(($ts['mode'] ?? '') === 'km')>{{ __('Kilometer') }}</option>
+                </select>
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Kilometer-Quelle') }}</label>
+                <select name="travel_settings[km_source]" class="select select-bordered w-full">
+                    <option value="">{{ __('— erben —') }}</option>
+                    <option value="company" @selected(($ts['km_source'] ?? '') === 'company')>{{ __('Firmenstandort') }}</option>
+                    <option value="tour" @selected(($ts['km_source'] ?? '') === 'tour')>{{ __('Je nach Tour') }}</option>
+                </select>
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Pauschale (netto €)') }}</label>
+                <input type="number" step="0.01" min="0" name="travel_settings[flat_amount]"
+                       value="{{ $ts['flat_amount'] ?? '' }}" class="input input-bordered w-full">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Satz (€/km)') }}</label>
+                <input type="number" step="0.01" min="0" name="travel_settings[rate_per_km]"
+                       value="{{ $ts['rate_per_km'] ?? '' }}" class="input input-bordered w-full">
+            </div>
+        </x-form-group>
+
         <x-form-group :legend="__('Bankverbindung')" icon="account_balance" tone="ghost" cols="2">
             <div class="fieldset md:col-span-2">
                 <label class="fieldset-label">{{ __('Kontoinhaber') }}</label>

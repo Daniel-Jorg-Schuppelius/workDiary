@@ -144,6 +144,16 @@ class OrganizationController extends Controller {
             'settings.routing.tiles' => ['sometimes', 'array'],
             'settings.routing.tiles.url' => ['nullable', 'string', 'max:255'],
             'settings.routing.tiles.max_zoom' => ['nullable', 'integer', 'min:1', 'max:22'],
+            'settings.travel' => ['sometimes', 'array'],
+            'settings.travel.enabled' => ['nullable', 'in:0,1'],
+            'settings.travel.mode' => ['nullable', 'in:flat,km'],
+            'settings.travel.flat_amount' => ['nullable', 'numeric', 'min:0'],
+            'settings.travel.rate_per_km' => ['nullable', 'numeric', 'min:0'],
+            'settings.travel.km_source' => ['nullable', 'in:company,tour'],
+            'settings.travel.round_trip' => ['nullable', 'in:0,1'],
+            'settings.travel.origin_lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'settings.travel.origin_lng' => ['nullable', 'numeric', 'between:-180,180'],
+            'settings.travel.label' => ['nullable', 'string', 'max:50'],
         ]);
 
         $data['is_active'] = $request->boolean('is_active', true);

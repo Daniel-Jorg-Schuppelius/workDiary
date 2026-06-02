@@ -189,7 +189,12 @@
     </x-card>
 
     {{-- Fremdkunden (Endkunden dieser Firma) --}}
-    @php($foreignCustomers = $customer->foreignCustomers()->whereNull('archived_at')->withCount('projects')->get())
+    @php
+        $foreignCustomers = $customer->foreignCustomers()
+            ->whereNull('archived_at')
+            ->withCount('projects')
+            ->get();
+    @endphp
     <x-card>
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h2 class="flex items-center gap-2 font-semibold">

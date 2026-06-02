@@ -56,6 +56,11 @@
 
     <x-page-toolbar :title="$invoice->documentLabel() . ' ' . $invoice->number" :badge="__($invoice->status)" badge-tone="outline">
         <div class="text-sm text-base-content/70">{{ $invoice->customer->name }}</div>
+        @if ($invoice->hasServicePeriod())
+            <div class="text-sm text-base-content/70">{{ $invoice->dateLabelPeriod() }}: {{ $invoice->serviceDateFrom()->format('d.m.Y') }} – {{ $invoice->serviceDateTo()->format('d.m.Y') }}</div>
+        @elseif ($invoice->serviceDateSingle())
+            <div class="text-sm text-base-content/70">{{ $invoice->dateLabelSingle() }}: {{ $invoice->serviceDateSingle()->format('d.m.Y') }}</div>
+        @endif
         <x-slot:actions>
             <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('invoices.pdf', $invoice)" show-label>{{ __('PDF') }}</x-icon-btn>
             @can('send', $invoice)
@@ -124,11 +129,13 @@
         </x-slot:actions>
     </x-page-toolbar>
 
+    @php $showServiceDates = $invoice->hasServicePeriod(); $footColspan = $showServiceDates ? 5 : 4; @endphp
     <x-table table-sort="client">
         <x-slot:head>
             <tr>
                 <th>#</th>
                 <x-table.th sort>{{ __('Beschreibung') }}</x-table.th>
+                @if ($showServiceDates)<x-table.th sort type="date">{{ $invoice->dateLabelSingle() }}</x-table.th>@endif
                 <x-table.th sort type="number" align="right">{{ __('Menge') }}</x-table.th>
                 <x-table.th sort type="number" align="right">{{ __('Einzelpreis') }}</x-table.th>
                 <x-table.th sort type="number" align="right">{{ __('Betrag') }}</x-table.th>
@@ -140,14 +147,15 @@
             </tr>
         </x-slot:head>
         <x-slot:foot>
-            <tr><td colspan="4" class="text-right">{{ __('Zwischensumme') }}</td><td class="text-right">{{ number_format((float) $invoice->subtotal, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
-            <tr><td colspan="4" class="text-right">{{ __('USt.') }} {{ rtrim(rtrim((string) $invoice->tax_rate, '0'), '.') }}%</td><td class="text-right">{{ number_format((float) $invoice->tax_amount, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
-            <tr><td colspan="4" class="text-right font-bold">{{ __('Gesamt') }}</td><td class="text-right font-bold">{{ number_format((float) $invoice->total, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('Zwischensumme') }}</td><td class="text-right">{{ number_format((float) $invoice->subtotal, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('USt.') }} {{ rtrim(rtrim((string) $invoice->tax_rate, '0'), '.') }}%</td><td class="text-right">{{ number_format((float) $invoice->tax_amount, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="text-right font-bold">{{ __('Gesamt') }}</td><td class="text-right font-bold">{{ number_format((float) $invoice->total, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
         </x-slot:foot>
         @forelse ($invoice->items as $item)
             <tr>
                 <td>{{ $item->position }}</td>
                 <td>{{ $item->description }}</td>
+                @if ($showServiceDates)<td data-sort-value="{{ optional($item->service_date)->toDateString() }}">{{ optional($item->service_date)->format('d.m.Y') ?: '—' }}</td>@endif
                 <td class="text-right" data-sort-value="{{ (float) $item->quantity }}">{{ number_format((float) $item->quantity, 2, ',', '.') }} {{ $item->unit }}</td>
                 <td class="text-right" data-sort-value="{{ (float) $item->unit_price }}">{{ number_format((float) $item->unit_price, 2, ',', '.') }} {{ $invoice->currency }}</td>
                 <td class="text-right" data-sort-value="{{ (float) $item->amount }}">{{ number_format((float) $item->amount, 2, ',', '.') }} {{ $invoice->currency }}</td>

@@ -11,6 +11,7 @@
         'notifications' => ['icon' => 'notifications', 'tone' => 'primary', 'label' => __('settings.tabs.notifications')],
         'ui' => ['icon' => 'tune', 'tone' => 'ghost', 'label' => __('settings.tabs.ui')],
         'routing' => ['icon' => 'route', 'tone' => 'info', 'label' => __('settings.tabs.routing')],
+        'travel' => ['icon' => 'local_shipping', 'tone' => 'success', 'label' => __('Anfahrt')],
     ];
 @endphp
 
@@ -197,6 +198,84 @@
                        placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('routing.tiles.max_zoom')]) }}"
                        class="input input-bordered w-full">
             </div>
+        </x-form-group>
+    </div>
+
+    {{-- ANFAHRT / TRAVEL --}}
+    <div x-show="tab === 'travel'" x-cloak
+         x-data="{
+            enabled: '{{ old('settings.travel.enabled', data_get($stored, 'travel.enabled', '0')) }}' === '1',
+            mode: '{{ old('settings.travel.mode', data_get($stored, 'travel.mode', 'flat')) }}',
+            kmSource: '{{ old('settings.travel.km_source', data_get($stored, 'travel.km_source', 'company')) }}',
+            roundTrip: '{{ old('settings.travel.round_trip', data_get($stored, 'travel.round_trip', '1')) }}' !== '0'
+         }">
+        <x-form-group :legend="__('Anfahrt-Abrechnung')" icon="local_shipping" tone="success" cols="2" compact
+                      :description="__('Bei einer Tour zum Kunden an einem Tag wird bei Projekt- oder Materialabrechnung automatisch eine Anfahrt berechnet.')">
+            <div class="fieldset md:col-span-2">
+                <label class="label cursor-pointer justify-start gap-3">
+                    <input type="hidden" name="settings[travel][enabled]" :value="enabled ? '1' : '0'">
+                    <input type="checkbox" class="toggle toggle-success" x-model="enabled">
+                    <span class="label-text">{{ __('Anfahrt automatisch berechnen') }}</span>
+                </label>
+            </div>
+
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Modus') }}</label>
+                <select name="settings[travel][mode]" class="select select-bordered w-full" x-model="mode">
+                    <option value="flat">{{ __('Pauschale') }}</option>
+                    <option value="km">{{ __('Kilometer') }}</option>
+                </select>
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Positionstext') }}</label>
+                <input type="text" maxlength="50" name="settings[travel][label]"
+                       value="{{ old('settings.travel.label', data_get($stored, 'travel.label', '')) }}"
+                       placeholder="Anfahrt" class="input input-bordered w-full">
+            </div>
+
+            <div class="fieldset" x-show="mode === 'flat'">
+                <label class="fieldset-label">{{ __('Pauschale (netto €)') }}</label>
+                <input type="number" step="0.01" min="0" name="settings[travel][flat_amount]"
+                       value="{{ old('settings.travel.flat_amount', data_get($stored, 'travel.flat_amount', '')) }}"
+                       class="input input-bordered w-full">
+            </div>
+
+            <template x-if="mode === 'km'">
+                <div class="contents">
+                    <div class="fieldset">
+                        <label class="fieldset-label">{{ __('Satz (€/km)') }}</label>
+                        <input type="number" step="0.01" min="0" name="settings[travel][rate_per_km]"
+                               value="{{ old('settings.travel.rate_per_km', data_get($stored, 'travel.rate_per_km', '')) }}"
+                               class="input input-bordered w-full">
+                    </div>
+                    <div class="fieldset">
+                        <label class="fieldset-label">{{ __('Kilometer-Quelle') }}</label>
+                        <select name="settings[travel][km_source]" class="select select-bordered w-full" x-model="kmSource">
+                            <option value="company">{{ __('Immer vom Firmenstandort') }}</option>
+                            <option value="tour">{{ __('Je nach Tour (tatsächliche km)') }}</option>
+                        </select>
+                    </div>
+                    <div class="fieldset md:col-span-2">
+                        <label class="label cursor-pointer justify-start gap-3">
+                            <input type="hidden" name="settings[travel][round_trip]" :value="roundTrip ? '1' : '0'">
+                            <input type="checkbox" class="toggle toggle-success" x-model="roundTrip">
+                            <span class="label-text">{{ __('Hin- und Rückfahrt (×2, nur Firmenstandort)') }}</span>
+                        </label>
+                    </div>
+                    <div class="fieldset" x-show="kmSource === 'company'">
+                        <label class="fieldset-label">{{ __('Firmenstandort Breite (lat)') }}</label>
+                        <input type="number" step="0.0000001" min="-90" max="90" name="settings[travel][origin_lat]"
+                               value="{{ old('settings.travel.origin_lat', data_get($stored, 'travel.origin_lat', '')) }}"
+                               class="input input-bordered w-full">
+                    </div>
+                    <div class="fieldset" x-show="kmSource === 'company'">
+                        <label class="fieldset-label">{{ __('Firmenstandort Länge (lng)') }}</label>
+                        <input type="number" step="0.0000001" min="-180" max="180" name="settings[travel][origin_lng]"
+                               value="{{ old('settings.travel.origin_lng', data_get($stored, 'travel.origin_lng', '')) }}"
+                               class="input input-bordered w-full">
+                    </div>
+                </div>
+            </template>
         </x-form-group>
     </div>
 </x-form-group>

@@ -96,6 +96,7 @@ class InvoiceController extends Controller {
             'foreign_customer_id' => ['nullable', 'integer', 'exists:foreign_customers,id'],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
+            'content' => ['nullable', 'in:service,material'],
         ]);
 
         /** @var Customer $customer */
@@ -105,10 +106,19 @@ class InvoiceController extends Controller {
         /** @var \App\Models\ForeignCustomer|null $foreignCustomer */
         $foreignCustomer = isset($data['foreign_customer_id']) ? \App\Models\ForeignCustomer::query()->find($data['foreign_customer_id']) : null;
 
-        $invoice = $gen->fromTimeEntries($customer, $project, [
+        $range = [
             'from' => $data['from'] ?? null,
             'to' => $data['to'] ?? null,
-        ], $foreignCustomer);
+        ];
+
+        // Material wird getrennt abgerechnet (eigene Rechnung mit Lieferdatum).
+        if (($data['content'] ?? 'service') === 'material') {
+            $invoice = $gen->fromMaterialUsages($customer, $project, $range, $foreignCustomer);
+
+            return redirect()->route('invoices.show', $invoice)->with('status', __('Materialrechnungs-Entwurf erstellt.'));
+        }
+
+        $invoice = $gen->fromTimeEntries($customer, $project, $range, $foreignCustomer);
 
         return redirect()->route('invoices.show', $invoice)->with('status', __('Rechnungsentwurf erstellt.'));
     }
@@ -200,6 +210,7 @@ class InvoiceController extends Controller {
 
         $invoice->items()->create([
             'organization_id' => $invoice->organization_id,
+            'service_date' => $data['service_date'] ?? null,
             'description' => $data['description'],
             'quantity' => (string) $data['quantity'],
             'unit' => $data['unit'] ?? (string) __('invoicing.unit_hour'),
@@ -218,6 +229,7 @@ class InvoiceController extends Controller {
         $data = $request->validated();
 
         $item->update([
+            'service_date' => $data['service_date'] ?? null,
             'description' => $data['description'],
             'quantity' => (string) $data['quantity'],
             'unit' => $data['unit'] ?? $item->unit,
