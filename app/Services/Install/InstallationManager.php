@@ -258,6 +258,20 @@ class InstallationManager {
             return false;
         }
 
+        return $this->writeSqidsSalt();
+    }
+
+    /**
+     * Erzeugt einen NEUEN SQIDS_SALT und überschreibt einen vorhandenen Wert.
+     * Achtung: Dadurch ändern sich ALLE öffentlich sichtbaren Sqid-Route-Keys;
+     * bereits verteilte URLs werden ungültig.
+     */
+    public function regenerateSqidsSalt(): void {
+        $this->env->ensureFileExists();
+        $this->writeSqidsSalt();
+    }
+
+    private function writeSqidsSalt(): bool {
         $salt = bin2hex(random_bytes(32));
         $this->env->set('SQIDS_SALT', $salt);
         Config::set('sqids.salt', $salt);
