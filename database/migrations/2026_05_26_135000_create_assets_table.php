@@ -3,7 +3,7 @@
  * Created on   : Sat May 23 2026
  * Author       : Daniel Jörg Schuppelius
  * Author Uri   : https://schuppelius.org
- * Filename     : 2026_06_03_140000_create_assets_table.php
+ * Filename     : 2026_05_26_135000_create_assets_table.php
  * License      : AGPL-3.0-or-later
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
