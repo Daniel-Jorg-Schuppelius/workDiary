@@ -266,6 +266,12 @@ class InstallController extends Controller {
     public function complete(): RedirectResponse {
         $this->installer->markInstalled();
 
+        // Während des Wizards geschriebene .env-Werte (DB, Mail, Lexoffice-Key,
+        // VAPID) werden von einem evtl. vorhandenen config:cache verdeckt. Vor
+        // dem Verlassen des Installers daher die Bootstrap-Caches verwerfen,
+        // damit die Konfiguration im Live-Betrieb sofort greift.
+        $this->installer->clearCaches();
+
         // Sicherheitshalber alle ausgeloggt in den frisch installierten
         // Zustand entlassen — der Admin meldet sich regulär neu an.
         Auth::logout();

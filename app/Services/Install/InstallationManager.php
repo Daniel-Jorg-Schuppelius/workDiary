@@ -93,6 +93,24 @@ class InstallationManager {
         return true;
     }
 
+    /**
+     * Verwirft die gecachten Bootstrap-Dateien (Config, Routen, Events, Views).
+     * Notwendig nach Abschluss des Installers, weil die während des Wizards in
+     * die .env geschriebenen Werte (DB, Mail, Lexoffice-API-Key, VAPID …) sonst
+     * von einem zuvor erstellten `config:cache` verdeckt werden und im
+     * laufenden Betrieb „nicht gespeichert" wirken.
+     */
+    public function clearCaches(): void {
+        foreach (['config:clear', 'route:clear', 'event:clear', 'view:clear'] as $command) {
+            try {
+                Artisan::call($command);
+            } catch (Throwable) {
+                // Best effort: ein fehlender Cache (z. B. route:clear ohne
+                // Cache-Datei) darf den Abschluss nicht verhindern.
+            }
+        }
+    }
+
     public function lockPath(): string {
         return $this->lockPath;
     }
@@ -188,6 +206,7 @@ class InstallationManager {
         }
 
         $this->ensureAppKey();
+        $this->ensureSqidsSalt();
     }
 
     /**
@@ -216,6 +235,40 @@ class InstallationManager {
 
     public function hasAppKey(): bool {
         $current = $this->env->get('APP_KEY');
+
+        return is_string($current) && $current !== '';
+    }
+
+    /**
+     * Erzeugt einen SQIDS_SALT, sofern noch keiner gesetzt ist. Der Salt geht
+     * in die Permutation des Sqids-Alphabets ein; ohne ihn verweigert der
+     * SqidEncoder in Produktion den Dienst (RuntimeException). Ein bereits
+     * gesetzter Salt wird NIEMALS überschrieben, da daran die öffentlich
+     * sichtbaren Route-Keys (Sqids) hängen.
+     *
+     * @return bool true, wenn ein neuer Salt erzeugt wurde
+     */
+    public function ensureSqidsSalt(): bool {
+        $this->env->ensureFileExists();
+
+        $current = $this->env->get('SQIDS_SALT');
+        if (is_string($current) && $current !== '') {
+            Config::set('sqids.salt', $current);
+
+            return false;
+        }
+
+        $salt = bin2hex(random_bytes(32));
+        $this->env->set('SQIDS_SALT', $salt);
+        Config::set('sqids.salt', $salt);
+        // SqidEncoder-Singleton neu binden, damit der frische Salt sofort greift.
+        app()->forgetInstance(\App\Services\SqidEncoder::class);
+
+        return true;
+    }
+
+    public function hasSqidsSalt(): bool {
+        $current = $this->env->get('SQIDS_SALT');
 
         return is_string($current) && $current !== '';
     }
