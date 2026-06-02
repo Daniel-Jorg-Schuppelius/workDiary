@@ -17,6 +17,8 @@ use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class LicenseService {
     private const CACHE_KEY = 'license:current';
@@ -39,7 +41,7 @@ class LicenseService {
 
         $ttl = (int) config('license.cache_ttl', 300);
         if ($ttl > 0) {
-            $cached = $this->cache->get(self::CACHE_KEY . ':' . ($host ?? '_'));
+            $cached = $this->safeCacheGet(self::CACHE_KEY . ':' . ($host ?? '_'));
             if ($cached instanceof LicenseResult) {
                 return $cached;
             }
@@ -50,17 +52,47 @@ class LicenseService {
         $this->recordStatusTransition($result);
 
         if ($ttl > 0) {
-            $this->cache->put(self::CACHE_KEY . ':' . ($host ?? '_'), $result, $ttl);
+            $this->safeCacheCall(fn () => $this->cache->put(self::CACHE_KEY . ':' . ($host ?? '_'), $result, $ttl));
         }
 
         return $result;
     }
 
+    /**
+     * Liest aus dem Cache, ohne bei Infrastruktur-Fehlern (z. B. nicht
+     * erreichbarer DB-Cache) den gesamten Request mit einem 500 abzubrechen.
+     * Die Lizenzbewertung selbst benötigt keine Datenbank.
+     */
+    private function safeCacheGet(string $key): mixed {
+        try {
+            return $this->cache->get($key);
+        } catch (Throwable $e) {
+            Log::warning('Lizenz-Cache nicht lesbar, fahre ohne Cache fort.', ['exception' => $e->getMessage()]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Führt eine schreibende Cache-/DB-Operation "best effort" aus. Schlägt sie
+     * fehl (z. B. fehlende cache-Tabelle), wird dies protokolliert, aber nicht
+     * als Fehler an den Aufrufer weitergereicht.
+     */
+    private function safeCacheCall(callable $callback): void {
+        try {
+            $callback();
+        } catch (Throwable $e) {
+            Log::warning('Lizenz-Cache nicht beschreibbar, überspringe.', ['exception' => $e->getMessage()]);
+        }
+    }
+
     public function flush(): void {
         // Cache hat eine kleine Key-Variation pro Host; einfacher: per Tag oder
-        // generischer Flush. Wir nutzen direkte Forgets für die häufigsten Fälle.
-        $this->cache->forget(self::CACHE_KEY . ':_');
-        $this->cache->forget(self::STATUS_KEY);
+        // generischer Flush. Wir nutzen direkte Forgets f\u00fcr die h\u00e4ufigsten F\u00e4lle.
+        $this->safeCacheCall(function (): void {
+            $this->cache->forget(self::CACHE_KEY . ':_');
+            $this->cache->forget(self::STATUS_KEY);
+        });
     }
 
     public function install(string $licenseKey): LicenseResult {
@@ -172,6 +204,17 @@ class LicenseService {
      * der zuletzt gesehene Status liegt im Cache (`license:lastStatus`).
      */
     private function recordStatusTransition(LicenseResult $result): void {
+        // Statuswechsel werden nur protokolliert (Audit/Cache). Schl\u00e4gt der
+        // dahinterliegende Speicher fehl (DB-Cache nicht erreichbar), darf das
+        // niemals den eigentlichen Request zum Absturz bringen.
+        try {
+            $this->recordStatusTransitionUnsafe($result);
+        } catch (Throwable $e) {
+            Log::warning('Lizenz-Statuswechsel konnte nicht protokolliert werden.', ['exception' => $e->getMessage()]);
+        }
+    }
+
+    private function recordStatusTransitionUnsafe(LicenseResult $result): void {
         $newStatus = $result->status;
         $previousValue = $this->cache->get(self::STATUS_KEY);
         $previousStatus = is_string($previousValue)

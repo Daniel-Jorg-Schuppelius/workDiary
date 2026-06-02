@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 use App\Models\{AuditLog, User};
 use App\Services\Licensing\LicenseService;
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class LicenseController extends Controller {
@@ -50,18 +51,25 @@ class LicenseController extends Controller {
         $payload = $result->payload;
         $licenseHash = $payload !== null ? hash('sha256', $payload->licenseId) : null;
 
-        AuditLog::query()->create([
-            'organization_id' => $user?->organization_id,
-            'user_id' => $user?->id,
-            'event' => 'license.installed',
-            'auditable_type' => User::class,
-            'auditable_id' => $user->id ?? 0,
-            'changes' => [
-                'license_id_sha256' => $licenseHash,
-                'status' => $result->status->value,
-                'licensee' => $payload?->licensee,
-                'expires_at' => $payload?->expiresAt?->toIso8601String(),
-            ],
-        ]);
+        // Der Audit-Eintrag ist Protokollierung – ein fehlgeschlagener
+        // Schreibvorgang (z. B. nicht erreichbare DB) darf die erfolgreiche
+        // Lizenzaktivierung nicht mit einem 500 zunichtemachen.
+        try {
+            AuditLog::query()->create([
+                'organization_id' => $user?->organization_id,
+                'user_id' => $user?->id,
+                'event' => 'license.installed',
+                'auditable_type' => User::class,
+                'auditable_id' => $user->id ?? 0,
+                'changes' => [
+                    'license_id_sha256' => $licenseHash,
+                    'status' => $result->status->value,
+                    'licensee' => $payload?->licensee,
+                    'expires_at' => $payload?->expiresAt?->toIso8601String(),
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Audit-Eintrag zur Lizenzinstallation fehlgeschlagen.', ['exception' => $e->getMessage()]);
+        }
     }
 }

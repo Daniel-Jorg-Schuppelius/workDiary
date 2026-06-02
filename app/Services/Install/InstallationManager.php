@@ -75,6 +75,24 @@ class InstallationManager {
         }
     }
 
+    /**
+     * Entfernt den Installations-Marker, sodass der Wizard erneut durchlaufen
+     * werden kann. Wirft, wenn die vorhandene Datei nicht gelöscht werden kann.
+     *
+     * @return bool true, wenn ein Marker entfernt wurde; false, wenn keiner existierte
+     */
+    public function markUninstalled(): bool {
+        if (! is_file($this->lockPath)) {
+            return false;
+        }
+
+        if (! @unlink($this->lockPath)) {
+            throw new RuntimeException('Konnte Installations-Marker nicht entfernen: ' . $this->lockPath);
+        }
+
+        return true;
+    }
+
     public function lockPath(): string {
         return $this->lockPath;
     }
@@ -323,6 +341,12 @@ class InstallationManager {
      * @param  array{org_name: string, name: string, email: string, password: string}  $data
      */
     public function createOrganizationAndAdmin(array $data): User {
+        // Dieser Schritt läuft in einem eigenen HTTP-Request, in dem die
+        // (ggf. gecachte) Config noch auf die alte Verbindung zeigen kann.
+        // Daher die in der .env hinterlegte DB-Verbindung erneut aktivieren,
+        // damit der Admin garantiert in der konfigurierten Datenbank landet.
+        $this->applyConfiguredDatabaseToRuntime();
+
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         return DB::transaction(function () use ($data): User {
@@ -350,6 +374,38 @@ class InstallationManager {
             }
 
             app(PermissionRegistrar::class)->setPermissionsTeamId($org->id);
+            $adminRole = Role::findOrCreate(UserRole::Admin->value, 'web');
+            $user->assignRole($adminRole);
+
+            return $user;
+        });
+    }
+
+    /**
+     * Setzt das Passwort eines bestehenden Benutzers neu und stellt sicher,
+     * dass er die Admin-Rolle seiner Organisation besitzt. Reaktiviert vorher
+     * die in der .env konfigurierte DB-Verbindung, damit auch bei gecachter
+     * Config die richtige Datenbank getroffen wird.
+     */
+    public function resetAdminPassword(string $email, string $password): User {
+        $this->applyConfiguredDatabaseToRuntime();
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        return DB::transaction(function () use ($email, $password): User {
+            /** @var User|null $user */
+            $user = User::where('email', $email)->first();
+            if ($user === null) {
+                throw new RuntimeException("Kein Benutzer mit E-Mail {$email} gefunden.");
+            }
+
+            // Cast 'password' => 'hashed' übernimmt das Hashing beim Speichern.
+            $user->password = $password;
+            $user->save();
+
+            if ($user->organization_id !== null) {
+                app(PermissionRegistrar::class)->setPermissionsTeamId($user->organization_id);
+            }
             $adminRole = Role::findOrCreate(UserRole::Admin->value, 'web');
             $user->assignRole($adminRole);
 
@@ -459,6 +515,32 @@ class InstallationManager {
         // Encrypter-Singleton neu binden, damit Session-/Cookie-Verschlüsselung
         // den frischen Key sofort verwendet.
         app()->forgetInstance('encrypter');
+    }
+
+    /**
+     * Liest die in der .env hinterlegte Datenbank-Konfiguration und aktiviert
+     * sie für die laufende Runtime. Nötig in Wizard-Schritten nach dem
+     * Datenbank-Schritt, die in eigenen Requests laufen und sonst eine
+     * (gecachte) Alt-Verbindung verwenden würden.
+     */
+    private function applyConfiguredDatabaseToRuntime(): void {
+        $driver = $this->env->get('DB_CONNECTION');
+
+        // Nur eingreifen, wenn die .env eine Verbindung definiert. Ohne
+        // Eintrag (z. B. in Tests) bleibt die bestehende Runtime-Verbindung
+        // unangetastet.
+        if (! is_string($driver) || $driver === '') {
+            return;
+        }
+
+        $this->applyDatabaseToRuntime([
+            'driver' => $driver,
+            'host' => $this->env->get('DB_HOST'),
+            'port' => $this->env->get('DB_PORT'),
+            'database' => $this->env->get('DB_DATABASE'),
+            'username' => $this->env->get('DB_USERNAME'),
+            'password' => $this->env->get('DB_PASSWORD'),
+        ]);
     }
 
     /**
