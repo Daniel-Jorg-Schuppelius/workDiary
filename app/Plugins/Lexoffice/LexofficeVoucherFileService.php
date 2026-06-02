@@ -88,9 +88,28 @@ class LexofficeVoucherFileService {
         $type = (string) ($voucher->voucher_type ?? '');
         $endpoint = self::SALES_DOCUMENT_ENDPOINTS[$type] ?? null;
 
+        // Verkaufsdokumente (Rechnungen, Gutschriften …) liefern ihr gerendertes
+        // PDF über den /document-Endpunkt. Liegt (noch) keines vor, antwortet
+        // Lexoffice mit 406; generische Belege tragen ihre Datei stattdessen im
+        // /vouchers/{id}-files-Array. Beide Wege werden als Fallback versucht,
+        // damit die Anzeige unabhängig von der Belegquelle funktioniert.
         $fileId = $endpoint !== null
             ? $this->fileIdFromDocument($endpoint, $voucher->external_id)
-            : $this->fileIdFromVoucher($voucher->external_id);
+            : '';
+
+        if ($fileId === '') {
+            $fileId = $this->fileIdFromVoucher($voucher->external_id);
+        }
+
+        if ($fileId === '' && $endpoint === null) {
+            // Letzter Versuch: vielleicht ist es doch ein Sales-Document.
+            foreach (array_unique(array_values(self::SALES_DOCUMENT_ENDPOINTS)) as $candidate) {
+                $fileId = $this->fileIdFromDocument($candidate, $voucher->external_id);
+                if ($fileId !== '') {
+                    break;
+                }
+            }
+        }
 
         if ($fileId === '') {
             throw new RuntimeException('Lexoffice voucher has no attached file.');
@@ -105,7 +124,7 @@ class LexofficeVoucherFileService {
             ->get($this->baseUrl . '/vouchers/' . $externalId);
 
         if (! $response->successful()) {
-            throw new RuntimeException('Lexoffice voucher fetch failed: ' . $response->status());
+            return '';
         }
 
         $files = $response->json('files');
@@ -127,8 +146,10 @@ class LexofficeVoucherFileService {
             ->acceptJson()
             ->get($this->baseUrl . '/' . $endpoint . '/' . $externalId . '/document');
 
+        // 406 = kein gerendertes Dokument verfügbar (z. B. Entwurf). Das ist
+        // kein harter Fehler — der Aufrufer fällt auf andere Quellen zurück.
         if (! $response->successful()) {
-            throw new RuntimeException('Lexoffice document metadata fetch failed: ' . $response->status());
+            return '';
         }
 
         return (string) ($response->json('documentFileId') ?? '');
