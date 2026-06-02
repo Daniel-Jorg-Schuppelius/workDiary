@@ -5,6 +5,11 @@
 
     RewriteEngine On
 
+    # Strip an accidental /public/ prefix (e.g. when DocumentRoot already
+    # points at public/ and a link was generated with /public/ in it).
+    RewriteCond %{THE_REQUEST} \s/+public/([^\s?]*) [NC]
+    RewriteRule ^public/(.*)$ /$1 [L,R=301]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
