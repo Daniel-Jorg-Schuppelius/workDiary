@@ -86,15 +86,23 @@ class InstallController extends Controller {
     public function database(): View {
         $env = $this->installer->env();
 
+        $driver = $env->get('DB_CONNECTION') ?? 'sqlite';
+        $storedDb = $env->get('DB_DATABASE');
+
         return view('install.database', [
             'step' => 'database',
             'steps' => self::STEPS,
             'drivers' => InstallationManager::DRIVERS,
             'values' => [
-                'driver' => $env->get('DB_CONNECTION') ?? 'sqlite',
+                'driver' => $driver,
                 'host' => $env->get('DB_HOST') ?? '127.0.0.1',
                 'port' => $env->get('DB_PORT') ?? '3306',
-                'database' => $env->get('DB_DATABASE') ?? database_path('database.sqlite'),
+                // SQLite nutzt einen Dateipfad, Server-Treiber nur einen Namen –
+                // daher getrennte Defaults, damit sich die Felder nicht mischen.
+                'database_sqlite' => $driver === 'sqlite' && $storedDb
+                    ? $storedDb
+                    : database_path('database.sqlite'),
+                'database_server' => $driver !== 'sqlite' ? ($storedDb ?? '') : '',
                 'username' => $env->get('DB_USERNAME') ?? '',
             ],
         ]);

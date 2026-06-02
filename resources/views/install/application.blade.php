@@ -16,36 +16,36 @@
 <form method="POST" action="{{ route('install.application.store') }}" class="space-y-4">
     @csrf
 
-    <div>
-        <label class="label" for="app_name"><span class="label-text">{{ __('Anwendungsname') }}</span></label>
+    <fieldset class="fieldset">
+        <label class="fieldset-label" for="app_name">{{ __('Anwendungsname') }}</label>
         <input type="text" name="app_name" id="app_name" value="{{ old('app_name', $values['app_name']) }}"
                class="input input-sm input-bordered w-full" required>
-    </div>
+    </fieldset>
 
-    <div>
-        <label class="label" for="app_url"><span class="label-text">{{ __('Anwendungs-URL') }}</span></label>
+    <fieldset class="fieldset">
+        <label class="fieldset-label" for="app_url">{{ __('Anwendungs-URL') }}</label>
         <input type="url" name="app_url" id="app_url" value="{{ old('app_url', $values['app_url']) }}"
                class="input input-sm input-bordered w-full" required>
-    </div>
+    </fieldset>
 
     <div class="grid gap-4 sm:grid-cols-3">
-        <div>
-            <label class="label" for="app_env"><span class="label-text">{{ __('Umgebung') }}</span></label>
+        <fieldset class="fieldset">
+            <label class="fieldset-label" for="app_env">{{ __('Umgebung') }}</label>
             <select name="app_env" id="app_env" class="select select-sm select-bordered w-full">
                 <option value="production" @selected(old('app_env', $values['app_env']) === 'production')>production</option>
                 <option value="local" @selected(old('app_env', $values['app_env']) === 'local')>local</option>
             </select>
-        </div>
-        <div>
-            <label class="label" for="locale"><span class="label-text">{{ __('Sprache') }}</span></label>
+        </fieldset>
+        <fieldset class="fieldset">
+            <label class="fieldset-label" for="locale">{{ __('Sprache') }}</label>
             <input type="text" name="locale" id="locale" value="{{ old('locale', $values['locale']) }}"
                    class="input input-sm input-bordered w-full" required>
-        </div>
-        <div>
-            <label class="label" for="timezone"><span class="label-text">{{ __('Zeitzone') }}</span></label>
+        </fieldset>
+        <fieldset class="fieldset">
+            <label class="fieldset-label" for="timezone">{{ __('Zeitzone') }}</label>
             <input type="text" name="timezone" id="timezone" value="{{ old('timezone', $values['timezone']) }}"
                    class="input input-sm input-bordered w-full" required>
-        </div>
+        </fieldset>
     </div>
 
     <div class="card-actions justify-between pt-2">

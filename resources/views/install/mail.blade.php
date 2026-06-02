@@ -9,59 +9,59 @@
 <form method="POST" action="{{ route('install.mail.store') }}" class="space-y-4">
     @csrf
 
-    <div>
-        <label class="label" for="mailer"><span class="label-text">{{ __('Mailer') }}</span></label>
+    <fieldset class="fieldset">
+        <label class="fieldset-label" for="mailer">{{ __('Mailer') }}</label>
         <select name="mailer" id="mailer" class="select select-sm select-bordered w-full">
             <option value="log" @selected(old('mailer', $values['mailer']) === 'log')>log</option>
             <option value="smtp" @selected(old('mailer', $values['mailer']) === 'smtp')>smtp</option>
         </select>
-    </div>
+    </fieldset>
 
     <div class="grid gap-4 sm:grid-cols-2">
-        <div>
-            <label class="label" for="host"><span class="label-text">{{ __('SMTP-Host') }}</span></label>
+        <fieldset class="fieldset">
+            <label class="fieldset-label" for="host">{{ __('SMTP-Host') }}</label>
             <input type="text" name="host" id="host" value="{{ old('host', $values['host']) }}"
                    class="input input-sm input-bordered w-full">
-        </div>
-        <div>
-            <label class="label" for="port"><span class="label-text">{{ __('Port') }}</span></label>
+        </fieldset>
+        <fieldset class="fieldset">
+            <label class="fieldset-label" for="port">{{ __('Port') }}</label>
             <input type="number" name="port" id="port" value="{{ old('port', $values['port']) }}"
                    class="input input-sm input-bordered w-full">
-        </div>
+        </fieldset>
     </div>
 
     <div class="grid gap-4 sm:grid-cols-3">
-        <div>
-            <label class="label" for="username"><span class="label-text">{{ __('Benutzer') }}</span></label>
+        <fieldset class="fieldset">
+            <label class="fieldset-label" for="username">{{ __('Benutzer') }}</label>
             <input type="text" name="username" id="username" value="{{ old('username', $values['username']) }}"
                    class="input input-sm input-bordered w-full">
-        </div>
-        <div>
-            <label class="label" for="password"><span class="label-text">{{ __('Passwort') }}</span></label>
+        </fieldset>
+        <fieldset class="fieldset">
+            <label class="fieldset-label" for="password">{{ __('Passwort') }}</label>
             <input type="password" name="password" id="password" value=""
                    class="input input-sm input-bordered w-full" autocomplete="new-password">
-        </div>
-        <div>
-            <label class="label" for="scheme"><span class="label-text">{{ __('Verschlüsselung') }}</span></label>
+        </fieldset>
+        <fieldset class="fieldset">
+            <label class="fieldset-label" for="scheme">{{ __('Verschlüsselung') }}</label>
             <select name="scheme" id="scheme" class="select select-sm select-bordered w-full">
                 <option value="" @selected(old('scheme', $values['scheme']) === '')>{{ __('keine') }}</option>
                 <option value="tls" @selected(old('scheme', $values['scheme']) === 'tls')>tls</option>
                 <option value="ssl" @selected(old('scheme', $values['scheme']) === 'ssl')>ssl</option>
             </select>
-        </div>
+        </fieldset>
     </div>
 
     <div class="grid gap-4 sm:grid-cols-2">
-        <div>
-            <label class="label" for="from_address"><span class="label-text">{{ __('Absender-Adresse') }}</span></label>
+        <fieldset class="fieldset">
+            <label class="fieldset-label" for="from_address">{{ __('Absender-Adresse') }}</label>
             <input type="email" name="from_address" id="from_address" value="{{ old('from_address', $values['from_address']) }}"
                    class="input input-sm input-bordered w-full" required>
-        </div>
-        <div>
-            <label class="label" for="from_name"><span class="label-text">{{ __('Absender-Name') }}</span></label>
+        </fieldset>
+        <fieldset class="fieldset">
+            <label class="fieldset-label" for="from_name">{{ __('Absender-Name') }}</label>
             <input type="text" name="from_name" id="from_name" value="{{ old('from_name', $values['from_name']) }}"
                    class="input input-sm input-bordered w-full" required>
-        </div>
+        </fieldset>
     </div>
 
     <div class="card-actions justify-between pt-2">

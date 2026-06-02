@@ -9,31 +9,31 @@
 <form method="POST" action="{{ route('install.integrations.store') }}" class="space-y-4">
     @csrf
 
-    <div>
-        <label class="label" for="lexoffice_api_key"><span class="label-text">{{ __('Lexoffice API-Schlüssel') }}</span></label>
+    <fieldset class="fieldset">
+        <label class="fieldset-label" for="lexoffice_api_key">{{ __('Lexoffice API-Schlüssel') }}</label>
         <input type="text" name="lexoffice_api_key" id="lexoffice_api_key" value="{{ old('lexoffice_api_key', $values['lexoffice_api_key']) }}"
                class="input input-sm input-bordered w-full" autocomplete="off">
-    </div>
+    </fieldset>
 
     <div class="divider text-xs">{{ __('Web-Push (VAPID)') }}</div>
 
-    <div>
-        <label class="label" for="vapid_subject"><span class="label-text">{{ __('VAPID Subject') }}</span></label>
+    <fieldset class="fieldset">
+        <label class="fieldset-label" for="vapid_subject">{{ __('VAPID Subject') }}</label>
         <input type="text" name="vapid_subject" id="vapid_subject" value="{{ old('vapid_subject', $values['vapid_subject']) }}"
                class="input input-sm input-bordered w-full">
-    </div>
+    </fieldset>
 
     <div class="grid gap-4 sm:grid-cols-2">
-        <div>
-            <label class="label" for="vapid_public_key"><span class="label-text">{{ __('Public Key') }}</span></label>
+        <fieldset class="fieldset">
+            <label class="fieldset-label" for="vapid_public_key">{{ __('Public Key') }}</label>
             <input type="text" name="vapid_public_key" id="vapid_public_key" value="{{ old('vapid_public_key', $values['vapid_public_key']) }}"
                    class="input input-sm input-bordered w-full" autocomplete="off">
-        </div>
-        <div>
-            <label class="label" for="vapid_private_key"><span class="label-text">{{ __('Private Key') }}</span></label>
+        </fieldset>
+        <fieldset class="fieldset">
+            <label class="fieldset-label" for="vapid_private_key">{{ __('Private Key') }}</label>
             <input type="text" name="vapid_private_key" id="vapid_private_key" value="{{ old('vapid_private_key', $values['vapid_private_key']) }}"
                    class="input input-sm input-bordered w-full" autocomplete="off">
-        </div>
+        </fieldset>
     </div>
 
     <div class="card-actions justify-between pt-2">

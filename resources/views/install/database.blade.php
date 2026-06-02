@@ -9,57 +9,57 @@
 <form method="POST" action="{{ route('install.database.store') }}" class="space-y-4">
     @csrf
 
-    <div>
-        <label class="label" for="driver"><span class="label-text">{{ __('Treiber') }}</span></label>
+    <fieldset class="fieldset">
+        <label class="fieldset-label" for="driver">{{ __('Treiber') }}</label>
         <select name="driver" id="driver" class="select select-sm select-bordered w-full">
             @foreach ($drivers as $d)
                 <option value="{{ $d }}" @selected(old('driver', $values['driver']) === $d)>{{ $d }}</option>
             @endforeach
         </select>
-    </div>
+    </fieldset>
 
-    <div data-driver-group="sqlite" class="space-y-1">
-        <label class="label" for="database_sqlite"><span class="label-text">{{ __('SQLite-Dateipfad') }}</span></label>
-        <input type="text" name="database_sqlite" id="database_sqlite" value="{{ old('database', $values['database']) }}"
+    <fieldset data-driver-group="sqlite" class="fieldset">
+        <label class="fieldset-label" for="database_sqlite">{{ __('SQLite-Dateipfad') }}</label>
+        <input type="text" name="database_sqlite" id="database_sqlite" value="{{ old('driver', $values['driver']) === 'sqlite' ? old('database', $values['database_sqlite']) : $values['database_sqlite'] }}"
                class="input input-sm input-bordered w-full">
-        <p class="text-xs text-base-content/50">{{ __('Standard: database/database.sqlite (wird bei Bedarf angelegt).') }}</p>
-    </div>
+        <p class="fieldset-label">{{ __('Standard: database/database.sqlite (wird bei Bedarf angelegt).') }}</p>
+    </fieldset>
 
     <div data-driver-group="server" class="space-y-4">
         <div class="grid gap-4 sm:grid-cols-2">
-            <div>
-                <label class="label" for="host"><span class="label-text">{{ __('Host') }}</span></label>
+            <fieldset class="fieldset">
+                <label class="fieldset-label" for="host">{{ __('Host') }}</label>
                 <input type="text" name="host" id="host" value="{{ old('host', $values['host']) }}"
                        class="input input-sm input-bordered w-full">
-            </div>
-            <div>
-                <label class="label" for="port"><span class="label-text">{{ __('Port') }}</span></label>
+            </fieldset>
+            <fieldset class="fieldset">
+                <label class="fieldset-label" for="port">{{ __('Port') }}</label>
                 <input type="number" name="port" id="port" value="{{ old('port', $values['port']) }}"
                        class="input input-sm input-bordered w-full">
-            </div>
+            </fieldset>
         </div>
-        <div>
-            <label class="label" for="database_server"><span class="label-text">{{ __('Datenbankname') }}</span></label>
-            <input type="text" name="database_server" id="database_server" value="{{ old('database', $values['database']) }}"
-                   class="input input-sm input-bordered w-full">
-        </div>
+        <fieldset class="fieldset">
+            <label class="fieldset-label" for="database_server">{{ __('Datenbankname') }}</label>
+            <input type="text" name="database_server" id="database_server" value="{{ old('driver', $values['driver']) !== 'sqlite' ? old('database', $values['database_server']) : $values['database_server'] }}"
+                   class="input input-sm input-bordered w-full" placeholder="workdiary">
+        </fieldset>
         <div class="grid gap-4 sm:grid-cols-2">
-            <div>
-                <label class="label" for="username"><span class="label-text">{{ __('Benutzer') }}</span></label>
+            <fieldset class="fieldset">
+                <label class="fieldset-label" for="username">{{ __('Benutzer') }}</label>
                 <input type="text" name="username" id="username" value="{{ old('username', $values['username']) }}"
                        class="input input-sm input-bordered w-full">
-            </div>
-            <div>
-                <label class="label" for="password"><span class="label-text">{{ __('Passwort') }}</span></label>
+            </fieldset>
+            <fieldset class="fieldset">
+                <label class="fieldset-label" for="password">{{ __('Passwort') }}</label>
                 <input type="password" name="password" id="password" value=""
                        class="input input-sm input-bordered w-full" autocomplete="new-password">
-            </div>
+            </fieldset>
         </div>
     </div>
 
     {{-- Wird per JS aus dem aktiven Treiber-Block befüllt, damit nur ein
          "database"-Feld an den Controller geht. --}}
-    <input type="hidden" name="database" id="database" value="{{ old('database', $values['database']) }}">
+    <input type="hidden" name="database" id="database" value="{{ old('database', $values['driver'] === 'sqlite' ? $values['database_sqlite'] : $values['database_server']) }}">
 
     <div class="card-actions justify-between pt-2">
         <a href="{{ route('install.application') }}" class="btn btn-sm btn-ghost">{{ __('Zurück') }}</a>
