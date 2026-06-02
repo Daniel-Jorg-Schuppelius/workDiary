@@ -88,7 +88,7 @@ class InstallationManager {
     public function requirements(?string $driver = null): array {
         $checks = [];
 
-        $minPhp = '8.3.0';
+        $minPhp = '8.4.0';
         $checks[] = [
             'label' => 'PHP >= ' . $minPhp . ' (' . PHP_VERSION . ')',
             'ok' => version_compare(PHP_VERSION, $minPhp, '>='),

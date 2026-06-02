@@ -8,7 +8,7 @@ Installationen.
 
 ## Aktueller Stand
 
-- Laravel 13, PHP 8.3, Vite 8, Tailwind CSS 4 und DaisyUI 5.
+- Laravel 13, PHP 8.4, Vite 8, Tailwind CSS 4 und DaisyUI 5.
 - Mandanten, Organisationen, Rollen, Gruppen und Berechtigungen auf Basis von
   `spatie/laravel-permission`.
 - Tagebuch, Kommentare, Anhaenge, Tags, Archiv, Wochenansicht, Kalender,
@@ -41,7 +41,7 @@ Die Produkt-Roadmap liegt unter [`docs/features`](docs/features/README.md).
 
 ## Voraussetzungen
 
-- PHP 8.3 oder neuer
+- PHP 8.4 oder neuer
 - Composer
 - Node.js mit npm
 - SQLite fuer lokale Entwicklung oder eine externe Datenbank
@@ -180,7 +180,7 @@ bash scripts/install-webspace.sh --url=https://example.com --skip-assets
 ```
 
 Wenn Composer auf dem Webspace ebenfalls nicht verfuegbar ist, `vendor/` lokal
-mit PHP 8.3-kompatibler Umgebung bauen und hochladen:
+mit PHP 8.4-kompatibler Umgebung bauen und hochladen:
 
 ```bash
 composer install --no-dev --prefer-dist --optimize-autoloader
