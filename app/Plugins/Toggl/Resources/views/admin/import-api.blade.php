@@ -61,11 +61,23 @@
                                     <option value="customer">{{ __('Als ein Kunde (Endkunden als Fremdkunden)') }}</option>
                                 </select>
                             </label>
-                            <label class="form-control md:col-span-4" x-show="mode === 'customer'" x-cloak>
-                                <span class="label-text text-xs">{{ __('Kundenname') }}</span>
+                            <div class="md:col-span-4 space-y-1" x-show="mode === 'customer'" x-cloak x-data="{ cmode: 'new' }">
+                                <span class="label-text text-xs">{{ __('Kunde') }}</span>
+                                <select x-model="cmode" class="select select-sm select-bordered w-full">
+                                    <option value="new">{{ __('Neuen Kunden anlegen') }}</option>
+                                    <option value="existing">{{ __('Bestehenden Kunden wählen') }}</option>
+                                </select>
+                                <select name="customer_ids[{{ $i }}]" x-show="cmode === 'existing'" x-cloak
+                                        class="select select-sm select-bordered w-full">
+                                    <option value="">{{ __('– Kunde wählen –') }}</option>
+                                    @foreach ($customers as $c)
+                                        <option value="{{ $c['sqid'] }}">{{ $c['label'] }}</option>
+                                    @endforeach
+                                </select>
                                 <input type="text" name="customer_names[{{ $i }}]" value="{{ $ws['name'] }}"
-                                       class="input input-sm input-bordered">
-                            </label>
+                                       x-show="cmode === 'new'" placeholder="{{ __('Kundenname') }}"
+                                       class="input input-sm input-bordered w-full">
+                            </div>
                         </div>
                     @endforeach
                 </div>
@@ -83,6 +95,29 @@
                                 {{ __('Alles auf einen Standard-Benutzer (Org-Owner) buchen') }}
                             </label>
                         </div>
+
+                        @if (! empty($togglUsers))
+                            <div class="mt-3 rounded-box border border-base-300 p-3">
+                                <p class="mb-2 text-xs text-base-content/60">
+                                    {{ __('Optional: einzelne Toggl-Benutzer fest einem bestehenden Benutzer zuordnen. Eine Auswahl hier hat Vorrang vor der obigen Regel (auch vor „Standard-Benutzer"). „Automatisch" = nach obiger Regel.') }}
+                                </p>
+                                <div class="space-y-1">
+                                    @foreach ($togglUsers as $tu)
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <span class="min-w-0 flex-1 truncate text-sm" title="{{ $tu['email'] }}">
+                                                {{ $tu['name'] }} <span class="text-base-content/50">({{ $tu['email'] }})</span>
+                                            </span>
+                                            <select name="user_map[{{ $tu['email'] }}]" class="select select-sm select-bordered">
+                                                <option value="">{{ __('— automatisch —') }}</option>
+                                                @foreach ($systemUsers as $su)
+                                                    <option value="{{ $su['sqid'] }}">{{ $su['label'] }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
                     </div>
 
                     <div>

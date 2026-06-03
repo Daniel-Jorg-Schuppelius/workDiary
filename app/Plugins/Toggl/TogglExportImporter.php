@@ -60,6 +60,9 @@ class TogglExportImporter {
     /** @var array<string, User> lower(email) → User (Lauf-Cache) */
     private array $userCache = [];
 
+    /** @var array<string, int> lower(email) → vorgegebene User-ID (explizite Zuordnung aus der UI) */
+    private array $userMap = [];
+
     private ?User $defaultUser = null;
 
     public function __construct(private readonly TogglWorkspaceReader $reader = new TogglWorkspaceReader) {}
@@ -67,14 +70,15 @@ class TogglExportImporter {
     /**
      * Import aus Workspace-Export-Ordnern auf der Platte.
      *
-     * @param  array<string, array{mode: string, customer_name?: ?string}>  $workspaceModes  Ordnername → Konfiguration
+     * @param  array<string, array{mode: string, customer_id?: int|string|null, customer_name?: ?string}>  $workspaceModes  Ordnername → Konfiguration
+     * @param  array<string, int>  $userMap  lower(email) → User-ID (explizite Benutzer-Zuordnung; Vorrang vor $userMode)
      * @return array{dry_run: bool, workspaces: array<int, array<string, mixed>>, totals: array<string, int>}
      */
-    public function import(string $basePath, Organization $organization, array $workspaceModes, string $userMode, bool $dryRun): array {
+    public function import(string $basePath, Organization $organization, array $workspaceModes, string $userMode, bool $dryRun, array $userMap = []): array {
         $basePath = rtrim($basePath, '/');
         $sources = [];
         foreach ($workspaceModes as $folder => $config) {
-            if (($config['mode'] ?? self::MODE_SKIP) === self::MODE_SKIP) {
+            if ($config['mode'] === self::MODE_SKIP) {
                 continue;
             }
             $path = $basePath . '/' . $folder;
@@ -84,18 +88,19 @@ class TogglExportImporter {
             $sources[(string) $folder] = new FolderWorkspaceSource($path, $this->reader);
         }
 
-        return $this->run($organization, $sources, $workspaceModes, $userMode, $dryRun);
+        return $this->run($organization, $sources, $workspaceModes, $userMode, $dryRun, $userMap);
     }
 
     /**
      * Import aus bereits gebundenen Workspace-Quellen (z. B. der Toggl-API).
      *
      * @param  array<string, WorkspaceSourceInterface>  $sources  Label → Quelle
-     * @param  array<string, array{mode: string, customer_name?: ?string}>  $workspaceModes  Label → Konfiguration
+     * @param  array<string, array{mode: string, customer_id?: int|string|null, customer_name?: ?string}>  $workspaceModes  Label → Konfiguration
+     * @param  array<string, int>  $userMap  lower(email) → User-ID (explizite Benutzer-Zuordnung; Vorrang vor $userMode)
      * @return array{dry_run: bool, workspaces: array<int, array<string, mixed>>, totals: array<string, int>}
      */
-    public function importFromApi(Organization $organization, array $sources, array $workspaceModes, string $userMode, bool $dryRun): array {
-        return $this->run($organization, $sources, $workspaceModes, $userMode, $dryRun);
+    public function importFromApi(Organization $organization, array $sources, array $workspaceModes, string $userMode, bool $dryRun, array $userMap = []): array {
+        return $this->run($organization, $sources, $workspaceModes, $userMode, $dryRun, $userMap);
     }
 
     /**
@@ -103,13 +108,15 @@ class TogglExportImporter {
      * Modus-Konfiguration in einer Transaktion (mit Dry-Run-Rollback).
      *
      * @param  array<string, WorkspaceSourceInterface>  $sources  Label → Quelle
-     * @param  array<string, array{mode: string, customer_name?: ?string}>  $workspaceModes  Label → Konfiguration
+     * @param  array<string, array{mode: string, customer_id?: int|string|null, customer_name?: ?string}>  $workspaceModes  Label → Konfiguration
+     * @param  array<string, int>  $userMap  lower(email) → User-ID (explizite Benutzer-Zuordnung; Vorrang vor $userMode)
      * @return array{dry_run: bool, workspaces: array<int, array<string, mixed>>, totals: array<string, int>}
      */
-    private function run(Organization $organization, array $sources, array $workspaceModes, string $userMode, bool $dryRun): array {
+    private function run(Organization $organization, array $sources, array $workspaceModes, string $userMode, bool $dryRun, array $userMap = []): array {
         $this->customerCache = [];
         $this->foreignCustomerCache = [];
         $this->userCache = [];
+        $this->userMap = $userMap;
         $this->defaultUser = null;
 
         $workspaces = [];
@@ -118,7 +125,7 @@ class TogglExportImporter {
         try {
             foreach ($sources as $label => $source) {
                 $config = $workspaceModes[$label] ?? ['mode' => self::MODE_SKIP];
-                $mode = $config['mode'] ?? self::MODE_SKIP;
+                $mode = $config['mode'];
                 if ($mode === self::MODE_SKIP) {
                     continue;
                 }
@@ -130,9 +137,9 @@ class TogglExportImporter {
                 if ($mode === self::MODE_OWN) {
                     $this->importOwn($organization, $source, $userMode, $stats);
                 } else {
-                    $customerName = trim((string) ($config['customer_name'] ?? $label)) ?: (string) $label;
-                    $stats['customer'] = $customerName;
-                    $this->importCustomer($organization, $source, $customerName, $userMode, $stats);
+                    $customer = $this->resolveTargetCustomer($organization, $config, (string) $label, $stats);
+                    $stats['customer'] = $customer->name;
+                    $this->importCustomer($organization, $source, $customer, $userMode, $stats);
                 }
 
                 $workspaces[] = $stats;
@@ -193,17 +200,49 @@ class TogglExportImporter {
     }
 
     /**
-     * Kunden-Workspace: genau ein Kunde (= die Firma). Jeder interne Toggl-Client
-     * wird als Fremdkunde (Endkunde) unter dem Kunden angelegt; die Projekte
-     * verweisen per `foreign_customer_id` auf ihren Endkunden. Keine
-     * Projektnamen-Präfixe — gleichnamige Projekte verschiedener Endkunden
-     * bleiben durch die Verknüpfung getrennt.
+     * Ermittelt den Zielkunden für einen Kunden-Workspace: entweder einen
+     * explizit gewählten bestehenden Kunden (`customer_id`, scoped auf die
+     * Organisation) oder — als Fallback — einen per Name angelegten/gefundenen
+     * Kunden (`customer_name`, sonst Workspace-Label). So lässt sich aus der UI
+     * sowohl „bestehenden Kunden wählen" als auch „neuen Kunden anlegen" abbilden.
+     *
+     * @param  array{mode: string, customer_id?: int|string|null, customer_name?: ?string}  $config
+     * @param  array<string, mixed>  $stats
+     */
+    private function resolveTargetCustomer(Organization $organization, array $config, string $label, array &$stats): Customer {
+        $customerId = $config['customer_id'] ?? null;
+        if ($customerId !== null && $customerId !== '') {
+            $existing = Customer::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->whereKey((int) $customerId)
+                ->first();
+
+            if ($existing instanceof Customer) {
+                $stats['customers_reused']++;
+                $this->customerCache[mb_strtolower((string) $existing->name)] = $existing;
+
+                return $existing;
+            }
+        }
+
+        $name = trim((string) ($config['customer_name'] ?? $label)) ?: $label;
+
+        return $this->findOrCreateCustomer($organization, $name, false, $stats);
+    }
+
+    /**
+     * Kunden-Workspace: genau ein Kunde (= die Firma, gewählt/angelegt via
+     * {@see resolveTargetCustomer()}). Jeder interne Toggl-Client wird als
+     * Fremdkunde (Endkunde) unter dem Kunden angelegt; die Projekte verweisen
+     * per `foreign_customer_id` auf ihren Endkunden. Keine Projektnamen-Präfixe —
+     * gleichnamige Projekte verschiedener Endkunden bleiben durch die Verknüpfung
+     * getrennt.
      *
      * @param  array<string, mixed>  $stats
      */
-    private function importCustomer(Organization $organization, WorkspaceSourceInterface $source, string $customerName, string $userMode, array &$stats): void {
-        $customer = $this->findOrCreateCustomer($organization, $customerName, false, $stats);
-        $this->rememberReference($organization, TogglImportService::EXT_TYPE_CLIENT, $customerName, $customer);
+    private function importCustomer(Organization $organization, WorkspaceSourceInterface $source, Customer $customer, string $userMode, array &$stats): void {
+        $this->rememberReference($organization, TogglImportService::EXT_TYPE_CLIENT, $customer->name, $customer);
 
         foreach ($source->users() as $u) {
             $this->resolveUser($organization, $u['email'], $u['name'], $userMode, $stats);
@@ -347,18 +386,24 @@ class TogglExportImporter {
 
     /** @param array<string, mixed> $stats */
     private function resolveUser(Organization $organization, ?string $email, ?string $name, string $userMode, array &$stats): User {
-        if ($userMode === self::USER_SINGLE) {
-            return $this->defaultUser($organization);
-        }
-
         $email = trim((string) $email);
-        if ($email === '') {
-            return $this->defaultUser($organization);
-        }
         $cacheKey = mb_strtolower($email);
 
-        if (isset($this->userCache[$cacheKey])) {
+        if ($cacheKey !== '' && isset($this->userCache[$cacheKey])) {
             return $this->userCache[$cacheKey];
+        }
+
+        // Explizite Zuordnung aus der UI (Toggl-E-Mail → bestimmter Benutzer) hat
+        // immer Vorrang — auch vor dem Einzelbenutzer-Modus.
+        if ($cacheKey !== '' && isset($this->userMap[$cacheKey])) {
+            $mapped = $this->loadOrgUser($organization, (int) $this->userMap[$cacheKey]);
+            if ($mapped instanceof User) {
+                return $this->userCache[$cacheKey] = $mapped;
+            }
+        }
+
+        if ($userMode === self::USER_SINGLE || $email === '') {
+            return $this->defaultUser($organization);
         }
 
         $existing = User::query()
@@ -382,6 +427,15 @@ class TogglExportImporter {
         $stats['users_created']++;
 
         return $this->userCache[$cacheKey] = $user;
+    }
+
+    /** Lädt einen Benutzer der Zielorganisation (oder null), für explizite Zuordnungen. */
+    private function loadOrgUser(Organization $organization, int $userId): ?User {
+        return User::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereKey($userId)
+            ->first();
     }
 
     /** @param array<string, mixed> $stats */

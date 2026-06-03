@@ -198,20 +198,23 @@ class TogglController extends Controller {
      * passieren soll (eigener Workspace / als ein Kunde / überspringen).
      */
     public function importExport(Request $request): View {
-        $this->admin();
+        $admin = $this->admin();
 
         $path = trim((string) $request->query('path', (string) config('plugins.toggl.export_path', '')));
         $workspaces = [];
+        $togglUsers = [];
         if ($path !== '' && is_dir($path)) {
             $reader = new TogglWorkspaceReader;
             foreach (TogglWorkspaceReader::detectWorkspaces($path) as $folder) {
                 $dir = rtrim($path, '/') . '/' . $folder;
+                $users = $reader->users($dir);
                 $workspaces[] = [
                     'folder' => $folder,
                     'clients' => count($reader->clients($dir)),
                     'projects' => count($reader->projects($dir)),
-                    'users' => count($reader->users($dir)),
+                    'users' => count($users),
                 ];
+                $this->collectTogglUsers($togglUsers, $users);
             }
         }
 
@@ -220,6 +223,9 @@ class TogglController extends Controller {
             'pathValid' => $path !== '' && is_dir($path),
             'workspaces' => $workspaces,
             'summary' => session('toggl_export_summary'),
+            'customers' => $this->customerSelectOptions(),
+            'systemUsers' => $this->userSelectOptions(),
+            'togglUsers' => $this->sortTogglUsers($togglUsers),
         ]);
     }
 
@@ -236,8 +242,12 @@ class TogglController extends Controller {
             'folders.*' => ['required', 'string'],
             'modes' => ['required', 'array'],
             'modes.*' => ['required', 'in:skip,own,customer'],
+            'customer_ids' => ['array'],
+            'customer_ids.*' => ['nullable', 'string', 'max:191'],
             'customer_names' => ['array'],
             'customer_names.*' => ['nullable', 'string', 'max:191'],
+            'user_map' => ['array'],
+            'user_map.*' => ['nullable', 'string', 'max:191'],
         ]);
 
         abort_unless(is_dir($validated['path']), 422, (string) __('Pfad nicht gefunden.'));
@@ -246,12 +256,14 @@ class TogglController extends Controller {
         foreach ($validated['folders'] as $i => $folder) {
             $workspaceModes[$folder] = [
                 'mode' => $validated['modes'][$i] ?? TogglExportImporter::MODE_SKIP,
+                'customer_id' => $this->optionalCustomerId($validated['customer_ids'][$i] ?? null),
                 'customer_name' => $validated['customer_names'][$i] ?? null,
             ];
         }
+        $userMap = $this->buildUserMap($validated['user_map'] ?? [], $organization);
 
         $dryRun = $validated['action'] === 'preview';
-        $summary = $this->exportImporter->import($validated['path'], $organization, $workspaceModes, $validated['user_mode'], $dryRun);
+        $summary = $this->exportImporter->import($validated['path'], $organization, $workspaceModes, $validated['user_mode'], $dryRun, $userMap);
 
         return redirect()
             ->route('admin.toggl.import-export', ['path' => $validated['path']])
@@ -273,18 +285,21 @@ class TogglController extends Controller {
         $config = TogglConfig::resolve($admin->organization_id);
         $tokenSet = $config['api_token'] !== null;
         $workspaces = [];
+        $togglUsers = [];
 
         if ($tokenSet) {
             $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
             foreach ($client->workspaces() as $ws) {
                 $source = new ApiWorkspaceSource($client, $ws['id']);
+                $users = $source->users();
                 $workspaces[] = [
                     'id' => $ws['id'],
                     'name' => $ws['name'],
                     'clients' => count($source->clients()),
                     'projects' => count($source->projects()),
-                    'users' => count($source->users()),
+                    'users' => count($users),
                 ];
+                $this->collectTogglUsers($togglUsers, $users);
             }
         }
 
@@ -292,6 +307,9 @@ class TogglController extends Controller {
             'tokenSet' => $tokenSet,
             'workspaces' => $workspaces,
             'summary' => session('toggl_api_summary'),
+            'customers' => $this->customerSelectOptions(),
+            'systemUsers' => $this->userSelectOptions(),
+            'togglUsers' => $this->sortTogglUsers($togglUsers),
         ]);
     }
 
@@ -311,8 +329,12 @@ class TogglController extends Controller {
             'workspace_names.*' => ['nullable', 'string', 'max:191'],
             'modes' => ['required', 'array'],
             'modes.*' => ['required', 'in:skip,own,customer'],
+            'customer_ids' => ['array'],
+            'customer_ids.*' => ['nullable', 'string', 'max:191'],
             'customer_names' => ['array'],
             'customer_names.*' => ['nullable', 'string', 'max:191'],
+            'user_map' => ['array'],
+            'user_map.*' => ['nullable', 'string', 'max:191'],
         ]);
 
         $config = TogglConfig::resolve($admin->organization_id);
@@ -336,14 +358,17 @@ class TogglController extends Controller {
             $sources[$label] = new ApiWorkspaceSource($client, (int) $wid, $from, $to);
             $workspaceModes[$label] = [
                 'mode' => $mode,
+                'customer_id' => $this->optionalCustomerId($validated['customer_ids'][$i] ?? null),
                 'customer_name' => $validated['customer_names'][$i] ?? null,
             ];
         }
 
         abort_if($sources === [], 422, (string) __('Kein Workspace ausgewählt.'));
 
+        $userMap = $this->buildUserMap($validated['user_map'] ?? [], $organization);
+
         $dryRun = $validated['action'] === 'preview';
-        $summary = $this->exportImporter->importFromApi($organization, $sources, $workspaceModes, $validated['user_mode'], $dryRun);
+        $summary = $this->exportImporter->importFromApi($organization, $sources, $workspaceModes, $validated['user_mode'], $dryRun, $userMap);
 
         return redirect()
             ->route('admin.toggl.import-api')
@@ -461,6 +486,98 @@ class TogglController extends Controller {
             'id' => (int) $c->id,
             'label' => (string) ($c->company ?: $c->name),
         ])->all();
+    }
+
+    /**
+     * Kunden der Organisation als Dropdown-Optionen (für die Workspace-Import-Modi).
+     *
+     * @return array<int, array{sqid: string, id: int, label: string}>
+     */
+    private function customerSelectOptions(): array {
+        return $this->customerOptions(
+            Customer::query()->orderBy('name')->get(['id', 'name', 'company'])
+        );
+    }
+
+    /**
+     * Benutzer der Organisation als Dropdown-Optionen (für die explizite
+     * Benutzer-Zuordnung der Toggl-Workspace-Benutzer).
+     *
+     * @return array<int, array{sqid: string, label: string}>
+     */
+    private function userSelectOptions(): array {
+        return User::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'email'])
+            ->map(fn(User $u): array => [
+                'sqid' => $u->sqid,
+                'label' => trim((string) $u->name) !== ''
+                    ? $u->name . ' (' . $u->email . ')'
+                    : (string) $u->email,
+            ])->all();
+    }
+
+    /**
+     * Sammelt distinkte Toggl-Workspace-Benutzer (über alle Workspaces hinweg,
+     * dedupliziert per E-Mail) für die Zuordnungs-Oberfläche.
+     *
+     * @param  array<string, array{email: string, name: string}>  $bucket  (per Referenz, Schlüssel = lower(email))
+     * @param  array<int, array{email: string, name: string, timezone?: ?string}>  $users
+     */
+    private function collectTogglUsers(array &$bucket, array $users): void {
+        foreach ($users as $u) {
+            $email = trim($u['email']);
+            if ($email === '') {
+                continue;
+            }
+            $key = mb_strtolower($email);
+            $bucket[$key] ??= ['email' => $email, 'name' => trim($u['name']) ?: $email];
+        }
+    }
+
+    /**
+     * @param  array<string, array{email: string, name: string}>  $bucket
+     * @return array<int, array{email: string, name: string}>
+     */
+    private function sortTogglUsers(array $bucket): array {
+        ksort($bucket);
+
+        return array_values($bucket);
+    }
+
+    /** Optionale Kunden-Sqid → ID (null bei leerer Auswahl, z. B. „neuer Kunde"). */
+    private function optionalCustomerId(?string $sqid): ?int {
+        $sqid = trim((string) $sqid);
+
+        return $sqid === '' ? null : $this->decodeId(Customer::class, $sqid);
+    }
+
+    /**
+     * Baut die explizite Benutzer-Zuordnung aus der UI (Toggl-E-Mail → System-User).
+     * Leere Auswahlen und Benutzer fremder Organisationen werden ignoriert.
+     *
+     * @param  array<string, string|null>  $raw  E-Mail → User-Sqid
+     * @return array<string, int>  lower(email) → User-ID
+     */
+    private function buildUserMap(array $raw, Organization $organization): array {
+        $map = [];
+        foreach ($raw as $email => $sqid) {
+            $email = trim((string) $email);
+            $sqid = trim((string) $sqid);
+            if ($email === '' || $sqid === '') {
+                continue;
+            }
+            $userId = Sqid::decode(User::class, $sqid);
+            if ($userId === null) {
+                continue;
+            }
+            $user = User::query()->whereKey($userId)->first();
+            if ($user instanceof User && (int) $user->organization_id === (int) $organization->id) {
+                $map[mb_strtolower($email)] = (int) $user->id;
+            }
+        }
+
+        return $map;
     }
 
     /**

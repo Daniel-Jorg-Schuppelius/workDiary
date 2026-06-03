@@ -111,6 +111,8 @@ class TogglApiWorkspaceImportTest extends TestCase {
 
         $website = Project::query()->where('name', 'Website')->first();
         $rollout = Project::query()->where('name', 'Rollout')->first();
+        $this->assertNotNull($website);
+        $this->assertNotNull($rollout);
         $this->assertSame($acme->id, $website->customer_id);
         $this->assertNull($website->foreign_customer_id);
         $this->assertSame($bigcorp->id, $rollout->customer_id);
@@ -121,7 +123,9 @@ class TogglApiWorkspaceImportTest extends TestCase {
 
         $this->assertSame(2, TimeEntry::query()->count());
         $this->assertSame(2, TimeEntry::query()->where('user_id', $dev->id)->count());
-        $this->assertSame(60, TimeEntry::query()->where('project_id', $website->id)->first()->minutes);
+        $entry = TimeEntry::query()->where('project_id', $website->id)->first();
+        $this->assertNotNull($entry);
+        $this->assertSame(60, $entry->minutes);
     }
 
     public function test_import_is_idempotent(): void {

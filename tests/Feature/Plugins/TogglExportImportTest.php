@@ -161,6 +161,48 @@ class TogglExportImportTest extends TestCase {
         $this->assertSame(0, $second['totals']['entries_created']);
     }
 
+    public function test_explicit_customer_id_uses_selected_customer(): void {
+        $selected = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Selected Corp']);
+
+        $result = (new TogglExportImporter)->import(
+            $this->base,
+            $this->organization,
+            ['BigCorp' => ['mode' => TogglExportImporter::MODE_CUSTOMER, 'customer_id' => $selected->id]],
+            TogglExportImporter::USER_SINGLE,
+            dryRun: false,
+        );
+
+        // Kein neuer "BigCorp"-Kunde — alles hängt unter dem gewählten Kunden.
+        $this->assertNull(Customer::query()->where('name', 'BigCorp')->first());
+        $this->assertSame(1, Customer::query()->count());
+        $this->assertSame(1, $result['workspaces'][0]['customers_reused']);
+        $this->assertSame(0, $result['workspaces'][0]['customers_created']);
+
+        $rollout = Project::query()->where('name', 'Rollout')->first();
+        $internal = ForeignCustomer::query()->where('name', 'Internal')->first();
+        $this->assertSame($selected->id, $rollout->customer_id);
+        $this->assertSame($selected->id, $internal->customer_id);
+    }
+
+    public function test_explicit_user_map_assigns_entries_to_mapped_user(): void {
+        $mapped = User::factory()->create(['organization_id' => $this->organization->id, 'email' => 'mapped@example.com', 'name' => 'Mapped']);
+
+        (new TogglExportImporter)->import(
+            $this->base,
+            $this->organization,
+            ['OwnWs' => ['mode' => TogglExportImporter::MODE_OWN]],
+            TogglExportImporter::USER_PER_EMAIL,
+            dryRun: false,
+            userMap: ['dev@example.com' => $mapped->id],
+        );
+
+        // dev@ wird NICHT neu angelegt; der Eintrag läuft auf den zugeordneten Benutzer.
+        $this->assertNull(User::query()->where('email', 'dev@example.com')->first());
+        $website = Project::query()->where('name', 'Website')->first();
+        $entry = TimeEntry::query()->where('project_id', $website->id)->first();
+        $this->assertSame($mapped->id, $entry->user_id);
+    }
+
     // --- Fixtures -----------------------------------------------------------
 
     private function buildOwn(string $dir): void {
