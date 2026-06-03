@@ -13,7 +13,7 @@ namespace App\Plugins\Toggl\Http\Controllers;
 use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, ExternalReference, Organization, Project, User};
-use App\Plugins\Toggl\Sources\TogglWorkspaceReader;
+use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglApiClient, TogglWorkspaceReader};
 use App\Plugins\Toggl\{TogglConfig, TogglExportImporter, TogglImportService, TogglPlugin};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -256,6 +256,98 @@ class TogglController extends Controller {
         return redirect()
             ->route('admin.toggl.import-export', ['path' => $validated['path']])
             ->with('toggl_export_summary', $summary)
+            ->with('status', $dryRun
+                ? (string) __('Vorschau berechnet — es wurde nichts gespeichert.')
+                : (string) __('Import abgeschlossen.'));
+    }
+
+    /**
+     * Workspace-Import direkt aus der Toggl-API: listet die Workspaces des
+     * hinterlegten Tokens und lässt je Workspace festlegen, was passieren soll
+     * (eigener Workspace / als ein Kunde / überspringen) — analog zum
+     * Ordner-Export, aber ohne Datei-Download.
+     */
+    public function importApi(): View {
+        $admin = $this->admin();
+
+        $config = TogglConfig::resolve($admin->organization_id);
+        $tokenSet = $config['api_token'] !== null;
+        $workspaces = [];
+
+        if ($tokenSet) {
+            $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
+            foreach ($client->workspaces() as $ws) {
+                $source = new ApiWorkspaceSource($client, $ws['id']);
+                $workspaces[] = [
+                    'id' => $ws['id'],
+                    'name' => $ws['name'],
+                    'clients' => count($source->clients()),
+                    'projects' => count($source->projects()),
+                    'users' => count($source->users()),
+                ];
+            }
+        }
+
+        return view('toggl::admin.import-api', [
+            'tokenSet' => $tokenSet,
+            'workspaces' => $workspaces,
+            'summary' => session('toggl_api_summary'),
+        ]);
+    }
+
+    /** Führt den API-Workspace-Import aus — als Vorschau (Dry-Run) oder echt. */
+    public function runImportApi(Request $request): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $validated = $request->validate([
+            'action' => ['required', 'in:preview,import'],
+            'user_mode' => ['required', 'in:per_email,single'],
+            'date_from' => ['nullable', 'date'],
+            'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
+            'workspace_ids' => ['required', 'array', 'min:1'],
+            'workspace_ids.*' => ['required', 'integer'],
+            'workspace_names' => ['array'],
+            'workspace_names.*' => ['nullable', 'string', 'max:191'],
+            'modes' => ['required', 'array'],
+            'modes.*' => ['required', 'in:skip,own,customer'],
+            'customer_names' => ['array'],
+            'customer_names.*' => ['nullable', 'string', 'max:191'],
+        ]);
+
+        $config = TogglConfig::resolve($admin->organization_id);
+        if ($config['api_token'] === null) {
+            return back()->withErrors(['api_token' => __('Kein Toggl API-Token hinterlegt.')]);
+        }
+
+        $from = ! empty($validated['date_from']) ? CarbonImmutable::parse($validated['date_from'])->startOfDay() : null;
+        $to = ! empty($validated['date_to']) ? CarbonImmutable::parse($validated['date_to'])->endOfDay() : null;
+
+        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
+
+        $sources = [];
+        $workspaceModes = [];
+        foreach ($validated['workspace_ids'] as $i => $wid) {
+            $mode = $validated['modes'][$i] ?? TogglExportImporter::MODE_SKIP;
+            if ($mode === TogglExportImporter::MODE_SKIP) {
+                continue;
+            }
+            $label = trim((string) ($validated['workspace_names'][$i] ?? ('Workspace ' . $wid))) ?: ('Workspace ' . $wid);
+            $sources[$label] = new ApiWorkspaceSource($client, (int) $wid, $from, $to);
+            $workspaceModes[$label] = [
+                'mode' => $mode,
+                'customer_name' => $validated['customer_names'][$i] ?? null,
+            ];
+        }
+
+        abort_if($sources === [], 422, (string) __('Kein Workspace ausgewählt.'));
+
+        $dryRun = $validated['action'] === 'preview';
+        $summary = $this->exportImporter->importFromApi($organization, $sources, $workspaceModes, $validated['user_mode'], $dryRun);
+
+        return redirect()
+            ->route('admin.toggl.import-api')
+            ->with('toggl_api_summary', $summary)
             ->with('status', $dryRun
                 ? (string) __('Vorschau berechnet — es wurde nichts gespeichert.')
                 : (string) __('Import abgeschlossen.'));

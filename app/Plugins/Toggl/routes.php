@@ -29,4 +29,7 @@ Route::middleware(['web', 'auth'])->group(function (): void {
 
     Route::get('admin/toggl/import-export', [TogglController::class, 'importExport'])->name('admin.toggl.import-export');
     Route::post('admin/toggl/import-export', [TogglController::class, 'runImportExport'])->name('admin.toggl.import-export.run');
+
+    Route::get('admin/toggl/import-api', [TogglController::class, 'importApi'])->name('admin.toggl.import-api');
+    Route::post('admin/toggl/import-api', [TogglController::class, 'runImportApi'])->name('admin.toggl.import-api.run');
 });

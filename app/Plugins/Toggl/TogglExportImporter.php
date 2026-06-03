@@ -13,7 +13,7 @@ namespace App\Plugins\Toggl;
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Customer, ExternalReference, ForeignCustomer, Organization, Project, TimeEntry, User};
-use App\Plugins\Toggl\Sources\{TogglEntry, TogglWorkspaceReader};
+use App\Plugins\Toggl\Sources\{FolderWorkspaceSource, TogglEntry, TogglWorkspaceReader, WorkspaceSourceInterface};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -65,41 +65,74 @@ class TogglExportImporter {
     public function __construct(private readonly TogglWorkspaceReader $reader = new TogglWorkspaceReader) {}
 
     /**
+     * Import aus Workspace-Export-Ordnern auf der Platte.
+     *
      * @param  array<string, array{mode: string, customer_name?: ?string}>  $workspaceModes  Ordnername → Konfiguration
      * @return array{dry_run: bool, workspaces: array<int, array<string, mixed>>, totals: array<string, int>}
      */
     public function import(string $basePath, Organization $organization, array $workspaceModes, string $userMode, bool $dryRun): array {
+        $basePath = rtrim($basePath, '/');
+        $sources = [];
+        foreach ($workspaceModes as $folder => $config) {
+            if (($config['mode'] ?? self::MODE_SKIP) === self::MODE_SKIP) {
+                continue;
+            }
+            $path = $basePath . '/' . $folder;
+            if (! is_dir($path)) {
+                continue;
+            }
+            $sources[(string) $folder] = new FolderWorkspaceSource($path, $this->reader);
+        }
+
+        return $this->run($organization, $sources, $workspaceModes, $userMode, $dryRun);
+    }
+
+    /**
+     * Import aus bereits gebundenen Workspace-Quellen (z. B. der Toggl-API).
+     *
+     * @param  array<string, WorkspaceSourceInterface>  $sources  Label → Quelle
+     * @param  array<string, array{mode: string, customer_name?: ?string}>  $workspaceModes  Label → Konfiguration
+     * @return array{dry_run: bool, workspaces: array<int, array<string, mixed>>, totals: array<string, int>}
+     */
+    public function importFromApi(Organization $organization, array $sources, array $workspaceModes, string $userMode, bool $dryRun): array {
+        return $this->run($organization, $sources, $workspaceModes, $userMode, $dryRun);
+    }
+
+    /**
+     * Gemeinsamer Importkern: verarbeitet die gebundenen Quellen gemäß ihrer
+     * Modus-Konfiguration in einer Transaktion (mit Dry-Run-Rollback).
+     *
+     * @param  array<string, WorkspaceSourceInterface>  $sources  Label → Quelle
+     * @param  array<string, array{mode: string, customer_name?: ?string}>  $workspaceModes  Label → Konfiguration
+     * @return array{dry_run: bool, workspaces: array<int, array<string, mixed>>, totals: array<string, int>}
+     */
+    private function run(Organization $organization, array $sources, array $workspaceModes, string $userMode, bool $dryRun): array {
         $this->customerCache = [];
         $this->foreignCustomerCache = [];
         $this->userCache = [];
         $this->defaultUser = null;
 
-        $basePath = rtrim($basePath, '/');
         $workspaces = [];
 
         DB::beginTransaction();
         try {
-            foreach ($workspaceModes as $folder => $config) {
-                $mode = $config['mode'];
+            foreach ($sources as $label => $source) {
+                $config = $workspaceModes[$label] ?? ['mode' => self::MODE_SKIP];
+                $mode = $config['mode'] ?? self::MODE_SKIP;
                 if ($mode === self::MODE_SKIP) {
                     continue;
                 }
 
-                $path = $basePath . '/' . $folder;
-                if (! is_dir($path)) {
-                    continue;
-                }
-
                 $stats = $this->newStats();
-                $stats['workspace'] = $folder;
+                $stats['workspace'] = $label;
                 $stats['mode'] = $mode;
 
                 if ($mode === self::MODE_OWN) {
-                    $this->importOwn($organization, $path, $userMode, $stats);
+                    $this->importOwn($organization, $source, $userMode, $stats);
                 } else {
-                    $customerName = trim((string) ($config['customer_name'] ?? $folder)) ?: $folder;
+                    $customerName = trim((string) ($config['customer_name'] ?? $label)) ?: (string) $label;
                     $stats['customer'] = $customerName;
-                    $this->importCustomer($organization, $path, $customerName, $userMode, $stats);
+                    $this->importCustomer($organization, $source, $customerName, $userMode, $stats);
                 }
 
                 $workspaces[] = $stats;
@@ -128,26 +161,26 @@ class TogglExportImporter {
      *
      * @param  array<string, mixed>  $stats
      */
-    private function importOwn(Organization $organization, string $path, string $userMode, array &$stats): void {
-        foreach ($this->reader->clients($path) as $client) {
+    private function importOwn(Organization $organization, WorkspaceSourceInterface $source, string $userMode, array &$stats): void {
+        foreach ($source->clients() as $client) {
             $customer = $this->findOrCreateCustomer($organization, $client['name'], $client['archived'], $stats);
             $this->rememberReference($organization, TogglImportService::EXT_TYPE_CLIENT, $client['name'], $customer);
         }
 
-        foreach ($this->reader->users($path) as $u) {
+        foreach ($source->users() as $u) {
             $this->resolveUser($organization, $u['email'], $u['name'], $userMode, $stats);
         }
 
         // projectKey(clientName, projectName) → Project, für die Eintrag-Zuordnung.
         $projectMap = [];
-        foreach ($this->reader->projects($path) as $p) {
+        foreach ($source->projects() as $p) {
             $customer = $this->findOrCreateCustomer($organization, (string) ($p['client_name'] ?? ''), false, $stats);
             $project = $this->findOrCreateProject($organization, $customer, $p['name'], $p, $stats);
             $projectMap[$this->key($p['client_name'], $p['name'])] = $project;
             $this->rememberReference($organization, TogglImportService::EXT_TYPE_PROJECT, $this->key($p['client_name'], $p['name']), $project);
         }
 
-        foreach ($this->reader->entries($path) as $entry) {
+        foreach ($source->entries() as $entry) {
             $project = $projectMap[$this->key($entry->clientName, $entry->projectName)] ?? null;
             if ($project === null) {
                 // Eintrag verweist auf (gelöschtes) Projekt/Client → on-the-fly anlegen.
@@ -168,24 +201,24 @@ class TogglExportImporter {
      *
      * @param  array<string, mixed>  $stats
      */
-    private function importCustomer(Organization $organization, string $path, string $customerName, string $userMode, array &$stats): void {
+    private function importCustomer(Organization $organization, WorkspaceSourceInterface $source, string $customerName, string $userMode, array &$stats): void {
         $customer = $this->findOrCreateCustomer($organization, $customerName, false, $stats);
         $this->rememberReference($organization, TogglImportService::EXT_TYPE_CLIENT, $customerName, $customer);
 
-        foreach ($this->reader->users($path) as $u) {
+        foreach ($source->users() as $u) {
             $this->resolveUser($organization, $u['email'], $u['name'], $userMode, $stats);
         }
 
         // key(clientName, projectName) → Project, getrennt je Endkunde (Fremdkunde).
         $projectMap = [];
-        foreach ($this->reader->projects($path) as $p) {
+        foreach ($source->projects() as $p) {
             $foreign = $this->findOrCreateForeignCustomer($organization, $customer, $p['client_name'], $stats);
             $project = $this->findOrCreateProject($organization, $customer, $p['name'], $p, $stats, $foreign);
             $projectMap[$this->key($p['client_name'], $p['name'])] = $project;
             $this->rememberReference($organization, TogglImportService::EXT_TYPE_PROJECT, $this->key($p['client_name'], $p['name']), $project);
         }
 
-        foreach ($this->reader->entries($path) as $entry) {
+        foreach ($source->entries() as $entry) {
             $project = $projectMap[$this->key($entry->clientName, $entry->projectName)] ?? null;
             if ($project === null) {
                 $foreign = $this->findOrCreateForeignCustomer($organization, $customer, $entry->clientName, $stats);

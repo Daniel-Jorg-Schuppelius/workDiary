@@ -10,6 +10,7 @@
             <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
                 <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Toggl Track importieren') }}</h1>
                 <div class="flex gap-2">
+                    <a href="{{ route('admin.toggl.import-api') }}" class="btn btn-ghost btn-sm">{{ __('Workspaces aus API importieren') }}</a>
                     <a href="{{ route('admin.toggl.import-export') }}" class="btn btn-ghost btn-sm">{{ __('Workspace-Export importieren') }}</a>
                     <a href="{{ route('admin.toggl.mappings.index') }}" class="btn btn-ghost btn-sm">{{ __('Zuordnungen verwalten') }}</a>
                 </div>
