@@ -20,7 +20,7 @@ use Carbon\CarbonInterface;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany, MorphMany};
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\{Carbon, Collection};
@@ -33,6 +33,12 @@ use Spatie\Permission\Traits\HasRoles;
  * @property int $id
  * @property int|null $organization_id
  * @property string $name
+ * @property string|null $first_name
+ * @property string|null $middle_names
+ * @property string|null $last_name
+ * @property string|null $phone
+ * @property string|null $mobile
+ * @property string|null $fax
  * @property string $email
  * @property Carbon|null $email_verified_at
  * @property string $password
@@ -132,6 +138,12 @@ class User extends Authenticatable {
         'organization_id',
         'customer_id',
         'name',
+        'first_name',
+        'middle_names',
+        'last_name',
+        'phone',
+        'mobile',
+        'fax',
         'email',
         'password',
         'legacy_user_id',
@@ -167,6 +179,47 @@ class User extends Authenticatable {
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
+    }
+
+    /**
+     * Strukturierte Adressen des Mitarbeiters (polymorph, konsistent mit
+     * Customer/Supplier). In der Regel genügt eine primäre Adresse.
+     *
+     * @return MorphMany<ContactAddress, $this>
+     */
+    public function addresses(): MorphMany {
+        return $this->morphMany(ContactAddress::class, 'addressable');
+    }
+
+    /**
+     * Bankverbindungen des Mitarbeiters (polymorph). Lokal/push-führend.
+     *
+     * @return MorphMany<ContactBankAccount, $this>
+     */
+    public function bankAccounts(): MorphMany {
+        return $this->morphMany(ContactBankAccount::class, 'accountable');
+    }
+
+    public function primaryAddress(): ?ContactAddress {
+        return $this->addresses()->where('is_primary', true)->first()
+            ?? $this->addresses()->first();
+    }
+
+    public function primaryBankAccount(): ?ContactBankAccount {
+        return $this->bankAccounts()->where('is_primary', true)->first()
+            ?? $this->bankAccounts()->first();
+    }
+
+    /**
+     * Voller Name aus den strukturierten Bestandteilen
+     * (Vorname, weitere Vornamen, Nachname). Fällt auf den Anzeigenamen
+     * `name` zurück, wenn keine Bestandteile erfasst sind.
+     */
+    public function fullName(): string {
+        $parts = array_filter([$this->first_name, $this->middle_names, $this->last_name],
+            static fn(?string $v): bool => $v !== null && trim($v) !== '');
+
+        return $parts === [] ? $this->name : implode(' ', $parts);
     }
 
     /**

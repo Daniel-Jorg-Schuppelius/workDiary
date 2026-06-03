@@ -2,7 +2,7 @@
 
 <x-form-group :legend="__('Mitarbeiterdaten')" icon="person" tone="primary" cols="2">
     <div class="fieldset md:col-span-2">
-        <label class="fieldset-label">{{ __('Vollständiger Name') }} *</label>
+        <label class="fieldset-label">{{ __('Anzeigename') }} *</label>
         <input type="text" name="name" class="input input-bordered w-full @error('name') input-error @enderror"
                value="{{ old('name', $member?->name) }}" required maxlength="255" autofocus>
         @error('name')<p class="text-error text-sm">{{ $message }}</p>@enderror
@@ -27,6 +27,8 @@
         @error('role')<p class="text-error text-sm">{{ $message }}</p>@enderror
     </div>
 </x-form-group>
+
+@include('users._contact_fields', ['user' => $member ?? null])
 
 @if (! isset($member))
     <x-form-group :legend="__('Initial-Passwort')" icon="lock" tone="warning" cols="2"

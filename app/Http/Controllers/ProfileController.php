@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ManagesUserContactDetails;
 use App\Models\{Attachment, User};
 use App\Services\Attachments\ImageMetaUploader;
 use Illuminate\Contracts\View\View;
@@ -17,12 +18,14 @@ use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller {
+    use ManagesUserContactDetails;
+
     public function __construct(private readonly ImageMetaUploader $avatarUploader) {}
 
     public function edit(): View {
         /** @var User $user */
         $user = $this->authUser();
-        $user->loadMissing('attachments');
+        $user->loadMissing(['attachments', 'addresses', 'bankAccounts']);
 
         return view('account._profile_dialog', [
             'user' => $user,
@@ -49,9 +52,10 @@ class ProfileController extends Controller {
             'preferences.startpage' => ['nullable', 'string', Rule::in($startpages)],
             'avatar' => ['nullable', 'file'],
             'remove_avatar' => ['nullable', 'boolean'],
-        ]);
+        ] + $this->contactDetailRules());
 
         $user->fill(['name' => $data['name'], 'email' => $data['email']]);
+        $this->fillUserContactFields($user, $data);
 
         if ($request->has('preferences')) {
             $clean = array_filter(
@@ -62,6 +66,9 @@ class ProfileController extends Controller {
         }
 
         $user->save();
+
+        $this->syncUserAddress($user, (array) ($data['address'] ?? []));
+        $this->syncUserBankAccount($user, (array) ($data['bank'] ?? []));
 
         $avatar = $request->file('avatar');
         if ($avatar instanceof UploadedFile) {

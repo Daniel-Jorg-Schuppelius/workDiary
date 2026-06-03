@@ -27,7 +27,7 @@
 
     <x-form-group :legend="__('Profildaten')" icon="person" tone="info" cols="2">
         <div class="fieldset">
-            <label class="fieldset-label" for="name">{{ __('Name') }}</label>
+            <label class="fieldset-label" for="name">{{ __('Anzeigename') }}</label>
             <input type="text" id="name" name="name" value="{{ old('name', $user->name) }}" class="input input-bordered w-full" required>
             @error('name')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
@@ -38,6 +38,8 @@
             @error('email')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
     </x-form-group>
+
+    @include('users._contact_fields', ['user' => $user])
 
     <x-form-group :legend="__('Profilbild')" icon="account_circle" tone="primary" cols="1"
                   :description="__('PNG, JPG oder WEBP. Max. :max KB.', ['max' => $avatarMaxKb])"

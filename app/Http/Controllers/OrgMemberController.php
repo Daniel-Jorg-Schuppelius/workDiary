@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\UserRole;
+use App\Http\Controllers\Concerns\ManagesUserContactDetails;
 use App\Models\User;
 use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -24,6 +25,7 @@ use Spatie\Permission\Models\Role;
  * Nur Org-Admins dürfen zugreifen (Gate 'manage-members' via OrganizationPolicy).
  */
 class OrgMemberController extends Controller {
+    use ManagesUserContactDetails;
     public function index(Request $request): View {
         Gate::authorize('manage-members');
 
@@ -70,7 +72,7 @@ class OrgMemberController extends Controller {
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'role' => ['required', 'in:' . implode(',', [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value])],
             'password' => ['required', 'string', 'confirmed', Password::defaults()],
-        ]);
+        ] + $this->contactDetailRules());
 
         $user = User::create([
             'organization_id' => $auth->organization_id,
@@ -79,6 +81,11 @@ class OrgMemberController extends Controller {
             'password' => Hash::make($data['password']),
             'must_change_password' => true,
         ]);
+        $this->fillUserContactFields($user, $data);
+        $user->save();
+
+        $this->syncUserAddress($user, (array) ($data['address'] ?? []));
+        $this->syncUserBankAccount($user, (array) ($data['bank'] ?? []));
 
         $role = Role::findOrCreate($data['role'], 'web');
         $user->assignRole($role);
@@ -90,6 +97,7 @@ class OrgMemberController extends Controller {
     public function edit(User $member): View {
         Gate::authorize('manage-members');
         $this->ensureSameOrg($member);
+        $member->loadMissing(['addresses', 'bankAccounts']);
 
         $roles = [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value];
 
@@ -104,9 +112,14 @@ class OrgMemberController extends Controller {
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $member->id],
             'role' => ['required', 'in:' . implode(',', [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value])],
-        ]);
+        ] + $this->contactDetailRules());
 
-        $member->update(['name' => $data['name'], 'email' => $data['email']]);
+        $member->fill(['name' => $data['name'], 'email' => $data['email']]);
+        $this->fillUserContactFields($member, $data);
+        $member->save();
+
+        $this->syncUserAddress($member, (array) ($data['address'] ?? []));
+        $this->syncUserBankAccount($member, (array) ($data['bank'] ?? []));
 
         $role = Role::findOrCreate($data['role'], 'web');
         $member->syncRoles([$role]);
