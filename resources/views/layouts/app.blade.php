@@ -553,6 +553,7 @@
 
                             $manageNavItems = [];
                             $adminNavItems  = [];
+                            $pluginPanelRoutes = []; // Routen aktiver Plugin-Panels (eigene Systemmenü-Gruppe „Plugins")
                             // Admin-/Verwaltungs-Menü: sowohl Legacy-Admins (ID ≤ 3 bzw.
                             // Namens-Fallback) als auch echte App-Admins (Spatie-Rolle
                             // Admin) erhalten Zugriff. Sonst sieht ein frisch angelegter
@@ -598,6 +599,22 @@
                                     $adminNavItems[] = ['route' => 'audit.index',                       'label' => __('Audit-Log'),        'icon' => 'fact_check',       'modal' => false];
                                     $adminNavItems[] = ['route' => 'admin.plugins.index',                'label' => __('Plugins'),          'icon' => 'extension',        'modal' => false];
                                     $adminNavItems[] = ['route' => 'admin.plugin-errors.index',          'label' => __('Plugin-Fehler'),    'icon' => 'bug_report',       'modal' => false];
+
+                                    // Aktive Plugins mit eigenem Admin-Panel (adminPanel()) dynamisch
+                                    // ins Systemmenü aufnehmen — gruppiert unter „Plugins" (siehe $adminGroups).
+                                    foreach (app(\App\Plugins\PluginManager::class)->enabled() as $_plugin) {
+                                        $_panel = $_plugin->adminPanel();
+                                        if ($_panel === null || empty($_panel['route']) || ! \Illuminate\Support\Facades\Route::has($_panel['route'])) {
+                                            continue;
+                                        }
+                                        $adminNavItems[] = [
+                                            'route' => $_panel['route'],
+                                            'label' => $_panel['label'] ?? $_plugin->name(),
+                                            'icon'  => $_panel['icon'] ?? 'extension',
+                                            'modal' => false,
+                                        ];
+                                        $pluginPanelRoutes[] = $_panel['route'];
+                                    }
                                 }
                                 $adminNavItems[] = ['route' => 'admin.legacy-migration.index',      'label' => __('Legacy-Migration'), 'icon' => 'sync_alt',         'modal' => false];
                             }
@@ -950,6 +967,7 @@
                                                 ['label' => __('Stammdaten'), 'icon' => 'inventory_2', 'routes' => ['admin.organizations.index', 'admin.branding.edit', 'admin.entry-types.index', 'admin.classifications.index', 'admin.classification-requirements.index', 'admin.branch-profiles.index', 'admin.expense-categories.index', 'admin.per-diem-rates.index']],
                                                 ['label' => __('Daten & Schnittstellen'), 'icon' => 'sync_alt', 'routes' => ['admin.automations.index', 'admin.data.index', 'admin.remote-support.pending.index']],
                                                 ['label' => __('System'), 'icon' => 'settings', 'routes' => ['admin.access.index', 'audit.index', 'admin.plugins.index', 'admin.plugin-errors.index', 'admin.legacy-migration.index']],
+                                                ['label' => __('Plugins'), 'icon' => 'extension', 'routes' => $pluginPanelRoutes],
                                             ];
                                             $adminByRoute = collect($adminNavItems)->keyBy('route');
                                             $adminGrouped = collect();
