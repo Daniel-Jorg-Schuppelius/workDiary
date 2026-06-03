@@ -341,6 +341,13 @@ class BranchProfileInstaller {
             $created['software']++;
         }
 
+        $installedProfileCode = (string) ($profile['code'] ?? $profileCode);
+        $profileVersion = (int) ($profile['version'] ?? 1);
+
+        $settings = is_array($organization->settings) ? $organization->settings : [];
+        $settings['branch_profile_code'] = $installedProfileCode;
+        $organization->forceFill(['settings' => $settings])->save();
+
         AuditLog::query()->create([
             'organization_id' => $organization->id,
             'user_id' => $actor?->id,
@@ -348,8 +355,8 @@ class BranchProfileInstaller {
             'auditable_type' => Organization::class,
             'auditable_id' => $organization->id,
             'changes' => [
-                'profile_code' => (string) ($profile['code'] ?? $profileCode),
-                'version' => (int) ($profile['version'] ?? 1),
+                'profile_code' => $installedProfileCode,
+                'version' => $profileVersion,
                 'created' => $created,
                 'updated' => $updated,
                 'skipped' => $skipped,
@@ -360,8 +367,8 @@ class BranchProfileInstaller {
         ]);
 
         return [
-            'profile_code' => (string) ($profile['code'] ?? $profileCode),
-            'version' => (int) ($profile['version'] ?? 1),
+            'profile_code' => $installedProfileCode,
+            'version' => $profileVersion,
             'created' => $created,
             'updated' => $updated,
             'skipped' => $skipped,

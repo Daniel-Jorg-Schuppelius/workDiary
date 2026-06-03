@@ -143,6 +143,28 @@ class OnboardingChecklistResolverTest extends TestCase {
         $this->assertSame('Wird später erledigt', $row->skipped_reason);
     }
 
+    public function test_resolver_accepts_existing_branch_profile_install_audit_as_done(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+
+        AuditLog::query()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $admin->id,
+            'event' => 'branch_profile.installed',
+            'auditable_type' => Organization::class,
+            'auditable_id' => $this->organization->id,
+            'changes' => ['profile_code' => 'it', 'version' => 1],
+        ]);
+
+        $resolver = app(OnboardingChecklistResolver::class);
+        $result = $resolver->forOrganization($this->organization->fresh(), $admin);
+
+        $branchProfileStep = collect($result['steps'])->firstWhere('code', 'org.branch_profile');
+
+        $this->assertIsArray($branchProfileStep);
+        $this->assertTrue($branchProfileStep['done']);
+        $this->assertSame('done', $branchProfileStep['state']);
+    }
+
     public function test_resolver_writes_step_completed_audit_only_on_transition_to_done(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 

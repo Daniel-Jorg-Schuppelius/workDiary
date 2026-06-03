@@ -11,7 +11,7 @@
 namespace Tests\Feature\Classification;
 
 use App\Enums\User\UserRole;
-use App\Models\{AuditLog, Classification, ClassificationRequirement, Tag, User};
+use App\Models\{AuditLog, Classification, ClassificationRequirement, Organization, Tag, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
@@ -99,6 +99,9 @@ class BranchProfileAdminControllerTest extends TestCase {
             'organization_id' => $this->organization->id,
             'event' => 'branch_profile.installed',
         ]);
+
+        $organization = Organization::query()->findOrFail($this->organization->id);
+        $this->assertSame('it', $organization->settings['branch_profile_code'] ?? null);
     }
 
     public function test_force_install_reapplies_profile_updates(): void {

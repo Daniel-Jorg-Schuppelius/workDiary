@@ -85,9 +85,6 @@ class OnboardingChecklistResolver {
 
     /** @return array<string, bool> */
     private function evaluate(Organization $organization): array {
-        $settings = is_array($organization->settings) ? $organization->settings : [];
-        $branchProfile = (string) ($settings['branch_profile_code'] ?? '');
-
         $usersInOrg = User::query()->where('organization_id', $organization->id);
 
         $adminExists = $this->organizationHasRole($organization->id, UserRole::Admin->value);
@@ -95,7 +92,7 @@ class OnboardingChecklistResolver {
 
         return [
             'org.profile' => filled($organization->name) && filled($organization->locale) && filled($organization->timezone),
-            'org.branch_profile' => $branchProfile !== '',
+            'org.branch_profile' => $this->organizationHasBranchProfile($organization),
             'users.invite' => $usersInOrg->count() >= 2,
             'roles.check' => $adminExists && $operatorExists,
             'classification.check' => Classification::query()->where('organization_id', $organization->id)->exists(),
@@ -113,6 +110,20 @@ class OnboardingChecklistResolver {
                 ->where('created_at', '>=', now()->subHours(26))
                 ->exists(),
         ];
+    }
+
+    private function organizationHasBranchProfile(Organization $organization): bool {
+        $settings = is_array($organization->settings) ? $organization->settings : [];
+        $branchProfile = (string) ($settings['branch_profile_code'] ?? '');
+
+        if ($branchProfile !== '') {
+            return true;
+        }
+
+        return AuditLog::query()
+            ->where('organization_id', $organization->id)
+            ->where('event', 'branch_profile.installed')
+            ->exists();
     }
 
     private function organizationHasRole(int $organizationId, string $roleName): bool {
