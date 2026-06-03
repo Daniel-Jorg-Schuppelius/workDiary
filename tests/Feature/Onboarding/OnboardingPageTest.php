@@ -43,7 +43,8 @@ class OnboardingPageTest extends TestCase {
             ->assertOk()
             ->assertSee(__('onboarding.page.heading'))
             ->assertSee(__('onboarding.page.progress_label'))
-            ->assertSee('org.profile');
+            ->assertSee(__('onboarding.step.org.profile.title'))
+            ->assertDontSee('org.profile');
     }
 
     public function test_skip_requires_permission(): void {

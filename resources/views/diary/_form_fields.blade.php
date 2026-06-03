@@ -11,9 +11,15 @@
     $entryTypeFlags = $entryTypeFlags ?? [];
     $customerOptions = $customerOptions ?? collect();
     $tourOptions = $tourOptions ?? collect();
-    $defaultEntryTypeId = old('entry_type_id', $entry?->entry_type_id ?? ($prefillEntryTypeId ?? 0));
+    $rawDefaultEntryTypeId = old('entry_type_id', $entry?->entry_type_id ?? ($prefillEntryTypeId ?? 0));
+    $defaultEntryTypeSqid = '0';
+    if (is_numeric($rawDefaultEntryTypeId) && (int) $rawDefaultEntryTypeId > 0) {
+        $defaultEntryTypeSqid = \App\Support\Sqid::encode(\App\Models\EntryType::class, (int) $rawDefaultEntryTypeId);
+    } elseif (is_string($rawDefaultEntryTypeId) && $rawDefaultEntryTypeId !== '' && $rawDefaultEntryTypeId !== '0') {
+        $defaultEntryTypeSqid = $rawDefaultEntryTypeId;
+    }
     // Initialer Flags-Block für Alpine (auch wenn nichts gewählt ist).
-    $initialFlags = $entryTypeFlags[(int) $defaultEntryTypeId] ?? [
+    $initialFlags = $entryTypeFlags[$defaultEntryTypeSqid] ?? [
         'requires_customer' => false,
         'requires_address' => false,
         'requires_schedule' => false,
@@ -36,12 +42,12 @@
 
 <div
     x-data="{
-        entryTypeId: @js((int) $defaultEntryTypeId),
+        entryTypeId: @js($defaultEntryTypeSqid),
         flagsMap: @js($entryTypeFlags),
         flags: @js($initialFlags),
         mode: @js($defaultMode),
         onTypeChange() {
-            const id = parseInt(this.entryTypeId || 0, 10);
+            const id = String(this.entryTypeId || '0');
             const next = this.flagsMap[id] ?? {
                 requires_customer: false, requires_address: false, requires_schedule: false,
                 requires_tour: false, allow_priority: false, allow_tour: false,
@@ -80,13 +86,13 @@
             <select
                 id="entry_type_id"
                 name="entry_type_id"
-                x-model.number="entryTypeId"
+                x-model="entryTypeId"
                 @change="onTypeChange()"
                 class="select select-bordered w-full @error('entry_type_id') select-error @enderror"
             >
                 <option value="0">{{ __('— ohne Typ —') }}</option>
                 @foreach ($entryTypes as $type)
-                    <option value="{{ $type->sqid }}" @selected((string) old('entry_type_id', \App\Support\Sqid::encode(\App\Models\EntryType::class, $defaultEntryTypeId)) === $type->sqid)>
+                    <option value="{{ $type->sqid }}" @selected($defaultEntryTypeSqid === $type->sqid)>
                         {{ $type->label }}
                     </option>
                 @endforeach
@@ -96,7 +102,7 @@
             @enderror
         </div>
 
-        <div class="fieldset" x-show="entryTypeId > 0" x-cloak>
+        <div class="fieldset" x-show="entryTypeId !== '0' && entryTypeId !== ''" x-cloak>
             <label class="fieldset-label" for="title">{{ __('Titel') }}</label>
             <input
                 type="text"

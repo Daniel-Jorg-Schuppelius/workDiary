@@ -79,8 +79,7 @@
                         </span>
                     </div>
 
-                    <div class="flex items-center justify-between gap-3 border-t border-base-300/70 pt-3">
-                        <span class="text-xs text-base-content/60">{{ $step['code'] }}</span>
+                    <div class="flex items-center justify-end gap-3 border-t border-base-300/70 pt-3">
                         <div class="flex flex-wrap items-center justify-end gap-2">
                             @if (! empty($step['href']) && ! empty($step['label']))
                                 <a href="{{ $step['href'] }}" class="btn btn-sm btn-outline">{{ $step['label'] }}</a>

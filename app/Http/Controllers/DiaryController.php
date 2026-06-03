@@ -384,12 +384,12 @@ class DiaryController extends Controller {
     /**
      * Liefert EntryTypes + Flags-Map + Kunden- & Tour-Optionen für die Formularansicht.
      *
-     * @return array{entryTypes: Collection<int, EntryType>, entryTypeFlags: array<int, array<string, mixed>>, customerOptions: Collection<int, Customer>, tourOptions: Collection<int, Tour>}
+     * @return array{entryTypes: Collection<int, EntryType>, entryTypeFlags: array<string, array<string, mixed>>, customerOptions: Collection<int, Customer>, tourOptions: Collection<int, Tour>}
      */
     private function entryTypeFormData(): array {
         /** @var Collection<int, EntryType> $types */
         $types = EntryType::query()->active()->ordered()->get();
-        $flagsMap = $types->mapWithKeys(fn(EntryType $t) => [$t->id => $t->flagsArray()])->all();
+        $flagsMap = $types->mapWithKeys(fn(EntryType $t) => [$t->sqid => $t->flagsArray()])->all();
 
         /** @var Collection<int, Customer> $customers */
         $customers = Customer::query()->orderBy('name')->limit(500)->get(['id', 'name', 'company']);

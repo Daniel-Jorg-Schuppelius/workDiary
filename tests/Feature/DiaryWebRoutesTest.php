@@ -10,7 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Customer, DiaryEntry, User};
+use App\Models\{Customer, DiaryEntry, EntryType, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -19,6 +19,33 @@ class DiaryWebRoutesTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+    }
+
+    public function test_create_form_uses_entry_type_sqids_for_frontend_flags(): void {
+        $user = User::factory()->user()->create();
+        $type = EntryType::factory()->create([
+            'organization_id' => $user->organization_id,
+            'slug' => 'angebot',
+            'label' => 'Angebot',
+            'requires_customer' => true,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('diary.create', ['entry_type_id' => $type->id]));
+
+        $response->assertOk();
+
+        $content = (string) $response->getContent();
+        $flagsMapStart = strpos($content, 'flagsMap:');
+        $flagsStart = strpos($content, 'flags:', (int) $flagsMapStart + 1);
+
+        $this->assertNotFalse($flagsMapStart);
+        $this->assertNotFalse($flagsStart);
+
+        $flagsMap = substr($content, (int) $flagsMapStart, (int) $flagsStart - (int) $flagsMapStart);
+
+        $this->assertStringContainsString($type->sqid, $flagsMap);
+        $this->assertStringContainsString('\u0022requires_customer\u0022:true', $flagsMap);
     }
 
     public function test_store_persists_customer_supplied_as_sqid(): void {
