@@ -10,11 +10,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Diary\{LocationMode, Mode};
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{FiltersDiaryEntries, ResolvesGlobalDateRange};
 use App\Http\Requests\SaveDiaryEntryRequest;
 use App\Legacy\Models\LegacyDiaryEntry;
-use App\Models\{Customer, DiaryEntry, EntryType, Project, Tag, Tour, User};
+use App\Models\{Customer, DiaryEntry, EntryType, Tag, Tour, User};
 use App\Services\Archive\ArchiveService;
 use App\Services\SqidEncoder;
 use App\Services\UI\DateRangeContext;
@@ -27,7 +26,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class DiaryController extends Controller {
-    use ResolvesGlobalDateRange;
+    use FiltersDiaryEntries, ResolvesGlobalDateRange;
 
     public function __construct(private readonly SqidEncoder $sqids) {}
 
@@ -79,104 +78,12 @@ class DiaryController extends Controller {
      */
     private function buildIndexQuery(Request $request): array {
         $query = DiaryEntry::query()
-            ->select([
-                'id',
-                'user_id',
-                'content',
-                'status',
-                'is_archived',
-                'start_at',
-                'end_at',
-                'created_at',
-                'mode',
-                'due_date',
-                'window_start_date',
-                'window_end_date',
-                'location_mode',
-            ])
+            ->select($this->diaryListColumns())
             ->with(['user:id,name', 'tags:id,name,color,slug'])
             ->orderByDesc('start_at');
 
-        if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', (int) $request->status);
-        }
-
         $range = $this->globalDateRange();
-        $from = $range['from']->toDateString();
-        $to = $range['to']->toDateString();
-
-        // Datumsbereich gilt modus-abhängig: fixed → start_at, deadline → due_date,
-        // window → Overlap mit window_*_date. Backlog/recurring haben kein Datum
-        // und werden immer mitgenommen, damit sie nicht im Range verschwinden.
-        $query->where(function ($q) use ($from, $to): void {
-            $q->where(function ($sub) use ($from, $to): void {
-                $sub->where('mode', Mode::Fixed->value)
-                    ->whereDate('start_at', '>=', $from)
-                    ->whereDate('start_at', '<=', $to);
-            });
-            $q->orWhere(function ($sub) use ($from, $to): void {
-                $sub->where('mode', Mode::Deadline->value)
-                    ->whereDate('due_date', '>=', $from)
-                    ->whereDate('due_date', '<=', $to);
-            });
-            $q->orWhere(function ($sub) use ($from, $to): void {
-                $sub->where('mode', Mode::Window->value)
-                    ->whereDate('window_end_date', '>=', $from)
-                    ->whereDate('window_start_date', '<=', $to);
-            });
-            $q->orWhereIn('mode', [Mode::Backlog->value, Mode::Recurring->value]);
-        });
-
-        if ($request->boolean('mine')) {
-            $query->where('user_id', Auth::id());
-        }
-
-        $customerId = $this->sqids->decode(Customer::class, (string) $request->query('customer', ''));
-        if ($customerId !== null) {
-            $query->where('customer_id', $customerId);
-        }
-
-        $showArchived = $request->boolean('archived');
-        if (! $showArchived) {
-            $query->where('is_archived', false);
-        }
-
-        $tagId = $this->sqids->decode(Tag::class, (string) $request->query('tag', ''));
-        if ($tagId !== null) {
-            $query->whereHas('tags', fn($q) => $q->where('tags.id', $tagId));
-        }
-
-        $entryTypeId = $this->sqids->decode(EntryType::class, (string) $request->query('entry_type', ''));
-        if ($entryTypeId !== null) {
-            $query->where('entry_type_id', $entryTypeId);
-        }
-
-        $projectId = $this->sqids->decode(Project::class, (string) $request->query('project', ''));
-        if ($projectId !== null) {
-            $query->where('project_id', $projectId);
-        }
-
-        $modeFilter = (string) $request->query('mode', '');
-        if ($modeFilter !== '' && in_array($modeFilter, Mode::values(), true)) {
-            $query->where('mode', $modeFilter);
-        }
-
-        $locationFilter = (string) $request->query('location', '');
-        if ($locationFilter !== '' && in_array($locationFilter, LocationMode::values(), true)) {
-            $query->where('location_mode', $locationFilter);
-        }
-
-        $q = trim((string) $request->query('q', ''));
-        if ($q !== '') {
-            $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $q) . '%';
-            $query->where(function ($w) use ($like) {
-                $w->where('content', 'like', $like)->orWhere('response', 'like', $like);
-            });
-        }
-
-        $filters = $request->only('status', 'mine', 'archived', 'tag', 'project', 'q', 'entry_type', 'mode', 'location', 'customer');
-        $filters['from'] = $from;
-        $filters['to'] = $to;
+        $filters = $this->applyDiaryFilters($query, $request, $range['from']->toDateString(), $range['to']->toDateString());
 
         return [$query, $filters];
     }

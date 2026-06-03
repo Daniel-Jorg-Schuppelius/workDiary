@@ -89,19 +89,12 @@ class DiaryExportController extends Controller {
             $query->where('status', (int) $request->status);
         }
 
-        // Hybrid-Filter: explizite Query-Parameter haben Vorrang, sonst globaler Kontext.
-        if ($request->filled('from') || $request->filled('to')) {
-            if ($request->filled('from')) {
-                $query->whereDate('start_at', '>=', $request->from);
-            }
-            if ($request->filled('to')) {
-                $query->whereDate('start_at', '<=', $request->to);
-            }
-        } else {
-            $range = app(DateRangeContext::class)->current();
-            $query->whereDate('start_at', '>=', $range['from']->toDateString());
-            $query->whereDate('start_at', '<=', $range['to']->toDateString());
-        }
+        // Hybrid-Filter: explizite Query-Parameter haben Vorrang, sonst globaler
+        // Kontext. Modus-bewusste Overlap-Logik identisch zur Auftragsliste.
+        $range = app(DateRangeContext::class)->current();
+        $from = $request->filled('from') ? (string) $request->from : $range['from']->toDateString();
+        $to = $request->filled('to') ? (string) $request->to : $range['to']->toDateString();
+        $query->overlappingDateRange($from, $to);
 
         if ($request->boolean('mine')) {
             $query->where('user_id', Auth::id());

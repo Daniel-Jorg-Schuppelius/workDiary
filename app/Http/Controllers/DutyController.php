@@ -11,7 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Vacation\VacationStatus;
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{FiltersDiaryEntries, ResolvesGlobalDateRange};
 use App\Models\Contracts\HasTimeWindow;
 use App\Models\{DiaryEntry, EmergencyAssignment, EntryType, OnCallShift, SickLeave, Tag, User, Vacation};
 use App\Services\HolidayService;
@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class DutyController extends Controller {
-    use ResolvesGlobalDateRange;
+    use FiltersDiaryEntries, ResolvesGlobalDateRange;
 
     public function index(Request $request, HolidayService $holidayService): View|RedirectResponse {
         // Backward-Compat: ?from=&to= einmalig in den globalen Context.
@@ -85,7 +85,8 @@ class DutyController extends Controller {
 
         $allTags = Tag::orderBy('name')->get(['id', 'name', 'color']);
         $users = $isAdmin ? User::query()->orderBy('name')->get(['id', 'name']) : collect();
-        $filters = $request->only('status', 'mine', 'q', 'tag', 'vtype', 'vstatus', 'user_id', 'entry_type', 'kkind', 'kstatus');
+        $filters = $request->only('status', 'mine', 'q', 'tag', 'vtype', 'vstatus', 'user_id', 'entry_type', 'kkind', 'kstatus',
+            'mode', 'location', 'archived', 'project', 'customer');
         if (! empty($filters['tag']) && is_numeric((string) $filters['tag'])) {
             $tagId = (int) $filters['tag'];
             $filters['tag'] = $tagId > 0 ? Sqid::encode(Tag::class, $tagId) : null;
@@ -135,35 +136,13 @@ class DutyController extends Controller {
     private function buildDiaryQuery(Request $request, string $rangeFrom, string $rangeTo): EloquentBuilder {
         /** @var EloquentBuilder<DiaryEntry> $diaryQuery */
         $diaryQuery = DiaryEntry::query()
-            ->select(['id', 'user_id', 'content', 'status', 'is_archived', 'start_at', 'end_at', 'created_at'])
+            ->select($this->diaryListColumns())
             ->with(['user:id,name', 'tags:id,name,color,slug'])
-            ->where('is_archived', false)
             ->orderByDesc('start_at');
 
-        if ($request->filled('status') && $request->status !== 'all') {
-            $diaryQuery->where('status', (int) $request->status);
-        }
-        $diaryQuery->whereDate('start_at', '>=', $rangeFrom);
-        $diaryQuery->whereDate('start_at', '<=', $rangeTo);
-        if ($request->boolean('mine')) {
-            $diaryQuery->where('user_id', Auth::id());
-        }
-        $q = trim((string) $request->query('q', ''));
-        if ($q !== '') {
-            $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $q) . '%';
-            $diaryQuery->where(fn($w) => $w->where('content', 'like', $like)->orWhere('response', 'like', $like));
-        }
-        $rawTag = (string) $request->query('tag', '');
-        $tagId = Sqid::decodeOrNumeric(Tag::class, $rawTag, 0);
-        if ($tagId > 0) {
-            $diaryQuery->whereHas('tags', fn($tq) => $tq->where('tags.id', $tagId));
-        }
-
-        $rawEntryType = (string) $request->query('entry_type', '');
-        $entryTypeId = Sqid::decodeOrNumeric(EntryType::class, $rawEntryType, 0);
-        if ($entryTypeId > 0) {
-            $diaryQuery->where('entry_type_id', $entryTypeId);
-        }
+        // Gemeinsame Filterlogik mit /diary (Concern), damit beide Listen
+        // identisch filtern und nicht auseinanderlaufen.
+        $this->applyDiaryFilters($diaryQuery, $request, $rangeFrom, $rangeTo);
 
         return $diaryQuery;
     }

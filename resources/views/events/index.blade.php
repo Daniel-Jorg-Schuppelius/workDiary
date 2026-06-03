@@ -78,10 +78,10 @@
                 </select>
             </x-filter-field>
 
-            <label class="flex items-center gap-2 pb-2">
+            <label class="flex shrink-0 items-center gap-2 cursor-pointer">
                 <input type="checkbox" id="ev-only-mandatory" name="only_mandatory" value="1"
                        @checked(request('only_mandatory'))
-                       class="checkbox checkbox-primary checkbox-sm"
+                       class="toggle toggle-primary toggle-sm"
                        onchange="this.form.submit()">
                 <span class="text-sm text-base-content/75">{{ __('Nur Pflicht') }}</span>
             </label>

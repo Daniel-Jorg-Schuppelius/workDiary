@@ -58,44 +58,7 @@
         <x-filter-bar :action="route('duties.index')" :reset="! empty($tabFilters) ? route('duties.index', ['tab' => $tab]) : null">
             <input type="hidden" name="tab" value="{{ $tab }}">
             @if ($tab === 'diary')
-                <x-filter-field :label="__('Suche')" for="duties-q" class="flex-1 min-w-52">
-                    <input id="duties-q" type="search" name="q" value="{{ $filters['q'] ?? '' }}"
-                           placeholder="{{ __('Inhalt oder Antwort …') }}"
-                           class="input input-bordered input-sm w-full">
-                </x-filter-field>
-                <x-filter-field :label="__('Status')" for="duties-status" class="flex-1 min-w-40">
-                    <select id="duties-status" name="status" class="select select-bordered select-sm w-full">
-                        <option value="all"  @selected(($filters['status'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
-                        <option value="2"    @selected(($filters['status'] ?? '') === '2')>{{ __('Offen') }}</option>
-                        <option value="3"    @selected(($filters['status'] ?? '') === '3')>{{ __('Problem') }}</option>
-                        <option value="1"    @selected(($filters['status'] ?? '') === '1')>{{ __('Bestätigt') }}</option>
-                        <option value="-1"   @selected(($filters['status'] ?? '') === '-1')>{{ __('Erledigt') }}</option>
-                    </select>
-                </x-filter-field>
-                @if ($allTags->isNotEmpty())
-                    <x-filter-field :label="__('Tag')" for="duties-tag" class="min-w-36">
-                        <select id="duties-tag" name="tag" class="select select-bordered select-sm">
-                            <option value="">—</option>
-                            @foreach ($allTags as $tag)
-                                <option value="{{ $tag->sqid }}" @selected((string) ($filters['tag'] ?? '') === $tag->sqid)>{{ $tag->name }}</option>
-                            @endforeach
-                        </select>
-                    </x-filter-field>
-                @endif
-                @if (($entryTypes ?? collect())->isNotEmpty())
-                    <x-filter-field :label="__('Typ')" for="duties-entry-type" class="min-w-40">
-                        <select id="duties-entry-type" name="entry_type" class="select select-bordered select-sm w-full">
-                            <option value="">{{ __('Alle Typen') }}</option>
-                            @foreach ($entryTypes as $type)
-                                <option value="{{ $type->sqid }}" @selected((string) ($filters['entry_type'] ?? '') === $type->sqid)>{{ $type->label }}</option>
-                            @endforeach
-                        </select>
-                    </x-filter-field>
-                @endif
-                <label class="flex items-center gap-2 pb-2">
-                    <input type="checkbox" id="mine" name="mine" value="1" @checked(!empty($filters['mine'])) class="checkbox checkbox-primary checkbox-sm">
-                    <span class="text-sm text-base-content/75">{{ __('Nur meine') }}</span>
-                </label>
+                @include('diary._filter_fields', ['idPrefix' => 'duties'])
             @elseif ($tab === 'urlaub')
                 @if ($isAdmin)
                     <x-filter-field :label="__('Mitarbeiter')" for="duties-user" class="flex-1 min-w-44">
@@ -151,6 +114,19 @@
                         <option value="cancelled" @selected(($filters['kstatus'] ?? '') === 'cancelled')>{{ __('Storniert') }}</option>
                     </select>
                 </x-filter-field>
+            @endif
+            @if ($tab === 'diary')
+                <x-slot:extra>
+                    <div class="dropdown dropdown-end">
+                        <label tabindex="0" class="btn btn-sm btn-outline gap-1">
+                            <x-icon name="download" /><span>{{ __('Export') }}</span>
+                        </label>
+                        <ul tabindex="0" class="dropdown-content menu z-50 mt-1 w-44 rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                            <li><a href="{{ route('diary.export.csv', array_filter($filters)) }}">{{ __('CSV') }}</a></li>
+                            <li><a href="{{ route('diary.export.pdf', array_filter($filters)) }}" target="_blank">{{ __('PDF (Druckansicht)') }}</a></li>
+                        </ul>
+                    </div>
+                </x-slot:extra>
             @endif
         </x-filter-bar>
 

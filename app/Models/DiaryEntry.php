@@ -252,4 +252,35 @@ class DiaryEntry extends Model {
     public function scopeInProgress(Builder $query): void {
         $query->where('status', Status::InProgress->value);
     }
+
+    /**
+     * Modus-bewusste Datumsfilterung: ein Eintrag erscheint, wenn sich sein
+     * Zeitraum mit [$from, $to] überschneidet.
+     *  - fixed    → Overlap zwischen [start_at, end_at] (end_at fällt bei Altdaten auf start_at zurück)
+     *  - deadline → due_date liegt im Range
+     *  - window   → Overlap zwischen [window_start_date, window_end_date]
+     *  - backlog/recurring → kein festes Datum ("irgendwann"), immer enthalten
+     *
+     * @param Builder<DiaryEntry> $query
+     */
+    public function scopeOverlappingDateRange(Builder $query, string $from, string $to): void {
+        $query->where(function (Builder $q) use ($from, $to): void {
+            $q->where(function (Builder $sub) use ($from, $to): void {
+                $sub->where('mode', Mode::Fixed->value)
+                    ->whereDate('start_at', '<=', $to)
+                    ->whereRaw('DATE(COALESCE(end_at, start_at)) >= ?', [$from]);
+            });
+            $q->orWhere(function (Builder $sub) use ($from, $to): void {
+                $sub->where('mode', Mode::Deadline->value)
+                    ->whereDate('due_date', '>=', $from)
+                    ->whereDate('due_date', '<=', $to);
+            });
+            $q->orWhere(function (Builder $sub) use ($from, $to): void {
+                $sub->where('mode', Mode::Window->value)
+                    ->whereDate('window_end_date', '>=', $from)
+                    ->whereDate('window_start_date', '<=', $to);
+            });
+            $q->orWhereIn('mode', [Mode::Backlog->value, Mode::Recurring->value]);
+        });
+    }
 }
