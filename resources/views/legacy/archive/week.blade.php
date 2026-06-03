@@ -1,8 +1,6 @@
 @extends('layouts.app')
 @section('title', __('Archiv') . ' — ' . __('Wochenansicht') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Wochenansicht') . ' (' . __('Archiv') . ')')
-@section('wrapper-height-class', 'h-[calc(100dvh_-_var(--app-header-h))] overflow-clip')
-@section('main-class', 'min-h-0 overflow-clip flex flex-col')
 
 @section('content')
 @php
@@ -14,6 +12,11 @@
     $hours   = range(7, 20);
     $legacyUsers = collect($users ?? []);
 @endphp
+
+{{-- Füllt den Viewport, fällt aber nie unter --wd-content-min-h (zentral in
+     app.css); bei kleinem Viewport scrollt die Seite. Mechanik wie alle
+     Legacy-Listen. --}}
+<div class="wd-fill-h flex flex-col gap-4">
 
 {{-- Toolbar --}}
 <div class="flex-none flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
@@ -64,7 +67,7 @@
 </div>
 
 {{-- Card mit Scroll-Container --}}
-<div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs mt-4">
+<div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
     <div id="week-scroll" class="h-full overflow-auto">
         @php
             $tableMinWidth = 'calc(4.5rem + ' . $legacyUsers->count() . ' * 6rem + 4.5rem)';
@@ -165,6 +168,7 @@
             </tbody>
         </table>
     </div>
+</div>
 </div>
 <script>
 (function () {

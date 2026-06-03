@@ -13,7 +13,7 @@
 @section('nav-title', __('Legacy-Migration'))
 
 @section('content')
-<div class="flex h-[calc(100dvh-11rem)] flex-col gap-6 overflow-auto">
+<div class="flex wd-fill-h flex-col gap-6 overflow-auto">
     <div class="flex justify-end">
         @if ($writeEnabled)
             <x-status-badge tone="warning">{{ __('Legacy-Schreibzugriff aktiv') }}</x-status-badge>

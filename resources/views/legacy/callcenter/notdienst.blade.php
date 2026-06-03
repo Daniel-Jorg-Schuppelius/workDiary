@@ -12,7 +12,7 @@
 @section('nav-title', __('Zentrale'))
 
 @section('content')
-    <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
+    <div class="flex wd-fill-h flex-col gap-4">
         {{-- Kopfzeile: Login-Info / Wochennavigation --}}
         <div class="flex flex-none flex-wrap items-center gap-2">
             @if (! empty($callcenterUser))

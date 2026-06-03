@@ -2,7 +2,7 @@
 
 @section('title', __('Pflichtregeln'))
 @section('nav-title', __('Pflichtregeln'))
-@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('wrapper-height-class', 'wd-page-fill')
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')

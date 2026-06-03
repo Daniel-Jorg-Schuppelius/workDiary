@@ -14,7 +14,7 @@
             'urlaub'       => ['label' => __('Urlaub'),     'count' => $tabCounts['urlaub']],
         ];
     @endphp
-    <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
+    <div class="flex wd-fill-h flex-col gap-4">
 
         {{-- Kopfzeile: Status-Badge + Tabs + Archiv-Link --}}
         <div class="flex flex-wrap items-center justify-between gap-3">

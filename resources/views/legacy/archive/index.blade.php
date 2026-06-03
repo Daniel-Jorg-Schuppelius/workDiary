@@ -97,7 +97,7 @@
             );
     @endphp
 
-    <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
+    <div class="flex wd-fill-h flex-col gap-4">
         {{-- Kopfzeile mit Modus-Badge, Tabs + Cross-Links --}}
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-3">

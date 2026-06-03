@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', __('Materialien'))
 @section('nav-title', __('Materialien'))
-@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('wrapper-height-class', 'wd-page-fill')
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Materialien und Verbrauchsmittel verwalten.')">

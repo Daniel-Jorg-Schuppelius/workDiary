@@ -1,9 +1,6 @@
 @extends('layouts.app')
 @section('title', 'Wochenansicht — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Wochenansicht'))
-{{-- Full-viewport-height: kein Seiten-Scroll, nur interner Tabellen-Scroll --}}
-@section('wrapper-height-class', 'h-[calc(100dvh_-_var(--app-header-h))] overflow-clip')
-@section('main-class', 'min-h-0 overflow-clip flex flex-col')
 
 @section('content')
 @php
@@ -15,6 +12,11 @@
     $hours   = range(7, 20); // Slots 07–08 bis 20–21
     $legacyUsers = collect($users ?? []);
 @endphp
+
+{{-- Füllt den Viewport, fällt aber nie unter --wd-content-min-h (zentral in
+     app.css). Bei kleinem Viewport/großer Schrift scrollt die Seite, statt den
+     Kalender zu zerquetschen. Gleiche Mechanik wie alle Legacy-Listen. --}}
+<div class="wd-fill-h flex flex-col gap-4">
 
 {{-- Toolbar --}}
 <div class="flex-none flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
@@ -66,7 +68,7 @@
 </div>
 
 {{-- Card mit Scroll-Container --}}
-<div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs mt-4">
+<div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
     <div id="week-scroll" class="h-full overflow-auto">
         @php
             /* min-width: Zeitspalte (4.5rem) + N Benutzer × 6rem + letzte Spalte (4.5rem) */
@@ -171,6 +173,7 @@
             </tbody>
         </table>
     </div>
+</div>
 </div>
 <script>
 (function () {

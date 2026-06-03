@@ -16,7 +16,7 @@
     /** @var \Illuminate\Support\Collection<int, \App\Legacy\Models\LegacyUser> $users */
     /** @var array<string, mixed> $filters */
 @endphp
-<div class="flex h-[calc(100dvh-11rem)] flex-col gap-4">
+<div class="flex wd-fill-h flex-col gap-4">
     <div role="tablist" class="tabs tabs-box flex-none self-start">
         <a role="tab" href="{{ route('legacy.oncall.index') }}" class="tab">{{ __('Bereitschaft') }}</a>
         <a role="tab" href="{{ route('legacy.notdienst.index') }}" class="tab tab-active">{{ __('Notdienst') }}</a>

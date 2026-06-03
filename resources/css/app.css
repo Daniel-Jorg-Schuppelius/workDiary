@@ -33,6 +33,10 @@
 @layer base {
     html {
         scroll-behavior: smooth;
+        /* Globaler absoluter Boden für die "füllende" Content-Höhe (wd-fill-h).
+           Unterhalb dieser Höhe wird nicht weiter zusammengestaucht – die Seite
+           scrollt stattdessen. Zentral hier anpassen. */
+        --wd-content-min-h: 42rem;
         /* Week calendar: height per hour row – adjust to scale the grid */
         --wd-hour-h: 2.5rem;
         /* Dialoge: zentrale Max-Höhe – luftiger als 100vh,
@@ -90,6 +94,37 @@
 }
 
 @layer components {
+    /* Füllt die verfügbare Viewport-Höhe (abzüglich App-Header + Seiten-
+       Padding ≈ 11rem), fällt aber nie unter den absoluten Boden
+       --wd-content-min-h. Ersetzt das frühere fixe `h-[calc(100dvh-11rem)]`:
+         • großer Schirm → calc() gewinnt → füllt den Viewport, innere
+           Listen/Tabellen scrollen intern wie bisher;
+         • kleiner Schirm / großer Zoom → Boden gewinnt → die SEITE scrollt,
+           nichts wird zerquetscht oder abgeschnitten.
+       Single source of truth für die Content-Mindesthöhe. */
+    .wd-fill-h {
+        height: max(var(--wd-content-min-h, 42rem), calc(100dvh - 11rem));
+    }
+
+    /* Responsives Höhen-/Scroll-Verhalten der Seiten im NEUEN Bereich
+       (Außen-Wrapper via @yield('wrapper-height-class')). Ersetzt den früher
+       in jeder Seite wiederholten Inline-String
+       `min-h-[…] lg:h-[…] lg:overflow-clip` durch eine zentrale Definition mit
+       demselben Boden --wd-content-min-h wie wd-fill-h:
+         • < lg  → min-height = max(Boden, Viewport) → bei Bedarf Seiten-Scroll;
+         • ≥ lg  → feste Höhe = max(Boden, Viewport) + overflow-clip → interner
+                   Scroll wie bisher; unterschreitet der Viewport den Boden,
+                   greift der Boden und die SEITE scrollt (kein Zerquetschen). */
+    .wd-page-fill {
+        min-height: max(var(--wd-content-min-h, 42rem), calc(100dvh - var(--app-header-h)));
+    }
+    @media (min-width: 64rem) {
+        .wd-page-fill {
+            height: max(var(--wd-content-min-h, 42rem), calc(100dvh - var(--app-header-h)));
+            overflow: clip;
+        }
+    }
+
     /* Volle-Höhe-Tabellenkarten (scroll="flex"): Wenn die Tabelle leer ist
        (nur die Empty-State-Zeile <tr data-sort-ignore>), soll die Karte NICHT
        die volle Resthöhe füllen, sondern auf Inhaltshöhe schrumpfen – damit

@@ -13,7 +13,7 @@
         ];
     @endphp
 
-    <div class="flex h-[calc(100dvh-11rem)] flex-col gap-4 overflow-auto pr-1">
+    <div class="flex wd-fill-h flex-col gap-4 overflow-auto pr-1">
         {{-- Status-Kacheln --}}
         <section>
             <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-base-content/70">{{ __('Status') }}</h2>

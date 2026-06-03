@@ -11,7 +11,7 @@
 
 @section('title', __('Nummernkreise'))
 @section('nav-title', __('Nummernkreise'))
-@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('wrapper-height-class', 'wd-page-fill')
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')

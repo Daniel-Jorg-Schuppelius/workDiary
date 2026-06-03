@@ -3,7 +3,7 @@
 @section('nav-title', __('Veranstaltungs-Kalender'))
 {{-- Volle Viewport-Höhe wie Schichtplan: Wrapper bekommt fixe Höhe, Main
      ist Flex-Container — damit das Kalender-Grid die restliche Höhe nutzt. --}}
-@section('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))] lg:h-[calc(100dvh_-_var(--app-header-h))] lg:overflow-clip')
+@section('wrapper-height-class', 'wd-page-fill')
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @php
