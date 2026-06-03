@@ -179,16 +179,20 @@ class DateRangeContext {
                 return 'year';
         }
         // Custom: leite Einheit aus Range ab, damit Vor/Zurück sinnvoll ist.
+        // Tag-genauer Vergleich (isSameDay), da Custom-Ranges nur als Datum
+        // (ohne Uhrzeit) in der Session liegen und endOf*-Zeiten beim Roundtrip
+        // verloren gehen. Sonst würde ein voller Monat/Jahr fälschlich als
+        // 'custom' erkannt und beim Vor/Zurück um Tage driften (Schaltjahre).
         if ($from->isSameDay($to)) {
             return 'day';
         }
-        if ($from->equalTo($from->startOfWeek()) && $to->equalTo($from->endOfWeek())) {
+        if ($from->isSameDay($from->startOfWeek()) && $to->isSameDay($from->endOfWeek())) {
             return 'week';
         }
-        if ($from->equalTo($from->startOfMonth()) && $to->equalTo($from->endOfMonth())) {
+        if ($from->isSameDay($from->startOfMonth()) && $to->isSameDay($from->endOfMonth())) {
             return 'month';
         }
-        if ($from->equalTo($from->startOfYear()) && $to->equalTo($from->endOfYear())) {
+        if ($from->isSameDay($from->startOfYear()) && $to->isSameDay($from->endOfYear())) {
             return 'year';
         }
 
