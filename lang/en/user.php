@@ -11,5 +11,6 @@ return [
         'callcenter' => 'Call Center',
         'support' => 'Support',
         'training_manager' => 'Training Manager',
+        'kunde' => 'Customer',
     ],
 ];

@@ -13,6 +13,7 @@
 @section('nav-title', $group->name)
 
 @section('content')
+@php($permissionLabels = (array) trans('access.permission'))
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
@@ -44,7 +45,7 @@
             <div class="card-body space-y-3">
                 <h3 class="card-title">{{ __('access.title.assigned_roles') }}</h3>
                 @forelse ($group->roles as $role)
-                    <x-status-badge size="md" outline>{{ $role->name }}</x-status-badge>
+                    <x-status-badge size="md" outline>{{ \Illuminate\Support\Facades\Lang::has("user.role.{$role->name}") ? __("user.role.{$role->name}") : $role->name }}</x-status-badge>
                 @empty
                     <p class="text-sm text-base-content/60">{{ __('access.empty.assigned_roles') }}</p>
                 @endforelse
@@ -55,7 +56,7 @@
                 @else
                     <div class="flex flex-wrap gap-1">
                         @foreach ($group->permissions as $permission)
-                            <x-status-badge tone="ghost" size="sm" class="font-mono">{{ $permission->name }}</x-status-badge>
+                            <x-status-badge tone="ghost" size="sm">{{ $permissionLabels[$permission->name] ?? $permission->name }}</x-status-badge>
                         @endforeach
                     </div>
                 @endif

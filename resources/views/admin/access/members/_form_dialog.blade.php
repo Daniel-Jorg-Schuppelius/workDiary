@@ -6,6 +6,7 @@
     /** @var array<int, int> $assignedRoles */
     /** @var array<int, int> $assignedGroups */
     /** @var \Illuminate\Support\Collection $effectivePermissions */
+    $permissionLabels = (array) trans('access.permission');
 @endphp
 <x-modal
     :title="__('access.title.member_edit', ['name' => $member->name])"
@@ -27,7 +28,7 @@
                         <input type="checkbox" name="roles[]" value="{{ $role->id }}"
                                class="checkbox checkbox-sm"
                                @checked(in_array($role->id, $assignedRoles, true)) />
-                        <span class="font-mono text-sm">{{ $role->name }}</span>
+                        <span class="text-sm">{{ \Illuminate\Support\Facades\Lang::has("user.role.{$role->name}") ? __("user.role.{$role->name}") : $role->name }}</span>
                         @if ($role->getAttribute(config('permission.column_names.team_foreign_key', 'team_id')) === null)
                             <x-status-badge tone="ghost" size="xs">{{ __('access.badge.global') }}</x-status-badge>
                         @endif
@@ -73,7 +74,7 @@
             @else
                 <div class="flex flex-wrap gap-1 max-h-40 overflow-y-auto">
                     @foreach ($effectivePermissions as $permission)
-                        <x-status-badge tone="ghost" size="sm" class="font-mono">{{ $permission }}</x-status-badge>
+                        <x-status-badge tone="ghost" size="sm">{{ $permissionLabels[$permission] ?? $permission }}</x-status-badge>
                     @endforeach
                 </div>
             @endif

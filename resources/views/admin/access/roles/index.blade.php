@@ -33,8 +33,8 @@
             </x-slot:head>
             @forelse ($orgRoles as $role)
                 <tr>
-                    <td class="font-mono text-sm">
-                        {{ $role->name }}
+                    <td class="text-sm" data-sort-value="{{ $role->name }}">
+                        {{ \Illuminate\Support\Facades\Lang::has("user.role.{$role->name}") ? __("user.role.{$role->name}") : $role->name }}
                         @if (in_array($role->name, $systemRoleNames, true))
                             <x-status-badge tone="info" size="xs" class="ml-2">{{ __('access.badge.system') }}</x-status-badge>
                         @endif
@@ -74,7 +74,7 @@
                 </x-slot:head>
                 @foreach ($globalRoles as $role)
                     <tr>
-                        <td class="font-mono text-sm">{{ $role->name }}</td>
+                        <td class="text-sm" data-sort-value="{{ $role->name }}">{{ \Illuminate\Support\Facades\Lang::has("user.role.{$role->name}") ? __("user.role.{$role->name}") : $role->name }}</td>
                         <td>{{ $role->permissions_count }}</td>
                     </tr>
                 @endforeach
