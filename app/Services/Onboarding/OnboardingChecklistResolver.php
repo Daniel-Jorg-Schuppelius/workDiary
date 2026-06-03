@@ -12,11 +12,21 @@ namespace App\Services\Onboarding;
 
 use App\Enums\Protocol\ProtocolStatus;
 use App\Enums\User\UserRole;
-use App\Models\{AuditLog, Classification, Customer, DiaryEntry, OnboardingProgress, Organization, Project, Protocol, TimeEntry, User};
+use App\Models\{AuditLog, Classification, Customer, DiaryEntry, OnboardingProgress, Organization, Project, Protocol, TimeEntry, User, UserGroup};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
 class OnboardingChecklistResolver {
+    /** @var list<string> */
+    private const OPERATOR_ROLE_NAMES = [
+        UserRole::User->value,
+        UserRole::Teamleitung->value,
+        UserRole::Aussendienst->value,
+        UserRole::Buchhaltung->value,
+        UserRole::Callcenter->value,
+        UserRole::TrainingManager->value,
+    ];
+
     /** @var list<array{code:string, required:bool}> */
     private const STEPS = [
         ['code' => 'org.profile', 'required' => true],
@@ -87,8 +97,8 @@ class OnboardingChecklistResolver {
     private function evaluate(Organization $organization): array {
         $usersInOrg = User::query()->where('organization_id', $organization->id);
 
-        $adminExists = $this->organizationHasRole($organization->id, UserRole::Admin->value);
-        $operatorExists = $this->organizationHasRole($organization->id, UserRole::User->value);
+        $adminExists = $this->organizationHasAnyRole($organization->id, [UserRole::Admin->value]);
+        $operatorExists = $this->organizationHasAnyRole($organization->id, self::OPERATOR_ROLE_NAMES);
 
         return [
             'org.profile' => filled($organization->name) && filled($organization->locale) && filled($organization->timezone),
@@ -126,18 +136,38 @@ class OnboardingChecklistResolver {
             ->exists();
     }
 
-    private function organizationHasRole(int $organizationId, string $roleName): bool {
+    /** @param list<string> $roleNames */
+    private function organizationHasAnyRole(int $organizationId, array $roleNames): bool {
         $rolesTable = config('permission.table_names.roles', 'roles');
         $modelHasRolesTable = config('permission.table_names.model_has_roles', 'model_has_roles');
         $teamKey = config('permission.column_names.team_foreign_key', 'team_id');
         $morphKey = config('permission.column_names.model_morph_key', 'model_id');
 
-        return DB::table($modelHasRolesTable)
+        $directRoleExists = DB::table($modelHasRolesTable)
             ->join($rolesTable, $rolesTable . '.id', '=', $modelHasRolesTable . '.role_id')
             ->join('users', 'users.id', '=', $modelHasRolesTable . '.' . $morphKey)
             ->where($modelHasRolesTable . '.model_type', User::class)
             ->where('users.organization_id', $organizationId)
-            ->where($rolesTable . '.name', $roleName)
+            ->whereIn($rolesTable . '.name', $roleNames)
+            ->where(function ($query) use ($rolesTable, $teamKey, $organizationId): void {
+                $query->where($rolesTable . '.' . $teamKey, $organizationId)
+                    ->orWhereNull($rolesTable . '.' . $teamKey);
+            })
+            ->exists();
+
+        if ($directRoleExists) {
+            return true;
+        }
+
+        return DB::table($modelHasRolesTable)
+            ->join($rolesTable, $rolesTable . '.id', '=', $modelHasRolesTable . '.role_id')
+            ->join('user_groups', 'user_groups.id', '=', $modelHasRolesTable . '.' . $morphKey)
+            ->join('user_user_group', 'user_user_group.user_group_id', '=', 'user_groups.id')
+            ->join('users', 'users.id', '=', 'user_user_group.user_id')
+            ->where($modelHasRolesTable . '.model_type', UserGroup::class)
+            ->where('user_groups.organization_id', $organizationId)
+            ->where('users.organization_id', $organizationId)
+            ->whereIn($rolesTable . '.name', $roleNames)
             ->where(function ($query) use ($rolesTable, $teamKey, $organizationId): void {
                 $query->where($rolesTable . '.' . $teamKey, $organizationId)
                     ->orWhereNull($rolesTable . '.' . $teamKey);

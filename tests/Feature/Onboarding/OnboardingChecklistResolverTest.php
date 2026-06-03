@@ -11,10 +11,13 @@
 namespace Tests\Feature\Onboarding;
 
 use App\Enums\Protocol\ProtocolStatus;
-use App\Models\{AuditLog, Classification, Customer, DiaryEntry, OnboardingProgress, Organization, Project, Protocol, TimeEntry, User};
+use App\Enums\User\UserRole;
+use App\Models\{AuditLog, Classification, Customer, DiaryEntry, OnboardingProgress, Organization, Project, Protocol, TimeEntry, User, UserGroup};
 use App\Services\Onboarding\OnboardingChecklistResolver;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -163,6 +166,50 @@ class OnboardingChecklistResolverTest extends TestCase {
         $this->assertIsArray($branchProfileStep);
         $this->assertTrue($branchProfileStep['done']);
         $this->assertSame('done', $branchProfileStep['state']);
+    }
+
+    public function test_resolver_accepts_operational_roles_beyond_basic_user_role(): void {
+        User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        User::factory()->teamleitung()->create(['organization_id' => $this->organization->id]);
+
+        $resolver = app(OnboardingChecklistResolver::class);
+        $result = $resolver->forOrganization($this->organization->fresh());
+
+        $rolesStep = collect($result['steps'])->firstWhere('code', 'roles.check');
+
+        $this->assertIsArray($rolesStep);
+        $this->assertTrue($rolesStep['done']);
+        $this->assertSame('done', $rolesStep['state']);
+    }
+
+    public function test_resolver_accepts_operational_role_assigned_through_group(): void {
+        User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $operator = User::factory()->create(['organization_id' => $this->organization->id]);
+
+        $group = UserGroup::query()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Disposition',
+        ]);
+
+        $registrar = app(PermissionRegistrar::class);
+        $registrar->setPermissionsTeamId($this->organization->id);
+
+        $role = Role::query()
+            ->where('name', UserRole::Teamleitung->value)
+            ->where('team_id', $this->organization->id)
+            ->firstOrFail();
+
+        $group->syncRoles([$role]);
+        $operator->userGroups()->attach($group->id, ['joined_at' => now()]);
+
+        $resolver = app(OnboardingChecklistResolver::class);
+        $result = $resolver->forOrganization($this->organization->fresh());
+
+        $rolesStep = collect($result['steps'])->firstWhere('code', 'roles.check');
+
+        $this->assertIsArray($rolesStep);
+        $this->assertTrue($rolesStep['done']);
+        $this->assertSame('done', $rolesStep['state']);
     }
 
     public function test_resolver_writes_step_completed_audit_only_on_transition_to_done(): void {
