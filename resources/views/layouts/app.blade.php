@@ -553,7 +553,8 @@
 
                             $manageNavItems = [];
                             $adminNavItems  = [];
-                            $pluginPanelRoutes = []; // Routen aktiver Plugin-Panels (eigene Systemmenü-Gruppe „Plugins")
+                            $pluginPanelRoutes = []; // Routen aktiver Plugin-Panels (für Ungruppiert-Ausschluss)
+                            $pluginPanelItems  = []; // fertige Menü-Items der Plugin-Panels (eigene Systemmenü-Gruppe „Plugins")
                             // Admin-/Verwaltungs-Menü: sowohl Legacy-Admins (ID ≤ 3 bzw.
                             // Namens-Fallback) als auch echte App-Admins (Spatie-Rolle
                             // Admin) erhalten Zugriff. Sonst sieht ein frisch angelegter
@@ -604,15 +605,26 @@
                                     // ins Systemmenü aufnehmen — gruppiert unter „Plugins" (siehe $adminGroups).
                                     foreach (app(\App\Plugins\PluginManager::class)->enabled() as $_plugin) {
                                         $_panel = $_plugin->adminPanel();
-                                        if ($_panel === null || empty($_panel['route']) || ! \Illuminate\Support\Facades\Route::has($_panel['route'])) {
+                                        if ($_panel === null || empty($_panel['route'])) {
                                             continue;
                                         }
-                                        $adminNavItems[] = [
-                                            'route' => $_panel['route'],
-                                            'label' => $_panel['label'] ?? $_plugin->name(),
-                                            'icon'  => $_panel['icon'] ?? 'extension',
-                                            'modal' => false,
+                                        $_routeDef = \Illuminate\Support\Facades\Route::getRoutes()->getByName($_panel['route']);
+                                        if ($_routeDef === null) {
+                                            continue; // Route (noch) nicht registriert – Plugin liefert sie ggf. erst bei Aktivierung
+                                        }
+                                        // Manche Plugins zeigen auf admin.plugins.edit/{plugin}; benötigte
+                                        // Parameter mit der Plugin-ID auffüllen, sonst wirft route() beim Rendern.
+                                        $_params = count($_routeDef->parameterNames()) > 0 ? [$_plugin->id()] : [];
+                                        $_item = [
+                                            'route'        => $_panel['route'],
+                                            'route_params' => $_params,
+                                            'label'        => $_panel['label'] ?? $_plugin->name(),
+                                            'icon'         => $_panel['icon'] ?? 'extension',
+                                            // admin.plugins.edit rendert nur das Settings-Modal-Fragment → als Modal-Trigger öffnen.
+                                            'modal'        => $_panel['route'] === 'admin.plugins.edit',
                                         ];
+                                        $adminNavItems[]    = $_item;
+                                        $pluginPanelItems[] = $_item;
                                         $pluginPanelRoutes[] = $_panel['route'];
                                     }
                                 }
@@ -806,7 +818,7 @@
                             <nav class="hidden xl:flex items-center gap-1">
                                 @foreach ($mainNavItems as $item)
                                     @php $active = collect($item['matches'])->contains(fn ($m) => request()->routeIs($m)); @endphp
-                                    <a href="{{ route($item['route']) }}"
+                                    <a href="{{ route($item['route'], $item['route_params'] ?? []) }}"
                                        @if ($item['modal']) data-entry-modal-trigger @endif
                                        class="btn btn-sm {{ $active ? 'btn-primary' : 'btn-ghost' }}">
                                         {{ $item['label'] }}
@@ -820,7 +832,7 @@
                                     @foreach ($mainNavItems as $item)
                                         @php $active = collect($item['matches'])->contains(fn ($m) => request()->routeIs($m)); @endphp
                                         <li>
-                                            <a href="{{ route($item['route']) }}"
+                                            <a href="{{ route($item['route'], $item['route_params'] ?? []) }}"
                                                @if ($item['modal']) data-entry-modal-trigger @endif
                                                class="{{ $active ? 'active' : '' }}">
                                                 {{ $item['label'] }}
@@ -837,7 +849,7 @@
                                                 :tone="$active ? 'primary' : 'ghost'"
                                                 size="sm"
                                                 :label="$item['label']"
-                                                :href="route($item['route'])" />
+                                                :href="route($item['route'], $item['route_params'] ?? [])" />
                                 @endforeach
                             @endif
 
@@ -858,14 +870,14 @@
                                                         :tone="$active ? 'primary' : 'ghost'"
                                                         size="sm"
                                                         :label="$item['label']"
-                                                        :href="route($item['route'])" />
+                                                        :href="route($item['route'], $item['route_params'] ?? [])" />
                                         </div>
                                     @else
                                         <x-icon-btn :icon="$item['icon'] ?? 'tune'"
                                                     :tone="$active ? 'primary' : 'ghost'"
                                                     size="sm"
                                                     :label="$item['label']"
-                                                    :href="route($item['route'])" />
+                                                    :href="route($item['route'], $item['route_params'] ?? [])" />
                                     @endif
                                 @endforeach
                             @endif
@@ -927,7 +939,7 @@
                                                         @foreach ($group['items'] as $item)
                                                             @php $active = request()->routeIs($item['route']); @endphp
                                                             <li class="w-full">
-                                                                <a href="{{ route($item['route']) }}" class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}">
+                                                                <a href="{{ route($item['route'], $item['route_params'] ?? []) }}" class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}">
                                                                     <x-icon :name="$item['icon'] ?? 'tune'" class="text-[1.1rem] shrink-0" />
                                                                     <span class="min-w-0 flex-1 truncate">{{ $item['label'] }}</span>
                                                                 </a>
@@ -940,7 +952,7 @@
                                         @foreach ($manageUngrouped as $item)
                                             @php $active = request()->routeIs($item['route']); @endphp
                                             <li class="w-full">
-                                                <a href="{{ route($item['route']) }}" class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}">
+                                                <a href="{{ route($item['route'], $item['route_params'] ?? []) }}" class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}">
                                                     <x-icon :name="$item['icon'] ?? 'tune'" class="text-[1.1rem] shrink-0" />
                                                     <span class="min-w-0 flex-1 truncate">{{ $item['label'] }}</span>
                                                 </a>
@@ -967,7 +979,6 @@
                                                 ['label' => __('Stammdaten'), 'icon' => 'inventory_2', 'routes' => ['admin.organizations.index', 'admin.branding.edit', 'admin.entry-types.index', 'admin.classifications.index', 'admin.classification-requirements.index', 'admin.branch-profiles.index', 'admin.expense-categories.index', 'admin.per-diem-rates.index']],
                                                 ['label' => __('Daten & Schnittstellen'), 'icon' => 'sync_alt', 'routes' => ['admin.automations.index', 'admin.data.index', 'admin.remote-support.pending.index']],
                                                 ['label' => __('System'), 'icon' => 'settings', 'routes' => ['admin.access.index', 'audit.index', 'admin.plugins.index', 'admin.plugin-errors.index', 'admin.legacy-migration.index']],
-                                                ['label' => __('Plugins'), 'icon' => 'extension', 'routes' => $pluginPanelRoutes],
                                             ];
                                             $adminByRoute = collect($adminNavItems)->keyBy('route');
                                             $adminGrouped = collect();
@@ -977,7 +988,13 @@
                                                     $adminGrouped->push(['label' => $g['label'], 'icon' => $g['icon'], 'items' => $items]);
                                                 }
                                             }
+                                            // Plugin-Panels als eigene Gruppe – direkt aus den Items, da mehrere
+                                            // Plugins auf dieselbe Route (admin.plugins.edit) zeigen können.
+                                            if (! empty($pluginPanelItems)) {
+                                                $adminGrouped->push(['label' => __('Plugins'), 'icon' => 'extension', 'items' => collect($pluginPanelItems)]);
+                                            }
                                             $groupedRoutes = $adminGrouped->flatMap(fn ($g) => $g['items']->pluck('route'))->all();
+                                            $groupedRoutes = array_merge($groupedRoutes, $pluginPanelRoutes);
                                             $adminUngrouped = collect($adminNavItems)->reject(fn ($i) => in_array($i['route'], $groupedRoutes, true))->values();
                                         @endphp
                                         @foreach ($adminGrouped as $group)
@@ -998,7 +1015,9 @@
                                                         @foreach ($group['items'] as $item)
                                                             @php $active = request()->routeIs($item['route']); @endphp
                                                             <li class="w-full">
-                                                                <a href="{{ route($item['route']) }}" class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}">
+                                                                <a href="{{ route($item['route'], $item['route_params'] ?? []) }}"
+                                                                   @if (! empty($item['modal'])) data-entry-modal-trigger @endif
+                                                                   class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}">
                                                                     <x-icon :name="$item['icon'] ?? 'tune'" class="text-[1.1rem] shrink-0" />
                                                                     <span class="min-w-0 flex-1 truncate">{{ $item['label'] }}</span>
                                                                     @if (! empty($item['badge']))
@@ -1014,7 +1033,9 @@
                                         @foreach ($adminUngrouped as $item)
                                             @php $active = request()->routeIs($item['route']); @endphp
                                             <li class="w-full">
-                                                <a href="{{ route($item['route']) }}" class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}">
+                                                <a href="{{ route($item['route'], $item['route_params'] ?? []) }}"
+                                                   @if (! empty($item['modal'])) data-entry-modal-trigger @endif
+                                                   class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}">
                                                     <x-icon :name="$item['icon'] ?? 'tune'" class="text-[1.1rem] shrink-0" />
                                                     <span class="min-w-0 flex-1 truncate">{{ $item['label'] }}</span>
                                                     @if (! empty($item['badge']))
@@ -1294,7 +1315,7 @@
                                     @foreach ($userNavItems as $item)
                                         @php $active = request()->routeIs($item['route']); @endphp
                                         <li>
-                                            <a href="{{ route($item['route']) }}"
+                                            <a href="{{ route($item['route'], $item['route_params'] ?? []) }}"
                                                @if ($item['modal']) data-entry-modal-trigger @endif
                                                class="{{ $active ? 'active' : '' }}">
                                                 {{ $item['label'] }}
@@ -1438,7 +1459,7 @@
                                 </li>
                                 @foreach ($group['items'] as $item)
                                     <li>
-                                        <a href="{{ route($item['route']) }}"
+                                        <a href="{{ route($item['route'], $item['route_params'] ?? []) }}"
                                            data-entry-modal-trigger
                                            class="flex items-center gap-3"
                                            title="{{ $item['label'] }}">
@@ -1490,7 +1511,7 @@
                                                     @foreach (($group['items'] ?? []) as $item)
                                                         @php $active = collect($item['matches'] ?? [$item['route']])->contains(fn ($m) => request()->routeIs($m)); @endphp
                                                         <li>
-                                                            <a href="{{ route($item['route']) }}"
+                                                            <a href="{{ route($item['route'], $item['route_params'] ?? []) }}"
                                                                @if (! empty($item['modal'])) data-entry-modal-trigger @endif
                                                                class="menu-link flex items-center gap-3 {{ $active ? 'menu-active' : '' }}"
                                                                title="{{ $item['label'] }}">
@@ -1508,7 +1529,7 @@
                                         @foreach ($section['items'] as $item)
                                             @php $active = collect($item['matches'] ?? [$item['route']])->contains(fn ($m) => request()->routeIs($m)); @endphp
                                             <li>
-                                                <a href="{{ route($item['route']) }}"
+                                                <a href="{{ route($item['route'], $item['route_params'] ?? []) }}"
                                                    @if (! empty($item['modal'])) data-entry-modal-trigger @endif
                                                    class="menu-link flex items-center gap-3 {{ $active ? 'menu-active' : '' }}"
                                                    title="{{ $item['label'] }}">
