@@ -37,6 +37,12 @@
     @php
         $q = mb_strtolower(trim((string) ($filters['q'] ?? '')));
         $statusFilter = (string) ($filters['status'] ?? '');
+        $capabilityLabels = [
+            \App\Plugins\Contracts\PluginCapability::CONTACT_SYNC => __('Kontaktsynchronisierung'),
+            \App\Plugins\Contracts\PluginCapability::TIME_EXPORT => __('Zeit-Export'),
+            \App\Plugins\Contracts\PluginCapability::PAYMENT_SYNC => __('Zahlungsabgleich'),
+            \App\Plugins\Contracts\PluginCapability::TIME_IMPORT => __('Zeit-Import'),
+        ];
         $filtered = collect($plugins)->filter(function ($plugin) use ($q, $statusFilter, $settings, $states) {
             if ($q !== '' && ! str_contains(mb_strtolower($plugin->name() . ' ' . $plugin->id() . ' ' . $plugin->description()), $q)) {
                 return false;
@@ -67,10 +73,10 @@
                     <x-table.th sort type="string">{{ __('ID') }}</x-table.th>
                     <x-table.th sort type="string">{{ __('Version') }}</x-table.th>
                     <x-table.th sort type="string">{{ __('Schema') }}</x-table.th>
-                    <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
-                    <x-table.th sort type="string">{{ __('Health') }}</x-table.th>
-                    <x-table.th>{{ __('Capabilities') }}</x-table.th>
-                    <x-table.th class="text-right">{{ __('Aktion') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Plugin-Status') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Plugin-Zustand') }}</x-table.th>
+                    <x-table.th>{{ __('Plugin-Fähigkeiten') }}</x-table.th>
+                    <x-table.th class="text-right">{{ __('Aktionen') }}</x-table.th>
                 </tr>
             </x-slot:head>
             @foreach ($filtered as $plugin)
@@ -87,10 +93,10 @@
                         default => 'badge-ghost',
                     };
                     $healthLabel = match ($health) {
-                        'ok' => __('ok'),
-                        'degraded' => __('eingeschränkt'),
-                        'failing' => __('fehlerhaft'),
-                        default => __('unbekannt'),
+                        'ok' => __('Zustand ok'),
+                        'degraded' => __('Zustand eingeschränkt'),
+                        'failing' => __('Zustand fehlerhaft'),
+                        default => __('Zustand unbekannt'),
                     };
                 @endphp
                 <tr data-plugin-row="{{ $plugin->id() }}">
@@ -105,11 +111,11 @@
                     </td>
                     <td>
                         @if ($isAutoDisabled)
-                            <x-status-badge tone="error" size="sm" title="{{ $state->disabled_reason }}">{{ __('auto-deaktiviert') }}</x-status-badge>
+                            <x-status-badge tone="error" size="sm" title="{{ $state->disabled_reason }}">{{ __('Automatisch deaktiviert') }}</x-status-badge>
                         @elseif ($isEnabled)
-                            <x-status-badge tone="success" size="sm">{{ __('aktiv') }}</x-status-badge>
+                            <x-status-badge tone="success" size="sm">{{ __('Plugin aktiv') }}</x-status-badge>
                         @else
-                            <x-status-badge tone="ghost" size="sm">{{ __('inaktiv') }}</x-status-badge>
+                            <x-status-badge tone="ghost" size="sm">{{ __('Plugin inaktiv') }}</x-status-badge>
                         @endif
                     </td>
                     <td>
@@ -121,7 +127,7 @@
                     <td>
                         <div class="flex flex-wrap gap-1">
                             @foreach ($plugin->capabilities() as $cap)
-                                <x-status-badge size="sm" outline>{{ $cap }}</x-status-badge>
+                                <x-status-badge size="sm" outline>{{ $capabilityLabels[$cap] ?? $cap }}</x-status-badge>
                             @endforeach
                         </div>
                     </td>
@@ -173,9 +179,9 @@
         failing:  '{{ __('Healthcheck: fehlerhaft') }}'
     };
     var STATUS_LABEL = {
-        ok:       '{{ __('ok') }}',
-        degraded: '{{ __('eingeschränkt') }}',
-        failing:  '{{ __('fehlerhaft') }}'
+        ok:       '{{ __('Zustand ok') }}',
+        degraded: '{{ __('Zustand eingeschränkt') }}',
+        failing:  '{{ __('Zustand fehlerhaft') }}'
     };
     var STATUS_BADGE = {
         ok: 'badge-success', degraded: 'badge-warning', failing: 'badge-error'

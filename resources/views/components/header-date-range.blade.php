@@ -64,7 +64,11 @@
                                     data-header-daterange-preset="{{ $key }}"
                                     class="grid w-full grid-cols-[1fr_1rem] items-center gap-2 rounded-md px-3 py-1.5 text-left {{ $current === $key ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-base-200' }}">
                                 <span class="truncate">{{ $label }}</span>
-                                <x-icon name="check" data-header-daterange-check class="justify-self-end text-[1rem] text-primary {{ $current === $key ? '' : 'invisible' }}" />
+                                <span
+                                    data-header-daterange-check
+                                    class="material-symbols-outlined leading-none align-middle shrink-0 select-none justify-self-end text-[1rem] text-primary"
+                                    style="font-variation-settings: 'FILL' 0, 'wght' 400; visibility: {{ $current === $key ? 'visible' : 'hidden' }};"
+                                    aria-hidden="true">check</span>
                             </button>
                         </form>
                     </li>
@@ -249,7 +253,7 @@
                             btn.classList.toggle('font-medium', active);
                             btn.classList.toggle('hover:bg-base-200', !active);
                             var check = btn.querySelector('[data-header-daterange-check]');
-                            if (check) check.classList.toggle('invisible', !active);
+                            if (check) check.style.visibility = active ? 'visible' : 'hidden';
                         });
                     }
 

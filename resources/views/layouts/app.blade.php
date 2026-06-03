@@ -157,6 +157,76 @@
             .header-row .header-left   { grid-area: left;   min-width: 0; max-width: 100%; }
             .header-row .header-center { grid-area: center; min-width: 0; max-width: 100%; display: flex; justify-content: center; }
             .header-row .header-right  { grid-area: right;  min-width: 0; max-width: 100%; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.5rem; }
+            .header-dropdown-panel {
+                scroll-padding-block: .5rem;
+            }
+            .header-menu-list.menu {
+                gap: .35rem;
+            }
+            .header-menu-list.menu :where(li) > a,
+            .header-menu-list.menu :where(li) > form > button,
+            .header-menu-list.menu :where(li) > details > summary {
+                min-height: 2.75rem;
+                border-radius: var(--radius-field, .5rem);
+                padding: .65rem .75rem;
+            }
+            .header-menu-list.menu :where(li) > details > ul {
+                display: flex;
+                flex-direction: column;
+                gap: .25rem;
+                margin-top: .25rem;
+                padding-left: .5rem;
+            }
+            .header-menu-list.menu :where(li) > details > ul :where(li) > a {
+                min-height: 2.55rem;
+                padding-block: .55rem;
+            }
+            @media (max-width: 639px), (hover: none) and (pointer: coarse) {
+                .header-row {
+                    justify-items: stretch;
+                }
+                .header-row .header-left,
+                .header-row .header-center,
+                .header-row .header-right {
+                    width: 100%;
+                }
+                .header-row .header-right {
+                    justify-content: center;
+                }
+                .header-dropdown-panel {
+                    position: fixed !important;
+                    inset-inline: .5rem !important;
+                    top: calc(var(--app-header-h) + .35rem) !important;
+                    bottom: calc(var(--app-footer-h) + .5rem + env(safe-area-inset-bottom)) !important;
+                    height: calc(100vh - var(--app-header-h) - var(--app-footer-h) - 1.35rem - env(safe-area-inset-bottom)) !important;
+                    height: calc(100dvh - var(--app-header-h) - var(--app-footer-h) - 1.35rem - env(safe-area-inset-bottom)) !important;
+                    width: auto !important;
+                    max-height: none !important;
+                    margin-top: 0 !important;
+                    overscroll-behavior: contain;
+                    overflow: auto !important;
+                    overflow-x: hidden !important;
+                    overflow-y: auto !important;
+                    padding-bottom: max(.5rem, env(safe-area-inset-bottom));
+                    -webkit-overflow-scrolling: touch;
+                    touch-action: pan-y;
+                    z-index: 70 !important;
+                }
+                .dropdown.dropdown-open > .header-dropdown-panel,
+                .dropdown:focus-within > .header-dropdown-panel {
+                    display: block !important;
+                    pointer-events: auto;
+                }
+                .header-dropdown-panel.header-menu-list.menu {
+                    display: none;
+                    flex-direction: column;
+                    align-content: stretch;
+                }
+                .dropdown.dropdown-open > .header-dropdown-panel.header-menu-list.menu,
+                .dropdown:focus-within > .header-dropdown-panel.header-menu-list.menu {
+                    display: flex !important;
+                }
+            }
             @container app-header (min-width: 600px) {
                 .header-row {
                     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -729,7 +799,7 @@
 
                             <div class="dropdown dropdown-end xl:hidden">
                                 <label tabindex="0" class="btn btn-sm btn-ghost">☰ {{ __('Navigation') }}</label>
-                                <ul tabindex="0" class="dropdown-content menu z-50 w-[min(14rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                <ul tabindex="0" class="dropdown-content header-dropdown-panel header-menu-list menu z-50 w-[min(14rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
                                     @foreach ($mainNavItems as $item)
                                         @php $active = collect($item['matches'])->contains(fn ($m) => request()->routeIs($m)); @endphp
                                         <li>
@@ -808,7 +878,8 @@
                                            aria-label="{{ __('Verwaltung') }}">
                                         <x-icon name="manage_accounts" class="text-[1.1rem]" />
                                     </label>
-                                    <ul tabindex="0" class="dropdown-content menu z-50 w-[min(22rem,calc(100vw-1rem))]! rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                    <div tabindex="0" class="dropdown-content header-dropdown-panel z-50 w-[min(22rem,calc(100vw-1rem))]! rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                        <ul class="header-menu-list menu w-full p-0">
                                         @php
                                             // Gruppierung der Verwaltungs-Einträge in aufklappbare Ordner.
                                             $manageGroups = [
@@ -858,7 +929,8 @@
                                                 </a>
                                             </li>
                                         @endforeach
-                                    </ul>
+                                        </ul>
+                                    </div>
                                 </div>
                             @endif
 
@@ -870,7 +942,8 @@
                                            aria-label="{{ __('System') }}">
                                         <x-icon name="settings" class="text-[1.1rem]" />
                                     </label>
-                                    <ul tabindex="0" class="dropdown-content menu z-50 w-[min(22rem,calc(100vw-1rem))]! rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                    <div tabindex="0" class="dropdown-content header-dropdown-panel z-50 w-[min(22rem,calc(100vw-1rem))]! rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                        <ul class="header-menu-list menu w-full p-0">
                                         @php
                                             // Gruppierung der System-Einträge in aufklappbare Ordner.
                                             $adminGroups = [
@@ -932,7 +1005,8 @@
                                                 </a>
                                             </li>
                                         @endforeach
-                                    </ul>
+                                        </ul>
+                                    </div>
                                 </div>
                             @endif
                         @endif
@@ -1003,7 +1077,7 @@
                                        aria-label="{{ __('Lesezeichen') }}">
                                     <x-icon name="bookmarks" class="text-base" />
                                 </label>
-                                <div tabindex="0" class="dropdown-content z-50 mt-2 w-[min(20rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-0 shadow-lg overflow-hidden">
+                                <div tabindex="0" class="dropdown-content header-dropdown-panel z-50 mt-2 w-[min(20rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-0 shadow-lg overflow-hidden">
                                     <div class="px-4 py-2 border-b border-base-200 flex items-center justify-between gap-2">
                                         <span class="text-xs uppercase tracking-wider opacity-60">{{ __('Lesezeichen') }}</span>
                                         <a href="{{ route('bookmarks.create') }}?url={{ urlencode(request()->fullUrl()) }}"
@@ -1047,7 +1121,7 @@
                                         </span>
                                     @endif
                                 </label>
-                                <div tabindex="0" class="dropdown-content z-50 mt-2 w-[min(22rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-0 shadow-lg overflow-hidden">
+                                <div tabindex="0" class="dropdown-content header-dropdown-panel z-50 mt-2 w-[min(22rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-0 shadow-lg overflow-hidden">
                                     <div class="px-4 py-2 border-b border-base-200 flex items-center justify-between">
                                         <span class="text-xs uppercase tracking-wider opacity-60">{{ __('Erinnerungen') }}</span>
                                         @if (count($_reminders) > 0)
@@ -1101,7 +1175,7 @@
                                        aria-label="{{ __('Einstellungen') }}">
                                     <x-icon name="tune" class="text-base" />
                                 </label>
-                                <div tabindex="0" class="dropdown-content z-50 mt-2 w-[min(20rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-0 shadow-lg overflow-hidden">
+                                <div tabindex="0" class="dropdown-content header-dropdown-panel z-50 mt-2 w-[min(20rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-0 shadow-lg overflow-hidden">
                                     {{-- Farbschema --}}
                                     <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-base-200">
                                         <span class="text-sm font-medium">{{ __('Farbschema') }}</span>
@@ -1198,7 +1272,7 @@
                                     <x-icon name="account_circle" class="text-[1.65rem]" />
                                     <span class="max-w-32 truncate">{{ Auth::user()->name }}</span>
                                 </label>
-                                <ul tabindex="0" class="dropdown-content menu z-50 w-[min(14rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                <ul tabindex="0" class="dropdown-content header-dropdown-panel header-menu-list menu z-50 w-[min(14rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
                                     @foreach ($userNavItems as $item)
                                         @php $active = request()->routeIs($item['route']); @endphp
                                         <li>
@@ -1231,7 +1305,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zm0 0c2.5 0 4-4.03 4-9s-1.5-9-4-9m0 18c-2.5 0-4-4.03-4-9s1.5-9 4-9M3 12h18" />
                                     </svg>
                                 </label>
-                                <ul tabindex="0" class="dropdown-content menu z-50 w-[min(10rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-1 shadow">
+                                <ul tabindex="0" class="dropdown-content header-dropdown-panel header-menu-list menu z-50 w-[min(10rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-1 shadow">
                                     @foreach ($supportedLocales as $code => $locale)
                                         <li>
                                             <form method="POST" action="{{ route('locale.switch', $code) }}">
@@ -1467,6 +1541,47 @@
                     window.addEventListener('resize', apply);
                 }
                 window.addEventListener('load', apply);
+            })();
+        </script>
+        <script>
+            (function () {
+                function closeDropdown(dropdown) {
+                    dropdown.classList.remove('dropdown-open');
+                    var trigger = dropdown.querySelector(':scope > [tabindex="0"]');
+                    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                }
+
+                function closeOthers(current) {
+                    document.querySelectorAll('.dropdown.dropdown-open').forEach(function (dropdown) {
+                        if (dropdown !== current) closeDropdown(dropdown);
+                    });
+                }
+
+                document.addEventListener('click', function (event) {
+                    var trigger = event.target.closest('.dropdown > [tabindex="0"]');
+                    if (trigger) {
+                        if (trigger.classList.contains('dropdown-content')) return;
+
+                        var dropdown = trigger.closest('.dropdown');
+                        if (!dropdown || !dropdown.querySelector('.header-dropdown-panel')) return;
+
+                        event.preventDefault();
+                        var open = dropdown.classList.contains('dropdown-open');
+                        closeOthers(dropdown);
+                        dropdown.classList.toggle('dropdown-open', !open);
+                        trigger.setAttribute('aria-expanded', open ? 'false' : 'true');
+                        return;
+                    }
+
+                    if (!event.target.closest('.dropdown.dropdown-open')) {
+                        closeOthers(null);
+                    }
+                }, true);
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key !== 'Escape') return;
+                    closeOthers(null);
+                });
             })();
         </script>
 
