@@ -27,7 +27,16 @@ window.SignaturePad = SignaturePad;
 Alpine.start();
 
 const htmlLang = (document.documentElement.lang || "de").toLowerCase();
-const locale = htmlLang.startsWith("de") ? German : "default";
+const isGerman = htmlLang.startsWith("de");
+const locale = isGerman ? German : "default";
+
+// Sichtbares Eingabeformat je Oberflächensprache (deutsch TT.MM.JJJJ, englisch
+// MM/TT/JJJJ usw.), während das tatsächlich abgeschickte (versteckte) Feld
+// stets ISO `Y-m-d` bleibt — via Flatpickrs altInput/altFormat. Ohne altFormat
+// zeigt das Feld sonst das ISO-Format, das viele als „englisch" empfinden.
+const dateFormatByLang = { de: "d.m.Y", en: "m/d/Y", fr: "d/m/Y", it: "d/m/Y" };
+const dateAltFormat = dateFormatByLang[htmlLang.slice(0, 2)] ?? "Y-m-d";
+const datetimeAltFormat = dateAltFormat + " H:i";
 
 const normalizeCompactTimeValue = (rawValue) => {
     const raw = String(rawValue || "").trim();
@@ -120,6 +129,8 @@ const bindCompactTimeSupport = (el) => {
 flatpickr('input[type="date"]', {
     locale,
     dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: dateAltFormat,
     weekNumbers: true,
     allowInput: true,
     disableMobile: true,
@@ -131,6 +142,8 @@ flatpickr('input[type="datetime-local"]', {
     time_24hr: true,
     minuteIncrement: 1,
     dateFormat: "Y-m-d\\TH:i",
+    altInput: true,
+    altFormat: datetimeAltFormat,
     weekNumbers: true,
     allowInput: true,
     disableMobile: true,
@@ -186,6 +199,8 @@ window.__initFlatpickr = (el) => {
         flatpickr(el, {
             locale,
             dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: dateAltFormat,
             weekNumbers: true,
             allowInput: true,
             disableMobile: true,
@@ -198,6 +213,8 @@ window.__initFlatpickr = (el) => {
             time_24hr: true,
             minuteIncrement: 1,
             dateFormat: "Y-m-d\\TH:i",
+            altInput: true,
+            altFormat: datetimeAltFormat,
             weekNumbers: true,
             allowInput: true,
             disableMobile: true,
