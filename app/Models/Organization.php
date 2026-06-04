@@ -148,6 +148,19 @@ class Organization extends Model {
         return ($value === null || $value === '') ? null : (string) $value;
     }
 
+    /**
+     * Organisationsweiter Standard-Arbeitszeit-Typ (Vorbelegung neuer
+     * Arbeitszeit-Modelle). Override in settings['timesheet']['default_schedule_type'],
+     * Fallback ist der config-Default.
+     */
+    public function defaultScheduleType(): string {
+        $stored = $this->settings['timesheet']['default_schedule_type'] ?? null;
+
+        return is_string($stored) && $stored !== ''
+            ? $stored
+            : (string) config('timesheet.defaults.schedule_type', 'flextime');
+    }
+
     /** @return HasMany<User, $this> */
     public function users(): HasMany {
         return $this->hasMany(User::class);

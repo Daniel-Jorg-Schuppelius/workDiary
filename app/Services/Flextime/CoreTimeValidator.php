@@ -10,7 +10,7 @@
 
 namespace App\Services\Flextime;
 
-use App\Models\{TimeEntry, User};
+use App\Models\{TimeEntry, User, WorkSchedule};
 
 class CoreTimeValidator {
     public function __construct(protected WorkScheduleResolver $resolver) {}
@@ -27,6 +27,13 @@ class CoreTimeValidator {
 
         $schedule = $this->resolver->for($user, $entry->started_at);
         $issues = [];
+
+        // Kern-/Rahmenzeit-Regeln gelten nur für Gleitzeit; andere Typen
+        // (Wochenarbeitszeit, wochentagsweise, Vertrauensarbeitszeit) kennen
+        // keine Kernzeit. Die Pflichtpause unten gilt dagegen für alle.
+        if (! $schedule->schedule_type->usesCoreTime()) {
+            return $this->breakOnly($schedule, $entry);
+        }
 
         if ($schedule->frame_start && $entry->started_at->format('H:i:s') < $schedule->frame_start) {
             $issues[] = __('Beginn vor Rahmenzeit (:t).', ['t' => substr($schedule->frame_start, 0, 5)]);
@@ -47,10 +54,19 @@ class CoreTimeValidator {
             }
         }
 
+        return array_merge($issues, $this->breakOnly($schedule, $entry));
+    }
+
+    /**
+     * Nur die Pflichtpausen-Prüfung – gilt unabhängig vom Arbeitszeit-Typ.
+     *
+     * @return array<int, string>
+     */
+    private function breakOnly(WorkSchedule $schedule, TimeEntry $entry): array {
         if ((int) $entry->minutes >= $schedule->break_after_minutes && (int) $entry->break_minutes < $schedule->break_minutes) {
-            $issues[] = __('Pflichtpause :m min nicht erreicht.', ['m' => $schedule->break_minutes]);
+            return [__('Pflichtpause :m min nicht erreicht.', ['m' => $schedule->break_minutes])];
         }
 
-        return $issues;
+        return [];
     }
 }

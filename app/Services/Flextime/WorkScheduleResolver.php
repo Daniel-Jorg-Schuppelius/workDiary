@@ -18,9 +18,11 @@ class WorkScheduleResolver {
     /** @return array<string, mixed> */
     public static function defaults(): array {
         return [
+            'schedule_type' => (string) config('timesheet.defaults.schedule_type', 'flextime'),
             'weekly_minutes' => (int) config('timesheet.defaults.weekly_minutes', 2400),
             'daily_target_minutes' => (int) config('timesheet.defaults.daily_target_minutes', 480),
             'working_days' => (array) config('timesheet.defaults.working_days', [1, 2, 3, 4, 5]),
+            'day_targets' => null,
             'core_start' => config('timesheet.defaults.core_start', '09:00'),
             'core_end' => config('timesheet.defaults.core_end', '15:00'),
             'frame_start' => config('timesheet.defaults.frame_start', '06:00'),
@@ -30,13 +32,27 @@ class WorkScheduleResolver {
         ];
     }
 
+    /**
+     * Defaults mit organisationsweitem Standard-Arbeitszeit-Typ.
+     *
+     * @return array<string, mixed>
+     */
+    public static function defaultsFor(User $user): array {
+        $defaults = self::defaults();
+        if ($user->organization) {
+            $defaults['schedule_type'] = $user->organization->defaultScheduleType();
+        }
+
+        return $defaults;
+    }
+
     public function for(User $user, CarbonInterface $on): WorkSchedule {
         $schedule = $user->workSchedule($on);
         if ($schedule) {
             return $schedule;
         }
 
-        $defaults = self::defaults();
+        $defaults = self::defaultsFor($user);
         $schedule = new WorkSchedule($defaults);
         $schedule->user_id = $user->id;
         $schedule->valid_from = Carbon::instance($on)->startOfMonth();

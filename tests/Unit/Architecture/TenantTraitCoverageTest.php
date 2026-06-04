@@ -88,6 +88,10 @@ class TenantTraitCoverageTest extends TestCase {
         // Eine globale Scope-Bindung via BelongsToOrganization würde genau
         // diese Plattform-Einträge ausblenden.
         LicenseFlagOverride::class,
+        // Eurostat-Mindestlohn-Referenz: länderweite, mandantenübergreifende
+        // Vergleichsdaten (kein Org-Bezug). Der org-spezifische Mindestlohn
+        // liegt separat in MinimumWage (tenant-scoped).
+        \App\Models\MinimumWageReference::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {

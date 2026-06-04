@@ -162,11 +162,12 @@ class AttendanceReportController extends Controller {
                 continue;
             }
             $iso = (int) $day->dayOfWeekIso;
-            if (! $sched->appliesOnWeekday($iso)) {
+            $dayTarget = $sched->targetMinutesForWeekday($iso);
+            if ($dayTarget <= 0 && ! $sched->appliesOnWeekday($iso)) {
                 continue;
             }
             $workdays++;
-            $target += (int) $sched->daily_target_minutes;
+            $target += $dayTarget;
         }
 
         return [$workdays, $target];

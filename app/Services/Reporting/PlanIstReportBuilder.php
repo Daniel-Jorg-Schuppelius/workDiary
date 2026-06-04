@@ -75,7 +75,7 @@ class PlanIstReportBuilder {
             $planStart = null;
             $noPlan = true;
             if ($schedule && $schedule->appliesOnWeekday((int) $d->dayOfWeekIso)) {
-                $planMinutes = (int) ($schedule->daily_target_minutes ?? 0);
+                $planMinutes = $schedule->targetMinutesForWeekday((int) $d->dayOfWeekIso);
                 $planStart = $schedule->core_start ? substr((string) $schedule->core_start, 0, 5) : null;
                 $noPlan = false;
             }

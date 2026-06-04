@@ -11,6 +11,7 @@
 return [
 
     'defaults' => [
+        'schedule_type' => env('TIMESHEET_DEFAULT_SCHEDULE_TYPE', 'flextime'),
         'weekly_minutes' => (int) env('TIMESHEET_DEFAULT_WEEKLY_MINUTES', 2400),
         'daily_target_minutes' => (int) env('TIMESHEET_DEFAULT_DAILY_MINUTES', 480),
         'working_days' => [1, 2, 3, 4, 5],

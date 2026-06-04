@@ -32,6 +32,19 @@
     </div>
 </x-form-group>
 
+<x-form-group :legend="__('Arbeitszeit-Modell')" icon="tune" tone="primary" cols="1"
+              :description="__('Standard-Arbeitszeit-Typ für neue Mitarbeiter (pro Person überschreibbar).')">
+    <div class="fieldset">
+        <label class="fieldset-label">{{ __('Standard-Arbeitszeit-Typ') }}</label>
+        @php $defaultType = old('settings.timesheet.default_schedule_type', $organization?->defaultScheduleType() ?? 'flextime'); @endphp
+        <select name="settings[timesheet][default_schedule_type]" class="select select-bordered w-full">
+            @foreach (\App\Enums\WorkSchedule\ScheduleType::options() as $val => $lbl)
+                <option value="{{ $val }}" @selected($defaultType === $val)>{{ $lbl }}</option>
+            @endforeach
+        </select>
+    </div>
+</x-form-group>
+
 <x-form-group :legend="__('Arbeitszeit-Grenzwerte')" icon="schedule" tone="info" cols="2">
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Max. Stunden/Tag') }}</label>

@@ -27,11 +27,8 @@ class FlexCalculator {
             return 0;
         }
         $schedule = $this->resolver->for($user, $day);
-        if (! $schedule->appliesOnWeekday($day->dayOfWeekIso)) {
-            return 0;
-        }
 
-        return (int) $schedule->daily_target_minutes;
+        return $schedule->targetMinutesForWeekday($day->dayOfWeekIso);
     }
 
     public function actualMinutes(User $user, CarbonInterface $day): int {

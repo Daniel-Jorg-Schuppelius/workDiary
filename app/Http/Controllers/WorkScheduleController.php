@@ -21,7 +21,7 @@ class WorkScheduleController extends Controller {
     public function edit(User $user, WorkScheduleResolver $resolver): View {
         Gate::authorize('create', WorkSchedule::class); // Admin via before-Hook
 
-        $schedule = $user->workSchedule() ?? new WorkSchedule(WorkScheduleResolver::defaults() + [
+        $schedule = $user->workSchedule() ?? new WorkSchedule(WorkScheduleResolver::defaultsFor($user) + [
             'user_id' => $user->id,
             'valid_from' => now()->startOfMonth(),
         ]);
@@ -53,7 +53,7 @@ class WorkScheduleController extends Controller {
     public function self(): View {
         /** @var User $user */
         $user = Auth::user();
-        $defaults = WorkScheduleResolver::defaults();
+        $defaults = WorkScheduleResolver::defaultsFor($user);
         $schedule = $user->workSchedule() ?? new WorkSchedule($defaults + [
             'user_id' => $user->id,
             'valid_from' => now()->startOfMonth(),
