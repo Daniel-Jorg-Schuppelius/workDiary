@@ -79,6 +79,14 @@ enum Permission: string implements HasLabel {
     case UserPayrollManage = 'user.payroll.manage';
     case UserImport = 'user.import';
 
+        // ── Arbeits-Teams ──────────────────────────────────────────────────
+    case TeamViewAny = 'team.viewAny';
+    case TeamView = 'team.view';
+    case TeamCreate = 'team.create';
+    case TeamUpdate = 'team.update';
+    case TeamDelete = 'team.delete';
+    case TeamManageMembers = 'team.manageMembers';
+
         // ── Kunden ─────────────────────────────────────────────────────────
     case CustomerViewAny = 'customer.viewAny';
     case CustomerView = 'customer.view';
@@ -346,6 +354,7 @@ enum Permission: string implements HasLabel {
         return match (true) {
             str_starts_with($this->value, 'access.'), str_starts_with($this->value, 'audit-log.') => PermissionGroup::Access,
             str_starts_with($this->value, 'organization.'), str_starts_with($this->value, 'branding.'), str_starts_with($this->value, 'org.onboarding.'), str_starts_with($this->value, 'privacy.') => PermissionGroup::Organization,
+            str_starts_with($this->value, 'team.') => PermissionGroup::Teams,
             str_starts_with($this->value, 'user.') => PermissionGroup::Members,
             str_starts_with($this->value, 'customer.') => PermissionGroup::Customers,
             str_starts_with($this->value, 'foreignCustomer.') => PermissionGroup::Customers,

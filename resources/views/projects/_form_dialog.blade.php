@@ -30,6 +30,10 @@
             'sqid' => \App\Support\Sqid::encode(\App\Models\ForeignCustomer::class, $fc->id),
             'name' => $fc->name,
         ])->values());
+    $teams = $teams ?? collect();
+    $orgUsers = $orgUsers ?? collect();
+    $assignedTeamIds = $assignedTeamIds ?? [];
+    $assignedMemberIds = $assignedMemberIds ?? [];
     $initialCustomerSqid = (string) old('customer_id', $project?->customer_id ? \App\Support\Sqid::encode(\App\Models\Customer::class, $project->customer_id) : '');
     $initialForeignCustomerSqid = (string) old('foreign_customer_id', $project?->foreign_customer_id ? \App\Support\Sqid::encode(\App\Models\ForeignCustomer::class, $project->foreign_customer_id) : '');
 @endphp
@@ -151,6 +155,39 @@
                 :toError="$errors->first('ends_on')"
                 :fromError="$errors->first('starts_on')"
             />
+        </x-form-group>
+
+        <x-form-group :legend="__('Teams & Mitglieder')" icon="groups" tone="secondary">
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Zuständige Teams') }}</label>
+                @php($selectedTeams = (array) old('team_ids', array_map(fn($id) => \App\Support\Sqid::encode(\App\Models\Team::class, $id), $assignedTeamIds)))
+                <div class="grid grid-cols-1 gap-1 sm:grid-cols-2">
+                    @forelse ($teams as $team)
+                        <label class="label cursor-pointer justify-start gap-2 rounded px-2 hover:bg-base-200">
+                            <input type="checkbox" name="team_ids[]" value="{{ $team->sqid }}" class="checkbox checkbox-sm"
+                                   @checked(in_array($team->sqid, $selectedTeams, true))>
+                            <span class="text-sm">@if ($team->color)<span class="mr-1 inline-block h-2 w-2 rounded-full" style="background-color: {{ $team->color }}"></span>@endif{{ $team->name }}</span>
+                        </label>
+                    @empty
+                        <p class="text-xs text-base-content/60">{{ __('Noch keine Teams angelegt.') }}</p>
+                    @endforelse
+                </div>
+                <p class="text-xs text-base-content/60">{{ __('Mitglieder der gewählten Teams können Aufgaben dieses Auftrags übernehmen.') }}</p>
+            </div>
+
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Zusätzliche Einzelmitglieder') }}</label>
+                @php($selectedMembers = (array) old('member_ids', array_map(fn($id) => \App\Support\Sqid::encode(\App\Models\User::class, $id), $assignedMemberIds)))
+                <div class="grid grid-cols-1 gap-1 sm:grid-cols-2 lg:grid-cols-3">
+                    @foreach ($orgUsers as $u)
+                        <label class="label cursor-pointer justify-start gap-2 rounded px-2 hover:bg-base-200">
+                            <input type="checkbox" name="member_ids[]" value="{{ $u->sqid }}" class="checkbox checkbox-sm"
+                                   @checked(in_array($u->sqid, $selectedMembers, true))>
+                            <span class="text-sm">{{ $u->name }}</span>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
         </x-form-group>
 
         @if (auth()->user()?->canManageBilling())

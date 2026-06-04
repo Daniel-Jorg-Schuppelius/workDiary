@@ -13,6 +13,7 @@ namespace App\Plugins\Lexoffice;
 use App\Models\{Customer, Supplier, TimeEntry};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;
+use Illuminate\Http\Client\{ConnectionException, PendingRequest, RequestException};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Lexoffice\API\Client;
@@ -45,20 +46,64 @@ class LexofficeService {
 
     /**
      * Kurzer Health-Ping gegen den `/profile`-Endpunkt der Lexoffice-API.
-     * Liefert `true` bei HTTP 2xx, `false` sonst (z. B. 401). Netzwerk- oder
-     * Timeout-Fehler werden als Exception nach oben weitergereicht, damit
-     * der Caller (PluginHealth) sie als `degraded` interpretieren kann.
+     * Liefert `true` bei HTTP 2xx, `false` bei echtem Fehler (z. B. 401).
+     *
+     * Transiente Zustände werden NICHT als `false` gemeldet, sondern als
+     * Exception nach oben gereicht, damit der Caller (PluginHealth) sie als
+     * `degraded` einstufen kann und das Plugin nicht auto-deaktiviert wird:
+     *   - 429 (Rate-Limit) → {@see LexofficeRateLimitException}
+     *   - Netz-/Timeout-Fehler → {@see ConnectionException}
+     *
+     * @throws LexofficeRateLimitException|ConnectionException
      */
     public function ping(): bool {
         if (! $this->isConfigured()) {
             return false;
         }
-        $response = Http::withToken((string) $this->apiKey)
+        $response = $this->http()
             ->acceptJson()
             ->timeout(5)
             ->get($this->baseUrl . '/profile');
 
+        if ($response->status() === 429) {
+            throw new LexofficeRateLimitException();
+        }
+
         return $response->successful();
+    }
+
+    /**
+     * Basis-HTTP-Client für die rohen REST-Aufrufe. Wiederholt bei
+     * Rate-Limit (429) und transienten Verbindungsfehlern automatisch mit
+     * Backoff – Lexoffice erlaubt nur 2 Anfragen/Sekunde und antwortet sonst
+     * mit 429. `throw: false` → nach Ausschöpfen der Versuche kommt die
+     * (Fehler-)Antwort regulär zurück und wird vom jeweiligen Aufrufer
+     * behandelt.
+     */
+    private function http(): PendingRequest {
+        return Http::withToken((string) $this->apiKey)
+            ->retry(3, $this->retryDelayMs(...), $this->shouldRetry(...), throw: false);
+    }
+
+    /** Nur bei Rate-Limit (429) und Verbindungsfehlern erneut versuchen. */
+    private function shouldRetry(\Throwable $e): bool {
+        if ($e instanceof ConnectionException) {
+            return true;
+        }
+
+        return $e instanceof RequestException && $e->response->status() === 429;
+    }
+
+    /** Backoff in Millisekunden; respektiert den `Retry-After`-Header. */
+    private function retryDelayMs(int $attempt, \Throwable $e): int {
+        if ($e instanceof RequestException) {
+            $retryAfter = (int) $e->response->header('Retry-After');
+            if ($retryAfter > 0) {
+                return $retryAfter * 1000;
+            }
+        }
+
+        return $attempt * 500;
     }
 
     private function client(): Client {
@@ -143,7 +188,7 @@ class LexofficeService {
         if (! $this->isConfigured()) {
             return null;
         }
-        $response = Http::withToken((string) $this->apiKey)
+        $response = $this->http()
             ->acceptJson()
             ->get($this->baseUrl . '/contacts', $query + ['page' => 0, 'size' => 1]);
 
@@ -163,7 +208,7 @@ class LexofficeService {
         if (! $this->isConfigured()) {
             return 0;
         }
-        $response = Http::withToken((string) $this->apiKey)
+        $response = $this->http()
             ->acceptJson()
             ->get($this->baseUrl . '/contacts/' . $externalId);
 

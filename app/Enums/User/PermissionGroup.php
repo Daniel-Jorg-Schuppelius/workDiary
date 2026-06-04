@@ -23,6 +23,7 @@ enum PermissionGroup: string implements HasLabel {
     case Access = 'access';
     case Organization = 'organization';
     case Members = 'members';
+    case Teams = 'teams';
     case Customers = 'customers';
     case Projects = 'projects';
     case TimeEntries = 'time-entries';
@@ -50,6 +51,7 @@ enum PermissionGroup: string implements HasLabel {
             self::Access => 'admin_panel_settings',
             self::Organization => 'corporate_fare',
             self::Members => 'group',
+            self::Teams => 'groups',
             self::Customers => 'badge',
             self::Projects => 'folder_special',
             self::TimeEntries => 'schedule',

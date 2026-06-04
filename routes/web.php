@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, BrandingController, CalendarFeedController, CommentController, CoverageRequirementController, CustomerController, DashboardController, DiaryController, DiaryExportController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectRecurrenceRuleController, ProtocolController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, RoomController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, TagController, TaskController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VehicleController, WeekController, WorkScheduleController};
+use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, BrandingController, CalendarFeedController, CommentController, CoverageRequirementController, CustomerController, DashboardController, DiaryController, DiaryExportController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectRecurrenceRuleController, ProtocolController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, RoomController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, TagController, TaskController, TeamController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VehicleController, WeekController, WorkScheduleController};
 use App\Http\Controllers\Admin\Access\{AccessHubController, MemberController as AccessMemberController, PermissionController as AccessPermissionController, RoleController as AccessRoleController, UserGroupController as AccessUserGroupController};
 use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatController, BranchProfileController, ClassificationController, ClassificationRequirementController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, SupportAccessAuditController, SupportReportController};
 use App\Http\Controllers\Asset\MaintenancePlanController;
@@ -324,8 +324,11 @@ Route::middleware('auth')->group(function () {
             ->parameters(['admin/invoice-mail-templates' => 'invoiceMailTemplate']);
 
         Route::resource('projects', ProjectController::class);
+        Route::get('projects/{project}/planning', [ProjectController::class, 'planning'])->name('projects.planning');
         Route::resource('projects.milestones', MilestoneController::class)->except(['index', 'show']);
         Route::resource('projects.tasks', TaskController::class)->except(['index', 'show']);
+        Route::get('teams/{team}/workload', [TeamController::class, 'workload'])->name('teams.workload');
+        Route::patch('projects/{project}/tasks/{task}/schedule', [TaskController::class, 'schedule'])->name('projects.tasks.schedule');
 
         // Globale Aufgaben (Activities ohne Projekt)
         Route::get('tasks/global', [\App\Http\Controllers\GlobalTaskController::class, 'index'])->name('tasks.global.index');
@@ -816,6 +819,16 @@ Route::middleware('auth')->group(function () {
             ->names('org.members')
             ->parameters(['members' => 'member'])
             ->except('show');
+
+        // ── Arbeits-Teams (operative Einheiten, getrennt von Rechte-Gruppen) ──
+        Route::resource('teams', TeamController::class)
+            ->parameters(['teams' => 'team']);
+        Route::get('teams/{team}/members/attach', [TeamController::class, 'attachMemberForm'])
+            ->name('teams.members.attach.form');
+        Route::post('teams/{team}/members', [TeamController::class, 'attachMember'])
+            ->name('teams.members.attach');
+        Route::delete('teams/{team}/members/{user}', [TeamController::class, 'detachMember'])
+            ->name('teams.members.detach');
 
         // ── Rechteverwaltung (Rollen, Gruppen, Permissions, Mitgliederzuweisung) ──
         // Alle Routen sind über das Gate 'manage-access' bzw. die UserGroupPolicy

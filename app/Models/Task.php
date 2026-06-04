@@ -31,6 +31,7 @@ use Illuminate\Support\Carbon;
  * @property TaskStatus $status
  * @property TaskPriority $priority
  * @property Carbon|null $due_date
+ * @property Carbon|null $start_date
  * @property int|null $position
  * @property string|null $hourly_rate
  * @property string|null $internal_rate
@@ -65,6 +66,7 @@ class Task extends Model {
         'status',
         'priority',
         'due_date',
+        'start_date',
         'position',
         'hourly_rate',
         'internal_rate',
@@ -80,6 +82,7 @@ class Task extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'due_date' => 'date',
+        'start_date' => 'date',
         'archived_at' => 'datetime',
         'hourly_rate' => 'decimal:2',
         'internal_rate' => 'decimal:2',
@@ -111,9 +114,35 @@ class Task extends Model {
         return $this->hasMany(Task::class, 'parent_task_id');
     }
 
-    /** @return BelongsTo<User, $this> */
+    /**
+     * Primärer Bearbeiter (= erster Eintrag aus {@see assignees()}). Bleibt für
+     * API/Reports/Filter erhalten und wird über {@see syncAssignees()} gepflegt.
+     *
+     * @return BelongsTo<User, $this>
+     */
     public function assignee(): BelongsTo {
         return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    /**
+     * Alle Bearbeiter dieser Aufgabe (Mehrfach-Zuweisung an Team-Mitglieder).
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<User, $this>
+     */
+    public function assignees(): \Illuminate\Database\Eloquent\Relations\BelongsToMany {
+        return $this->belongsToMany(User::class, 'task_user')->withTimestamps();
+    }
+
+    /**
+     * Setzt die Bearbeiter (Pivot) und hält den primären `assigned_to` auf dem
+     * ersten Eintrag synchron.
+     *
+     * @param  list<int>  $userIds
+     */
+    public function syncAssignees(array $userIds): void {
+        $ids = array_values(array_unique(array_map('intval', $userIds)));
+        $this->assignees()->sync($ids);
+        $this->forceFill(['assigned_to' => $ids[0] ?? null])->save();
     }
 
     /** @return BelongsTo<User, $this> */

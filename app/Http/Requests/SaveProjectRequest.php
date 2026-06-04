@@ -12,7 +12,7 @@ namespace App\Http\Requests;
 
 use App\Enums\Project\ProjectStatus;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\{Customer, ForeignCustomer, Project};
+use App\Models\{Customer, ForeignCustomer, Project, Team, User};
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -25,6 +25,8 @@ class SaveProjectRequest extends FormRequest {
         'customer_id' => Customer::class,
         'foreign_customer_id' => ForeignCustomer::class,
         'parent_id' => Project::class,
+        'team_ids' => Team::class,
+        'member_ids' => User::class,
     ];
 
     public function authorize(): bool {
@@ -56,6 +58,10 @@ class SaveProjectRequest extends FormRequest {
             'starts_on' => ['nullable', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
             'is_default' => ['sometimes', 'boolean'],
+            'team_ids' => ['array'],
+            'team_ids.*' => ['integer', Rule::exists('teams', 'id')],
+            'member_ids' => ['array'],
+            'member_ids.*' => ['integer', Rule::exists('users', 'id')],
             'customer_id' => ['nullable', 'integer', Rule::exists('customers', 'id')],
             'foreign_customer_id' => [
                 'nullable',

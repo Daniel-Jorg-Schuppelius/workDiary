@@ -275,6 +275,26 @@ class User extends Authenticatable {
     }
 
     /**
+     * Operative Arbeits-Teams, in denen der Benutzer Mitglied ist.
+     *
+     * @return BelongsToMany<Team, $this>
+     */
+    public function teams(): BelongsToMany {
+        return $this->belongsToMany(Team::class, 'team_user')
+            ->withPivot(['is_lead', 'joined_at'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Teams, die dieser Benutzer leitet (als lead_user_id hinterlegt).
+     *
+     * @return HasMany<Team, $this>
+     */
+    public function ledTeams(): HasMany {
+        return $this->hasMany(Team::class, 'lead_user_id');
+    }
+
+    /**
      * Alle Permission-Namen, die der User effektiv besitzt:
      *   - direkte Permissions am User,
      *   - Permissions via eigene Rollen,

@@ -442,6 +442,56 @@ class Project extends Model {
         return $this->hasMany(Task::class);
     }
 
+    /**
+     * Zugewiesene Arbeits-Teams (n:m). Aufträge können von mehreren Teams
+     * gemeinsam bearbeitet werden.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<Team, $this>
+     */
+    public function teams(): \Illuminate\Database\Eloquent\Relations\BelongsToMany {
+        return $this->belongsToMany(Team::class, 'project_team')->withTimestamps();
+    }
+
+    /**
+     * Optionale Einzelmitglieder (zusätzlich zu den Team-Mitgliedern).
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<User, $this>
+     */
+    public function members(): \Illuminate\Database\Eloquent\Relations\BelongsToMany {
+        return $this->belongsToMany(User::class, 'project_user')->withTimestamps();
+    }
+
+    /**
+     * Alle Personen, denen in diesem Projekt Aufgaben zugewiesen werden dürfen:
+     * Vereinigung aus den Mitgliedern aller zugewiesenen Teams und den
+     * Einzelmitgliedern, dedupliziert nach ID.
+     *
+     * @return Collection<int, User>
+     */
+    public function assignableUsers(): Collection {
+        $this->loadMissing(['teams.members', 'members']);
+
+        return $this->teams->flatMap(fn(Team $team) => $team->members)
+            ->merge($this->members)
+            ->unique('id')
+            ->sortBy('name')
+            ->values();
+    }
+
+    /**
+     * Projekte, an denen ein Benutzer beteiligt ist – über ein zugewiesenes
+     * Team oder als Einzelmitglied. Für die „meine Aufträge"-Sicht.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeForUser(Builder $query, User $user): Builder {
+        return $query->where(function (Builder $q) use ($user): void {
+            $q->whereHas('teams.members', fn($m) => $m->whereKey($user->id))
+                ->orWhereHas('members', fn($m) => $m->whereKey($user->id));
+        });
+    }
+
     /** @return HasMany<TimeEntry, $this> */
     public function timeEntries(): HasMany {
         return $this->hasMany(TimeEntry::class);

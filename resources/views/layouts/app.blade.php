@@ -640,6 +640,9 @@
                                 // Organisation) zuordnen kann, bevor Mitglieder gepflegt werden.
                                 $manageNavItems[] = ['route' => 'admin.organizations.index', 'label' => __('Mitarbeiter'), 'icon' => 'group', 'modal' => false];
                             }
+                            if (! $isLegacyMode && $_authUser?->can(\App\Enums\User\Permission::TeamViewAny->value)) {
+                                $manageNavItems[] = ['route' => 'teams.index', 'label' => __('Teams'), 'icon' => 'groups', 'modal' => false];
+                            }
                             if (! $isLegacyMode) {
                                 $manageNavItems[] = ['route' => 'activity-categories.index', 'label' => __('Tätigkeitskategorien'), 'icon' => 'category', 'modal' => false];
                             }

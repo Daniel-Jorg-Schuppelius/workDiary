@@ -12,6 +12,8 @@ namespace App\Http\Requests;
 
 use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Http\Requests\Concerns\DecodesSqidInputs;
+use App\Models\Project;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,7 +24,7 @@ class SaveTaskRequest extends FormRequest {
     protected array $sqidFields = [
         'milestone_id' => \App\Models\Milestone::class,
         'parent_task_id' => \App\Models\Task::class,
-        'assigned_to' => \App\Models\User::class,
+        'assignee_ids' => \App\Models\User::class,
     ];
 
     public function authorize(): bool {
@@ -45,8 +47,31 @@ class SaveTaskRequest extends FormRequest {
             'priority' => ['required', Rule::enum(TaskPriority::class)],
             'milestone_id' => ['nullable', 'integer', Rule::exists('milestones', 'id')],
             'parent_task_id' => ['nullable', 'integer', Rule::exists('tasks', 'id')],
-            'assigned_to' => ['nullable', 'integer', Rule::exists('users', 'id')],
-            'due_date' => ['nullable', 'date'],
+            'assignee_ids' => ['array'],
+            'assignee_ids.*' => [
+                'integer',
+                Rule::exists('users', 'id'),
+                // Bearbeiter müssen dem Auftrag zugeordnet sein (Team-Mitglied oder
+                // Einzelmitglied), sofern das Projekt überhaupt Zuordnungen hat.
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    if ($value === null || $value === '') {
+                        return;
+                    }
+                    $project = $this->route('project');
+                    if (! $project instanceof Project) {
+                        return;
+                    }
+                    $assignable = $project->assignableUsers();
+                    if ($assignable->isEmpty()) {
+                        return; // Kein Team/Mitglied zugeordnet → keine Einschränkung.
+                    }
+                    if (! $assignable->contains('id', (int) $value)) {
+                        $fail(__('Ein gewählter Bearbeiter gehört nicht zu einem Team oder den Mitgliedern dieses Auftrags.'));
+                    }
+                },
+            ],
+            'due_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+            'start_date' => ['nullable', 'date'],
             'is_global' => ['sometimes', 'boolean'],
             'hourly_rate' => ['nullable', 'numeric', 'min:0'],
             'internal_rate' => ['nullable', 'numeric', 'min:0'],

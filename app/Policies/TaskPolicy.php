@@ -30,10 +30,21 @@ class TaskPolicy {
     }
 
     public function update(User $user, Task $task): bool {
-        return $this->owns($user, $task, 'created_by');
+        return $this->owns($user, $task, 'created_by') || $this->participatesInProject($user, $task);
     }
 
     public function delete(User $user, Task $task): bool {
-        return $this->owns($user, $task, 'created_by');
+        return $this->owns($user, $task, 'created_by') || $this->participatesInProject($user, $task);
+    }
+
+    /**
+     * Erlaubt das Planen (Bearbeiten/Löschen) durch Personen, die dem Auftrag
+     * zugeordnet sind – Mitglieder eines zugewiesenen Teams oder Einzelmitglieder.
+     * So können „einzelne Mitarbeiter ihre Projekte planen".
+     */
+    private function participatesInProject(User $user, Task $task): bool {
+        $project = $task->project;
+
+        return $project !== null && $project->assignableUsers()->contains('id', (int) $user->id);
     }
 }

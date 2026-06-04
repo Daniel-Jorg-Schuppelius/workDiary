@@ -11,6 +11,7 @@
 namespace App\Plugins\Lexoffice;
 
 use App\Models\LexofficeVoucher;
+use Illuminate\Http\Client\{ConnectionException, PendingRequest, RequestException};
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -66,9 +67,13 @@ class LexofficeVoucherFileService {
 
         $fileId = $this->resolveFileId($voucher);
 
-        $response = Http::withToken((string) $this->apiKey)
+        $response = $this->http()
             ->withHeaders(['Accept' => 'application/pdf, image/png, image/jpeg, image/gif, image/tiff, application/xml, */*'])
             ->get($this->baseUrl . '/files/' . $fileId);
+
+        if ($response->status() === 429) {
+            throw new LexofficeRateLimitException();
+        }
 
         if (! $response->successful()) {
             throw new RuntimeException('Lexoffice file fetch failed: ' . $response->status());
@@ -119,7 +124,7 @@ class LexofficeVoucherFileService {
     }
 
     private function fileIdFromVoucher(string $externalId): string {
-        $response = Http::withToken((string) $this->apiKey)
+        $response = $this->http()
             ->acceptJson()
             ->get($this->baseUrl . '/vouchers/' . $externalId);
 
@@ -142,7 +147,7 @@ class LexofficeVoucherFileService {
     }
 
     private function fileIdFromDocument(string $endpoint, string $externalId): string {
-        $response = Http::withToken((string) $this->apiKey)
+        $response = $this->http()
             ->acceptJson()
             ->get($this->baseUrl . '/' . $endpoint . '/' . $externalId . '/document');
 
@@ -153,6 +158,38 @@ class LexofficeVoucherFileService {
         }
 
         return (string) ($response->json('documentFileId') ?? '');
+    }
+
+    /**
+     * Basis-HTTP-Client mit automatischem Retry bei Rate-Limit (429) und
+     * transienten Verbindungsfehlern. Lexoffice erlaubt nur 2 Anfragen/Sekunde;
+     * `throw: false` → die (Fehler-)Antwort kommt regulär zurück und wird vom
+     * Aufrufer behandelt.
+     */
+    private function http(): PendingRequest {
+        return Http::withToken((string) $this->apiKey)
+            ->retry(3, $this->retryDelayMs(...), $this->shouldRetry(...), throw: false);
+    }
+
+    /** Nur bei Rate-Limit (429) und Verbindungsfehlern erneut versuchen. */
+    private function shouldRetry(\Throwable $e): bool {
+        if ($e instanceof ConnectionException) {
+            return true;
+        }
+
+        return $e instanceof RequestException && $e->response->status() === 429;
+    }
+
+    /** Backoff in Millisekunden; respektiert den `Retry-After`-Header. */
+    private function retryDelayMs(int $attempt, \Throwable $e): int {
+        if ($e instanceof RequestException) {
+            $retryAfter = (int) $e->response->header('Retry-After');
+            if ($retryAfter > 0) {
+                return $retryAfter * 1000;
+            }
+        }
+
+        return $attempt * 500;
     }
 
     private function extensionFor(string $contentType): string {

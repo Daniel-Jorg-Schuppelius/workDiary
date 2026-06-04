@@ -562,16 +562,31 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ForeignCustomerView,
         ];
 
+        // Arbeits-Teams: interne Rollen dürfen Teams sehen; Verwaltung
+        // (Anlegen/Bearbeiten/Löschen/Mitglieder) nur Teamleitung + Admin.
+        // Geschäftsführung erhält .viewAny/.view bereits über die Heuristik oben.
+        $teamRead = [
+            PermissionEnum::TeamViewAny,
+            PermissionEnum::TeamView,
+        ];
+        $teamManage = [
+            ...$teamRead,
+            PermissionEnum::TeamCreate,
+            PermissionEnum::TeamUpdate,
+            PermissionEnum::TeamDelete,
+            PermissionEnum::TeamManageMembers,
+        ];
+
         return [
             UserRole::Admin->value => $all,
             UserRole::Geschaeftsfuehrung->value => $geschaeftsfuehrung,
-            UserRole::Personalverwaltung->value => $personalverwaltung,
-            UserRole::Teamleitung->value => [...$teamleitung, ...$foreignCustomerRead],
-            UserRole::Buchhaltung->value => $buchhaltung,
-            UserRole::User->value => [...$user, ...$foreignCustomerRead],
-            UserRole::Aussendienst->value => [...$aussendienst, ...$foreignCustomerRead],
-            UserRole::Callcenter->value => [...$callcenter, ...$foreignCustomerRead],
-            UserRole::Support->value => [...$support, ...$foreignCustomerRead],
+            UserRole::Personalverwaltung->value => [...$personalverwaltung, ...$teamRead],
+            UserRole::Teamleitung->value => [...$teamleitung, ...$foreignCustomerRead, ...$teamManage],
+            UserRole::Buchhaltung->value => [...$buchhaltung, ...$teamRead],
+            UserRole::User->value => [...$user, ...$foreignCustomerRead, ...$teamRead],
+            UserRole::Aussendienst->value => [...$aussendienst, ...$foreignCustomerRead, ...$teamRead],
+            UserRole::Callcenter->value => [...$callcenter, ...$foreignCustomerRead, ...$teamRead],
+            UserRole::Support->value => [...$support, ...$foreignCustomerRead, ...$teamRead],
             UserRole::Kunde->value => $kunde,
         ];
     }

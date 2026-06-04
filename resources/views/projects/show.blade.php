@@ -18,6 +18,7 @@
             @endif
         </div>
         <x-slot:actions>
+            <x-icon-btn icon="timeline" size="sm" :href="route('projects.planning', $project)" show-label>{{ __('Projektplanung') }}</x-icon-btn>
             @can('update', $project)
                 <x-icon-btn icon="edit" size="sm"
                             data-entry-modal-trigger

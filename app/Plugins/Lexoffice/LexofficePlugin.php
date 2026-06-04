@@ -14,6 +14,7 @@ use App\Models\{Customer, ExternalReference, Supplier, TimeEntry};
 use App\Plugins\Contracts\{ContactSyncer, Plugin, PluginCapability, TimeExporter};
 use App\Plugins\{PluginDefaults, PluginHealth};
 use Carbon\CarbonImmutable;
+use Illuminate\Http\Client\ConnectionException;
 use Throwable;
 
 /**
@@ -61,8 +62,15 @@ class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
 
     /**
      * Kurzer Ping gegen den Lexoffice-/profile-Endpunkt. Antwortet die API,
-     * gilt das Plugin als gesund; 401 → failing (Key ungültig);
-     * Netz-/Timeout-Fehler → degraded; sonstige Fehler → failing mit Message.
+     * gilt das Plugin als gesund; 401 → failing (Key ungültig).
+     *
+     * Transiente Zustände führen bewusst zu `degraded` (nicht `failing`):
+     * `degraded` zählt NICHT auf den Auto-Disable-Zähler ein, damit ein
+     * vorübergehendes Rate-Limit (429) oder ein Netz-Hänger das Plugin nicht
+     * dauerhaft stilllegt:
+     *   - 429 (Rate-Limit) → degraded
+     *   - Netz-/Timeout-Fehler → degraded
+     *   - sonstige Fehler → failing mit Message
      */
     public function healthCheck(): PluginHealth {
         if (! $this->service->isConfigured()) {
@@ -74,6 +82,10 @@ class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
             return $ok
                 ? PluginHealth::ok(__('Lexoffice-API erreichbar.'))
                 : PluginHealth::failing(__('Lexoffice-API antwortet nicht erwartungsgemäß.'));
+        } catch (LexofficeRateLimitException $e) {
+            return PluginHealth::degraded($e->getMessage());
+        } catch (ConnectionException $e) {
+            return PluginHealth::degraded(__('Lexoffice ist momentan nicht erreichbar (Netzwerk-/Timeout-Fehler).'));
         } catch (Throwable $e) {
             return PluginHealth::failing($e->getMessage());
         }

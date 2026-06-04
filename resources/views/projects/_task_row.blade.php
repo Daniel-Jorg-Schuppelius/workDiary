@@ -28,8 +28,8 @@
             @if ($task->milestone && ! $indent)
                 {{-- already shown in group header, skip --}}
             @endif
-            @if ($task->assignee)
-                <span>{{ $task->assignee->name }}</span>
+            @if ($task->relationLoaded('assignees') ? $task->assignees->isNotEmpty() : $task->assignees()->exists())
+                <span>{{ $task->assignees->pluck('name')->join(', ') }}</span>
             @endif
             @if ($task->due_date)
                 <span class="{{ $task->due_date->isPast() && $task->status !== \App\Enums\Task\TaskStatus::Done ? 'text-error' : '' }}">
