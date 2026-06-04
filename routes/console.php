@@ -92,3 +92,10 @@ Schedule::command('lexoffice:sync-vouchers')
     ->hourly()
     ->withoutOverlapping()
     ->onOneServer();
+
+// Eurostat veröffentlicht die Mindestlöhne halbjährlich (S1/S2). Zwei Läufe
+// pro Jahr (15. Jan / 15. Jul) genügen; der Import ist idempotent.
+Schedule::command('payroll:import-minimum-wages')
+    ->cron('0 4 15 1,7 *')
+    ->withoutOverlapping()
+    ->onOneServer();

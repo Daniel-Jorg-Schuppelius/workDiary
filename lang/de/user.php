@@ -14,4 +14,13 @@ return [
         'training_manager' => 'Schulungsverantwortliche/r',
         'kunde' => 'Kunde',
     ],
+    'employment_type' => [
+        'vollzeit' => 'Vollzeit',
+        'teilzeit' => 'Teilzeit',
+        'minijob' => 'Minijob (geringfügig)',
+        'midijob' => 'Midijob (Übergangsbereich)',
+        'kurzfristig' => 'Kurzfristige Beschäftigung',
+        'werkstudent' => 'Werkstudent/in',
+        'azubi' => 'Auszubildende/r',
+    ],
 ];

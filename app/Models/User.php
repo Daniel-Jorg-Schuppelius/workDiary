@@ -44,6 +44,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property bool $church_tax
  * @property Carbon|null $employment_start_date
  * @property Carbon|null $employment_end_date
+ * @property \App\Enums\User\EmploymentType|null $employment_type
  * @property string|null $first_name
  * @property string|null $middle_names
  * @property string|null $last_name
@@ -160,6 +161,7 @@ class User extends Authenticatable {
         'church_tax',
         'employment_start_date',
         'employment_end_date',
+        'employment_type',
         'first_name',
         'middle_names',
         'last_name',
@@ -192,6 +194,7 @@ class User extends Authenticatable {
         'church_tax' => 'boolean',
         'employment_start_date' => 'date',
         'employment_end_date' => 'date',
+        'employment_type' => \App\Enums\User\EmploymentType::class,
         'hourly_rate' => 'decimal:2',
         'internal_rate' => 'decimal:2',
         'home_lat' => 'decimal:7',

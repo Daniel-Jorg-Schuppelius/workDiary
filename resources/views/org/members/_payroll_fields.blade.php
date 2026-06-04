@@ -1,14 +1,40 @@
 {{-- Personal-/Lohndaten. Erwartet $member (nullable) und $canManagePayroll.
      Wird im Admin-Formular und im HR-/GF-Zweig (Personalverwaltung) genutzt. --}}
-@php $canManagePayroll = $canManagePayroll ?? false; @endphp
+@php
+    $canManagePayroll = $canManagePayroll ?? false;
+    $minWage = app(\App\Services\Payroll\MinimumWageService::class)->currentFor();
+    $wageVal = old('payroll_hourly_wage', $member?->payroll_hourly_wage);
+    $belowMin = $minWage !== null && $wageVal !== null && $wageVal !== '' && (float) $wageVal < $minWage;
+    $employmentHint = $member ? app(\App\Services\Payroll\PayrollClassifier::class)->mismatchHint($member) : null;
+@endphp
 <x-form-group :legend="__('Lohnabrechnung')" icon="payments" tone="warning" cols="2">
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Stundenlohn') }}</label>
         <input type="number" name="payroll_hourly_wage" step="0.01" min="0"
-               class="input input-bordered w-full @error('payroll_hourly_wage') input-error @enderror"
-               value="{{ old('payroll_hourly_wage', $member?->payroll_hourly_wage) }}"
+               class="input input-bordered w-full @error('payroll_hourly_wage') @enderror @if($belowMin) input-warning @endif"
+               value="{{ $wageVal }}"
                @disabled(! $canManagePayroll)>
         @error('payroll_hourly_wage')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        @if ($minWage !== null)
+            <p class="mt-1 text-xs {{ $belowMin ? 'text-warning font-medium' : 'text-base-content/60' }}">
+                @if ($belowMin)
+                    {{ __('Unter dem aktuellen Mindestlohn von :min €.', ['min' => number_format($minWage, 2, ',', '.')]) }}
+                @else
+                    {{ __('Aktueller Mindestlohn: :min €.', ['min' => number_format($minWage, 2, ',', '.')]) }}
+                @endif
+            </p>
+        @endif
+    </div>
+
+    <div class="fieldset">
+        <label class="fieldset-label">{{ __('Beschäftigungsart') }}</label>
+        <select name="employment_type" class="select select-bordered w-full @error('employment_type') select-error @enderror">
+            <option value="">{{ __('— bitte wählen —') }}</option>
+            @foreach (\App\Enums\User\EmploymentType::options() as $value => $label)
+                <option value="{{ $value }}" @selected(old('employment_type', $member?->employment_type?->value) === $value)>{{ $label }}</option>
+            @endforeach
+        </select>
+        @error('employment_type')<p class="text-error text-sm">{{ $message }}</p>@enderror
     </div>
 
     <div class="fieldset">
@@ -98,4 +124,11 @@
                @checked(old('church_tax', $member?->church_tax))>
         <span class="label-text">{{ __('Kirchensteuerpflichtig') }}</span>
     </label>
+
+    @if ($employmentHint)
+        <div class="alert alert-warning md:col-span-2 py-2 text-sm">
+            <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">info</span>
+            <span>{{ $employmentHint }}</span>
+        </div>
+    @endif
 </x-form-group>

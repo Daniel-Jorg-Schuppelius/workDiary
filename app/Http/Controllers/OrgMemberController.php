@@ -232,6 +232,7 @@ class OrgMemberController extends Controller {
             'church_tax' => ['nullable', 'boolean'],
             'employment_start_date' => ['nullable', 'date'],
             'employment_end_date' => ['nullable', 'date', 'after_or_equal:employment_start_date'],
+            'employment_type' => ['nullable', \Illuminate\Validation\Rule::enum(\App\Enums\User\EmploymentType::class)],
         ];
 
         if ($this->canManagePayroll($user)) {
@@ -255,6 +256,7 @@ class OrgMemberController extends Controller {
             'church_tax' => (bool) ($data['church_tax'] ?? false),
             'employment_start_date' => $this->blankToNull($data['employment_start_date'] ?? null),
             'employment_end_date' => $this->blankToNull($data['employment_end_date'] ?? null),
+            'employment_type' => $this->blankToNull($data['employment_type'] ?? null),
         ];
 
         if ($this->canManagePayroll($auth)) {

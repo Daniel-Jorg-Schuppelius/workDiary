@@ -14,4 +14,13 @@ return [
         'training_manager' => 'Training Manager',
         'kunde' => 'Customer',
     ],
+    'employment_type' => [
+        'vollzeit' => 'Full-time',
+        'teilzeit' => 'Part-time',
+        'minijob' => 'Mini-job (marginal)',
+        'midijob' => 'Midi-job (transition zone)',
+        'kurzfristig' => 'Short-term employment',
+        'werkstudent' => 'Working student',
+        'azubi' => 'Apprentice',
+    ],
 ];

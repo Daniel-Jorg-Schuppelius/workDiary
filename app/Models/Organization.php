@@ -131,6 +131,23 @@ class Organization extends Model {
         return $this->belongsTo(User::class, 'owner_id');
     }
 
+    /**
+     * Lohn-/Sozialversicherungs-Stammdaten aus settings['payroll'].
+     * Ohne Schlüssel die gesamte Gruppe; sonst der Einzelwert (oder null).
+     *
+     * @return ($key is null ? array<string, mixed> : string|null)
+     */
+    public function payroll(?string $key = null): array|string|null {
+        $payroll = is_array($this->settings['payroll'] ?? null) ? $this->settings['payroll'] : [];
+        if ($key === null) {
+            return $payroll;
+        }
+
+        $value = $payroll[$key] ?? null;
+
+        return ($value === null || $value === '') ? null : (string) $value;
+    }
+
     /** @return HasMany<User, $this> */
     public function users(): HasMany {
         return $this->hasMany(User::class);
