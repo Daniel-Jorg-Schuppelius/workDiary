@@ -630,7 +630,9 @@
                                 }
                                 $adminNavItems[] = ['route' => 'admin.legacy-migration.index',      'label' => __('Legacy-Migration'), 'icon' => 'sync_alt',         'modal' => false];
                             }
-                            if (! $isLegacyMode && \Illuminate\Support\Facades\Gate::allows('manage-members')) {
+                            if (! $isLegacyMode && (\Illuminate\Support\Facades\Gate::allows('manage-members') || $_authUser?->can(\App\Enums\User\Permission::UserPayrollManage->value))) {
+                                // Admin (volle Verwaltung) ODER Personalverwaltung/Geschäftsführung
+                                // (Personal-/Lohndaten + Arbeitszeit-Modell) erreichen den Bereich.
                                 $manageNavItems[] = ['route' => 'org.members.index', 'label' => __('Mitarbeiter'), 'icon' => 'group', 'modal' => false];
                             } elseif (! $isLegacyMode && $_authUser instanceof \App\Models\User && $_authUser->isAdmin()) {
                                 // Globaler Admin ohne Org-Kontext: Eintrag verlinkt auf die

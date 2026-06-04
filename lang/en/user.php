@@ -4,6 +4,7 @@ return [
     'role' => [
         'admin' => 'Administrator',
         'geschaeftsfuehrung' => 'Management',
+        'personalverwaltung' => 'Personnel Administration',
         'teamleitung' => 'Team Lead',
         'buchhaltung' => 'Accounting',
         'user' => 'Employee',

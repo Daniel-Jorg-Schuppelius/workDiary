@@ -196,6 +196,7 @@ return [
         'user.reset-password' => 'Reset password',
         'user.rates.manage' => 'Manage hourly rates',
         'user.flex.manage' => 'Manage flex eligibility',
+        'user.payroll.manage' => 'Manage personnel & payroll data',
         'user.import' => 'Import users',
 
         'customer.viewAny' => 'List customers',

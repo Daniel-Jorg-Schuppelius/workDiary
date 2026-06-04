@@ -31,7 +31,7 @@ class UserExportSpec extends AbstractExportSpec {
     }
 
     public function columns(): array {
-        return ['name', 'email', 'hourly_rate', 'internal_rate', 'home_address'];
+        return ['name', 'personnel_number', 'email', 'hourly_rate', 'internal_rate', 'home_address'];
     }
 
     public function query(Organization $organization, array $filters): iterable {
@@ -42,6 +42,7 @@ class UserExportSpec extends AbstractExportSpec {
             ->when($search !== '', function ($q) use ($search): void {
                 $q->where(function ($inner) use ($search): void {
                     $inner->where('name', 'like', "%{$search}%")
+                        ->orWhere('personnel_number', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%");
                 });
             })
@@ -53,6 +54,7 @@ class UserExportSpec extends AbstractExportSpec {
         /** @var User $model */
         return [
             'name' => $this->str($model->name),
+            'personnel_number' => $this->str($model->personnel_number),
             'email' => $this->str($model->email),
             'hourly_rate' => $this->decimalCell($model->hourly_rate),
             'internal_rate' => $this->decimalCell($model->internal_rate),

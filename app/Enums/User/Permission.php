@@ -76,6 +76,7 @@ enum Permission: string implements HasLabel {
     case UserResetPassword = 'user.reset-password';
     case UserManageRates = 'user.rates.manage';
     case UserFlexManage = 'user.flex.manage';
+    case UserPayrollManage = 'user.payroll.manage';
     case UserImport = 'user.import';
 
         // ── Kunden ─────────────────────────────────────────────────────────

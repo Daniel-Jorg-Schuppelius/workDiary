@@ -196,6 +196,7 @@ return [
         'user.reset-password' => 'Passwort zurücksetzen',
         'user.rates.manage' => 'Stundensätze verwalten',
         'user.flex.manage' => 'Gleitzeit-Berechtigung verwalten',
+        'user.payroll.manage' => 'Personal-/Lohndaten verwalten',
         'user.import' => 'Benutzer importieren',
 
         'customer.viewAny' => 'Kunden auflisten',

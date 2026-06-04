@@ -32,7 +32,7 @@ class UserSpec extends AbstractEntitySpec {
     }
 
     public function columns(): array {
-        return ['name', 'email', 'hourly_rate', 'internal_rate', 'home_address'];
+        return ['name', 'personnel_number', 'email', 'hourly_rate', 'internal_rate', 'home_address'];
     }
 
     public function requiredColumns(): array {
@@ -43,6 +43,10 @@ class UserSpec extends AbstractEntitySpec {
         return [
             'benutzer' => 'name',
             'mitarbeiter' => 'name',
+            'personalnummer' => 'personnel_number',
+            'personalnr' => 'personnel_number',
+            'personalnr.' => 'personnel_number',
+            'mitarbeiternummer' => 'personnel_number',
             'e-mail' => 'email',
             'stundensatz' => 'hourly_rate',
             'adresse' => 'home_address',
@@ -84,6 +88,7 @@ class UserSpec extends AbstractEntitySpec {
             if ($existing !== null) {
                 $update = array_filter([
                     'name' => $row['name'] ?? null,
+                    'personnel_number' => $row['personnel_number'] ?? null,
                     'hourly_rate' => $row['hourly_rate'] ?? null,
                     'internal_rate' => $row['internal_rate'] ?? null,
                     'home_address' => $row['home_address'] ?? null,
@@ -98,6 +103,7 @@ class UserSpec extends AbstractEntitySpec {
             User::create([
                 'organization_id' => $organization->id,
                 'name' => $row['name'],
+                'personnel_number' => $row['personnel_number'] ?? null,
                 'email' => $row['email'],
                 'password' => Str::random(40),
                 'must_change_password' => true,

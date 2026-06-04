@@ -22,6 +22,7 @@ enum UserRole: string implements HasLabel {
 
     case Admin = 'admin';
     case Geschaeftsfuehrung = 'geschaeftsfuehrung';
+    case Personalverwaltung = 'personalverwaltung';
     case Teamleitung = 'teamleitung';
     case Buchhaltung = 'buchhaltung';
     case User = 'user';

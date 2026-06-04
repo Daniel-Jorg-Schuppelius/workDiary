@@ -16,7 +16,12 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="$isEdit ? __('Speichern') : __('Anlegen')">
 
-    @include('org.members._form', ['member' => $member ?? null, 'roles' => $roles])
+    @include('org.members._form', [
+        'member' => $member ?? null,
+        'roles' => $roles,
+        'canManageMembers' => $canManageMembers ?? true,
+        'canManagePayroll' => $canManagePayroll ?? false,
+    ])
 
     @if ($errors->any())
         <div class="alert alert-error text-sm">

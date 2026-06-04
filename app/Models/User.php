@@ -33,6 +33,17 @@ use Spatie\Permission\Traits\HasRoles;
  * @property int $id
  * @property int|null $organization_id
  * @property string $name
+ * @property string|null $personnel_number
+ * @property string|null $payroll_hourly_wage
+ * @property string|null $tax_identification_number
+ * @property string|null $social_security_number
+ * @property Carbon|null $date_of_birth
+ * @property string|null $health_insurance
+ * @property string|null $tax_class
+ * @property string|null $child_allowances
+ * @property bool $church_tax
+ * @property Carbon|null $employment_start_date
+ * @property Carbon|null $employment_end_date
  * @property string|null $first_name
  * @property string|null $middle_names
  * @property string|null $last_name
@@ -138,6 +149,17 @@ class User extends Authenticatable {
         'organization_id',
         'customer_id',
         'name',
+        'personnel_number',
+        'payroll_hourly_wage',
+        'tax_identification_number',
+        'social_security_number',
+        'date_of_birth',
+        'health_insurance',
+        'tax_class',
+        'child_allowances',
+        'church_tax',
+        'employment_start_date',
+        'employment_end_date',
         'first_name',
         'middle_names',
         'last_name',
@@ -164,6 +186,12 @@ class User extends Authenticatable {
         'password' => 'hashed',
         'must_change_password' => 'boolean',
         'is_new_system' => 'boolean',
+        'payroll_hourly_wage' => 'decimal:2',
+        'date_of_birth' => 'date',
+        'child_allowances' => 'decimal:2',
+        'church_tax' => 'boolean',
+        'employment_start_date' => 'date',
+        'employment_end_date' => 'date',
         'hourly_rate' => 'decimal:2',
         'internal_rate' => 'decimal:2',
         'home_lat' => 'decimal:7',

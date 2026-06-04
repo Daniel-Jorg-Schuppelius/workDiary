@@ -10,9 +10,16 @@
 
 namespace App\Policies;
 
+use App\Enums\User\Permission;
 use App\Models\{User, WorkSchedule};
 use App\Policies\Concerns\HasAdminBypass;
 
+/**
+ * Das Arbeitszeit-Modell darf nur von Personen mit `work-schedule.manage`
+ * bearbeitet werden (per Default: Personalverwaltung + Geschäftsführung;
+ * Admin via {@see HasAdminBypass}). Für alle anderen ist es read-only —
+ * sie sehen lediglich ihr eigenes Modell.
+ */
 class WorkSchedulePolicy {
     use HasAdminBypass;
 
@@ -21,18 +28,22 @@ class WorkSchedulePolicy {
     }
 
     public function view(User $user, WorkSchedule $schedule): bool {
-        return (int) $user->id === (int) $schedule->user_id;
+        return $this->canManage($user) || (int) $user->id === (int) $schedule->user_id;
     }
 
     public function create(User $user): bool {
-        return false;
+        return $this->canManage($user);
     }
 
     public function update(User $user, WorkSchedule $schedule): bool {
-        return false;
+        return $this->canManage($user);
     }
 
     public function delete(User $user, WorkSchedule $schedule): bool {
-        return false;
+        return $this->canManage($user);
+    }
+
+    private function canManage(User $user): bool {
+        return $user->can(Permission::WorkScheduleManage->value);
     }
 }

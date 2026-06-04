@@ -1,9 +1,10 @@
-{{-- Self-view dialog for WorkSchedule (read-only for non-admins, editable for admins) --}}
+{{-- Self-view dialog for WorkSchedule: editierbar nur mit work-schedule.manage
+     (Personalverwaltung/Geschäftsführung/Admin), sonst read-only. --}}
 @php
-    $_isAdmin = auth()->check() && auth()->user()->isAdmin();
+    $_canManage = auth()->check() && \Illuminate\Support\Facades\Gate::allows('create', \App\Models\WorkSchedule::class);
 @endphp
 
-@if ($_isAdmin)
+@if ($_canManage)
     @include('work-schedules._form_dialog')
 @else
     @php $s = $schedule ?? (object) $defaults; @endphp
@@ -36,6 +37,6 @@
                 <span>{{ (int) $s->break_minutes }} min @ {{ (int) $s->break_after_minutes }} min</span>
             </li>
         </ul>
-        <p class="mt-4 text-xs opacity-60">{{ __('Änderungen am Arbeitszeit-Modell können nur Administratoren vornehmen.') }}</p>
+        <p class="mt-4 text-xs opacity-60">{{ __('Änderungen am Arbeitszeit-Modell können nur die Personalverwaltung oder Geschäftsführung vornehmen.') }}</p>
     </x-modal>
 @endif

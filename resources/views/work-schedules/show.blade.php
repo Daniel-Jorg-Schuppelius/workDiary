@@ -5,14 +5,14 @@
 <x-page-shell>
     <x-page-toolbar :title="__('Mein Arbeitszeit-Modell')">
         @auth
-            @if (auth()->user()->isAdmin())
+            @can('create', \App\Models\WorkSchedule::class)
                 <x-slot:actions>
                     <x-icon-btn icon="edit" tone="primary" size="sm"
                                 data-entry-modal-trigger
                                 :href="route('users.work-schedule.edit', $user)"
                                 show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                 </x-slot:actions>
-            @endif
+            @endcan
         @endauth
     </x-page-toolbar>
     @php $s = $schedule ?? (object) $defaults; @endphp

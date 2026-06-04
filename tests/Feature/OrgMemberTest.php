@@ -33,6 +33,10 @@ class OrgMemberTest extends TestCase {
         return User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
+    private function management(): User {
+        return User::factory()->geschaeftsfuehrung()->create(['organization_id' => $this->organization->id]);
+    }
+
     // ── Zugriffskontrolle ────────────────────────────────────────────────────
 
     public function test_guest_cannot_access_members(): void {
@@ -63,12 +67,32 @@ class OrgMemberTest extends TestCase {
             ->assertViewIs('org.members.index');
     }
 
+    public function test_management_can_view_member_list_for_hourly_wage_maintenance(): void {
+        $management = $this->management();
+        $this->regularUser();
+
+        $this->actingAs($management)
+            ->get(route('org.members.index'))
+            ->assertOk()
+            ->assertDontSee(__('Mitarbeiter anlegen'));
+    }
+
     // ── Mitglied anlegen ─────────────────────────────────────────────────────
 
     public function test_admin_can_create_member(): void {
         $this->actingAs($this->admin())
             ->post(route('org.members.store'), [
                 'name' => 'Neue Person',
+                'personnel_number' => 'P-1001',
+                'payroll_hourly_wage' => '22.50',
+                'tax_identification_number' => '12345678901',
+                'social_security_number' => '12 010170 A 123',
+                'date_of_birth' => '1990-01-15',
+                'health_insurance' => 'Techniker Krankenkasse',
+                'tax_class' => '1',
+                'child_allowances' => '0.50',
+                'church_tax' => '1',
+                'employment_start_date' => '2026-01-01',
                 'email' => 'neu@test.de',
                 'role' => UserRole::User->value,
                 'password' => 'Password123!Strong',
@@ -79,6 +103,17 @@ class OrgMemberTest extends TestCase {
         $new = User::where('email', 'neu@test.de')->first();
         $this->assertNotNull($new);
         $this->assertSame($this->organization->id, $new->organization_id);
+        $this->assertSame('P-1001', $new->personnel_number);
+        // Admin hält user.payroll.manage → darf den Stundenlohn setzen.
+        $this->assertSame('22.50', (string) $new->payroll_hourly_wage);
+        $this->assertSame('12345678901', $new->tax_identification_number);
+        $this->assertSame('12 010170 A 123', $new->social_security_number);
+        $this->assertSame('1990-01-15', $new->date_of_birth?->format('Y-m-d'));
+        $this->assertSame('Techniker Krankenkasse', $new->health_insurance);
+        $this->assertSame('1', $new->tax_class);
+        $this->assertSame('0.50', (string) $new->child_allowances);
+        $this->assertTrue($new->church_tax);
+        $this->assertSame('2026-01-01', $new->employment_start_date?->format('Y-m-d'));
         $this->assertTrue($new->hasRole(UserRole::User->value));
         $this->assertTrue($new->must_change_password);
     }
@@ -97,6 +132,49 @@ class OrgMemberTest extends TestCase {
             ->assertSessionHasErrors('email');
     }
 
+    public function test_store_validates_unique_personnel_number_within_org(): void {
+        User::factory()->create([
+            'organization_id' => $this->organization->id,
+            'personnel_number' => 'P-1001',
+        ]);
+
+        $this->actingAs($this->admin())
+            ->post(route('org.members.store'), [
+                'name' => 'Jemand',
+                'personnel_number' => 'P-1001',
+                'email' => 'personnel@test.de',
+                'role' => UserRole::User->value,
+                'password' => 'Password123!Strong',
+                'password_confirmation' => 'Password123!Strong',
+            ])
+            ->assertSessionHasErrors('personnel_number');
+    }
+
+    public function test_same_personnel_number_is_allowed_in_other_org(): void {
+        $otherOrg = Organization::factory()->create();
+        User::factory()->create([
+            'organization_id' => $otherOrg->id,
+            'personnel_number' => 'P-1001',
+        ]);
+
+        $this->actingAs($this->admin())
+            ->post(route('org.members.store'), [
+                'name' => 'Jemand',
+                'personnel_number' => 'P-1001',
+                'email' => 'personnel@test.de',
+                'role' => UserRole::User->value,
+                'password' => 'Password123!Strong',
+                'password_confirmation' => 'Password123!Strong',
+            ])
+            ->assertRedirect(route('org.members.index'));
+
+        $this->assertDatabaseHas('users', [
+            'organization_id' => $this->organization->id,
+            'personnel_number' => 'P-1001',
+            'email' => 'personnel@test.de',
+        ]);
+    }
+
     // ── Mitglied bearbeiten ───────────────────────────────────────────────────
 
     public function test_admin_can_update_member(): void {
@@ -106,13 +184,105 @@ class OrgMemberTest extends TestCase {
         $this->actingAs($admin)
             ->put(route('org.members.update', $member), [
                 'name' => 'Geändert',
+                'personnel_number' => 'P-2002',
+                'payroll_hourly_wage' => '25.00',
+                'tax_identification_number' => '98765432109',
+                'date_of_birth' => '1985-05-20',
+                'employment_start_date' => '2025-01-01',
+                'employment_end_date' => '2026-12-31',
                 'email' => $member->email,
                 'role' => UserRole::Buchhaltung->value,
             ])
             ->assertRedirect(route('org.members.index'));
 
         $this->assertSame('Geändert', $member->fresh()->name);
+        $this->assertSame('P-2002', $member->fresh()->personnel_number);
+        $this->assertSame('25.00', (string) $member->fresh()->payroll_hourly_wage);
+        $this->assertSame('98765432109', $member->fresh()->tax_identification_number);
+        $this->assertSame('1985-05-20', $member->fresh()->date_of_birth?->format('Y-m-d'));
+        $this->assertSame('2025-01-01', $member->fresh()->employment_start_date?->format('Y-m-d'));
+        $this->assertSame('2026-12-31', $member->fresh()->employment_end_date?->format('Y-m-d'));
         $this->assertTrue($member->fresh()->hasRole(UserRole::Buchhaltung->value));
+    }
+
+    public function test_management_can_update_payroll_block_but_not_identity(): void {
+        $management = $this->management();
+        $member = $this->regularUser();
+        $originalName = $member->name;
+
+        $this->actingAs($management)
+            ->get(route('org.members.edit', $member))
+            ->assertOk()
+            ->assertSee(__('Stundenlohn'));
+
+        $this->actingAs($management)
+            ->put(route('org.members.update', $member), [
+                'payroll_hourly_wage' => '24.75',
+                'tax_identification_number' => '11111111111',
+                // Identität/Rolle dürfen NICHT durchschlagen.
+                'name' => 'Darf nicht geändert werden',
+                'role' => UserRole::Admin->value,
+            ])
+            ->assertRedirect(route('org.members.index'));
+
+        $member->refresh();
+        // Voller Payroll-Block editierbar (inkl. Lohn).
+        $this->assertSame('24.75', (string) $member->payroll_hourly_wage);
+        $this->assertSame('11111111111', $member->tax_identification_number);
+        // Identität/Rolle unverändert.
+        $this->assertSame($originalName, $member->name);
+        $this->assertTrue($member->hasRole(UserRole::User->value));
+        $this->assertFalse($member->hasRole(UserRole::Admin->value));
+    }
+
+    // ── Personalverwaltung (HR) ───────────────────────────────────────────────
+
+    private function personnelAdmin(): User {
+        return User::factory()->personalverwaltung()->create(['organization_id' => $this->organization->id]);
+    }
+
+    public function test_personnel_admin_can_view_and_maintain_payroll(): void {
+        $hr = $this->personnelAdmin();
+        $member = $this->regularUser();
+        $originalName = $member->name;
+
+        $this->actingAs($hr)->get(route('org.members.index'))->assertOk();
+
+        $this->actingAs($hr)
+            ->put(route('org.members.update', $member), [
+                'payroll_hourly_wage' => '19.90',
+                'tax_class' => '3',
+                'name' => 'Hack',
+                'role' => UserRole::Admin->value,
+            ])
+            ->assertRedirect(route('org.members.index'));
+
+        $member->refresh();
+        $this->assertSame('19.90', (string) $member->payroll_hourly_wage);
+        $this->assertSame('3', $member->tax_class);
+        $this->assertSame($originalName, $member->name);
+        $this->assertTrue($member->hasRole(UserRole::User->value));
+    }
+
+    public function test_personnel_admin_cannot_create_or_delete_members(): void {
+        $hr = $this->personnelAdmin();
+        $member = $this->regularUser();
+
+        $this->actingAs($hr)
+            ->post(route('org.members.store'), [
+                'name' => 'Neu',
+                'email' => 'hrneu@test.de',
+                'role' => UserRole::User->value,
+                'password' => 'Password123!Strong',
+                'password_confirmation' => 'Password123!Strong',
+            ])
+            ->assertForbidden();
+
+        $this->actingAs($hr)
+            ->delete(route('org.members.destroy', $member))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('users', ['id' => $member->id]);
     }
 
     // ── Mitglied entfernen ────────────────────────────────────────────────────

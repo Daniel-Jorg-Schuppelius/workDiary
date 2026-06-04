@@ -158,6 +158,10 @@ class PermissionsSeeder extends Seeder {
                     PermissionEnum::AccessAuditView->value,
                     PermissionEnum::FlexBalanceView->value,
                     PermissionEnum::ClassificationList->value,
+                    // Geschäftsführung darf — wie die Personalverwaltung —
+                    // Personal-/Lohndaten und das Arbeitszeit-Modell pflegen.
+                    PermissionEnum::UserPayrollManage->value,
+                    PermissionEnum::WorkScheduleManage->value,
                     // MVP-005: Datenschutzbericht als PDF/Export — die
                     // .view-Heuristik trifft hier nicht, daher explizit.
                     PermissionEnum::PrivacyReportExport->value,
@@ -226,7 +230,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::SickLeaveManage,
             PermissionEnum::AttendanceViewAny,
             PermissionEnum::AttendanceManage,
-            PermissionEnum::WorkScheduleManage,
+            // Arbeitszeit-Modell pflegen jetzt exklusiv Personalverwaltung +
+            // Geschäftsführung (work-schedule.manage daher hier entfernt).
             PermissionEnum::FlexBalanceView,
             PermissionEnum::FlexBalanceManage,
             PermissionEnum::TourViewAny,
@@ -298,6 +303,25 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::AssetTransferOwnership,
             PermissionEnum::ReportView,
             PermissionEnum::AccessAuditView,
+        ];
+
+        // Personalverwaltung (HR): pflegt Personal-/Lohndaten und das
+        // Arbeitszeit-Modell, sieht Anwesenheit/Abwesenheit/Gleitzeit lesend.
+        // KEINE Rollenvergabe, Passwörter, Neuanlage/Löschung (bleibt Admin).
+        $personalverwaltung = [
+            PermissionEnum::OrganizationView,
+            PermissionEnum::UserViewAny,
+            PermissionEnum::UserView,
+            PermissionEnum::UserPayrollManage,
+            PermissionEnum::UserFlexManage,
+            PermissionEnum::WorkScheduleManage,
+            PermissionEnum::AttendanceViewAny,
+            PermissionEnum::FlexBalanceView,
+            PermissionEnum::VacationViewAny,
+            PermissionEnum::SickLeaveViewAny,
+            PermissionEnum::SickLeaveManage,
+            PermissionEnum::ReportView,
+            PermissionEnum::ClassificationList,
         ];
 
         $buchhaltung = [
@@ -541,6 +565,7 @@ class PermissionsSeeder extends Seeder {
         return [
             UserRole::Admin->value => $all,
             UserRole::Geschaeftsfuehrung->value => $geschaeftsfuehrung,
+            UserRole::Personalverwaltung->value => $personalverwaltung,
             UserRole::Teamleitung->value => [...$teamleitung, ...$foreignCustomerRead],
             UserRole::Buchhaltung->value => $buchhaltung,
             UserRole::User->value => [...$user, ...$foreignCustomerRead],

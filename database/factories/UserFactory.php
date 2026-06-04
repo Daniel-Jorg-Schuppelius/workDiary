@@ -15,6 +15,7 @@ use App\Models\{Organization, User};
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 /**
@@ -97,6 +98,12 @@ class UserFactory extends Factory {
         });
     }
 
+    public function personalverwaltung(): static {
+        return $this->afterCreating(function (User $user): void {
+            self::syncRolesInOwnOrg($user, [UserRole::Personalverwaltung->value]);
+        });
+    }
+
     public function teamleitung(): static {
         return $this->afterCreating(function (User $user): void {
             self::syncRolesInOwnOrg($user, [UserRole::Teamleitung->value]);
@@ -150,8 +157,31 @@ class UserFactory extends Factory {
         $registrar = app(PermissionRegistrar::class);
         $previous = $registrar->getPermissionsTeamId();
         try {
-            $registrar->setPermissionsTeamId((int) $user->organization_id);
-            $user->syncRoles($roles);
+            $orgId = (int) $user->organization_id;
+            $registrar->setPermissionsTeamId($orgId);
+            // Beide gleichnamigen Rollen-Zeilen anhängen — exakt wie die Admin-UI
+            // ({@see \App\Http\Controllers\Admin\Access\MemberController}):
+            //  - die GLOBALE Rolle (team_id = NULL) matcht team-lose Abfragen wie
+            //    User::role([...]) (z. B. PushNotifier) und den isAdmin()-Check,
+            //  - die PER-ORGANISATION-Rolle trägt die Permissions (work-schedule.manage,
+            //    user.payroll.manage, …), die permission-basierte Policies prüfen.
+            // Spaties findByName()/String-Sync würde nur die leere globale Rolle treffen.
+            $teamForeign = config('permission.column_names.team_foreign_key', 'team_id');
+            $models = [];
+            foreach ($roles as $name) {
+                $rows = Role::query()
+                    ->where('name', $name)
+                    ->where('guard_name', 'web')
+                    ->where(static fn($q) => $q->whereNull($teamForeign)->orWhere($teamForeign, $orgId))
+                    ->get();
+                if ($rows->isEmpty()) {
+                    $rows = collect([Role::findOrCreate($name, 'web')]);
+                }
+                foreach ($rows as $row) {
+                    $models[] = $row;
+                }
+            }
+            $user->syncRoles($models);
         } finally {
             $registrar->setPermissionsTeamId($previous);
             // Wichtig in Test-Setups: Spatie cached die geladene Permission-

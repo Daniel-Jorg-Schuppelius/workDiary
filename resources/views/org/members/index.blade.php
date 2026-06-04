@@ -6,10 +6,12 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Mitarbeiter des Mandanten verwalten.')">
     <x-slot:actions>
-        <x-icon-btn icon="add" tone="primary" size="sm"
-                    data-entry-modal-trigger
-                    :href="route('org.members.create')"
-                    show-label>{{ __('Mitarbeiter anlegen') }}</x-icon-btn>
+        @if ($canManageMembers ?? true)
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('org.members.create')"
+                        show-label>{{ __('Mitarbeiter anlegen') }}</x-icon-btn>
+        @endif
     </x-slot:actions>
 
     @if ($members->isEmpty())
@@ -26,6 +28,7 @@
             <x-slot:head>
                 <tr>
                     <x-table.th sort="name" default>{{ __('Name') }}</x-table.th>
+                    <x-table.th sort="personnel_number">{{ __('Personalnr.') }}</x-table.th>
                     <x-table.th sort="email">{{ __('E-Mail') }}</x-table.th>
                     <th>{{ __('Rolle') }}</th>
                     <th></th>
@@ -34,6 +37,13 @@
                 @foreach ($members as $member)
                     <tr>
                         <td class="font-medium">{{ $member->name }}</td>
+                        <td class="text-sm text-base-content/70">
+                            @if ($member->personnel_number)
+                                {{ $member->personnel_number }}
+                            @else
+                                &mdash;
+                            @endif
+                        </td>
                         <td class="text-sm text-base-content/70">{{ $member->email }}</td>
                         <td>
                             @foreach ($member->roles as $role)
@@ -51,13 +61,15 @@
                                             data-entry-modal-trigger
                                             :href="route('org.members.edit', $member)"
                                             :label="__('Bearbeiten')" />
-                                <form method="POST" action="{{ route('org.members.destroy', $member) }}" class="inline"
-                                      data-confirm-dialog
-                                      data-confirm-message="{{ __('Mitarbeiter wirklich entfernen?') }}"
-                                      data-confirm-label="{{ __('Entfernen') }}">
-                                    @csrf @method('DELETE')
-                                    <x-icon-btn icon="person_remove" tone="error" type="submit" :label="__('Entfernen')" />
-                                </form>
+                                @if ($canManageMembers ?? true)
+                                    <form method="POST" action="{{ route('org.members.destroy', $member) }}" class="inline"
+                                          data-confirm-dialog
+                                          data-confirm-message="{{ __('Mitarbeiter wirklich entfernen?') }}"
+                                          data-confirm-label="{{ __('Entfernen') }}">
+                                        @csrf @method('DELETE')
+                                        <x-icon-btn icon="person_remove" tone="error" type="submit" :label="__('Entfernen')" />
+                                    </form>
+                                @endif
                             </div>
                         </td>
                     </tr>

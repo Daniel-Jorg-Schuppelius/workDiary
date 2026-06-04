@@ -22,6 +22,7 @@ final class UserRoleTest extends TestCase {
         $this->assertSame([
             'admin',
             'geschaeftsfuehrung',
+            'personalverwaltung',
             'teamleitung',
             'buchhaltung',
             'user',
