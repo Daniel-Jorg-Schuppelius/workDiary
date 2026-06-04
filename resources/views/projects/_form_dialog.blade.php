@@ -178,15 +178,12 @@
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('Zusätzliche Einzelmitglieder') }}</label>
                 @php($selectedMembers = (array) old('member_ids', array_map(fn($id) => \App\Support\Sqid::encode(\App\Models\User::class, $id), $assignedMemberIds)))
-                <div class="grid grid-cols-1 gap-1 sm:grid-cols-2 lg:grid-cols-3">
-                    @foreach ($orgUsers as $u)
-                        <label class="label cursor-pointer justify-start gap-2 rounded px-2 hover:bg-base-200">
-                            <input type="checkbox" name="member_ids[]" value="{{ $u->sqid }}" class="checkbox checkbox-sm"
-                                   @checked(in_array($u->sqid, $selectedMembers, true))>
-                            <span class="text-sm">{{ $u->name }}</span>
-                        </label>
-                    @endforeach
-                </div>
+                <x-user-checklist
+                    name="member_ids"
+                    :users="$orgUsers"
+                    :selected="$selectedMembers"
+                    :placeholder="__('Mitarbeiter suchen…')"
+                    :empty-text="__('Keine Benutzer vorhanden.')" />
             </div>
         </x-form-group>
 

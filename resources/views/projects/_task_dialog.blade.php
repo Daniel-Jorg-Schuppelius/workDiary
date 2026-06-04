@@ -72,39 +72,31 @@
                 </select>
             </div>
 
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Startdatum') }}</label>
-                <input name="start_date" type="date"
-                       class="input input-bordered w-full @error('start_date') input-error @enderror"
-                       value="{{ old('start_date', $task?->start_date?->format('Y-m-d')) }}">
-                @error('start_date')<p class="text-error text-sm">{{ $message }}</p>@enderror
-            </div>
-
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Fälligkeitsdatum') }}</label>
-                <input name="due_date" type="date"
-                       class="input input-bordered w-full @error('due_date') input-error @enderror"
-                       value="{{ old('due_date', $task?->due_date?->format('Y-m-d')) }}">
-                @error('due_date')<p class="text-error text-sm">{{ $message }}</p>@enderror
-            </div>
+            <x-date-range
+                layout="join"
+                :from="old('start_date', $task?->start_date?->format('Y-m-d'))"
+                :to="old('due_date', $task?->due_date?->format('Y-m-d'))"
+                fromName="start_date"
+                toName="due_date"
+                :fromLabel="__('Startdatum')"
+                :toLabel="__('Fälligkeitsdatum')"
+                :label="__('Zeitraum (Start – Fälligkeit)')"
+                size=""
+                formControl
+                :fromError="$errors->first('start_date')"
+                :toError="$errors->first('due_date')"
+            />
 
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('Bearbeiter') }}</label>
                 @php($selectedAssignees = (array) old('assignee_ids', array_map(fn($id) => \App\Support\Sqid::encode(\App\Models\User::class, $id), $assigneeIds ?? [])))
-                @if ($users->isEmpty())
-                    <p class="text-xs text-base-content/60">{{ __('Dem Auftrag ist noch kein Team/Mitglied zugeordnet.') }}</p>
-                @else
-                    <div class="grid grid-cols-1 gap-1 sm:grid-cols-2">
-                        @foreach ($users as $u)
-                            <label class="label cursor-pointer justify-start gap-2 rounded px-2 hover:bg-base-200">
-                                <input type="checkbox" name="assignee_ids[]" value="{{ $u->sqid }}" class="checkbox checkbox-sm"
-                                       @checked(in_array($u->sqid, $selectedAssignees, true))>
-                                <span class="text-sm">{{ $u->name }}</span>
-                            </label>
-                        @endforeach
-                    </div>
-                    <p class="text-xs text-base-content/60">{{ __('Mehrfachauswahl möglich – die erste Person gilt als Hauptverantwortliche/r.') }}</p>
-                @endif
+                <x-user-checklist
+                    name="assignee_ids"
+                    :users="$users"
+                    :selected="$selectedAssignees"
+                    :placeholder="__('Bearbeiter suchen…')"
+                    :empty-text="__('Dem Auftrag ist noch kein Team/Mitglied zugeordnet.')" />
+                <p class="text-xs text-base-content/60">{{ __('Mehrfachauswahl möglich – die erste Person gilt als Hauptverantwortliche/r.') }}</p>
                 @error('assignee_ids.*')<p class="text-error text-sm">{{ $message }}</p>@enderror
             </div>
         </x-form-group>

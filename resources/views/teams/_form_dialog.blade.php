@@ -48,18 +48,12 @@
             <p class="text-xs text-base-content/60">{{ __('Der Teamleiter wird automatisch als Mitglied geführt.') }}</p>
 
             @php($selectedMembers = (array) old('member_ids', array_map(fn($id) => \App\Support\Sqid::encode(\App\Models\User::class, $id), $assignedMemberIds)))
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                @forelse ($orgUsers as $u)
-                    <label class="label cursor-pointer justify-start gap-3 rounded px-2 hover:bg-base-100">
-                        <input type="checkbox" name="member_ids[]" value="{{ $u->sqid }}"
-                               class="checkbox checkbox-sm"
-                               @checked(in_array($u->sqid, $selectedMembers, true)) />
-                        <span class="text-sm">{{ $u->name }}</span>
-                    </label>
-                @empty
-                    <div class="col-span-full text-sm text-base-content/60">{{ __('Keine Benutzer vorhanden.') }}</div>
-                @endforelse
-            </div>
+            <x-user-checklist
+                name="member_ids"
+                :users="$orgUsers"
+                :selected="$selectedMembers"
+                :placeholder="__('Mitarbeiter suchen…')"
+                :empty-text="__('Keine Benutzer vorhanden.')" />
         </div>
     </section>
 </x-modal>

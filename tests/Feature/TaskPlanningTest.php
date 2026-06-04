@@ -83,6 +83,14 @@ class TaskPlanningTest extends TestCase {
         );
     }
 
+    public function test_task_create_dialog_lists_assignable_members(): void {
+        $this->actingAs($this->admin)
+            ->get(route('projects.tasks.create', $this->project))
+            ->assertOk()
+            ->assertSee('assignee_ids[]', false)
+            ->assertSee($this->teamMember->name);
+    }
+
     public function test_due_date_before_start_date_is_rejected(): void {
         $this->actingAs($this->admin)
             ->post(route('projects.tasks.store', $this->project), $this->payload([
