@@ -68,9 +68,9 @@
     </div>
 
     @if ($filtered->isEmpty())
-        <div class="rounded-box border border-base-300 bg-base-100 p-8 text-center text-sm text-base-content/60">
-            {{ __('Keine Aufgaben vorhanden.') }}
-        </div>
+        <x-empty-state framed
+            icon='<span class="material-symbols-outlined" aria-hidden="true">checklist</span>'
+            :title="__('Keine Aufgaben vorhanden.')" />
     @else
         @foreach ($grouped->sortKeys() as $milestoneId => $tasks)
             @php

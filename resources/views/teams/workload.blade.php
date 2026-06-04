@@ -33,7 +33,9 @@
                     </div>
 
                     @if ($tasks->isEmpty())
-                        <p class="text-sm text-base-content/50">{{ __('Keine Aufgaben im Zeitraum.') }}</p>
+                        <x-empty-state compact
+                            icon='<span class="material-symbols-outlined" aria-hidden="true">event_available</span>'
+                            :title="__('Keine Aufgaben im Zeitraum.')" />
                     @else
                         <x-table table-sort="client">
                             <x-slot:head>
@@ -60,7 +62,9 @@
                 </div>
             </div>
         @empty
-            <p class="text-sm text-base-content/60">{{ __('Dieses Team hat noch keine Mitglieder.') }}</p>
+            <x-empty-state framed
+                icon='<span class="material-symbols-outlined" aria-hidden="true">group</span>'
+                :title="__('Dieses Team hat noch keine Mitglieder.')" />
         @endforelse
     </div>
 </x-page-shell>

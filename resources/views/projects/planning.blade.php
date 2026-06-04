@@ -22,7 +22,9 @@
             </div>
 
             @if ($t['groups']->isEmpty())
-                <p class="py-6 text-center text-sm text-base-content/60">{{ __('Noch keine Aufgaben für diesen Auftrag.') }}</p>
+                <x-empty-state compact
+                    icon='<span class="material-symbols-outlined" aria-hidden="true">checklist</span>'
+                    :title="__('Noch keine Aufgaben für diesen Auftrag.')" />
             @else
                 {{-- Wochen-Achse --}}
                 <div class="relative ml-44 h-6 border-b border-base-300">

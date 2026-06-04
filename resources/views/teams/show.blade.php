@@ -38,7 +38,9 @@
                 @forelse ($team->projects as $project)
                     <a href="{{ route('projects.show', $project) }}" class="link link-hover block text-sm">{{ $project->name }}</a>
                 @empty
-                    <p class="text-sm text-base-content/60">{{ __('Diesem Team sind noch keine Aufträge zugewiesen.') }}</p>
+                    <x-empty-state compact
+                        icon='<span class="material-symbols-outlined" aria-hidden="true">folder_open</span>'
+                        :title="__('Diesem Team sind noch keine Aufträge zugewiesen.')" />
                 @endforelse
             </div>
         </div>
@@ -87,7 +89,9 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="4" class="py-4 text-center text-base-content/60">{{ __('Noch keine Mitglieder.') }}</td></tr>
+                    <x-table.empty :colspan="4"
+                        icon='<span class="material-symbols-outlined" aria-hidden="true">group</span>'
+                        :title="__('Noch keine Mitglieder.')" compact />
                 @endforelse
             </x-table>
         </div>

@@ -12,7 +12,11 @@
         </header>
 
         @if ($timesheets->isEmpty())
-            <div class="px-4 py-6 text-sm text-base-content/60">{{ __('Noch keine Stundenzettel erfasst.') }}</div>
+            <div class="p-4">
+                <x-empty-state compact
+                    icon='<span class="material-symbols-outlined" aria-hidden="true">description</span>'
+                    :title="__('Noch keine Stundenzettel erfasst.')" />
+            </div>
         @else
             <x-table table-sort="client" bare>
                 <x-slot:head>

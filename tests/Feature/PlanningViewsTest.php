@@ -48,6 +48,37 @@ class PlanningViewsTest extends TestCase {
             ->assertSee($member->name);
     }
 
+    public function test_project_show_empty_tabs_render(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $project = Project::factory()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($admin)
+            ->get(route('projects.show', $project))
+            ->assertOk()
+            ->assertSee(__('Keine Aufgaben vorhanden.'))
+            ->assertSee(__('Noch keine Zeiteinträge erfasst.'));
+    }
+
+    public function test_project_timeline_empty_state_renders(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $project = Project::factory()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($admin)
+            ->get(route('projects.planning', $project))
+            ->assertOk()
+            ->assertSee(__('Noch keine Aufgaben für diesen Auftrag.'));
+    }
+
+    public function test_team_workload_empty_state_renders(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $team = Team::factory()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($admin)
+            ->get(route('teams.workload', $team))
+            ->assertOk()
+            ->assertSee(__('Dieses Team hat noch keine Mitglieder.'));
+    }
+
     public function test_team_workload_renders_member_tasks(): void {
         $member = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $team = Team::factory()->create(['organization_id' => $this->organization->id]);

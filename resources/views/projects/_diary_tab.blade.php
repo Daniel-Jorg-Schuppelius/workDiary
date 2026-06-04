@@ -42,7 +42,11 @@
                 </a>
             </li>
         @empty
-            <li class="px-4 py-8 text-center text-sm text-base-content/60">{{ __('Keine Aufträge auf dieses Projekt gebucht.') }}</li>
+            <li class="p-4">
+                <x-empty-state compact
+                    icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>'
+                    :title="__('Keine Aufträge auf dieses Projekt gebucht.')" />
+            </li>
         @endforelse
     </ul>
 </div>

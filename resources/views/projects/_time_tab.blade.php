@@ -32,7 +32,11 @@
             @endcan
         </header>
         @if ($timeEntries->isEmpty())
-            <div class="px-4 py-8 text-center text-sm text-base-content/60">{{ __('Noch keine Zeiteinträge erfasst.') }}</div>
+            <div class="p-4">
+                <x-empty-state compact
+                    icon='<span class="material-symbols-outlined" aria-hidden="true">schedule</span>'
+                    :title="__('Noch keine Zeiteinträge erfasst.')" />
+            </div>
         @else
             <x-table table-sort="client" bare>
                 <x-slot:head>
