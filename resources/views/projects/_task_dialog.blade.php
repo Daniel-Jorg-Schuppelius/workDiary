@@ -78,16 +78,16 @@
                 :to="old('due_date', $task?->due_date?->format('Y-m-d'))"
                 fromName="start_date"
                 toName="due_date"
-                :fromLabel="__('Startdatum')"
-                :toLabel="__('Fälligkeitsdatum')"
-                :label="__('Zeitraum (Start – Fälligkeit)')"
+                :fromLabel="__('Start')"
+                :toLabel="__('Fällig')"
+                :label="__('Zeitraum (Start – Fällig)')"
                 size=""
                 formControl
                 :fromError="$errors->first('start_date')"
                 :toError="$errors->first('due_date')"
             />
 
-            <div class="fieldset">
+            <div class="fieldset md:col-span-2">
                 <label class="fieldset-label">{{ __('Bearbeiter') }}</label>
                 @php($selectedAssignees = (array) old('assignee_ids', array_map(fn($id) => \App\Support\Sqid::encode(\App\Models\User::class, $id), $assigneeIds ?? [])))
                 <x-user-checklist

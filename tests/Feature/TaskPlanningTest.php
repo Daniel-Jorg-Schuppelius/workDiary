@@ -88,7 +88,11 @@ class TaskPlanningTest extends TestCase {
             ->get(route('projects.tasks.create', $this->project))
             ->assertOk()
             ->assertSee('assignee_ids[]', false)
-            ->assertSee($this->teamMember->name);
+            ->assertSee($this->teamMember->name)
+            // Sicheres Filter-Muster (data-search/$el.dataset), KEIN Js::from im
+            // x-show — sonst bricht das doppelt-gequotete Attribut (Dialog lädt nicht).
+            ->assertSee('$el.dataset.search', false)
+            ->assertDontSee('Illuminate\\Support\\Js', false);
     }
 
     public function test_due_date_before_start_date_is_rejected(): void {

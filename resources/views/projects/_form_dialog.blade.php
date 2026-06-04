@@ -128,33 +128,35 @@
             </p>
         </x-form-group>
 
-        <x-form-group :legend="__('Status & Zeitraum')" icon="event" tone="success" cols="2">
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Status') }}</label>
-                <select name="status" class="select select-bordered w-full">
-                    @foreach (\App\Enums\Project\ProjectStatus::options() as $value => $label)
-                        <option value="{{ $value }}" @selected(old('status', $project?->status?->value ?? \App\Enums\Project\ProjectStatus::Active->value) === $value)>
-                            {{ $label }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+        <x-form-group :legend="__('Status & Zeitraum')" icon="event" tone="success">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div class="fieldset">
+                    <label class="fieldset-label">{{ __('Status') }}</label>
+                    <select name="status" class="select select-bordered w-full">
+                        @foreach (\App\Enums\Project\ProjectStatus::options() as $value => $label)
+                            <option value="{{ $value }}" @selected(old('status', $project?->status?->value ?? \App\Enums\Project\ProjectStatus::Active->value) === $value)>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-            <x-date-range
-                layout="join"
-                :from="old('starts_on', $project?->starts_on?->format('Y-m-d'))"
-                :to="old('ends_on', $project?->ends_on?->format('Y-m-d'))"
-                fromName="starts_on"
-                toName="ends_on"
-                :fromLabel="__('Start')"
-                :toLabel="__('Ende')"
-                :label="__('Start – Ende')"
-                size=""
-                formControl
-                class="col-span-2"
-                :toError="$errors->first('ends_on')"
-                :fromError="$errors->first('starts_on')"
-            />
+                <x-date-range
+                    layout="join"
+                    class="sm:col-span-2"
+                    :from="old('starts_on', $project?->starts_on?->format('Y-m-d'))"
+                    :to="old('ends_on', $project?->ends_on?->format('Y-m-d'))"
+                    fromName="starts_on"
+                    toName="ends_on"
+                    :fromLabel="__('Start')"
+                    :toLabel="__('Ende')"
+                    :label="__('Start – Ende')"
+                    size=""
+                    formControl
+                    :toError="$errors->first('ends_on')"
+                    :fromError="$errors->first('starts_on')"
+                />
+            </div>
         </x-form-group>
 
         <x-form-group :legend="__('Teams & Mitglieder')" icon="groups" tone="secondary">

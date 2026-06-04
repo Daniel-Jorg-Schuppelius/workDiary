@@ -63,6 +63,16 @@ class ProjectTeamAssignmentTest extends TestCase {
         $this->assertFalse(Project::forUser($outsider)->whereKey($project->id)->exists());
     }
 
+    public function test_project_create_dialog_renders(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($admin)
+            ->get(route('projects.create'), ['X-Requested-With' => 'XMLHttpRequest'])
+            ->assertOk()
+            ->assertSee('starts_on', false)
+            ->assertSee('ends_on', false);
+    }
+
     public function test_admin_can_assign_teams_and_members_via_update(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $team = Team::factory()->create(['organization_id' => $this->organization->id]);

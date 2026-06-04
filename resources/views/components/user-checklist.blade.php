@@ -29,21 +29,21 @@
     @if ($checklistItems->isEmpty())
         <p class="text-xs text-base-content/60">{{ $emptyText ?? __('Keine Einträge vorhanden.') }}</p>
     @else
-        <div class="relative">
-            <input type="text" x-model="q" autocomplete="off"
-                   class="input input-bordered input-sm w-full pl-8"
+        <label class="input input-bordered input-sm flex w-full items-center gap-2">
+            <span class="material-symbols-outlined text-[1.05rem] opacity-50" aria-hidden="true">search</span>
+            <input type="text" x-model="q" autocomplete="off" class="grow"
                    placeholder="{{ $placeholder ?? __('Suchen…') }}">
-            <span class="material-symbols-outlined pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-[1.05rem] opacity-50" aria-hidden="true">search</span>
-        </div>
+        </label>
 
         <div class="{{ $height }} divide-y divide-base-200 overflow-y-auto rounded-box border border-base-300">
             @foreach ($checklistItems as $item)
                 <label class="flex cursor-pointer items-center gap-2 px-2 py-1.5 hover:bg-base-200"
-                       x-show="q === '' || {{ Illuminate\Support\Js::from(mb_strtolower($item['label'])) }}.includes(q.toLowerCase().trim())">
+                       data-search="{{ \Illuminate\Support\Str::lower($item['label']) }}"
+                       x-show="q.trim() === '' || $el.dataset.search.includes(q.toLowerCase().trim())">
                     <input type="checkbox" name="{{ $name }}[]" value="{{ $item['value'] }}"
                            class="checkbox checkbox-sm"
                            @checked(in_array($item['value'], $checklistSelected, true))
-                           @change="count += $el.checked ? 1 : -1">
+                           @change="count += $event.target.checked ? 1 : -1">
                     <span class="text-sm">{{ $item['label'] }}</span>
                 </label>
             @endforeach
