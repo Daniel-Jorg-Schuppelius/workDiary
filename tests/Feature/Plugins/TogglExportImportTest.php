@@ -203,6 +203,42 @@ class TogglExportImportTest extends TestCase {
         $this->assertSame($mapped->id, $entry->user_id);
     }
 
+    public function test_long_description_is_stored_in_full(): void {
+        // Historische Toggl-Notizen können > 500 Zeichen lang sein. Nach dem
+        // Verbreitern der Spalte auf TEXT dürfen sie vollständig gespeichert
+        // werden, statt den Import abzubrechen oder gekappt zu werden.
+        $dir = sys_get_temp_dir() . '/toggl_long_' . uniqid();
+        $long = trim(str_repeat('Lange Besprechungsnotiz mit vielen Details -> ', 30)); // ~1.4k Zeichen
+        @mkdir($dir . '/LongWs', 0777, true);
+        file_put_contents($dir . '/LongWs/clients.json', json_encode([
+            ['id' => 1, 'name' => 'Acme', 'archived' => false],
+        ]));
+        file_put_contents($dir . '/LongWs/projects.json', json_encode([
+            ['id' => 10, 'name' => 'Website', 'client_id' => 1, 'client_name' => 'Acme', 'active' => true],
+        ]));
+        file_put_contents($dir . '/LongWs/workspace_users.json', json_encode([
+            ['id' => 1, 'email' => 'dev@example.com', 'name' => 'Dev'],
+        ]));
+        $this->writeCsv($dir . '/LongWs/Toggl_time_entries_2025-01-01_to_2025-12-31.csv', [
+            ['Dev', 'dev@example.com', 'Acme', 'Website', '', $long, 'No', '2025-03-02', '09:00:00', '2025-03-02', '10:00:00', '01:00:00', ''],
+        ]);
+
+        (new TogglExportImporter)->import(
+            $dir,
+            $this->organization,
+            ['LongWs' => ['mode' => TogglExportImporter::MODE_OWN]],
+            TogglExportImporter::USER_PER_EMAIL,
+            dryRun: false,
+        );
+
+        $entry = TimeEntry::query()->latest('id')->first();
+        $this->assertNotNull($entry);
+        $this->assertGreaterThan(500, mb_strlen((string) $entry->description));
+        $this->assertStringContainsString('Besprechungsnotiz', (string) $entry->description);
+
+        $this->rrmdir($dir);
+    }
+
     // --- Fixtures -----------------------------------------------------------
 
     private function buildOwn(string $dir): void {
