@@ -107,7 +107,7 @@
         <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('img/logo/workdiary-mark-192.png') }}">
 
         {{-- PWA: Manifest + Theme-Color + iOS-Hinweise. --}}
-        <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+        <link rel="manifest" href="{{ asset('manifest.webmanifest') }}?v={{ @filemtime(public_path('manifest.webmanifest')) ?: '1' }}">
         <meta name="theme-color" content="#1d232a" media="(prefers-color-scheme: dark)">
         <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
         <meta name="mobile-web-app-capable" content="yes">
