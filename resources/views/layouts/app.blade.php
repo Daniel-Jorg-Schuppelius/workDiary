@@ -486,11 +486,6 @@
             $_activeOrg = app()->bound('currentOrganization') ? app('currentOrganization') : null;
             $_activeOrgId = $_activeOrg ? (int) $_activeOrg->id : null;
             $showOrgSwitch = $_isGlobalAdmin && $_orgList->count() > 1;
-            $currentLocale = app()->getLocale();
-            $supportedLocales = [
-                'de' => ['label' => __('Deutsch'),  'code' => 'DE'],
-                'en' => ['label' => __('Englisch'), 'code' => 'EN'],
-            ];
         @endphp
 
         <header id="app-header" class="sticky top-0 z-50 bg-base-100 border-b border-base-300 shadow-xs">
@@ -547,7 +542,7 @@
                                     ['route' => 'invoices.index',           'label' => __('Rechnungen & Belege'), 'icon' => 'receipt_long',     'modal' => false, 'matches' => ['invoices.*', 'lexoffice.vouchers.*']],
                                     ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
                                     ['route' => 'events.index',             'label' => __('Veranstaltungen'),'icon' => 'event',            'modal' => false, 'matches' => ['events.*']],
-                                    ['route' => 'flex.index',               'label' => __('Gleitzeit'),      'icon' => 'hourglass_top',    'modal' => false, 'matches' => ['flex.*']],
+                                    ['route' => 'flex.index',               'label' => __('Arbeitszeitkonto'),'icon' => 'hourglass_top',   'modal' => false, 'matches' => ['flex.*']],
                                     ['route' => 'archive.index',            'label' => __('Archiv'),         'icon' => 'inventory_2',      'modal' => false, 'matches' => ['archive.*']],
                                 ];
 
@@ -693,7 +688,7 @@
                                         ['route' => 'duty-plans.index', 'label' => __('Dienstpläne'),   'icon' => 'event_available', 'modal' => false, 'matches' => ['duty-plans.*']],
                                         ['route' => 'schedule.index',   'label' => __('Schichtplan'),   'icon' => 'schedule',        'modal' => false, 'matches' => ['schedule.*']],
                                         ['route' => 'timesheets.index', 'label' => __('Stundenzettel'), 'icon' => 'description',     'modal' => false, 'matches' => ['timesheets.*', 'projects.timesheets.*']],
-                                        ['route' => 'flex.index',       'label' => __('Gleitzeit'),     'icon' => 'hourglass_top',   'modal' => false, 'matches' => ['flex.*']],
+                                        ['route' => 'flex.index',       'label' => __('Arbeitszeitkonto'),'icon' => 'hourglass_top',  'modal' => false, 'matches' => ['flex.*']],
                                         ['route' => 'tours.index',      'label' => __('Touren'),        'icon' => 'route',           'modal' => false, 'matches' => ['tours.index', 'tours.map', 'tours.create', 'tours.show', 'tours.edit']],
                                     ],
                                 ];
@@ -1239,19 +1234,7 @@
                                     {{-- Sprache --}}
                                     <div class="px-4 py-3 border-b border-base-200">
                                         <p class="mb-2 text-xs uppercase tracking-wider opacity-60">{{ __('Sprache') }}</p>
-                                        <div class="flex flex-wrap gap-1">
-                                            @foreach ($supportedLocales as $code => $locale)
-                                                <form method="POST" action="{{ route('locale.switch', $code) }}">
-                                                    @csrf
-                                                    <button type="submit"
-                                                            class="btn btn-xs {{ $currentLocale === $code ? 'btn-primary' : 'btn-ghost' }} gap-1.5"
-                                                            title="{{ $locale['label'] }}">
-                                                        <span class="font-mono text-[0.65rem] font-bold opacity-80">{{ $locale['code'] }}</span>
-                                                        <span>{{ $locale['label'] }}</span>
-                                                    </button>
-                                                </form>
-                                            @endforeach
-                                        </div>
+                                        <x-locale-switcher variant="inline" />
                                     </div>
 
                                     @if ($showModeSwitch)
@@ -1346,29 +1329,7 @@
                             <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
                                 <span data-theme-label class="text-base leading-none">◐</span>
                             </button>
-                            <div class="dropdown dropdown-end">
-                                <label tabindex="0" class="btn btn-sm btn-ghost btn-square" title="{{ __('Sprache wechseln') }}" aria-label="{{ __('Sprache wechseln') }}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zm0 0c2.5 0 4-4.03 4-9s-1.5-9-4-9m0 18c-2.5 0-4-4.03-4-9s1.5-9 4-9M3 12h18" />
-                                    </svg>
-                                </label>
-                                <ul tabindex="0" class="dropdown-content header-dropdown-panel header-menu-list menu z-50 w-[min(10rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-1 shadow">
-                                    @foreach ($supportedLocales as $code => $locale)
-                                        <li>
-                                            <form method="POST" action="{{ route('locale.switch', $code) }}">
-                                                @csrf
-                                                <button type="submit" class="flex w-full items-center gap-2 {{ $currentLocale === $code ? 'active' : '' }}">
-                                                    <span class="rounded px-1 py-0.5 font-mono text-[0.65rem] font-bold leading-none ring-1 ring-current opacity-70">{{ $locale['code'] }}</span>
-                                                    <span>{{ $locale['label'] }}</span>
-                                                    @if ($currentLocale === $code)
-                                                        <span class="ml-auto opacity-60">•</span>
-                                                    @endif
-                                                </button>
-                                            </form>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            </div>
+                            <x-locale-switcher />
                             <a href="{{ route('login') }}" class="btn btn-sm btn-primary">⇢ {{ __('Anmelden') }}</a>
                         </div>
                     @endauth

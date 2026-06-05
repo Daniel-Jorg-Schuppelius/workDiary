@@ -78,6 +78,9 @@
                                 <input type="checkbox" class="checkbox checkbox-xs" x-model="days[{{ $iso }}].enabled">
                                 <span class="font-medium">{{ $lbl }}</span>
                             </label>
+                            {{-- Hidden-Felder fürs Posten (Minuten/Stunden serverseitig normalisiert) --}}
+                            <input type="hidden" name="day_targets[{{ $iso }}][enabled]" :value="days[{{ $iso }}].enabled ? '1' : '0'">
+                            <input type="hidden" name="day_targets[{{ $iso }}][hours]" :value="dayHours({{ $iso }})">
                         </td>
                         <td>
                             <select class="select select-bordered select-xs" x-model="days[{{ $iso }}].mode" name="day_targets[{{ $iso }}][mode]" :disabled="!days[{{ $iso }}].enabled">
@@ -99,9 +102,6 @@
                             </div>
                         </td>
                         <td class="text-right text-sm tabular-nums" x-text="days[{{ $iso }}].enabled ? fmt(dayMinutes({{ $iso }})) : '–'"></td>
-                        {{-- Hidden-Felder fürs Posten (Minuten/Stunden serverseitig normalisiert) --}}
-                        <input type="hidden" name="day_targets[{{ $iso }}][enabled]" :value="days[{{ $iso }}].enabled ? '1' : '0'">
-                        <input type="hidden" name="day_targets[{{ $iso }}][hours]" :value="dayHours({{ $iso }})">
                     </tr>
                 @endforeach
             </tbody>

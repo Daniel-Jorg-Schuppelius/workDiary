@@ -1,8 +1,28 @@
 <?php
-/*
- * French translation placeholders. Strings are copied from English as a
- * working fallback until proper translations are provided. Keys must
- * remain in sync with lang/en/diary.php.
- */
 
-return require __DIR__ . '/../en/diary.php';
+return [
+    'priority' => [
+        'low' => 'Basse',
+        'normal' => 'Normale',
+        'high' => 'Haute',
+        'urgent' => 'Urgente',
+    ],
+    'location_mode' => [
+        'onsite' => 'Sur site',
+        'remote' => 'À distance',
+        'hybrid' => 'Hybride',
+    ],
+    'mode' => [
+        'fixed' => 'Planifié',
+        'deadline' => 'Échéance',
+        'window' => 'Fenêtre',
+        'recurring' => 'Récurrent',
+        'backlog' => 'Backlog',
+    ],
+    'status' => [
+        'Done' => 'Terminé',
+        'InProgress' => 'Confirmé',
+        'Open' => 'Ouvert',
+        'Problem' => 'Problème',
+    ],
+];

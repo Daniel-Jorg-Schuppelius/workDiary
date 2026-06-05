@@ -1,8 +1,50 @@
 <?php
-/*
- * French translation placeholders. Strings are copied from English as a
- * working fallback until proper translations are provided. Keys must
- * remain in sync with lang/en/open-issue.php.
- */
 
-return require __DIR__ . '/../en/open-issue.php';
+return [
+    'title' => [
+        'index' => 'Points ouverts',
+        'show' => 'Point ouvert :title',
+    ],
+    'field' => [
+        'title' => 'Titre',
+        'description' => 'Description',
+        'category' => 'Catégorie',
+        'severity' => 'Gravité',
+        'status' => 'Statut',
+        'assignee' => 'Assigné à',
+        'creator' => 'Créé par',
+        'due_at' => 'Échéance',
+        'visibility' => 'Visibilité',
+        'closed_at' => 'Clôturé le',
+        'closed_by' => 'Clôturé par',
+        'reason' => 'Motif',
+        'resolution' => 'Résolution',
+    ],
+    'action' => [
+        'create' => 'Créer un point ouvert',
+        'edit' => 'Modifier',
+        'assign' => 'Assigner',
+        'start' => 'Passer en cours',
+        'block' => 'Bloquer',
+        'unblock' => 'Débloquer',
+        'complete' => 'Terminer',
+        'wontDo' => 'Ne sera pas fait',
+        'reopen' => 'Rouvrir',
+        'delete' => 'Supprimer',
+        'publishToCustomer' => 'Partager avec le client',
+    ],
+    'flash' => [
+        'created' => 'Point ouvert créé.',
+        'updated' => 'Point ouvert mis à jour.',
+        'deleted' => 'Point ouvert supprimé.',
+        'assigned' => 'Attribution mise à jour.',
+        'status' => [
+            'open' => 'Point ouvert rouvert.',
+            'inProgress' => 'Le point ouvert est maintenant en cours.',
+            'blocked' => 'Le point ouvert a été bloqué.',
+            'done' => 'Le point ouvert a été terminé.',
+            'wontDo' => 'Point ouvert marqué « ne sera pas fait ».',
+            'reopened' => 'Le point ouvert a été rouvert.',
+        ],
+    ],
+];

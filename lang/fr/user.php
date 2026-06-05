@@ -1,8 +1,26 @@
 <?php
-/*
- * French translation placeholders. Strings are copied from English as a
- * working fallback until proper translations are provided. Keys must
- * remain in sync with lang/en/user.php.
- */
 
-return require __DIR__ . '/../en/user.php';
+return [
+    'role' => [
+        'admin' => 'Administrateur',
+        'geschaeftsfuehrung' => 'Direction',
+        'personalverwaltung' => 'Gestion du personnel',
+        'teamleitung' => 'Chef d\'équipe',
+        'buchhaltung' => 'Comptabilité',
+        'user' => 'Employé',
+        'aussendienst' => 'Service externe',
+        'callcenter' => 'Centre d\'appels',
+        'support' => 'Support',
+        'training_manager' => 'Responsable de formation',
+        'kunde' => 'Client',
+    ],
+    'employment_type' => [
+        'vollzeit' => 'Temps plein',
+        'teilzeit' => 'Temps partiel',
+        'minijob' => 'Mini-job (marginal)',
+        'midijob' => 'Midi-job (zone de transition)',
+        'kurzfristig' => 'Emploi de courte durée',
+        'werkstudent' => 'Étudiant salarié',
+        'azubi' => 'Apprenti',
+    ],
+];

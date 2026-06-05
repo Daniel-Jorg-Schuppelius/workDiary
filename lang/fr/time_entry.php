@@ -1,8 +1,16 @@
 <?php
-/*
- * French translation placeholders. Strings are copied from English as a
- * working fallback until proper translations are provided. Keys must
- * remain in sync with lang/en/time_entry.php.
- */
 
-return require __DIR__ . '/../en/time_entry.php';
+return [
+    'activity_type' => [
+        'project' => 'Projet',
+        'admin' => 'Administration',
+        'training' => 'Formation',
+        'meeting' => 'Réunion',
+        'internal' => 'Interne',
+        'travel' => 'Déplacement',
+        'break' => 'Pause',
+        'absence' => 'Absence',
+        'standby' => 'Astreinte',
+        'other' => 'Autre',
+    ],
+];

@@ -1,8 +1,17 @@
 <?php
-/*
- * Italian translation placeholders. Strings are copied from English as a
- * working fallback until proper translations are provided. Keys must
- * remain in sync with lang/en/attendance.php.
- */
 
-return require __DIR__ . '/../en/attendance.php';
+return [
+    'status' => [
+        'open' => 'Aperto',
+        'closed' => 'Chiuso',
+        'auto_closed' => 'Chiuso automaticamente',
+        'adjusted' => 'Rettificato',
+        'cancelled' => 'Annullato',
+    ],
+    'source' => [
+        'clock' => 'Timbratura',
+        'manual' => 'Manuale',
+        'import' => 'Importazione',
+        'auto_close' => 'Chiusura automatica',
+    ],
+];

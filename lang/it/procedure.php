@@ -1,8 +1,50 @@
 <?php
-/*
- * Italian translation placeholders. Strings are copied from English as a
- * working fallback until proper translations are provided. Keys must
- * remain in sync with lang/en/procedure.php.
- */
 
-return require __DIR__ . '/../en/procedure.php';
+return [
+    'flash' => [
+        'created' => 'Modello di procedura creato.',
+        'updated' => 'Modello di procedura aggiornato.',
+        'published' => 'Versione :version del modello pubblicata.',
+        'versionInitial' => 'Versione iniziale',
+        'versionCreated' => 'Nuova versione :version del modello creata.',
+        'stepAdded' => 'Fase aggiunta.',
+        'stepUpdated' => 'Fase aggiornata.',
+        'stepRemoved' => 'Fase rimossa.',
+        'runStarted' => 'Esecuzione della procedura avviata.',
+        'runCompleted' => 'Esecuzione della procedura completata.',
+        'runAborted' => 'Esecuzione della procedura interrotta.',
+        'stepCompleted' => 'Fase completata.',
+        'backupRegistered' => 'Record di backup registrato.',
+        'backupVerified' => 'Record di backup verificato.',
+        'backupRejected' => 'Record di backup rifiutato.',
+        'secondPersonRequested' => 'È stata richiesta una seconda persona.',
+        'secondPersonAssigned' => 'Una seconda persona ha preso in carico l\'approvazione.',
+        'secondPersonSigned' => 'La seconda persona ha controfirmato l\'approvazione.',
+        'secondPersonRevoked' => 'Approvazione a quattro occhi revocata.',
+        'deviationRecorded' => 'Scostamento registrato.',
+        'deviationUpdated' => 'Scostamento aggiornato.',
+        'deviationActionTriggered' => 'Azione di follow-up per lo scostamento attivata.',
+        'criticalRiskAccepted' => 'Lo scostamento critico è stato accettato.',
+    ],
+    'validation' => [
+        'versionLocked' => 'Le versioni pubblicate del modello sono immutabili. Crea una nuova versione.',
+        'runIncomplete' => 'Impossibile completare l\'esecuzione: ci sono ancora fasi obbligatorie aperte.',
+        'backupInvalid' => 'Il record di backup non è valido (motivo: :reason).',
+        'backupMissingOrExpired' => 'Manca un record di backup valido (o l\'ultimo backup è troppo vecchio).',
+        'secondPersonMissing' => 'L\'approvazione a quattro occhi è mancante o incompleta.',
+        'secondPersonSelfNotAllowed' => 'La persona esecutrice non può assumere personalmente l\'approvazione.',
+        'deviationReasonTooShort' => 'Il motivo dello scostamento è troppo breve (almeno 20 caratteri).',
+        'deviationInvalid' => 'Impossibile registrare lo scostamento (motivo: :reason).',
+        'criticalDeviationOpen' => 'Impossibile completare l\'esecuzione: esiste uno scostamento critico senza accettazione del rischio.',
+    ],
+    'blocked' => [
+        'previousStepIncomplete' => 'La fase obbligatoria precedente non è ancora completata.',
+        'runNotActive' => 'L\'esecuzione non è attiva.',
+        'stepAlreadyFinal' => 'La fase è già completata.',
+        'missingQualification' => 'Manca la qualifica richiesta.',
+        'missingRole' => 'Manca il ruolo richiesto.',
+        'secondPersonRequired' => 'È richiesta una seconda persona.',
+        'backupNotVerified' => 'Il record di backup è mancante o non verificato.',
+        'backupMissingOrExpired' => 'L\'ultimo backup è mancante o fuori dalla finestra di validità.',
+    ],
+];

@@ -44,4 +44,24 @@ enum ScheduleType: string implements HasLabel {
     public function usesCoreTime(): bool {
         return $this === self::Flextime;
     }
+
+    /** Badge-Farbton (daisyUI tone) für die Modell-Anzeige. */
+    public function badgeTone(): string {
+        return match ($this) {
+            self::Flextime => 'primary',
+            self::Weekly => 'info',
+            self::PerWeekday => 'info',
+            self::Trust => 'warning',
+        };
+    }
+
+    /** Material-Symbols-Icon für die Modell-Anzeige. */
+    public function icon(): string {
+        return match ($this) {
+            self::Flextime => 'schedule',
+            self::Weekly => 'date_range',
+            self::PerWeekday => 'calendar_view_week',
+            self::Trust => 'handshake',
+        };
+    }
 }

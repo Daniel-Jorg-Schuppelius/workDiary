@@ -8,7 +8,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
+use App\Models\{User, WorkSchedule};
 use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -45,6 +45,35 @@ class FlexControllerTest extends TestCase {
 
         $response->assertOk();
         $response->assertViewHas('user', static fn(User $user): bool => (int) $user->id === (int) $other->id);
+    }
+
+    public function test_flex_page_shows_model_badge_and_balance_for_flextime(): void {
+        $user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($user)->get(route('flex.index'))
+            ->assertOk()
+            ->assertViewHas('tracksTarget', true)
+            ->assertSee(__('work_schedule.type.flextime'))
+            ->assertSee(__('Saldo'));
+    }
+
+    public function test_trust_user_sees_attendance_instead_of_balance(): void {
+        $user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        WorkSchedule::create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $user->id,
+            'schedule_type' => 'trust',
+            'working_days' => [1, 2, 3, 4, 5],
+            'break_after_minutes' => 360,
+            'break_minutes' => 30,
+            'valid_from' => '2020-01-01',
+        ]);
+
+        $this->actingAs($user)->get(route('flex.index'))
+            ->assertOk()
+            ->assertViewHas('tracksTarget', false)
+            ->assertSee(__('work_schedule.type.trust'))
+            ->assertSee(__('Anwesenheitstage'));
     }
 
     public function test_non_admin_cannot_switch_user_via_numeric_fallback(): void {

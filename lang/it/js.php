@@ -1,3 +1,14 @@
 <?php
 
-return require __DIR__.'/../en/js.php';
+return [
+    'dialog' => [
+        'check_input' => 'Controlla i dati inseriti.',
+        'save_failed' => 'Impossibile salvare la finestra di dialogo.',
+        'load_failed' => 'Impossibile caricare la finestra di dialogo.',
+        'loading' => 'Caricamento…',
+        'open_in_new_tab' => 'Apri la pagina in una nuova scheda',
+    ],
+    'schedule' => [
+        'move_failed' => 'Spostamento non riuscito.',
+    ],
+];

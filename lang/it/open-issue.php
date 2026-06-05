@@ -1,8 +1,50 @@
 <?php
-/*
- * Italian translation placeholders. Strings are copied from English as a
- * working fallback until proper translations are provided. Keys must
- * remain in sync with lang/en/open-issue.php.
- */
 
-return require __DIR__ . '/../en/open-issue.php';
+return [
+    'title' => [
+        'index' => 'Punti aperti',
+        'show' => 'Punto aperto :title',
+    ],
+    'field' => [
+        'title' => 'Titolo',
+        'description' => 'Descrizione',
+        'category' => 'Categoria',
+        'severity' => 'Gravità',
+        'status' => 'Stato',
+        'assignee' => 'Assegnato a',
+        'creator' => 'Creato da',
+        'due_at' => 'Scadenza',
+        'visibility' => 'Visibilità',
+        'closed_at' => 'Chiuso il',
+        'closed_by' => 'Chiuso da',
+        'reason' => 'Motivo',
+        'resolution' => 'Soluzione',
+    ],
+    'action' => [
+        'create' => 'Crea punto aperto',
+        'edit' => 'Modifica',
+        'assign' => 'Assegna',
+        'start' => 'Metti in corso',
+        'block' => 'Blocca',
+        'unblock' => 'Sblocca',
+        'complete' => 'Completa',
+        'wontDo' => 'Non verrà fatto',
+        'reopen' => 'Riapri',
+        'delete' => 'Elimina',
+        'publishToCustomer' => 'Condividi con il cliente',
+    ],
+    'flash' => [
+        'created' => 'Punto aperto creato.',
+        'updated' => 'Punto aperto aggiornato.',
+        'deleted' => 'Punto aperto eliminato.',
+        'assigned' => 'Assegnazione aggiornata.',
+        'status' => [
+            'open' => 'Punto aperto riaperto.',
+            'inProgress' => 'Il punto aperto è ora in corso.',
+            'blocked' => 'Il punto aperto è stato bloccato.',
+            'done' => 'Il punto aperto è stato completato.',
+            'wontDo' => 'Punto aperto contrassegnato come «non verrà fatto».',
+            'reopened' => 'Il punto aperto è stato riaperto.',
+        ],
+    ],
+];

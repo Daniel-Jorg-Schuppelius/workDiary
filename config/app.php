@@ -110,13 +110,13 @@ return [
     | Available Locales
     |--------------------------------------------------------------------------
     |
-    | List of locales the UI is allowed to switch to. `de` and `en` ship with
-    | full translations; `fr` and `it` are structural placeholders that fall
-    | back to English content until proper translations are provided.
+    | ENV-Whitelist über der zentralen Registry (config/locales.php). Nur Codes,
+    | die in BEIDEN stehen, sind auswählbar (siehe App\Support\Locales::enabled()).
+    | de=Default; en/fr/it/es liefern vollständige Übersetzungen.
     |
     */
 
-    'available_locales' => array_filter(array_map('trim', explode(',', (string) env('APP_AVAILABLE_LOCALES', 'de,en,fr,it')))),
+    'available_locales' => array_filter(array_map('trim', explode(',', (string) env('APP_AVAILABLE_LOCALES', 'de,en,fr,it,es')))),
 
     /*
     |--------------------------------------------------------------------------

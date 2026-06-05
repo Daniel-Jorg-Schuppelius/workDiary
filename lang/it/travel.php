@@ -1,8 +1,15 @@
 <?php
-/*
- * Italian translation placeholders. Strings are copied from English as a
- * working fallback until proper translations are provided. Keys must
- * remain in sync with lang/en/travel.php.
- */
 
-return require __DIR__ . '/../en/travel.php';
+return [
+    'vehicle' => [
+        'company' => 'Auto aziendale',
+        'private' => 'Auto privata',
+        'rental' => 'Auto a noleggio',
+        'public_transport' => 'Trasporto pubblico',
+        'bicycle' => 'Bicicletta',
+        'foot' => 'A piedi',
+        'other' => 'Altro',
+    ],
+    'tour_leg_purpose' => 'Tratta verso :title',
+    'tour_return_purpose' => 'Viaggio di ritorno',
+];

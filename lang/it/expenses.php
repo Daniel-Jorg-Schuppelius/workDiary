@@ -1,8 +1,71 @@
 <?php
-/*
- * Italian translation placeholders. Strings are copied from English as a
- * working fallback until proper translations are provided. Keys must
- * remain in sync with lang/en/expenses.php.
- */
 
-return require __DIR__ . '/../en/expenses.php';
+return [
+    'title' => [
+        'index' => 'Spese',
+        'create' => 'Registra spesa',
+        'edit' => 'Modifica spesa',
+        'inbox' => 'Approvazione spese',
+        'category_index' => 'Categorie di spesa',
+        'category_create' => 'Crea categoria di spesa',
+        'category_edit' => 'Modifica categoria di spesa',
+    ],
+    'intro' => [
+        'category' => 'Le categorie di spesa raggruppano i giustificativi (es. vitto, alloggio, ospitalità) e definiscono valori predefiniti come l\'aliquota fiscale, l\'obbligo di caricare un giustificativo e se la spesa è per impostazione predefinita rifatturabile al cliente. Icona e colore definiscono l\'aspetto in elenchi e report.',
+    ],
+    'field' => [
+        'label' => 'Etichetta',
+        'slug' => 'Slug',
+        'icon' => 'Icona (material symbol)',
+        'color' => 'Colore',
+        'description' => 'Descrizione',
+        'sort' => 'Ordine',
+        'is_active' => 'Attivo',
+        'default_tax_rate' => 'Aliquota fiscale (predefinita, %)',
+        'requires_receipt' => 'Giustificativo obbligatorio',
+        'default_billable' => 'Rifatturabile al cliente per impostazione predefinita',
+        'date' => 'Data del giustificativo',
+        'category' => 'Categoria',
+        'vendor' => 'Fornitore',
+        'amount_gross' => 'Importo lordo',
+        'amount_net' => 'Importo netto',
+        'tax_rate' => 'Aliquota fiscale (%)',
+        'tax_amount' => 'Importo imposta',
+        'currency' => 'Valuta',
+        'payment_method' => 'Metodo di pagamento',
+        'project' => 'Progetto',
+        'customer' => 'Cliente',
+        'task' => 'Attività',
+        'billable' => 'Rifatturabile al cliente',
+        'notes' => 'Note',
+        'status' => 'Stato',
+        'attachments' => 'Giustificativi',
+        'reimbursement_reference' => 'Riferimento di rimborso',
+        'reject_reason' => 'Motivo del rifiuto',
+        'decided_at' => 'Deciso il',
+        'reimbursed_at' => 'Rimborsato il',
+    ],
+    'action' => [
+        'create_category' => 'Crea categoria',
+        'create' => 'Registra spesa',
+        'submit' => 'Invia per l\'approvazione',
+        'approve' => 'Approva',
+        'reject' => 'Rifiuta',
+        'cancel' => 'Annulla',
+        'reimburse' => 'Segna come rimborsato',
+        'export' => 'Esporta CSV',
+    ],
+    'help' => [
+        'color' => 'Definisce il colore d\'accento per icona, badge ed evidenziazioni negli elenchi.',
+        'gross_first' => 'Inserisci l\'importo lordo dal giustificativo. Importo netto e imposta vengono calcolati automaticamente.',
+        'requires_receipt' => 'Se attivo, è richiesto almeno un giustificativo (foto/PDF) durante la registrazione.',
+    ],
+    'empty' => [
+        'categories' => 'Ancora nessuna categoria di spesa.',
+        'expenses' => 'Ancora nessuna spesa registrata.',
+    ],
+    'confirm' => [
+        'delete_category' => 'Eliminare davvero questa categoria di spesa?',
+        'delete_expense' => 'Eliminare davvero questa spesa?',
+    ],
+];

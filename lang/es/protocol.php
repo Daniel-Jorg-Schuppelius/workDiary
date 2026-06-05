@@ -1,0 +1,130 @@
+<?php
+
+return [
+    'title' => [
+        'index' => 'Protocolos',
+        'show' => 'Protocolo n.º:id',
+        'create' => 'Crear protocolo',
+        'edit' => 'Editar protocolo',
+    ],
+    'field' => [
+        'type' => 'Tipo',
+        'title' => 'Título',
+        'description' => 'Descripción',
+        'state_initial' => 'Estado anterior',
+        'stateInitial' => 'Estado anterior',
+        'state_final' => 'Estado posterior',
+        'stateFinal' => 'Estado posterior',
+        'occurred_at' => 'Fecha / hora',
+        'occurredAt' => 'Fecha / hora',
+        'createdBy' => 'Creado por',
+        'visibility' => 'Visibilidad',
+        'status' => 'Estado',
+        'revision' => 'Revisión',
+        'subject' => 'Referencia',
+    ],
+    'action' => [
+        'create' => 'Crear',
+        'update' => 'Guardar',
+        'requestReview' => 'Enviar para revisión',
+        'returnToDraft' => 'Devolver a borrador',
+        'sign' => 'Finalizar / firmar',
+        'archive' => 'Archivar',
+        'supersede' => 'Crear revisión de corrección',
+        'addItem' => 'Añadir elemento',
+        'fillItem' => 'Rellenar elemento',
+        'removeItem' => 'Eliminar elemento',
+        'delete' => 'Eliminar',
+    ],
+    'flash' => [
+        'created' => 'Protocolo creado.',
+        'updated' => 'Protocolo actualizado.',
+        'deleted' => 'Protocolo eliminado.',
+        'transition' => [
+            'requestReview' => 'Protocolo enviado para revisión.',
+            'returnToDraft' => 'Protocolo devuelto a borrador.',
+            'sign' => 'Protocolo firmado y finalizado.',
+            'archive' => 'Protocolo archivado.',
+            'supersede' => 'Revisión de corrección creada.',
+        ],
+        'item' => [
+            'added' => 'Elemento añadido.',
+            'filled' => 'Elemento rellenado.',
+            'removed' => 'Elemento eliminado.',
+        ],
+        'photo' => [
+            'uploaded' => 'Foto añadida.',
+            'removed' => 'Foto eliminada.',
+            'captionUpdated' => 'Pie de foto actualizado.',
+        ],
+    ],
+    'validation' => [
+        'required' => 'El elemento «:label» es obligatorio.',
+        'criticalDefectMissingOpenIssue' => 'El defecto crítico «:label» requiere un punto abierto.',
+        'text' => [
+            'minLength' => 'El texto es demasiado corto (mín. :min caracteres).',
+            'maxLength' => 'El texto es demasiado largo (máx. :max caracteres).',
+        ],
+        'boolean' => [
+            'invalid' => 'Se requiere un valor booleano.',
+        ],
+        'choice' => [
+            'invalid' => 'Se requiere una selección.',
+            'notInOptions' => 'La selección no está en la lista de opciones.',
+        ],
+        'multichoice' => [
+            'invalid' => 'Se requiere al menos una selección.',
+            'notInOptions' => 'La selección no está en la lista de opciones.',
+        ],
+        'number' => [
+            'invalid' => 'Se requiere un valor numérico.',
+            'min' => 'El valor está por debajo del mínimo (:bound).',
+            'max' => 'El valor supera el máximo (:bound).',
+        ],
+        'date' => [
+            'invalid' => 'Fecha no válida.',
+        ],
+        'attachments' => [
+            'required' => 'Se requiere al menos un adjunto.',
+            'min' => 'Se requieren al menos :min adjuntos.',
+            'max' => 'Se permiten como máximo :max adjuntos.',
+        ],
+        'defect' => [
+            'severity' => 'La gravedad debe ser low/medium/high/critical.',
+            'description' => 'La descripción del defecto es obligatoria.',
+        ],
+        'measurement' => [
+            'empty' => 'Se requiere al menos una medición.',
+            'invalidSample' => 'Cada medición necesita «at» y «value».',
+        ],
+        'signature' => [
+            'missing' => 'La firma aún no está adjunta.',
+        ],
+        'photo' => [
+            'missingPhase' => 'Elemento de foto «:label»: la fase «:phase» requiere al menos :need foto(s) (presentes: :have).',
+        ],
+    ],
+    'pdf' => [
+        'title' => 'Protocolo – :title',
+        'state' => 'Estado',
+        'items' => 'Elementos del protocolo',
+        'signatures' => 'Firmas',
+        'col' => [
+            'label' => 'Elemento',
+            'type' => 'Tipo',
+            'value' => 'Valor',
+            'result' => 'Resultado',
+            'note' => 'Nota',
+        ],
+        'footer' => [
+            'hash' => 'Suma de verificación',
+            'generated' => 'Generado el :at',
+        ],
+    ],
+    'signature' => [
+        'tokenIssued' => 'El enlace de firma se ha creado.',
+        'tokenExpired' => 'El enlace de firma ha caducado o ya se ha utilizado.',
+        'tokenUnknown' => 'Enlace de firma desconocido.',
+        'redeemed' => 'La firma se ha guardado.',
+    ],
+];

@@ -346,4 +346,29 @@ return [
             'escalate' => 'Eskalation',
         ],
     ],
+    'duty_plan' => [
+        'status' => [
+            'draft' => 'Entwurf',
+            'published' => 'Veröffentlicht',
+        ],
+    ],
+    'export' => [
+        'entity' => [
+            'customers' => 'Kunden',
+            'projects' => 'Projekte',
+            'users' => 'Benutzer',
+            'materials' => 'Materialien',
+            'scheduled_shifts' => 'Geplante Schichten',
+            'tours' => 'Touren',
+        ],
+        'format' => [
+            'csv' => 'CSV',
+            'xlsx' => 'XLSX',
+        ],
+        'state' => [
+            'preparing' => 'In Vorbereitung',
+            'ready' => 'Bereit',
+            'failed' => 'Fehlgeschlagen',
+        ],
+    ],
 ];

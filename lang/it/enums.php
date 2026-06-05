@@ -1,8 +1,349 @@
 <?php
-/*
- * Italian translation placeholders. Strings are copied from English as a
- * working fallback until proper translations are provided. Keys must
- * remain in sync with lang/en/enums.php.
- */
 
-return require __DIR__ . '/../en/enums.php';
+return [
+    'event' => [
+        'type' => [
+            'training' => 'Formazione',
+            'workshop' => 'Workshop',
+            'conference' => 'Conferenza',
+            'meeting' => 'Riunione',
+            'internal_briefing' => 'Briefing interno',
+            'external_visit' => 'Visita esterna',
+        ],
+        'status' => [
+            'planned' => 'Pianificato',
+            'confirmed' => 'Confermato',
+            'in_progress' => 'In corso',
+            'completed' => 'Completato',
+            'cancelled' => 'Annullato',
+        ],
+        'visibility' => [
+            'internal' => 'Interno',
+            'external' => 'Esterno',
+            'public' => 'Pubblico',
+        ],
+        'participant' => [
+            'role' => [
+                'organizer' => 'Organizzatore',
+                'trainer' => 'Formatore',
+                'attendee' => 'Partecipante',
+                'optional' => 'Facoltativo',
+            ],
+            'status' => [
+                'invited' => 'Invitato',
+                'accepted' => 'Accettato',
+                'declined' => 'Rifiutato',
+                'attended' => 'Presente',
+                'no_show' => 'Assente',
+            ],
+        ],
+        'reminder' => [
+            'channel' => [
+                'mail' => 'E-mail',
+                'webpush' => 'Push',
+                'database' => 'Nell\'app',
+            ],
+        ],
+    ],
+    'vehicle' => [
+        'type' => [
+            'car' => 'Auto',
+            'van' => 'Furgone',
+            'truck' => 'Camion',
+            'bicycle' => 'Bicicletta',
+            'other' => 'Altro',
+        ],
+        'propulsion' => [
+            'diesel' => 'Diesel',
+            'petrol' => 'Benzina',
+            'gas' => 'Gas',
+            'hybrid' => 'Ibrido',
+            'electric' => 'Elettrico',
+            'muscle' => 'Forza muscolare',
+            'other' => 'Altro',
+        ],
+        'ownership' => [
+            'owned' => 'Di proprietà',
+            'leased' => 'Leasing',
+            'rental' => 'Noleggio',
+        ],
+    ],
+    'sickness' => [
+        'kind' => [
+            'initial' => 'Certificato iniziale',
+            'follow_up' => 'Certificato di proseguimento',
+        ],
+    ],
+    'tour' => [
+        'status' => [
+            'draft' => 'Bozza',
+            'planned' => 'Pianificato',
+            'in_progress' => 'In corso',
+            'completed' => 'Completato',
+            'cancelled' => 'Annullato',
+        ],
+    ],
+    'activity' => [
+        'category_type' => [
+            'admin' => 'Amministrazione',
+            'training' => 'Formazione',
+            'meeting' => 'Riunione',
+            'internal' => 'Interno',
+            'travel' => 'Trasferta',
+            'break' => 'Pausa',
+            'absence' => 'Assenza',
+            'standby' => 'Reperibilità',
+            'other' => 'Altro',
+        ],
+    ],
+    'vacation' => [
+        'type' => [
+            'vacation' => 'Ferie',
+            'sick' => 'Malattia',
+            'special' => 'Permesso speciale',
+            'unpaid' => 'Non retribuito',
+        ],
+        'status' => [
+            'pending' => 'In attesa',
+            'approved' => 'Approvato',
+            'rejected' => 'Rifiutato',
+            'cancelled' => 'Annullato',
+        ],
+    ],
+    'project' => [
+        'status' => [
+            'active' => 'Attivo',
+            'paused' => 'In pausa',
+            'archived' => 'Archiviato',
+        ],
+    ],
+    'task' => [
+        'status' => [
+            'open' => 'Aperto',
+            'in_progress' => 'In corso',
+            'done' => 'Completato',
+        ],
+        'priority' => [
+            'low' => 'Bassa',
+            'medium' => 'Media',
+            'high' => 'Alta',
+            'urgent' => 'Urgente',
+        ],
+    ],
+    'timesheet' => [
+        'status' => [
+            'draft' => 'Bozza',
+            'submitted' => 'Inviato',
+            'signed' => 'Firmato',
+            'locked' => 'Bloccato',
+        ],
+        'kind' => [
+            'project' => 'Progetto',
+            'personal_day' => 'Giornata personale',
+        ],
+    ],
+    'time_entry' => [
+        'kind' => [
+            'work' => 'Lavoro',
+            'travel' => 'Trasferta',
+            'standby' => 'Reperibilità',
+        ],
+    ],
+    'expense' => [
+        'status' => [
+            'draft' => 'Bozza',
+            'pending' => 'Inviato',
+            'approved' => 'Approvato',
+            'rejected' => 'Rifiutato',
+            'cancelled' => 'Annullato',
+            'reimbursed' => 'Rimborsato',
+            'invoiced' => 'Fatturato',
+        ],
+        'payment_method' => [
+            'private_paid' => 'Pagato privatamente',
+            'company_card' => 'Carta aziendale',
+            'cash' => 'Cassa',
+            'bank_transfer' => 'Bonifico bancario',
+        ],
+    ],
+    'per_diem' => [
+        'day_kind' => [
+            'departure_day' => 'Giorno di partenza',
+            'full_day' => 'Giornata intera di viaggio',
+            'return_day' => 'Giorno di rientro',
+            'single_day' => 'Trasferta di un giorno',
+        ],
+        'trip_status' => [
+            'draft' => 'Bozza',
+            'converted' => 'Convertito in spesa',
+            'cancelled' => 'Annullato',
+        ],
+    ],
+    'open-issue' => [
+        'status' => [
+            'open' => 'Aperto',
+            'inProgress' => 'In corso',
+            'blocked' => 'Bloccato',
+            'done' => 'Completato',
+            'wontDo' => 'Non verrà fatto',
+            'reopened' => 'Riaperto',
+        ],
+        'severity' => [
+            'low' => 'Bassa',
+            'medium' => 'Media',
+            'high' => 'Alta',
+            'critical' => 'Critica',
+        ],
+        'source' => [
+            'manual' => 'Manuale',
+            'protocolDefect' => 'Dal protocollo',
+            'communicationFollowup' => 'Dalla comunicazione',
+        ],
+        'visibility' => [
+            'internal' => 'Interno',
+            'customer' => 'Visibile al cliente',
+        ],
+    ],
+    'protocol' => [
+        'status' => [
+            'draft' => 'Bozza',
+            'in_review' => 'In revisione',
+            'signed' => 'Firmato',
+            'archived' => 'Archiviato',
+            'superseded' => 'Sostituito',
+        ],
+        'type' => [
+            'acceptance' => 'Accettazione',
+            'service' => 'Intervento di assistenza',
+            'maintenance' => 'Manutenzione',
+            'handover' => 'Consegna',
+            'defect' => 'Rapporto di difetto',
+            'inspection' => 'Ispezione',
+            'siteVisit' => 'Sopralluogo',
+            'other' => 'Altro',
+        ],
+        'visibility' => [
+            'internal' => 'Interno',
+            'customer' => 'Visibile al cliente',
+        ],
+        'item-result' => [
+            'ok' => 'OK',
+            'notok' => 'Non OK',
+            'n_a' => 'Non applicabile',
+            'open' => 'Aperto',
+        ],
+        'signature-role' => [
+            'customer' => 'Cliente',
+            'contractor' => 'Appaltatore',
+            'witness' => 'Testimone',
+        ],
+        'signature-method' => [
+            'onscreen' => 'Firma su schermo',
+            'portal' => 'Portale cliente',
+            'emailLink' => 'Link e-mail',
+            'paper' => 'Carta',
+        ],
+        'item-type' => [
+            'group' => 'Sezione',
+            'text' => 'Testo libero',
+            'boolean' => 'Elemento sì/no',
+            'choice' => 'Scelta singola',
+            'multichoice' => 'Scelta multipla',
+            'number' => 'Misurazione / numero',
+            'range' => 'Intervallo target',
+            'date' => 'Data',
+            'datetime' => 'Data e ora',
+            'signature' => 'Firma',
+            'photo' => 'Foto obbligatoria',
+            'file' => 'Documento obbligatorio',
+            'defect' => 'Difetto',
+            'measurement.timestamped' => 'Serie di misurazioni',
+            'procedure_step' => 'Fase di procedura',
+            'signoff_internal' => 'Approvazione interna',
+        ],
+        'item-photo-phase' => [
+            'before' => 'Prima',
+            'after' => 'Dopo',
+            'detail' => 'Dettaglio',
+            'defect' => 'Difetto',
+            'reference' => 'Riferimento',
+        ],
+    ],
+    'procedure' => [
+        'risk-level' => [
+            'low' => 'Basso',
+            'normal' => 'Normale',
+            'high' => 'Alto',
+            'critical' => 'Critico',
+        ],
+        'step-type' => [
+            'confirm' => 'Conferma',
+            'text' => 'Testo',
+            'number' => 'Numero/misurazione',
+            'choice' => 'Scelta',
+            'photo' => 'Foto',
+            'file' => 'File',
+            'backup' => 'Registrazione di backup',
+            'signature' => 'Firma',
+            'material' => 'Inserimento materiale',
+            'dienstmittel' => 'Attrezzatura di servizio',
+            'freigabe' => 'Approvazione (doppio controllo)',
+            'messreihe' => 'Serie di misurazioni',
+            'link_protocol' => 'Collega protocollo',
+            'link_test' => 'Collega test',
+        ],
+        'run-status' => [
+            'open' => 'Aperto',
+            'inProgress' => 'In corso',
+            'blocked' => 'Bloccato',
+            'completed' => 'Completato',
+            'aborted' => 'Interrotto',
+        ],
+        'step-run-status' => [
+            'pending' => 'In attesa',
+            'done' => 'Completato',
+            'n_a' => 'Non applicabile',
+            'failed' => 'Fallito',
+            'deviated' => 'Scostamento',
+            'blocked' => 'Bloccato',
+        ],
+        'backup-scope' => [
+            'config' => 'Configurazione',
+            'database' => 'Database',
+            'fullSystem' => 'Sistema completo',
+            'customScript' => 'Script personalizzato',
+        ],
+        'backup-storage-target' => [
+            'attachment' => 'Allegato',
+            'external' => 'Archiviazione esterna',
+        ],
+        'backup-verify-method' => [
+            'checksum' => 'Confronto checksum',
+            'restoreCheck' => 'Test di ripristino',
+            'managerConfirmation' => 'Conferma della direzione',
+        ],
+        'deviation-type' => [
+            'not_applicable' => 'Non applicabile',
+            'not_possible' => 'Non possibile',
+            'partial' => 'Parzialmente soddisfatto',
+            'alternative_method' => 'Metodo alternativo',
+            'failed_check' => 'Lettura fuori tolleranza',
+            'material_substitute' => 'Materiale sostitutivo',
+            'safety_block' => 'Interruzione di sicurezza',
+            'customer_decline' => 'Cliente ha rifiutato',
+        ],
+        'deviation-severity' => [
+            'low' => 'Bassa',
+            'medium' => 'Media',
+            'high' => 'Alta',
+            'critical' => 'Critica',
+        ],
+        'deviation-proposed-action' => [
+            'none' => 'Nessuna azione di follow-up',
+            'open_issue' => 'Punto aperto',
+            'new_diary_entry' => 'Nuova commessa',
+            'requalify' => 'Esegui di nuovo',
+            'escalate' => 'Escalation',
+        ],
+    ],
+];

@@ -1,8 +1,17 @@
 <?php
-/*
- * French translation placeholders. Strings are copied from English as a
- * working fallback until proper translations are provided. Keys must
- * remain in sync with lang/en/attendance.php.
- */
 
-return require __DIR__ . '/../en/attendance.php';
+return [
+    'status' => [
+        'open' => 'Ouvert',
+        'closed' => 'Fermé',
+        'auto_closed' => 'Fermé automatiquement',
+        'adjusted' => 'Ajusté',
+        'cancelled' => 'Annulé',
+    ],
+    'source' => [
+        'clock' => 'Pointage',
+        'manual' => 'Manuel',
+        'import' => 'Import',
+        'auto_close' => 'Fermeture auto',
+    ],
+];

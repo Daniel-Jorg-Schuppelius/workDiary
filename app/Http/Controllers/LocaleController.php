@@ -10,12 +10,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Middleware\SetLocale;
+use App\Support\Locales;
 use Illuminate\Http\{RedirectResponse, Request};
 
 class LocaleController extends Controller {
     public function switch(Request $request, string $locale): RedirectResponse {
-        if (in_array($locale, SetLocale::SUPPORTED, true)) {
+        if (Locales::isSupported($locale)) {
             $request->session()->put('locale', $locale);
         }
 

@@ -1,8 +1,50 @@
 <?php
-/*
- * French translation placeholders. Strings are copied from English as a
- * working fallback until proper translations are provided. Keys must
- * remain in sync with lang/en/procedure.php.
- */
 
-return require __DIR__ . '/../en/procedure.php';
+return [
+    'flash' => [
+        'created' => 'Modèle de procédure créé.',
+        'updated' => 'Modèle de procédure mis à jour.',
+        'published' => 'Version :version du modèle publiée.',
+        'versionInitial' => 'Version initiale',
+        'versionCreated' => 'Nouvelle version :version du modèle créée.',
+        'stepAdded' => 'Étape ajoutée.',
+        'stepUpdated' => 'Étape mise à jour.',
+        'stepRemoved' => 'Étape supprimée.',
+        'runStarted' => 'Exécution de la procédure démarrée.',
+        'runCompleted' => 'Exécution de la procédure terminée.',
+        'runAborted' => 'Exécution de la procédure interrompue.',
+        'stepCompleted' => 'Étape terminée.',
+        'backupRegistered' => 'Enregistrement de sauvegarde enregistré.',
+        'backupVerified' => 'Enregistrement de sauvegarde vérifié.',
+        'backupRejected' => 'Enregistrement de sauvegarde rejeté.',
+        'secondPersonRequested' => 'Une deuxième personne a été demandée.',
+        'secondPersonAssigned' => 'Une deuxième personne a pris en charge l\'approbation.',
+        'secondPersonSigned' => 'La deuxième personne a contresigné l\'approbation.',
+        'secondPersonRevoked' => 'Approbation à quatre yeux révoquée.',
+        'deviationRecorded' => 'Écart enregistré.',
+        'deviationUpdated' => 'Écart mis à jour.',
+        'deviationActionTriggered' => 'Action de suivi pour l\'écart déclenchée.',
+        'criticalRiskAccepted' => 'L\'écart critique a été accepté.',
+    ],
+    'validation' => [
+        'versionLocked' => 'Les versions de modèle publiées sont immuables. Veuillez créer une nouvelle version.',
+        'runIncomplete' => 'L\'exécution ne peut pas être terminée : des étapes obligatoires sont encore ouvertes.',
+        'backupInvalid' => 'L\'enregistrement de sauvegarde est invalide (motif : :reason).',
+        'backupMissingOrExpired' => 'Un enregistrement de sauvegarde valide est manquant (ou la dernière sauvegarde est trop ancienne).',
+        'secondPersonMissing' => 'L\'approbation à quatre yeux est manquante ou incomplète.',
+        'secondPersonSelfNotAllowed' => 'La personne exécutante ne doit pas prendre en charge l\'approbation elle-même.',
+        'deviationReasonTooShort' => 'Le motif de l\'écart est trop court (au moins 20 caractères).',
+        'deviationInvalid' => 'L\'écart n\'a pas pu être enregistré (motif : :reason).',
+        'criticalDeviationOpen' => 'L\'exécution ne peut pas être terminée : il existe un écart critique sans acceptation du risque.',
+    ],
+    'blocked' => [
+        'previousStepIncomplete' => 'L\'étape obligatoire précédente n\'est pas encore terminée.',
+        'runNotActive' => 'L\'exécution n\'est pas active.',
+        'stepAlreadyFinal' => 'L\'étape est déjà terminée.',
+        'missingQualification' => 'La qualification requise est manquante.',
+        'missingRole' => 'Le rôle requis est manquant.',
+        'secondPersonRequired' => 'Une deuxième personne est requise.',
+        'backupNotVerified' => 'L\'enregistrement de sauvegarde est manquant ou non vérifié.',
+        'backupMissingOrExpired' => 'La dernière sauvegarde est manquante ou hors de la fenêtre de validité.',
+    ],
+];

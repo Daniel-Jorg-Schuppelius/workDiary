@@ -13,7 +13,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\User;
 use App\Services\Calendar\WeekViewService;
-use App\Services\Flextime\FlexCalculator;
+use App\Services\Flextime\{FlexCalculator, WorkScheduleResolver};
 use App\Services\UI\DateRangeContext;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -24,7 +24,7 @@ use Illuminate\View\View;
 class FlexController extends Controller {
     use ResolvesGlobalDateRange;
 
-    public function __construct(protected FlexCalculator $calc, protected WeekViewService $weekService) {}
+    public function __construct(protected FlexCalculator $calc, protected WeekViewService $weekService, protected WorkScheduleResolver $resolver) {}
 
     public function index(Request $request): View|RedirectResponse {
         if ($redirect = $this->migrateLegacyYearMonth($request, 'flex.index')) {
@@ -89,6 +89,14 @@ class FlexController extends Controller {
             ->get()
             : collect();
 
+        // Aktives Arbeitszeit-Modell des Monats (für Badge/typgerechte Anzeige).
+        // Das Badge spiegelt das Modell zum Monatsende; weicht der Monatsanfang
+        // ab, wird auf einen Modellwechsel im Zeitraum hingewiesen.
+        $activeStart = CarbonImmutable::createFromDate($year, $month, 1)->startOfMonth();
+        $schedFirst = $this->resolver->for($user, $activeStart);
+        $schedActive = $this->resolver->for($user, $activeStart->endOfMonth());
+        $scheduleType = $schedActive->schedule_type;
+
         return view('flex.index', [
             'user' => $user,
             'authUser' => $authUser,
@@ -101,6 +109,10 @@ class FlexController extends Controller {
             'isAdmin' => $canSeeOthers,
             'canSeeOthers' => $canSeeOthers,
             'service' => $this->weekService,
+            'schedule' => $schedActive,
+            'scheduleType' => $scheduleType,
+            'tracksTarget' => $scheduleType->tracksTarget(),
+            'modelChanged' => $schedFirst->schedule_type !== $scheduleType,
         ]);
     }
 
