@@ -101,17 +101,31 @@ class PluginManager {
     }
 
     /**
-     * IDs der per Auto-Disable global stillgelegten Plugins. Wird defensiv
-     * abgefragt — wenn die plugin_states-Tabelle noch nicht existiert (z. B.
-     * vor der ersten Migration), liefern wir eine leere Liste statt zu werfen.
+     * IDs der per Auto-Disable stillgelegten Plugins für den aktuellen Kontext.
+     * Eine globale Stilllegung (organization_id = null, z. B. Boot-/Schema-Fehler)
+     * gilt überall; eine per-Org-Stilllegung nur, wenn ihre Organisation aktuell
+     * gebunden ist. Defensiv abgefragt — fehlt die Tabelle (vor der ersten
+     * Migration), liefern wir eine leere Liste statt zu werfen.
      *
      * @return array<int, string>
      */
     private function autoDisabledIds(): array {
         try {
+            $orgId = app()->bound('currentOrganization')
+                && app('currentOrganization') instanceof \App\Models\Organization
+                ? (int) app('currentOrganization')->id
+                : null;
+
             return PluginState::query()
                 ->whereNotNull('disabled_reason')
+                ->where(function ($q) use ($orgId): void {
+                    $q->whereNull('organization_id');
+                    if ($orgId !== null) {
+                        $q->orWhere('organization_id', $orgId);
+                    }
+                })
                 ->pluck('plugin_id')
+                ->unique()
                 ->all();
         } catch (\Throwable) {
             return [];

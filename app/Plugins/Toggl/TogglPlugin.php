@@ -93,6 +93,10 @@ class TogglPlugin implements Plugin {
         ];
     }
 
+    public function isPerOrganization(): bool {
+        return true;
+    }
+
     /** Health-Check: pingt /me mit dem konfigurierten Token. */
     public function healthCheck(): PluginHealth {
         $config = TogglConfig::resolve();

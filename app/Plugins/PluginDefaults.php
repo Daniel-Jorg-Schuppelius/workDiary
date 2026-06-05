@@ -38,4 +38,13 @@ trait PluginDefaults {
     public function healthCheck(): PluginHealth {
         return PluginHealth::ok();
     }
+
+    /**
+     * Default: global (läuft einmalig auf der Instanz). Plugins mit
+     * Konfiguration/API-Keys pro Organisation überschreiben dies mit `true`,
+     * damit Healthcheck + Zustand je Organisation geführt werden.
+     */
+    public function isPerOrganization(): bool {
+        return false;
+    }
 }

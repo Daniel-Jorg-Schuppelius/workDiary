@@ -3924,5 +3924,12 @@
     "— wählen —": "— seleziona —",
     "„Eigener Workspace\" = Toggl-Clients werden zu Kunden, Projekte zu Projekten. „Als ein Kunde\" = der ganze Workspace wird zu genau einem Kunden; jeder interne Toggl-Client (Endkunde der Firma) wird als Fremdkunde angelegt, die Projekte verweisen darauf — so bleibt die Endkunden-Trennung erhalten. Bestehende Kunden/Fremdkunden/Projekte werden per Name wiederverwendet (keine Duplikate).": "«Spazio di lavoro proprio» = i clienti di Toggl diventano clienti e i progetti diventano progetti. «Come un solo cliente» = l'intero spazio di lavoro diventa esattamente un cliente; ogni cliente interno di Toggl (cliente finale dell'azienda) viene creato come cliente esterno e i progetti vi fanno riferimento — così si mantiene la separazione dei clienti finali. I clienti/clienti esterni/progetti esistenti vengono riutilizzati per nome (nessun duplicato).",
     "Lexoffice ist momentan nicht erreichbar (HTTP :status).": "Lexoffice non è al momento disponibile (HTTP :status).",
-    "Lexoffice-API antwortet nicht erwartungsgemäß (HTTP :status).": "L'API di Lexoffice ha risposto in modo inatteso (HTTP :status)."
+    "Lexoffice-API antwortet nicht erwartungsgemäß (HTTP :status).": "L'API di Lexoffice ha risposto in modo inatteso (HTTP :status).",
+    "oder": "oppure",
+    "Toggl-Export als ZIP hochladen": "Carica l'export Toggl come ZIP",
+    "Hochladen & einlesen": "Carica e leggi",
+    "Keine gültige ZIP-Datei.": "File ZIP non valido.",
+    "ZIP konnte nicht entpackt werden.": "Impossibile estrarre il file ZIP.",
+    "Vorschau verworfen.": "Anteprima scartata.",
+    "Vorschau zurücksetzen": "Reimposta anteprima"
 }

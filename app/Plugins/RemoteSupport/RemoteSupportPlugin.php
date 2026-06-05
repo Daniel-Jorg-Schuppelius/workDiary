@@ -98,6 +98,10 @@ class RemoteSupportPlugin implements Plugin {
         ];
     }
 
+    public function isPerOrganization(): bool {
+        return true;
+    }
+
     /**
      * Pingt die aktiven Provider. Antwortet mindestens einer, gilt das Plugin
      * als gesund; kein aktiver/konfigurierter Provider → degraded.

@@ -21,14 +21,28 @@
                 <div class="alert alert-error mb-3 text-sm">{{ $errors->first() }}</div>
             @endif
 
-            {{-- Schritt 1: Pfad --}}
+            {{-- Schritt 1a: Server-Pfad --}}
             <form method="GET" action="{{ route('admin.toggl.import-export') }}" class="flex items-end gap-2">
                 <label class="form-control flex-1">
                     <span class="label-text text-xs">{{ __('Pfad zum Export-Ordner (auf dem Server)') }}</span>
-                    <input type="text" name="path" value="{{ $path }}" placeholder="/mnt/c/AMD/toggl"
+                    <input type="text" name="path" value="{{ $path }}" placeholder="/tmp/toggl"
                            class="input input-sm input-bordered w-full font-mono">
                 </label>
                 <button type="submit" class="btn btn-sm">{{ __('Ordner einlesen') }}</button>
+            </form>
+
+            <div class="divider my-2 text-xs text-base-content/50">{{ __('oder') }}</div>
+
+            {{-- Schritt 1b: ZIP-Upload (Toggl liefert den Export als ZIP) --}}
+            <form method="POST" action="{{ route('admin.toggl.import-export.upload') }}"
+                  enctype="multipart/form-data" class="flex items-end gap-2">
+                @csrf
+                <label class="form-control flex-1">
+                    <span class="label-text text-xs">{{ __('Toggl-Export als ZIP hochladen') }}</span>
+                    <input type="file" name="archive" accept=".zip,application/zip" required
+                           class="file-input file-input-sm file-input-bordered w-full">
+                </label>
+                <button type="submit" class="btn btn-sm">{{ __('Hochladen & einlesen') }}</button>
             </form>
 
             @if ($path !== '' && ! $pathValid)
@@ -143,9 +157,15 @@
         {{-- Ergebnis / Vorschau --}}
         @if (! empty($summary))
             <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-                <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">
-                    {{ $summary['dry_run'] ? __('Vorschau (nicht gespeichert)') : __('Import-Ergebnis') }}
-                </h2>
+                <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">
+                        {{ $summary['dry_run'] ? __('Vorschau (nicht gespeichert)') : __('Import-Ergebnis') }}
+                    </h2>
+                    <form method="POST" action="{{ route('admin.toggl.import-export.reset') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-ghost btn-xs">{{ __('Vorschau zurücksetzen') }}</button>
+                    </form>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="table table-sm">
                         <thead>

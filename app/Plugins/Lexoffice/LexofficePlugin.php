@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Models\{Customer, ExternalReference, Supplier, TimeEntry};
+use App\Models\{Customer, ExternalReference, Organization, PluginSetting, Supplier, TimeEntry};
 use App\Plugins\Contracts\{ContactSyncer, Plugin, PluginCapability, TimeExporter};
 use App\Plugins\{PluginDefaults, PluginHealth};
 use Carbon\CarbonImmutable;
@@ -40,7 +40,8 @@ class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
 
     public function __construct(
         private readonly LexofficeService $service,
-    ) {}
+    ) {
+    }
 
     public function id(): string {
         return self::ID;
@@ -72,12 +73,36 @@ class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
      *   - Netz-/Timeout-Fehler → degraded
      *   - sonstige Fehler → failing mit Message
      */
+    public function isPerOrganization(): bool {
+        return true;
+    }
+
     public function healthCheck(): PluginHealth {
-        if (! $this->service->isConfigured()) {
+        // Per-Org-Plugin: der geplante `plugin:healthcheck` bindet je Organisation
+        // den Kontext, daher wird der Schlüssel der GEBUNDENEN Org frisch aufgelöst
+        // (nicht der env-/Singleton-Key). Liefert die Auflösung keinen Key (kein
+        // Kontext / env leer), greift der injizierte Service — so bleiben DI/Tests
+        // und env-Single-Tenant abgedeckt.
+        $config = LexofficeConfig::resolve();
+        if (! empty($config['api_key'])) {
+            return $this->checkService(new LexofficeService(
+                apiKey: $config['api_key'],
+                mapper: new LexofficeMapper,
+                defaults: $config['defaults'],
+                baseUrl: $config['base_url'],
+            ));
+        }
+
+        return $this->checkService($this->service);
+    }
+
+    /** Klassifiziert einen einzelnen /profile-Ping eines konkreten Service. */
+    private function checkService(LexofficeService $service): PluginHealth {
+        if (! $service->isConfigured()) {
             return PluginHealth::degraded(__('Lexoffice ist nicht konfiguriert.'));
         }
         try {
-            $status = $this->service->profileStatus();
+            $status = $service->profileStatus();
 
             if ($status !== null && $status >= 200 && $status < 300) {
                 return PluginHealth::ok(__('Lexoffice-API erreichbar.'));
@@ -108,8 +133,8 @@ class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
         // Wenn eine Organisation gebunden ist, entscheidet die DB; sonst Fallback auf config (Tests + Konsolen-Kontexte ohne Org).
         if (app()->bound('currentOrganization')) {
             $org = app('currentOrganization');
-            if ($org instanceof \App\Models\Organization) {
-                $row = \App\Models\PluginSetting::forOrganization($org->id, self::ID);
+            if ($org instanceof Organization) {
+                $row = PluginSetting::forOrganization($org->id, self::ID);
                 if ($row->exists || ($row->enabled || ($row->settings['api_key'] ?? null) !== null)) {
                     return $row->enabled && (string) ($row->get('api_key') ?? '') !== '';
                 }

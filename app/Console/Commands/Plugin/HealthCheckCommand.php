@@ -10,7 +10,8 @@
 
 namespace App\Console\Commands\Plugin;
 
-use App\Models\PluginState;
+use App\Models\{Organization, PluginState};
+use App\Plugins\Contracts\Plugin;
 use App\Plugins\{PluginErrorRecorder, PluginHealth, PluginManager};
 use Illuminate\Console\Command;
 use Throwable;
@@ -42,33 +43,25 @@ class HealthCheckCommand extends Command {
 
         $exitCode = self::SUCCESS;
         foreach ($plugins as $plugin) {
-            $state = PluginState::findOrInit($plugin->id());
-            $state->plugin_id = $plugin->id();
-            $state->last_health_check_at = now();
-
-            try {
-                $health = $plugin->healthCheck();
-                $state->last_health_status = $health->status;
-                $state->last_health_message = $health->message;
-                $state->save();
-
-                if ($health->isOk()) {
-                    $recorder->markHealthy($plugin->id());
-                    $this->line(sprintf('  ✓ %s: ok %s', $plugin->id(), $health->message));
-                } elseif ($health->isFailing()) {
-                    $this->warn(sprintf('  ✗ %s: failing — %s', $plugin->id(), $health->message));
-                    $recorder->record($plugin->id(), 'healthcheck', new \RuntimeException($health->message !== '' ? $health->message : 'failing healthcheck'));
-                    $exitCode = self::FAILURE;
-                } else {
-                    $this->line(sprintf('  ~ %s: degraded — %s', $plugin->id(), $health->message));
+            if ($plugin->isPerOrganization()) {
+                // Per-Org-Plugin: je Organisation mit gebundenem Kontext prüfen,
+                // damit healthCheck() den jeweils gespeicherten Schlüssel nutzt.
+                foreach (Organization::query()->get() as $org) {
+                    app()->instance('currentOrganization', $org);
+                    if (! $plugin->isEnabled()) {
+                        continue; // in dieser Org nicht aktiv → kein Check
+                    }
+                    if ($this->checkOne($plugin, (int) $org->id, (string) $org->name, $recorder) === self::FAILURE) {
+                        $exitCode = self::FAILURE;
+                    }
                 }
-            } catch (Throwable $e) {
-                $state->last_health_status = PluginHealth::STATUS_FAILING;
-                $state->last_health_message = $e->getMessage();
-                $state->save();
-                $recorder->record($plugin->id(), 'healthcheck', $e);
-                $this->error(sprintf('  ✗ %s: exception — %s', $plugin->id(), $e->getMessage()));
-                $exitCode = self::FAILURE;
+                app()->forgetInstance('currentOrganization');
+            } else {
+                // Globales Plugin: einmalig ohne Org-Kontext.
+                app()->forgetInstance('currentOrganization');
+                if ($this->checkOne($plugin, null, null, $recorder) === self::FAILURE) {
+                    $exitCode = self::FAILURE;
+                }
             }
         }
 
@@ -82,5 +75,50 @@ class HealthCheckCommand extends Command {
         }
 
         return $exitCode;
+    }
+
+    /**
+     * Führt einen Healthcheck für genau ein (Plugin, Organisation)-Paar aus,
+     * persistiert den Zustand und meldet Fehler org-bezogen. `$organizationId`
+     * = null → globaler Zustand.
+     */
+    private function checkOne(Plugin $plugin, ?int $organizationId, ?string $orgName, PluginErrorRecorder $recorder): int {
+        $label = $plugin->id() . ($orgName !== null ? " [{$orgName}]" : '');
+
+        $state = PluginState::findOrInit($plugin->id(), $organizationId);
+        $state->plugin_id = $plugin->id();
+        $state->organization_id = $organizationId;
+        $state->last_health_check_at = now();
+
+        try {
+            $health = $plugin->healthCheck();
+            $state->last_health_status = $health->status;
+            $state->last_health_message = $health->message;
+            $state->save();
+
+            if ($health->isOk()) {
+                $recorder->markHealthy($plugin->id(), $organizationId);
+                $this->line(sprintf('  ✓ %s: ok %s', $label, $health->message));
+
+                return self::SUCCESS;
+            }
+            if ($health->isFailing()) {
+                $this->warn(sprintf('  ✗ %s: failing — %s', $label, $health->message));
+                $recorder->record($plugin->id(), 'healthcheck', new \RuntimeException($health->message !== '' ? $health->message : 'failing healthcheck'), [], $organizationId);
+
+                return self::FAILURE;
+            }
+            $this->line(sprintf('  ~ %s: degraded — %s', $label, $health->message));
+
+            return self::SUCCESS;
+        } catch (Throwable $e) {
+            $state->last_health_status = PluginHealth::STATUS_FAILING;
+            $state->last_health_message = $e->getMessage();
+            $state->save();
+            $recorder->record($plugin->id(), 'healthcheck', $e, [], $organizationId);
+            $this->error(sprintf('  ✗ %s: exception — %s', $label, $e->getMessage()));
+
+            return self::FAILURE;
+        }
     }
 }

@@ -38,7 +38,7 @@ class PluginController extends Controller {
         return view('admin.plugins.index', [
             'plugins' => $manager->all(),
             'settings' => $rows,
-            'states' => PluginState::all()->keyBy('plugin_id'),
+            'states' => PluginState::mapForOrganization((int) $admin->organization_id),
             'filters' => [
                 'status' => (string) $request->string('status'),
                 'q' => (string) $request->string('q'),
@@ -53,7 +53,7 @@ class PluginController extends Controller {
         abort_unless($instance !== null, 404);
 
         $row = PluginSetting::forOrganization((int) $admin->organization_id, $plugin);
-        $state = PluginState::query()->where('plugin_id', $plugin)->first();
+        $state = PluginState::forContext($plugin, $instance->isPerOrganization() ? (int) $admin->organization_id : null);
 
         return view('admin.plugins._form_dialog', [
             'plugin' => $instance,
@@ -182,12 +182,17 @@ class PluginController extends Controller {
      * der scheduled Command `plugin:healthcheck`.
      */
     public function healthCheck(Request $request, string $plugin, PluginManager $manager, PluginErrorRecorder $recorder): JsonResponse {
-        $this->ensureAdmin($request);
+        $admin = $this->ensureAdmin($request);
         $instance = $manager->get($plugin);
         abort_unless($instance !== null, 404);
 
-        $state = PluginState::findOrInit($plugin);
+        // Per-Org-Plugins: Zustand/Fehler der Org des Admins zuordnen (der
+        // healthCheck() prüft denselben gebundenen Org-Kontext); globale Plugins → null.
+        $orgId = $instance->isPerOrganization() ? (int) $admin->organization_id : null;
+
+        $state = PluginState::findOrInit($plugin, $orgId);
         $state->plugin_id = $plugin;
+        $state->organization_id = $orgId;
         $state->last_health_check_at = now();
 
         try {
@@ -197,9 +202,9 @@ class PluginController extends Controller {
             $state->save();
 
             if ($health->isOk()) {
-                $recorder->markHealthy($plugin);
+                $recorder->markHealthy($plugin, $orgId);
             } elseif ($health->isFailing()) {
-                $recorder->record($plugin, 'healthcheck', new \RuntimeException($health->message !== '' ? $health->message : 'failing healthcheck'));
+                $recorder->record($plugin, 'healthcheck', new \RuntimeException($health->message !== '' ? $health->message : 'failing healthcheck'), [], $orgId);
             }
 
             return response()->json($health->toArray() + ['checked_at' => $state->last_health_check_at->toIso8601String()]);
@@ -207,7 +212,7 @@ class PluginController extends Controller {
             $state->last_health_status = \App\Plugins\PluginHealth::STATUS_FAILING;
             $state->last_health_message = $e->getMessage();
             $state->save();
-            $recorder->record($plugin, 'healthcheck', $e);
+            $recorder->record($plugin, 'healthcheck', $e, [], $orgId);
 
             return response()->json([
                 'status' => \App\Plugins\PluginHealth::STATUS_FAILING,

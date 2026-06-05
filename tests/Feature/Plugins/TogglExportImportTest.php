@@ -239,6 +239,48 @@ class TogglExportImportTest extends TestCase {
         $this->rrmdir($dir);
     }
 
+    public function test_zip_upload_extracts_and_detects_workspaces(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+
+        $zipPath = sys_get_temp_dir() . '/toggl_upload_' . uniqid() . '.zip';
+        $zip = new \ZipArchive;
+        $zip->open($zipPath, \ZipArchive::CREATE);
+        $zip->addFromString('AcmeWs/clients.json', (string) json_encode([['id' => 1, 'name' => 'Acme', 'archived' => false]]));
+        $zip->addFromString('AcmeWs/projects.json', (string) json_encode([['id' => 10, 'name' => 'Website', 'client_id' => 1, 'client_name' => 'Acme', 'active' => true]]));
+        $zip->addFromString('AcmeWs/workspace_users.json', (string) json_encode([['id' => 1, 'email' => 'dev@example.com', 'name' => 'Dev']]));
+        $zip->close();
+
+        $file = new \Illuminate\Http\UploadedFile($zipPath, 'export.zip', 'application/zip', null, true);
+
+        $response = $this->actingAs($admin)->post(route('admin.toggl.import-export.upload'), ['archive' => $file]);
+        $response->assertRedirect();
+
+        parse_str((string) parse_url((string) $response->headers->get('Location'), PHP_URL_QUERY), $q);
+        $this->assertArrayHasKey('path', $q);
+        $this->assertDirectoryExists($q['path']);
+        $this->assertContains('AcmeWs', \App\Plugins\Toggl\Sources\TogglWorkspaceReader::detectWorkspaces($q['path']));
+
+        $this->actingAs($admin)->get(route('admin.toggl.import-export', ['path' => $q['path']]))
+            ->assertOk()
+            ->assertSee('AcmeWs');
+
+        @unlink($zipPath);
+        $this->rrmdir($q['path']);
+    }
+
+    public function test_reset_clears_preview_summary(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($admin)
+            ->withSession(['toggl_export_summary' => ['dry_run' => true, 'workspaces' => [], 'totals' => []]])
+            ->post(route('admin.toggl.import-export.reset'))
+            ->assertRedirect();
+
+        $this->actingAs($admin)->get(route('admin.toggl.import-export'))
+            ->assertOk()
+            ->assertDontSee(__('Vorschau (nicht gespeichert)'));
+    }
+
     // --- Fixtures -----------------------------------------------------------
 
     private function buildOwn(string $dir): void {

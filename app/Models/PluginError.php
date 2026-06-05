@@ -41,6 +41,7 @@ class PluginError extends Model {
 
     protected $fillable = [
         'plugin_id',
+        'organization_id',
         'phase',
         'exception_class',
         'message',

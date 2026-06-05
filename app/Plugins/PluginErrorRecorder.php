@@ -28,9 +28,10 @@ class PluginErrorRecorder {
     /**
      * @param  array<string, mixed>  $context
      */
-    public function record(string $pluginId, string $phase, Throwable $e, array $context = []): PluginError {
+    public function record(string $pluginId, string $phase, Throwable $e, array $context = [], ?int $organizationId = null): PluginError {
         $error = new PluginError([
             'plugin_id' => $pluginId,
+            'organization_id' => $organizationId,
             'phase' => $phase,
             'exception_class' => $e::class,
             'message' => $this->truncate($e->getMessage(), 2000),
@@ -40,8 +41,11 @@ class PluginErrorRecorder {
         ]);
         $error->save();
 
-        $state = PluginState::findOrInit($pluginId);
+        // Zustand/Auto-Disable wird pro (Plugin, Organisation) geführt: ein
+        // fehlerhafter Key in Org A legt das Plugin nicht für Org B still.
+        $state = PluginState::findOrInit($pluginId, $organizationId);
         $state->plugin_id = $pluginId;
+        $state->organization_id = $organizationId;
         $state->failure_count = (int) $state->failure_count + 1;
 
         $threshold = (int) config('plugins.auto_disable_threshold', 5);
@@ -54,6 +58,7 @@ class PluginErrorRecorder {
             );
             Log::warning('Plugin auto-disabled after repeated failures', [
                 'plugin_id' => $pluginId,
+                'organization_id' => $organizationId,
                 'failure_count' => $state->failure_count,
                 'phase' => $phase,
             ]);
@@ -62,6 +67,7 @@ class PluginErrorRecorder {
 
         Log::error('Plugin error recorded', [
             'plugin_id' => $pluginId,
+            'organization_id' => $organizationId,
             'phase' => $phase,
             'exception' => $e::class,
             'message' => $e->getMessage(),
@@ -72,18 +78,20 @@ class PluginErrorRecorder {
     }
 
     /** Setzt failure_count + disabled_reason zurück (Admin-Aktion „Reset"). */
-    public function reset(string $pluginId): void {
-        $state = PluginState::findOrInit($pluginId);
+    public function reset(string $pluginId, ?int $organizationId = null): void {
+        $state = PluginState::findOrInit($pluginId, $organizationId);
         $state->plugin_id = $pluginId;
+        $state->organization_id = $organizationId;
         $state->failure_count = 0;
         $state->disabled_reason = null;
         $state->save();
     }
 
     /** Nach einem erfolgreichen Healthcheck → Failure-Counter wieder auf 0. */
-    public function markHealthy(string $pluginId): void {
-        $state = PluginState::findOrInit($pluginId);
+    public function markHealthy(string $pluginId, ?int $organizationId = null): void {
+        $state = PluginState::findOrInit($pluginId, $organizationId);
         $state->plugin_id = $pluginId;
+        $state->organization_id = $organizationId;
         $state->failure_count = 0;
         $state->disabled_reason = null;
         $state->save();

@@ -20,6 +20,7 @@ use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
@@ -265,12 +266,76 @@ class TogglController extends Controller {
         $dryRun = $validated['action'] === 'preview';
         $summary = $this->exportImporter->import($validated['path'], $organization, $workspaceModes, $validated['user_mode'], $dryRun, $userMap);
 
+        // Persistent (nicht nur Flash), damit die Vorschau-/Ergebnistabelle beim
+        // erneuten Aufruf der Seite weiter sichtbar bleibt — bis sie zurückgesetzt wird.
+        $request->session()->put('toggl_export_summary', $summary);
+
         return redirect()
             ->route('admin.toggl.import-export', ['path' => $validated['path']])
-            ->with('toggl_export_summary', $summary)
             ->with('status', $dryRun
                 ? (string) __('Vorschau berechnet — es wurde nichts gespeichert.')
                 : (string) __('Import abgeschlossen.'));
+    }
+
+    /**
+     * Lädt eine Toggl-Export-ZIP hoch, entpackt sie sicher nach
+     * storage/app/toggl-imports/<id>/ und leitet auf den bestehenden
+     * Pfad-Flow um — der Rest (Workspace-Erkennung, Konfiguration, Import)
+     * bleibt identisch zur Server-Pfad-Variante.
+     */
+    public function uploadExport(Request $request): RedirectResponse {
+        $this->admin();
+
+        $request->validate([
+            'archive' => ['required', 'file', 'mimes:zip', 'max:204800'], // bis 200 MB
+        ]);
+
+        $base = storage_path('app/toggl-imports');
+        if (! is_dir($base)) {
+            @mkdir($base, 0775, true);
+        }
+        $this->pruneOldImports($base);
+
+        $target = $base . '/' . now()->format('Ymd_His') . '_' . Str::random(8);
+        @mkdir($target, 0775, true);
+
+        $zip = new \ZipArchive;
+        if ($zip->open((string) $request->file('archive')->getRealPath()) !== true) {
+            $this->rrmdir($target);
+
+            return back()->withErrors(['archive' => (string) __('Keine gültige ZIP-Datei.')]);
+        }
+
+        // Zip-Slip-Schutz: keine Pfade mit „..“ oder absoluten Wurzeln zulassen.
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = (string) $zip->getNameIndex($i);
+            if (str_contains($name, '..') || str_starts_with($name, '/') || str_starts_with($name, '\\')) {
+                $zip->close();
+                $this->rrmdir($target);
+
+                return back()->withErrors(['archive' => (string) __('ZIP konnte nicht entpackt werden.')]);
+            }
+        }
+
+        $ok = $zip->extractTo($target);
+        $zip->close();
+        if (! $ok) {
+            $this->rrmdir($target);
+
+            return back()->withErrors(['archive' => (string) __('ZIP konnte nicht entpackt werden.')]);
+        }
+
+        $root = $this->resolveExportRoot($target);
+
+        return redirect()->route('admin.toggl.import-export', ['path' => $root]);
+    }
+
+    /** Verwirft die gespeicherte Vorschau-/Ergebnistabelle. */
+    public function resetPreview(Request $request): RedirectResponse {
+        $this->admin();
+        $request->session()->forget('toggl_export_summary');
+
+        return back()->with('status', (string) __('Vorschau verworfen.'));
     }
 
     /**
@@ -606,5 +671,68 @@ class TogglController extends Controller {
         abort_unless($org instanceof Organization, 422, 'Kein Organisationskontext.');
 
         return $org;
+    }
+
+    /**
+     * Findet den tatsächlichen Export-Wurzelordner im entpackten ZIP:
+     *  - durchläuft transparente „Wrapper"-Ordner (genau ein Unterordner),
+     *  - und packt einen flachen Single-Workspace-Export (projects.json direkt
+     *    im Ordner, keine Unterordner) in einen benannten Unterordner, damit
+     *    {@see TogglWorkspaceReader::detectWorkspaces()} ihn erkennt.
+     */
+    private function resolveExportRoot(string $dir): string {
+        for ($depth = 0; $depth < 6; $depth++) {
+            if (TogglWorkspaceReader::detectWorkspaces($dir) !== []) {
+                return $dir;
+            }
+
+            // Flacher Single-Workspace-Export → in Unterordner „Workspace" heben.
+            if (is_file($dir . '/projects.json')) {
+                $wrap = $dir . '/Workspace';
+                @mkdir($wrap, 0775, true);
+                foreach ((array) glob($dir . '/*') as $item) {
+                    if ($item === $wrap) {
+                        continue;
+                    }
+                    @rename($item, $wrap . '/' . basename((string) $item));
+                }
+
+                return $dir;
+            }
+
+            $subdirs = array_values(array_filter((array) glob($dir . '/*', GLOB_ONLYDIR)));
+            if (count($subdirs) === 1) {
+                $dir = $subdirs[0];
+
+                continue;
+            }
+            break;
+        }
+
+        return $dir;
+    }
+
+    /** Entfernt entpackte Import-Ordner, die älter als einen Tag sind (Best-Effort). */
+    private function pruneOldImports(string $base): void {
+        foreach ((array) glob($base . '/*', GLOB_ONLYDIR) as $dir) {
+            if (is_string($dir) && @filemtime($dir) !== false && filemtime($dir) < now()->subDay()->getTimestamp()) {
+                $this->rrmdir($dir);
+            }
+        }
+    }
+
+    /** Rekursives Löschen eines Verzeichnisses (Best-Effort). */
+    private function rrmdir(string $dir): void {
+        if (! is_dir($dir)) {
+            return;
+        }
+        foreach ((array) scandir($dir) as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+            $path = $dir . '/' . $entry;
+            is_dir($path) ? $this->rrmdir($path) : @unlink($path);
+        }
+        @rmdir($dir);
     }
 }

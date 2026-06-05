@@ -24,7 +24,12 @@ class ListCommand extends Command {
     protected $description = 'Zeigt alle registrierten Plugins mit Version, Status und Health.';
 
     public function handle(PluginManager $manager): int {
-        $states = PluginState::all()->keyBy('plugin_id');
+        // Pro Plugin können mehrere (Org-)Zustände existieren. Für die globale
+        // CLI-Übersicht je Plugin den auffälligsten zeigen: auto-disabled zuletzt
+        // sortiert → keyBy behält ihn.
+        $states = PluginState::all()
+            ->sortBy(fn(PluginState $s): int => $s->isAutoDisabled() ? 1 : 0)
+            ->keyBy('plugin_id');
 
         $rows = [];
         foreach ($manager->all() as $plugin) {

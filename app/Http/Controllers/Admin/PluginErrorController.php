@@ -29,7 +29,7 @@ class PluginErrorController extends Controller {
     private const ALLOWED_SORTS = ['occurred_at', 'plugin_id', 'phase', 'exception_class', 'message', 'acknowledged_at'];
 
     public function index(Request $request, PluginManager $manager): View {
-        $this->ensureAdmin($request);
+        $admin = $this->ensureAdmin($request);
 
         $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
             ? $request->string('sort')->toString()
@@ -60,7 +60,7 @@ class PluginErrorController extends Controller {
             'errors' => $query->paginate(25)->withQueryString(),
             'filters' => $filters,
             'plugins' => $manager->all(),
-            'states' => PluginState::all()->keyBy('plugin_id'),
+            'states' => PluginState::mapForOrganization((int) $admin->organization_id),
             'sort' => $sort,
             'dir' => $dir,
         ]);
@@ -87,9 +87,12 @@ class PluginErrorController extends Controller {
     }
 
     public function reset(Request $request, string $plugin, PluginErrorRecorder $recorder): RedirectResponse {
-        $this->ensureAdmin($request);
+        $admin = $this->ensureAdmin($request);
 
-        $recorder->reset($plugin);
+        // Sowohl den globalen als auch den org-spezifischen Zustand des Admins
+        // zurücksetzen — deckt globale wie per-Org-Plugins ab.
+        $recorder->reset($plugin, null);
+        $recorder->reset($plugin, (int) $admin->organization_id);
 
         return back()->with('success', __('Failure-Counter zurückgesetzt — Plugin wieder aktiv.'));
     }

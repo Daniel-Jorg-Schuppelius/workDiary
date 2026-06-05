@@ -97,4 +97,13 @@ interface Plugin {
      * über die Admin-UI. Plugins ohne externe Abhängigkeit dürfen `PluginHealth::ok()` liefern.
      */
     public function healthCheck(): PluginHealth;
+
+    /**
+     * Ob das Plugin pro Organisation betrieben wird (eigene Konfiguration /
+     * API-Keys je Org) statt global auf der Instanz. Steuert den geplanten
+     * Healthcheck: bei `true` wird er je Organisation mit gebundenem Kontext
+     * ausgeführt und der Zustand pro (plugin_id, organization_id) gespeichert;
+     * bei `false` einmalig global (organization_id = null).
+     */
+    public function isPerOrganization(): bool;
 }
