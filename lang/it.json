@@ -3468,7 +3468,6 @@
     "Letzte Exporte": "Ultime esportazioni",
     "Letzter Vorfall": "Ultimo incidente",
     "Lexoffice-Anfrage für :resource fehlgeschlagen (:status).": "Richiesta a Lexoffice per :resource fallita (:status).",
-    "Lexoffice-API antwortet nicht erwartungsgemäß.": "L'API di Lexoffice non risponde come previsto.",
     "Lexoffice-API erreichbar.": "API di Lexoffice raggiungibile.",
     "Lexoffice-Beleg": "Documento di Lexoffice",
     "Lexoffice-Belege": "Documenti di Lexoffice",
@@ -3923,5 +3922,7 @@
     "— ohne Raum —": "— senza sala —",
     "— Standardprojekt —": "— Progetto standard —",
     "— wählen —": "— seleziona —",
-    "„Eigener Workspace\" = Toggl-Clients werden zu Kunden, Projekte zu Projekten. „Als ein Kunde\" = der ganze Workspace wird zu genau einem Kunden; jeder interne Toggl-Client (Endkunde der Firma) wird als Fremdkunde angelegt, die Projekte verweisen darauf — so bleibt die Endkunden-Trennung erhalten. Bestehende Kunden/Fremdkunden/Projekte werden per Name wiederverwendet (keine Duplikate).": "«Spazio di lavoro proprio» = i clienti di Toggl diventano clienti e i progetti diventano progetti. «Come un solo cliente» = l'intero spazio di lavoro diventa esattamente un cliente; ogni cliente interno di Toggl (cliente finale dell'azienda) viene creato come cliente esterno e i progetti vi fanno riferimento — così si mantiene la separazione dei clienti finali. I clienti/clienti esterni/progetti esistenti vengono riutilizzati per nome (nessun duplicato)."
+    "„Eigener Workspace\" = Toggl-Clients werden zu Kunden, Projekte zu Projekten. „Als ein Kunde\" = der ganze Workspace wird zu genau einem Kunden; jeder interne Toggl-Client (Endkunde der Firma) wird als Fremdkunde angelegt, die Projekte verweisen darauf — so bleibt die Endkunden-Trennung erhalten. Bestehende Kunden/Fremdkunden/Projekte werden per Name wiederverwendet (keine Duplikate).": "«Spazio di lavoro proprio» = i clienti di Toggl diventano clienti e i progetti diventano progetti. «Come un solo cliente» = l'intero spazio di lavoro diventa esattamente un cliente; ogni cliente interno di Toggl (cliente finale dell'azienda) viene creato come cliente esterno e i progetti vi fanno riferimento — così si mantiene la separazione dei clienti finali. I clienti/clienti esterni/progetti esistenti vengono riutilizzati per nome (nessun duplicato).",
+    "Lexoffice ist momentan nicht erreichbar (HTTP :status).": "Lexoffice non è al momento disponibile (HTTP :status).",
+    "Lexoffice-API antwortet nicht erwartungsgemäß (HTTP :status).": "L'API di Lexoffice ha risposto in modo inatteso (HTTP :status)."
 }

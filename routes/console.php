@@ -45,7 +45,7 @@ Schedule::command('events:materialize-recurrences')
     ->withoutOverlapping()
     ->onOneServer();
 
-Schedule::command('plugin:healthcheck')
+Schedule::command('plugin:healthcheck --no-fail')
     ->hourly()
     ->withoutOverlapping()
     ->onOneServer();

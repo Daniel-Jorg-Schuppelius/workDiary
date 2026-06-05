@@ -3468,7 +3468,6 @@
     "Letzte Exporte": "Recent exports",
     "Letzter Vorfall": "Last incident",
     "Lexoffice-Anfrage für :resource fehlgeschlagen (:status).": "Lexoffice request for :resource failed (:status).",
-    "Lexoffice-API antwortet nicht erwartungsgemäß.": "The Lexoffice API does not respond as expected.",
     "Lexoffice-API erreichbar.": "Lexoffice API reachable.",
     "Lexoffice-Beleg": "Lexoffice receipt",
     "Lexoffice-Belege": "Lexoffice receipts",
@@ -3923,5 +3922,7 @@
     "— ohne Raum —": "— without room —",
     "— Standardprojekt —": "— Default project —",
     "— wählen —": "— select —",
-    "„Eigener Workspace\" = Toggl-Clients werden zu Kunden, Projekte zu Projekten. „Als ein Kunde\" = der ganze Workspace wird zu genau einem Kunden; jeder interne Toggl-Client (Endkunde der Firma) wird als Fremdkunde angelegt, die Projekte verweisen darauf — so bleibt die Endkunden-Trennung erhalten. Bestehende Kunden/Fremdkunden/Projekte werden per Name wiederverwendet (keine Duplikate).": "\"Own workspace\" = Toggl clients become customers and projects become projects. \"As a single customer\" = the entire workspace becomes exactly one customer; each internal Toggl client (the company's end customer) is created as an external customer and the projects reference it — this preserves the end-customer separation. Existing customers/external customers/projects are reused by name (no duplicates)."
+    "„Eigener Workspace\" = Toggl-Clients werden zu Kunden, Projekte zu Projekten. „Als ein Kunde\" = der ganze Workspace wird zu genau einem Kunden; jeder interne Toggl-Client (Endkunde der Firma) wird als Fremdkunde angelegt, die Projekte verweisen darauf — so bleibt die Endkunden-Trennung erhalten. Bestehende Kunden/Fremdkunden/Projekte werden per Name wiederverwendet (keine Duplikate).": "\"Own workspace\" = Toggl clients become customers and projects become projects. \"As a single customer\" = the entire workspace becomes exactly one customer; each internal Toggl client (the company's end customer) is created as an external customer and the projects reference it — this preserves the end-customer separation. Existing customers/external customers/projects are reused by name (no duplicates).",
+    "Lexoffice ist momentan nicht erreichbar (HTTP :status).": "Lexoffice is currently unavailable (HTTP :status).",
+    "Lexoffice-API antwortet nicht erwartungsgemäß (HTTP :status).": "Lexoffice API responded unexpectedly (HTTP :status)."
 }

@@ -77,11 +77,20 @@ class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
             return PluginHealth::degraded(__('Lexoffice ist nicht konfiguriert.'));
         }
         try {
-            $ok = $this->service->ping();
+            $status = $this->service->profileStatus();
 
-            return $ok
-                ? PluginHealth::ok(__('Lexoffice-API erreichbar.'))
-                : PluginHealth::failing(__('Lexoffice-API antwortet nicht erwartungsgemäß.'));
+            if ($status !== null && $status >= 200 && $status < 300) {
+                return PluginHealth::ok(__('Lexoffice-API erreichbar.'));
+            }
+            if ($status === 401) {
+                return PluginHealth::failing(__('Lexoffice lehnt den API-Schlüssel ab (401). Bitte prüfe, ob der hinterlegte Schlüssel gültig ist.'));
+            }
+            if ($status !== null && $status >= 500) {
+                // Serverseitige 5xx sind transient → degraded (kein Auto-Disable).
+                return PluginHealth::degraded(__('Lexoffice ist momentan nicht erreichbar (HTTP :status).', ['status' => $status]));
+            }
+
+            return PluginHealth::failing(__('Lexoffice-API antwortet nicht erwartungsgemäß (HTTP :status).', ['status' => $status ?? '—']));
         } catch (LexofficeRateLimitException $e) {
             return PluginHealth::degraded($e->getMessage());
         } catch (ConnectionException $e) {

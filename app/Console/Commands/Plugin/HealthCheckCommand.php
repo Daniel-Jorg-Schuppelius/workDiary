@@ -21,7 +21,9 @@ use Throwable;
  * {@see PluginErrorRecorder} (Phase: healthcheck).
  */
 class HealthCheckCommand extends Command {
-    protected $signature = 'plugin:healthcheck {plugin? : Plugin-ID. Ohne Argument: alle aktiven Plugins.}';
+    protected $signature = 'plugin:healthcheck
+        {plugin? : Plugin-ID. Ohne Argument: alle aktiven Plugins.}
+        {--no-fail : Auch bei ungesunden Plugins mit Exit 0 beenden (für geplante Läufe — Ergebnis wird trotzdem aufgezeichnet).}';
 
     protected $description = 'Führt Healthchecks für ein oder alle Plugins durch und persistiert das Ergebnis.';
 
@@ -68,6 +70,15 @@ class HealthCheckCommand extends Command {
                 $this->error(sprintf('  ✗ %s: exception — %s', $plugin->id(), $e->getMessage()));
                 $exitCode = self::FAILURE;
             }
+        }
+
+        // Bei `--no-fail` (geplante Läufe) zählt nur, dass die Checks liefen und
+        // die Ergebnisse persistiert/aufgezeichnet wurden — ein ungesundes Plugin
+        // ist ein erfasster Zustand, kein Kommando-Fehlschlag. So erzeugt der
+        // Scheduler keinen irreführenden „failed"-Eintrag, der Auto-Disable-Zähler
+        // und die Statusanzeige bleiben aber unberührt.
+        if ($this->option('no-fail')) {
+            return self::SUCCESS;
         }
 
         return $exitCode;

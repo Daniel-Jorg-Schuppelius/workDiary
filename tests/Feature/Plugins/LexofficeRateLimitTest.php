@@ -61,4 +61,28 @@ class LexofficeRateLimitTest extends TestCase {
 
         $this->assertTrue($this->service()->ping());
     }
+
+    public function test_healthcheck_returns_degraded_on_server_error(): void {
+        // 5xx ist serverseitig/transient → degraded (kein Auto-Disable).
+        Http::fake([
+            'https://api.lexoffice.io/v1/profile' => Http::response('boom', 503),
+        ]);
+
+        $health = (new LexofficePlugin($this->service()))->healthCheck();
+
+        $this->assertSame(PluginHealth::STATUS_DEGRADED, $health->status);
+        $this->assertStringContainsString('503', $health->message);
+    }
+
+    public function test_healthcheck_returns_failing_with_status_on_client_error(): void {
+        // 403 (z. B. fehlender Scope/Tarif) → failing, Status in der Meldung.
+        Http::fake([
+            'https://api.lexoffice.io/v1/profile' => Http::response('forbidden', 403),
+        ]);
+
+        $health = (new LexofficePlugin($this->service()))->healthCheck();
+
+        $this->assertSame(PluginHealth::STATUS_FAILING, $health->status);
+        $this->assertStringContainsString('403', $health->message);
+    }
 }

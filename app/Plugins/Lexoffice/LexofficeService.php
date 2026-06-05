@@ -57,8 +57,22 @@ class LexofficeService {
      * @throws LexofficeRateLimitException|ConnectionException
      */
     public function ping(): bool {
+        $status = $this->profileStatus();
+
+        return $status !== null && $status >= 200 && $status < 300;
+    }
+
+    /**
+     * HTTP-Status des /profile-Endpunkts (für den Healthcheck, damit dieser
+     * 401/403/5xx differenziert melden kann). `null`, wenn das Plugin nicht
+     * konfiguriert ist. Ein 429 (Rate-Limit) führt — wie bei {@see ping()} —
+     * weiterhin zur {@see LexofficeRateLimitException}.
+     *
+     * @throws LexofficeRateLimitException|ConnectionException
+     */
+    public function profileStatus(): ?int {
         if (! $this->isConfigured()) {
-            return false;
+            return null;
         }
         $response = $this->http()
             ->acceptJson()
@@ -69,7 +83,7 @@ class LexofficeService {
             throw new LexofficeRateLimitException();
         }
 
-        return $response->successful();
+        return $response->status();
     }
 
     /**

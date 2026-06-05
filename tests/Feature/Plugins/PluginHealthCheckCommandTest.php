@@ -37,6 +37,16 @@ class PluginHealthCheckCommandTest extends TestCase {
         $this->assertSame(PluginHealth::STATUS_FAILING, $failing->last_health_status);
         $this->assertSame(1, (int) $failing->failure_count);
     }
+
+    public function test_no_fail_option_exits_zero_but_still_records_state(): void {
+        // Geplante Läufe nutzen --no-fail: ungesundes Plugin darf den Command
+        // (und damit den Scheduler) NICHT als Fehlschlag markieren.
+        $this->artisan('plugin:healthcheck --no-fail')->assertExitCode(0);
+
+        $failing = PluginState::query()->where('plugin_id', 'broken')->firstOrFail();
+        $this->assertSame(PluginHealth::STATUS_FAILING, $failing->last_health_status);
+        $this->assertSame(1, (int) $failing->failure_count);
+    }
 }
 
 final class FakeHealthyPlugin implements Plugin {
