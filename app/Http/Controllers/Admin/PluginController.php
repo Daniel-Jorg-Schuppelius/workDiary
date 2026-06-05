@@ -113,6 +113,7 @@ class PluginController extends Controller {
             return redirect()->back()->withErrors($missing)->withInput();
         }
 
+        $wasEnabled = (bool) $row->enabled;
         $row->enabled = $request->boolean('enabled');
 
         $settings = $row->settings ?? [];
@@ -137,8 +138,29 @@ class PluginController extends Controller {
             }
             $settings[$key] = (string) $input;
         }
+
+        // Plugin-eigene Validierung (über das Schema hinaus) vor dem Speichern.
+        $pluginErrors = $instance->validateSettings($settings);
+        if ($pluginErrors !== []) {
+            $errors = [];
+            foreach ($pluginErrors as $field => $message) {
+                $errors['settings.' . $field] = $message;
+            }
+
+            return redirect()->back()->withErrors($errors)->withInput();
+        }
+
         $row->settings = $settings;
         $row->save();
+
+        // Lifecycle-Hooks: Settings gespeichert + (De-)Aktivierung in dieser Org.
+        $orgId = (int) $admin->organization_id;
+        $instance->onSettingsSaved($orgId, $settings);
+        if ($row->enabled && ! $wasEnabled) {
+            $instance->onActivate($orgId);
+        } elseif (! $row->enabled && $wasEnabled) {
+            $instance->onDeactivate($orgId);
+        }
 
         return redirect()->route('admin.plugins.index')
             ->with('success', __('Plugin-Einstellungen gespeichert.'));
@@ -160,7 +182,8 @@ class PluginController extends Controller {
      */
     public function toggle(Request $request, string $plugin, PluginManager $manager): RedirectResponse {
         $admin = $this->ensureAdmin($request);
-        abort_unless($manager->get($plugin) !== null, 404);
+        $instance = $manager->get($plugin);
+        abort_unless($instance !== null, 404);
 
         $row = PluginSetting::query()
             ->withoutGlobalScopes()
@@ -170,6 +193,10 @@ class PluginController extends Controller {
             ]);
         $row->enabled = ! (bool) $row->enabled;
         $row->save();
+
+        // Lifecycle-Hook für (De-)Aktivierung in dieser Organisation.
+        $orgId = (int) $admin->organization_id;
+        $row->enabled ? $instance->onActivate($orgId) : $instance->onDeactivate($orgId);
 
         return back()->with('success', $row->enabled
             ? __('Plugin aktiviert.')
@@ -191,15 +218,22 @@ class PluginController extends Controller {
         $orgId = $instance->isPerOrganization() ? (int) $admin->organization_id : null;
 
         $state = PluginState::findOrInit($plugin, $orgId);
+        $previous = $state->last_health_status;
         $state->plugin_id = $plugin;
         $state->organization_id = $orgId;
         $state->last_health_check_at = now();
 
         try {
+            $startedAt = hrtime(true);
             $health = $instance->healthCheck();
+            $health = $health->withLatency((int) ((hrtime(true) - $startedAt) / 1_000_000));
             $state->last_health_status = $health->status;
             $state->last_health_message = $health->message;
+            if ($health->isOk()) {
+                $state->last_ok_at = now();
+            }
             $state->save();
+            $this->announceHealth($plugin, $orgId, $previous, $health->status, $health->message);
 
             if ($health->isOk()) {
                 $recorder->markHealthy($plugin, $orgId);
@@ -212,6 +246,7 @@ class PluginController extends Controller {
             $state->last_health_status = \App\Plugins\PluginHealth::STATUS_FAILING;
             $state->last_health_message = $e->getMessage();
             $state->save();
+            $this->announceHealth($plugin, $orgId, $previous, \App\Plugins\PluginHealth::STATUS_FAILING, $e->getMessage());
             $recorder->record($plugin, 'healthcheck', $e, [], $orgId);
 
             return response()->json([
@@ -219,6 +254,17 @@ class PluginController extends Controller {
                 'message' => $e->getMessage(),
                 'checked_at' => $state->last_health_check_at->toIso8601String(),
             ], 200);
+        }
+    }
+
+    /** Feuert Status-Übergangs-Events (nur bei tatsächlicher Änderung). */
+    private function announceHealth(string $pluginId, ?int $organizationId, ?string $from, string $to, string $message): void {
+        if ($from === $to) {
+            return;
+        }
+        \App\Events\PluginHealthChanged::dispatch($pluginId, $organizationId, $from, $to, $message);
+        if ($to === \App\Plugins\PluginHealth::STATUS_OK && $from !== null) {
+            \App\Events\PluginRecovered::dispatch($pluginId, $organizationId, $message);
         }
     }
 }

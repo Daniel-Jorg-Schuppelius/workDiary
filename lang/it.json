@@ -3931,5 +3931,8 @@
     "Keine gültige ZIP-Datei.": "File ZIP non valido.",
     "ZIP konnte nicht entpackt werden.": "Impossibile estrarre il file ZIP.",
     "Vorschau verworfen.": "Anteprima scartata.",
-    "Vorschau zurücksetzen": "Reimposta anteprima"
+    "Vorschau zurücksetzen": "Reimposta anteprima",
+    "Verbindung testen": "Verifica connessione",
+    "Wird geprüft …": "Verifica in corso …",
+    "Verbindung fehlgeschlagen.": "Connessione fallita."
 }

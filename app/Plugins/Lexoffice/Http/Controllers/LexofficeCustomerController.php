@@ -132,7 +132,7 @@ class LexofficeCustomerController extends Controller {
     }
 
     private function plugin(): ?LexofficePlugin {
-        $plugin = $this->manager->withCapability(PluginCapability::TIME_EXPORT)->get(LexofficePlugin::ID);
+        $plugin = $this->manager->withCapability(PluginCapability::TimeExport)->get(LexofficePlugin::ID);
 
         return $plugin instanceof LexofficePlugin ? $plugin : null;
     }

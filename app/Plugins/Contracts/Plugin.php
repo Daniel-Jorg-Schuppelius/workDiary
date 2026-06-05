@@ -40,9 +40,11 @@ interface Plugin {
     public function isEnabled(): bool;
 
     /**
-     * Capability identifiers this plugin advertises.
+     * Fähigkeiten, die dieses Plugin ankündigt. Für jede zurückgegebene
+     * {@see PluginCapability} muss das zugehörige Contract-Interface
+     * implementiert sein (s. {@see PluginCapability::interface()}).
      *
-     * @return array<int, string>
+     * @return array<int, PluginCapability>
      */
     public function capabilities(): array;
 
@@ -106,4 +108,33 @@ interface Plugin {
      * bei `false` einmalig global (organization_id = null).
      */
     public function isPerOrganization(): bool;
+
+    /**
+     * Optionaler Lifecycle — Default-Implementierungen liefert {@see \App\Plugins\PluginDefaults}.
+     * Validiert die eingegebenen Settings VOR dem Speichern (z. B. Format/Pflicht
+     * über das Schema hinaus). Leeres Array = gültig.
+     *
+     * @param  array<string, mixed>  $settings
+     * @return array<string, string>  Feld-Key => Fehlermeldung
+     */
+    public function validateSettings(array $settings): array;
+
+    /**
+     * Nach dem Speichern der Settings einer Organisation (z. B. Caches leeren).
+     *
+     * @param  array<string, mixed>  $settings
+     */
+    public function onSettingsSaved(int $organizationId, array $settings): void;
+
+    /** Nach Aktivierung des Plugins in einer Organisation. */
+    public function onActivate(int $organizationId): void;
+
+    /** Nach Deaktivierung des Plugins in einer Organisation. */
+    public function onDeactivate(int $organizationId): void;
+
+    /** Nach erfolgreicher Schema-Installation (instanzweit). */
+    public function onInstall(): void;
+
+    /** Nach Schema-Deinstallation (instanzweit). */
+    public function onUninstall(): void;
 }

@@ -56,7 +56,7 @@ class SupplierController extends Controller {
     public function show(Supplier $supplier, PluginManager $plugins): View {
         Gate::authorize('view', $supplier);
 
-        $lexoffice = $plugins->withCapability(PluginCapability::TIME_EXPORT)->get(LexofficePlugin::ID);
+        $lexoffice = $plugins->withCapability(PluginCapability::TimeExport)->get(LexofficePlugin::ID);
         $lexofficeContactRef = $lexoffice
             ? ExternalReference::query()
             ->where('plugin_id', LexofficePlugin::ID)

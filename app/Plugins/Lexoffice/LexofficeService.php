@@ -11,11 +11,11 @@
 namespace App\Plugins\Lexoffice;
 
 use App\Models\{Customer, Supplier, TimeEntry};
+use App\Plugins\Support\PluginHttp;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;
-use Illuminate\Http\Client\{ConnectionException, PendingRequest, RequestException};
+use Illuminate\Http\Client\{ConnectionException, PendingRequest};
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Http;
 use Lexoffice\API\Client;
 use Lexoffice\API\Endpoints\{ContactsEndpoint, VouchersEndpoint};
 use Lexoffice\Entities\Contacts\Contact;
@@ -87,37 +87,14 @@ class LexofficeService {
     }
 
     /**
-     * Basis-HTTP-Client für die rohen REST-Aufrufe. Wiederholt bei
-     * Rate-Limit (429) und transienten Verbindungsfehlern automatisch mit
-     * Backoff – Lexoffice erlaubt nur 2 Anfragen/Sekunde und antwortet sonst
-     * mit 429. `throw: false` → nach Ausschöpfen der Versuche kommt die
-     * (Fehler-)Antwort regulär zurück und wird vom jeweiligen Aufrufer
-     * behandelt.
+     * Basis-HTTP-Client für die rohen REST-Aufrufe. Nutzt die gemeinsame
+     * {@see PluginHttp}-Basis (einheitlicher User-Agent, Default-Timeout,
+     * Retry bei Rate-Limit/Verbindungsfehlern mit Backoff inkl. `Retry-After`,
+     * `throw: false`). Lexoffice erlaubt nur 2 Anfragen/Sekunde → 429 wird
+     * automatisch wiederholt; danach kommt die (Fehler-)Antwort regulär zurück.
      */
     private function http(): PendingRequest {
-        return Http::withToken((string) $this->apiKey)
-            ->retry(3, $this->retryDelayMs(...), $this->shouldRetry(...), throw: false);
-    }
-
-    /** Nur bei Rate-Limit (429) und Verbindungsfehlern erneut versuchen. */
-    private function shouldRetry(\Throwable $e): bool {
-        if ($e instanceof ConnectionException) {
-            return true;
-        }
-
-        return $e instanceof RequestException && $e->response->status() === 429;
-    }
-
-    /** Backoff in Millisekunden; respektiert den `Retry-After`-Header. */
-    private function retryDelayMs(int $attempt, \Throwable $e): int {
-        if ($e instanceof RequestException) {
-            $retryAfter = (int) $e->response->header('Retry-After');
-            if ($retryAfter > 0) {
-                return $retryAfter * 1000;
-            }
-        }
-
-        return $attempt * 500;
+        return PluginHttp::for('lexoffice')->withToken((string) $this->apiKey);
     }
 
     private function client(): Client {

@@ -3931,5 +3931,8 @@
     "Keine gültige ZIP-Datei.": "Not a valid ZIP file.",
     "ZIP konnte nicht entpackt werden.": "The ZIP could not be extracted.",
     "Vorschau verworfen.": "Preview discarded.",
-    "Vorschau zurücksetzen": "Reset preview"
+    "Vorschau zurücksetzen": "Reset preview",
+    "Verbindung testen": "Test connection",
+    "Wird geprüft …": "Checking …",
+    "Verbindung fehlgeschlagen.": "Connection failed."
 }

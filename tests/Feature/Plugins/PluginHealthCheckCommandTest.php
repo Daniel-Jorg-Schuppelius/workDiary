@@ -10,10 +10,12 @@
 
 namespace Tests\Feature\Plugins;
 
+use App\Events\{PluginHealthChanged, PluginRecovered};
 use App\Models\PluginState;
 use App\Plugins\Contracts\{Plugin, PluginCapability};
 use App\Plugins\{PluginDefaults, PluginHealth, PluginManager};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 class PluginHealthCheckCommandTest extends TestCase {
@@ -36,6 +38,21 @@ class PluginHealthCheckCommandTest extends TestCase {
         $failing = PluginState::query()->where('plugin_id', 'broken')->firstOrFail();
         $this->assertSame(PluginHealth::STATUS_FAILING, $failing->last_health_status);
         $this->assertSame(1, (int) $failing->failure_count);
+    }
+
+    public function test_status_transition_dispatches_events_and_sets_last_ok_at(): void {
+        Event::fake([PluginHealthChanged::class, PluginRecovered::class]);
+
+        $this->artisan('plugin:healthcheck --no-fail')->assertExitCode(0);
+
+        // Erster Lauf: null → ok/failing zählt als Übergang für beide Plugins.
+        Event::assertDispatched(PluginHealthChanged::class, fn($e) => $e->pluginId === 'healthy' && $e->to === PluginHealth::STATUS_OK);
+        Event::assertDispatched(PluginHealthChanged::class, fn($e) => $e->pluginId === 'broken' && $e->to === PluginHealth::STATUS_FAILING);
+        // Recovery feuert NICHT beim Erststatus (from === null).
+        Event::assertNotDispatched(PluginRecovered::class);
+
+        $healthy = PluginState::query()->where('plugin_id', 'healthy')->firstOrFail();
+        $this->assertNotNull($healthy->last_ok_at);
     }
 
     public function test_no_fail_option_exits_zero_but_still_records_state(): void {
@@ -68,7 +85,7 @@ final class FakeHealthyPlugin implements Plugin {
         return true;
     }
     public function capabilities(): array {
-        return [PluginCapability::CONTACT_SYNC];
+        return [PluginCapability::ContactSync];
     }
     public function adminPanel(): ?array {
         return null;
@@ -103,7 +120,7 @@ final class FakeFailingPlugin implements Plugin {
         return true;
     }
     public function capabilities(): array {
-        return [PluginCapability::CONTACT_SYNC];
+        return [PluginCapability::ContactSync];
     }
     public function adminPanel(): ?array {
         return null;

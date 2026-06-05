@@ -11,7 +11,7 @@
 namespace App\Plugins\RemoteSupport\Providers;
 
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\Http;
+use App\Plugins\Support\PluginHttp;
 
 /**
  * Client für die TeamViewer Web-API (https://webapi.teamviewer.com/api/v1).
@@ -41,7 +41,7 @@ class TeamViewerClient implements RemoteProvider {
             return false;
         }
 
-        return Http::withToken((string) $this->apiKey)
+        return PluginHttp::for('remote-support')->withToken((string) $this->apiKey)
             ->acceptJson()
             ->timeout(5)
             ->get($this->baseUrl . '/ping')
@@ -65,7 +65,7 @@ class TeamViewerClient implements RemoteProvider {
                 $query['offset_id'] = $offset;
             }
 
-            $response = Http::withToken((string) $this->apiKey)
+            $response = PluginHttp::for('remote-support')->withToken((string) $this->apiKey)
                 ->acceptJson()
                 ->timeout(15)
                 ->get($this->baseUrl . '/reports/connections', $query);

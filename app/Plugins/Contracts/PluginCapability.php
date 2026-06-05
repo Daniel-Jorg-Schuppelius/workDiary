@@ -11,19 +11,35 @@
 namespace App\Plugins\Contracts;
 
 /**
- * Capability identifiers used by plugins to advertise what they can do.
- * Plugins may implement zero or more capability interfaces.
+ * Fähigkeiten, die ein Plugin über {@see Plugin::capabilities()} ankündigt.
+ * Jede Fähigkeit ist an genau ein Contract-Interface gebunden ({@see interface()}):
+ * Ein Plugin, das eine Fähigkeit ankündigt, MUSS das zugehörige Interface
+ * implementieren — erzwungen von `plugin:doctor` und {@see \Tests\Unit\Architecture\PluginContractTest}.
  */
-final class PluginCapability {
-    /** Plugin can push customer contact data to an external system. */
-    public const CONTACT_SYNC = 'contact_sync';
+enum PluginCapability: string {
+    /** Kann Kundenkontakte in ein externes System pushen. */
+    case ContactSync = 'contact_sync';
 
-    /** Plugin can transmit recorded times (per customer/project/period). */
-    public const TIME_EXPORT = 'time_export';
+    /** Kann erfasste Zeiten (je Kunde/Projekt/Zeitraum) übertragen. */
+    case TimeExport = 'time_export';
 
-    /** Plugin can fetch payment status / reconcile data back. */
-    public const PAYMENT_SYNC = 'payment_sync';
+    /** Kann Zeiten aus einem externen System importieren (z. B. Toggl, Fernwartung). */
+    case TimeImport = 'time_import';
 
-    /** Plugin can import recorded times from an external system (e.g. remote sessions). */
-    public const TIME_IMPORT = 'time_import';
+    /** Kann Zahlungs-/Abgleichdaten zurücklesen. */
+    case PaymentSync = 'payment_sync';
+
+    /**
+     * Das Contract-Interface, das ein Plugin mit dieser Fähigkeit implementieren muss.
+     *
+     * @return class-string
+     */
+    public function interface(): string {
+        return match ($this) {
+            self::ContactSync => ContactSyncer::class,
+            self::TimeExport => TimeExporter::class,
+            self::TimeImport => TimeImporter::class,
+            self::PaymentSync => PaymentSyncer::class,
+        };
+    }
 }

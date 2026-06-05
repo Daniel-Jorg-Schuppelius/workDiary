@@ -30,18 +30,27 @@ final class PluginHealth {
     public function __construct(
         public readonly string $status,
         public readonly string $message = '',
+        /** Antwortzeit des Checks in Millisekunden (sofern gemessen). */
+        public readonly ?int $latencyMs = null,
+        /** Optionaler stabiler Maschinen-Code (z. B. 'http_401', 'rate_limited'). */
+        public readonly ?string $code = null,
     ) {}
 
-    public static function ok(string $message = ''): self {
-        return new self(self::STATUS_OK, $message);
+    public static function ok(string $message = '', ?string $code = null): self {
+        return new self(self::STATUS_OK, $message, code: $code);
     }
 
-    public static function degraded(string $message = ''): self {
-        return new self(self::STATUS_DEGRADED, $message);
+    public static function degraded(string $message = '', ?string $code = null): self {
+        return new self(self::STATUS_DEGRADED, $message, code: $code);
     }
 
-    public static function failing(string $message = ''): self {
-        return new self(self::STATUS_FAILING, $message);
+    public static function failing(string $message = '', ?string $code = null): self {
+        return new self(self::STATUS_FAILING, $message, code: $code);
+    }
+
+    /** Kopie mit gesetzter Latenz (der Aufrufer misst die Zeit um healthCheck()). */
+    public function withLatency(int $latencyMs): self {
+        return new self($this->status, $this->message, $latencyMs, $this->code);
     }
 
     public function isOk(): bool {
@@ -52,8 +61,13 @@ final class PluginHealth {
         return $this->status === self::STATUS_FAILING;
     }
 
-    /** @return array{status: string, message: string} */
+    /** @return array{status: string, message: string, latency_ms: ?int, code: ?string} */
     public function toArray(): array {
-        return ['status' => $this->status, 'message' => $this->message];
+        return [
+            'status' => $this->status,
+            'message' => $this->message,
+            'latency_ms' => $this->latencyMs,
+            'code' => $this->code,
+        ];
     }
 }

@@ -134,7 +134,7 @@ final class AdminTestPlugin implements Plugin {
         return true;
     }
     public function capabilities(): array {
-        return [PluginCapability::CONTACT_SYNC];
+        return [PluginCapability::ContactSync];
     }
     public function adminPanel(): ?array {
         return null;

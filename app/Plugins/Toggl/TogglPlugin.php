@@ -11,9 +11,10 @@
 namespace App\Plugins\Toggl;
 
 use App\Models\{Organization, PluginSetting};
-use App\Plugins\Contracts\{Plugin, PluginCapability};
+use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
 use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Toggl\Sources\TogglApiClient;
+use Carbon\CarbonImmutable;
 use Throwable;
 
 /**
@@ -27,7 +28,7 @@ use Throwable;
  * Plugin-Id ist "toggl". Pro Organisation konfigurierbar über plugin_settings;
  * ENV/config dient nur als Fallback.
  */
-class TogglPlugin implements Plugin {
+class TogglPlugin implements Plugin, TimeImporter {
     use PluginDefaults;
 
     public const ID = 'toggl';
@@ -66,8 +67,17 @@ class TogglPlugin implements Plugin {
 
     public function capabilities(): array {
         return [
-            PluginCapability::TIME_IMPORT,
+            PluginCapability::TimeImport,
         ];
+    }
+
+    /** Einheitlicher Sync-Einstieg (TimeImporter): API-Import über das konfigurierte Zeitfenster. */
+    public function importTimeEntries(Organization $organization): array {
+        $config = TogglConfig::resolve($organization->id);
+        $days = max(1, (int) $config['sync_window_days']);
+        $to = CarbonImmutable::now();
+
+        return app(TogglImportService::class)->importFromApi($organization, $config, $to->subDays($days), $to);
     }
 
     public function adminPanel(): ?array {

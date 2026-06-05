@@ -62,6 +62,7 @@ class PluginErrorRecorder {
                 'failure_count' => $state->failure_count,
                 'phase' => $phase,
             ]);
+            \App\Events\PluginAutoDisabled::dispatch($pluginId, $organizationId, (string) $state->disabled_reason, (int) $state->failure_count);
         }
         $state->save();
 

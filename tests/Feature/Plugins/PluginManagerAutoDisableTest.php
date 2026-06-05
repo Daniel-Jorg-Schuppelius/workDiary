@@ -59,7 +59,7 @@ final class FakeAlwaysOnPlugin implements Plugin {
     }
 
     public function capabilities(): array {
-        return [PluginCapability::CONTACT_SYNC];
+        return [PluginCapability::ContactSync];
     }
 
     public function adminPanel(): ?array {

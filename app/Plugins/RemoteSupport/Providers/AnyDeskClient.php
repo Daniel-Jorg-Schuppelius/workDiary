@@ -11,7 +11,7 @@
 namespace App\Plugins\RemoteSupport\Providers;
 
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\Http;
+use App\Plugins\Support\PluginHttp;
 
 /**
  * Client für die AnyDesk REST-API v1 (https://v1.api.anydesk.com).
@@ -44,7 +44,7 @@ class AnyDeskClient implements RemoteProvider {
             return false;
         }
 
-        return Http::withHeaders($this->authHeaders('GET', '/auth'))
+        return PluginHttp::for('remote-support')->withHeaders($this->authHeaders('GET', '/auth'))
             ->acceptJson()
             ->timeout(5)
             ->get($this->baseUrl . '/auth')
@@ -62,7 +62,7 @@ class AnyDeskClient implements RemoteProvider {
             'to' => $to->getTimestamp(),
         ];
 
-        $response = Http::withHeaders($this->authHeaders('GET', $resource))
+        $response = PluginHttp::for('remote-support')->withHeaders($this->authHeaders('GET', $resource))
             ->acceptJson()
             ->timeout(15)
             ->get($this->baseUrl . $resource, $query);

@@ -38,10 +38,10 @@
         $q = mb_strtolower(trim((string) ($filters['q'] ?? '')));
         $statusFilter = (string) ($filters['status'] ?? '');
         $capabilityLabels = [
-            \App\Plugins\Contracts\PluginCapability::CONTACT_SYNC => __('Kontaktsynchronisierung'),
-            \App\Plugins\Contracts\PluginCapability::TIME_EXPORT => __('Zeit-Export'),
-            \App\Plugins\Contracts\PluginCapability::PAYMENT_SYNC => __('Zahlungsabgleich'),
-            \App\Plugins\Contracts\PluginCapability::TIME_IMPORT => __('Zeit-Import'),
+            \App\Plugins\Contracts\PluginCapability::ContactSync->value => __('Kontaktsynchronisierung'),
+            \App\Plugins\Contracts\PluginCapability::TimeExport->value => __('Zeit-Export'),
+            \App\Plugins\Contracts\PluginCapability::PaymentSync->value => __('Zahlungsabgleich'),
+            \App\Plugins\Contracts\PluginCapability::TimeImport->value => __('Zeit-Import'),
         ];
         $filtered = collect($plugins)->filter(function ($plugin) use ($q, $statusFilter, $settings, $states) {
             if ($q !== '' && ! str_contains(mb_strtolower($plugin->name() . ' ' . $plugin->id() . ' ' . $plugin->description()), $q)) {
@@ -127,7 +127,7 @@
                     <td>
                         <div class="flex flex-wrap gap-1">
                             @foreach ($plugin->capabilities() as $cap)
-                                <x-status-badge size="sm" outline>{{ $capabilityLabels[$cap] ?? $cap }}</x-status-badge>
+                                <x-status-badge size="sm" outline>{{ $capabilityLabels[$cap->value] ?? $cap->value }}</x-status-badge>
                             @endforeach
                         </div>
                     </td>

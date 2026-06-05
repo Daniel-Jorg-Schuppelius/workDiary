@@ -694,7 +694,7 @@ class TogglController extends Controller {
                     if ($item === $wrap) {
                         continue;
                     }
-                    @rename($item, $wrap . '/' . basename((string) $item));
+                    @rename((string) $item, $wrap . '/' . basename((string) $item));
                 }
 
                 return $dir;

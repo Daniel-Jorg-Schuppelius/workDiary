@@ -11,7 +11,7 @@
 namespace App\Plugins;
 
 use App\Models\PluginState;
-use App\Plugins\Contracts\Plugin;
+use App\Plugins\Contracts\{Plugin, PluginCapability, SlotRenderer};
 use Illuminate\Support\Collection;
 use RuntimeException;
 
@@ -77,10 +77,12 @@ class PluginManager {
     public function renderSlot(string $slot, mixed $context = null): string {
         $out = '';
         foreach ($this->enabled() as $plugin) {
-            if (! method_exists($plugin, 'renderActions')) {
+            if (! $plugin instanceof SlotRenderer) {
                 continue;
             }
-            $html = $plugin->renderActions($slot, $context);
+            // Exception-isoliert: ein fehlerhaftes Plugin darf die Seite nicht
+            // zerreißen — der Fehler wird als runtime-Fehler aufgezeichnet.
+            $html = $this->invoke($plugin, fn(): ?string => $plugin->renderActions($slot, $context));
             if (is_string($html) && $html !== '') {
                 $out .= $html;
             }
@@ -90,11 +92,45 @@ class PluginManager {
     }
 
     /**
+     * Führt einen Plugin-Aufruf gekapselt aus: fängt jede Exception, zeichnet sie
+     * org-bezogen als Plugin-Fehler (Phase $phase) auf und gibt null zurück, statt
+     * die App zu reißen. Zentrale Stelle für Laufzeit-Robustheit.
+     */
+    public function invoke(Plugin|string $plugin, callable $fn, string $phase = 'runtime'): mixed {
+        $id = $plugin instanceof Plugin ? $plugin->id() : $plugin;
+        try {
+            return $fn();
+        } catch (\Throwable $e) {
+            try {
+                $orgId = app()->bound('currentOrganization')
+                    && app('currentOrganization') instanceof \App\Models\Organization
+                    ? (int) app('currentOrganization')->id
+                    : null;
+                app(PluginErrorRecorder::class)->record($id, $phase, $e, [], $orgId);
+            } catch (\Throwable) {
+                // Aufzeichnung darf selbst nie werfen.
+            }
+
+            return null;
+        }
+    }
+
+    /**
+     * Plugins, die das gegebene Contract-Interface implementieren (typsicher).
+     *
+     * @param  class-string  $interface
+     * @return Collection<string, Plugin>
+     */
+    public function implementing(string $interface): Collection {
+        return $this->enabled()->filter(fn(Plugin $p): bool => $p instanceof $interface);
+    }
+
+    /**
      * Plugins that advertise the given capability identifier.
      *
      * @return Collection<string, Plugin>
      */
-    public function withCapability(string $capability): Collection {
+    public function withCapability(PluginCapability $capability): Collection {
         return $this->enabled()->filter(
             fn(Plugin $p): bool => in_array($capability, $p->capabilities(), true),
         );

@@ -11,9 +11,10 @@
 namespace App\Plugins\RemoteSupport;
 
 use App\Models\{Asset, Organization, PluginSetting};
-use App\Plugins\Contracts\{Plugin, PluginCapability};
+use App\Plugins\Contracts\{Plugin, PluginCapability, SlotRenderer, TimeImporter};
 use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
+use Carbon\CarbonImmutable;
 use Throwable;
 
 /**
@@ -26,7 +27,7 @@ use Throwable;
  * Plugin-Id ist "remote-support". Pro Organisation konfigurierbar über
  * plugin_settings; ENV dient nur als Fallback.
  */
-class RemoteSupportPlugin implements Plugin {
+class RemoteSupportPlugin implements Plugin, SlotRenderer, TimeImporter {
     use PluginDefaults;
 
     public const ID = 'remote-support';
@@ -65,8 +66,17 @@ class RemoteSupportPlugin implements Plugin {
 
     public function capabilities(): array {
         return [
-            PluginCapability::TIME_IMPORT,
+            PluginCapability::TimeImport,
         ];
+    }
+
+    /** Einheitlicher Sync-Einstieg (TimeImporter): importiert Sitzungen über das konfigurierte Zeitfenster. */
+    public function importTimeEntries(Organization $organization): array {
+        $config = RemoteSupportConfig::resolve($organization->id);
+        $days = max(1, (int) $config['sync_window_days']);
+        $to = CarbonImmutable::now();
+
+        return app(RemoteSupportService::class)->import($organization, $config, $to->subDays($days), $to);
     }
 
     public function adminPanel(): ?array {

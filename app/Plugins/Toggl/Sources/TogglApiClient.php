@@ -11,8 +11,8 @@
 namespace App\Plugins\Toggl\Sources;
 
 use App\Models\TogglPendingEntry;
+use App\Plugins\Support\PluginHttp;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\Http;
 
 /**
  * Client für die Toggl Track API v9 (https://api.track.toggl.com/api/v9).
@@ -486,6 +486,6 @@ class TogglApiClient {
     }
 
     private function request(): \Illuminate\Http\Client\PendingRequest {
-        return Http::withBasicAuth((string) $this->apiToken, 'api_token')->acceptJson();
+        return PluginHttp::for('toggl')->withBasicAuth((string) $this->apiToken, 'api_token')->acceptJson();
     }
 }

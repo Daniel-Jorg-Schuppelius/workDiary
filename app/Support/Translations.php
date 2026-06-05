@@ -137,7 +137,11 @@ class Translations {
         file_put_contents($dir . '/' . $file, $body);
     }
 
-    /** Rekursiver PHP-Array-Export im Projektstil (short syntax, 4-Space). */
+    /**
+     * Rekursiver PHP-Array-Export im Projektstil (short syntax, 4-Space).
+     *
+     * @param  array<int|string, mixed>  $arr
+     */
     public static function exportArray(array $arr, int $depth): string {
         $pad = str_repeat('    ', $depth);
         $padEnd = str_repeat('    ', $depth - 1);

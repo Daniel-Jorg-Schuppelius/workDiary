@@ -47,4 +47,20 @@ trait PluginDefaults {
     public function isPerOrganization(): bool {
         return false;
     }
+
+    /** @param array<string, mixed> $settings @return array<string, string> */
+    public function validateSettings(array $settings): array {
+        return [];
+    }
+
+    /** @param array<string, mixed> $settings */
+    public function onSettingsSaved(int $organizationId, array $settings): void {}
+
+    public function onActivate(int $organizationId): void {}
+
+    public function onDeactivate(int $organizationId): void {}
+
+    public function onInstall(): void {}
+
+    public function onUninstall(): void {}
 }

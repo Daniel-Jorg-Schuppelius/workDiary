@@ -70,11 +70,16 @@ class PluginSchemaManager {
 
         $state = PluginState::findOrInit($plugin->id());
         $state->plugin_id = $plugin->id();
+        $freshInstall = $state->installed_at === null;
         $state->installed_version = $plugin->schemaVersion();
-        if ($state->installed_at === null) {
+        if ($freshInstall) {
             $state->installed_at = now();
         }
         $state->save();
+
+        if ($freshInstall) {
+            $plugin->onInstall();
+        }
 
         return true;
     }
@@ -97,6 +102,8 @@ class PluginSchemaManager {
         $state = PluginState::findOrInit($plugin->id());
         $state->installed_version = null;
         $state->save();
+
+        $plugin->onUninstall();
 
         return true;
     }

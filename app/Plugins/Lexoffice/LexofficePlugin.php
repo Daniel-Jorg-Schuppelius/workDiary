@@ -11,7 +11,7 @@
 namespace App\Plugins\Lexoffice;
 
 use App\Models\{Customer, ExternalReference, Organization, PluginSetting, Supplier, TimeEntry};
-use App\Plugins\Contracts\{ContactSyncer, Plugin, PluginCapability, TimeExporter};
+use App\Plugins\Contracts\{ContactSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
 use App\Plugins\{PluginDefaults, PluginHealth};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
@@ -27,7 +27,7 @@ use Throwable;
  * Mappings between local entities and Lexoffice ids are persisted in the
  * external_references table. The plugin id is "lexoffice".
  */
-class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
+class LexofficePlugin implements ContactSyncer, Plugin, SlotRenderer, TimeExporter {
     use PluginDefaults;
 
     public const ID = 'lexoffice';
@@ -146,8 +146,8 @@ class LexofficePlugin implements ContactSyncer, Plugin, TimeExporter {
 
     public function capabilities(): array {
         return [
-            PluginCapability::CONTACT_SYNC,
-            PluginCapability::TIME_EXPORT,
+            PluginCapability::ContactSync,
+            PluginCapability::TimeExport,
         ];
     }
 

@@ -126,6 +126,7 @@ class AppServiceProvider extends ServiceProvider {
         });
 
         EventFacade::subscribe(AuthEventSubscriber::class);
+        EventFacade::subscribe(\App\Listeners\PluginEventSubscriber::class);
 
         Comment::observe(CommentObserver::class);
         Attachment::observe(AttachmentObserver::class);

@@ -3931,5 +3931,8 @@
     "Keine gültige ZIP-Datei.": "Archivo ZIP no válido.",
     "ZIP konnte nicht entpackt werden.": "No se pudo extraer el ZIP.",
     "Vorschau verworfen.": "Vista previa descartada.",
-    "Vorschau zurücksetzen": "Restablecer vista previa"
+    "Vorschau zurücksetzen": "Restablecer vista previa",
+    "Verbindung testen": "Probar conexión",
+    "Wird geprüft …": "Comprobando …",
+    "Verbindung fehlgeschlagen.": "Error de conexión."
 }

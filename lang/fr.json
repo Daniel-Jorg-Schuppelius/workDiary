@@ -3931,5 +3931,8 @@
     "Keine gültige ZIP-Datei.": "Fichier ZIP invalide.",
     "ZIP konnte nicht entpackt werden.": "Le ZIP n'a pas pu être extrait.",
     "Vorschau verworfen.": "Aperçu supprimé.",
-    "Vorschau zurücksetzen": "Réinitialiser l'aperçu"
+    "Vorschau zurücksetzen": "Réinitialiser l'aperçu",
+    "Verbindung testen": "Tester la connexion",
+    "Wird geprüft …": "Vérification …",
+    "Verbindung fehlgeschlagen.": "Échec de la connexion."
 }

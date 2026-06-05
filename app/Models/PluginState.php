@@ -41,6 +41,7 @@ class PluginState extends Model {
         'last_health_check_at',
         'last_health_status',
         'last_health_message',
+        'last_ok_at',
         'failure_count',
         'disabled_reason',
     ];
@@ -50,6 +51,7 @@ class PluginState extends Model {
         'organization_id' => 'integer',
         'installed_at' => 'datetime',
         'last_health_check_at' => 'datetime',
+        'last_ok_at' => 'datetime',
         'failure_count' => 'integer',
     ];
 
