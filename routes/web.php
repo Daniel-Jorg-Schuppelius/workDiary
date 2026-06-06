@@ -15,7 +15,7 @@ use App\Http\Controllers\Asset\MaintenancePlanController;
 use App\Http\Controllers\Auth\{LoginController, TenantRegistrationController};
 use App\Http\Controllers\KeyHandover\KeyHandoverController;
 use App\Http\Controllers\MeterReading\MeterReadingController;
-use App\Http\Controllers\Reporting\{AbsencesReportController, AssetAnalysisReportController, AttendanceReportController, AuditActivityReportController, BillingReportController, CoverageReportController, CustomerAnalysisReportController, CustomerProjectReportController, EntryTypeAnalysisReportController, EntryTypeDrilldownReportController, ExpenseReportController, FleetReportController, MaterialReportController, MonthByUserTeamReportController, MyMonthReportController, MyYearReportController, OnCallReportController, OperationsReportController, ProjectDetailsReportController, ProjectInactiveReportController, QualificationReportController, SicknessReportController, WeekByUserReportController, WorkBalanceReportController};
+use App\Http\Controllers\Reporting\{AbsencesReportController, AssetAnalysisReportController, AttendanceReportController, AuditActivityReportController, BillingReportController, CoverageReportController, CustomerAnalysisReportController, CustomerProjectReportController, EntryTypeAnalysisReportController, EntryTypeDrilldownReportController, ExpenseReportController, ExternalPayoutReportController, FleetReportController, MaterialReportController, MonthByUserTeamReportController, MyMonthReportController, MyYearReportController, OnCallReportController, OperationsReportController, ProjectDetailsReportController, ProjectInactiveReportController, QualificationReportController, SicknessReportController, WeekByUserReportController, WorkBalanceReportController};
 use App\Http\Controllers\ServiceTicket\ServiceTicketController;
 use App\Http\Controllers\UI\DateRangeController;
 use Illuminate\Support\Facades\Route;
@@ -660,6 +660,7 @@ Route::middleware('auth')->group(function () {
         // ── Auswertungen ────────────────────────────────────────────────────────
         Route::get('reports/my-year', [MyYearReportController::class, 'index'])->name('reports.my-year');
         Route::get('reports/my-month', [MyMonthReportController::class, 'index'])->name('reports.my-month');
+        Route::get('reports/external-payouts', [ExternalPayoutReportController::class, 'index'])->name('reports.external-payouts');
         Route::get('reports/customers', [CustomerAnalysisReportController::class, 'index'])->name('reports.customers');
         Route::get('reports/customers/drilldown/open-issues', [\App\Http\Controllers\Reporting\CustomerDrilldownReportController::class, 'openIssues'])
             ->name('reports.customers.drilldown.open-issues');

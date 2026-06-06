@@ -6,9 +6,17 @@ und an **Administratoren** beim Kunden (die eine erhaltene Lizenz einspielen).
 
 ## 1. Konzeptioneller Überblick
 
-Die App wird unter AGPL-3.0 entwickelt, aber kommerziell als gehostete oder
-On-Premise-Lösung vertrieben. Um unautorisierte Klone zu erschweren, prüft
-jede Instanz beim Start eine signierte Lizenzdatei.
+Die App wird unter AGPL-3.0-or-later entwickelt. Daneben können Pflege,
+Support, Hosting, LTS-Releases, kundenspezifische Leistungen und gesonderte
+kommerzielle Nutzungsrechte angeboten werden.
+
+Das Aktivierungssystem weist technische Ansprüche einer konkreten Auslieferung
+nach, beispielsweise gebuchte Enterprise-Funktionen, Update-Zugänge oder
+Supportzeiträume. Es ersetzt keine urheberrechtliche Lizenz und darf nicht so
+kommuniziert werden, als beschränke es die Rechte an einer unter AGPL
+veröffentlichten Ausgabe. Empfänger einer AGPL-Ausgabe dürfen den Quellcode im
+Rahmen der AGPL untersuchen, verändern und weitergeben; dazu gehört auch das
+Ändern oder Entfernen dieses Aktivierungssystems.
 
 | Baustein                | Aufgabe                                                                                |
 | ----------------------- | -------------------------------------------------------------------------------------- |
@@ -225,24 +233,45 @@ Vollständige Liste der `.env`-Variablen:
 | `license:show`    | Zeigt Status, Lizenznehmer, Ablauf, Features.                                   |
 | `license:seal`    | Versiegelt Public Key + Datei-Hashes in `LicenseSeal`. `--unseal` setzt zurück. |
 
-## 10. Bedrohungsmodell
+## 10. Abgrenzung zur Softwarelizenz
+
+Die Begriffe in diesem Dokument bezeichnen einen technischen
+Berechtigungsschlüssel. Für die rechtliche Nutzung des veröffentlichten
+Quellcodes gilt die AGPL-3.0-or-later.
+
+- Eine fehlende Aktivierung darf den Zugriff auf gebuchte Binärpakete,
+  Enterprise-Dienste, Support oder verwaltete Installationen begrenzen.
+- Sie kann die Nutzung einer bereits unter AGPL erhaltenen Ausgabe rechtlich
+  nicht von einer Zahlung abhängig machen.
+- Community-Nutzer erhalten keine zugesagten Wartungsfristen, Reaktionszeiten
+  oder LTS-Pflege, sofern dies nicht separat vereinbart wurde.
+- Eine kommerzielle Vereinbarung kann zusätzliche Leistungen oder alternative
+  Nutzungsrechte einräumen. Sie entzieht Dritten keine bereits erhaltenen
+  AGPL-Rechte.
+
+## 11. Bedrohungsmodell
 
 Was das System leistet:
 
-- Verhindert "wilde Kopien" durch normale Anwender (Code kopieren, woanders
-  installieren reicht nicht – ohne signierte Lizenz keine App).
-- Erkennt Manipulation der Lizenzdateien nach dem Sealing.
-- Verhindert simples Umgehen über die `.env` (`LICENSE_PUBLIC_KEY` ersetzen).
+- Prüft, ob eine Installation einen vom Herausgeber signierten Anspruch auf
+  die konfigurierte Edition, Funktionen oder Leistungen besitzt.
+- Erkennt unbeabsichtigte oder nicht autorisierte Änderungen an versiegelten
+  Auslieferungsartefakten.
+- Verhindert bei verwalteten Auslieferungen simples Ersetzen des Public Keys
+  über die `.env`.
 
 Was es **nicht** leistet:
 
-- Schutz gegen Reverse Engineering. Mit Codezugriff lässt sich jeder PHP-
-  Check theoretisch entfernen. Für echten Bytecode-Schutz wäre ein
-  kommerzieller Encoder wie ionCube oder SourceGuardian nötig.
+- Erzwingung einer Zahlung für die Nutzung des unter AGPL veröffentlichten
+  Quellcodes.
+- Schutz gegen Änderungen durch Empfänger einer AGPL-Ausgabe. Mit Codezugriff
+  lässt sich jeder PHP-Check entfernen; die AGPL gestattet solche Änderungen.
 - Schutz vor weitergegebenen Lizenzen mit Wildcard-Domain. Wer eine
   `*.example.com`-Lizenz weitergibt, kann sie auf beliebigen Subdomains nutzen.
   Daher Lizenzen so eng binden wie möglich (`app.kunde.de` statt
   `*.kunde.de`), sofern fachlich vertretbar.
 
-Realistisches Ziel: eine hohe Hürde gegen Hobby-Klone, kombiniert mit
-juristischer Klarheit über die Lizenzbedingungen.
+Realistisches Ziel ist die Verwaltung kommerzieller Leistungsansprüche und die
+Integritätsprüfung kontrollierter Auslieferungen. Die wirtschaftliche
+Absicherung erfolgt durch Verträge, Pflege, Support, Hosting, LTS-Angebote und
+gegebenenfalls eine gesonderte kommerzielle Lizenz.

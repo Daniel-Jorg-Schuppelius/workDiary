@@ -23,4 +23,14 @@ return [
         'werkstudent' => 'Working student',
         'azubi' => 'Apprentice',
     ],
+    'compensation_model' => [
+        'payroll' => 'Internal (payroll)',
+        'pauschal' => 'Flat rate',
+        'nach_zeitaufwand' => 'By time spent',
+    ],
+    'flat_interval' => [
+        'monatlich' => 'Monthly',
+        'pro_einsatz' => 'Per assignment',
+        'einmalig' => 'One-time',
+    ],
 ];

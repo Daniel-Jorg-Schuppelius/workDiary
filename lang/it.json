@@ -3937,5 +3937,19 @@
     "Verbindung fehlgeschlagen.": "Connessione fallita.",
     "Organisation übernehmen": "Usa quello dell'organizzazione",
     "Überschreibt die Zeitzone der Organisation für deine Ansichten.": "Sostituisce il fuso orario dell'organizzazione per le tue viste.",
-    "— Standard —": "— Predefinito —"
+    "— Standard —": "— Predefinito —",
+    "Vergütung & Lohn": "Retribuzione & paga",
+    "Vergütungsmodell": "Modello di retribuzione",
+    "Intern (Lohnabrechnung)": "Interno (busta paga)",
+    "Extern (pauschal / nach Zeitaufwand) blendet die deutschen Lohnfelder aus.": "Esterno (forfettario / a consuntivo) nasconde i campi paga tedeschi.",
+    "Pauschalbetrag (€)": "Importo forfettario (€)",
+    "Stundensatz (Vergütung, €)": "Tariffa di retribuzione (€/h)",
+    "Wird auf die erfasste Zeit angewandt (nicht der Kundensatz).": "Applicata al tempo registrato (non alla tariffa cliente).",
+    "Externe Auszahlungen": "Pagamenti esterni",
+    "Keine externen Mitarbeiter": "Nessun collaboratore esterno",
+    "Es sind keine Mitarbeiter mit pauschaler oder zeitbasierter Vergütung hinterlegt.": "Nessun collaboratore con retribuzione forfettaria o a consuntivo è configurato.",
+    "Berechnungsbasis": "Base di calcolo",
+    ":hours × :rate": ":hours × :rate",
+    "An externe Mitarbeiter zu zahlende Beträge im gewählten Zeitraum (:from – :to).": "Importi da pagare ai collaboratori esterni nel periodo selezionato (:from – :to).",
+    "Pauschalen je Intervall (monatlich × Monate, pro Einsatz × Einsatztage, einmalig) und zeitbasierte Vergütung (erfasste Zeit × Stundensatz). Brutto, ohne Steuer/SV.": "Forfait per intervallo (mensile × mesi, per intervento × giorni di intervento, una tantum) e retribuzione a consuntivo (tempo registrato × tariffa oraria). Lordo, escluse imposte/contributi."
 }

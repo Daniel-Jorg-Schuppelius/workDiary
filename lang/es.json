@@ -3937,5 +3937,19 @@
     "Verbindung fehlgeschlagen.": "Error de conexión.",
     "Organisation übernehmen": "Usar el de la organización",
     "Überschreibt die Zeitzone der Organisation für deine Ansichten.": "Anula la zona horaria de la organización para tus vistas.",
-    "— Standard —": "— Predeterminado —"
+    "— Standard —": "— Predeterminado —",
+    "Vergütung & Lohn": "Retribución y nómina",
+    "Vergütungsmodell": "Modelo de retribución",
+    "Intern (Lohnabrechnung)": "Interno (nómina)",
+    "Extern (pauschal / nach Zeitaufwand) blendet die deutschen Lohnfelder aus.": "Externo (tarifa plana / por tiempo) oculta los campos de nómina alemanes.",
+    "Pauschalbetrag (€)": "Importe a tanto alzado (€)",
+    "Stundensatz (Vergütung, €)": "Tarifa de retribución (€/h)",
+    "Wird auf die erfasste Zeit angewandt (nicht der Kundensatz).": "Se aplica al tiempo registrado (no a la tarifa del cliente).",
+    "Externe Auszahlungen": "Pagos externos",
+    "Keine externen Mitarbeiter": "Sin personal externo",
+    "Es sind keine Mitarbeiter mit pauschaler oder zeitbasierter Vergütung hinterlegt.": "No hay personal con retribución a tanto alzado o por tiempo configurado.",
+    "Berechnungsbasis": "Base de cálculo",
+    ":hours × :rate": ":hours × :rate",
+    "An externe Mitarbeiter zu zahlende Beträge im gewählten Zeitraum (:from – :to).": "Importes a pagar al personal externo en el período seleccionado (:from – :to).",
+    "Pauschalen je Intervall (monatlich × Monate, pro Einsatz × Einsatztage, einmalig) und zeitbasierte Vergütung (erfasste Zeit × Stundensatz). Brutto, ohne Steuer/SV.": "Tarifas planas por intervalo (mensual × meses, por intervención × días de intervención, único) y retribución por tiempo (tiempo registrado × tarifa horaria). Bruto, sin impuestos/seguridad social."
 }

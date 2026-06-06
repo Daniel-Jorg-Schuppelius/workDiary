@@ -23,4 +23,14 @@ return [
         'werkstudent' => 'Estudiante en prácticas',
         'azubi' => 'Aprendiz',
     ],
+    'compensation_model' => [
+        'payroll' => 'Interno (nómina)',
+        'pauschal' => 'Tarifa plana',
+        'nach_zeitaufwand' => 'Por tiempo',
+    ],
+    'flat_interval' => [
+        'monatlich' => 'Mensual',
+        'pro_einsatz' => 'Por intervención',
+        'einmalig' => 'Único',
+    ],
 ];

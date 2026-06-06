@@ -23,4 +23,14 @@ return [
         'werkstudent' => 'Studente lavoratore',
         'azubi' => 'Apprendista',
     ],
+    'compensation_model' => [
+        'payroll' => 'Interno (busta paga)',
+        'pauschal' => 'Forfettario',
+        'nach_zeitaufwand' => 'A consuntivo',
+    ],
+    'flat_interval' => [
+        'monatlich' => 'Mensile',
+        'pro_einsatz' => 'Per intervento',
+        'einmalig' => 'Una tantum',
+    ],
 ];

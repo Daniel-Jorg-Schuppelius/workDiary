@@ -23,4 +23,14 @@ return [
         'werkstudent' => 'Étudiant salarié',
         'azubi' => 'Apprenti',
     ],
+    'compensation_model' => [
+        'payroll' => 'Interne (paie)',
+        'pauschal' => 'Forfait',
+        'nach_zeitaufwand' => 'Au temps passé',
+    ],
+    'flat_interval' => [
+        'monatlich' => 'Mensuel',
+        'pro_einsatz' => 'Par intervention',
+        'einmalig' => 'Unique',
+    ],
 ];

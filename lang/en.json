@@ -3937,5 +3937,19 @@
     "Verbindung fehlgeschlagen.": "Connection failed.",
     "Organisation übernehmen": "Use organization default",
     "Überschreibt die Zeitzone der Organisation für deine Ansichten.": "Overrides the organization's timezone for your views.",
-    "— Standard —": "— Default —"
+    "— Standard —": "— Default —",
+    "Vergütung & Lohn": "Compensation & payroll",
+    "Vergütungsmodell": "Compensation model",
+    "Intern (Lohnabrechnung)": "Internal (payroll)",
+    "Extern (pauschal / nach Zeitaufwand) blendet die deutschen Lohnfelder aus.": "External (flat rate / by time) hides the German payroll fields.",
+    "Pauschalbetrag (€)": "Flat amount (€)",
+    "Stundensatz (Vergütung, €)": "Compensation rate (€/h)",
+    "Wird auf die erfasste Zeit angewandt (nicht der Kundensatz).": "Applied to the tracked time (not the client rate).",
+    "Externe Auszahlungen": "External payouts",
+    "Keine externen Mitarbeiter": "No external staff",
+    "Es sind keine Mitarbeiter mit pauschaler oder zeitbasierter Vergütung hinterlegt.": "No staff with flat-rate or time-based compensation are configured.",
+    "Berechnungsbasis": "Calculation basis",
+    ":hours × :rate": ":hours × :rate",
+    "An externe Mitarbeiter zu zahlende Beträge im gewählten Zeitraum (:from – :to).": "Amounts payable to external staff in the selected period (:from – :to).",
+    "Pauschalen je Intervall (monatlich × Monate, pro Einsatz × Einsatztage, einmalig) und zeitbasierte Vergütung (erfasste Zeit × Stundensatz). Brutto, ohne Steuer/SV.": "Flat rates per interval (monthly × months, per assignment × assignment days, one-time) and time-based compensation (tracked time × hourly rate). Gross, excluding tax/social security."
 }

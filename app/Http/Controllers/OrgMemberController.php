@@ -237,6 +237,13 @@ class OrgMemberController extends Controller {
 
         if ($this->canManagePayroll($user)) {
             $rules['payroll_hourly_wage'] = ['nullable', 'numeric', 'min:0', 'max:99999999.99'];
+
+            // Vergütungsmodell (auch für externe Mitarbeiter). Je nach Modell
+            // sind Pauschale (Betrag + Intervall) bzw. Stundensatz erforderlich.
+            $rules['compensation_model'] = ['nullable', \Illuminate\Validation\Rule::enum(\App\Enums\User\CompensationModel::class)];
+            $rules['flat_amount'] = ['nullable', 'required_if:compensation_model,pauschal', 'numeric', 'min:0', 'max:99999999.99'];
+            $rules['flat_interval'] = ['nullable', 'required_if:compensation_model,pauschal', \Illuminate\Validation\Rule::enum(\App\Enums\User\FlatInterval::class)];
+            $rules['compensation_rate'] = ['nullable', 'required_if:compensation_model,nach_zeitaufwand', 'numeric', 'min:0', 'max:99999999.99'];
         }
 
         return $rules;
@@ -261,6 +268,13 @@ class OrgMemberController extends Controller {
 
         if ($this->canManagePayroll($auth)) {
             $payload['payroll_hourly_wage'] = $data['payroll_hourly_wage'] ?? null;
+
+            $model = $this->blankToNull($data['compensation_model'] ?? null);
+            $payload['compensation_model'] = $model;
+            // Nur die zum Modell passenden Felder behalten, andere auf null setzen.
+            $payload['flat_amount'] = $model === \App\Enums\User\CompensationModel::Pauschal->value ? ($data['flat_amount'] ?? null) : null;
+            $payload['flat_interval'] = $model === \App\Enums\User\CompensationModel::Pauschal->value ? $this->blankToNull($data['flat_interval'] ?? null) : null;
+            $payload['compensation_rate'] = $model === \App\Enums\User\CompensationModel::NachZeitaufwand->value ? ($data['compensation_rate'] ?? null) : null;
         }
 
         $member->fill($payload);

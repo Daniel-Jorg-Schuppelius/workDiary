@@ -3937,5 +3937,19 @@
     "Verbindung fehlgeschlagen.": "Échec de la connexion.",
     "Organisation übernehmen": "Utiliser celui de l'organisation",
     "Überschreibt die Zeitzone der Organisation für deine Ansichten.": "Remplace le fuseau horaire de l'organisation pour vos vues.",
-    "— Standard —": "— Par défaut —"
+    "— Standard —": "— Par défaut —",
+    "Vergütung & Lohn": "Rémunération & paie",
+    "Vergütungsmodell": "Modèle de rémunération",
+    "Intern (Lohnabrechnung)": "Interne (paie)",
+    "Extern (pauschal / nach Zeitaufwand) blendet die deutschen Lohnfelder aus.": "Externe (forfait / au temps passé) masque les champs de paie allemands.",
+    "Pauschalbetrag (€)": "Montant forfaitaire (€)",
+    "Stundensatz (Vergütung, €)": "Taux de rémunération (€/h)",
+    "Wird auf die erfasste Zeit angewandt (nicht der Kundensatz).": "Appliqué au temps saisi (pas au taux client).",
+    "Externe Auszahlungen": "Paiements externes",
+    "Keine externen Mitarbeiter": "Aucun collaborateur externe",
+    "Es sind keine Mitarbeiter mit pauschaler oder zeitbasierter Vergütung hinterlegt.": "Aucun collaborateur avec rémunération forfaitaire ou au temps n'est configuré.",
+    "Berechnungsbasis": "Base de calcul",
+    ":hours × :rate": ":hours × :rate",
+    "An externe Mitarbeiter zu zahlende Beträge im gewählten Zeitraum (:from – :to).": "Montants à verser aux collaborateurs externes sur la période sélectionnée (:from – :to).",
+    "Pauschalen je Intervall (monatlich × Monate, pro Einsatz × Einsatztage, einmalig) und zeitbasierte Vergütung (erfasste Zeit × Stundensatz). Brutto, ohne Steuer/SV.": "Forfaits par intervalle (mensuel × mois, par intervention × jours d'intervention, unique) et rémunération au temps (temps saisi × taux horaire). Brut, hors impôts/charges sociales."
 }

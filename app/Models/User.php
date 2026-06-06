@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Enums\User\CompensationModel;
 use App\Enums\User\UserRole;
 use App\Legacy\Models\LegacyUser;
 use App\Legacy\Support\LegacyRoleResolver;
@@ -162,6 +163,10 @@ class User extends Authenticatable {
         'employment_start_date',
         'employment_end_date',
         'employment_type',
+        'compensation_model',
+        'flat_amount',
+        'flat_interval',
+        'compensation_rate',
         'first_name',
         'middle_names',
         'last_name',
@@ -195,6 +200,10 @@ class User extends Authenticatable {
         'employment_start_date' => 'date',
         'employment_end_date' => 'date',
         'employment_type' => \App\Enums\User\EmploymentType::class,
+        'compensation_model' => \App\Enums\User\CompensationModel::class,
+        'flat_amount' => 'decimal:2',
+        'flat_interval' => \App\Enums\User\FlatInterval::class,
+        'compensation_rate' => 'decimal:2',
         'hourly_rate' => 'decimal:2',
         'internal_rate' => 'decimal:2',
         'home_lat' => 'decimal:7',
@@ -506,5 +515,15 @@ class User extends Authenticatable {
         $tz = $stored['timezone'] ?? null;
 
         return is_string($tz) && $tz !== '' ? $tz : null;
+    }
+
+    /**
+     * Externe(r) Mitarbeiter(in): wird pauschal oder nach Zeitaufwand vergütet
+     * (nicht über die deutsche Lohnabrechnung). compensation_model = null gilt
+     * als interner Payroll-Mitarbeiter (Bestandsverhalten).
+     */
+    public function isExternal(): bool {
+        return $this->compensation_model instanceof CompensationModel
+            && $this->compensation_model->isExternal();
     }
 }

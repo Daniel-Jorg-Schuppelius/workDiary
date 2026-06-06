@@ -800,11 +800,15 @@
                                             'key'   => 'reports-finance',
                                             'label' => __('Finanzen & Audit'),
                                             'icon'  => 'request_quote',
-                                            'items' => [
+                                            'items' => array_values(array_filter([
                                                 ['route' => 'reports.billing',        'label' => __('Abrechnung'),      'icon' => 'request_quote', 'modal' => false, 'matches' => ['reports.billing']],
                                                 ['route' => 'reports.expenses',       'label' => __('Spesen'),          'icon' => 'receipt_long',  'modal' => false, 'matches' => ['reports.expenses']],
+                                                // Externe Auszahlungen: sensible Vergütungsdaten → nur für Payroll-Berechtigte.
+                                                auth()->user()?->can(\App\Enums\User\Permission::UserPayrollManage->value)
+                                                    ? ['route' => 'reports.external-payouts', 'label' => __('Externe Auszahlungen'), 'icon' => 'payments', 'modal' => false, 'matches' => ['reports.external-payouts']]
+                                                    : null,
                                                 ['route' => 'reports.audit-activity', 'label' => __('Audit-Aktivität'), 'icon' => 'security',      'modal' => false, 'matches' => ['reports.audit-activity']],
-                                            ],
+                                            ])),
                                         ],
                                     ],
                                 ];

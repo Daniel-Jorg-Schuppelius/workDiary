@@ -23,4 +23,14 @@ return [
         'werkstudent' => 'Werkstudent/in',
         'azubi' => 'Auszubildende/r',
     ],
+    'compensation_model' => [
+        'payroll' => 'Intern (Lohnabrechnung)',
+        'pauschal' => 'Pauschal',
+        'nach_zeitaufwand' => 'Nach Zeitaufwand',
+    ],
+    'flat_interval' => [
+        'monatlich' => 'Monatlich',
+        'pro_einsatz' => 'Pro Einsatz',
+        'einmalig' => 'Einmalig',
+    ],
 ];

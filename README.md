@@ -39,6 +39,32 @@ Installationen.
 
 Die Produkt-Roadmap liegt unter [`docs/features`](docs/features/README.md).
 
+## Lizenz und kommerzielle Leistungen
+
+WorkDiary wird unter der
+[GNU Affero General Public License v3.0 oder spaeter](LICENSE) veroeffentlicht.
+Die AGPL-Version darf auch kommerziell genutzt, veraendert und selbst betrieben
+werden. Bei einer veraenderten, ueber ein Netzwerk bereitgestellten Version
+muessen deren Benutzer den zugehoerigen Quellcode gemaess AGPL erhalten.
+
+Die oeffentliche Community-Version wird ohne garantierte Reaktionszeiten,
+Wartungsfristen oder individuelle Betriebsunterstuetzung bereitgestellt.
+Kostenpflichtig angeboten werden koennen insbesondere:
+
+- priorisierte Fehlerbehebung, Sicherheitsupdates und langfristige Pflege,
+- LTS-Releases, getestete Update-Pfade und Migrationsunterstuetzung,
+- Installation, Hosting, Monitoring, Backups und Wiederherstellung,
+- Support mit vereinbarten Reaktionszeiten und Service Level Agreements,
+- Schulungen, Integrationen und kundenspezifische Entwicklung,
+- eine gesonderte kommerzielle Lizenz fuer Anforderungen, die nicht mit der
+  AGPL vereinbar sind.
+
+Einzelheiten stehen in
+[`COMMERCIAL-SERVICES.md`](COMMERCIAL-SERVICES.md). Technische Lizenzschluessel
+weisen den Anspruch auf gebuchte Releases, Funktionen oder Dienstleistungen
+nach; sie beschraenken nicht die Rechte, die Empfaenger unter der AGPL an einer
+AGPL-Ausgabe erhalten.
+
 ## Voraussetzungen
 
 - PHP 8.4 oder neuer
