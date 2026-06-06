@@ -46,7 +46,7 @@ class ProfileController extends Controller {
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'preferences' => ['sometimes', 'array'],
             'preferences.theme' => ['nullable', 'string', Rule::in($themes)],
-            'preferences.locale' => ['nullable', 'string', 'max:10'],
+            'preferences.locale' => ['nullable', Rule::in(\App\Support\Locales::enabledCodes())],
             'preferences.timezone' => ['nullable', 'timezone'],
             'preferences.date_format' => ['nullable', 'string', 'max:32'],
             'preferences.time_format' => ['nullable', 'string', 'max:32'],

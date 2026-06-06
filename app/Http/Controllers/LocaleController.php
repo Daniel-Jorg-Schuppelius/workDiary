@@ -10,12 +10,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Support\Locales;
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\Auth;
 
 class LocaleController extends Controller {
     public function switch(Request $request, string $locale): RedirectResponse {
         if (Locales::isSupported($locale)) {
+            // Angemeldete Nutzer: dauerhaft in preferences.locale (gilt
+            // geräteübergreifend). Gäste: nur Session.
+            $user = Auth::user();
+            if ($user instanceof User) {
+                $prefs = (array) ($user->preferences ?? []);
+                $prefs['locale'] = $locale;
+                $user->preferences = $prefs;
+                $user->save();
+            }
             $request->session()->put('locale', $locale);
         }
 

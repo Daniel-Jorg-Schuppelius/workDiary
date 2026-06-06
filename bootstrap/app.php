@@ -45,8 +45,10 @@ return Application::configure(basePath: dirname(__DIR__))
             RedirectIfNotInstalled::class,
             EnsureValidLicense::class,
             SecurityHeaders::class,
-            SetLocale::class,
+            // SetOrganizationContext vor SetLocale: damit Locales::current() die
+            // Organisations-Sprache (currentOrganization) auflösen kann.
             SetOrganizationContext::class,
+            SetLocale::class,
             ForcePasswordChange::class,
         ]);
 

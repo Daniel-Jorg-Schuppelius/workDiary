@@ -67,7 +67,7 @@ class OrganizationController extends Controller {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'plan' => ['required', 'in:' . implode(',', Organization::$plans)],
-            'locale' => ['required', 'string', 'max:10'],
+            'locale' => ['required', \Illuminate\Validation\Rule::in(\App\Support\Locales::enabledCodes())],
             'timezone' => ['required', 'timezone'],
             'is_active' => ['boolean'],
         ]);
@@ -101,7 +101,7 @@ class OrganizationController extends Controller {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'plan' => ['required', 'in:' . implode(',', Organization::$plans)],
-            'locale' => ['required', 'string', 'max:10'],
+            'locale' => ['required', \Illuminate\Validation\Rule::in(\App\Support\Locales::enabledCodes())],
             'timezone' => ['required', 'timezone'],
             'is_active' => ['boolean'],
             'compliance' => ['sometimes', 'array'],

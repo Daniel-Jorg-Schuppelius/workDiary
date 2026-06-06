@@ -38,8 +38,7 @@
         </fieldset>
         <fieldset class="fieldset">
             <label class="fieldset-label" for="locale">{{ __('Sprache') }}</label>
-            <input type="text" name="locale" id="locale" value="{{ old('locale', $values['locale']) }}"
-                   class="input input-sm input-bordered w-full" required>
+            <x-locale-select name="locale" id="locale" :selected="old('locale', $values['locale'])" class="select-sm" />
         </fieldset>
         <fieldset class="fieldset">
             <label class="fieldset-label" for="timezone">{{ __('Zeitzone') }}</label>

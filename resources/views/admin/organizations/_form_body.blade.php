@@ -13,9 +13,9 @@
 
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Sprache') }}</label>
-        <input type="text" name="locale" maxlength="10" placeholder="de"
-               class="input input-bordered w-full @error('locale') input-error @enderror"
-               value="{{ old('locale', $organization?->locale ?? 'de') }}">
+        <x-locale-select name="locale"
+                         :selected="old('locale', $organization?->locale ?? 'de')"
+                         class="@error('locale') input-error @enderror" />
         @error('locale')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
     </div>
 

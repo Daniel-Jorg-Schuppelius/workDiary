@@ -19,10 +19,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class SetLocale {
     public function handle(Request $request, Closure $next): Response {
-        $locale = (string) $request->session()->get('locale', config('app.locale', 'de'));
-        if (! Locales::isSupported($locale)) {
-            $locale = 'de';
-        }
+        // Maßgebliche Auflösung: User-Preference → Organisation → Session → App.
+        $locale = Locales::current();
         App::setLocale($locale);
         Carbon::setLocale(Locales::carbon($locale));
 

@@ -111,9 +111,9 @@
 
         <div class="fieldset">
             <label class="fieldset-label">{{ __('Sprache') }}</label>
-            <input type="text" name="preferences[locale]" maxlength="10" placeholder="de"
-                   class="input input-bordered w-full"
-                   value="{{ old('preferences.locale', $prefs['locale'] ?? '') }}">
+            <x-locale-select name="preferences[locale]"
+                             :selected="old('preferences.locale', $prefs['locale'] ?? null)"
+                             include-blank :blank-label="__('Organisation übernehmen')" />
             @error('preferences.locale')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 

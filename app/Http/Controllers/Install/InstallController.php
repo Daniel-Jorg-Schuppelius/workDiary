@@ -71,7 +71,7 @@ class InstallController extends Controller {
             'app_name' => ['required', 'string', 'max:255'],
             'app_url' => ['required', 'url', 'max:255'],
             'app_env' => ['required', 'in:local,production'],
-            'locale' => ['required', 'string', 'max:8'],
+            'locale' => ['required', \Illuminate\Validation\Rule::in(\App\Support\Locales::enabledCodes())],
             'timezone' => ['required', 'string', 'max:64'],
         ]);
 

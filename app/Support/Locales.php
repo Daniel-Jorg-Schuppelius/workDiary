@@ -55,6 +55,49 @@ class Locales {
         return array_key_exists($code, self::enabled());
     }
 
+    /**
+     * Maßgebliche Auflösung der aktiven Anzeige-Sprache. Reihenfolge:
+     *   1. Persönliche Sprache des angemeldeten Benutzers (preferences.locale)
+     *   2. Sprache der aktiven Organisation (currentOrganization->locale)
+     *   3. Session-Sprache (Gäste-Umschalter)
+     *   4. config('app.locale')
+     *   5. 'de'
+     * Jeweils nur, wenn die Sprache tatsächlich auswählbar ist (isSupported()).
+     *
+     * Symmetrisch zu {@see \App\Support\Tz::current()}.
+     */
+    public static function current(): string {
+        // 1) Angemeldeter Benutzer
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if ($user instanceof \App\Models\User) {
+            $pref = (array) ($user->preferences ?? []);
+            $userLocale = is_string($pref['locale'] ?? null) ? $pref['locale'] : null;
+            if ($userLocale !== null && self::isSupported($userLocale)) {
+                return $userLocale;
+            }
+        }
+
+        // 2) Aktive Organisation
+        if (app()->bound('currentOrganization')) {
+            $org = app('currentOrganization');
+            if ($org instanceof \App\Models\Organization
+                && is_string($org->locale) && self::isSupported($org->locale)) {
+                return $org->locale;
+            }
+        }
+
+        // 3) Session (v. a. Gäste)
+        $session = request()->hasSession() ? (string) request()->session()->get('locale', '') : '';
+        if ($session !== '' && self::isSupported($session)) {
+            return $session;
+        }
+
+        // 4)/5) Konfig-Fallback
+        $configured = (string) config('app.locale', 'de');
+
+        return self::isSupported($configured) ? $configured : 'de';
+    }
+
     /** @return array{native:string, flag:string, carbon:string}|null */
     public static function meta(string $code): ?array {
         return self::all()[$code] ?? null;
