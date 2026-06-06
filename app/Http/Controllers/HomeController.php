@@ -12,7 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Cache, DB};
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class HomeController extends Controller {
@@ -45,44 +45,9 @@ class HomeController extends Controller {
             return redirect()->route('dashboard');
         }
 
-        $legacyOnline = false;
-        $stats = [
-            'entries_total' => 0,
-            'entries_open' => 0,
-            'entries_alert' => 0,
-            'team_size' => 0,
-        ];
-        $entries = collect();
-        $team = collect();
-
-        if ($legacyConfigured) {
-            // Probe-Ergebnis kurz cachen (file-Store, damit kein DB-Roundtrip nötig ist),
-            // sonst läuft jeder Request bei nicht erreichbarer Legacy-DB in den
-            // Connect-Timeout (siehe DB_CONNECT_TIMEOUT).
-            $legacyOnline = (bool) Cache::store('file')->remember(
-                'legacy_db_online',
-                30,
-                static function (): bool {
-                    try {
-                        DB::connection('legacy')->getPdo();
-
-                        return true;
-                    } catch (\Throwable) {
-                        return false;
-                    }
-                }
-            );
-        }
-
-        return view('home', [
-            'currentMode' => $currentMode,
-            'canViewSensitive' => $canViewSensitive,
-            'legacyConfigured' => $legacyConfigured,
-            'legacyOnline' => $legacyOnline,
-            'stats' => $stats,
-            'entries' => $entries,
-            'team' => $team,
-        ]);
+        // Ab hier nur noch Gäste: öffentliche Produkt-Landingpage. Authentifizierte
+        // Nutzer wurden oben bereits ins Dashboard bzw. Legacy umgeleitet.
+        return view('home');
     }
 
     public function switchMode(Request $request, string $mode): RedirectResponse {

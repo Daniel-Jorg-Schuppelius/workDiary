@@ -16,6 +16,18 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+    build: {
+        rollupOptions: {
+            // Rolldown (Vite 8) warnt, wenn Plugins viel Build-Zeit
+            // beanspruchen. Hier dominieren @tailwindcss/vite und das
+            // laravel-Plugin erwartungsgemäß den kleinen JS-Build – das ist
+            // Normalfall, kein Problem. Den rauschenden Check daher abschalten,
+            // damit der Build-Output sauber bleibt.
+            checks: {
+                pluginTimings: false,
+            },
+        },
+    },
     server: {
         // 0.0.0.0 lässt Vite auf allen Interfaces lauschen, damit auch
         // Windows-Browser auf WSL2 die Assets (Fonts, Symbols, woff2)
