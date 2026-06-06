@@ -36,7 +36,7 @@
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Beginn') }} *</label>
         <input type="datetime-local" name="started_at" required
-               value="{{ old('started_at', $trip ? $trip->started_at->format('Y-m-d\\TH:i') : $date . 'T08:00') }}"
+               value="{{ old('started_at', $trip ? $trip->started_at->orgTz()->format('Y-m-d\\TH:i') : $date . 'T08:00') }}"
                class="input input-bordered w-full">
     </div>
     <div class="fieldset">

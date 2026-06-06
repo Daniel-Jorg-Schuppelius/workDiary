@@ -6,7 +6,7 @@
             @if ($current)
                 <x-status-badge tone="success" size="sm">{{ __('Offen') }}</x-status-badge>
                 <x-status-badge size="sm" outline>
-                    {{ __('Eingestempelt seit :time', ['time' => $current->started_at?->format('H:i')]) }}
+                    {{ __('Eingestempelt seit :time', ['time' => $current->started_at?->orgTz()->format('H:i')]) }}
                 </x-status-badge>
                 @if ($current->break_minutes_total > 0)
                     <x-status-badge tone="ghost" size="sm">

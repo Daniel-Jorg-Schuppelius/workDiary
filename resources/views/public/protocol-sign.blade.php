@@ -11,7 +11,7 @@
     <div class="mb-4 rounded-box bg-base-100 p-4 shadow">
         <h1 class="font-['Space_Grotesk'] text-xl font-semibold">{{ $protocol->title }}</h1>
         <div class="mt-1 text-sm text-base-content/70">
-            {{ $protocol->type->label() }} · {{ optional($protocol->occurred_at)->format('d.m.Y H:i') }}
+            {{ $protocol->type->label() }} · {{ $protocol->occurred_at?->orgTz()->format('d.m.Y H:i') }}
         </div>
     </div>
 

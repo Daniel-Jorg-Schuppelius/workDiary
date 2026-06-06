@@ -28,7 +28,8 @@ use App\Services\Routing\{NominatimGeocoder, OsrmRouter};
 use App\Services\Timesheet\Stopwatch;
 use App\Services\UI\DateRangeContext;
 use App\Support\Setting;
-use Carbon\CarbonImmutable;
+use App\Support\Tz;
+use Carbon\{Carbon as CarbonMutable, CarbonImmutable};
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Request;
@@ -118,6 +119,19 @@ class AppServiceProvider extends ServiceProvider {
     }
 
     public function boot(): void {
+        // Carbon-Macro: wandelt einen (in UTC gespeicherten) Zeitpunkt in die
+        // aktive Anzeige-Zeitzone um (User-Override → Organisation → Fallback).
+        // Auf allen Carbon-Varianten registriert, da Eloquent-Casts
+        // Illuminate\Support\Carbon liefern, manuelle Aufrufe aber auch
+        // Carbon\Carbon / CarbonImmutable nutzen.
+        $orgTzMacro = function () {
+            /** @var \Carbon\CarbonInterface $this */
+            return $this->copy()->setTimezone(Tz::current());
+        };
+        CarbonMutable::macro('orgTz', $orgTzMacro);
+        CarbonImmutable::macro('orgTz', $orgTzMacro);
+        \Illuminate\Support\Carbon::macro('orgTz', $orgTzMacro);
+
         Auth::provider('legacy', function ($app) {
             return new LegacyUserProvider($app['hash']);
         });

@@ -112,7 +112,7 @@
     <tbody>
         @forelse ($recent as $log)
             <tr>
-                <td class="small">{{ optional($log->created_at)->format('d.m.Y H:i:s') }}</td>
+                <td class="small">{{ $log->created_at?->orgTz()->format('d.m.Y H:i:s') }}</td>
                 <td>{{ $userLabel($log->user?->name) }}</td>
                 <td>{{ $eventLabel($log->event) }}</td>
                 <td class="small">{{ $shortType($log->auditable_type) }}</td>

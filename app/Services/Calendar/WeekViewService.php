@@ -11,7 +11,7 @@
 namespace App\Services\Calendar;
 
 use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift, User};
-use App\Support\{Setting, WeekDay};
+use App\Support\{Setting, Tz, WeekDay};
 use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -30,8 +30,17 @@ class WeekViewService {
      * }
      */
     public function build(CarbonInterface $anchor, User $user, bool $teamScope, ?int $filterUserId = null): array {
-        $start = CarbonImmutable::instance($anchor)->startOfWeek(WeekDay::MONDAY)->startOfDay();
+        // Tagesgrenzen in der aktiven Anzeige-Zeitzone (Org/User) verankern, damit
+        // Positionierung und Tagesspalten der lokalen Wanduhr entsprechen. Die
+        // Werte sind echte Instants (lokale Mitternacht) – diffInMinutes/Vergleiche
+        // rechnen instant-basiert, daher ist keine weitere Umrechnung nötig.
+        $tz = Tz::current();
+        $start = CarbonImmutable::instance($anchor)->setTimezone($tz)->startOfWeek(WeekDay::MONDAY)->startOfDay();
         $end = $start->addDays(7); // exclusive
+
+        // Für DB-Queries die Fenstergrenzen nach UTC umrechnen (Spalten sind UTC).
+        $startUtc = $start->setTimezone('UTC');
+        $endUtc = $end->setTimezone('UTC');
 
         $days = [];
         for ($i = 0; $i < 7; $i++) {
@@ -40,7 +49,7 @@ class WeekViewService {
 
         $shifts = OnCallShift::query()
             ->with('user:id,name')
-            ->overlapping($start, $end)
+            ->overlapping($startUtc, $endUtc)
             ->where('is_archived', false)
             ->when(! $teamScope, fn($q) => $q->where('user_id', $user->id))
             ->when($teamScope && $filterUserId, fn($q) => $q->where('user_id', $filterUserId))
@@ -49,7 +58,7 @@ class WeekViewService {
 
         $assignments = EmergencyAssignment::query()
             ->with('user:id,name')
-            ->overlapping($start, $end)
+            ->overlapping($startUtc, $endUtc)
             ->where('is_archived', false)
             ->when(! $teamScope, fn($q) => $q->where('user_id', $user->id))
             ->when($teamScope && $filterUserId, fn($q) => $q->where('user_id', $filterUserId))
@@ -59,12 +68,12 @@ class WeekViewService {
         $entries = DiaryEntry::query()
             ->with('user:id,name')
             ->where('is_archived', false)
-            ->where(function ($q) use ($start, $end) {
-                $q->whereBetween('start_at', [$start, $end])
-                    ->orWhere(function ($q2) use ($start, $end) {
+            ->where(function ($q) use ($startUtc, $endUtc) {
+                $q->whereBetween('start_at', [$startUtc, $endUtc])
+                    ->orWhere(function ($q2) use ($startUtc, $endUtc) {
                         $q2->whereNotNull('end_at')
-                            ->where('start_at', '<', $end)
-                            ->where('end_at', '>', $start);
+                            ->where('start_at', '<', $endUtc)
+                            ->where('end_at', '>', $startUtc);
                     });
             })
             ->when(! $teamScope, fn($q) => $q->where('user_id', $user->id))
@@ -89,24 +98,27 @@ class WeekViewService {
      * @return Collection<int, User>
      */
     public function usersInWeek(CarbonInterface $anchor): Collection {
-        $start = CarbonImmutable::instance($anchor)->startOfWeek(WeekDay::MONDAY)->startOfDay();
+        $tz = Tz::current();
+        $start = CarbonImmutable::instance($anchor)->setTimezone($tz)->startOfWeek(WeekDay::MONDAY)->startOfDay();
         $end = $start->addDays(7);
+        $startUtc = $start->setTimezone('UTC');
+        $endUtc = $end->setTimezone('UTC');
 
         $entryUserIds = DiaryEntry::query()
             ->where('is_archived', false)
-            ->where(function ($q) use ($start, $end) {
-                $q->whereBetween('start_at', [$start, $end])
-                    ->orWhere(function ($q2) use ($start, $end) {
+            ->where(function ($q) use ($startUtc, $endUtc) {
+                $q->whereBetween('start_at', [$startUtc, $endUtc])
+                    ->orWhere(function ($q2) use ($startUtc, $endUtc) {
                         $q2->whereNotNull('end_at')
-                            ->where('start_at', '<', $end)
-                            ->where('end_at', '>', $start);
+                            ->where('start_at', '<', $endUtc)
+                            ->where('end_at', '>', $startUtc);
                     });
             })
             ->distinct()
             ->pluck('user_id');
 
-        $shiftUserIds = OnCallShift::query()->overlapping($start, $end)->where('is_archived', false)->distinct()->pluck('user_id');
-        $assignUserIds = EmergencyAssignment::query()->overlapping($start, $end)->where('is_archived', false)->distinct()->pluck('user_id');
+        $shiftUserIds = OnCallShift::query()->overlapping($startUtc, $endUtc)->where('is_archived', false)->distinct()->pluck('user_id');
+        $assignUserIds = EmergencyAssignment::query()->overlapping($startUtc, $endUtc)->where('is_archived', false)->distinct()->pluck('user_id');
 
         $ids = $entryUserIds->merge($shiftUserIds)->merge($assignUserIds)->filter()->unique()->values();
 

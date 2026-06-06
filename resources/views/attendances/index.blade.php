@@ -40,8 +40,8 @@
                 @forelse ($attendances as $a)
                     <tr>
                         <td>{{ optional($a->date)->format('d.m.Y') }}</td>
-                        <td class="tabular-nums">{{ optional($a->started_at)->format('H:i') }}</td>
-                        <td class="tabular-nums">{{ optional($a->ended_at)->format('H:i') ?? '—' }}</td>
+                        <td class="tabular-nums">{{ $a->started_at?->orgTz()->format('H:i') }}</td>
+                        <td class="tabular-nums">{{ $a->ended_at?->orgTz()->format('H:i') ?? '—' }}</td>
                         <td class="text-right tabular-nums">{{ $a->break_minutes_total }}</td>
                         <td class="text-right tabular-nums">
                             @if ($a->duration_minutes !== null)

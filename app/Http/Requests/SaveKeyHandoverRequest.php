@@ -11,10 +11,17 @@
 namespace App\Http\Requests;
 
 use App\Enums\KeyHandover\KeyHandoverDirection;
+use App\Http\Requests\Concerns\ParsesOrgLocalDateTimes;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
 class SaveKeyHandoverRequest extends FormRequest {
+    use ParsesOrgLocalDateTimes;
+
+    protected function prepareForValidation(): void {
+        $this->mergeOrgLocalToUtc(['occurred_at']);
+    }
+
     public function authorize(): bool {
         return true;
     }

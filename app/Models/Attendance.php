@@ -98,7 +98,10 @@ class Attendance extends Model {
     protected static function booted(): void {
         static::saving(function (Attendance $a): void {
             if (! $a->date && $a->started_at) {
-                $a->date = $a->started_at->copy()->startOfDay();
+                // Kalendertag in der aktiven Anzeige-Zeitzone bestimmen, nicht in
+                // UTC – sonst landet z. B. ein Einstempeln um 23:30 (lokal) auf
+                // dem Folgetag (UTC). started_at bleibt UTC.
+                $a->date = $a->started_at->copy()->orgTz()->startOfDay();
             }
             if ($a->started_at && $a->ended_at) {
                 // Apply statutory minimum breaks (ArbZG §4) before computing the

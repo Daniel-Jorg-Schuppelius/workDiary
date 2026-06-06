@@ -13,9 +13,10 @@ namespace App\Http\Controllers;
 use App\Enums\Attendance\AttendanceStatus;
 use App\Models\{Attendance, User};
 use App\Services\Attendance\AttendanceClockService;
-use App\Support\{Setting, SortableQuery};
+use App\Support\{Setting, SortableQuery, Tz};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -153,7 +154,11 @@ class AttendanceController extends Controller {
             'status' => ['nullable', Rule::enum(AttendanceStatus::class)],
         ]);
 
-        $attendance->fill($data);
+        // Manuell eingegebene Zeiten werden in der aktiven Anzeige-Zeitzone
+        // interpretiert und zur Speicherung nach UTC umgerechnet.
+        $attendance->fill(Arr::except($data, ['started_at', 'ended_at']));
+        $attendance->started_at = Tz::parse($data['started_at']);
+        $attendance->ended_at = filled($data['ended_at'] ?? null) ? Tz::parse($data['ended_at']) : null;
         $attendance->updated_by = (int) Auth::id();
         $attendance->save();
 

@@ -11,13 +11,13 @@
 namespace App\Http\Requests;
 
 use App\Enums\Diary\{LocationMode, Mode, Priority};
-use App\Http\Requests\Concerns\DecodesSqidInputs;
+use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
 use App\Models\EntryType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class SaveDiaryEntryRequest extends FormRequest {
-    use DecodesSqidInputs;
+    use DecodesSqidInputs, ParsesOrgLocalDateTimes;
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
@@ -66,6 +66,10 @@ class SaveDiaryEntryRequest extends FormRequest {
                 $this->merge([$key => null]);
             }
         }
+
+        // datetime-local Von/Bis (Wanduhrzeit) in aktiver Anzeige-Zeitzone → UTC.
+        // due_date/window_*_date sind reine Datumsfelder und bleiben unverändert.
+        $this->mergeOrgLocalToUtc(['start_at', 'end_at']);
     }
 
     /** @return array<string, mixed> */

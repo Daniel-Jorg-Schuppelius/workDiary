@@ -28,7 +28,7 @@
                     <td>{{ $protocol->title }}</td>
                     <td>{{ $protocol->status->label() }}</td>
                     <td>{{ $protocol->type->label() }}</td>
-                    <td>{{ $protocol->occurred_at->format('Y-m-d H:i') }}</td>
+                    <td>{{ $protocol->occurred_at->orgTz()->format('Y-m-d H:i') }}</td>
                     <td>{{ $protocol->creator?->name ?? '' }}</td>
                     <td>{{ $protocol->subject_id }}</td>
                 </tr>

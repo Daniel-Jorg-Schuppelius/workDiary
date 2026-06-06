@@ -47,7 +47,7 @@
                     <td class="font-mono text-xs">{{ $run->input_filename }}</td>
                     <td><span class="badge badge-sm">{{ $run->state->label() }}</span></td>
                     <td class="text-right tabular-nums">{{ $run->rows_created }} / {{ $run->rows_updated }} / {{ $run->rows_skipped }} / {{ $run->rows_failed }}</td>
-                    <td class="text-sm" data-sort-value="{{ optional($run->created_at)->format('Y-m-d H:i') ?? '' }}">{{ optional($run->created_at)->format('Y-m-d H:i') }}</td>
+                    <td class="text-sm" data-sort-value="{{ $run->created_at?->orgTz()->format('Y-m-d H:i') ?? '' }}">{{ $run->created_at?->orgTz()->format('Y-m-d H:i') }}</td>
                     <td><x-icon-btn icon="visibility" size="sm" :href="route('admin.imports.show', $run)" /></td>
                 </tr>
             @endforeach
@@ -79,7 +79,7 @@
                     <td><span class="badge badge-sm badge-ghost uppercase">{{ $run->format->value }}</span></td>
                     <td><span class="badge badge-sm">{{ $run->state->label() }}</span></td>
                     <td class="text-right tabular-nums">{{ $run->rows_total }}</td>
-                    <td class="text-sm" data-sort-value="{{ optional($run->created_at)->format('Y-m-d H:i') ?? '' }}">{{ optional($run->created_at)->format('Y-m-d H:i') }}</td>
+                    <td class="text-sm" data-sort-value="{{ $run->created_at?->orgTz()->format('Y-m-d H:i') ?? '' }}">{{ $run->created_at?->orgTz()->format('Y-m-d H:i') }}</td>
                     <td>
                         @if ($run->state->canDownload())
                             <x-icon-btn icon="download" size="sm" :href="route('admin.data.download', $run)" />

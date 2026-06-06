@@ -118,6 +118,15 @@
         </div>
 
         <div class="fieldset">
+            <label class="fieldset-label">{{ __('Zeitzone') }}</label>
+            <x-timezone-select name="preferences[timezone]"
+                               :selected="old('preferences.timezone', $prefs['timezone'] ?? null)"
+                               include-blank :blank-label="__('Organisation übernehmen')" />
+            <p class="mt-1 text-xs text-base-content/60">{{ __('Überschreibt die Zeitzone der Organisation für deine Ansichten.') }}</p>
+            @error('preferences.timezone')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="fieldset">
             <label class="fieldset-label">{{ __('Datumsformat') }}</label>
             <input type="text" name="preferences[date_format]" maxlength="32"
                    class="input input-bordered w-full"

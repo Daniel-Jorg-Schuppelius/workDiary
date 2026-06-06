@@ -68,7 +68,7 @@ class OrganizationController extends Controller {
             'name' => ['required', 'string', 'max:255'],
             'plan' => ['required', 'in:' . implode(',', Organization::$plans)],
             'locale' => ['required', 'string', 'max:10'],
-            'timezone' => ['required', 'string', 'max:64'],
+            'timezone' => ['required', 'timezone'],
             'is_active' => ['boolean'],
         ]);
 
@@ -102,7 +102,7 @@ class OrganizationController extends Controller {
             'name' => ['required', 'string', 'max:255'],
             'plan' => ['required', 'in:' . implode(',', Organization::$plans)],
             'locale' => ['required', 'string', 'max:10'],
-            'timezone' => ['required', 'string', 'max:64'],
+            'timezone' => ['required', 'timezone'],
             'is_active' => ['boolean'],
             'compliance' => ['sometimes', 'array'],
             'compliance.mode' => ['sometimes', 'in:' . implode(',', Organization::$complianceModes)],

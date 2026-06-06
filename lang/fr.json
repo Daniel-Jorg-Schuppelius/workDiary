@@ -3934,5 +3934,8 @@
     "Vorschau zurücksetzen": "Réinitialiser l'aperçu",
     "Verbindung testen": "Tester la connexion",
     "Wird geprüft …": "Vérification …",
-    "Verbindung fehlgeschlagen.": "Échec de la connexion."
+    "Verbindung fehlgeschlagen.": "Échec de la connexion.",
+    "Organisation übernehmen": "Utiliser celui de l'organisation",
+    "Überschreibt die Zeitzone der Organisation für deine Ansichten.": "Remplace le fuseau horaire de l'organisation pour vos vues.",
+    "— Standard —": "— Par défaut —"
 }

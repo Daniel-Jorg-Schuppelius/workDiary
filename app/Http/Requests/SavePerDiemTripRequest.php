@@ -10,11 +10,15 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Requests\Concerns\DecodesSqidInputs;
+use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
 use Illuminate\Foundation\Http\FormRequest;
 
 class SavePerDiemTripRequest extends FormRequest {
-    use DecodesSqidInputs;
+    use DecodesSqidInputs, ParsesOrgLocalDateTimes;
+
+    protected function prepareForValidation(): void {
+        $this->mergeOrgLocalToUtc(['started_at', 'ended_at']);
+    }
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [

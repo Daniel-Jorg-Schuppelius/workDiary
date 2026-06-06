@@ -3934,5 +3934,8 @@
     "Vorschau zurücksetzen": "Reset preview",
     "Verbindung testen": "Test connection",
     "Wird geprüft …": "Checking …",
-    "Verbindung fehlgeschlagen.": "Connection failed."
+    "Verbindung fehlgeschlagen.": "Connection failed.",
+    "Organisation übernehmen": "Use organization default",
+    "Überschreibt die Zeitzone der Organisation für deine Ansichten.": "Overrides the organization's timezone for your views.",
+    "— Standard —": "— Default —"
 }

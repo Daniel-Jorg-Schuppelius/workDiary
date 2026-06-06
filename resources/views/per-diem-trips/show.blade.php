@@ -68,7 +68,7 @@
                 <p class="mt-2 text-sm text-base-content/60 whitespace-pre-line">{{ $trip->notes }}</p>
             @endif
             <p class="mt-2 text-xs text-base-content/60">
-                {{ $trip->started_at->format('d.m.Y H:i') }} – {{ $trip->ended_at->format('d.m.Y H:i') }}
+                {{ $trip->started_at->orgTz()->format('d.m.Y H:i') }} – {{ $trip->ended_at->orgTz()->format('d.m.Y H:i') }}
                 @if ($trip->accommodation_provided)
                     · <x-status-badge tone="ghost" size="xs">{{ __('Übernachtung gestellt') }}</x-status-badge>
                 @endif

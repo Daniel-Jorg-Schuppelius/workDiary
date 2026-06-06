@@ -26,7 +26,7 @@
                     </span>
                     @if ($request->decided_at)
                         <span class="text-sm text-base-content/70">
-                            {{ __('Entschieden') }}: {{ $request->decided_at->format('d.m.Y H:i') }}
+                            {{ __('Entschieden') }}: {{ $request->decided_at->orgTz()->format('d.m.Y H:i') }}
                             ({{ $request->decidedBy?->name }})
                         </span>
                     @endif

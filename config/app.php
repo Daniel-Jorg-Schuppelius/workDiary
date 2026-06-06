@@ -90,6 +90,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Display Timezone (Fallback)
+    |--------------------------------------------------------------------------
+    |
+    | Daten werden immer in UTC gespeichert (siehe oben). Für die Anzeige und
+    | das Parsen von Eingaben wird die Zeitzone des Benutzers bzw. der aktiven
+    | Organisation verwendet (siehe App\Support\Tz). Dieser Wert dient nur als
+    | letzter Fallback, wenn weder User noch Organisation eine Zeitzone gesetzt
+    | haben.
+    |
+    */
+
+    'display_timezone' => env('APP_DISPLAY_TIMEZONE', 'Europe/Berlin'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |

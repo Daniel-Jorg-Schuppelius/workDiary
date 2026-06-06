@@ -13,6 +13,7 @@ namespace App\Http\Requests;
 use App\Enums\TimeEntry\TimeEntryActivityType;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\TimeEntry;
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\{Rule, Validator};
@@ -52,8 +53,12 @@ class SaveAdminTimeEntryRequest extends FormRequest {
             return;
         }
 
+        // Eingaben werden in der aktiven Anzeige-Zeitzone interpretiert und für
+        // die Speicherung nach UTC umgerechnet. Der Tagesüberlauf (Mitternacht)
+        // wird in der lokalen Zeit ermittelt, bevor umgerechnet wird.
+        $tz = Tz::current();
         try {
-            $start = CarbonImmutable::createFromFormat('Y-m-d H:i', "$date $startTime");
+            $start = CarbonImmutable::createFromFormat('Y-m-d H:i', "$date $startTime", $tz);
         } catch (\Throwable) {
             $start = null;
         }
@@ -61,11 +66,11 @@ class SaveAdminTimeEntryRequest extends FormRequest {
             return;
         }
 
-        $merge = ['started_at' => $start->format('Y-m-d\TH:i')];
+        $merge = ['started_at' => $start->setTimezone('UTC')->format('Y-m-d H:i:s')];
 
         if ($endTime && preg_match('/^\d{2}:\d{2}$/', $endTime)) {
             try {
-                $end = CarbonImmutable::createFromFormat('Y-m-d H:i', "$date $endTime");
+                $end = CarbonImmutable::createFromFormat('Y-m-d H:i', "$date $endTime", $tz);
             } catch (\Throwable) {
                 $end = null;
             }
@@ -73,7 +78,7 @@ class SaveAdminTimeEntryRequest extends FormRequest {
                 if ($end->lessThanOrEqualTo($start)) {
                     $end = $end->addDay();
                 }
-                $merge['ended_at'] = $end->format('Y-m-d\TH:i');
+                $merge['ended_at'] = $end->setTimezone('UTC')->format('Y-m-d H:i:s');
             }
         }
 

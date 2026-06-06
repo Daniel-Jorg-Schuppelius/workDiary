@@ -14,7 +14,7 @@ use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueVisibility
 use App\Exceptions\InvalidOpenIssueTransitionException;
 use App\Models\{Customer, DiaryEntry, OpenIssue, Project, User};
 use App\Services\OpenIssue\OpenIssueService;
-use App\Support\Sqid;
+use App\Support\{Sqid, Tz};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -121,7 +121,7 @@ class OpenIssueController extends Controller {
             'category' => $data['category'] ?? null,
             'severity' => $data['severity'] ?? OpenIssueSeverity::Low->value,
             'assignee_user_id' => $data['assignee_user_id'] ?? null,
-            'due_at' => $data['due_at'] ?? null,
+            'due_at' => filled($data['due_at'] ?? null) ? Tz::parse($data['due_at'])->format('Y-m-d H:i:s') : null,
             'visibility' => $data['visibility'] ?? OpenIssueVisibility::Internal->value,
         ]);
 

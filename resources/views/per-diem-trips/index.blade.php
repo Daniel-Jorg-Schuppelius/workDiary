@@ -55,8 +55,8 @@
                 </x-slot:head>
                 @forelse ($trips as $trip)
                     <tr>
-                        <td class="whitespace-nowrap">{{ $trip->started_at->format('d.m.Y H:i') }}</td>
-                        <td class="whitespace-nowrap">{{ $trip->ended_at->format('d.m.Y H:i') }}</td>
+                        <td class="whitespace-nowrap">{{ $trip->started_at->orgTz()->format('d.m.Y H:i') }}</td>
+                        <td class="whitespace-nowrap">{{ $trip->ended_at->orgTz()->format('d.m.Y H:i') }}</td>
                         <td>
                             <span class="inline-flex items-center gap-1">
                                 <x-icon name="place" class="text-info" />

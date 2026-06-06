@@ -3,8 +3,8 @@
     $isDialog = $isDialog ?? false;
     $isEdit = $isEdit ?? false;
     $action = $isEdit ? route('shifts.update', $shift) : route('shifts.store');
-    $startAt = old('start_at', $shift?->start_at?->format('Y-m-d\TH:i') ?? $prefillStartAt ?? '');
-    $endAt = old('end_at', $shift?->end_at?->format('Y-m-d\TH:i') ?? $prefillEndAt ?? '');
+    $startAt = old('start_at', $shift?->start_at?->orgTz()->format('Y-m-d\TH:i') ?? $prefillStartAt ?? '');
+    $endAt = old('end_at', $shift?->end_at?->orgTz()->format('Y-m-d\TH:i') ?? $prefillEndAt ?? '');
     $note = old('note', $shift?->note ?? '');
     $selectedUser = (int) old('user_id', $shift?->user_id ?? $prefillUserId ?? auth()->id());
     $back = request()->query('_back') ?? url()->previous();

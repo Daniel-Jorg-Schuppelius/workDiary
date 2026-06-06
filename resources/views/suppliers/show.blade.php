@@ -267,7 +267,7 @@
                         <x-status-badge tone="ghost">{{ $log->eventLabel() }}</x-status-badge>
                         {{ optional($log->user)->name ?? '—' }}
                     </span>
-                    <span class="text-base-content/60">{{ $log->created_at->format('d.m.Y H:i') }}</span>
+                    <span class="text-base-content/60">{{ $log->created_at->orgTz()->format('d.m.Y H:i') }}</span>
                 </li>
             @endforeach
         </ul>

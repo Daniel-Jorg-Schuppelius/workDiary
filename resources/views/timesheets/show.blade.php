@@ -84,8 +84,8 @@
             </x-slot:head>
             @forelse($timesheet->entries as $e)
                 <tr>
-                    <td class="tabular-nums">{{ optional($e->started_at)->format('H:i') }}</td>
-                    <td class="tabular-nums">{{ optional($e->ended_at)->format('H:i') }}</td>
+                    <td class="tabular-nums">{{ $e->started_at?->orgTz()->format('H:i') }}</td>
+                    <td class="tabular-nums">{{ $e->ended_at?->orgTz()->format('H:i') }}</td>
                     <td class="text-right tabular-nums">{{ (int)$e->break_minutes }}</td>
                     <td class="text-right tabular-nums" data-sort-value="{{ (int) $e->minutes }}">{{ $fmtMin((int)$e->minutes) }}</td>
                     <td>{{ $entryKindLabel($e->kind) }}</td>
@@ -170,7 +170,7 @@
                     @if($timesheet->signed_at || $timesheet->signed_ip)
                         <div class="mt-1 text-base-content/60">
                             @if($timesheet->signed_at)
-                                {{ __('Signiert am') }}: {{ optional($timesheet->signed_at)->format('d.m.Y H:i') }}
+                                {{ __('Signiert am') }}: {{ $timesheet->signed_at?->orgTz()->format('d.m.Y H:i') }}
                             @endif
                             @if($timesheet->signed_ip)
                                 @if($timesheet->signed_at) · @endif

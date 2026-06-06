@@ -11,6 +11,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
+use App\Support\Tz;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -53,6 +54,16 @@ class SaveTimeEntryRequest extends FormRequest {
         }
         if ($this->input('break_minutes') === '') {
             $this->merge(['break_minutes' => null]);
+        }
+
+        // Die datetime-local-Eingaben (Wanduhrzeit ohne Zeitzone) werden in der
+        // aktiven Anzeige-Zeitzone interpretiert und zur Speicherung nach UTC
+        // umgerechnet.
+        foreach (['started_at', 'ended_at'] as $key) {
+            $value = $this->input($key);
+            if (is_string($value) && $value !== '') {
+                $this->merge([$key => Tz::parse($value)->format('Y-m-d H:i:s')]);
+            }
         }
     }
 

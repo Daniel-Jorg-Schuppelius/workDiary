@@ -115,7 +115,7 @@
                 </x-slot:head>
                 @foreach ($recent as $log)
                     <tr>
-                        <td class="tabular-nums" data-sort-value="{{ optional($log->created_at)->format('Y-m-d H:i:s') }}">{{ optional($log->created_at)->format('d.m.Y H:i:s') }}</td>
+                        <td class="tabular-nums" data-sort-value="{{ $log->created_at?->orgTz()->format('Y-m-d H:i:s') }}">{{ $log->created_at?->orgTz()->format('d.m.Y H:i:s') }}</td>
                         <td>{{ $userLabel($log->user?->name) }}</td>
                         <td>{{ $eventLabel($log->event) }}</td>
                         <td class="text-xs">{{ $shortType($log->auditable_type) }}</td>

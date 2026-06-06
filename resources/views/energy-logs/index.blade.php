@@ -75,7 +75,7 @@
                 </x-slot:head>
                 @forelse ($logs as $log)
                     <tr>
-                        <td>{{ $log->started_at?->format('d.m.Y H:i') }}</td>
+                        <td>{{ $log->started_at?->orgTz()->format('d.m.Y H:i') }}</td>
                         <td>{{ $log->vehicle?->displayName() }}</td>
                         <td>{{ $log->user?->name }}</td>
                         <td>

@@ -56,7 +56,7 @@
         <td class="label">{{ __('Ort / Ziel') }}</td>
         <td>{{ $trip->location }}</td>
         <td class="label">Zeitraum</td>
-        <td>{{ $trip->started_at->format('d.m.Y H:i') }} – {{ $trip->ended_at->format('d.m.Y H:i') }}</td>
+        <td>{{ $trip->started_at->orgTz()->format('d.m.Y H:i') }} – {{ $trip->ended_at->orgTz()->format('d.m.Y H:i') }}</td>
     </tr>
     <tr>
         <td class="label">Zweck</td>

@@ -13,6 +13,7 @@ namespace App\Http\Requests;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Timesheet;
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\{Rule, Validator};
@@ -54,8 +55,11 @@ class SaveTimesheetEntryRequest extends FormRequest {
             return;
         }
 
+        // Eingaben in aktiver Anzeige-Zeitzone interpretieren, Tagesüberlauf in
+        // lokaler Zeit ermitteln und zur Speicherung nach UTC umrechnen.
+        $tz = Tz::current();
         try {
-            $start = CarbonImmutable::createFromFormat('Y-m-d H:i', "$date $startTime");
+            $start = CarbonImmutable::createFromFormat('Y-m-d H:i', "$date $startTime", $tz);
         } catch (\Throwable) {
             $start = null;
         }
@@ -63,11 +67,11 @@ class SaveTimesheetEntryRequest extends FormRequest {
             return;
         }
 
-        $merge = ['started_at' => $start->format('Y-m-d\TH:i')];
+        $merge = ['started_at' => $start->setTimezone('UTC')->format('Y-m-d H:i:s')];
 
         if ($endTime && preg_match('/^\d{2}:\d{2}$/', $endTime)) {
             try {
-                $end = CarbonImmutable::createFromFormat('Y-m-d H:i', "$date $endTime");
+                $end = CarbonImmutable::createFromFormat('Y-m-d H:i', "$date $endTime", $tz);
             } catch (\Throwable) {
                 $end = null;
             }
@@ -75,7 +79,7 @@ class SaveTimesheetEntryRequest extends FormRequest {
                 if ($end->lessThanOrEqualTo($start)) {
                     $end = $end->addDay();
                 }
-                $merge['ended_at'] = $end->format('Y-m-d\TH:i');
+                $merge['ended_at'] = $end->setTimezone('UTC')->format('Y-m-d H:i:s');
             }
         }
 

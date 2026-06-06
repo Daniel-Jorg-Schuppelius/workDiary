@@ -69,13 +69,13 @@
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Beginn') }} *</label>
         <input type="datetime-local" name="started_at" required
-               value="{{ old('started_at', $log?->started_at?->format('Y-m-d\TH:i')) }}"
+               value="{{ old('started_at', $log?->started_at?->orgTz()->format('Y-m-d\TH:i')) }}"
                class="input input-bordered w-full">
     </div>
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Ende') }}</label>
         <input type="datetime-local" name="ended_at"
-               value="{{ old('ended_at', $log?->ended_at?->format('Y-m-d\TH:i')) }}"
+               value="{{ old('ended_at', $log?->ended_at?->orgTz()->format('Y-m-d\TH:i')) }}"
                class="input input-bordered w-full">
     </div>
     <div class="fieldset">

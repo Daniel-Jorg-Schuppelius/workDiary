@@ -10,9 +10,16 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ParsesOrgLocalDateTimes;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SaveMeterReadingRequest extends FormRequest {
+    use ParsesOrgLocalDateTimes;
+
+    protected function prepareForValidation(): void {
+        $this->mergeOrgLocalToUtc(['read_at']);
+    }
+
     public function authorize(): bool {
         return true;
     }

@@ -495,4 +495,16 @@ class User extends Authenticatable {
 
         return array_replace($defaults, $stored);
     }
+
+    /**
+     * Persönliche Anzeige-Zeitzone (Override der Organisations-Zeitzone).
+     * Liegt in preferences['timezone']; null bedeutet "Organisation verwenden".
+     * Wird von App\Support\Tz ausgewertet.
+     */
+    public function getTimezoneAttribute(): ?string {
+        $stored = (array) ($this->preferences ?? []);
+        $tz = $stored['timezone'] ?? null;
+
+        return is_string($tz) && $tz !== '' ? $tz : null;
+    }
 }

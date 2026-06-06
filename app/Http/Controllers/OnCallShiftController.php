@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ManagesShiftLike;
 use App\Models\{OnCallShift, User};
+use App\Support\Tz;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -90,6 +91,12 @@ class OnCallShiftController extends Controller {
 
     /** @return array<string, mixed> */
     private function validateShift(Request $request): array {
+        // datetime-local (Wanduhrzeit) in aktiver Anzeige-Zeitzone → UTC.
+        $request->merge([
+            'start_at' => Tz::toUtcString($request->input('start_at')),
+            'end_at' => Tz::toUtcString($request->input('end_at')),
+        ]);
+
         return $request->validate([
             'user_id' => ['nullable', 'integer', 'exists:users,id'],
             'start_at' => ['required', 'date'],

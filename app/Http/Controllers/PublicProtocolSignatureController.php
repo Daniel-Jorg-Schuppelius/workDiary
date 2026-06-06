@@ -28,6 +28,15 @@ class PublicProtocolSignatureController extends Controller {
 
         $protocol = $record->protocol()->with(['items', 'subject'])->firstOrFail();
 
+        // Org-Kontext aus dem Protokoll binden, damit Anzeige-Zeitzone (Tz)
+        // korrekt aufgelöst wird statt auf den globalen Fallback zu fallen.
+        if (! empty($protocol->organization_id)) {
+            $org = \App\Models\Organization::query()->withoutGlobalScopes()->find($protocol->organization_id);
+            if ($org instanceof \App\Models\Organization) {
+                app()->instance('currentOrganization', $org);
+            }
+        }
+
         return view('public.protocol-sign', [
             'token' => $token,
             'record' => $record,

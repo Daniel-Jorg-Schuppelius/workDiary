@@ -3934,5 +3934,8 @@
     "Vorschau zurücksetzen": "Restablecer vista previa",
     "Verbindung testen": "Probar conexión",
     "Wird geprüft …": "Comprobando …",
-    "Verbindung fehlgeschlagen.": "Error de conexión."
+    "Verbindung fehlgeschlagen.": "Error de conexión.",
+    "Organisation übernehmen": "Usar el de la organización",
+    "Überschreibt die Zeitzone der Organisation für deine Ansichten.": "Anula la zona horaria de la organización para tus vistas.",
+    "— Standard —": "— Predeterminado —"
 }

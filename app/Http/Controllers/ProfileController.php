@@ -47,6 +47,7 @@ class ProfileController extends Controller {
             'preferences' => ['sometimes', 'array'],
             'preferences.theme' => ['nullable', 'string', Rule::in($themes)],
             'preferences.locale' => ['nullable', 'string', 'max:10'],
+            'preferences.timezone' => ['nullable', 'timezone'],
             'preferences.date_format' => ['nullable', 'string', 'max:32'],
             'preferences.time_format' => ['nullable', 'string', 'max:32'],
             'preferences.startpage' => ['nullable', 'string', Rule::in($startpages)],

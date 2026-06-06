@@ -63,7 +63,8 @@ class AttendanceClockService {
                 'user_id' => $user->id,
                 'started_at' => $start,
                 'ended_at' => null,
-                'date' => $start->startOfDay(),
+                // 'date' wird im Model-Hook (Attendance::booted) aus started_at in
+                // der aktiven Anzeige-Zeitzone abgeleitet – nicht hier in UTC.
                 'source' => $context['source'] ?? AttendanceSource::Clock->value,
                 'status' => AttendanceStatus::Open->value,
                 'started_lat' => $context['lat'] ?? null,

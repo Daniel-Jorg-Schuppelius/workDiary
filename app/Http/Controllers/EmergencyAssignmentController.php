@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ManagesShiftLike;
 use App\Models\{EmergencyAssignment, OnCallShift, User};
+use App\Support\Tz;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -106,6 +107,9 @@ class EmergencyAssignmentController extends Controller {
         $request->merge([
             'user_id' => $userId,
             'on_call_shift_id' => $onCallShiftId,
+            // datetime-local (Wanduhrzeit) in aktiver Anzeige-Zeitzone → UTC.
+            'start_at' => Tz::toUtcString($request->input('start_at')),
+            'end_at' => Tz::toUtcString($request->input('end_at')),
         ]);
 
         return $request->validate([

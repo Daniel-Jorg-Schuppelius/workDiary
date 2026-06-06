@@ -215,8 +215,8 @@
             toName="end_at"
             fromId="start_at"
             toId="end_at"
-            :from="old('start_at', $entry?->start_at?->format('Y-m-d\TH:i') ?? $prefillStartAt)"
-            :to="old('end_at', $entry?->end_at?->format('Y-m-d\TH:i'))"
+            :from="old('start_at', $entry?->start_at?->orgTz()->format('Y-m-d\TH:i') ?? $prefillStartAt)"
+            :to="old('end_at', $entry?->end_at?->orgTz()->format('Y-m-d\TH:i'))"
             :label="false"
             class="w-full"
         />

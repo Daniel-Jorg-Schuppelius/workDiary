@@ -54,8 +54,8 @@
                     $em = (int) $e->minutes % 60;
                 @endphp
                 <tr>
-                    <td>{{ $e->started_at ? \Carbon\Carbon::parse((string) $e->started_at)->format('H:i') : '' }}</td>
-                    <td>{{ $e->ended_at ? \Carbon\Carbon::parse((string) $e->ended_at)->format('H:i') : '' }}</td>
+                    <td>{{ $e->started_at ? \Carbon\Carbon::parse((string) $e->started_at)->orgTz()->format('H:i') : '' }}</td>
+                    <td>{{ $e->ended_at ? \Carbon\Carbon::parse((string) $e->ended_at)->orgTz()->format('H:i') : '' }}</td>
                     <td><span class="badge">{{ $e->kind?->label() ?? '' }}</span></td>
                     <td>
                         @if ($e->project)

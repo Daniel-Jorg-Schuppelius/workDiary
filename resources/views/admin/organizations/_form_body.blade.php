@@ -21,9 +21,9 @@
 
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Zeitzone') }}</label>
-        <input type="text" name="timezone" maxlength="64"
-               class="input input-bordered w-full @error('timezone') input-error @enderror"
-               value="{{ old('timezone', $organization?->timezone ?? 'Europe/Berlin') }}">
+        <x-timezone-select name="timezone"
+                           :selected="old('timezone', $organization?->timezone ?? 'Europe/Berlin')"
+                           class="@error('timezone') input-error @enderror" />
         @error('timezone')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
     </div>
 </x-form-group>

@@ -2,8 +2,8 @@
 @php
     $isDialog = $isDialog ?? false;
     $isEdit = $isEdit ?? false;
-    $startAt = old('start_at', $assignment?->start_at?->format('Y-m-d\TH:i') ?? $prefillStartAt ?? '');
-    $endAt = old('end_at', $assignment?->end_at?->format('Y-m-d\TH:i') ?? $prefillEndAt ?? '');
+    $startAt = old('start_at', $assignment?->start_at?->orgTz()->format('Y-m-d\TH:i') ?? $prefillStartAt ?? '');
+    $endAt = old('end_at', $assignment?->end_at?->orgTz()->format('Y-m-d\TH:i') ?? $prefillEndAt ?? '');
     $reason = old('reason', $assignment?->reason ?? '');
     $selectedUser = (int) old('user_id', $assignment?->user_id ?? $prefillUserId ?? auth()->id());
     $selectedShift = (int) old('on_call_shift_id', $assignment?->on_call_shift_id ?? 0);
