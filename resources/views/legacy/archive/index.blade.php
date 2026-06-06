@@ -257,8 +257,8 @@
                                 <td class="whitespace-nowrap">{{ $v->user?->name ?? '—' }}</td>
                             @endif
                             <td class="whitespace-nowrap">{{ $typeLabel }}</td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $v->start_date->format('d.m.Y') }}</td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $v->end_date->format('d.m.Y') }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $v->start_date->fdate() }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $v->end_date->fdate() }}</td>
                             <td><span class="badge badge-sm {{ $statusBadge }}">{{ $statusLabel }}</span></td>
                             <td class="max-w-xs truncate text-sm text-base-content/70">{{ $v->note ?? '—' }}</td>
                         </tr>
@@ -298,8 +298,8 @@
                             <td class="text-center">
                                 <span class="badge badge-sm {{ $badgeClass }}">{{ $entry->statusLabel() }}</span>
                             </td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->von?->format('d.m.Y H:i') ?? '—' }}</td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->bis?->format('d.m.Y H:i') ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->von?->fdatetime() ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->bis?->fdatetime() ?? '—' }}</td>
                             <td class="text-sm">
                                 <a href="{{ route('legacy.archive.show', $entry) }}" data-entry-modal-trigger class="link link-hover">
                                     {{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->inhalt ?? '', 160) }}
@@ -329,8 +329,8 @@
                         @endphp
                         <tr class="hover">
                             <td class="whitespace-nowrap">{{ optional($entry->mitarbeiter)->uname ?? '—' }}</td>
-                            <td class="whitespace-nowrap text-xs">{{ $entry->von?->format('d.m.Y') ?? '—' }}</td>
-                            <td class="whitespace-nowrap text-xs">{{ $entry->bis?->format('d.m.Y') ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs">{{ $entry->von?->fdate() ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs">{{ $entry->bis?->fdate() ?? '—' }}</td>
                             <td class="text-xs text-base-content/70">{{ $duration !== null ? trans_choice('{1} :n Tag|[2,*] :n Tage', $duration, ['n' => $duration]) : '—' }}</td>
                         </tr>
                     @empty
@@ -356,8 +356,8 @@
                         @endphp
                         <tr class="hover">
                             <td class="whitespace-nowrap">{{ optional($entry->mitarbeiter)->uname ?? '—' }}</td>
-                            <td class="whitespace-nowrap text-xs">{{ $entry->von?->format('d.m.Y') ?? '—' }}</td>
-                            <td class="whitespace-nowrap text-xs">{{ $entry->bis?->format('d.m.Y') ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs">{{ $entry->von?->fdate() ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs">{{ $entry->bis?->fdate() ?? '—' }}</td>
                             <td class="text-xs text-base-content/70">{{ $duration !== null ? trans_choice('{1} :n Tag|[2,*] :n Tage', $duration, ['n' => $duration]) : '—' }}</td>
                         </tr>
                     @empty

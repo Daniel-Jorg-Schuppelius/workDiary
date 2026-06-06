@@ -95,7 +95,7 @@
                             <td></td>
                             <td class="tabular-nums text-sm">
                                 @if ($e->started_at && $e->ended_at)
-                                    {{ $e->started_at->orgTz()->format('H:i') }}–{{ $e->ended_at->orgTz()->format('H:i') }}
+                                    {{ $e->started_at->ftime() }}–{{ $e->ended_at->ftime() }}
                                 @else
                                     <span class="text-base-content/40">—</span>
                                 @endif

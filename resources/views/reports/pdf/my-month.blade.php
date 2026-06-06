@@ -23,7 +23,7 @@
 <body>
 
 <h1>Mein Monat – {{ $monthLabel }}</h1>
-<div class="meta">Erstellt: {{ now()->format('d.m.Y H:i') }} – Nutzer: {{ auth()->user()?->name }}</div>
+<div class="meta">Erstellt: {{ now()->fdatetime() }} – Nutzer: {{ auth()->user()?->name }}</div>
 
 @forelse ($byDay as $date => $row)
     @php
@@ -54,8 +54,8 @@
                     $em = (int) $e->minutes % 60;
                 @endphp
                 <tr>
-                    <td>{{ $e->started_at ? \Carbon\Carbon::parse((string) $e->started_at)->orgTz()->format('H:i') : '' }}</td>
-                    <td>{{ $e->ended_at ? \Carbon\Carbon::parse((string) $e->ended_at)->orgTz()->format('H:i') : '' }}</td>
+                    <td>{{ $e->started_at ? \Carbon\Carbon::parse((string) $e->started_at)->ftime() : '' }}</td>
+                    <td>{{ $e->ended_at ? \Carbon\Carbon::parse((string) $e->ended_at)->ftime() : '' }}</td>
                     <td><span class="badge">{{ $e->kind?->label() ?? '' }}</span></td>
                     <td>
                         @if ($e->project)

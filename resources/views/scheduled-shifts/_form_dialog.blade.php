@@ -10,7 +10,7 @@
 
 <x-modal
     :title="__('Schicht bearbeiten')"
-    :eyebrow="$shift->date->format('d.m.Y') . ' · ' . ($shift->user?->name ?? '—')"
+    :eyebrow="$shift->date->fdate() . ' · ' . ($shift->user?->name ?? '—')"
     icon="event"
     tone="primary"
     :action="$action"

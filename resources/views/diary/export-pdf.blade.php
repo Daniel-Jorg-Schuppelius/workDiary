@@ -30,7 +30,7 @@
 
     <h1>{{ __('Auftragsbuch-Export') }}</h1>
     <div class="meta">
-        {{ __('Erstellt am') }} {{ $generatedAt->format('d.m.Y H:i') }} —
+        {{ __('Erstellt am') }} {{ $generatedAt->fdatetime() }} —
         {{ count($entries) }} {{ __('Einträge') }}
         @if (! empty(array_filter($filters)))
             — {{ __('Filter aktiv') }}
@@ -56,8 +56,8 @@
                     <td>{{ $entry->id }}</td>
                     <td class="status status-{{ $entry->statusTone() }}">{{ $entry->statusLabel() }}</td>
                     <td>{{ optional($entry->user)->name ?? '—' }}</td>
-                    <td>{{ optional($entry->start_at)->format('d.m.Y H:i') }}</td>
-                    <td>{{ optional($entry->end_at)->format('d.m.Y H:i') }}</td>
+                    <td>{{ optional($entry->start_at)->fdatetime() }}</td>
+                    <td>{{ optional($entry->end_at)->fdatetime() }}</td>
                     <td>{{ $entry->content }}</td>
                     <td>{{ $entry->response }}</td>
                     <td>{{ $entry->tags->pluck('name')->implode(', ') }}</td>

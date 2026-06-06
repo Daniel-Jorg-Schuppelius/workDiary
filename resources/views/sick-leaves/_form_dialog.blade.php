@@ -74,7 +74,7 @@
                 <option value="">{{ __('Bitte wählen …') }}</option>
                 @foreach ($previousLeaves as $prev)
                     <option value="{{ $prev->sqid }}" @selected((string) old('follow_up_for_id', \App\Support\Sqid::encode(\App\Models\SickLeave::class, $sickLeave?->follow_up_for_id)) === $prev->sqid)>
-                        {{ $prev->start_date->format('d.m.Y') }} – {{ $prev->end_date->format('d.m.Y') }}@if ($canAssignOthers) · {{ $prev->user?->name }} @endif
+                        {{ $prev->start_date->fdate() }} – {{ $prev->end_date->fdate() }}@if ($canAssignOthers) · {{ $prev->user?->name }} @endif
                     </option>
                 @endforeach
             </select>

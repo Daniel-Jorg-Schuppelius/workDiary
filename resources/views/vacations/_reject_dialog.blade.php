@@ -16,7 +16,7 @@
 
     <div class="mb-4 rounded-box border border-base-300 bg-base-200/60 p-3 text-sm">
         <p class="font-semibold">{{ $vacation->user?->name }}</p>
-        <p class="text-base-content/70">{{ $vacation->start_date->format('d.m.Y') }} – {{ $vacation->end_date->format('d.m.Y') }}</p>
+        <p class="text-base-content/70">{{ $vacation->start_date->fdate() }} – {{ $vacation->end_date->fdate() }}</p>
         <p class="text-base-content/70">{{ $vacation->typeLabel() }}</p>
     </div>
 

@@ -19,7 +19,7 @@
 <body>
 
 <h1>Projekt: {{ $project->name }}@if ($project->customer) <span style="font-weight:normal;color:#555;">– {{ $project->customer->name }}</span>@endif</h1>
-<div class="meta">Jahr: <strong>{{ $year }}</strong> · Erstellt: {{ now()->format('d.m.Y H:i') }}</div>
+<div class="meta">Jahr: <strong>{{ $year }}</strong> · Erstellt: {{ now()->fdatetime() }}</div>
 
 <h2>Monatswerte</h2>
 <table>

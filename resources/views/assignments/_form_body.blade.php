@@ -54,7 +54,7 @@
             <option value="">{{ __('— keine —') }}</option>
             @foreach ($shiftOptions as $s)
                 <option value="{{ $s->sqid }}" @selected((string) old('on_call_shift_id', \App\Support\Sqid::encode(\App\Models\OnCallShift::class, $selectedShift)) === $s->sqid)>
-                    {{ $s->user?->name }} · {{ $s->start_at?->format('d.m.Y H:i') }} – {{ $s->end_at?->format('d.m.Y H:i') }}
+                    {{ $s->user?->name }} · {{ $s->start_at?->fdatetime() }} – {{ $s->end_at?->fdatetime() }}
                 </option>
             @endforeach
         </select>

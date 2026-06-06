@@ -72,7 +72,7 @@
                         <td><x-status-badge :tone="$c->status->tone()" size="sm">{{ $c->status->label() }}</x-status-badge></td>
                         <td class="text-right tabular-nums">{{ $c->days_open }}</td>
                         <td class="text-right tabular-nums">{{ $c->warnings_count }}</td>
-                        <td class="text-xs tabular-nums">{{ $c->submitted_at?->format('d.m.Y H:i') }}</td>
+                        <td class="text-xs tabular-nums">{{ $c->submitted_at?->fdatetime() }}</td>
                         <td class="text-right">
                             <div class="flex justify-end gap-1">
                                 @can('approve', $c)

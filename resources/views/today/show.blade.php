@@ -153,8 +153,8 @@
                 </x-slot:head>
                 @forelse ($attendances as $a)
                     <tr>
-                        <td class="tabular-nums">{{ $a->started_at?->orgTz()->format('H:i') }}</td>
-                        <td class="tabular-nums">{{ $a->ended_at?->orgTz()->format('H:i') ?? '—' }}</td>
+                        <td class="tabular-nums">{{ $a->started_at?->ftime() }}</td>
+                        <td class="tabular-nums">{{ $a->ended_at?->ftime() ?? '—' }}</td>
                         <td class="text-right tabular-nums">{{ $a->break_minutes_total }}</td>
                         <td class="text-right tabular-nums" data-sort-value="{{ (int) ($a->duration_minutes ?? 0) }}">{{ $fmt((int) ($a->duration_minutes ?? 0)) }}</td>
                         <td><x-status-badge :tone="$a->isOpen() ? 'success' : 'ghost'">{{ $a->statusLabel() }}</x-status-badge></td>
@@ -186,7 +186,7 @@
                     <tr>
                         <td class="tabular-nums text-xs">
                             @if ($e->started_at)
-                                {{ $e->started_at->orgTz()->format('H:i') }}–{{ $e->ended_at?->orgTz()->format('H:i') ?? '…' }}
+                                {{ $e->started_at->ftime() }}–{{ $e->ended_at?->ftime() ?? '…' }}
                             @else
                                 —
                             @endif

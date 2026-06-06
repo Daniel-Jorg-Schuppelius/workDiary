@@ -337,7 +337,7 @@
                         <x-status-badge tone="ghost">{{ $log->eventLabel() }}</x-status-badge>
                         {{ optional($log->user)->name ?? '—' }}
                     </span>
-                    <span class="text-base-content/60">{{ $log->created_at->format('d.m.Y H:i') }}</span>
+                    <span class="text-base-content/60">{{ $log->created_at->fdatetime() }}</span>
                 </li>
             @endforeach
         </ul>
@@ -402,7 +402,7 @@
                         @foreach ($lexofficeVouchers as $ref)
                             <li class="flex items-center justify-between gap-2 py-1.5">
                                 <code class="text-xs text-base-content/80">{{ $ref->external_id }}</code>
-                                <span class="text-xs text-base-content/60">{{ optional($ref->synced_at)->format('d.m.Y H:i') }}</span>
+                                <span class="text-xs text-base-content/60">{{ optional($ref->synced_at)->fdatetime() }}</span>
                             </li>
                         @endforeach
                     </ul>
@@ -446,7 +446,7 @@
                 @foreach ($lexofficeVoucherCache as $voucher)
                     <tr>
                         <td class="font-mono text-xs">{{ $voucher->voucher_number ?? '–' }}</td>
-                        <td data-sort-value="{{ optional($voucher->voucher_date)->format('Y-m-d') ?? '' }}">{{ optional($voucher->voucher_date)->format('d.m.Y') ?? '–' }}</td>
+                        <td data-sort-value="{{ optional($voucher->voucher_date)->format('Y-m-d') ?? '' }}">{{ optional($voucher->voucher_date)->fdate() ?? '–' }}</td>
                         <td>{{ $lexofficeValueLabel($voucher->voucher_type) }}</td>
                         <td>
                             <x-status-badge :tone="match ($voucher->voucher_status) {

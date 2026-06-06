@@ -47,17 +47,17 @@
         <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-base-content/65">
             @switch($entry->mode)
                 @case(\App\Enums\Diary\Mode::Deadline)
-                    @if ($entry->due_date)<span>{{ __('Fällig bis') }} {{ $entry->due_date->format('d.m.Y') }}</span>@endif
+                    @if ($entry->due_date)<span>{{ __('Fällig bis') }} {{ $entry->due_date->fdate() }}</span>@endif
                     @break
                 @case(\App\Enums\Diary\Mode::Window)
-                    @if ($entry->window_start_date)<span>{{ __('Fenster') }} {{ $entry->window_start_date->format('d.m.Y') }}@if ($entry->window_end_date) – {{ $entry->window_end_date->format('d.m.Y') }}@endif</span>@endif
+                    @if ($entry->window_start_date)<span>{{ __('Fenster') }} {{ $entry->window_start_date->fdate() }}@if ($entry->window_end_date) – {{ $entry->window_end_date->fdate() }}@endif</span>@endif
                     @break
                 @case(\App\Enums\Diary\Mode::Backlog)
                     <span>{{ __('Backlog — kein Datum') }}</span>
                     @break
                 @default
-                    @if ($entry->start_at)<span class="{{ $entry->start_at->isSunday() ? 'text-error font-semibold' : '' }}">{{ __('Von') }} {{ $entry->start_at->format('d.m.Y H:i') }}</span>@endif
-                    @if ($entry->end_at)<span class="{{ $entry->end_at->isSunday() ? 'text-error font-semibold' : '' }}">{{ __('Bis') }} {{ $entry->end_at->format('d.m.Y H:i') }}</span>@endif
+                    @if ($entry->start_at)<span class="{{ $entry->start_at->isSunday() ? 'text-error font-semibold' : '' }}">{{ __('Von') }} {{ $entry->start_at->fdatetime() }}</span>@endif
+                    @if ($entry->end_at)<span class="{{ $entry->end_at->isSunday() ? 'text-error font-semibold' : '' }}">{{ __('Bis') }} {{ $entry->end_at->fdatetime() }}</span>@endif
             @endswitch
             <span>{{ __('Erstellt') }} {{ $entry->created_at->diffForHumans() }}</span>
         </div>

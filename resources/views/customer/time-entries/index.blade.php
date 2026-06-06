@@ -19,7 +19,7 @@
             <tbody>
                 @foreach ($entries as $entry)
                     <tr class="border-b border-base-200">
-                        <td class="p-2 whitespace-nowrap">{{ optional($entry->start_at)->format('d.m.Y H:i') }}</td>
+                        <td class="p-2 whitespace-nowrap">{{ optional($entry->start_at)->fdatetime() }}</td>
                         <td class="p-2">{{ $entry->project?->name }}</td>
                         <td class="p-2">{{ $entry->user?->name }}</td>
                         <td class="p-2">{{ $entry->description }}</td>

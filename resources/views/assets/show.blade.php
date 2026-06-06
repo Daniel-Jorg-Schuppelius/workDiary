@@ -256,13 +256,13 @@
                                     <td>
                                         @if ($plan->next_due_on)
                                             <span class="@if ($isDue) text-error font-semibold @endif">
-                                                {{ $plan->next_due_on->format('d.m.Y') }}
+                                                {{ $plan->next_due_on->fdate() }}
                                             </span>
                                         @else
                                             —
                                         @endif
                                     </td>
-                                    <td>{{ optional($plan->last_run_at)->format('d.m.Y H:i') ?: '—' }}</td>
+                                    <td>{{ optional($plan->last_run_at)->fdatetime() ?: '—' }}</td>
                                     <td>
                                         @if (! $plan->is_active)
                                             <x-status-badge tone="ghost">{{ __('pausiert') }}</x-status-badge>
@@ -337,7 +337,7 @@
                                     </td>
                                     <td>{{ $entry->project?->name ?: '—' }}</td>
                                     <td>{{ $entry->user?->name ?: '—' }}</td>
-                                    <td>{{ optional($entry->start_at)->format('d.m.Y H:i') ?: '—' }}</td>
+                                    <td>{{ optional($entry->start_at)->fdatetime() ?: '—' }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -373,7 +373,7 @@
                                     <td>{{ $protocol->title }}</td>
                                     <td>{{ $protocol->type->label() }}</td>
                                     <td>{{ $protocol->status->label() }}</td>
-                                    <td>{{ optional($protocol->occurred_at)->format('d.m.Y H:i') ?: '—' }}</td>
+                                    <td>{{ optional($protocol->occurred_at)->fdatetime() ?: '—' }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -410,7 +410,7 @@
                                     <td>{{ number_format((float) $usage->quantity, 3, ',', '.') }} {{ $usage->unit }}</td>
                                     <td>{{ number_format((float) $usage->line_total_net, 2, ',', '.') }} €</td>
                                     <td>
-                                        {{ optional($usage->timesheet?->work_date)->format('d.m.Y') ?: ($usage->timesheet ? ('#' . $usage->timesheet->id) : '—') }}
+                                        {{ optional($usage->timesheet?->work_date)->fdate() ?: ($usage->timesheet ? ('#' . $usage->timesheet->id) : '—') }}
                                     </td>
                                 </tr>
                             @endforeach

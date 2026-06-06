@@ -4,7 +4,7 @@
 @section('wrapper-height-class', 'wd-page-fill')
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 @section('content')
-<x-index-page overflow="clip" :subtitle="$dutyPlan->title . ' · ' . $dutyPlan->from_date->format('d.m.Y') . ' – ' . $dutyPlan->to_date->format('d.m.Y')">
+<x-index-page overflow="clip" :subtitle="$dutyPlan->title . ' · ' . $dutyPlan->from_date->fdate() . ' – ' . $dutyPlan->to_date->fdate()">
     <x-slot:actions>
         <x-icon-btn icon="arrow_back" size="sm"
                     :href="route('duty-plans.show', $dutyPlan)"
@@ -56,7 +56,7 @@
                         <td class="text-sm">
                             @if ($req->specific_date)
                                 <x-status-badge tone="warning">{{ __('Konkretes Datum') }}</x-status-badge>
-                                {{ $req->specific_date->format('d.m.Y') }}
+                                {{ $req->specific_date->fdate() }}
                             @elseif ($req->weekday !== null)
                                 <x-status-badge tone="info">{{ __('Wochentag') }}</x-status-badge>
                                 {{ $weekdayLabels[$req->weekday] ?? $req->weekday }}

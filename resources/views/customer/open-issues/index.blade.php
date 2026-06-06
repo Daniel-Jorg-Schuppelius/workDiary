@@ -28,7 +28,7 @@
                                 @endif
                                 @if ($issue->due_at)
                                     <x-status-badge tone="ghost" size="sm">
-                                        {{ __('open-issue.field.due_at') }}: {{ $issue->due_at->format('d.m.Y') }}
+                                        {{ __('open-issue.field.due_at') }}: {{ $issue->due_at->fdate() }}
                                     </x-status-badge>
                                 @endif
                             </div>
@@ -39,7 +39,7 @@
                             <p class="mt-2 text-xs text-base-content/60">
                                 {{ __('open-issue.field.assignee') }}: {{ optional($issue->assignee)->name ?? '—' }}
                                 @if ($issue->closed_at)
-                                    · {{ __('open-issue.field.closed_at') }}: {{ $issue->closed_at->format('d.m.Y H:i') }}
+                                    · {{ __('open-issue.field.closed_at') }}: {{ $issue->closed_at->fdatetime() }}
                                 @endif
                             </p>
                         </div>

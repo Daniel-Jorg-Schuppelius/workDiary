@@ -35,9 +35,18 @@ const locale = isGerman ? German : "default";
 // MM/TT/JJJJ usw.), während das tatsächlich abgeschickte (versteckte) Feld
 // stets ISO `Y-m-d` bleibt — via Flatpickrs altInput/altFormat. Ohne altFormat
 // zeigt das Feld sonst das ISO-Format, das viele als „englisch" empfinden.
+// Bevorzugt das organisations-/benutzerseitig konfigurierte Format
+// (window.__formats, im Layout gesetzt); fällt sonst auf die Sprach-Ableitung
+// zurück. So zeigt der Datepicker dasselbe Format wie die serverseitige Anzeige.
 const dateFormatByLang = { de: "d.m.Y", en: "m/d/Y", fr: "d/m/Y", it: "d/m/Y" };
-const dateAltFormat = dateFormatByLang[htmlLang.slice(0, 2)] ?? "Y-m-d";
-const datetimeAltFormat = dateAltFormat + " H:i";
+const cfgFormats = (typeof window !== "undefined" && window.__formats) || {};
+// PHP-Token → flatpickr-Token: identisch bis auf AM/PM (PHP "A" → flatpickr "K").
+const toFlatpickrFormat = (fmt) => String(fmt || "").replace(/A/g, "K");
+const dateAltFormat = cfgFormats.date || dateFormatByLang[htmlLang.slice(0, 2)] || "Y-m-d";
+const timeAltFormat = toFlatpickrFormat(cfgFormats.time || "H:i");
+// 12-Stunden-Format erkennen (PHP "h"=12h, "H"=24h; "K"=AM/PM nach Konvertierung).
+const timeIs24h = !/[hK]/.test(timeAltFormat);
+const datetimeAltFormat = dateAltFormat + " " + timeAltFormat;
 
 const normalizeCompactTimeValue = (rawValue) => {
     const raw = String(rawValue || "").trim();
@@ -140,7 +149,7 @@ flatpickr('input[type="date"]', {
 flatpickr('input[type="datetime-local"]', {
     locale,
     enableTime: true,
-    time_24hr: true,
+    time_24hr: timeIs24h,
     minuteIncrement: 1,
     dateFormat: "Y-m-d\\TH:i",
     altInput: true,
@@ -211,7 +220,7 @@ window.__initFlatpickr = (el) => {
         flatpickr(el, {
             locale,
             enableTime: true,
-            time_24hr: true,
+            time_24hr: timeIs24h,
             minuteIncrement: 1,
             dateFormat: "Y-m-d\\TH:i",
             altInput: true,

@@ -33,7 +33,7 @@
             @endif
             @if ($task->due_date)
                 <span class="{{ $task->due_date->isPast() && $task->status !== \App\Enums\Task\TaskStatus::Done ? 'text-error' : '' }}">
-                    {{ $task->due_date->format('d.m.Y') }}
+                    {{ $task->due_date->fdate() }}
                 </span>
             @endif
             @if (! $indent && $task->subTasks->isNotEmpty())

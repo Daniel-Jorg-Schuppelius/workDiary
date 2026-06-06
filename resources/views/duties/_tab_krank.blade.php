@@ -32,14 +32,14 @@
                         <strong>{{ max(0, $sicknessStatus->remainingDays) }}</strong> {{ __('Tage') }}
                     </span>
                     @if ($sicknessStatus->chainStart)
-                        <span>{{ __('Beginn Krankheitskette') }}: {{ $sicknessStatus->chainStart->format('d.m.Y') }}</span>
+                        <span>{{ __('Beginn Krankheitskette') }}: {{ $sicknessStatus->chainStart->fdate() }}</span>
                     @endif
                     @if ($sicknessStatus->exhaustionDate)
                         <span class="text-{{ $tone }}">
                             @if ($sicknessStatus->exhausted)
-                                {{ __('Anspruch ausgeschöpft seit :date', ['date' => $sicknessStatus->exhaustionDate->format('d.m.Y')]) }}
+                                {{ __('Anspruch ausgeschöpft seit :date', ['date' => $sicknessStatus->exhaustionDate->fdate()]) }}
                             @else
-                                {{ __('Voraussichtliches Ende: :date', ['date' => $sicknessStatus->exhaustionDate->format('d.m.Y')]) }}
+                                {{ __('Voraussichtliches Ende: :date', ['date' => $sicknessStatus->exhaustionDate->fdate()]) }}
                             @endif
                         </span>
                     @endif
@@ -76,9 +76,9 @@
                     <td class="font-medium">{{ $s->user?->name ?? '—' }}</td>
                 @endif
                 <td class="whitespace-nowrap">
-                    {{ $s->start_date->format('d.m.Y') }}
+                    {{ $s->start_date->fdate() }}
                     @if ($s->start_date->ne($s->end_date))
-                        – {{ $s->end_date->format('d.m.Y') }}
+                        – {{ $s->end_date->fdate() }}
                     @endif
                 </td>
                 <td class="tabular-nums">{{ $days }}</td>
@@ -109,7 +109,7 @@
                         <x-status-badge tone="success" size="sm">{{ __('Gemeldet') }}</x-status-badge>
                     @endif
                     @if ($s->kasse_notified_at)
-                        <span class="tooltip tooltip-right ml-1" data-tip="{{ __('Krankenkasse informiert am :date', ['date' => $s->kasse_notified_at->format('d.m.Y')]) }}">
+                        <span class="tooltip tooltip-right ml-1" data-tip="{{ __('Krankenkasse informiert am :date', ['date' => $s->kasse_notified_at->fdate()]) }}">
                             <x-icon name="check_circle" class="h-3 w-3 text-success" />
                         </span>
                     @endif

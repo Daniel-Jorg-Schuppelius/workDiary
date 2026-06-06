@@ -40,7 +40,7 @@
                                 <input type="checkbox" name="expense_ids[]" value="{{ $expense->sqid }}"
                                        class="checkbox checkbox-sm" checked>
                             </td>
-                            <td class="whitespace-nowrap">{{ $expense->date->format('d.m.Y') }}</td>
+                            <td class="whitespace-nowrap">{{ $expense->date->fdate() }}</td>
                             <td>{{ $expense->user?->name ?? '—' }}</td>
                             <td>
                                 @if ($expense->category)

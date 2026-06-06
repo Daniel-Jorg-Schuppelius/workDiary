@@ -25,7 +25,7 @@
     <x-page-shell>
         <x-page-toolbar :title="__('Tour') . ' ' . ($tour->name ?? ('#' . $tour->id))" :badge="$tour->status?->label() ?? ''" badge-tone="ghost">
             <div class="text-sm text-base-content/70">
-                {{ $tour->tour_date?->format('d.m.Y') }} ·
+                {{ $tour->tour_date?->fdate() }} ·
                 {{ number_format((float) $tour->planned_distance_km, 2, ',', '.') }} km ·
                 {{ $tour->planned_duration_minutes }} min
             </div>
@@ -186,9 +186,9 @@
                                                 <div class="text-xs text-base-content/60">
                                                     {{ $svcLabel }}
                                                     @if ($a->mode === \App\Enums\Diary\Mode::Deadline && $a->due_date)
-                                                        · {{ __('fällig bis') }} {{ $a->due_date->format('d.m.Y') }}
+                                                        · {{ __('fällig bis') }} {{ $a->due_date->fdate() }}
                                                     @elseif ($a->mode === \App\Enums\Diary\Mode::Window && $a->window_end_date)
-                                                        · {{ __('Fenster bis') }} {{ $a->window_end_date->format('d.m.Y') }}
+                                                        · {{ __('Fenster bis') }} {{ $a->window_end_date->fdate() }}
                                                     @endif
                                                 </div>
                                             </div>

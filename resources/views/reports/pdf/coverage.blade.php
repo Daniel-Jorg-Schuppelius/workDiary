@@ -29,9 +29,9 @@
 
 <h1>{{ __('Coverage / Soll-Ist-Besetzung') }}</h1>
 <div class="meta">
-    Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->format('d.m.Y') }}</strong> bis
-    <strong>{{ \Carbon\Carbon::parse($to)->format('d.m.Y') }}</strong> ·
-    Erstellt: {{ now()->format('d.m.Y H:i') }}
+    Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> bis
+    <strong>{{ \Carbon\Carbon::parse($to)->fdate() }}</strong> ·
+    Erstellt: {{ now()->fdatetime() }}
 </div>
 
 <table class="kpis">

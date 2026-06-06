@@ -18,7 +18,7 @@
 <body>
 
 <h1>Woche pro Mitarbeiter – {{ $weekLabel }}</h1>
-<div class="meta">Erstellt: {{ now()->format('d.m.Y H:i') }}</div>
+<div class="meta">Erstellt: {{ now()->fdatetime() }}</div>
 
 <table>
     <thead>

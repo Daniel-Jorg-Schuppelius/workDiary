@@ -26,7 +26,7 @@
         if ($c['valid_until'] === null) {
             return '✓';
         }
-        return \Carbon\Carbon::parse($c['valid_until'])->format('d.m.Y');
+        return \Carbon\Carbon::parse($c['valid_until'])->fdate();
     };
 @endphp
 

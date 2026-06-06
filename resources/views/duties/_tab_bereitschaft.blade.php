@@ -19,8 +19,8 @@
                 @php $isSunday = $shift->start_at && $shift->start_at->isSunday(); @endphp
                 <tr class="hover {{ $isSunday ? 'text-error' : '' }}">
                     <td>{{ $shift->user?->name ?? '—' }}</td>
-                    <td class="whitespace-nowrap">{{ $shift->start_at?->format('d.m.Y H:i') ?? '—' }}</td>
-                    <td class="whitespace-nowrap">{{ $shift->end_at?->format('d.m.Y H:i') ?? '—' }}</td>
+                    <td class="whitespace-nowrap">{{ $shift->start_at?->fdatetime() ?? '—' }}</td>
+                    <td class="whitespace-nowrap">{{ $shift->end_at?->fdatetime() ?? '—' }}</td>
                     <td class="max-w-xs truncate">{{ $shift->note ?? '—' }}</td>
                     <td class="whitespace-nowrap text-right">
                         <x-icon-btn icon="edit"

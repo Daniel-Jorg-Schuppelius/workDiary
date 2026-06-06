@@ -86,7 +86,7 @@
             <option value="">—</option>
             @foreach ($travelLogs as $tl)
                 <option value="{{ $tl->sqid }}" @selected((string) old('travel_log_id', \App\Support\Sqid::encode(\App\Models\TravelLog::class, $trip?->travel_log_id)) === $tl->sqid)>
-                    {{ $tl->started_at?->format('d.m.Y') }} · {{ $tl->from_address ?: '?' }} → {{ $tl->to_address ?: '?' }}
+                    {{ $tl->started_at?->fdate() }} · {{ $tl->from_address ?: '?' }} → {{ $tl->to_address ?: '?' }}
                 </option>
             @endforeach
         </select>

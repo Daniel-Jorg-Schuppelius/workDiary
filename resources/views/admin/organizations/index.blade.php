@@ -44,7 +44,7 @@
                         {{ $org->name }}
                         @if (! $org->is_active && $deactivatedAt)
                             <div class="text-xs text-base-content/50">
-                                {{ __('Deaktiviert am :date', ['date' => $deactivatedAt->format('d.m.Y H:i')]) }}
+                                {{ __('Deaktiviert am :date', ['date' => $deactivatedAt->fdatetime()]) }}
                             </div>
                         @endif
                     </td>

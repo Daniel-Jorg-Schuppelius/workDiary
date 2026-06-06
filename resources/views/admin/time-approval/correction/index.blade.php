@@ -48,7 +48,7 @@
                 </x-slot:head>
                 @foreach ($requests as $r)
                     <tr>
-                        <td class="font-medium">{{ optional($r->scope_date)->format('d.m.Y') }}</td>
+                        <td class="font-medium">{{ optional($r->scope_date)->fdate() }}</td>
                         <td>{{ $r->user?->name }}</td>
                         <td>{{ $r->requestedBy?->name }}</td>
                         <td>

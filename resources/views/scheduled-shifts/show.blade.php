@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', __('Schicht'))
-@section('nav-title', __('Schicht am :date', ['date' => $shift->date->format('d.m.Y')]))
+@section('nav-title', __('Schicht am :date', ['date' => $shift->date->fdate()]))
 
 @section('content')
     <x-page-shell>
@@ -24,7 +24,7 @@
         <div class="card border border-base-300 bg-base-100 shadow-xs max-w-2xl">
             <div class="card-body grid gap-3 sm:grid-cols-2">
                 <div><span class="text-xs uppercase text-base-content/60">{{ __('Mitarbeiter') }}</span><div>{{ $shift->user?->name ?? '—' }}</div></div>
-                <div><span class="text-xs uppercase text-base-content/60">{{ __('Datum') }}</span><div>{{ $shift->date->format('d.m.Y') }}</div></div>
+                <div><span class="text-xs uppercase text-base-content/60">{{ __('Datum') }}</span><div>{{ $shift->date->fdate() }}</div></div>
                 <div><span class="text-xs uppercase text-base-content/60">{{ __('Beginn') }}</span><div>{{ $shift->start_time ?? '—' }}</div></div>
                 <div><span class="text-xs uppercase text-base-content/60">{{ __('Ende') }}</span><div>{{ $shift->end_time ?? '—' }}</div></div>
                 <div><span class="text-xs uppercase text-base-content/60">{{ __('Schichttyp') }}</span><div>{{ $shift->shiftType?->name ?? '—' }}</div></div>

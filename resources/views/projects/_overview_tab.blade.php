@@ -23,7 +23,7 @@
                     tone="success" />
         <x-kpi-tile :label="__('Nächster Milestone')"
                     :value="$nextMilestone ? \CommonToolkit\Helper\Data\StringHelper::truncate($nextMilestone->title, 28) : __('—')"
-                    :hint="$nextMilestone?->due_date?->format('d.m.Y') ?: ($nextMilestone ? __('kein Datum') : null)"
+                    :hint="$nextMilestone?->due_date?->fdate() ?: ($nextMilestone ? __('kein Datum') : null)"
                     format="text" />
     </div>
 
@@ -57,7 +57,7 @@
                                 {{ $milestone->title }}
                             </span>
                             @if ($milestone->due_date)
-                                <span class="text-xs text-base-content/50">{{ $milestone->due_date->format('d.m.Y') }}</span>
+                                <span class="text-xs text-base-content/50">{{ $milestone->due_date->fdate() }}</span>
                             @endif
                         </div>
                         @if ($mTotal > 0)
@@ -119,10 +119,10 @@
                 @foreach ($entries->take(5) as $entry)
                     @php
                         $dateLabel = match ($entry->mode) {
-                            \App\Enums\Diary\Mode::Deadline => $entry->due_date?->format('d.m.Y'),
-                            \App\Enums\Diary\Mode::Window => $entry->window_start_date?->format('d.m.Y'),
+                            \App\Enums\Diary\Mode::Deadline => $entry->due_date?->fdate(),
+                            \App\Enums\Diary\Mode::Window => $entry->window_start_date?->fdate(),
                             \App\Enums\Diary\Mode::Backlog => __('Backlog'),
-                            default => $entry->start_at?->format('d.m.Y H:i'),
+                            default => $entry->start_at?->fdatetime(),
                         };
                     @endphp
                     <li class="px-4 py-3">

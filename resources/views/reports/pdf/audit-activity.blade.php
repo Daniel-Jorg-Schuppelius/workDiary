@@ -46,9 +46,9 @@
 
 <h1>{{ __('Audit-Aktivität') }}</h1>
 <div class="meta">
-    {{ __('Zeitraum') }}: <strong>{{ \Carbon\Carbon::parse($from)->format('d.m.Y') }}</strong> {{ __('bis') }}
-    <strong>{{ \Carbon\Carbon::parse($to)->format('d.m.Y') }}</strong> ·
-    {{ __('Erstellt') }}: {{ now()->format('d.m.Y H:i') }}
+    {{ __('Zeitraum') }}: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> {{ __('bis') }}
+    <strong>{{ \Carbon\Carbon::parse($to)->fdate() }}</strong> ·
+    {{ __('Erstellt') }}: {{ now()->fdatetime() }}
 </div>
 
 <table class="kpis">

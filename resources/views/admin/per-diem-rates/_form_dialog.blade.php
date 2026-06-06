@@ -5,7 +5,7 @@
 @endphp
 <x-modal
     :title="$isEdit ? __('Pauschalensatz bearbeiten') : __('Pauschalensatz anlegen')"
-    :eyebrow="$isEdit ? ($rate->country . ' · ' . \Illuminate\Support\Carbon::parse($rate->valid_from)->format('d.m.Y')) : null"
+    :eyebrow="$isEdit ? ($rate->country . ' · ' . \Illuminate\Support\Carbon::parse($rate->valid_from)->fdate()) : null"
     icon="restaurant_menu"
     tone="primary"
     :action="$isEdit ? route('admin.per-diem-rates.update', $rate) : route('admin.per-diem-rates.store')"

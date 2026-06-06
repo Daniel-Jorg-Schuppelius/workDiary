@@ -71,10 +71,10 @@
                     <dt class="text-base-content/70">{{ __('Datei') }}</dt>
                     <dd class="font-mono text-xs break-all">{{ $export->file_path ?? '—' }}</dd>
                     <dt class="text-base-content/70">{{ __('Erstellt') }}</dt>
-                    <dd>{{ $export->created_at?->format('d.m.Y H:i') }} · {{ $export->creator?->name }}</dd>
+                    <dd>{{ $export->created_at?->fdatetime() }} · {{ $export->creator?->name }}</dd>
                     @if ($export->delivered_at)
                         <dt class="text-base-content/70">{{ __('Übermittelt') }}</dt>
-                        <dd>{{ $export->delivered_at->format('d.m.Y H:i') }} · {{ $export->deliveredBy?->name }}</dd>
+                        <dd>{{ $export->delivered_at->fdatetime() }} · {{ $export->deliveredBy?->name }}</dd>
                     @endif
                     @if ($export->supersededBy)
                         <dt class="text-base-content/70">{{ __('Ersetzt durch') }}</dt>
@@ -175,7 +175,7 @@
                             <td class="text-right tabular-nums" data-sort-value="{{ $line->quantity }}">{{ number_format((float) $line->quantity, 4, ',', '.') }}</td>
                             <td>{{ $line->unit }}</td>
                             <td class="text-xs tabular-nums" data-sort-value="{{ $line->period_start?->format('Y-m-d') ?? '' }}">
-                                {{ $line->period_start?->format('d.m.Y') }} – {{ $line->period_end?->format('d.m.Y') }}
+                                {{ $line->period_start?->fdate() }} – {{ $line->period_end?->fdate() }}
                             </td>
                         </tr>
                     @endforeach
@@ -198,7 +198,7 @@
                             </div>
                             <div class="timeline-end timeline-box">
                                 <div class="flex items-center gap-2 text-xs text-base-content/70">
-                                    <span class="tabular-nums">{{ $ev->created_at?->format('d.m.Y H:i') }}</span>
+                                    <span class="tabular-nums">{{ $ev->created_at?->fdatetime() }}</span>
                                     <span>·</span>
                                     <span>{{ $ev->actor?->name ?? __('System') }}</span>
                                 </div>

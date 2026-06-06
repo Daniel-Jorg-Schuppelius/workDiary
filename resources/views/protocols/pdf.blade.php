@@ -32,7 +32,7 @@
 
 <table class="meta">
     <tr><th>{{ __('protocol.field.type') }}</th><td>{{ $protocol->type->label() }}</td></tr>
-    <tr><th>{{ __('protocol.field.occurredAt') }}</th><td>{{ $protocol->occurred_at?->format('d.m.Y H:i') }}</td></tr>
+    <tr><th>{{ __('protocol.field.occurredAt') }}</th><td>{{ $protocol->occurred_at?->fdatetime() }}</td></tr>
     <tr><th>{{ __('protocol.field.revision') }}</th><td>{{ $protocol->revision }}</td></tr>
     <tr><th>{{ __('protocol.field.status') }}</th><td>{{ $protocol->status->label() }}</td></tr>
     <tr><th>{{ __('protocol.field.createdBy') }}</th><td>{{ $protocol->creator?->name }}</td></tr>
@@ -82,7 +82,7 @@
     @foreach ($protocol->signatures as $sig)
         <div class="signature">
             <strong>{{ $sig->signer_name }}</strong> — {{ $sig->role->label() }}<br>
-            {{ $sig->method->label() }} • {{ $sig->signed_at->format('d.m.Y H:i') }}
+            {{ $sig->method->label() }} • {{ $sig->signed_at->fdatetime() }}
             @if ($sig->ip)<br><small>{{ $sig->ip }}</small>@endif
         </div>
     @endforeach
@@ -90,7 +90,7 @@
 
 <div class="footer">
     {{ __('protocol.pdf.footer.hash') }}: {{ $hash }}<br>
-    {{ __('protocol.pdf.footer.generated', ['at' => $generatedAt->format('d.m.Y H:i')]) }}
+    {{ __('protocol.pdf.footer.generated', ['at' => $generatedAt->fdatetime()]) }}
 </div>
 </body>
 </html>

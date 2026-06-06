@@ -52,8 +52,8 @@
             <tr>
                 <td class="font-mono uppercase">{{ $rate->country }}</td>
                 <td>{{ $rate->region_label ?? '—' }}</td>
-                <td>{{ \Illuminate\Support\Carbon::parse($rate->valid_from)->format('d.m.Y') }}</td>
-                <td>{{ $rate->valid_to ? \Illuminate\Support\Carbon::parse($rate->valid_to)->format('d.m.Y') : '—' }}</td>
+                <td>{{ \Illuminate\Support\Carbon::parse($rate->valid_from)->fdate() }}</td>
+                <td>{{ $rate->valid_to ? \Illuminate\Support\Carbon::parse($rate->valid_to)->fdate() : '—' }}</td>
                 <td class="text-right tabular-nums">{{ number_format((float) $rate->full_day_amount, 2, ',', '.') }}</td>
                 <td class="text-right tabular-nums">{{ number_format((float) $rate->partial_day_amount, 2, ',', '.') }}</td>
                 <td class="text-right tabular-nums">{{ $rate->overnight_amount !== null ? number_format((float) $rate->overnight_amount, 2, ',', '.') : '—' }}</td>

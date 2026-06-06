@@ -5,7 +5,7 @@
             @foreach ($today as $shift)
                 <li class="flex items-center gap-2">
                     <x-icon name="event" />
-                    <span>{{ $shift->start_at->format('H:i') }} – {{ $shift->end_at->format('H:i') }}</span>
+                    <span>{{ $shift->start_at->ftime() }} – {{ $shift->end_at->ftime() }}</span>
                 </li>
             @endforeach
         </ul>

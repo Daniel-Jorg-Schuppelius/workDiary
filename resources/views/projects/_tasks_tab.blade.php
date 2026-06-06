@@ -85,7 +85,7 @@
                         </span>
                         {{ $ms->title }}
                         @if ($ms->due_date)
-                            <span class="font-normal normal-case opacity-60">· {{ $ms->due_date->format('d.m.Y') }}</span>
+                            <span class="font-normal normal-case opacity-60">· {{ $ms->due_date->fdate() }}</span>
                         @endif
                     @else
                         {{ __('Ohne Milestone') }}

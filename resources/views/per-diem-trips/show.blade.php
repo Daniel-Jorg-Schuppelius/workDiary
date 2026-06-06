@@ -15,7 +15,7 @@
 @section('content')
     <x-page-shell>
         <x-slot:toolbar>
-            <x-page-toolbar :title="$trip->location . ' · ' . $trip->started_at->format('d.m.Y')">
+            <x-page-toolbar :title="$trip->location . ' · ' . $trip->started_at->fdate()">
                 <x-slot:actions>
                     <x-status-badge :tone="$trip->status->tone()">{{ $trip->status->label() }}</x-status-badge>
                     <x-icon-btn icon="picture_as_pdf" tone="ghost" size="sm"
@@ -68,7 +68,7 @@
                 <p class="mt-2 text-sm text-base-content/60 whitespace-pre-line">{{ $trip->notes }}</p>
             @endif
             <p class="mt-2 text-xs text-base-content/60">
-                {{ $trip->started_at->orgTz()->format('d.m.Y H:i') }} – {{ $trip->ended_at->orgTz()->format('d.m.Y H:i') }}
+                {{ $trip->started_at->fdatetime() }} – {{ $trip->ended_at->fdatetime() }}
                 @if ($trip->accommodation_provided)
                     · <x-status-badge tone="ghost" size="xs">{{ __('Übernachtung gestellt') }}</x-status-badge>
                 @endif
@@ -93,7 +93,7 @@
                 @foreach ($trip->days as $day)
                     @php($fid = 'pd-day-form-' . $day->id)
                     <tr>
-                        <td class="whitespace-nowrap" data-sort-value="{{ $day->date->format('Y-m-d') }}">{{ $day->date->format('d.m.Y') }}</td>
+                        <td class="whitespace-nowrap" data-sort-value="{{ $day->date->format('Y-m-d') }}">{{ $day->date->fdate() }}</td>
                         <td><x-status-badge tone="ghost" size="sm">{{ $day->kind->label() }}</x-status-badge></td>
                         <td class="text-right whitespace-nowrap" data-sort-value="{{ $day->base_amount }}">{{ number_format((float) $day->base_amount, 2, ',', '.') }} €</td>
                         <td class="text-center">

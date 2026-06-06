@@ -146,7 +146,7 @@
                 </x-slot:head>
                 @forelse ($minimumWages as $mw)
                     <tr>
-                        <td data-sort-value="{{ $mw->valid_from->format('Y-m-d') }}">{{ $mw->valid_from->format('d.m.Y') }}</td>
+                        <td data-sort-value="{{ $mw->valid_from->format('Y-m-d') }}">{{ $mw->valid_from->fdate() }}</td>
                         <td class="tabular-nums">{{ number_format((float) $mw->hourly_amount, 2, ',', '.') }} €</td>
                         <td class="text-sm text-base-content/70">{{ $mw->note }}</td>
                         <td class="text-right">
@@ -186,7 +186,7 @@
                         'country' => $reference->country,
                         'amount' => number_format((float) $reference->monthly_amount, 2, ',', '.'),
                         'currency' => $reference->currency,
-                        'date' => $reference->valid_from->format('d.m.Y'),
+                        'date' => $reference->valid_from->fdate(),
                     ]) }}
                 </p>
                 <p class="text-xs text-base-content/50">{{ __('Monatlicher gesetzlicher Mindestlohn laut Eurostat – informativ, getrennt vom oben gepflegten Stundensatz.') }}</p>

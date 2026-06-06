@@ -16,7 +16,7 @@
         @if (! empty($org))
             <div><strong>{{ $org }}</strong></div>
         @endif
-        <div>{{ __('Erstellt am') }} {{ $generatedAt->format('d.m.Y H:i') }}</div>
+        <div>{{ __('Erstellt am') }} {{ $generatedAt->fdatetime() }}</div>
         @if (! empty($extraMeta))
             <div>{{ $extraMeta }}</div>
         @endif

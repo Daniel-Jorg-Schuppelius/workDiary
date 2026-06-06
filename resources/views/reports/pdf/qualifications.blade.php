@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<title>Qualifikationsmatrix – {{ now()->format('d.m.Y') }}</title>
+<title>Qualifikationsmatrix – {{ now()->fdate() }}</title>
 <style>
     @page { margin: 12mm 10mm; }
     body  { font-family: DejaVu Sans, sans-serif; font-size: 8.5pt; color: #111; }
@@ -43,7 +43,7 @@
 @endphp
 
 <h1>Qualifikationsmatrix</h1>
-<div class="meta">Stand: {{ now()->format('d.m.Y H:i') }}</div>
+<div class="meta">Stand: {{ now()->fdatetime() }}</div>
 
 <table class="kpis">
     <tr>

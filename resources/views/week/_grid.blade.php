@@ -97,7 +97,7 @@
                 @foreach ($shiftsByDay[$dayIndex] as $shift)
                     @php
                         $p = $service->placement($shift->start_at, $shift->end_at, $day);
-                        $shiftTitle = __('Bereitschaft') . ' · ' . ($shift->user?->name ?? '—') . ' · ' . $shift->start_at->orgTz()->format('d.m. H:i') . '–' . $shift->end_at->orgTz()->format('H:i');
+                        $shiftTitle = __('Bereitschaft') . ' · ' . ($shift->user?->name ?? '—') . ' · ' . $shift->start_at->orgTz()->format('d.m. H:i') . '–' . $shift->end_at->ftime();
                     @endphp
                     @can('update', $shift)
                         <a href="{{ route('shifts.edit', $shift) }}"
@@ -118,7 +118,7 @@
                 @foreach ($assignmentsByDay[$dayIndex] as $assignment)
                     @php
                         $p = $service->placement($assignment->start_at, $assignment->end_at, $day);
-                        $assignmentTitle = __('Notdienst') . ' · ' . ($assignment->user?->name ?? '—') . ' · ' . $assignment->start_at->orgTz()->format('d.m. H:i') . '–' . $assignment->end_at->orgTz()->format('H:i') . ($assignment->reason ? ' · ' . $assignment->reason : '');
+                        $assignmentTitle = __('Notdienst') . ' · ' . ($assignment->user?->name ?? '—') . ' · ' . $assignment->start_at->orgTz()->format('d.m. H:i') . '–' . $assignment->end_at->ftime() . ($assignment->reason ? ' · ' . $assignment->reason : '');
                     @endphp
                     @can('update', $assignment)
                         <a href="{{ route('assignments.edit', $assignment) }}"
@@ -148,7 +148,7 @@
                        class="wd-week-entry {{ $toneClass }}"
                        style="top: {{ $placed['top'] }}%; height: {{ max($placed['height'], 3) }}%; left: calc(1rem + (100% - 1.25rem) * {{ $leftFrac }} + 2px); width: calc((100% - 1.25rem) * {{ $widthFrac }} - 4px); border-left: 3px solid hsl({{ $userHue }} 70% 45%);"
                        title="{{ $entry->statusLabel() }} · {{ $entry->user?->name }} · {{ $entry->start_at?->orgTz()->format('d.m. H:i') }}">
-                        <span class="wd-week-entry-time">{{ $entry->start_at?->orgTz()->format('H:i') }}{{ $entry->user ? ' · ' . $entry->user->name : '' }}</span>
+                        <span class="wd-week-entry-time">{{ $entry->start_at?->ftime() }}{{ $entry->user ? ' · ' . $entry->user->name : '' }}</span>
                         <span class="wd-week-entry-text">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content, 60) }}</span>
                     </a>
                 @endforeach

@@ -65,7 +65,7 @@
                     <?php $m = (int)$ts->total_work_minutes % 60; ?>
                     <?php $tsIsSunday = $ts->work_date && \Carbon\Carbon::parse($ts->work_date)->isSunday(); ?>
                     <tr class="{{ $tsIsSunday ? 'text-error' : '' }}">
-                        <td>{{ optional($ts->work_date)->format('d.m.Y') }}</td>
+                        <td>{{ optional($ts->work_date)->fdate() }}</td>
                         <td>{{ $ts->project?->name }}</td>
                         <td>{{ $ts->user?->name }}</td>
                         <td class="text-right tabular-nums">{{ $h }}:{{ str_pad((string)$m,2,'0',STR_PAD_LEFT) }} h</td>

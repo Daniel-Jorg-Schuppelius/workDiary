@@ -11,7 +11,7 @@
     <div class="mb-4 rounded-box bg-base-100 p-4 shadow">
         <h1 class="font-['Space_Grotesk'] text-xl font-semibold">{{ __('Stundenzettel signieren') }}</h1>
         <div class="mt-1 text-sm text-base-content/70">
-            {{ $timesheet->project?->name }} · {{ optional($timesheet->work_date)->format('d.m.Y') }}
+            {{ $timesheet->project?->name }} · {{ optional($timesheet->work_date)->fdate() }}
         </div>
     </div>
 
@@ -22,8 +22,8 @@
             </x-slot:head>
             @foreach($timesheet->entries as $e)
                 <tr>
-                    <td>{{ $e->started_at?->orgTz()->format('H:i') }}</td>
-                    <td>{{ $e->ended_at?->orgTz()->format('H:i') }}</td>
+                    <td>{{ $e->started_at?->ftime() }}</td>
+                    <td>{{ $e->ended_at?->ftime() }}</td>
                     <td class="text-right">{{ (int)$e->minutes }}</td>
                     <td>{{ $e->kind?->label() ?? '' }}</td>
                     <td>{{ $e->description }}</td>

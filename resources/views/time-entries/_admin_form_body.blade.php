@@ -58,7 +58,7 @@
     @if ($openAttendance)
         <input type="hidden" name="attendance_id" value="{{ $openAttendance->sqid }}">
         <p class="text-xs text-base-content/60 md:col-span-2">
-            {{ __('Wird mit Stempelung verknüpft (seit :time).', ['time' => $openAttendance->started_at?->orgTz()->format('H:i')]) }}
+            {{ __('Wird mit Stempelung verknüpft (seit :time).', ['time' => $openAttendance->started_at?->ftime()]) }}
         </p>
     @endif
 </x-form-group>

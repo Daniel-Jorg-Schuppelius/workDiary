@@ -199,8 +199,8 @@
                                     <td>{{ optional($entry->author)->uname ?? __('Unbekannt') }}</td>
                                     <td class="max-w-md truncate" title="{{ $entry->inhalt ?? '' }}">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->inhalt ?? '', 120) }}</td>
                                     <td class="max-w-xs truncate" title="{{ $entry->antwort ?? '' }}">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->antwort ?? '', 80) }}</td>
-                                    <td>{{ $entry->von?->format('d.m.Y H:i') ?? '-' }}</td>
-                                    <td>{{ $entry->bis?->format('d.m.Y H:i') ?? '-' }}</td>
+                                    <td>{{ $entry->von?->fdatetime() ?? '-' }}</td>
+                                    <td>{{ $entry->bis?->fdatetime() ?? '-' }}</td>
                                     <td class="whitespace-nowrap text-right">
                                         <x-icon-btn icon="visibility"
                                                     data-entry-modal-trigger
@@ -323,8 +323,8 @@
                     @forelse ($oncallItems as $item)
                         <tr class="hover">
                             <td>{{ optional($item->mitarbeiter)->uname ?? __('Unbekannt') }}</td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->von?->format('d.m.Y') ?? '-' }}</td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->bis?->format('d.m.Y') ?? '-' }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->von?->fdate() ?? '-' }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->bis?->fdate() ?? '-' }}</td>
                             <td class="text-right whitespace-nowrap">
                                 @if ($isAdmin)
                                     <x-icon-btn icon="edit"
@@ -410,8 +410,8 @@
                     @forelse ($notdienstItems as $item)
                         <tr class="hover">
                             <td>{{ optional($item->mitarbeiter)->uname ?? __('Unbekannt') }}</td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->von?->format('d.m.Y') ?? '-' }}</td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->bis?->format('d.m.Y') ?? '-' }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->von?->fdate() ?? '-' }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $item->bis?->fdate() ?? '-' }}</td>
                             <td class="text-right whitespace-nowrap">
                                 @if ($isAdmin)
                                     <x-icon-btn icon="edit"
@@ -554,8 +554,8 @@
                                 <td>{{ $v->user?->name ?? '—' }}</td>
                             @endif
                             <td class="whitespace-nowrap">{{ $typeLabel }}</td>
-                            <td class="whitespace-nowrap">{{ $v->start_date->format('d.m.Y') }}</td>
-                            <td class="whitespace-nowrap">{{ $v->end_date->format('d.m.Y') }}</td>
+                            <td class="whitespace-nowrap">{{ $v->start_date->fdate() }}</td>
+                            <td class="whitespace-nowrap">{{ $v->end_date->fdate() }}</td>
                             <td><span class="badge badge-sm {{ $statusBadge }}">{{ $statusLabel }}</span></td>
                             <td class="max-w-xs truncate text-base-content/70">{{ $v->note ?? '—' }}</td>
                             <td class="whitespace-nowrap text-right">

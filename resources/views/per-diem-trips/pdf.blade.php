@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<title>Reisekostenabrechnung – {{ $trip->location }} ({{ $trip->started_at->format('d.m.Y') }})</title>
+<title>Reisekostenabrechnung – {{ $trip->location }} ({{ $trip->started_at->fdate() }})</title>
 <style>
     @page { margin: 14mm 12mm; }
     body  { font-family: DejaVu Sans, sans-serif; font-size: 9pt; color: #111; }
@@ -42,7 +42,7 @@
 <h1>{{ __('Reisekostenabrechnung – Verpflegungspauschale') }}</h1>
 <div class="meta">
     Reise #{{ $trip->id }} · Status: <strong>{{ $trip->status->label() }}</strong> ·
-    Erstellt: {{ now()->format('d.m.Y H:i') }}
+    Erstellt: {{ now()->fdatetime() }}
 </div>
 
 <table class="header-table">
@@ -56,7 +56,7 @@
         <td class="label">{{ __('Ort / Ziel') }}</td>
         <td>{{ $trip->location }}</td>
         <td class="label">Zeitraum</td>
-        <td>{{ $trip->started_at->orgTz()->format('d.m.Y H:i') }} – {{ $trip->ended_at->orgTz()->format('d.m.Y H:i') }}</td>
+        <td>{{ $trip->started_at->fdatetime() }} – {{ $trip->ended_at->fdatetime() }}</td>
     </tr>
     <tr>
         <td class="label">Zweck</td>
@@ -104,7 +104,7 @@
     <tbody>
         @foreach ($trip->days as $day)
             <tr>
-                <td>{{ $day->date->format('d.m.Y') }}</td>
+                <td>{{ $day->date->fdate() }}</td>
                 <td>{{ $day->kind->label() }}</td>
                 <td class="right">{{ $fmtEur($day->base_amount) }}</td>
                 <td class="center">{{ $day->meal_breakfast ? '×' : '' }}</td>
@@ -141,7 +141,7 @@
 </table>
 
 <div class="footer">
-    Erstellt mit workDiary · {{ now()->format('d.m.Y H:i') }} · Reise #{{ $trip->id }}
+    Erstellt mit workDiary · {{ now()->fdatetime() }} · Reise #{{ $trip->id }}
 </div>
 
 </body>

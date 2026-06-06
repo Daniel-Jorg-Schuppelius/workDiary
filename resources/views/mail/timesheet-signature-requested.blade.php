@@ -8,7 +8,7 @@
 @endcomponent
 
 @component('mail::panel')
-{{ $timesheet->project?->name }} · {{ optional($timesheet->work_date)->format('d.m.Y') }}
+{{ $timesheet->project?->name }} · {{ optional($timesheet->work_date)->fdate() }}
 @endcomponent
 
 {{ __('Danke!') }}

@@ -128,19 +128,17 @@
 
         <div class="fieldset">
             <label class="fieldset-label">{{ __('Datumsformat') }}</label>
-            <input type="text" name="preferences[date_format]" maxlength="32"
-                   class="input input-bordered w-full"
-                   placeholder="{{ config('personalization.defaults.date_format') }}"
-                   value="{{ old('preferences.date_format', $prefs['date_format'] ?? '') }}">
+            <x-format-select type="date" name="preferences[date_format]"
+                             :selected="old('preferences.date_format', data_get($user->preferences, 'date_format'))"
+                             include-blank :blank-label="__('Organisation übernehmen')" />
             @error('preferences.date_format')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
         <div class="fieldset">
             <label class="fieldset-label">{{ __('Uhrzeitformat') }}</label>
-            <input type="text" name="preferences[time_format]" maxlength="32"
-                   class="input input-bordered w-full"
-                   placeholder="{{ config('personalization.defaults.time_format') }}"
-                   value="{{ old('preferences.time_format', $prefs['time_format'] ?? '') }}">
+            <x-format-select type="time" name="preferences[time_format]"
+                             :selected="old('preferences.time_format', data_get($user->preferences, 'time_format'))"
+                             include-blank :blank-label="__('Organisation übernehmen')" />
             @error('preferences.time_format')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 

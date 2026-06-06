@@ -53,7 +53,7 @@
                         <td class="font-medium">{{ $issue->title }}</td>
                         <td><x-status-badge tone="ghost" outline>{{ $issue->status->label() }}</x-status-badge></td>
                         <td><x-status-badge tone="ghost" outline>{{ $issue->severity->label() }}</x-status-badge></td>
-                        <td>{{ $issue->due_at?->format('d.m.Y') ?? '—' }}</td>
+                        <td>{{ $issue->due_at?->fdate() ?? '—' }}</td>
                         <td>{{ $issue->assignee?->name ?? '—' }}</td>
                     </tr>
                 @endforeach

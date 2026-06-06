@@ -20,7 +20,7 @@
             <input type="time" name="end_time" required class="input input-bordered w-full">
         </div>
         <p class="text-xs text-base-content/60 md:col-span-2">
-            {{ __('Datum stammt aus dem Stundenzettel (:date). Endet die Zeit nach Mitternacht? Einfach die kleinere Uhrzeit eintragen.', ['date' => optional($timesheet->work_date)->format('d.m.Y')]) }}
+            {{ __('Datum stammt aus dem Stundenzettel (:date). Endet die Zeit nach Mitternacht? Einfach die kleinere Uhrzeit eintragen.', ['date' => optional($timesheet->work_date)->fdate()]) }}
         </p>
         <div class="fieldset">
             <label class="fieldset-label">{{ __('Pause (Min.)') }}</label>

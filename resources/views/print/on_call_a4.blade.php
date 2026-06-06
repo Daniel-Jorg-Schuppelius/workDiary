@@ -42,8 +42,8 @@
             @foreach ($shifts as $s)
                 <tr>
                     <td><strong>{{ $anonymous ? \CommonToolkit\Helper\Data\StringHelper::printableInitials($s->user?->name) : ($s->user?->name ?? '—') }}</strong></td>
-                    <td>{{ $s->start_at?->format('d.m.Y H:i') }}</td>
-                    <td>{{ $s->end_at?->format('d.m.Y H:i') }}</td>
+                    <td>{{ $s->start_at?->fdatetime() }}</td>
+                    <td>{{ $s->end_at?->fdatetime() }}</td>
                     <td>{{ $s->note }}</td>
                 </tr>
             @endforeach
@@ -74,8 +74,8 @@
             @foreach ($assignments as $a)
                 <tr>
                     <td><strong>{{ $anonymous ? \CommonToolkit\Helper\Data\StringHelper::printableInitials($a->user?->name) : ($a->user?->name ?? '—') }}</strong></td>
-                    <td>{{ $a->start_at?->format('d.m.Y H:i') }}</td>
-                    <td>{{ $a->end_at?->format('d.m.Y H:i') }}</td>
+                    <td>{{ $a->start_at?->fdatetime() }}</td>
+                    <td>{{ $a->end_at?->fdatetime() }}</td>
                     <td>{{ $a->reason }}</td>
                 </tr>
             @endforeach
@@ -85,6 +85,6 @@
 
 <div class="footer">
     <span>{{ $org ?? '' }}</span>
-    <span>{{ now()->format('d.m.Y H:i') }}</span>
+    <span>{{ now()->fdatetime() }}</span>
 </div>
 @endsection

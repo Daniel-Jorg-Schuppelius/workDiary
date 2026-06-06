@@ -51,7 +51,7 @@
                 </x-slot:head>
                 @foreach ($timeEntries as $entry)
                     <tr class="hover:bg-base-200/50">
-                        <td class="whitespace-nowrap text-xs" data-sort-value="{{ $entry->date->format('Y-m-d') }}">{{ $entry->date->format('d.m.Y') }}</td>
+                        <td class="whitespace-nowrap text-xs" data-sort-value="{{ $entry->date->format('Y-m-d') }}">{{ $entry->date->fdate() }}</td>
                         <td class="text-xs">{{ $entry->user->name ?? '—' }}</td>
                         <td class="whitespace-nowrap text-right text-xs font-medium">{{ $entry->hoursFormatted() }}</td>
                         <td class="text-xs text-base-content/70">{{ $entry->task->title ?? '—' }}</td>

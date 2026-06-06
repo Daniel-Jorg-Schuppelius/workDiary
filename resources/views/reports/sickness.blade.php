@@ -54,7 +54,7 @@
                             {{ $r['user']->name }}
                             @if ($r['chain_start'])
                                 <div class="text-xs text-base-content/60">
-                                    {{ __('Kette seit') }} {{ \Carbon\Carbon::parse($r['chain_start'])->format('d.m.Y') }}
+                                    {{ __('Kette seit') }} {{ \Carbon\Carbon::parse($r['chain_start'])->fdate() }}
                                 </div>
                             @endif
                         </td>
@@ -74,7 +74,7 @@
                                 <x-status-badge tone="error">{{ __('Ausgeschöpft') }}</x-status-badge>
                                 @if ($r['exhaustion_date'])
                                     <div class="text-xs text-base-content/60">
-                                        {{ \Carbon\Carbon::parse($r['exhaustion_date'])->format('d.m.Y') }}
+                                        {{ \Carbon\Carbon::parse($r['exhaustion_date'])->fdate() }}
                                     </div>
                                 @endif
                             @elseif ($r['used_days'] > 0)

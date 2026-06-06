@@ -39,12 +39,12 @@
                             @endif
                         </div>
                         <div class="mt-1 text-xs text-base-content/60">
-                            {{ __('Ab') }} {{ $rule->starts_on?->format('d.m.Y') }}
+                            {{ __('Ab') }} {{ $rule->starts_on?->fdate() }}
                             @if ($rule->ends_on)
-                                · {{ __('bis') }} {{ $rule->ends_on->format('d.m.Y') }}
+                                · {{ __('bis') }} {{ $rule->ends_on->fdate() }}
                             @endif
                             @if ($rule->last_generated_until)
-                                · {{ __('erzeugt bis') }} {{ $rule->last_generated_until->format('d.m.Y') }}
+                                · {{ __('erzeugt bis') }} {{ $rule->last_generated_until->fdate() }}
                             @endif
                         </div>
                         @if ($rule->title_template)

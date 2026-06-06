@@ -65,7 +65,7 @@
                 </x-slot:head>
                 @forelse ($tours as $tour)
                     <tr>
-                        <td>{{ $tour->tour_date?->format('d.m.Y') }}</td>
+                        <td>{{ $tour->tour_date?->fdate() }}</td>
                         <td>{{ $tour->user?->name }}</td>
                         <td>{{ $tour->vehicle?->license_plate ?? '—' }}</td>
                         <td>

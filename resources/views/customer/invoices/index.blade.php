@@ -20,7 +20,7 @@
                 @foreach ($invoices as $invoice)
                     <tr class="border-b border-base-200">
                         <td class="p-2">{{ $invoice->number }}</td>
-                        <td class="p-2 whitespace-nowrap">{{ optional($invoice->issued_on)->format('d.m.Y') }}</td>
+                        <td class="p-2 whitespace-nowrap">{{ optional($invoice->issued_on)->fdate() }}</td>
                         <td class="p-2">{{ $invoice->status }}</td>
                         <td class="p-2 text-right">{{ number_format((float) $invoice->total, 2, ',', '.') }} {{ $invoice->currency }}</td>
                     </tr>

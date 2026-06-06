@@ -33,7 +33,7 @@
 
     <h1>{{ __('Arbeitsbilanz') }} — {{ $label }}</h1>
     <div class="meta">
-        {{ $user->name }} ({{ $user->email }}) — {{ __('Erstellt') }}: {{ now()->format('d.m.Y H:i') }}
+        {{ $user->name }} ({{ $user->email }}) — {{ __('Erstellt') }}: {{ now()->fdatetime() }}
     </div>
 
     <table class="summary">
@@ -80,7 +80,7 @@
                     @continue
                 @endif
                 <tr>
-                    <td>{{ \Carbon\Carbon::parse($day->date)->format('d.m.Y') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($day->date)->fdate() }}</td>
                     <td class="num">{{ $fmt($day->targetMinutes) }}</td>
                     <td class="num">{{ $fmt($day->attendanceMinutes) }}</td>
                     <td class="num">{{ $fmt($day->breakMinutes) }}</td>

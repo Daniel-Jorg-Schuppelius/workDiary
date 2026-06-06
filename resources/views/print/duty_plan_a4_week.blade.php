@@ -17,7 +17,7 @@
     'title'       => $title,
     'subtitle'    => $dutyPlan->title . ($anonymous ? ' · ' . __('Anonymisiert') : ''),
     'org'         => $org ?? null,
-    'extraMeta'   => $from->format('d.m.Y') . ' – ' . $to->format('d.m.Y'),
+    'extraMeta'   => $from->fdate() . ' – ' . $to->fdate(),
 ])
 
 @if ($users->isEmpty())
@@ -96,6 +96,6 @@
 
 <div class="footer">
     <span>{{ $org ?? '' }} · {{ $dutyPlan->title }} · KW {{ $from->weekOfYear }} / {{ $from->year }}</span>
-    <span>{{ now()->format('d.m.Y H:i') }}</span>
+    <span>{{ now()->fdatetime() }}</span>
 </div>
 @endsection

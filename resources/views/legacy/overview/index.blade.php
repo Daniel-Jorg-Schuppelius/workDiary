@@ -33,7 +33,7 @@
             <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                 <div class="mb-3 flex items-center justify-between">
                     <h2 class="text-sm font-semibold uppercase tracking-wider text-base-content/70">
-                        {{ __('Bereitschaft heute') }} ({{ $today->format('d.m.Y') }})
+                        {{ __('Bereitschaft heute') }} ({{ $today->fdate() }})
                     </h2>
                     <a href="{{ route('legacy.oncall.index') }}" class="btn btn-xs btn-ghost">{{ __('Alle') }} →</a>
                 </div>
@@ -45,7 +45,7 @@
                             <li class="flex items-center justify-between rounded-box border border-base-200 bg-base-200/40 px-3 py-2 text-sm">
                                 <span class="font-semibold">{{ optional($shift->mitarbeiter)->uname ?? '—' }}</span>
                                 <span class="text-xs text-base-content/70">
-                                    {{ $shift->von?->format('d.m.') }} – {{ $shift->bis?->format('d.m.Y') }}
+                                    {{ $shift->von?->format('d.m.') }} – {{ $shift->bis?->fdate() }}
                                 </span>
                             </li>
                         @endforeach
@@ -56,7 +56,7 @@
             <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                 <div class="mb-3 flex items-center justify-between">
                     <h2 class="text-sm font-semibold uppercase tracking-wider text-base-content/70">
-                        {{ __('Notdienst heute') }} ({{ $today->format('d.m.Y') }})
+                        {{ __('Notdienst heute') }} ({{ $today->fdate() }})
                     </h2>
                     <a href="{{ route('legacy.notdienst.index') }}" class="btn btn-xs btn-ghost">{{ __('Alle') }} →</a>
                 </div>
@@ -68,7 +68,7 @@
                             <li class="flex items-center justify-between rounded-box border border-base-200 bg-base-200/40 px-3 py-2 text-sm">
                                 <span class="font-semibold">{{ optional($shift->mitarbeiter)->uname ?? '—' }}</span>
                                 <span class="text-xs text-base-content/70">
-                                    {{ $shift->von?->format('d.m.') }} – {{ $shift->bis?->format('d.m.Y') }}
+                                    {{ $shift->von?->format('d.m.') }} – {{ $shift->bis?->fdate() }}
                                 </span>
                             </li>
                         @endforeach

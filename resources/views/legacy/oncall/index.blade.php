@@ -78,8 +78,8 @@
                     <tr class="hover">
                         <td class="text-center">{{ $item->id }}</td>
                         <td>{{ optional($item->mitarbeiter)->uname ?? __('Unbekannt') }}</td>
-                        <td class="bg-info/10 text-center">{{ $item->von?->format('d.m.Y') ?? '-' }}</td>
-                        <td class="bg-info/10 text-center">{{ $item->bis?->format('d.m.Y') ?? '-' }}</td>
+                        <td class="bg-info/10 text-center">{{ $item->von?->fdate() ?? '-' }}</td>
+                        <td class="bg-info/10 text-center">{{ $item->bis?->fdate() ?? '-' }}</td>
                         <td class="text-right whitespace-nowrap">
                             @if ($isAdmin)
                                 <div class="inline-flex items-center justify-end gap-1 whitespace-nowrap">

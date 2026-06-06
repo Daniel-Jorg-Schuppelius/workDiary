@@ -89,7 +89,7 @@
                     <tr>
                         <td>{{ $member->name }}</td>
                         <td class="text-sm text-base-content/70">{{ $member->email }}</td>
-                        <td class="text-sm" @if ($member->pivot->joined_at) data-sort-value="{{ \Carbon\Carbon::parse($member->pivot->joined_at)->format('Y-m-d') }}" @endif>{{ optional($member->pivot->joined_at)->format('d.m.Y') }}</td>
+                        <td class="text-sm" @if ($member->pivot->joined_at) data-sort-value="{{ \Carbon\Carbon::parse($member->pivot->joined_at)->format('Y-m-d') }}" @endif>{{ optional($member->pivot->joined_at)->fdate() }}</td>
                         <td class="text-right">
                             <form method="POST" action="{{ route('admin.access.groups.members.detach', [$group, $member]) }}" class="inline">
                                 @csrf @method('DELETE')

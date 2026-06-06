@@ -38,7 +38,7 @@
 
 @if ($invoice->isCancelled())
     <div class="banner banner-cancelled">
-        {{ __('STORNIERT') }}@if ($invoice->cancelled_at) – {{ $invoice->cancelled_at->format('d.m.Y') }}@endif
+        {{ __('STORNIERT') }}@if ($invoice->cancelled_at) – {{ $invoice->cancelled_at->fdate() }}@endif
         @if ($invoice->cancel_reason)<br><span style="font-weight:normal">{{ $invoice->cancel_reason }}</span>@endif
     </div>
 @endif
@@ -47,7 +47,7 @@
     <div class="banner banner-credit">
         {{ __('GUTSCHRIFT / KORREKTURRECHNUNG zu Rechnung :nr vom :date', [
             'nr' => $invoice->parent->number,
-            'date' => optional($invoice->parent->issued_on ?? $invoice->parent->created_at)->format('d.m.Y'),
+            'date' => optional($invoice->parent->issued_on ?? $invoice->parent->created_at)->fdate(),
         ]) }}
     </div>
 @endif
@@ -63,12 +63,12 @@
     <div class="right">
         <h1>{{ $invoice->documentLabel() }}</h1>
         <strong>{{ $invoice->number }}</strong><br>
-        {{ __('Datum') }}: {{ optional($invoice->issued_on ?? $invoice->created_at)->format('d.m.Y') }}<br>
-        @if ($invoice->due_on) {{ __('Fällig') }}: {{ $invoice->due_on->format('d.m.Y') }}<br> @endif
+        {{ __('Datum') }}: {{ optional($invoice->issued_on ?? $invoice->created_at)->fdate() }}<br>
+        @if ($invoice->due_on) {{ __('Fällig') }}: {{ $invoice->due_on->fdate() }}<br> @endif
         @if ($invoice->hasServicePeriod())
-            {{ $invoice->dateLabelPeriod() }}: {{ $invoice->serviceDateFrom()->format('d.m.Y') }} – {{ $invoice->serviceDateTo()->format('d.m.Y') }}<br>
+            {{ $invoice->dateLabelPeriod() }}: {{ $invoice->serviceDateFrom()->fdate() }} – {{ $invoice->serviceDateTo()->fdate() }}<br>
         @elseif ($invoice->serviceDateSingle())
-            {{ $invoice->dateLabelSingle() }}: {{ $invoice->serviceDateSingle()->format('d.m.Y') }}<br>
+            {{ $invoice->dateLabelSingle() }}: {{ $invoice->serviceDateSingle()->fdate() }}<br>
         @endif
     </div>
 </div>
@@ -91,7 +91,7 @@
         <tr>
             <td>{{ $item->position }}</td>
             <td>{{ $item->description }}</td>
-            @if ($showServiceDates)<td>{{ optional($item->service_date)->format('d.m.Y') ?: '—' }}</td>@endif
+            @if ($showServiceDates)<td>{{ optional($item->service_date)->fdate() ?: '—' }}</td>@endif
             <td class="num">{{ number_format((float) $item->quantity, 2, ',', '.') }} {{ $item->unit }}</td>
             <td class="num">{{ number_format((float) $item->unit_price, 2, ',', '.') }} {{ $invoice->currency }}</td>
             <td class="num">{{ number_format((float) $item->amount, 2, ',', '.') }} {{ $invoice->currency }}</td>

@@ -22,7 +22,7 @@
             <h2 class="font-['Space_Grotesk'] text-lg font-semibold">
                 {{ __('Keine Aktivität im Zeitraum') }}
                 <span class="text-xs uppercase tracking-[0.18em] text-base-content/60 ml-2">
-                    {{ $rangeFrom->format('d.m.Y') }} – {{ $rangeTo->format('d.m.Y') }}
+                    {{ $rangeFrom->fdate() }} – {{ $rangeTo->fdate() }}
                 </span>
             </h2>
             <div class="text-xs uppercase tracking-[0.18em] text-base-content/60">
@@ -57,7 +57,7 @@
                             <td>{{ $project->status?->value }}</td>
                             <td class="text-sm tabular-nums">
                                 @php($last = $lastByProject[$project->id] ?? null)
-                                {{ $last !== null ? \Illuminate\Support\Carbon::parse($last)->format('d.m.Y') : '–' }}
+                                {{ $last !== null ? \Illuminate\Support\Carbon::parse($last)->fdate() : '–' }}
                             </td>
                         </tr>
                     @endforeach

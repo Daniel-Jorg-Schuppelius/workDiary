@@ -12,10 +12,10 @@
             @php
                 $primary = (int) $entry->project_id === (int) $project->id;
                 $dateLabel = match ($entry->mode) {
-                    \App\Enums\Diary\Mode::Deadline => $entry->due_date?->format('d.m.Y'),
-                    \App\Enums\Diary\Mode::Window => $entry->window_start_date?->format('d.m.Y'),
+                    \App\Enums\Diary\Mode::Deadline => $entry->due_date?->fdate(),
+                    \App\Enums\Diary\Mode::Window => $entry->window_start_date?->fdate(),
                     \App\Enums\Diary\Mode::Backlog => __('Backlog'),
-                    default => $entry->start_at?->format('d.m.Y H:i'),
+                    default => $entry->start_at?->fdatetime(),
                 };
             @endphp
             <li class="flex flex-wrap items-start justify-between gap-2 px-4 py-3">

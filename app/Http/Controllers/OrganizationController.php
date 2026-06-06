@@ -115,6 +115,9 @@ class OrganizationController extends Controller {
             // Generic per-group overrides. Werte sind immer Strings (Form-Input);
             // leere Strings werden weiter unten verworfen → Fallback auf config().
             'settings' => ['sometimes', 'array'],
+            'settings.personalization' => ['sometimes', 'array'],
+            'settings.personalization.date_format' => ['nullable', \Illuminate\Validation\Rule::in(\App\Support\Formats::dateOptions())],
+            'settings.personalization.time_format' => ['nullable', \Illuminate\Validation\Rule::in(\App\Support\Formats::timeOptions())],
             'settings.pagination' => ['sometimes', 'array'],
             'settings.pagination.*' => ['nullable', 'integer', 'min:1', 'max:1000'],
             'settings.invoicing' => ['sometimes', 'array'],

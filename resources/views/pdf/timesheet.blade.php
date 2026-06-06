@@ -32,7 +32,7 @@
 
     <h1>{{ __('pdf.timesheet.title') }}</h1>
     <div class="meta">
-        {{ __('timesheet.fields.date') }}: <strong>{{ optional($timesheet->work_date)->format('d.m.Y') }}</strong> ·
+        {{ __('timesheet.fields.date') }}: <strong>{{ optional($timesheet->work_date)->fdate() }}</strong> ·
         {{ __('timesheet.fields.project') }}: <strong>{{ $timesheet->project?->name }}</strong> ·
         {{ __('timesheet.fields.user') }}: <strong>{{ $timesheet->user?->name }}</strong> ·
         {{ __('timesheet.fields.status') }}: {{ $timesheet->statusLabel() }}
@@ -50,8 +50,8 @@
             @forelse($timesheet->entries as $e)
                 @php $h = intdiv((int)$e->minutes, 60); $m = (int)$e->minutes % 60; @endphp
                 <tr>
-                    <td>{{ optional($e->started_at)->format('H:i') }}</td>
-                    <td>{{ optional($e->ended_at)->format('H:i') }}</td>
+                    <td>{{ $e->started_at?->ftime() }}</td>
+                    <td>{{ $e->ended_at?->ftime() }}</td>
                     <td class="right">{{ (int) $e->break_minutes }}</td>
                     <td class="right">{{ $h }}:{{ str_pad((string)$m,2,'0',STR_PAD_LEFT) }}</td>
                     <td>{{ $e->kind?->label() ?? '' }}</td>
@@ -108,7 +108,7 @@
                     </div>
                     @if($timesheet->customer_email)<div>{{ $timesheet->customer_email }}</div>@endif
                     @if($timesheet->signed_at)
-                        <div class="small">{{ __('timesheet.signature.signed_at', ['datetime' => $timesheet->signed_at->format('d.m.Y H:i')]) }}
+                        <div class="small">{{ __('timesheet.signature.signed_at', ['datetime' => $timesheet->signed_at->fdatetime()]) }}
                             @if($timesheet->signed_ip) · {{ __('timesheet.signature.ip', ['ip' => $timesheet->signed_ip]) }} @endif
                         </div>
                         <div class="small">{{ __('timesheet.signature.hash', ['hash' => $timesheet->signature_hash]) }}</div>

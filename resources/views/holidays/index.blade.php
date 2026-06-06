@@ -41,7 +41,7 @@
                     $isSunday = $row['date']->isSunday();
                 @endphp
                 <tr class="hover {{ $isPast ? 'opacity-50' : '' }} {{ $row['date']->isToday() ? 'bg-warning/10' : '' }} {{ $isSunday ? 'text-error' : '' }}">
-                    <td class="whitespace-nowrap font-mono" data-sort-value="{{ $row['date']->format('Y-m-d') }}">{{ $row['date']->format('d.m.Y') }}</td>
+                    <td class="whitespace-nowrap font-mono" data-sort-value="{{ $row['date']->format('Y-m-d') }}">{{ $row['date']->fdate() }}</td>
                     <td class="whitespace-nowrap text-xs text-base-content/70">{{ $row['date']->locale(app()->getLocale())->isoFormat('dd') }}</td>
                     <td class="font-semibold">{{ $row['name'] }}</td>
                     <td>
@@ -97,7 +97,7 @@
             @forelse ($customHolidays as $holiday)
                 @php $isSunday = $holiday->date && $holiday->date->isSunday(); @endphp
                 <tr class="hover {{ $isSunday ? 'text-error' : '' }}">
-                    <td class="whitespace-nowrap font-mono" data-sort-value="{{ optional($holiday->date)->format('Y-m-d') }}">{{ optional($holiday->date)->format('d.m.Y') }}</td>
+                    <td class="whitespace-nowrap font-mono" data-sort-value="{{ optional($holiday->date)->format('Y-m-d') }}">{{ optional($holiday->date)->fdate() }}</td>
                     <td>{{ $holiday->name }}</td>
                     <td>
                         @if (($holiday->recurrence_type ?? 'fixed') === 'relative')

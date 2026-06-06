@@ -132,6 +132,31 @@ class AppServiceProvider extends ServiceProvider {
         CarbonImmutable::macro('orgTz', $orgTzMacro);
         \Illuminate\Support\Carbon::macro('orgTz', $orgTzMacro);
 
+        // Anzeige-Macros: formatieren mit dem konfigurierten Datums-/Uhrzeitformat
+        // (User → Org → config, siehe App\Support\Formats) und lokalisierten
+        // Monats-/Tagesnamen (translatedFormat). Datums-/Zeitkomponente wird – wo
+        // sinnvoll – zuvor in die Anzeige-Zeitzone umgerechnet.
+        //   ->fdate()     : reines Datum, OHNE TZ-Umrechnung (für date-Felder)
+        //   ->fdatetime() : Datum+Uhrzeit in Anzeige-Zeitzone
+        //   ->ftime()     : nur Uhrzeit in Anzeige-Zeitzone
+        $fdate = function () {
+            /** @var \Carbon\CarbonInterface $this */
+            return $this->translatedFormat(\App\Support\Formats::date());
+        };
+        $fdatetime = function () {
+            /** @var \Carbon\CarbonInterface $this */
+            return $this->copy()->setTimezone(Tz::current())->translatedFormat(\App\Support\Formats::dateTime());
+        };
+        $ftime = function () {
+            /** @var \Carbon\CarbonInterface $this */
+            return $this->copy()->setTimezone(Tz::current())->translatedFormat(\App\Support\Formats::time());
+        };
+        foreach ([CarbonMutable::class, CarbonImmutable::class, \Illuminate\Support\Carbon::class] as $carbonClass) {
+            $carbonClass::macro('fdate', $fdate);
+            $carbonClass::macro('fdatetime', $fdatetime);
+            $carbonClass::macro('ftime', $ftime);
+        }
+
         Auth::provider('legacy', function ($app) {
             return new LegacyUserProvider($app['hash']);
         });

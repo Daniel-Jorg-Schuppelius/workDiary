@@ -180,8 +180,8 @@ use App\Enums\Vacation\VacationType;
                                 <td class="whitespace-nowrap">{{ $v->user?->name ?? '—' }}</td>
                             @endif
                             <td class="whitespace-nowrap">{{ $typeLabel }}</td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $v->start_date->format('d.m.Y') }}</td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $v->end_date->format('d.m.Y') }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $v->start_date->fdate() }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $v->end_date->fdate() }}</td>
                             <td><span class="badge badge-sm {{ $statusBadge }}">{{ $statusLabel }}</span></td>
                             <td class="max-w-xs truncate text-sm text-base-content/70">{{ $v->note ?? '—' }}</td>
                         </tr>
@@ -215,9 +215,9 @@ use App\Enums\Vacation\VacationType;
                                     'badge-ghost'   => $entry->statusTone() === 'neutral',
                                 ])>{{ $entry->statusLabel() }}</span>
                             </td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->start_at?->format('d.m.Y H:i') ?? '—' }}</td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->end_at?->format('d.m.Y H:i') ?? '—' }}</td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->archived_at?->format('d.m.Y') ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->start_at?->fdatetime() ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->end_at?->fdatetime() ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->archived_at?->fdate() ?? '—' }}</td>
                             <td class="text-sm">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content ?? '', 160) }}</td>
                         </tr>
                     @empty
@@ -244,8 +244,8 @@ use App\Enums\Vacation\VacationType;
                         @endphp
                         <tr class="hover">
                             <td class="whitespace-nowrap">{{ $entry->user?->name ?? '—' }}</td>
-                            <td class="whitespace-nowrap text-xs">{{ $entry->start_at?->format('d.m.Y H:i') ?? '—' }}</td>
-                            <td class="whitespace-nowrap text-xs">{{ $entry->end_at?->format('d.m.Y H:i') ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs">{{ $entry->start_at?->fdatetime() ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs">{{ $entry->end_at?->fdatetime() ?? '—' }}</td>
                             <td class="text-xs text-base-content/70">
                                 {{ $duration !== null ? trans_choice('{1} :n Tag|[2,*] :n Tage', $duration, ['n' => $duration]) : '—' }}
                             </td>
@@ -275,8 +275,8 @@ use App\Enums\Vacation\VacationType;
                         @endphp
                         <tr class="hover">
                             <td class="whitespace-nowrap">{{ $entry->user?->name ?? '—' }}</td>
-                            <td class="whitespace-nowrap text-xs">{{ $entry->start_at?->format('d.m.Y H:i') ?? '—' }}</td>
-                            <td class="whitespace-nowrap text-xs">{{ $entry->end_at?->format('d.m.Y H:i') ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs">{{ $entry->start_at?->fdatetime() ?? '—' }}</td>
+                            <td class="whitespace-nowrap text-xs">{{ $entry->end_at?->fdatetime() ?? '—' }}</td>
                             <td class="text-xs text-base-content/70">
                                 {{ $duration !== null ? trans_choice('{1} :n Tag|[2,*] :n Tage', $duration, ['n' => $duration]) : '—' }}
                             </td>

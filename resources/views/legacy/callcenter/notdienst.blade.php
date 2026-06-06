@@ -29,7 +29,7 @@
                         :href="route('legacy.callcenter.notdienst', ['week' => $weekOffset - 1])"
                         :label="__('Vorherige Woche')" />
             <span class="text-sm font-semibold">
-                {{ $rangeStart->format('d.m.Y') }} &ndash; {{ $rangeEnd->format('d.m.Y') }}
+                {{ $rangeStart->fdate() }} &ndash; {{ $rangeEnd->fdate() }}
             </span>
             <x-icon-btn icon="chevron_right" size="sm"
                         :href="route('legacy.callcenter.notdienst', ['week' => $weekOffset + 1])"
@@ -61,7 +61,7 @@
                 @foreach ($kpis as $tile)
                     <a href="{{ route('legacy.diary.index', $tile['params']) }}"
                        class="group rounded-box border bg-base-100 px-4 py-3 shadow-xs transition hover:border-primary hover:shadow-md {{ $tile['border'] }}"
-                       title="{{ __('Zur Arbeitsliste filtern (ab :date)', ['date' => \Carbon\Carbon::parse($tile['params']['from'])->format('d.m.Y')]) }}">
+                       title="{{ __('Zur Arbeitsliste filtern (ab :date)', ['date' => \Carbon\Carbon::parse($tile['params']['from'])->fdate()]) }}">
                         <div class="flex items-center justify-between">
                             <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $tile['label'] }}</p>
                             <span class="text-base-content/30 transition group-hover:text-primary">›</span>
@@ -107,19 +107,19 @@
                 <div class="mt-3 grid grid-cols-3 gap-2 text-center">
                     <a href="{{ route('legacy.diary.index', ['status' => '2', 'to' => $yesterday]) }}"
                        class="rounded-box border border-base-300 px-2 py-1.5 transition hover:border-error hover:bg-error/5"
-                       title="{{ __('Vorgänge mit Frist bis :date', ['date' => \Carbon\Carbon::parse($yesterday)->format('d.m.Y')]) }}">
+                       title="{{ __('Vorgänge mit Frist bis :date', ['date' => \Carbon\Carbon::parse($yesterday)->fdate()]) }}">
                         <p class="text-[0.65rem] uppercase tracking-wider text-base-content/60">{{ __('Überfällig') }}</p>
                         <p class="font-['Space_Grotesk'] text-lg font-semibold {{ $overdueCount > 0 ? 'text-error' : 'text-base-content/70' }}">{{ $overdueCount }}</p>
                     </a>
                     <a href="{{ route('legacy.diary.index', ['status' => '2', 'to' => $todayStr]) }}"
                        class="rounded-box border border-base-300 px-2 py-1.5 transition hover:border-warning hover:bg-warning/5"
-                       title="{{ __('Vorgänge mit Frist bis :date', ['date' => $today->format('d.m.Y')]) }}">
+                       title="{{ __('Vorgänge mit Frist bis :date', ['date' => $today->fdate()]) }}">
                         <p class="text-[0.65rem] uppercase tracking-wider text-base-content/60">{{ __('Heute fällig') }}</p>
                         <p class="font-['Space_Grotesk'] text-lg font-semibold {{ $dueTodayCount > 0 ? 'text-warning' : 'text-base-content/70' }}">{{ $dueTodayCount }}</p>
                     </a>
                     <a href="{{ route('legacy.diary.index', ['status' => '2', 'to' => $next7Str]) }}"
                        class="rounded-box border border-base-300 px-2 py-1.5 transition hover:border-primary hover:bg-primary/5"
-                       title="{{ __('Vorgänge mit Frist bis :date', ['date' => \Carbon\Carbon::parse($next7Str)->format('d.m.Y')]) }}">
+                       title="{{ __('Vorgänge mit Frist bis :date', ['date' => \Carbon\Carbon::parse($next7Str)->fdate()]) }}">
                         <p class="text-[0.65rem] uppercase tracking-wider text-base-content/60">{{ __('Nächste 7d') }}</p>
                         <p class="font-['Space_Grotesk'] text-lg font-semibold text-base-content">{{ $dueNext7Count }}</p>
                     </a>
@@ -172,7 +172,7 @@
                                     <td class="font-semibold whitespace-nowrap sticky left-0 z-10 bg-base-100">{{ __('Notdienst') }}</td>
                                     @foreach ($notdienstByDay as $item)
                                         <td class="text-center {{ $item['isToday'] ? 'bg-primary/10 font-semibold' : ($item['isHoliday'] ? 'bg-error/5' : '') }}"
-                                            @if ($item['user'] && $item['von'] && $item['bis']) title="{{ $item['von']->format('d.m.Y H:i') }} – {{ $item['bis']->format('d.m.Y H:i') }}" @endif>
+                                            @if ($item['user'] && $item['von'] && $item['bis']) title="{{ $item['von']->fdatetime() }} – {{ $item['bis']->fdatetime() }}" @endif>
                                             {{ $item['user'] ?: '–' }}
                                         </td>
                                     @endforeach
@@ -181,7 +181,7 @@
                                     <td class="font-semibold whitespace-nowrap sticky left-0 z-10 bg-base-100">{{ __('Bereitschaft') }}</td>
                                     @foreach ($bereitschaftByDay as $item)
                                         <td class="text-center {{ $item['isToday'] ? 'bg-primary/10 font-semibold' : ($item['isHoliday'] ? 'bg-error/5' : '') }}"
-                                            @if ($item['user'] && $item['von'] && $item['bis']) title="{{ $item['von']->format('d.m.Y H:i') }} – {{ $item['bis']->format('d.m.Y H:i') }}" @endif>
+                                            @if ($item['user'] && $item['von'] && $item['bis']) title="{{ $item['von']->fdatetime() }} – {{ $item['bis']->fdatetime() }}" @endif>
                                             {{ $item['user'] ?: '–' }}
                                         </td>
                                     @endforeach
@@ -262,7 +262,7 @@
                                     $cls = $isToday ? 'bg-primary' : ($point['count'] === 0 ? 'bg-base-200' : 'bg-base-content/30');
                                 @endphp
                                 <div class="group flex flex-1 flex-col items-center gap-1"
-                                     title="{{ $point['date']->format('d.m.Y') }}: {{ $point['count'] }}">
+                                     title="{{ $point['date']->fdate() }}: {{ $point['count'] }}">
                                     <div class="w-full rounded-sm {{ $cls }} transition group-hover:bg-primary"
                                          style="height: {{ $h }}px"></div>
                                 </div>
@@ -367,7 +367,7 @@
                                     </td>
                                     <td class="whitespace-nowrap" @if ($bisDate) data-sort-value="{{ $bisDate->format('Y-m-d') }}" @endif>
                                         @if ($bisDate)
-                                            <div>{{ $bisDate->format('d.m.Y') }}</div>
+                                            <div>{{ $bisDate->fdate() }}</div>
                                             @if ($isDueToday)
                                                 <span class="text-[0.65rem] font-semibold text-warning">{{ __('heute') }}</span>
                                             @elseif ($daysLeft !== null && $daysLeft > 0 && $daysLeft <= 7)

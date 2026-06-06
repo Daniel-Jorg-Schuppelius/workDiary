@@ -25,6 +25,18 @@ return [
         'startpage' => null,
     ],
 
+    // Organisations-/App-weite Standardformate. Org-überschreibbar via
+    // Setting::get('personalization.date_format') (organization.settings →
+    // dieser Default). User-Preferences (defaults oben) überschreiben pro Person.
+    'date_format' => 'd.m.Y',
+    'time_format' => 'H:i',
+
+    // Kuratierte, flatpickr-kompatible Auswahl. Die Tokens d/m/Y/H/i/F/j/M
+    // decken sich zwischen PHP und flatpickr, sodass dasselbe Format serverseitig
+    // (->translatedFormat) und im Datepicker (altFormat) gilt.
+    'date_formats' => ['d.m.Y', 'Y-m-d', 'd/m/Y', 'm/d/Y', 'd. F Y', 'j. M Y'],
+    'time_formats' => ['H:i', 'h:i A'],
+
     // Whitelist für die Auswahl auf der Profilseite.
     'startpages' => [
         'dashboard',

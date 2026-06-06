@@ -100,6 +100,6 @@
 
 <div class="footer">
     <span>{{ $org ?? '' }} · {{ __('Urlaubsübersicht') }} {{ $year }}</span>
-    <span>{{ now()->format('d.m.Y H:i') }}</span>
+    <span>{{ now()->fdatetime() }}</span>
 </div>
 @endsection

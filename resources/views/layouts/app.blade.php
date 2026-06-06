@@ -426,6 +426,9 @@
             }
         </style>
         <script>window.__translations = @json($jsTranslations ?? []);</script>
+        {{-- Aktive Anzeigeformate (User → Org → config), damit der Datepicker
+             (flatpickr altFormat) dasselbe Format wie die serverseitige Anzeige nutzt. --}}
+        <script>window.__formats = @json(['date' => \App\Support\Formats::date(), 'time' => \App\Support\Formats::time()]);</script>
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @else
@@ -1078,7 +1081,7 @@
                         @isset($attendanceCurrent)
                             @if ($attendanceCurrent)
                                 <div class="flex items-center gap-1.5 rounded-box border border-success/40 bg-success/10 px-2 py-1 shadow-xs"
-                                     title="{{ __('Eingestempelt seit :time', ['time' => $attendanceCurrent->started_at?->format('H:i')]) }}"
+                                     title="{{ __('Eingestempelt seit :time', ['time' => $attendanceCurrent->started_at?->ftime()]) }}"
                                      x-data="{ s: 0 }"
                                      x-init="s = Math.max(0, Math.floor((Date.now() - new Date('{{ $attendanceCurrent->started_at?->toIso8601String() }}').getTime())/1000)); setInterval(() => s++, 1000);">
                                     <x-icon name="badge" class="text-[1rem] text-success" />

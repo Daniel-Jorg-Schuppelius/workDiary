@@ -20,8 +20,8 @@
                 @php $isSunday = $a->start_at && $a->start_at->isSunday(); @endphp
                 <tr class="hover {{ $isSunday ? 'text-error' : '' }}">
                     <td>{{ $a->user?->name ?? '—' }}</td>
-                    <td class="whitespace-nowrap">{{ $a->start_at?->format('d.m.Y H:i') ?? '—' }}</td>
-                    <td class="whitespace-nowrap">{{ $a->end_at?->format('d.m.Y H:i') ?? '—' }}</td>
+                    <td class="whitespace-nowrap">{{ $a->start_at?->fdatetime() ?? '—' }}</td>
+                    <td class="whitespace-nowrap">{{ $a->end_at?->fdatetime() ?? '—' }}</td>
                     <td class="text-base-content/60 whitespace-nowrap text-xs">
                         @if ($a->shift)
                             {{ $a->shift->start_at?->format('d.m.') }}–{{ $a->shift->end_at?->format('d.m.') }}

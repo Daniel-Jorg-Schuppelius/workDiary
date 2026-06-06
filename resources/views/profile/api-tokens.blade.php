@@ -48,7 +48,7 @@
         @forelse ($tokens as $token)
             <tr>
                 <td>{{ $token->name }}</td>
-                <td data-sort-value="{{ optional($token->created_at)->format('Y-m-d H:i:s') }}">{{ optional($token->created_at)->format('d.m.Y H:i') }}</td>
+                <td data-sort-value="{{ optional($token->created_at)->format('Y-m-d H:i:s') }}">{{ optional($token->created_at)->fdatetime() }}</td>
                 <td data-sort-value="{{ optional($token->last_used_at)->format('Y-m-d H:i:s') }}">{{ $token->last_used_at ? $token->last_used_at->diffForHumans() : '—' }}</td>
                 <td class="text-right">
                     <form method="POST" action="{{ route('profile.api-tokens.destroy', $token->id) }}" class="inline"

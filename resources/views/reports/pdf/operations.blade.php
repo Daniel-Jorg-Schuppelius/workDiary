@@ -34,10 +34,10 @@
 
 <h1>{{ __('Operations-Auswertung') }}</h1>
 <div class="meta">
-    Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->format('d.m.Y') }}</strong> bis
-    <strong>{{ \Carbon\Carbon::parse($to)->format('d.m.Y') }}</strong> ·
+    Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> bis
+    <strong>{{ \Carbon\Carbon::parse($to)->fdate() }}</strong> ·
     Bereich: {{ $scope === 'team' ? 'Gesamtes Team' : 'Eigene' }} ·
-    Erstellt: {{ now()->format('d.m.Y H:i') }}
+    Erstellt: {{ now()->fdatetime() }}
 </div>
 
 <table class="kpis">

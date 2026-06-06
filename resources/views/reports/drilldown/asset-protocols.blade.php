@@ -49,7 +49,7 @@
                     <tr>
                         <td class="font-medium">{{ $protocol->title }}</td>
                         <td><x-status-badge tone="ghost" outline>{{ $protocol->status->label() }}</x-status-badge></td>
-                        <td>{{ $protocol->occurred_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}</td>
+                        <td>{{ $protocol->occurred_at?->fdatetime() ?? '—' }}</td>
                         <td>{{ $protocol->creator?->name ?? '—' }}</td>
                         <td>
                             <a href="{{ route('diary.show', $protocol->subject_id) }}" class="link link-hover">#{{ $protocol->subject_id }}</a>

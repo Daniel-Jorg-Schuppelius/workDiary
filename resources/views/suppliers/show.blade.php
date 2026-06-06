@@ -229,7 +229,7 @@
                 @foreach ($lexofficeVoucherCache as $voucher)
                     <tr>
                         <td class="font-mono text-xs">{{ $voucher->voucher_number ?? '–' }}</td>
-                        <td @if ($voucher->voucher_date) data-sort-value="{{ \Carbon\Carbon::parse($voucher->voucher_date)->format('Y-m-d') }}" @endif>{{ optional($voucher->voucher_date)->format('d.m.Y') ?? '–' }}</td>
+                        <td @if ($voucher->voucher_date) data-sort-value="{{ \Carbon\Carbon::parse($voucher->voucher_date)->format('Y-m-d') }}" @endif>{{ optional($voucher->voucher_date)->fdate() ?? '–' }}</td>
                         <td>{{ $lexofficeValueLabel($voucher->voucher_type) }}</td>
                         <td>
                             <x-status-badge :tone="match ($voucher->voucher_status) {
@@ -267,7 +267,7 @@
                         <x-status-badge tone="ghost">{{ $log->eventLabel() }}</x-status-badge>
                         {{ optional($log->user)->name ?? '—' }}
                     </span>
-                    <span class="text-base-content/60">{{ $log->created_at->orgTz()->format('d.m.Y H:i') }}</span>
+                    <span class="text-base-content/60">{{ $log->created_at->fdatetime() }}</span>
                 </li>
             @endforeach
         </ul>

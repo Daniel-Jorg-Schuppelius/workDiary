@@ -26,6 +26,22 @@
                            class="@error('timezone') input-error @enderror" />
         @error('timezone')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
     </div>
+
+    <div class="fieldset">
+        <label class="fieldset-label">{{ __('Datumsformat') }}</label>
+        <x-format-select type="date" name="settings[personalization][date_format]"
+                         :selected="old('settings.personalization.date_format', data_get($organization?->settings, 'personalization.date_format'))"
+                         class="@error('settings.personalization.date_format') input-error @enderror" />
+        @error('settings.personalization.date_format')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
+    </div>
+
+    <div class="fieldset">
+        <label class="fieldset-label">{{ __('Uhrzeitformat') }}</label>
+        <x-format-select type="time" name="settings[personalization][time_format]"
+                         :selected="old('settings.personalization.time_format', data_get($organization?->settings, 'personalization.time_format'))"
+                         class="@error('settings.personalization.time_format') input-error @enderror" />
+        @error('settings.personalization.time_format')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
+    </div>
 </x-form-group>
 
 <x-form-group :legend="__('Plan & Status')" icon="workspace_premium" tone="info" cols="2">

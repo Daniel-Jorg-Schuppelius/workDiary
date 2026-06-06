@@ -55,7 +55,7 @@
                 </x-slot:head>
                 @forelse ($logs as $log)
                     <tr>
-                        <td>{{ $log->date?->format('d.m.Y') }}</td>
+                        <td>{{ $log->date?->fdate() }}</td>
                         <td>{{ $log->from_address }}</td>
                         <td>{{ $log->to_address }}</td>
                         <td class="text-right">

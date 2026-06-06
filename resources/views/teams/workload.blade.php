@@ -52,8 +52,8 @@
                                 <tr>
                                     <td class="text-sm">{{ $task->project?->name ?? '—' }}</td>
                                     <td class="text-sm">{{ $task->title }}</td>
-                                    <td class="text-sm" @if ($task->start_date) data-sort-value="{{ $task->start_date->format('Y-m-d') }}" @endif>{{ $task->start_date?->format('d.m.Y') ?? '—' }}</td>
-                                    <td class="text-sm {{ $overdue ? 'text-error font-semibold' : '' }}" @if ($task->due_date) data-sort-value="{{ $task->due_date->format('Y-m-d') }}" @endif>{{ $task->due_date?->format('d.m.Y') ?? '—' }}</td>
+                                    <td class="text-sm" @if ($task->start_date) data-sort-value="{{ $task->start_date->format('Y-m-d') }}" @endif>{{ $task->start_date?->fdate() ?? '—' }}</td>
+                                    <td class="text-sm {{ $overdue ? 'text-error font-semibold' : '' }}" @if ($task->due_date) data-sort-value="{{ $task->due_date->format('Y-m-d') }}" @endif>{{ $task->due_date?->fdate() ?? '—' }}</td>
                                     <td><x-status-badge :tone="$task->statusTone()" size="xs">{{ $task->statusLabel() }}</x-status-badge></td>
                                 </tr>
                             @endforeach

@@ -37,7 +37,7 @@
 
         <span class="ml-3 font-['Space_Grotesk'] text-base-content">
             <span class="text-sm text-base-content/70">
-                {{ $monday->format('d.m.Y') }} &ndash; {{ $sunday->format('d.m.Y') }}
+                {{ $monday->fdate() }} &ndash; {{ $sunday->fdate() }}
             </span>
         </span>
     </div>

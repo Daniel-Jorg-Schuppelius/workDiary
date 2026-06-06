@@ -14,7 +14,7 @@
 
 <x-page-shell>
 
-    <x-page-toolbar :title="__('Stundenzettel') . ' – ' . optional($timesheet->work_date)->format('d.m.Y')"
+    <x-page-toolbar :title="__('Stundenzettel') . ' – ' . optional($timesheet->work_date)->fdate()"
                     :badge="$timesheet->statusLabel()"
                     :badge-tone="$timesheet->statusTone()">
         <div class="text-sm text-base-content/70">
@@ -84,8 +84,8 @@
             </x-slot:head>
             @forelse($timesheet->entries as $e)
                 <tr>
-                    <td class="tabular-nums">{{ $e->started_at?->orgTz()->format('H:i') }}</td>
-                    <td class="tabular-nums">{{ $e->ended_at?->orgTz()->format('H:i') }}</td>
+                    <td class="tabular-nums">{{ $e->started_at?->ftime() }}</td>
+                    <td class="tabular-nums">{{ $e->ended_at?->ftime() }}</td>
                     <td class="text-right tabular-nums">{{ (int)$e->break_minutes }}</td>
                     <td class="text-right tabular-nums" data-sort-value="{{ (int) $e->minutes }}">{{ $fmtMin((int)$e->minutes) }}</td>
                     <td>{{ $entryKindLabel($e->kind) }}</td>
@@ -170,7 +170,7 @@
                     @if($timesheet->signed_at || $timesheet->signed_ip)
                         <div class="mt-1 text-base-content/60">
                             @if($timesheet->signed_at)
-                                {{ __('Signiert am') }}: {{ $timesheet->signed_at?->orgTz()->format('d.m.Y H:i') }}
+                                {{ __('Signiert am') }}: {{ $timesheet->signed_at?->fdatetime() }}
                             @endif
                             @if($timesheet->signed_ip)
                                 @if($timesheet->signed_at) · @endif

@@ -13,7 +13,7 @@
         <div class="alert alert-error">
             <span class="material-symbols-outlined" aria-hidden="true">block</span>
             <div>
-                <div class="font-bold">{{ __('Storniert') }}@if ($invoice->cancelled_at) – {{ $invoice->cancelled_at->format('d.m.Y H:i') }}@endif</div>
+                <div class="font-bold">{{ __('Storniert') }}@if ($invoice->cancelled_at) – {{ $invoice->cancelled_at->fdatetime() }}@endif</div>
                 @if ($invoice->cancel_reason)
                     <div class="text-sm">{{ $invoice->cancel_reason }}</div>
                 @endif
@@ -48,7 +48,7 @@
         <div class="alert alert-success/40 text-sm">
             <span class="material-symbols-outlined" aria-hidden="true">mark_email_read</span>
             {{ __('Zuletzt versendet: :date (:count Versand(e))', [
-                'date' => $invoice->sent_at->format('d.m.Y H:i'),
+                'date' => $invoice->sent_at->fdatetime(),
                 'count' => $invoice->sent_count,
             ]) }}
         </div>
@@ -57,9 +57,9 @@
     <x-page-toolbar :title="$invoice->documentLabel() . ' ' . $invoice->number" :badge="__($invoice->status)" badge-tone="outline">
         <div class="text-sm text-base-content/70">{{ $invoice->customer->name }}</div>
         @if ($invoice->hasServicePeriod())
-            <div class="text-sm text-base-content/70">{{ $invoice->dateLabelPeriod() }}: {{ $invoice->serviceDateFrom()->format('d.m.Y') }} – {{ $invoice->serviceDateTo()->format('d.m.Y') }}</div>
+            <div class="text-sm text-base-content/70">{{ $invoice->dateLabelPeriod() }}: {{ $invoice->serviceDateFrom()->fdate() }} – {{ $invoice->serviceDateTo()->fdate() }}</div>
         @elseif ($invoice->serviceDateSingle())
-            <div class="text-sm text-base-content/70">{{ $invoice->dateLabelSingle() }}: {{ $invoice->serviceDateSingle()->format('d.m.Y') }}</div>
+            <div class="text-sm text-base-content/70">{{ $invoice->dateLabelSingle() }}: {{ $invoice->serviceDateSingle()->fdate() }}</div>
         @endif
         <x-slot:actions>
             <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('invoices.pdf', $invoice)" show-label>{{ __('PDF') }}</x-icon-btn>
@@ -155,7 +155,7 @@
             <tr>
                 <td>{{ $item->position }}</td>
                 <td>{{ $item->description }}</td>
-                @if ($showServiceDates)<td data-sort-value="{{ optional($item->service_date)->toDateString() }}">{{ optional($item->service_date)->format('d.m.Y') ?: '—' }}</td>@endif
+                @if ($showServiceDates)<td data-sort-value="{{ optional($item->service_date)->toDateString() }}">{{ optional($item->service_date)->fdate() ?: '—' }}</td>@endif
                 <td class="text-right" data-sort-value="{{ (float) $item->quantity }}">{{ number_format((float) $item->quantity, 2, ',', '.') }} {{ $item->unit }}</td>
                 <td class="text-right" data-sort-value="{{ (float) $item->unit_price }}">{{ number_format((float) $item->unit_price, 2, ',', '.') }} {{ $invoice->currency }}</td>
                 <td class="text-right" data-sort-value="{{ (float) $item->amount }}">{{ number_format((float) $item->amount, 2, ',', '.') }} {{ $invoice->currency }}</td>

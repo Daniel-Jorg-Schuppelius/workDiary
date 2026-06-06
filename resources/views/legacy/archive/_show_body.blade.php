@@ -32,14 +32,14 @@
 <div class="mt-6 grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
     <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
         <p class="mb-1 text-xs text-base-content/60">{{ __('Von') }}</p>
-        <p class="text-base-content">{{ $entry->von?->format('d.m.Y H:i') ?? '—' }}</p>
+        <p class="text-base-content">{{ $entry->von?->fdatetime() ?? '—' }}</p>
     </div>
     <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
         <p class="mb-1 text-xs text-base-content/60">{{ __('Bis') }}</p>
-        <p class="text-base-content">{{ $entry->bis?->format('d.m.Y H:i') ?? '—' }}</p>
+        <p class="text-base-content">{{ $entry->bis?->fdatetime() ?? '—' }}</p>
     </div>
     <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
         <p class="mb-1 text-xs text-base-content/60">{{ __('Aktuell') }}</p>
-        <p class="text-base-content">{{ $entry->aktuell?->format('d.m.Y H:i') ?? '—' }}</p>
+        <p class="text-base-content">{{ $entry->aktuell?->fdatetime() ?? '—' }}</p>
     </div>
 </div>

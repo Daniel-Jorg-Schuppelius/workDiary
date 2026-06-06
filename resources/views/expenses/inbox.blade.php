@@ -94,7 +94,7 @@
                                        aria-label="{{ __('Spese :id auswählen', ['id' => $expense->id]) }}">
                             </td>
                         @endif
-                        <td class="whitespace-nowrap">{{ $expense->date->format('d.m.Y') }}</td>
+                        <td class="whitespace-nowrap">{{ $expense->date->fdate() }}</td>
                         <td>
                             <div class="font-medium">{{ $expense->user?->name ?? '—' }}</div>
                             @if ($expense->project)

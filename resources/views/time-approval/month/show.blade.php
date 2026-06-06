@@ -102,7 +102,7 @@
                     <ul class="timeline timeline-vertical timeline-compact">
                         @foreach ($closure->events as $event)
                             <li>
-                                <div class="timeline-start text-xs tabular-nums">{{ $event->created_at?->orgTz()->format('d.m.Y H:i') }}</div>
+                                <div class="timeline-start text-xs tabular-nums">{{ $event->created_at?->fdatetime() }}</div>
                                 <div class="timeline-middle">
                                     <span class="material-symbols-outlined text-base">history</span>
                                 </div>

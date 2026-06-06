@@ -14,7 +14,7 @@
             ])>{{ $diary->statusLabel() }}</span>
             <span class="text-sm text-base-content/70">{{ optional($diary->user)->name ?? '—' }}</span>
             @if ($diary->is_archived)
-                <x-status-badge tone="neutral">{{ __('Archiviert') }}{{ $diary->archived_at ? ' · ' . $diary->archived_at->format('d.m.Y') : '' }}</x-status-badge>
+                <x-status-badge tone="neutral">{{ __('Archiviert') }}{{ $diary->archived_at ? ' · ' . $diary->archived_at->fdate() : '' }}</x-status-badge>
             @endif
             @if ($diary->legacy_id)
                 <x-status-badge tone="warning" outline>
@@ -80,11 +80,11 @@
     <div class="mt-6 grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
         <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
             <p class="mb-1 text-xs text-base-content/60">{{ __('Von') }}</p>
-            <p class="text-base-content">{{ $diary->start_at?->format('d.m.Y H:i') ?? '—' }}</p>
+            <p class="text-base-content">{{ $diary->start_at?->fdatetime() ?? '—' }}</p>
         </div>
         <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
             <p class="mb-1 text-xs text-base-content/60">{{ __('Bis') }}</p>
-            <p class="text-base-content">{{ $diary->end_at?->format('d.m.Y H:i') ?? '—' }}</p>
+            <p class="text-base-content">{{ $diary->end_at?->fdatetime() ?? '—' }}</p>
         </div>
         @if ($diary->customer)
             <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
@@ -94,7 +94,7 @@
         @endif
         <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
             <p class="mb-1 text-xs text-base-content/60">{{ __('Erstellt') }}</p>
-            <p class="text-base-content">{{ $diary->created_at->format('d.m.Y H:i') }}</p>
+            <p class="text-base-content">{{ $diary->created_at->fdatetime() }}</p>
         </div>
         <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
             <p class="mb-1 text-xs text-base-content/60">{{ __('Geändert') }}</p>

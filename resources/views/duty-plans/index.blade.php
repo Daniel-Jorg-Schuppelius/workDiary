@@ -46,7 +46,7 @@
                         <a href="{{ route('duty-plans.show', $plan) }}" class="link link-hover">{{ $plan->title }}</a>
                     </td>
                     <td class="text-sm text-base-content/70">
-                        {{ $plan->from_date->format('d.m.Y') }} – {{ $plan->to_date->format('d.m.Y') }}
+                        {{ $plan->from_date->fdate() }} – {{ $plan->to_date->fdate() }}
                     </td>
                     <td>
                         <x-status-badge size="sm" outline>{{ $plan->period_type->label() }}</x-status-badge>

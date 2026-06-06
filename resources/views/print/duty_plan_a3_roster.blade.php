@@ -13,8 +13,8 @@
     $extraMeta = sprintf(
         '%s %s – %s · %d %s',
         __('Zeitraum'),
-        $dutyPlan->from_date->format('d.m.Y'),
-        $dutyPlan->to_date->format('d.m.Y'),
+        $dutyPlan->from_date->fdate(),
+        $dutyPlan->to_date->fdate(),
         $users->count(),
         __('Mitarbeiter'),
     );
@@ -107,6 +107,6 @@
 
 <div class="footer">
     <span>{{ $org ?? '' }} · {{ $dutyPlan->title }}</span>
-    <span>{{ now()->format('d.m.Y H:i') }}</span>
+    <span>{{ now()->fdatetime() }}</span>
 </div>
 @endsection

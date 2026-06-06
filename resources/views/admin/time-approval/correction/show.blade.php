@@ -4,7 +4,7 @@
 @section('nav-title', __('Korrekturantrag #:id', ['id' => $request->id]))
 
 @section('content')
-    <x-index-page :subtitle="$request->user?->name . ' · ' . optional($request->scope_date)->format('d.m.Y')">
+    <x-index-page :subtitle="$request->user?->name . ' · ' . optional($request->scope_date)->fdate()">
         <x-slot:actions>
             <x-icon-btn icon="arrow_back" size="sm" tone="ghost"
                         :href="route('admin.corrections.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
@@ -26,13 +26,13 @@
                     </span>
                     @if ($request->decided_at)
                         <span class="text-sm text-base-content/70">
-                            {{ __('Entschieden') }}: {{ $request->decided_at->format('d.m.Y H:i') }}
+                            {{ __('Entschieden') }}: {{ $request->decided_at->fdatetime() }}
                             ({{ $request->decidedBy?->name }})
                         </span>
                     @endif
                     @if ($request->applied_at)
                         <span class="text-sm text-success">
-                            {{ __('Angewendet') }}: {{ $request->applied_at->format('d.m.Y H:i') }}
+                            {{ __('Angewendet') }}: {{ $request->applied_at->fdatetime() }}
                         </span>
                     @endif
                 </div>

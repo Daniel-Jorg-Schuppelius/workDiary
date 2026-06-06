@@ -57,7 +57,7 @@
                                     <x-status-badge tone="accent">{{ $issue->visibility->label() }}</x-status-badge>
                                 @endif
                                 @if ($issue->due_at)
-                                    <x-status-badge :tone="$dueOverdue ? 'error' : 'ghost'">{{ __('open-issue.field.due_at') }}: {{ $issue->due_at->format('d.m.Y') }}</x-status-badge>
+                                    <x-status-badge :tone="$dueOverdue ? 'error' : 'ghost'">{{ __('open-issue.field.due_at') }}: {{ $issue->due_at->fdate() }}</x-status-badge>
                                 @endif
                             </div>
                             <p class="font-semibold text-base-content">{{ $issue->title }}</p>
@@ -68,7 +68,7 @@
                                 {{ __('open-issue.field.creator') }}: {{ optional($issue->creator)->name ?? '—' }}
                                 · {{ __('open-issue.field.assignee') }}: {{ optional($issue->assignee)->name ?? '—' }}
                                 @if ($issue->closed_at)
-                                    · {{ __('open-issue.field.closed_at') }}: {{ $issue->closed_at->format('d.m.Y H:i') }}
+                                    · {{ __('open-issue.field.closed_at') }}: {{ $issue->closed_at->fdatetime() }}
                                 @endif
                             </p>
                             @if ($issue->closed_reason)

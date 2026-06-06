@@ -36,7 +36,7 @@
                         $tsIsSunday = $ts->work_date && \Carbon\Carbon::parse($ts->work_date)->isSunday();
                     @endphp
                     <tr class="{{ $tsIsSunday ? 'text-error' : '' }}">
-                        <td data-sort-value="{{ optional($ts->work_date)->format('Y-m-d') }}">{{ optional($ts->work_date)->format('d.m.Y') }}</td>
+                        <td data-sort-value="{{ optional($ts->work_date)->format('Y-m-d') }}">{{ optional($ts->work_date)->fdate() }}</td>
                         <td>{{ $ts->user?->name }}</td>
                         <td class="text-right tabular-nums" data-sort-value="{{ (int) $ts->total_work_minutes }}">{{ $h }}:{{ str_pad((string)$m,2,'0',STR_PAD_LEFT) }} h</td>
                         <td class="text-right tabular-nums">{{ number_format((float)$ts->total_material_net, 2, ',', '.') }} €</td>

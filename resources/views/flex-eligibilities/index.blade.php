@@ -77,10 +77,10 @@
         </x-slot:head>
         @forelse ($periods as $period)
             <tr>
-                <td data-sort-value="{{ $period->valid_from->format('Y-m-d') }}">{{ $period->valid_from->format('d.m.Y') }}</td>
+                <td data-sort-value="{{ $period->valid_from->format('Y-m-d') }}">{{ $period->valid_from->fdate() }}</td>
                 <td data-sort-value="{{ $period->valid_to?->format('Y-m-d') ?? '9999-12-31' }}">
                     @if ($period->valid_to)
-                        {{ $period->valid_to->format('d.m.Y') }}
+                        {{ $period->valid_to->fdate() }}
                     @else
                         <x-status-badge tone="ghost" size="sm">{{ __('flex.eligibility.table.open') }}</x-status-badge>
                     @endif

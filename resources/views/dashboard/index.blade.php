@@ -122,7 +122,7 @@
                             <ul class="space-y-2">
                                 @foreach ($user['today_shifts'] as $shift)
                                     <li class="flex items-center justify-between gap-3 rounded-box border border-base-300 bg-base-200 px-3 py-2 text-sm">
-                                        <span class="inline-flex items-center gap-1"><x-icon name="event" /> {{ $shift->start_at->format('H:i') }} – {{ $shift->end_at->format('H:i') }}</span>
+                                        <span class="inline-flex items-center gap-1"><x-icon name="event" /> {{ $shift->start_at->ftime() }} – {{ $shift->end_at->ftime() }}</span>
                                         <span class="text-base-content/60">{{ $shift->note ? \CommonToolkit\Helper\Data\StringHelper::truncate($shift->note, 40) : '' }}</span>
                                     </li>
                                 @endforeach
@@ -235,7 +235,7 @@
                                             <x-status-badge size="xs" :tone="$issTone">{{ $issue->status->label() }}</x-status-badge>
                                             <x-status-badge size="xs" :tone="$issSevTone">{{ $issue->severity->label() }}</x-status-badge>
                                             @if ($issue->due_at)
-                                                <x-status-badge size="xs" :tone="$issue->due_at->isPast() ? 'error' : 'ghost'">{{ $issue->due_at->format('d.m.Y') }}</x-status-badge>
+                                                <x-status-badge size="xs" :tone="$issue->due_at->isPast() ? 'error' : 'ghost'">{{ $issue->due_at->fdate() }}</x-status-badge>
                                             @endif
                                         </div>
                                         @if ($subjectRoute)

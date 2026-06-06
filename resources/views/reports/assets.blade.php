@@ -104,7 +104,7 @@
                             @endif
                         </td>
                         <td class="text-right">{{ number_format((float) $row['defectRate'], 2, ',', '.') }}</td>
-                        <td @if ($row['lastIncidentAt']) data-sort-value="{{ \Illuminate\Support\Carbon::parse($row['lastIncidentAt'])->format('Y-m-d') }}" @endif>{{ $row['lastIncidentAt'] ? \Illuminate\Support\Carbon::parse($row['lastIncidentAt'])->format('d.m.Y') : '—' }}</td>
+                        <td @if ($row['lastIncidentAt']) data-sort-value="{{ \Illuminate\Support\Carbon::parse($row['lastIncidentAt'])->format('Y-m-d') }}" @endif>{{ $row['lastIncidentAt'] ? \Illuminate\Support\Carbon::parse($row['lastIncidentAt'])->fdate() : '—' }}</td>
                     </tr>
                 @endforeach
             </x-table>

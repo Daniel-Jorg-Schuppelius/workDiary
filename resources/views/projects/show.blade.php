@@ -11,10 +11,10 @@
         @endif
         <div class="mt-1 flex flex-wrap gap-3 text-xs text-base-content/60">
             @if ($project->starts_on)
-                <span>{{ __('Start') }}: {{ $project->starts_on->format('d.m.Y') }}</span>
+                <span>{{ __('Start') }}: {{ $project->starts_on->fdate() }}</span>
             @endif
             @if ($project->ends_on)
-                <span>{{ __('Ende') }}: {{ $project->ends_on->format('d.m.Y') }}</span>
+                <span>{{ __('Ende') }}: {{ $project->ends_on->fdate() }}</span>
             @endif
         </div>
         <x-slot:actions>

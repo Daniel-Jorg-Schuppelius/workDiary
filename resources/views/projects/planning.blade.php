@@ -42,7 +42,7 @@
                     <div class="relative ml-44 h-5">
                         @foreach ($t['milestones'] as $m)
                             <div class="absolute top-0 -translate-x-1/2 text-[10px] text-warning"
-                                 style="left: {{ $m['offsetPct'] }}%" title="{{ $m['milestone']->title }} · {{ \Illuminate\Support\Carbon::parse($m['milestone']->due_date)->format('d.m.Y') }}">
+                                 style="left: {{ $m['offsetPct'] }}%" title="{{ $m['milestone']->title }} · {{ \Illuminate\Support\Carbon::parse($m['milestone']->due_date)->fdate() }}">
                                 <span class="material-symbols-outlined text-[14px]" aria-hidden="true">flag</span>
                             </div>
                         @endforeach

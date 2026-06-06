@@ -27,9 +27,9 @@ use App\Enums\Vacation\VacationStatus;
                         <td class="font-medium">{{ $v->user?->name ?? '—' }}</td>
                     @endif
                     <td class="whitespace-nowrap">
-                        {{ $v->start_date->format('d.m.Y') }}
+                        {{ $v->start_date->fdate() }}
                         @if ($v->start_date->ne($v->end_date))
-                            – {{ $v->end_date->format('d.m.Y') }}
+                            – {{ $v->end_date->fdate() }}
                         @endif
                     </td>
                     <td class="tabular-nums">{{ $days }}</td>

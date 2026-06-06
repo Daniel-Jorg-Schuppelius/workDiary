@@ -18,7 +18,7 @@
             <tbody>
                 @foreach ($entries as $entry)
                     <tr class="border-b border-base-200">
-                        <td class="p-2 whitespace-nowrap">{{ optional($entry->start_at)->format('d.m.Y') }}</td>
+                        <td class="p-2 whitespace-nowrap">{{ optional($entry->start_at)->fdate() }}</td>
                         <td class="p-2">{{ $entry->title }}</td>
                         <td class="p-2">{{ $entry->status }}</td>
                     </tr>

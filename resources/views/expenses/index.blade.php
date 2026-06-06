@@ -65,7 +65,7 @@
                 </x-slot:head>
                 @forelse ($expenses as $expense)
                     <tr>
-                        <td class="whitespace-nowrap">{{ $expense->date?->format('d.m.Y') }}</td>
+                        <td class="whitespace-nowrap">{{ $expense->date?->fdate() }}</td>
                         <td>
                             @if ($expense->category)
                                 <span class="inline-flex items-center gap-1">
