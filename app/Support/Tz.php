@@ -39,14 +39,17 @@ final class Tz {
     public static function current(): string {
         // 1) User-Override
         $user = Auth::user();
-        if ($user instanceof User && self::isValid($user->timezone)) {
-            return $user->timezone;
+        if ($user instanceof User) {
+            $userTz = $user->timezone;
+            if ($userTz !== null && self::isValid($userTz)) {
+                return $userTz;
+            }
         }
 
         // 2) Aktive Organisation
         if (app()->bound('currentOrganization')) {
             $org = app('currentOrganization');
-            if ($org instanceof Organization && self::isValid($org->timezone)) {
+            if ($org instanceof Organization && is_string($org->timezone) && self::isValid($org->timezone)) {
                 return $org->timezone;
             }
         }
@@ -90,6 +93,10 @@ final class Tz {
         $parsed = $format !== null
             ? CarbonImmutable::createFromFormat($format, $value, $tz)
             : CarbonImmutable::parse($value, $tz);
+        if (! $parsed instanceof CarbonImmutable) {
+            // createFromFormat kann bei unpassendem Format false liefern.
+            $parsed = CarbonImmutable::parse($value, $tz);
+        }
 
         return $parsed->setTimezone('UTC');
     }
@@ -131,8 +138,8 @@ final class Tz {
         $groups = [];
         foreach (DateTimeZone::listIdentifiers() as $identifier) {
             $region = str_contains($identifier, '/')
-                ? strstr($identifier, '/', true)
-                : __('Sonstige');
+                ? (string) strstr($identifier, '/', true)
+                : (string) __('Sonstige');
             $groups[$region][] = $identifier;
         }
         ksort($groups);

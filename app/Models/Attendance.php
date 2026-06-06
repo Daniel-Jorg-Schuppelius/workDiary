@@ -101,7 +101,7 @@ class Attendance extends Model {
                 // Kalendertag in der aktiven Anzeige-Zeitzone bestimmen, nicht in
                 // UTC – sonst landet z. B. ein Einstempeln um 23:30 (lokal) auf
                 // dem Folgetag (UTC). started_at bleibt UTC.
-                $a->date = $a->started_at->copy()->orgTz()->startOfDay();
+                $a->date = $a->started_at->copy()->setTimezone(\App\Support\Tz::current())->startOfDay();
             }
             if ($a->started_at && $a->ended_at) {
                 // Apply statutory minimum breaks (ArbZG §4) before computing the

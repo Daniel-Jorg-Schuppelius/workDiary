@@ -11,6 +11,7 @@ export default defineConfig({
                 "resources/js/schedule.js",
                 "resources/js/map.js",
                 "resources/js/calendar.js",
+                "resources/js/chat.js",
             ],
             refresh: true,
         }),

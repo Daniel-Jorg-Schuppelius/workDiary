@@ -118,7 +118,13 @@ class LegacyUserProvider extends EloquentUserProvider {
         if ($user->customer_id !== null) {
             return false;
         }
-        // Bei Legacy-Accounts: Klartext-Vergleich gegen Legacy-DB; users.password
+        // Neu-System-Accounts (inkl. ehemals Legacy-verkn\u00fcpfter, denen ein Admin
+        // ein neues Passwort gesetzt hat) werden per bcrypt gegen users.password
+        // gepr\u00fcft \u2013 unabh\u00e4ngig von einer Legacy-Verkn\u00fcpfung.
+        if ($user->is_new_system) {
+            return $this->hasher->check($password, $user->getAuthPassword());
+        }
+        // Reine Legacy-Accounts: Klartext-Vergleich gegen Legacy-DB; users.password
         // ist nur ein zuf\u00e4lliger Platzhalter und darf NICHT akzeptiert werden.
         if ($user->legacy_user_id !== null) {
             return $this->findLegacyUser((string) $user->name, (string) $password) !== null;

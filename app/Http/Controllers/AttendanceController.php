@@ -157,8 +157,10 @@ class AttendanceController extends Controller {
         // Manuell eingegebene Zeiten werden in der aktiven Anzeige-Zeitzone
         // interpretiert und zur Speicherung nach UTC umgerechnet.
         $attendance->fill(Arr::except($data, ['started_at', 'ended_at']));
-        $attendance->started_at = Tz::parse($data['started_at']);
-        $attendance->ended_at = filled($data['ended_at'] ?? null) ? Tz::parse($data['ended_at']) : null;
+        $attendance->started_at = \Illuminate\Support\Carbon::instance(Tz::parse($data['started_at']));
+        $attendance->ended_at = filled($data['ended_at'] ?? null)
+            ? \Illuminate\Support\Carbon::instance(Tz::parse($data['ended_at']))
+            : null;
         $attendance->updated_by = (int) Auth::id();
         $attendance->save();
 

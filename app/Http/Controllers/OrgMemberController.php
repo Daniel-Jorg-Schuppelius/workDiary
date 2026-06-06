@@ -156,6 +156,9 @@ class OrgMemberController extends Controller {
             ],
             'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $member->id],
             'role' => ['required', 'in:' . implode(',', [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value])],
+            // Admin kann optional ein neues Passwort setzen; der Mitarbeiter muss
+            // es beim nächsten Login ändern.
+            'new_password' => ['nullable', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
         ] + $this->payrollDetailRules($auth) + $this->contactDetailRules());
 
         $member->fill([
@@ -165,6 +168,15 @@ class OrgMemberController extends Controller {
         ]);
         $this->fillUserPayrollFields($member, $data, $auth);
         $this->fillUserContactFields($member, $data);
+        if (filled($data['new_password'] ?? null)) {
+            // Neues Passwort gilt im Neu-System (bcrypt). is_new_system aktivieren,
+            // damit der Login users.password prüft statt der Legacy-DB.
+            $member->forceFill([
+                'password' => Hash::make($data['new_password']),
+                'is_new_system' => true,
+                'must_change_password' => true,
+            ]);
+        }
         $member->save();
 
         $this->syncUserAddress($member, (array) ($data['address'] ?? []));

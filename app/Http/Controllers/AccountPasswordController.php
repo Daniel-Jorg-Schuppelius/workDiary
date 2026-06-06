@@ -18,10 +18,15 @@ use Illuminate\Validation\Rules\Password;
 
 class AccountPasswordController extends Controller {
     public function edit(Request $request): View {
-        return view('account._password_dialog', [
-            'mustChange' => (bool) (Auth::user()->must_change_password ?? false),
-            'isDialog' => true,
-        ]);
+        $mustChange = (bool) (Auth::user()->must_change_password ?? false);
+
+        // Wird die Route als Modal geladen (AJAX), nur das Dialog-Partial liefern;
+        // bei direktem Aufruf die Vollseite im App-Layout rendern.
+        if ($request->ajax()) {
+            return view('account._password_dialog', ['mustChange' => $mustChange, 'isDialog' => true]);
+        }
+
+        return view('account.password', ['mustChange' => $mustChange]);
     }
 
     public function update(Request $request): RedirectResponse {

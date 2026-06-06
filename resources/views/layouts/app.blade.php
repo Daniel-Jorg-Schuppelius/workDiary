@@ -536,6 +536,7 @@
                                     ['route' => $indexRoute,                'label' => __('Arbeitsliste'),   'icon' => 'list_alt',         'modal' => false, 'matches' => [$indexRoute, 'diary.*']],
                                     ['route' => 'week.index',               'label' => __('Wochenansicht'),  'icon' => 'calendar_view_week','modal' => false, 'matches' => ['week.index']],
                                     ['route' => 'kanban.index',             'label' => __('Kanban'),         'icon' => 'view_kanban',      'modal' => false, 'matches' => ['kanban.index']],
+                                    ['route' => 'chat.index',               'label' => __('Chat'),           'icon' => 'forum',            'modal' => false, 'matches' => ['chat.*']],
                                     ['route' => 'duty-plans.index',         'label' => __('Dienstpläne'),    'icon' => 'event_available',  'modal' => false, 'matches' => ['duty-plans.*']],
                                     ['route' => 'schedule.index',           'label' => __('Schichtplan'),    'icon' => 'schedule',         'modal' => false, 'matches' => ['schedule.*']],
                                     ['route' => 'timesheets.index',         'label' => __('Stundenzettel'),  'icon' => 'description',      'modal' => false, 'matches' => ['timesheets.*', 'projects.timesheets.*']],
@@ -1118,7 +1119,16 @@
                             @if (! $isLegacyMode)
                             @php
                                 $_bookmarks = $userBookmarks ?? collect();
+                                $chatUnread = auth()->check() ? \App\Models\Chat\Channel::unreadTotalFor(auth()->user()) : 0;
                             @endphp
+                            <a href="{{ route('chat.index') }}"
+                               class="btn btn-sm btn-ghost btn-square relative {{ request()->routeIs('chat.*') ? 'btn-active' : '' }}"
+                               title="{{ __('Chat') }}" aria-label="{{ __('Chat') }}">
+                                <x-icon name="forum" class="text-base" />
+                                @if ($chatUnread > 0)
+                                    <span class="badge badge-primary badge-xs absolute -right-1 -top-1 tabular-nums">{{ $chatUnread > 99 ? '99+' : $chatUnread }}</span>
+                                @endif
+                            </a>
                             <div class="dropdown dropdown-end">
                                 <label tabindex="0"
                                        class="btn btn-sm btn-ghost btn-square"

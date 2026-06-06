@@ -92,6 +92,13 @@ class TenantTraitCoverageTest extends TestCase {
         // Vergleichsdaten (kein Org-Bezug). Der org-spezifische Mindestlohn
         // liegt separat in MinimumWage (tenant-scoped).
         \App\Models\MinimumWageReference::class,
+        // Chat: Child-Entitäten von Message/Poll — Mandantengrenze wird transitiv
+        // über das tenant-gebundene Parent (Channel/Message, beide mit
+        // BelongsToOrganization) durchgesetzt; eigene organization_id wäre redundant.
+        \App\Models\Chat\MessageReaction::class,
+        \App\Models\Chat\Poll::class,
+        \App\Models\Chat\PollOption::class,
+        \App\Models\Chat\PollVote::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {

@@ -27,8 +27,8 @@ use App\Services\Reminders\ReminderService;
 use App\Services\Routing\{NominatimGeocoder, OsrmRouter};
 use App\Services\Timesheet\Stopwatch;
 use App\Services\UI\DateRangeContext;
+use App\Support\CarbonFmt;
 use App\Support\Setting;
-use App\Support\Tz;
 use Carbon\{Carbon as CarbonMutable, CarbonImmutable};
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Foundation\Application;
@@ -124,38 +124,24 @@ class AppServiceProvider extends ServiceProvider {
         // Auf allen Carbon-Varianten registriert, da Eloquent-Casts
         // Illuminate\Support\Carbon liefern, manuelle Aufrufe aber auch
         // Carbon\Carbon / CarbonImmutable nutzen.
-        $orgTzMacro = function () {
-            /** @var \Carbon\CarbonInterface $this */
-            return $this->copy()->setTimezone(Tz::current());
-        };
-        CarbonMutable::macro('orgTz', $orgTzMacro);
-        CarbonImmutable::macro('orgTz', $orgTzMacro);
-        \Illuminate\Support\Carbon::macro('orgTz', $orgTzMacro);
-
-        // Anzeige-Macros: formatieren mit dem konfigurierten Datums-/Uhrzeitformat
-        // (User → Org → config, siehe App\Support\Formats) und lokalisierten
-        // Monats-/Tagesnamen (translatedFormat). Datums-/Zeitkomponente wird – wo
-        // sinnvoll – zuvor in die Anzeige-Zeitzone umgerechnet.
-        //   ->fdate()     : reines Datum, OHNE TZ-Umrechnung (für date-Felder)
-        //   ->fdatetime() : Datum+Uhrzeit in Anzeige-Zeitzone
-        //   ->ftime()     : nur Uhrzeit in Anzeige-Zeitzone
-        $fdate = function () {
-            /** @var \Carbon\CarbonInterface $this */
-            return $this->translatedFormat(\App\Support\Formats::date());
-        };
-        $fdatetime = function () {
-            /** @var \Carbon\CarbonInterface $this */
-            return $this->copy()->setTimezone(Tz::current())->translatedFormat(\App\Support\Formats::dateTime());
-        };
-        $ftime = function () {
-            /** @var \Carbon\CarbonInterface $this */
-            return $this->copy()->setTimezone(Tz::current())->translatedFormat(\App\Support\Formats::time());
-        };
-        foreach ([CarbonMutable::class, CarbonImmutable::class, \Illuminate\Support\Carbon::class] as $carbonClass) {
-            $carbonClass::macro('fdate', $fdate);
-            $carbonClass::macro('fdatetime', $fdatetime);
-            $carbonClass::macro('ftime', $ftime);
-        }
+        // Carbon-Anzeige-Macros (Logik in App\Support\CarbonFmt). Inline an macro()
+        // übergeben, damit larastan $this korrekt an die Carbon-Instanz bindet.
+        //   ->orgTz()     : in die aktive Anzeige-Zeitzone umrechnen
+        //   ->fdate()     : reines Datum im konfigurierten Format (ohne TZ-Umrechnung)
+        //   ->fdatetime() : Datum+Uhrzeit in Anzeige-Zeitzone + Format
+        //   ->ftime()     : nur Uhrzeit in Anzeige-Zeitzone + Format
+        CarbonMutable::macro('orgTz', fn () => CarbonFmt::orgTz($this));
+        CarbonImmutable::macro('orgTz', fn () => CarbonFmt::orgTz($this));
+        \Illuminate\Support\Carbon::macro('orgTz', fn () => CarbonFmt::orgTz($this));
+        CarbonMutable::macro('fdate', fn () => CarbonFmt::fdate($this));
+        CarbonImmutable::macro('fdate', fn () => CarbonFmt::fdate($this));
+        \Illuminate\Support\Carbon::macro('fdate', fn () => CarbonFmt::fdate($this));
+        CarbonMutable::macro('fdatetime', fn () => CarbonFmt::fdatetime($this));
+        CarbonImmutable::macro('fdatetime', fn () => CarbonFmt::fdatetime($this));
+        \Illuminate\Support\Carbon::macro('fdatetime', fn () => CarbonFmt::fdatetime($this));
+        CarbonMutable::macro('ftime', fn () => CarbonFmt::ftime($this));
+        CarbonImmutable::macro('ftime', fn () => CarbonFmt::ftime($this));
+        \Illuminate\Support\Carbon::macro('ftime', fn () => CarbonFmt::ftime($this));
 
         Auth::provider('legacy', function ($app) {
             return new LegacyUserProvider($app['hash']);
@@ -181,6 +167,8 @@ class AppServiceProvider extends ServiceProvider {
         MaterialUsage::observe(MaterialUsageObserver::class);
         Organization::observe(OrganizationObserver::class);
 
+        Gate::policy(\App\Models\Chat\Channel::class, \App\Policies\Chat\ChannelPolicy::class);
+        Gate::policy(\App\Models\Chat\Message::class, \App\Policies\Chat\MessagePolicy::class);
         Gate::policy(DutyPlan::class, DutyPlanPolicy::class);
         Gate::policy(CoverageRequirement::class, CoverageRequirementPolicy::class);
         Gate::policy(Milestone::class, MilestonePolicy::class);

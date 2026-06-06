@@ -12,7 +12,7 @@ use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController,
 use App\Http\Controllers\Admin\Access\{AccessHubController, MemberController as AccessMemberController, PermissionController as AccessPermissionController, RoleController as AccessRoleController, UserGroupController as AccessUserGroupController};
 use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatController, BranchProfileController, ClassificationController, ClassificationRequirementController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, SupportAccessAuditController, SupportReportController};
 use App\Http\Controllers\Asset\MaintenancePlanController;
-use App\Http\Controllers\Auth\{LoginController, TenantRegistrationController};
+use App\Http\Controllers\Auth\{LoginController, PasswordResetController, TenantRegistrationController};
 use App\Http\Controllers\KeyHandover\KeyHandoverController;
 use App\Http\Controllers\MeterReading\MeterReadingController;
 use App\Http\Controllers\Reporting\{AbsencesReportController, AssetAnalysisReportController, AttendanceReportController, AuditActivityReportController, BillingReportController, CoverageReportController, CustomerAnalysisReportController, CustomerProjectReportController, EntryTypeAnalysisReportController, EntryTypeDrilldownReportController, ExpenseReportController, ExternalPayoutReportController, FleetReportController, MaterialReportController, MonthByUserTeamReportController, MyMonthReportController, MyYearReportController, OnCallReportController, OperationsReportController, ProjectDetailsReportController, ProjectInactiveReportController, QualificationReportController, SicknessReportController, WeekByUserReportController, WorkBalanceReportController};
@@ -45,6 +45,14 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::get('/register', [TenantRegistrationController::class, 'showForm'])->name('register')->middleware('guest');
 Route::post('/register', [TenantRegistrationController::class, 'register'])->middleware(['guest', 'throttle:register']);
+
+// Passwort vergessen (self-contained Reset-Flow, Gast).
+Route::middleware('guest')->group(function (): void {
+    Route::get('/password/forgot', [PasswordResetController::class, 'request'])->name('password.request');
+    Route::post('/password/forgot', [PasswordResetController::class, 'email'])->middleware('throttle:6,1')->name('password.email');
+    Route::get('/password/reset/{token}', [PasswordResetController::class, 'reset'])->name('password.reset');
+    Route::post('/password/reset', [PasswordResetController::class, 'update'])->middleware('throttle:6,1')->name('password.update');
+});
 
 Route::post('/locale/{locale}', [LocaleController::class, 'switch'])->name('locale.switch');
 
@@ -839,6 +847,36 @@ Route::middleware('auth')->group(function () {
         Route::post('payroll/references/import', [PayrollController::class, 'importReferences'])->name('payroll.references.import');
         Route::delete('payroll/minimum-wages/{minimumWage}', [PayrollController::class, 'destroyMinimumWage'])->name('payroll.minimum-wages.destroy');
         Route::post('payroll/raise-to-minimum', [PayrollController::class, 'raiseToMinimum'])->name('payroll.raise-to-minimum');
+
+        // ── Chat (Kanäle, Direktnachrichten, Threads, Reaktionen, Umfragen) ──
+        Route::prefix('chat')->name('chat.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Chat\ChannelController::class, 'index'])->name('index');
+            Route::post('channels', [\App\Http\Controllers\Chat\ChannelController::class, 'store'])->name('channels.store');
+            Route::post('direct', [\App\Http\Controllers\Chat\ChannelController::class, 'direct'])->name('direct');
+            Route::get('search', [\App\Http\Controllers\Chat\MessageController::class, 'search'])->name('search');
+
+            // Nachrichten-/Poll-Aktionen auf einzelnen Nachrichten (literal vor {channel}).
+            Route::put('messages/{message}', [\App\Http\Controllers\Chat\MessageController::class, 'update'])->name('messages.update');
+            Route::delete('messages/{message}', [\App\Http\Controllers\Chat\MessageController::class, 'destroy'])->name('messages.destroy');
+            Route::get('messages/{message}', [\App\Http\Controllers\Chat\MessageController::class, 'show'])->name('messages.show');
+            Route::get('messages/{message}/replies', [\App\Http\Controllers\Chat\MessageController::class, 'replies'])->name('messages.replies');
+            Route::post('messages/{message}/pin', [\App\Http\Controllers\Chat\MessageController::class, 'pin'])->name('messages.pin');
+            Route::post('messages/{message}/react', [\App\Http\Controllers\Chat\ReactionController::class, 'toggle'])->name('messages.react');
+            Route::post('polls/{poll}/vote', [\App\Http\Controllers\Chat\PollController::class, 'vote'])->name('polls.vote');
+
+            // Kanalbezogen.
+            Route::get('{channel}', [\App\Http\Controllers\Chat\ChannelController::class, 'index'])->name('show');
+            Route::put('{channel}', [\App\Http\Controllers\Chat\ChannelController::class, 'update'])->name('channels.update');
+            Route::delete('{channel}', [\App\Http\Controllers\Chat\ChannelController::class, 'destroy'])->name('channels.destroy');
+            Route::post('{channel}/join', [\App\Http\Controllers\Chat\ChannelController::class, 'join'])->name('channels.join');
+            Route::post('{channel}/leave', [\App\Http\Controllers\Chat\ChannelController::class, 'leave'])->name('channels.leave');
+            Route::post('{channel}/invite', [\App\Http\Controllers\Chat\ChannelController::class, 'invite'])->name('channels.invite');
+            Route::post('{channel}/read', [\App\Http\Controllers\Chat\ChannelController::class, 'markRead'])->name('channels.read');
+            Route::get('{channel}/messages', [\App\Http\Controllers\Chat\MessageController::class, 'index'])->name('messages.index');
+            Route::post('{channel}/messages', [\App\Http\Controllers\Chat\MessageController::class, 'store'])->name('messages.store');
+            Route::get('{channel}/pinned', [\App\Http\Controllers\Chat\MessageController::class, 'pinned'])->name('messages.pinned');
+            Route::post('{channel}/polls', [\App\Http\Controllers\Chat\PollController::class, 'store'])->name('polls.store');
+        });
 
         // ── Rechteverwaltung (Rollen, Gruppen, Permissions, Mitgliederzuweisung) ──
         // Alle Routen sind über das Gate 'manage-access' bzw. die UserGroupPolicy

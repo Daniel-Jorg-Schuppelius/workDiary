@@ -1368,3 +1368,15 @@
         @apply text-xs text-error;
     }
 }
+
+/* Chat: aufeinanderfolgende Nachrichten desselben Benutzers (kurz nacheinander)
+   werden gruppiert — Avatar/Name nur bei der ersten, engerer Abstand. */
+.chat-msg.is-grouped {
+    margin-top: -0.125rem;
+}
+.chat-msg.is-grouped .chat-avatar {
+    visibility: hidden; /* Platz erhalten, damit die Bubble buendig bleibt */
+}
+.chat-msg.is-grouped .chat-name {
+    display: none;
+}

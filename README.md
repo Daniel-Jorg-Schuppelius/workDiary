@@ -246,6 +246,67 @@ Installationen alternativ ein regelmaessiger Cronjob genutzt werden:
 * * * * * cd /pfad/zum/workdiary && php artisan queue:work --stop-when-empty --tries=3 >> /dev/null 2>&1
 ```
 
+### Chat-Echtzeit (Reverb) — optional
+
+Der Chat aktualisiert sich **immer ohne Reload**, auch ganz ohne Zusatzdienste:
+ein eingebautes Polling holt alle ~3 s neue Nachrichten. Fuer **sofortige**
+(sub-sekuendliche) Zustellung gibt es zusaetzlich WebSockets via Laravel Reverb.
+
+`.env` (Werte beim Setup/Installer erzeugt):
+
+```dotenv
+BROADCAST_CONNECTION=reverb
+REVERB_APP_ID=…  REVERB_APP_KEY=…  REVERB_APP_SECRET=…
+REVERB_HOST=127.0.0.1  REVERB_PORT=8080  REVERB_SCHEME=http
+VITE_REVERB_APP_KEY="${REVERB_APP_KEY}"
+VITE_REVERB_HOST="${REVERB_HOST}"
+VITE_REVERB_PORT="${REVERB_PORT}"
+VITE_REVERB_SCHEME="${REVERB_SCHEME}"
+```
+
+Fuer echte Echtzeit muessen zwei dauerhafte Prozesse laufen — der WebSocket-Server
+und ein Queue-Worker (die Broadcast-Events laufen ueber die Queue). Lokal sind
+beide bereits in `composer dev` enthalten. Produktiv per **Supervisor** (empfohlen):
+
+```ini
+[program:workdiary-reverb]
+command=php /pfad/zum/workdiary/artisan reverb:start --host=127.0.0.1 --port=8080
+autostart=true
+autorestart=true
+user=www-data
+stopwaitsecs=10
+
+[program:workdiary-queue]
+command=php /pfad/zum/workdiary/artisan queue:work --tries=3 --max-time=3600
+autostart=true
+autorestart=true
+user=www-data
+stopwaitsecs=10
+```
+
+Hinter einem Webserver wird `/app/…` (Port `REVERB_PORT`) als WebSocket an Reverb
+durchgereicht (Beispiel nginx):
+
+```nginx
+location /app/ {
+    proxy_pass http://127.0.0.1:8080;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "Upgrade";
+    proxy_set_header Host $host;
+}
+```
+
+Ohne Supervisor laesst sich Reverb per **Cron-Watchdog** am Leben halten (minuetlich
+neu starten, falls abgestuerzt):
+
+```cron
+* * * * * pgrep -f "artisan reverb:start" >/dev/null || (cd /pfad/zum/workdiary && nohup php artisan reverb:start --port=8080 >> storage/logs/reverb.log 2>&1 &)
+```
+
+Wer auf Reverb verzichtet, bleibt beim Polling — der Chat funktioniert
+vollstaendig, nur eben mit ~3 s statt sofort. Details: `docs/chat.md`.
+
 ## Wichtige Konfiguration
 
 Die lokale `.env.example` nutzt standardmaessig SQLite:

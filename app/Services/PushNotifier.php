@@ -114,4 +114,45 @@ class PushNotifier {
             'tag' => 'timesheet-' . $timesheet->id,
         ]);
     }
+
+    /**
+     * Chat: benachrichtigt bei Direktnachrichten alle anderen Mitglieder und in
+     * Kanälen/Gruppen die per @Name erwähnten Mitglieder (sofern nicht
+     * stummgeschaltet). Verschickt Web-Push an deren Geräte.
+     */
+    public function chatMessage(\App\Models\Chat\Message $message): void {
+        if (! $message->user_id) {
+            return;
+        }
+        $message->loadMissing(['channel.members.pushSubscriptions', 'user']);
+        $channel = $message->channel;
+        if ($channel === null) {
+            return;
+        }
+
+        $body = (string) $message->body;
+        $sender = $message->user->name ?? __('Unbekannt');
+        $title = $channel->isDirect() ? $sender : '#' . ($channel->name ?? __('Chat')) . ' · ' . $sender;
+
+        // Stummgeschaltete Mitglieder per Pivot-Query ausschließen (kein Pivot-Property-Zugriff).
+        $mutedIds = $channel->members()->wherePivotNotNull('muted_at')->pluck('users.id')->all();
+
+        $recipients = $channel->members->filter(function (User $m) use ($message, $channel, $body, $mutedIds): bool {
+            if ($m->id === $message->user_id || in_array($m->id, $mutedIds, true)) {
+                return false;
+            }
+            // Direktnachricht: immer benachrichtigen; sonst nur bei @Mention.
+            return $channel->isDirect() || mb_stripos($body, '@' . $m->name) !== false;
+        });
+
+        $truncate = (int) Setting::get('notifications.push.body_truncate', 120);
+        foreach ($recipients as $m) {
+            $this->webPush->sendToUser($m, [
+                'title' => $title,
+                'body' => mb_substr($body !== '' ? $body : __('[Anhang]'), 0, $truncate),
+                'url' => route('chat.show', $channel),
+                'tag' => 'chat-' . $channel->id,
+            ]);
+        }
+    }
 }

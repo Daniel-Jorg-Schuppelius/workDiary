@@ -78,6 +78,10 @@
                 <p class="mt-3 text-sm text-base-content/70">{{ __('Benutzerdaten aus dem bestehenden Auftragsbuch-System.') }}</p>
             </div>
 
+            @if (session('status'))
+                <div class="mb-4 alert alert-success text-sm">{{ session('status') }}</div>
+            @endif
+
             <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs">
                 <form method="POST" action="{{ route('login') }}" class="space-y-5">
                     @csrf
@@ -111,14 +115,17 @@
                         >
                     </div>
 
-                    <div class="flex items-center gap-3">
-                        <input
-                            id="remember"
-                            name="remember"
-                            type="checkbox"
-                            class="checkbox checkbox-primary checkbox-sm"
-                        >
-                        <label for="remember" class="text-sm text-base-content/80">{{ __('Angemeldet bleiben') }}</label>
+                    <div class="flex items-center justify-between gap-3">
+                        <label class="flex items-center gap-3">
+                            <input
+                                id="remember"
+                                name="remember"
+                                type="checkbox"
+                                class="checkbox checkbox-primary checkbox-sm"
+                            >
+                            <span class="text-sm text-base-content/80">{{ __('Angemeldet bleiben') }}</span>
+                        </label>
+                        <a href="{{ route('password.request') }}" class="text-sm text-primary transition hover:opacity-80">{{ __('Passwort vergessen?') }}</a>
                     </div>
 
                     <button
