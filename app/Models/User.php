@@ -68,7 +68,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Role> $roles
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Permission> $permissions
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, SpatiePermission> $permissions
  */
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable {
@@ -200,7 +200,7 @@ class User extends Authenticatable {
         'employment_start_date' => 'date',
         'employment_end_date' => 'date',
         'employment_type' => \App\Enums\User\EmploymentType::class,
-        'compensation_model' => \App\Enums\User\CompensationModel::class,
+        'compensation_model' => CompensationModel::class,
         'flat_amount' => 'decimal:2',
         'flat_interval' => \App\Enums\User\FlatInterval::class,
         'compensation_rate' => 'decimal:2',
@@ -256,8 +256,10 @@ class User extends Authenticatable {
      * `name` zurück, wenn keine Bestandteile erfasst sind.
      */
     public function fullName(): string {
-        $parts = array_filter([$this->first_name, $this->middle_names, $this->last_name],
-            static fn(?string $v): bool => $v !== null && trim($v) !== '');
+        $parts = array_filter(
+            [$this->first_name, $this->middle_names, $this->last_name],
+            static fn(?string $v): bool => $v !== null && trim($v) !== ''
+        );
 
         return $parts === [] ? $this->name : implode(' ', $parts);
     }

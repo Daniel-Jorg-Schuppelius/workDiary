@@ -158,7 +158,7 @@ class OrgMemberController extends Controller {
             'role' => ['required', 'in:' . implode(',', [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value])],
             // Admin kann optional ein neues Passwort setzen; der Mitarbeiter muss
             // es beim nächsten Login ändern.
-            'new_password' => ['nullable', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
+            'new_password' => ['nullable', 'confirmed', Password::defaults()],
         ] + $this->payrollDetailRules($auth) + $this->contactDetailRules());
 
         $member->fill([
@@ -244,7 +244,7 @@ class OrgMemberController extends Controller {
             'church_tax' => ['nullable', 'boolean'],
             'employment_start_date' => ['nullable', 'date'],
             'employment_end_date' => ['nullable', 'date', 'after_or_equal:employment_start_date'],
-            'employment_type' => ['nullable', \Illuminate\Validation\Rule::enum(\App\Enums\User\EmploymentType::class)],
+            'employment_type' => ['nullable', Rule::enum(\App\Enums\User\EmploymentType::class)],
         ];
 
         if ($this->canManagePayroll($user)) {
@@ -252,9 +252,9 @@ class OrgMemberController extends Controller {
 
             // Vergütungsmodell (auch für externe Mitarbeiter). Je nach Modell
             // sind Pauschale (Betrag + Intervall) bzw. Stundensatz erforderlich.
-            $rules['compensation_model'] = ['nullable', \Illuminate\Validation\Rule::enum(\App\Enums\User\CompensationModel::class)];
+            $rules['compensation_model'] = ['nullable', Rule::enum(\App\Enums\User\CompensationModel::class)];
             $rules['flat_amount'] = ['nullable', 'required_if:compensation_model,pauschal', 'numeric', 'min:0', 'max:99999999.99'];
-            $rules['flat_interval'] = ['nullable', 'required_if:compensation_model,pauschal', \Illuminate\Validation\Rule::enum(\App\Enums\User\FlatInterval::class)];
+            $rules['flat_interval'] = ['nullable', 'required_if:compensation_model,pauschal', Rule::enum(\App\Enums\User\FlatInterval::class)];
             $rules['compensation_rate'] = ['nullable', 'required_if:compensation_model,nach_zeitaufwand', 'numeric', 'min:0', 'max:99999999.99'];
         }
 
