@@ -46,7 +46,6 @@
 
 <div id="chat-root"
      data-channel-id="{{ $activeChannel?->sqid }}"
-     data-channel-rt="{{ $activeChannel?->id }}"
      data-txt-del-title="{{ __('Nachricht löschen?') }}"
      data-txt-del-msg="{{ __('Diese Nachricht wird dauerhaft entfernt.') }}"
      data-txt-del-ok="{{ __('Löschen') }}"

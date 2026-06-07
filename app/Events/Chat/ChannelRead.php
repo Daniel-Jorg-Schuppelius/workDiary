@@ -19,7 +19,7 @@ use Illuminate\Queue\SerializesModels;
 class ChannelRead implements ShouldBroadcast {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public int $channelId, public int $userId, public int $readTs) {}
+    public function __construct(public string $channelId, public int $userId, public int $readTs) {}
 
     /** @return list<PrivateChannel> */
     public function broadcastOn(): array {

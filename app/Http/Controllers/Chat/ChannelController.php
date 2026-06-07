@@ -214,7 +214,7 @@ class ChannelController extends Controller {
         $user = Auth::user();
         $now = now();
         $channel->members()->updateExistingPivot($user->id, ['last_read_at' => $now]);
-        broadcast(new \App\Events\Chat\ChannelRead($channel->id, $user->id, $now->getTimestamp()))->toOthers();
+        broadcast(new \App\Events\Chat\ChannelRead($channel->sqid, $user->id, $now->getTimestamp()))->toOthers();
 
         return back();
     }

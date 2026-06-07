@@ -19,7 +19,7 @@ use Illuminate\Queue\SerializesModels;
 class ReactionToggled implements ShouldBroadcast {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public int $channelId, public string $messageId) {}
+    public function __construct(public string $channelId, public string $messageId) {}
 
     /** @return list<PrivateChannel> */
     public function broadcastOn(): array {

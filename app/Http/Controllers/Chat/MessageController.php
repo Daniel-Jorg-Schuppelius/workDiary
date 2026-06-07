@@ -195,10 +195,12 @@ class MessageController extends Controller {
 
     public function destroy(Message $message): JsonResponse {
         Gate::authorize('delete', $message);
-        $channelId = $message->channel_id;
+        $channel = $message->channel;
         $sqid = $message->sqid;
         $message->delete();
-        broadcast(new MessageDeleted($channelId, $sqid))->toOthers();
+        if ($channel instanceof Channel) {
+            broadcast(new MessageDeleted($channel->sqid, $sqid))->toOthers();
+        }
 
         return response()->json(['id' => $sqid]);
     }

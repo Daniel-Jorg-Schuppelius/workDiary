@@ -63,8 +63,7 @@ function initSearch() {
 }
 
 function initChat(root) {
-    const channelId = root.dataset.channelId;        // Sqid: API-URLs / Ressourcen
-    const rtId = root.dataset.channelRt || channelId; // numerisch: Echtzeit-Channelname
+    const channelId = root.dataset.channelId; // Sqid: API-URLs + Echtzeit-Channelname
     if (!channelId) return;
     const list = document.getElementById("chat-messages");
     const csrf = document.querySelector('meta[name="csrf-token"]')?.content || "";
@@ -520,7 +519,7 @@ function initChat(root) {
         });
         echo.connector?.pusher?.connection?.bind?.("unavailable", () => { realtimeConnected = false; });
         echo.connector?.pusher?.connection?.bind?.("failed", () => { realtimeConnected = false; });
-        const privateChannel = echo.private(`chat.channel.${rtId}`);
+        const privateChannel = echo.private(`chat.channel.${channelId}`);
         privateChannel
             .listen(".message.sent", () => { loadNew(); hideTyping(); })
             .listen(".message.updated", (e) => refreshMessage(e.id))
@@ -541,7 +540,7 @@ function initChat(root) {
             const countEl = presenceEl.querySelector("[data-count]");
             if (countEl) countEl.textContent = (presenceEl.dataset.tpl || ":count online").replace(":count", n);
         };
-        echo.join(`presence-chat.channel.${rtId}`)
+        echo.join(`presence-chat.channel.${channelId}`)
             .here((users) => { presence.clear(); (users || []).forEach((u) => presence.set(u.id, u)); renderPresence(); })
             .joining((u) => { presence.set(u.id, u); renderPresence(); })
             .leaving((u) => { presence.delete(u.id); renderPresence(); })

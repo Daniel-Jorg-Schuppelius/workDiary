@@ -100,7 +100,7 @@ class PollController extends Controller {
             }
         });
 
-        broadcast(new PollVoted($message->channel_id, $message->sqid))->toOthers();
+        broadcast(new PollVoted($channel->sqid, $message->sqid))->toOthers();
         $message->load(['user:id,name', 'poll.options.votes', 'attachments', 'reactions', 'replies']);
 
         return response()->json(['id' => $message->id, 'html' => $this->render($message)]);
