@@ -252,21 +252,142 @@ Der Chat aktualisiert sich **immer ohne Reload**, auch ganz ohne Zusatzdienste:
 ein eingebautes Polling holt alle ~3 s neue Nachrichten. Fuer **sofortige**
 (sub-sekuendliche) Zustellung gibt es zusaetzlich WebSockets via Laravel Reverb.
 
-`.env` (Werte beim Setup/Installer erzeugt):
+> **Deploy-Hinweis:** Das Chat-Frontend bindet die npm-Pakete `laravel-echo`
+> und `pusher-js` ein (in `package.json`/`package-lock.json` enthalten). Nach
+> einem Update daher **vor** `npm run build` zwingend `npm ci` (bzw.
+> `npm install`) ausfuehren — sonst schlaegt der Build mit
+> „Rolldown failed to resolve import 'laravel-echo'" fehl.
+
+Die Reverb-Zugangsdaten werden lokal erzeugt; es ist kein externer Dienst
+erforderlich:
+
+```bash
+openssl rand -hex 16  # REVERB_APP_KEY
+openssl rand -hex 32  # REVERB_APP_SECRET
+```
+
+Die Ausgaben zusammen mit einer frei waehlbaren `REVERB_APP_ID` in `.env`
+eintragen. Hinter einem HTTPS-Reverse-Proxy zeigt `REVERB_*` auf den intern
+erreichbaren Reverb-Prozess, waehrend `VITE_REVERB_*` die oeffentlich
+erreichbare Domain beschreibt:
 
 ```dotenv
 BROADCAST_CONNECTION=reverb
-REVERB_APP_ID=…  REVERB_APP_KEY=…  REVERB_APP_SECRET=…
-REVERB_HOST=127.0.0.1  REVERB_PORT=8080  REVERB_SCHEME=http
+QUEUE_CONNECTION=database
+
+REVERB_APP_ID=workdiary
+REVERB_APP_KEY=hier_den_ersten_zufallswert_eintragen
+REVERB_APP_SECRET=hier_den_zweiten_zufallswert_eintragen
+
+REVERB_HOST=127.0.0.1
+REVERB_PORT=8080
+REVERB_SCHEME=http
+REVERB_SERVER_HOST=127.0.0.1
+REVERB_SERVER_PORT=8080
+
 VITE_REVERB_APP_KEY="${REVERB_APP_KEY}"
-VITE_REVERB_HOST="${REVERB_HOST}"
-VITE_REVERB_PORT="${REVERB_PORT}"
-VITE_REVERB_SCHEME="${REVERB_SCHEME}"
+VITE_REVERB_HOST=workdiary.example.org
+VITE_REVERB_PORT=443
+VITE_REVERB_SCHEME=https
+```
+
+`REVERB_APP_SECRET` darf nicht an den Browser oder in das Repository gelangen.
+Der `REVERB_APP_KEY` ist dagegen eine oeffentliche Anwendungskennung und wird
+beim Frontend-Build eingebettet. Nach Aenderungen:
+
+```bash
+php artisan optimize:clear
+npm run build
 ```
 
 Fuer echte Echtzeit muessen zwei dauerhafte Prozesse laufen — der WebSocket-Server
 und ein Queue-Worker (die Broadcast-Events laufen ueber die Queue). Lokal sind
-beide bereits in `composer dev` enthalten. Produktiv per **Supervisor** (empfohlen):
+beide bereits in `composer dev` enthalten.
+
+#### Betrieb mit systemd
+
+Auf Systemen mit systemd werden zwei Dienste angelegt. In beiden Dateien muessen
+`/pfad/zum/workdiary` und gegebenenfalls `/usr/bin/php` angepasst werden
+(`command -v php` zeigt den PHP-Pfad).
+
+`/etc/systemd/system/workdiary-reverb.service`:
+
+```ini
+[Unit]
+Description=WorkDiary Laravel Reverb
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/pfad/zum/workdiary
+ExecStart=/usr/bin/php artisan reverb:start --host=127.0.0.1 --port=8080
+Restart=always
+RestartSec=5
+TimeoutStopSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```
+
+`/etc/systemd/system/workdiary-queue.service`:
+
+```ini
+[Unit]
+Description=WorkDiary Laravel Queue Worker
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/pfad/zum/workdiary
+ExecStart=/usr/bin/php artisan queue:work --tries=3 --timeout=90 --max-time=3600
+Restart=always
+RestartSec=5
+TimeoutStopSec=100
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Dienste laden, beim Systemstart aktivieren und sofort starten:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now workdiary-reverb workdiary-queue
+sudo systemctl status workdiary-reverb workdiary-queue
+```
+
+Logs lassen sich ueber das Journal verfolgen:
+
+```bash
+sudo journalctl -u workdiary-reverb -f
+sudo journalctl -u workdiary-queue -f
+```
+
+Nach einem Deployment beide Prozesse neu starten:
+
+```bash
+sudo systemctl restart workdiary-reverb workdiary-queue
+```
+
+Der konfigurierte Benutzer muss `.env` lesen und in `storage` sowie
+`bootstrap/cache` schreiben koennen. Bei Hosting-Setups sollte statt `www-data`
+gegebenenfalls der Benutzer des jeweiligen Webauftritts verwendet werden.
+
+Ein Fehler wie `Pusher\Pusher::__construct(): ... auth_key ... null given`
+bedeutet, dass `REVERB_APP_KEY` in `.env` fehlt oder noch eine alte Laravel-
+Konfiguration gecacht ist. Nach dem Eintragen hilft `php artisan optimize:clear`.
+
+#### Betrieb mit Supervisor
+
+Alternativ koennen die Prozesse per Supervisor verwaltet werden:
 
 ```ini
 [program:workdiary-reverb]
@@ -284,8 +405,27 @@ user=www-data
 stopwaitsecs=10
 ```
 
-Hinter einem Webserver wird `/app/…` (Port `REVERB_PORT`) als WebSocket an Reverb
-durchgereicht (Beispiel nginx):
+#### Reverse-Proxy
+
+Hinter einem Webserver wird `/app/...` als WebSocket an Reverb durchgereicht.
+Fuer Apache im HTTPS-`VirtualHost`:
+
+```apache
+ProxyPreserveHost On
+
+ProxyPass        "/app/" "ws://127.0.0.1:8080/app/" retry=0 timeout=600
+ProxyPassReverse "/app/" "ws://127.0.0.1:8080/app/"
+```
+
+Die erforderlichen Apache-Module aktivieren und die Konfiguration pruefen:
+
+```bash
+sudo a2enmod proxy proxy_http proxy_wstunnel
+sudo apachectl configtest
+sudo systemctl restart apache2
+```
+
+Alternativ fuer nginx:
 
 ```nginx
 location /app/ {
