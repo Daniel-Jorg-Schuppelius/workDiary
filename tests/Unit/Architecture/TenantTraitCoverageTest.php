@@ -99,6 +99,8 @@ class TenantTraitCoverageTest extends TestCase {
         \App\Models\Chat\Poll::class,
         \App\Models\Chat\PollOption::class,
         \App\Models\Chat\PollVote::class,
+        \App\Models\Chat\Reminder::class,
+        \App\Models\Chat\ScheduledMessage::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {

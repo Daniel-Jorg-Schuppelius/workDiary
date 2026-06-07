@@ -12,9 +12,10 @@ namespace App\Models\Chat;
 
 use App\Models\Attachment;
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\HasSqid;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne, MorphMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany, HasOne, MorphMany};
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -31,12 +32,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Message extends Model {
     use BelongsToOrganization;
+    use HasSqid;
     use SoftDeletes;
 
     protected $table = 'chat_messages';
 
     protected $fillable = [
         'organization_id', 'channel_id', 'user_id', 'parent_id',
+        'quoted_id', 'forwarded_from_user_id',
         'body', 'type', 'pinned_at', 'pinned_by', 'edited_at',
     ];
 
@@ -63,6 +66,25 @@ class Message extends Model {
     /** @return HasMany<Message, $this> Thread-Antworten (Kommentare). */
     public function replies(): HasMany {
         return $this->hasMany(self::class, 'parent_id');
+    }
+
+    /** @return BelongsTo<Message, $this> Zitierte Nachricht (Zitat-Antwort). */
+    public function quoted(): BelongsTo {
+        return $this->belongsTo(self::class, 'quoted_id');
+    }
+
+    /** @return BelongsTo<User, $this> Ursprünglicher Autor bei Weiterleitung. */
+    public function forwardedFrom(): BelongsTo {
+        return $this->belongsTo(User::class, 'forwarded_from_user_id');
+    }
+
+    /** @return BelongsToMany<User, $this> Nutzer, die diese Nachricht gesternt haben. */
+    public function starredBy(): BelongsToMany {
+        return $this->belongsToMany(User::class, 'chat_message_stars', 'message_id', 'user_id');
+    }
+
+    public function isStarredBy(?User $user): bool {
+        return $user !== null && $this->starredBy->contains('id', $user->id);
     }
 
     /** @return HasMany<MessageReaction, $this> */

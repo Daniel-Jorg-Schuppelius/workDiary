@@ -155,4 +155,22 @@ class PushNotifier {
             ]);
         }
     }
+
+    /** Web-Push für eine fällige Chat-Erinnerung. */
+    public function chatReminder(\App\Models\Chat\Reminder $reminder): void {
+        $user = $reminder->user;
+        $message = $reminder->message;
+        $channel = $reminder->channel;
+        if ($user === null || $message === null || $channel === null) {
+            return;
+        }
+        $body = trim((string) $message->body);
+
+        $this->webPush->sendToUser($user, [
+            'title' => __('Erinnerung') . ' · #' . ($channel->name ?? __('Chat')),
+            'body' => mb_substr($body !== '' ? $body : __('[Anhang]'), 0, 120),
+            'url' => route('chat.show', $channel),
+            'tag' => 'chat-reminder-' . $reminder->id,
+        ]);
+    }
 }

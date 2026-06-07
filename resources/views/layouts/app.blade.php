@@ -1121,13 +1121,13 @@
                                 $_bookmarks = $userBookmarks ?? collect();
                                 $chatUnread = auth()->check() ? \App\Models\Chat\Channel::unreadTotalFor(auth()->user()) : 0;
                             @endphp
-                            <a href="{{ route('chat.index') }}"
+                            <a id="chat-unread-link" href="{{ route('chat.index') }}"
+                               data-unread-url="{{ route('chat.unread') }}"
                                class="btn btn-sm btn-ghost btn-square relative {{ request()->routeIs('chat.*') ? 'btn-active' : '' }}"
                                title="{{ __('Chat') }}" aria-label="{{ __('Chat') }}">
                                 <x-icon name="forum" class="text-base" />
-                                @if ($chatUnread > 0)
-                                    <span class="badge badge-primary badge-xs absolute -right-1 -top-1 tabular-nums">{{ $chatUnread > 99 ? '99+' : $chatUnread }}</span>
-                                @endif
+                                <span id="chat-unread-badge"
+                                      class="badge badge-primary badge-xs absolute -right-1 -top-1 tabular-nums {{ $chatUnread > 0 ? '' : 'hidden' }}">{{ $chatUnread > 99 ? '99+' : $chatUnread }}</span>
                             </a>
                             <div class="dropdown dropdown-end">
                                 <label tabindex="0"
@@ -1662,7 +1662,7 @@
 
         <footer class="fixed inset-x-0 bottom-0 z-50 h-12 bg-base-100 border-t border-base-300 shadow-xs">
             <div class="mx-auto flex w-full {{ $_wrapperMaxW }} items-center justify-center px-4 py-3 text-xs text-base-content/70 xl:px-8 2xl:px-12">
-                &copy; {{ date('Y') }} {{ isset($branding) && $branding ? $branding->appName() : 'WorkDiary' }}. {{ __('Alle Rechte vorbehalten.') }}
+                <x-footer-copyright />
             </div>
         </footer>
 
@@ -2066,6 +2066,33 @@
                 })();
             </script>
             @stack('scripts')
+
+            @auth
+            {{-- Live-Aktualisierung des Ungelesen-Zählers am Chat-Header-Symbol.
+                 window.refreshChatUnread() wird zusätzlich von der Chat-Seite
+                 nach Lesen/Empfang aufgerufen; app-weit greift ein leichtes Polling. --}}
+            <script>
+                (function () {
+                    var link = document.getElementById('chat-unread-link');
+                    var badge = document.getElementById('chat-unread-badge');
+                    if (!link || !badge) return;
+                    var url = link.dataset.unreadUrl;
+                    window.refreshChatUnread = function () {
+                        fetch(url, { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+                            .then(function (r) { return r.ok ? r.json() : null; })
+                            .then(function (d) {
+                                if (!d) return;
+                                var n = d.count || 0;
+                                badge.textContent = n > 99 ? '99+' : n;
+                                badge.classList.toggle('hidden', n <= 0);
+                            })
+                            .catch(function () {});
+                    };
+                    setInterval(function () { if (!document.hidden) window.refreshChatUnread(); }, 20000);
+                    document.addEventListener('visibilitychange', function () { if (!document.hidden) window.refreshChatUnread(); });
+                })();
+            </script>
+            @endauth
 
             {{-- In-App-Hilfe-Drawer (MVP-051): einmal pro Seite, befüllt von JS. --}}
             @auth

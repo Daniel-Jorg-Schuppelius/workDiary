@@ -23,6 +23,16 @@ return [
 
     'name' => env('APP_NAME', 'WorkDiary'),
 
+    'copyright_start_year' => 2026,
+
+    'copyright_holder' => 'Daniel Jörg Schuppelius',
+
+    'copyright_holder_url' => 'https://schuppelius.org',
+
+    'license_name' => 'AGPL-3.0-or-later',
+
+    'license_url' => 'https://www.gnu.org/licenses/agpl-3.0.html',
+
     /*
     |--------------------------------------------------------------------------
     | Installations-Status

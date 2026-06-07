@@ -10,6 +10,7 @@
 
 namespace App\Models\Chat;
 
+use App\Models\Concerns\HasSqid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
@@ -22,6 +23,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property \Illuminate\Support\Carbon|null $closes_at
  */
 class Poll extends Model {
+    use HasSqid;
+
     protected $table = 'chat_polls';
 
     protected $fillable = ['message_id', 'question', 'multiple', 'closes_at'];

@@ -140,7 +140,7 @@
 
         <footer class="border-t border-base-300 bg-base-100">
             <div class="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-4 px-6 py-6 text-sm text-base-content/70 sm:flex-row lg:px-10">
-                <span>&copy; {{ date('Y') }} {{ config('app.name', 'WorkDiary') }}. {{ __('Alle Rechte vorbehalten.') }}</span>
+                <span><x-footer-copyright /></span>
                 {{-- TODO: Öffentliche Impressum-/Datenschutz-Seiten anlegen und hier verlinken (aktuell nur admin.privacy.index hinter Login). --}}
                 <nav class="flex items-center gap-5">
                     <a href="#" class="transition hover:text-base-content">{{ __('Impressum') }}</a>

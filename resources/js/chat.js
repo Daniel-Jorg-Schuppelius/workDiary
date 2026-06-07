@@ -5,7 +5,33 @@ import { initEcho } from "./echo.js";
 const root = document.getElementById("chat-root");
 if (root) {
     initSearch();
+    initSidebar(root);
     if (root.dataset.channelId) initChat(root);
+}
+
+// Sidebar-Kanalliste live halten – auch OHNE offenen Kanal (Mobil/Listenansicht).
+function initSidebar(root) {
+    const listEl = document.getElementById("chat-channel-list");
+    if (!listEl?.dataset.listUrl) return;
+    const activeSqid = root.dataset.channelId || "";
+    const refresh = () => {
+        fetch(listEl.dataset.listUrl + (activeSqid ? `?active=${activeSqid}` : ""), {
+            headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+        })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d) => { if (d && d.html != null) listEl.innerHTML = d.html; })
+            .catch(() => {});
+    };
+    window.refreshChatChannelList = refresh;
+    setInterval(() => { if (!document.hidden) refresh(); }, 12000);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
+    const meId = root.dataset.meId;
+    if (meId) {
+        try {
+            initEcho().private(`App.Models.User.${meId}`)
+                .listen(".channel.list.changed", () => { refresh(); window.refreshChatUnread?.(); });
+        } catch (e) { /* Echtzeit optional */ }
+    }
 }
 
 // Volltextsuche in der Sidebar (funktioniert auch ohne aktiven Kanal).
@@ -37,7 +63,8 @@ function initSearch() {
 }
 
 function initChat(root) {
-    const channelId = root.dataset.channelId;
+    const channelId = root.dataset.channelId;        // Sqid: API-URLs / Ressourcen
+    const rtId = root.dataset.channelRt || channelId; // numerisch: Echtzeit-Channelname
     if (!channelId) return;
     const list = document.getElementById("chat-messages");
     const csrf = document.querySelector('meta[name="csrf-token"]')?.content || "";
@@ -45,6 +72,7 @@ function initChat(root) {
     let oldest = null;
     let newest = 0;
     let loadingOlder = false;
+    let noMoreOlder = false;
     let socketId = "";
 
     function headers() {
@@ -52,8 +80,68 @@ function initChat(root) {
     }
     const append = (html) => list.insertAdjacentHTML("beforeend", html);
     const prepend = (html) => list.insertAdjacentHTML("afterbegin", html);
-    const bottom = () => { list.scrollTop = list.scrollHeight; };
-    const markRead = () => fetch(`/chat/${channelId}/read`, { method: "POST", headers: headers() }).catch(() => {});
+    const bottom = () => {
+        // Zuverlässig ganz nach unten – auch wenn Inhalte (Bilder) noch nachladen.
+        list.scrollTop = list.scrollHeight;
+        requestAnimationFrame(() => { list.scrollTop = list.scrollHeight; });
+        setTimeout(() => { list.scrollTop = list.scrollHeight; }, 60);
+    };
+    const nearBottom = () => list.scrollHeight - list.scrollTop - list.clientHeight < 120;
+    const scrollBtn = document.getElementById("chat-scroll-bottom");
+    const updateScrollBtn = () => scrollBtn?.classList.toggle("hidden", nearBottom());
+    scrollBtn?.addEventListener("click", () => { bottom(); setTimeout(updateScrollBtn, 80); });
+    const markRead = () => fetch(`/chat/${channelId}/read`, { method: "POST", headers: headers() })
+        .then(() => { window.refreshChatUnread?.(); window.refreshChatChannelList?.(); })
+        .catch(() => {});
+
+    // "… schreibt …"-Anzeige (über Client-Whisper, kein Server-Load).
+    const meName = root.dataset.meName || "";
+    const typingEl = document.getElementById("chat-typing");
+    const typingTpl = root.dataset.txtTyping || ":name schreibt …";
+    let typingTimer = null;
+    const showTyping = (name) => {
+        if (!typingEl || !name || name === meName) return;
+        typingEl.textContent = typingTpl.replace(":name", name);
+        typingEl.classList.remove("hidden");
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => typingEl.classList.add("hidden"), 3000);
+    };
+    const hideTyping = () => { clearTimeout(typingTimer); typingEl?.classList.add("hidden"); };
+
+    // Lesebestätigungen: ✓ gesendet → ✓✓ gelesen (sobald andere bis dahin gelesen haben).
+    let othersReadTs = 0;
+    const applyReadStatus = () => {
+        list.querySelectorAll(".chat-status").forEach((s) => {
+            if (Number(s.dataset.ts || 0) <= othersReadTs) {
+                s.textContent = "✓✓";
+                s.classList.add("chat-status--read");
+            }
+        });
+    };
+    const bumpRead = (ts) => { ts = Number(ts || 0); if (ts > othersReadTs) othersReadTs = ts; applyReadStatus(); };
+
+    // Datums-Trenner zwischen Tagen (Heute/Gestern/Datum).
+    const keyOf = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    const dayLabel = (ts) => {
+        const d = new Date(ts * 1000);
+        const k = keyOf(d);
+        if (k === keyOf(new Date())) return root.dataset.txtToday || "Heute";
+        if (k === keyOf(new Date(Date.now() - 86400000))) return root.dataset.txtYesterday || "Gestern";
+        return d.toLocaleDateString(undefined, { weekday: "short", day: "2-digit", month: "long", year: "numeric" });
+    };
+    const insertDateDividers = () => {
+        list.querySelectorAll(".chat-date-divider").forEach((e) => e.remove());
+        let lastDay = null;
+        list.querySelectorAll(".chat-msg").forEach((el) => {
+            const ts = Number(el.dataset.ts || 0);
+            if (!ts) return;
+            const k = keyOf(new Date(ts * 1000));
+            if (k !== lastDay) {
+                lastDay = k;
+                el.insertAdjacentHTML("beforebegin", `<div class="chat-date-divider my-2 flex justify-center"><span class="rounded-full bg-base-300/80 px-3 py-0.5 text-xs font-medium text-base-content/70 shadow-xs">${dayLabel(ts)}</span></div>`);
+            }
+        });
+    };
 
     // Aufeinanderfolgende Nachrichten desselben Benutzers (innerhalb 5 min)
     // gruppieren: spätere bekommen 'is-grouped' (Avatar/Name aus, enger).
@@ -77,27 +165,49 @@ function initChat(root) {
         list.innerHTML = "";
         d.messages.forEach((m) => append(m.html));
         if (d.messages.length) { oldest = d.messages[0].id; newest = d.messages.at(-1).id; }
-        bottom();
+        insertDateDividers();
+        // "Neue Nachrichten"-Trenner vor der ersten ungelesenen Nachricht.
+        let dividerEl = null;
+        if (d.first_unread_id) {
+            const el = document.getElementById(`chat-msg-${d.first_unread_id}`);
+            if (el) {
+                const label = root.dataset.txtNew || "Neue Nachrichten";
+                el.insertAdjacentHTML("beforebegin", `<div id="chat-unread-divider" class="my-2 flex items-center gap-2 px-3 text-xs font-semibold text-primary"><span class="h-px flex-1 bg-primary/40"></span>${label}<span class="h-px flex-1 bg-primary/40"></span></div>`);
+                dividerEl = document.getElementById("chat-unread-divider");
+            }
+        }
+        if (dividerEl) dividerEl.scrollIntoView({ block: "center" }); else bottom();
+        bumpRead(d.others_read_ts);
         markRead();
     }
     async function loadNew() {
         const d = await getJson(`/chat/${channelId}/messages?after=${newest}`);
         if (!d) return;
         let added = false;
+        const wasNear = nearBottom();
         d.messages.forEach((m) => {
-            if (!document.getElementById(`chat-msg-${m.id}`)) { append(m.html); newest = Math.max(newest, m.id); added = true; }
+            if (!document.getElementById(`chat-msg-${m.sqid}`)) { append(m.html); newest = Math.max(newest, m.id); added = true; }
         });
-        if (added) { bottom(); markRead(); }
+        if (added) {
+            insertDateDividers();
+            if (wasNear) { bottom(); markRead(); } else { updateScrollBtn(); }
+        }
     }
     async function loadOlder() {
-        if (loadingOlder || !oldest) return;
+        if (loadingOlder || noMoreOlder || !oldest) return;
         loadingOlder = true;
         const prevH = list.scrollHeight;
         const d = await getJson(`/chat/${channelId}/messages?before=${oldest}`);
-        if (d) {
+        // Nur bei tatsächlich geladenen älteren Nachrichten die Scrollposition
+        // anpassen. Sonst (keine älteren mehr) NICHT scrollen – sonst springt
+        // die Liste an den Anfang. Und künftige Versuche unterbinden.
+        if (d && d.messages.length) {
+            oldest = d.messages[0].id;
             [...d.messages].reverse().forEach((m) => prepend(m.html));
-            if (d.messages.length) oldest = d.messages[0].id;
+            insertDateDividers();
             list.scrollTop = list.scrollHeight - prevH;
+        } else {
+            noMoreOlder = true;
         }
         loadingOlder = false;
     }
@@ -114,15 +224,236 @@ function initChat(root) {
 
     // Composer
     const form = document.getElementById("chat-composer");
+    const composerBody = form?.querySelector('[name="body"]');
+    const fileInput = document.getElementById("chat-file-input");
+    const filePreview = document.getElementById("chat-file-preview");
+
+    // Eingabefeld wächst mit dem Inhalt (bis max-h aus den Klassen).
+    const autoGrow = () => {
+        if (!composerBody) return;
+        composerBody.style.height = "auto";
+        composerBody.style.height = Math.min(composerBody.scrollHeight, 160) + "px";
+    };
+    composerBody?.addEventListener("input", autoGrow);
+
+    // Format-Helfer
+    const wrapSel = (pre, suf) => {
+        if (!composerBody) return;
+        const s = composerBody.selectionStart, en = composerBody.selectionEnd, v = composerBody.value;
+        const sel = v.slice(s, en);
+        composerBody.value = v.slice(0, s) + pre + sel + suf + v.slice(en);
+        composerBody.focus();
+        const caret = s + pre.length + sel.length;
+        composerBody.setSelectionRange(caret, caret);
+    };
+    const insertText = (t) => {
+        if (!composerBody) return;
+        const s = composerBody.selectionStart, en = composerBody.selectionEnd, v = composerBody.value;
+        composerBody.value = v.slice(0, s) + t + v.slice(en);
+        composerBody.focus();
+        composerBody.setSelectionRange(s + t.length, s + t.length);
+    };
+    form?.querySelectorAll("[data-fmt]").forEach((b) => b.addEventListener("click", () => {
+        const f = b.dataset.fmt;
+        if (f === "bold") wrapSel("**", "**");
+        else if (f === "italic") wrapSel("_", "_");
+        else if (f === "code") wrapSel("`", "`");
+        else if (f === "codeblock") wrapSel("```\n", "\n```");
+    }));
+
+    // Emoji-Panel (in den Text einfügen)
+    const emojiInsertBtn = document.getElementById("chat-emoji-insert");
+    const emojiPanel = document.getElementById("chat-emoji-panel");
+    const toggleEmojiPanel = (show) => {
+        if (!emojiPanel) return;
+        const open = show ?? emojiPanel.classList.contains("hidden");
+        emojiPanel.classList.toggle("hidden", !open);
+        emojiPanel.classList.toggle("grid", open);
+    };
+    emojiInsertBtn?.addEventListener("click", (e) => { e.stopPropagation(); toggleEmojiPanel(); });
+    emojiPanel?.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-insert]");
+        if (!b) return;
+        insertText(b.dataset.insert);
+        toggleEmojiPanel(false);
+    });
+    document.addEventListener("click", (e) => {
+        if (emojiPanel && !emojiPanel.classList.contains("hidden") && !emojiPanel.contains(e.target) && e.target !== emojiInsertBtn) toggleEmojiPanel(false);
+    });
+
+    // Datei-Vorschau + Paste/Drag&Drop
+    const renderFilePreview = () => {
+        if (!fileInput || !filePreview) return;
+        const files = [...(fileInput.files || [])];
+        filePreview.classList.toggle("hidden", !files.length);
+        filePreview.classList.toggle("flex", files.length > 0);
+        filePreview.innerHTML = files.map((f) => {
+            const icon = (f.type || "").startsWith("image/") ? "image" : "description";
+            const name = f.name.replace(/[<>&"]/g, "");
+            return `<span class="badge badge-ghost max-w-40 gap-1 truncate" title="${name}"><span class="material-symbols-outlined" style="font-size:0.9rem" aria-hidden="true">${icon}</span>${name}</span>`;
+        }).join("");
+    };
+    const addFiles = (fileList) => {
+        if (!fileInput || !fileList?.length) return;
+        const dt = new DataTransfer();
+        [...(fileInput.files || [])].forEach((f) => dt.items.add(f));
+        [...fileList].forEach((f) => dt.items.add(f));
+        fileInput.files = dt.files;
+        renderFilePreview();
+    };
+    fileInput?.addEventListener("change", renderFilePreview);
+    composerBody?.addEventListener("paste", (e) => {
+        const files = [...(e.clipboardData?.items || [])].filter((i) => i.kind === "file").map((i) => i.getAsFile()).filter(Boolean);
+        if (files.length) { e.preventDefault(); addFiles(files); }
+    });
+    ["dragover", "drop"].forEach((ev) => form?.addEventListener(ev, (e) => e.preventDefault()));
+    form?.addEventListener("drop", (e) => addFiles(e.dataTransfer?.files));
+
+    // Zitat-Antwort (Reply-Vorschau über dem Eingabefeld)
+    const replyBar = document.getElementById("chat-reply-bar");
+    const quotedIdInput = document.getElementById("chat-quoted-id");
+    const setReply = (id, name, snippet) => {
+        if (!replyBar || !quotedIdInput) return;
+        quotedIdInput.value = id || "";
+        const nameEl = document.getElementById("chat-reply-name");
+        const snEl = document.getElementById("chat-reply-snippet");
+        if (nameEl) nameEl.textContent = name || "";
+        if (snEl) snEl.textContent = snippet || "";
+        replyBar.classList.toggle("hidden", !id);
+        replyBar.classList.toggle("flex", !!id);
+        if (id) composerBody?.focus();
+    };
+    const clearReply = () => setReply("", "", "");
+    document.getElementById("chat-reply-cancel")?.addEventListener("click", clearReply);
+
+    // Weiterleiten
+    const forwardDialog = document.getElementById("chat-forward-dialog");
+    const forwardChannel = document.getElementById("chat-forward-channel");
+    let forwardId = null;
+    const openForward = (id) => { forwardId = id; forwardDialog?.showModal(); };
+    document.getElementById("chat-forward-send")?.addEventListener("click", async () => {
+        const ch = forwardChannel?.value;
+        forwardDialog?.close();
+        if (forwardId && ch) {
+            await send(`/chat/messages/${forwardId}/forward`, "POST", { channel_id: Number(ch) });
+            window.notifyAction?.({ message: root.dataset.txtForwarded || "OK", tone: "success" });
+        }
+    });
+
+    const pad2 = (n) => String(n).padStart(2, "0");
+    // Datum (lokal) als YYYY-MM-DD; Zeit als HH:MM; kombiniert zu "YYYY-MM-DDTHH:MM".
+    const combineDateTime = (dateVal, timeVal) => (dateVal && timeVal) ? `${dateVal}T${timeVal}` : "";
+
+    // Erinnerung
+    const remindDialog = document.getElementById("chat-remind-dialog");
+    const remindDate = document.getElementById("chat-remind-date");
+    const remindTime = document.getElementById("chat-remind-time");
+    let remindId = null;
+    const fmtLocal = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+    const openRemind = (id) => { remindId = id; if (remindDate) remindDate.value = ""; if (remindTime) remindTime.value = ""; remindDialog?.showModal(); };
+    const submitRemind = async (whenStr) => {
+        remindDialog?.close();
+        if (remindId && whenStr) {
+            await send(`/chat/messages/${remindId}/remind`, "POST", { remind_at: whenStr });
+            window.notifyAction?.({ message: root.dataset.txtReminded || "OK", tone: "success" });
+        }
+    };
+    remindDialog?.querySelectorAll("[data-remind]").forEach((b) => b.addEventListener("click", () => {
+        const v = b.dataset.remind;
+        let d;
+        if (v === "tomorrow") { d = new Date(); d.setDate(d.getDate() + 1); d.setHours(8, 0, 0, 0); }
+        else { d = new Date(Date.now() + Number(v) * 60000); }
+        submitRemind(fmtLocal(d));
+    }));
+    document.getElementById("chat-remind-save")?.addEventListener("click", () => {
+        const when = combineDateTime(remindDate?.value, remindTime?.value);
+        if (when) submitRemind(when);
+    });
+
+    // Senden planen
+    const scheduleDialog = document.getElementById("chat-schedule-dialog");
+    const scheduleDate = document.getElementById("chat-schedule-date");
+    const scheduleTime = document.getElementById("chat-schedule-time");
+    document.getElementById("chat-schedule-btn")?.addEventListener("click", () => { if (scheduleDate) scheduleDate.value = ""; if (scheduleTime) scheduleTime.value = ""; scheduleDialog?.showModal(); });
+    document.getElementById("chat-schedule-send")?.addEventListener("click", async () => {
+        const when = combineDateTime(scheduleDate?.value, scheduleTime?.value);
+        const body = (composerBody?.value || "").trim();
+        scheduleDialog?.close();
+        if (!when || !body) return;
+        const r = await fetch(`/chat/${channelId}/messages`, {
+            method: "POST",
+            headers: { ...headers(), "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({ body, scheduled_at: when }),
+        });
+        if (r.ok) { if (composerBody) composerBody.value = ""; window.notifyAction?.({ message: root.dataset.txtScheduled || "OK", tone: "success" }); }
+    });
+
+    // Zu einer (zitierten) Nachricht springen + kurz hervorheben
+    const jumpTo = (id) => {
+        const el = document.getElementById(`chat-msg-${id}`);
+        if (!el) return;
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-2", "ring-primary", "rounded-2xl");
+        setTimeout(() => el.classList.remove("ring-2", "ring-primary", "rounded-2xl"), 1200);
+    };
+
     form?.addEventListener("submit", async (e) => {
         e.preventDefault();
         const fd = new FormData(form);
         const r = await fetch(`/chat/${channelId}/messages`, { method: "POST", headers: headers(), body: fd });
         if (r.ok) {
             const d = await r.json();
-            if (!d.parent_id) { append(d.html); newest = Math.max(newest, d.id); bottom(); }
+            if (!d.parent_id) { append(d.html); newest = Math.max(newest, d.id); insertDateDividers(); bottom(); }
             form.reset();
+            renderFilePreview();
+            clearReply();
+            autoGrow();
         }
+    });
+
+    // In-App-Dialoge statt Browser-confirm/prompt.
+    const editDialog = document.getElementById("chat-edit-dialog");
+    const editInput = document.getElementById("chat-edit-input");
+    const emojiDialog = document.getElementById("chat-emoji-dialog");
+    let editId = null;
+    let emojiId = null;
+    const openEditDialog = (id, body) => {
+        editId = id;
+        if (editInput) editInput.value = body || "";
+        editDialog?.showModal();
+        setTimeout(() => editInput?.focus(), 30);
+    };
+    document.getElementById("chat-edit-save")?.addEventListener("click", async () => {
+        const b = (editInput?.value || "").trim();
+        editDialog?.close();
+        if (editId && b !== "") { await send(`/chat/messages/${editId}`, "PUT", { body: b }); refreshMessage(editId); }
+    });
+    const openEmojiPicker = (id) => { emojiId = id; emojiDialog?.showModal(); };
+    emojiDialog?.addEventListener("click", async (e) => {
+        const b = e.target.closest("[data-emoji]");
+        if (!b) return;
+        emojiDialog.close();
+        if (emojiId) { await send(`/chat/messages/${emojiId}/react`, "POST", { emoji: b.dataset.emoji }); refreshMessage(emojiId); }
+    });
+
+    // Dynamische Umfrage-Optionen (2–20 Felder).
+    const pollOptions = document.getElementById("chat-poll-options");
+    document.getElementById("chat-poll-add")?.addEventListener("click", () => {
+        if (!pollOptions) return;
+        const count = pollOptions.querySelectorAll('input[name="options[]"]').length;
+        if (count >= 20) return;
+        const ph = pollOptions.dataset.optPlaceholder || "Option";
+        const row = document.createElement("div");
+        row.className = "flex items-center gap-1";
+        row.innerHTML = `<input type="text" name="options[]" maxlength="200" class="input input-bordered input-sm w-full" placeholder="${ph} ${count + 1}"><button type="button" class="chat-poll-remove btn btn-ghost btn-sm btn-square" tabindex="-1"><span class="material-symbols-outlined" style="font-size:1rem" aria-hidden="true">close</span></button>`;
+        pollOptions.appendChild(row);
+        row.querySelector("input")?.focus();
+    });
+    pollOptions?.addEventListener("click", (e) => {
+        const rm = e.target.closest(".chat-poll-remove");
+        if (!rm) return;
+        if (pollOptions.querySelectorAll('input[name="options[]"]').length <= 2) return; // mind. 2 behalten
+        rm.closest("div")?.remove();
     });
 
     // Aktionen per Delegation
@@ -132,15 +463,26 @@ function initChat(root) {
         const id = btn.dataset.messageId || btn.closest(".chat-msg")?.dataset.messageId;
         const action = btn.dataset.action;
         if (action === "react") { await send(`/chat/messages/${id}/react`, "POST", { emoji: btn.dataset.emoji }); refreshMessage(id); }
-        else if (action === "react-pick") { const emo = prompt(root.dataset.txtEmoji || "Emoji:", "❤️"); if (emo) { await send(`/chat/messages/${id}/react`, "POST", { emoji: emo }); refreshMessage(id); } }
+        else if (action === "react-pick") { openEmojiPicker(id); }
         else if (action === "pin") { await send(`/chat/messages/${id}/pin`, "POST"); refreshMessage(id); }
-        else if (action === "delete") { if (confirm(root.dataset.txtDelete || "Löschen?")) { await send(`/chat/messages/${id}`, "DELETE"); removeMessage(id); } }
-        else if (action === "edit") { const b = prompt(root.dataset.txtEdit || "Bearbeiten:", btn.dataset.body || ""); if (b !== null && b.trim() !== "") { await send(`/chat/messages/${id}`, "PUT", { body: b }); refreshMessage(id); } }
+        else if (action === "star") { await send(`/chat/messages/${id}/star`, "POST"); refreshMessage(id); }
+        else if (action === "delete") {
+            const ok = await (window.confirmAction?.({
+                title: root.dataset.txtDelTitle, message: root.dataset.txtDelMsg,
+                label: root.dataset.txtDelOk, tone: "error", icon: "delete",
+            }) ?? Promise.resolve(false));
+            if (ok) { await send(`/chat/messages/${id}`, "DELETE"); removeMessage(id); }
+        }
+        else if (action === "edit") { openEditDialog(id, btn.dataset.body || ""); }
         else if (action === "thread") { openThread(id); }
+        else if (action === "quote") { setReply(id, btn.dataset.quoteName || "", btn.dataset.quoteBody || ""); }
+        else if (action === "forward") { openForward(id); }
+        else if (action === "remind") { openRemind(id); }
+        else if (action === "jump") { jumpTo(id); }
         else if (action === "vote") { await send(`/chat/polls/${btn.dataset.pollId}/vote`, "POST", { options: [Number(btn.dataset.optionId)] }); refreshMessage(id); }
     });
 
-    list.addEventListener("scroll", () => { if (list.scrollTop < 40) loadOlder(); });
+    list.addEventListener("scroll", () => { if (list.scrollTop < 40) loadOlder(); updateScrollBtn(); });
 
     // Thread-Drawer
     async function openThread(id) {
@@ -178,12 +520,44 @@ function initChat(root) {
         });
         echo.connector?.pusher?.connection?.bind?.("unavailable", () => { realtimeConnected = false; });
         echo.connector?.pusher?.connection?.bind?.("failed", () => { realtimeConnected = false; });
-        echo.private(`chat.channel.${channelId}`)
-            .listen(".message.sent", () => loadNew())
+        const privateChannel = echo.private(`chat.channel.${rtId}`);
+        privateChannel
+            .listen(".message.sent", () => { loadNew(); hideTyping(); })
             .listen(".message.updated", (e) => refreshMessage(e.id))
             .listen(".message.deleted", (e) => removeMessage(e.id))
             .listen(".reaction.toggled", (e) => refreshMessage(e.message_id))
-            .listen(".poll.voted", (e) => refreshMessage(e.message_id));
+            .listen(".poll.voted", (e) => refreshMessage(e.message_id))
+            .listen(".channel.read", (e) => bumpRead(e.read_ts))
+            .listenForWhisper("typing", (e) => showTyping(e?.name));
+
+        // Präsenz (wer ist online) über Presence-Channel.
+        const presenceEl = document.getElementById("chat-presence");
+        const presence = new Map();
+        const renderPresence = () => {
+            if (!presenceEl) return;
+            const n = presence.size;
+            presenceEl.classList.toggle("hidden", n <= 0);
+            presenceEl.classList.toggle("inline-flex", n > 0);
+            const countEl = presenceEl.querySelector("[data-count]");
+            if (countEl) countEl.textContent = (presenceEl.dataset.tpl || ":count online").replace(":count", n);
+        };
+        echo.join(`presence-chat.channel.${rtId}`)
+            .here((users) => { presence.clear(); (users || []).forEach((u) => presence.set(u.id, u)); renderPresence(); })
+            .joining((u) => { presence.set(u.id, u); renderPresence(); })
+            .leaving((u) => { presence.delete(u.id); renderPresence(); })
+            .error(() => {});
+
+
+        // Eigenes Tippen signalisieren (gedrosselt) – nur Client-Whisper.
+        const composerInput = document.querySelector('#chat-composer [name="body"]');
+        let lastWhisper = 0;
+        composerInput?.addEventListener("input", () => {
+            const now = Date.now();
+            if (now - lastWhisper > 1800) {
+                lastWhisper = now;
+                try { privateChannel.whisper("typing", { name: meName }); } catch (e) { /* whisper optional */ }
+            }
+        });
     } catch (err) {
         console.warn("Chat-Echtzeit nicht verfügbar (Reverb?):", err);
     }
@@ -198,7 +572,7 @@ function initChat(root) {
         const everyN = realtimeConnected ? 4 : 1;
         if (pollTick % everyN === 0) loadNew();
     }, 3000);
-    // Beim Zurückkehren in den Tab sofort nachladen.
+    // Beim Zurückkehren in den Tab sofort nachladen (Sidebar via initSidebar).
     document.addEventListener("visibilitychange", () => { if (!document.hidden) loadNew(); });
 
     loadInitial();

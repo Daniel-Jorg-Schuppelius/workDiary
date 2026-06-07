@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Chat;
 use App\Http\Controllers\Controller;
 use App\Models\Chat\Channel;
 use App\Models\User;
-use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -39,11 +39,53 @@ class ChannelController extends Controller {
             ->orderBy('name')
             ->get(['id', 'name']);
 
+        // Ohne expliziten Kanal: bei genau EINEM Kanal diesen direkt öffnen
+        // (es gibt nichts zu wählen); bei mehreren/keinem die Kanalliste (mobil)
+        // bzw. den Empty-State (Desktop) zeigen – damit der Zurück-Pfeil greift.
+        $active = $channel && $channel->exists
+            ? $channel
+            : ($channels->count() === 1 ? $channels->first() : null);
+
         return view('chat.index', [
             'channels' => $channels,
-            'activeChannel' => $channel && $channel->exists ? $channel : $channels->first(),
+            'activeChannel' => $active,
             'orgUsers' => $users,
         ]);
+    }
+
+    /** Gesamtzahl ungelesener Nachrichten des Nutzers (für das Header-Badge, live). */
+    public function unreadCount(): JsonResponse {
+        $user = Auth::user();
+
+        return response()->json(['count' => $user instanceof User ? Channel::unreadTotalFor($user) : 0]);
+    }
+
+    /** Gerenderte Kanalliste (für Live-Refresh der Sidebar). */
+    public function channelList(Request $request): JsonResponse {
+        /** @var User $user */
+        $user = Auth::user();
+        $channels = $this->visibleChannels($user);
+        $activeSqid = (string) $request->query('active', '');
+        $activeChannel = $activeSqid !== '' ? $channels->firstWhere('sqid', $activeSqid) : null;
+
+        return response()->json([
+            'html' => view('chat._channel_list', [
+                'channels' => $channels,
+                'activeChannel' => $activeChannel,
+                'me' => $user,
+            ])->render(),
+        ]);
+    }
+
+    /**
+     * Betroffene Nutzer über eine geänderte Kanalliste informieren (Live-Sidebar).
+     *
+     * @param array<int, int|string> $userIds
+     */
+    private function notifyChannelListChanged(array $userIds): void {
+        foreach (array_unique(array_map('intval', $userIds)) as $id) {
+            broadcast(new \App\Events\Chat\ChannelListChanged($id));
+        }
     }
 
     public function store(Request $request): RedirectResponse {
@@ -69,11 +111,14 @@ class ChannelController extends Controller {
             'created_by' => $user->id,
         ]);
         $channel->members()->attach($user->id, ['role' => 'owner', 'joined_at' => now()]);
+        $added = [];
         foreach (array_unique($data['members'] ?? []) as $memberId) {
             if ((int) $memberId !== $user->id) {
                 $channel->members()->syncWithoutDetaching([(int) $memberId => ['role' => 'member', 'joined_at' => now()]]);
+                $added[] = (int) $memberId;
             }
         }
+        $this->notifyChannelListChanged($added);
 
         return redirect()->route('chat.show', $channel)->with('success', __('Kanal erstellt.'));
     }
@@ -100,6 +145,7 @@ class ChannelController extends Controller {
                 $user->id => ['role' => 'owner', 'joined_at' => now()],
                 $other => ['role' => 'member', 'joined_at' => now()],
             ]);
+            $this->notifyChannelListChanged([$other]);
         }
 
         return redirect()->route('chat.show', $existing);
@@ -156,6 +202,7 @@ class ChannelController extends Controller {
         foreach (array_unique($data['members']) as $memberId) {
             $channel->members()->syncWithoutDetaching([(int) $memberId => ['role' => 'member', 'joined_at' => now()]]);
         }
+        $this->notifyChannelListChanged($data['members']);
 
         return back()->with('success', __('Mitglieder eingeladen.'));
     }
@@ -165,7 +212,9 @@ class ChannelController extends Controller {
         Gate::authorize('view', $channel);
         /** @var User $user */
         $user = Auth::user();
-        $channel->members()->updateExistingPivot($user->id, ['last_read_at' => now()]);
+        $now = now();
+        $channel->members()->updateExistingPivot($user->id, ['last_read_at' => $now]);
+        broadcast(new \App\Events\Chat\ChannelRead($channel->id, $user->id, $now->getTimestamp()))->toOthers();
 
         return back();
     }

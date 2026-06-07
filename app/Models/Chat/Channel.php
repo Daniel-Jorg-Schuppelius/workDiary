@@ -11,6 +11,7 @@
 namespace App\Models\Chat;
 
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\HasSqid;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};
@@ -27,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};
  */
 class Channel extends Model {
     use BelongsToOrganization;
+    use HasSqid;
 
     protected $table = 'chat_channels';
 

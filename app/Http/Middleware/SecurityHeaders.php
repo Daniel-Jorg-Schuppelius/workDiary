@@ -49,6 +49,18 @@ class SecurityHeaders {
         $tileOrigin = $this->originFromUrl(\App\Support\Setting::get('routing.tiles.url'));
         $imgHosts = $tileOrigin !== '' ? ' ' . $tileOrigin : '';
 
+        // Reverb-WebSocket (Echtzeit-Chat) für connect-src zulassen – sonst
+        // blockt die CSP die WS-Verbindung des Browsers. Host/Port aus der
+        // Broadcasting-Config; lokale Varianten (ws/wss, localhost/127.0.0.1)
+        // für die Entwicklung ergänzt.
+        $reverbHost = (string) config('broadcasting.connections.reverb.options.host', '127.0.0.1');
+        $reverbPort = (string) config('broadcasting.connections.reverb.options.port', '8080');
+        $reverbHosts = array_values(array_unique(array_filter([$reverbHost, '127.0.0.1', 'localhost'])));
+        $reverbWs = '';
+        foreach ($reverbHosts as $h) {
+            $reverbWs .= " ws://{$h}:{$reverbPort} wss://{$h}:{$reverbPort}";
+        }
+
         $directives = [
             "default-src 'self'",
             // Tailwind/daisyUI sind kompiliert; inline Styles für Alpine x-bind/Color-Tokens noch erlaubt.
@@ -64,7 +76,7 @@ class SecurityHeaders {
             // blockiert der Browser die woff2-Requests still und fällt auf
             // Times / unrenderte Material-Symbol-Ligaturen zurück.
             "font-src 'self' data:" . $viteDev,
-            "connect-src 'self'" . $viteDev,
+            "connect-src 'self'" . $viteDev . $reverbWs,
             "media-src 'self' blob:",
             "object-src 'none'",
             "base-uri 'self'",

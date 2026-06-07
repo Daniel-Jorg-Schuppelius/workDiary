@@ -24,7 +24,23 @@ class AttachmentPolicy {
      * Kontexten, in denen der Global Scope nicht aktiv ist.
      */
     public function view(User $user, Attachment $attachment): bool {
-        return $this->sharesOrganization($user, $attachment);
+        if (! $this->sharesOrganization($user, $attachment)) {
+            return false;
+        }
+
+        // Chat-Anhänge zusätzlich auf Kanal-Mitgliedschaft einschränken
+        // (private Kanäle): gleiche Organisation allein genügt hier nicht.
+        $parent = $attachment->attachable;
+        if ($parent instanceof \App\Models\Chat\Message) {
+            $channel = $parent->channel;
+
+            return $channel !== null && (
+                $channel->hasMember($user)
+                || ($channel->type === 'channel' && $channel->visibility === 'public')
+            );
+        }
+
+        return true;
     }
 
     public function create(User $user): bool {

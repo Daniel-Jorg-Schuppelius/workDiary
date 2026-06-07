@@ -89,7 +89,7 @@
 
         <footer class="fixed inset-x-0 bottom-0 z-50 border-t border-base-300 bg-base-100 shadow-xs">
             <div class="mx-auto flex w-full max-w-screen-2xl items-center justify-center px-4 py-3 text-xs text-base-content/70 xl:px-8 2xl:px-12">
-                &copy; {{ date('Y') }} {{ $brandName }}. {{ __('Alle Rechte vorbehalten.') }}
+                <x-footer-copyright />
             </div>
         </footer>
         <script>

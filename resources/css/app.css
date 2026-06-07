@@ -1380,3 +1380,15 @@
 .chat-msg.is-grouped .chat-name {
     display: none;
 }
+
+/* Chat: Lesestatus-Häkchen – sichtbar auch auf der Primary-Bubble. */
+.chat-status {
+    font-size: 0.8rem;
+    line-height: 1;
+    opacity: 0.85;
+}
+.chat-status--read {
+    color: #38bdf8; /* sky-400 */
+    opacity: 1;
+    font-weight: 600;
+}

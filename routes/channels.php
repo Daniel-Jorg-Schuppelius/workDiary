@@ -24,3 +24,13 @@ Broadcast::channel('chat.channel.{channelId}', function (User $user, int $channe
 
     return $channel instanceof Channel && $channel->hasMember($user);
 });
+
+// Präsenz-Channel: liefert Nutzerinfos der online anwesenden Mitglieder.
+// Rückgabe-Array (statt bool) = autorisiert + diese Daten werden geteilt.
+Broadcast::channel('presence-chat.channel.{channelId}', function (User $user, int $channelId): ?array {
+    $channel = Channel::query()->whereKey($channelId)->first();
+
+    return ($channel instanceof Channel && $channel->hasMember($user))
+        ? ['id' => $user->id, 'name' => $user->name]
+        : null;
+});

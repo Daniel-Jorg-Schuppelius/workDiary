@@ -34,7 +34,7 @@ class MessageUpdated implements ShouldBroadcast {
     /** @return array<string, mixed> */
     public function broadcastWith(): array {
         return [
-            'id' => $this->message->id,
+            'id' => $this->message->sqid,
             'channel_id' => $this->message->channel_id,
             'parent_id' => $this->message->parent_id,
         ];

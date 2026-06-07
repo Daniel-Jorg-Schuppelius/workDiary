@@ -1,9 +1,9 @@
 <?php
 /*
- * Created on   : Sat Jun 06 2026
+ * Created on   : Sun Jun 07 2026
  * Author       : Daniel Jörg Schuppelius
  * Author Uri   : https://schuppelius.org
- * Filename     : MessageDeleted.php
+ * Filename     : ChannelRead.php
  * License      : AGPL-3.0-or-later
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
@@ -15,11 +15,11 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-/** Nachricht gelöscht (Skalare, da das Model bereits soft-deleted sein kann). */
-class MessageDeleted implements ShouldBroadcast {
+/** Ein Mitglied hat den Kanal bis $readTs gelesen (für Lesebestätigungen ✓✓). */
+class ChannelRead implements ShouldBroadcast {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public int $channelId, public string $messageId) {}
+    public function __construct(public int $channelId, public int $userId, public int $readTs) {}
 
     /** @return list<PrivateChannel> */
     public function broadcastOn(): array {
@@ -27,11 +27,11 @@ class MessageDeleted implements ShouldBroadcast {
     }
 
     public function broadcastAs(): string {
-        return 'message.deleted';
+        return 'channel.read';
     }
 
     /** @return array<string, mixed> */
     public function broadcastWith(): array {
-        return ['id' => $this->messageId, 'channel_id' => $this->channelId];
+        return ['channel_id' => $this->channelId, 'user_id' => $this->userId, 'read_ts' => $this->readTs];
     }
 }

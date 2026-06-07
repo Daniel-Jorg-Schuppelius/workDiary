@@ -45,68 +45,114 @@
     </div>
 
 <div id="chat-root"
-     data-channel-id="{{ $activeChannel?->id }}"
-     data-txt-delete="{{ __('Nachricht löschen?') }}"
-     data-txt-edit="{{ __('Nachricht bearbeiten:') }}"
-     data-txt-emoji="{{ __('Emoji:') }}"
+     data-channel-id="{{ $activeChannel?->sqid }}"
+     data-channel-rt="{{ $activeChannel?->id }}"
+     data-txt-del-title="{{ __('Nachricht löschen?') }}"
+     data-txt-del-msg="{{ __('Diese Nachricht wird dauerhaft entfernt.') }}"
+     data-txt-del-ok="{{ __('Löschen') }}"
+     data-me-name="{{ $me?->name }}"
+     data-me-id="{{ $me?->id }}"
+     data-txt-typing="{{ __(':name schreibt …') }}"
+     data-txt-forwarded="{{ __('Nachricht weitergeleitet.') }}"
+     data-txt-new="{{ __('Neue Nachrichten') }}"
+     data-txt-reminded="{{ __('Erinnerung gesetzt.') }}"
+     data-txt-scheduled="{{ __('Nachricht geplant.') }}"
+     data-txt-today="{{ __('Heute') }}"
+     data-txt-yesterday="{{ __('Gestern') }}"
      class="flex min-h-0 flex-1 gap-3">
 
-    {{-- Sidebar: Kanäle --}}
-    <aside class="flex w-64 min-h-0 shrink-0 flex-col rounded-box border border-base-300 bg-base-100 shadow-xs">
+    {{-- Sidebar: Kanäle (mobil: Vollbreite; bei offenem Kanal ausgeblendet) --}}
+    <aside class="{{ $activeChannel ? 'hidden lg:flex' : 'flex' }} w-full min-h-0 shrink-0 flex-col rounded-box border border-base-300 bg-base-100 shadow-xs lg:w-64">
         <div class="flex h-14 shrink-0 items-center gap-2 border-b border-base-300 px-3">
             <h2 class="font-['Space_Grotesk'] font-semibold">{{ __('Kanäle') }}</h2>
         </div>
-        <nav id="chat-channel-list" class="min-h-0 flex-1 overflow-y-auto p-2">
-            @forelse ($channels as $c)
-                @php $unread = $me ? $c->unreadCountFor($me) : 0; $active = $activeChannel && $activeChannel->id === $c->id; @endphp
-                <a href="{{ route('chat.show', $c) }}"
-                   class="flex items-center gap-2 rounded-box px-2 py-1.5 text-sm {{ $active ? 'bg-primary/10 text-primary' : 'hover:bg-base-200' }}">
-                    <x-icon :name="$icon[$c->type] ?? 'tag'" size="1rem" class="opacity-60" />
-                    <span class="flex-1 truncate {{ $unread ? 'font-semibold' : '' }}">{{ $channelTitle($c) }}</span>
-                    @if ($unread)<span class="badge badge-primary badge-sm tabular-nums">{{ $unread }}</span>@endif
-                </a>
-            @empty
-                <p class="px-2 py-4 text-sm text-base-content/50">{{ __('Noch keine Kanäle.') }}</p>
-            @endforelse
+        <nav id="chat-channel-list" class="min-h-0 flex-1 overflow-y-auto p-2" data-list-url="{{ route('chat.channel-list') }}">
+            @include('chat._channel_list')
         </nav>
     </aside>
 
-    {{-- Hauptbereich --}}
-    <section class="flex min-h-0 min-w-0 flex-1 flex-col rounded-box border border-base-300 bg-base-100 shadow-xs">
+    {{-- Hauptbereich (mobil: nur sichtbar, wenn ein Kanal offen ist) --}}
+    <section class="{{ $activeChannel ? 'flex' : 'hidden lg:flex' }} min-h-0 min-w-0 flex-1 flex-col rounded-box border border-base-300 bg-base-100 shadow-xs">
         @if ($activeChannel)
             <header class="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-base-300 px-3">
-                <div class="min-w-0">
+                <a href="{{ route('chat.index') }}" class="btn btn-ghost btn-sm btn-square -ml-1 shrink-0 lg:hidden" title="{{ __('Zurück') }}"><x-icon name="arrow_back" /></a>
+                <div class="min-w-0 flex-1">
                     <h1 class="truncate font-['Space_Grotesk'] text-lg font-semibold leading-tight">
                         <x-icon :name="$icon[$activeChannel->type] ?? 'tag'" size="1.1rem" class="opacity-60" /> {{ $channelTitle($activeChannel) }}
                     </h1>
                     @if ($activeChannel->description)<p class="truncate text-xs text-base-content/60">{{ $activeChannel->description }}</p>@endif
                 </div>
-                <div class="flex shrink-0 items-center gap-1">
+                <div class="flex shrink-0 items-center gap-2">
+                    <span id="chat-presence" data-tpl="{{ __(':count online') }}" class="hidden items-center gap-1 text-xs font-medium text-success">
+                        <span class="inline-block size-2 rounded-full bg-success"></span><span data-count></span>
+                    </span>
                     <span class="text-xs text-base-content/50">{{ trans_choice(':count Mitglied|:count Mitglieder', $activeChannel->members->count(), ['count' => $activeChannel->members->count()]) }}</span>
                     @can('manageMembers', $activeChannel)
-                        <button class="btn btn-xs btn-ghost" onclick="document.getElementById('chat-invite').showModal()"><x-icon name="person_add" size="1rem" /> {{ __('Einladen') }}</button>
+                        <button class="btn btn-xs btn-ghost btn-square" title="{{ __('Mitglieder einladen') }}" aria-label="{{ __('Mitglieder einladen') }}" onclick="document.getElementById('chat-invite').showModal()"><x-icon name="person_add" size="1.1rem" /></button>
                     @endcan
                     @if (! $activeChannel->isDirect())
-                        <form method="POST" action="{{ route('chat.channels.leave', $activeChannel) }}" onsubmit="return confirm('{{ __('Kanal verlassen?') }}')">@csrf
-                            <button class="btn btn-xs btn-ghost text-error">{{ __('Verlassen') }}</button>
+                        <form method="POST" action="{{ route('chat.channels.leave', $activeChannel) }}"
+                              data-confirm-dialog
+                              data-confirm-title="{{ __('Kanal verlassen?') }}"
+                              data-confirm-message="{{ __('Du erhältst keine neuen Nachrichten dieses Kanals mehr.') }}"
+                              data-confirm-label="{{ __('Verlassen') }}"
+                              data-confirm-icon="logout">@csrf
+                            <button class="btn btn-xs btn-ghost btn-square text-error" title="{{ __('Verlassen') }}" aria-label="{{ __('Verlassen') }}"><x-icon name="logout" size="1.1rem" /></button>
                         </form>
                     @endif
                 </div>
             </header>
 
             {{-- Nachrichtenliste --}}
-            <div id="chat-messages" class="min-h-0 flex-1 overflow-x-clip overflow-y-auto pt-3"></div>
+            <div class="relative flex min-h-0 flex-1 flex-col">
+                <div id="chat-messages" class="min-h-0 flex-1 overflow-x-clip overflow-y-auto pt-3"></div>
+                <button id="chat-scroll-bottom" type="button"
+                        class="btn btn-circle btn-sm absolute bottom-3 right-4 z-10 hidden shadow-md"
+                        title="{{ __('Nach unten') }}"><x-icon name="arrow_downward" /></button>
+            </div>
+
+            {{-- Tipp-Anzeige ("… schreibt …") --}}
+            <div id="chat-typing" class="hidden h-5 px-4 text-xs italic text-base-content/60"></div>
 
             {{-- Composer --}}
-            <form id="chat-composer" class="border-t border-base-300 p-3" enctype="multipart/form-data">
+            <form id="chat-composer" class="border-t border-base-300 bg-base-200 p-3" enctype="multipart/form-data">
                 @csrf
+                {{-- Zitat-Antwort-Vorschau --}}
+                <div id="chat-reply-bar" class="mb-1 hidden items-center gap-2 rounded-lg border-l-4 border-primary bg-base-100 px-2 py-1 text-xs">
+                    <input type="hidden" name="quoted_id" id="chat-quoted-id" value="">
+                    <div class="min-w-0 flex-1">
+                        <span id="chat-reply-name" class="font-semibold text-primary"></span>
+                        <span id="chat-reply-snippet" class="block truncate opacity-70"></span>
+                    </div>
+                    <button type="button" id="chat-reply-cancel" class="btn btn-ghost btn-xs btn-square" title="{{ __('Abbrechen') }}"><x-icon name="close" size="1rem" /></button>
+                </div>
+                {{-- Format-Toolbar --}}
+                <div class="mb-1 flex items-center gap-0.5">
+                    <button type="button" data-fmt="bold" class="btn btn-ghost btn-xs btn-square" title="{{ __('Fett') }}"><x-icon name="format_bold" size="1.15rem" /></button>
+                    <button type="button" data-fmt="italic" class="btn btn-ghost btn-xs btn-square" title="{{ __('Kursiv') }}"><x-icon name="format_italic" size="1.15rem" /></button>
+                    <button type="button" data-fmt="code" class="btn btn-ghost btn-xs btn-square" title="{{ __('Inline-Code') }}"><x-icon name="code" size="1.15rem" /></button>
+                    <button type="button" data-fmt="codeblock" class="btn btn-ghost btn-xs btn-square" title="{{ __('Codeblock') }}"><x-icon name="data_object" size="1.15rem" /></button>
+                    <button type="button" id="chat-schedule-btn" class="btn btn-ghost btn-xs btn-square" title="{{ __('Senden planen') }}"><x-icon name="schedule" size="1.15rem" /></button>
+                    <div class="relative">
+                        <button type="button" id="chat-emoji-insert" class="btn btn-ghost btn-xs btn-square" title="{{ __('Emoji') }}"><x-icon name="mood" size="1.15rem" /></button>
+                        <div id="chat-emoji-panel" class="absolute bottom-full left-0 z-30 mb-1 hidden max-h-56 w-72 grid-cols-8 gap-0.5 overflow-y-auto rounded-box border border-base-300 bg-base-100 p-1 text-2xl shadow-lg">
+                            @foreach (['👍', '👎', '❤️', '🔥', '🎉', '😂', '😅', '😍', '😎', '🤔', '😮', '😢', '😡', '🤯', '🥳', '😴', '🙏', '👏', '🙌', '💪', '🤝', '👀', '✅', '❌', '❓', '❗', '💡', '⭐', '🚀', '🎯', '💯', '☕'] as $emoji)
+                                <button type="button" data-insert="{{ $emoji }}" class="rounded p-1 leading-none hover:bg-base-200">{{ $emoji }}</button>
+                            @endforeach
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-ghost btn-xs btn-square ml-auto" title="{{ __('Formatierungshilfe') }}"
+                            onclick="document.getElementById('chat-format-help').showModal()"><x-icon name="help" size="1.15rem" /></button>
+                </div>
+                {{-- Anhang-Vorschau (Einfügen/Drag&Drop) --}}
+                <div id="chat-file-preview" class="mb-1 hidden flex-wrap gap-2"></div>
                 <div class="flex items-end gap-2">
                     <textarea name="body" rows="1" class="textarea textarea-bordered max-h-32 min-h-10 flex-1"
                               placeholder="{{ __('Nachricht schreiben …') }}"
                               onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.form.requestSubmit();}"></textarea>
                     <label class="btn btn-ghost btn-square" title="{{ __('Datei anhängen') }}">
                         <x-icon name="attach_file" />
-                        <input type="file" name="files[]" multiple class="hidden">
+                        <input id="chat-file-input" type="file" name="files[]" multiple class="hidden">
                     </label>
                     <button type="button" class="btn btn-ghost btn-square" title="{{ __('Umfrage') }}" onclick="document.getElementById('chat-new-poll').showModal()"><x-icon name="bar_chart" /></button>
                     <button type="submit" class="btn btn-primary btn-square" title="{{ __('Senden') }}"><x-icon name="send" /></button>
@@ -122,7 +168,7 @@
     </section>
 
     {{-- Thread-Drawer --}}
-    <aside id="chat-thread" class="hidden w-80 min-h-0 shrink-0 flex-col rounded-box border border-base-300 bg-base-100 shadow-xs">
+    <aside id="chat-thread" class="hidden min-h-0 flex-col border border-base-300 bg-base-100 shadow-xs fixed inset-0 z-40 lg:static lg:inset-auto lg:z-auto lg:w-80 lg:shrink-0 lg:rounded-box">
         <div class="flex h-14 shrink-0 items-center justify-between border-b border-base-300 px-3">
             <h2 class="font-['Space_Grotesk'] font-semibold">{{ __('Thread') }}</h2>
             <button id="chat-thread-close" class="btn btn-xs btn-ghost btn-square"><x-icon name="close" /></button>
@@ -184,6 +230,91 @@
 </x-modal>
 
 @if ($activeChannel)
+    {{-- Dialog: Nachricht bearbeiten (JS-gesteuert über chat.js) --}}
+    <x-modal id="chat-edit-dialog" :embedded="false" icon="edit" :eyebrow="__('Chat')" :title="__('Nachricht bearbeiten')">
+        <div class="fieldset">
+            <label class="fieldset-label" for="chat-edit-input">{{ __('Nachricht') }}</label>
+            <textarea id="chat-edit-input" rows="3" class="textarea textarea-bordered w-full"></textarea>
+        </div>
+        <x-slot:actions>
+            <button type="button" class="btn btn-ghost" data-entry-modal-close>{{ __('Abbrechen') }}</button>
+            <button type="button" id="chat-edit-save" class="btn btn-primary">{{ __('Speichern') }}</button>
+        </x-slot:actions>
+    </x-modal>
+
+    {{-- Dialog: Emoji-Auswahl (JS-gesteuert über chat.js) --}}
+    <x-modal id="chat-emoji-dialog" :embedded="false" icon="mood" :eyebrow="__('Chat')" :title="__('Reagieren')" :hide-footer="true">
+        <div class="grid max-h-[60vh] grid-cols-8 gap-0.5 overflow-y-auto text-4xl leading-none">
+            @foreach (['👍', '👎', '❤️', '🧡', '💛', '💚', '💙', '💜', '🔥', '🎉', '🎊', '✨', '⭐', '🌟', '💫', '💯', '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '🙂', '😉', '😊', '😍', '🥰', '😘', '😎', '🤩', '🤔', '🤨', '😐', '😑', '🙄', '😏', '😮', '😯', '😲', '😳', '🥺', '😢', '😭', '😤', '😡', '🤯', '😱', '😴', '🤤', '🤗', '🤭', '🤫', '🫡', '🤝', '🙏', '👏', '🙌', '👐', '🤲', '💪', '👀', '🫶', '✅', '❌', '❓', '❗', '💡', '🚀', '🎯', '🏆', '👑', '💰', '☕', '🍕', '🎂', '🍻', '🥳', '🤡', '💩', '👻', '🙈', '🙉', '🙊', '🐶', '🐱'] as $emoji)
+                <button type="button" data-emoji="{{ $emoji }}" class="rounded-lg p-1.5 transition hover:bg-base-200">{{ $emoji }}</button>
+            @endforeach
+        </div>
+    </x-modal>
+
+    {{-- Dialog: Weiterleiten (JS-gesteuert) --}}
+    <x-modal id="chat-forward-dialog" :embedded="false" icon="forward" :eyebrow="__('Chat')" :title="__('Weiterleiten')">
+        <div class="fieldset">
+            <label class="fieldset-label" for="chat-forward-channel">{{ __('Zielkanal') }}</label>
+            <select id="chat-forward-channel" class="select select-bordered w-full">
+                @foreach ($channels as $c)
+                    <option value="{{ $c->sqid }}">{{ $channelTitle($c) }}</option>
+                @endforeach
+            </select>
+        </div>
+        <x-slot:actions>
+            <button type="button" class="btn btn-ghost" data-entry-modal-close>{{ __('Abbrechen') }}</button>
+            <button type="button" id="chat-forward-send" class="btn btn-primary">{{ __('Weiterleiten') }}</button>
+        </x-slot:actions>
+    </x-modal>
+
+    {{-- Dialog: Senden planen (JS-gesteuert) --}}
+    <x-modal id="chat-schedule-dialog" :embedded="false" icon="schedule" :eyebrow="__('Chat')" :title="__('Senden planen')">
+        <div class="fieldset">
+            <label class="fieldset-label">{{ __('Zeitpunkt') }}</label>
+            <div class="flex gap-2">
+                <input type="date" id="chat-schedule-date" class="input input-bordered w-full">
+                <input type="time" id="chat-schedule-time" class="input input-bordered w-36">
+            </div>
+        </div>
+        <x-slot:actions>
+            <button type="button" class="btn btn-ghost" data-entry-modal-close>{{ __('Abbrechen') }}</button>
+            <button type="button" id="chat-schedule-send" class="btn btn-primary">{{ __('Planen') }}</button>
+        </x-slot:actions>
+    </x-modal>
+
+    {{-- Dialog: Formatierungshilfe --}}
+    <x-modal id="chat-format-help" :embedded="false" icon="help" :eyebrow="__('Chat')" :title="__('Formatierung')" :hide-footer="true">
+        <ul class="space-y-1.5 text-sm">
+            <li class="flex items-center gap-2"><code class="rounded bg-base-300/70 px-1 py-0.5 font-mono">**{{ __('Text') }}**</code> → <strong>{{ __('Text') }}</strong></li>
+            <li class="flex items-center gap-2"><code class="rounded bg-base-300/70 px-1 py-0.5 font-mono">_{{ __('Text') }}_</code> → <em>{{ __('Text') }}</em></li>
+            <li class="flex items-center gap-2"><code class="rounded bg-base-300/70 px-1 py-0.5 font-mono">~~{{ __('Text') }}~~</code> → <del>{{ __('Text') }}</del></li>
+            <li class="flex items-center gap-2"><code class="rounded bg-base-300/70 px-1 py-0.5 font-mono">`code`</code> → <code class="rounded bg-base-300/70 px-1 py-0.5 font-mono">code</code></li>
+            <li class="flex items-center gap-2"><code class="rounded bg-base-300/70 px-1 py-0.5 font-mono">```</code> … <code class="rounded bg-base-300/70 px-1 py-0.5 font-mono">```</code> → {{ __('Codeblock') }}</li>
+            <li><code class="rounded bg-base-300/70 px-1 py-0.5 font-mono">@Name</code> → {{ __('Erwähnung') }} · <code class="rounded bg-base-300/70 px-1 py-0.5 font-mono">https://…</code> → Link</li>
+        </ul>
+    </x-modal>
+
+    {{-- Dialog: Erinnerung (JS-gesteuert) --}}
+    <x-modal id="chat-remind-dialog" :embedded="false" icon="alarm" :eyebrow="__('Chat')" :title="__('Erinnerung')">
+        <div class="flex flex-wrap gap-2">
+            <button type="button" class="btn btn-sm" data-remind="20">{{ __('In 20 Min.') }}</button>
+            <button type="button" class="btn btn-sm" data-remind="60">{{ __('In 1 Stunde') }}</button>
+            <button type="button" class="btn btn-sm" data-remind="180">{{ __('In 3 Stunden') }}</button>
+            <button type="button" class="btn btn-sm" data-remind="tomorrow">{{ __('Morgen früh') }}</button>
+        </div>
+        <div class="fieldset mt-3">
+            <label class="fieldset-label">{{ __('Eigener Zeitpunkt') }}</label>
+            <div class="flex gap-2">
+                <input type="date" id="chat-remind-date" class="input input-bordered w-full">
+                <input type="time" id="chat-remind-time" class="input input-bordered w-32">
+            </div>
+        </div>
+        <x-slot:actions>
+            <button type="button" class="btn btn-ghost" data-entry-modal-close>{{ __('Abbrechen') }}</button>
+            <button type="button" id="chat-remind-save" class="btn btn-primary">{{ __('Erinnern') }}</button>
+        </x-slot:actions>
+    </x-modal>
+
     {{-- Dialog: Umfrage --}}
     <x-modal id="chat-new-poll" :embedded="false" icon="bar_chart" :eyebrow="__('Chat')" :title="__('Umfrage erstellen')"
              :action="route('chat.polls.store', $activeChannel)" method="POST" :submit-label="__('Erstellen')">
@@ -193,9 +324,17 @@
         </div>
         <div class="fieldset mt-2">
             <label class="fieldset-label">{{ __('Optionen') }}</label>
-            @for ($i = 0; $i < 5; $i++)
-                <input type="text" name="options[]" maxlength="200" class="input input-bordered input-sm mt-1 w-full" placeholder="{{ __('Option') }} {{ $i + 1 }}">
-            @endfor
+            <div id="chat-poll-options" class="space-y-1" data-opt-placeholder="{{ __('Option') }}">
+                @for ($i = 0; $i < 2; $i++)
+                    <div class="flex items-center gap-1">
+                        <input type="text" name="options[]" maxlength="200" class="input input-bordered input-sm w-full" placeholder="{{ __('Option') }} {{ $i + 1 }}">
+                        <button type="button" class="chat-poll-remove btn btn-ghost btn-sm btn-square" tabindex="-1" title="{{ __('Entfernen') }}"><x-icon name="close" size="1rem" /></button>
+                    </div>
+                @endfor
+            </div>
+            <button type="button" id="chat-poll-add" class="btn btn-ghost btn-sm mt-1 gap-1 self-start">
+                <x-icon name="add" size="1rem" /> {{ __('Option hinzufügen') }}
+            </button>
         </div>
         <label class="label mt-2 cursor-pointer justify-start gap-2">
             <input type="checkbox" name="multiple" value="1" class="checkbox checkbox-sm">

@@ -30,7 +30,7 @@ class ReactionController extends Controller {
             $message->reactions()->create(['user_id' => $userId, 'emoji' => $data['emoji']]);
         }
 
-        broadcast(new ReactionToggled($message->channel_id, $message->id))->toOthers();
+        broadcast(new ReactionToggled($message->channel_id, $message->sqid))->toOthers();
         $message->load(['user:id,name', 'attachments', 'reactions', 'poll.options.votes', 'replies']);
 
         return response()->json([

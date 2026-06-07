@@ -854,15 +854,23 @@ Route::middleware('auth')->group(function () {
             Route::post('channels', [\App\Http\Controllers\Chat\ChannelController::class, 'store'])->name('channels.store');
             Route::post('direct', [\App\Http\Controllers\Chat\ChannelController::class, 'direct'])->name('direct');
             Route::get('search', [\App\Http\Controllers\Chat\MessageController::class, 'search'])->name('search');
+            Route::get('unread-count', [\App\Http\Controllers\Chat\ChannelController::class, 'unreadCount'])->name('unread');
+            Route::get('channel-list', [\App\Http\Controllers\Chat\ChannelController::class, 'channelList'])->name('channel-list');
 
             // Nachrichten-/Poll-Aktionen auf einzelnen Nachrichten (literal vor {channel}).
             Route::put('messages/{message}', [\App\Http\Controllers\Chat\MessageController::class, 'update'])->name('messages.update');
             Route::delete('messages/{message}', [\App\Http\Controllers\Chat\MessageController::class, 'destroy'])->name('messages.destroy');
             Route::get('messages/{message}', [\App\Http\Controllers\Chat\MessageController::class, 'show'])->name('messages.show');
             Route::get('messages/{message}/replies', [\App\Http\Controllers\Chat\MessageController::class, 'replies'])->name('messages.replies');
-            Route::post('messages/{message}/pin', [\App\Http\Controllers\Chat\MessageController::class, 'pin'])->name('messages.pin');
-            Route::post('messages/{message}/react', [\App\Http\Controllers\Chat\ReactionController::class, 'toggle'])->name('messages.react');
-            Route::post('polls/{poll}/vote', [\App\Http\Controllers\Chat\PollController::class, 'vote'])->name('polls.vote');
+            // Schreib-Aktionen gedrosselt (Spam-/DoS-Schutz durch authentifizierte Nutzer).
+            Route::middleware('throttle:240,1')->group(function (): void {
+                Route::post('messages/{message}/pin', [\App\Http\Controllers\Chat\MessageController::class, 'pin'])->name('messages.pin');
+                Route::post('messages/{message}/react', [\App\Http\Controllers\Chat\ReactionController::class, 'toggle'])->name('messages.react');
+                Route::post('messages/{message}/forward', [\App\Http\Controllers\Chat\MessageController::class, 'forward'])->name('messages.forward');
+                Route::post('messages/{message}/star', [\App\Http\Controllers\Chat\MessageController::class, 'star'])->name('messages.star');
+                Route::post('messages/{message}/remind', [\App\Http\Controllers\Chat\MessageController::class, 'remind'])->name('messages.remind');
+                Route::post('polls/{poll}/vote', [\App\Http\Controllers\Chat\PollController::class, 'vote'])->name('polls.vote');
+            });
 
             // Kanalbezogen.
             Route::get('{channel}', [\App\Http\Controllers\Chat\ChannelController::class, 'index'])->name('show');
@@ -873,7 +881,7 @@ Route::middleware('auth')->group(function () {
             Route::post('{channel}/invite', [\App\Http\Controllers\Chat\ChannelController::class, 'invite'])->name('channels.invite');
             Route::post('{channel}/read', [\App\Http\Controllers\Chat\ChannelController::class, 'markRead'])->name('channels.read');
             Route::get('{channel}/messages', [\App\Http\Controllers\Chat\MessageController::class, 'index'])->name('messages.index');
-            Route::post('{channel}/messages', [\App\Http\Controllers\Chat\MessageController::class, 'store'])->name('messages.store');
+            Route::post('{channel}/messages', [\App\Http\Controllers\Chat\MessageController::class, 'store'])->middleware('throttle:120,1')->name('messages.store');
             Route::get('{channel}/pinned', [\App\Http\Controllers\Chat\MessageController::class, 'pinned'])->name('messages.pinned');
             Route::post('{channel}/polls', [\App\Http\Controllers\Chat\PollController::class, 'store'])->name('polls.store');
         });

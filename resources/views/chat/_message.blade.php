@@ -11,7 +11,7 @@
     $metaTone = $isMine ? 'text-primary-content/70' : 'text-base-content/50';
 @endphp
 <div class="chat-msg group relative flex items-start gap-2 px-3 py-0.5 {{ $isMine ? 'flex-row-reverse' : '' }}"
-     data-message-id="{{ $message->id }}" id="chat-msg-{{ $message->id }}"
+     data-message-id="{{ $message->sqid }}" id="chat-msg-{{ $message->sqid }}"
      data-user-id="{{ $message->user_id }}" data-ts="{{ $message->created_at?->timestamp }}" data-mine="{{ $isMine ? '1' : '0' }}">
     {{-- Avatar nur bei fremden Nachrichten --}}
     @unless ($isMine)
@@ -31,12 +31,12 @@
                 $total = $poll->options->reduce(fn ($c, $o) => $c + $o->votes->count(), 0);
                 $myVotes = $poll->options->flatMap->votes->where('user_id', $me?->id)->pluck('poll_option_id')->all();
             @endphp
-            <div class="rounded-2xl border border-base-300 bg-base-100 p-3" data-poll-id="{{ $poll->id }}">
+            <div class="rounded-2xl border border-base-300 bg-base-100 p-3" data-poll-id="{{ $poll->sqid }}">
                 <p class="font-medium">{{ $poll->question }}</p>
                 <div class="mt-2 space-y-1.5">
                     @foreach ($poll->options as $opt)
                         @php $c = $opt->votes->count(); $pct = $total > 0 ? round($c / $total * 100) : 0; $mine = in_array($opt->id, $myVotes, true); @endphp
-                        <button type="button" class="block w-full text-left" data-action="vote" data-poll-id="{{ $poll->id }}" data-option-id="{{ $opt->id }}" @disabled($poll->isClosed())>
+                        <button type="button" class="block w-full text-left" data-action="vote" data-poll-id="{{ $poll->sqid }}" data-option-id="{{ $opt->id }}" @disabled($poll->isClosed())>
                             <div class="flex items-center justify-between text-sm">
                                 <span class="{{ $mine ? 'font-semibold text-primary' : '' }}">{{ $mine ? '✓ ' : '' }}{{ $opt->label }}</span>
                                 <span class="tabular-nums text-base-content/60">{{ $c }} · {{ $pct }}%</span>
@@ -55,12 +55,21 @@
         @else
             {{-- Sprechblase --}}
             <div class="rounded-2xl px-3 py-1.5 shadow-xs {{ $isMine ? 'rounded-br-sm bg-primary text-primary-content' : 'rounded-bl-sm bg-base-200 text-base-content' }}">
+                @if ($message->forwarded_from_user_id)
+                    <div class="mb-1 flex items-center gap-1 text-xs italic opacity-70">
+                        <x-icon name="forward" size="0.85rem" /> {{ __('Weitergeleitet von :name', ['name' => $message->forwardedFrom?->name ?? __('Unbekannt')]) }}
+                    </div>
+                @endif
+                @if ($message->quoted)
+                    <button type="button" data-action="jump" data-message-id="{{ $message->quoted->sqid }}"
+                            class="mb-1 block w-full rounded-lg border-l-4 border-current/40 bg-black/5 px-2 py-1 text-left text-xs dark:bg-white/10">
+                        <span class="block font-semibold">{{ $message->quoted->user?->name ?? __('System') }}</span>
+                        <span class="line-clamp-2 opacity-80">{{ \Illuminate\Support\Str::limit(strip_tags((string) $message->quoted->body), 120) }}</span>
+                    </button>
+                @endif
                 @if (filled($message->body))
-                    @php
-                        // Escapen, dann @Mentions hervorheben (auf dem escapten String → XSS-sicher).
-                        $bodyHtml = preg_replace('/@([\p{L}\p{N}_.\-]+)/u', '<span class="font-semibold underline decoration-current/40">@$1</span>', e($message->body));
-                    @endphp
-                    <div class="whitespace-pre-line break-words text-sm leading-relaxed">{!! nl2br($bodyHtml) !!}</div>
+                    {{-- Sicheres HTML inkl. ```Code```/`inline`/@Mentions, siehe App\Support\ChatText --}}
+                    <div class="break-words text-sm leading-relaxed">{!! \App\Support\ChatText::render($message->body) !!}</div>
                 @endif
 
                 {{-- Anhänge --}}
@@ -83,9 +92,11 @@
 
                 {{-- Meta: Zeit / bearbeitet / angepinnt --}}
                 <div class="mt-0.5 flex items-center justify-end gap-1 text-[10px] {{ $metaTone }}">
+                    @if ($message->isStarredBy($me))<x-icon name="star" size="0.75rem" class="text-warning" />@endif
                     @if ($message->isPinned())<x-icon name="push_pin" size="0.75rem" />@endif
                     @if ($message->edited_at)<span>{{ __('bearbeitet') }}</span>@endif
                     <time>{{ $message->created_at?->ftime() }}</time>
+                    @if ($isMine)<span class="chat-status" data-ts="{{ $message->created_at?->timestamp }}" title="{{ __('Gesendet') }}">✓</span>@endif
                 </div>
             </div>
         @endif
@@ -93,7 +104,7 @@
         {{-- Thread-Indikator: dauerhaft sichtbar, sobald Antworten existieren --}}
         @php $replyCount = $message->parent_id ? 0 : $message->replies->count(); @endphp
         @if ($replyCount > 0)
-            <button type="button" data-action="thread" data-message-id="{{ $message->id }}"
+            <button type="button" data-action="thread" data-message-id="{{ $message->sqid }}"
                     class="mt-1 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary transition hover:bg-primary/20">
                 <x-icon name="forum" size="0.9rem" />
                 {{ trans_choice(':count Antwort|:count Antworten', $replyCount, ['count' => $replyCount]) }}
@@ -106,7 +117,7 @@
             <div class="mt-0.5 flex flex-wrap items-center gap-1 {{ $isMine ? 'justify-end' : '' }}">
                 @foreach ($reactions as $emoji => $group)
                     @php $mine = $group->contains('user_id', $me?->id); @endphp
-                    <button type="button" class="btn btn-xs {{ $mine ? 'btn-primary' : 'btn-ghost border border-base-300' }} gap-1" data-action="react" data-message-id="{{ $message->id }}" data-emoji="{{ $emoji }}">
+                    <button type="button" class="btn btn-xs {{ $mine ? 'btn-primary' : 'btn-ghost border border-base-300' }} gap-1" data-action="react" data-message-id="{{ $message->sqid }}" data-emoji="{{ $emoji }}">
                         <span>{{ $emoji }}</span><span class="tabular-nums">{{ $group->count() }}</span>
                     </button>
                 @endforeach
@@ -116,20 +127,27 @@
         {{-- Aktionen: kleiner Trigger neben der Bubble (bei Nachrichten-Hover).
              Das volle Aktionsmenü erscheint erst beim Hovern des Triggers. --}}
         <div class="group/act absolute -top-2 z-10 hidden group-hover:block {{ $isMine ? 'right-1' : 'left-1' }}">
-            <button type="button" class="btn btn-circle btn-xs border border-base-300 bg-base-100 shadow-sm" title="{{ __('Aktionen') }}">
-                <x-icon name="more_horiz" size="1rem" />
+            <button type="button" class="btn btn-circle btn-sm border border-base-300 bg-base-100 shadow-sm" title="{{ __('Aktionen') }}">
+                <x-icon name="more_horiz" size="1.25rem" />
             </button>
             {{-- Menü: deckt den Trigger bei Hover ab, wächst zur Mitte --}}
             <div class="absolute top-0 hidden items-center gap-0.5 rounded-full border border-base-300 bg-base-100 px-1 py-0.5 shadow-md group-hover/act:flex {{ $isMine ? 'right-0' : 'left-0' }}">
-                <button type="button" class="btn btn-xs btn-ghost" data-action="react" data-message-id="{{ $message->id }}" data-emoji="👍" title="{{ __('Gefällt mir') }}">👍</button>
-                <button type="button" class="btn btn-xs btn-ghost" data-action="react-pick" data-message-id="{{ $message->id }}" title="{{ __('Reagieren') }}">😀</button>
+                <button type="button" class="btn btn-sm btn-ghost text-lg" data-action="react" data-message-id="{{ $message->sqid }}" data-emoji="👍" title="{{ __('Gefällt mir') }}">👍</button>
+                <button type="button" class="btn btn-sm btn-ghost text-lg" data-action="react-pick" data-message-id="{{ $message->sqid }}" title="{{ __('Reagieren') }}">😀</button>
+                <button type="button" class="btn btn-sm btn-ghost" data-action="quote" data-message-id="{{ $message->sqid }}"
+                        data-quote-name="{{ $message->user?->name ?? __('System') }}"
+                        data-quote-body="{{ \Illuminate\Support\Str::limit(strip_tags((string) $message->body), 120) }}"
+                        title="{{ __('Zitieren') }}"><x-icon name="reply" size="1.15rem" /></button>
+                <button type="button" class="btn btn-sm btn-ghost" data-action="forward" data-message-id="{{ $message->sqid }}" title="{{ __('Weiterleiten') }}"><x-icon name="forward" size="1.15rem" /></button>
+                <button type="button" class="btn btn-sm btn-ghost {{ $message->isStarredBy($me) ? 'text-warning' : '' }}" data-action="star" data-message-id="{{ $message->sqid }}" title="{{ __('Favorit') }}"><x-icon name="{{ $message->isStarredBy($me) ? 'star' : 'star_border' }}" size="1.15rem" /></button>
+                <button type="button" class="btn btn-sm btn-ghost" data-action="remind" data-message-id="{{ $message->sqid }}" title="{{ __('Erinnern') }}"><x-icon name="alarm" size="1.15rem" /></button>
                 @if (! $message->parent_id)
-                    <button type="button" class="btn btn-xs btn-ghost gap-1" data-action="thread" data-message-id="{{ $message->id }}"><x-icon name="forum" size="0.9rem" /> {{ __('Antworten') }}</button>
-                    <button type="button" class="btn btn-xs btn-ghost" data-action="pin" data-message-id="{{ $message->id }}" title="{{ __('Anpinnen') }}"><x-icon name="push_pin" size="0.9rem" /></button>
+                    <button type="button" class="btn btn-sm btn-ghost gap-1" data-action="thread" data-message-id="{{ $message->sqid }}"><x-icon name="forum" size="1.15rem" /> {{ __('Antworten') }}</button>
+                    <button type="button" class="btn btn-sm btn-ghost" data-action="pin" data-message-id="{{ $message->sqid }}" title="{{ __('Anpinnen') }}"><x-icon name="push_pin" size="1.15rem" /></button>
                 @endif
                 @if ($isMine)
-                    <button type="button" class="btn btn-xs btn-ghost" data-action="edit" data-message-id="{{ $message->id }}" data-body="{{ $message->body }}" title="{{ __('Bearbeiten') }}"><x-icon name="edit" size="0.9rem" /></button>
-                    <button type="button" class="btn btn-xs btn-ghost text-error" data-action="delete" data-message-id="{{ $message->id }}" title="{{ __('Löschen') }}"><x-icon name="delete" size="0.9rem" /></button>
+                    <button type="button" class="btn btn-sm btn-ghost" data-action="edit" data-message-id="{{ $message->sqid }}" data-body="{{ $message->body }}" title="{{ __('Bearbeiten') }}"><x-icon name="edit" size="1.15rem" /></button>
+                    <button type="button" class="btn btn-sm btn-ghost text-error" data-action="delete" data-message-id="{{ $message->sqid }}" title="{{ __('Löschen') }}"><x-icon name="delete" size="1.15rem" /></button>
                 @endif
             </div>
         </div>

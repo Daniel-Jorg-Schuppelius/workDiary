@@ -19,7 +19,7 @@ use Illuminate\Queue\SerializesModels;
 class PollVoted implements ShouldBroadcast {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public int $channelId, public int $messageId) {}
+    public function __construct(public int $channelId, public string $messageId) {}
 
     /** @return list<PrivateChannel> */
     public function broadcastOn(): array {

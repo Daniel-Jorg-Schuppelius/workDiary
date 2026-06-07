@@ -20,6 +20,14 @@ Schedule::command('archive:run')
     ->withoutOverlapping()
     ->onOneServer();
 
+Schedule::command('chat:send-reminders')
+    ->everyMinute()
+    ->withoutOverlapping();
+
+Schedule::command('chat:send-scheduled')
+    ->everyMinute()
+    ->withoutOverlapping();
+
 Schedule::command('attendance:close-open')
     ->everyFifteenMinutes()
     ->withoutOverlapping()
