@@ -2,7 +2,9 @@
 <?php $isDialog = $isDialog ?? false; ?>
 
 <article>
-    <div class="flex flex-wrap items-center justify-between gap-4 mb-6 {{ $isDialog ? 'pr-10' : '' }}">
+    {{-- Im Dialog tragen Modal-Header (Status/Autor) + Footer (Aktionen) diese Zeile. --}}
+    @unless ($isDialog)
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div class="flex flex-wrap items-center gap-3">
             <span @class([
                 'badge badge-sm',
@@ -23,37 +25,23 @@
             @endif
         </div>
         <div class="flex flex-wrap gap-2">
-            @can('archive', $diary)
-                @if ($diary->is_archived)
-                    <form method="POST" action="{{ route('diary.restore', $diary) }}" class="inline">
-                        @csrf
-                        <x-icon-btn icon="restore" tone="outline" size="sm" type="submit" show-label>{{ __('Wiederherstellen') }}</x-icon-btn>
-                    </form>
-                @else
-                    <form method="POST" action="{{ route('diary.archive', $diary) }}" class="inline">
-                        @csrf
-                        <x-icon-btn icon="archive" tone="outline" size="sm" type="submit" show-label>{{ __('Archivieren') }}</x-icon-btn>
-                    </form>
-                @endif
-            @endcan
-            @can('delete', $diary)
-                <form method="POST" action="{{ route('diary.destroy', $diary) }}" class="inline"
-                    data-confirm-dialog
-                    data-confirm-title="{{ __('Eintrag löschen') }}"
-                    data-confirm-message="{{ __('Der Eintrag wird dauerhaft gelöscht. Möchtest du fortfahren?') }}"
-                    data-confirm-label="{{ __('Löschen') }}">
-                    @csrf @method('DELETE')
-                    <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
-                </form>
-            @endcan
-            @can('update', $diary)
-                <x-icon-btn icon="edit" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('diary.edit', $diary)"
-                            show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-            @endcan
+            @include('diary._show_actions')
         </div>
     </div>
+    @endunless
+
+    {{-- Im Dialog: Autor + Archiviert-/Legacy-Hinweis kompakt (Status/Titel stehen im Header). --}}
+    @if ($isDialog)
+        <div class="mb-4 flex flex-wrap items-center gap-2 text-sm text-base-content/70">
+            <span class="inline-flex items-center gap-1"><x-icon name="person" size="1rem" /> {{ optional($diary->user)->name ?? '—' }}</span>
+            @if ($diary->is_archived)
+                <x-status-badge tone="neutral">{{ __('Archiviert') }}{{ $diary->archived_at ? ' · ' . $diary->archived_at->fdate() : '' }}</x-status-badge>
+            @endif
+            @if ($diary->legacy_id)
+                <x-status-badge tone="warning" outline>Legacy #{{ $diary->legacy_id }}</x-status-badge>
+            @endif
+        </div>
+    @endif
 
     <h2 class="mb-4 font-['Space_Grotesk'] text-2xl font-bold text-base-content">{{ __('Inhalt') }}</h2>
     <div class="whitespace-pre-wrap leading-relaxed text-base-content">{{ $diary->content }}</div>

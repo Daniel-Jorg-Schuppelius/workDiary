@@ -106,7 +106,7 @@
     </x-index-page>
 
     @push('scripts')
-        <script>
+        <script @cspNonce>
             (function () {
                 const list = document.getElementById('items-list');
                 const tpl = document.getElementById('item-template');

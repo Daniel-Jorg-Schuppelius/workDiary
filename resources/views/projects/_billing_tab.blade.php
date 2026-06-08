@@ -24,7 +24,7 @@
 @endphp
 
 @if ($project)
-<div class="card bg-base-100 shadow mb-4" x-data="{ inc: '{{ $increment === null ? '' : ($isPreset ? (int) $increment : 'custom') }}' }">
+<div class="card bg-base-100 shadow mb-4" x-data="reveal('{{ $increment === null ? '' : ($isPreset ? (int) $increment : 'custom') }}')">
     <div class="card-body space-y-4">
         <h2 class="card-title">{{ __('Taktung & Zusammenfassung') }}</h2>
         <p class="text-sm opacity-70">
@@ -38,8 +38,8 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="fieldset">
                     <label class="fieldset-label">{{ __('Taktung') }}</label>
-                    <select class="select select-bordered w-full" x-model="inc"
-                            x-bind:name="inc === 'custom' ? 'billing_increment_select' : 'billing_increment_minutes'">
+                    <select class="select select-bordered w-full" x-model="value"
+                            x-bind:name="choose('custom', 'billing_increment_select', 'billing_increment_minutes')">
                         <option value="">{{ __('Erben (aktuell: :min Min)', ['min' => $effectiveIncrement]) }}</option>
                         @foreach ($presetIncrements as $min => $label)
                             <option value="{{ $min }}" @selected($isPreset && (int) $increment === $min)>{{ $label }} ({{ $min }} Min)</option>
@@ -48,10 +48,10 @@
                     </select>
                     <input type="number" name="billing_increment_minutes_custom" min="1" max="1440" step="1"
                            value="{{ $isPreset ? '' : (int) $increment }}"
-                           x-show="inc === 'custom'" x-cloak
+                           x-show="is('custom')" x-cloak
                            placeholder="{{ __('Minuten') }}"
                            class="input input-bordered w-full mt-2"
-                           x-bind:name="inc === 'custom' ? 'billing_increment_minutes' : 'billing_increment_minutes_custom'">
+                           x-bind:name="choose('custom', 'billing_increment_minutes', 'billing_increment_minutes_custom')">
                 </div>
 
                 <div class="fieldset">

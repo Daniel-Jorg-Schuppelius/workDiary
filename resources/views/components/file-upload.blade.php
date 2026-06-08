@@ -30,25 +30,7 @@
     $inputId = 'fu_' . uniqid();
 @endphp
 
-<div class="wd-file-upload" x-data="{
-        fileName: null,
-        fileSize: null,
-        error: null,
-        maxKb: {{ (int) $maxKb }},
-        onChange(event) {
-            this.error = null;
-            const f = event.target.files && event.target.files[0];
-            if (!f) { this.fileName = null; this.fileSize = null; return; }
-            if (f.size > this.maxKb * 1024) {
-                this.error = '{{ __('Datei ist größer als das Limit.') }}';
-                event.target.value = '';
-                this.fileName = null; this.fileSize = null;
-                return;
-            }
-            this.fileName = f.name;
-            this.fileSize = (f.size / 1024).toFixed(0) + ' KB';
-        }
-    }">
+<div class="wd-file-upload" x-data="fileUpload({{ (int) $maxKb }}, @js(__('Datei ist größer als das Limit.')))">
     @if ($label)
         <label for="{{ $inputId }}" class="wd-file-upload__label">{{ $label }}</label>
     @endif
@@ -82,12 +64,12 @@
                 />
 
                 <div class="wd-file-upload__actions">
-                    <button type="submit" class="btn btn-primary btn-sm" x-bind:disabled="!fileName">
+                    <button type="submit" class="btn btn-primary btn-sm" x-bind:disabled="hasNoFile">
                         <x-icon name="upload" />
                         <span>{{ __('Hochladen') }}</span>
                     </button>
                     <template x-if="fileName">
-                        <span class="wd-file-upload__meta" x-text="fileName + ' (' + fileSize + ')'"></span>
+                        <span class="wd-file-upload__meta" x-text="fileLabel"></span>
                     </template>
                 </div>
 

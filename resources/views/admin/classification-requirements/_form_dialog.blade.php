@@ -105,7 +105,7 @@
     </div>
 </x-modal>
 
-<script>
+<script @cspNonce>
     (function () {
         var entryTypeSelect = document.getElementById('req-entry-type');
         var requiredDomainSelect = document.getElementById('req-domain');

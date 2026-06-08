@@ -116,7 +116,7 @@
 
 </x-modal>
 
-<script>
+<script @cspNonce>
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('btn-open-type-manager')?.addEventListener('click', function () {
         document.getElementById('shift-type-manager').showModal();

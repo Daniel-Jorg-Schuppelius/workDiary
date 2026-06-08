@@ -4,7 +4,7 @@
     $assignedSet = array_flip($assigned ?? []);
 @endphp
 
-<div x-data="{ filter: '' }">
+<div x-data="permissionMatrix">
     <label class="input input-bordered input-sm flex items-center gap-2 mb-3 max-w-md">
         <x-icon name="search" class="text-base-content/60" />
         <input type="text" x-model="filter" class="grow" placeholder="{{ __('access.placeholder.filter_permissions') }}" />
@@ -13,8 +13,9 @@
     <div class="space-y-4">
         @foreach ($grouped as $groupKey => $items)
             @php($groupEnum = \App\Enums\User\PermissionGroup::from($groupKey))
+            @php($groupHaystack = \Illuminate\Support\Str::lower(collect($items)->map(fn($p) => $p->value . ' ' . $p->label())->implode(' ')))
             <div class="collapse collapse-arrow bg-base-200/40"
-                 x-show="filter === '' || [{{ collect($items)->map(fn($p) => "'".$p->value."'")->implode(',') }}].some(v => v.toLowerCase().includes(filter.toLowerCase()))">
+                 x-show="matches({{ \Illuminate\Support\Js::from($groupHaystack) }})">
                 <input type="checkbox" checked />
                 <div class="collapse-title font-medium flex items-center gap-2">
                     <x-icon :name="$groupEnum->icon()" />
@@ -28,19 +29,19 @@
                     <div class="flex gap-2 mb-2">
                         <button type="button"
                                 class="btn btn-xs btn-ghost"
-                                @click="$root.querySelectorAll('input[data-group=&quot;{{ $groupKey }}&quot;]').forEach(el => el.checked = true)">
+                                @click="selectGroup('{{ $groupKey }}')">
                             {{ __('access.action.select_all') }}
                         </button>
                         <button type="button"
                                 class="btn btn-xs btn-ghost"
-                                @click="$root.querySelectorAll('input[data-group=&quot;{{ $groupKey }}&quot;]').forEach(el => el.checked = false)">
+                                @click="clearGroup('{{ $groupKey }}')">
                             {{ __('access.action.select_none') }}
                         </button>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                         @foreach ($items as $permission)
                             <label class="label cursor-pointer justify-start gap-3 hover:bg-base-200 rounded px-2"
-                                   x-show="filter === '' || '{{ $permission->value }}'.toLowerCase().includes(filter.toLowerCase()) || @js((string) $permission->label()).toLowerCase().includes(filter.toLowerCase())">
+                                   x-show="matches({{ \Illuminate\Support\Js::from(\Illuminate\Support\Str::lower($permission->value . ' ' . $permission->label())) }})">
                                 <input type="checkbox"
                                        name="{{ $name }}"
                                        value="{{ $permission->value }}"

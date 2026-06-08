@@ -63,18 +63,18 @@
                                         <div class="relative h-5 flex-1 rounded bg-base-200/60" data-track>
                                             @if ($row['dated'])
                                                 <div data-bar
-                                                     x-data="ganttBar({
-                                                        offset: {{ $row['startOffsetDays'] }},
-                                                        duration: {{ $row['durationDays'] }},
-                                                        total: {{ $t['totalDays'] }},
-                                                        fromIso: @js($t['fromIso']),
-                                                        url: @js(route('projects.tasks.schedule', [$project, $row['task']])),
-                                                        editable: {{ $row['editable'] ? 'true' : 'false' }},
-                                                        color: @js($row['task']->color ?: ($overdue ? '#dc2626' : '#3b82f6')),
-                                                     })"
+                                                     x-data="ganttBar"
+                                                     data-offset="{{ $row['startOffsetDays'] }}"
+                                                     data-duration="{{ $row['durationDays'] }}"
+                                                     data-total="{{ $t['totalDays'] }}"
+                                                     data-from-iso="{{ $t['fromIso'] }}"
+                                                     data-url="{{ route('projects.tasks.schedule', [$project, $row['task']]) }}"
+                                                     data-editable="{{ $row['editable'] ? '1' : '0' }}"
+                                                     data-color="{{ $row['task']->color ?: ($overdue ? '#dc2626' : '#3b82f6') }}"
+                                                     data-csrf="{{ csrf_token() }}"
                                                      class="group absolute top-0 flex h-5 items-center overflow-visible rounded text-[10px] text-white select-none"
-                                                     :class="editable ? 'cursor-move' : ''"
-                                                     :style="`left:${offsetPct}%; width:${widthPct}%; background-color:${color}`"
+                                                     :class="cursorClass"
+                                                     :style="barStyle"
                                                      @pointerdown="startMove($event)"
                                                      :title="label">
                                                     <template x-if="editable">
@@ -101,71 +101,4 @@
         </div>
     </div>
 </x-page-shell>
-
-@push('scripts')
-<script>
-    window.__ganttCsrf = @js(csrf_token());
-    window.ganttBar = function (cfg) {
-        return {
-            offset: cfg.offset,
-            duration: cfg.duration,
-            total: cfg.total,
-            fromIso: cfg.fromIso,
-            url: cfg.url,
-            editable: cfg.editable,
-            color: cfg.color,
-            _d: null,
-            get offsetPct() { return Math.max(0, this.offset / this.total * 100); },
-            get widthPct() { return Math.max(2, this.duration / this.total * 100); },
-            get label() {
-                const s = this.addDays(this.fromIso, this.offset);
-                return this.fmt(s) + (this.duration > 0 ? '–' + this.fmt(this.addDays(this.fromIso, this.offset + this.duration)) : '');
-            },
-            _dayWidth(el) { const t = el.closest('[data-track]'); return Math.max(1, t.clientWidth / this.total); },
-            startMove(e) { if (this.editable) this._begin(e, 'move'); },
-            startResize(e, edge) { if (this.editable) this._begin(e, edge); },
-            _begin(e, mode) {
-                e.preventDefault();
-                const bar = e.target.closest('[data-bar]');
-                this._d = { mode, x: e.clientX, o: this.offset, du: this.duration, dw: this._dayWidth(bar) };
-                const move = (ev) => this._move(ev);
-                const up = () => { this._end(); window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
-                window.addEventListener('pointermove', move);
-                window.addEventListener('pointerup', up);
-            },
-            _move(e) {
-                if (!this._d) return;
-                const dd = Math.round((e.clientX - this._d.x) / this._d.dw);
-                if (this._d.mode === 'move') {
-                    this.offset = Math.max(0, this._d.o + dd);
-                } else if (this._d.mode === 'l') {
-                    const newOffset = Math.max(0, Math.min(this._d.o + dd, this._d.o + this._d.du));
-                    this.duration = this._d.du + (this._d.o - newOffset);
-                    this.offset = newOffset;
-                } else {
-                    this.duration = Math.max(0, this._d.du + dd);
-                }
-            },
-            _end() {
-                if (!this._d) return;
-                const changed = this.offset !== this._d.o || this.duration !== this._d.du;
-                this._d = null;
-                if (changed) this.persist();
-            },
-            persist() {
-                fetch(this.url, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': window.__ganttCsrf },
-                    body: JSON.stringify({
-                        start_date: this.addDays(this.fromIso, this.offset),
-                        due_date: this.addDays(this.fromIso, this.offset + this.duration),
-                    }),
-                }).catch(() => {});
-            },
-            addDays(iso, days) { const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); },
-            fmt(iso) { const p = iso.split('-'); return p[2] + '.' + p[1] + '.'; },
-        };
-    };
-</script>
-@endpush
 @endsection

@@ -45,15 +45,16 @@
     method="PUT"
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Speichern')"
-    x-data="wsForm({{ \Illuminate\Support\Js::from($wsInit) }})"
+    x-data="wsForm"
+    :data-config="json_encode($wsInit)"
 >
     <x-slot:headerActions>
         <div class="join rounded-box border border-base-300/70">
             <button type="button" class="join-item btn btn-xs"
-                    :class="unit === 'minutes' ? 'btn-primary' : 'btn-ghost'"
+                    :class="unitClass('minutes')"
                     @click="switchTo('minutes')">{{ __('Minuten') }}</button>
             <button type="button" class="join-item btn btn-xs"
-                    :class="unit === 'hours' ? 'btn-primary' : 'btn-ghost'"
+                    :class="unitClass('hours')"
                     @click="switchTo('hours')">{{ __('Stunden') }}</button>
         </div>
     </x-slot:headerActions>

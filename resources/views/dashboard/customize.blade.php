@@ -60,7 +60,7 @@
     </x-page-shell>
 
     @push('scripts')
-        <script>
+        <script @cspNonce>
             document.addEventListener('DOMContentLoaded', () => {
                 const list = document.getElementById('dashboard-widget-list');
                 if (! list) return;

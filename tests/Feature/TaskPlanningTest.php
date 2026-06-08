@@ -89,10 +89,10 @@ class TaskPlanningTest extends TestCase {
             ->assertOk()
             ->assertSee('assignee_ids[]', false)
             ->assertSee($this->teamMember->name)
-            // Sicheres Filter-Muster (data-search/$el.dataset), KEIN Js::from im
-            // x-show — sonst bricht das doppelt-gequotete Attribut (Dialog lädt nicht).
-            ->assertSee('$el.dataset.search', false)
-            ->assertDontSee('Illuminate\\Support\\Js', false);
+            // CSP-konforme Auswahlliste: registrierte Alpine-Komponente + Filter
+            // über eine Methode (visible(...)) statt Inline-Ausdruck im x-show.
+            ->assertSee('x-data="userChecklist', false)
+            ->assertSee('visible(', false);
     }
 
     public function test_due_date_before_start_date_is_rejected(): void {

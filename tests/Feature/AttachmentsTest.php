@@ -26,7 +26,9 @@ class AttachmentsTest extends TestCase {
     }
 
     public function test_user_can_upload_attachment_to_asset(): void {
-        $owner = User::factory()->user()->create();
+        // Anhängen an ein Asset erfordert jetzt das Bearbeiten-Recht (asset.update);
+        // Admin besteht via HasAdminBypass.
+        $owner = User::factory()->admin()->create();
         $asset = Asset::factory()->create([
             'organization_id' => $owner->organization_id,
             'customer_id' => null,

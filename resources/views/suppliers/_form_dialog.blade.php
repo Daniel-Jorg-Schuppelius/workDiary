@@ -246,7 +246,7 @@
         </div>
 </x-modal>
 
-<script>
+<script @cspNonce>
 (function () {
     const root = document.querySelector('[data-contact-persons]');
     if (!root) return;

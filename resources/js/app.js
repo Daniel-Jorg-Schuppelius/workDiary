@@ -1,4 +1,10 @@
+// Standard-Alpine-Build. Der gesamte Code ist bereits CSP-konform refactored
+// (alle Komponenten via Alpine.data in resources/js/alpine/components.js, keine
+// Inline-Ausdrücke in Direktiven). Der Wechsel auf den strengeren CSP-Build
+// (`@alpinejs/csp`) ist EIN Einzeiler — aber erst nach einem Browser-Smoke-Test
+// aller interaktiven Seiten produktiv schalten (zusammen mit CSP_SCRIPT_NONCE).
 import Alpine from "alpinejs";
+import { registerAlpineComponents } from "./alpine/components.js";
 import flatpickr from "flatpickr";
 import SignaturePad from "signature_pad";
 import "flatpickr/dist/flatpickr.min.css";
@@ -11,9 +17,8 @@ import "./sortable-tables.js";
 import "./bulk-selection.js";
 import "./global-search.js";
 import "./help-drawer.js";
-import "./facility-picker.js";
-import "./tag-picker.js";
-import "./work-schedule-form.js";
+// facility-picker.js / tag-picker.js / work-schedule-form.js wurden in
+// alpine/components.js als Alpine.data-Komponenten überführt (CSP-konform).
 
 // PWA: Service Worker registrieren + Install-Button binden.
 if (typeof window !== "undefined") {
@@ -25,6 +30,7 @@ if (typeof window !== "undefined") {
 
 window.Alpine = Alpine;
 window.SignaturePad = SignaturePad;
+registerAlpineComponents(Alpine);
 Alpine.start();
 
 const htmlLang = (document.documentElement.lang || "de").toLowerCase();

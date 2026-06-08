@@ -79,7 +79,7 @@
     </div>
 </x-index-page>
 
-<script>
+<script @cspNonce>
     (function () {
         const scope = document.getElementById('scope-select');
         const wrapper = document.getElementById('scope-user-wrapper');

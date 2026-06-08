@@ -43,25 +43,7 @@
 
     <x-form-group :legend="__('Profilbild')" icon="account_circle" tone="primary" cols="1"
                   :description="__('PNG, JPG oder WEBP. Max. :max KB.', ['max' => $avatarMaxKb])"
-                  x-data="{
-                      fileName: null,
-                      error: null,
-                      maxKb: {{ $avatarMaxKb }},
-                      remove: false,
-                      onChange(event) {
-                          this.error = null;
-                          const f = event.target.files && event.target.files[0];
-                          if (!f) { this.fileName = null; return; }
-                          if (f.size > this.maxKb * 1024) {
-                              this.error = '{{ __('Datei ist größer als das Limit.') }}';
-                              event.target.value = '';
-                              this.fileName = null;
-                              return;
-                          }
-                          this.fileName = f.name;
-                          this.remove = false;
-                      }
-                  }">
+                  x-data="fileUpload({{ $avatarMaxKb }}, @js(__('Datei ist größer als das Limit.')))">
         <div class="flex items-start gap-4">
             <div class="shrink-0">
                 @if ($avatarPreview)

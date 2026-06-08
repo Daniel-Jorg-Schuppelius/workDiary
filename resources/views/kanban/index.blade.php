@@ -56,7 +56,7 @@
     </div>
 </x-index-page>
 
-<script>
+<script @cspNonce>
 (function () {
     const board = document.querySelector('[data-kanban-board]');
     if (!board) return;

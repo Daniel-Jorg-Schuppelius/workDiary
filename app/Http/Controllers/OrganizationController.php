@@ -210,6 +210,8 @@ class OrganizationController extends Controller {
         }
 
         $data['settings'] = $mergedSettings;
+        // Checkbox: unchecked wird nicht gesendet → explizit aus dem Request lesen.
+        $data['two_factor_required'] = $request->boolean('two_factor_required');
 
         $organization->update($data);
 

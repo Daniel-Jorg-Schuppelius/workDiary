@@ -12,7 +12,8 @@ use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController,
 use App\Http\Controllers\Admin\Access\{AccessHubController, MemberController as AccessMemberController, PermissionController as AccessPermissionController, RoleController as AccessRoleController, UserGroupController as AccessUserGroupController};
 use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatController, BranchProfileController, ClassificationController, ClassificationRequirementController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, SupportAccessAuditController, SupportReportController};
 use App\Http\Controllers\Asset\MaintenancePlanController;
-use App\Http\Controllers\Auth\{LoginController, PasswordResetController, TenantRegistrationController};
+use App\Http\Controllers\Auth\{LoginController, PasswordResetController, TenantRegistrationController, TwoFactorChallengeController};
+use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\KeyHandover\KeyHandoverController;
 use App\Http\Controllers\MeterReading\MeterReadingController;
 use App\Http\Controllers\Reporting\{AbsencesReportController, AssetAnalysisReportController, AttendanceReportController, AuditActivityReportController, BillingReportController, CoverageReportController, CustomerAnalysisReportController, CustomerProjectReportController, EntryTypeAnalysisReportController, EntryTypeDrilldownReportController, ExpenseReportController, ExternalPayoutReportController, FleetReportController, MaterialReportController, MonthByUserTeamReportController, MyMonthReportController, MyYearReportController, OnCallReportController, OperationsReportController, ProjectDetailsReportController, ProjectInactiveReportController, QualificationReportController, SicknessReportController, WeekByUserReportController, WorkBalanceReportController};
@@ -42,6 +43,11 @@ Route::get('/', HomeController::class)->name('home');
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login')->middleware('guest');
 Route::post('/login', [LoginController::class, 'login'])->middleware(['guest', 'throttle:login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+// Zweiter Login-Schritt (Zwei-Faktor): session-basiert (auth.2fa.id), daher
+// weder guest- noch auth-Middleware. Der Controller prüft die Session selbst.
+Route::get('/two-factor-challenge', [TwoFactorChallengeController::class, 'create'])->name('two-factor.login');
+Route::post('/two-factor-challenge', [TwoFactorChallengeController::class, 'store'])->middleware('throttle:login')->name('two-factor.login.attempt');
 
 Route::get('/register', [TenantRegistrationController::class, 'showForm'])->name('register')->middleware('guest');
 Route::post('/register', [TenantRegistrationController::class, 'register'])->middleware(['guest', 'throttle:register']);
@@ -98,6 +104,13 @@ Route::middleware('auth')->group(function () {
 
     Route::get('account/password', [AccountPasswordController::class, 'edit'])->name('account.password.edit');
     Route::post('account/password', [AccountPasswordController::class, 'update'])->middleware('throttle:password')->name('account.password.update');
+
+    // Zwei-Faktor-Authentifizierung (Selbstverwaltung).
+    Route::get('account/two-factor', [TwoFactorController::class, 'show'])->name('account.2fa.show');
+    Route::post('account/two-factor', [TwoFactorController::class, 'enable'])->name('account.2fa.enable');
+    Route::post('account/two-factor/confirm', [TwoFactorController::class, 'confirm'])->name('account.2fa.confirm');
+    Route::post('account/two-factor/recovery-codes', [TwoFactorController::class, 'regenerateRecoveryCodes'])->name('account.2fa.recovery');
+    Route::delete('account/two-factor', [TwoFactorController::class, 'disable'])->name('account.2fa.disable');
 
     Route::get('account/profile', [ProfileController::class, 'edit'])->name('account.profile.edit');
     Route::put('account/profile', [ProfileController::class, 'update'])->name('account.profile.update');

@@ -53,7 +53,7 @@
     </div>
 </form>
 
-<script>
+<script @cspNonce>
     (function () {
         const btn = document.getElementById('vapid-generate');
         if (! btn) {

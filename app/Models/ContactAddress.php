@@ -61,6 +61,12 @@ class ContactAddress extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'is_primary' => 'boolean',
+        // Vollständige Adress-PII at-rest verschlüsselt. PLZ/Ort werden nirgends
+        // gefiltert/sortiert, daher ebenfalls verschlüsselbar.
+        'street' => 'encrypted',
+        'supplement' => 'encrypted',
+        'zip' => 'encrypted',
+        'city' => 'encrypted',
     ];
 
     /** @return MorphTo<Model, $this> */

@@ -25,7 +25,7 @@
 @endphp
 
 <div {{ $attributes->merge(['class' => 'space-y-1']) }}
-     x-data="{ q: '', count: {{ count($checklistSelected) }} }">
+     x-data="userChecklist({{ count($checklistSelected) }})">
     @if ($checklistItems->isEmpty())
         <p class="text-xs text-base-content/60">{{ $emptyText ?? __('Keine Einträge vorhanden.') }}</p>
     @else
@@ -38,12 +38,11 @@
         <div class="{{ $height }} divide-y divide-base-200 overflow-y-auto rounded-box border border-base-300">
             @foreach ($checklistItems as $item)
                 <label class="flex cursor-pointer items-center gap-2 px-2 py-1.5 hover:bg-base-200"
-                       data-search="{{ \Illuminate\Support\Str::lower($item['label']) }}"
-                       x-show="q.trim() === '' || $el.dataset.search.includes(q.toLowerCase().trim())">
+                       x-show="visible({{ \Illuminate\Support\Js::from(\Illuminate\Support\Str::lower($item['label'])) }})">
                     <input type="checkbox" name="{{ $name }}[]" value="{{ $item['value'] }}"
                            class="checkbox checkbox-sm"
                            @checked(in_array($item['value'], $checklistSelected, true))
-                           @change="count += $event.target.checked ? 1 : -1">
+                           @change="adjust($event)">
                     <span class="text-sm">{{ $item['label'] }}</span>
                 </label>
             @endforeach

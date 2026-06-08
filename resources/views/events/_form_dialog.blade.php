@@ -36,6 +36,9 @@
         'user_id' => $p->sqid,
         'role'    => $p->pivot->role,
     ])->all() ?? []);
+
+    $roomTemplate = ['room_id' => '', 'started_at' => '', 'ended_at' => '', 'setup_minutes_before' => 0, 'teardown_minutes_after' => 0];
+    $participantTemplate = ['user_id' => '', 'role' => 'attendee'];
 @endphp
 
 <x-modal
@@ -227,17 +230,17 @@
 
     {{-- Räume ------------------------------------------------------------- --}}
     <x-form-group :legend="__('Räume')" icon="meeting_room" tone="ghost">
-        <div x-data="{
-                items: {{ json_encode($roomItems) }},
-                add() { this.items.push({ room_id: '', started_at: '', ended_at: '', setup_minutes_before: 0, teardown_minutes_after: 0 }); },
-                remove(i) { this.items.splice(i, 1); },
-             }" class="space-y-2">
+        <div x-data="repeater"
+             data-prefix="rooms"
+             data-items="{{ json_encode($roomItems) }}"
+             data-template="{{ json_encode($roomTemplate) }}"
+             class="space-y-2">
             <template x-for="(it, i) in items" :key="i">
                 <div class="rounded-box border border-base-300 bg-base-200/40 p-3 space-y-2">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2 items-end">
                         <div class="fieldset">
                             <label class="fieldset-label">{{ __('Raum') }}</label>
-                            <select :name="`rooms[${i}][room_id]`" x-model="it.room_id"
+                            <select :name="fieldName(i, 'room_id')" x-model="it.room_id"
                                     class="select select-sm select-bordered w-full" required>
                                 <option value="">—</option>
                                 @foreach ($rooms as $room)
@@ -250,11 +253,11 @@
                             <label class="fieldset-label">{{ __('Belegung (Von – Bis)') }}</label>
                             <div class="join w-full">
                                 <input type="datetime-local"
-                                       :name="`rooms[${i}][started_at]`" x-model="it.started_at"
+                                       :name="fieldName(i, 'started_at')" x-model="it.started_at"
                                        class="join-item input input-sm input-bordered flex-1 min-w-0"
                                        :title="'{{ __('Beginn') }}'" :aria-label="'{{ __('Beginn') }}'">
                                 <input type="datetime-local"
-                                       :name="`rooms[${i}][ended_at]`" x-model="it.ended_at"
+                                       :name="fieldName(i, 'ended_at')" x-model="it.ended_at"
                                        class="join-item input input-sm input-bordered flex-1 min-w-0"
                                        :title="'{{ __('Ende') }}'" :aria-label="'{{ __('Ende') }}'">
                             </div>
@@ -265,14 +268,14 @@
                         <div class="fieldset">
                             <label class="fieldset-label">{{ __('Aufbau (Min)') }}</label>
                             <input type="number" min="0"
-                                   :name="`rooms[${i}][setup_minutes_before]`"
+                                   :name="fieldName(i, 'setup_minutes_before')"
                                    x-model.number="it.setup_minutes_before"
                                    class="input input-sm input-bordered w-full">
                         </div>
                         <div class="fieldset">
                             <label class="fieldset-label">{{ __('Abbau (Min)') }}</label>
                             <input type="number" min="0"
-                                   :name="`rooms[${i}][teardown_minutes_after]`"
+                                   :name="fieldName(i, 'teardown_minutes_after')"
                                    x-model.number="it.teardown_minutes_after"
                                    class="input input-sm input-bordered w-full">
                         </div>
@@ -292,17 +295,17 @@
 
     {{-- Teilnehmer -------------------------------------------------------- --}}
     <x-form-group :legend="__('Teilnehmer')" icon="group" tone="info">
-        <div x-data="{
-                items: {{ json_encode($participantItems) }},
-                add() { this.items.push({ user_id: '', role: 'attendee' }); },
-                remove(i) { this.items.splice(i, 1); },
-             }" class="space-y-2">
+        <div x-data="repeater"
+             data-prefix="participants"
+             data-items="{{ json_encode($participantItems) }}"
+             data-template="{{ json_encode($participantTemplate) }}"
+             class="space-y-2">
             <template x-for="(it, i) in items" :key="i">
                 <div class="rounded-box border border-base-300 bg-base-200/40 p-3">
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-2 items-end">
                         <div class="fieldset md:col-span-3">
                             <label class="fieldset-label">{{ __('Benutzer') }}</label>
-                            <select :name="`participants[${i}][user_id]`" x-model="it.user_id"
+                            <select :name="fieldName(i, 'user_id')" x-model="it.user_id"
                                     class="select select-sm select-bordered w-full" required>
                                 <option value="">—</option>
                                 @foreach ($users as $u)
@@ -312,7 +315,7 @@
                         </div>
                         <div class="fieldset">
                             <label class="fieldset-label">{{ __('Rolle') }}</label>
-                            <select :name="`participants[${i}][role]`" x-model="it.role"
+                            <select :name="fieldName(i, 'role')" x-model="it.role"
                                     class="select select-sm select-bordered w-full">
                                 @foreach ($roles as $val => $label)
                                     <option value="{{ $val }}">{{ $label }}</option>

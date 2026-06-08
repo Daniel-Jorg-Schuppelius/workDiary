@@ -254,11 +254,14 @@ class LexofficeContactSyncTest extends TestCase {
         $this->assertSame('Wichtiger Kunde', $customer->comment);
         $this->assertSame('10042', (string) $customer->lexoffice_contact_number);
 
-        $this->assertDatabaseHas('contact_addresses', [
-            'addressable_id' => $customer->id,
-            'kind' => 'shipping',
-            'city' => 'Hamburg',
-        ]);
+        // city ist at-rest verschlüsselt → über das Model (entschlüsselt) prüfen,
+        // nicht per assertDatabaseHas gegen den Ciphertext.
+        $shipping = \App\Models\ContactAddress::query()
+            ->where('addressable_id', $customer->id)
+            ->where('kind', 'shipping')
+            ->first();
+        $this->assertNotNull($shipping);
+        $this->assertSame('Hamburg', $shipping->city);
     }
 
     public function test_official_number_overwrites_local_draft_number(): void {

@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <script>
+        <script @cspNonce>
             (function () {
                 var savedTheme = localStorage.getItem('workDiaryTheme');
                 var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
@@ -121,7 +121,7 @@
             </div>
         </footer>
 
-        <script>
+        <script @cspNonce>
             (function () {
                 var root = document.documentElement;
                 var toggle = document.querySelector('[data-theme-toggle]');

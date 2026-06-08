@@ -46,8 +46,11 @@ class AccountPasswordController extends Controller {
 
         $data = $request->validate($rules);
 
+        // is_new_system aktivieren: sonst prüft der LegacyUserProvider beim Login
+        // weiter das alte Klartext-Legacy-Passwort und ignoriert das neue bcrypt-PW.
         $user->forceFill([
             'password' => Hash::make($data['password']),
+            'is_new_system' => true,
             'must_change_password' => false,
         ])->save();
 

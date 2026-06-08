@@ -198,16 +198,44 @@ class TogglController extends Controller {
      * enthaltenen Workspace-Ordner erkannt und je Workspace abgefragt, was
      * passieren soll (eigener Workspace / als ein Kunde / überspringen).
      */
+    /**
+     * Beschränkt einen vom Admin angegebenen Import-Pfad auf erlaubte
+     * Basisverzeichnisse (konfigurierter Toggl-Export-Pfad + storage/app/toggl-imports)
+     * via realpath-Prefix. Verhindert das Auslesen beliebiger Server-Verzeichnisse.
+     */
+    private function safeImportPath(string $path): ?string {
+        if (trim($path) === '') {
+            return null;
+        }
+        $real = realpath($path);
+        if ($real === false || ! is_dir($real)) {
+            return null;
+        }
+        $bases = array_filter([
+            (string) config('plugins.toggl.export_path', ''),
+            storage_path('app/toggl-imports'),
+        ]);
+        foreach ($bases as $base) {
+            $realBase = realpath((string) $base);
+            if ($realBase !== false && ($real === $realBase || str_starts_with($real, $realBase . DIRECTORY_SEPARATOR))) {
+                return $real;
+            }
+        }
+
+        return null;
+    }
+
     public function importExport(Request $request): View {
         $admin = $this->admin();
 
         $path = trim((string) $request->query('path', (string) config('plugins.toggl.export_path', '')));
+        $safePath = $this->safeImportPath($path);
         $workspaces = [];
         $togglUsers = [];
-        if ($path !== '' && is_dir($path)) {
+        if ($safePath !== null) {
             $reader = new TogglWorkspaceReader;
-            foreach (TogglWorkspaceReader::detectWorkspaces($path) as $folder) {
-                $dir = rtrim($path, '/') . '/' . $folder;
+            foreach (TogglWorkspaceReader::detectWorkspaces($safePath) as $folder) {
+                $dir = rtrim($safePath, '/') . '/' . $folder;
                 $users = $reader->users($dir);
                 $workspaces[] = [
                     'folder' => $folder,
@@ -221,7 +249,7 @@ class TogglController extends Controller {
 
         return view('toggl::admin.import-export', [
             'path' => $path,
-            'pathValid' => $path !== '' && is_dir($path),
+            'pathValid' => $safePath !== null,
             'workspaces' => $workspaces,
             'summary' => session('toggl_export_summary'),
             'customers' => $this->customerSelectOptions(),
@@ -251,7 +279,9 @@ class TogglController extends Controller {
             'user_map.*' => ['nullable', 'string', 'max:191'],
         ]);
 
-        abort_unless(is_dir($validated['path']), 422, (string) __('Pfad nicht gefunden.'));
+        $safePath = $this->safeImportPath($validated['path']);
+        abort_unless($safePath !== null, 422, (string) __('Pfad nicht gefunden oder nicht erlaubt.'));
+        $validated['path'] = $safePath;
 
         $workspaceModes = [];
         foreach ($validated['folders'] as $i => $folder) {

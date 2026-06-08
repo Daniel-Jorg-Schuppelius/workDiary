@@ -50,6 +50,16 @@ class LoginController extends Controller {
             ]);
         }
 
+        // Zwei-Faktor aktiv: Identität parken, erst nach Code-Eingabe voll einloggen.
+        if ($user->hasTwoFactorEnabled()) {
+            $remember = $request->boolean('remember');
+            Auth::guard('customer')->logout();
+            $request->session()->put('auth.customer.2fa.id', $user->getKey());
+            $request->session()->put('auth.customer.2fa.remember', $remember);
+
+            return redirect()->route('customer.two-factor.login');
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('customer.dashboard'));

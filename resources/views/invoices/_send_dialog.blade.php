@@ -75,7 +75,7 @@
     </div>
 
     {{-- Kleines Inline-Script: splittet komma-getrennte Eingaben in mehrere [] Felder --}}
-    <script>
+    <script @cspNonce>
     document.addEventListener('submit', function (e) {
         const form = e.target;
         if (! form.matches('form[data-entry-form]')) return;

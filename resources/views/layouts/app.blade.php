@@ -78,7 +78,7 @@
                 overflow: visible;
             }
         </style>
-        <script>
+        <script @cspNonce>
             (function () {
                 var savedTheme = localStorage.getItem('workDiaryTheme');
                 var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
@@ -425,10 +425,10 @@
                 font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             }
         </style>
-        <script>window.__translations = @json($jsTranslations ?? []);</script>
+        <script @cspNonce>window.__translations = @json($jsTranslations ?? []);</script>
         {{-- Aktive Anzeigeformate (User → Org → config), damit der Datepicker
              (flatpickr altFormat) dasselbe Format wie die serverseitige Anzeige nutzt. --}}
-        <script>window.__formats = @json(['date' => \App\Support\Formats::date(), 'time' => \App\Support\Formats::time()]);</script>
+        <script @cspNonce>window.__formats = @json(['date' => \App\Support\Formats::date(), 'time' => \App\Support\Formats::time()]);</script>
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @else
@@ -658,6 +658,7 @@
                             } else {
                                 $userNavItems[] = ['route' => 'legacy.account.password.edit', 'label' => __('Passwort ändern'), 'modal' => true];
                             }
+                            $userNavItems[] = ['route' => 'account.2fa.show', 'label' => __('Zwei-Faktor-Authentifizierung'), 'modal' => false];
                             $userNavItems[] = ['route' => 'profile.api-tokens.index', 'label' => __('API-Tokens'), 'modal' => false];
 
                             $isAdminActive  = collect($adminNavItems)->contains(fn ($i) => request()->routeIs($i['route'])) || request()->routeIs('admin.access.*') || request()->routeIs('admin.imports.*') || request()->routeIs('admin.data.*') || request()->routeIs('admin.remote-support.*');
@@ -1065,14 +1066,13 @@
                             @if ($stopwatchEntry)
                                 <div class="flex items-center gap-1.5 rounded-box border border-primary/40 bg-primary/10 px-2 py-1 shadow-xs"
                                      title="{{ $stopwatchEntry->description ?: __('Läuft…') }}"
-                                     x-data="{ s: 0 }"
-                                     x-init="s = Math.max(0, Math.floor((Date.now() - new Date('{{ $stopwatchEntry->started_at?->toIso8601String() }}').getTime())/1000)); setInterval(() => s++, 1000);">
+                                     x-data="stopwatch('{{ $stopwatchEntry->started_at?->toIso8601String() }}')">
                                     <span class="relative flex size-2">
                                         <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
                                         <span class="relative inline-flex size-2 rounded-full bg-primary"></span>
                                     </span>
                                     <span class="font-['Space_Grotesk'] text-sm font-semibold tabular-nums text-primary"
-                                          x-text="String(Math.floor(s/3600)).padStart(2,'0') + ':' + String(Math.floor((s%3600)/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0')">00:00:00</span>
+                                          x-text="display">00:00:00</span>
                                     <form method="POST" action="{{ route('stopwatch.stop') }}" class="leading-none">
                                         @csrf
                                         <button type="submit" class="btn btn-xs btn-ghost btn-square text-error" title="{{ __('Stoppen') }}" aria-label="{{ __('Stoppen') }}">
@@ -1087,11 +1087,10 @@
                             @if ($attendanceCurrent)
                                 <div class="flex items-center gap-1.5 rounded-box border border-success/40 bg-success/10 px-2 py-1 shadow-xs"
                                      title="{{ __('Eingestempelt seit :time', ['time' => $attendanceCurrent->started_at?->ftime()]) }}"
-                                     x-data="{ s: 0 }"
-                                     x-init="s = Math.max(0, Math.floor((Date.now() - new Date('{{ $attendanceCurrent->started_at?->toIso8601String() }}').getTime())/1000)); setInterval(() => s++, 1000);">
+                                     x-data="stopwatch('{{ $attendanceCurrent->started_at?->toIso8601String() }}')">
                                     <x-icon name="badge" class="text-[1rem] text-success" />
                                     <span class="font-['Space_Grotesk'] text-sm font-semibold tabular-nums text-success"
-                                          x-text="String(Math.floor(s/3600)).padStart(2,'0') + ':' + String(Math.floor((s%3600)/60)).padStart(2,'0')">00:00</span>
+                                          x-text="displayShort">00:00</span>
                                     <form method="POST" action="{{ route('attendance.clock-out') }}" class="leading-none">
                                         @csrf
                                         <button type="submit" class="btn btn-xs btn-ghost btn-square text-warning" title="{{ __('Ausstempeln') }}" aria-label="{{ __('Ausstempeln') }}">
@@ -1550,7 +1549,7 @@
         @endunless
         @endauth
 
-        <script>
+        <script @cspNonce>
             // Header-Höhe als CSS-Var pflegen (Sidebar + Content folgen automatisch)
             (function () {
                 var header = document.getElementById('app-header');
@@ -1568,7 +1567,7 @@
                 window.addEventListener('load', apply);
             })();
         </script>
-        <script>
+        <script @cspNonce>
             (function () {
                 function closeDropdown(dropdown) {
                     dropdown.classList.remove('dropdown-open');
@@ -1619,7 +1618,7 @@
                 <span class="font-medium">{{ session('mode_toast') }}</span>
             </div>
         </div>
-        <script>
+        <script @cspNonce>
             (function () {
                 var el = document.getElementById('mode-toast');
                 if (!el) return;
@@ -1707,7 +1706,7 @@
             </x-slot:actions>
         </x-modal>
 
-        <script>
+        <script @cspNonce>
                 (function () {
                     var root = document.documentElement;
                     var toggle = document.querySelector('[data-theme-toggle]');
@@ -2071,7 +2070,7 @@
             {{-- Live-Aktualisierung des Ungelesen-Zählers am Chat-Header-Symbol.
                  window.refreshChatUnread() wird zusätzlich von der Chat-Seite
                  nach Lesen/Empfang aufgerufen; app-weit greift ein leichtes Polling. --}}
-            <script>
+            <script @cspNonce>
                 (function () {
                     var link = document.getElementById('chat-unread-link');
                     var badge = document.getElementById('chat-unread-badge');

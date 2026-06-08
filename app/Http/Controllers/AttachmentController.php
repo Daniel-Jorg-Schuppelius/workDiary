@@ -82,6 +82,11 @@ class AttachmentController extends Controller {
             return $this->storeImageMeta($request, $parent, $meta);
         }
 
+        // Anhängen erfordert das Bearbeiten-Recht am Trägerobjekt – nicht nur
+        // dessen Sichtbarkeit. Verhindert, dass ein Org-Benutzer Dateien an
+        // Objekte hängt, die er nicht bearbeiten darf.
+        Gate::authorize('update', $parent);
+
         $request->validate([
             'file' => ['required', 'file', 'max:' . (self::MAX_BYTES / 1024)],
         ]);

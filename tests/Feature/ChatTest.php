@@ -181,4 +181,20 @@ class ChatTest extends TestCase {
         // Mitglied (Owner): Gate erlaubt → Datei fehlt → 404 (kein 403) belegt die Freigabe.
         $this->actingAs($owner)->get($url)->assertNotFound();
     }
+
+    public function test_admin_cannot_access_private_channel_they_are_not_member_of(): void {
+        $owner = $this->member();
+        $admin = User::factory()->admin()->create(['organization_id' => $owner->organization_id]);
+
+        // Privater Kanal, Admin ist KEIN Mitglied.
+        $channel = Channel::create(['organization_id' => $owner->organization_id, 'name' => 'Vertraulich', 'slug' => 'vertraulich', 'type' => 'channel', 'visibility' => 'private', 'created_by' => $owner->id]);
+        $channel->members()->attach($owner->id, ['role' => 'owner', 'joined_at' => now()]);
+
+        $msg = $channel->messages()->create(['user_id' => $owner->id, 'body' => 'geheim', 'type' => 'text']);
+
+        // Admin darf private Inhalte weder lesen noch löschen (kein Admin-Bypass).
+        $this->actingAs($admin)->getJson(route('chat.messages.index', $channel))->assertForbidden();
+        $this->actingAs($admin)->deleteJson(route('chat.messages.destroy', $msg))->assertForbidden();
+        $this->assertDatabaseHas('chat_messages', ['id' => $msg->id]);
+    }
 }

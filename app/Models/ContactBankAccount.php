@@ -53,6 +53,10 @@ class ContactBankAccount extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'is_primary' => 'boolean',
+        // PII at-rest verschlüsselt (Spalten als text, siehe Migration).
+        'account_holder' => 'encrypted',
+        'iban' => 'encrypted',
+        'bic' => 'encrypted',
     ];
 
     /** @return MorphTo<Model, $this> */

@@ -23,6 +23,18 @@ class MessageController extends Controller {
     private const MAX_FILE_KB = 20480; // 20 MB
     private const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'doc', 'docx', 'xls', 'xlsx', 'zip'];
 
+    /** Serverseitig erkannte MIME-Typen (Defense-in-Depth gegen umbenannte Dateien). */
+    private const ALLOWED_MIMES = [
+        'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+        'application/pdf',
+        'text/plain', 'text/csv',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/zip', 'application/x-zip-compressed',
+    ];
+
     /** Cursor-paginierte Top-Level-Nachrichten eines Kanals (JSON mit gerendertem HTML). */
     public function index(Request $request, Channel $channel): JsonResponse {
         Gate::authorize('view', $channel);
@@ -299,6 +311,11 @@ class MessageController extends Controller {
     private function attach(Message $message, \Illuminate\Http\UploadedFile $file): void {
         $ext = strtolower($file->getClientOriginalExtension() ?: (string) $file->extension());
         if (! in_array($ext, self::ALLOWED_EXT, true)) {
+            return;
+        }
+        // Defense-in-Depth: serverseitig erkannten MIME-Typ gegen Allow-List prüfen
+        // (verhindert ausführbare/unerwünschte Inhalte hinter erlaubter Endung).
+        if (! in_array($file->getMimeType() ?? '', self::ALLOWED_MIMES, true)) {
             return;
         }
         $path = $file->storeAs('attachments/chat/' . now()->format('Y/m'), Str::uuid()->toString() . '.' . $ext, 'local');

@@ -68,6 +68,16 @@
         </label>
     </div>
     @endunless
+
+    <div class="fieldset">
+        <label class="fieldset-label">{{ __('Sicherheit') }}</label>
+        <label class="label cursor-pointer justify-start gap-3">
+            <input type="hidden" name="two_factor_required" value="0">
+            <input type="checkbox" name="two_factor_required" value="1" class="toggle toggle-primary"
+                   @checked(old('two_factor_required', $organization?->two_factor_required ?? false))>
+            <span class="label-text">{{ __('Zwei-Faktor-Authentifizierung für alle Mitglieder verpflichtend') }}</span>
+        </label>
+    </div>
 </x-form-group>
 
 @if ($organization)

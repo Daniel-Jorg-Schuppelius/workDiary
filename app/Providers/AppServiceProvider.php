@@ -296,6 +296,15 @@ class AppServiceProvider extends ServiceProvider {
         \Illuminate\Support\Facades\Blade::if('feature', function (string $code): bool {
             return app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled($code);
         });
+
+        // Pro-Request-Nonce für alle @vite-erzeugten Script-Tags. Derselbe Nonce
+        // wird für Inline-Scripts (@cspNonce) und den CSP-Header verwendet.
+        \Illuminate\Support\Facades\Vite::useCspNonce();
+
+        // @cspNonce → nonce="..."-Attribut für Inline-<script>-Tags (CSP).
+        \Illuminate\Support\Facades\Blade::directive('cspNonce', static function (): string {
+            return "<?php \$__n = \\Illuminate\\Support\\Facades\\Vite::cspNonce(); echo \$__n ? 'nonce=\"'.e(\$__n).'\"' : ''; ?>";
+        });
     }
 
     /**

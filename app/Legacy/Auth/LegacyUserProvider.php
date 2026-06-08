@@ -99,11 +99,23 @@ class LegacyUserProvider extends EloquentUserProvider {
         // damit sie nie ueber den internen Guard authentifiziert werden koennen.
         $candidate = parent::retrieveByCredentials(['email' => $username, 'password' => $password]);
 
-        if ($candidate instanceof User && $candidate->customer_id !== null) {
+        // Unbekannter oder als Portal-Account ausgeschlossener Login: Dummy-bcrypt-
+        // Check, damit die Antwortzeit der eines bekannten Logins entspricht
+        // (Schutz gegen User-Enumeration über Timing-Messung).
+        if (! $candidate instanceof User || $candidate->customer_id !== null) {
+            $this->equalizeTiming((string) $password);
+
             return null;
         }
 
         return $candidate;
+    }
+
+    /** Konstante Antwortzeit: ein bcrypt-Vergleich gegen einen festen Dummy-Hash. */
+    private function equalizeTiming(string $password): void {
+        static $dummyHash = null;
+        $dummyHash ??= $this->hasher->make('timing-equalizer');
+        $this->hasher->check($password, $dummyHash);
     }
 
     /** @param array<string, mixed> $credentials */

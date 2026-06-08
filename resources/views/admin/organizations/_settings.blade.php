@@ -17,16 +17,16 @@
 
 <x-form-group :legend="__('Erweiterte Einstellungen')" icon="settings" tone="ghost" cols="1"
               :description="__('settings.hint')"
-              x-data="{ tab: 'pagination' }">
+              x-data="tabs('pagination')">
     <div role="tablist" class="tabs tabs-lifted mb-2">
         @foreach ($tabs as $key => $meta)
-            <a role="tab" class="tab" :class="tab === '{{ $key }}' ? 'tab-active' : ''"
-               @click.prevent="tab = '{{ $key }}'" href="#">{{ $meta['label'] }}</a>
+            <a role="tab" class="tab" :class="tabClass('{{ $key }}')"
+               @click.prevent="setTab('{{ $key }}')" href="#">{{ $meta['label'] }}</a>
         @endforeach
     </div>
 
     {{-- PAGINATION --}}
-    <div x-show="tab === 'pagination'" x-cloak>
+    <div x-show="isTab('pagination')" x-cloak>
         <x-form-group :legend="__('settings.tabs.pagination')" :icon="$tabs['pagination']['icon']" :tone="$tabs['pagination']['tone']" cols="3" compact>
             @foreach ((array) config('pagination') as $k => $v)
                 <div class="fieldset">
@@ -42,7 +42,7 @@
     </div>
 
     {{-- INVOICING --}}
-    <div x-show="tab === 'invoicing'" x-cloak>
+    <div x-show="isTab('invoicing')" x-cloak>
         <x-form-group :legend="__('settings.tabs.invoicing')" :icon="$tabs['invoicing']['icon']" :tone="$tabs['invoicing']['tone']" cols="3" compact>
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('settings.invoicing.default_tax_rate') }}</label>
@@ -69,7 +69,7 @@
     </div>
 
     {{-- UPLOADS --}}
-    <div x-show="tab === 'uploads'" x-cloak>
+    <div x-show="isTab('uploads')" x-cloak>
         <x-form-group :legend="__('settings.tabs.uploads')" :icon="$tabs['uploads']['icon']" :tone="$tabs['uploads']['tone']" cols="2" compact>
             @foreach ((array) config('uploads') as $k => $v)
                 <div class="fieldset">
@@ -84,7 +84,7 @@
     </div>
 
     {{-- VALIDATION --}}
-    <div x-show="tab === 'validation'" x-cloak class="space-y-4">
+    <div x-show="isTab('validation')" x-cloak class="space-y-4">
         @foreach ((array) config('validation') as $group => $fields)
             <x-form-group :legend="__('settings.validation.' . $group . '.heading')" :icon="$tabs['validation']['icon']" :tone="$tabs['validation']['tone']" cols="3" compact>
                 @foreach ((array) $fields as $field => $val)
@@ -102,7 +102,7 @@
     </div>
 
     {{-- NOTIFICATIONS --}}
-    <div x-show="tab === 'notifications'" x-cloak>
+    <div x-show="isTab('notifications')" x-cloak>
         <x-form-group :legend="__('settings.tabs.notifications')" :icon="$tabs['notifications']['icon']" :tone="$tabs['notifications']['tone']" cols="2" compact>
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('settings.notifications.push.body_truncate') }}</label>
@@ -116,7 +116,7 @@
     </div>
 
     {{-- UI --}}
-    <div x-show="tab === 'ui'" x-cloak class="space-y-4">
+    <div x-show="isTab('ui')" x-cloak class="space-y-4">
         @foreach ((array) config('ui') as $group => $fields)
             <x-form-group :legend="__('settings.ui.' . $group . '.heading')" :icon="$tabs['ui']['icon']" :tone="$tabs['ui']['tone']" cols="3" compact>
                 @foreach ((array) $fields as $field => $val)
@@ -134,7 +134,7 @@
     </div>
 
     {{-- ROUTING --}}
-    <div x-show="tab === 'routing'" x-cloak class="space-y-4">
+    <div x-show="isTab('routing')" x-cloak class="space-y-4">
         <x-form-group :legend="__('settings.routing.nominatim.heading')" :icon="$tabs['routing']['icon']" :tone="$tabs['routing']['tone']" cols="2" compact>
             <div class="fieldset md:col-span-2">
                 <label class="fieldset-label">{{ __('settings.routing.nominatim.base_url') }}</label>
@@ -202,18 +202,13 @@
     </div>
 
     {{-- ANFAHRT / TRAVEL --}}
-    <div x-show="tab === 'travel'" x-cloak
-         x-data="{
-            enabled: '{{ old('settings.travel.enabled', data_get($stored, 'travel.enabled', '0')) }}' === '1',
-            mode: '{{ old('settings.travel.mode', data_get($stored, 'travel.mode', 'flat')) }}',
-            kmSource: '{{ old('settings.travel.km_source', data_get($stored, 'travel.km_source', 'company')) }}',
-            roundTrip: '{{ old('settings.travel.round_trip', data_get($stored, 'travel.round_trip', '1')) }}' !== '0'
-         }">
+    <div x-show="isTab('travel')" x-cloak
+         x-data="travelSettings({{ (string) old('settings.travel.enabled', data_get($stored, 'travel.enabled', '0')) === '1' ? 'true' : 'false' }}, '{{ old('settings.travel.mode', data_get($stored, 'travel.mode', 'flat')) }}', '{{ old('settings.travel.km_source', data_get($stored, 'travel.km_source', 'company')) }}', {{ (string) old('settings.travel.round_trip', data_get($stored, 'travel.round_trip', '1')) !== '0' ? 'true' : 'false' }})">
         <x-form-group :legend="__('Anfahrt-Abrechnung')" icon="local_shipping" tone="success" cols="2" compact
                       :description="__('Bei einer Tour zum Kunden an einem Tag wird bei Projekt- oder Materialabrechnung automatisch eine Anfahrt berechnet.')">
             <div class="fieldset md:col-span-2">
                 <label class="label cursor-pointer justify-start gap-3">
-                    <input type="hidden" name="settings[travel][enabled]" :value="enabled ? '1' : '0'">
+                    <input type="hidden" name="settings[travel][enabled]" :value="enabledValue">
                     <input type="checkbox" class="toggle toggle-success" x-model="enabled">
                     <span class="label-text">{{ __('Anfahrt automatisch berechnen') }}</span>
                 </label>
@@ -233,14 +228,14 @@
                        placeholder="Anfahrt" class="input input-bordered w-full">
             </div>
 
-            <div class="fieldset" x-show="mode === 'flat'">
+            <div class="fieldset" x-show="isMode('flat')">
                 <label class="fieldset-label">{{ __('Pauschale (netto €)') }}</label>
                 <input type="number" step="0.01" min="0" name="settings[travel][flat_amount]"
                        value="{{ old('settings.travel.flat_amount', data_get($stored, 'travel.flat_amount', '')) }}"
                        class="input input-bordered w-full">
             </div>
 
-            <template x-if="mode === 'km'">
+            <template x-if="isMode('km')">
                 <div class="contents">
                     <div class="fieldset">
                         <label class="fieldset-label">{{ __('Satz (€/km)') }}</label>
@@ -257,18 +252,18 @@
                     </div>
                     <div class="fieldset md:col-span-2">
                         <label class="label cursor-pointer justify-start gap-3">
-                            <input type="hidden" name="settings[travel][round_trip]" :value="roundTrip ? '1' : '0'">
+                            <input type="hidden" name="settings[travel][round_trip]" :value="roundTripValue">
                             <input type="checkbox" class="toggle toggle-success" x-model="roundTrip">
                             <span class="label-text">{{ __('Hin- und Rückfahrt (×2, nur Firmenstandort)') }}</span>
                         </label>
                     </div>
-                    <div class="fieldset" x-show="kmSource === 'company'">
+                    <div class="fieldset" x-show="isKmSource('company')">
                         <label class="fieldset-label">{{ __('Firmenstandort Breite (lat)') }}</label>
                         <input type="number" step="0.0000001" min="-90" max="90" name="settings[travel][origin_lat]"
                                value="{{ old('settings.travel.origin_lat', data_get($stored, 'travel.origin_lat', '')) }}"
                                class="input input-bordered w-full">
                     </div>
-                    <div class="fieldset" x-show="kmSource === 'company'">
+                    <div class="fieldset" x-show="isKmSource('company')">
                         <label class="fieldset-label">{{ __('Firmenstandort Länge (lng)') }}</label>
                         <input type="number" step="0.0000001" min="-180" max="180" name="settings[travel][origin_lng]"
                                value="{{ old('settings.travel.origin_lng', data_get($stored, 'travel.origin_lng', '')) }}"

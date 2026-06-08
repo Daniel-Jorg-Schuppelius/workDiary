@@ -78,7 +78,7 @@
     </div>
 </form>
 
-<script>
+<script @cspNonce>
     (function () {
         const driver = document.getElementById('driver');
         const sqliteGroup = document.querySelector('[data-driver-group="sqlite"]');

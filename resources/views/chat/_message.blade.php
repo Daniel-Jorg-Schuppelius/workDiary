@@ -69,7 +69,7 @@
                 @endif
                 @if (filled($message->body))
                     {{-- Sicheres HTML inkl. ```Code```/`inline`/@Mentions, siehe App\Support\ChatText --}}
-                    <div class="break-words text-sm leading-relaxed">{!! \App\Support\ChatText::render($message->body) !!}</div>
+                    <div class="wrap-break-word text-sm leading-relaxed">{!! \App\Support\ChatText::render($message->body) !!}</div>
                 @endif
 
                 {{-- Anhänge --}}

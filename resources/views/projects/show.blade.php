@@ -41,86 +41,64 @@
     {{-- Tabs --}}
     <div x-data="projectTabs({{ Js::from(request('tab', 'overview')) }})" class="flex min-h-0 flex-col gap-4">
         <div role="tablist" class="tabs tabs-box w-full sm:w-auto">
-            <button role="tab" @click="setTab('overview')" :class="{ 'tab-active': tab === 'overview' }" class="tab">
+            <button role="tab" @click="setTab('overview')" :class="tabClass('overview')" class="tab">
                 {{ __('Übersicht') }}
             </button>
-            <button role="tab" @click="setTab('tasks')" :class="{ 'tab-active': tab === 'tasks' }" class="tab">
+            <button role="tab" @click="setTab('tasks')" :class="tabClass('tasks')" class="tab">
                 {{ __('Aufgaben') }}
                 @php $openCount = ($taskStats->get('open') ?? 0) + ($taskStats->get('in_progress') ?? 0); @endphp
                 @if ($openCount > 0)
                     <x-status-badge tone="primary" size="xs" class="ml-1">{{ $openCount }}</x-status-badge>
                 @endif
             </button>
-            <button role="tab" @click="setTab('time')" :class="{ 'tab-active': tab === 'time' }" class="tab">
+            <button role="tab" @click="setTab('time')" :class="tabClass('time')" class="tab">
                 {{ __('Zeiterfassung') }}
             </button>
-            <button role="tab" @click="setTab('timesheets')" :class="{ 'tab-active': tab === 'timesheets' }" class="tab">
+            <button role="tab" @click="setTab('timesheets')" :class="tabClass('timesheets')" class="tab">
                 {{ __('Stundenzettel') }}
             </button>
-            <button role="tab" @click="setTab('diary')" :class="{ 'tab-active': tab === 'diary' }" class="tab">
+            <button role="tab" @click="setTab('diary')" :class="tabClass('diary')" class="tab">
                 {{ __('Aufträge') }}
                 @if ($entries->isNotEmpty())
                     <x-status-badge tone="ghost" size="xs" class="ml-1">{{ $entries->count() }}</x-status-badge>
                 @endif
             </button>
-            <button role="tab" @click="setTab('recurrence')" :class="{ 'tab-active': tab === 'recurrence' }" class="tab">
+            <button role="tab" @click="setTab('recurrence')" :class="tabClass('recurrence')" class="tab">
                 {{ __('Wiederkehr') }}
                 @if ($recurrenceRules->isNotEmpty())
                     <x-status-badge tone="ghost" size="xs" class="ml-1">{{ $recurrenceRules->count() }}</x-status-badge>
                 @endif
             </button>
             @if (auth()->user()?->canManageBilling())
-                <button role="tab" @click="setTab('billing')" :class="{ 'tab-active': tab === 'billing' }" class="tab">
+                <button role="tab" @click="setTab('billing')" :class="tabClass('billing')" class="tab">
                     {{ __('Abrechnung') }}
                 </button>
             @endif
         </div>
 
-        <div x-show="tab === 'overview'" x-cloak>
+        <div x-show="isTab('overview')" x-cloak>
             @include('projects._overview_tab')
         </div>
-        <div x-show="tab === 'tasks'" x-cloak>
+        <div x-show="isTab('tasks')" x-cloak>
             @include('projects._tasks_tab')
         </div>
-        <div x-show="tab === 'time'" x-cloak>
+        <div x-show="isTab('time')" x-cloak>
             @include('projects._time_tab')
         </div>
-        <div x-show="tab === 'timesheets'" x-cloak>
+        <div x-show="isTab('timesheets')" x-cloak>
             @include('projects._timesheets_tab')
         </div>
-        <div x-show="tab === 'diary'" x-cloak>
+        <div x-show="isTab('diary')" x-cloak>
             @include('projects._diary_tab')
         </div>
-        <div x-show="tab === 'recurrence'" x-cloak>
+        <div x-show="isTab('recurrence')" x-cloak>
             @include('projects._recurrence_tab')
         </div>
         @if (auth()->user()?->canManageBilling())
-            <div x-show="tab === 'billing'" x-cloak>
+            <div x-show="isTab('billing')" x-cloak>
                 @include('projects._billing_tab')
             </div>
         @endif
     </div>
 </x-page-shell>
-
-<script>
-    function projectTabs(initial) {
-        const allowed = ['overview', 'tasks', 'time', 'timesheets', 'diary', 'recurrence', 'billing'];
-        const fromQuery = new URLSearchParams(window.location.search).get('tab');
-        const fromHash = window.location.hash.replace('#', '');
-        const start = allowed.includes(fromQuery) ? fromQuery
-                    : allowed.includes(initial) ? initial
-                    : allowed.includes(fromHash) ? fromHash
-                    : 'overview';
-        return {
-            tab: start,
-            setTab(name) {
-                this.tab = name;
-                const url = new URL(window.location.href);
-                url.searchParams.set('tab', name);
-                url.hash = '';
-                history.replaceState(null, '', url.toString());
-            }
-        };
-    }
-</script>
 @endsection

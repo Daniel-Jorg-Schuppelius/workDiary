@@ -21,9 +21,8 @@
     </div>
 
     @if ($current)
-        <div class="mt-2 flex flex-wrap items-center justify-between gap-1.5" x-data="{ s: 0 }" x-init="s = Math.max(0, Math.floor((Date.now() - new Date('{{ $current->started_at?->toIso8601String() }}').getTime())/1000)); setInterval(() => s++, 1000);">
-            <div class="font-['Space_Grotesk'] text-lg font-bold tabular-nums text-success"
-                 x-text="String(Math.floor(s/3600)).padStart(2,'0') + ':' + String(Math.floor((s%3600)/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0')">00:00:00</div>
+        <div class="mt-2 flex flex-wrap items-center justify-between gap-1.5" x-data="stopwatch('{{ $current->started_at?->toIso8601String() }}')">
+            <div class="font-['Space_Grotesk'] text-lg font-bold tabular-nums text-success" x-text="display">00:00:00</div>
 
             <div class="ml-auto flex flex-wrap items-center justify-end gap-1.5">
                 <form method="POST" action="{{ route('attendance.clock-out') }}" class="flex flex-wrap items-center justify-end gap-1.5">

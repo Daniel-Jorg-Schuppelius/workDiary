@@ -30,32 +30,7 @@
 
 @section('content')
     <x-page-shell
-        x-data="{
-            isLive: {{ $isLive ? 'true' : 'false' }},
-            baseAttendance: {{ $attendanceMinutes }},
-            entriesMin: {{ $entriesMinutes }},
-            target: {{ $targetMinutes }},
-            renderedAt: new Date('{{ $renderedAt }}').getTime(),
-            now: Date.now(),
-            get extraMinutes() {
-                if (! this.isLive) return 0;
-                return Math.max(0, Math.floor((this.now - this.renderedAt) / 60000));
-            },
-            get attendanceMin() { return this.baseAttendance + this.extraMinutes; },
-            get untrackedMin() { return Math.max(0, this.attendanceMin - this.entriesMin); },
-            get balance() { return this.attendanceMin - this.target; },
-            get progress() {
-                return this.target > 0
-                    ? Math.min(100, Math.round(this.attendanceMin / this.target * 100))
-                    : 0;
-            },
-            fmt(m) {
-                var sign = m < 0 ? '-' : '';
-                var abs = Math.abs(m);
-                return sign + Math.floor(abs / 60) + ':' + String(abs % 60).padStart(2, '0') + ' h';
-            },
-        }"
-        x-init="if (isLive) { setInterval(() => { now = Date.now(); }, 1000); }">
+        x-data="todayCounters({{ $isLive ? 'true' : 'false' }}, {{ $attendanceMinutes }}, {{ $entriesMinutes }}, {{ $targetMinutes }}, '{{ $renderedAt }}')">
         <x-slot:toolbar>
             <x-page-toolbar :subtitle="$day->translatedFormat('l, d.m.Y')">
                 <x-slot:actions>
@@ -86,18 +61,18 @@
             <div class="rounded-box border border-success/40 bg-base-100 px-4 py-3 shadow-xs">
                 <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ __('Anwesenheit') }}</p>
                 <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-success"
-                   x-text="fmt(attendanceMin)">{{ $fmt($attendanceMinutes) }}</p>
+                   x-text="attendanceFmt">{{ $fmt($attendanceMinutes) }}</p>
             </div>
 
             <x-kpi-tile :label="__('Erfasst')" :value="$fmt($entriesMinutes)" tone="info" />
 
             {{-- Unverteilt-Tile: leitet sich aus Anwesenheit ab, also auch live. --}}
             <div class="rounded-box border bg-base-100 px-4 py-3 shadow-xs"
-                 :class="untrackedMin > 0 ? 'border-warning/40' : 'border-base-300'">
+                 :class="untrackedBorderClass">
                 <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ __('Unverteilt') }}</p>
                 <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold"
-                   :class="untrackedMin > 0 ? 'text-warning' : 'text-base-content'"
-                   x-text="fmt(untrackedMin)">{{ $fmt($untrackedMinutes) }}</p>
+                   :class="untrackedTextClass"
+                   x-text="untrackedFmt">{{ $fmt($untrackedMinutes) }}</p>
             </div>
 
             @include('attendances._panel', ['current' => $current])
@@ -107,16 +82,16 @@
             <div class="flex flex-wrap items-center justify-between gap-2">
                 <h2 class="font-['Space_Grotesk'] text-sm font-semibold uppercase tracking-widest text-base-content/60">{{ __('Tagesfortschritt') }}</h2>
                 <span class="text-xs text-base-content/60">
-                    <span x-text="fmt(attendanceMin)">{{ $fmt($attendanceMinutes) }}</span>
+                    <span x-text="attendanceFmt">{{ $fmt($attendanceMinutes) }}</span>
                     / {{ $fmt($targetMinutes) }}
                     (<span x-text="progress">{{ $progress }}</span>%)
                     · {{ __('Saldo') }}:
-                    <strong :class="balance >= 0 ? 'text-success' : 'text-error'"
-                            x-text="fmt(balance)">{{ $fmt($balance) }}</strong>
+                    <strong :class="balanceTextClass"
+                            x-text="balanceFmt">{{ $fmt($balance) }}</strong>
                 </span>
             </div>
             <progress class="progress mt-2 w-full"
-                      :class="balance >= 0 ? 'progress-success' : 'progress-warning'"
+                      :class="balanceProgressClass"
                       :value="progress"
                       max="100"
                       value="{{ $progress }}"></progress>

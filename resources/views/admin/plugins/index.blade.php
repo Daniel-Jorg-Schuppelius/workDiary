@@ -170,7 +170,7 @@
 </x-index-page>
 
 @push('scripts')
-<script>
+<script @cspNonce>
 (function () {
     var STATUS_TONE = { ok: 'success', degraded: 'warning', failing: 'error' };
     var STATUS_TITLE = {

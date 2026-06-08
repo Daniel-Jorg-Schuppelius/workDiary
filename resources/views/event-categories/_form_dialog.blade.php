@@ -68,16 +68,13 @@
         <p class="text-xs opacity-70 mb-2">
             {{ __('Minuten vor Beginn — pro Eintrag eine Zeile (z. B. 10080 = 1 Woche, 1440 = 1 Tag, 60 = 1 Stunde).') }}
         </p>
-        <div x-data="{
-            items: {{ json_encode(old('reminder_offsets', $category?->reminder_offsets ?? [10080, 1440, 60])) }},
-            add() { this.items.push(60); },
-            remove(i) { this.items.splice(i, 1); },
-        }" class="space-y-2">
+        @php($reminderOffsetItems = old('reminder_offsets', $category?->reminder_offsets ?? [10080, 1440, 60]))
+        <div x-data="reminderOffsets" data-items="{{ json_encode($reminderOffsetItems) }}" class="space-y-2">
             <template x-for="(it, i) in items" :key="i">
                 <div class="flex items-center gap-2">
                     <input type="number" min="0"
-                           :name="`reminder_offsets[${i}]`"
-                           x-model.number="items[i]"
+                           :name="fieldName(i)"
+                           x-model.number="it.value"
                            class="input input-sm input-bordered w-32 font-mono">
                     <span class="opacity-70 text-xs">{{ __('Minuten') }}</span>
                     <x-icon-btn icon="close" tone="error" type="button" :label="__('Entfernen')" @click="remove(i)" />

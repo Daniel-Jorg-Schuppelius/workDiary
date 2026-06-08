@@ -49,19 +49,13 @@
     :method="$project ? 'PUT' : 'POST'"
     :form-data="['data-entry-form' => '']"
     :submit-label="$project ? __('Speichern') : __('Anlegen')">
-    <div x-data="{
-              parentId: @js((string) old('parent_id', $project?->parent_id ?? '')),
-              parentCustomers: @js($parentCustomerSqids),
-              customerId: @js($initialCustomerSqid),
-              foreignCustomersByCustomer: @js($foreignCustomersByCustomer),
-              foreignCustomerId: @js($initialForeignCustomerSqid),
-              get hasParent() { return this.parentId !== '' && this.parentId !== null; },
-              get parentCustomerId() { return this.hasParent ? (this.parentCustomers[this.parentId] ?? '') : ''; },
-              get effectiveCustomerId() { return this.hasParent ? this.parentCustomerId : this.customerId; },
-              get availableForeignCustomers() { return this.foreignCustomersByCustomer[this.effectiveCustomerId] ?? []; },
-          }"
-         x-effect="if (hasParent && parentCustomerId) { customerId = String(parentCustomerId); }
-                   if (!availableForeignCustomers.some(fc => fc.sqid === foreignCustomerId)) { foreignCustomerId = ''; }"
+    <div x-data="projectForm"
+          data-parent-id="{{ (string) old('parent_id', $project?->parent_id ?? '') }}"
+          data-parent-customers="{{ json_encode($parentCustomerSqids) }}"
+          data-customer-id="{{ $initialCustomerSqid }}"
+          data-foreign-customers="{{ json_encode($foreignCustomersByCustomer) }}"
+          data-foreign-customer-id="{{ $initialForeignCustomerSqid }}"
+         x-effect="sync()"
          class="space-y-4">
         @if ($isDialog)
             <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
@@ -99,7 +93,7 @@
                 @error('parent_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
             </div>
 
-            <div class="fieldset" x-show="!hasParent" x-cloak>
+            <div class="fieldset" x-show="noParent" x-cloak>
                 <label class="fieldset-label">{{ __('Kunde') }}</label>
                 <select name="customer_id" class="select select-bordered w-full" x-ref="customerSelect" x-model="customerId" :disabled="hasParent">
                     <option value="">{{ __('— Kein Kunde —') }}</option>
@@ -112,13 +106,13 @@
                 @error('customer_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
             </div>
 
-            <div class="fieldset" x-show="!hasParent && availableForeignCustomers.length > 0" x-cloak>
+            <div class="fieldset" x-show="showForeignCustomer" x-cloak>
                 <label class="fieldset-label">{{ __('Fremdkunde') }}</label>
                 <select name="foreign_customer_id" class="select select-bordered w-full"
                         x-model="foreignCustomerId" :disabled="hasParent">
                     <option value="">{{ __('— Kein Fremdkunde —') }}</option>
                     <template x-for="fc in availableForeignCustomers" :key="fc.sqid">
-                        <option :value="fc.sqid" x-text="fc.name" :selected="fc.sqid === foreignCustomerId"></option>
+                        <option :value="fc.sqid" x-text="fc.name" :selected="isSelectedForeign(fc)"></option>
                     </template>
                 </select>
                 @error('foreign_customer_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
@@ -190,7 +184,7 @@
         </x-form-group>
 
         @if (auth()->user()?->canManageBilling())
-            <x-form-group :legend="__('Abrechnung')" icon="payments" tone="warning" x-show="!hasParent" x-cloak>
+            <x-form-group :legend="__('Abrechnung')" icon="payments" tone="warning" x-show="noParent" x-cloak>
                 <div class="fieldset">
                     <label class="label cursor-pointer justify-start gap-2">
                         <input type="hidden" name="is_default" value="0">

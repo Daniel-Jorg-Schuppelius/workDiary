@@ -177,7 +177,9 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    // Sicherer Default: in Produktion HTTPS-only Cookies erzwingen, auch wenn
+    // SESSION_SECURE_COOKIE in der .env vergessen wurde. Lokal (http) bleibt es aus.
+    'secure' => env('SESSION_SECURE_COOKIE', env('APP_ENV') === 'production'),
 
     /*
     |--------------------------------------------------------------------------

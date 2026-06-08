@@ -37,6 +37,23 @@ class SecurityHeaders {
         return $response;
     }
 
+    /**
+     * script-src je nach Konfiguration: streng (Nonce) oder kompatibel
+     * (unsafe-inline, bis alle Inline-Scripts produktiv per Browser verifiziert
+     * wurden). 'unsafe-eval' bleibt immer (Alpine.js Standard-Build).
+     */
+    private function scriptSrc(): string {
+        $nonce = \Illuminate\Support\Facades\Vite::cspNonce();
+        if (config('security.csp_script_nonce', false) && is_string($nonce) && $nonce !== '') {
+            // Stufe 1: Nonce ersetzt 'unsafe-inline'. 'unsafe-eval' bleibt, solange
+            // Alpine im Standard-Build läuft. Beim Wechsel auf @alpinejs/csp (Stufe 2)
+            // kann 'unsafe-eval' hier ebenfalls entfernt werden.
+            return "script-src 'self' 'nonce-{$nonce}' 'unsafe-eval'";
+        }
+
+        return "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
+    }
+
     private function buildCsp(Request $request): string {
         // Vite Dev-Server (HMR) im non-prod Modus zulassen.
         $viteDev = app()->environment('production')
@@ -66,8 +83,11 @@ class SecurityHeaders {
             // Tailwind/daisyUI sind kompiliert; inline Styles für Alpine x-bind/Color-Tokens noch erlaubt.
             // Fonts (IBM Plex Sans, Space Grotesk, Material Symbols) werden lokal aus dem App-Bundle ausgeliefert.
             "style-src 'self' 'unsafe-inline'" . $viteDev,
-            // Inline-Scripts in Auth-/Legacy-Views vorhanden; bis Refactor kompatibel halten.
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'" . $viteDev,
+            // script-src: Sobald config security.csp_script_nonce aktiv ist, wird
+            // 'unsafe-inline' durch ein Pro-Request-Nonce ersetzt (echtes XSS-Netz).
+            // 'unsafe-eval' bleibt: Alpine.js (Standard-Build) benötigt es.
+            // Alle Inline-Scripts tragen via @cspNonce bereits das Nonce.
+            $this->scriptSrc() . $viteDev,
             "img-src 'self' data: blob:" . $imgHosts,
             // Webfonts werden im Production-Build aus /build/assets/ geladen.
             // Im Dev-Modus liefert Vite die Fonts unter $viteDev aus

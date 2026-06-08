@@ -10,22 +10,30 @@
 
 namespace App\Policies\Chat;
 
+use App\Models\Chat\Channel;
 use App\Models\Chat\Message;
 use App\Models\User;
-use App\Policies\Concerns\HasAdminBypass;
 
 class MessagePolicy {
-    use HasAdminBypass;
+    // KEIN pauschaler Admin-Bypass: in privaten Kanälen/DMs haben Admins ohne
+    // Mitgliedschaft keinen Zugriff. Inhalte bearbeiten darf nur der Autor selbst;
+    // Löschen (Moderation) zusätzlich Admins in ÖFFENTLICHEN Kanälen.
 
-    /** Eigene Nachricht bearbeiten. */
+    /** Eigene Nachricht bearbeiten (auch Admins nicht fremde Inhalte). */
     public function update(User $user, Message $message): bool {
         return $message->user_id === $user->id;
     }
 
-    /** Eigene Nachricht oder als Kanal-Eigentümer löschen. */
+    /** Eigene Nachricht, Kanal-Eigentümer, oder Admin in öffentlichem Kanal. */
     public function delete(User $user, Message $message): bool {
+        $channel = $message->channel;
+
         return $message->user_id === $user->id
-            || ($message->channel?->isOwner($user) ?? false);
+            || ($channel?->isOwner($user) ?? false)
+            || ($channel instanceof Channel
+                && $user->isAdmin()
+                && $channel->type === 'channel'
+                && $channel->visibility === 'public');
     }
 
     /** Anpinnen: jedes Kanal-Mitglied. */

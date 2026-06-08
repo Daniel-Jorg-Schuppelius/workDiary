@@ -35,47 +35,42 @@
         ->map(fn ($v) => (string) $v)->values()->all();
     $tagPickerNew = collect(preg_split('/[,;\n]+/', (string) old($newName, '')) ?: [])
         ->map(fn ($v) => trim((string) $v))->filter()->values()->all();
+    $tagPickerConfig = ['all' => $tagPickerAll, 'selectedIds' => $tagPickerSelected, 'recentIds' => $tagPickerRecent, 'initialNew' => $tagPickerNew, 'quickLimit' => 8, 'allowCreate' => (bool) $allowCreate];
 @endphp
 
 <div {{ $attributes->merge(['class' => 'fieldset']) }}
-     x-data="tagPicker({
-         all: @js($tagPickerAll),
-         selectedIds: @js($tagPickerSelected),
-         recentIds: @js($tagPickerRecent),
-         initialNew: @js($tagPickerNew),
-         quickLimit: 8,
-         allowCreate: {{ $allowCreate ? 'true' : 'false' }},
-     })"
-     @click.outside="open = false">
+     x-data="tagPicker"
+     data-config="{{ json_encode($tagPickerConfig) }}"
+     @click.outside="close()">
 
     {{-- Versteckte Felder für den Submit --}}
-    <template x-for="id in existingIds" :key="'eid-' + id">
+    <template x-for="id in existingIds" :key="id">
         <input type="hidden" name="{{ $name }}[]" :value="id">
     </template>
-    <input type="hidden" name="{{ $newName }}" :value="newNames.join(', ')">
+    <input type="hidden" name="{{ $newName }}" :value="newNamesText">
 
     {{-- Ausgewählte Tags als entfernbare Chips --}}
-    <div class="flex flex-wrap gap-2" x-show="selected.length" x-cloak>
+    <div class="flex flex-wrap gap-2" x-show="hasSelected" x-cloak>
         <template x-for="tag in selected" :key="tag.key">
             <span class="badge gap-1"
-                  :class="tag.isNew ? 'badge-success' : 'badge-primary'"
-                  :style="tag.color ? `background-color:${tag.color};border-color:${tag.color};color:#fff` : ''">
+                  :class="chipClass(tag)"
+                  :style="chipStyle(tag)">
                 <span x-text="tag.name"></span>
                 <button type="button" class="opacity-70 hover:opacity-100"
-                        :aria-label="tag.name + ' {{ __('entfernen') }}'"
+                        aria-label="{{ __('Tag entfernen') }}"
                         @click="remove(tag)">&times;</button>
             </span>
         </template>
     </div>
 
     {{-- Schnellauswahl: zuletzt verwendete Tags --}}
-    <div class="flex flex-wrap gap-2 mt-2" x-show="quickPicks.length" x-cloak>
-        <template x-for="tag in quickPicks" :key="'q-' + tag.id">
+    <div class="flex flex-wrap gap-2 mt-2" x-show="hasQuickPicks" x-cloak>
+        <template x-for="tag in quickPicks" :key="tag.id">
             <button type="button"
                     class="badge badge-outline transition-colors hover:bg-primary hover:border-primary hover:text-primary-content"
                     @click="addExisting(tag)">
                 <span x-show="tag.color" class="inline-block w-2 h-2 rounded-full mr-1"
-                      :style="`background:${tag.color}`"></span>
+                      :style="dotStyle(tag)"></span>
                 <span x-text="tag.name"></span>
             </button>
         </template>
@@ -85,33 +80,33 @@
     <div class="relative mt-2">
         <input type="text"
                x-model="query"
-               @focus="open = true"
-               @input="open = true; highlight = 0"
+               @focus="openMenu()"
+               @input="onInput()"
                @keydown.enter.prevent="enterPressed()"
                @keydown.arrow-down.prevent="move(1)"
                @keydown.arrow-up.prevent="move(-1)"
-               @keydown.escape="open = false"
+               @keydown.escape="close()"
                autocomplete="off"
                class="input input-bordered input-sm w-full"
                placeholder="{{ __('Tag suchen oder neuen Tag eingeben…') }}">
 
-        <ul x-show="open && (filtered.length || canCreate)" x-cloak x-transition.opacity
+        <ul x-show="showMenu" x-cloak x-transition.opacity
             class="menu menu-sm absolute z-30 mt-1 w-full max-h-56 flex-nowrap overflow-y-auto rounded-box border border-base-300 bg-base-100 shadow-lg">
-            <template x-for="(tag, idx) in filtered" :key="'f-' + tag.id">
+            <template x-for="(tag, idx) in filtered" :key="tag.id">
                 <li>
                     <button type="button"
-                            :class="idx === highlight ? 'active' : ''"
-                            @mouseenter="highlight = idx"
+                            :class="optionClass(idx)"
+                            @mouseenter="setHighlight(idx)"
                             @click="addExisting(tag)">
                         <span x-show="tag.color" class="inline-block w-2 h-2 rounded-full"
-                              :style="`background:${tag.color}`"></span>
+                              :style="dotStyle(tag)"></span>
                         <span x-text="tag.name"></span>
                     </button>
                 </li>
             </template>
             <li x-show="canCreate">
                 <button type="button" class="text-success" @click="createNew()">
-                    <span>{{ __('Neu anlegen:') }} „<span x-text="query.trim()"></span>"</span>
+                    <span>{{ __('Neu anlegen:') }} „<span x-text="queryTrimmed"></span>"</span>
                 </button>
             </li>
         </ul>

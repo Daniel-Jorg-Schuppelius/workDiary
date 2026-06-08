@@ -108,7 +108,7 @@
 
     @once
         @push('scripts')
-            <script>
+            <script @cspNonce>
                 (function () {
                     var PRESET_LABELS = {
                         today: @json(__('Heute')),

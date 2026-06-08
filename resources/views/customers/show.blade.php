@@ -232,18 +232,18 @@
 
     {{-- Auswertung pro Kunde --}}
     @isset($statsTotal)
-        <x-card x-data="{ tab: 'month' }">
+        <x-card x-data="tabs('month')">
             <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
                     <x-icon name="analytics" class="text-base-content/60" /> {{ __('Auswertung') }}
                 </h2>
                 <div role="tablist" class="tabs tabs-boxed tabs-sm">
-                    <button role="tab" class="tab" :class="{ 'tab-active': tab === 'month' }" @click="tab = 'month'">{{ __('Aktueller Monat') }}</button>
-                    <button role="tab" class="tab" :class="{ 'tab-active': tab === 'total' }" @click="tab = 'total'">{{ __('Gesamt') }}</button>
+                    <button role="tab" class="tab" :class="tabClass('month')" @click="setTab('month')">{{ __('Aktueller Monat') }}</button>
+                    <button role="tab" class="tab" :class="tabClass('total')" @click="setTab('total')">{{ __('Gesamt') }}</button>
                 </div>
             </div>
             @foreach (['month' => $statsMonth, 'total' => $statsTotal] as $key => $set)
-                <div x-show="tab === '{{ $key }}'" x-cloak>
+                <div x-show="isTab('{{ $key }}')" x-cloak>
                     <div class="mb-3 grid grid-cols-2 gap-3 text-sm">
                         <div class="rounded-box bg-base-200 p-3">
                             <div class="text-xs text-base-content/60">{{ __('Stunden gesamt') }}</div>

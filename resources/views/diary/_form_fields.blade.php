@@ -41,21 +41,11 @@
 @endphp
 
 <div
-    x-data="{
-        entryTypeId: @js($defaultEntryTypeSqid),
-        flagsMap: @js($entryTypeFlags),
-        flags: @js($initialFlags),
-        mode: @js($defaultMode),
-        onTypeChange() {
-            const id = String(this.entryTypeId || '0');
-            const next = this.flagsMap[id] ?? {
-                requires_customer: false, requires_address: false, requires_schedule: false,
-                requires_tour: false, allow_priority: false, allow_tour: false,
-                default_service_minutes: null, default_priority: null, default_status: 2,
-            };
-            this.flags = next;
-        },
-    }"
+    x-data="diaryEntryForm"
+    data-entry-type="{{ $defaultEntryTypeSqid }}"
+    data-flags-map='@json($entryTypeFlags)'
+    data-flags='@json($initialFlags)'
+    data-mode="{{ $defaultMode }}"
     class="space-y-4"
 >
 
@@ -102,7 +92,7 @@
             @enderror
         </div>
 
-        <div class="fieldset" x-show="entryTypeId !== '0' && entryTypeId !== ''" x-cloak>
+        <div class="fieldset" x-show="hasEntryType" x-cloak>
             <label class="fieldset-label" for="title">{{ __('Titel') }}</label>
             <input
                 type="text"
@@ -116,7 +106,7 @@
             @error('title')<p class="text-error text-sm">{{ $message }}</p>@enderror
         </div>
 
-        <div class="fieldset" x-show="flags.allow_priority" x-cloak>
+        <div class="fieldset" x-show="allowPriority" x-cloak>
             <label class="fieldset-label" for="priority">{{ __('Priorität') }}</label>
             <select id="priority" name="priority" class="select select-bordered w-full @error('priority') select-error @enderror">
                 <option value="">—</option>
@@ -207,7 +197,7 @@
     </div>
 
     {{-- Fester Zeitraum --}}
-    <div class="fieldset md:col-span-2" x-show="mode === '{{ \App\Enums\Diary\Mode::Fixed->value }}'" x-cloak>
+    <div class="fieldset md:col-span-2" x-show="isMode('{{ \App\Enums\Diary\Mode::Fixed->value }}')" x-cloak>
         <label class="fieldset-label">{{ __('Zeitraum') }}</label>
         <x-date-range
             type="datetime-local"
@@ -225,7 +215,7 @@
     </div>
 
     {{-- Deadline --}}
-    <div class="fieldset md:col-span-2" x-show="mode === '{{ \App\Enums\Diary\Mode::Deadline->value }}'" x-cloak>
+    <div class="fieldset md:col-span-2" x-show="isMode('{{ \App\Enums\Diary\Mode::Deadline->value }}')" x-cloak>
         <label class="fieldset-label" for="due_date">{{ __('Fällig bis') }}</label>
         <input
             type="date"
@@ -238,7 +228,7 @@
     </div>
 
     {{-- Zeitfenster --}}
-    <div class="fieldset md:col-span-2" x-show="mode === '{{ \App\Enums\Diary\Mode::Window->value }}'" x-cloak>
+    <div class="fieldset md:col-span-2" x-show="isMode('{{ \App\Enums\Diary\Mode::Window->value }}')" x-cloak>
         <label class="fieldset-label">{{ __('Zeitfenster (Datum von/bis)') }}</label>
         <x-date-range
             type="date"
@@ -256,13 +246,13 @@
     </div>
 
     {{-- Backlog: keine Datumsfelder --}}
-    <div class="fieldset md:col-span-2" x-show="mode === '{{ \App\Enums\Diary\Mode::Backlog->value }}'" x-cloak>
+    <div class="fieldset md:col-span-2" x-show="isMode('{{ \App\Enums\Diary\Mode::Backlog->value }}')" x-cloak>
         <p class="text-sm text-base-content/60">{{ __('Kein Datum erfasst — erscheint im Backlog und kann später terminiert werden.') }}</p>
     </div>
 </x-form-group>
 
 {{-- Kunde / zugewiesener Benutzer (typabhängig) --}}
-<template x-if="flags.requires_customer">
+<template x-if="requiresCustomer">
     <x-form-group :legend="__('Kunde & Zuweisung')" icon="badge" tone="secondary" cols="2">
         <div class="fieldset">
             <label class="fieldset-label" for="customer_id">{{ __('Kunde') }}</label>
@@ -299,7 +289,7 @@
 </template>
 
 {{-- Termin / Zeitfenster / Servicedauer --}}
-<template x-if="flags.requires_schedule">
+<template x-if="requiresSchedule">
     <x-form-group :legend="__('Termin & Servicezeit')" icon="event" tone="info" cols="3">
         <div class="fieldset">
             <label class="fieldset-label" for="scheduled_for">{{ __('Datum') }}</label>
@@ -355,7 +345,7 @@
 </template>
 
 {{-- Adresse --}}
-<template x-if="flags.requires_address">
+<template x-if="requiresAddress">
     <x-form-group :legend="__('Adresse')" icon="location_on" tone="warning" cols="2">
         <div class="fieldset md:col-span-2">
             <label class="fieldset-label" for="address_line">{{ __('Straße & Nummer') }}</label>
@@ -408,7 +398,7 @@
 </template>
 
 {{-- Tour-Zuordnung --}}
-<template x-if="flags.allow_tour">
+<template x-if="allowTour">
     <x-form-group :legend="__('Tour')" icon="route" tone="accent" cols="2">
         <div class="fieldset">
             <label class="fieldset-label" for="tour_id">{{ __('Tour') }}</label>
@@ -447,46 +437,41 @@
         // Bei Validierungsfehlern eingegebene neue Tags wiederherstellen.
         $tagPickerNew = collect(preg_split('/[,;\n]+/', (string) old('new_tags', '')) ?: [])
             ->map(fn ($v) => trim((string) $v))->filter()->values()->all();
+        $tagPickerConfig = ['all' => $tagPickerAll, 'selectedIds' => $tagPickerSelected, 'recentIds' => $tagPickerRecent, 'initialNew' => $tagPickerNew, 'quickLimit' => 8, 'allowCreate' => true];
     @endphp
     <div class="fieldset"
-         x-data="tagPicker({
-             all: @js($tagPickerAll),
-             selectedIds: @js($tagPickerSelected),
-             recentIds: @js($tagPickerRecent),
-             initialNew: @js($tagPickerNew),
-             quickLimit: 8,
-             allowCreate: true,
-         })"
-         @click.outside="open = false">
+         x-data="tagPicker"
+         data-config="{{ json_encode($tagPickerConfig) }}"
+         @click.outside="close()">
 
         {{-- Versteckte Felder für den Submit --}}
-        <template x-for="id in existingIds" :key="'eid-' + id">
+        <template x-for="id in existingIds" :key="id">
             <input type="hidden" name="tag_ids[]" :value="id">
         </template>
-        <input type="hidden" name="new_tags" :value="newNames.join(', ')">
+        <input type="hidden" name="new_tags" :value="newNamesText">
 
         {{-- Ausgewählte Tags als entfernbare Chips --}}
-        <div class="flex flex-wrap gap-2" x-show="selected.length" x-cloak>
+        <div class="flex flex-wrap gap-2" x-show="hasSelected" x-cloak>
             <template x-for="tag in selected" :key="tag.key">
                 <span class="badge gap-1"
-                      :class="tag.isNew ? 'badge-success' : 'badge-primary'"
-                      :style="tag.color ? `background-color:${tag.color};border-color:${tag.color};color:#fff` : ''">
+                      :class="chipClass(tag)"
+                      :style="chipStyle(tag)">
                     <span x-text="tag.name"></span>
                     <button type="button" class="opacity-70 hover:opacity-100"
-                            :aria-label="tag.name + ' {{ __('entfernen') }}'"
+                            aria-label="{{ __('Tag entfernen') }}"
                             @click="remove(tag)">&times;</button>
                 </span>
             </template>
         </div>
 
         {{-- Schnellauswahl: zuletzt verwendete Tags --}}
-        <div class="flex flex-wrap gap-2 mt-2" x-show="quickPicks.length" x-cloak>
-            <template x-for="tag in quickPicks" :key="'q-' + tag.id">
+        <div class="flex flex-wrap gap-2 mt-2" x-show="hasQuickPicks" x-cloak>
+            <template x-for="tag in quickPicks" :key="tag.id">
                 <button type="button"
                         class="badge badge-outline transition-colors hover:bg-primary hover:border-primary hover:text-primary-content"
                         @click="addExisting(tag)">
                     <span x-show="tag.color" class="inline-block w-2 h-2 rounded-full mr-1"
-                          :style="`background:${tag.color}`"></span>
+                          :style="dotStyle(tag)"></span>
                     <span x-text="tag.name"></span>
                 </button>
             </template>
@@ -496,33 +481,33 @@
         <div class="relative mt-2">
             <input type="text"
                    x-model="query"
-                   @focus="open = true"
-                   @input="open = true; highlight = 0"
+                   @focus="openMenu()"
+                   @input="onInput()"
                    @keydown.enter.prevent="enterPressed()"
                    @keydown.arrow-down.prevent="move(1)"
                    @keydown.arrow-up.prevent="move(-1)"
-                   @keydown.escape="open = false"
+                   @keydown.escape="close()"
                    autocomplete="off"
                    class="input input-bordered input-sm w-full"
                    placeholder="{{ __('Tag suchen oder neuen Tag eingeben…') }}">
 
-            <ul x-show="open && (filtered.length || canCreate)" x-cloak x-transition.opacity
+            <ul x-show="showMenu" x-cloak x-transition.opacity
                 class="menu menu-sm absolute z-30 mt-1 w-full max-h-56 flex-nowrap overflow-y-auto rounded-box border border-base-300 bg-base-100 shadow-lg">
-                <template x-for="(tag, idx) in filtered" :key="'f-' + tag.id">
+                <template x-for="(tag, idx) in filtered" :key="tag.id">
                     <li>
                         <button type="button"
-                                :class="idx === highlight ? 'active' : ''"
-                                @mouseenter="highlight = idx"
+                                :class="optionClass(idx)"
+                                @mouseenter="setHighlight(idx)"
                                 @click="addExisting(tag)">
                             <span x-show="tag.color" class="inline-block w-2 h-2 rounded-full"
-                                  :style="`background:${tag.color}`"></span>
+                                  :style="dotStyle(tag)"></span>
                             <span x-text="tag.name"></span>
                         </button>
                     </li>
                 </template>
                 <li x-show="canCreate">
                     <button type="button" class="text-success" @click="createNew()">
-                        <span>{{ __('Neu anlegen:') }} „<span x-text="query.trim()"></span>"</span>
+                        <span>{{ __('Neu anlegen:') }} „<span x-text="queryTrimmed"></span>"</span>
                     </button>
                 </li>
             </ul>

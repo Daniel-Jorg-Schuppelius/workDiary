@@ -1087,6 +1087,16 @@
         justify-content: flex-end;
     }
 
+    /* Footer-Buttons sind teils in <form class="inline"> gewrappt (POST-Aktionen
+       wie Löschen/Archivieren). Als reines inline-Element bekäme die Form eine
+       Zeilenbox und säße minimal höher als direkte Buttons. Als inline-flex wird
+       sie zum gleichhohen Flex-Item → alle Footer-Buttons fluchten auf einer Höhe. */
+    .wd-dialog__footer-extra > form,
+    .wd-dialog__footer-actions > form {
+        display: inline-flex;
+        align-items: center;
+    }
+
     /* ── Header-Actions (Toggle/Color oben rechts, vor Close-Button) ── */
     .wd-dialog__header-actions {
         display: inline-flex;

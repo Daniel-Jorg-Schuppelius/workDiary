@@ -39,7 +39,7 @@
     </div>
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Eigentum') }} *</label>
-        <select name="ownership" required class="select select-bordered w-full" x-model="ownership">
+        <select name="ownership" required class="select select-bordered w-full" x-model="value">
             @foreach ($ownerships as $o)
                 <option value="{{ $o->value }}" @selected(old('ownership', $vehicle?->ownership?->value ?? 'owned') === $o->value)>{{ $o->label() }}</option>
             @endforeach
@@ -89,7 +89,7 @@
     </div>
 </x-form-group>
 
-<div x-show="ownership === 'rental'" x-cloak>
+<div x-show="is('rental')" x-cloak>
     <x-form-group :legend="__('Mietvertrag')" icon="key" tone="warning" cols="2">
         <div class="fieldset">
             <label class="fieldset-label">{{ __('Anbieter') }}</label>

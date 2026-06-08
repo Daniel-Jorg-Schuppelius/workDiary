@@ -70,7 +70,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Role> $roles
  * @property-read \Illuminate\Database\Eloquent\Collection<int, SpatiePermission> $permissions
  */
-#[Hidden(['password', 'remember_token'])]
+#[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasAttachments, HasFactory, HasRoles, HasSqid, Notifiable;
@@ -81,6 +81,11 @@ class User extends Authenticatable {
         }
 
         return LegacyRoleResolver::isAdmin($this);
+    }
+
+    /** Zwei-Faktor-Authentifizierung aktiv (Secret bestätigt). */
+    public function hasTwoFactorEnabled(): bool {
+        return $this->two_factor_confirmed_at !== null && filled($this->two_factor_secret);
     }
 
     /**
@@ -191,6 +196,12 @@ class User extends Authenticatable {
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'two_factor_secret' => 'encrypted',
+        'two_factor_recovery_codes' => 'encrypted:array',
+        'two_factor_confirmed_at' => 'datetime',
+        // Sensible Personenkennungen at-rest verschlüsselt (Spalten als text).
+        'tax_identification_number' => 'encrypted',
+        'social_security_number' => 'encrypted',
         'must_change_password' => 'boolean',
         'is_new_system' => 'boolean',
         'payroll_hourly_wage' => 'decimal:2',

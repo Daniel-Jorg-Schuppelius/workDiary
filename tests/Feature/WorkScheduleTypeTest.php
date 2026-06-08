@@ -114,7 +114,7 @@ class WorkScheduleTypeTest extends TestCase {
             ->get(route('users.work-schedule.edit', $member))
             ->assertOk()
             ->assertSee('name="schedule_type"', false)
-            ->assertSee('wsForm(', false)
+            ->assertSee('x-data="wsForm"', false)
             ->assertSee(__('work_schedule.type.per_weekday'));
     }
 

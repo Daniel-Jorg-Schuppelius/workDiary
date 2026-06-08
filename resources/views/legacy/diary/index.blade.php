@@ -221,7 +221,7 @@
                     </div>
                 </form>
             </div>
-            <script>
+            <script @cspNonce>
                 (function () {
                     const form = document.getElementById('bulk-form');
                     if (!form) return;

@@ -30,20 +30,7 @@
         <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
     @endif
 
-    <div x-data="{
-            start: @js(old('start_date', $sickLeave?->start_date?->format('Y-m-d') ?? $prefillStart)),
-            end:   @js(old('end_date',   $sickLeave?->end_date?->format('Y-m-d')   ?? $prefillEnd)),
-            kind:  @js($currentKind),
-            threshold: {{ $auThreshold }},
-            hasExisting: {{ $existing->isNotEmpty() ? 'true' : 'false' }},
-            get days() {
-                if (!this.start || !this.end) return 0;
-                const s = new Date(this.start), e = new Date(this.end);
-                if (isNaN(s) || isNaN(e) || e < s) return 0;
-                return Math.round((e - s) / 86400000) + 1;
-            },
-            get requiresAu() { return !this.hasExisting && this.days >= this.threshold; },
-        }">
+    <div x-data="sickLeaveForm(@js(old('start_date', $sickLeave?->start_date?->format('Y-m-d') ?? $prefillStart)), @js(old('end_date', $sickLeave?->end_date?->format('Y-m-d') ?? $prefillEnd)), @js($currentKind), {{ $auThreshold }}, {{ $existing->isNotEmpty() ? 'true' : 'false' }})">
 
     @if ($canAssignOthers && $assignableUsers->isNotEmpty())
         <x-form-group :legend="__('Zuordnung')" icon="person" tone="primary">
@@ -68,7 +55,7 @@
             </select>
         </div>
 
-        <div class="fieldset" x-show="kind === '{{ \App\Enums\Sickness\SickLeaveKind::FollowUp->value }}'" x-cloak>
+        <div class="fieldset" x-show="isKind('{{ \App\Enums\Sickness\SickLeaveKind::FollowUp->value }}')" x-cloak>
             <label class="fieldset-label" for="sick-follow">{{ __('Vorausgehende Krankmeldung') }} *</label>
             <select id="sick-follow" name="follow_up_for_id" class="select select-bordered w-full">
                 <option value="">{{ __('Bitte wählen …') }}</option>

@@ -124,7 +124,7 @@
     ]);
 @endphp
 
-<script>
+<script @cspNonce>
 window.__scheduleConfig = {
     isAdmin: {{ $isAdmin ? 'true' : 'false' }},
     currentUserId: @json(auth()->user()?->sqid),

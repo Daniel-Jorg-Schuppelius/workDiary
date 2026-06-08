@@ -157,7 +157,7 @@
     @endif
 </div>
 
-<script>
+<script @cspNonce>
 (function () {
     var KEY  = 'workDiaryWeekCalFit';
     var btn  = document.getElementById('wd-week-fit-btn');
@@ -239,7 +239,7 @@
     <a href="#" class="block rounded-md px-3 py-2 hover:bg-base-200" data-wd-menu-kind="shift" data-entry-modal-trigger>{{ __('Bereitschaft') }}</a>
     <a href="#" class="block rounded-md px-3 py-2 hover:bg-base-200" data-wd-menu-kind="assignment" data-entry-modal-trigger>{{ __('Notdienst') }}</a>
 </div>
-<script>
+<script @cspNonce>
 (function () {
     var menu = document.getElementById('wd-week-create-menu');
     if (!menu) return;

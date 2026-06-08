@@ -133,7 +133,7 @@
 @endif
 
 @push('scripts')
-<script>
+<script @cspNonce>
     (() => {
         const root = document.currentScript.previousElementSibling?.closest('dialog') || document;
         const catSelect = root.querySelector('[data-expense-category]');

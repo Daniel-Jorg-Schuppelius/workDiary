@@ -12,13 +12,21 @@ namespace App\Policies\Chat;
 
 use App\Models\Chat\Channel;
 use App\Models\User;
-use App\Policies\Concerns\HasAdminBypass;
 
 class ChannelPolicy {
-    use HasAdminBypass;
+    // KEIN pauschaler Admin-Bypass: private Kanäle und Direktnachrichten bleiben
+    // auch für Plattform-Admins vertraulich (Zugriff nur als Mitglied). Admins
+    // dürfen lediglich ÖFFENTLICHE Kanäle moderieren (adminMayModerate()).
 
     public function viewAny(User $user): bool {
         return true;
+    }
+
+    /** Admin-Moderation ausschließlich in öffentlichen Kanälen (nie privat/DM). */
+    private function adminMayModerate(User $user, Channel $channel): bool {
+        return $user->isAdmin()
+            && $channel->type === 'channel'
+            && $channel->visibility === 'public';
     }
 
     /** Sichtbar für Mitglieder; öffentliche Kanäle für alle der Organisation. */
@@ -44,15 +52,15 @@ class ChannelPolicy {
     }
 
     public function update(User $user, Channel $channel): bool {
-        return $channel->isOwner($user);
+        return $channel->isOwner($user) || $this->adminMayModerate($user, $channel);
     }
 
     public function delete(User $user, Channel $channel): bool {
-        return $channel->isOwner($user);
+        return $channel->isOwner($user) || $this->adminMayModerate($user, $channel);
     }
 
-    /** Mitglieder verwalten/einladen: Eigentümer. */
+    /** Mitglieder verwalten/einladen: Eigentümer (oder Admin in öffentlichem Kanal). */
     public function manageMembers(User $user, Channel $channel): bool {
-        return $channel->isOwner($user);
+        return $channel->isOwner($user) || $this->adminMayModerate($user, $channel);
     }
 }

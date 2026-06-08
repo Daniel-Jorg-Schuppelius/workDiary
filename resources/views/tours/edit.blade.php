@@ -209,7 +209,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script @cspNonce>
         (function () {
             const list = document.querySelector('[data-stop-list]');
             if (!list) {

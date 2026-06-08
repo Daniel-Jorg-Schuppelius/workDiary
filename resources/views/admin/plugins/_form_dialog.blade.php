@@ -57,21 +57,13 @@
     @endif
 
     {{-- Sofort-Healthcheck (testet die aktuell gespeicherte Konfiguration). --}}
-    <div class="mt-1" x-data="{ testing: false, result: null }">
-        <button type="button" class="btn btn-ghost btn-xs" :disabled="testing"
-            @click="testing = true; result = null;
-                fetch('{{ route('admin.plugins.health-check', $plugin->id()) }}', {
-                    method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
-                }).then(r => r.json()).then(d => { result = d; })
-                  .catch(() => { result = { status: 'failing', message: '{{ __('Verbindung fehlgeschlagen.') }}' }; })
-                  .finally(() => { testing = false; })">
-            <span x-show="!testing">{{ __('Verbindung testen') }}</span>
+    <div class="mt-1" x-data="pluginHealthCheck('{{ route('admin.plugins.health-check', $plugin->id()) }}', '{{ csrf_token() }}', '{{ __('Verbindung fehlgeschlagen.') }}')">
+        <button type="button" class="btn btn-ghost btn-xs" :disabled="testing" @click="run()">
+            <span x-show="idle">{{ __('Verbindung testen') }}</span>
             <span x-show="testing" x-cloak>{{ __('Wird geprüft …') }}</span>
         </button>
         <template x-if="result">
-            <span class="ml-2 text-sm"
-                  x-text="result.status + (result.message ? ' — ' + result.message : '') + (result.latency_ms != null ? ' (' + result.latency_ms + 'ms)' : '')"></span>
+            <span class="ml-2 text-sm" x-text="resultText"></span>
         </template>
     </div>
 

@@ -36,16 +36,12 @@ class DiaryWebRoutesTest extends TestCase {
         $response->assertOk();
 
         $content = (string) $response->getContent();
-        $flagsMapStart = strpos($content, 'flagsMap:');
-        $flagsStart = strpos($content, 'flags:', (int) $flagsMapStart + 1);
 
-        $this->assertNotFalse($flagsMapStart);
-        $this->assertNotFalse($flagsStart);
+        // flagsMap liegt jetzt im data-flags-map-Attribut (CSP-Build), nicht mehr im Inline-x-data.
+        $this->assertStringContainsString('data-flags-map=', $content);
+        $this->assertStringContainsString($type->sqid, $content);
 
-        $flagsMap = substr($content, (int) $flagsMapStart, (int) $flagsStart - (int) $flagsMapStart);
-
-        $this->assertStringContainsString($type->sqid, $flagsMap);
-        $this->assertStringContainsString('\u0022requires_customer\u0022:true', $flagsMap);
+        $this->assertStringContainsString('"requires_customer":true', $content);
     }
 
     public function test_store_persists_customer_supplied_as_sqid(): void {

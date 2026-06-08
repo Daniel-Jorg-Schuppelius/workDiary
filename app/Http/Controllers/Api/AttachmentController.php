@@ -50,6 +50,9 @@ class AttachmentController extends Controller {
         $class = self::TYPE_MAP[$type] ?? abort(404);
         $parent = $class::findOrFail($id);
 
+        // Anhängen erfordert das Bearbeiten-Recht am Trägerobjekt (nicht nur Sichtbarkeit).
+        Gate::authorize('update', $parent);
+
         $request->validate(['file' => ['required', 'file', 'max:' . (self::MAX_BYTES / 1024)]]);
         $file = $request->file('file');
         $ext = strtolower($file->getClientOriginalExtension() ?: $file->extension());

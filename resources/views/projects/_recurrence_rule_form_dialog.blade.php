@@ -105,7 +105,7 @@
     <x-form-group :legend="__('Wiederholung')" icon="event_repeat" tone="accent" cols="3">
         <div class="fieldset">
             <label class="fieldset-label">{{ __('Häufigkeit') }} *</label>
-            <select name="frequency" required class="select select-bordered w-full" x-data x-init="$watch('$el.value', () => {})">
+            <select name="frequency" required class="select select-bordered w-full">
                 @php($currentFrequency = old('frequency', $rule->frequency?->value ?? 'weekly'))
                 @foreach (\App\Enums\Recurrence\RecurrenceFrequency::cases() as $freq)
                     <option value="{{ $freq->value }}" @selected($currentFrequency === $freq->value)>{{ $freq->label() }}</option>

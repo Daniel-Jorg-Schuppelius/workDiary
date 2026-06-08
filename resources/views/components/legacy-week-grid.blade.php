@@ -124,7 +124,7 @@
     </div>
 </div>
 
-<script>
+<script @cspNonce>
 (function () {
     var scroll  = document.getElementById('{{ $scrollId }}');
     var table   = document.getElementById('{{ $tableId }}');

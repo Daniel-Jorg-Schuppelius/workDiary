@@ -78,22 +78,25 @@
             'customer_id' => $r->customer_id !== null ? (int) $r->customer_id : null,
         ])->values(),
     ];
+
+    $pickerConfig = [
+        'data' => $pickerData,
+        'initial' => [
+            'customer_id' => $selectedCustomerId !== null && $selectedCustomerId !== '' ? (int) $selectedCustomerId : null,
+            'foreign_customer_id' => $selectedForeignCustomerId !== null && $selectedForeignCustomerId !== '' ? (int) $selectedForeignCustomerId : null,
+            'site_id' => $selectedSiteId !== null && $selectedSiteId !== '' ? (int) $selectedSiteId : null,
+            'building_id' => $selectedBuildingId !== null && $selectedBuildingId !== '' ? (int) $selectedBuildingId : null,
+            'floor_id' => $selectedFloorId !== null && $selectedFloorId !== '' ? (int) $selectedFloorId : null,
+            'room_id' => $selectedRoomId !== null && $selectedRoomId !== '' ? (int) $selectedRoomId : null,
+        ],
+        'withRoom' => (bool) $withRoom,
+        'withForeignCustomer' => (bool) $withForeignCustomer,
+    ];
 @endphp
 
 <div
-    x-data="facilityPicker({
-        data: {{ Js::from($pickerData) }},
-        initial: {
-            customer_id: @js($selectedCustomerId !== null && $selectedCustomerId !== '' ? (int) $selectedCustomerId : null),
-            foreign_customer_id: @js($selectedForeignCustomerId !== null && $selectedForeignCustomerId !== '' ? (int) $selectedForeignCustomerId : null),
-            site_id:     @js($selectedSiteId     !== null && $selectedSiteId     !== '' ? (int) $selectedSiteId     : null),
-            building_id: @js($selectedBuildingId !== null && $selectedBuildingId !== '' ? (int) $selectedBuildingId : null),
-            floor_id:    @js($selectedFloorId    !== null && $selectedFloorId    !== '' ? (int) $selectedFloorId    : null),
-            room_id:     @js($selectedRoomId     !== null && $selectedRoomId     !== '' ? (int) $selectedRoomId     : null),
-        },
-        withRoom: @js((bool) $withRoom),
-        withForeignCustomer: @js((bool) $withForeignCustomer),
-    })"
+    x-data="facilityPicker"
+    data-config="{{ json_encode($pickerConfig) }}"
     class="contents"
 >
     @if ($withCustomer)
@@ -103,20 +106,20 @@
                     class="select select-bordered w-full @error($customerName) select-error @enderror">
                 <option :value="null">{{ __('— ohne Kunde —') }}</option>
                 <template x-for="c in data.customers" :key="c.id">
-                    <option :value="c.id" x-text="c.name" :selected="c.id === customer_id"></option>
+                    <option :value="c.id" x-text="c.name"></option>
                 </template>
             </select>
             @error($customerName)<p class="text-error text-sm">{{ $message }}</p>@enderror
         </div>
 
         @if ($withForeignCustomer)
-            <div class="fieldset" x-show="customer_id != null && filteredForeignCustomers.length > 0" x-cloak>
+            <div class="fieldset" x-show="hasForeignCustomers" x-cloak>
                 <label class="fieldset-label">{{ __('Fremdkunde') }}</label>
                 <select name="{{ $foreignCustomerName }}" x-model.number="foreign_customer_id"
                         class="select select-bordered w-full @error($foreignCustomerName) select-error @enderror">
                     <option :value="null">{{ __('— ohne Fremdkunde —') }}</option>
                     <template x-for="fc in filteredForeignCustomers" :key="fc.id">
-                        <option :value="fc.id" x-text="fc.name" :selected="fc.id === foreign_customer_id"></option>
+                        <option :value="fc.id" x-text="fc.name"></option>
                     </template>
                 </select>
                 @error($foreignCustomerName)<p class="text-error text-sm">{{ $message }}</p>@enderror
@@ -130,7 +133,7 @@
                 class="select select-bordered w-full">
             <option :value="null">{{ __('— bitte wählen —') }}</option>
             <template x-for="s in filteredSites" :key="s.id">
-                <option :value="s.id" x-text="s.name" :selected="s.id === site_id"></option>
+                <option :value="s.id" x-text="s.name"></option>
             </template>
         </select>
     </div>
@@ -141,7 +144,7 @@
                 class="select select-bordered w-full">
             <option :value="null">{{ __('— bitte wählen —') }}</option>
             <template x-for="b in filteredBuildings" :key="b.id">
-                <option :value="b.id" x-text="b.name" :selected="b.id === building_id"></option>
+                <option :value="b.id" x-text="b.name"></option>
             </template>
         </select>
     </div>
@@ -153,7 +156,7 @@
                     class="select select-bordered w-full @error($floorName) select-error @enderror">
                 <option :value="null">{{ __('— bitte wählen —') }}</option>
                 <template x-for="f in filteredFloors" :key="f.id">
-                    <option :value="f.id" x-text="`${f.label} (${f.level})`" :selected="f.id === floor_id"></option>
+                    <option :value="f.id" x-text="`${f.label} (${f.level})`"></option>
                 </template>
             </select>
             @error($floorName)<p class="text-error text-sm">{{ $message }}</p>@enderror
@@ -167,7 +170,7 @@
                     class="select select-bordered w-full @error($roomName) select-error @enderror">
                 <option :value="null">{{ __('— ohne Raum —') }}</option>
                 <template x-for="r in filteredRooms" :key="r.id">
-                    <option :value="r.id" x-text="r.name" :selected="r.id === room_id"></option>
+                    <option :value="r.id" x-text="r.name"></option>
                 </template>
             </select>
             @error($roomName)<p class="text-error text-sm">{{ $message }}</p>@enderror

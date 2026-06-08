@@ -98,12 +98,14 @@ class Organization extends Model {
         'trial_ends_at',
         'is_demo',
         'demo_seeded_at',
+        'two_factor_required',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
         'settings' => 'array',
         'is_active' => 'boolean',
+        'two_factor_required' => 'boolean',
         'trial_ends_at' => 'datetime',
         'deactivated_at' => 'datetime',
         'is_demo' => 'boolean',

@@ -81,26 +81,25 @@
         </div>
 
         {{-- Tabs --}}
-        <div x-data="{ tab: (localStorage.getItem('wd-dash-tab') || 'overview') }"
-             x-init="$watch('tab', v => localStorage.setItem('wd-dash-tab', v))"
+        <div x-data="persistedTabs('wd-dash-tab', 'overview')"
              class="space-y-4">
             <div role="tablist" class="tabs tabs-box flex-nowrap self-start overflow-x-auto">
-                <button type="button" role="tab" class="tab gap-1.5 whitespace-nowrap" :class="{ 'tab-active': tab === 'overview' }" @click="tab = 'overview'">
+                <button type="button" role="tab" class="tab gap-1.5 whitespace-nowrap" :class="tabClass('overview')" @click="setTab('overview')">
                     <x-icon name="dashboard" /> <span>{{ __('Überblick') }}</span>
                 </button>
-                <button type="button" role="tab" class="tab gap-1.5 whitespace-nowrap" :class="{ 'tab-active': tab === 'tasks' }" @click="tab = 'tasks'">
+                <button type="button" role="tab" class="tab gap-1.5 whitespace-nowrap" :class="tabClass('tasks')" @click="setTab('tasks')">
                     <x-icon name="checklist" /> <span>{{ __('Aufgaben') }}</span>
                 </button>
-                <button type="button" role="tab" class="tab gap-1.5 whitespace-nowrap" :class="{ 'tab-active': tab === 'activity' }" @click="tab = 'activity'">
+                <button type="button" role="tab" class="tab gap-1.5 whitespace-nowrap" :class="tabClass('activity')" @click="setTab('activity')">
                     <x-icon name="forum" /> <span>{{ __('Aktivität') }}</span>
                 </button>
-                <button type="button" role="tab" class="tab gap-1.5 whitespace-nowrap" :class="{ 'tab-active': tab === 'finance' }" @click="tab = 'finance'">
+                <button type="button" role="tab" class="tab gap-1.5 whitespace-nowrap" :class="tabClass('finance')" @click="setTab('finance')">
                     <x-icon name="payments" /> <span>{{ __('Finanzen & Reisen') }}</span>
                 </button>
             </div>
 
             {{-- ── Tab: Überblick ───────────────────────────────────────────── --}}
-            <div x-show="tab === 'overview'" x-cloak class="space-y-4">
+            <div x-show="isTab('overview')" x-cloak class="space-y-4">
                 @if ($team)
                     <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
                         <x-kpi-tile :label="__('Offen (Team)')" :value="$team['kpi']['open_entries']" tone="info" />
@@ -204,7 +203,7 @@
             </div>
 
             {{-- ── Tab: Aufgaben ────────────────────────────────────────────── --}}
-            <div x-show="tab === 'tasks'" x-cloak class="grid gap-4 lg:grid-cols-2">
+            <div x-show="isTab('tasks')" x-cloak class="grid gap-4 lg:grid-cols-2">
                 @if (isset($user['open_issues_assigned']))
                     <x-card>
                         <div class="mb-3 flex items-center justify-between gap-2">
@@ -271,7 +270,7 @@
             </div>
 
             {{-- ── Tab: Aktivität ───────────────────────────────────────────── --}}
-            <div x-show="tab === 'activity'" x-cloak class="grid gap-4 lg:grid-cols-2">
+            <div x-show="isTab('activity')" x-cloak class="grid gap-4 lg:grid-cols-2">
                 <x-card>
                     <h3 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
                         <x-icon name="comment" class="text-info" /> {{ __('Neue Kommentare auf meinen Einträgen') }}
@@ -333,7 +332,7 @@
             </div>
 
             {{-- ── Tab: Finanzen & Reisen ───────────────────────────────────── --}}
-            <div x-show="tab === 'finance'" x-cloak class="space-y-4">
+            <div x-show="isTab('finance')" x-cloak class="space-y-4">
                 <p class="font-['Space_Grotesk'] text-sm font-semibold uppercase tracking-[0.2em] text-base-content/60">
                     {{ __('Monat') }} · {{ $finance['month']['label'] ?? '' }}
                 </p>

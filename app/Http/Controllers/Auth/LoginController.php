@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\Auth\Concerns\ResolvesWorkMode;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\{Auth, DB, RateLimiter};
 use Illuminate\View\View;
 
 class LoginController extends Controller {
+    use ResolvesWorkMode;
+
     private const MAX_LOGIN_ATTEMPTS = 5;
 
     public function showLoginForm(): View {
@@ -47,32 +50,23 @@ class LoginController extends Controller {
 
             /** @var User|null $user */
             $user = Auth::user();
-            $legacyConfigured = filled(config('database.connections.legacy.database'));
-            $sessionMode = (string) session('work_mode', 'legacy');
 
-            // Modus an die tatsächlichen Zugriffsrechte des Benutzers
-            // anpassen. Sonst landet ein Legacy-only-User u. U. auf einer
-            // Route hinter `access.new` (oder umgekehrt) und sieht eine
-            // 403-Meldung statt seiner Startseite.
-            $canLegacy = $legacyConfigured && ($user?->canAccessLegacy() ?? true);
-            $canNew = $user?->canAccessNew() ?? true;
+            // Zwei-Faktor aktiv: noch NICHT voll einloggen. Identität wird in der
+            // Session geparkt und erst nach erfolgreicher Code-Eingabe vollendet.
+            if ($user instanceof User && $user->hasTwoFactorEnabled()) {
+                $remember = $request->boolean('remember');
+                Auth::logout();
+                $request->session()->put('auth.2fa.id', $user->getKey());
+                $request->session()->put('auth.2fa.remember', $remember);
 
-            if ($sessionMode === 'legacy' && ! $canLegacy && $canNew) {
-                $sessionMode = 'new';
-            } elseif ($sessionMode === 'new' && ! $canNew && $canLegacy) {
-                $sessionMode = 'legacy';
-            } elseif (! $canLegacy && ! $canNew) {
-                // Konsistenter Fallback: HomeController zeigt dann eine
-                // erklärende Seite ohne 403-Modal.
-                $sessionMode = 'legacy';
+                return redirect()->route('two-factor.login');
             }
-            $request->session()->put('work_mode', $sessionMode);
 
-            $defaultRoute = ($sessionMode === 'legacy' && $canLegacy)
-                ? route('legacy.diary.index')
-                : ($canNew ? route('diary.index') : route('home'));
+            if ($user instanceof User) {
+                return $this->applyWorkModeAndRedirect($request, $user);
+            }
 
-            return redirect()->intended($defaultRoute);
+            return redirect()->intended(route('home'));
         }
 
         RateLimiter::hit($throttleKey, 60);

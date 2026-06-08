@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Admin\Access;
 
+use App\Enums\User\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\{Organization, User, UserGroup};
 use App\Support\SortableQuery;
@@ -86,15 +87,33 @@ class MemberController extends Controller {
             'groups.*' => ['integer'],
         ]);
 
+        $teamForeign = config('permission.column_names.team_foreign_key', 'team_id');
+
         // Nur Rollen, die zur Org bzw. global gehören, dürfen zugewiesen werden.
         $validRoles = Role::query()
             ->whereIn('id', $data['roles'] ?? [])
-            ->where(function ($q) use ($member): void {
-                $teamForeign = config('permission.column_names.team_foreign_key', 'team_id');
+            ->where(function ($q) use ($member, $teamForeign): void {
                 $q->whereNull($teamForeign)
                     ->orWhere($teamForeign, $member->organization_id);
             })
             ->get();
+
+        // Eskalationsschutz: Die globale System-Rolle "admin" (plattformweiter
+        // Zugriff, auch org-übergreifend) darf NUR ein echter Plattform-Admin
+        // vergeben oder entziehen — nicht ein delegierter access.manage-Verwalter.
+        $auth = Auth::user();
+        $adminRole = Role::query()->where('name', UserRole::Admin->value)->whereNull($teamForeign)->first();
+        if ($adminRole instanceof Role && ! ($auth instanceof User && $auth->isAdmin())) {
+            $validRoles = $validRoles->reject(fn (Role $r): bool => $r->is($adminRole));
+            $hadAdmin = \Illuminate\Support\Facades\DB::table(config('permission.table_names.model_has_roles', 'model_has_roles'))
+                ->where('role_id', $adminRole->id)
+                ->where('model_id', $member->getKey())
+                ->where('model_type', $member->getMorphClass())
+                ->exists();
+            if ($hadAdmin) {
+                $validRoles->push($adminRole);
+            }
+        }
 
         $member->syncRoles($validRoles);
 
@@ -117,13 +136,24 @@ class MemberController extends Controller {
         $org = $this->currentOrganization();
         $teamForeign = config('permission.column_names.team_foreign_key', 'team_id');
 
-        return Role::query()
+        $roles = Role::query()
             ->where(function ($q) use ($teamForeign, $org): void {
                 $q->whereNull($teamForeign)
                     ->orWhere($teamForeign, $org->id);
             })
             ->orderBy('name')
             ->get();
+
+        // Die globale System-Rolle "admin" nur echten Plattform-Admins zur
+        // Auswahl anbieten (Server-Guard in update() ist die eigentliche Grenze).
+        $auth = Auth::user();
+        if (! ($auth instanceof User && $auth->isAdmin())) {
+            $roles = $roles->reject(
+                fn (Role $r): bool => $r->name === UserRole::Admin->value && $r->getAttribute($teamForeign) === null
+            )->values();
+        }
+
+        return $roles;
     }
 
     private function currentOrganization(): Organization {

@@ -175,7 +175,7 @@
     </div>
 </div>
 </div>
-<script>
+<script @cspNonce>
 (function () {
     var scroll  = document.getElementById('week-scroll');
     var table   = document.getElementById('week-table');

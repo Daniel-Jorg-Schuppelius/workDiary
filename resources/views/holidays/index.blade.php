@@ -131,7 +131,7 @@
     </div>
 </x-index-page>
 
-<script>
+<script @cspNonce>
     (function () {
         var tabs = document.querySelectorAll('[data-holiday-tab]');
         var panes = document.querySelectorAll('[data-holiday-pane]');

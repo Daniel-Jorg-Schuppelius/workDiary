@@ -24,6 +24,7 @@
                     <a href="{{ route('customer.diary.index') }}" class="hover:underline">{{ __('Auftragsbuch') }}</a>
                     <a href="{{ route('customer.time-entries.index') }}" class="hover:underline">{{ __('Zeiten') }}</a>
                     <a href="{{ route('customer.invoices.index') }}" class="hover:underline">{{ __('Rechnungen') }}</a>
+                    <a href="{{ route('customer.2fa.show') }}" class="hover:underline" title="{{ __('Zwei-Faktor-Authentifizierung') }}">{{ __('Sicherheit') }}</a>
                     <form method="POST" action="{{ route('customer.logout') }}">
                         @csrf
                         <button type="submit" class="btn btn-ghost btn-sm">
