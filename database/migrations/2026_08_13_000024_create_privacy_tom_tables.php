@@ -35,7 +35,8 @@ return new class extends Migration {
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->index(['organization_id', 'implementation_status']);
+            // Kurzer expliziter Indexname (MySQL-Limit 64).
+            $table->index(['organization_id', 'implementation_status'], 'ptm_org_impl_index');
             $table->index('next_review_at');
         });
 

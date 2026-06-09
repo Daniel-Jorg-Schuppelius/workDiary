@@ -40,7 +40,7 @@ return new class extends Migration {
             $table->timestamps();
 
             $table->index(['organization_id', 'status']);
-            $table->index(['organization_id', 'requirement_key']);
+            $table->index(['organization_id', 'requirement_key'], 'pcf_org_reqkey_index');
         });
     }
 
