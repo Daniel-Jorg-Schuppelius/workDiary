@@ -91,6 +91,16 @@ class TwoFactorTest extends TestCase {
         $this->assertTrue($user->fresh()->hasTwoFactorEnabled());
     }
 
+    public function test_setup_page_renders_inline_svg_qr_not_data_uri(): void {
+        $user = User::factory()->user()->create(['is_new_system' => true]);
+        $this->actingAs($user)->post(route('account.2fa.enable'));
+
+        $response = $this->actingAs($user)->get(route('account.2fa.show'));
+        $response->assertOk();
+        $response->assertSee('<svg', false);     // echtes Inline-SVG eingebettet
+        $response->assertDontSee('data:image');  // KEIN data:-URI (alter Bug)
+    }
+
     public function test_org_required_redirects_user_without_2fa_to_setup(): void {
         $user = User::factory()->user()->create(['is_new_system' => true]);
         $user->organization?->forceFill(['two_factor_required' => true])->save();
