@@ -19,6 +19,13 @@ return [
     // darf in produktiven Kundeninstallationen niemals gesetzt sein.
     'private_key' => env('LICENSE_PRIVATE_KEY', ''),
 
+    // Optional: Pfad zu einer Schlüssel-Datei (z. B. license-keys.env), aus der der
+    // Private Key gelesen wird (Format: LICENSE_PRIVATE_KEY=<base64>). Ermöglicht das
+    // Ausstellen von Lizenzen in der Oberfläche, ohne den Key in die Haupt-.env zu legen.
+    // Absolut oder relativ zum Projekt-Root. Nur auf einer vertrauenswürdigen Herausgeber-
+    // Instanz setzen – wer den Key lesen kann, kann beliebige Lizenzen signieren.
+    'private_key_path' => env('LICENSE_PRIVATE_KEY_FILE', ''),
+
     // Optional: Lizenzschlüssel direkt aus der .env (z. B. für SaaS-Instanzen
     // unter eigener Kontrolle). Hat Vorrang vor der Datei im Storage.
     'key' => env('LICENSE_KEY'),

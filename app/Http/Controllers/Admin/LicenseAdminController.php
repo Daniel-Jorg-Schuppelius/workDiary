@@ -52,7 +52,71 @@ class LicenseAdminController extends Controller {
             'orgBadgeTone' => $orgLicense !== null ? $this->badgeTone($orgLicense) : 'neutral',
             'orgExpiresIn' => $orgLicense !== null ? $this->expiresInDays($orgLicense) : null,
             'orgModules' => $this->orgModules($orgLicense),
+            'canIssue' => $this->service->canIssue(),
+            'moduleCodes' => $this->moduleCodes(),
         ]);
+    }
+
+    /**
+     * Alle buchbaren Modul-Codes (module.*) aus dem Katalog – fuer die Add-on-Auswahl.
+     *
+     * @return list<string>
+     */
+    private function moduleCodes(): array {
+        $codes = [];
+        foreach ((array) config('plans.tiers.enterprise', []) as $code) {
+            $code = (string) $code;
+            if (str_starts_with($code, 'module.')) {
+                $codes[] = $code;
+            }
+        }
+        sort($codes);
+
+        return $codes;
+    }
+
+    public function issueOrg(Request $request): RedirectResponse {
+        Gate::authorize(Permission::PlatformLicenseInstall->value);
+
+        /** @var User $user */
+        $user = $request->user();
+        $org = $user->organization;
+        abort_if($org === null, Response::HTTP_NOT_FOUND);
+        abort_unless($this->service->canIssue(), Response::HTTP_FORBIDDEN);
+
+        $data = $request->validate([
+            'licensee' => ['required', 'string', 'max:255'],
+            'plan' => ['required', \Illuminate\Validation\Rule::in(['free', 'pro', 'enterprise'])],
+            'addons' => ['array'],
+            'addons.*' => ['string', \Illuminate\Validation\Rule::in($this->moduleCodes())],
+            'expires' => ['nullable', 'date'],
+        ]);
+
+        /** @var list<string> $addons */
+        $addons = array_values($data['addons'] ?? []);
+        $result = $this->service->issueForOrganization(
+            $org,
+            (string) $data['plan'],
+            $addons,
+            $data['expires'] ?? null,
+            (string) $data['licensee'],
+        );
+        $this->resolver->flush();
+
+        if (! $result->isUsable()) {
+            return back()->withErrors(['issue' => __('Lizenz konnte nicht erstellt werden: ') . ($result->message ?? $result->status->value)]);
+        }
+
+        AuditLog::query()->create([
+            'organization_id' => $org->id,
+            'user_id' => $user->id,
+            'event' => 'license.orgIssued',
+            'auditable_type' => Organization::class,
+            'auditable_id' => $org->id,
+            'changes' => ['license_id' => $result->payload?->licenseId, 'plan' => $result->payload?->plan, 'addons' => $addons],
+        ]);
+
+        return back()->with('success', __('Lizenz erstellt & installiert. Plan: ') . (string) $data['plan']);
     }
 
     /**

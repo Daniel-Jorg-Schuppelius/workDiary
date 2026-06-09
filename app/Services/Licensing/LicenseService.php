@@ -141,6 +141,83 @@ class LicenseService {
         $this->safeCacheCall(fn() => $this->cache->forget(self::CACHE_KEY . ':org:' . (string) $org->getKey()));
     }
 
+    /** Ed25519 Private Key (raw) aus Config oder Schlüssel-Datei, oder null. */
+    public function privateKey(): ?string {
+        $b64 = trim((string) config('license.private_key', ''));
+        if ($b64 === '') {
+            $path = (string) config('license.private_key_path', '');
+            if ($path !== '') {
+                $full = str_starts_with($path, '/') ? $path : base_path($path);
+                if ($this->files->exists($full)) {
+                    $b64 = $this->extractEnvValue((string) $this->files->get($full), 'LICENSE_PRIVATE_KEY');
+                }
+            }
+        }
+        if ($b64 === '') {
+            return null;
+        }
+
+        $key = self::b64Decode($b64);
+
+        return ($key !== null && strlen($key) === SODIUM_CRYPTO_SIGN_SECRETKEYBYTES) ? $key : null;
+    }
+
+    /** Kann diese Instanz Lizenzen ausstellen (Private Key vorhanden)? */
+    public function canIssue(): bool {
+        return $this->privateKey() !== null;
+    }
+
+    private function extractEnvValue(string $contents, string $key): string {
+        $lines = preg_split('/\r\n|\r|\n/', $contents);
+        foreach ($lines !== false ? $lines : [] as $line) {
+            $line = trim($line);
+            if (str_starts_with($line, $key . '=')) {
+                return trim(substr($line, strlen($key) + 1), " \t\"'");
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Signiert eine org-gebundene Lizenz und installiert sie direkt. Nur auf einer
+     * Herausgeber-Instanz (Private Key vorhanden) sinnvoll.
+     *
+     * @param  array<int,string>  $addons
+     */
+    public function issueForOrganization(
+        Organization $org,
+        string $plan,
+        array $addons,
+        ?string $expires,
+        string $licensee,
+        ?int $maxUsers = null,
+    ): LicenseResult {
+        $private = $this->privateKey();
+        if ($private === null || $private === '') {
+            return LicenseResult::fail(LicenseStatus::PublicKeyMissing, 'Kein Private Key konfiguriert.');
+        }
+
+        $payload = [
+            'license_id' => bin2hex(random_bytes(8)),
+            'licensee' => $licensee,
+            'issued_at' => CarbonImmutable::now()->toIso8601String(),
+            'expires_at' => ($expires !== null && $expires !== '')
+                ? CarbonImmutable::parse($expires)->endOfDay()->toIso8601String()
+                : null,
+            'max_users' => $maxUsers,
+            'plan' => $plan,
+            'addons' => array_values($addons),
+            'organization' => (string) $org->license_uid,
+        ];
+
+        $json = JsonHelper::encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $signature = sodium_crypto_sign_detached($json, $private);
+        $key = self::b64Encode($json) . '.' . self::b64Encode($signature);
+
+        return $this->installForOrganization($org, $key);
+    }
+
     public function rawKey(): ?string {
         $env = config('license.key');
         if (is_string($env) && $env !== '') {

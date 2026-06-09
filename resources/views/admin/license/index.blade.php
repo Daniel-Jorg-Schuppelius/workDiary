@@ -190,6 +190,51 @@
                         @csrf @method('DELETE')
                     </form>
                 @endif
+
+                {{-- Lizenz direkt ausstellen (nur auf einer Herausgeber-Instanz mit Private Key) --}}
+                @if ($canInstall && ($canIssue ?? false))
+                    <details class="rounded-box border border-base-300 bg-base-200/50 mt-2" @if ($errors->has('issue')) open @endif>
+                        <summary class="cursor-pointer px-3 py-2 text-sm font-semibold">{{ __('Lizenz hier ausstellen') }}</summary>
+                        <form method="POST" action="{{ route('admin.license.org.issue') }}" class="space-y-3 px-3 pb-3">
+                            @csrf
+                            @error('issue')<p class="text-xs text-error">{{ $message }}</p>@enderror
+                            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                                <div>
+                                    <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Lizenznehmer') }}</label>
+                                    <input type="text" name="licensee" required value="{{ old('licensee', $op->licensee ?? $org->name) }}"
+                                        class="input input-sm input-bordered w-full @error('licensee') input-error @enderror">
+                                </div>
+                                <div>
+                                    <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Plan (Tier)') }}</label>
+                                    <select name="plan" class="select select-sm select-bordered w-full">
+                                        @foreach (['free' => 'Free', 'pro' => 'Pro', 'enterprise' => 'Enterprise'] as $val => $lbl)
+                                            <option value="{{ $val }}" @selected(old('plan', $orgModules['plan']) === $val)>{{ $lbl }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Gültig bis (optional)') }}</label>
+                                    <input type="date" name="expires" value="{{ old('expires') }}"
+                                        class="input input-sm input-bordered w-full @error('expires') input-error @enderror">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Einzeln gebuchte Module (Add-ons)') }}</label>
+                                <div class="mt-1 grid grid-cols-1 gap-1 sm:grid-cols-2">
+                                    @php $oldAddons = (array) old('addons', $orgModules['addons']); @endphp
+                                    @foreach ($moduleCodes as $code)
+                                        <label class="label cursor-pointer justify-start gap-2 py-0.5">
+                                            <input type="checkbox" name="addons[]" value="{{ $code }}" class="checkbox checkbox-xs" @checked(in_array($code, $oldAddons, true))>
+                                            <span class="font-mono text-xs">{{ $code }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                                <p class="mt-1 text-xs text-base-content/50">{{ __('Tier-Module sind bereits enthalten; hier nur zusätzliche Module zubuchen.') }}</p>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-primary">{{ __('Ausstellen & installieren') }}</button>
+                        </form>
+                    </details>
+                @endif
             @endif
         </div>
     </article>

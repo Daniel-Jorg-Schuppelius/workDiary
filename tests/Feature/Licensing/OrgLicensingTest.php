@@ -131,6 +131,40 @@ class OrgLicensingTest extends TestCase {
         $this->assertNull($org->refresh()->license_key);
     }
 
+    public function test_issue_for_organization_signs_and_installs(): void {
+        config()->set('license.private_key', base64_encode($this->secretKey));
+        $service = app(LicenseService::class);
+        $this->assertTrue($service->canIssue());
+
+        $org = Organization::factory()->create(['plan' => 'free']);
+        $result = $service->issueForOrganization($org, 'pro', ['module.lohn'], null, 'Selbst ausgestellt');
+
+        $this->assertSame(LicenseStatus::Valid, $result->status);
+        $this->assertSame('pro', $org->refresh()->plan);
+
+        $resolver = $this->resolverFor($org);
+        $this->assertTrue($resolver->isEnabled('module.datenschutz')); // pro-Tier
+        $this->assertTrue($resolver->isEnabled('module.lohn'));        // Add-on
+    }
+
+    public function test_admin_ui_issues_license(): void {
+        config()->set('license.private_key', base64_encode($this->secretKey));
+        $this->seed(PermissionsSeeder::class);
+        $admin = User::factory()->admin()->create();
+        $org = $admin->organization;
+        $org->update(['plan' => 'free']);
+
+        $this->actingAs($admin)->post(route('admin.license.org.issue'), [
+            'licensee' => 'ACME',
+            'plan' => 'enterprise',
+            'addons' => [],
+        ])->assertRedirect();
+
+        $org->refresh();
+        $this->assertSame('enterprise', $org->plan);
+        $this->assertNotNull($org->license_key);
+    }
+
     public function test_no_license_falls_back_to_org_plan_in_testing(): void {
         $org = Organization::factory()->create(['plan' => 'enterprise']);
 
