@@ -16,20 +16,13 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-BACKUP="../license-keys.env.deploybak"
-
-echo "→ Lizenz-Signierschlüssel sichern (falls vorhanden)"
-[ -f storage/license-keys.env ] && cp storage/license-keys.env "$BACKUP" || true
-
 echo "→ Code auf origin/main bringen (Hard-Reset – verwirft lokale Änderungen!)"
+# storage/license-keys.env ist gitignored/untracked → reset --hard lässt sie unberührt.
 git fetch origin
 git reset --hard origin/main
 
-echo "→ Lizenz-Signierschlüssel zurücklegen + absichern"
-if [ -f "$BACKUP" ]; then
-    cp "$BACKUP" storage/license-keys.env
-    chmod 600 storage/license-keys.env
-fi
+echo "→ Lizenz-Signierschlüssel absichern (falls vorhanden)"
+[ -f storage/license-keys.env ] && chmod 600 storage/license-keys.env || true
 
 echo "→ Composer-Abhängigkeiten (ohne dev)"
 composer install --no-dev --optimize-autoloader --no-interaction
@@ -41,8 +34,16 @@ echo "→ Caches leeren"
 php artisan config:clear
 php artisan view:clear
 
-echo "→ Lizenzdateien neu sealen (Public Key aus der .env)"
-php artisan license:seal
+echo "→ Public Key ermitteln (license-keys.env, sonst .env)"
+PUBKEY="$(grep -E '^[[:space:]]*LICENSE_PUBLIC_KEY=' storage/license-keys.env 2>/dev/null | head -1 | cut -d= -f2- | tr -d " \"'")"
+[ -z "$PUBKEY" ] && PUBKEY="$(grep -E '^[[:space:]]*LICENSE_PUBLIC_KEY=' .env 2>/dev/null | head -1 | cut -d= -f2- | tr -d " \"'")"
+
+echo "→ Lizenzdateien neu sealen"
+if [ -n "$PUBKEY" ]; then
+    php artisan license:seal --public-key="$PUBKEY"
+else
+    echo "  ⚠ Kein LICENSE_PUBLIC_KEY gefunden (weder storage/license-keys.env noch .env) – Sealing übersprungen."
+fi
 
 echo "→ Kontrolle"
 php artisan license:show || true
